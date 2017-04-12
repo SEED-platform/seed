@@ -240,7 +240,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
     # the property table then make sure to skip this so that superfluous property entries are
     # not created.
     if 'PropertyState' in table_mappings.keys():
-        if delimited_fields and delimited_fields['jurisdiction_tax`_lot_id']:
+        if delimited_fields and delimited_fields['jurisdiction_tax_lot_id']:
             table_mappings['PropertyState'][
                 delimited_fields['jurisdiction_tax_lot_id']['from_field']] = (
                 'PropertyState', 'lot_number')
