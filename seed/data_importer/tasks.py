@@ -194,7 +194,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
                 if key2 not in list_of_raw_columns:
                     del table_mappings[k][key2]
 
-        # check that the dictionaries are not empty, if so, then delete.
+        # check that the dictionaries are not empty, if empty, then delete.
         for k in table_mappings.keys():
             if not table_mappings[k]:
                 del table_mappings[k]
