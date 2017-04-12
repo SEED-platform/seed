@@ -184,11 +184,9 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
     # get all the table_mappings that exist for the organization
     table_mappings = ColumnMapping.get_column_mappings_by_table_name(org)
 
-    # TODO: **START TOTAL TERRIBLE HACK**
     # Remove any of the mappings that are not in the current list of raw columns because this
     # can really mess up the mapping of delimited_fields.
-    #
-    # Ideally the table_mapping method would be attached to the import_file_id
+    # Ideally the table_mapping method would be attached to the import_file_id, someday...
     list_of_raw_columns = import_file.first_row_columns
     if list_of_raw_columns:
         for k, v in table_mappings.items():
@@ -196,10 +194,18 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
                 if key2 not in list_of_raw_columns:
                     del table_mappings[k][key2]
 
+        # check that the dictionaries are not empty, if so, then delete.
+        for k in table_mappings.keys():
+            if not table_mappings[k]:
+                del table_mappings[k]
+
+
+    # TODO: **START TOTAL TERRIBLE HACK**
     # For some reason the mappings that got created previously don't
     # always have the table class in them.  To get this working for
     # the demo this is an infix place, but is absolutely terrible and
     # should be removed ASAP!!!!!
+    # NL: 4/12/2017, this should no longer be a problem after the column cleanup, remove and test post 2.0.2.
     if 'PropertyState' not in table_mappings and 'TaxLotState' in table_mappings and '' in table_mappings:
         _log.error('this code should not be running here...')
         debug_inferred_prop_state_mapping = table_mappings['']
@@ -229,12 +235,15 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
     # _log.debug("my table mappings are {}".format(table_mappings))
     _log.debug("delimited_field that will be expanded and normalized: {}".format(delimited_fields))
 
-    # Add custom mappings for cross-related data. Right now these are hard coded.
-    if delimited_fields and delimited_fields[
-            'jurisdiction_tax_lot_id'] and 'PropertyState' in table_mappings.keys():
-        table_mappings['PropertyState'][
-            delimited_fields['jurisdiction_tax_lot_id']['from_field']] = (
-            'PropertyState', 'lot_number')
+    # If a single file is being imported into both the tax lot and property table, then add
+    # an extra custom mapping for the cross-related data. If the data are not being imported into
+    # the property table then make sure to skip this so that superfluous property entries are
+    # not created.
+    if 'PropertyState' in table_mappings.keys():
+        if delimited_fields and delimited_fields['jurisdiction_tax`_lot_id']:
+            table_mappings['PropertyState'][
+                delimited_fields['jurisdiction_tax_lot_id']['from_field']] = (
+                'PropertyState', 'lot_number')
     # *** END BREAK OUT ***
 
     # yes, there are three cascading for loops here. sorry :(
