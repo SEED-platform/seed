@@ -534,7 +534,14 @@ def _delete_organization_property_chunk(del_ids, prog_key, increment, org_pk, *a
 def _delete_organization_property_state_chunk(del_ids, prog_key, increment, org_pk, *args, **kwargs):
     """deletes a list of ``del_ids`` and increments the cache"""
     qs = PropertyState.objects.filter(organization_id=org_pk, pk__in=del_ids)
-    qs.delete()
+    for i in range(0, 10):
+        while True:
+            try:
+                qs.delete()
+            except RuntimeError:
+                # RuntimeError occurred while deleting property_states, possibly due to too many cascading deletes
+                continue
+            break
     increment_cache(prog_key, increment * 100)
 
 
@@ -550,5 +557,12 @@ def _delete_organization_taxlot_chunk(del_ids, prog_key, increment, org_pk, *arg
 def _delete_organization_taxlot_state_chunk(del_ids, prog_key, increment, org_pk, *args, **kwargs):
     """deletes a list of ``del_ids`` and increments the cache"""
     qs = TaxLotState.objects.filter(organization_id=org_pk, pk__in=del_ids)
-    qs.delete()
+    for i in range(0, 10):
+        while True:
+            try:
+                qs.delete()
+            except RuntimeError:
+                # RuntimeError occurred while deleting taxlot_states, possibly due to too many cascading deletes
+                continue
+            break
     increment_cache(prog_key, increment * 100)
