@@ -3443,11 +3443,12 @@ class InventoryViewTests(TestCase):
             'name': 'pm_property_id',
             'table': 'PropertyState',
             'displayName': 'PM Property ID',
+            'dataType': 'string',
             'pinnedLeft': True,
             'type': 'number',
             'related': False,
         }
-        self.assertEqual(results[0], pm_property_id_col)
+        self.assertIn(pm_property_id_col, results)
 
         expected_property_extra_data_column = {
             'extraData': True,
@@ -3490,11 +3491,12 @@ class InventoryViewTests(TestCase):
             'name': 'jurisdiction_tax_lot_id',
             'table': 'TaxLotState',
             'displayName': 'Jurisdiction Tax Lot ID',
+            'dataType': 'string',
             'pinnedLeft': True,
             'type': 'numberStr',
             'related': False,
         }
-        self.assertEqual(results[2], jurisdiction_tax_lot_id_col)
+        self.assertIn(jurisdiction_tax_lot_id_col, results)
 
         expected_property_extra_data_column = {
             'extraData': True,

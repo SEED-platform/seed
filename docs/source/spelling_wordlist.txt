@@ -212,6 +212,7 @@ tsts
 travis
 tuples
 Ubuntu
+UI
 unicode
 unittest
 unmatch

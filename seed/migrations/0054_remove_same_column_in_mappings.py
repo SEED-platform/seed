@@ -7,7 +7,9 @@ from django.db import migrations
 from seed.models.columns import Column, ColumnMapping
 
 
-def duplicate_column(column):
+def duplicate_column(apps, column):
+    Column = apps.get_model("seed", "Column")
+
     new_c = Column.objects.get(pk=column.id)
     new_c.pk = None
     new_c.save()
@@ -15,7 +17,7 @@ def duplicate_column(column):
     return new_c
 
 
-def split_duplicate_mapping(cm):
+def split_duplicate_mapping(apps, cm):
     if cm.column_raw.count() == 0 or cm.column_mapped.count() == 0:
         raise Exception("column_raw or column_mapped is none")
 
@@ -24,7 +26,7 @@ def split_duplicate_mapping(cm):
 
     print "    Splitting duplicate mapping"
     raw = cm.column_raw.first()
-    new_raw = duplicate_column(raw)
+    new_raw = duplicate_column(apps, raw)
     cm.column_raw.clear()
     cm.column_raw.add(new_raw)
     cm.save()
@@ -33,6 +35,9 @@ def split_duplicate_mapping(cm):
 
 
 def forwards(apps, schema_editor):
+    Column = apps.get_model("seed", "Column")
+    ColumnMapping = apps.get_model("seed", "ColumnMapping")
+
     # find which columns are not used in column mappings
     double_usage_count = 0
 
@@ -43,7 +48,7 @@ def forwards(apps, schema_editor):
             print "    duplicate 'from' and 'to' column used in same mapping(s)"
             for cm in cm_duplicates:
                 double_usage_count += 1
-                split_duplicate_mapping(cm)
+                split_duplicate_mapping(apps, cm)
 
     # print ""
     # print ""

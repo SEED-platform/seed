@@ -107,7 +107,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         // API request to tell backend that it is finished with the mappings
         $http.put('/api/v2/import_files/' + $scope.dataset.import_file_id + '/mapping_done/', {}, {
           params: {
-            organization_id: $scope.organization_id
+            organization_id: $scope.organization.org_id
           }
         }).then(function (response) {
           // console.log(response);

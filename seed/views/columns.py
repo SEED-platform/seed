@@ -53,8 +53,8 @@ class ColumnViewSet(viewsets.ViewSet):
               paramType: query
         """
 
-        org_id = request.query_params.get('organization_id', None)
-        org = Organization.objects.get(pk=org_id)
+        organization_id = request.query_params.get('organization_id', None)
+        org = Organization.objects.get(pk=organization_id)
         columns = []
         for c in Column.objects.filter(organization=org).order_by('table_name', 'column_name'):
             columns.append(c.to_dict())
@@ -95,10 +95,10 @@ class ColumnViewSet(viewsets.ViewSet):
               required: true
               paramType: query
         """
-        org_id = request.query_params.get('organization_id', None)
+        organization_id = request.query_params.get('organization_id', None)
         inventory_type = request.query_params.get('inventory_type', 'property')
 
-        columns = Column.retrieve_all(org_id, inventory_type)
+        columns = Column.retrieve_all(organization_id, inventory_type)
 
         # for c in Column.objects.filter(organization=org).order_by('table_name', 'column_name'):
         #     columns.append(c.to_dict())
@@ -108,7 +108,7 @@ class ColumnViewSet(viewsets.ViewSet):
             'columns': columns,
         })
 
-    # TODO: 1295 - cleanup for require_organization_id_class
+    @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
     def retrieve(self, request, pk=None):
@@ -133,16 +133,6 @@ class ColumnViewSet(viewsets.ViewSet):
                   paramType: query
         """
         organization_id = request.query_params.get('organization_id', None)
-        if organization_id is None:
-            return JsonResponse(
-                {'status': 'error', 'message': 'Missing organization_id query parameter'},
-                status=status.HTTP_400_BAD_REQUEST)
-        try:
-            organization_id = int(organization_id)
-        except ValueError:
-            return JsonResponse({'status': 'error', 'message': 'Bad (non-numeric) organization_id'},
-                                status=status.HTTP_400_BAD_REQUEST)
-
         valid_orgs = OrganizationUser.objects.filter(
             user_id=request.user.id
         ).values_list('organization_id', flat=True).order_by('organization_id')
@@ -203,10 +193,10 @@ class ColumnViewSet(viewsets.ViewSet):
                 type: integer
                 required: true
         """
-        org_id = int(request.query_params.get('organization_id', None))
+        organization_id = request.query_params.get('organization_id', None)
 
         try:
-            org = Organization.objects.get(pk=org_id)
+            org = Organization.objects.get(pk=organization_id)
             c_count, cm_count = Column.delete_all(org)
             return JsonResponse(
                 {
@@ -218,7 +208,7 @@ class ColumnViewSet(viewsets.ViewSet):
         except Organization.DoesNotExist:
             return JsonResponse({
                 'status': 'error',
-                'message': 'organization with with id {} does not exist'.format(org_id)
+                'message': 'organization with with id {} does not exist'.format(organization_id)
             }, status=status.HTTP_404_NOT_FOUND)
 
 
@@ -251,8 +241,8 @@ class ColumnMappingViewSet(viewsets.ViewSet):
               paramType: query
         """
 
-        org_id = request.query_params.get('organization_id', None)
-        org = Organization.objects.get(pk=org_id)
+        organization_id = request.query_params.get('organization_id', None)
+        org = Organization.objects.get(pk=organization_id)
         column_mappings = []
         for cm in ColumnMapping.objects.filter(super_organization=org):
             # find the raw and mapped column
@@ -263,6 +253,7 @@ class ColumnMappingViewSet(viewsets.ViewSet):
             'column_mappings': column_mappings,
         })
 
+    @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
     def retrieve(self, request, pk=None):
@@ -287,16 +278,6 @@ class ColumnMappingViewSet(viewsets.ViewSet):
                   paramType: query
         """
         organization_id = request.query_params.get('organization_id', None)
-        if organization_id is None:
-            return JsonResponse(
-                {'status': 'error', 'message': 'Missing organization_id query parameter'},
-                status=status.HTTP_400_BAD_REQUEST)
-        try:
-            organization_id = int(organization_id)
-        except ValueError:
-            return JsonResponse({'status': 'error', 'message': 'Bad (non-numeric) organization_id'},
-                                status=status.HTTP_400_BAD_REQUEST)
-
         valid_orgs = OrganizationUser.objects.filter(
             user_id=request.user.id
         ).values_list('organization_id', flat=True).order_by('organization_id')
@@ -350,10 +331,10 @@ class ColumnMappingViewSet(viewsets.ViewSet):
                 type: integer
                 required: true
         """
-        org_id = int(request.query_params.get('organization_id', None))
+        organization_id = request.query_params.get('organization_id')
 
         try:
-            org = Organization.objects.get(pk=org_id)
+            org = Organization.objects.get(pk=organization_id)
             delete_count = ColumnMapping.delete_mappings(org)
             return JsonResponse(
                 {
@@ -364,5 +345,5 @@ class ColumnMappingViewSet(viewsets.ViewSet):
         except Organization.DoesNotExist:
             return JsonResponse({
                 'status': 'error',
-                'message': 'organization with with id {} does not exist'.format(org_id)
+                'message': 'organization with with id {} does not exist'.format(organization_id)
             }, status=status.HTTP_404_NOT_FOUND)

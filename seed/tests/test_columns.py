@@ -243,6 +243,7 @@ class TestColumnMapping(TestCase):
 
 
 class TestColumnsByInventory(TestCase):
+
     def setUp(self):
         self.fake_user = User.objects.create(username='test')
         self.fake_org = Organization.objects.create()
@@ -285,7 +286,7 @@ class TestColumnsByInventory(TestCase):
             'extraData': True,
             'displayName': u'Column A',
             'name': u'Column A',
-            'related': False
+            'related': False,
         }
         self.assertIn(c, columns)
 
@@ -295,18 +296,19 @@ class TestColumnsByInventory(TestCase):
             "extraData": True,
             "displayName": "Id",
             "name": "id_extra",
-            "related": False
+            "related": False,
         }
         self.assertIn(c, columns)
 
         # check the 'pinIfNative' argument
         c = {
-            "displayName": "PM Property ID",
             "name": "pm_property_id",
             "related": False,
             "table": "PropertyState",
+            "displayName": "PM Property ID",
+            "dataType": "string",
             "type": "number",
-            "pinnedLeft": True
+            "pinnedLeft": True,
         }
         self.assertIn(c, columns)
 
@@ -315,11 +317,12 @@ class TestColumnsByInventory(TestCase):
             "related": True,
             "table": "TaxLotState",
             "displayName": "State (Tax Lot)",
-            "name": "tax_state"
+            "dataType": "string",
+            "name": "tax_state",
         }
         self.assertIn(c, columns)
-        self.assertNotIn('not extra data', [col['name'] for col in columns])
-        self.assertNotIn('not mapped data', [col['name'] for col in columns])
+        self.assertNotIn('not extra data', [d['name'] for d in columns])
+        self.assertNotIn('not mapped data', [d['name'] for d in columns])
 
     def test_column_retrieve_all_duplicate_error(self):
         seed_models.Column.objects.create(
@@ -331,3 +334,75 @@ class TestColumnsByInventory(TestCase):
 
         with self.assertRaisesRegexp(Exception, 'Duplicate name'):
             Column.retrieve_all(self.fake_org.pk, 'property')
+
+    def test_column_retrieve_schema(self):
+        schema = {
+            "types": {
+                "pm_property_id": "string",
+                "pm_parent_property_id": "string",
+                "jurisdiction_tax_lot_id": "string",
+                "jurisdiction_property_id": "string",
+                "custom_id_1": "string",
+                "address_line_1": "string",
+                "address_line_2": "string",
+                "city": "string",
+                "state": "string",
+                "postal_code": "string",
+                "primary_tax_lot_id": "string",
+                "calculated_taxlot_ids": "string",
+                "associated_building_tax_lot_id": "string",
+                "associated_tax_lot_ids": "string",
+                "lot_number": "string",
+                "primary": "boolean",
+                "property_name": "string",
+                "campus": "boolean",
+                "gross_floor_area": "float",
+                "use_description": "string",
+                "energy_score": "integer",
+                "site_eui": "float",
+                "property_notes": "string",
+                "property_type": "string",
+                "year_ending": "date",
+                "owner": "string",
+                "owner_email": "string",
+                "owner_telephone": "string",
+                "building_count": "integer",
+                "year_built": "integer",
+                "recent_sale_date": "datetime",
+                "conditioned_floor_area": "float",
+                "occupied_floor_area": "float",
+                "owner_address": "string",
+                "owner_city_state": "string",
+                "owner_postal_code": "string",
+                "home_energy_score_id": "string",
+                "generation_date": "datetime",
+                "release_date": "datetime",
+                "source_eui_weather_normalized": "float",
+                "site_eui_weather_normalized": "float",
+                "source_eui": "float",
+                "energy_alerts": "string",
+                "space_alerts": "string",
+                "building_certification": "string",
+                "number_properties": "integer",
+                "block_number": "string",
+                "district": "string"
+            }
+        }
+        columns = Column.retrieve_db_types()
+        self.assertEqual(schema, columns)
+
+    def test_column_retrieve_db_fields(self):
+        c = Column.retrieve_db_fields()
+
+        data = ['address_line_1', 'address_line_2', 'block_number', 'building_certification',
+                'building_count', 'campus', 'city', 'conditioned_floor_area', 'custom_id_1', 'district',
+                'energy_alerts', 'energy_score', 'generation_date', 'gross_floor_area',
+                'home_energy_score_id', 'jurisdiction_property_id', 'jurisdiction_tax_lot_id',
+                'lot_number', 'number_properties', 'occupied_floor_area', 'owner', 'owner_address',
+                'owner_city_state', 'owner_email', 'owner_postal_code', 'owner_telephone',
+                'pm_parent_property_id', 'pm_property_id', 'postal_code', 'property_name',
+                'property_notes', 'property_type', 'recent_sale_date', 'release_date', 'site_eui',
+                'site_eui_weather_normalized', 'source_eui', 'source_eui_weather_normalized',
+                'space_alerts', 'state', 'use_description', 'year_built', 'year_ending']
+
+        self.assertItemsEqual(data, c)

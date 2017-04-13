@@ -6,7 +6,9 @@ from django.db import migrations
 
 from seed.models.columns import Column, ColumnMapping
 
-def duplicate_column(column):
+def duplicate_column(apps, column):
+    Column = apps.get_model("seed", "Column")
+
     new_c = Column.objects.get(pk=column.id)
     new_c.pk = None
     new_c.save()
@@ -14,12 +16,14 @@ def duplicate_column(column):
     return new_c
 
 
-def duplicate_mapping(mapping, column, raw_or_mapped):
+def duplicate_mapping(apps, mapping, column, raw_or_mapped):
+    ColumnMapping = apps.get_model("seed", "ColumnMapping")
+
     new_m = ColumnMapping.objects.get(pk=mapping.id)
     new_m.pk = None
     new_m.save()
 
-    new_c = duplicate_column(column)
+    new_c = duplicate_column(apps, column)
 
     # duplicate any of the columns
     if raw_or_mapped == 'mapped':
@@ -35,6 +39,9 @@ def duplicate_mapping(mapping, column, raw_or_mapped):
 
 
 def forwards(apps, schema_editor):
+    Column = apps.get_model("seed", "Column")
+    ColumnMapping = apps.get_model("seed", "ColumnMapping")
+
     # find which columns are not used in column mappings
     # for c in Column.objects.filter(column_name='Building Count'):
     for c in Column.objects.all():
@@ -51,7 +58,7 @@ def forwards(apps, schema_editor):
             if cm_raw.count() == 0 and cm_mapped.count() > 1 and c.is_extra_data:
                 for idx, mapping in enumerate(cm_mapped):
                     print "        Duplicating columns for {}".format(idx)
-                    new_m, _new_c = duplicate_mapping(mapping, c, 'mapped')
+                    new_m, _new_c = duplicate_mapping(apps, mapping, c, 'mapped')
                     print "            new mapping created {}".format(new_m)
 
                 for m in cm_mapped:
@@ -60,7 +67,7 @@ def forwards(apps, schema_editor):
             if cm_raw.count() > 1 and cm_mapped.count() == 0:
                 for idx, mapping in enumerate(cm_raw):
                     print "        Duplicating columns for {}".format(idx)
-                    new_m, _new_c = duplicate_mapping(mapping, c, 'raw')
+                    new_m, _new_c = duplicate_mapping(apps, mapping, c, 'raw')
                     print "            new mapping created {}".format(new_m)
 
                 for m in cm_raw:

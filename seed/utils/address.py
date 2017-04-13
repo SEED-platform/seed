@@ -5,9 +5,10 @@
 :author
 """
 
+import re
+
 import usaddress
 from streetaddress import StreetAddressFormatter
-import re
 
 
 def _normalize_address_direction(direction):
@@ -99,7 +100,8 @@ def normalize_address_str(address_val):
 
     # now parse the address into number, street name and street type
     try:
-        addr = usaddress.tag(str(address_val))[0]
+        # Add in the mapping of CornerOf to the AddressNumber.
+        addr = usaddress.tag(str(address_val), tag_mapping={'CornerOf': 'AddressNumber'})[0]
     except usaddress.RepeatedLabelError:
         # usaddress can't parse this at all
         normalized_address = str(address_val)
@@ -114,27 +116,29 @@ def normalize_address_str(address_val):
             normalized_address = _normalize_address_number(
                 addr['AddressNumber'])
 
-        if 'StreetNamePreDirectional' in addr and addr[
-                'StreetNamePreDirectional'] is not None:
+        if 'StreetNamePreDirectional' in addr and addr['StreetNamePreDirectional'] is not None:
             normalized_address = normalized_address + ' ' + _normalize_address_direction(
                 addr['StreetNamePreDirectional'])  # NOQA
 
         if 'StreetName' in addr and addr['StreetName'] is not None:
             normalized_address = normalized_address + ' ' + addr['StreetName']
 
-        if 'StreetNamePostType' in addr and addr[
-                'StreetNamePostType'] is not None:
+        if 'StreetNamePostType' in addr and addr['StreetNamePostType'] is not None:
             # remove any periods from abbreviations
             normalized_address = normalized_address + ' ' + _normalize_address_post_type(
                 addr['StreetNamePostType'])  # NOQA
 
-        if 'StreetNamePostDirectional' in addr and addr[
-                'StreetNamePostDirectional'] is not None:
+        if 'StreetNamePostDirectional' in addr and addr['StreetNamePostDirectional'] is not None:
             normalized_address = normalized_address + ' ' + _normalize_address_direction(
                 addr['StreetNamePostDirectional'])  # NOQA
 
+        if 'OccupancyType' in addr and addr['OccupancyType'] is not None:
+            normalized_address = normalized_address + ' ' + addr['OccupancyType']
+
+        if 'OccupancyIdentifier' in addr and addr['OccupancyIdentifier'] is not None:
+            normalized_address = normalized_address + ' ' + addr['OccupancyIdentifier']
+
         formatter = StreetAddressFormatter()
-        normalized_address = formatter.abbrev_street_avenue_etc(
-            normalized_address)
+        normalized_address = formatter.abbrev_street_avenue_etc(normalized_address)
 
     return normalized_address.lower().strip()

@@ -9,8 +9,6 @@ angular.module('BE.seed.controller.mapping', [])
     'suggested_mappings_payload',
     'raw_columns_payload',
     'first_five_rows_payload',
-    'property_columns',
-    'taxlot_columns',
     'cycles',
     'mappingValidatorService',
     'mapping_service',
@@ -29,8 +27,6 @@ angular.module('BE.seed.controller.mapping', [])
               suggested_mappings_payload,
               raw_columns_payload,
               first_five_rows_payload,
-              property_columns,
-              taxlot_columns,
               cycles,
               mappingValidatorService,
               mapping_service,
@@ -352,6 +348,15 @@ angular.module('BE.seed.controller.mapping', [])
 
         $scope.save_mappings = false;
 
+        // Request the columns again because they may (most likely)
+        // have changed from the initial import
+        inventory_service.get_property_columns().then(function(data){
+          $scope.property_columns = data;
+        });
+        inventory_service.get_taxlot_columns().then(function(data){
+          $scope.taxlot_columns =  data;
+        });
+
         inventory_service.search_matching_inventory($scope.import_file.id).then(function (data) {
           $scope.mappedData = data;
 
@@ -372,7 +377,7 @@ angular.module('BE.seed.controller.mapping', [])
           var existing_extra_property_keys = existing_property_keys.length ? _.keys(data.properties[0].extra_data) : [];
           var existing_taxlot_keys = _.keys(data.tax_lots[0]);
           var existing_extra_taxlot_keys = existing_taxlot_keys.length ? _.keys(data.tax_lots[0].extra_data) : [];
-          _.map(property_columns, function (col) {
+          _.map($scope.property_columns, function (col) {
             var options = {};
             if (!_.includes(existing_property_keys, col.name) && !_.includes(existing_extra_property_keys, col.name)) col.visible = false;
             else {
@@ -381,7 +386,7 @@ angular.module('BE.seed.controller.mapping', [])
             }
             return _.defaults(col, options, defaults);
           });
-          _.map(taxlot_columns, function (col) {
+          _.map($scope.taxlot_columns, function (col) {
             var options = {};
             if (!_.includes(existing_taxlot_keys, col.name) && !_.includes(existing_extra_taxlot_keys, col.name)) {
               col.visible = false;
@@ -396,12 +401,12 @@ angular.module('BE.seed.controller.mapping', [])
           $scope.propertiesGridOptions.data = _.map(data.properties, function (prop) {
             return _.defaults(prop, prop.extra_data);
           });
-          $scope.propertiesGridOptions.columnDefs = property_columns;
+          $scope.propertiesGridOptions.columnDefs = $scope.property_columns;
           $scope.taxlotsGridOptions = angular.copy(gridOptions);
           $scope.taxlotsGridOptions.data = _.map(data.tax_lots, function (taxlot) {
             return _.defaults(taxlot, taxlot.extra_data);
           });
-          $scope.taxlotsGridOptions.columnDefs = taxlot_columns;
+          $scope.taxlotsGridOptions.columnDefs = $scope.taxlot_columns;
 
           $scope.show_mapped_buildings = true;
         }).catch(function (response) {
@@ -684,13 +689,9 @@ angular.module('BE.seed.controller.mapping', [])
             }
           }
         });
-
       };
 
       $scope.MAP_copy = 'A \'check\' indicates you want to map a data field header from your import file to either a standard header from the Building Energy Data Exchange Specification (BEDES) or to a custom header of your choice. Unchecked rows will be ignored for mapping purposes and the data will be imported with the header from your import file.';
-
       $scope.BEDES_copy = 'A Green check in this column indicates the mapping is done to a standard field in the BEDES specification.';
-
       $scope.VALIDATE_copy = 'Indicates whether data mapping was successful, if there\'s invalid data in your columns, or a duplicate field header mappings that need to be re-mapped to a unique BEDES/non-BEDES field. ';
-
     }]);

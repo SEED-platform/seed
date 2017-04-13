@@ -4,18 +4,18 @@ from __future__ import unicode_literals
 
 from django.db import migrations
 
-from seed.models.columns import Column, ColumnMapping
-
 
 def forwards(apps, schema_editor):
-    # find which columns are not used in column mappings
+    Column = apps.get_model("seed", "Column")
+    ColumnMapping = apps.get_model("seed", "ColumnMapping")
 
+    # find which columns are not used in column mappings
     for c in Column.objects.all():
         cm_raw = ColumnMapping.objects.filter(column_raw=c)
         cm_mapped = ColumnMapping.objects.filter(column_mapped=c)
-        
+
         print "Column {}: {}.{}".format(c.id, c.table_name, c.column_name)
-        
+
         # check if the column isn't used and delete it if not
         if cm_raw.count() == 0 and cm_mapped.count() == 0:
             print "    deleting column: not used in any mappings"
@@ -40,10 +40,10 @@ def forwards(apps, schema_editor):
                 c.extra_data_source = 'P'
                 c.save()
 
-    print ""
-    print ""
-    print "-------------------------------------------------------------------"
-    print "Total Columns: {}".format(Column.objects.all().count())
+                # print ""
+                # print ""
+                # print "-------------------------------------------------------------------"
+                # print "Total Columns: {}".format(Column.objects.all().count())
 
 
 class Migration(migrations.Migration):

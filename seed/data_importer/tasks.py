@@ -42,7 +42,6 @@ from seed.decorators import lock_and_track
 from seed.green_button import xml_importer
 from seed.lib.mappings.mapping_data import MappingData
 from seed.lib.mcm import cleaners, mapper, reader
-from seed.lib.mcm.data.SEED import seed as seed_schema
 from seed.lib.mcm.mapper import expand_rows
 from seed.lib.mcm.utils import batch
 from seed.lib.merging import merging
@@ -129,7 +128,7 @@ def finish_mapping(import_file_id, mark_as_done):
 
 def _translate_unit_to_type(unit):
     if unit is None or unit == 'String':
-        return 'str'
+        return 'string'
 
     return unit.lower()
 
@@ -140,23 +139,21 @@ def _build_cleaner(org):
     Basically, this just tells us how to try and cast types during cleaning
     based on the Column definition in the database.
 
-    :param org: superperms.orgs.Organization instance.
+    :param org: organization instance.
     :returns: dict of dicts. {'types': {'col_name': 'type'},}
     """
     units = {'types': {}}
-    for column in Column.objects.filter(
-            mapped_mappings__super_organization=org
-    ).select_related('unit'):
-        column_type = 'str'
+    for column in Column.objects.filter(mapped_mappings__super_organization=org).select_related(
+            'unit'):
+        column_type = 'string'
         if column.unit:
             column_type = _translate_unit_to_type(
                 column.unit.get_unit_type_display()
             )
         units['types'][column.column_name] = column_type
 
-    # TODO(gavin): make this completely data-driven. # NL !!!
-    # Update with our predefined types for our BuildingSnapshot column types.
-    units['types'].update(seed_schema.schema['types'])
+    # Update with our predefined types for our database column types.
+    units['types'].update(Column.retrieve_db_types()['types'])
 
     return cleaners.Cleaner(units)
 
@@ -187,11 +184,9 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
     # get all the table_mappings that exist for the organization
     table_mappings = ColumnMapping.get_column_mappings_by_table_name(org)
 
-    # TODO: **START TOTAL TERRIBLE HACK**
     # Remove any of the mappings that are not in the current list of raw columns because this
     # can really mess up the mapping of delimited_fields.
-    #
-    # Ideally the table_mapping method would be attached to the import_file_id
+    # Ideally the table_mapping method would be attached to the import_file_id, someday...
     list_of_raw_columns = import_file.first_row_columns
     if list_of_raw_columns:
         for k, v in table_mappings.items():
@@ -199,10 +194,17 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
                 if key2 not in list_of_raw_columns:
                     del table_mappings[k][key2]
 
+        # check that the dictionaries are not empty, if empty, then delete.
+        for k in table_mappings.keys():
+            if not table_mappings[k]:
+                del table_mappings[k]
+
+    # TODO: **START TOTAL TERRIBLE HACK**
     # For some reason the mappings that got created previously don't
     # always have the table class in them.  To get this working for
     # the demo this is an infix place, but is absolutely terrible and
     # should be removed ASAP!!!!!
+    # NL: 4/12/2017, this should no longer be a problem after the column cleanup, remove and test post 2.0.2.
     if 'PropertyState' not in table_mappings and 'TaxLotState' in table_mappings and '' in table_mappings:
         _log.error('this code should not be running here...')
         debug_inferred_prop_state_mapping = table_mappings['']
@@ -232,12 +234,15 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
     # _log.debug("my table mappings are {}".format(table_mappings))
     _log.debug("delimited_field that will be expanded and normalized: {}".format(delimited_fields))
 
-    # Add custom mappings for cross-related data. Right now these are hard coded.
-    if delimited_fields and delimited_fields[
-            'jurisdiction_tax_lot_id'] and 'PropertyState' in table_mappings.keys():
-        table_mappings['PropertyState'][
-            delimited_fields['jurisdiction_tax_lot_id']['from_field']] = (
-            'PropertyState', 'lot_number')
+    # If a single file is being imported into both the tax lot and property table, then add
+    # an extra custom mapping for the cross-related data. If the data are not being imported into
+    # the property table then make sure to skip this so that superfluous property entries are
+    # not created.
+    if 'PropertyState' in table_mappings.keys():
+        if delimited_fields and delimited_fields['jurisdiction_tax_lot_id']:
+            table_mappings['PropertyState'][
+                delimited_fields['jurisdiction_tax_lot_id']['from_field']] = (
+                'PropertyState', 'lot_number')
     # *** END BREAK OUT ***
 
     # yes, there are three cascading for loops here. sorry :(
@@ -1092,20 +1097,22 @@ class EquivalencePartitioner(object):
             return False
 
     def calculate_equivalence_classes(self, list_of_obj):
-        # TODO: Finish writing the equivalence class code.
+        """
+        There is some subtlety with whether we use "comparison" keys
+        or "canonical" keys.  This reflects the difference between
+        searching vs. deciding information is official.
 
+        For example, if we are trying to match on pm_property_id is,
+        we may look in either pm_property_id or custom_id_1.  But if
+        we are trying to ask what the pm_property_id of a State is
+        that has a blank pm_property, we would not want to say the
+        value in the custom_id must be the pm_property_id.
+        
+        :param list_of_obj: 
+        :return: 
+        """
         equivalence_classes = collections.defaultdict(list)
         identities_for_equivalence = {}
-
-        # There is some subtlety with whether we use "comparison" keys
-        # or "canonical" keys.  This reflects the difference between
-        # searching vs. deciding information is official.
-
-        # For example, if we are trying to match on pm_property_id is,
-        # we may look in either pm_property_id or custom_id_1.  But if
-        # we are trying to ask what the pm_property_id of a State is
-        # that has a blank pm_property, we would not want to say the
-        # value in the custom_id must be the pm_property_id.
 
         for (ndx, obj) in enumerate(list_of_obj):
             cmp_key = self.calculate_comparison_key(obj)
@@ -1114,7 +1121,7 @@ class EquivalencePartitioner(object):
             for class_key in equivalence_classes:
                 if self.calculate_key_equivalence(class_key,
                                                   cmp_key) and not self.identities_are_different(
-                        identities_for_equivalence[class_key], identity_key):
+                    identities_for_equivalence[class_key], identity_key):
 
                     equivalence_classes[class_key].append(ndx)
 
@@ -1127,7 +1134,7 @@ class EquivalencePartitioner(object):
                 can_key = self.calculate_canonical_key(obj)
                 equivalence_classes[can_key].append(ndx)
                 identities_for_equivalence[can_key] = identity_key
-        return equivalence_classes  # TODO: Make sure return is correct on this.
+        return equivalence_classes
 
 
 def match_and_merge_unmatched_objects(unmatched_states, partitioner, org, import_file):
@@ -1209,7 +1216,9 @@ def merge_unmatched_into_views(unmatched_states, partitioner, org, import_file):
         raise ValueError("Unknown class '{}' passed to merge_unmatched_into_views".format(
             type(unmatched_states[0])))
 
-    class_views = ObjectViewClass.objects.filter(state__organization=org).select_related('state')
+    class_views = ObjectViewClass.objects.filter(
+        state__organization=org,
+        cycle_id=current_match_cycle).select_related('state')
     existing_view_states = collections.defaultdict(dict)
     for view in class_views:
         equivalence_can_key = partitioner.calculate_canonical_key(view.state)
@@ -1279,7 +1288,6 @@ def _match_properties_and_taxlots(file_pk, user_pk):
     unmatched_properties = []
     unmatched_tax_lots = []
     if all_unmatched_properties:
-
         # Filter out the duplicates.  Do we actually want to delete them
         # here?  Mark their abandonment in the Audit Logs?
         unmatched_properties, duplicate_property_states = filter_duplicated_states(
@@ -1310,9 +1318,15 @@ def _match_properties_and_taxlots(file_pk, user_pk):
     all_unmatched_tax_lots = import_file.find_unmatched_tax_lot_states()
 
     if all_unmatched_tax_lots:
+        # Filter out the duplicates.  Do we actually want to delete them
+        # here?  Mark their abandonment in the Audit Logs?
         unmatched_tax_lots, duplicate_tax_lot_states = filter_duplicated_states(
             all_unmatched_tax_lots)
+
         taxlot_partitioner = EquivalencePartitioner.make_default_state_equivalence(TaxLotState)
+
+        # Merge everything together based on the notion of equivalence
+        # provided by the partitioner.
         unmatched_tax_lots, taxlot_equivalence_keys = match_and_merge_unmatched_objects(
             unmatched_tax_lots,
             taxlot_partitioner,
