@@ -16,7 +16,7 @@
 
     <div class="section_tab_container">
         <uib-tabset>
-            <uib-tab heading="Auto Matching">
+            <uib-tab heading="Auto Matching" ng-click="updateHeight()">
                 <div class="row">
                     <div class="col-sm-6 tab_content wide">
                         <p><strong>HOW THE SYSTEM AUTO-MATCHES YOUR PROPERTIES &amp; TAX LOTS:</strong></p>
@@ -34,7 +34,7 @@
                     </div>
                 </div>
             </uib-tab>
-            <uib-tab heading="Manual Matching">
+            <uib-tab heading="Manual Matching" ng-click="updateHeight()">
                 <div class="row">
                     <div class="col-sm-6 tab_content wide">
                         <p><strong>HOW TO MANUALLY MATCH YOUR PROPERTIES &amp; TAX LOTS:</strong></p>
@@ -46,7 +46,7 @@
                     </div>-->
                 </div>
             </uib-tab>
-            <uib-tab class="pull-right" heading="Collapse Tabs"></uib-tab>
+            <uib-tab class="pull-right" heading="Collapse Tabs" ng-click="updateHeight()"></uib-tab>
         </uib-tabset>
     </div>
 
@@ -63,7 +63,7 @@
 
     <div class="section_content_container">
         <div class="section_content">
-            <div class="table_list_container matching" ng-cloak>
+            <div class="table_list_container matching" id="table-container" ng-cloak>
                 <table class="table table-striped">
                     <thead>
                         <tr>
@@ -84,7 +84,7 @@
                                 </form>
                             </th>
                             <th class="source_data blank" ng-hide="selectedFilter == SHOW_UNMATCHED"></th>
-                            <th class="source_data" colspan="{$ all_columns.length $}" ng-hide="selectedFilter == SHOW_UNMATCHED">Matched {$ inventory_type == 'taxlots' ? 'Tax Lots' : 'Properties' $} {$ filter_selected $}</th>
+                            <th class="source_data" colspan="{$ reduced_columns.length $}" ng-hide="selectedFilter == SHOW_UNMATCHED">Matched {$ inventory_type == 'taxlots' ? 'Tax Lots' : 'Properties' $} {$ filter_selected $}</th>
                         </tr>
                         <tr>
                             <th ng-repeat="col in columns" class="pointer noselect" ng-click="order_by_field(col.extraData, col.name)">
@@ -92,7 +92,7 @@
                                 <span ng-hide="col.name != order_by" class="fa" ng-class="sort_reverse ? 'fa-caret-down' : 'fa-caret-up'"></span>
                             </th>
                             <th class="sub_head is_aligned_center" ng-hide="selectedFilter == SHOW_UNMATCHED">Match</th>
-                            <th ng-repeat="col in all_columns" class="noselect" ng-hide="selectedFilter == SHOW_UNMATCHED">
+                            <th ng-repeat="col in reduced_columns" class="noselect" ng-hide="selectedFilter == SHOW_UNMATCHED">
                                 {$ col.displayName $} <span class="subtitle">{$ col.subtitle $}</span>
                             </th>
                         </tr>
@@ -114,7 +114,7 @@
                                     <input type="checkbox" ng-model="i.matched" ng-change="unmatch(i)" ng-disabled="!i.matched">
                                 </label>
                             </td>
-                            <td ng-repeat="col in all_columns" ng-hide="selectedFilter == SHOW_UNMATCHED">
+                            <td ng-repeat="col in reduced_columns" ng-hide="selectedFilter == SHOW_UNMATCHED">
                                 <span>{$ col.extraData ? i.coparent.extra_data[col.name] : i.coparent[col.name] $}</span>
                             </td>
                         </tr>

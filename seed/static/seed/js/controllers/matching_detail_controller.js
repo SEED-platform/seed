@@ -5,6 +5,7 @@
 angular.module('BE.seed.controller.matching_detail', [])
   .controller('matching_detail_controller', [
     '$scope',
+    '$window',
     '$state',
     '$stateParams',
     'import_file_payload',
@@ -19,6 +20,7 @@ angular.module('BE.seed.controller.matching_detail', [])
     'spinner_utility',
     'Notification',
     function ($scope,
+              $window,
               $state,
               $stateParams,
               import_file_payload,
@@ -58,6 +60,7 @@ angular.module('BE.seed.controller.matching_detail', [])
       $scope.state_id = $stateParams.state_id;
 
       $scope.columns = columns;
+      $scope.reduced_columns = _.reject(columns, {extraData: true});
       $scope.state = state_payload.state;
 
       /* Handle 'update filters' button click */
@@ -266,7 +269,24 @@ angular.module('BE.seed.controller.matching_detail', [])
       //   });
       // };
 
+      $scope.updateHeight = function () {
+        console.log('updateHeight called');
+        var height = 0;
+        _.forEach(['.header', '.page_header_container', '.section .section_tab_container', '.section .section_header_container', '.matching-tab-container', '.table_footer'], function (selector) {
+          var element = angular.element(selector)[0];
+          if (element) height += element.offsetHeight;
+        });
+        angular.element('#table-container').css('height', 'calc(100vh - ' + (height + 2) + 'px)');
+      };
+
+      var debouncedHeightUpdate = _.debounce($scope.updateHeight, 150);
+      angular.element($window).on('resize', debouncedHeightUpdate);
+      $scope.$on('$destroy', function () {
+        angular.element($window).off('resize', debouncedHeightUpdate);
+      });
+
       _.delay(function () {
         spinner_utility.hide();
+        $scope.updateHeight();
       }, 150);
     }]);

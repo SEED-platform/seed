@@ -2748,7 +2748,7 @@ table.import_results a[disabled] {
   user-select: none;
 }
 
-#mapped-table td {
+#mapped-table td, div.table_list_container.matching td, div.table_list_container.matching_detail td {
   max-width: 350px;
   overflow: hidden;
   text-overflow: ellipsis;
