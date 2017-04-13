@@ -180,9 +180,9 @@ class PropertyState(models.Model):
             return None
 
     def __unicode__(self):
-        return u'Property State - %s' % (self.pk)
+        return u'Property State - %s' % self.pk
 
-    def clean(self, *args, **kwargs):
+    def clean(self):
         date_field_names = (
             'year_ending',
             'generation_date',
@@ -269,7 +269,7 @@ class PropertyView(models.Model):
     # labels = models.ManyToManyField(StatusLabel)
 
     def __unicode__(self):
-        return u'Property View - %s' % (self.pk)
+        return u'Property View - %s' % self.pk
 
     class Meta:
         unique_together = ('property', 'cycle',)

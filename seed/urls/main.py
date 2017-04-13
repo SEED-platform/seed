@@ -36,7 +36,7 @@ urlpatterns = [
     # template routes
     url(r'^$', home, name='home'),
 
-    # TO REMOVE
+    # TODO: CLEANUP - some of these can be removed, e.g. get_building
     url(
         r'^' + apiv1 + r'get_total_number_of_buildings_for_user/$',
         get_total_number_of_buildings_for_user,

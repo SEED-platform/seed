@@ -289,7 +289,6 @@ class TestPromotingProperties(DataMappingBaseTestCase):
         # Do a bunch of work to flatten out this temp file that has extra_data
         # asa string representation of a dict
         data = []
-        keys = None
         new_keys = set()
 
         f = os.path.join(os.path.dirname(__file__), 'data', filename)

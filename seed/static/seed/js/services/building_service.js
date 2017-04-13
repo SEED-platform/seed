@@ -15,31 +15,31 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
 
       var building_factory = {total_number_of_buildings_for_user: 0};
 
-      building_factory.get_total_number_of_buildings_for_user = function () {
-        // django uses request.user for user information
-        return $http.get(window.BE.urls.get_total_number_of_buildings_for_user_url).then(function (response) {
-          building_factory.total_number_of_buildings_for_user = response.data.buildings_count;
-          return response.data;
-        });
-      };
-
-      building_factory.get_building = function (building_id) {
-        // django uses request.user for user information
-        return $http.get(window.BE.urls.get_building_url, {
-          params: {
-            building_id: building_id,
-            organization_id: user_service.get_organization().id
-          }
-        }).then(function (response) {
-          _.forEach(response.data.projects, function (project) {
-            var building = project.building;
-            if (building.label) {
-              building.label.label = label_helper_service.lookup_label(building.label.color);
-            }
-          });
-          return response.data;
-        });
-      };
+      // building_factory.get_total_number_of_buildings_for_user = function () {
+      //   // django uses request.user for user information
+      //   return $http.get(window.BE.urls.get_total_number_of_buildings_for_user_url).then(function (response) {
+      //     building_factory.total_number_of_buildings_for_user = response.data.buildings_count;
+      //     return response.data;
+      //   });
+      // };
+      //
+      // building_factory.get_building = function (building_id) {
+      //   // django uses request.user for user information
+      //   return $http.get(window.BE.urls.get_building_url, {
+      //     params: {
+      //       building_id: building_id,
+      //       organization_id: user_service.get_organization().id
+      //     }
+      //   }).then(function (response) {
+      //     _.forEach(response.data.projects, function (project) {
+      //       var building = project.building;
+      //       if (building.label) {
+      //         building.label.label = label_helper_service.lookup_label(building.label.color);
+      //       }
+      //     });
+      //     return response.data;
+      //   });
+      // };
 
       /**
        *

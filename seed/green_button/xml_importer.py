@@ -15,7 +15,6 @@ from seed.models import (
     Meter,
     TimeSeries,
     CanonicalBuilding,
-    set_initial_sources,
     GREEN_BUTTON_BS,
 )
 from seed.audit_logs.models import AuditLog
@@ -269,7 +268,6 @@ def create_models(data, import_file):
     super_org = import_file.import_record.super_organization
     raw_bs.super_organization = super_org
 
-    set_initial_sources(raw_bs)
     raw_bs.address_line_1 = data['address']
     raw_bs.source_type = GREEN_BUTTON_BS
 

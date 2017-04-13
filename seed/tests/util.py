@@ -13,7 +13,6 @@ import json
 
 from seed.models import (
     PropertyState,
-    set_initial_sources,
     Cycle,
 )
 
@@ -33,8 +32,6 @@ def make_fake_property(import_file, init_data, bs_type, is_canon=False, org=None
         ps.import_record = import_file.import_record
         ps.source_type = bs_type
 
-    # TODO: can we remove set_initial sources? Seems like this is invalid in the new data model world.
-    set_initial_sources(ps)
     ps.save()
 
     # The idea of canon is no longer applicable. The linked property state
