@@ -5,6 +5,7 @@
 angular.module('BE.seed.controller.matching_list', [])
   .controller('matching_list_controller', [
     '$scope',
+    '$window',
     '$state',
     '$stateParams',
     'import_file_payload',
@@ -20,6 +21,7 @@ angular.module('BE.seed.controller.matching_list', [])
     'spinner_utility',
     'Notification',
     function ($scope,
+              $window,
               $state,
               $stateParams,
               import_file_payload,
@@ -75,6 +77,7 @@ angular.module('BE.seed.controller.matching_list', [])
 
       // Reduce columns to only the ones that are populated
       $scope.all_columns = columns;
+      $scope.reduced_columns = _.reject(columns, {extraData: true});
       $scope.columns = [];
       var inventory = $scope.inventory_type == 'properties' ? inventory_payload.properties : inventory_payload.tax_lots;
       var existing_keys = _.pull(_.keys(_.first(inventory)), 'id', 'matched', 'extra_data', 'coparent');
@@ -308,11 +311,29 @@ angular.module('BE.seed.controller.matching_list', [])
         $state.go('matching_list', {importfile_id: $scope.file_select.file.id, inventory_type: $scope.inventory_type});
       };
 
+      $scope.updateHeight = function () {
+        console.log('updateHeight called');
+        var height = 0;
+        _.forEach(['.header', '.page_header_container', '.section .section_tab_container', '.matching-tab-container', '.table_footer'], function (selector) {
+          var element = angular.element(selector)[0];
+          if (element) height += element.offsetHeight;
+        });
+        angular.element('#table-container').css('height', 'calc(100vh - ' + (height + 2) + 'px)');
+      };
+
       /**
        * init: sets the default pagination, gets the columns that should be displayed
        *   in the matching list table, sets the table inventory from the inventory_payload
        */
       $scope.init = function () {
+        _.delay($scope.updateHeight, 150);
+
+        var debouncedHeightUpdate = _.debounce($scope.updateHeight, 150);
+        angular.element($window).on('resize', debouncedHeightUpdate);
+        $scope.$on('$destroy', function () {
+          angular.element($window).off('resize', debouncedHeightUpdate);
+        });
+
         $scope.cycleChanged();
         // $scope.columns = search_service.generate_columns($scope.fields, $scope.default_columns);
         $scope.number_properties_matching_search = inventory_payload.number_properties_matching_search;
