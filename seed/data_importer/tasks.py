@@ -1097,20 +1097,22 @@ class EquivalencePartitioner(object):
             return False
 
     def calculate_equivalence_classes(self, list_of_obj):
-        # TODO: Finish writing the equivalence class code.
+        """
+        There is some subtlety with whether we use "comparison" keys
+        or "canonical" keys.  This reflects the difference between
+        searching vs. deciding information is official.
 
+        For example, if we are trying to match on pm_property_id is,
+        we may look in either pm_property_id or custom_id_1.  But if
+        we are trying to ask what the pm_property_id of a State is
+        that has a blank pm_property, we would not want to say the
+        value in the custom_id must be the pm_property_id.
+        
+        :param list_of_obj: 
+        :return: 
+        """
         equivalence_classes = collections.defaultdict(list)
         identities_for_equivalence = {}
-
-        # There is some subtlety with whether we use "comparison" keys
-        # or "canonical" keys.  This reflects the difference between
-        # searching vs. deciding information is official.
-
-        # For example, if we are trying to match on pm_property_id is,
-        # we may look in either pm_property_id or custom_id_1.  But if
-        # we are trying to ask what the pm_property_id of a State is
-        # that has a blank pm_property, we would not want to say the
-        # value in the custom_id must be the pm_property_id.
 
         for (ndx, obj) in enumerate(list_of_obj):
             cmp_key = self.calculate_comparison_key(obj)
@@ -1119,7 +1121,7 @@ class EquivalencePartitioner(object):
             for class_key in equivalence_classes:
                 if self.calculate_key_equivalence(class_key,
                                                   cmp_key) and not self.identities_are_different(
-                        identities_for_equivalence[class_key], identity_key):
+                    identities_for_equivalence[class_key], identity_key):
 
                     equivalence_classes[class_key].append(ndx)
 
@@ -1132,7 +1134,7 @@ class EquivalencePartitioner(object):
                 can_key = self.calculate_canonical_key(obj)
                 equivalence_classes[can_key].append(ndx)
                 identities_for_equivalence[can_key] = identity_key
-        return equivalence_classes  # TODO: Make sure return is correct on this.
+        return equivalence_classes
 
 
 def match_and_merge_unmatched_objects(unmatched_states, partitioner, org, import_file):
@@ -1214,7 +1216,9 @@ def merge_unmatched_into_views(unmatched_states, partitioner, org, import_file):
         raise ValueError("Unknown class '{}' passed to merge_unmatched_into_views".format(
             type(unmatched_states[0])))
 
-    class_views = ObjectViewClass.objects.filter(state__organization=org).select_related('state')
+    class_views = ObjectViewClass.objects.filter(
+        state__organization=org,
+        cycle_id=current_match_cycle).select_related('state')
     existing_view_states = collections.defaultdict(dict)
     for view in class_views:
         equivalence_can_key = partitioner.calculate_canonical_key(view.state)
@@ -1284,7 +1288,6 @@ def _match_properties_and_taxlots(file_pk, user_pk):
     unmatched_properties = []
     unmatched_tax_lots = []
     if all_unmatched_properties:
-
         # Filter out the duplicates.  Do we actually want to delete them
         # here?  Mark their abandonment in the Audit Logs?
         unmatched_properties, duplicate_property_states = filter_duplicated_states(
@@ -1315,9 +1318,15 @@ def _match_properties_and_taxlots(file_pk, user_pk):
     all_unmatched_tax_lots = import_file.find_unmatched_tax_lot_states()
 
     if all_unmatched_tax_lots:
+        # Filter out the duplicates.  Do we actually want to delete them
+        # here?  Mark their abandonment in the Audit Logs?
         unmatched_tax_lots, duplicate_tax_lot_states = filter_duplicated_states(
             all_unmatched_tax_lots)
+
         taxlot_partitioner = EquivalencePartitioner.make_default_state_equivalence(TaxLotState)
+
+        # Merge everything together based on the notion of equivalence
+        # provided by the partitioner.
         unmatched_tax_lots, taxlot_equivalence_keys = match_and_merge_unmatched_objects(
             unmatched_tax_lots,
             taxlot_partitioner,
