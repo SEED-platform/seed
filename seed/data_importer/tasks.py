@@ -1107,9 +1107,9 @@ class EquivalencePartitioner(object):
         we are trying to ask what the pm_property_id of a State is
         that has a blank pm_property, we would not want to say the
         value in the custom_id must be the pm_property_id.
-        
-        :param list_of_obj: 
-        :return: 
+
+        :param list_of_obj:
+        :return:
         """
         equivalence_classes = collections.defaultdict(list)
         identities_for_equivalence = {}
@@ -1121,7 +1121,7 @@ class EquivalencePartitioner(object):
             for class_key in equivalence_classes:
                 if self.calculate_key_equivalence(class_key,
                                                   cmp_key) and not self.identities_are_different(
-                    identities_for_equivalence[class_key], identity_key):
+                                                  identities_for_equivalence[class_key], identity_key):
 
                     equivalence_classes[class_key].append(ndx)
 
