@@ -399,7 +399,7 @@ def export_buildings_download(request):
         }
 
 
-# TODO: TO REMOVE
+# TODO: CLEANUP - TO REMOVE
 @ajax_request
 @login_required
 def get_total_number_of_buildings_for_user(request):
@@ -409,7 +409,7 @@ def get_total_number_of_buildings_for_user(request):
     return {'status': 'success', 'buildings_count': buildings_count}
 
 
-# TO REMOVE
+# TODO: CLEANUP - REMOVE
 def get_building(request):
     """
     Retrieves a building. If user doesn't belong to the building's org,

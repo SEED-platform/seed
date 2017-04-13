@@ -38,7 +38,7 @@ class TaxLot(models.Model):
     labels = models.ManyToManyField(StatusLabel)
 
     def __unicode__(self):
-        return u'TaxLot - %s' % (self.pk)
+        return u'TaxLot - %s' % self.pk
 
 
 class TaxLotState(models.Model):
@@ -73,7 +73,7 @@ class TaxLotState(models.Model):
     extra_data = JsonField(default={}, blank=True)
 
     def __unicode__(self):
-        return u'TaxLot State - %s' % (self.pk)
+        return u'TaxLot State - %s' % self.pk
 
     def promote(self, cycle):
         """
@@ -191,7 +191,7 @@ class TaxLotView(models.Model):
     # labels = models.ManyToManyField(StatusLabel)
 
     def __unicode__(self):
-        return u'TaxLot View - %s' % (self.pk)
+        return u'TaxLot View - %s' % self.pk
 
     # TODO: Add unique constraint on (property, cycle) -- NL: isn't that already below?
     class Meta:

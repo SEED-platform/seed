@@ -38,7 +38,7 @@ class TaxLotState(EZState):
 class TestEquivalenceClassGenerator(TestCase):
 
     def test_equivalence(self):
-        partitioner = EquivalencePartitioner.make_PropertyState_equivalence()
+        partitioner = EquivalencePartitioner.make_propertystate_equivalence()
 
         p1 = PropertyState(pm_property_id=100)
         p2 = PropertyState(pm_property_id=100)

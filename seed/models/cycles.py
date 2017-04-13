@@ -1,4 +1,4 @@
-# TODO: Add copyrights
+# TODO: CLEANUP Add copyrights
 
 from __future__ import unicode_literals
 
@@ -17,7 +17,7 @@ class Cycle(models.Model):
     created = models.DateTimeField(auto_now_add=True)
 
     def __unicode__(self):
-        return u'Cycle - %s' % (self.name)
+        return u'Cycle - %s' % self.name
 
     class Meta:
         ordering = ['-created']

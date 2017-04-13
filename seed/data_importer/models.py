@@ -66,9 +66,9 @@ IMPORT_STATII = [
 
 class DuplicateDataError(RuntimeError):
 
-    def __init__(self, id):
+    def __init__(self, dup_id):
         super(DuplicateDataError, self).__init__()
-        self.id = id
+        self.id = dup_id
 
 
 class NotDeletableModel(models.Model):
@@ -695,7 +695,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
         super(ImportFile, self).save(*args, **kwargs)
         try:
             if not in_validation:
-                queue_update_status_for_import_record(self.import_record.pk)
+                return None
         except ImportRecord.DoesNotExist:
             pass
             # If we're deleting.
@@ -1312,45 +1312,4 @@ class BuildingImportRecord(models.Model):
     is_missing_from_import = models.BooleanField(default=False)
 
     def __unicode__(self, *args, **kwargs):
-        return "%s" % (self.building_record,)
-
-
-def queue_update_status_for_import_record(pk):
-    """edited by AKL to trim down data_importer"""
-    # if not cache.get(ImportRecord.SUMMARY_ANALYSIS_ACTIVE_KEY(pk), False) and not cache.get(ImportRecord.SUMMARY_ANALYSIS_QUEUED_KEY(pk), False) and not "test" in sys.argv:
-    return None
-
-
-def update_status_from_import_record(sender, instance, **kwargs):
-    try:
-        queue_update_status_for_import_record(instance.pk)
-    except ObjectDoesNotExist:
-        pass
-
-
-def update_status_from_import_file(sender, instance, **kwargs):
-    try:
-        queue_update_status_for_import_record(instance.import_record.pk)
-    except ObjectDoesNotExist:
-        pass
-
-
-def update_status_from_tcm(sender, instance, **kwargs):
-    try:
-        queue_update_status_for_import_record(instance.import_file.import_record.pk)
-    except ObjectDoesNotExist:
-        pass
-
-
-def update_status_from_dcm(sender, instance, **kwargs):
-    try:
-        queue_update_status_for_import_record(
-            instance.table_column_mapping.import_file.import_record.pk)
-    except ObjectDoesNotExist:
-        pass
-
-
-post_save.connect(update_status_from_import_record, sender=ImportRecord)
-# post_save.connect(update_status_from_import_file, sender=ImportFile)
-# post_save.connect(update_status_from_tcm, sender=TableColumnMapping)
-# post_save.connect(update_status_from_dcm, sender=DataCoercionMapping)
+        return "%s" % self.building_record

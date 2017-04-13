@@ -41,7 +41,7 @@ def get_column_mapping(raw_column, organization, attr_name='column_mapped'):
     :returns: list of mapped items, float representation of confidence.
 
     """
-    from seed.utils.mapping import _get_table_and_column_names
+    from seed.utils.mapping import get_table_and_column_names
 
     if not isinstance(raw_column, list):
         column_raw = [raw_column]
@@ -73,7 +73,7 @@ def get_column_mapping(raw_column, organization, attr_name='column_mapped'):
         _log.debug("ColumnMapping.DoesNotExist")
         return None
 
-    column_names = _get_table_and_column_names(previous_mapping, attr_name=attr_name)
+    column_names = get_table_and_column_names(previous_mapping, attr_name=attr_name)
 
     # Check if the mapping is a one-to-one mapping, that is, there is only one mapping available.
     # As far as I know, this should always be the case because of the MultipleObjectsReturned
@@ -270,8 +270,6 @@ class Column(models.Model):
                         )
                         return [obj]
 
-            return True
-
         md = MappingData()
 
         # Container to store the dicts with the Column object
@@ -376,7 +374,7 @@ class Column(models.Model):
                                                         table_name=model_obj.__class__.__name__)
                         for c in columns:
                             if not ColumnMapping.objects.filter(
-                                    Q(column_raw=c) | Q(column_mapped=c)).exists():
+                                            Q(column_raw=c) | Q(column_mapped=c)).exists():
                                 _log.debug("Deleting column object {}".format(c.column_name))
                                 c.delete()
 
@@ -401,13 +399,14 @@ class Column(models.Model):
         :return: dict
         """
 
-        c = {}
-        c['pk'] = self.id
-        c['id'] = self.id
-        c['organization_id'] = self.organization.id
-        c['table_name'] = self.table_name
-        c['column_name'] = self.column_name
-        c['is_extra_data'] = self.is_extra_data
+        c = {
+            'pk': self.id,
+            'id': self.id,
+            'organization_id': self.organization.id,
+            'table_name': self.table_name,
+            'column_name': self.column_name,
+            'is_extra_data': self.is_extra_data
+        }
         if self.unit:
             c['unit_name'] = self.unit.unit_name
             c['unit_type'] = self.unit.unit_type
@@ -627,7 +626,7 @@ class ColumnMapping(models.Model):
         Returns True if the ColumnMapping represents the concatenation of
         imported column names; else returns False.
         """
-        return (not self.is_direct())
+        return not self.is_direct()
 
     def remove_duplicates(self, qs, m2m_type='column_raw'):
         """
@@ -653,9 +652,10 @@ class ColumnMapping(models.Model):
         :return: dict
         """
 
-        c = {}
-        c['pk'] = self.id
-        c['id'] = self.id
+        c = {
+            'pk': self.id,
+            'id': self.id
+        }
         if self.user:
             c['user_id'] = self.user.id
         else:

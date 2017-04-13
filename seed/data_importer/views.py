@@ -997,9 +997,7 @@ class ImportFileViewSet(viewsets.ViewSet):
                                                     state1,
                                                     state2,
                                                     merging.get_state_attrs([state1, state2]),
-                                                    conf=None,
-                                                    default=state2,
-                                                    match_type=USER_MATCH)
+                                                    default=state2)
 
         state_1_audit_log = audit_log.objects.filter(state=state1).first()
         state_2_audit_log = audit_log.objects.filter(state=state2).first()
