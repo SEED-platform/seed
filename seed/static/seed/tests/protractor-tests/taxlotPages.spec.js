@@ -36,7 +36,7 @@ describe('When I go to the taxlot page', function () {
 			$$('[ng-model="colFilter.term"]').first().sendKeys(label);
 		});
 		//after filter
-		expect(rows.count()).not.toBeLessThan(1);
+		expect(rows.count()).toBe(1);
 
 		//clear by clicking the 'x' -> child of sibling of text input
 		$$('[ng-model="colFilter.term"]').first().element(by.xpath('..')).$('[ui-grid-one-bind-aria-label="aria.removeFilter"]').click();
