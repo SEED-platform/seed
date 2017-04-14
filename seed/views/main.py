@@ -25,9 +25,6 @@ from rest_framework.decorators import detail_route, api_view
 from seed import tasks
 from seed.authentication import SEEDAuthentication
 from seed.data_importer.models import ImportFile, ImportRecord
-from seed.data_importer.tasks import (
-    remap_data,
-)
 from seed.decorators import (
     ajax_request, ajax_request_class, get_prog_key, require_organization_id
 )
@@ -41,7 +38,6 @@ from seed.models import (
     ASSESSED_BS,
     PORTFOLIO_BS,
     GREEN_BUTTON_BS,
-    BuildingSnapshot,
     CanonicalBuilding,
     Column,
     ProjectBuilding,
@@ -403,7 +399,7 @@ def export_buildings_download(request):
         }
 
 
-# TO REMOVE
+# TODO: TO REMOVE
 @ajax_request
 @login_required
 def get_total_number_of_buildings_for_user(request):
@@ -787,65 +783,6 @@ def save_match(request):
 #     return resp
 
 
-@api_endpoint
-@ajax_request
-@login_required
-@has_perm('requires_viewer')
-def get_match_tree(request):
-    """returns the BuildingSnapshot tree
-
-    :GET: Expects organization_id and building_id in the query string
-
-    Returns::
-
-        {
-            'status': 'success',
-            'match_tree': [ // array of all the members of the tree
-                {
-                    "id": 333,
-                    "coparent": 223,
-                    "child": 443,
-                    "parents": [],
-                    "canonical_building_id": 1123
-                },
-                {
-                    "id": 223,
-                    "coparent": 333,
-                    "child": 443,
-                    "parents": [],
-                    "canonical_building_id": 1124
-                },
-                {
-                    "id": 443,
-                    "coparent": null,
-                    "child": 9933,
-                    "parents": [333, 223],
-                    "canonical_building_id": 1123
-                },
-                {
-                    "id": 9933,
-                    "coparent": null,
-                    "child": null,
-                    "parents": [443],
-                    "canonical_building_id": 1123
-                },
-                ...
-            ]
-        }
-    """
-    building_id = request.GET.get('building_id', '')
-    bs = BuildingSnapshot.objects.get(pk=building_id)
-    # since our tree has the structure of two parents and one child, we can go
-    # to the tip and look up, otherwise it's hard to keep track of the
-    # co-parent trees of the children.
-    tree = bs.tip.parent_tree + [bs.tip]
-    tree = map(lambda b: b.to_dict(), tree)
-    return {
-        'status': 'success',
-        'match_tree': tree,
-    }
-
-
 def _parent_tree_coparents(snapshot):
     """
     Takes a BuildingSnapshot inst. Climbs the snapshot tree upward and
@@ -921,157 +858,6 @@ def _parent_tree_coparents(snapshot):
     return (root, result_nodes,)
 
 
-@api_endpoint
-@ajax_request
-@login_required
-@has_perm('requires_viewer')
-def get_coparents(request):
-    """
-    Returns the nodes in the BuildingSnapshot tree that can be unmatched.
-
-
-    :GET: Expects organization_id and building_id in the query string
-
-    Returns::
-
-        {
-            'status': 'success',
-            'coparents': [
-                {
-                    "id": 333,
-                    "coparent": 223,
-                    "child": 443,
-                    "parents": [],
-                    "canonical_building_id": 1123
-                },
-                {
-                    "id": 223,
-                    "coparent": 333,
-                    "child": 443,
-                    "parents": [],
-                    "canonical_building_id": 1124
-                },
-                ...
-            ]
-        }
-    """
-    building_id = request.GET.get('building_id', '')
-    node = BuildingSnapshot.objects.get(pk=building_id)
-
-    # we need to climb up 'root's parents to find the other matched
-    # snapshots
-    root, proto_result = _parent_tree_coparents(node)
-
-    if node.canonical_building and node.co_parent:
-        proto_result.append(node.co_parent)
-    elif node.co_parent and node.co_parent.canonical_building:
-        proto_result.append(node)
-
-    while node.children.first():
-        child = node.children.first()
-        if child.co_parent:
-            proto_result.append(child.co_parent)
-        node = child
-
-    result = map(lambda b: b.to_dict(), proto_result)
-
-    tip = root.tip
-    tree = tip.parent_tree + [tip]
-    tree = map(lambda b: b.to_dict(), tree)
-    response = {
-        'status': 'success',
-        'coparents': result,
-        'match_tree': tree,
-        'tip': tip.to_dict(),
-    }
-
-    return response
-
-
-@api_endpoint
-@ajax_request
-@login_required
-def get_PM_filter_by_counts(request):
-    """
-    Retrieves the number of matched and unmatched BuildingSnapshots for
-    a given ImportFile record.
-
-    :GET: Expects import_file_id corresponding to the ImportFile in question.
-
-    Returns::
-
-        {
-            'status': 'success',
-            'matched': Number of BuildingSnapshot objects that have matches,
-            'unmatched': Number of BuildingSnapshot objects with no matches.
-        }
-    """
-    import_file_id = request.GET.get('import_file_id', '')
-
-    matched = BuildingSnapshot.objects.filter(
-        import_file__pk=import_file_id,
-        source_type__in=[2, 3],
-        children__isnull=False
-    ).count()
-    unmatched = BuildingSnapshot.objects.filter(
-        import_file__pk=import_file_id,
-        source_type__in=[2, 3],
-        children__isnull=True,
-        duplicate__isnull=True
-    ).count()
-    duplicates = BuildingSnapshot.objects.filter(
-        import_file__pk=import_file_id,
-        source_type__in=[2, 3],
-        duplicate__isnull=False
-    ).count()
-    return {
-        'status': 'success',
-        'matched': matched,
-        'unmatched': unmatched,
-        'duplicates': duplicates,
-    }
-
-
-@api_endpoint
-@ajax_request
-@login_required
-def delete_duplicates_from_import_file(request):
-    """
-    Retrieves the number of matched and unmatched BuildingSnapshots for
-    a given ImportFile record.
-
-    :GET: Expects import_file_id corresponding to the ImportFile in question.
-
-    Returns::
-
-        {
-            "status": "success",
-            "deleted": "Number of duplicates deleted"
-        }
-    """
-    import_file_id = request.GET.get('import_file_id', '')
-
-    orig_duplicate_ct = BuildingSnapshot.objects.filter(
-        import_file__pk=import_file_id,
-        source_type__in=[2, 3],
-        duplicate__isnull=False
-    ).count()
-    BuildingSnapshot.objects.filter(
-        import_file__pk=import_file_id,
-        source_type__in=[2, 3],
-        duplicate__isnull=False
-    ).delete()
-    new_duplicate_ct = BuildingSnapshot.objects.filter(
-        import_file__pk=import_file_id,
-        source_type__in=[2, 3],
-        duplicate__isnull=False
-    ).count()
-    return {
-        'status': 'success',
-        'deleted': orig_duplicate_ct - new_duplicate_ct,
-    }
-
-
 def _tmp_mapping_suggestions(import_file_id, org_id, user):
     """
     Temp function for allowing both api version for mapping suggestions to
@@ -1114,11 +900,11 @@ def _tmp_mapping_suggestions(import_file_id, org_id, user):
 
     # Portfolio manager files have their own mapping scheme - yuck, really?
     if import_file.from_portfolio_manager:
-        _log.info("map Portfolio Manager input file")
+        _log.debug("map Portfolio Manager input file")
         suggested_mappings = simple_mapper.get_pm_mapping(import_file.first_row_columns,
                                                           resolve_duplicates=True)
     else:
-        _log.info("custom mapping of input file")
+        _log.debug("custom mapping of input file")
         # All other input types
         suggested_mappings = mapper.build_column_mapping(
             import_file.first_row_columns,
@@ -1240,38 +1026,6 @@ def delete_file(request):
     return {
         'status': 'success',
     }
-
-
-@api_endpoint
-@ajax_request
-@login_required
-@has_perm('can_modify_data')
-def remap_buildings(request):
-    """
-    Re-run the background task to remap buildings as if it hadn't happened at
-    all. Deletes mapped buildings for a given ImportRecord, resets status.
-
-    NB: will not work if buildings have been merged into CanonicalBuilings.
-
-    Payload::
-
-        {
-            'file_id': The ID of the ImportFile to be remapped
-        }
-
-    Returns::
-
-        {
-            'status': 'success' or 'error',
-            'progress_key': ID of background job, for retrieving job progress
-        }
-    """
-    body = json.loads(request.body)
-    import_file_id = body.get('file_id')
-    if not import_file_id:
-        return {'status': 'error', 'message': 'Import File does not exist'}
-
-    return remap_data(import_file_id)
 
 
 @api_endpoint
@@ -1403,7 +1157,7 @@ def delete_organization_inventory(request):
             'progress_key': ID of background job, for retrieving job progress
         }
     """
-    org_id = request.GET.get('org_id', '')
+    org_id = request.GET.get('organization_id', None)
     deleting_cache_key = get_prog_key(
         'delete_organization_inventory',
         org_id

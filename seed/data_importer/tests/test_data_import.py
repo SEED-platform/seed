@@ -117,6 +117,8 @@ class TestMappingPortfolioData(DataMappingBaseTestCase):
 
         test_bs = mapped_bs[0]
 
+        from seed.utils.generic import pp
+        pp(test_bs)
         self.assertNotEqual(test_bs.pk, fake_raw_bs.pk)
         self.assertEqual(test_bs.property_name, self.fake_row['Name'])
         self.assertEqual(test_bs.address_line_1, self.fake_row['Address Line 1'])
@@ -129,7 +131,7 @@ class TestMappingPortfolioData(DataMappingBaseTestCase):
         data_columns = Column.objects.filter(
             organization=self.org,
             is_extra_data=True
-        )
+        ).exclude(table_name='')
 
         # There's only one piece of data that didn't cleanly map.
         # Note that as of 09/15/2016 - extra data still needs to be defined in the mappings, it

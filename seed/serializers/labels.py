@@ -27,6 +27,8 @@ class LabelSerializer(serializers.ModelSerializer):
         validated by the serializer.
 
         """
+        if 'super_organization' not in kwargs:
+            return
         super_organization = kwargs.pop('super_organization')
         self.inventory = kwargs.pop('inventory')
         super(LabelSerializer, self).__init__(*args, **kwargs)

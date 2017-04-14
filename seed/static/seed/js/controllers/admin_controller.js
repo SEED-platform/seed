@@ -8,9 +8,12 @@ angular.module('BE.seed.controller.admin', [])
     '$state',
     'user_service',
     'organization_service',
+    'column_mappings_service',
     'uploader_service',
     'user_profile_payload',
-    function ($scope, $state, user_service, organization_service, uploader_service, user_profile_payload) {
+    'Notification',
+    '$window',
+    function ($scope, $state, user_service, organization_service, column_mappings_service, uploader_service, user_profile_payload, Notification, $window) {
       $scope.user = {};
       $scope.temp_users = [];
       $scope.org = {};
@@ -28,7 +31,6 @@ angular.module('BE.seed.controller.admin', [])
       };
       $scope.username = user_profile_payload.first_name + ' ' + user_profile_payload.last_name;
 
-
       var update_alert = function (is_ok, message) {
         $scope.alert.show = true;
         $scope.alert.css = is_ok ? $scope.alert.bootstrap_class.ok : $scope.alert.bootstrap_class.error;
@@ -45,6 +47,7 @@ angular.module('BE.seed.controller.admin', [])
           // resolve promise
           $scope.org_form.invalid = false;
           get_organizations();
+          $scope.$emit('organization_list_updated');
           update_alert(true, 'Organization ' + org.name + ' created');
 
         }, function (data) {
@@ -144,6 +147,26 @@ angular.module('BE.seed.controller.admin', [])
         });
       };
 
+      $scope.confirm_column_mappings_delete = function (org) {
+        var yes = confirm('Are you sure you want to delete the \'' + org.name + '\' column mappings?  This will invalidate preexisting mapping review data');
+        if (yes) {
+          $scope.delete_org_column_mappings(org);
+        }
+      };
+
+      $scope.delete_org_column_mappings = function (org) {
+        column_mappings_service.delete_all_column_mappings_for_org(org.org_id).then(function (data) {
+          if (data.delete_count == 0) {
+            Notification.info('No column mappings exist.');
+          } else if (data.delete_count == 1) {
+            Notification.success(data.delete_count + ' column mapping deleted.');
+          } else {
+            Notification.success(data.delete_count + ' column mappings deleted.');
+          }
+
+        });
+      };
+
       /**
        * confirm_inventory_delete: checks with the user before kicking off the delete task
        * for an org's inventory.
@@ -196,10 +219,10 @@ angular.module('BE.seed.controller.admin', [])
                 org.remove_message = 'success';
                 if (parseInt(org.id) === parseInt(user_service.get_organization().id)) {
                   // Reload page if deleting current org.
-                  $state.reload();
+                  $window.location.reload();
                 } else {
                   get_organizations();
-                  $scope.$emit('organization_deleted');
+                  $scope.$emit('organization_list_updated');
                 }
               }, function (data) {  //failure fn
                 // Do nothing

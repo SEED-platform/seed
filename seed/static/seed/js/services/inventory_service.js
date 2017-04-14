@@ -5,21 +5,19 @@
 // inventory services
 angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
   '$http',
-  '$q',
   '$log',
   'urls',
   'user_service',
   'cycle_service',
   'spinner_utility',
-  function ($http, $q, $log, urls, user_service, cycle_service, spinner_utility) {
+  function ($http, $log, urls, user_service, cycle_service, spinner_utility) {
 
     var inventory_service = {
       total_properties_for_user: 0,
       total_taxlots_for_user: 0
     };
 
-
-    inventory_service.get_properties = function (page, per_page, cycle) {
+    inventory_service.get_properties = function (page, per_page, cycle, columns) {
 
       var params = {
         organization_id: user_service.get_organization().id,
@@ -27,9 +25,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         per_page: per_page || 999999999
       };
 
-      var defer = $q.defer();
-
-      cycle_service.get_cycles().then(function (cycles) {
+      return cycle_service.get_cycles().then(function (cycles) {
         var validCycleIds = _.map(cycles.cycles, 'id');
 
         var lastCycleId = inventory_service.get_last_cycle();
@@ -40,26 +36,21 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           params.cycle = lastCycleId;
         }
 
-        var get_properties_url = "/app/properties";
-
         spinner_utility.show();
 
-        $http({
-          method: 'GET',
-          url: get_properties_url,
+        return $http.post('/api/v2/properties/filter/', {
+          // Ensure that the required meta fields are included
+          columns: _.uniq(columns.concat(['property_state_id', 'taxlot_state_id', 'property_view_id', 'taxlot_view_id']))
+        }, {
           params: params
-        }).success(function (data, status, headers, config) {
-          defer.resolve(data);
-        }).error(function (data, status, headers, config) {
-          defer.reject(data, status);
+        }).then(function (response) {
+          return response.data;
         }).finally(function () {
           spinner_utility.hide();
         });
       }).catch(function () {
-        defer.reject('Error fetching cycles');
+        return 'Error fetching cycles';
       });
-
-      return defer.promise;
     };
 
 
@@ -131,36 +122,27 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
      */
 
     inventory_service.get_property = function (property_id, cycle_id) {
-
       // Error checks
-      if (angular.isUndefined(property_id)) {
-        $log.error("#inventory_service.get_property(): property_id is undefined");
-        throw new Error("Invalid Parameter");
+      if (_.isNil(property_id)) {
+        $log.error('#inventory_service.get_property(): property_id is undefined');
+        throw new Error('Invalid Parameter');
       }
-      if (angular.isUndefined(cycle_id)) {
-        $log.error("#inventory_service.get_property(): cycle_id : is undefined");
-        throw new Error("Invalid Parameter");
+      if (_.isNil(cycle_id)) {
+        $log.error('#inventory_service.get_property(): cycle_id is undefined');
+        throw new Error('Invalid Parameter');
       }
-
-      var defer = $q.defer();
-      var organization_id = user_service.get_organization().id;
-      var get_property_url = "/app/properties/" + property_id + "/cycles/" + cycle_id;
 
       spinner_utility.show();
-      $http({
-        method: 'GET',
-        url: get_property_url,
+      return $http.get('/api/v2/properties/' + property_id + '/', {
         params: {
-          organization_id: organization_id
+          cycle_id: cycle_id,
+          organization_id: user_service.get_organization().id
         }
-      }).success(function (data, status, headers, config) {
-        defer.resolve(data);
-      }).error(function (data, status, headers, config) {
-        defer.reject(data, status);
+      }).then(function (response) {
+        return response.data;
       }).finally(function () {
         spinner_utility.hide();
       });
-      return defer.promise;
     };
 
     /** Update Property State for a specified property, cycle, and organization.
@@ -173,7 +155,6 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
      * @returns {Promise}
      */
     inventory_service.update_property = function (property_id, cycle_id, state) {
-
       // Error checks
       if (_.isNil(property_id)) {
         $log.error('#inventory_service.update_property(): property_id is undefined');
@@ -188,59 +169,40 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         throw new Error('Invalid Parameter');
       }
 
-      var defer = $q.defer();
-      var update_property_url = '/app/properties/' + property_id + '/cycles/' + cycle_id + '/';
-
       spinner_utility.show();
-      $http({
-        method: 'PUT',
-        url: update_property_url,
-        data: {
-          state: state
-        },
+      return $http.put('/api/v2/properties/' + property_id + '/', {
+        state: state
+      }, {
         params: {
+          cycle_id: cycle_id,
           organization_id: user_service.get_organization().id
         }
-      }).success(function (data, status, headers, config) {
-        defer.resolve(data);
-      }).error(function (data, status, headers, config) {
-        defer.reject(data, status);
+      }).then(function (response) {
+        return response.data;
       }).finally(function () {
         spinner_utility.hide();
       });
-      return defer.promise;
     };
 
 
     inventory_service.delete_properties = function (search_payload) {
-
-      var defer = $q.defer();
-      var delete_properties_url = "/app/properties";
-      var organization_id = user_service.get_organization().id;
-
       spinner_utility.show();
-      $http({
-        method: 'DELETE',
-        url: delete_properties_url,
+      // TODO: FixthisURL
+      return $http.delete('/app/properties', {
         data: {
-          organization_id: organization_id,
+          organization_id: user_service.get_organization().id,
           search_payload: search_payload
         }
-      }).success(function (data, status, headers, config) {
-        defer.resolve(data);
-      }).error(function (data, status, headers, config) {
-        defer.reject(data, status);
+      }).then(function (response) {
+        return response.data;
       }).finally(function () {
         spinner_utility.hide();
       });
-      return defer.promise;
     };
 
 
     inventory_service.delete_property_states = function (ids) {
-      return $http({
-        method: 'DELETE',
-        url: '/app/property-state/',
+      return $http.delete('/api/v2/properties/batch_delete/', {
         headers: {
           'Content-Type': 'application/json;charset=utf-8'
         },
@@ -253,9 +215,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
 
     inventory_service.delete_taxlot_states = function (ids) {
-      return $http({
-        method: 'DELETE',
-        url: '/app/taxlot-state/',
+      return $http.delete('/api/v2/taxlots/batch_delete/', {
         headers: {
           'Content-Type': 'application/json;charset=utf-8'
         },
@@ -267,17 +227,14 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
 
-    inventory_service.get_taxlots = function (page, per_page, cycle) {
-
+    inventory_service.get_taxlots = function (page, per_page, cycle, columns) {
       var params = {
         organization_id: user_service.get_organization().id,
         page: page,
         per_page: per_page || 999999999
       };
 
-      var defer = $q.defer();
-
-      cycle_service.get_cycles().then(function (cycles) {
+      return cycle_service.get_cycles().then(function (cycles) {
         var validCycleIds = _.map(cycles.cycles, 'id');
 
         var lastCycleId = inventory_service.get_last_cycle();
@@ -288,26 +245,20 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           params.cycle = lastCycleId;
         }
 
-        var get_taxlots_url = "/app/taxlots";
-
         spinner_utility.show();
-
-        $http({
-          method: 'GET',
-          url: get_taxlots_url,
+        return $http.post('/api/v2/taxlots/filter/', {
+          // Ensure that the required meta fields are included
+          columns: _.uniq(columns.concat(['property_state_id', 'taxlot_state_id', 'property_view_id', 'taxlot_view_id']))
+        }, {
           params: params
-        }).success(function (data, status, headers, config) {
-          defer.resolve(data);
-        }).error(function (data, status, headers, config) {
-          defer.reject(data, status);
+        }).then(function (response) {
+          return response.data;
         }).finally(function () {
           spinner_utility.hide();
         });
       }).catch(function () {
-        defer.reject('Error fetching cycles');
+        return 'Error fetching cycles';
       });
-
-      return defer.promise;
     };
 
 
@@ -384,33 +335,26 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     inventory_service.get_taxlot = function (taxlot_id, cycle_id) {
 
       // Error checks
-      if (angular.isUndefined(taxlot_id)) {
+      if (_.isNil(taxlot_id)) {
         $log.error('#inventory_service.get_taxlot(): null taxlot_id parameter');
         throw new Error('Invalid Parameter');
       }
-      if (angular.isUndefined(cycle_id)) {
+      if (_.isNil(cycle_id)) {
         $log.error('#inventory_service.get_taxlot(): null cycle_id parameter');
         throw new Error('Invalid Parameter');
       }
 
-      var defer = $q.defer();
-      var get_taxlot_url = '/app/taxlots/' + taxlot_id + '/cycles/' + cycle_id;
-
       spinner_utility.show();
-      $http({
-        method: 'GET',
-        url: get_taxlot_url,
+      return $http.get('/api/v2/taxlots/' + taxlot_id + '/', {
         params: {
+          cycle_id: cycle_id,
           organization_id: user_service.get_organization().id
         }
-      }).success(function (data, status, headers, config) {
-        defer.resolve(data);
-      }).error(function (data, status, headers, config) {
-        defer.reject(data, status);
+      }).then(function (response) {
+        return response.data;
       }).finally(function () {
         spinner_utility.hide();
       });
-      return defer.promise;
     };
 
 
@@ -424,7 +368,6 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
      * @returns {Promise}
      */
     inventory_service.update_taxlot = function (taxlot_id, cycle_id, state) {
-
       // Error checks
       if (_.isNil(taxlot_id)) {
         $log.error('#inventory_service.update_taxlot(): taxlot_id is undefined');
@@ -439,89 +382,59 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         throw new Error('Invalid Parameter');
       }
 
-      var defer = $q.defer();
-      var update_taxlot_url = '/app/taxlots/' + taxlot_id + '/cycles/' + cycle_id + '/';
-
       spinner_utility.show();
-      $http({
-        method: 'PUT',
-        url: update_taxlot_url,
-        data: {
-          state: state
-        },
+      return $http.put('/api/v2/taxlots/' + taxlot_id + '/', {
+        state: state
+      }, {
         params: {
+          cycle_id: cycle_id,
           organization_id: user_service.get_organization().id
         }
-      }).success(function (data, status, headers, config) {
-        defer.resolve(data);
-      }).error(function (data, status, headers, config) {
-        defer.reject(data, status);
+      }).then(function (response) {
+        return response.data;
       }).finally(function () {
         spinner_utility.hide();
       });
-      return defer.promise;
     };
 
     inventory_service.get_last_cycle = function () {
       var organization_id = user_service.get_organization().id;
-      return (JSON.parse(sessionStorage.getItem('cycles')) || {})[organization_id];
+      return (JSON.parse(localStorage.getItem('cycles')) || {})[organization_id];
     };
 
     inventory_service.save_last_cycle = function (pk) {
       var organization_id = user_service.get_organization().id,
-        cycles = JSON.parse(sessionStorage.getItem('cycles')) || {};
+        cycles = JSON.parse(localStorage.getItem('cycles')) || {};
       cycles[organization_id] = _.toInteger(pk);
-      sessionStorage.setItem('cycles', JSON.stringify(cycles));
+      localStorage.setItem('cycles', JSON.stringify(cycles));
     };
 
 
     inventory_service.get_property_columns = function () {
-
-      var defer = $q.defer();
-      var get_property_columns_url = "/app/property-columns";
-      var organization_id = user_service.get_organization().id;
-
-      $http({
-        method: 'GET',
-        url: get_property_columns_url,
+      return $http.get('/api/v2/properties/columns/', {
         params: {
-          organization_id: organization_id
+          organization_id: user_service.get_organization().id
         }
-      }).success(function (data, status, headers, config) {
+      }).then(function (response) {
         // Remove empty columns
-        _.remove(data, function (datum) {
-          return _.isEmpty(datum.name);
+        return _.filter(response.data.columns, function (col) {
+          return !_.isEmpty(col.name);
         });
-        defer.resolve(data);
-      }).error(function (data, status, headers, config) {
-        defer.reject(data, status);
       });
-      return defer.promise;
     };
 
 
     inventory_service.get_taxlot_columns = function () {
-
-      var defer = $q.defer();
-      var get_taxlot_columns_url = "/app/taxlot-columns";
-      var organization_id = user_service.get_organization().id;
-
-      $http({
-        method: 'GET',
-        url: get_taxlot_columns_url,
+      return $http.get('/api/v2/taxlots/columns/', {
         params: {
-          organization_id: organization_id
+          organization_id: user_service.get_organization().id
         }
-      }).success(function (data, status, headers, config) {
+      }).then(function (response) {
         // Remove empty columns
-        _.remove(data, function (datum) {
-          return _.isEmpty(datum.name);
+        return _.filter(response.data.columns, function (col) {
+          return !_.isEmpty(col.name);
         });
-        defer.resolve(data);
-      }).error(function (data, status, headers, config) {
-        defer.reject(data, status);
       });
-      return defer.promise;
     };
 
     var textRegex = /^(!?)"(([^"]|\\")*)"$/;
@@ -605,45 +518,34 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
     inventory_service.get_total_properties_for_user = function () {
       // django uses request.user for user information
-      var defer = $q.defer();
-      $http({
-        method: 'GET',
-        url: window.BE.urls.get_total_number_of_properties_for_user_url
-      }).success(function (data, status, headers, config) {
-        property_factory.total_properties_for_user = data.properties_count;
-        defer.resolve(data);
-      }).error(function (data, status, headers, config) {
-        defer.reject(data, status);
+      return $http.get(window.BE.urls.get_total_number_of_properties_for_user_url).then(function (response) {
+        property_factory.total_properties_for_user = response.data.properties_count;
+        return response.data;
       });
-      return defer.promise;
     };
 
 
     inventory_service.get_total_taxlots_for_user = function () {
       // django uses request.user for user information
-      var defer = $q.defer();
-      $http({
-        method: 'GET',
-        url: window.BE.urls.get_total_number_of_taxlots_for_user_url
-      }).success(function (data, status, headers, config) {
-        property_factory.total_taxlots_for_user = data.taxlots_count;
-        defer.resolve(data);
-      }).error(function (data, status, headers, config) {
-        defer.reject(data, status);
+      return $http.get(window.BE.urls.get_total_number_of_taxlots_for_user_url).then(function (response) {
+        property_factory.total_taxlots_for_user = response.data.taxlots_count;
+        return response.data;
       });
-      return defer.promise;
     };
 
     inventory_service.saveSettings = function (key, columns) {
       key += '.' + user_service.get_organization().id;
       var toSave = inventory_service.reorderSettings(_.map(columns, function (col) {
-        return _.pick(col, ['name', 'pinnedLeft', 'visible']);
+        return _.pick(col, ['name', 'pinnedLeft', 'related', 'visible']);
       }));
       localStorage.setItem(key, JSON.stringify(toSave));
     };
 
     inventory_service.loadSettings = function (key, columns) {
       key += '.' + user_service.get_organization().id;
+
+      var isDetailSetting = key.match(/^grid\.(properties|taxlots)\.detail\.\d+$/);
+
       // Hide extra data columns by default
       _.forEach(columns, function (col) {
         col.visible = !col.extraData;
@@ -653,13 +555,23 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       if (!_.isNull(localColumns)) {
         var existingColumnNames = _.map(columns, 'name');
         localColumns = JSON.parse(localColumns);
+
+        // Remove deprecated columns missing 'related' field
+        // NOT FOR DETAIL SETTINGS
+        if (!isDetailSetting) {
+          _.remove(localColumns, function (col) {
+            return !_.has(col, 'related');
+          });
+        }
+
         // Remove nonexistent columns
         _.remove(localColumns, function (col) {
           return !_.includes(existingColumnNames, col.name);
         });
         // Use saved column settings with original data as defaults
         localColumns = _.map(localColumns, function (col) {
-          return _.defaults(col, _.remove(columns, {name: col.name})[0])
+          if (isDetailSetting) return _.defaults(col, _.remove(columns, {name: col.name})[0]);
+          else return _.defaults(col, _.remove(columns, {name: col.name, related: col.related})[0]);
         });
         // If no columns are visible, reset visibility only
         if (!_.find(localColumns, 'visible')) {
@@ -673,6 +585,17 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }
     };
 
+    // Save non-empty sort/filter states
+    inventory_service.saveGridSettings = function (key, settings) {
+      key += '.' + user_service.get_organization().id;
+      localStorage.setItem(key, JSON.stringify(settings));
+    };
+
+    inventory_service.loadGridSettings = function (key) {
+      key += '.' + user_service.get_organization().id;
+      return localStorage.getItem(key);
+    };
+
     inventory_service.removeSettings = function (key) {
       key += '.' + user_service.get_organization().id;
       localStorage.removeItem(key);
@@ -684,13 +607,13 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
     // TODO: Identify Tax Lot specific values that have dates.
     inventory_service.property_state_date_columns = [
-      "generation_date",
-      "release_date",
-      "recent_sale_date",
-      "year_ending",
-      "record_created",
-      "record_modified",
-      "record_year_ending"
+      'generation_date',
+      'release_date',
+      'recent_sale_date',
+      'year_ending',
+      'record_created',
+      'record_modified',
+      'record_year_ending'
     ];
 
     // TODO: Identify Tax Lot specific values that have dates.
@@ -708,6 +631,65 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       var pinned = _.remove(columns, 'pinnedLeft');
       var selected = _.remove(columns, 'visible');
       return pinned.concat(selected).concat(columns);
+    };
+
+    inventory_service.search_matching_inventory = function (import_file_id, options) {
+      spinner_utility.show();
+      return $http.post('/api/v2/import_files/' + import_file_id + '/filtered_mapping_results/', options, {
+        params: {
+          organization_id: user_service.get_organization().id
+        }
+      }).then(function (response) {
+        return response.data;
+      }).finally(function () {
+        spinner_utility.hide();
+      });
+    };
+
+    inventory_service.save_property_match = function (source_property_id, target_property_id, create_match) {
+      // TODO: Fix url
+      return $http.post(urls.save_match, {
+        source_inventory_id: source_property_id,
+        target_inventory_id: target_property_id,
+        create_match: create_match,
+        organization_id: user_service.get_organization().id
+      }).then(function (response) {
+        return response.data;
+      });
+    };
+
+    inventory_service.save_taxlot_match = function (source_taxlot_id, target_taxlot_id, create_match) {
+      // TODO: Fix url
+      return $http.post(urls.save_match, {
+        source_inventory_id: source_taxlot_id,
+        target_inventory_id: target_taxlot_id,
+        create_match: create_match,
+        organization_id: user_service.get_organization().id
+      }).then(function (response) {
+        return response.data;
+      });
+    };
+
+    inventory_service.get_columns = function (all_fields) {
+      all_fields = all_fields || '';
+      return $http.get('/app/get_columns/', {
+        params: {
+          all_fields: all_fields,
+          organization_id: user_service.get_organization().id
+        }
+      }).then(function (response) {
+        return response.data;
+      });
+    };
+
+    inventory_service.get_matching_results = function (import_file_id) {
+      return $http.get('/api/v2/import_files/' + import_file_id + '/matching_results/', {
+        params: {
+          organization_id: user_service.get_organization().id
+        }
+      }).then(function (response) {
+        return response.data;
+      });
     };
 
     return inventory_service;

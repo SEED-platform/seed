@@ -20,3 +20,13 @@ Module contents
     :members:
     :undoc-members:
     :show-inheritance:
+
+.. automodule:: seed.lib.mappings
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. automodule:: seed.lib.merging
+    :members:
+    :undoc-members:
+    :show-inheritance:

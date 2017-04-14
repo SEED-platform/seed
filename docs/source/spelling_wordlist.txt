@@ -37,6 +37,7 @@ Chomsky
 chomsky
 chunked
 ci
+cmp
 collectstatic
 concat
 cond
@@ -211,6 +212,7 @@ tsts
 travis
 tuples
 Ubuntu
+UI
 unicode
 unittest
 unmatch

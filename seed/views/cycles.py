@@ -4,17 +4,16 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author Paul Munday<paul@paulmunday.net>
 """
-import datetime
-
 from django.forms.models import model_to_dict
 from django.http import JsonResponse
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.renderers import JSONRenderer
 from rest_framework.viewsets import GenericViewSet
 
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.lib.superperms.orgs.models import Organization
+from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import Cycle, PropertyView, TaxLotView
 from seed.serializers.cycles import CycleSerializer
 from seed.utils.api import api_endpoint_class
@@ -52,6 +51,7 @@ class CycleView(GenericViewSet):
 
     @api_endpoint_class
     @ajax_request_class
+    @has_perm_class('requires_viewer')
     def list(self, request):
         """
         List all the cycles
@@ -62,20 +62,22 @@ class CycleView(GenericViewSet):
               required: true
               paramType: query
         """
-        # make sure query org id is in this user's orgs
-        org_id_in_query = request.query_params.get('organization_id', None)
-        tmp_cycles = Cycle.objects.filter(
-            organization_id=org_id_in_query
-        )
-        cycles = []
-        if tmp_cycles.exists():
-            for cycle in tmp_cycles:
-                cycles.append(model_to_dict(cycle))
-        else:
+        org_id = int(request.query_params.get('organization_id', None))
+        valid_orgs = OrganizationUser.objects.filter(
+            user_id=request.user.id
+        ).values_list('organization_id', flat=True).order_by('organization_id')
+        if org_id not in valid_orgs:
             return JsonResponse({
                 'status': 'error',
-                'message': 'Could not access any cycles for organization_id={}'.format(org_id_in_query)
+                'message': 'Cannot access cycles for this organization id',
             }, status=status.HTTP_403_FORBIDDEN)
+
+        tmp_cycles = Cycle.objects.filter(
+            organization_id=org_id
+        ).order_by('name')
+        cycles = []
+        for cycle in tmp_cycles:
+            cycles.append(model_to_dict(cycle))
         return JsonResponse({'status': 'success', 'cycles': cycles})
 
     @api_endpoint_class
@@ -97,7 +99,7 @@ class CycleView(GenericViewSet):
         try:
             org = Organization.objects.get(pk=org_id)
         except Organization.DoesNotExist:
-            return JsonResponse({"status": 'error', 'message': 'organization_id not provided'},
+            return JsonResponse({'status': 'error', 'message': 'organization_id not provided'},
                                 status=status.HTTP_400_BAD_REQUEST)
         record = Cycle.objects.create(
             organization=org,
@@ -105,7 +107,7 @@ class CycleView(GenericViewSet):
             name=body['name'],
             start=body['start'],
             end=body['end'],
-            created=datetime.datetime.now()
+            created=timezone.now()
         )
         return JsonResponse({'status': 'success', 'id': record.pk, 'name': record.name})
 

@@ -44,7 +44,8 @@ class TestCaseB(DataMappingBaseTestCase):
         """ case B (many property <-> one tax lot) """
         tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
         Column.create_mappings(self.fake_mappings, self.org, self.user)
-        tasks.map_data(self.import_file.pk)
+        # Set remap to True because for some reason this file id has been imported before.
+        tasks.map_data(self.import_file.pk, True)
 
         # Check to make sure all the properties imported
         ps = PropertyState.objects.filter(

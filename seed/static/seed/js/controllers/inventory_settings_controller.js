@@ -105,7 +105,7 @@ angular.module('BE.seed.controller.inventory_settings', [])
         }, {
           name: 'displayName',
           displayName: 'Column Name',
-          cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP">{$ COL_FIELD CUSTOM_FILTERS $} <span ng-if="row.entity.related" class="badge" style="margin-left: 10px;">{$ grid.appScope.inventory_type == "properties" ? "tax lot" : "property" $}</span></div>',
+          cellTemplate: '<div class="ui-grid-cell-contents inventory-settings-cell" title="TOOLTIP" data-after-content="{$ row.entity.name $}">{$ COL_FIELD CUSTOM_FILTERS $} <span ng-if="row.entity.related" class="badge" style="margin-left: 10px;">{$ grid.appScope.inventory_type == "properties" ? "tax lot" : "property" $}</span></div>',
           enableHiding: false
         }],
         onRegisterApi: function (gridApi) {

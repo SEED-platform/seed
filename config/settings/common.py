@@ -26,6 +26,7 @@ MANAGERS = ADMINS
 WSGI_APPLICATION = 'config.wsgi.application'
 
 TIME_ZONE = 'America/Los_Angeles'
+# TIME_ZONE = 'UTC'
 USE_TZ = True
 LANGUAGE_CODE = 'en-us'
 SITE_ID = 1
@@ -119,9 +120,9 @@ SEED_URL_APPS = (
 )
 
 MEDIA_ROOT = join(SITE_ROOT, 'collected_static')
-MEDIA_URL = "/media/"
+MEDIA_URL = '/media/'
 
-STATIC_ROOT = "collected_static"
+STATIC_ROOT = 'collected_static'
 STATIC_URL = '/static/'
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
@@ -129,8 +130,8 @@ STATICFILES_FINDERS = (
     'compressor.finders.CompressorFinder',
 )
 
-COMPRESS_ROOT = STATIC_ROOT
-COMPRESS_URL = STATIC_URL
+COMPRESS_ROOT = join(SITE_ROOT, 'collected_static')
+COMPRESS_URL = '/static/'
 COMPRESS_PRECOMPILERS = (
     ('text/less', 'lessc {infile} {outfile}'),
 )
@@ -204,7 +205,7 @@ register('seed_json', CeleryDatetimeSerializer.seed_dumps,
 CELERY_ACCEPT_CONTENT = ['seed_json']
 CELERY_TASK_SERIALIZER = 'seed_json'
 CELERY_RESULT_SERIALIZER = 'seed_json'
-CELERY_TASK_RESULT_EXPIRES = 18000  # 5 hours
+CELERY_TASK_RESULT_EXPIRES = 86400  # 24 hours
 CELERY_MESSAGE_COMPRESSION = 'gzip'
 
 BROKER_URL = 'amqp://guest:guest@localhost:5672//'
@@ -280,5 +281,5 @@ REST_FRAMEWORK = {
 }
 
 SWAGGER_SETTINGS = {
-    "exclude_namespaces": ["labels", "app"],  # List URL namespaces to ignore
+    "exclude_namespaces": ["app"],  # List URL namespaces to ignore
 }

@@ -18,12 +18,7 @@ from seed.views.main import (
     set_default_building_detail_columns,
     get_columns,
     save_match,
-    get_match_tree,
-    get_coparents,
-    get_PM_filter_by_counts,
-    delete_duplicates_from_import_file,
     delete_file,
-    remap_buildings,
     public_search, export_buildings,
     export_buildings_progress,
     export_buildings_download,
@@ -72,20 +67,6 @@ urlpatterns = [
     ),
     url(r'^' + apiv1 + r'get_columns/$', get_columns, name='get_columns'),
     url(r'^' + apiv1 + r'save_match/$', save_match, name='save_match'),
-    url(r'^' + apiv1 + r'get_match_tree/$', get_match_tree,
-        name='get_match_tree'),
-    url(r'^' + apiv1 + r'get_coparents/$', get_coparents,
-        name='get_coparents'),
-    url(
-        r'^' + apiv1 + r'get_PM_filter_by_counts/$',
-        get_PM_filter_by_counts,
-        name='get_PM_filter_by_counts'
-    ),
-    url(
-        r'^' + apiv1 + r'delete_duplicates_from_import_file/$',
-        delete_duplicates_from_import_file,
-        name='delete_duplicates_from_import_file',
-    ),
     url(r'^' + apiv1 + r'delete_file/$', delete_file, name='delete_file'),
     # url(r'^' + apiv1 + r'update_building/$', update_building,
     #     name='update_building'),
@@ -108,8 +89,6 @@ urlpatterns = [
     # ),
 
     # New MCM endpoints
-    url(r'^' + apiv1 + r'remap_buildings/$', remap_buildings,
-        name='remap_buildings'),
     url(
         r'^' + apiv1 + r'public_search/$',
         public_search,

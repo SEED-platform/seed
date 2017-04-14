@@ -13,72 +13,63 @@
  *
  * @returns - a list of strings, all the values which didn't pass the validator.
  */
-angular.module('mappingValidatorService', []).factory(
-    'mappingValidatorService', function() {
+angular.module('mappingValidatorService', []).factory('mappingValidatorService', function () {
 
-        var validatorService = {};
-        validatorService.validate = function(originals, type) {
-            var invalid_date = 'Invalid Date';
+  var validatorService = {};
+  validatorService.validate = function (originals, type) {
+    var invalid_date = 'Invalid Date';
 
-            var date_converter = function(item) {
-                return new Date(item);
-            };
+    var date_converter = function (item) {
+      return new Date(item);
+    };
 
-            var date_validator = function(orig, converted) {
-                return (
-                    angular.isDate(converted) &&
-                    converted.toString() !==
-                    invalid_date
-                );
-            };
+    var date_validator = function (orig, converted) {
+      return angular.isDate(converted) && converted.toString() !== invalid_date;
+    };
 
-            var float_converter = function(item) {
-                if (_.isString(item)){
-                    item = item.replace(/[,$$]/g, '');
-                }
-                return Number(item);
-            };
+    var float_converter = function (item) {
+      if (_.isString(item)) {
+        item = item.replace(/[,$$]/g, '');
+      }
+      return Number(item);
+    };
 
-            var float_validator = function(orig, converted) {
-                return (
-                    angular.isNumber(converted) &&
-                    !isNaN(converted) &&
-                    orig !== ''
-                );
-            };
+    var float_validator = function (orig, converted) {
+      return angular.isNumber(converted) && !isNaN(converted) && orig !== '';
+    };
 
-            var pass_converter = function(item) {
-                return item;
-            };
+    var pass_converter = function (item) {
+      return item;
+    };
 
-            var pass_validator = function() {
-                return true;
-            };
+    var pass_validator = function () {
+      return true;
+    };
 
-            var results = [];
-            var converter = pass_converter;
-            var validator = pass_validator;
-            switch (angular.lowercase(type)) {
-                case 'float':
-                   validator = float_validator;
-                   converter = float_converter;
-                   break;
-                case 'date':
-                    validator = date_validator;
-                    converter = date_converter;
-                    break;
-             }
+    var results = [];
+    var converter = pass_converter;
+    var validator = pass_validator;
+    switch (angular.lowercase(type)) {
+      case 'float':
+        validator = float_validator;
+        converter = float_converter;
+        break;
+      case 'date':
+        validator = date_validator;
+        converter = date_converter;
+        break;
+    }
 
-            angular.forEach(originals, function(original) {
-                var valid = validator(original, converter(original));
-                if (!valid) {
-                    results.push(original);
-                }
-            });
+    angular.forEach(originals, function (original) {
+      var valid = validator(original, converter(original));
+      if (!valid) {
+        results.push(original);
+      }
+    });
 
-            // Returns a list of objects, each containing 'original' and 'valid'
-            return results;
-        };
+    // Returns a list of objects, each containing 'original' and 'valid'
+    return results;
+  };
 
-        return validatorService;
+  return validatorService;
 });

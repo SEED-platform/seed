@@ -281,13 +281,6 @@ class Cleansing(object):
         :param kwargs:
         :return:
         """
-        # For changed field names, TODO uncomment when appropriate
-        # self.required_fields = {
-        #     'property': ['address_line_1', 'pm_property_id',
-        #                  'jurisdiction_property_id'],
-        #     'taxlot': ['jurisdiction_taxlot_id', 'address_line_1'],
-        # }
-        # For old field names, TODO remove when appropriate
         self.required_fields = {
             'property': ['address_line_1', 'pm_property_id', 'jurisdiction_property_id'],
             'taxlot': ['jurisdiction_tax_lot_id', 'address_line_1'],
@@ -554,4 +547,4 @@ class Cleansing(object):
         existing_results = existing_results + l
 
         z = sorted(existing_results, key=lambda k: k['id'])
-        set_cache_raw(Cleansing.cache_key(file_pk), z, 3600)  # save the results for 1 hour
+        set_cache_raw(Cleansing.cache_key(file_pk), z, 86400)  # save the results for 24 hours

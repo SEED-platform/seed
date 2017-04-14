@@ -187,13 +187,16 @@
                                             {$ cycle.name $}: {$ cycle.num_taxlots $}
                                         </div>
                                     </td>
-                                    <td>
-                                        <div style="width: 285px;">
-                                            <button class="btn btn-default" ng-click="confirm_inventory_delete(org)" ng-disabled="org.progress > -1 || org.total_inventory == 0">Remove Inventory</button>
-                                            <button class="btn btn-danger" type="submit" style="margin-left:20px;" ng-click="confirm_org_delete(org)" ng-hide="org.progress > -1">
+                                    <td style="width: 470px;">
+                                        <div>
+                                            <button class="btn btn-default" ng-click="confirm_inventory_delete(org)" ng-disabled="org.progress > -1">Remove Inventory</button>
+                                            <button class="btn btn-warning" type="button" style="margin-left:10px;" ng-click="confirm_column_mappings_delete(org)" ng-disabled="org.progress > -1">
+                                                <i class="fa fa-exclamation-triangle"></i> Remove Column Mappings
+                                            </button>
+                                            <button class="btn btn-danger" type="button" style="margin-left:10px;" ng-click="confirm_org_delete(org)" ng-disabled="org.progress > -1">
                                                 <i class="fa fa-exclamation-triangle"></i> Delete Organization
                                             </button>
-                                            <uib-progressbar class="progress-striped active" value="org.progress" type="danger" ng-show="org.progress > -1">{$ org.remove_message $}</uib-progressbar>
+                                            <uib-progressbar class="progress-striped active" value="org.progress" type="success" ng-show="org.progress > -1">{$ org.remove_message $}</uib-progressbar>
                                         </div>
                                     </td>
                                 </tr>

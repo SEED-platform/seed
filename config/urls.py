@@ -30,9 +30,6 @@ urlpatterns = [
     # api section
     url(r'^app/api/', include('seed.urls.api', namespace="api", app_name="api")),
 
-    # labels section
-    url(r'^app/labels', include('seed.urls.labels', namespace="labels", app_name="labels")),
-
     url(r'^eula/', include('tos.urls', namespace='tos', app_name='tos')),
 
     # i18n setlang # TODO: remove i18n support per Nick Serra?
