@@ -5,13 +5,31 @@
 // organization services
 angular.module('BE.seed.service.organization', []).factory('organization_service', [
   '$http',
-  function ($http) {
+  'naturalSort',
+  function ($http, naturalSort) {
 
     var organization_factory = {total_organizations_for_user: 0};
 
     organization_factory.get_organizations = function () {
       return $http.get('/api/v2/organizations/').then(function (response) {
         organization_factory.total_organizations_for_user = _.has(response.data.organizations, 'length') ? response.data.organizations.length : 0;
+        response.data.organizations = response.data.organizations.sort(function (a, b) {
+          return naturalSort(a.name, b.name);
+        });
+        return response.data;
+      });
+    };
+
+    organization_factory.get_organizations_brief = function () {
+      return $http.get('/api/v2/organizations/', {
+        params: {
+          brief: true
+        }
+      }).then(function (response) {
+        organization_factory.total_organizations_for_user = _.has(response.data.organizations, 'length') ? response.data.organizations.length : 0;
+        response.data.organizations = response.data.organizations.sort(function (a, b) {
+          return naturalSort(a.name, b.name);
+        });
         return response.data;
       });
     };
@@ -154,20 +172,10 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
       });
     };
 
-    organization_factory.delete_organization_buildings = function (org_id) {
-      return $http.delete(window.BE.urls.delete_organization_buildings, {
-        params: {
-          org_id: org_id
-        }
-      }).then(function (response) {
-        return response.data;
-      });
-    };
-
     organization_factory.delete_organization_inventory = function (org_id) {
-      return $http.delete(window.BE.urls.delete_organization_inventory, {
+      return $http.delete('/app/delete_organization_inventory/', {
         params: {
-          org_id: org_id
+          organization_id: org_id
         }
       }).then(function (response) {
         return response.data;

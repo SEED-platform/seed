@@ -1,12 +1,12 @@
 from __future__ import unicode_literals
 
 from django.core.management.base import BaseCommand
-from django.apps import apps
+
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import User
-from IPython import embed
+
+
 # from seed.landing.models import DoesNotExist
-import pdb
 
 
 class Command(BaseCommand):
@@ -69,7 +69,12 @@ class Command(BaseCommand):
             print "Adding user to {}.".format(org)
             org.add_member(user)
         else:
-            user.save() # One for good measure
+            # NL added this but is not going to make it the default because it may cause
+            # security issues for others. Not sure yet. Comment here if you think we should
+            # by default make the user a superuser in this script:
+            #
+            # user.is_superuser = True
+            user.save()  # One for good measure
 
         print "Done!"
 

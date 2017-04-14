@@ -5,7 +5,12 @@
 :author
 """
 
+import copy
+import logging
+from collections import OrderedDict
+
 from django.db import models
+from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
 
 from seed.landing.models import SEEDUser as User
@@ -16,9 +21,10 @@ from seed.models.models import (
     Unit,
     SEED_DATA_SOURCES,
 )
+from seed.utils.constants import VIEW_COLUMNS_PROPERTY
 
-import logging
-
+INVENTORY_MAP = {'property': 'PropertyState', 'taxlot': 'TaxLotState'}
+INVENTORY_MAP_PREPEND = {'property': 'tax', 'taxlot': 'property'}
 _log = logging.getLogger(__name__)
 
 
@@ -86,37 +92,36 @@ class Column(models.Model):
 
     # We have two concepts of the SOURCE. The table_name, which is mostly used, and the
     # SOURCE_* fields. Need to converge on one or the other.
-    SOURCE_PROPERTY = 'P'
-    SOURCE_TAXLOT = 'T'
-    SOURCE_CHOICES = (
-        (SOURCE_PROPERTY, 'Property'),
-        (SOURCE_TAXLOT, 'Taxlot'),
-    )
-    SOURCE_CHOICES_MAP = {
-        SOURCE_PROPERTY: 'property',
-        SOURCE_TAXLOT: 'taxlot',
-    }
+    # SOURCE_PROPERTY = 'P'
+    # SOURCE_TAXLOT = 'T'
+    # SOURCE_CHOICES = (
+    #     (SOURCE_PROPERTY, 'Property'),
+    #     (SOURCE_TAXLOT, 'Taxlot'),
+    # )
+    # SOURCE_CHOICES_MAP = {
+    #     SOURCE_PROPERTY: 'property',
+    #     SOURCE_TAXLOT: 'taxlot',
+    # }
 
     organization = models.ForeignKey(SuperOrganization, blank=True, null=True)
     column_name = models.CharField(max_length=512, db_index=True)
 
     # name of the table which the column name applies, if the column name
-    # is a db field
+    # is a db field. Options now are only PropertyState and TaxLotState
     table_name = models.CharField(max_length=512, blank=True, db_index=True, )
     unit = models.ForeignKey(Unit, blank=True, null=True)
     enum = models.ForeignKey(Enum, blank=True, null=True)
     is_extra_data = models.BooleanField(default=False)
-    extra_data_source = models.CharField(
-        max_length=1, null=True, blank=True,
-        db_index=True, choices=SOURCE_CHOICES
-    )
+    import_file = models.ForeignKey('data_importer.ImportFile', blank=True, null=True)
 
-    class Meta:
-        unique_together = (
-            'organization', 'column_name', 'is_extra_data', 'extra_data_source')
+    # Do not enable this until running through the database and merging the columns down.
+    # BUT first, make sure to add an import file ID into the column class.
+    # class Meta:
+    #     unique_together = (
+    #         'organization', 'column_name', 'is_extra_data', 'table_name', 'import_file')
 
     def __unicode__(self):
-        return u'{0}'.format(self.column_name)
+        return u'{} - {}'.format(self.pk, self.column_name)
 
     @staticmethod
     def create_mappings(mappings, organization, user):
@@ -280,25 +285,50 @@ class Column(models.Model):
             db_field = md.find_column(field['to_table_name'], field['to_field'])
             is_extra_data = False if db_field else True  # yes i am a db column, thus I am not extra_data
 
-            # find the to_column
-            to_org_col = Column.objects.filter(organization=organization,
-                                               column_name=field['to_field'],
-                                               table_name=field['to_table_name'],
-                                               is_extra_data=is_extra_data).first()
-            from_org_col = Column.objects.filter(organization=organization,
-                                                 column_name=field['from_field'],
-                                                 is_extra_data=is_extra_data).first()
+            try:
+                to_org_col, _ = Column.objects.get_or_create(
+                    organization=organization,
+                    column_name=field['to_field'],
+                    table_name=field['to_table_name'],
+                    is_extra_data=is_extra_data
+                )
+            except Column.MultipleObjectsReturned:
+                _log.debug("More than one to_column found for {}.{}".format(field['to_table_name'],
+                                                                            field['to_field']))
+                # raise Exception("Cannot handle more than one to_column returned for {}.{}".format(
+                #     field['to_field'], field['to_table_name']))
 
-            new_field['to_column_object'] = select_col_obj(
-                field['to_field'],
-                field['to_table_name'],
-                to_org_col
-            )
-            new_field['from_column_object'] = select_col_obj(
-                field['from_field'],
-                "",
-                from_org_col)
+                # TODO: write something to remove the duplicate columns
+                to_org_col = Column.objects.filter(organization=organization,
+                                                   column_name=field['to_field'],
+                                                   table_name=field['to_table_name'],
+                                                   is_extra_data=is_extra_data).first()
+                _log.debug("Grabbing the first to_column")
 
+            try:
+                # the from column is the field in the import file, thus the table_name needs to be
+                # blank. Eventually need to handle passing in import_file_id
+                from_org_col, _ = Column.objects.get_or_create(
+                    organization=organization,
+                    table_name__in=[None, ''],
+                    column_name=field['from_field'],
+                    is_extra_data=False  # data from header rows in the files are NEVER extra data
+                )
+            except Column.MultipleObjectsReturned:
+                _log.debug(
+                    "More than one from_column found for {}.{}".format(field['to_table_name'],
+                                                                       field['to_field']))
+
+                # TODO: write something to remove the duplicate columns
+                from_org_col = Column.objects.filter(organization=organization,
+                                                     table_name__in=[None, ''],
+                                                     column_name=field['from_field'],
+                                                     is_extra_data=is_extra_data).first()
+                _log.debug("Grabbing the first from_column")
+
+            new_field['to_column_object'] = select_col_obj(field['to_field'],
+                                                           field['to_table_name'], to_org_col)
+            new_field['from_column_object'] = select_col_obj(field['from_field'], "", from_org_col)
             new_data.append(new_field)
 
         return new_data
@@ -307,7 +337,7 @@ class Column(models.Model):
     def save_column_names(model_obj):
         """Save unique column names for extra_data in this organization.
 
-        Basically this is a record of all the extra_data keys we've ever seen
+        This is a record of all the extra_data keys we've ever seen
         for a particular organization.
 
         :param model_obj: model_obj instance (either PropertyState or TaxLotState).
@@ -323,13 +353,247 @@ class Column(models.Model):
             db_field = md.find_column(model_obj.__class__.__name__, key)
             is_extra_data = False if db_field else True  # yes i am a db column, thus I am not extra_data
 
-            # get the name of the model object as a string to save into the database
-            Column.objects.get_or_create(
-                column_name=key[:511],
-                is_extra_data=is_extra_data,
-                organization=model_obj.organization,
-                table_name=model_obj.__class__.__name__
+            # handle the special edge-case where an old organization may have duplicate columns
+            # in the database. We should make this a migration in the future and put a validation
+            # in the db.
+            for i in range(0, 5):
+                while True:
+                    try:
+                        Column.objects.get_or_create(
+                            column_name=key[:511],
+                            is_extra_data=is_extra_data,
+                            organization=model_obj.organization,
+                            table_name=model_obj.__class__.__name__
+                        )
+                    except Column.MultipleObjectsReturned:
+                        _log.debug(
+                            "Column.MultipleObjectsReturned for {} in save_column_names".format(
+                                key[:511]))
+
+                        columns = Column.objects.filter(column_name=key[:511],
+                                                        is_extra_data=is_extra_data,
+                                                        organization=model_obj.organization,
+                                                        table_name=model_obj.__class__.__name__)
+                        for c in columns:
+                            if not ColumnMapping.objects.filter(
+                                    Q(column_raw=c) | Q(column_mapped=c)).exists():
+                                _log.debug("Deleting column object {}".format(c.column_name))
+                                c.delete()
+
+                        # Check if there are more than one column still
+                        if Column.objects.filter(
+                                column_name=key[:511],
+                                is_extra_data=is_extra_data,
+                                organization=model_obj.organization,
+                                table_name=model_obj.__class__.__name__).count() > 1:
+                            raise Exception(
+                                "Could not fix duplicate columns for {}. Contact dev team").format(
+                                key)
+
+                        continue
+
+                    break
+
+    def to_dict(self):
+        """
+        Convert the column object to a dictionary
+
+        :return: dict
+        """
+
+        c = {}
+        c['pk'] = self.id
+        c['id'] = self.id
+        c['organization_id'] = self.organization.id
+        c['table_name'] = self.table_name
+        c['column_name'] = self.column_name
+        c['is_extra_data'] = self.is_extra_data
+        if self.unit:
+            c['unit_name'] = self.unit.unit_name
+            c['unit_type'] = self.unit.unit_type
+        else:
+            c['unit_name'] = None
+            c['unit_type'] = None
+
+        return c
+
+    @staticmethod
+    def delete_all(organization):
+        """
+        Delete all the columns for an organization. Note that this will invalidate all the
+        data that is in the extra_data fields of the inventory and is irreversible.
+
+        :param organization: instance, Organization
+        :return: [int, int] Number of columns, column_mappings records that were deleted
+        """
+        cm_delete_count, _ = ColumnMapping.objects.filter(super_organization=organization).delete()
+        c_count, _ = Column.objects.filter(organization=organization).delete()
+        return [c_count, cm_delete_count]
+
+    @staticmethod
+    def _retrieve_db_columns():
+        """
+        # Retrieve all the columns from the database, independent of the destination of the data,
+        # that is, there may be duplicate names, but the table_name.column_name will be unique.
+
+        :return: dict
+        """
+
+        # Grab the default columns and their details
+        columns = copy.deepcopy(VIEW_COLUMNS_PROPERTY)
+
+        # TODO: check to make sure that all the fields in the DB are in this list!
+
+        return columns
+
+    @staticmethod
+    def retrieve_db_types():
+        """
+        return the data types for the database columns in the format of:
+
+        Example:
+        {
+          "field_name": "data_type",
+          "field_name_2": "data_type_2",
+          "address_line_1": "string",
+        }
+
+        :return: dict
+        """
+        columns = Column._retrieve_db_columns()
+
+        MAP_TYPES = {
+            'number': 'float',
+            'float': 'float',
+            'integer': 'integer',
+            'string': 'string',
+            'datetime': 'datetime',
+            'date': 'date',
+            'boolean': 'boolean',
+        }
+
+        types = OrderedDict()
+        for c in columns:
+            try:
+                types[c['name']] = MAP_TYPES[c['dataType']]
+            except KeyError:
+                types[c['name']] = ''
+
+        return {"types": types}
+
+    @staticmethod
+    def retrieve_db_fields():
+        """
+        return the fields in the database regardless of properties or taxlots
+
+        [ "address_line_1", "gross_floor_area", ... ]
+        :return: list
+        """
+
+        columns = Column._retrieve_db_columns()
+
+        fields = set()
+        for c in columns:
+            if 'dbField' in c.keys() and c['dbField']:
+                fields.add(c['name'])
+
+        return list(fields)
+
+    @staticmethod
+    def retrieve_all(org_id, inventory_type):
+        """
+        # Retrieve all the columns for an organization. First, grab the columns from the
+        # VIEW_COLUMNS_PROPERTY schema which defines the database columns with added data for
+        # various reasons. Then query the database for all extra data columns and add in the
+        # data as appropriate ensuring that duplicates that are taken care of (albeit crudely).
+
+        # Note: this method should retrieve the columns from MappingData and then have a method
+        # to return for JavaScript (i.e. UI-Grid) or native (standard JSON)
+
+        :param org_id: Organization ID
+        :param inventory_type: Inventory Type (property|taxlot)
+
+        :return: dict
+        """
+
+        # Grab the default columns and their details
+        columns = Column._retrieve_db_columns()
+
+        # Clean up the columns
+        for c in columns:
+            if c['table'] == INVENTORY_MAP[inventory_type]:
+                c['related'] = False
+                if c.get('pinIfNative', False):
+                    c['pinnedLeft'] = True
+            else:
+                c['related'] = True
+                # For now, a related field has a prepended value to make the columns unique.
+                if c.get('duplicateNameInOtherTable', False):
+                    c['name'] = "{}_{}".format(INVENTORY_MAP_PREPEND[inventory_type], c['name'])
+
+            # Remove some keys that are not needed for the API
+            try:
+                c.pop('pinIfNative')
+            except KeyError:
+                pass
+
+            try:
+                c.pop('duplicateNameInOtherTable')
+            except KeyError:
+                pass
+
+            try:
+                c.pop('dbField')
+            except KeyError:
+                pass
+
+        # Add in all the extra columns
+        # don't return columns that have no table_name as these are the columns of the import files
+        extra_data_columns = Column.objects.filter(
+            organization_id=org_id, is_extra_data=True
+        ).exclude(table_name='').exclude(table_name=None)
+
+        for edc in extra_data_columns:
+            name = edc.column_name
+            table = edc.table_name
+
+            # MAKE NOTE ABOUT HOW IMPORTANT THIS IN
+            if name == 'id':
+                name += '_extra'
+
+            # check if the column name is already defined in the list. For example, gross_floor_area
+            # is a core field, but can be an extra field in taxlot, meaning that the other one
+            # needs to be tagged something else.
+            # for col in columns:
+
+            # add _extra if the column is already in the list and it is not the one of
+            while any(col['name'] == name and col['table'] != table for col in columns):
+                name += '_extra'
+
+            # TODO: need to check if the column name is already in the list and if it is then
+            # overwrite the data
+
+            display_name = edc.column_name.title().replace('_', ' ')
+            columns.append(
+                {
+                    'name': name,
+                    'table': edc.table_name,
+                    'displayName': display_name,
+                    # 'dataType': 'string',  # TODO: how to check dataTypes on extra_data!
+                    'related': edc.table_name != INVENTORY_MAP[inventory_type],
+                    'extraData': True
+                }
             )
+
+        # validate that the column names are unique
+        uniq = set()
+        for c in columns:
+            if c['name'] in uniq:
+                raise Exception("Duplicate name '{}' found in columns".format(c['name']))
+            else:
+                uniq.add(c['name'])
+
+        return columns
 
 
 class ColumnMapping(models.Model):
@@ -382,6 +646,34 @@ class ColumnMapping(models.Model):
             }
         ).exclude(pk=self.pk).delete()
 
+    def to_dict(self):
+        """
+        Convert the ColumnMapping object to a dictionary
+
+        :return: dict
+        """
+
+        c = {}
+        c['pk'] = self.id
+        c['id'] = self.id
+        if self.user:
+            c['user_id'] = self.user.id
+        else:
+            c['user_id'] = None
+        c['source_type'] = self.source_type
+        c['organization_id'] = self.super_organization.id
+        if self.column_raw and self.column_raw.first():
+            c['from_column'] = self.column_raw.first().to_dict()
+        else:
+            c['from_column'] = None
+
+        if self.column_mapped and self.column_mapped.first():
+            c['to_column'] = self.column_mapped.first().to_dict()
+        else:
+            c['to_column'] = None
+
+        return c
+
     def save(self, *args, **kwargs):
         """
         Overrides default model save to eliminate duplicate mappings.
@@ -414,17 +706,26 @@ class ColumnMapping(models.Model):
         call it after all of the mappings have been saved to the ``ColumnMapping``
         table.
         """
-        from seed.utils.mapping import _get_table_and_column_names
-
-        source_mappings = ColumnMapping.objects.filter(
+        column_mappings = ColumnMapping.objects.filter(
             super_organization=organization
         )
         mapping = {}
-        for item in source_mappings:
-            if not item.column_mapped.all().exists():
+        for cm in column_mappings:
+            # What in the world is this doings? -- explanation please
+            if not cm.column_mapped.all().exists():
                 continue
-            key = _get_table_and_column_names(item, attr_name='column_raw')[0]
-            value = _get_table_and_column_names(item, attr_name='column_mapped')[0]
+
+            key = cm.column_raw.all().values_list('table_name', 'column_name')
+            value = cm.column_mapped.all().values_list('table_name', 'column_name')
+
+            if len(key) != 1:
+                raise Exception("There is either none or more than one mapping raw column")
+
+            if len(value) != 1:
+                raise Exception("There is either none or more than one mapping dest column")
+
+            key = key[0]
+            value = value[0]
 
             # Concat is not used as of 2016-09-14: commenting out.
             # if isinstance(key, list) and len(key) > 1:
@@ -449,18 +750,6 @@ class ColumnMapping(models.Model):
 
         :param organization: instance, Organization
         :return: dict
-
-        expected = {
-            u'PropertyState': {
-                u'Wookiee': (u'PropertyState', u'Dothraki'),
-                u'eui': (u'PropertyState', u'site_eui'),
-            },
-            u'TaxLotState': {
-                u'address': (u'TaxLotState', u'address'),
-                u'Ewok': (u'TaxLotState', u'Hattin'),
-            }
-        }
-
         """
 
         data, _ = ColumnMapping.get_column_mappings(organization)
@@ -485,4 +774,29 @@ class ColumnMapping(models.Model):
         for k, v in data.iteritems():
             container[v[0]][k] = v
 
+        # Container will be in the format:
+        #
+        # container = {
+        #     u'PropertyState': {
+        #         u'Wookiee': (u'PropertyState', u'Dothraki'),
+        #         u'eui': (u'PropertyState', u'site_eui'),
+        #     },
+        #     u'TaxLotState': {
+        #         u'address': (u'TaxLotState', u'address'),
+        #         u'Ewok': (u'TaxLotState', u'Hattin'),
+        #     }
+        # }
         return container
+
+    @staticmethod
+    def delete_mappings(organization):
+        """
+        Delete all the mappings for an organization. Note that this will erase all the mappings
+        so if a user views an existing Data Mapping the mappings will not show up as the actual
+        mapping, rather, it will show up as new suggested mappings
+
+        :param organization: instance, Organization
+        :return: int, Number of records that were deleted
+        """
+        count, _ = ColumnMapping.objects.filter(super_organization=organization).delete()
+        return count

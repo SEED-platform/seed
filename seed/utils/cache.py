@@ -75,7 +75,7 @@ def get_cache_state(progress_key, default=None):
 
 
 def delete_cache(progress_key):
-    """Delete the chache associated with the progress_key"""
+    """Delete the cache associated with the progress_key"""
     django_cache.delete(progress_key)
 
 

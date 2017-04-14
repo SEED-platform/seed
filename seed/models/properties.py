@@ -6,28 +6,28 @@
 """
 from __future__ import unicode_literals
 
-import pdb
 import logging
+import pdb
 
 from django.db import models
 from django_pgjson.fields import JsonField
 
-from seed.lib.superperms.orgs.models import Organization
-from seed.utils.generic import split_model_fields, obj_to_dict
-from seed.utils.address import normalize_address_str
+from auditlog import AUDIT_IMPORT
+from auditlog import DATA_UPDATE_TYPE
 from seed.data_importer.models import ImportFile
+from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     Cycle,
     StatusLabel,
     DATA_STATE,
     DATA_STATE_UNKNOWN,
     DATA_STATE_MATCHING,
-    ASSESSED_BS,
+    MERGE_STATE,
+    MERGE_STATE_UNKNOWN,
     TaxLotProperty
 )
-
-from auditlog import AUDIT_IMPORT
-from auditlog import DATA_UPDATE_TYPE
+from seed.utils.address import normalize_address_str
+from seed.utils.generic import split_model_fields, obj_to_dict
 from seed.utils.time import convert_datestr
 
 logger = logging.getLogger(__name__)
@@ -62,6 +62,7 @@ class PropertyState(models.Model):
 
     organization = models.ForeignKey(Organization)
     data_state = models.IntegerField(choices=DATA_STATE, default=DATA_STATE_UNKNOWN)
+    merge_state = models.IntegerField(choices=MERGE_STATE, default=MERGE_STATE_UNKNOWN, null=True)
 
     # Is this still being used during matching? Apparently so.
     confidence = models.FloatField(default=0, null=True, blank=True)
@@ -79,7 +80,7 @@ class PropertyState(models.Model):
     home_energy_score_id = models.CharField(max_length=255, null=True, blank=True)
 
     # Tax Lot Number of the property - this field can be an unparsed list or just one string.
-    lot_number = models.CharField(max_length=255, null=True, blank=True)
+    lot_number = models.TextField(null=True, blank=True)
     property_name = models.CharField(max_length=255, null=True, blank=True)
 
     # Leave this as is for now, normalize into its own table soon
@@ -158,15 +159,12 @@ class PropertyState(models.Model):
             if not self.organization:
                 pdb.set_trace()
 
-            prop = Property.objects.create(
-                organization=self.organization
-            )
+            prop = Property.objects.create(organization=self.organization)
 
             pv = PropertyView.objects.create(property=prop, cycle=cycle, state=self)
 
-            # Also set the data state on the promoted state to DATA_STATE_MATCHING
+            # This may be legacy and is definitely still needed here to have the tests pass.
             self.data_state = DATA_STATE_MATCHING
-            self.source_type = ASSESSED_BS
             self.save()
 
             return pv
@@ -256,7 +254,7 @@ class PropertyState(models.Model):
         if self.address_line_1 is not None:
             self.normalized_address = normalize_address_str(self.address_line_1)
         else:
-            self.normalize_address = None
+            self.normalized_address = None
 
         return super(PropertyState, self).save(*args, **kwargs)
 
@@ -288,39 +286,6 @@ class PropertyView(models.Model):
             'record_type': AUDIT_IMPORT
         })
         return PropertyAuditLog.objects.create(**kwargs)
-
-    def update_state(self, new_state, **kwargs):
-        view_audit_log = PropertyAuditLog.objects.filter(
-            state=self.state
-        ).first()
-        if not view_audit_log:
-            view_audit_log = self.initialize_audit_logs(
-                description="Initial audit log added on update.",
-                record_type=AUDIT_IMPORT,
-            )
-        new_audit_log = PropertyAuditLog(
-            organization=self.property.organization,
-            parent1=view_audit_log,
-            state=new_state,
-            view=self,
-            **kwargs
-        )
-        self.state = new_state
-        self.save()
-        new_audit_log.save()
-        return
-
-    def save(self, *args, **kwargs):
-        # create audit log on creation
-        audit_log_initialized = True if self.id else False
-        import_filename = kwargs.pop('import_filename', self._import_filename)
-        super(PropertyView, self).save(*args, **kwargs)
-        if not audit_log_initialized:
-            self.initialize_audit_logs(
-                description="Initial audit log added on creation/save.",
-                record_type=AUDIT_IMPORT,
-                import_filename=import_filename
-            )
 
     def tax_lot_views(self):
         """
@@ -368,6 +333,14 @@ class PropertyAuditLog(models.Model):
                                 related_name='propertyauditlog__parent1')
     parent2 = models.ForeignKey('PropertyAuditLog', blank=True, null=True,
                                 related_name='propertyauditlog__parent2')
+
+    # store the parent states as well so that we can quickly return which state is associated
+    # with the parents of the audit log without having to query the parent audit log to grab
+    # the state
+    parent_state1 = models.ForeignKey(PropertyState, blank=True, null=True,
+                                      related_name='propertyauditlog__parent_state1')
+    parent_state2 = models.ForeignKey(PropertyState, blank=True, null=True,
+                                      related_name='propertyauditlog__parent_state2')
 
     state = models.ForeignKey('PropertyState',
                               related_name='propertyauditlog__state')

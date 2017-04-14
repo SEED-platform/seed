@@ -24,6 +24,7 @@
  */
 angular.module('BE.seed.controller.data_upload_modal', [])
   .controller('data_upload_modal_controller', [
+    '$http',
     '$scope',
     '$uibModalInstance',
     '$log',
@@ -32,12 +33,14 @@ angular.module('BE.seed.controller.data_upload_modal', [])
     '$state',
     'mapping_service',
     'matching_service',
-    'building_services',
+    'inventory_service',
     'spinner_utility',
     'step',
     'dataset',
     'cycles',
-    function ($scope,
+    'organization',
+    function ($http,
+              $scope,
               $uibModalInstance,
               $log,
               $timeout,
@@ -45,12 +48,14 @@ angular.module('BE.seed.controller.data_upload_modal', [])
               $state,
               mapping_service,
               matching_service,
-              building_services,
+              inventory_service,
               spinner_utility,
               step,
               dataset,
-              cycles) {
+              cycles,
+              organization) {
       $scope.cycles = cycles.cycles;
+      if ($scope.cycles.length) $scope.selectedCycle = $scope.cycles[0];
       $scope.step_10_style = 'info';
       $scope.step_10_title = 'load more data';
       $scope.step = {
@@ -66,6 +71,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        *  newly created data set
        * file: the file being upload file.filename is the file's name
        */
+      $scope.organization = organization;
       $scope.dataset = {
         name: '',
         disabled: function () {
@@ -95,6 +101,22 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       };
 
       /**
+       * Tell the backend that the mapping is done and start the next step
+       */
+      $scope.save_mappings = function () {
+        // API request to tell backend that it is finished with the mappings
+        $http.put('/api/v2/import_files/' + $scope.dataset.import_file_id + '/mapping_done/', {}, {
+          params: {
+            organization_id: $scope.organization.org_id
+          }
+        }).then(function (response) {
+          // console.log(response);
+          $scope.goto_step(7);
+          $scope.find_matches();
+        });
+      };
+
+      /**
        * goto_step: changes the step of the modal, i.e. name dataset -> upload ...
        * step: int - used with the `ng-switch` in the DOM to change state
        * step_text:
@@ -114,13 +136,11 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       };
       $scope.goto_data_matching = function () {
         $uibModalInstance.close();
-        $state.go('matching', {importfile_id: $scope.dataset.import_file_id});
+        $state.go('matching_list', {importfile_id: $scope.dataset.import_file_id, inventory_type: 'properties'});
       };
-      $scope.view_my_buildings = function () {
+      $scope.view_my_properties = function () {
         $uibModalInstance.close();
-        spinner_utility.show();
         $state.go('inventory_list', {inventory_type: 'properties'});
-        spinner_utility.hide();
       };
       /**
        * cancel: dismissed the modal, routes to the dismiss function of the parent
@@ -300,7 +320,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         matching_service.start_system_matching(
           import_file_id
         ).then(function (data) {
-          if (data.status === 'error' || data.status === 'warning') {
+          if (_.includes(['error', 'warning'], data.status)) {
             $scope.uploader.complete = true;
             $scope.uploader.in_progress = false;
             $scope.uploader.progress = 0;
@@ -309,40 +329,21 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             $scope.step_10_error_message = data.message;
             $scope.step_10_title = data.message;
           } else {
-            uploader_service.check_progress_loop(
-              data.progress_key,
-              0,
-              1.0,
-              function (data) {
-                building_services.get_PM_filter_by_counts($scope.dataset.import_file_id)
-                  .then(function (data) {
-                    // resolve promise
-                    $scope.matched_buildings = data.matched;
-                    $scope.unmatched_buildings = data.unmatched;
-                    $scope.duplicate_buildings = data.duplicates;
-                    $scope.uploader.complete = true;
-                    $scope.uploader.in_progress = false;
-                    $scope.uploader.progress = 0;
-                    if ($scope.duplicate_buildings > 0) {
-                      //alert("Duplicate buildings found, trying to delete");
-                      building_services.delete_duplicates_from_import_file($scope.dataset.import_file_id).then(function (data) {
-                        if ($scope.matched_buildings > 0) {
-                          $scope.step.number = 8;
-                        } else {
-                          $scope.step.number = 10;
-                          // building_services.get_total_number_of_buildings_for_user();
-                        }
-                      });
-                    }
-                    else {
-                      if ($scope.matched_buildings > 0) {
-                        $scope.step.number = 8;
-                      } else {
-                        $scope.step.number = 10;
-                        // building_services.get_total_number_of_buildings_for_user();
-                      }
-                    }
-                  });
+            uploader_service.check_progress_loop(data.progress_key, 0, 1, function (data) {
+                inventory_service.get_matching_results($scope.dataset.import_file_id).then(function (data) {
+                  $scope.matched_properties = data.properties.matched;
+                  $scope.unmatched_properties = data.properties.unmatched;
+                  $scope.matched_taxlots = data.tax_lots.matched;
+                  $scope.unmatched_taxlots = data.tax_lots.unmatched;
+                  $scope.uploader.complete = true;
+                  $scope.uploader.in_progress = false;
+                  $scope.uploader.progress = 0;
+                  if ($scope.matched_properties + $scope.matched_taxlots > 0) {
+                    $scope.step.number = 8;
+                  } else {
+                    $scope.step.number = 10;
+                  }
+                });
               }, function (data) {
                 // Do nothing
               },

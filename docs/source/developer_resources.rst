@@ -154,43 +154,14 @@ in the web server & Celery
 BEDES Compliance and Managing Columns
 -------------------------------------
 
-Columns that do not represent hardcoded fields in the application are
-represented using a Django database model defined in the seed.models module.
+Columns that do not represent hardcoded fields in the application are represented using
+a Django database model defined in the seed.models module. The goal of adding new columns
+to the database is to create seed.models.Column records in the database for each column to
+import. Currently, the list of Columns is dynamically populated by importing data.
 
-The goal of adding new columns to the database is to create seed.models.Column
-records in the database for each column to import. In the Django application,
-Columns are linked together via a Schema model. Currently there is a schema
-containing the ESPM fields with a name of "BEDES". When creating columns they
-should be added to either an existing schema or a new one should be created if
-that is the desired result.
+There are default mappings for ESPM are located here:
 
-When creating Column records, if the type of the column is a string (should be
-treated as a string for searching and filtering), then just creating a Column
-record is sufficient for importing that column. If the column type is not
-string, then a seed.models.Unit record must be created and linked to the
-Column model via a foreign key.
-
-The initial fields from the ESPM schema were imported using a standard
-Django migration using the migration library south. You can find the
-initial migration here:
-
-.. note:: This seems out of state
-
-    https://github.com/seed-platform/seed/blob/master/seed/migrations/0025_add_espm_column_names.py
-
-In that example, the migration is using the data from the 'flat_schema' and
-'types' keys of the python dictionary defined here:
-
-.. note::
-
-    Need to reevaluate how this is stored
-    https://github.com/seed-platform/seed-mcm/blob/master/mcm/data/ESPM/espm.py
-
-.. note::
-
-    The fields to import do not need to be in a separate file, and the format
-    could differ from what is shown here as long as the migration logic
-    accounted for the different format.
+    https://github.com/SEED-platform/seed/blob/develop/seed/lib/mappings/data/pm-mapping.json
 
 
 Resetting the Database

@@ -20,13 +20,14 @@ import os
 import re
 import string
 from collections import namedtuple
+from django.utils import timezone
 
 import mock
 from django.db.models.fields.files import FieldFile
 from faker import Factory
 
 from seed.models import (
-    BuildingSnapshot, Cycle, Column, Property, PropertyState, TaxLotState
+    BuildingSnapshot, Cycle, Column, Property, PropertyState, TaxLotState, TaxLotAuditLog, PropertyAuditLog
 )
 
 Owner = namedtuple(
@@ -145,26 +146,15 @@ class FakeColumnFactory(BaseFake):
         self.organization = organization
 
     def get_column(self, name, organization=None, is_extra_data=False,
-                   extra_data_source=None, **kw):
-        source = extra_data_source[0].upper() if extra_data_source else None
-        if is_extra_data and not source or source not in ['P', 'T']:
-            msg = (
-                "extra_data_source must be one of P(property), T(axlot) "
-                "if is_extra_data is True."
-            )
-            raise AttributeError(msg)
-        elif source and not is_extra_data:
-            raise AttributeError(
-                "extra_data_source supplied but is_extra_data is False."
-            )
+                   table_name='PropertyState', **kw):
         column_details = {
             'organization': organization if organization else self.organization,
             'column_name': name,
+            'table_name': table_name,
         }
         if is_extra_data:
             column_details.update({
                 'is_extra_data': is_extra_data,
-                'extra_data_source': source
             })
         column_details.update(kw)
         return Column.objects.create(**column_details)
@@ -184,8 +174,7 @@ class FakeCycleFactory(BaseFake):
         if 'start' in kw:
             start = kw.pop('start')
         else:
-            start = self.fake.date_time_this_decade()
-            start = datetime.datetime(start.year, 0o1, 0o1)
+            start = datetime.datetime(2015, 1, 1, tzinfo=timezone.get_current_timezone())
         if 'end' in kw:
             end = kw.pop('end')
         else:
@@ -253,7 +242,11 @@ class FakePropertyStateFactory(BaseFake):
         """Return a property state populated with pseudo random data"""
         property_details = self.get_details()
         property_details.update(kw)
-        return PropertyState.objects.create(organization=org, **property_details)
+
+        ps = PropertyState.objects.create(organization=org, **property_details)
+        auditlog_detail = {}
+        PropertyAuditLog.objects.create(organization=org, state=ps, **auditlog_detail)
+        return ps
 
 
 class FakeTaxLotStateFactory(BaseFake):
@@ -277,7 +270,12 @@ class FakeTaxLotStateFactory(BaseFake):
         """Return a taxlot state populated with pseudo random data"""
         taxlot_details = self.get_details()
         taxlot_details.update(kw)
-        return TaxLotState.objects.create(organization=org, **taxlot_details)
+
+        tls = TaxLotState.objects.create(organization=org, **taxlot_details)
+        auditlog_detail = {}
+        TaxLotAuditLog.objects.create(organization=org, state=tls, **auditlog_detail)
+
+        return tls
 
 
 def mock_file_factory(name, size=None, url=None, path=None):
@@ -358,7 +356,7 @@ def mock_queryset_factory(model, flatten=False, **kwargs):
         else field.name for field in fields
     ]
     Instance = namedtuple(model.__name__, field_names)
-    count_name = field_names[0] if field_names[0] != auto_populate\
+    count_name = field_names[0] if field_names[0] != auto_populate \
         else field_names[1]
     queryset = []
     for i in range(len(kwargs[count_name])):

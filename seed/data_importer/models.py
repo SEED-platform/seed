@@ -5,7 +5,6 @@
 :author
 """
 import csv
-import datetime
 import hashlib
 import json
 import math
@@ -20,6 +19,7 @@ from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models import Q
 from django.db.models.signals import post_save
+from django.utils import timezone
 from django.utils.timesince import timesince
 from django_extensions.db.models import TimeStampedModel
 
@@ -506,7 +506,7 @@ class ImportRecord(NotDeletableModel):
         self.merge_analysis_done = True
         self.merge_analysis_active = False
         self.is_imported_live = True
-        self.import_completed_at = datetime.datetime.now()
+        self.import_completed_at = timezone.now()
         self.save()
 
     def mark_merge_started(self):
@@ -568,7 +568,7 @@ class ImportRecord(NotDeletableModel):
                 'app': self.app,
                 'last_modified_time_ago': timesince(self.updated_at).split(",")[0],
                 'last_modified_seconds_ago': -1 * (
-                    self.updated_at - datetime.datetime.now()).total_seconds(),
+                    self.updated_at - timezone.now()).total_seconds(),
                 'last_modified_by': last_modified_by,
                 'notes': self.notes,
                 'merge_analysis_done': self.merge_analysis_done,
@@ -775,7 +775,10 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     @property
     def first_row_columns(self):
         if not hasattr(self, "_first_row_columns"):
-            self._first_row_columns = self.cached_first_row.split(ROW_DELIMITER)
+            if self.cached_first_row:
+                self._first_row_columns = self.cached_first_row.split(ROW_DELIMITER)
+            else:
+                return None
         return self._first_row_columns
 
     def save_cached_mapped_columns(self, columns):
@@ -785,7 +788,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     @property
     def get_cached_mapped_columns(self):
         # create a list of tuples
-        data = json.loads(self.cached_mapped_columns)
+        data = json.loads(self.cached_mapped_columns or '{}')
         result = []
         for d in data:
             result.append((d['to_table_name'], d['to_field']))
@@ -870,41 +873,42 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     def num_cells(self):
         return self.num_rows * self.num_columns
 
-    @property
-    def tcm_json(self):
-        # JSON used to render the mapping interface.
-        tcms = []
-        try:
-            row_number = 0
-            for tcm in self.tablecolumnmappings:
-                row_number += 1
-                error_message_text = ""
-                if tcm.error_message_text:
-                    error_message_text = tcm.error_message_text.replace("\n", "<br>")
-
-                first_rows = ["", "", "", "", ""]
-                if tcm.first_five_rows:
-                    first_rows = ["%s" % r for r in tcm.first_five_rows]
-                tcms.append({
-                    'row_number': row_number,
-                    'pk': tcm.pk,
-                    'destination_model': tcm.destination_model,
-                    'destination_field': tcm.destination_field,
-                    'order': tcm.order,
-                    'ignored': tcm.ignored,
-                    'confidence': tcm.confidence,
-                    'was_a_human_decision': tcm.was_a_human_decision,
-                    'error_message_text': error_message_text,
-                    'active': tcm.active,
-                    'is_mapped': tcm.is_mapped,
-                    'header_row': tcm.first_row,
-                    'first_rows': first_rows,
-                })
-        except:
-            from traceback import print_exc
-            print_exc()
-
-        return json.dumps(tcms)
+    # TODO: 2/8/17 Verify that this can be removed
+    # @property
+    # def tcm_json(self):
+    #     # JSON used to render the mapping interface.
+    #     tcms = []
+    #     try:
+    #         row_number = 0
+    #         for tcm in self.tablecolumnmappings:
+    #             row_number += 1
+    #             error_message_text = ""
+    #             if tcm.error_message_text:
+    #                 error_message_text = tcm.error_message_text.replace("\n", "<br>")
+    #
+    #             first_rows = ["", "", "", "", ""]
+    #             if tcm.first_five_rows:
+    #                 first_rows = ["%s" % r for r in tcm.first_five_rows]
+    #             tcms.append({
+    #                 'row_number': row_number,
+    #                 'pk': tcm.pk,
+    #                 'destination_model': tcm.destination_model,
+    #                 'destination_field': tcm.destination_field,
+    #                 'order': tcm.order,
+    #                 'ignored': tcm.ignored,
+    #                 'confidence': tcm.confidence,
+    #                 'was_a_human_decision': tcm.was_a_human_decision,
+    #                 'error_message_text': error_message_text,
+    #                 'active': tcm.active,
+    #                 'is_mapped': tcm.is_mapped,
+    #                 'header_row': tcm.first_row,
+    #                 'first_rows': first_rows,
+    #             })
+    #     except:
+    #         from traceback import print_exc
+    #         print_exc()
+    #
+    #     return json.dumps(tcms)
 
     @property
     def tcm_errors_json(self):
@@ -1072,7 +1076,6 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
 
         :rtype: list of tuples, field values specified in BS_VALUES_LIST.
 
-        NB: This does not return a queryset!
         NJA: This function is a straight copy/update to find_unmatched_property_states
         """
 
@@ -1082,24 +1085,19 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
             DATA_STATE_MAPPING
         )
 
-        assert kls in [PropertyState, TaxLotState], "Must be one of our State objects!"
+        assert kls in [PropertyState, TaxLotState], \
+            "Must be one of our State objects [PropertyState, TaxLotState]!"
 
         return kls.objects.filter(
-            # TODO: I would really like to remove this source_type field if at all possible
-            # source_type__in=[COMPOSITE_BS, ASSESSED_RAW, PORTFOLIO_RAW, GREEN_BUTTON_RAW],
             data_state__in=[DATA_STATE_MAPPING],
             import_file=self.id,
         )
-
-        return
 
     def find_unmatched_property_states(self):
         """Get unmatched property states' id info from an import file.
 
         # TODO - Fix Comment
         :rtype: list of tuples, field values specified in BS_VALUES_LIST.
-
-        NB: This does not return a queryset!
 
         """
 
@@ -1197,23 +1195,24 @@ class TableColumnMapping(models.Model):
             self._first_row = first_row
         return self._first_row
 
-    @property
-    def first_five_rows(self):
-        if not hasattr(self, "_first_five_rows"):
-            first_rows = []
-            for r in self.import_file.second_to_fifth_rows:
-                try:
-                    if r[self.order - 1]:
-                        first_rows.append(r[self.order - 1])
-                    else:
-                        first_rows.append('')
-                except:
-                    first_rows.append('')
-                    pass
-
-            self._first_five_rows = first_rows
-
-        return self._first_five_rows
+    # TODO: Verify that this can be removed
+    # @property
+    # def first_five_rows(self):
+    #     if not hasattr(self, "_first_five_rows"):
+    #         first_rows = []
+    #         for r in self.import_file.second_to_fifth_rows:
+    #             try:
+    #                 if r[self.order - 1]:
+    #                     first_rows.append(r[self.order - 1])
+    #                 else:
+    #                     first_rows.append('')
+    #             except:
+    #                 first_rows.append('')
+    #                 pass
+    #
+    #         self._first_five_rows = first_rows
+    #
+    #     return self._first_five_rows
 
     @property
     def destination_django_field(self):

@@ -22,7 +22,8 @@ from seed.models import (
     DATA_STATE,
     DATA_STATE_UNKNOWN,
     DATA_STATE_MATCHING,
-    ASSESSED_BS,
+    MERGE_STATE,
+    MERGE_STATE_UNKNOWN,
 )
 from seed.utils.address import normalize_address_str
 from seed.utils.generic import split_model_fields, obj_to_dict
@@ -53,6 +54,7 @@ class TaxLotState(models.Model):
     # Add organization to the tax lot states
     organization = models.ForeignKey(Organization)
     data_state = models.IntegerField(choices=DATA_STATE, default=DATA_STATE_UNKNOWN)
+    merge_state = models.IntegerField(choices=MERGE_STATE, default=MERGE_STATE_UNKNOWN, null=True)
 
     custom_id_1 = models.CharField(max_length=255, null=True, blank=True)
 
@@ -60,9 +62,9 @@ class TaxLotState(models.Model):
     block_number = models.CharField(max_length=255, null=True, blank=True)
     district = models.CharField(max_length=255, null=True, blank=True)
     address_line_1 = models.CharField(max_length=255, null=True, blank=True)
+    address_line_2 = models.CharField(max_length=255, null=True, blank=True)
     normalized_address = models.CharField(max_length=255, null=True, blank=True, editable=False)
 
-    address_line_2 = models.CharField(max_length=255, null=True, blank=True)
     city = models.CharField(max_length=255, null=True, blank=True)
     state = models.CharField(max_length=255, null=True, blank=True)
     postal_code = models.CharField(max_length=255, null=True, blank=True)
@@ -104,9 +106,9 @@ class TaxLotState(models.Model):
 
             tlv = TaxLotView.objects.create(taxlot=taxlot, cycle=cycle, state=self)
 
-            # Also set the data state on the promoted state to DATA_STATE_MATCHING
+            # This is legacy but still needed here to have the tests pass.
             self.data_state = DATA_STATE_MATCHING
-            self.source_type = ASSESSED_BS
+
             self.save()
 
             return tlv
@@ -175,7 +177,7 @@ class TaxLotState(models.Model):
         if self.address_line_1 is not None:
             self.normalized_address = normalize_address_str(self.address_line_1)
         else:
-            self.normalize_address = None
+            self.normalized_address = None
 
         return super(TaxLotState, self).save(*args, **kwargs)
 
@@ -207,38 +209,6 @@ class TaxLotView(models.Model):
             'record_type': AUDIT_IMPORT
         })
         return TaxLotAuditLog.objects.create(**kwargs)
-
-    def update_state(self, new_state, **kwargs):
-        view_audit_log = TaxLotAuditLog.objects.filter(
-            state=self.state).first()
-        if not view_audit_log:
-            view_audit_log = self.initialize_audit_logs(
-                description="Initial audit log added on update.",
-                record_type=AUDIT_IMPORT,
-            )
-        new_audit_log = TaxLotAuditLog(
-            organization=self.taxlot.organization,
-            parent1=view_audit_log,
-            state=new_state,
-            view=self,
-            **kwargs
-        )
-        self.state = new_state
-        self.save()
-        new_audit_log.save()
-        return
-
-    def save(self, *args, **kwargs):
-        # create audit log on creation
-        audit_log_initialized = True if self.id else False
-        import_filename = kwargs.pop('import_filename', self._import_filename)
-        super(TaxLotView, self).save(*args, **kwargs)
-        if not audit_log_initialized:
-            self.initialize_audit_logs(
-                description="Initial audit log added on creation/save.",
-                record_type=AUDIT_IMPORT,
-                import_filename=import_filename
-            )
 
     def property_views(self):
         """
@@ -288,6 +258,15 @@ class TaxLotAuditLog(models.Model):
                                 related_name='taxlotauditlog__parent1')
     parent2 = models.ForeignKey('TaxLotAuditLog', blank=True, null=True,
                                 related_name='taxlotauditlog__parent2')
+
+    # store the parent states as well so that we can quickly return which state is associated
+    # with the parents of the audit log without having to query the parent audit log to grab
+    # the state
+    parent_state1 = models.ForeignKey(TaxLotState, blank=True, null=True,
+                                      related_name='taxlotauditlog__parent_state1')
+    parent_state2 = models.ForeignKey(TaxLotState, blank=True, null=True,
+                                      related_name='taxlotauditlog__parent_state2')
+
     state = models.ForeignKey('TaxLotState',
                               related_name='taxlotauditlog__state')
     view = models.ForeignKey('TaxLotView', related_name='taxlotauditlog__view',

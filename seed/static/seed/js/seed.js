@@ -19,30 +19,32 @@ angular.module('BE.seed.vendor_dependencies', [
   'ui.grid.moveColumns',
   'ui.grid.pinning',
   'ui.grid.resizeColumns',
+  'ui.grid.saveState',
   'ui.grid.selection',
   'ui.grid.treeView',
   'ui.router',
   'ui.router.stateHelper',
   'ui.sortable',
   'ui.tree',
-  'xeditable'
+  'xeditable',
+  angularDragula(angular)
 ]);
 angular.module('BE.seed.controllers', [
   'BE.seed.controller.about',
   'BE.seed.controller.accounts',
   'BE.seed.controller.admin',
   'BE.seed.controller.api',
-  'BE.seed.controller.building_list',
-  'BE.seed.controller.buildings_settings',
   'BE.seed.controller.cleansing',
   'BE.seed.controller.cleansing_admin',
   'BE.seed.controller.cycle_admin',
   'BE.seed.controller.concat_modal',
   'BE.seed.controller.create_note_modal',
-  'BE.seed.controller.create_organization_modal',
+  'BE.seed.controller.create_sub_organization_modal',
   'BE.seed.controller.data_upload_modal',
   'BE.seed.controller.dataset',
   'BE.seed.controller.dataset_detail',
+  'BE.seed.controller.delete_dataset_modal',
+  'BE.seed.controller.delete_file_modal',
   'BE.seed.controller.delete_modal',
   'BE.seed.controller.developer',
   'BE.seed.controller.edit_project_modal',
@@ -56,16 +58,19 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.inventory_settings',
   'BE.seed.controller.label_admin',
   'BE.seed.controller.mapping',
-  'BE.seed.controller.matching',
+  'BE.seed.controller.matching_list',
   'BE.seed.controller.matching_detail',
   'BE.seed.controller.members',
   'BE.seed.controller.menu',
   'BE.seed.controller.new_member_modal',
-  'BE.seed.controller.profile',
   'BE.seed.controller.organization',
   'BE.seed.controller.organization_settings',
+  'BE.seed.controller.organization_sharing',
+  'BE.seed.controller.pairing',
+  'BE.seed.controller.profile',
   'BE.seed.controller.project',
   'BE.seed.controller.security',
+  'BE.seed.controller.unmerge_modal',
   'BE.seed.controller.update_item_labels_modal'
 ]);
 angular.module('BE.seed.filters', [
@@ -90,8 +95,8 @@ angular.module('BE.seed.directives', [
 angular.module('BE.seed.services', [
   'BE.seed.service.audit',
   'BE.seed.service.auth',
-  'BE.seed.service.building',
   'BE.seed.service.cleansing',
+  'BE.seed.service.column_mappings',
   'BE.seed.service.cycle',
   'BE.seed.service.dataset',
   'BE.seed.service.export',
@@ -103,6 +108,7 @@ angular.module('BE.seed.services', [
   'BE.seed.service.mapping',
   'BE.seed.service.matching',
   'BE.seed.service.organization',
+  'BE.seed.service.pairing',
   'BE.seed.service.project',
   'BE.seed.service.search',
   'BE.seed.service.simple_modal',
@@ -239,206 +245,105 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }]
         }
       })
-      /*.state({
-       name: 'projects',
-       url: '/projects',
-       templateUrl: static_url + 'seed/partials/projects.html',
-       controller: 'project_list_controller',
-       resolve: {
-       projects_payload: ['project_service', function (project_service) {
-       return project_service.get_projects();
-       }]
-       }
-       })
-       .state({
-       name: 'project_detail',
-       url: '/projects/{project_id:int}',
-       templateUrl: static_url + 'seed/partials/project_detail.html',
-       controller: 'building_list_controller',
-       resolve: {
-       search_payload: ['building_services', '$state', '$stateParams', function (building_services, $state, $stateParams) {
-       var orderBy = '';
-       var sortReverse = false;
-       var params = angular.copy($stateParams);
-       var q = params.q || '';
-       var numberPerPage = 10;
-       var project_slug = params.project_id;
-       var pageNumber = 1;
-       delete(params.project_id);
-       params.project__slug = project_slug;
-
-       // Check session storage for order, sort, and filter values.
-       if (!_.isUndefined(Storage)) {
-
-       // set the prefix to the specific project. This fixes
-       // the issue where the filter was not persisting.
-       var prefix = _.replace($state.current.url, ':project_id', project_slug);
-       if (sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy') !== null) {
-       orderBy = sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy');
-       }
-       if (sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse') !== null) {
-       sortReverse = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse'));
-       }
-       if (sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams') !== null) {
-       params = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams'));
-       }
-       if (sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage') !== null) {
-       numberPerPage = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage'));
-       }
-       if (sessionStorage.getItem(prefix + ':' + 'seedBuildingPageNumber') !== null) {
-       pageNumber = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingPageNumber'));
-       }
-       }
-       // params: (query_string, number_per_page, page_number, order_by, sort_reverse, filter_params, project_id, project_slug)
-       return building_services.search_buildings(q, numberPerPage, pageNumber, orderBy, sortReverse, params, null, project_slug);
-       }],
-       default_columns: ['user_service', function (user_service) {
-       return user_service.get_default_columns();
-       }],
-       all_columns: ['building_services', '$stateParams', function (building_services, $stateParams) {
-       var params = angular.copy($stateParams);
-       var project_slug = params.project_id;
-       return building_services.get_columns();
-       }],
-       project_payload: ['$stateParams', 'project_service', function ($stateParams, project_service) {
-       var params = angular.copy($stateParams);
-       var project_slug = params.project_id;
-       return project_service.get_project(project_slug);
-       }]
-       }
-       })
-       .state({
-       name: 'project_settings',
-       url: '/projects/{project_id:int}/settings',
-       templateUrl: static_url + 'seed/partials/project_settings.html',
-       controller: 'buildings_settings_controller',
-       resolve: {
-       all_columns: ['building_services', function (building_services) {
-       return building_services.get_columns();
-       }],
-       default_columns: ['user_service', function (user_service) {
-       return user_service.get_default_columns();
-       }],
-       shared_fields_payload: ['user_service', function (user_service) {
-       return user_service.get_shared_buildings();
-       }],
-       $uibModalInstance: function () {
-       return {close: function () {}};
-       },
-       project_payload: ['$stateParams', 'project_service', function ($stateParams, project_service) {
-       var params = angular.copy($stateParams);
-       var project_slug = params.project_id;
-       return project_service.get_project(project_slug);
-       }],
-       building_payload: function () {
-       return {building: {}};
-       }
-       }
-       })
-       .state({
-       name: 'building_detail_section',
-       url: '/projects/{project_id:int}/{building_id:int}',
-       templateUrl: static_url + 'seed/partials/building_detail_section.html',
-       controller: 'building_detail_controller',
-       resolve: {
-       building_payload: ['building_services', '$stateParams', function (building_services, $stateParams) {
-       var building_id = $stateParams.building_id;
-       return building_services.get_building(building_id);
-       }],
-       all_columns: ['building_services', function (building_services) {
-       return building_services.get_columns();
-       }],
-       audit_payload: function () {
-       return {audit_logs: {}};
-       },
-       default_columns: ['user_service', function (user_service) {
-       return user_service.get_default_building_detail_columns();
-       }]
-       }
-       })*/
-      .state({
-        name: 'buildings',
-        url: '/buildings',
-        templateUrl: static_url + 'seed/partials/buildings.html',
-        controller: 'building_list_controller',
-        resolve: {
-          search_payload: ['building_services', '$state', '$stateParams', function (building_services, $state, $stateParams) {
-            // Defaults
-
-            var q = $stateParams.q || '';
-            var orderBy = '';
-            var sortReverse = false;
-            var params = {};
-            var numberPerPage = 10;
-            var pageNumber = 1;
-
-            // Check session storage for order, sort, and filter values.
-            if (!_.isUndefined(Storage)) {
-
-              var prefix = $state.current.url;
-
-              if (sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy') !== null) {
-                orderBy = sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy');
-              }
-              if (sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse') !== null) {
-                sortReverse = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse'));
-              }
-              if (sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams') !== null) {
-                params = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams'));
-              }
-              if (sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage') !== null) {
-                numberPerPage = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage'));
-              }
-              if (sessionStorage.getItem(prefix + ':' + 'seedBuildingPageNumber') !== null) {
-                pageNumber = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingPageNumber'));
-              }
-            }
-
-            // params: (query, number_per_page, page_number, order_by, sort_reverse, filter_params, project_id)
-            return building_services.search_buildings(q, numberPerPage, pageNumber, orderBy, sortReverse, params, null);
-          }],
-          default_columns: ['user_service', function (user_service) {
-            return user_service.get_default_columns();
-          }],
-          all_columns: ['building_services', function (building_services) {
-            return building_services.get_columns();
-          }],
-          project_payload: function () {
-            return {
-              project: {}
-            };
-          }
-        }
-      })
-      .state({
-        name: 'buildings_settings',
-        url: '/buildings/settings',
-        templateUrl: static_url + 'seed/partials/buildings_settings.html',
-        controller: 'buildings_settings_controller',
-        resolve: {
-          all_columns: ['building_services', function (building_services) {
-            return building_services.get_columns();
-          }],
-          default_columns: ['user_service', function (user_service) {
-            return user_service.get_default_columns();
-          }],
-          shared_fields_payload: ['user_service', function (user_service) {
-            return user_service.get_shared_buildings();
-          }],
-          $uibModalInstance: function () {
-            return {
-              close: function () {
-              }
-            };
-          },
-          project_payload: function () {
-            return {project: {}};
-          },
-          building_payload: function () {
-            return {building: {}};
-          }
-        }
-      })
+      // .state({
+      //   name: 'projects',
+      //   url: '/projects',
+      //   templateUrl: static_url + 'seed/partials/projects.html',
+      //   controller: 'project_list_controller',
+      //   resolve: {
+      //     projects_payload: ['project_service', function (project_service) {
+      //       return project_service.get_projects();
+      //     }]
+      //   }
+      // })
+      // .state({
+      //   name: 'project_detail',
+      //   url: '/projects/{project_id:int}',
+      //   templateUrl: static_url + 'seed/partials/project_detail.html',
+      //   controller: 'building_list_controller',
+      //   resolve: {
+      //     search_payload: ['building_services', '$state', '$stateParams', function (building_services, $state, $stateParams) {
+      //       var orderBy = '';
+      //       var sortReverse = false;
+      //       var params = angular.copy($stateParams);
+      //       var q = params.q || '';
+      //       var numberPerPage = 10;
+      //       var project_slug = params.project_id;
+      //       var pageNumber = 1;
+      //       delete(params.project_id);
+      //       params.project__slug = project_slug;
+      //
+      //       // Check session storage for order, sort, and filter values.
+      //       if (!_.isUndefined(Storage)) {
+      //
+      //         // set the prefix to the specific project. This fixes
+      //         // the issue where the filter was not persisting.
+      //         var prefix = _.replace($state.current.url, ':project_id', project_slug);
+      //         if (sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy') !== null) {
+      //           orderBy = sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy');
+      //         }
+      //         if (sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse') !== null) {
+      //           sortReverse = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse'));
+      //         }
+      //         if (sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams') !== null) {
+      //           params = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams'));
+      //         }
+      //         if (sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage') !== null) {
+      //           numberPerPage = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage'));
+      //         }
+      //         if (sessionStorage.getItem(prefix + ':' + 'seedBuildingPageNumber') !== null) {
+      //           pageNumber = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingPageNumber'));
+      //         }
+      //       }
+      //       // params: (query_string, number_per_page, page_number, order_by, sort_reverse, filter_params, project_id, project_slug)
+      //       return building_services.search_buildings(q, numberPerPage, pageNumber, orderBy, sortReverse, params, null, project_slug);
+      //     }],
+      //     default_columns: ['user_service', function (user_service) {
+      //       return user_service.get_default_columns();
+      //     }],
+      //     all_columns: ['building_services', '$stateParams', function (building_services, $stateParams) {
+      //       var params = angular.copy($stateParams);
+      //       var project_slug = params.project_id;
+      //       return building_services.get_columns();
+      //     }],
+      //     project_payload: ['$stateParams', 'project_service', function ($stateParams, project_service) {
+      //       var params = angular.copy($stateParams);
+      //       var project_slug = params.project_id;
+      //       return project_service.get_project(project_slug);
+      //     }]
+      //   }
+      // })
+      // .state({
+      //   name: 'project_settings',
+      //   url: '/projects/{project_id:int}/settings',
+      //   templateUrl: static_url + 'seed/partials/project_settings.html',
+      //   controller: 'buildings_settings_controller',
+      //   resolve: {
+      //     all_columns: ['building_services', function (building_services) {
+      //       return building_services.get_columns();
+      //     }],
+      //     default_columns: ['user_service', function (user_service) {
+      //       return user_service.get_default_columns();
+      //     }],
+      //     shared_fields_payload: ['user_service', function (user_service) {
+      //       return user_service.get_shared_buildings();
+      //     }],
+      //     $uibModalInstance: function () {
+      //       return {
+      //         close: function () {
+      //         }
+      //       };
+      //     },
+      //     project_payload: ['$stateParams', 'project_service', function ($stateParams, project_service) {
+      //       var params = angular.copy($stateParams);
+      //       var project_slug = params.project_id;
+      //       return project_service.get_project(project_slug);
+      //     }],
+      //     building_payload: function () {
+      //       return {building: {}};
+      //     }
+      //   }
+      // })
       .state({
         name: 'reports',
         url: '/{inventory_type:properties|taxlots}/reports',
@@ -489,145 +394,24 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             if ($stateParams.inventory_type === 'properties') {
               return inventory_service.get_property_columns().then(function (columns) {
-                _.remove(columns, 'related');
+                _.remove(columns, function (col) {
+                  return col.related === true;
+                });
                 return _.map(columns, function (col) {
                   return _.omit(col, ['pinnedLeft', 'related']);
                 });
               });
             } else if ($stateParams.inventory_type === 'taxlots') {
               return inventory_service.get_taxlot_columns().then(function (columns) {
-                _.remove(columns, 'related');
+                _.remove(columns, function (col) {
+                  return col.related === true;
+                });
                 return _.map(columns, function (col) {
                   return _.omit(col, ['pinnedLeft', 'related']);
                 });
               });
             }
           }]
-        }
-      })
-      .state({
-        name: 'building_detail',
-        url: '/buildings/{building_id:int}',
-        templateUrl: static_url + 'seed/partials/building_detail_section.html',
-        controller: 'building_detail_controller',
-        resolve: {
-          building_payload: ['building_services', '$stateParams', function (building_services, $stateParams) {
-            // load `get_building` before page is loaded to avoid
-            // page flicker.
-            var building_id = $stateParams.building_id;
-            return building_services.get_building(building_id);
-          }],
-          all_columns: ['building_services', function (building_services) {
-            return building_services.get_columns();
-          }],
-          audit_payload: function () {
-            return {audit_logs: {}};
-          },
-          default_columns: ['user_service', function (user_service) {
-            return user_service.get_default_building_detail_columns();
-          }]
-        }
-      })
-      .state({
-        name: 'building_projects',
-        url: '/buildings/{building_id:int}/projects',
-        templateUrl: static_url + 'seed/partials/building_projects_section.html',
-        controller: 'building_detail_controller',
-        resolve: {
-          building_payload: ['building_services', '$stateParams', function (building_services, $stateParams) {
-            // load `get_building` before page is loaded to avoid
-            // page flicker.
-            var building_id = $stateParams.building_id;
-            return building_services.get_building(building_id);
-          }],
-          all_columns: ['building_services', function (building_services) {
-            return building_services.get_columns();
-          }],
-          audit_payload: function () {
-            return {audit_logs: {}};
-          },
-          default_columns: function () {
-            return {columns: {}};
-          }
-        }
-      })
-      .state({
-        name: 'building_audit_log',
-        url: '/buildings/{building_id:int}/audit',
-        templateUrl: static_url + 'seed/partials/building_audit_log.html',
-        controller: 'building_detail_controller',
-        resolve: {
-          building_payload: ['building_services', '$stateParams', function (building_services, $stateParams) {
-            // load `get_building` before page is loaded to avoid
-            // page flicker.
-            var building_id = $stateParams.building_id;
-            return building_services.get_building(building_id);
-          }],
-          all_columns: ['building_services', function (building_services) {
-            return building_services.get_columns();
-          }],
-          audit_payload: ['audit_service', '$stateParams', function (audit_service, $stateParams) {
-            var building_id = $stateParams.building_id;
-            return audit_service.get_building_logs(building_id);
-          }],
-          default_columns: function () {
-            return {columns: {}};
-          }
-        }
-      })
-      .state({
-        name: 'building_energy',
-        url: '/buildings/{building_id:int}/energy',
-        templateUrl: static_url + 'seed/partials/building_energy_section.html',
-        controller: 'building_detail_controller',
-        resolve: {
-          building_payload: ['building_services', '$stateParams', function (building_services, $stateParams) {
-            // load `get_building` before page is loaded to avoid
-            // page flicker.
-            var building_id = $stateParams.building_id;
-            return building_services.get_building(building_id);
-          }],
-          all_columns: ['building_services', function (building_services) {
-            return building_services.get_columns();
-          }],
-          audit_payload: function () {
-            return {audit_logs: {}};
-          },
-          default_columns: function () {
-            return {columns: {}};
-          }
-        }
-      })
-      .state({
-        name: 'building_settings',
-        url: '/buildings/{building_id:int}/settings',
-        templateUrl: static_url + 'seed/partials/building_settings_section.html',
-        controller: 'buildings_settings_controller',
-        resolve: {
-          building_payload: ['building_services', '$stateParams', function (building_services, $stateParams) {
-            // load `get_building` before page is loaded to avoid
-            // page flicker.
-            var building_id = $stateParams.building_id;
-            return building_services.get_building(building_id);
-          }],
-          all_columns: ['building_services', function (building_services) {
-            return building_services.get_columns();
-          }],
-          default_columns: ['user_service', function (user_service) {
-            return user_service.get_default_building_detail_columns();
-          }],
-          shared_fields_payload: function () {
-            return {show_shared_buildings: false};
-          },
-          $uibModalInstance: function () {
-            return {
-              close: function () {
-              }
-            };
-          },
-          project_payload: function () {
-            return {project: {}};
-          }
         }
       })
       .state({
@@ -664,6 +448,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           taxlot_columns: ['inventory_service', function (inventory_service) {
             return inventory_service.get_taxlot_columns();
           }],
+          cycles: ['cycle_service', function (cycle_service) {
+            return cycle_service.get_cycles();
+          }],
           auth_payload: ['auth_service', '$q', 'user_service', function (auth_service, $q, user_service) {
             var organization_id = user_service.get_organization().id;
             return auth_service.is_authorized(organization_id, ['requires_member'])
@@ -680,38 +467,177 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         }
       })
       .state({
-        name: 'matching',
-        url: '/data/matching/{importfile_id:int}',
-        templateUrl: static_url + 'seed/partials/matching.html',
-        controller: 'matching_controller',
+        name: 'matching_list',
+        url: '/data/matching/{importfile_id:int}/{inventory_type:properties|taxlots}',
+        templateUrl: static_url + 'seed/partials/matching_list.html',
+        controller: 'matching_list_controller',
         resolve: {
           import_file_payload: ['dataset_service', '$stateParams', function (dataset_service, $stateParams) {
             var importfile_id = $stateParams.importfile_id;
             return dataset_service.get_import_file(importfile_id);
           }],
-          buildings_payload: ['building_services', '$stateParams', function (building_services, $stateParams) {
+          inventory_payload: ['inventory_service', '$stateParams', function (inventory_service, $stateParams) {
             var importfile_id = $stateParams.importfile_id;
-            return building_services.search_matching_buildings(
-              '', 10, 1, '', false, {}, importfile_id);
+            return inventory_service.search_matching_inventory(importfile_id, {
+              get_coparents: true
+            });
           }],
-          default_columns: ['user_service', function (user_service) {
-            return user_service.get_default_columns();
+          columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+            if ($stateParams.inventory_type === 'properties') {
+              return inventory_service.get_property_columns().then(function (columns) {
+                _.remove(columns, function (col) {
+                  return col.related === true;
+                });
+                return _.map(columns, function (col) {
+                  return _.omit(col, ['pinnedLeft', 'related']);
+                });
+              });
+            } else if ($stateParams.inventory_type === 'taxlots') {
+              return inventory_service.get_taxlot_columns().then(function (columns) {
+                _.remove(columns, function (col) {
+                  return col.related === true;
+                });
+                return _.map(columns, function (col) {
+                  return _.omit(col, ['pinnedLeft', 'related']);
+                });
+              });
+            }
           }],
-          all_columns: ['building_services', function (building_services) {
-            return building_services.get_columns();
+          cycles: ['cycle_service', function (cycle_service) {
+            return cycle_service.get_cycles();
           }],
           auth_payload: ['auth_service', '$q', 'user_service', function (auth_service, $q, user_service) {
             var organization_id = user_service.get_organization().id;
-            return auth_service.is_authorized(organization_id, ['requires_member'])
-              .then(function (data) {
-                if (data.auth.requires_member) {
-                  return data;
-                } else {
-                  return $q.reject('not authorized');
-                }
-              }, function (data) {
-                return $q.reject(data.message);
+            return auth_service.is_authorized(organization_id, ['requires_member']).then(function (data) {
+              if (data.auth.requires_member) {
+                return data;
+              } else {
+                return $q.reject('not authorized');
+              }
+            }, function (data) {
+              return $q.reject(data.message);
+            });
+          }]
+        }
+      })
+      .state({
+        name: 'matching_detail',
+        url: '/data/matching/{importfile_id:int}/{inventory_type:properties|taxlots}/{state_id:int}',
+        templateUrl: static_url + 'seed/partials/matching_detail.html',
+        controller: 'matching_detail_controller',
+        resolve: {
+          import_file_payload: ['dataset_service', '$stateParams', function (dataset_service, $stateParams) {
+            return dataset_service.get_import_file($stateParams.importfile_id);
+          }],
+          state_payload: ['inventory_service', '$stateParams', function (inventory_service, $stateParams) {
+            return inventory_service.search_matching_inventory($stateParams.importfile_id, {
+              get_coparents: true,
+              inventory_type: $stateParams.inventory_type,
+              state_id: $stateParams.state_id
+            });
+          }],
+          available_matches: ['matching_service', '$stateParams', function (matching_service, $stateParams) {
+            return matching_service.available_matches($stateParams.importfile_id, $stateParams.inventory_type, $stateParams.state_id);
+          }],
+          columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+            if ($stateParams.inventory_type === 'properties') {
+              return inventory_service.get_property_columns().then(function (columns) {
+                _.remove(columns, function (col) {
+                  return col.related === true;
+                });
+                return _.map(columns, function (col) {
+                  return _.omit(col, ['pinnedLeft', 'related']);
+                });
               });
+            } else if ($stateParams.inventory_type === 'taxlots') {
+              return inventory_service.get_taxlot_columns().then(function (columns) {
+                _.remove(columns, function (col) {
+                  return col.related === true;
+                });
+                return _.map(columns, function (col) {
+                  return _.omit(col, ['pinnedLeft', 'related']);
+                });
+              });
+            }
+          }],
+          auth_payload: ['auth_service', '$q', 'user_service', function (auth_service, $q, user_service) {
+            var organization_id = user_service.get_organization().id;
+            return auth_service.is_authorized(organization_id, ['requires_member']).then(function (data) {
+              if (data.auth.requires_member) {
+                return data;
+              } else {
+                return $q.reject('not authorized');
+              }
+            }, function (data) {
+              return $q.reject(data.message);
+            });
+          }]
+        }
+      })
+      .state({
+        name: 'pairing',
+        url: '/data/pairing/{importfile_id:int}/{inventory_type:properties|taxlots}',
+        templateUrl: static_url + 'seed/partials/pairing.html',
+        controller: 'pairing_controller',
+        resolve: {
+          import_file_payload: ['dataset_service', '$stateParams', function (dataset_service, $stateParams) {
+            var importfile_id = $stateParams.importfile_id;
+            return dataset_service.get_import_file(importfile_id);
+          }],
+          propertyInventory: ['inventory_service', function (inventory_service) {
+            var myColumns = [{
+              'displayName': 'Address Line 1 (Property)',
+              'name': 'address_line_1',
+              'type': 'numberStr',
+              'related': false
+            }, {
+              'displayName': 'PM Property ID',
+              'name': 'pm_property_id',
+              'type': 'number',
+              'related': false
+            }, {
+              'displayName': 'Jurisdiction Tax Lot ID',
+              'name': 'jurisdiction_tax_lot_id',
+              'type': 'numberStr',
+              'related': false
+            }, {
+              'displayName': 'Custom ID',
+              'name': 'custom_id_1',
+              'type': 'numberStr',
+              'related': false
+            }];
+            var visibleColumns = _.map(myColumns, 'name');
+            // console.log('before: ', myColumns);
+            return inventory_service.get_properties(1, undefined, undefined, visibleColumns).then(function (inv) {
+              // return inventory_service.get_properties(1).then(function (inv) {
+              return _.extend({'columns': myColumns}, inv);
+            });
+          }],
+          taxlotInventory: ['inventory_service', function (inventory_service) {
+            var myColumns = [{
+              'displayName': 'Address Line 1 (Tax Lot)',
+              'name': 'address_line_1',
+              'type': 'numberStr',
+              'related': false
+            }, /*{
+             'displayName': 'Primary Tax Lot ID',
+             'name': 'primary_tax_lot_id',
+             'type': 'number',
+             'related': false
+             },*/ {
+              'displayName': 'Jurisdiction Tax Lot ID',
+              'name': 'jurisdiction_tax_lot_id',
+              'type': 'numberStr',
+              'related': false
+            }];
+            var visibleColumns = _.map(myColumns, 'name');
+            // console.log('before: ', myColumns);
+            return inventory_service.get_taxlots(1, undefined, undefined, visibleColumns).then(function (inv) {
+              return _.extend({'columns': myColumns}, inv);
+            });
+          }],
+          cycles: ['cycle_service', function (cycle_service) {
+            return cycle_service.get_cycles();
           }]
         }
       })
@@ -745,9 +671,26 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/dataset_detail.html',
         controller: 'dataset_detail_controller',
         resolve: {
-          dataset_payload: ['dataset_service', '$stateParams', function (dataset_service, $stateParams) {
-            var dataset_id = $stateParams.dataset_id;
-            return dataset_service.get_dataset(dataset_id);
+          dataset_payload: ['dataset_service', '$stateParams', '$state', '$q', 'spinner_utility', function (dataset_service, $stateParams, $state, $q, spinner_utility) {
+            return dataset_service.get_dataset($stateParams.dataset_id)
+              .catch(function (response) {
+                if (response.status == 400 && response.data.message == 'Organization ID mismatch between dataset and organization') {
+                  // Org id mismatch, likely due to switching organizations while viewing a dataset_detail page
+                  _.delay(function () {
+                    $state.go('dataset_list');
+                    spinner_utility.hide();
+                  });
+                  // Resolve with empty response to avoid error alert
+                  return $q.resolve({
+                    status: 'success',
+                    dataset: {}
+                  });
+                }
+                return $q.reject(response);
+              });
+          }],
+          cycles: ['cycle_service', function (cycle_service) {
+            return cycle_service.get_cycles();
           }],
           auth_payload: ['auth_service', '$q', 'user_service', function (auth_service, $q, user_service) {
             var organization_id = user_service.get_organization().id;
@@ -800,23 +743,12 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
       .state({
         name: 'organization_settings',
         url: '/accounts/{organization_id:int}',
-        templateUrl: static_url + 'seed/partials/settings.html',
+        templateUrl: static_url + 'seed/partials/organization_settings.html',
         controller: 'organization_settings_controller',
         resolve: {
-          all_columns: ['building_services', function (building_services) {
-            return building_services.get_columns(true);
-          }],
           organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
             var organization_id = $stateParams.organization_id;
             return organization_service.get_organization(organization_id);
-          }],
-          query_threshold_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
-            var organization_id = $stateParams.organization_id;
-            return organization_service.get_query_threshold(organization_id);
-          }],
-          shared_fields_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
-            var organization_id = $stateParams.organization_id;
-            return organization_service.get_shared_fields(organization_id);
           }],
           auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
             var organization_id = $stateParams.organization_id;
@@ -836,11 +768,11 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
       .state({
         name: 'organization_sharing',
         url: '/accounts/{organization_id:int}/sharing',
-        templateUrl: static_url + 'seed/partials/sharing.html',
-        controller: 'organization_settings_controller',
+        templateUrl: static_url + 'seed/partials/organization_sharing.html',
+        controller: 'organization_sharing_controller',
         resolve: {
-          all_columns: ['building_services', function (building_services) {
-            return building_services.get_columns();
+          all_columns: ['inventory_service', function (inventory_service) {
+            return inventory_service.get_columns();
           }],
           organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
             var organization_id = $stateParams.organization_id;
@@ -875,8 +807,8 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/cleansing_admin.html',
         controller: 'cleansing_admin_controller',
         resolve: {
-          all_columns: ['building_services', function (building_services) {
-            return building_services.get_columns();
+          all_columns: ['inventory_service', function (inventory_service) {
+            return inventory_service.get_columns();
           }],
           organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
             var organization_id = $stateParams.organization_id;
@@ -1066,6 +998,13 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             } else if ($stateParams.inventory_type === 'taxlots') {
               return inventory_service.get_taxlot_columns();
             }
+          }],
+          all_columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+            if ($stateParams.inventory_type === 'properties') {
+              return inventory_service.get_property_columns();
+            } else if ($stateParams.inventory_type === 'taxlots') {
+              return inventory_service.get_taxlot_columns();
+            }
           }]
         }
       })
@@ -1093,14 +1032,18 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           columns: ['inventory_service', '$stateParams', function (inventory_service, $stateParams) {
             if ($stateParams.inventory_type == 'properties') {
               return inventory_service.get_property_columns().then(function (columns) {
-                _.remove(columns, 'related');
+                _.remove(columns, function (col) {
+                  return col.related === true;
+                });
                 return _.map(columns, function (col) {
                   return _.omit(col, ['pinnedLeft', 'related']);
                 });
               });
             } else if ($stateParams.inventory_type == 'taxlots') {
               return inventory_service.get_taxlot_columns().then(function (columns) {
-                _.remove(columns, 'related');
+                _.remove(columns, function (col) {
+                  return col.related === true;
+                });
                 return _.map(columns, function (col) {
                   return _.omit(col, ['pinnedLeft', 'related']);
                 });

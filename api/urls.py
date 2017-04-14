@@ -8,6 +8,7 @@ from django.conf.urls import url, include
 from rest_framework import routers
 
 from api.views import test_view_with_arg, TestReverseViewSet
+from seed.data_importer.views import ImportFileViewSet
 from seed.data_importer.views import (
     handle_s3_upload_complete,
     get_upload_details,
@@ -15,17 +16,19 @@ from seed.data_importer.views import (
     LocalUploaderViewSet
 )
 from seed.views.api import get_api_schema
+from seed.views.columns import ColumnViewSet, ColumnMappingViewSet
 from seed.views.cycles import CycleView
 from seed.views.datasets import DatasetViewSet
-from seed.views.import_files import ImportFileViewSet
+from seed.views.labels import LabelViewSet, UpdateInventoryLabelsAPIView
 from seed.views.main import DataFileViewSet, version, progress
 from seed.views.organizations import OrganizationViewSet
 from seed.views.projects import ProjectViewSet
-from seed.views.users import UserViewSet
 from seed.views.properties import PropertyViewSet, TaxLotViewSet
-from seed.views.labels import LabelViewSet, UpdateInventoryLabelsAPIView
+from seed.views.users import UserViewSet
 
 api_v2_router = routers.DefaultRouter()
+api_v2_router.register(r'columns', ColumnViewSet, base_name="columns")
+api_v2_router.register(r'column_mappings', ColumnMappingViewSet, base_name="column_mappings")
 api_v2_router.register(r'datasets', DatasetViewSet, base_name="datasets")
 api_v2_router.register(r'organizations', OrganizationViewSet, base_name="organizations")
 api_v2_router.register(r'data_files', DataFileViewSet, base_name="data_files")
@@ -38,7 +41,6 @@ api_v2_router.register(r'cycles', CycleView, base_name="cycles")
 api_v2_router.register(r'properties', PropertyViewSet, base_name="properties")
 api_v2_router.register(r'taxlots', TaxLotViewSet, base_name="taxlots")
 api_v2_router.register(r'reverse_and_test', TestReverseViewSet, base_name="reverse_and_test")
-# TODO: NL: Upload needs to get moved to import_files
 api_v2_router.register(r'upload', LocalUploaderViewSet, base_name='local_uploader')
 
 urlpatterns = [

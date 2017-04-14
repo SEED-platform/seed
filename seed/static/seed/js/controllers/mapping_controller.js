@@ -9,9 +9,7 @@ angular.module('BE.seed.controller.mapping', [])
     'suggested_mappings_payload',
     'raw_columns_payload',
     'first_five_rows_payload',
-    'property_columns',
-    'taxlot_columns',
-    'building_services',
+    'cycles',
     'mappingValidatorService',
     'mapping_service',
     'search_service',
@@ -29,9 +27,7 @@ angular.module('BE.seed.controller.mapping', [])
               suggested_mappings_payload,
               raw_columns_payload,
               first_five_rows_payload,
-              property_columns,
-              taxlot_columns,
-              building_services,
+              cycles,
               mappingValidatorService,
               mapping_service,
               search_service,
@@ -44,7 +40,6 @@ angular.module('BE.seed.controller.mapping', [])
               $filter,
               cleansing_service,
               inventory_service) {
-
       var db_field_columns = suggested_mappings_payload.column_names;
       var columns = suggested_mappings_payload.columns;
       var extra_data_columns = _.filter(columns, 'extra_data');
@@ -58,21 +53,7 @@ angular.module('BE.seed.controller.mapping', [])
         db_field_columns[i] = $filter('titleCase')(db_field_columns[i]);
       }
 
-      $scope.typeahead_columns = db_field_columns.concat(extra_data_columns);
-
-      // remove dupes
-      function uniquify(params) {
-        var result = [];
-        for (i = 0; i < params.length; i++) {
-          var current = params[i];
-          if (!_.includes(result, current)) {
-            result.push(current);
-          }
-        }
-        return result;
-      }
-
-      $scope.typeahead_columns = uniquify($scope.typeahead_columns);
+      $scope.typeahead_columns = _.uniq(db_field_columns.concat(_.map(extra_data_columns, 'name')));
       $scope.tabs = {
         one_active: true,
         two_active: false,
@@ -104,6 +85,8 @@ angular.module('BE.seed.controller.mapping', [])
       $scope.search = angular.copy(search_service);
       $scope.search.has_checkbox = false;
       $scope.search.update_results();
+
+      $scope.isValidCycle = !!_.find(cycles.cycles, {id: $scope.import_file.cycle});
 
       /*
        * Opens modal for making changes to concatenation changes.
@@ -159,9 +142,6 @@ angular.module('BE.seed.controller.mapping', [])
         if (tcm.suggestion === '') {
           return '';
         }
-        if (tcm.validity === 'valid') {
-          return 'success';
-        }
         for (
           var i = 0; _.isUndefined(tcm.invalids) &&
         i < tcm.invalids.length; i++
@@ -184,44 +164,18 @@ angular.module('BE.seed.controller.mapping', [])
         value: 'TaxLotState'
       }];
       $scope.setAllInventoryTypes = function () {
-        _.each($scope.valids, function (valid) {
-          valid.suggestion_table_name = $scope.setAllFields.value;
-          $scope.change(valid);
-          // Check if the mapping button should be disabled.
-          $scope.disable_mapping_button();
-        })
-      };
-      $scope.setInventoryType = function (tcm) {
-        var chosenTypes = _.uniq(_.map($scope.valids, 'suggestion_table_name'));
-        if (chosenTypes.length == 1) $scope.setAllFields = _.find($scope.setAllFieldsOptions, {value: chosenTypes[0]});
-        else $scope.setAllFields = '';
-      };
-
-      $scope.find_duplicates = function (array, element) {
-        var indices = [];
-        var idx = array.indexOf(element);
-        while (idx !== -1) {
-          indices.push(idx);
-          idx = array.indexOf(element, idx + 1);
-        }
-        return indices;
-      };
-
-      /*
-       * Returns true if a TCM row is duplicated elsewhere.
-       */
-      $scope.is_tcm_duplicate = function (tcm) {
-        var suggestions = [];
-        for (var i = 0; i < $scope.raw_columns.length; i++) {
-
-          var potential = $scope.raw_columns[i].suggestion + '.' + $scope.raw_columns[i].suggestion_table_name;
-          if (_.isUndefined(potential) || _.isEmpty(potential) || !$scope.raw_columns[i].mapped_row) {
-            continue;
+        _.forEach($scope.valids, function (tcm) {
+          if (tcm.suggestion_table_name !== $scope.setAllFields.value) {
+            tcm.suggestion_table_name = $scope.setAllFields.value;
+            $scope.change(tcm, true);
           }
-          suggestions.push(potential);
-        }
-        var dups = $scope.find_duplicates(suggestions, tcm.suggestion + '.' + tcm.suggestion_table_name);
-        return dups.length > 1;
+        });
+        $scope.updateColDuplicateStatus();
+      };
+      $scope.updateInventoryTypeDropdown = function () {
+        var chosenTypes = _.uniq(_.map($scope.valids, 'suggestion_table_name'));
+        if (chosenTypes.length === 1) $scope.setAllFields = _.find($scope.setAllFieldsOptions, {value: chosenTypes[0]});
+        else $scope.setAllFields = '';
       };
 
       /*
@@ -267,14 +221,29 @@ angular.module('BE.seed.controller.mapping', [])
        * @param tcm: table column mapping object. Represents the database fields <-> raw
        *  relationship.
        */
-      $scope.change = function (tcm) {
+      $scope.change = function (tcm, checkingMultiple) {
         // Validate that the example data will convert.
         $scope.validate_data(tcm);
+
+        if (!checkingMultiple) $scope.updateColDuplicateStatus();
+      };
+
+      $scope.updateColDuplicateStatus = function () {
+        // Build suggestions with counts
+        var suggestions = {};
+        _.forEach($scope.raw_columns, function (col) {
+          if (!_.isUndefined(col.suggestion) && !_.isEmpty(col.suggestion) && col.mapped_row) {
+            var potential = col.suggestion + '.' + col.suggestion_table_name;
+            if (!_.has(suggestions, potential)) suggestions[potential] = 1;
+            else suggestions[potential]++;
+          }
+        });
+
         // Verify that we don't have any duplicate mappings.
-        for (var i = 0; i < $scope.raw_columns.length; i++) {
-          var inner_tcm = $scope.raw_columns[i];
-          inner_tcm.is_duplicate = $scope.is_tcm_duplicate(inner_tcm);
-        }
+        _.forEach($scope.raw_columns, function (col) {
+          var potential = col.suggestion + '.' + col.suggestion_table_name;
+          col.is_duplicate = _.get(suggestions, potential, 0) > 1;
+        });
       };
 
       /*
@@ -379,11 +348,16 @@ angular.module('BE.seed.controller.mapping', [])
 
         $scope.save_mappings = false;
 
-        spinner_utility.show();
-        $http.post('/api/v2/import_files/' + $scope.import_file.id + '/filtered_mapping_results/', {}).then(function (response) {
-          spinner_utility.hide();
+        // Request the columns again because they may (most likely)
+        // have changed from the initial import
+        inventory_service.get_property_columns().then(function(data){
+          $scope.property_columns = data;
+        });
+        inventory_service.get_taxlot_columns().then(function(data){
+          $scope.taxlot_columns =  data;
+        });
 
-          var data = response.data
+        inventory_service.search_matching_inventory($scope.import_file.id).then(function (data) {
           $scope.mappedData = data;
 
           var gridOptions = {
@@ -403,7 +377,7 @@ angular.module('BE.seed.controller.mapping', [])
           var existing_extra_property_keys = existing_property_keys.length ? _.keys(data.properties[0].extra_data) : [];
           var existing_taxlot_keys = _.keys(data.tax_lots[0]);
           var existing_extra_taxlot_keys = existing_taxlot_keys.length ? _.keys(data.tax_lots[0].extra_data) : [];
-          _.map(property_columns, function (col) {
+          _.map($scope.property_columns, function (col) {
             var options = {};
             if (!_.includes(existing_property_keys, col.name) && !_.includes(existing_extra_property_keys, col.name)) col.visible = false;
             else {
@@ -412,46 +386,27 @@ angular.module('BE.seed.controller.mapping', [])
             }
             return _.defaults(col, options, defaults);
           });
-          _.forEach(existing_extra_property_keys, function (name) {
-            if (!_.find(property_columns, {name: name})) {
-              property_columns.push(_.defaults({
-                name: name,
-                displayName: _.startCase(_.toLower(name)),
-                filter: inventory_service.textFilter(),
-                related: false
-              }, defaults));
-            }
-          });
-          _.map(taxlot_columns, function (col) {
+          _.map($scope.taxlot_columns, function (col) {
             var options = {};
-            if (!_.includes(existing_taxlot_keys, col.name) && !_.includes(existing_extra_taxlot_keys, col.name)) col.visible = false;
-            else {
+            if (!_.includes(existing_taxlot_keys, col.name) && !_.includes(existing_extra_taxlot_keys, col.name)) {
+              col.visible = false;
+            } else {
               if (col.type == 'number') options.filter = inventory_service.numFilter();
               else options.filter = inventory_service.textFilter();
             }
             return _.defaults(col, options, defaults);
-          });
-          _.forEach(existing_extra_taxlot_keys, function (name) {
-            if (!_.find(taxlot_columns, {name: name})) {
-              taxlot_columns.push(_.defaults({
-                name: name,
-                displayName: _.startCase(_.toLower(name)),
-                filter: inventory_service.textFilter(),
-                related: false
-              }, defaults));
-            }
           });
 
           $scope.propertiesGridOptions = angular.copy(gridOptions);
           $scope.propertiesGridOptions.data = _.map(data.properties, function (prop) {
             return _.defaults(prop, prop.extra_data);
           });
-          $scope.propertiesGridOptions.columnDefs = property_columns;
+          $scope.propertiesGridOptions.columnDefs = $scope.property_columns;
           $scope.taxlotsGridOptions = angular.copy(gridOptions);
           $scope.taxlotsGridOptions.data = _.map(data.tax_lots, function (taxlot) {
             return _.defaults(taxlot, taxlot.extra_data);
           });
-          $scope.taxlotsGridOptions.columnDefs = taxlot_columns;
+          $scope.taxlotsGridOptions.columnDefs = $scope.taxlot_columns;
 
           $scope.show_mapped_buildings = true;
         }).catch(function (response) {
@@ -500,25 +455,25 @@ angular.module('BE.seed.controller.mapping', [])
         return mappings;
       };
 
-      /*
-       * show_mapping_progress: shows the progress bar and kicks off the mapping,
-       *   after saving column mappings
-       */
-      $scope.show_mapping_progress = function () {
-        $scope.import_file.progress = 0;
-        $scope.save_mappings = true;
-        mapping_service.save_mappings(
-          $scope.import_file.id,
-          $scope.get_mappings()
-        )
-          .then(function (data) {
-            // start mapping
-            mapping_service.start_mapping($scope.import_file.id).then(function (data) {
-              // save maps start mapping data
-              check_mapping(data.progress_key);
-            });
-          });
-      };
+      // As far as I can tell, this is never used.
+      // /*
+      //  * show_mapping_progress: shows the progress bar and kicks off the mapping,
+      //  *   after saving column mappings
+      //  */
+      // $scope.show_mapping_progress = function () {
+      //   $scope.import_file.progress = 0;
+      //   $scope.save_mappings = true;
+      //   mapping_service.save_mappings(
+      //     $scope.import_file.id,
+      //     $scope.get_mappings()
+      //   ).then(function (data) {
+      //       // start mapping
+      //       mapping_service.start_mapping($scope.import_file.id).then(function (data) {
+      //         // save maps start mapping data
+      //         check_mapping(data.progress_key);
+      //       });
+      //     });
+      // };
 
 
       /**
@@ -621,22 +576,42 @@ angular.module('BE.seed.controller.mapping', [])
        *   mappings' button.
        */
       $scope.duplicates_present = function () {
-        for (var i = 0; i < $scope.raw_columns.length; i++) {
-          var tcm = $scope.raw_columns[i];
-          $scope.change(tcm);
-          if (tcm.is_duplicate) {
-            return true;
-          }
-        }
-        return false;
+        return Boolean(_.find($scope.raw_columns, 'is_duplicate'));
       };
 
-      $scope.disable_mapping_button = function () {
-        if ($scope.duplicates_present()){
-          angular.element('.mapping-button').prop('disabled', true);
-        } else {
-          angular.element('.mapping-button').prop('disabled', false);
+      /*
+       * empty_fields_present: used to disable or enable the 'show & review
+       *   mappings' button.
+       */
+      $scope.empty_fields_present = function () {
+        return Boolean(_.find($scope.raw_columns, {suggestion: ''}));
+      };
+
+      /*
+       * check_fields: called by ng-disabled for "Map Your Data" button.  Checks for duplicates and for required fields.
+       */
+      $scope.check_fields = function () {
+        return $scope.duplicates_present() || $scope.empty_fields_present() || !$scope.required_fields_present();
+      };
+
+      /*
+       * required_fields_present: check for presence of at least one field used by SEED to match records
+       */
+      $scope.required_fields_present = function () {
+        var required_fields = [
+          {header: 'Jurisdiction Tax Lot Id', inventory_type: 'TaxLotState'},
+          {header: 'Pm Property Id', inventory_type: 'PropertyState'},
+          {header: 'Custom Id 1', inventory_type: 'PropertyState'},
+          {header: 'Custom Id 1', inventory_type: 'TaxLotState'},
+          {header: 'Address Line 1', inventory_type: 'PropertyState'},
+          {header: 'Address Line 1', inventory_type: 'TaxLotState'}
+        ];
+
+        function compare_fields(x, y) {
+          return x.header == y.suggestion && x.inventory_type == y.suggestion_table_name;
         }
+
+        return _.intersectionWith(required_fields, $scope.raw_columns, compare_fields).length > 0;
       };
 
       $scope.backToMapping = function () {
@@ -672,10 +647,12 @@ angular.module('BE.seed.controller.mapping', [])
       var init = function () {
         update_raw_columns();
 
-        $scope.duplicates_present();
+        $scope.updateColDuplicateStatus();
         $scope.duplicates = $filter('filter')($scope.raw_columns, {is_duplicate: true});
         $scope.duplicates = $filter('orderBy')($scope.duplicates, 'suggestion', false);
-        $scope.valids = $filter('filter')($scope.raw_columns, {is_duplicate: false});
+        $scope.valids = $filter('filter')($scope.raw_columns, function (col) {
+          return !col.is_duplicate;
+        });
 
         var chosenTypes = _.uniq(_.map($scope.valids, 'suggestion_table_name'));
         if (chosenTypes.length == 1) $scope.setAllFields = _.find($scope.setAllFieldsOptions, {value: chosenTypes[0]});
@@ -700,24 +677,21 @@ angular.module('BE.seed.controller.mapping', [])
           templateUrl: urls.static_url + 'seed/partials/data_upload_modal.html',
           controller: 'data_upload_modal_controller',
           resolve: {
-            cycles: ['cycle_service', function (cycle_service) {
-              return cycle_service.get_cycles();
-            }],
+            cycles: cycles,
             step: function () {
               return step;
             },
             dataset: function () {
               return ds;
+            },
+            organization: function () {
+              return $scope.menu.user.organization;
             }
           }
         });
-
       };
 
       $scope.MAP_copy = 'A \'check\' indicates you want to map a data field header from your import file to either a standard header from the Building Energy Data Exchange Specification (BEDES) or to a custom header of your choice. Unchecked rows will be ignored for mapping purposes and the data will be imported with the header from your import file.';
-
       $scope.BEDES_copy = 'A Green check in this column indicates the mapping is done to a standard field in the BEDES specification.';
-
       $scope.VALIDATE_copy = 'Indicates whether data mapping was successful, if there\'s invalid data in your columns, or a duplicate field header mappings that need to be re-mapped to a unique BEDES/non-BEDES field. ';
-
     }]);

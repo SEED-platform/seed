@@ -32,15 +32,7 @@ from functools import reduce
 _log = logging.getLogger(__name__)
 
 
-def convert_to_js_timestamp(timestamp):
-    """converts a django/python datetime object to milliseconds since epoch
-        duplicated code with seed utils due to circular imports
-    """
-    return int(timestamp.strftime("%s")) * 1000
-
 # TODO: obsolete?
-
-
 def get_building_fieldnames():
     """returns a list of field names for the BuildingSnapshot class/model that
     will be searched against

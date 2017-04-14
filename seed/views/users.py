@@ -237,7 +237,7 @@ class UserViewSet(viewsets.ViewSet):
         try:
             domain = request.get_host()
         except Exception:
-            domain = 'buildingenergy.com'  # TODO: What should this value be now?
+            domain = 'seed-platform.org'
         invite_to_seed(domain, user.email,
                        default_token_generator.make_token(user), user.pk,
                        first_name)
@@ -256,8 +256,8 @@ class UserViewSet(viewsets.ViewSet):
         response_serializer: ListUsersResponseSerializer
         """
         users = []
-        for u in User.objects.all():
-            users.append({'email': u.email, 'user_id': u.pk})
+        for user in User.objects.only('id', 'email'):
+            users.append({'email': user.email, 'user_id': user.id})
         return JsonResponse({'users': users})
 
     @ajax_request_class
@@ -610,9 +610,7 @@ class UserViewSet(viewsets.ViewSet):
             return JsonResponse({'status': 'success', 'auth': auth})
 
         try:
-            ou = OrganizationUser.objects.get(
-                user=user, organization=org
-            )
+            ou = OrganizationUser.objects.get(user=user, organization=org)
         except OrganizationUser.DoesNotExist:
             return JsonResponse({'status': 'error', 'message': 'user does not exist'})
 
@@ -632,12 +630,18 @@ class UserViewSet(viewsets.ViewSet):
             message = 'no actions to check'
             error = True
 
-        try:
-            org = Organization.objects.get(pk=request.query_params.get('organization_id'))
-        except Organization.DoesNotExist:
-            message = 'organization does not exist'
+        org_id = request.query_params.get('organization_id')
+        if org_id == '':
+            message = 'organization id is undefined'
             error = True
             org = None
+        else:
+            try:
+                org = Organization.objects.get(pk=org_id)
+            except Organization.DoesNotExist:
+                message = 'organization does not exist'
+                error = True
+                org = None
 
         return body.get('actions'), org, error, message
 

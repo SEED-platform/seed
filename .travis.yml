@@ -1,46 +1,40 @@
 sudo: false
-
 cache:
-  directories: 
-    - node_modules
-    - seed/static/vendors/bower_components
-    - $HOME/.pip-cache/
-    - $HOME/.nvm
-    - .tox
-
+  directories:
+  - node_modules
+  - seed/static/vendors/bower_components
+  - "$HOME/.pip-cache/"
+  - "$HOME/.nvm"
+  - ".tox"
 language: python
-
 python:
-  - 2.7
-
+- 2.7
 addons:
   postgresql: '9.4'
-  # Sauce credentials in Travis env vars, but we aren't using Sauce until we get functional tests working, so disable it
-  # sauce_connect: true
+  sauce_connect: true
   apt_packages:
-    - enchant
-
+  - enchant
 services:
-  - redis-server
-  - postgresql
-
+- redis-server
+- postgresql
 env:
   global:
-    - DJANGO_SETTINGS_MODULE=config.settings.travis
-    - DISPLAY=:99.0
+  - DJANGO_SETTINGS_MODULE=config.settings.travis
+  - DISPLAY=:99.0
+  - secure: CpPzxEwVMmfQ7M1eMsrceOjFbjtQ4ZTKV/576UwskPdY1HXj+2tCvZxwWLS0TCmlEicNqpZ3ZOK8/2t654qUbkMNqyzqh5RNtXngBuD5QP4WIxdWJ9WkC801gIm27nmgBxooiVy/UAU+VDKMdw1honfSWou5FISFm+u5ep7DzCU=
+  - secure: JTArNnjh+Gir7ck4Kb+zUkfvZPHqi97FQg0YG06pqKoClmbPcFKaW/eiMeY8oJbbsM/R/diIpqskI1U8YpOG3SfILQfsG4bAs7m2x7a72Z2Z/jwWT8AWLc2qwlFNTByeoL3cOQt3sOyBRwC/XxGey4BqUDRkD0LJcRIoEiGGcKw=
   matrix:
-    - TOX_ENV=python
-    - TOX_ENV=flake8
-#    - TOX_ENV=functional
-#    - TOX_ENV=apitest
-    - TOX_ENV=spelling
-
+  - TOX_ENV=python
+  - TOX_ENV=flake8
+  - TOX_ENV=spelling
+  - TOX_ENV=functional
 install:
-  - pip install --upgrade pip
-  - pip install tox==2.3.2
-
+- pip install --upgrade pip
+- pip install tox==2.3.2
+- npm install npm@latest -g
+- nvm install stable
 before_script:
-  - psql -c "create database seeddb;" -U postgres
-
+- psql -c "create database seeddb;" -U postgres
+- mv config/settings/test_local_untracked.py config/settings/local_untracked.py
 script:
-  - tox -e $TOX_ENV
+- tox -e $TOX_ENV

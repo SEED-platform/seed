@@ -10,6 +10,7 @@ from datetime import datetime, date
 
 import dateutil
 import dateutil.parser
+from django.utils import timezone
 
 from seed.lib.mcm.matchers import fuzzy_in_set
 
@@ -60,9 +61,7 @@ def float_cleaner(value, *args):
     except ValueError:
         value = None
     except TypeError:
-        message = 'float_cleaner cannot convert {} to float'.format(
-            type(value)
-        )
+        message = 'float_cleaner cannot convert {} to float'.format(type(value))
         raise TypeError(message)
 
     return value
@@ -85,7 +84,7 @@ def bool_cleaner(value, *args):
 
 def date_cleaner(value, *args):
     """Try to clean value, coerce it into a python datetime."""
-    if not value:
+    if not value or value == '':
         return None
     if isinstance(value, datetime) or isinstance(value, date):
         return value
@@ -94,10 +93,31 @@ def date_cleaner(value, *args):
         # the dateutil parser only parses strings, make sure to return None if not a string
         if isinstance(value, basestring):
             value = dateutil.parser.parse(value)
+            value = timezone.make_aware(value, timezone.get_current_timezone())
         else:
             value = None
     except (TypeError, ValueError):
         return None
+
+    return value
+
+
+def int_cleaner(value, *args):
+    """Try to convert to an integer"""
+    # API breakage if None does not return None
+    if value is None:
+        return None
+
+    if isinstance(value, basestring):
+        value = PUNCT_REGEX.sub('', value)
+
+    try:
+        value = int(float(value))
+    except ValueError:
+        value = None
+    except TypeError:
+        message = 'int_cleaner cannot convert {} to int'.format(type(value))
+        raise TypeError(message)
 
     return value
 
@@ -113,10 +133,13 @@ class Cleaner(object):
             lambda x: self.schema[x] == u'float', self.schema
         )
         self.date_columns = filter(
-            lambda x: self.schema[x] == u'date', self.schema
+            lambda x: self.schema[x] == u'date' or self.schema[x] == u'datetime', self.schema
         )
         self.string_columns = filter(
             lambda x: self.schema[x] == u'string', self.schema
+        )
+        self.int_columns = filter(
+            lambda x: self.schema[x] == u'integer', self.schema
         )
 
     def clean_value(self, value, column_name):
@@ -130,5 +153,8 @@ class Cleaner(object):
 
         if column_name in self.string_columns:
             return str(value)
+
+        if column_name in self.int_columns:
+            return int_cleaner(value)
 
         return value

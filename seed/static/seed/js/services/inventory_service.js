@@ -39,7 +39,8 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         spinner_utility.show();
 
         return $http.post('/api/v2/properties/filter/', {
-          columns: columns
+          // Ensure that the required meta fields are included
+          columns: _.uniq(columns.concat(['property_state_id', 'taxlot_state_id', 'property_view_id', 'taxlot_view_id']))
         }, {
           params: params
         }).then(function (response) {
@@ -246,7 +247,8 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
         spinner_utility.show();
         return $http.post('/api/v2/taxlots/filter/', {
-          columns: columns
+          // Ensure that the required meta fields are included
+          columns: _.uniq(columns.concat(['property_state_id', 'taxlot_state_id', 'property_view_id', 'taxlot_view_id']))
         }, {
           params: params
         }).then(function (response) {
@@ -397,14 +399,14 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
     inventory_service.get_last_cycle = function () {
       var organization_id = user_service.get_organization().id;
-      return (JSON.parse(sessionStorage.getItem('cycles')) || {})[organization_id];
+      return (JSON.parse(localStorage.getItem('cycles')) || {})[organization_id];
     };
 
     inventory_service.save_last_cycle = function (pk) {
       var organization_id = user_service.get_organization().id,
-        cycles = JSON.parse(sessionStorage.getItem('cycles')) || {};
+        cycles = JSON.parse(localStorage.getItem('cycles')) || {};
       cycles[organization_id] = _.toInteger(pk);
-      sessionStorage.setItem('cycles', JSON.stringify(cycles));
+      localStorage.setItem('cycles', JSON.stringify(cycles));
     };
 
 
@@ -534,13 +536,16 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     inventory_service.saveSettings = function (key, columns) {
       key += '.' + user_service.get_organization().id;
       var toSave = inventory_service.reorderSettings(_.map(columns, function (col) {
-        return _.pick(col, ['name', 'pinnedLeft', 'visible']);
+        return _.pick(col, ['name', 'pinnedLeft', 'related', 'visible']);
       }));
       localStorage.setItem(key, JSON.stringify(toSave));
     };
 
     inventory_service.loadSettings = function (key, columns) {
       key += '.' + user_service.get_organization().id;
+
+      var isDetailSetting = key.match(/^grid\.(properties|taxlots)\.detail\.\d+$/);
+
       // Hide extra data columns by default
       _.forEach(columns, function (col) {
         col.visible = !col.extraData;
@@ -550,13 +555,23 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       if (!_.isNull(localColumns)) {
         var existingColumnNames = _.map(columns, 'name');
         localColumns = JSON.parse(localColumns);
+
+        // Remove deprecated columns missing 'related' field
+        // NOT FOR DETAIL SETTINGS
+        if (!isDetailSetting) {
+          _.remove(localColumns, function (col) {
+            return !_.has(col, 'related');
+          });
+        }
+
         // Remove nonexistent columns
         _.remove(localColumns, function (col) {
           return !_.includes(existingColumnNames, col.name);
         });
         // Use saved column settings with original data as defaults
         localColumns = _.map(localColumns, function (col) {
-          return _.defaults(col, _.remove(columns, {name: col.name})[0])
+          if (isDetailSetting) return _.defaults(col, _.remove(columns, {name: col.name})[0]);
+          else return _.defaults(col, _.remove(columns, {name: col.name, related: col.related})[0]);
         });
         // If no columns are visible, reset visibility only
         if (!_.find(localColumns, 'visible')) {
@@ -568,6 +583,17 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       } else {
         return inventory_service.reorderSettings(columns);
       }
+    };
+
+    // Save non-empty sort/filter states
+    inventory_service.saveGridSettings = function (key, settings) {
+      key += '.' + user_service.get_organization().id;
+      localStorage.setItem(key, JSON.stringify(settings));
+    };
+
+    inventory_service.loadGridSettings = function (key) {
+      key += '.' + user_service.get_organization().id;
+      return localStorage.getItem(key);
     };
 
     inventory_service.removeSettings = function (key) {
@@ -605,6 +631,65 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       var pinned = _.remove(columns, 'pinnedLeft');
       var selected = _.remove(columns, 'visible');
       return pinned.concat(selected).concat(columns);
+    };
+
+    inventory_service.search_matching_inventory = function (import_file_id, options) {
+      spinner_utility.show();
+      return $http.post('/api/v2/import_files/' + import_file_id + '/filtered_mapping_results/', options, {
+        params: {
+          organization_id: user_service.get_organization().id
+        }
+      }).then(function (response) {
+        return response.data;
+      }).finally(function () {
+        spinner_utility.hide();
+      });
+    };
+
+    inventory_service.save_property_match = function (source_property_id, target_property_id, create_match) {
+      // TODO: Fix url
+      return $http.post(urls.save_match, {
+        source_inventory_id: source_property_id,
+        target_inventory_id: target_property_id,
+        create_match: create_match,
+        organization_id: user_service.get_organization().id
+      }).then(function (response) {
+        return response.data;
+      });
+    };
+
+    inventory_service.save_taxlot_match = function (source_taxlot_id, target_taxlot_id, create_match) {
+      // TODO: Fix url
+      return $http.post(urls.save_match, {
+        source_inventory_id: source_taxlot_id,
+        target_inventory_id: target_taxlot_id,
+        create_match: create_match,
+        organization_id: user_service.get_organization().id
+      }).then(function (response) {
+        return response.data;
+      });
+    };
+
+    inventory_service.get_columns = function (all_fields) {
+      all_fields = all_fields || '';
+      return $http.get('/app/get_columns/', {
+        params: {
+          all_fields: all_fields,
+          organization_id: user_service.get_organization().id
+        }
+      }).then(function (response) {
+        return response.data;
+      });
+    };
+
+    inventory_service.get_matching_results = function (import_file_id) {
+      return $http.get('/api/v2/import_files/' + import_file_id + '/matching_results/', {
+        params: {
+          organization_id: user_service.get_organization().id
+        }
+      }).then(function (response) {
+        return response.data;
+      });
     };
 
     return inventory_service;

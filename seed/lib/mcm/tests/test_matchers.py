@@ -99,6 +99,16 @@ class TestMatchers(TestCase):
         self.assertGreater(first_match[2], 90)
         self.assertLess(second_match[2], 90)
 
+    def test_null_matches(self):
+        matches = matchers.best_match('', US_STATES, top_n=2)
+        self.assertEqual(len(matches), 2)
+
+        matches = matchers.best_match('nothing', [], top_n=5)
+        self.assertEqual([], matches)
+
+        matches = matchers.best_match(None, [], top_n=5)
+        self.assertEqual([], matches)
+
     def test_sort_scores(self):
         data = [
             ('PropertyState', 'pointless_3', 0.2),

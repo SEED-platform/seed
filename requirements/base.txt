@@ -34,9 +34,9 @@ django-storages==1.4
 jellyfish==0.3.2
 python-dateutil>=2.4
 raven==5.9.0
-street-address==0.2.1
+street-address==0.3.0
 unicodecsv==0.9.4
-usaddress==0.5.4
+usaddress==0.5.10
 xlrd==0.9.4
 xlwt==0.7.5
 xmltodict==0.9.0
