@@ -49,6 +49,7 @@ if cache_settings is None:
         'Port': os.environ.get('CACHE_PORT', 6379)
     }
 BROKER_URL = 'redis://%(Address)s:%(Port)i/1' % cache_settings
+CELERY_RESULT_BACKEND = BROKER_URL
 CELERY_DEFAULT_QUEUE = 'seed-deploy'
 CELERY_QUEUES = (
     Queue(
