@@ -4,12 +4,12 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-import datetime as dt
 import json
 import pprint
-import time
 
+import datetime as dt
 import requests
+import time
 
 from seed_readingtools import (
     check_status, read_map_file, upload_file,  # check_progress
@@ -17,8 +17,8 @@ from seed_readingtools import (
 )
 
 
-def upload_match_sort(header, main_url, organization_id, dataset_id, filepath, filetype, mappingfilepath, log):
-
+def upload_match_sort(header, main_url, organization_id, dataset_id, filepath, filetype,
+                      mappingfilepath, log):
     # Upload the covered-buildings-sample file
     print ('API Function: upload_file\n'),
     partmsg = 'upload_file'
@@ -47,8 +47,10 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, filepath, f
     # Get the mapping suggestions
     print ('API Function: get_column_mapping_suggestions\n'),
     partmsg = 'get_column_mapping_suggestions'
-    result = requests.get(main_url + '/api/v2/data_files/%s/mapping_suggestions/?organization_id=%s' % (import_id, organization_id),
-                          headers=header)
+    result = requests.get(
+        main_url + '/api/v2/data_files/%s/mapping_suggestions/?organization_id=%s' % (
+        import_id, organization_id),
+        headers=header)
     check_status(result, partmsg, log, PIIDflag='mappings')
 
     # Save the column mappings
@@ -117,7 +119,7 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, filepath, f
 
 
 def search_and_project(header, main_url, organization_id, log):
-        # Search CanonicalBuildings
+    # Search CanonicalBuildings
     print ('API Function: search_buildings\n'),
     partmsg = 'search_buildings'
     search_payload = {'filter_params': {u'address_line_1': u'94734 SE Honeylocust Street'}}
@@ -157,7 +159,8 @@ def search_and_project(header, main_url, organization_id, log):
 
     result = requests.get(main_url + '/api/v2/projects/',
                           headers=header,
-                          params=json.dumps({'project_slug': project_slug, 'organization_id': organization_id}))
+                          params=json.dumps(
+                              {'project_slug': project_slug, 'organization_id': organization_id}))
     check_status(result, partmsg, log)
 
     # Populate project by search buildings result
@@ -178,9 +181,10 @@ def search_and_project(header, main_url, organization_id, log):
     check_status(result, partmsg, log)
 
     # Get the percent/progress of buildings added to project
-    progress = requests.post(main_url + '/app/projects/get_adding_buildings_to_project_status_percentage/',
-                             headers=header,
-                             data=json.dumps({'project_loading_cache_key': result.json()['project_loading_cache_key']}))
+    progress = requests.post(
+        main_url + '/app/projects/get_adding_buildings_to_project_status_percentage/',
+        headers=header,
+        data=json.dumps({'project_loading_cache_key': result.json()['project_loading_cache_key']}))
     log.debug(pprint.pformat(progress.json()))
 
     # Export
@@ -213,7 +217,7 @@ def search_and_project(header, main_url, organization_id, log):
     partmsg = 'export_buildings_download'
 
     count = 100
-    while(count > 0):
+    while (count > 0):
         result = requests.post(main_url + '/app/export_buildings/download/',
                                headers=header,
                                data=json.dumps({'export_id': exportID}))
@@ -246,7 +250,7 @@ def account(header, main_url, username, log):
     partmsg = 'get_organizations'
     result = requests.get(main_url + '/api/v2/organizations/',
                           headers=header)
-    check_status(result, partmsg, log, PIIDflag='organizations')
+    check_status(result, partmsg, log, piid_flag='organizations')
 
     # # Get the organization id to be used.
     # # NOTE: Loop through the organizations and get the org_id
@@ -287,7 +291,7 @@ def account(header, main_url, username, log):
     partmsg = 'get_organizations_users'
     result = requests.get(main_url + '/api/v2/organizations/%s/users/' % organization_id,
                           headers=header)
-    check_status(result, partmsg, log, PIIDflag='users')
+    check_status(result, partmsg, log, piid_flag='users')
 
     # Get organizations settings
     print ('API Function: get_query_treshold\n'),
@@ -307,7 +311,6 @@ def account(header, main_url, username, log):
 
 
 def delete_set(header, main_url, organization_id, dataset_id, project_slug, log):
-
     # Delete all buildings
     print ('API Function: delete_buildings\n'),
     partmsg = 'delete_buildings'
@@ -340,3 +343,56 @@ def delete_set(header, main_url, organization_id, dataset_id, project_slug, log)
                              headers=header,
                              data=json.dumps(payload))
     check_status(result, partmsg, log)
+
+
+def cycles(header, main_url, organization_id, log):
+    print ('API Function: get_cycles\n')
+    partmsg = 'get_cycles'
+    result = requests.get(main_url + '/api/v2/cycles/',
+                          headers=header,
+                          params={'organization_id': organization_id})
+    print result
+    check_status(result, partmsg, log, piid_flag='cycles')
+
+    cycles = result.json()['cycles']
+    print "current cycles are {}".format(cycles)
+    for cyc in cycles:
+        if cyc['name'] == 'TestCycle':
+            cycle_id = cyc['id']
+            break
+    else:
+        # Create cycle (only if it doesn't exist, until there is a function to delete cycles)
+        print ('API Function: create_cycle\n')
+        partmsg = 'create_cycle'
+        payload = {
+            'start': "2015-01-01T08:00:00.000Z",
+            'end': "2016-01-01T08:00:00.000Z",
+            'name': "TestCycle"
+        }
+        result = requests.post(main_url + '/api/v2/cycles/',
+                               headers=header,
+                               params={'organization_id': organization_id},
+                               json=payload)
+        check_status(result, partmsg, log)
+
+        cycle_id = result.json()['id']
+
+    # Update cycle
+    print ('\nAPI Function: update_cycle')
+    partmsg = 'update_cycle'
+    print cycle_id
+    payload = {
+        'start': "2015-01-01T08:00:00.000Z",
+        'end': "2016-01-01T08:00:00.000Z",
+        'name': "TestCycle",
+        'id': cycle_id
+    }
+    result = requests.put(main_url + '/api/v2/cycles/{}/'.format(cycle_id),
+                          headers=header,
+                          params={'organization_id': organization_id},
+                          json=payload)
+    check_status(result, partmsg, log)
+
+
+    # TODO: Test deleting a cycle
+    return cycle_id

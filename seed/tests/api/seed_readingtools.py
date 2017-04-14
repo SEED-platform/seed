@@ -4,15 +4,16 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-import logging
-import pprint
-import json
-import os
-import requests
 import csv
-import datetime as dt
-import time
+import json
+import logging
+import os
+import pprint
 from calendar import timegm
+
+import datetime as dt
+import requests
+import time
 
 
 # Three-step upload process
@@ -134,9 +135,10 @@ def upload_file(upload_header, upload_filepath, main_url, upload_dataset_id, upl
         }
 
         print upload_url
+        print fsysparams
         return requests.post(upload_url,
                              params=fsysparams,
-                             files={'filename': open(upload_filepath, 'rb')},
+                             files={'file': open(upload_filepath, 'rb')},
                              headers=upload_header)
 
     # Get the upload details.
@@ -154,64 +156,6 @@ def upload_file(upload_header, upload_filepath, main_url, upload_dataset_id, upl
     else:
         raise RuntimeError("Upload mode unknown: %s" %
                            upload_details['upload_mode'])
-
-
-def cycles(header, main_url, organization_id, log):
-    print ('API Function: get_cycles\n')
-    partmsg = 'get_cycles'
-    try:
-        result = requests.get(main_url + '/app/get_cycles/',
-                              headers=header,
-                              params={'organization_id': organization_id})
-        print result
-        check_status(result, partmsg, log, PIIDflag='cycles')
-
-        cycles = result.json()['cycles']
-        print "current cycles are {}".format(cycles)
-        for cyc in cycles:
-            if cyc['name'] == 'TestCycle':
-                cycle_id = cyc['id']
-                break
-        else:
-            # Create cycle (only if it doesn't exist, until there is a function to delete cycles)
-            print ('API Function: create_cycle\n')
-            partmsg = 'create_cycle'
-            payload = {
-                'start': "2015-01-01T08:00:00.000Z",
-                'end': "2016-01-01T08:00:00.000Z",
-                'name': "TestCycle"
-            }
-            result = requests.post(main_url + '/app/create_cycle/',
-                                   headers=header,
-                                   params={'organization_id': organization_id},
-                                   data=json.dumps(payload))
-            check_status(result, partmsg, log)
-
-            cycles = result.json()['cycles']
-            for cyc in cycles:
-                if cyc['name'] == 'TestCycle':
-                    cycle_id = cyc['id']
-                    break
-    except:
-        cycle_id = 138
-
-    # Update cycle
-    print ('\nAPI Function: update_cycle')
-    partmsg = 'update_cycle'
-    print cycle_id
-    payload = {
-        'start': "2015-01-01T08:00:00.000Z",
-        'end': "2016-01-01T08:00:00.000Z",
-        'name': "TestCycle",
-        'id': cycle_id
-    }
-    result = requests.put(main_url + '/app/update_cycle/',
-                          headers=header,
-                          params={'organization_id': organization_id},
-                          data=json.dumps(payload))
-    check_status(result, partmsg, log)
-
-    return cycle_id
 
 
 def check_status(result_out, part_msg, log, piid_flag=None):
@@ -259,7 +203,7 @@ def check_status(result_out, part_msg, log, piid_flag=None):
         log.debug(msg)
     else:
         msg = result_out.reason
-        print msg.json
+        print msg
         log.error(part_msg + failed)
         log.debug(msg)
         raise RuntimeError
