@@ -641,7 +641,7 @@ class PropertyViewSet(GenericViewSet):
 
                 if 'extra_data' in new_property_state_data.keys():
                     property_state_data['extra_data'].update(new_property_state_data.pop('extra_data'))
-                    property_state_data.update(new_property_state_data)
+                property_state_data.update(new_property_state_data)
 
                 if log.name == 'Import Creation':
                     # Add new state
