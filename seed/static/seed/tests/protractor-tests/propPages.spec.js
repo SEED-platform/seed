@@ -17,15 +17,14 @@ describe('When I go to the inventory page', function () {
 		})
 	});
 
-	// TODO: NL - can we figure out why this isn't working?
-	// it('should filter semi colon and expand', function () {
-	// 	var jurisTL = $$('[role="columnheader"]').filter(function(elm) {
-	// 		return elm.getText().then(function (label) {
-	// 			return label.includes('Jurisdiction Tax Lot ID');
-	// 		});
-	// 	}).first();
-	// 	jurisTL.$$('[ng-model="colFilter.term"]').first().sendKeys(';');
-	// });
+	it('should filter semi colon and expand', function () {
+		var jurisTL = $$('[role="columnheader"]').filter(function(elm) {
+			return elm.getText().then(function (label) {
+				return label.includes('Jurisdiction Tax Lot ID');
+			});
+		}).first();
+		jurisTL.$$('[ng-model="colFilter.term"]').first().sendKeys(';');
+	});
 
 	it('should filter', function () {
 		var rows = $('.left.ui-grid-render-container-left.ui-grid-render-container')
@@ -104,8 +103,11 @@ describe('When I go to the inventory page', function () {
 		var rows = $('.left.ui-grid-render-container-left.ui-grid-render-container')
 				.all(by.repeater('(rowRenderIndex, row) in rowContainer.renderedRows'));
 		expect(rows.count()).toBe(1);
-		rows.first().getText().then(function (label) {
-			expect(label).toContain('protractor unique stuff');
+		rows.filter(function(elm) {
+			return elm.getText().then(function (label) {
+				expect(label).toContain('protractor unique stuff');
+				return;
+			})
 		});
 		$('[ng-click="clear_labels()"]').click();
 		var rows = $('.left.ui-grid-render-container-left.ui-grid-render-container')

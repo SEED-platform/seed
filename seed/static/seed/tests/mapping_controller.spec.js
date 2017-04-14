@@ -310,40 +310,29 @@ describe('controller: mapping_controller', function(){
         mapping_controller_scope.$digest();
 
         // raw_columns[0] and raw_columns[3] should be the only mapped rows
-        var column = mapping_controller_scope.raw_columns[3];
-        var test_class = mapping_controller_scope.is_tcm_duplicate(
-            column
-        );
 
-        expect(test_class).toBe(false);
+        expect(mapping_controller_scope.raw_columns[3].is_duplicate).toBe(false);
 
         // Set the property_name tcm's suggestion to the same as
         // the property_id tcm (raw_columns[0])
-        column.suggestion = 'Pm Property Id';
+        mapping_controller_scope.raw_columns[3].suggestion = 'Pm Property Id';
+        mapping_controller_scope.updateColDuplicateStatus();
+        mapping_controller_scope.$digest();
 
-        test_class = mapping_controller_scope.is_tcm_duplicate(
-            column
-        );
-
-        expect(test_class).toBe(true);
+        expect(mapping_controller_scope.raw_columns[3].is_duplicate).toBe(true);
 
         // Since we mark both duplicates as duplicates, the other
         // TCM that has the 'pm_property_id' suggestion should also get
         // 'danger' as its duplicate class.
-        var other_dup = mapping_controller_scope.is_tcm_duplicate(
-            mapping_controller_scope.raw_columns[0]
-        );
-        expect(other_dup).toBe(true);
+        expect(mapping_controller_scope.raw_columns[0].is_duplicate).toBe(true);
 
         // Shows that mapped_row is the sole determinant of
         // column ignoring
-        column.mapped_row = false;
+        mapping_controller_scope.raw_columns[0].mapped_row = false;
+        mapping_controller_scope.updateColDuplicateStatus();
+        mapping_controller_scope.$digest();
 
-        test_class = mapping_controller_scope.is_tcm_duplicate(
-            column
-        );
-
-        expect(test_class).toBe(false);
+        expect(mapping_controller_scope.raw_columns[0].is_duplicate).toBe(false);
 
     });
 
@@ -352,22 +341,14 @@ describe('controller: mapping_controller', function(){
         mapping_controller_scope.$digest();
 
         // raw_columns[0] and raw_columns[3] should be the only mapped rows
-        var column = mapping_controller_scope.raw_columns[1];
-        var test_class = mapping_controller_scope.is_tcm_duplicate(
-            column
-        );
 
-        expect(test_class).toBe(false);
+        expect(mapping_controller_scope.raw_columns[1].is_duplicate).toBe(false);
 
         // Set the property_name tcm's suggestion to the same as
         // the property_id tcm (raw_columns[0])
-        column.suggestion = 'Pm Property Id';
+        mapping_controller_scope.raw_columns[1].suggestion = 'Pm Property Id';
 
-        test_class = mapping_controller_scope.is_tcm_duplicate(
-            column
-        );
-
-        expect(test_class).toBe(false);
+        expect(mapping_controller_scope.raw_columns[0].is_duplicate).toBe(false);
     });
 
     // Needs to be an e2e test.
