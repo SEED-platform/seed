@@ -114,7 +114,7 @@ cycle_id = cycles(header, main_url, organization_id, log)
 
 
 # Create a dataset
-print ('API Function: create_dataset')
+print ('\n\n-------Create Dateset-------')
 partmsg = 'create_dataset'
 payload = {'name': 'API Test'}
 result = requests.post(main_url + '/api/v2/datasets/?organization_id=%s' % organization_id,
@@ -127,12 +127,12 @@ dataset_id = result.json()['id']
 
 # Upload and test the raw building file
 print ('\n|---Covered Building File---|\n')
-upload_match_sort(header, main_url, organization_id, dataset_id, raw_building_file, 'Assessed Raw',
+upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, raw_building_file, 'Assessed Raw',
                   raw_map_file, log)
 
 # Upload and test the portfolio manager file
 print ('\n|---Portfolio Manager File---|\n')
-upload_match_sort(header, main_url, organization_id, dataset_id, pm_building_file, 'Portfolio Raw',
+upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, pm_building_file, 'Portfolio Raw',
                   pm_map_file, log)
 
 # Run search and project tests

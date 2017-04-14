@@ -17,7 +17,7 @@ from seed_readingtools import (
 )
 
 
-def upload_match_sort(header, main_url, organization_id, dataset_id, filepath, filetype,
+def upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, filepath, filetype,
                       mappingfilepath, log):
     # Upload the covered-buildings-sample file
     print ('API Function: upload_file\n'),
@@ -31,38 +31,40 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, filepath, f
     # Save the data to BuildingSnapshots
     print ('API Function: save_raw_data\n'),
     partmsg = 'save_raw_data'
-    payload = {'file_id': import_id,
-               'organization_id': organization_id}
-    result = requests.post(main_url + '/app/save_raw_data/',
+    payload = {
+        'organization_id': organization_id,
+        'cycle_id': cycle_id
+    }
+    result = requests.post(main_url + '/api/v2/import_files/{}/save_raw_data/'.format(import_id),
                            headers=header,
-                           data=json.dumps(payload))
+                           json=payload)
     # progress = check_progress(main_url, header, result.json()['progress_key'])
     # without the above line this is just checking the url returned something
     # not that it did anything, as there are no guarantees the task finished
     check_status(result, partmsg, log)
 
-    # I think the idea was if we wait long enough it might finish?
-    time.sleep(20)
-
     # Get the mapping suggestions
     print ('API Function: get_column_mapping_suggestions\n'),
     partmsg = 'get_column_mapping_suggestions'
     result = requests.get(
-        main_url + '/api/v2/data_files/%s/mapping_suggestions/?organization_id=%s' % (
-        import_id, organization_id),
+        main_url + '/api/v2/data_files/{}/mapping_suggestions/'.format(import_id),
+        params={"organization_id": organization_id},
         headers=header)
-    check_status(result, partmsg, log, PIIDflag='mappings')
+    check_status(result, partmsg, log, piid_flag='mappings')
 
     # Save the column mappings
     print ('API Function: save_column_mappings\n'),
     partmsg = 'save_column_mappings'
-    payload = {'import_file_id': import_id,
-               'organization_id': organization_id}
-    payload['mappings'] = read_map_file(mappingfilepath)
+    payload = {'mappings': read_map_file(mappingfilepath)}
+    print payload
 
-    result = requests.get(main_url + '/app/save_column_mappings/',
-                          headers=header,
-                          data=json.dumps(payload))
+    result = requests.get(
+        main_url + '/api/v2/import_files/{}/save_column_mappings/'.format(import_id),
+        params={"organization_id": organization_id},
+        headers=header,
+        json=payload
+    )
+    print result
 
     check_status(result, partmsg, log)
 
@@ -392,7 +394,6 @@ def cycles(header, main_url, organization_id, log):
                           params={'organization_id': organization_id},
                           json=payload)
     check_status(result, partmsg, log)
-
 
     # TODO: Test deleting a cycle
     return cycle_id
