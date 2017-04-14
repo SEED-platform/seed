@@ -47,7 +47,6 @@ from seed.models import (
 from seed.utils.api import api_endpoint, api_endpoint_class
 from seed.utils.buildings import (
     get_columns as utils_get_columns,
-    get_buildings_for_user_count
 )
 from seed.utils.cache import get_cache, set_cache
 from seed.utils.projects import (
@@ -400,13 +399,13 @@ def export_buildings_download(request):
 
 
 # TODO: CLEANUP - TO REMOVE
-@ajax_request
-@login_required
-def get_total_number_of_buildings_for_user(request):
-    """gets a count of all buildings in the user's organizations"""
-    buildings_count = get_buildings_for_user_count(request.user)
-
-    return {'status': 'success', 'buildings_count': buildings_count}
+# @ajax_request
+# @login_required
+# def get_total_number_of_buildings_for_user(request):
+#     """gets a count of all buildings in the user's organizations"""
+#     buildings_count = get_buildings_for_user_count(request.user)
+#
+#     return {'status': 'success', 'buildings_count': buildings_count}
 
 
 # TODO: CLEANUP - REMOVE
