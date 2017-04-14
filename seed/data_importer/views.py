@@ -65,7 +65,6 @@ from seed.models import (
     TaxLotAuditLog,
     PropertyView,
     TaxLotView,
-    USER_MATCH,
     AUDIT_IMPORT,
     AUDIT_USER_EDIT,
     Property,

@@ -53,7 +53,6 @@ from seed.models import (
     GREEN_BUTTON_RAW,
     PORTFOLIO_BS,
     PORTFOLIO_RAW,
-    SYSTEM_MATCH,
     Column,
     ColumnMapping,
     PropertyState,
