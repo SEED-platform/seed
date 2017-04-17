@@ -5,15 +5,15 @@
 :author
 """
 import csv
+import datetime as dt
 import json
 import logging
 import os
 import pprint
+import time
 from calendar import timegm
 
-import datetime as dt
 import requests
-import time
 
 
 # Three-step upload process
@@ -224,28 +224,26 @@ def check_progress(mainURL, Header, progress_key):
         progressResult = check_progress(mainURL, Header, progress_key)
 
 
-def read_map_file(mapfilePath):
+def read_map_file(mapfile_path):
     """Read in the mapping file"""
 
-    assert (os.path.isfile(mapfilePath)), "Cannot find file:\t" + mapfilePath
+    assert (os.path.isfile(mapfile_path)), "Cannot find file:\t" + mapfile_path
 
-    mapReader = csv.reader(open(mapfilePath, 'r'))
-    mapReader.next()  # Skip the header
+    map_reader = csv.reader(open(mapfile_path, 'r'))
+    map_reader.next()  # Skip the header
 
     # Open the mapping file and fill list
     maplist = list()
 
-    for rowitem in mapReader:
-        # formerly
-        # maplist.append(rowitem)
-        # changed to make the test pass
+    for rowitem in map_reader:
         maplist.append(
             {
-                'to_table_name': rowitem[0], 'to_field': rowitem[1],
-                # rowitem only has 2 values, lets make this one up
-                'from_field': rowitem[0]
+                'from_field': rowitem[0],
+                'to_table_name': rowitem[1],
+                'to_field': rowitem[2],
             }
         )
+
     return maplist
 
 

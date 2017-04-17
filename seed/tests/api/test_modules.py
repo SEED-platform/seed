@@ -4,15 +4,17 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+import datetime as dt
 import json
 import pprint
-
-import datetime as dt
-import requests
 import time
 
+import requests
+
 from seed_readingtools import (
-    check_status, read_map_file, upload_file,  # check_progress
+    check_status,
+    read_map_file,
+    upload_file,
     write_out_django_debug
 )
 
@@ -38,6 +40,9 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, f
     result = requests.post(main_url + '/api/v2/import_files/{}/save_raw_data/'.format(import_id),
                            headers=header,
                            json=payload)
+
+    print result
+
     # progress = check_progress(main_url, header, result.json()['progress_key'])
     # without the above line this is just checking the url returned something
     # not that it did anything, as there are no guarantees the task finished
@@ -56,9 +61,7 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, f
     print ('API Function: save_column_mappings\n'),
     partmsg = 'save_column_mappings'
     payload = {'mappings': read_map_file(mappingfilepath)}
-    print payload
-
-    result = requests.get(
+    result = requests.post(
         main_url + '/api/v2/import_files/{}/save_column_mappings/'.format(import_id),
         params={"organization_id": organization_id},
         headers=header,
@@ -68,56 +71,39 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, f
 
     check_status(result, partmsg, log)
 
-    # Map the buildings with new column mappings.
-    print ('API Function: remap_buildings\n'),
-    partmsg = 'remap_buildings'
-    payload = {'file_id': import_id,
-               'organization_id': organization_id}
-
-    result = requests.get(main_url + '/app/remap_buildings/',
-                          headers=header,
-                          data=json.dumps(payload))
-
-    # progress = check_progress(main_url, header, result.json()['progress_key'])
-    check_status(result, partmsg, log)
-
     # Get Data Cleansing Message
     print ('API Function: cleansing\n'),
     partmsg = 'cleansing'
 
-    result = requests.get(main_url + '/cleansing/results/',
-                          headers=header,
-                          params={'import_file_id': import_id})
-    check_status(result, partmsg, log, PIIDflag='cleansing')
-
-    # SKIP THIS AS MATCHING BROKEN  DUE TO MIX OF OLD AND NEW CODE
+    result = requests.get(
+        main_url + '/api/v2/import_files/{}/cleansing_results.json/'.format(import_id),
+        headers=header,
+        params={"organization_id": organization_id}
+    )
+    check_status(result, partmsg, log, piid_flag='cleansing')
 
     # Match uploaded buildings with buildings already in the organization.
-    # print ('API Function: start_system_matching\n'),
-    # partmsg = 'start_system_matching'
-    # payload = {'file_id': import_id,
-    #            'organization_id': organization_id}
+    print ('API Function: start_system_matching\n'),
+    partmsg = 'start_system_matching'
+    payload = {'file_id': import_id,
+               'organization_id': organization_id}
 
-    # count = 100
-    # while(count > 0):
-    #     result = requests.post(main_url + '/app/start_system_matching/',
-    #                            headers=header,
-    #                            data=json.dumps(payload))
-    #     if result.status_code == 200:
-    #         break
-    #     time.sleep(5)
-    #     count -= 1
-
-    # check_status(result, partmsg, log)
+    result = requests.post(
+        main_url + '/api/v2/import_files/{}/start_system_matching/'.format(import_id),
+        headers=header,
+        params={"organization_id": organization_id},
+        json=payload
+    )
+    check_status(result, partmsg, log)
 
     # Check number of matched and unmatched BuildingSnapshots
-    print ('API Function: matching_results\n'),
-    partmsg = 'matching_results'
-
-    result = requests.get(main_url + '/api/v2/import_files/' + import_id + 'matching_results/',
-                          headers=header,
-                          params={})
-    check_status(result, partmsg, log, PIIDflag='PM_filter')
+    # print ('API Function: matching_results\n'),
+    # partmsg = 'matching_results'
+    #
+    # result = requests.get(main_url + '/api/v2/import_files/' + import_id + 'matching_results/',
+    #                       headers=header,
+    #                       params={})
+    # check_status(result, partmsg, log, piid_flag='PM_filter')
 
 
 def search_and_project(header, main_url, organization_id, log):
