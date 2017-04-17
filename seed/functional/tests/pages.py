@@ -168,7 +168,7 @@ class AccountsPage(Page):
         All TableRows have two parts: the first cell contains the organization
         name (or 'Sub-Organizations') the second the controls i.e. links to
         'Settings' and 'Members' if its  a sub/child organization,
-        'Settings', 'Sharing', 'Data', 'Cleansing', 'Sub-Organizations',
+        'Settings', 'Sharing', 'Data', 'Data Quality', 'Sub-Organizations',
         'Members' if it's a parent organization.
 
         The keys are 'ORGANIZATION' and 'Col_1' respectively.

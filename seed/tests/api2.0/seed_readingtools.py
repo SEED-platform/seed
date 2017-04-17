@@ -155,7 +155,7 @@ def upload_file(upload_header, upload_filepath, main_url, upload_dataset_id, upl
 def check_status(resultOut, partmsg, log, PIIDflag=None):
     """Checks the status of the API endpoint and makes the appropriate print outs."""
     if resultOut.status_code in [200, 201, 204, 403, 401]:
-        if PIIDflag == 'cleansing':
+        if PIIDflag == 'data_quality':
             msg = pprint.pformat(resultOut.json(), indent=2, width=70)
         else:
             try:

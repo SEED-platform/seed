@@ -102,7 +102,7 @@ SEED_CORE_APPS = (
     'seed',
     'seed.lib.superperms.orgs',
     'seed.audit_logs',
-    'seed.cleansing',
+    'seed.data_quality',
     'seed.functional'  # why is this a core_app?
 )
 

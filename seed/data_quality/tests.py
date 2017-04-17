@@ -14,7 +14,7 @@ from django.core.files import File
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 
-from seed.cleansing.models import Cleansing
+from seed.data_quality.models import DataQuality
 from seed.data_importer import tasks
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
@@ -29,7 +29,7 @@ from seed.models import (
 _log = logging.getLogger(__name__)
 
 
-class CleansingDataTestCoveredBuilding(TestCase):
+class DataQualityTestCoveredBuilding(TestCase):
 
     def setUp(self):
         self.user_details = {
@@ -66,7 +66,7 @@ class CleansingDataTestCoveredBuilding(TestCase):
         self.assertTrue('_auth_user_id' in self.client.session)
 
     @skip("Fix for new data model")
-    def test_cleanse(self):
+    def test_check(self):
         # Import the file and run mapping
 
         # This is silly, the mappings are backwards from what you would expect. The key is the BS field, and the
@@ -95,13 +95,13 @@ class CleansingDataTestCoveredBuilding(TestCase):
             source_type=ASSESSED_BS,
         ).iterator()
 
-        c = Cleansing(self.org)
-        c.cleanse(qs)
-        # print c.results
+        d = DataQuality(self.org)
+        d.check(qs)
+        # print d.results
 
-        self.assertEqual(len(c.results), 2)
+        self.assertEqual(len(d.results), 2)
 
-        result = [v for v in c.results.values() if
+        result = [v for v in d.results.values() if
                   v['address_line_1'] == '95373 E Peach Avenue']
         if len(result) == 1:
             result = result[0]
@@ -118,9 +118,9 @@ class CleansingDataTestCoveredBuilding(TestCase):
             'detailed_message': u'PM Property ID is missing',
             'severity': u'error'
         }]
-        self.assertEqual(res, result['cleansing_results'])
+        self.assertEqual(res, result['data_quality_results'])
 
-        result = [v for v in c.results.values() if
+        result = [v for v in d.results.values() if
                   v['address_line_1'] == '120243 E True Lane']
         if len(result) == 1:
             result = result[0]
@@ -156,15 +156,15 @@ class CleansingDataTestCoveredBuilding(TestCase):
             'detailed_message': u'PM Property ID is missing',
             'severity': u'error'
         }]
-        self.assertItemsEqual(res, result['cleansing_results'])
+        self.assertItemsEqual(res, result['data_quality_results'])
 
-        result = [v for v in c.results.values() if
+        result = [v for v in d.results.values() if
                   v['address_line_1'] == '1234 Peach Tree Avenue']
         self.assertEqual(len(result), 0)
         self.assertEqual(result, [])
 
 
-class CleansingDataTestPM(TestCase):
+class DataQualityTestPM(TestCase):
 
     def setUp(self):
         self.user_details = {
@@ -196,7 +196,7 @@ class CleansingDataTestPM(TestCase):
 
         # tasks.save_raw_data(self.import_file.pk)
 
-    def test_cleanse(self):
+    def test_check(self):
         # Import the file and run mapping
 
         # Year Ending,Energy Score,Total GHG Emissions (MtCO2e),Weather Normalized Site EUI (kBtu/ft2),
@@ -260,14 +260,14 @@ class CleansingDataTestPM(TestCase):
             source_type=PORTFOLIO_BS,
         ).iterator()
 
-        c = Cleansing(self.org)
-        c.cleanse('property', qs)
+        d = DataQuality(self.org)
+        d.check('property', qs)
 
-        _log.debug(c.results)
+        _log.debug(d.results)
 
-        self.assertEqual(len(c.results), 2)
+        self.assertEqual(len(d.results), 2)
 
-        result = [v for v in c.results.values() if v['address_line_1'] == '120243 E True Lane']
+        result = [v for v in d.results.values() if v['address_line_1'] == '120243 E True Lane']
         if len(result) == 1:
             result = result[0]
         else:
@@ -281,9 +281,9 @@ class CleansingDataTestPM(TestCase):
             'detailed_message': u'PM Property ID is missing',
             'severity': u'error'
         }]
-        self.assertEqual(res, result['cleansing_results'])
+        self.assertEqual(res, result['data_quality_results'])
 
-        result = [v for v in c.results.values() if v['address_line_1'] == '95373 E Peach Avenue']
+        result = [v for v in d.results.values() if v['address_line_1'] == '95373 E Peach Avenue']
         if len(result) == 1:
             result = result[0]
         else:
@@ -297,10 +297,10 @@ class CleansingDataTestPM(TestCase):
             'detailed_message': u'Site EUI [0.1] < 10.0',
             'severity': u'warning'
         }]
-        self.assertEqual(res, result['cleansing_results'])
+        self.assertEqual(res, result['data_quality_results'])
 
 
-class CleansingDataSample(TestCase):
+class DataQualitySample(TestCase):
 
     def setUp(self):
         self.user_details = {
@@ -324,11 +324,11 @@ class CleansingDataSample(TestCase):
         self.import_file.is_espm = False
         self.import_file.source_type = 'ASSESSED_RAW'
         self.import_file.file = File(
-            open(path.join(path.dirname(__file__), 'test_data', 'data-cleansing-sample.csv')))
+            open(path.join(path.dirname(__file__), 'test_data', 'data-quality-check-sample.csv')))
 
         self.import_file.save()
 
-    def test_cleanse(self):
+    def test_check(self):
         # Import the file and run mapping
 
         # This is silly, the mappings are backwards from what you would expect.
@@ -504,15 +504,15 @@ class CleansingDataSample(TestCase):
             source_type=ASSESSED_BS,
         ).iterator()
 
-        c = Cleansing(self.org)
-        c.cleanse('property', qs)
+        d = DataQuality(self.org)
+        d.check('property', qs)
 
-        # _log.debug(c.results)
+        # _log.debug(d.results)
         # This only checks to make sure the 34 errors have occurred.
-        self.assertEqual(len(c.results), 34)
+        self.assertEqual(len(d.results), 34)
 
 
-class CleansingViewTests(TestCase):
+class DataQualityViewTests(TestCase):
 
     def setUp(self):
         user_details = {
@@ -523,16 +523,16 @@ class CleansingViewTests(TestCase):
             email='test_user@demo.com', **user_details)
         self.client.login(**user_details)
 
-    def test_get_cleansing_results(self):
+    def test_get_data_quality_results(self):
         data = {'test': 'test'}
-        cache.set('cleansing_results__1', data)
-        response = self.client.get(reverse('apiv2:import_files-cleansing-results.json', args=[1]))
+        cache.set('data_quality_results__1', data)
+        response = self.client.get(reverse('apiv2:import_files-data_quality-results.json', args=[1]))
         self.assertEqual(json.loads(response.content)['data'], data)
 
     def test_get_progress(self):
         data = {'status': 'success', 'progress': 85}
         cache.set(':1:SEED:get_progress:PROG:1', data)
-        response = self.client.get(reverse('apiv2:import_files-cleansing-progress', args=[1]))
+        response = self.client.get(reverse('apiv2:import_files-data_quality-progress', args=[1]))
         self.assertEqual(json.loads(response.content), 85)
 
     def test_get_csv(self):
@@ -541,12 +541,12 @@ class CleansingViewTests(TestCase):
             'pm_property_id': '',
             'tax_lot_id': '',
             'custom_id_1': '',
-            'cleansing_results': [{
+            'data_quality_results': [{
                 'formatted_field': '',
                 'detailed_message': '',
                 'severity': '',
             }]
         }]
-        cache.set('cleansing_results__1', data)
-        response = self.client.get(reverse('apiv2:import_files-cleansing-results.csv', args=[1]))
+        cache.set('data_quality_results__1', data)
+        response = self.client.get(reverse('apiv2:import_files-data_quality-results.csv', args=[1]))
         self.assertEqual(200, response.status_code)

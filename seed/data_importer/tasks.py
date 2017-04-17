@@ -26,10 +26,10 @@ from django.db.models import Q
 from django.utils import timezone
 from unidecode import unidecode
 
-from seed.cleansing.models import Cleansing
-from seed.cleansing.tasks import (
-    finish_cleansing,
-    cleanse_data_chunk,
+from seed.data_quality.models import DataQuality
+from seed.data_quality.tasks import (
+    finish_checking,
+    check_data_chunk,
 )
 from seed.data_importer.models import (
     ImportFile,
@@ -122,8 +122,8 @@ def finish_mapping(import_file_id, mark_as_done):
     }
     set_cache(prog_key, result['status'], result)
 
-    # now call cleansing
-    _cleanse_data(import_file_id)
+    # now call data_quality
+    _data_quality_check(import_file_id)
 
 
 def _translate_unit_to_type(unit):
@@ -408,10 +408,10 @@ def _map_data(import_file_id, mark_as_done, *args, **kwargs):
 
 @shared_task
 @lock_and_track
-def _cleanse_data(import_file_id, record_type='property'):
+def _data_quality_check(import_file_id, record_type='property'):
     """
 
-    Get the mapped data and run the cleansing class against it in chunks. The
+    Get the mapped data and run the data_quality class against it in chunks. The
     mapped data are pulled from the PropertyState(or Taxlot) table.
 
     @lock_and_track returns a progress_key
@@ -449,23 +449,23 @@ def _cleanse_data(import_file_id, record_type='property'):
         source_type=source_type,
     ).only('id').iterator()
 
-    # initialize the cache for the cleansing results using the cleansing static method
-    Cleansing.initialize_cache(import_file_id)
+    # initialize the cache for the data_quality results using the data_quality static method
+    DataQuality.initialize_cache(import_file_id)
 
-    prog_key = get_prog_key('cleanse_data', import_file_id)
+    prog_key = get_prog_key('check_data', import_file_id)
 
     id_chunks = [[obj.id for obj in chunk] for chunk in batch(qs, 100)]
     increment = get_cache_increment_value(id_chunks)
     tasks = [
-        cleanse_data_chunk.s(record_type, ids, import_file_id, increment)
+        check_data_chunk.s(record_type, ids, import_file_id, increment)
         for ids in id_chunks
     ]
 
     if tasks:
         # specify the chord as an immutable with .si
-        chord(tasks, interval=15)(finish_cleansing.si(import_file_id))
+        chord(tasks, interval=15)(finish_checking.si(import_file_id))
     else:
-        finish_cleansing.s(import_file_id)
+        finish_checking.s(import_file_id)
 
     result = {
         'status': 'success',

@@ -6,11 +6,11 @@ Modules
     :maxdepth: 3
 
     modules/seed.audit_logs
-    modules/seed.cleansing
     modules/seed.common
     modules/config
     modules/seed.data
     modules/seed.data_importer
+    modules/seed.data_quality
     modules/seed.features
     modules/seed.green_button
     modules/seed.landing

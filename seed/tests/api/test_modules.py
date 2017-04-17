@@ -77,14 +77,14 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, filepath, f
     # progress = check_progress(main_url, header, result.json()['progress_key'])
     check_status(result, partmsg, log)
 
-    # Get Data Cleansing Message
-    print ('API Function: cleansing\n'),
-    partmsg = 'cleansing'
+    # Get Data Quality Message
+    print ('API Function: data_quality\n'),
+    partmsg = 'data_quality'
 
-    result = requests.get(main_url + '/cleansing/results/',
+    result = requests.get(main_url + '/data_quality/results/',
                           headers=header,
                           params={'import_file_id': import_id})
-    check_status(result, partmsg, log, PIIDflag='cleansing')
+    check_status(result, partmsg, log, PIIDflag='data_quality')
 
     # SKIP THIS AS MATCHING BROKEN  DUE TO MIX OF OLD AND NEW CODE
 

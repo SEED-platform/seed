@@ -118,14 +118,14 @@ def upload_match_sort(header, main_url, organization_id, cycle_id, dataset_id, f
         log.error("Following API could not be tested")
         return
 
-    # Get Data Cleansing Message
-    print ('\nAPI Function: cleansing'),
-    partmsg = 'cleansing'
+    # Get Data Quality Message
+    print ('\nAPI Function: data_quality'),
+    partmsg = 'data_quality'
     try:
-        result = client.get(main_url + '/cleansing/results/',
+        result = client.get(main_url + '/data_quality/results/',
                             headers=header,
                             params={'import_file_id': import_id})
-        check_status(result, partmsg, log, PIIDflag='cleansing')
+        check_status(result, partmsg, log, PIIDflag='data_quality')
     except:
         pass
 
