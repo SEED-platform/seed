@@ -187,11 +187,6 @@ def check_status(result_out, part_msg, log, piid_flag=None):
                     elif piid_flag == 'mappings':
                         msg = pprint.pformat(result_out.json()['suggested_column_mappings'],
                                              indent=2, width=70)
-                    elif piid_flag == 'PM_filter':
-                        msg = "Duplicates: " + str(
-                            result_out.json()['duplicates']) + ", Unmatched: " + str(
-                            result_out.json()['unmatched']) + ", Matched: " + str(
-                            result_out.json()['matched'])
                     else:
                         msg = pprint.pformat(result_out.json(), indent=2, width=70)
             except:
@@ -211,17 +206,23 @@ def check_status(result_out, part_msg, log, piid_flag=None):
     return
 
 
-def check_progress(mainURL, Header, progress_key):
+def check_progress(main_url, header, progress_key):
     """Delays the sequence until progress is at 100 percent."""
-    time.sleep(5)
-    progressResult = requests.post(mainURL + '/api/v2/progress/',
-                                   headers=Header,
-                                   data=json.dumps({'progress_key': progress_key}))
+    print "checking progress {}".format(progress_key)
+    time.sleep(1)
+    progress_result = requests.post(
+        main_url + '/api/v2/progress/',
+        headers=header,
+        json={'progress_key': progress_key}
+    )
+    print "... {} ...".format(progress_result.json()['progress'])
 
-    if progressResult.json()['progress'] == 100:
-        return (progressResult)
+    if progress_result.json()['progress'] == 100:
+        return progress_result
     else:
-        progressResult = check_progress(mainURL, Header, progress_key)
+        progress_result = check_progress(main_url, header, progress_key)
+
+    return progress_result
 
 
 def read_map_file(mapfile_path):
