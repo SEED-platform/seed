@@ -157,4 +157,6 @@ delete_set(header, main_url, organization_id, dataset_id, log)
 time2 = dt.datetime.now()
 diff = time2 - time1
 log.info('Processing Time:{}min, {}sec'.format(diff.seconds / 60, diff.seconds % 60))
+
+exit(0)
 #

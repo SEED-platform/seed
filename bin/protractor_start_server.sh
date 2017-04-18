@@ -10,9 +10,9 @@ echo "creating default user"
 echo "making SU"
 echo "y" | ./manage.py make_superuser --user demo@example.com &> make_superuser.log
 echo "starting celery"
-celery -A seed worker -l INFO -c 2 -B --events --maxtasksperchild 1000 & &> main.log
+celery -A seed worker -l INFO -c 2 -B --events --maxtasksperchild 1000 & &> celery.log
 echo "starting server"
-./manage.py runserver & &>> main.log
+./manage.py runserver & &> main.log
 sleep 15
 echo "run e2e tests"
 npm test
