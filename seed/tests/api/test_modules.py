@@ -231,8 +231,10 @@ def search_and_project(header, main_url, organization_id, log):
 def account(header, main_url, username, log):
     # Retrieve the user id key for later retrievals
     print ('API Function: current_user_id\n')
-    result = requests.get(main_url + '/api/v2/users/current_user_id/',
-                          headers=header)
+    result = requests.get(
+        main_url + '/api/v2/users/current_user_id/',
+        headers=header
+    )
     user_pk = json.loads(result.content)['pk']
 
     # Retrieve the user profile

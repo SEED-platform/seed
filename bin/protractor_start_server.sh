@@ -12,6 +12,7 @@ echo "y" | ./manage.py make_superuser --user demo@example.com &> make_superuser.
 echo "starting celery"
 celery -A seed worker -l INFO -c 2 -B --events --maxtasksperchild 1000 & &> main.log
 echo "starting server"
-./manage.py runserver --settings=config.settings.travis & &>> main.log 
+./manage.py runserver & &>> main.log
+sleep 15
 echo "run e2e tests"
 npm test

@@ -11,7 +11,7 @@ python:
 - 2.7
 addons:
   postgresql: '9.4'
-  sauce_connect: true
+#  sauce_connect: true
   apt_packages:
   - enchant
 services:
@@ -28,6 +28,7 @@ env:
   - TOX_ENV=flake8
   - TOX_ENV=spelling
   - TOX_ENV=functional
+  - TOX_ENV=apitest
 install:
 - pip install --upgrade pip
 - pip install tox==2.3.2

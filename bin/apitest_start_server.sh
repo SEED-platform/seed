@@ -12,4 +12,5 @@ echo "Saving API data"
 echo "starting celery"
 celery -A seed worker -l INFO -c 2 -B --events --maxtasksperchild 1000 & &> main.log
 echo "starting server"
-./manage.py runserver & &>> main.log
+./manage.py runserver &
+sleep 15

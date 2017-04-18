@@ -35,7 +35,7 @@ class Command(BaseCommand):
 
             data = {
                 'name': 'seed_api_test',
-                'host': 'http://localhost:8000',
+                'host': 'http://127.0.0.1:8000',
                 'username': options['username'],
                 'api_key': u.api_key,
             }

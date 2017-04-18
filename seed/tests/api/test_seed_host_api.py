@@ -14,9 +14,9 @@ Instructions:
     - Run ./manage.py create_test_user_json --username demo@example.com --file ./seed/tests/api/api_test_user.json
     - Or create the seed/tests/api/api_test_user.json with the following data:
         {
-          "username": "demo@example.com", 
-          "host": "http://localhost:8000", 
-          "api_key": "fa0073715dbecb6dcd6dc31f02eb80fa7c3c16b5", 
+          "username": "demo@example.com",
+          "host": "http://localhost:8000",
+          "api_key": "fa0073715dbecb6dcd6dc31f02eb80fa7c3c16b5",
           "name": "seed_api_test"
         }
 - Run the script eg. python seed/tests/api/test_seed_host_api.py
@@ -58,8 +58,10 @@ if '--standalone' in sys.argv:
     time.sleep(5)
 
 if '--noinput' in sys.argv:
+    print("Path to json is: {}".format(os.path.join(location, 'api_test_user.json')))
     with open(os.path.join(location, 'api_test_user.json')) as f:
         j_data = json.load(f)
+        print(j_data)
         hostname = j_data['name']
         main_url = j_data['host']
         username = j_data['username']
