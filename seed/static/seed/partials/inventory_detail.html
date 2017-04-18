@@ -59,7 +59,7 @@
                             <th sd-resizable id="building-fields">Field</th>
                             <th sd-resizable class="ellipsis-resizable">Master</th>
                             <!-- Historical values -->
-                            <th ng-repeat="historical_item in historical_items" class="ellipsis">
+                            <th sd-resizable ng-repeat="historical_item in historical_items" class="ellipsis-resizable">
                                 <div ng-if="_.includes(['ImportFile', 'UserEdit'], historical_item.source)" uib-popover="{$ historical_item.filename $}">
                                     {$ historical_item.filename $}
                                 </div>
