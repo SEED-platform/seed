@@ -178,6 +178,7 @@ repo
 rmi
 rtype
 runTest
+scalable
 seeddb
 seeduser
 sendmail
