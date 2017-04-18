@@ -39,6 +39,7 @@ chunked
 ci
 cmp
 collectstatic
+comparators
 concat
 cond
 config
@@ -125,6 +126,7 @@ loggedout
 lookup
 lte
 MapItem
+mappable
 metadata
 MIDDLEWARE
 middleware
@@ -139,6 +141,7 @@ nginx
 nlong
 nodejs
 noncanonicalprojectbuildings
+nones
 noqa
 npm
 num
@@ -175,6 +178,7 @@ repo
 rmi
 rtype
 runTest
+scalable
 seeddb
 seeduser
 sendmail
@@ -186,6 +190,7 @@ setUpClass
 signup
 str
 strftime
+subclasses
 subdirectory
 Submodules
 Subpackages
@@ -204,6 +209,7 @@ TestCaseFactoryBrowser
 Thusly
 timeseries
 timestamp
+timestamps
 todo
 TODO
 Todo

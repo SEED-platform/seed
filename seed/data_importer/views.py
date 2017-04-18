@@ -1509,7 +1509,6 @@ class ImportFileViewSet(viewsets.ViewSet):
 
             {'status': 'success'}
         """
-
         body = request.data
         import_file = ImportFile.objects.get(pk=pk)
         organization = import_file.import_record.super_organization
