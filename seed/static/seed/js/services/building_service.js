@@ -13,7 +13,7 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
     'spinner_utility',
     function ($http, urls, label_helper_service, user_service, generated_urls, spinner_utility) {
 
-      var building_factory = {total_number_of_buildings_for_user: 0};
+      var building_factory = {};
 
       // building_factory.get_total_number_of_buildings_for_user = function () {
       //   // django uses request.user for user information

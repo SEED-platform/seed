@@ -10,7 +10,7 @@ from django.conf.urls import url
 from seed.views.main import (
     home,
     # get_total_number_of_buildings_for_user,         # TO REMOVE
-    get_building,                                   # TO REMOVE
+    # get_building,                                   # TO REMOVE
     search_buildings,                               # TO REMOVE
     get_default_columns,
     set_default_columns,
@@ -42,7 +42,7 @@ urlpatterns = [
     #     get_total_number_of_buildings_for_user,
     #     name='get_total_number_of_buildings_for_user'
     # ),
-    url(r'^' + apiv1 + r'get_building/$', get_building, name='get_building'),
+    # url(r'^' + apiv1 + r'get_building/$', get_building, name='get_building'),
     url(r'^' + apiv1 + r'search_buildings/$', search_buildings,
         name='search_buildings'),
     url(

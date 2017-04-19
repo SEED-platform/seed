@@ -15,7 +15,6 @@ from seed.landing.views import (
     password_reset_confirm, password_reset_complete, signup
 )
 
-
 urlpatterns = [
     url(r'^$', landing_page, name='landing_page'),
     url(r'^accounts/login/$', login_view, name='login'),
