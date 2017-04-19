@@ -9,13 +9,12 @@ from django.conf.urls import url
 
 from seed.views.main import (
     home,
-    search_buildings,                               # TO REMOVE
+    search_buildings,
     get_default_columns,
     set_default_columns,
     get_default_building_detail_columns,
     set_default_building_detail_columns,
     get_columns,
-    save_match,
     delete_file,
     public_search, export_buildings,
     export_buildings_progress,
@@ -30,23 +29,11 @@ from seed.views.main import (
 apiv1 = r''  # r'api/v1/'
 
 urlpatterns = [
-
     # template routes
     url(r'^$', home, name='home'),
-
-    # TODO: CLEANUP - some of these can be removed, e.g. get_building
-    url(r'^' + apiv1 + r'search_buildings/$', search_buildings,
-        name='search_buildings'),
-    url(
-        r'^' + apiv1 + r'get_default_columns/$',
-        get_default_columns,
-        name='get_default_columns'
-    ),
-    url(
-        r'^' + apiv1 + r'set_default_columns/$',
-        set_default_columns,
-        name='set_default_columns'
-    ),
+    url(r'^' + apiv1 + r'search_buildings/$', search_buildings, name='search_buildings'),
+    url(r'^' + apiv1 + r'get_default_columns/$', get_default_columns, name='get_default_columns'),
+    url(r'^' + apiv1 + r'set_default_columns/$', set_default_columns, name='set_default_columns'),
     url(
         r'^' + apiv1 + r'get_default_building_detail_columns/$',
         get_default_building_detail_columns,
@@ -58,10 +45,7 @@ urlpatterns = [
         name='set_default_building_detail_columns'
     ),
     url(r'^' + apiv1 + r'get_columns/$', get_columns, name='get_columns'),
-    url(r'^' + apiv1 + r'save_match/$', save_match, name='save_match'),
     url(r'^' + apiv1 + r'delete_file/$', delete_file, name='delete_file'),
-    # url(r'^' + apiv1 + r'update_building/$', update_building,
-    #     name='update_building'),
 
     # Building reports
     # url(
@@ -117,10 +101,5 @@ urlpatterns = [
     ),
 
     # delete
-    url(
-        r'^' + apiv1 + r'delete_buildings/$',
-        delete_buildings,
-        name='delete_buildings'
-    ),
-
+    url(r'^' + apiv1 + r'delete_buildings/$', delete_buildings, name='delete_buildings'),
 ]
