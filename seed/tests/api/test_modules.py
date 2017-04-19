@@ -235,7 +235,7 @@ def account(header, main_url, username, log):
         main_url + '/api/v2/users/current_user_id/',
         headers=header
     )
-    user_pk = json.loads(result.content)['pk']
+    user_pk = result.json()['pk']
 
     # Retrieve the user profile
     print ('API Function: get_user_profile\n')
