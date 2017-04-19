@@ -30,7 +30,7 @@ from seed.utils.address import normalize_address_str
 from seed.utils.generic import split_model_fields, obj_to_dict
 from seed.utils.time import convert_datestr
 
-logger = logging.getLogger(__name__)
+_log = logging.getLogger(__name__)
 
 # Oops! we override a builtin in some of the models
 property_decorator = property
@@ -148,14 +148,14 @@ class PropertyState(models.Model):
         pvs = PropertyView.objects.filter(cycle=cycle, state=self)
 
         if len(pvs) == 0:
-            logger.debug("Found 0 PropertyViews, adding property, promoting")
+            _log.debug("Found 0 PropertyViews, adding property, promoting")
             # There are no PropertyViews for this property state and cycle.
             # Most likely there is nothing to match right now, so just
             # promote it to the view
 
             # Need to create a property for this state
             if self.organization is None:
-                print "organization is None"
+                _log.debug("organization is None")
 
             if not self.organization:
                 pdb.set_trace()
@@ -170,13 +170,13 @@ class PropertyState(models.Model):
 
             return pv
         elif len(pvs) == 1:
-            logger.debug("Found 1 PropertyView... Nothing to do")
+            _log.debug("Found 1 PropertyView... Nothing to do")
             # PropertyView already exists for cycle and state. Nothing to do.
 
             return pvs[0]
         else:
-            logger.debug("Found %s PropertyView" % len(pvs))
-            logger.debug("This should never occur, famous last words?")
+            _log.debug("Found %s PropertyView" % len(pvs))
+            _log.debug("This should never occur, famous last words?")
 
             return None
 
@@ -248,7 +248,7 @@ class PropertyState(models.Model):
         # TODO: Decide if we should allow the user to define what the unique ID is for the taxlot
         # if PropertyState.objects.filter(jurisdiction_tax_lot_id=self.jurisdiction_tax_lot_id,
         #                               organization=self.organization).exists():
-        #     logger.error("PropertyState already exists for the same <unique id> and org")
+        #     _log.error("PropertyState already exists for the same <unique id> and org")
         #     return False
 
         # Calculate and save the normalized address

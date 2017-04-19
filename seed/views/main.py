@@ -734,8 +734,7 @@ def _parent_tree_coparents(snapshot):
     return (root, result_nodes,)
 
 
-# TODO: CLEANUP - REMOVE _tmp_mapping_suggestions
-def _tmp_mapping_suggestions(import_file_id, org_id, user):
+def _mapping_suggestions(import_file_id, org_id, user):
     """
     Temp function for allowing both api version for mapping suggestions to
     return the same data. Move this to the mapping_suggestions once we can
@@ -854,7 +853,7 @@ class DataFileViewSet(viewsets.ViewSet):
         """
         org_id = request.query_params.get('organization_id', None)
 
-        result = _tmp_mapping_suggestions(pk, org_id, request.user)
+        result = _mapping_suggestions(pk, org_id, request.user)
 
         return JsonResponse(result)
 

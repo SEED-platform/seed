@@ -133,9 +133,6 @@ def upload_file(upload_header, upload_filepath, main_url, upload_dataset_id, upl
             'import_record': upload_dataset_id,
             'source_type': upload_datatype
         }
-
-        print upload_url
-        print fsysparams
         return requests.post(upload_url,
                              params=fsysparams,
                              files={'file': open(upload_filepath, 'rb')},
@@ -151,7 +148,6 @@ def upload_file(upload_header, upload_filepath, main_url, upload_dataset_id, upl
     if upload_details['upload_mode'] == 'S3':
         return _upload_file_to_aws(upload_details)
     elif upload_details['upload_mode'] == 'filesystem':
-        print upload_details
         return _upload_file_to_file_system(upload_details)
     else:
         raise RuntimeError("Upload mode unknown: %s" %
@@ -198,7 +194,6 @@ def check_status(result_out, part_msg, log, piid_flag=None):
         log.debug(msg)
     else:
         msg = result_out.reason
-        print msg
         log.error(part_msg + failed)
         log.debug(msg)
         raise RuntimeError

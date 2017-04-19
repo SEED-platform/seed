@@ -61,7 +61,6 @@ if '--noinput' in sys.argv:
     print("Path to json is: {}".format(os.path.join(location, 'api_test_user.json')))
     with open(os.path.join(location, 'api_test_user.json')) as f:
         j_data = json.load(f)
-        print(j_data)
         hostname = j_data['name']
         main_url = j_data['host']
         username = j_data['username']

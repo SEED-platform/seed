@@ -28,7 +28,7 @@ from seed.models import (
 from seed.utils.address import normalize_address_str
 from seed.utils.generic import split_model_fields, obj_to_dict
 
-logger = logging.getLogger(__name__)
+_log = logging.getLogger(__name__)
 
 
 class TaxLot(models.Model):
@@ -91,14 +91,14 @@ class TaxLotState(models.Model):
         tlvs = TaxLotView.objects.filter(cycle=cycle, state=self)
 
         if len(tlvs) == 0:
-            logger.debug("Found 0 TaxLotViews, adding TaxLot, promoting")
+            _log.debug("Found 0 TaxLotViews, adding TaxLot, promoting")
             # There are no PropertyViews for this property state and cycle.
             # Most likely there is nothing to match right now, so just
             # promote it to the view
 
             # Need to create a property for this state
             if self.organization is None:
-                print "organization is None"  # TODO: raise an exception
+                _log.error("organization is None")
 
             taxlot = TaxLot.objects.create(
                 organization=self.organization
@@ -113,13 +113,13 @@ class TaxLotState(models.Model):
 
             return tlv
         elif len(tlvs) == 1:
-            logger.debug("Found 1 PropertyView... Nothing to do")
+            _log.debug("Found 1 PropertyView... Nothing to do")
             # PropertyView already exists for cycle and state. Nothing to do.
 
             return tlvs[0]
         else:
-            logger.debug("Found %s PropertyView" % len(tlvs))
-            logger.debug("This should never occur, famous last words?")
+            _log.debug("Found %s PropertyView" % len(tlvs))
+            _log.debug("This should never occur, famous last words?")
 
             return None
 
@@ -171,7 +171,7 @@ class TaxLotState(models.Model):
         # TODO: Decide if we should allow the user to define what the unique ID is for the taxlot
         # if TaxLotState.objects.filter(jurisdiction_tax_lot_id=self.jurisdiction_tax_lot_id,
         #                               organization=self.organization).exists():
-        #     logger.error("TaxLotState already exists for the same jurisdiction_tax_lot_id and org")
+        #     _log.error("TaxLotState already exists for the same jurisdiction_tax_lot_id and org")
         #     return False
         # Calculate and save the normalized address
         if self.address_line_1 is not None:

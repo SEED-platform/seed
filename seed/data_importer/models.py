@@ -7,6 +7,7 @@
 import csv
 import hashlib
 import json
+import logging
 import math
 import tempfile
 from urllib import unquote
@@ -29,6 +30,8 @@ from seed.utils.cache import (
     set_cache_raw, set_cache_state, get_cache, get_cache_raw,
     get_cache_state, delete_cache
 )
+
+_log = logging.getLogger(__name__)
 
 SOURCE_FACILITY_ID_MAX_LEN = 40
 
@@ -745,7 +748,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
                     else:
                         cleaned_row.append(val)
                 except:
-                    print "problem with val: %s" % val
+                    _log.error("problem with val: {}".format(val))
                     from traceback import print_exc
                     print_exc()
             yield cleaned_row
