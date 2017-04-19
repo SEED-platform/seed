@@ -33,15 +33,11 @@ from seed.lib.mappings import mapper as simple_mapper
 from seed.lib.mappings import mapping_data
 from seed.lib.mcm import mapper
 from seed.lib.superperms.orgs.decorators import has_perm
-from seed.lib.superperms.orgs.models import Organization, OrganizationUser
+from seed.lib.superperms.orgs.models import OrganizationUser
 from seed.models import (
-    ASSESSED_BS,
-    PORTFOLIO_BS,
-    GREEN_BUTTON_BS,
     CanonicalBuilding,
     Column,
     ProjectBuilding,
-    get_ancestors,  # TO REMOVE
     get_column_mapping,
 )
 from seed.utils.api import api_endpoint, api_endpoint_class
@@ -49,9 +45,6 @@ from seed.utils.buildings import (
     get_columns as utils_get_columns,
 )
 from seed.utils.cache import get_cache, set_cache
-from seed.utils.projects import (
-    get_projects,
-)
 from seed.views.users import _get_js_role
 from .. import search
 

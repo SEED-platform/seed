@@ -9,8 +9,6 @@ from django.conf.urls import url
 
 from seed.views.main import (
     home,
-    # get_total_number_of_buildings_for_user,         # TO REMOVE
-    # get_building,                                   # TO REMOVE
     search_buildings,                               # TO REMOVE
     get_default_columns,
     set_default_columns,

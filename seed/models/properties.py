@@ -128,6 +128,7 @@ class PropertyState(models.Model):
     space_alerts = models.TextField(null=True, blank=True)
     building_certification = models.CharField(max_length=255, null=True, blank=True)
 
+    # TODO: CLEANUP -- https://docs.djangoproject.com/en/1.9/ref/contrib/postgres/fields/#jsonfield
     extra_data = JsonField(default={}, blank=True)
 
     def promote(self, cycle):
