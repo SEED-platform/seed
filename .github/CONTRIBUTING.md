@@ -48,12 +48,12 @@ contribution is larger (e.g. a new feature or new functionality/capability), weâ
 your proposed contribution first. To do that, we need a written description of why you wish to 
 contribute to SEED platform, a detailed description of the project that you are proposing, the 
 precise functionalities that you plan to implement as part of the project, and a timeframe for 
-implementation (see [here](SEED_Contribution_Proposal_v1.0_2017-04-10.doc) for the template 
-contribution proposal document). After we review your materials, we will schedule a meeting or 
-conference call to discuss your information in more detail. We may ask you to revise your materials 
-and make changes to it, which we will re-review. Before you do any work we must reach prior 
-agreement and written approval on project areas, scope, timeframe, expected contents, and 
-functionalities to be addressed. 
+implementation (see [here][seed-proposal] for the template contribution proposal document). After 
+we review your materials, we will schedule a meeting or conference call to discuss your 
+information in more detail. We may ask you to revise your materials and make changes to it, 
+which we will re-review. Before you do any work we must reach prior agreement and written 
+approval on project areas, scope, timeframe, expected contents, and functionalities to be 
+addressed. 
 
 3.	Technical contribution process
 
@@ -126,4 +126,7 @@ SEED is developed in collaboration with NREL, LBNL, and private firms.
 
 **Documents**
  
-[SEED_Contribution_Proposal_v1.0_2017-04-10.doc](SEED_Contribution_Proposal_v1.0_2017-04-10.doc)
+[SEED_Contribution_Proposal_v1.0_2017-04-10.doc][seed-proposal]
+
+
+[seed-proposal]: https://github.com/SEED-platform/seed/raw/develop/.github/SEED_Contribution_Proposal_v1.0_2017-04-10.doc
