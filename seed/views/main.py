@@ -857,6 +857,7 @@ def _parent_tree_coparents(snapshot):
     return (root, result_nodes,)
 
 
+# TODO: CLEANUP - REMOVE _tmp_mapping_suggestions
 def _tmp_mapping_suggestions(import_file_id, org_id, user):
     """
     Temp function for allowing both api version for mapping suggestions to
@@ -931,6 +932,7 @@ def _tmp_mapping_suggestions(import_file_id, org_id, user):
     return result
 
 
+# TODO: CLEANUP - Move this to ImportFiles
 class DataFileViewSet(viewsets.ViewSet):
     raise_exception = True
     authentication_classes = (SessionAuthentication, SEEDAuthentication)

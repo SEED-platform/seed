@@ -1,4 +1,4 @@
-# TODO: CLEANUP Add copyrights
+# TODO: CLEANUP - Add copyrights
 
 from __future__ import unicode_literals
 
