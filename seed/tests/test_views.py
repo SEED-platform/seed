@@ -6,12 +6,12 @@
 """
 import json
 from datetime import date, datetime, timedelta
-from django.utils import timezone
 from unittest import skip
 
 from django.core.cache import cache
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.test import TestCase
+from django.utils import timezone
 
 from seed import decorators
 from seed.audit_logs.models import AuditLog, LOG

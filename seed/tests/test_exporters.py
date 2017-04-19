@@ -7,13 +7,14 @@
 import os
 import uuid
 
-from django.test import TestCase
+import unicodecsv as csv
+import xlrd
 from django.db.models import Manager
-from seed.models import CanonicalBuilding, BuildingSnapshot
+from django.test import TestCase
+
 from seed.factory import SEEDFactory
 from seed.lib.exporter import Exporter
-import xlrd
-import unicodecsv as csv
+from seed.models import CanonicalBuilding, BuildingSnapshot
 
 
 class TestExporters(TestCase):

@@ -7,9 +7,10 @@ Tests for the functional test infrastructure, not the actual tests, thankfully.
 
 :author Paul Munday<paul@paulmunday.net>
 """
-from collections import OrderedDict
-import mock
 import unittest
+from collections import OrderedDict
+
+import mock
 
 import seed.functional.tests.page
 

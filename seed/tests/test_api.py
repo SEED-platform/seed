@@ -5,7 +5,6 @@
 :author
 """
 import datetime
-from django.utils import timezone
 import json
 import os
 import time
@@ -13,6 +12,7 @@ from unittest import skip
 
 from django.core.urlresolvers import reverse_lazy, reverse
 from django.test import TestCase
+from django.utils import timezone
 
 from seed.factory import SEEDFactory
 from seed.landing.models import SEEDUser as User

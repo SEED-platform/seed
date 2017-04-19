@@ -5,6 +5,7 @@
 :author
 """
 import json
+from unittest import skip
 
 from django.core.urlresolvers import reverse_lazy, NoReverseMatch
 from django.test import TestCase
@@ -12,8 +13,7 @@ from django.test import TestCase
 from seed.cleansing.models import Rules, CATEGORY_MISSING_MATCHING_FIELD, \
     CATEGORY_MISSING_VALUES, CATEGORY_IN_RANGE_CHECKING
 from seed.landing.models import SEEDUser as User
-from seed.views.main import _get_default_org
-from seed.views.users import _get_js_role, _get_role_from_js
+from seed.lib.superperms.orgs.exceptions import InsufficientPermission
 from seed.lib.superperms.orgs.models import (
     ROLE_OWNER,
     ROLE_MEMBER,
@@ -21,11 +21,11 @@ from seed.lib.superperms.orgs.models import (
     OrganizationUser,
     Organization
 )
-from seed.lib.superperms.orgs.exceptions import InsufficientPermission
+from seed.models.deprecate import CanonicalBuilding, BuildingSnapshot
 from seed.public.models import SharedBuildingField
 from seed.tests.util import FakeRequest
-from unittest import skip
-from seed.models.deprecate import CanonicalBuilding, BuildingSnapshot
+from seed.views.main import _get_default_org
+from seed.views.users import _get_js_role, _get_role_from_js
 
 
 class AccountsViewTests(TestCase):
