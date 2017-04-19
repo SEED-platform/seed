@@ -200,20 +200,19 @@ class Exporter:
         """
         Creates a list of all accessible fields on a model based off of a queryset.
 
-        This method should not be here. It seems that is should be on the building snapshot model. Not moved yet
-        because I am unsure if the qs argument is more than one data type (i.e. BuildingSnapshot and/or ?)
+        This method should not be here. It seems that is should be on the building snapshot model.
+        Not moved yet because I am unsure if the qs argument is more than one data type
+        (i.e. BuildingSnapshot and/or ?)
         """
-        fields = qs.model._meta.get_all_field_names()
+        fields = qs.model._meta.get_fields()
         for field in fields:
             try:
-                f = qs.model._meta.get_field(field)
-                # Filter out related fields.
-                if f.is_relation:
+                if field.is_relation:
                     continue
             except FieldDoesNotExist:
                 continue
             else:
-                yield field
+                yield field.name
 
     def subdirectory(self):
         """
