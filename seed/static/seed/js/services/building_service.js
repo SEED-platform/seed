@@ -70,39 +70,6 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
         });
       };
 
-      building_factory.save_match = function (source_building_id, target_building_id, create_match) {
-        return $http.post(urls.save_match, {
-          source_building_id: source_building_id,
-          target_building_id: target_building_id,
-          create_match: create_match,
-          organization_id: user_service.get_organization().id
-        }).then(function (response) {
-          return response.data;
-        });
-      };
-
-      building_factory.update_building = function (building, organization_id) {
-        return $http.put(urls.update_building, {
-          building: building,
-          organization_id: organization_id
-        }).then(function (response) {
-          return response.data;
-        });
-      };
-
-
-      building_factory.get_columns = function (all_fields) {
-        all_fields = all_fields || '';
-        return $http.get(window.BE.urls.get_columns_url, {
-          params: {
-            all_fields: all_fields,
-            organization_id: user_service.get_organization().id
-          }
-        }).then(function (response) {
-          return response.data;
-        });
-      };
-
       building_factory.get_matching_results = function (import_file_id) {
         return $http.get("/api/v2/import_files/" + import_file_id + "/matching_results/", {
           params: {
