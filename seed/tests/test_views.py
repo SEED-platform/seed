@@ -511,7 +511,7 @@ class TestMCMViews(TestCase):
 
     def test_get_column_mapping_suggestions(self):
         response = self.client.get(
-            reverse_lazy('apiv2:data_files-mapping-suggestions',
+            reverse_lazy('apiv2:import_files-mapping-suggestions',
                          args=[self.import_file.pk]) + '?organization_id=' + str(self.org.pk),
             content_type='application/json'
         )
@@ -519,7 +519,7 @@ class TestMCMViews(TestCase):
 
     def test_get_column_mapping_suggestions_pm_file(self):
         response = self.client.get(
-            reverse_lazy('apiv2:data_files-mapping-suggestions',
+            reverse_lazy('apiv2:import_files-mapping-suggestions',
                          args=[self.import_file.pk]) + '?organization_id=' + str(self.org.pk),
             content_type='application/json',
         )
@@ -545,7 +545,7 @@ class TestMCMViews(TestCase):
         mapping.save()
 
         response = self.client.get(
-            reverse_lazy('apiv2:data_files-mapping-suggestions',
+            reverse_lazy('apiv2:import_files-mapping-suggestions',
                          args=[self.import_file.pk]) + '?organization_id=' + str(self.org.pk),
             content_type='application/json',
         )

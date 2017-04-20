@@ -72,6 +72,7 @@ from seed.models import (
     TaxLotProperty)
 from seed.utils.api import api_endpoint, api_endpoint_class
 from seed.utils.cache import get_cache_raw, get_cache
+from seed.views.main import _mapping_suggestions
 
 _log = logging.getLogger(__name__)
 
@@ -1650,3 +1651,48 @@ class ImportFileViewSet(viewsets.ViewSet):
                 'unmatched_ids': tax_lots_new
             }
         }
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_member')
+    @detail_route(methods=['GET'])
+    def mapping_suggestions(self, request, pk):
+        """
+        Returns suggested mappings from an uploaded file's headers to known
+        data fields.
+        ---
+        type:
+            status:
+                required: true
+                type: string
+                description: Either success or error
+            suggested_column_mappings:
+                required: true
+                type: dictionary
+                description: Dictionary where (key, value) = (the column header from the file,
+                      array of tuples (destination column, score))
+            building_columns:
+                required: true
+                type: array
+                description: A list of all possible columns
+            building_column_types:
+                required: true
+                type: array
+                description: A list of column types corresponding to the building_columns array
+        parameter_strategy: replace
+        parameters:
+            - name: pk
+              description: import_file_id
+              required: true
+              paramType: path
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+
+        """
+        org_id = request.query_params.get('organization_id', None)
+
+        result = _mapping_suggestions(pk, org_id, request.user)
+
+        return JsonResponse(result)

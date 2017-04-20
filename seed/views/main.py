@@ -18,15 +18,12 @@ from django.core.files.storage import DefaultStorage
 from django.http import JsonResponse
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
-from rest_framework import viewsets
-from rest_framework.authentication import SessionAuthentication
-from rest_framework.decorators import detail_route, api_view
+from rest_framework.decorators import api_view
 
 from seed import tasks
-from seed.authentication import SEEDAuthentication
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.decorators import (
-    ajax_request, ajax_request_class, get_prog_key, require_organization_id
+    ajax_request, get_prog_key, require_organization_id
 )
 from seed.lib.exporter import Exporter
 from seed.lib.mappings import mapper as simple_mapper
@@ -40,7 +37,7 @@ from seed.models import (
     ProjectBuilding,
     get_column_mapping,
 )
-from seed.utils.api import api_endpoint, api_endpoint_class
+from seed.utils.api import api_endpoint
 from seed.utils.buildings import (
     get_columns as utils_get_columns,
 )
@@ -647,56 +644,6 @@ def _mapping_suggestions(import_file_id, org_id, user):
     result['columns'] = md.data
 
     return result
-
-
-# TODO: CLEANUP - Move this to ImportFiles
-class DataFileViewSet(viewsets.ViewSet):
-    raise_exception = True
-    authentication_classes = (SessionAuthentication, SEEDAuthentication)
-
-    @api_endpoint_class
-    @ajax_request_class
-    @detail_route(methods=['GET'])
-    def mapping_suggestions(self, request, pk):
-        """
-        Returns suggested mappings from an uploaded file's headers to known
-        data fields.
-        ---
-        type:
-            status:
-                required: true
-                type: string
-                description: Either success or error
-            suggested_column_mappings:
-                required: true
-                type: dictionary
-                description: Dictionary where (key, value) = (the column header from the file,
-                      array of tuples (destination column, score))
-            building_columns:
-                required: true
-                type: array
-                description: A list of all possible columns
-            building_column_types:
-                required: true
-                type: array
-                description: A list of column types corresponding to the building_columns array
-        parameter_strategy: replace
-        parameters:
-            - name: pk
-              description: import_file_id
-              required: true
-              paramType: path
-            - name: organization_id
-              description: The organization_id for this user's organization
-              required: true
-              paramType: query
-
-        """
-        org_id = request.query_params.get('organization_id', None)
-
-        result = _mapping_suggestions(pk, org_id, request.user)
-
-        return JsonResponse(result)
 
 
 @api_endpoint

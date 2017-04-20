@@ -50,7 +50,7 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, f
     print('API Function: get_column_mapping_suggestions\n'),
     partmsg = 'get_column_mapping_suggestions'
     result = requests.get(
-        main_url + '/api/v2/data_files/{}/mapping_suggestions/'.format(import_id),
+        main_url + '/api/v2/import_files/{}/mapping_suggestions/'.format(import_id),
         params={"organization_id": organization_id},
         headers=header)
     check_status(result, partmsg, log, piid_flag='mappings')

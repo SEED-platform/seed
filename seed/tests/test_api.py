@@ -539,8 +539,8 @@ class TestApi(TestCase):
 
         # # Get the mapping suggestions
         r = self.client.post(
-            '/api/v2/data_files/{}/mapping_suggestions/?organization_id={}'.format(import_file_id,
-                                                                                   organization_id),
+            '/api/v2/import_files/{}/mapping_suggestions/?organization_id={}'.format(import_file_id,
+                                                                                     organization_id),
             content_type='application/json',
             follow=True,
             **self.headers
