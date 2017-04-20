@@ -780,52 +780,6 @@ def progress(request):
         })
 
 
-# @api_endpoint
-# @ajax_request
-# @login_required
-# @has_perm('can_modify_data')
-# def update_building(request):
-#     """
-#     Manually updates a building's record.  Creates a new BuildingSnapshot for
-#     the resulting changes.
-
-#     :PUT:
-
-#     Payload::
-
-#         {
-#             "organization_id": "organization id as integer",
-#             "building":
-#                 {
-#                     "canonical_building": "canonical building ID as integer"
-#                     "fieldname": "value",
-#                     "...": "Remaining fields in the BuildingSnapshot; see get_columns() endpoint for complete list."
-#                 }
-#         }
-
-#     Returns::
-
-#         {
-#             "status": "success",
-#             "child_id": "The ID of the newly-created BuildingSnapshot"
-#         }
-#     """
-#     body = json.loads(request.body)
-#     # Will be a dict representation of a hydrated building, incl pk.
-#     building = body.get('building')
-#     org_id = body['organization_id']
-#     canon = CanonicalBuilding.objects.get(pk=building['canonical_building'])
-#     old_snapshot = canon.canonical_snapshot
-
-#     new_building = models.update_building(old_snapshot, building, request.user)
-
-#     resp = {'status': 'success',
-#             'child_id': new_building.pk}
-
-#     AuditLog.objects.log_action(request, canon, org_id, resp)
-#     return resp
-
-
 @api_endpoint
 @ajax_request
 @login_required

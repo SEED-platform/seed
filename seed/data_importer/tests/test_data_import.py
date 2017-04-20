@@ -9,10 +9,10 @@ import datetime
 import json
 import logging
 import os.path
-from unittest import skip
 
 from dateutil import parser
 from django.core.files import File
+from django.utils import timezone
 from mock import patch
 
 from seed.data_importer import tasks
@@ -233,9 +233,8 @@ class TestMappingExampleData(DataMappingBaseTestCase):
         # this has the same jurisdiction_tax_lot_id as others so it was never imported. So assigning
         # the address was never happening because the tax_lot_id was already in use.
 
-    @skip('fix this soon')
     def test_promote_properties(self):
-        """Good case for testing our matching system."""
+        """Test if the promoting of a property works as expected"""
         tasks.save_raw_data(self.import_file.id)
         Column.create_mappings(self.fake_mappings, self.org, self.user)
         tasks.map_data(self.import_file.pk)
@@ -243,14 +242,13 @@ class TestMappingExampleData(DataMappingBaseTestCase):
         cycle2, _ = Cycle.objects.get_or_create(
             name=u'Hack Cycle 2016',
             organization=self.org,
-            start=datetime.datetime(2016, 1, 1),
-            end=datetime.datetime(2016, 12, 31),
+            start=datetime.datetime(2016, 1, 1, tzinfo=timezone.get_current_timezone()),
+            end=datetime.datetime(2016, 12, 31, tzinfo=timezone.get_current_timezone()),
         )
 
         # make sure that the new data was loaded correctly
-        ps = PropertyState.objects.filter(address_line_1='1181 Douglas Street')[0]
-        self.assertEqual(ps.site_eui, 439.9)
-        self.assertEqual(ps.extra_data['CoStar Property ID'], '1575599')
+        ps = PropertyState.objects.filter(address_line_1='50 Willow Ave SE')[0]
+        self.assertEqual(ps.site_eui, 125)
 
         # Promote the PropertyState to a PropertyView
         pv1 = ps.promote(self.cycle)

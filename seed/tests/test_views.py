@@ -5,8 +5,7 @@
 :author
 """
 import json
-from datetime import datetime, timedelta
-from unittest import skip
+from datetime import datetime
 
 from django.core.cache import cache
 from django.core.urlresolvers import reverse, reverse_lazy
@@ -15,13 +14,10 @@ from django.utils import timezone
 
 from seed import decorators
 from seed.data_importer.models import ImportFile, ImportRecord
-from seed.factory import SEEDFactory
 from seed.landing.models import SEEDUser as User
 from seed.lib.mcm.reader import ROW_DELIMITER
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
-    BuildingSnapshot,
-    CanonicalBuilding,
     Column,
     ColumnMapping,
     Cycle,
@@ -70,24 +66,24 @@ class MainViewTests(TestCase):
         response = self.client.get(reverse('seed:home'))
         self.assertEqual(200, response.status_code)
 
-    def test_export_buildings(self):
-        cb = CanonicalBuilding(active=True)
-        cb.save()
-        b = SEEDFactory.building_snapshot(canonical_building=cb)
-        cb.canonical_snapshot = b
-        cb.save()
-        b.super_organization = self.org
-        b.save()
-
-        payload = {
-            'export_name': 'My Export',
-            'export_type': 'csv',
-            'selected_buildings': [b.pk]
-        }
-        response = self.client.post(reverse('seed:export_buildings'),
-                                    json.dumps(payload),
-                                    content_type='application/json')
-        self.assertTrue(json.loads(response.content)['success'])
+    # def test_export_buildings(self):
+    #     cb = CanonicalBuilding(active=True)
+    #     cb.save()
+    #     b = SEEDFactory.building_snapshot(canonical_building=cb)
+    #     cb.canonical_snapshot = b
+    #     cb.save()
+    #     b.super_organization = self.org
+    #     b.save()
+    #
+    #     payload = {
+    #         'export_name': 'My Export',
+    #         'export_type': 'csv',
+    #         'selected_buildings': [b.pk]
+    #     }
+    #     response = self.client.post(reverse('seed:export_buildings'),
+    #                                 json.dumps(payload),
+    #                                 content_type='application/json')
+    #     self.assertTrue(json.loads(response.content)['success'])
 
     def test_export_buildings_empty(self):
         payload = {
@@ -381,83 +377,83 @@ class ImportFileViewsTests(TestCase):
         self.assertEqual('success', json.loads(response.content)['status'])
 
 
-@skip('Fix for new data model')
-class ReportViewsTests(TestCase):
-
-    def setUp(self):
-        user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
-            'email': 'test_user@demo.com'
-        }
-        self.user = User.objects.create_superuser(**user_details)
-        self.org = Organization.objects.create()
-        OrganizationUser.objects.create(user=self.user, organization=self.org)
-
-        self.import_record = ImportRecord.objects.create(owner=self.user)
-        self.import_record.super_organization = self.org
-        self.import_record.save()
-        self.import_file = ImportFile.objects.create(
-            import_record=self.import_record,
-            cached_first_row='Name|#*#|Address'
-        )
-
-        BuildingSnapshot.objects.create(super_organization=self.org,
-                                        import_file=self.import_file)
-
-        self.client.login(**user_details)
-
-    def test_get_building_summary_report_data(self):
-        params = {
-            'start_date': (datetime.now() - timedelta(days=30)).strftime(
-                '%Y-%m-%d'),
-            'end_date': datetime.now().strftime('%Y-%m-%d'),
-            'organization_id': self.org.pk
-        }
-
-        response = self.client.get(
-            reverse('seed:get_building_summary_report_data'), params)
-        self.assertEqual('success', json.loads(response.content)['status'])
-
-    # TODO replace with test for inventory report
-    @skip('Fix for new data model')
-    def test_get_building_report_data(self):
-        params = {
-            'start_date': (datetime.now() - timedelta(days=30)).strftime(
-                '%Y-%m-%d'),
-            'end_date': datetime.now().strftime('%Y-%m-%d'),
-            'x_var': 'use_description',
-            'y_var': 'year_built',
-            'organization_id': self.org.pk
-        }
-
-        response = self.client.get(reverse('seed:get_building_report_data'),
-                                   params)
-        self.assertEqual('success', json.loads(response.content)['status'])
-
-    @skip('Fix for new data model')
-    def test_get_inventory_report_data(self):
-        pass  # TODO
-
-    # TODO replace with test for inventory report
-    @skip('Fix for new data model')
-    def test_get_aggregated_building_report_data(self):
-        params = {
-            'start_date': (datetime.now() - timedelta(days=30)).strftime(
-                '%Y-%m-%d'),
-            'end_date': datetime.now().strftime('%Y-%m-%d'),
-            'x_var': 'energy_score',
-            'y_var': 'year_built',
-            'organization_id': self.org.pk
-        }
-
-        response = self.client.get(
-            reverse('seed:get_aggregated_building_report_data'), params)
-        self.assertEqual('success', json.loads(response.content)['status'])
-
-    @skip('Fix for new data model')
-    def test_get_aggregated_inventory_report_data(self):
-        pass  # TODO
+# @skip('Fix for new data model')
+# class ReportViewsTests(TestCase):
+#
+#     def setUp(self):
+#         user_details = {
+#             'username': 'test_user@demo.com',
+#             'password': 'test_pass',
+#             'email': 'test_user@demo.com'
+#         }
+#         self.user = User.objects.create_superuser(**user_details)
+#         self.org = Organization.objects.create()
+#         OrganizationUser.objects.create(user=self.user, organization=self.org)
+#
+#         self.import_record = ImportRecord.objects.create(owner=self.user)
+#         self.import_record.super_organization = self.org
+#         self.import_record.save()
+#         self.import_file = ImportFile.objects.create(
+#             import_record=self.import_record,
+#             cached_first_row='Name|#*#|Address'
+#         )
+#
+#         BuildingSnapshot.objects.create(super_organization=self.org,
+#                                         import_file=self.import_file)
+#
+#         self.client.login(**user_details)
+#
+#     def test_get_building_summary_report_data(self):
+#         params = {
+#             'start_date': (datetime.now() - timedelta(days=30)).strftime(
+#                 '%Y-%m-%d'),
+#             'end_date': datetime.now().strftime('%Y-%m-%d'),
+#             'organization_id': self.org.pk
+#         }
+#
+#         response = self.client.get(
+#             reverse('seed:get_building_summary_report_data'), params)
+#         self.assertEqual('success', json.loads(response.content)['status'])
+#
+#     # TODO replace with test for inventory report
+#     @skip('Fix for new data model')
+#     def test_get_building_report_data(self):
+#         params = {
+#             'start_date': (datetime.now() - timedelta(days=30)).strftime(
+#                 '%Y-%m-%d'),
+#             'end_date': datetime.now().strftime('%Y-%m-%d'),
+#             'x_var': 'use_description',
+#             'y_var': 'year_built',
+#             'organization_id': self.org.pk
+#         }
+#
+#         response = self.client.get(reverse('seed:get_building_report_data'),
+#                                    params)
+#         self.assertEqual('success', json.loads(response.content)['status'])
+#
+#     @skip('Fix for new data model')
+#     def test_get_inventory_report_data(self):
+#         pass  # TODO
+#
+#     # TODO replace with test for inventory report
+#     @skip('Fix for new data model')
+#     def test_get_aggregated_building_report_data(self):
+#         params = {
+#             'start_date': (datetime.now() - timedelta(days=30)).strftime(
+#                 '%Y-%m-%d'),
+#             'end_date': datetime.now().strftime('%Y-%m-%d'),
+#             'x_var': 'energy_score',
+#             'y_var': 'year_built',
+#             'organization_id': self.org.pk
+#         }
+#
+#         response = self.client.get(
+#             reverse('seed:get_aggregated_building_report_data'), params)
+#         self.assertEqual('success', json.loads(response.content)['status'])
+#
+#     @skip('Fix for new data model')
+#     def test_get_aggregated_inventory_report_data(self):
+#         pass  # TODO
 
 
 class TestMCMViews(TestCase):
