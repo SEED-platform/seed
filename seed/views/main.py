@@ -934,7 +934,6 @@ def delete_buildings(request):
 
 #     """
 
-#     # TODO: Generate this data the right way! Will be implemented by Stephen C.
 #     # The following is just dummy data...
 
 #     if request.method != 'GET':
@@ -1505,7 +1504,6 @@ def delete_buildings(request):
 
 #         """
 
-#     # TODO: Generate this data the right way! The following is just dummy data...
 #     if request.method != 'GET':
 #         return HttpResponseBadRequest('This view replies only to GET methods')
 

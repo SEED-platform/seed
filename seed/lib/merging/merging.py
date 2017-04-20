@@ -177,7 +177,6 @@ def merge_state(merged_state, state1, state2, can_attrs, default=None):
             setattr(merged_state, attr, attr_value)
             # setattr(merged_state, '{0}_source'.format(attr), attr_source)
 
-    # TODO: CLEANUP - deprecate extra_data_sources
     merged_extra_data, merged_extra_data_sources = merge_extra_data(state1, state2, default=default)
 
     merged_state.extra_data = merged_extra_data

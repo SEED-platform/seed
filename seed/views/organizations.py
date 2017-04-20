@@ -441,13 +441,6 @@ class OrganizationViewSet(viewsets.ViewSet):
               required: true
               paramType: path
         """
-        """
-        .. todo::
-
-            check permissions that request.user is owner or admin
-            and get more info about the users.
-        """
-
         try:
             org = Organization.objects.get(pk=pk)
         except ObjectDoesNotExist:

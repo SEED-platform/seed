@@ -164,15 +164,6 @@ class TaxLotState(models.Model):
         return d
 
     def save(self, *args, **kwargs):
-        # TODO: Check with Nick on this - this is totally incorrect.
-
-        # first check if the jurisdiction_tax_lot_id isn't already in the database for the
-        # organization - potential todo--move this to a unique constraint of the db.
-        # TODO: Decide if we should allow the user to define what the unique ID is for the taxlot
-        # if TaxLotState.objects.filter(jurisdiction_tax_lot_id=self.jurisdiction_tax_lot_id,
-        #                               organization=self.organization).exists():
-        #     _log.error("TaxLotState already exists for the same jurisdiction_tax_lot_id and org")
-        #     return False
         # Calculate and save the normalized address
         if self.address_line_1 is not None:
             self.normalized_address = normalize_address_str(self.address_line_1)
@@ -183,7 +174,6 @@ class TaxLotState(models.Model):
 
 
 class TaxLotView(models.Model):
-    # TODO: Are all foreign keys automatically indexed?
     taxlot = models.ForeignKey(TaxLot, related_name='views', null=True)
     state = models.ForeignKey(TaxLotState)
     cycle = models.ForeignKey(Cycle)
@@ -193,7 +183,6 @@ class TaxLotView(models.Model):
     def __unicode__(self):
         return u'TaxLot View - %s' % self.pk
 
-    # TODO: Add unique constraint on (property, cycle) -- NL: isn't that already below?
     class Meta:
         unique_together = ('taxlot', 'cycle',)
 

@@ -190,15 +190,6 @@ class PropertyState(models.Model):
             'release_date',
             'recent_sale_date'
         )
-
-        # TODO: Where to put in the custom_id_1
-        # custom_id_1 = getattr(self, 'custom_id_1')
-        # if isinstance(custom_id_1, unicode):
-        #     custom_id_1 = unicodedata.normalize('NFKD', custom_id_1).encode(
-        #         'ascii', 'ignore'
-        #     )
-        # if custom_id_1 and len(str(custom_id_1)) > 128:
-        #     self.custom_id_1 = custom_id_1[:128]
         for field in date_field_names:
             value = getattr(self, field)
             if value and isinstance(value, basestring):
@@ -243,14 +234,6 @@ class PropertyState(models.Model):
         return d
 
     def save(self, *args, **kwargs):
-        # first check if the <unique id> isn't already in the database for the
-        # organization - potential todo--move this to a unique constraint of the db.
-        # TODO: Decide if we should allow the user to define what the unique ID is for the taxlot
-        # if PropertyState.objects.filter(jurisdiction_tax_lot_id=self.jurisdiction_tax_lot_id,
-        #                               organization=self.organization).exists():
-        #     _log.error("PropertyState already exists for the same <unique id> and org")
-        #     return False
-
         # Calculate and save the normalized address
         if self.address_line_1 is not None:
             self.normalized_address = normalize_address_str(self.address_line_1)

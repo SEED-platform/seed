@@ -37,7 +37,8 @@ def upload_file(upload_header, upload_filepath, main_url, upload_dataset_id, upl
         1. SEED instance signs the upload request.
         2. File is uploaded to S3 with signature included.
         3. Client notifies SEED instance when upload completed.
-        @TODO: Currently can only upload to s3.amazonaws.com, though there are
+
+        Currently can only upload to s3.amazonaws.com, though there are
             other S3-compatible services that could be drop-in replacements.
 
         Args:
@@ -248,8 +249,8 @@ def setup_logger(filename, write_file=True):
 
     logging.getLogger("requests").setLevel(logging.WARNING)
 
-    logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG)
+    _log = logging.getLogger()
+    _log.setLevel(logging.DEBUG)
 
     formatter = logging.Formatter('%(message)s')
     formatter_console = logging.Formatter('%(levelname)s - %(message)s')
@@ -258,14 +259,14 @@ def setup_logger(filename, write_file=True):
         fh = logging.FileHandler(filename, mode='a')
         fh.setLevel(logging.DEBUG)
         fh.setFormatter(formatter)
-        logger.addHandler(fh)
+        _log.addHandler(fh)
 
     ch = logging.StreamHandler()
     ch.setLevel(logging.INFO)
     ch.setFormatter(formatter_console)
-    logger.addHandler(ch)
+    _log.addHandler(ch)
 
-    return logger
+    return _log
 
 
 def write_out_django_debug(partmsg, result):

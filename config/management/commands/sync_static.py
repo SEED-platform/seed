@@ -29,17 +29,12 @@ Command options are:
   --expires             Enables setting a far future expires header.
   --force               Skip the file mtime check to force upload of all
                         files.
-
-TODO:
-* Make FILTER_LIST an optional argument
-
 """
 import datetime
 import email
 import mimetypes
 import optparse
 import os
-import sys
 import time
 
 from django.core.management.base import BaseCommand, CommandError
@@ -53,7 +48,6 @@ except ImportError:
 
 
 class Command(BaseCommand):
-
     # TODO: might be better as instance variables rather than class variables
     #       in case more than one Command instance with different key or dir is needed
     # Extra variables to avoid passing these around
@@ -61,7 +55,7 @@ class Command(BaseCommand):
     AWS_SECRET_ACCESS_KEY = ''
     AWS_STORAGE_BUCKET_NAME = ''
     DIRECTORY = ''
-    FILTER_LIST = ['.DS_Store',]
+    FILTER_LIST = ['.DS_Store', ]
     GZIP_CONTENT_TYPES = (
         'text/css',
         'application/javascript',
@@ -73,17 +67,17 @@ class Command(BaseCommand):
 
     option_list = BaseCommand.option_list + (
         optparse.make_option('-p', '--prefix',
-            dest='prefix', default='',
-            help="The prefix to prepend to the path on S3."),
+                             dest='prefix', default='',
+                             help="The prefix to prepend to the path on S3."),
         optparse.make_option('--gzip',
-            action='store_true', dest='gzip', default=False,
-            help="Enables gzipping CSS and Javascript files."),
+                             action='store_true', dest='gzip', default=False,
+                             help="Enables gzipping CSS and Javascript files."),
         optparse.make_option('--expires',
-            action='store_true', dest='expires', default=False,
-            help="Enables setting a far future expires header."),
+                             action='store_true', dest='expires', default=False,
+                             help="Enables setting a far future expires header."),
         optparse.make_option('--force',
-            action='store_true', dest='force', default=False,
-            help="Skip the file mtime check to force upload of all files.")
+                             action='store_true', dest='force', default=False,
+                             help="Skip the file mtime check to force upload of all files.")
     )
 
     help = 'Syncs the complete STATIC_ROOT structure and files to S3 into the given bucket name.'
@@ -94,16 +88,16 @@ class Command(BaseCommand):
 
         # Check for AWS keys in settings
         if not hasattr(settings, 'AWS_ACCESS_KEY_ID') or \
-                       not hasattr(settings, 'AWS_SECRET_ACCESS_KEY'):
+                not hasattr(settings, 'AWS_SECRET_ACCESS_KEY'):
             raise CommandError('Missing AWS keys from settings file.  Please' +
-                    'supply both AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.')
+                               'supply both AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.')
         else:
             self.AWS_ACCESS_KEY_ID = settings.AWS_ACCESS_KEY_ID
             self.AWS_SECRET_ACCESS_KEY = settings.AWS_SECRET_ACCESS_KEY
 
         if not hasattr(settings, 'AWS_STORAGE_BUCKET_NAME'):
             raise CommandError('Missing bucket name from settings file. Please' +
-                ' add the AWS_STORAGE_BUCKET_NAME to your settings file.')
+                               ' add the AWS_STORAGE_BUCKET_NAME to your settings file.')
         else:
             if not settings.AWS_STORAGE_BUCKET_NAME:
                 raise CommandError('AWS_STORAGE_BUCKET_NAME cannot be empty.')
@@ -136,7 +130,7 @@ class Command(BaseCommand):
         """
         bucket, key = self.open_s3()
         os.path.walk(self.DIRECTORY, self.upload_s3,
-            (bucket, key, self.AWS_STORAGE_BUCKET_NAME, self.DIRECTORY))
+                     (bucket, key, self.AWS_STORAGE_BUCKET_NAME, self.DIRECTORY))
         from boto.s3.cors import CORSConfiguration
         cors_cfg = CORSConfiguration()
         cors_cfg.add_rule(['GET', 'POST', 'PUT'], '*', allowed_header='*')
@@ -167,10 +161,10 @@ class Command(BaseCommand):
         """
         This is the callback to os.path.walk and where much of the work happens
         """
-        bucket, key, bucket_name, root_dir = arg # expand arg tuple
+        bucket, key, bucket_name, root_dir = arg  # expand arg tuple
 
         if root_dir == dirname:
-            return # We're in the root media folder
+            return  # We're in the root media folder
 
         # Later we assume the STATIC_ROOT ends with a trailing slash
         # TODO: Check if we should check os.path.sep for Windows
@@ -181,11 +175,11 @@ class Command(BaseCommand):
             headers = {}
 
             if file in self.FILTER_LIST:
-                continue # Skip files we don't want to sync
+                continue  # Skip files we don't want to sync
 
             filename = os.path.join(dirname, file)
             if os.path.isdir(filename):
-                continue # Don't try to upload directories
+                continue  # Don't try to upload directories
 
             file_key = filename[len(root_dir):]
             if self.prefix:
@@ -203,7 +197,7 @@ class Command(BaseCommand):
                         self.skip_count += 1
                         if self.verbosity > 1:
                             print "File %s hasn't been modified since last " \
-                                "being uploaded" % (file_key)
+                                  "being uploaded" % (file_key)
                         continue
 
             # File is newer, let's process and upload
@@ -224,12 +218,12 @@ class Command(BaseCommand):
                     headers['Content-Encoding'] = 'gzip'
                     if self.verbosity > 1:
                         print "\tgzipped: %dk to %dk" % \
-                            (file_size/1024, len(filedata)/1024)
+                              (file_size / 1024, len(filedata) / 1024)
             if self.do_expires:
                 # HTTP/1.0
                 headers['Expires'] = '%s GMT' % (email.Utils.formatdate(
                     time.mktime((datetime.datetime.now() +
-                    datetime.timedelta(days=365*2)).timetuple())))
+                                 datetime.timedelta(days=365 * 2)).timetuple())))
                 # HTTP/1.1
                 headers['Cache-Control'] = 'max-age %d' % (3600 * 24 * 365 * 2)
                 if self.verbosity > 1:
@@ -250,10 +244,11 @@ class Command(BaseCommand):
 
             file_obj.close()
 
+
 # Backwards compatibility for Django r9110
 if not [opt for opt in Command.option_list if opt.dest == 'verbosity']:
     Command.option_list += (
         optparse.make_option('-v', '--verbosity',
-            dest='verbosity', default=1, action='count',
-            help="Verbose mode. Multiple -v options increase the verbosity."),
+                             dest='verbosity', default=1, action='count',
+                             help="Verbose mode. Multiple -v options increase the verbosity."),
     )

@@ -37,7 +37,6 @@ def get_column_mapping(raw_column, organization, attr_name='column_mapped'):
         whether we're looking at a mapping from the perspective of
         a raw_column (like we do when creating a mapping), or mapped_column,
         (like when we're applying that mapping).
-        # TODO: Remove the use of this attr_name
     :returns: list of mapped items, float representation of confidence.
 
     """
