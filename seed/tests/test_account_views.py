@@ -9,7 +9,7 @@ import json
 from django.core.urlresolvers import reverse_lazy, NoReverseMatch
 from django.test import TestCase
 
-from seed.data_quality.models import Rules, CATEGORY_MISSING_MATCHING_FIELD, \
+from seed.data_quality.models import Rule, CATEGORY_MISSING_MATCHING_FIELD, \
     CATEGORY_MISSING_VALUES, CATEGORY_IN_RANGE_CHECKING
 from seed.landing.models import SEEDUser as User
 from seed.views.main import _get_default_org
@@ -588,20 +588,20 @@ class AccountsViewTests(TestCase):
         self.assertEqual(len(fields), 2)
 
     def test_get_data_quality_rules_matching(self):
-        Rules.objects.create(org=self.org, category=CATEGORY_MISSING_MATCHING_FIELD,
-                             field='address_line_1', severity=0)
+        Rule.objects.create(org=self.org, category=CATEGORY_MISSING_MATCHING_FIELD,
+                            field='address_line_1', severity=0)
         response = self.client.get(reverse_lazy('apiv2:organizations-data-quality-rules', args=[self.org.pk]))
         self.assertEqual('success', json.loads(response.content)['status'])
 
     def test_get_data_quality_rules_values(self):
-        Rules.objects.create(org=self.org, category=CATEGORY_MISSING_VALUES,
-                             field='address_line_1', severity=0)
+        Rule.objects.create(org=self.org, category=CATEGORY_MISSING_VALUES,
+                            field='address_line_1', severity=0)
         response = self.client.get(reverse_lazy('apiv2:organizations-data-quality-rules', args=[self.org.pk]))
         self.assertEqual('success', json.loads(response.content)['status'])
 
     def test_get_data_quality_rules_range(self):
-        Rules.objects.create(org=self.org, category=CATEGORY_IN_RANGE_CHECKING,
-                             field='address_line_1', severity=0)
+        Rule.objects.create(org=self.org, category=CATEGORY_IN_RANGE_CHECKING,
+                            field='address_line_1', severity=0)
         response = self.client.get(reverse_lazy('apiv2:organizations-data-quality-rules', args=[self.org.pk]))
         self.assertEqual('success', json.loads(response.content)['status'])
 

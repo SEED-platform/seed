@@ -328,6 +328,7 @@ class StatusLabel(TimeStampedModel):
     )
 
     name = models.CharField(_('name'), max_length=PROJECT_NAME_MAX_LENGTH)
+    rule = models.ForeignKey('data_quality.Rule', null=True, on_delete=models.CASCADE)
     color = models.CharField(
         _('compliance_type'),
         max_length=30,

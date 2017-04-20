@@ -6,7 +6,7 @@
 """
 from celery import shared_task
 from celery.utils.log import get_task_logger
-from models import DataQuality
+from models import DataQualityCheck
 from seed.data_importer.models import ImportFile
 from seed.decorators import get_prog_key
 from seed.models import PropertyState, TaxLotState
@@ -34,8 +34,8 @@ def check_data_chunk(record_type, ids, file_pk, increment):
     import_file = ImportFile.objects.get(pk=file_pk)
     super_org = import_file.import_record.super_organization
 
-    d = DataQuality(super_org.get_parent())
-    d.check(record_type, qs)
+    d, _ = DataQualityCheck.objects.get_or_create(organization=super_org.get_parent())
+    d.check_data(record_type, qs)
     d.save_to_cache(file_pk)
 
 

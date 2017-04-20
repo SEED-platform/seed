@@ -23,7 +23,7 @@ from seed.data_quality.models import (
     CATEGORY_IN_RANGE_CHECKING,
     DATA_TYPES as DATA_QUALITY_DATA_TYPES,
     SEVERITY as DATA_QUALITY_SEVERITY,
-    Rules
+    Rule,
 )
 from seed.decorators import ajax_request_class
 from seed.decorators import get_prog_key
@@ -817,9 +817,9 @@ class OrganizationViewSet(viewsets.ViewSet):
             # 'data_type_check': []
         }
 
-        rules = Rules.objects.filter(org=org).order_by('field', 'severity')
+        rules = Rule.objects.filter(org=org).order_by('field', 'severity')
         if not rules.exists():
-            Rules.initialize_rules(org)
+            Rule.initialize_rules(org)
 
         for rule in rules:
             if rule.category == CATEGORY_MISSING_MATCHING_FIELD:
@@ -836,7 +836,7 @@ class OrganizationViewSet(viewsets.ViewSet):
                 result['in_range_checking'].append({
                     'field': rule.field,
                     'enabled': rule.enabled,
-                    'type': _get_js_rule_type(rule.type),
+                    'type': _get_js_rule_type(rule.data_type),
                     'min': rule.min,
                     'max': rule.max,
                     'severity': _get_js_rule_severity(rule.severity),
@@ -884,7 +884,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         """
         org = Organization.objects.get(pk=pk)
 
-        Rules.restore_defaults(org)
+        Rule.restore_defaults(org)
         return self.get_data_quality_rules(request, pk)
 
     @api_endpoint_class
@@ -917,6 +917,7 @@ class OrganizationViewSet(viewsets.ViewSet):
                 description: error message, if any
                 required: true
         """
+        # TODO: NLL Move this to the data_quality_checks/1/ API
         body = request.data
         try:
             org = Organization.objects.get(pk=pk)
@@ -934,33 +935,33 @@ class OrganizationViewSet(viewsets.ViewSet):
         posted_rules = body['data_quality_rules']
         updated_rules = []
         for rule in posted_rules['missing_matching_field']:
-            updated_rules.append(Rules(
+            updated_rules.append(Rule(
                 org=org,
                 field=rule['field'],
                 category=CATEGORY_MISSING_MATCHING_FIELD,
                 severity=_get_severity_from_js(rule['severity'])
             ))
         for rule in posted_rules['missing_values']:
-            updated_rules.append(Rules(
+            updated_rules.append(Rule(
                 org=org,
                 field=rule['field'],
                 category=CATEGORY_MISSING_VALUES,
                 severity=_get_severity_from_js(rule['severity'])
             ))
         for rule in posted_rules['in_range_checking']:
-            updated_rules.append(Rules(
+            updated_rules.append(Rule(
                 org=org,
                 field=rule['field'],
                 enabled=rule['enabled'],
                 category=CATEGORY_IN_RANGE_CHECKING,
-                type=_get_rule_type_from_js(rule['type']),
+                data_type=_get_rule_type_from_js(rule['type']),
                 min=rule['min'],
                 max=rule['max'],
                 severity=_get_severity_from_js(rule['severity']),
                 units=rule['units']
             ))
 
-        Rules.delete_rules(org)
+        Rule.delete_rules(org)
         for rule in updated_rules:
             rule.save()
         return JsonResponse({'status': 'success'})

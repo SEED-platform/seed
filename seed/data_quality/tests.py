@@ -14,9 +14,9 @@ from django.core.files import File
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 
-from seed.data_quality.models import DataQuality
 from seed.data_importer import tasks
 from seed.data_importer.models import ImportFile, ImportRecord
+from seed.data_quality.models import DataQualityCheck
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
@@ -95,8 +95,8 @@ class DataQualityTestCoveredBuilding(TestCase):
             source_type=ASSESSED_BS,
         ).iterator()
 
-        d = DataQuality(self.org)
-        d.check(qs)
+        d, _ = DataQualityCheck.objects.get_or_create(organization=self.org)
+        d.check_data(qs)
         # print d.results
 
         self.assertEqual(len(d.results), 2)
@@ -260,8 +260,8 @@ class DataQualityTestPM(TestCase):
             source_type=PORTFOLIO_BS,
         ).iterator()
 
-        d = DataQuality(self.org)
-        d.check('property', qs)
+        d, _ = DataQualityCheck.objects.get_or_create(organization=self.org)
+        d.check_data('property', qs)
 
         _log.debug(d.results)
 
@@ -504,8 +504,8 @@ class DataQualitySample(TestCase):
             source_type=ASSESSED_BS,
         ).iterator()
 
-        d = DataQuality(self.org)
-        d.check('property', qs)
+        d, _ = DataQualityCheck.objects.get_or_create(organization=self.org)
+        d.check_data('property', qs)
 
         # _log.debug(d.results)
         # This only checks to make sure the 34 errors have occurred.
@@ -519,20 +519,19 @@ class DataQualityViewTests(TestCase):
             'username': 'test_user@demo.com',
             'password': 'test_pass',
         }
-        self.user = User.objects.create_superuser(
-            email='test_user@demo.com', **user_details)
+        self.user = User.objects.create_superuser(email='test_user@demo.com', **user_details)
         self.client.login(**user_details)
 
     def test_get_data_quality_results(self):
         data = {'test': 'test'}
         cache.set('data_quality_results__1', data)
-        response = self.client.get(reverse('apiv2:import_files-data_quality-results.json', args=[1]))
+        response = self.client.get(reverse('apiv2:import_files-data-quality-results', args=[1]))
         self.assertEqual(json.loads(response.content)['data'], data)
 
     def test_get_progress(self):
         data = {'status': 'success', 'progress': 85}
         cache.set(':1:SEED:get_progress:PROG:1', data)
-        response = self.client.get(reverse('apiv2:import_files-data_quality-progress', args=[1]))
+        response = self.client.get(reverse('apiv2:import_files-data-quality-progress', args=[1]))
         self.assertEqual(json.loads(response.content), 85)
 
     def test_get_csv(self):
@@ -548,5 +547,5 @@ class DataQualityViewTests(TestCase):
             }]
         }]
         cache.set('data_quality_results__1', data)
-        response = self.client.get(reverse('apiv2:import_files-data_quality-results.csv', args=[1]))
+        response = self.client.get(reverse('apiv2:import_files-data-quality-results-csv', args=[1]))
         self.assertEqual(200, response.status_code)

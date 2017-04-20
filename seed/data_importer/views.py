@@ -33,7 +33,7 @@ from rest_framework.decorators import parser_classes
 from rest_framework.parsers import MultiPartParser, FormParser
 
 from seed.authentication import SEEDAuthentication
-from seed.data_quality.models import DataQuality
+from seed.data_quality.models import DataQualityCheck
 from seed.data_importer.models import (
     ImportFile,
     ImportRecord
@@ -1282,7 +1282,7 @@ class ImportFileViewSet(viewsets.ViewSet):
               paramType: path
         """
         import_file_id = pk
-        data_quality_results = get_cache_raw(DataQuality.cache_key(import_file_id))
+        data_quality_results = get_cache_raw(DataQualityCheck.cache_key(import_file_id))
         return JsonResponse({
             'status': 'success',
             'message': 'data quality check complete',
@@ -1293,7 +1293,7 @@ class ImportFileViewSet(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @detail_route(methods=['GET'])
-    def data_quality_check_progress(self, request, pk=None):
+    def data_quality_progress(self, request, pk=None):
         """
         Return the progress of the data quality check.
         ---
@@ -1342,7 +1342,7 @@ class ImportFileViewSet(viewsets.ViewSet):
         """
 
         import_file_id = pk
-        data_quality_results = get_cache_raw(DataQuality.cache_key(import_file_id))
+        data_quality_results = get_cache_raw(DataQualityCheck.cache_key(import_file_id))
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="Data Quality Check Results.csv"'
 
