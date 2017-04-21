@@ -33,7 +33,7 @@ from rest_framework.decorators import parser_classes
 from rest_framework.parsers import MultiPartParser, FormParser
 
 from seed.authentication import SEEDAuthentication
-from seed.cleansing.models import Cleansing
+from seed.data_quality.models import DataQuality
 from seed.data_importer.models import (
     ImportFile,
     ImportRecord
@@ -65,7 +65,6 @@ from seed.models import (
     TaxLotAuditLog,
     PropertyView,
     TaxLotView,
-    USER_MATCH,
     AUDIT_IMPORT,
     AUDIT_USER_EDIT,
     Property,
@@ -73,6 +72,7 @@ from seed.models import (
     TaxLotProperty)
 from seed.utils.api import api_endpoint, api_endpoint_class
 from seed.utils.cache import get_cache_raw, get_cache
+from seed.views.main import _mapping_suggestions
 
 _log = logging.getLogger(__name__)
 
@@ -622,14 +622,14 @@ class ImportFileViewSet(viewsets.ViewSet):
             taxlots_to_remove = list()
             for p in properties:
                 if PropertyAuditLog.objects.filter(
-                    state_id=p['id'],
-                    name='Manual Edit'
+                        state_id=p['id'],
+                        name='Manual Edit'
                 ).exists():
                     properties_to_remove.append(p['id'])
             for t in tax_lots:
                 if TaxLotAuditLog.objects.filter(
-                    state_id=t['id'],
-                    name='Manual Edit'
+                        state_id=t['id'],
+                        name='Manual Edit'
                 ).exists():
                     taxlots_to_remove.append(t['id'])
 
@@ -708,7 +708,8 @@ class ImportFileViewSet(viewsets.ViewSet):
             return result
 
         if inventory_type == 'properties':
-            views = PropertyView.objects.filter(cycle_id=import_file.cycle_id).select_related('state')
+            views = PropertyView.objects.filter(cycle_id=import_file.cycle_id).select_related(
+                'state')
         else:
             views = TaxLotView.objects.filter(cycle_id=import_file.cycle_id).select_related('state')
 
@@ -783,17 +784,21 @@ class ImportFileViewSet(viewsets.ViewSet):
             state_id=state_id,
             name='Import Creation'
         )
-        merged_record = audit_log.objects.only('parent_state1_id', 'parent_state2_id')\
-            .select_related('parent_state1', 'parent_state2')\
+        merged_record = audit_log.objects.only('parent_state1_id', 'parent_state2_id') \
+            .select_related('parent_state1', 'parent_state2') \
             .filter(Q(parent1_id=audit_creation_id.id) | Q(parent2_id=audit_creation_id.id))
 
         if not merged_record.exists():
             return False
 
         if merged_record.count() > 1:
-            return JsonResponse({'status': 'error',
-                                 'message': 'Internal problem occurred, more than one merge record found'},
-                                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return JsonResponse(
+                {
+                    'status': 'error',
+                    'message': 'Internal problem occurred, more than one merge record found'
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
         audit_entry = merged_record.first()
         state_id1 = audit_entry.parent_state1_id
@@ -852,106 +857,218 @@ class ImportFileViewSet(viewsets.ViewSet):
             state2 = state1_copy
 
         merged_state = merged_record.state
-        old_view = view.objects.get(state=merged_state)
-        cycle_id = old_view.cycle_id
 
-        # Clone the property/taxlot record, then the labels
-        if inventory_type == 'properties':
-            old_inventory = old_view.property
-            label_ids = list(old_inventory.labels.all().values_list('id', flat=True))
-            new_inventory = old_inventory
-            new_inventory.id = None
-            new_inventory.save()
+        # Check if we are at the end of a merge tree
+        if view.objects.filter(state=merged_state).exists():
+            old_view = view.objects.get(state=merged_state)
+            cycle_id = old_view.cycle_id
 
-            for label_id in label_ids:
-                label(property_id=new_inventory.id, statuslabel_id=label_id).save()
+            # Clone the property/taxlot record, then the labels
+            if inventory_type == 'properties':
+                old_inventory = old_view.property
+                label_ids = list(old_inventory.labels.all().values_list('id', flat=True))
+                new_inventory = old_inventory
+                new_inventory.id = None
+                new_inventory.save()
+
+                for label_id in label_ids:
+                    label(property_id=new_inventory.id, statuslabel_id=label_id).save()
+            else:
+                old_inventory = old_view.taxlot
+                label_ids = list(old_inventory.labels.all().values_list('id', flat=True))
+                new_inventory = old_inventory
+                new_inventory.id = None
+                new_inventory.save()
+
+                for label_id in label_ids:
+                    label(taxlot_id=new_inventory.id, tatuslabel_id=label_id).save()
+
+            # Create the views
+            if inventory_type == 'properties':
+                new_view1 = view(
+                    cycle_id=cycle_id,
+                    property_id=new_inventory.id,
+                    state=state1
+                )
+                new_view2 = view(
+                    cycle_id=cycle_id,
+                    property_id=old_view.property_id,
+                    state=state2
+                )
+            else:
+                new_view1 = view(
+                    cycle_id=cycle_id,
+                    taxlot_id=new_inventory.id,
+                    state=state1
+                )
+                new_view2 = view(
+                    cycle_id=cycle_id,
+                    taxlot_id=old_view.taxlot_id,
+                    state=state2
+                )
+
+            # Mark the merged state as deleted
+            merged_state.merge_state = MERGE_STATE_DELETE
+            merged_state.save()
+
+            # Change the merge_state of the individual states
+            if merged_record.parent1.name in ['Import Creation',
+                                              'Manual Edit'] and merged_record.parent1.import_filename is not None:
+                # State belongs to a new record
+                state1.merge_state = MERGE_STATE_NEW
+            else:
+                state1.merge_state = MERGE_STATE_MERGED
+            if merged_record.parent2.name in ['Import Creation',
+                                              'Manual Edit'] and merged_record.parent2.import_filename is not None:
+                # State belongs to a new record
+                state2.merge_state = MERGE_STATE_NEW
+            else:
+                state2.merge_state = MERGE_STATE_MERGED
+            state1.save()
+            state2.save()
+
+            # Delete the audit log entry for the merge
+            merged_record.delete()
+
+            # Duplicate pairing
+            if inventory_type == 'properties':
+                paired_view_ids = list(TaxLotProperty.objects.filter(property_view_id=old_view.id)
+                                       .order_by('taxlot_view_id').values_list('taxlot_view_id',
+                                                                               flat=True))
+            else:
+                paired_view_ids = list(TaxLotProperty.objects.filter(taxlot_view_id=old_view.id)
+                                       .order_by('property_view_id').values_list('property_view_id',
+                                                                                 flat=True))
+
+            old_view.delete()
+            new_view1.save()
+            new_view2.save()
+
+            if inventory_type == 'properties':
+                for paired_view_id in paired_view_ids:
+                    TaxLotProperty(primary=True,
+                                   cycle_id=cycle_id,
+                                   property_view_id=new_view1.id,
+                                   taxlot_view_id=paired_view_id).save()
+                    TaxLotProperty(primary=True,
+                                   cycle_id=cycle_id,
+                                   property_view_id=new_view2.id,
+                                   taxlot_view_id=paired_view_id).save()
+            else:
+                for paired_view_id in paired_view_ids:
+                    TaxLotProperty(primary=True,
+                                   cycle_id=cycle_id,
+                                   taxlot_view_id=new_view1.id,
+                                   property_view_id=paired_view_id).save()
+                    TaxLotProperty(primary=True,
+                                   cycle_id=cycle_id,
+                                   taxlot_view_id=new_view2.id,
+                                   property_view_id=paired_view_id).save()
+
         else:
-            old_inventory = old_view.taxlot
-            label_ids = list(old_inventory.labels.all().values_list('id', flat=True))
-            new_inventory = old_inventory
-            new_inventory.id = None
-            new_inventory.save()
+            # We are somewhere in the middle of a merge tree
+            # Climb the tree and find the final merge state
+            done_searching = False
+            current_merged_record = merged_record
+            while not done_searching:
+                # current_merged_record = audit_log.objects.select_related('state', 'parent1', 'parent2').filter(
+                #     parent1__in=[state1, state2],
+                #     parent_state2__in=[state1, state2]
+                # )
+                record = audit_log.objects.only('parent1_id', 'parent2_id') \
+                    .filter(
+                    Q(parent1_id=current_merged_record.id) | Q(parent2_id=current_merged_record.id))
+                if record.exists():
+                    current_merged_record = record.first()
+                else:
+                    final_merged_state = current_merged_record.state
+                    done_searching = True
 
-            for label_id in label_ids:
-                label(taxlot_id=new_inventory.id, tatuslabel_id=label_id).save()
+            old_view = view.objects.get(state=final_merged_state)
+            cycle_id = old_view.cycle_id
 
-        # Create the views
-        if inventory_type == 'properties':
-            new_view1 = view(
-                cycle_id=cycle_id,
-                property_id=new_inventory.id,
-                state=state1
-            )
-            new_view2 = view(
-                cycle_id=cycle_id,
-                property_id=old_view.property_id,
-                state=state2
-            )
-        else:
-            new_view1 = view(
-                cycle_id=cycle_id,
-                taxlot_id=new_inventory.id,
-                state=state1
-            )
-            new_view2 = view(
-                cycle_id=cycle_id,
-                taxlot_id=old_view.taxlot_id,
-                state=state2
-            )
+            # Clone the property/taxlot record, then the labels
+            if inventory_type == 'properties':
+                old_inventory = old_view.property
+                label_ids = list(old_inventory.labels.all().values_list('id', flat=True))
+                new_inventory = old_inventory
+                new_inventory.id = None
+                new_inventory.save()
 
-        # Mark the merged state as deleted
-        merged_state.merge_state = MERGE_STATE_DELETE
-        merged_state.save()
+                for label_id in label_ids:
+                    label(property_id=new_inventory.id, statuslabel_id=label_id).save()
+            else:
+                old_inventory = old_view.taxlot
+                label_ids = list(old_inventory.labels.all().values_list('id', flat=True))
+                new_inventory = old_inventory
+                new_inventory.id = None
+                new_inventory.save()
 
-        # Change the merge_state of the individual states
-        if merged_record.parent1.name in ['Import Creation', 'Manual Edit'] and merged_record.parent1.import_filename is not None:
-            # State belongs to a new record
-            state1.merge_state = MERGE_STATE_NEW
-        else:
-            state1.merge_state = MERGE_STATE_MERGED
-        if merged_record.parent2.name in ['Import Creation', 'Manual Edit'] and merged_record.parent2.import_filename is not None:
-            # State belongs to a new record
-            state2.merge_state = MERGE_STATE_NEW
-        else:
-            state2.merge_state = MERGE_STATE_MERGED
-        state1.save()
-        state2.save()
+                for label_id in label_ids:
+                    label(taxlot_id=new_inventory.id, tatuslabel_id=label_id).save()
 
-        # Delete the audit log entry for the merge
-        merged_record.delete()
+            # Create the view
+            if inventory_type == 'properties':
+                new_view = view(
+                    cycle_id=cycle_id,
+                    property_id=new_inventory.id,
+                    state=state.objects.get(id=source_state_id)
+                )
+            else:
+                new_view = view(
+                    cycle_id=cycle_id,
+                    taxlot_id=new_inventory.id,
+                    state=state.objects.get(id=source_state_id)
+                )
 
-        # Duplicate pairing
-        if inventory_type == 'properties':
-            paired_view_ids = list(TaxLotProperty.objects.filter(property_view_id=old_view.id)
-                                   .order_by('taxlot_view_id').values_list('taxlot_view_id', flat=True))
-        else:
-            paired_view_ids = list(TaxLotProperty.objects.filter(taxlot_view_id=old_view.id)
-                                   .order_by('property_view_id').values_list('property_view_id', flat=True))
+            # Change the merge_state of the individual states
+            if merged_record.parent1.name in ['Import Creation',
+                                              'Manual Edit'] and merged_record.parent1.import_filename is not None:
+                # State belongs to a new record
+                state1.merge_state = MERGE_STATE_NEW
+            else:
+                state1.merge_state = MERGE_STATE_MERGED
+            if merged_record.parent2.name in ['Import Creation',
+                                              'Manual Edit'] and merged_record.parent2.import_filename is not None:
+                # State belongs to a new record
+                state2.merge_state = MERGE_STATE_NEW
+            else:
+                state2.merge_state = MERGE_STATE_MERGED
+            state1.save()
+            state2.save()
 
-        old_view.delete()
-        new_view1.save()
-        new_view2.save()
+            # Remove the parent from the original merge state record and make sure only parent1 is populated
+            if merged_record.parent_state1_id == source_state_id:
+                merged_record.parent_state1_id = merged_record.parent_state2_id
+                merged_record.parent1_id = merged_record.parent2_id
+            merged_record.parent_state2_id = None
+            merged_record.parent2_id = None
+            merged_record.save()
 
-        if inventory_type == 'properties':
-            for paired_view_id in paired_view_ids:
-                TaxLotProperty(primary=True,
-                               cycle_id=cycle_id,
-                               property_view_id=new_view1.id,
-                               taxlot_view_id=paired_view_id).save()
-                TaxLotProperty(primary=True,
-                               cycle_id=cycle_id,
-                               property_view_id=new_view2.id,
-                               taxlot_view_id=paired_view_id).save()
-        else:
-            for paired_view_id in paired_view_ids:
-                TaxLotProperty(primary=True,
-                               cycle_id=cycle_id,
-                               taxlot_view_id=new_view1.id,
-                               property_view_id=paired_view_id).save()
-                TaxLotProperty(primary=True,
-                               cycle_id=cycle_id,
-                               taxlot_view_id=new_view2.id,
-                               property_view_id=paired_view_id).save()
+            # Duplicate pairing
+            if inventory_type == 'properties':
+                paired_view_ids = list(TaxLotProperty.objects.filter(property_view_id=old_view.id)
+                                       .order_by('taxlot_view_id').values_list('taxlot_view_id',
+                                                                               flat=True))
+            else:
+                paired_view_ids = list(TaxLotProperty.objects.filter(taxlot_view_id=old_view.id)
+                                       .order_by('property_view_id').values_list('property_view_id',
+                                                                                 flat=True))
+
+            new_view.save()
+
+            if inventory_type == 'properties':
+                for paired_view_id in paired_view_ids:
+                    TaxLotProperty(primary=True,
+                                   cycle_id=cycle_id,
+                                   property_view_id=new_view.id,
+                                   taxlot_view_id=paired_view_id).save()
+            else:
+                for paired_view_id in paired_view_ids:
+                    TaxLotProperty(primary=True,
+                                   cycle_id=cycle_id,
+                                   taxlot_view_id=new_view.id,
+                                   property_view_id=paired_view_id).save()
 
         return {
             'status': 'success'
@@ -997,9 +1114,7 @@ class ImportFileViewSet(viewsets.ViewSet):
                                                     state1,
                                                     state2,
                                                     merging.get_state_attrs([state1, state2]),
-                                                    conf=None,
-                                                    default=state2,
-                                                    match_type=USER_MATCH)
+                                                    default=state2)
 
         state_1_audit_log = audit_log.objects.filter(state=state1).first()
         state_2_audit_log = audit_log.objects.filter(state=state2).first()
@@ -1053,11 +1168,13 @@ class ImportFileViewSet(viewsets.ViewSet):
         if inventory_type == 'properties':
             for label_id in label_ids:
                 label(property_id=inventory_record.id, statuslabel_id=label_id).save()
-            new_view = view(cycle_id=cycle_id, state_id=merged_state.id, property_id=inventory_record.id)
+            new_view = view(cycle_id=cycle_id, state_id=merged_state.id,
+                            property_id=inventory_record.id)
         else:
             for label_id in label_ids:
                 label(taxlot_id=inventory_record.id, statuslabel_id=label_id).save()
-            new_view = view(cycle_id=cycle_id, state_id=merged_state.id, taxlot_id=inventory_record.id)
+            new_view = view(cycle_id=cycle_id, state_id=merged_state.id,
+                            taxlot_id=inventory_record.id)
         new_view.save()
 
         # Delete existing pairs and re-pair all to new view
@@ -1148,10 +1265,10 @@ class ImportFileViewSet(viewsets.ViewSet):
 
     @api_endpoint_class
     @ajax_request_class
-    @detail_route(methods=['GET'], url_path='cleansing_results.json')
-    def get_cleansing_results(self, request, pk=None):
+    @detail_route(methods=['GET'], url_path='data_quality_results')
+    def get_data_quality_results(self, request, pk=None):
         """
-        Retrieve the details of the cleansing script.
+        Retrieve the details of the data quality check.
         ---
         type:
             status:
@@ -1166,7 +1283,7 @@ class ImportFileViewSet(viewsets.ViewSet):
                 description: integer percent of completion
             data:
                 type: JSON
-                description: object describing the results of the cleansing
+                description: object describing the results of the data quality check
         parameter_strategy: replace
         parameters:
             - name: pk
@@ -1175,20 +1292,20 @@ class ImportFileViewSet(viewsets.ViewSet):
               paramType: path
         """
         import_file_id = pk
-        cleansing_results = get_cache_raw(Cleansing.cache_key(import_file_id))
+        data_quality_results = get_cache_raw(DataQuality.cache_key(import_file_id))
         return JsonResponse({
             'status': 'success',
-            'message': 'Cleansing complete',
+            'message': 'data quality check complete',
             'progress': 100,
-            'data': cleansing_results
+            'data': data_quality_results
         })
 
     @api_endpoint_class
     @ajax_request_class
     @detail_route(methods=['GET'])
-    def cleansing_progress(self, request, pk=None):
+    def data_quality_check_progress(self, request, pk=None):
         """
-        Return the progress of the cleansing.
+        Return the progress of the data quality check.
         ---
         type:
             status:
@@ -1197,7 +1314,7 @@ class ImportFileViewSet(viewsets.ViewSet):
                 description: either success or error
             progress:
                 type: integer
-                description: status of background cleansing task
+                description: status of background data quality task
         parameter_strategy: replace
         parameters:
             - name: pk
@@ -1213,7 +1330,7 @@ class ImportFileViewSet(viewsets.ViewSet):
 
     @api_endpoint_class
     @ajax_request_class
-    @detail_route(methods=['GET'], url_path='cleansing_results.csv')
+    @detail_route(methods=['GET'], url_path='data_quality_results_csv')
     def get_csv(self, request, pk=None):
         """
         Download a csv of the results.
@@ -1235,15 +1352,21 @@ class ImportFileViewSet(viewsets.ViewSet):
         """
 
         import_file_id = pk
-        cleansing_results = get_cache_raw(Cleansing.cache_key(import_file_id))
+        data_quality_results = get_cache_raw(DataQuality.cache_key(import_file_id))
         response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="Data Cleansing Results.csv"'
+        response['Content-Disposition'] = 'attachment; filename="Data Quality Check Results.csv"'
 
         writer = csv.writer(response)
+        if data_quality_results is None:
+            writer.writerow(['Error'])
+            writer.writerow(['data quality results not found'])
+            return response
+
         writer.writerow(['Address Line 1', 'PM Property ID', 'Tax Lot ID', 'Custom ID', 'Field',
                          'Error Message', 'Severity'])
-        for row in cleansing_results:
-            for result in row['cleansing_results']:
+
+        for row in data_quality_results:
+            for result in row['data_quality_results']:
                 writer.writerow([
                     row['address_line_1'],
                     row['pm_property_id'],
@@ -1465,19 +1588,20 @@ class ImportFileViewSet(viewsets.ViewSet):
         properties_to_remove = list()
         for p in properties:
             if PropertyAuditLog.objects.filter(
-                state_id=p.id,
-                name='Manual Edit'
+                    state_id=p.id,
+                    name='Manual Edit'
             ).exists():
                 properties_to_remove.append(p.id)
         properties = [p for p in properties if p.id not in properties_to_remove]
 
         for state in properties:
-            audit_creation_id = PropertyAuditLog.objects.only('id').exclude(import_filename=None).get(
+            audit_creation_id = PropertyAuditLog.objects.only('id').exclude(
+                import_filename=None).get(
                 state_id=state.id,
                 name='Import Creation'
             )
             if PropertyAuditLog.objects.exclude(record_type=AUDIT_USER_EDIT).filter(
-                parent1_id=audit_creation_id
+                    parent1_id=audit_creation_id
             ).exists():
                 properties_matched.append(state.id)
             else:
@@ -1500,8 +1624,8 @@ class ImportFileViewSet(viewsets.ViewSet):
         taxlots_to_remove = list()
         for t in taxlots:
             if TaxLotAuditLog.objects.filter(
-                state_id=t.id,
-                name='Manual Edit'
+                    state_id=t.id,
+                    name='Manual Edit'
             ).exists():
                 taxlots_to_remove.append(t.id)
         taxlots = [t for t in taxlots if t.id not in taxlots_to_remove]
@@ -1512,7 +1636,7 @@ class ImportFileViewSet(viewsets.ViewSet):
                 name='Import Creation'
             )
             if TaxLotAuditLog.objects.exclude(record_type=AUDIT_USER_EDIT).filter(
-                parent1_id=audit_creation_id
+                    parent1_id=audit_creation_id
             ).exists():
                 tax_lots_matched.append(state.id)
             else:
@@ -1533,3 +1657,48 @@ class ImportFileViewSet(viewsets.ViewSet):
                 'unmatched_ids': tax_lots_new
             }
         }
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_member')
+    @detail_route(methods=['GET'])
+    def mapping_suggestions(self, request, pk):
+        """
+        Returns suggested mappings from an uploaded file's headers to known
+        data fields.
+        ---
+        type:
+            status:
+                required: true
+                type: string
+                description: Either success or error
+            suggested_column_mappings:
+                required: true
+                type: dictionary
+                description: Dictionary where (key, value) = (the column header from the file,
+                      array of tuples (destination column, score))
+            building_columns:
+                required: true
+                type: array
+                description: A list of all possible columns
+            building_column_types:
+                required: true
+                type: array
+                description: A list of column types corresponding to the building_columns array
+        parameter_strategy: replace
+        parameters:
+            - name: pk
+              description: import_file_id
+              required: true
+              paramType: path
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+
+        """
+        org_id = request.query_params.get('organization_id', None)
+
+        result = _mapping_suggestions(pk, org_id, request.user)
+
+        return JsonResponse(result)

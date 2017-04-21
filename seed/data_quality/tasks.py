@@ -6,7 +6,7 @@
 """
 from celery import shared_task
 from celery.utils.log import get_task_logger
-from models import Cleansing
+from models import DataQuality
 from seed.data_importer.models import ImportFile
 from seed.decorators import get_prog_key
 from seed.models import PropertyState, TaxLotState
@@ -16,7 +16,7 @@ logger = get_task_logger(__name__)
 
 
 @shared_task
-def cleanse_data_chunk(record_type, ids, file_pk, increment):
+def check_data_chunk(record_type, ids, file_pk, increment):
     """
 
     :param record_type: one of 'property' or 'taxlot'
@@ -34,24 +34,24 @@ def cleanse_data_chunk(record_type, ids, file_pk, increment):
     import_file = ImportFile.objects.get(pk=file_pk)
     super_org = import_file.import_record.super_organization
 
-    c = Cleansing(super_org.get_parent())
-    c.cleanse(record_type, qs)
-    c.save_to_cache(file_pk)
+    d = DataQuality(super_org.get_parent())
+    d.check(record_type, qs)
+    d.save_to_cache(file_pk)
 
 
 @shared_task
-def finish_cleansing(file_pk):
+def finish_checking(file_pk):
     """
-    Chord that is called after the cleansing is complete
+    Chord that is called after the data quality check is complete
 
     :param file_pk: import file primary key
     :return:
     """
 
-    prog_key = get_prog_key('cleanse_data', file_pk)
+    prog_key = get_prog_key('check_data', file_pk)
     result = {
         'status': 'success',
         'progress': 100,
-        'message': 'cleansing complete'
+        'message': 'data quality check complete'
     }
     set_cache(prog_key, result['status'], result)

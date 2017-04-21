@@ -646,42 +646,6 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       });
     };
 
-    inventory_service.save_property_match = function (source_property_id, target_property_id, create_match) {
-      // TODO: Fix url
-      return $http.post(urls.save_match, {
-        source_inventory_id: source_property_id,
-        target_inventory_id: target_property_id,
-        create_match: create_match,
-        organization_id: user_service.get_organization().id
-      }).then(function (response) {
-        return response.data;
-      });
-    };
-
-    inventory_service.save_taxlot_match = function (source_taxlot_id, target_taxlot_id, create_match) {
-      // TODO: Fix url
-      return $http.post(urls.save_match, {
-        source_inventory_id: source_taxlot_id,
-        target_inventory_id: target_taxlot_id,
-        create_match: create_match,
-        organization_id: user_service.get_organization().id
-      }).then(function (response) {
-        return response.data;
-      });
-    };
-
-    inventory_service.get_columns = function (all_fields) {
-      all_fields = all_fields || '';
-      return $http.get('/app/get_columns/', {
-        params: {
-          all_fields: all_fields,
-          organization_id: user_service.get_organization().id
-        }
-      }).then(function (response) {
-        return response.data;
-      });
-    };
-
     inventory_service.get_matching_results = function (import_file_id) {
       return $http.get('/api/v2/import_files/' + import_file_id + '/matching_results/', {
         params: {

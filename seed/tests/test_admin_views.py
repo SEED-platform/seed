@@ -6,13 +6,14 @@
 """
 import json
 
-from django.core.urlresolvers import reverse_lazy, reverse
-from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
 from django.core import mail
+from django.core.urlresolvers import reverse_lazy, reverse
+from django.test import TestCase
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+
 from seed.lib.superperms.orgs.models import ROLE_OWNER, Organization, OrganizationUser
 from seed.utils.organizations import create_organization
 

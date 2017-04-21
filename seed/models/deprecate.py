@@ -33,7 +33,6 @@ SYSTEM_MATCH = 1
 USER_MATCH = 2
 POSSIBLE_MATCH = 3
 
-# TODO: remove these matches. They don't seem to be used for anything good
 SEED_MATCH_TYPES = (
     (SYSTEM_MATCH, 'System Match'),
     (USER_MATCH, 'User Match'),

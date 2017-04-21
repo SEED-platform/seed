@@ -17,7 +17,7 @@
     <div class="section_header_container">
         <div class="section_header has_no_padding fixed_height_short">
             <div class="section_action_container left_40">
-                <h2><i class="fa fa-flag"></i> Data Cleansing</h2>
+                <h2><i class="fa fa-flag"></i> Data Quality</h2>
             </div>
             <div class="section_action_container right_40 section_action_btn pull-right">
                 <button type="button" class="btn btn-default" ng-click="restore_defaults()">Restore Defaults <i class="fa fa-check" ng-show="defaults_restored"></i></button>
@@ -27,7 +27,7 @@
     </div>
     <div class="section_content_container">
         <div class="section_content with_padding" ng-if="org.is_parent && auth.requires_owner" style="margin-bottom:15px;">
-            <h3>In-Range Checking: Modifying Data Cleansing Rules</h3>
+            <h3>In-Range Checking: Modifying Data Quality Rules</h3>
             <p>From the table below, select the rules that you want to: 1) enable/disable within your organization, and 2) modify the minimum/maximum values to validate against on file upload.</p>
             <div class="right_wide section_action_container"><a ng-click="create_new_rule()">Create a new rule</a></div>
             <div class="table_list_container has_borders">

@@ -127,33 +127,33 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
     };
 
     /**
-     * gets the data cleansing rules for an org
+     * gets the data quality rules for an org
      * @param  {int} org_id the id of the organization
      */
-    organization_factory.get_cleansing_rules = function (org_id) {
-      return $http.get('/api/v2/organizations/' + org_id + '/cleansing_rules/').then(function (response) {
+    organization_factory.get_data_quality_rules = function (org_id) {
+      return $http.get('/api/v2/organizations/' + org_id + '/data_quality_rules/').then(function (response) {
         return response.data;
       });
     };
 
     /**
-     * resets the default data cleansing rules for an org
+     * resets the default data data_quality rules for an org
      * @param  {int} org_id the id of the organization
      */
-    organization_factory.reset_cleansing_rules = function (org_id) {
-      return $http.put('/api/v2/organizations/' + org_id + '/reset_cleansing_rules/').then(function (response) {
+    organization_factory.reset_data_quality_rules = function (org_id) {
+      return $http.put('/api/v2/organizations/' + org_id + '/reset_data_quality_rules/').then(function (response) {
         return response.data;
       });
     };
 
     /**
-     * saves the organization data cleansing rules
+     * saves the organization data data_quality rules
      * @param  {int} org_id the id of the organization
-     * @param  {obj} cleansing_rules the updated rules to save
+     * @param  {obj} data_quality_rules the updated rules to save
      */
-    organization_factory.save_cleansing_rules = function (org_id, cleansing_rules) {
-      return $http.put('/api/v2/organizations/' + org_id + '/save_cleansing_rules/', {
-        cleansing_rules: cleansing_rules
+    organization_factory.save_data_quality_rules = function (org_id, data_quality_rules) {
+      return $http.put('/api/v2/organizations/' + org_id + '/save_data_quality_rules/', {
+        data_quality_rules: data_quality_rules
       }).then(function (response) {
         return response.data;
       });

@@ -5,6 +5,7 @@
 :author 'Piper Merriam <pmerriam@quickleft.com>'
 """
 import itertools
+
 from django.test import TestCase
 
 from seed.utils.search import (

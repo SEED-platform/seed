@@ -538,11 +538,12 @@ class PropertyViewSet(GenericViewSet):
                         log = tree
                 else:
                     tree = None
-                    if log.parent2.name in ['Import Creation', 'Manual Edit']:
-                        record = record_dict(log.parent2)
-                        history.append(record)
-                    else:
-                        tree = log.parent2
+                    if log.parent2:
+                        if log.parent2.name in ['Import Creation', 'Manual Edit']:
+                            record = record_dict(log.parent2)
+                            history.append(record)
+                        else:
+                            tree = log.parent2
                     if log.parent1.name in ['Import Creation', 'Manual Edit']:
                         record = record_dict(log.parent1)
                         history.append(record)
@@ -1127,11 +1128,12 @@ class TaxLotViewSet(GenericViewSet):
                         log = tree
                 else:
                     tree = None
-                    if log.parent2.name in ['Import Creation', 'Manual Edit']:
-                        record = record_dict(log.parent2)
-                        history.append(record)
-                    else:
-                        tree = log.parent2
+                    if log.parent2:
+                        if log.parent2.name in ['Import Creation', 'Manual Edit']:
+                            record = record_dict(log.parent2)
+                            history.append(record)
+                        else:
+                            tree = log.parent2
                     if log.parent1.name in ['Import Creation', 'Manual Edit']:
                         record = record_dict(log.parent1)
                         history.append(record)

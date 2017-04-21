@@ -271,11 +271,11 @@ class Rules(models.Model):
         Rules.objects.filter(org=organization).delete()
 
 
-class Cleansing(object):
+class DataQuality(object):
 
     def __init__(self, organization, *args, **kwargs):
         """
-        Initialize the Cleansing class.
+        Initialize the Data Quality class.
 
         :param args:
         :param kwargs:
@@ -286,7 +286,7 @@ class Cleansing(object):
             'taxlot': ['jurisdiction_tax_lot_id', 'address_line_1'],
         }
         self.org = organization
-        super(Cleansing, self).__init__(*args, **kwargs)
+        super(DataQuality, self).__init__(*args, **kwargs)
 
         # Create rules if none exist
         if not Rules.objects.filter(org=organization).exists():
@@ -303,23 +303,23 @@ class Cleansing(object):
         :param file_pk: Import file primary key
         :return:
         """
-        set_cache_raw(Cleansing.cache_key(file_pk), [])
+        set_cache_raw(DataQuality.cache_key(file_pk), [])
 
     @staticmethod
     def cache_key(file_pk):
         """
-        Static method to return the location of the cleansing results from redis.
+        Static method to return the location of the data_quality results from redis.
 
         :param file_pk: Import file primary key
         :return:
         """
-        return "cleansing_results__%s" % file_pk
+        return "data_quality_results__%s" % file_pk
 
-    def cleanse(self, record_type, data):
+    def check(self, record_type, data):
         """
         Send in data as a queryset from the BuildingSnapshot ids.
         :param record_type: one of property/taxlot
-        :param data: rows of data to be cleansed
+        :param data: rows of data to be checked for data quality
         :return:
         """
         fields = self.get_fieldnames(record_type)
@@ -330,7 +330,7 @@ class Cleansing(object):
                 self.results[datum.id] = {}
                 for field in fields:
                     self.results[datum.id][field] = getattr(datum, field)
-                self.results[datum.id]['cleansing_results'] = []
+                self.results[datum.id]['data_quality_results'] = []
 
             # self.missing_matching_field(datum)
             self.in_range_checking(datum)
@@ -347,13 +347,13 @@ class Cleansing(object):
 
     def prune_data(self):
         """
-        Prune the results will remove any entries that have zero cleansing_results
+        Prune the results will remove any entries that have zero data_quality_results
 
         :return: None
         """
 
         for k, v in self.results.items():
-            if not v['cleansing_results']:
+            if not v['data_quality_results']:
                 del self.results[k]
 
     def reset_results(self):
@@ -379,8 +379,8 @@ class Cleansing(object):
                 value = getattr(datum, rule.field)
                 formatted_field = ASSESSOR_FIELDS_BY_COLUMN[rule.field]['title']
                 if value is None:
-                    # Field exists but the value is None. Register a cleansing error
-                    self.results[datum.id]['cleansing_results'].append({
+                    # Field exists but the value is None. Register a data_quality error
+                    self.results[datum.id]['data_quality_results'].append({
                         'field': rule.field,
                         'formatted_field': formatted_field,
                         'value': value,
@@ -392,7 +392,7 @@ class Cleansing(object):
     def missing_values(self, datum):
         """
         Look for fields in the database that are empty. Need to know the list
-        of fields that are part of the cleansing section.
+        of fields that are part of the data_quality section.
 
         The original intent of this method would be very intensive to run
         (looking at all fields except the ignored).
@@ -415,8 +415,8 @@ class Cleansing(object):
 
                 if value == '':
                     # TODO: check if the value is zero?
-                    # Field exists but the value is empty. Register a cleansing error
-                    self.results[datum.id]['cleansing_results'].append({
+                    # Field exists but the value is empty. Register a data_quality error
+                    self.results[datum.id]['data_quality_results'].append({
                         'field': rule.field,
                         'formatted_field': formatted_field,
                         'value': value,
@@ -472,7 +472,7 @@ class Cleansing(object):
                     formatted_rule_max = str(rule_max)
 
                 if rule_min is not None and value < rule_min:
-                    self.results[datum.id]['cleansing_results'].append({
+                    self.results[datum.id]['data_quality_results'].append({
                         'field': rule.field,
                         'formatted_field': formatted_field,
                         'value': value,
@@ -482,7 +482,7 @@ class Cleansing(object):
                     })
 
                 if rule_max is not None and value > rule_max:
-                    self.results[datum.id]['cleansing_results'].append({
+                    self.results[datum.id]['data_quality_results'].append({
                         'field': rule.field,
                         'formatted_field': formatted_field,
                         'value': value,
@@ -515,7 +515,7 @@ class Cleansing(object):
                     continue
 
                 if type(value).__name__ != rule.type:
-                    self.results[datum.id]['cleansing_results'].append({
+                    self.results[datum.id]['data_quality_results'].append({
                         'field': rule.field,
                         'formatted_field': formatted_field,
                         'value': value,
@@ -538,7 +538,7 @@ class Cleansing(object):
 
         # change the format of the data in the cache. Make this a list of
         # objects instead of object of objects.
-        existing_results = get_cache_raw(Cleansing.cache_key(file_pk))
+        existing_results = get_cache_raw(DataQuality.cache_key(file_pk))
 
         l = []
         for key, value in self.results.iteritems():
@@ -547,4 +547,4 @@ class Cleansing(object):
         existing_results = existing_results + l
 
         z = sorted(existing_results, key=lambda k: k['id'])
-        set_cache_raw(Cleansing.cache_key(file_pk), z, 86400)  # save the results for 24 hours
+        set_cache_raw(DataQuality.cache_key(file_pk), z, 86400)  # save the results for 24 hours

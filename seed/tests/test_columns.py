@@ -97,31 +97,6 @@ class TestColumns(TestCase):
         self.assertDictEqual(test_mapping, expected)
         self.assertEqual(no_concat, [])
 
-    # def test_save_mappings(self):
-    #     # Test that we can upload a mapping hash
-    #     test_map = [
-    #         # a: field in the db
-    #         # b: field in the datafile
-    #         ["eui", "my energy use intensity"],
-    #         ["best lab", "hawkins"],
-    #         ["concatenated", ["one", "two"]]
-    #     ]
-    #
-    #     seed_models.Column.create_mappings(test_map, self.fake_org,
-    #                                        self.fake_user)
-    #
-    #     test_mapping, _ = ColumnMapping.get_column_mappings(self.fake_org)
-    #
-    #     expected = {
-    #         u'hawkins': u'best lab',
-    #         u'my energy use intensity': u'eui'
-    #     }
-    #     # TODO: Concatenation is broken or never worked... that is why there is only 2
-    #     self.assertDictEqual(expected, test_mapping)
-    #
-    #     c = Column.objects.filter(column_name='hawkins')[0]
-    #     self.assertEqual(c.is_extra_data, True)
-
     def test_save_mappings_dict(self):
         """
         Test the way of saving mappings, which is dict-based instead of list of list of list.
@@ -395,7 +370,8 @@ class TestColumnsByInventory(TestCase):
         c = Column.retrieve_db_fields()
 
         data = ['address_line_1', 'address_line_2', 'block_number', 'building_certification',
-                'building_count', 'campus', 'city', 'conditioned_floor_area', 'custom_id_1', 'district',
+                'building_count', 'campus', 'city', 'conditioned_floor_area', 'custom_id_1',
+                'district',
                 'energy_alerts', 'energy_score', 'generation_date', 'gross_floor_area',
                 'home_energy_score_id', 'jurisdiction_property_id', 'jurisdiction_tax_lot_id',
                 'lot_number', 'number_properties', 'occupied_floor_area', 'owner', 'owner_address',

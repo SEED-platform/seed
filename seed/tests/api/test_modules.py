@@ -13,6 +13,7 @@ import requests
 
 from seed_readingtools import (
     check_status,
+    check_progress,
     read_map_file,
     upload_file,
     write_out_django_debug
@@ -31,34 +32,31 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, f
     import_id = result.json()['import_file_id']
 
     # Save the data to BuildingSnapshots
-    print ('API Function: save_raw_data\n'),
+    print('API Function: save_raw_data\n'),
     partmsg = 'save_raw_data'
     payload = {
         'organization_id': organization_id,
         'cycle_id': cycle_id
     }
-    result = requests.post(main_url + '/api/v2/import_files/{}/save_raw_data/'.format(import_id),
-                           headers=header,
-                           json=payload)
-
-    print result
-
-    # progress = check_progress(main_url, header, result.json()['progress_key'])
-    # without the above line this is just checking the url returned something
-    # not that it did anything, as there are no guarantees the task finished
+    result = requests.post(
+        main_url + '/api/v2/import_files/{}/save_raw_data/'.format(import_id),
+        headers=header,
+        json=payload
+    )
+    check_progress(main_url, header, result.json()['progress_key'])
     check_status(result, partmsg, log)
 
     # Get the mapping suggestions
-    print ('API Function: get_column_mapping_suggestions\n'),
+    print('API Function: get_column_mapping_suggestions\n'),
     partmsg = 'get_column_mapping_suggestions'
     result = requests.get(
-        main_url + '/api/v2/data_files/{}/mapping_suggestions/'.format(import_id),
+        main_url + '/api/v2/import_files/{}/mapping_suggestions/'.format(import_id),
         params={"organization_id": organization_id},
         headers=header)
     check_status(result, partmsg, log, piid_flag='mappings')
 
     # Save the column mappings
-    print ('API Function: save_column_mappings\n'),
+    print('API Function: save_column_mappings\n'),
     partmsg = 'save_column_mappings'
     payload = {'mappings': read_map_file(mappingfilepath)}
     result = requests.post(
@@ -67,20 +65,29 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, f
         headers=header,
         json=payload
     )
-    print result
-
     check_status(result, partmsg, log)
 
-    # Get Data Cleansing Message
-    print ('API Function: cleansing\n'),
-    partmsg = 'cleansing'
+    # Perform mapping
+    print('API Function: perform_mapping\n'),
+    partmsg = 'save_column_mappings'
+    result = requests.post(
+        main_url + '/api/v2/import_files/{}/perform_mapping/'.format(import_id),
+        params={"organization_id": organization_id},
+        headers=header
+    )
+    check_progress(main_url, header, result.json()['progress_key'])
+    check_status(result, partmsg, log)
+
+    # Get Data Quality Message
+    print ('API Function: data_quality\n'),
+    partmsg = 'data_quality'
 
     result = requests.get(
-        main_url + '/api/v2/import_files/{}/cleansing_results.json/'.format(import_id),
+        main_url + '/api/v2/import_files/{}/data_quality_results/'.format(import_id),
         headers=header,
         params={"organization_id": organization_id}
     )
-    check_status(result, partmsg, log, piid_flag='cleansing')
+    check_status(result, partmsg, log, piid_flag='data_quality')
 
     # Match uploaded buildings with buildings already in the organization.
     print ('API Function: start_system_matching\n'),
@@ -94,16 +101,18 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, f
         params={"organization_id": organization_id},
         json=payload
     )
+    result = check_progress(main_url, header, result.json()['progress_key'])
     check_status(result, partmsg, log)
 
     # Check number of matched and unmatched BuildingSnapshots
-    # print ('API Function: matching_results\n'),
-    # partmsg = 'matching_results'
-    #
-    # result = requests.get(main_url + '/api/v2/import_files/' + import_id + 'matching_results/',
-    #                       headers=header,
-    #                       params={})
-    # check_status(result, partmsg, log, piid_flag='PM_filter')
+    print ('API Function: matching_results\n'),
+    partmsg = 'matching_results'
+
+    result = requests.get(
+        main_url + '/api/v2/import_files/{}/matching_results/'.format(import_id),
+        headers=header,
+        params={})
+    check_status(result, partmsg, log)
 
 
 def search_and_project(header, main_url, organization_id, log):
@@ -222,8 +231,10 @@ def search_and_project(header, main_url, organization_id, log):
 def account(header, main_url, username, log):
     # Retrieve the user id key for later retrievals
     print ('API Function: current_user_id\n')
-    result = requests.get(main_url + '/api/v2/users/current_user_id/',
-                          headers=header)
+    result = requests.get(
+        main_url + '/api/v2/users/current_user_id/',
+        headers=header
+    )
     user_pk = json.loads(result.content)['pk']
 
     # Retrieve the user profile
@@ -298,39 +309,37 @@ def account(header, main_url, username, log):
     return organization_id
 
 
-def delete_set(header, main_url, organization_id, dataset_id, project_slug, log):
+def delete_set(header, main_url, organization_id, dataset_id, log):
     # Delete all buildings
-    print ('API Function: delete_buildings\n'),
-    partmsg = 'delete_buildings'
-    payload = {'organization_id': organization_id,
-               'search_payload': {'select_all_checkbox': True}}
-
-    result = requests.delete(main_url + '/app/delete_buildings/',
-                             headers=header,
-                             data=json.dumps(payload))
-    check_status(result, partmsg, log)
+    # print ('API Function: delete_inventory\n'),
+    # partmsg = 'delete_buildings'
+    # result = requests.delete(
+    #     main_url + '/app/delete_organization_inventory/',
+    #     headers=header,
+    #     params={'organization_id': organization_id}
+    # )
+    # check_status(result, partmsg, log)
 
     # Delete dataset
     print ('API Function: delete_dataset\n'),
     partmsg = 'delete_dataset'
-    payload = {'dataset_id': dataset_id,
-               'organization_id': organization_id}
-
-    result = requests.delete(main_url + '/app/delete_dataset/',
-                             headers=header,
-                             data=json.dumps(payload))
+    result = requests.delete(
+        main_url + '/api/v2/datasets/{}/'.format(dataset_id),
+        headers=header,
+        params={'organization_id': organization_id},
+    )
     check_status(result, partmsg, log)
 
     # Delete project
-    print ('API Function: delete_project\n'),
-    partmsg = 'delete_project'
-    payload = {'organization_id': organization_id,
-               'project_slug': project_slug}
-
-    result = requests.delete(main_url + '/app/projects/delete_project/',
-                             headers=header,
-                             data=json.dumps(payload))
-    check_status(result, partmsg, log)
+    # print ('API Function: delete_project\n'),
+    # partmsg = 'delete_project'
+    # payload = {'organization_id': organization_id,
+    #            'project_slug': project_slug}
+    #
+    # result = requests.delete(main_url + '/app/projects/delete_project/',
+    #                          headers=header,
+    #                          data=json.dumps(payload))
+    # check_status(result, partmsg, log)
 
 
 def cycles(header, main_url, organization_id, log):
@@ -339,7 +348,6 @@ def cycles(header, main_url, organization_id, log):
     result = requests.get(main_url + '/api/v2/cycles/',
                           headers=header,
                           params={'organization_id': organization_id})
-    print result
     check_status(result, partmsg, log, piid_flag='cycles')
 
     cycles = result.json()['cycles']
@@ -368,7 +376,6 @@ def cycles(header, main_url, organization_id, log):
     # Update cycle
     print ('\nAPI Function: update_cycle')
     partmsg = 'update_cycle'
-    print cycle_id
     payload = {
         'start': "2015-01-01T08:00:00.000Z",
         'end': "2016-01-01T08:00:00.000Z",

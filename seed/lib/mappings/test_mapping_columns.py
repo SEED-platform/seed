@@ -13,7 +13,6 @@ from django.test import TestCase
 
 from seed.lib.mappings import mapping_columns
 from seed.lib.mappings import mapping_data
-import json
 
 _log = logging.getLogger(__name__)
 
@@ -66,8 +65,6 @@ class TestMappingColumns(TestCase):
 
     def test_mapping_columns(self):
         mc = mapping_columns.MappingColumns(self.raw_columns, self.md.keys_with_table_names)
-
-        _log.debug(json.dumps(mc.final_mappings, indent=4))
         self.assertDictEqual(mc.final_mappings, self.expected)
 
     def test_excluded_fields(self):

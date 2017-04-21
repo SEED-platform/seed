@@ -124,7 +124,7 @@ class Command(BaseCommand):
             taxlot_id_list = []
             try:
                 taxlot_id_list = get_id_fields(m2m.taxlot_view.state.jurisdiction_tax_lot_id)
-                logger.info("Found taxlot_id_list: {l}".format(l = taxlot_id_list))
+                _log.info("Found taxlot_id_list: {l}".format(l = taxlot_id_list))
             except TaxLotIDValueError, e:
                 logging_warn(e)
                 continue

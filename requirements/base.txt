@@ -30,7 +30,7 @@ djangorestframework==3.3.3
 django-rest-swagger==0.3.8
 django-pgjson==0.3.1
 django-storages==1.4
--e git+https://github.com/revsys/django-tos.git@aca823ccd12fdb897b2827832458b3c34e91dee6#egg=django_tos-master
+-e git+https://github.com/revsys/django-tos.git#egg=django_tos-master
 jellyfish==0.3.2
 python-dateutil>=2.4
 raven==5.9.0

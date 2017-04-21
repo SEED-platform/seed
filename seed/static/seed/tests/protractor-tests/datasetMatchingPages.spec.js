@@ -31,14 +31,14 @@ describe('When I go to the dataset options page', function () {
 
 	it('should go to mapping Validation', function () {
 		$$('[ng-click="get_mapped_buildings()"]').first().click();
-		browser.wait(EC.presenceOf($('.inventory-list-tab-container.ng-scope')),30000);       
+		browser.wait(EC.presenceOf($('.inventory-list-tab-container.ng-scope')),30000);
 		expect($('[heading="View by Property"]').isPresent()).toBe(true);
 		expect($('[heading="View by Tax Lot"]').isPresent()).toBe(true);
 		var rows = element.all(by.repeater('(rowRenderIndex, row) in rowContainer.renderedRows')).filter(function (elm) {
 			expect(elm.length).not.toBeLessThan(1);
 			return elm;
 		});
-		$$('[ng-click="open_cleansing_modal()"]').first().click();
+		$$('[ng-click="open_data_quality_modal()"]').first().click();
 		browser.wait(EC.presenceOf($('.modal-title')),30000);
 		expect($('.modal-body.ng-scope').getText()).toContain('No warnings/errors');
 		$$('[ng-click="close()"]').first().click();
@@ -52,7 +52,7 @@ describe('When I go to the dataset options page', function () {
 		expect(rows.count()).toBe(2);
 		$$('#data-matching-0').first().click()
 	});
-	
+
 	it('should go to matching and have rows', function () {
 		expect($('.page_title').getText()).toContain('Data Matching');
         expect($('.table_footer').getText()).toContain('4 unmatched');
@@ -112,7 +112,7 @@ describe('When I go to the dataset options page', function () {
 	it('should edit change pair view', function () {
 		browser.sleep(2000);
 		element(by.cssContainingText('[ng-change="inventoryTypeChanged()"] option', "Tax Lot")).click();
-		// browser.wait(EC.presenceOf($('.inventory-list-tab-container.ng-scope')),30000);       
+		// browser.wait(EC.presenceOf($('.inventory-list-tab-container.ng-scope')),30000);
 		expect($('.page_title').getText()).toContain('Pair Tax Lots to Properties');
 
 		expect($('.pairing-text-right').getText()).toContain('Showing 18 Properties (18 unpaired)');

@@ -95,7 +95,7 @@ class OrganizationUser(models.Model):
                     other_user.role_level = ROLE_OWNER
                     other_user.save()
                 except IndexError:
-                    print "Unable to promote secondary user, because there are no other users!"
+                    _log.error("Unable to promote secondary user, because there are no other users!")
 
         super(OrganizationUser, self).delete(*args, **kwargs)
 

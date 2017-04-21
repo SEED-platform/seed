@@ -2,13 +2,13 @@
  * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
-angular.module('BE.seed.controller.cleansing_admin', [])
-.controller('cleansing_admin_controller', [
+angular.module('BE.seed.controller.data_quality_admin', [])
+.controller('data_quality_admin_controller', [
   '$scope',
   '$q',
   'all_columns',
   'organization_payload',
-  'cleansing_rules_payload',
+  'data_quality_rules_payload',
   'auth_payload',
   'labels_payload',
   'organization_service',
@@ -19,7 +19,7 @@ angular.module('BE.seed.controller.cleansing_admin', [])
     $q,
     all_columns,
     organization_payload,
-    cleansing_rules_payload,
+    data_quality_rules_payload,
     auth_payload,
     labels_payload,
     organization_service,
@@ -47,12 +47,12 @@ angular.module('BE.seed.controller.cleansing_admin', [])
         $scope.rows[rule.field].push(row);
       });
     };
-    loadRules(cleansing_rules_payload);
+    loadRules(data_quality_rules_payload);
 
     // Restores the default rules
     $scope.restore_defaults = function () {
       $scope.defaults_restored = false;
-      organization_service.reset_cleansing_rules($scope.org.org_id).then(function (rules) {
+      organization_service.reset_data_quality_rules($scope.org.org_id).then(function (rules) {
         loadRules(rules);
         $scope.defaults_restored = true;
       }, function (data, status) {
@@ -64,8 +64,8 @@ angular.module('BE.seed.controller.cleansing_admin', [])
     $scope.save_settings = function () {
       $scope.rules_updated = false;
       var rules = {
-        missing_matching_field: cleansing_rules_payload.missing_matching_field,
-        missing_values: cleansing_rules_payload.missing_values,
+        missing_matching_field: data_quality_rules_payload.missing_matching_field,
+        missing_values: data_quality_rules_payload.missing_values,
         in_range_checking: []
       };
       var promises = [];
@@ -125,8 +125,7 @@ angular.module('BE.seed.controller.cleansing_admin', [])
       });
       $q.all(promises)
       .then(function() {
-        console.log('rules', rules);
-        organization_service.save_cleansing_rules($scope.org.org_id, rules).then(function (data) {
+      	organization_service.save_data_quality_rules($scope.org.org_id, rules).then(function (data) {
           $scope.rules_updated = true;
         }, function (data, status) {
           $scope.$emit('app_error', data);

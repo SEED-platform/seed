@@ -8,18 +8,18 @@ from collections import Iterable
 from datetime import datetime
 
 import xmltodict
-from seed.lib.mcm.reader import ROW_DELIMITER
+from django.utils import timezone
 
+import seed.models
+from seed.audit_logs.models import AuditLog
+from seed.lib.mcm.reader import ROW_DELIMITER
 from seed.models import (
     BuildingSnapshot,
     Meter,
     TimeSeries,
     CanonicalBuilding,
-    set_initial_sources,
     GREEN_BUTTON_BS,
 )
-from seed.audit_logs.models import AuditLog
-import seed.models
 
 
 def energy_type(service_category):
@@ -269,7 +269,6 @@ def create_models(data, import_file):
     super_org = import_file.import_record.super_organization
     raw_bs.super_organization = super_org
 
-    set_initial_sources(raw_bs)
     raw_bs.address_line_1 = data['address']
     raw_bs.source_type = GREEN_BUTTON_BS
 
@@ -310,8 +309,8 @@ def create_models(data, import_file):
         start_time = int(reading['start_time'])
         duration = int(reading['duration'])
 
-        begin_time = datetime.fromtimestamp(start_time)
-        end_time = datetime.fromtimestamp(start_time + duration)
+        begin_time = datetime.fromtimestamp(start_time, tz=timezone.get_current_timezone())
+        end_time = datetime.fromtimestamp(start_time + duration, tz=timezone.get_current_timezone())
         value = reading['value']
         cost = reading['cost']
 

@@ -8,7 +8,6 @@ import json
 
 from django.http import HttpResponse
 from django.test import TestCase, RequestFactory
-
 from rest_framework.test import APIRequestFactory
 
 from seed import decorators
