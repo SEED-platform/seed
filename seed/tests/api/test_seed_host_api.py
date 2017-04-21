@@ -10,9 +10,15 @@ API Testing for remote SEED installations.
 Instructions:
 
 - Run this file from the root of the repo.
-
-- Copy seed_API_test.ini.example to seed_API_test.ini and make necessary changes. Don't commit the ini file.
-
+- Create the JSON file that the test script uses to run the tests.
+    - Run ./manage.py create_test_user_json --username demo@example.com --file ./seed/tests/api/api_test_user.json
+    - Or create the seed/tests/api/api_test_user.json with the following data:
+        {
+          "username": "demo@example.com",
+          "host": "http://localhost:8000",
+          "api_key": "fa0073715dbecb6dcd6dc31f02eb80fa7c3c16b5",
+          "name": "seed_api_test"
+        }
 - Run the script eg. python seed/tests/api/test_seed_host_api.py
 
 Description:
@@ -31,19 +37,19 @@ some apps.
 """
 
 import datetime as dt
+import json
 import os
 import sys
 import time
+from subprocess import Popen
 
 import requests
 
-from subprocess import Popen
-
 from seed_readingtools import check_status, setup_logger
-from test_modules import upload_match_sort, account, delete_set, search_and_project
-
+from test_modules import cycles, upload_match_sort, account, delete_set
 
 location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+print("Running from {}".format(location))
 
 if '--standalone' in sys.argv:
     # Open runserver as subprocess because tox doesn't support redirects or
@@ -52,15 +58,23 @@ if '--standalone' in sys.argv:
     time.sleep(5)
 
 if '--noinput' in sys.argv:
-    with open(os.path.join(location, 'seed_API_test.ini'), 'r') as f:
-        (hostname, main_url, username, api_key) = f.read().splitlines()
+    print("Path to json is: {}".format(os.path.join(location, 'api_test_user.json')))
+    with open(os.path.join(location, 'api_test_user.json')) as f:
+        j_data = json.load(f)
+        hostname = j_data['name']
+        main_url = j_data['host']
+        username = j_data['username']
+        api_key = j_data['api_key']
 else:
-    defaultchoice = raw_input('Use "seed_API_test.ini" credentials? [Y]es or Press Any Key ')
+    defaultchoice = raw_input('Use "api_test_user.json" credentials? [Y]es or Press Any Key ')
 
     if defaultchoice.upper() == 'Y':
-        with open(os.path.join(location, 'seed_API_test.ini'), 'r') as f:
-            (hostname, main_url, username, api_key) = f.read().splitlines()
-
+        with open(os.path.join(location, 'api_test_user.json')) as f:
+            j_data = json.load(f)
+            hostname = j_data['name']
+            main_url = j_data['host']
+            username = j_data['username']
+            api_key = j_data['api_key']
     else:
         hostname = raw_input('Hostname (default: "localhost"): \t')
         if hostname == '':
@@ -71,7 +85,10 @@ else:
         username = raw_input('Username: \t')
         api_key = raw_input('APIKEY: \t')
 
-header = {'authorization': ':'.join([username.lower(), api_key])}
+header = {
+    'authorization': ':'.join([username.lower(), api_key]),
+    # "Content-Type": "application/json"
+}
 # NOTE: The header only accepts lower case usernames.
 
 time1 = dt.datetime.now()
@@ -90,22 +107,28 @@ if '--nofile' not in sys.argv:
 else:
     log = setup_logger(fileout_name, write_file=False)
 
-
-raw_building_file = os.path.relpath(os.path.join(location, '..', 'data', 'covered-buildings-sample.csv'))
+raw_building_file = os.path.relpath(
+    os.path.join(location, '..', 'data', 'covered-buildings-sample.csv'))
 assert (os.path.isfile(raw_building_file)), 'Missing file ' + raw_building_file
-raw_map_file = os.path.relpath(os.path.join(location, '..', 'data', 'covered-buildings-mapping.csv'))
+raw_map_file = os.path.relpath(
+    os.path.join(location, '..', 'data', 'covered-buildings-mapping.csv'))
 assert (os.path.isfile(raw_map_file)), 'Missing file ' + raw_map_file
-pm_building_file = os.path.relpath(os.path.join(location, '..', 'data', 'portfolio-manager-sample.csv'))
+pm_building_file = os.path.relpath(
+    os.path.join(location, '..', 'data', 'portfolio-manager-sample.csv'))
 assert (os.path.isfile(pm_building_file)), 'Missing file ' + pm_building_file
 pm_map_file = os.path.relpath(os.path.join(location, '..', 'data', 'portfolio-manager-mapping.csv'))
 assert (os.path.isfile(pm_map_file)), 'Missing file ' + pm_map_file
 
 # -- Accounts
-print ('\n-------Accounts-------\n')
+print ('\n|-------Accounts-------|\n')
 organization_id = account(header, main_url, username, log)
 
+# -- Cycles
+print ('\n\n|-------Cycles-------|')
+cycle_id = cycles(header, main_url, organization_id, log)
+
 # Create a dataset
-print ('API Function: create_dataset')
+print ('\n\n|-------Create Dateset-------|')
 partmsg = 'create_dataset'
 payload = {'name': 'API Test'}
 result = requests.post(main_url + '/api/v2/datasets/?organization_id=%s' % organization_id,
@@ -118,18 +141,21 @@ dataset_id = result.json()['id']
 
 # Upload and test the raw building file
 print ('\n|---Covered Building File---|\n')
-upload_match_sort(header, main_url, organization_id, dataset_id, raw_building_file, 'Assessed Raw', raw_map_file, log)
+upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, raw_building_file,
+                  'Assessed Raw',
+                  raw_map_file, log)
 
 # Upload and test the portfolio manager file
 print ('\n|---Portfolio Manager File---|\n')
-upload_match_sort(header, main_url, organization_id, dataset_id, pm_building_file, 'Portfolio Raw', pm_map_file, log)
-
-# Run search and project tests
-project_slug = search_and_project(header, main_url, organization_id, log)
+# upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, pm_building_file, 'Portfolio Raw',
+#                   pm_map_file, log)
 
 # Delete dataset and building
-delete_set(header, main_url, organization_id, dataset_id, project_slug, log)
+delete_set(header, main_url, organization_id, dataset_id, log)
 
 time2 = dt.datetime.now()
 diff = time2 - time1
 log.info('Processing Time:{}min, {}sec'.format(diff.seconds / 60, diff.seconds % 60))
+
+exit(0)
+#

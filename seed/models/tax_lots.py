@@ -28,7 +28,7 @@ from seed.models import (
 from seed.utils.address import normalize_address_str
 from seed.utils.generic import split_model_fields, obj_to_dict
 
-logger = logging.getLogger(__name__)
+_log = logging.getLogger(__name__)
 
 
 class TaxLot(models.Model):
@@ -38,7 +38,7 @@ class TaxLot(models.Model):
     labels = models.ManyToManyField(StatusLabel)
 
     def __unicode__(self):
-        return u'TaxLot - %s' % (self.pk)
+        return u'TaxLot - %s' % self.pk
 
 
 class TaxLotState(models.Model):
@@ -73,7 +73,7 @@ class TaxLotState(models.Model):
     extra_data = JsonField(default={}, blank=True)
 
     def __unicode__(self):
-        return u'TaxLot State - %s' % (self.pk)
+        return u'TaxLot State - %s' % self.pk
 
     def promote(self, cycle):
         """
@@ -91,14 +91,14 @@ class TaxLotState(models.Model):
         tlvs = TaxLotView.objects.filter(cycle=cycle, state=self)
 
         if len(tlvs) == 0:
-            logger.debug("Found 0 TaxLotViews, adding TaxLot, promoting")
+            _log.debug("Found 0 TaxLotViews, adding TaxLot, promoting")
             # There are no PropertyViews for this property state and cycle.
             # Most likely there is nothing to match right now, so just
             # promote it to the view
 
             # Need to create a property for this state
             if self.organization is None:
-                print "organization is None"  # TODO: raise an exception
+                _log.error("organization is None")
 
             taxlot = TaxLot.objects.create(
                 organization=self.organization
@@ -113,13 +113,13 @@ class TaxLotState(models.Model):
 
             return tlv
         elif len(tlvs) == 1:
-            logger.debug("Found 1 PropertyView... Nothing to do")
+            _log.debug("Found 1 PropertyView... Nothing to do")
             # PropertyView already exists for cycle and state. Nothing to do.
 
             return tlvs[0]
         else:
-            logger.debug("Found %s PropertyView" % len(tlvs))
-            logger.debug("This should never occur, famous last words?")
+            _log.debug("Found %s PropertyView" % len(tlvs))
+            _log.debug("This should never occur, famous last words?")
 
             return None
 
@@ -164,15 +164,6 @@ class TaxLotState(models.Model):
         return d
 
     def save(self, *args, **kwargs):
-        # TODO: Check with Nick on this - this is totally incorrect.
-
-        # first check if the jurisdiction_tax_lot_id isn't already in the database for the
-        # organization - potential todo--move this to a unique constraint of the db.
-        # TODO: Decide if we should allow the user to define what the unique ID is for the taxlot
-        # if TaxLotState.objects.filter(jurisdiction_tax_lot_id=self.jurisdiction_tax_lot_id,
-        #                               organization=self.organization).exists():
-        #     logger.error("TaxLotState already exists for the same jurisdiction_tax_lot_id and org")
-        #     return False
         # Calculate and save the normalized address
         if self.address_line_1 is not None:
             self.normalized_address = normalize_address_str(self.address_line_1)
@@ -183,7 +174,6 @@ class TaxLotState(models.Model):
 
 
 class TaxLotView(models.Model):
-    # TODO: Are all foreign keys automatically indexed?
     taxlot = models.ForeignKey(TaxLot, related_name='views', null=True)
     state = models.ForeignKey(TaxLotState)
     cycle = models.ForeignKey(Cycle)
@@ -191,9 +181,8 @@ class TaxLotView(models.Model):
     # labels = models.ManyToManyField(StatusLabel)
 
     def __unicode__(self):
-        return u'TaxLot View - %s' % (self.pk)
+        return u'TaxLot View - %s' % self.pk
 
-    # TODO: Add unique constraint on (property, cycle) -- NL: isn't that already below?
     class Meta:
         unique_together = ('taxlot', 'cycle',)
 

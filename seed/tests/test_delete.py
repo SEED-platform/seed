@@ -8,6 +8,11 @@ import json
 
 from django.core.urlresolvers import reverse_lazy
 from django.test import TestCase
+
+from seed.audit_logs.models import AuditLog
+from seed.data_importer.models import ImportRecord
+from seed.factory import SEEDFactory
+from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import (
     ROLE_MEMBER,
     ROLE_OWNER,
@@ -15,12 +20,8 @@ from seed.lib.superperms.orgs.models import (
     OrganizationUser,
     Organization,
 )
-from seed.audit_logs.models import AuditLog
-from seed.landing.models import SEEDUser as User
-from seed.data_importer.models import ImportRecord
-from seed.tests.util import FakeRequest
-from seed.factory import SEEDFactory
 from seed.models import CanonicalBuilding, BuildingSnapshot
+from seed.tests.util import FakeRequest
 
 
 class DeleteViewTests(TestCase):

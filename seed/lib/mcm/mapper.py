@@ -218,7 +218,7 @@ def expand_rows(row, delimited_fields, expand_row):
         return [copy_row]
 
 
-def map_row(row, mapping, model_class, extra_data_fields=[], cleaner=None, concat=None, **kwargs):
+def map_row(row, mapping, model_class, extra_data_fields=[], cleaner=None, **kwargs):
     """Apply mapping of row data to model.
 
     :param row: dict, parsed row data from csv.

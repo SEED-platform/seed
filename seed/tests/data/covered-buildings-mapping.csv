@@ -1,11 +1,11 @@
 map_columns,raw_columns
-city,City
-postal_code,Zip
-gross_floor_area,GBA
-building_count,BLDGS
-tax_lot_id,UBI
-state_province,State
-address_line_1,Address
-owner,Owner
-use_description,Property Type
-year_built,AYB_YearBuilt
+UBI,TaxLotState,jurisdiction_tax_lot_id
+GBA,PropertyState,gross_floor_area
+BLDGS,PropertyState,building_count
+Address,PropertyState,address_line_1
+Owner,PropertyState,owner
+State,PropertyState,state_province
+City,PropertyState,city
+Zip,PropertyState,postal_code
+Property Type,PropertyState,use_description
+AYB_YearBuilt,PropertyState,year_built

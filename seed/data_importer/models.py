@@ -7,6 +7,7 @@
 import csv
 import hashlib
 import json
+import logging
 import math
 import tempfile
 from urllib import unquote
@@ -14,11 +15,9 @@ from urllib import unquote
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models import Q
-from django.db.models.signals import post_save
 from django.utils import timezone
 from django.utils.timesince import timesince
 from django_extensions.db.models import TimeStampedModel
@@ -31,6 +30,8 @@ from seed.utils.cache import (
     set_cache_raw, set_cache_state, get_cache, get_cache_raw,
     get_cache_state, delete_cache
 )
+
+_log = logging.getLogger(__name__)
 
 SOURCE_FACILITY_ID_MAX_LEN = 40
 
@@ -66,9 +67,9 @@ IMPORT_STATII = [
 
 class DuplicateDataError(RuntimeError):
 
-    def __init__(self, id):
+    def __init__(self, dup_id):
         super(DuplicateDataError, self).__init__()
-        self.id = id
+        self.id = dup_id
 
 
 class NotDeletableModel(models.Model):
@@ -695,7 +696,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
         super(ImportFile, self).save(*args, **kwargs)
         try:
             if not in_validation:
-                queue_update_status_for_import_record(self.import_record.pk)
+                return None
         except ImportRecord.DoesNotExist:
             pass
             # If we're deleting.
@@ -747,7 +748,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
                     else:
                         cleaned_row.append(val)
                 except:
-                    print "problem with val: %s" % val
+                    _log.error("problem with val: {}".format(val))
                     from traceback import print_exc
                     print_exc()
             yield cleaned_row
@@ -1312,45 +1313,4 @@ class BuildingImportRecord(models.Model):
     is_missing_from_import = models.BooleanField(default=False)
 
     def __unicode__(self, *args, **kwargs):
-        return "%s" % (self.building_record,)
-
-
-def queue_update_status_for_import_record(pk):
-    """edited by AKL to trim down data_importer"""
-    # if not cache.get(ImportRecord.SUMMARY_ANALYSIS_ACTIVE_KEY(pk), False) and not cache.get(ImportRecord.SUMMARY_ANALYSIS_QUEUED_KEY(pk), False) and not "test" in sys.argv:
-    return None
-
-
-def update_status_from_import_record(sender, instance, **kwargs):
-    try:
-        queue_update_status_for_import_record(instance.pk)
-    except ObjectDoesNotExist:
-        pass
-
-
-def update_status_from_import_file(sender, instance, **kwargs):
-    try:
-        queue_update_status_for_import_record(instance.import_record.pk)
-    except ObjectDoesNotExist:
-        pass
-
-
-def update_status_from_tcm(sender, instance, **kwargs):
-    try:
-        queue_update_status_for_import_record(instance.import_file.import_record.pk)
-    except ObjectDoesNotExist:
-        pass
-
-
-def update_status_from_dcm(sender, instance, **kwargs):
-    try:
-        queue_update_status_for_import_record(
-            instance.table_column_mapping.import_file.import_record.pk)
-    except ObjectDoesNotExist:
-        pass
-
-
-post_save.connect(update_status_from_import_record, sender=ImportRecord)
-# post_save.connect(update_status_from_import_file, sender=ImportFile)
-# post_save.connect(update_status_from_tcm, sender=TableColumnMapping)
-# post_save.connect(update_status_from_dcm, sender=DataCoercionMapping)
+        return "%s" % self.building_record

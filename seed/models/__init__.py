@@ -7,9 +7,6 @@
 """
 
 # Import all the models in this folder
-
-# TODO: Should we move all the views to the, well, views folder?
-
 from .cycles import *  # noqa
 from .models import *  # noqa
 from .joins import *  # noqa

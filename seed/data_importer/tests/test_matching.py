@@ -130,7 +130,6 @@ class TestMatching(DataMappingBaseTestCase):
             'postal_code': "54321",
             'data_state': DATA_STATE_MAPPING,
             'source_type': ASSESSED_BS,
-
         }
 
         # Setup mapped AS snapshot.

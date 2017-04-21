@@ -18,7 +18,6 @@ from seed.models import (
     Meter,
     TimeSeries
 )
-from seed.utils.time import convert_datestr
 
 
 @ajax_request
@@ -159,8 +158,8 @@ def add_timeseries(request):
 
     for ts_item in ts_data:
         TimeSeries.objects.create(
-            begin_time=convert_datestr(ts_item.get('begin_time', None)),
-            end_time=convert_datestr(ts_item.get('end_time', None)),
+            begin_time=ts_item.get('begin_time', None),
+            end_time=ts_item.get('end_time', None),
             reading=ts_item.get('reading', None),
             cost=ts_item.get('cost', None),
             meter=meter

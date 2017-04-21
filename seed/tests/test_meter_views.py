@@ -4,17 +4,17 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-import datetime
 import json
 
 from django.test import TestCase
+
 from seed.landing.models import SEEDUser as User
+from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     ELECTRICITY, KILOWATT_HOURS, BuildingSnapshot, Meter, TimeSeries
 )
-from seed.views import meters
 from seed.tests.util import FakeRequest
-from seed.lib.superperms.orgs.models import Organization
+from seed.views import meters
 
 
 class TestMeterViews(TestCase):
@@ -107,11 +107,10 @@ class TestMeterViews(TestCase):
             name='test', energy_type=ELECTRICITY, energy_units=KILOWATT_HOURS
         )
 
-        now = datetime.datetime.utcnow()
         for i in range(100):
             TimeSeries.objects.create(
-                begin_time=now,
-                end_time=now,
+                begin_time="2015-01-01T08:00:00.000Z",
+                end_time="2015-01-01T08:00:00.000Z",
                 cost=23,
                 meter=meter
             )
@@ -137,11 +136,10 @@ class TestMeterViews(TestCase):
             name='test', energy_type=ELECTRICITY, energy_units=KILOWATT_HOURS
         )
 
-        now = datetime.datetime.utcnow()
         for i in range(100):
             TimeSeries.objects.create(
-                begin_time=now,
-                end_time=now,
+                begin_time="2015-01-01T08:00:00.000Z",
+                end_time="2015-01-01T08:00:00.000Z",
                 cost=23,
                 meter=meter
             )
@@ -178,14 +176,14 @@ class TestMeterViews(TestCase):
                 'organization_id': self.org.pk,
                 'timeseries': [
                     {
-                        'begin_time': '2014-07-10T18:14:54.726',
-                        'end_time': '2014-07-10T18:14:54.726',
+                        'begin_time': '2014-07-10T18:14:54.726Z',
+                        'end_time': '2014-07-10T18:14:54.726Z',
                         'cost': 345,
                         'reading': 23.0,
                     },
                     {
-                        'begin_time': '2014-07-09T18:14:54.726',
-                        'end_time': '2014-07-09T18:14:54.726',
+                        'begin_time': '2014-07-09T18:14:54.726Z',
+                        'end_time': '2014-07-09T18:14:54.726Z',
                         'cost': 33,
                         'reading': 11.0,
                     }
