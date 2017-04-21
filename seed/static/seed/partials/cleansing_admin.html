@@ -29,25 +29,42 @@
         <div class="section_content with_padding" ng-if="org.is_parent && auth.requires_owner" style="margin-bottom:15px;">
             <h3>In-Range Checking: Modifying Data Cleansing Rules</h3>
             <p>From the table below, select the rules that you want to: 1) enable/disable within your organization, and 2) modify the minimum/maximum values to validate against on file upload.</p>
+            <div class="right_wide section_action_container"><a ng-click="create_new_rule()">Create a new rule</a></div>
             <div class="table_list_container has_borders">
                 <table class="table has_no_btm_margin tbody-striped">
                     <thead>
                         <tr>
                             <th class="condensed_head" style="min-width: 33px; width: 33px;"></th>
                             <th>Field</th>
+                            <th>Field Type</th>
+                            <th>Required</th>
+                            <th>Not Null</th>
                             <th>Minimum</th>
                             <th>Maximum</th>
                             <th>Severity</th>
                             <th>Units</th>
+                            <th>Label</th>
+                            <th class="condensed_head" style="min-width: 33px; width: 33px;"></th>
                         </tr>
                     </thead>
                     <tbody ng-repeat="rules in rows">
-                        <tr ng-repeat="rule in rules">
+                        <tr ng-repeat="rule in rules" ng-if="!rule.delete">
                             <td class="check is_aligned_center" style="width: 33px;">
                                 <input type="checkbox" ng-model="rule.enabled">
                             </td>
                             <td>
-                                <span>{$ rule.title $}</span>
+                                <!-- <span>{$ rule.title $}</span> -->
+                                <select class="form-control input-sm" ng-model="rule.title" ng-options="col.sort_column as col.title for col in all_columns.fields" ng-change="change_field(rule)">
+                                </select>
+                            </td>
+                            <td>
+                                <span>{$ rule.type $}</span>
+                            </td>
+                            <td>
+                                <input type="checkbox" ng-model="rule.required">
+                            </td>
+                            <td>
+                                <input type="checkbox" ng-model="rule.null">
                             </td>
                             <td>
                                 <input class="form-control input-sm" type="number" ng-model="rule.min" ng-if="rule.type != 'date'" placeholder="(no minimum)">
@@ -65,6 +82,15 @@
                             </td>
                             <td>
                                 <select class="form-control input-sm" ng-options="u for u in units" ng-model="rule.units"></select>
+                            </td>
+                            <td>
+                                <input class="form-control input-sm" ng-model="rule.label" ng-if="rule.new">
+                                <select class="form-control input-sm" ng-model="rule.label" ng-options="label.id as label.name for label in all_labels" ng-if="!rule.new">
+                                </select>
+                            </td>
+                            <td class="check is_aligned_center" style="width: 33px;">
+                                <button class="btn btn-danger btn-rowform" ng-click="delete_rule(rule, $index)">X
+                                </button>
                             </td>
                         </tr>
                     </tbody>
