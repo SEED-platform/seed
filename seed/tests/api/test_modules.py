@@ -83,7 +83,7 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, f
     partmsg = 'data_quality'
 
     result = requests.get(
-        main_url + '/api/v2/import_files/{}/data_quality.json/'.format(import_id),
+        main_url + '/api/v2/import_files/{}/data_quality_results/'.format(import_id),
         headers=header,
         params={"organization_id": organization_id}
     )
