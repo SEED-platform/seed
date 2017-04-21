@@ -807,8 +807,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/data_quality_admin.html',
         controller: 'data_quality_admin_controller',
         resolve: {
-          all_columns: ['inventory_service', function (inventory_service) {
-            return inventory_service.get_columns();
+          all_columns: ['$q', 'inventory_service', function ($q, inventory_service) {
+            return $q.all([inventory_service.get_property_columns(), inventory_service.get_taxlot_columns()]).then(function (columns) {
+              return {fields: _.flatten(columns)};
+            })
           }],
           organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
             var organization_id = $stateParams.organization_id;
@@ -818,7 +820,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             var organization_id = $stateParams.organization_id;
             return organization_service.get_data_quality_rules(organization_id);
           }],
-	  labels_payload: ['label_service', '$stateParams', function (label_service, $stateParams) {
+          labels_payload: ['label_service', '$stateParams', function (label_service, $stateParams) {
             var organization_id = $stateParams.organization_id;
             return label_service.get_labels_for_org(organization_id);
           }],

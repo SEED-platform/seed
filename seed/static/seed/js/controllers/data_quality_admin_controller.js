@@ -34,12 +34,14 @@ angular.module('BE.seed.controller.data_quality_admin', [])
     $scope.all_columns = all_columns;
     $scope.all_labels  = labels_payload;
 
+    console.log('col: ', all_columns)
+
     var loadRules = function (rules) {
       $scope.rows = {};
       _.forEach(rules.in_range_checking, function (rule) {
         if (!$scope.rows.hasOwnProperty(rule.field)) $scope.rows[rule.field] = [];
         var row = _.pick(rule, ['enabled', 'type', 'min', 'max', 'severity', 'units', 'label']);
-        row.title = _.find(all_columns.fields, {sort_column: rule.field}).sort_column;
+        row.displayName = _.find(all_columns.fields, {name: rule.field}).name;
         if (row.type === 'date') {
           if (row.min) row.min = moment(row.min, 'YYYYMMDD').toDate();
           if (row.max) row.max = moment(row.max, 'YYYYMMDD').toDate();
@@ -138,7 +140,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
     // capture rule field dropdown change.
     $scope.change_field = function(rule) {
       var original = rule.type;
-      var newType  = _.find(all_columns.fields, { sort_column: rule.title }).type;
+      var newType  = _.find(all_columns.fields, { name: rule.displayName }).type;
 
       // clear columns that are type specific.
       if(newType !== original) {
@@ -151,14 +153,14 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
       // modify the custom label if the rule is recently added.
       if(rule.new) {
-        rule.label = 'Invalid ' + _.find(all_columns.fields, { sort_column: rule.title }).title;
+        rule.label = 'Invalid ' + _.find(all_columns.fields, { name: rule.displayName }).displayName;
       }
     };
 
     // create a new rule.
     $scope.create_new_rule = function() {
-      var field = all_columns.fields[0].sort_column || null;
-      var label = all_columns.fields[0].title || '';
+      var field = all_columns.fields[0].name || null;
+      var label = all_columns.fields[0].displayName || '';
       var type  = all_columns.fields[0].type || null;
 
       if(field) {
@@ -166,7 +168,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
         $scope.rows[field].push({
           enabled:  false,
-          title:    field,
+          displayName:    field,
           type:     type,
           required: null,
           null:     null,
@@ -184,7 +186,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
     $scope.delete_rule = function(rule, index) {
       rule.delete = true;
       if(rule.new) {
-        $scope.rows[rule.title].splice(index, 1);
+        $scope.rows[rule.displayName].splice(index, 1);
       }
     };
   }]);

@@ -54,7 +54,7 @@
                             </td>
                             <td>
                                 <!-- <span>{$ rule.title $}</span> -->
-                                <select class="form-control input-sm" ng-model="rule.title" ng-options="col.sort_column as col.title for col in all_columns.fields" ng-change="change_field(rule)">
+                                <select class="form-control input-sm" ng-model="rule.displayName" ng-options="col.name as col.displayName for col in all_columns.fields" ng-change="change_field(rule)">
                                 </select>
                             </td>
                             <td>
