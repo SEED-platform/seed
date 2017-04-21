@@ -9,18 +9,18 @@ from kombu import Exchange, Queue
 from config.settings.aws import aws
 
 # AWS settings
-AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+## AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+## AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
 # Different names for same vars, used by django-ajax-uploader
-AWS_UPLOAD_CLIENT_KEY = AWS_ACCESS_KEY_ID
-AWS_UPLOAD_CLIENT_SECRET_KEY = AWS_SECRET_ACCESS_KEY
-APP_NAMESPACE = "seed" + os.environ.get("STACK_NAME", "prod")
-AWS_BUCKET_NAME = APP_NAMESPACE
-AWS_STORAGE_BUCKET_NAME = APP_NAMESPACE
-AWS_UPLOAD_BUCKET_NAME = APP_NAMESPACE
+## AWS_UPLOAD_CLIENT_KEY = AWS_ACCESS_KEY_ID
+## AWS_UPLOAD_CLIENT_SECRET_KEY = AWS_SECRET_ACCESS_KEY
+## APP_NAMESPACE = "seed" + os.environ.get("STACK_NAME", "prod")
+## AWS_BUCKET_NAME = APP_NAMESPACE
+## AWS_STORAGE_BUCKET_NAME = APP_NAMESPACE
+## AWS_UPLOAD_BUCKET_NAME = APP_NAMESPACE
 
-STACK_OUTPUTS = aws.get_stack_outputs()
-ENV = STACK_OUTPUTS.get('StackFlavor', 'dev')
+## STACK_OUTPUTS = aws.get_stack_outputs()
+## ENV = STACK_OUTPUTS.get('StackFlavor', 'dev')
 
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
@@ -33,10 +33,10 @@ if ONLY_HTTPS:
         MIDDLEWARE_CLASSES
 
 # Upload to S3
-AWS_S3_MAX_MEMORY_SIZE = 1024 * 1024
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
-STATICFILES_STORAGE = DEFAULT_FILE_STORAGE
-STATIC_URL = "https://%s.s3.amazonaws.com/" % AWS_STORAGE_BUCKET_NAME
+## AWS_S3_MAX_MEMORY_SIZE = 1024 * 1024
+## DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
+## STATICFILES_STORAGE = DEFAULT_FILE_STORAGE
+## STATIC_URL = "https://%s.s3.amazonaws.com/" % AWS_STORAGE_BUCKET_NAME
 
 # django-compressor
 COMPRESS_ENABLED = True
@@ -66,22 +66,23 @@ EMAIL_BACKEND = 'django_ses.SESBackend'
 # Database
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': "seed-deploy",
-        'USER': STACK_OUTPUTS.get('DBUsername', 'postgres'),
-        'PASSWORD': 'postgres',
-        'HOST': STACK_OUTPUTS.get('DBAddress', '127.0.0.1'),
-        'PORT': STACK_OUTPUTS.get('DBPort', ''),
+        'ENGINE':'django.db.backends.postgresql_psycopg2',
+        'NAME': 'seed-deploy',
+        'USER': 'eayoungs',
+        'PASSWORD': '05(@4641mm',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
+
 DATABASES['default']['CONN_MAX_AGE'] = None  # persistent, forever connections
 
 # Caches (django-redis-cache)
-CACHE_MIDDLEWARE_KEY_PREFIX = APP_NAMESPACE
+## CACHE_MIDDLEWARE_KEY_PREFIX = APP_NAMESPACE
 CACHES = {
     'default': {
         'BACKEND': 'redis_cache.cache.RedisCache',
-        'LOCATION': "%(Address)s:%(Port)s" % cache_settings,
+        'LOCATION': "127.0.0.1:6379",
         'OPTIONS': {'DB': 1},
         'TIMEOUT': 300
     }
