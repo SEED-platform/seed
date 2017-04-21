@@ -4,12 +4,9 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-import json
 import logging
 from os import path
-from unittest import skip
 
-from django.core.cache import cache
 from django.core.files import File
 from django.core.urlresolvers import reverse
 from django.test import TestCase
@@ -53,115 +50,111 @@ class DataQualityTestCoveredBuilding(TestCase):
         self.import_file.is_espm = False
         self.import_file.source_type = 'ASSESSED_RAW'
         self.import_file.file = File(
-            open(path.join(path.dirname(__file__), 'test_data',
+            open(path.join(path.dirname(__file__), '../tests/test_data',
                            'covered-buildings-sample-with-errors.csv'))
         )
 
         self.import_file.save()
 
-        # tasks.save_raw_data(self.import_file.pk)
-
     def test_simple_login(self):
         self.client.post(self.login_url, self.user_details, secure=True)
         self.assertTrue('_auth_user_id' in self.client.session)
 
-    @skip("Fix for new data model")
-    def test_check(self):
-        # Import the file and run mapping
-
-        # This is silly, the mappings are backwards from what you would expect. The key is the BS field, and the
-        # value is the value in the CSV
-        # fake_mappings = {
-        #     'city': 'city',
-        #     'postal_code': 'Zip',
-        #     'gross_floor_area': 'GBA',
-        #     'building_count': 'BLDGS',
-        #     'year_built': 'AYB_YearBuilt',
-        #     'state_province': 'State',
-        #     'address_line_1': 'Address',
-        #     'owner': 'Owner',
-        #     'property_notes': 'Property Type',
-        #     'tax_lot_id': 'UBI',
-        #     'custom_id_1': 'Custom ID',
-        #     'pm_property_id': 'PM Property ID'
-        # }
-
-        tasks.save_raw_data(self.import_file.id)
-        # util.make_fake_mappings(fake_mappings, self.org) -> convert to Column.create_mappings()
-        tasks.map_data(self.import_file.id)
-
-        qs = PropertyState.objects.filter(
-            import_file=self.import_file,
-            source_type=ASSESSED_BS,
-        ).iterator()
-
-        d, _ = DataQualityCheck.objects.get_or_create(organization=self.org)
-        d.check_data(qs)
-        # print d.results
-
-        self.assertEqual(len(d.results), 2)
-
-        result = [v for v in d.results.values() if
-                  v['address_line_1'] == '95373 E Peach Avenue']
-        if len(result) == 1:
-            result = result[0]
-        else:
-            raise RuntimeError('Non unity results')
-
-        self.assertTrue(result['address_line_1'], '95373 E Peach Avenue')
-        self.assertTrue(result['tax_lot_id'], '10107/c6596')
-        res = [{
-            'field': u'pm_property_id',
-            'formatted_field': u'PM Property ID',
-            'value': u'',
-            'message': u'PM Property ID is missing',
-            'detailed_message': u'PM Property ID is missing',
-            'severity': u'error'
-        }]
-        self.assertEqual(res, result['data_quality_results'])
-
-        result = [v for v in d.results.values() if
-                  v['address_line_1'] == '120243 E True Lane']
-        if len(result) == 1:
-            result = result[0]
-        else:
-            raise RuntimeError('Non unity results')
-
-        res = [{
-            'field': u'year_built',
-            'formatted_field': u'Year Built',
-            'value': 0,
-            'message': u'Year Built out of range',
-            'detailed_message': u'Year Built [0] < 1700',
-            'severity': u'error'
-        }, {
-            'field': u'gross_floor_area',
-            'formatted_field': u'Gross Floor Area',
-            'value': 10000000000.0,
-            'message': u'Gross Floor Area out of range',
-            'detailed_message': u'Gross Floor Area [10000000000.0] > 7000000.0',
-            'severity': u'error'
-        }, {
-            'field': u'custom_id_1',
-            'formatted_field': u'Custom ID 1',
-            'value': u'',
-            'message': u'Custom ID 1 is missing',
-            'detailed_message': u'Custom ID 1 is missing',
-            'severity': u'error'
-        }, {
-            'field': u'pm_property_id',
-            'formatted_field': u'PM Property ID',
-            'value': u'',
-            'message': u'PM Property ID is missing',
-            'detailed_message': u'PM Property ID is missing',
-            'severity': u'error'
-        }]
-        self.assertItemsEqual(res, result['data_quality_results'])
-
-        result = [v for v in d.results.values() if
-                  v['address_line_1'] == '1234 Peach Tree Avenue']
-        self.assertEqual(len(result), 0)
-        self.assertEqual(result, [])
+    # def test_check(self):
+    #     # Import the file and run mapping
+    #
+    #     # This is silly, the mappings are backwards from what you would expect. The key is the BS field, and the
+    #     # value is the value in the CSV
+    #     # fake_mappings = {
+    #     #     'city': 'city',
+    #     #     'postal_code': 'Zip',
+    #     #     'gross_floor_area': 'GBA',
+    #     #     'building_count': 'BLDGS',
+    #     #     'year_built': 'AYB_YearBuilt',
+    #     #     'state_province': 'State',
+    #     #     'address_line_1': 'Address',
+    #     #     'owner': 'Owner',
+    #     #     'property_notes': 'Property Type',
+    #     #     'tax_lot_id': 'UBI',
+    #     #     'custom_id_1': 'Custom ID',
+    #     #     'pm_property_id': 'PM Property ID'
+    #     # }
+    #
+    #     tasks.save_raw_data(self.import_file.id)
+    #     # util.make_fake_mappings(fake_mappings, self.org) -> convert to Column.create_mappings()
+    #     tasks.map_data(self.import_file.id)
+    #
+    #     qs = PropertyState.objects.filter(
+    #         import_file=self.import_file,
+    #         source_type=ASSESSED_BS,
+    #     ).iterator()
+    #
+    #     d = DataQualityCheck.retrieve(self.org)
+    #     d.check_data('property', qs)
+    #
+    #     self.assertEqual(len(d.results), 2)
+    #
+    #     result = [v for v in d.results.values() if
+    #               v['address_line_1'] == '95373 E Peach Avenue']
+    #     if len(result) == 1:
+    #         result = result[0]
+    #     else:
+    #         raise RuntimeError('Non unity results')
+    #
+    #     self.assertTrue(result['address_line_1'], '95373 E Peach Avenue')
+    #     self.assertTrue(result['tax_lot_id'], '10107/c6596')
+    #     res = [{
+    #         'field': u'pm_property_id',
+    #         'formatted_field': u'PM Property ID',
+    #         'value': u'',
+    #         'message': u'PM Property ID is missing',
+    #         'detailed_message': u'PM Property ID is missing',
+    #         'severity': u'error'
+    #     }]
+    #     self.assertEqual(res, result['data_quality_results'])
+    #
+    #     result = [v for v in d.results.values() if
+    #               v['address_line_1'] == '120243 E True Lane']
+    #     if len(result) == 1:
+    #         result = result[0]
+    #     else:
+    #         raise RuntimeError('Non unity results')
+    #
+    #     res = [{
+    #         'field': u'year_built',
+    #         'formatted_field': u'Year Built',
+    #         'value': 0,
+    #         'message': u'Year Built out of range',
+    #         'detailed_message': u'Year Built [0] < 1700',
+    #         'severity': u'error'
+    #     }, {
+    #         'field': u'gross_floor_area',
+    #         'formatted_field': u'Gross Floor Area',
+    #         'value': 10000000000.0,
+    #         'message': u'Gross Floor Area out of range',
+    #         'detailed_message': u'Gross Floor Area [10000000000.0] > 7000000.0',
+    #         'severity': u'error'
+    #     }, {
+    #         'field': u'custom_id_1',
+    #         'formatted_field': u'Custom ID 1',
+    #         'value': u'',
+    #         'message': u'Custom ID 1 is missing',
+    #         'detailed_message': u'Custom ID 1 is missing',
+    #         'severity': u'error'
+    #     }, {
+    #         'field': u'pm_property_id',
+    #         'formatted_field': u'PM Property ID',
+    #         'value': u'',
+    #         'message': u'PM Property ID is missing',
+    #         'detailed_message': u'PM Property ID is missing',
+    #         'severity': u'error'
+    #     }]
+    #     self.assertItemsEqual(res, result['data_quality_results'])
+    #
+    #     result = [v for v in d.results.values() if
+    #               v['address_line_1'] == '1234 Peach Tree Avenue']
+    #     self.assertEqual(len(result), 0)
+    #     self.assertEqual(result, [])
 
 
 class DataQualityTestPM(TestCase):
@@ -188,13 +181,10 @@ class DataQualityTestPM(TestCase):
         self.import_file.is_espm = True
         self.import_file.source_type = 'Portfolio Raw'
         self.import_file.file = File(
-            open(path.join(path.dirname(__file__), 'test_data',
+            open(path.join(path.dirname(__file__), '../tests/test_data',
                            'portfolio-manager-sample-with-errors.csv'))
         )
-
         self.import_file.save()
-
-        # tasks.save_raw_data(self.import_file.pk)
 
     def test_check(self):
         # Import the file and run mapping
@@ -260,7 +250,7 @@ class DataQualityTestPM(TestCase):
             source_type=PORTFOLIO_BS,
         ).iterator()
 
-        d, _ = DataQualityCheck.objects.get_or_create(organization=self.org)
+        d = DataQualityCheck.retrieve(self.org)
         d.check_data('property', qs)
 
         _log.debug(d.results)
@@ -324,7 +314,8 @@ class DataQualitySample(TestCase):
         self.import_file.is_espm = False
         self.import_file.source_type = 'ASSESSED_RAW'
         self.import_file.file = File(
-            open(path.join(path.dirname(__file__), 'test_data', 'data-quality-check-sample.csv')))
+            open(path.join(path.dirname(__file__), '../tests/test_data',
+                           'data-quality-check-sample.csv')))
 
         self.import_file.save()
 
@@ -504,48 +495,9 @@ class DataQualitySample(TestCase):
             source_type=ASSESSED_BS,
         ).iterator()
 
-        d, _ = DataQualityCheck.objects.get_or_create(organization=self.org)
+        d = DataQualityCheck.retrieve(self.org)
         d.check_data('property', qs)
 
         # _log.debug(d.results)
         # This only checks to make sure the 34 errors have occurred.
         self.assertEqual(len(d.results), 34)
-
-
-class DataQualityViewTests(TestCase):
-
-    def setUp(self):
-        user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
-        }
-        self.user = User.objects.create_superuser(email='test_user@demo.com', **user_details)
-        self.client.login(**user_details)
-
-    def test_get_data_quality_results(self):
-        data = {'test': 'test'}
-        cache.set('data_quality_results__1', data)
-        response = self.client.get(reverse('apiv2:import_files-data-quality-results', args=[1]))
-        self.assertEqual(json.loads(response.content)['data'], data)
-
-    def test_get_progress(self):
-        data = {'status': 'success', 'progress': 85}
-        cache.set(':1:SEED:get_progress:PROG:1', data)
-        response = self.client.get(reverse('apiv2:import_files-data-quality-progress', args=[1]))
-        self.assertEqual(json.loads(response.content), 85)
-
-    def test_get_csv(self):
-        data = [{
-            'address_line_1': '',
-            'pm_property_id': '',
-            'tax_lot_id': '',
-            'custom_id_1': '',
-            'data_quality_results': [{
-                'formatted_field': '',
-                'detailed_message': '',
-                'severity': '',
-            }]
-        }]
-        cache.set('data_quality_results__1', data)
-        response = self.client.get(reverse('apiv2:import_files-data-quality-results-csv', args=[1]))
-        self.assertEqual(200, response.status_code)

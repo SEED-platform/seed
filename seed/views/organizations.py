@@ -23,7 +23,7 @@ from seed.data_quality.models import (
     CATEGORY_IN_RANGE_CHECKING,
     DATA_TYPES as DATA_QUALITY_DATA_TYPES,
     SEVERITY as DATA_QUALITY_SEVERITY,
-    Rule,
+    DataQualityCheck,
 )
 from seed.decorators import ajax_request_class
 from seed.decorators import get_prog_key
@@ -811,23 +811,24 @@ class OrganizationViewSet(viewsets.ViewSet):
             # 'data_type_check': []
         }
 
-        rules = Rule.objects.filter(org=org).order_by('field', 'severity')
-        if not rules.exists():
-            Rule.initialize_rules(org)
-
+        dq = DataQualityCheck.retrieve(org)
+        rules = dq.rules.order_by('field', 'severity')
         for rule in rules:
             if rule.category == CATEGORY_MISSING_MATCHING_FIELD:
                 result['missing_matching_field'].append({
+                    'table_name': rule.table_name,
                     'field': rule.field,
                     'severity': _get_js_rule_severity(rule.severity),
                 })
             elif rule.category == CATEGORY_MISSING_VALUES:
                 result['missing_values'].append({
+                    'table_name': rule.table_name,
                     'field': rule.field,
                     'severity': _get_js_rule_severity(rule.severity),
                 })
             elif rule.category == CATEGORY_IN_RANGE_CHECKING:
                 result['in_range_checking'].append({
+                    'table_name': rule.table_name,
                     'field': rule.field,
                     'enabled': rule.enabled,
                     'type': _get_js_rule_type(rule.data_type),
@@ -878,8 +879,9 @@ class OrganizationViewSet(viewsets.ViewSet):
         """
         org = Organization.objects.get(pk=pk)
 
-        Rule.restore_defaults(org)
-        return self.get_data_quality_rules(request, pk)
+        dq = DataQualityCheck.retrieve(org)
+        dq.reset_default_rules()
+        return self.data_quality_rules(request, pk)
 
     @api_endpoint_class
     @ajax_request_class
@@ -887,7 +889,9 @@ class OrganizationViewSet(viewsets.ViewSet):
     @detail_route(methods=['PUT'])
     def save_data_quality_rules(self, request, pk=None):
         """
-        Saves an organization's settings: name, query threshold, shared fields
+        Saves an organization's settings: name, query threshold, shared fields.
+        The method passes in all the fields again, so it is okay to remove
+        all the rules in the db, and just recreate them (albiet inefficient)
         ---
         parameter_strategy: replace
         parameters:
@@ -929,35 +933,46 @@ class OrganizationViewSet(viewsets.ViewSet):
         posted_rules = body['data_quality_rules']
         updated_rules = []
         for rule in posted_rules['missing_matching_field']:
-            updated_rules.append(Rule(
-                org=org,
-                field=rule['field'],
-                category=CATEGORY_MISSING_MATCHING_FIELD,
-                severity=_get_severity_from_js(rule['severity'])
-            ))
+            updated_rules.append(
+                {
+                    'field': rule['field'],
+                    'category': CATEGORY_MISSING_MATCHING_FIELD,
+                    'severity': _get_severity_from_js(rule['severity']),
+                }
+            )
         for rule in posted_rules['missing_values']:
-            updated_rules.append(Rule(
-                org=org,
-                field=rule['field'],
-                category=CATEGORY_MISSING_VALUES,
-                severity=_get_severity_from_js(rule['severity'])
-            ))
+            updated_rules.append(
+                {
+                    'field': rule['field'],
+                    'category': CATEGORY_MISSING_VALUES,
+                    'severity': _get_severity_from_js(rule['severity']),
+                }
+            )
         for rule in posted_rules['in_range_checking']:
-            updated_rules.append(Rule(
-                org=org,
-                field=rule['field'],
-                enabled=rule['enabled'],
-                category=CATEGORY_IN_RANGE_CHECKING,
-                data_type=_get_rule_type_from_js(rule['type']),
-                min=rule['min'],
-                max=rule['max'],
-                severity=_get_severity_from_js(rule['severity']),
-                units=rule['units']
-            ))
+            updated_rules.append(
+                {
+                    'field': rule['field'],
+                    'enabled': rule['enabled'],
+                    'category': CATEGORY_IN_RANGE_CHECKING,
+                    'data_type': _get_rule_type_from_js(rule['type']),
+                    'min': rule['min'],
+                    'max': rule['max'],
+                    'severity': _get_severity_from_js(rule['severity']),
+                    'units': rule['units'],
+                }
+            )
 
-        Rule.delete_rules(org)
+        dq = DataQualityCheck.retrieve(org)
+        dq.remove_all_rules()
         for rule in updated_rules:
-            rule.save()
+            try:
+                dq.add_rule(rule)
+            except TypeError as e:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': e,
+                }, status=status.HTTP_400_BAD_REQUEST)
+
         return JsonResponse({'status': 'success'})
 
     @api_endpoint_class

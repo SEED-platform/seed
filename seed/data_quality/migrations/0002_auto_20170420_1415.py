@@ -25,6 +25,11 @@ class Migration(migrations.Migration):
                 ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='orgs.Organization')),
             ],
         ),
+        migrations.AddField(
+            model_name='dataqualitycheck',
+            name='name',
+            field=models.CharField(blank=b'Default Data Quality Check', max_length=255),
+        ),
         migrations.RenameModel('Rules', 'rule'),
         migrations.RenameField(
             model_name='rule',
@@ -35,7 +40,7 @@ class Migration(migrations.Migration):
             model_name='rule',
             name='data_quality_check',
             field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE,
-                                    to='data_quality.DataQualityCheck'),
+                                    related_name='rules', to='data_quality.DataQualityCheck'),
         ),
         migrations.AddField(
             model_name='rule',
@@ -48,9 +53,24 @@ class Migration(migrations.Migration):
             field=models.CharField(blank=True, default=b'PropertyState', max_length=200),
         ),
         migrations.AddField(
-            model_name='dataqualitycheck',
+            model_name='rule',
+            name='description',
+            field=models.CharField(blank=True, max_length=1000),
+        ),
+        migrations.AddField(
+            model_name='rule',
+            name='status_label',
+            field=models.OneToOneField(null=True, on_delete=django.db.models.deletion.SET_NULL,
+                                       to='seed.StatusLabel'),
+        ),
+        migrations.AddField(
+            model_name='rule',
             name='name',
             field=models.CharField(blank=True, max_length=255),
+        ),
+        migrations.RemoveField(
+            model_name='rule',
+            name='org',
         ),
         migrations.RunSQL(DROP_ACCOUNT_TABLES),
     ]

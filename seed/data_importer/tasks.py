@@ -26,17 +26,12 @@ from django.db.models import Q
 from django.utils import timezone
 from unidecode import unidecode
 
-from seed.data_quality.models import DataQualityCheck
-from seed.data_quality.tasks import (
-    finish_checking,
-    check_data_chunk,
-)
 from seed.data_importer.models import (
     ImportFile,
     ImportRecord,
     STATUS_READY_TO_MERGE,
-    # DuplicateDataError,
 )
+from seed.data_quality.models import DataQualityCheck
 from seed.data_quality.tasks import (
     finish_checking,
     check_data_chunk,

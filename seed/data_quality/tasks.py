@@ -34,7 +34,7 @@ def check_data_chunk(record_type, ids, file_pk, increment):
     import_file = ImportFile.objects.get(pk=file_pk)
     super_org = import_file.import_record.super_organization
 
-    d, _ = DataQualityCheck.objects.get_or_create(organization=super_org.get_parent())
+    d = DataQualityCheck.retrieve(super_org.get_parent())
     d.check_data(record_type, qs)
     d.save_to_cache(file_pk)
 

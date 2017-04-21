@@ -4,22 +4,21 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-from datetime import (
-    date,
-    datetime,
-)
-from logging import getLogger
+import logging
+from datetime import date, datetime
 
 import pytz
 from django.db import models
-from django.db.models.signals import post_init
 from django.utils.timezone import get_current_timezone, make_aware, make_naive
 
 from seed.lib.superperms.orgs.models import Organization
-from seed.utils.cache import set_cache_raw, get_cache_raw
+from seed.models import StatusLabel
+from seed.utils.cache import (
+    set_cache_raw, get_cache_raw
+)
 from seed.utils.constants import ASSESSOR_FIELDS_BY_COLUMN
 
-logger = getLogger(__name__)
+_log = logging.getLogger(__name__)
 
 CATEGORY_MISSING_MATCHING_FIELD = 0
 CATEGORY_MISSING_VALUES = 1
@@ -58,128 +57,243 @@ SEVERITY = [
 ]
 
 RULES_MISSING_MATCHES = [
-    'address_line_1',
-    # 'tax_lot_id',
-    'custom_id_1',
-    'pm_property_id'
+    {
+        'table_name': 'PropertyState',
+        'field': 'address_line_1',
+        'rule_type': RULE_TYPE_DEFAULT,
+        'severity': SEVERITY_ERROR,
+        'category': CATEGORY_MISSING_MATCHING_FIELD,
+    },
+    {
+        'table_name': 'TaxLotState',
+        'field': 'address_line_1',
+        'rule_type': RULE_TYPE_DEFAULT,
+        'severity': SEVERITY_ERROR,
+        'category': CATEGORY_MISSING_MATCHING_FIELD,
+    },
+    {
+        'table_name': 'PropertyState',
+        'field': 'custom_id_1',
+        'rule_type': RULE_TYPE_DEFAULT,
+        'severity': SEVERITY_ERROR,
+        'category': CATEGORY_MISSING_MATCHING_FIELD,
+    },
+    {
+        'table_name': 'PropertyState',
+        'field': 'pm_property_id',
+        'rule_type': RULE_TYPE_DEFAULT,
+        'severity': SEVERITY_ERROR,
+        'category': CATEGORY_MISSING_MATCHING_FIELD,
+    },
+    {
+        'table_name': 'TaxLotState',
+        'field': 'jurisdiction_tax_lot_id',
+        'rule_type': RULE_TYPE_DEFAULT,
+        'severity': SEVERITY_ERROR,
+        'category': CATEGORY_MISSING_MATCHING_FIELD,
+    },
 ]
 RULES_MISSING_VALUES = [
-    'address_line_1',
-    # 'tax_lot_id',
-    'custom_id_1',
-    'pm_property_id'
+    {
+        'table_name': 'PropertyState',
+        'field': 'address_line_1',
+        'rule_type': RULE_TYPE_DEFAULT,
+        'severity': SEVERITY_ERROR,
+        'category': CATEGORY_MISSING_VALUES,
+    },
+    {
+        'table_name': 'TaxLotState',
+        'field': 'address_line_1',
+        'rule_type': RULE_TYPE_DEFAULT,
+        'severity': SEVERITY_ERROR,
+        'category': CATEGORY_MISSING_VALUES,
+    },
+    {
+        'table_name': 'PropertyState',
+        'field': 'pm_property_id',
+        'rule_type': RULE_TYPE_DEFAULT,
+        'severity': SEVERITY_ERROR,
+        'category': CATEGORY_MISSING_VALUES,
+    },
+    {
+        'table_name': 'PropertyState',
+        'field': 'custom_id_1',
+        'rule_type': RULE_TYPE_DEFAULT,
+        'severity': SEVERITY_ERROR,
+        'category': CATEGORY_MISSING_VALUES,
+    },
+    {
+        'table_name': 'TaxLotState',
+        'field': 'jurisdiction_tax_lot_id',
+        'rule_type': RULE_TYPE_DEFAULT,
+        'severity': SEVERITY_ERROR,
+        'category': CATEGORY_MISSING_VALUES,
+    },
 ]
 RULES_RANGE_CHECKS = [
     {
+        'table_name': 'PropertyState',
         'field': 'year_built',
-        'type': TYPE_YEAR,
+        'data_type': TYPE_YEAR,
+        'rule_type': RULE_TYPE_DEFAULT,
         'min': 1700,
         'max': 2019,
-        'severity': SEVERITY_ERROR
+        'severity': SEVERITY_ERROR,
+        'category': CATEGORY_IN_RANGE_CHECKING,
     }, {
+        'table_name': 'PropertyState',
         'field': 'year_ending',
-        'type': TYPE_DATE,
+        'data_type': TYPE_DATE,
+        'rule_type': RULE_TYPE_DEFAULT,
         'min': 18890101,
         'max': 20201231,
-        'severity': SEVERITY_ERROR
+        'severity': SEVERITY_ERROR,
+        'category': CATEGORY_IN_RANGE_CHECKING,
     }, {
+        'table_name': 'PropertyState',
         'field': 'conditioned_floor_area',
-        'type': TYPE_NUMBER,
+        'data_type': TYPE_NUMBER,
+        'rule_type': RULE_TYPE_DEFAULT,
         'min': 0,
         'max': 7000000,
         'severity': SEVERITY_ERROR,
-        'units': 'square feet'
+        'units': 'square feet',
+        'category': CATEGORY_IN_RANGE_CHECKING,
     }, {
+        'table_name': 'PropertyState',
         'field': 'conditioned_floor_area',
-        'type': TYPE_NUMBER,
+        'data_type': TYPE_NUMBER,
+        'rule_type': RULE_TYPE_DEFAULT,
         'min': 100,
         'severity': SEVERITY_WARNING,
-        'units': 'square feet'
+        'units': 'square feet',
+        'category': CATEGORY_IN_RANGE_CHECKING,
     }, {
+        'table_name': 'PropertyState',
         'field': 'energy_score',
-        'type': TYPE_NUMBER,
+        'data_type': TYPE_NUMBER,
+        'rule_type': RULE_TYPE_DEFAULT,
         'min': 0,
         'max': 100,
-        'severity': SEVERITY_ERROR
+        'severity': SEVERITY_ERROR,
+        'category': CATEGORY_IN_RANGE_CHECKING,
     }, {
+        'table_name': 'PropertyState',
         'field': 'energy_score',
-        'type': TYPE_NUMBER,
+        'data_type': TYPE_NUMBER,
+        'rule_type': RULE_TYPE_DEFAULT,
         'min': 10,
-        'severity': SEVERITY_WARNING
+        'severity': SEVERITY_WARNING,
+        'category': CATEGORY_IN_RANGE_CHECKING,
     }, {
+        'table_name': 'PropertyState',
         'field': 'generation_date',
-        'type': TYPE_DATE,
+        'data_type': TYPE_DATE,
+        'rule_type': RULE_TYPE_DEFAULT,
         'min': 18890101,
         'max': 20201231,
-        'severity': SEVERITY_ERROR
+        'severity': SEVERITY_ERROR,
+        'category': CATEGORY_IN_RANGE_CHECKING,
     }, {
+        'table_name': 'PropertyState',
         'field': 'gross_floor_area',
-        'type': TYPE_NUMBER,
+        'data_type': TYPE_NUMBER,
+        'rule_type': RULE_TYPE_DEFAULT,
         'min': 100,
         'max': 7000000,
         'severity': SEVERITY_ERROR,
-        'units': 'square feet'
+        'units': 'square feet',
+        'category': CATEGORY_IN_RANGE_CHECKING,
     }, {
+        'table_name': 'PropertyState',
         'field': 'occupied_floor_area',
-        'type': TYPE_NUMBER,
+        'data_type': TYPE_NUMBER,
+        'rule_type': RULE_TYPE_DEFAULT,
         'min': 100,
         'max': 7000000,
         'severity': SEVERITY_ERROR,
-        'units': 'square feet'
+        'units': 'square feet',
+        'category': CATEGORY_IN_RANGE_CHECKING,
     }, {
+        'table_name': 'PropertyState',
         'field': 'recent_sale_date',
-        'type': TYPE_DATE,
+        'data_type': TYPE_DATE,
+        'rule_type': RULE_TYPE_DEFAULT,
         'min': 18890101,
         'max': 20201231,
-        'severity': SEVERITY_ERROR
+        'severity': SEVERITY_ERROR,
+        'category': CATEGORY_IN_RANGE_CHECKING,
     }, {
+        'table_name': 'PropertyState',
         'field': 'release_date',
-        'type': TYPE_DATE,
+        'data_type': TYPE_DATE,
+        'rule_type': RULE_TYPE_DEFAULT,
         'min': 18890101,
         'max': 20201231,
-        'severity': SEVERITY_ERROR
+        'severity': SEVERITY_ERROR,
+        'category': CATEGORY_IN_RANGE_CHECKING,
     }, {
+        'table_name': 'PropertyState',
         'field': 'site_eui',
-        'type': TYPE_NUMBER,
+        'data_type': TYPE_NUMBER,
+        'rule_type': RULE_TYPE_DEFAULT,
         'min': 0,
         'max': 1000,
         'severity': SEVERITY_ERROR,
-        'units': 'kBtu/sq. ft./year'
+        'units': 'kBtu/sq. ft./year',
+        'category': CATEGORY_IN_RANGE_CHECKING,
     }, {
+        'table_name': 'PropertyState',
         'field': 'site_eui',
-        'type': TYPE_NUMBER,
+        'data_type': TYPE_NUMBER,
+        'rule_type': RULE_TYPE_DEFAULT,
         'min': 10,
         'severity': SEVERITY_WARNING,
-        'units': 'kBtu/sq. ft./year'
+        'units': 'kBtu/sq. ft./year',
+        'category': CATEGORY_IN_RANGE_CHECKING,
     }, {
+        'table_name': 'PropertyState',
         'field': 'site_eui_weather_normalized',
-        'type': TYPE_NUMBER,
+        'data_type': TYPE_NUMBER,
+        'rule_type': RULE_TYPE_DEFAULT,
         'min': 0,
         'max': 1000,
         'severity': SEVERITY_ERROR,
-        'units': 'kBtu/sq. ft./year'
+        'units': 'kBtu/sq. ft./year',
+        'category': CATEGORY_IN_RANGE_CHECKING,
     }, {
+        'table_name': 'PropertyState',
         'field': 'source_eui',
-        'type': TYPE_NUMBER,
+        'data_type': TYPE_NUMBER,
+        'rule_type': RULE_TYPE_DEFAULT,
         'min': 0,
         'max': 1000,
         'severity': SEVERITY_ERROR,
-        'units': 'kBtu/sq. ft./year'
+        'units': 'kBtu/sq. ft./year',
+        'category': CATEGORY_IN_RANGE_CHECKING,
     }, {
+        'table_name': 'PropertyState',
         'field': 'source_eui',
-        'type': TYPE_NUMBER,
+        'data_type': TYPE_NUMBER,
+        'rule_type': RULE_TYPE_DEFAULT,
         'min': 10,
         'severity': SEVERITY_WARNING,
-        'units': 'kBtu/sq. ft./year'
+        'units': 'kBtu/sq. ft./year',
+        'category': CATEGORY_IN_RANGE_CHECKING,
     }, {
+        'table_name': 'PropertyState',
         'field': 'source_eui_weather_normalized',
-        'type': TYPE_NUMBER,
+        'data_type': TYPE_NUMBER,
+        'rule_type': RULE_TYPE_DEFAULT,
         'min': 10,
         'max': 1000,
         'severity': SEVERITY_ERROR,
-        'units': 'kBtu/sq. ft./year'
+        'units': 'kBtu/sq. ft./year',
+        'category': CATEGORY_IN_RANGE_CHECKING,
     }
 ]
+
+
 # RULES_DATA_TYPE_CHECKS = [
 #     {'address_line_1': TYPE_STRING},
 #     {'address_line_2': TYPE_STRING},
@@ -225,8 +339,11 @@ class Rule(models.Model):
     """
     Rules for DataQualityCheck
     """
-    org = models.ForeignKey(Organization)  # TODO: remove this and trigger off of DataQualityChecks
-    data_quality_check = models.ForeignKey('DataQualityCheck', on_delete=models.CASCADE, null=True)
+    name = models.CharField(max_length=255, blank=True)
+    description = models.CharField(max_length=1000, blank=True)
+    data_quality_check = models.ForeignKey('DataQualityCheck', related_name='rules',
+                                           on_delete=models.CASCADE, null=True)
+    status_label = models.OneToOneField(StatusLabel, null=True, on_delete=models.SET_NULL)
     table_name = models.CharField(max_length=200, default='PropertyState', blank=True)
     field = models.CharField(max_length=200)
     enabled = models.BooleanField(default=True)
@@ -238,66 +355,10 @@ class Rule(models.Model):
     severity = models.IntegerField(choices=SEVERITY)
     units = models.CharField(max_length=100, blank=True)
 
-    @staticmethod
-    def initialize_rules(organization, data_quality_check_id):
-        """
-        Initialize the default rules for a DataQualityCheck object
-
-        :param organization: Organization ID
-        :param data_quality_check_id: ID of the DataQualityCheck class
-
-        :return: None
-        """
-        for field in RULES_MISSING_MATCHES:
-            Rule.objects.create(
-                org=organization,
-                data_quality_check_id=data_quality_check_id,
-                table_name='PropertyState',
-                field=field,
-                category=CATEGORY_MISSING_MATCHING_FIELD,
-                severity=SEVERITY_ERROR,
-                rule_type=RULE_TYPE_DEFAULT,
-            )
-        for ignored_field in RULES_MISSING_VALUES:
-            Rule.objects.create(
-                org=organization,
-                data_quality_check_id=data_quality_check_id,
-                field=ignored_field,
-                category=CATEGORY_MISSING_VALUES,
-                severity=SEVERITY_ERROR,
-                rule_type=RULE_TYPE_DEFAULT,
-            )
-        for rule in RULES_RANGE_CHECKS:
-            Rule.objects.create(
-                org=organization,
-                data_quality_check_id=data_quality_check_id,
-                field=rule['field'],
-                category=CATEGORY_IN_RANGE_CHECKING,
-                data_type=rule['type'],
-                min=rule.get('min'),
-                max=rule.get('max'),
-                severity=rule['severity'],
-                units=rule.get('units', ''),
-                rule_type=RULE_TYPE_DEFAULT,
-            )
-            # for pair in data_type_check:
-            #     Rule.objects.create(
-            #         org=organization,
-            #         field=pair[0],
-            #         category=CATEGORY_DATA_TYPE_CHECK,
-            #         type=pair[1],
-            #         severity=SEVERITY_ERROR,
-            #         rule_type = RULE_TYPE_DEFAULT,
-            #     )
-
-    @staticmethod
-    def restore_defaults(organization):
-        Rule.delete_rules(organization)
-        Rule.initialize_rules(organization)
-
-    @staticmethod
-    def delete_rules(organization):
-        Rule.objects.filter(org=organization).delete()
+    def delete(self, *args, **kwargs):
+        if self.status_label:
+            self.status_label.delete()
+        return super(self.__class__, self).delete(*args, **kwargs)
 
 
 class DataQualityCheck(models.Model):
@@ -310,7 +371,33 @@ class DataQualityCheck(models.Model):
     }
 
     organization = models.ForeignKey(Organization)
-    name = models.CharField(max_length=255, blank=True)  # Name of the DataQualityCheck, ignored right now.
+    name = models.CharField(max_length=255, blank='Default Data Quality Check')
+
+    @classmethod
+    def retrieve(klass, organization):
+        """
+        DataQualityCheck was previously a simple object but has been migrated to a django model. This
+        method ensures that the data quality model will be backwards compatible.
+
+        This is the preferred method to initialize a new object.
+
+        :param organization: int or instance of Organization
+        :return: obj, DataQualityCheck
+
+
+        """
+        dq, _ = DataQualityCheck.objects.get_or_create(organization=organization)
+        if dq.rules.count() == 0:
+            _log.info("No rules found in DataQualityCheck, initializing default rules")
+            dq.initialize_rules()
+
+        return dq
+
+    def __init__(self, *args, **kwargs):
+        # Add member variable for temp storage of results
+        self.results = {}
+        self.reset_results()
+        super(DataQualityCheck, self).__init__(*args, **kwargs)
 
     @staticmethod
     def initialize_cache(file_pk):
@@ -354,12 +441,15 @@ class DataQualityCheck(models.Model):
                     self.results[datum.id][field] = getattr(datum, field)
                 self.results[datum.id]['data_quality_results'] = []
 
-            # self.missing_matching_field(datum)
-            self.in_range_checking(datum)
-            self.missing_values(datum)
-            # self.data_type_check(datum)
+            # self._missing_matching_field(datum)
+            self._in_range_checking(datum)
+            self._missing_values(datum)
+            # self._data_type_check(datum)
 
-        self.prune_data()
+        # Prune the results will remove any entries that have zero data_quality_results
+        for k, v in self.results.items():
+            if not v['data_quality_results']:
+                del self.results[k]
 
     def get_fieldnames(self, record_type):
         """Get fieldnames to apply to results."""
@@ -367,21 +457,10 @@ class DataQualityCheck(models.Model):
         field_names.extend(DataQualityCheck.REQUIRED_FIELDS[record_type])
         return field_names
 
-    def prune_data(self):
-        """
-        Prune the results will remove any entries that have zero data_quality_results
-
-        :return: None
-        """
-
-        for k, v in self.results.items():
-            if not v['data_quality_results']:
-                del self.results[k]
-
     def reset_results(self):
         self.results = {}
 
-    def missing_matching_field(self, datum):
+    def _missing_matching_field(self, datum):
         """
         Look for fields in the database that are not matched. Missing is
         defined as a None in the database
@@ -392,11 +471,8 @@ class DataQualityCheck(models.Model):
         # TODO: NL: Should we check the extra_data field for the data?
         """
 
-        for rule in Rule.objects.filter(
-                org=self.organization,
-                category=CATEGORY_MISSING_MATCHING_FIELD,
-                enabled=True
-        ).order_by('field', 'severity'):
+        for rule in self.rules.filter(category=CATEGORY_MISSING_MATCHING_FIELD,
+                                      enabled=True).order_by('field', 'severity'):
             if hasattr(datum, rule.field):
                 value = getattr(datum, rule.field)
                 formatted_field = ASSESSOR_FIELDS_BY_COLUMN[rule.field]['title']
@@ -411,7 +487,7 @@ class DataQualityCheck(models.Model):
                         'severity': dict(SEVERITY)[rule.severity]
                     })
 
-    def missing_values(self, datum):
+    def _missing_values(self, datum):
         """
         Look for fields in the database that are empty. Need to know the list
         of fields that are part of the data_quality section.
@@ -426,8 +502,8 @@ class DataQualityCheck(models.Model):
         # TODO: Check the extra_data field for the data?
         """
 
-        for rule in Rule.objects.filter(org=self.organization, category=CATEGORY_MISSING_VALUES,
-                                        enabled=True).order_by('field', 'severity'):
+        for rule in self.rules.filter(category=CATEGORY_MISSING_VALUES,
+                                      enabled=True).order_by('field', 'severity'):
             if hasattr(datum, rule.field):
                 value = getattr(datum, rule.field)
                 formatted_field = ASSESSOR_FIELDS_BY_COLUMN[rule.field]['title']
@@ -444,15 +520,16 @@ class DataQualityCheck(models.Model):
                         'severity': dict(SEVERITY)[rule.severity]
                     })
 
-    def in_range_checking(self, datum):
+    def _in_range_checking(self, datum):
         """
         Check for errors in the min/max of the values.
 
         :param datum: Database record containing the BS version of the fields populated
         :return: None
         """
-        for rule in Rule.objects.filter(org=self.organization, category=CATEGORY_IN_RANGE_CHECKING,
-                                        enabled=True).order_by('field', 'severity'):
+
+        for rule in self.rules.filter(
+                category=CATEGORY_IN_RANGE_CHECKING, enabled=True).order_by('field', 'severity'):
             # check if the field exists
             if hasattr(datum, rule.field):
                 value = getattr(datum, rule.field)
@@ -508,7 +585,7 @@ class DataQualityCheck(models.Model):
                         'severity': dict(SEVERITY)[rule.severity]
                     })
 
-    def data_type_check(self, datum):
+    def _data_type_check(self, datum):
         """
         Check the data types of the fields. These should never be wrong as
         these are the data in the database.
@@ -519,8 +596,8 @@ class DataQualityCheck(models.Model):
         :return: None
         """
 
-        for rule in Rule.objects.filter(org=self.organization, category=CATEGORY_DATA_TYPE_CHECK,
-                                        enabled=True).order_by('field', 'severity'):
+        for rule in self.rules.filter(
+                category=CATEGORY_DATA_TYPE_CHECK, enabled=True).order_by('field', 'severity'):
             # check if the field exists
             if hasattr(datum, rule.field):
                 value = getattr(datum, rule.field)
@@ -566,22 +643,53 @@ class DataQualityCheck(models.Model):
         set_cache_raw(DataQualityCheck.cache_key(file_pk), z,
                       86400)  # save the results for 24 hours
 
+    def initialize_rules(self):
+        """
+        Initialize the default rules for a DataQualityCheck object
 
-def data_quality_post_init(**kwargs):
-    """
-    DataQualityCheck was previously a simple object but has been migrated to a django model. This
-    method ensures that the data quality model will be backwards compatible.
+        :return: None
+        """
+        for rule in RULES_MISSING_MATCHES:
+            self.rules.add(Rule.objects.create(**rule))
+        for rule in RULES_MISSING_VALUES:
+            self.rules.add(Rule.objects.create(**rule))
 
-    :param kwargs:
-    :return: None
-    """
-    dq = kwargs.get('instance')
+        for rule in RULES_RANGE_CHECKS:
+            self.rules.add(Rule.objects.create(**rule))
 
-    # need a point here
-    if not Rule.objects.filter(org=dq.organization).exists():
-        Rule.initialize_rules(dq.organization, dq.pk)
+    def remove_all_rules(self):
+        """
+        Removes all the rules associated with this DataQualityCheck instance.
 
-    dq.reset_results()
+        :return: None
+        """
 
+        # call it this way to handle deleting status_labels
+        for r in self.rules.all():
+            r.delete()
 
-post_init.connect(data_quality_post_init, DataQualityCheck)
+    def reset_default_rules(self):
+        """
+        Reset the instances rules back to the default set of rules
+
+        :return:
+        """
+        self.remove_all_rules()
+        self.initialize_rules()
+
+    def add_rule(self, rule):
+        """
+
+        :param rule: dict to be added as a new rule
+        :return: None
+        """
+        try:
+            r = Rule.objects.create(**rule)
+        except TypeError as e:
+            raise TypeError("Rule data is not defined correctly: {}".format(e))
+
+        self.rules.add(r)
+
+    def __unicode__(self):
+        return u'DataQuality ({}:{}) - Rule Count: {}'.format(self.pk, self.name,
+                                                              self.rules.count())
