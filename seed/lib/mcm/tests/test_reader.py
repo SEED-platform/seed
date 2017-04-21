@@ -1,15 +1,20 @@
+# !/usr/bin/env python
+# encoding: utf-8
 """
-:copyright: (c) 2014 Building Energy Inc
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
 """
-from unittest import TestCase
 import os
+from unittest import TestCase
 
 import unicodecsv
+
 from seed.lib.mcm import reader
 from seed.lib.mcm.tests import utils
 
 
 class TestCSVParser(TestCase):
+
     def setUp(self):
         test_file = os.path.dirname(os.path.realpath(__file__)) + '/test_data/test_espm.csv'
         self.csv_f = open(test_file, 'rb')
@@ -24,22 +29,6 @@ class TestCSVParser(TestCase):
             isinstance(self.parser.csvreader, unicodecsv.DictReader)
         )
 
-    def test_clean_super(self):
-        """Make sure we clean out unicode escaped super scripts."""
-        expected = u'Testing 2. And 2.'
-        test = u'Testing \xb2. And \ufffd.'
-        self.assertEqual(
-            self.parser._clean_super(test),
-            expected
-        )
-
-        # Test that our replace keyword works
-        new_expected = expected.replace('2', '3')
-        self.assertEqual(
-            self.parser._clean_super(test, replace=u'3'),
-            new_expected
-        )
-
     def test_clean_super_scripts(self):
         """Call _clean_super on all fieldnames."""
         escape = u'\xb2'
@@ -52,6 +41,7 @@ class TestCSVParser(TestCase):
 
 
 class TestMCMParserCSV(TestCase):
+
     def setUp(self):
         test_file = os.path.dirname(os.path.realpath(__file__)) + '/test_data/test_espm.csv'
         self.csv_f = open(test_file, 'rb')
@@ -88,8 +78,20 @@ class TestMCMParserCSV(TestCase):
     def test_num_columns(self):
         self.assertEqual(self.parser.num_columns(), 250)
 
+    def test_headers(self):
+        """tests that we can get the original order of headers"""
+        self.assertEqual(
+            self.parser.headers[0],
+            'Property Id'
+        )
+        self.assertEqual(
+            self.parser.headers[-1],
+            'Release Date'
+        )
+
 
 class TestMCMParserXLS(TestCase):
+
     def setUp(self):
         test_file = os.path.dirname(os.path.realpath(__file__)) + '/test_data/test_espm.xls'
         self.xls_f = open(test_file, 'rb')
@@ -126,8 +128,34 @@ class TestMCMParserXLS(TestCase):
     def test_num_columns(self):
         self.assertEqual(self.parser.num_columns(), 250)
 
+    def test_headers(self):
+        self.assertEqual(
+            self.parser.headers[0],
+            'Property Id'
+        )
+        self.assertEqual(
+            self.parser.headers[-1],
+            'Release Date'
+        )
+
+    def test_blank_row(self):
+        self.xls_f.close()
+        test_file = os.path.dirname(os.path.realpath(__file__)) + '/test_data/test_espm_blank_rows.xls'
+        self.xls_f = open(test_file, 'rb')
+        self.parser = reader.MCMParser(self.xls_f)
+        self.total_callbacks = 0
+        self.assertEqual(
+            self.parser.headers[0],
+            'Property Id'
+        )
+        self.assertEqual(
+            self.parser.headers[-1],
+            'Release Date'
+        )
+
 
 class TestMCMParserXLSX(TestCase):
+
     def setUp(self):
         test_file = os.path.dirname(os.path.realpath(__file__)) + '/test_data/test_espm.xlsx'
         self.xlsx_f = open(test_file, 'rb')
@@ -163,3 +191,29 @@ class TestMCMParserXLSX(TestCase):
 
     def test_num_columns(self):
         self.assertEqual(self.parser.num_columns(), 250)
+
+    def test_headers(self):
+        self.assertEqual(
+            self.parser.headers[0],
+            'Property Id'
+        )
+        self.assertEqual(
+            self.parser.headers[-1],
+            'Release Date'
+        )
+
+    def test_odd_date_format(self):
+        """
+        Regression test to handle excel date format issues. More info at:
+        https://secure.simplistix.co.uk/svn/xlrd/trunk/xlrd/doc/xlrd.html?p=4966
+        under 'Dates in Excel spreadsheets'
+        """
+        self.xlsx_f.close()
+        test_file = os.path.dirname(os.path.realpath(__file__)) + '/test_data/test_espm_date_format.xlsx'
+        self.xlsx_f = open(test_file, 'rb')
+        self.parser = reader.MCMParser(self.xlsx_f)
+        list(self.parser.reader.excelreader)
+
+    def test_get_all_rows(self):
+        """Force evaluate all rows to make sure we don't get errors."""
+        list(self.parser.reader.excelreader)

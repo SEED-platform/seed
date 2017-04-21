@@ -1,5 +1,8 @@
+# !/usr/bin/env python
+# encoding: utf-8
 """
-:copyright: (c) 2014 Building Energy Inc
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
 """
 import json
 
@@ -18,6 +21,7 @@ User = get_user_model()
 
 
 class AdminViewsTest(TestCase):
+
     def setUp(self):
         admin_user_details = {'username': 'admin@testserver',
                               'email': 'admin@testserver',
@@ -30,8 +34,8 @@ class AdminViewsTest(TestCase):
                         'password': 'user_passS1'}
         self.user = User.objects.create_user(**user_details)
 
-        self.add_org_url = reverse_lazy('accounts:add_org')
-        self.add_user_url = reverse_lazy('accounts:add_user')
+        self.add_org_url = reverse_lazy('apiv2:organizations-list')
+        self.add_user_url = reverse_lazy('apiv2:users-list')
 
     def _post_json(self, url, data):
         """
@@ -152,7 +156,7 @@ class AdminViewsTest(TestCase):
     def test_signup_process(self):
         """
         Simulates the entire new user signup process, from initial
-        account creation by an admin to recieving the signup email
+        account creation by an admin to receiving the signup email
         to confirming the account and setting a password.
         """
         data = {'first_name': 'New',

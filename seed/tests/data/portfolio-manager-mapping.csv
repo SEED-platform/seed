@@ -1,0 +1,23 @@
+map_columns,raw_columns
+city,City
+energy_score,ENERGY STAR Score
+state_province,State/Province
+site_eui,Site EUI (kBtu/ft2)
+year_ending,Year Ending
+source_eui_weather_normalized,Weather Normalized Source EUI (kBtu/ft2)
+Parking - Gross Floor Area,Parking - Gross Floor Area (ft2)
+address_line_1,Address 1
+pm_property_id,Property Id
+address_line_2,Address 2
+source_eui,Source EUI (kBtu/ft2)
+release_date,Release Date
+National Median Source EUI,National Median Source EUI (kBtu/ft2)
+site_eui_weather_normalized,Weather Normalized Site EUI (kBtu/ft2)
+National Median Site EUI,National Median Site EUI (kBtu/ft2)
+year_built,Year Built
+postal_code,Postal Code
+owner,Organization
+property_name,Property Name
+Property Floor Area (Buildings and Parking),Property Floor Area (Buildings and Parking) (ft2)
+Total GHG Emissions,Total GHG Emissions (MtCO2e)
+generation_date,Generation Date

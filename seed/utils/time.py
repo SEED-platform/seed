@@ -1,3 +1,11 @@
+# !/usr/bin/env python
+# encoding: utf-8
+"""
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
+"""
+import calendar
+import datetime
 import dateutil
 
 
@@ -12,5 +20,17 @@ def convert_datestr(datestr):
 def convert_to_js_timestamp(timestamp):
     """converts a django/python datetime object to milliseconds since epoch"""
     if timestamp:
-        return int(timestamp.strftime("%s")) * 1000
+        return calendar.timegm(timestamp.timetuple()) * 1000
     return None
+
+
+def parse_datetime(maybe_datetime):
+    """
+    Process a datetime value that may be None, timestamp, strftime.
+    """
+    if isinstance(maybe_datetime, (int, float)):
+        return datetime.datetime.fromtimestamp(maybe_datetime / 1000)
+    elif isinstance(maybe_datetime, basestring):
+        return dateutil.parser.parse(maybe_datetime)
+    else:
+        return None

@@ -1,3 +1,9 @@
+# !/usr/bin/env python
+# encoding: utf-8
+"""
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
+"""
 import datetime
 
 from django.db.models import Q
@@ -11,6 +17,8 @@ from seed.utils.constants import ASSESSOR_FIELDS_BY_COLUMN
 
 def get_source_type(import_file, source_type=''):
     """Used for converting ImportFile source_type into an int."""
+
+    # TODO: move source_type to a database lookup. Right now it is hard coded
     source_type_str = getattr(import_file, 'source_type', '') or ''
     source_type_str = source_type or source_type_str
     source_type_str = source_type_str.upper().replace(' ', '_')
@@ -22,7 +30,7 @@ def serialize_building_snapshot(b, pm_cb, building):
     """returns a dict that's safe to JSON serialize"""
     b_as_dict = b.__dict__.copy()
     for key, val in b_as_dict.items():
-        if type(val) == datetime.datetime or type(val) == datetime.date:
+        if isinstance(val, datetime.datetime) or isinstance(val, datetime.date):
             b_as_dict[key] = time.convert_to_js_timestamp(val)
     del(b_as_dict['_state'])
     # check if they're matched
@@ -37,12 +45,10 @@ def serialize_building_snapshot(b, pm_cb, building):
 
 def get_buildings_for_user_count(user):
     """returns the number of buildings in a user's orgs"""
-    building_snapshots = BuildingSnapshot.objects.filter(
+    return BuildingSnapshot.objects.filter(
         super_organization__in=user.orgs.all(),
         canonicalbuilding__active=True,
-    ).distinct('pk')
-
-    return building_snapshots.count()
+    ).count()
 
 
 def get_search_query(user, params):
@@ -83,8 +89,11 @@ def get_search_query(user, params):
     return buildings_queryset
 
 
-def get_columns(is_project, org_id, all_fields=False):
-    """gets default columns, to be overriden in future
+def get_columns(org_id, all_fields=False):
+    """
+    Get default columns, to be overridden in future
+
+    Returns::
 
         title: HTML presented title of column
         sort_column: semantic name used by js and for searching DB
@@ -109,6 +118,7 @@ def get_columns(is_project, org_id, all_fields=False):
         'string': 'string',
         'decimal': 'number',
         'datetime': 'date',
+        'foreignkey': 'number'
     }
     field_types = {}
     for k, v in get_mappable_types().items():
@@ -117,7 +127,6 @@ def get_columns(is_project, org_id, all_fields=False):
             "sort_column": k,
             "type": translator[v],
             "class": "is_aligned_right",
-            "field_type": "assessor",
             "sortable": True,
             "checked": False,
             "static": False,
@@ -170,18 +179,6 @@ def get_columns(is_project, org_id, all_fields=False):
         cols.append(d)
 
     cols.sort(key=lambda x: x['title'])
-    if is_project:
-        cols.insert(0, {
-            "title": "Status",
-            "sort_column": "project_building_snapshots__status_label__name",
-            "class": "",
-            "title_class": "",
-            "type": "string",
-            "field_type": "assessor",
-            "sortable": True,
-            "checked": True,
-            "static": True
-        })
     columns = {
         'fields': cols,
     }

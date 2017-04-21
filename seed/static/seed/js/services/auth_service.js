@@ -1,12 +1,13 @@
-/**
- * :copyright: (c) 2014 Building Energy Inc
+/*
+ * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :author
  */
 
 angular.module('BE.seed.service.auth', []).factory('auth_service', [
   '$http',
-  '$q',
+  'user_service',
   'generated_urls',
-  function ($http, $q, generated_urls) {
+  function ($http, user_service, generated_urls) {
 
     var auth_factory = {};
     var urls = generated_urls;
@@ -20,51 +21,35 @@ angular.module('BE.seed.service.auth', []).factory('auth_service', [
      *    .then(function(data) {
      *      auth = data.auth; // auth === {'can_invite_member': true, 'can_remove_member': true}
      *  });
-     * 
-     * @param  {organization_id}  id of ogranization
+     *
+     * @param  {integer}  organization_id is the id of organization
      * @param  {array}  actions is an array of actions
      * @return {promise} then a an object with keys as the actions, and bool
      * values
      */
-    auth_factory.is_authorized = function(organization_id, actions) {
-        var defer = $q.defer();
-        $http({
-            method: 'POST',
-            'url': urls.accounts.is_authorized,
-            'data': {
-                'actions': actions,
-                'organization_id': organization_id
-            }
-        }).success(function(data, status, headers, config) {
-            if (data.status === "error") {
-                defer.reject(data, status);
-            }
-            defer.resolve(data);
-        }).error(function(data, status, headers, config) {
-            defer.reject(data, status);
+    auth_factory.is_authorized = function (organization_id, actions) {
+      return user_service.get_user_id().then(function (user_id) {
+        return $http.post('/api/v2/users/' + user_id + '/is_authorized/', {
+          actions: actions
+        }, {
+          params: {
+            organization_id: organization_id
+          }
+        }).then(function (response) {
+          return response.data;
         });
-        return defer.promise;
+      });
     };
 
     /**
-     * gets all availble actions
+     * gets all available actions
      * @return {promise} then an array of actions
      */
-    auth_factory.get_actions = function(user) {
-        var defer = $q.defer();
-        $http({
-            method: 'GET',
-            'url': urls.accounts.get_actions
-        }).success(function(data, status, headers, config) {
-            if (data.status === "error") {
-                defer.reject(data, status);
-            }
-            defer.resolve(data);
-        }).error(function(data, status, headers, config) {
-            defer.reject(data, status);
-        });
-        return defer.promise;
+    auth_factory.get_actions = function (user) {
+      return $http.get(urls.accounts.get_actions).then(function (response) {
+        return response.data;
+      });
     };
 
     return auth_factory;
-}]);
+  }]);

@@ -1,5 +1,8 @@
+# !/usr/bin/env python
+# encoding: utf-8
 """
-:copyright: (c) 2014 Building Energy Inc
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
 """
 import os
 import uuid
@@ -63,9 +66,9 @@ class TestExporters(TestCase):
                 qs_val = qs[i]
                 for component in components:
                     qs_val = getattr(qs_val, component)
-                    if qs_val == None:
+                    if qs_val is None:
                         break
-                if isinstance(qs_val, Manager) or qs_val == None:
+                if isinstance(qs_val, Manager) or qs_val is None:
                     qs_val = u''
                 else:
                     qs_val = unicode(qs_val)
@@ -106,9 +109,9 @@ class TestExporters(TestCase):
                         qs_val = getattr(qs_val, component)
                     except AttributeError:
                         qs_val = qs_val.extra_data.get(component)
-                    if qs_val == None:
+                    if qs_val is None:
                         break
-                if isinstance(qs_val, Manager) or qs_val == None:
+                if isinstance(qs_val, Manager) or qs_val is None:
                     qs_val = u''
                 else:
                     qs_val = unicode(qs_val)
@@ -142,9 +145,9 @@ class TestExporters(TestCase):
                 qs_val = qs[i]
                 for component in components:
                     qs_val = getattr(qs_val, component)
-                    if qs_val == None:
+                    if qs_val is None:
                         break
-                if isinstance(qs_val, Manager) or qs_val == None:
+                if isinstance(qs_val, Manager) or qs_val is None:
                     qs_val = u''
                 else:
                     qs_val = unicode(qs_val)

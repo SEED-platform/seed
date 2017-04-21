@@ -1,20 +1,24 @@
+# !/usr/bin/env python
+# encoding: utf-8
 """
-:copyright: (c) 2014 Building Energy Inc
-
-
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
+"""
+"""
 The Reader module is intended to contain only code which reads data
 out of CSV files. Fuzzy matches, application to data models happens
 elsewhere.
 
 """
-import datetime
 import mmap
 import operator
 import sys
-import unicodedata
 
 from unicodecsv import DictReader, Sniffer
-from xlrd import XLRDError, open_workbook, xldate_as_tuple, empty_cell
+from unidecode import unidecode
+from xlrd import xldate, XLRDError, open_workbook, empty_cell
+from xlrd.xldate import XLDateAmbiguous
+
 from seed.lib.mcm import mapper, utils
 
 (
@@ -26,6 +30,8 @@ from seed.lib.mcm import mapper, utils
     XL_CELL_ERROR,
     XL_CELL_BLANK,  # for use in debugging, gathering stats, etc
 ) = range(7)
+
+ROW_DELIMITER = "|#*#|"
 
 
 class ExcelParser(object):
@@ -43,6 +49,7 @@ class ExcelParser(object):
     """
 
     def __init__(self, excel_file, *args, **kwargs):
+        self.cache_headers = []
         self.excel_file = excel_file
         self.sheet = self._get_sheet(excel_file)
         self.header_row = self._get_header_row(self.sheet)
@@ -61,10 +68,10 @@ class ExcelParser(object):
         return book.sheet_by_index(sheet_index)
 
     def _get_header_row(self, sheet):
-        """attempt to locate the header row based on a lack of empty cells
+        """returns the best guess for the header row
 
         :param sheet: xlrd sheet
-        :returns: header row index
+        :returns: index of header row
         """
         for row in range(sheet.nrows):
             row_contains_empty_cells = False
@@ -84,11 +91,12 @@ class ExcelParser(object):
         :returns: items value with dates parsed properly
         """
 
-        # Thx to Augusto C Men to point fast solution for XLS/XLSX dates
         if item.ctype == XL_CELL_DATE:
-            return datetime.datetime(
-                *xldate_as_tuple(item.value, self._workbook.datemode)
-            )
+            try:
+                return xldate.xldate_as_datetime(item.value, self._workbook.datemode)
+            except XLDateAmbiguous:
+                raise Exception('Date fields are not in a format that SEED can interpret. '
+                                'A possible solution is to save as a CSV file and reimport.')
 
         if item.ctype == XL_CELL_NUMBER:
             if item.value % 1 == 0:  # integers
@@ -97,9 +105,7 @@ class ExcelParser(object):
                 return item.value
 
         if isinstance(item.value, unicode):
-            return unicodedata.normalize('NFKD', item.value).encode(
-                'ascii', 'ignore'
-            )
+            return unidecode(item.value)
 
         return item.value
 
@@ -112,8 +118,15 @@ class ExcelParser(object):
         :returns: Generator yeilding a row as Dict
         """
 
+        # save off the headers into a member variable. Only do this once. If XLSDictReader is
+        # called later (which it is in `seek_to_beginning` then don't reparse the headers
+        if not self.cache_headers:
+            for j in range(sheet.ncols):
+                self.cache_headers.append(self.get_value(sheet.cell(header_row, j)).strip())
+
         def item(i, j):
             """returns a tuple (column header, cell value)"""
+            # self.cache_headers[j],
             return (
                 self.get_value(sheet.cell(header_row, j)),
                 self.get_value(sheet.cell(i, j))
@@ -129,7 +142,7 @@ class ExcelParser(object):
 
     def next(self):
         """generator to match CSVReader"""
-        while 1:
+        while True:
             try:
                 yield self.excelreader.next()
             except StopIteration:
@@ -138,7 +151,8 @@ class ExcelParser(object):
     def seek_to_beginning(self):
         """seeks to the beginning of the file
 
-        Since ``XLSDictReader`` is in memory, a new one is created
+        Since ``XLSDictReader`` is in memory, a new one is created. Note: the headers will not be
+        parsed again when the XLSDictReader is loaded
         """
         self.excel_file.seek(0)
         self.excelreader = self.XLSDictReader(self.sheet, self.header_row)
@@ -146,6 +160,11 @@ class ExcelParser(object):
     def num_columns(self):
         """gets the number of columns for the file"""
         return self.sheet.ncols
+
+    @property
+    def headers(self):
+        """return ordered list of clean headers"""
+        return self.cache_headers
 
 
 class CSVParser(object):
@@ -161,12 +180,12 @@ class CSVParser(object):
             reader.seek_to_beginning()
             # rows.next() will return the first row
     """
-    # Character escape sequences to replace
-    CLEAN_SUPER = [u'\ufffd', u'\xb2']
 
     def __init__(self, csvfile, *args, **kwargs):
         self.csvfile = csvfile
         self.csvreader = self._get_csv_reader(csvfile, **kwargs)
+
+        # cleaning the superscripts also assigns the headers to the csvreader.unicode_fieldnames
         self.clean_super_scripts()
 
     def _get_csv_reader(self, *args, **kwargs):
@@ -188,30 +207,17 @@ class CSVParser(object):
             del kwargs['reader_type']
             return reader_type(self.csvfile, dialect, **kwargs)
 
-    def _clean_super(self, col, replace=u'2'):
-        """Cleans up various superscript unicode escapes.
-
-        :param col: str, column name as read from the file.
-        :param replace: (optional) str, string to replace superscripts with.
-        :rtype: str, cleaned row name.
-
-        """
-        for item in self.CLEAN_SUPER:
-            col = col.replace(item, unicode(replace))
-
-        return col
-
     def clean_super_scripts(self):
         """Replaces column names with clean ones."""
         new_fields = []
         for col in self.csvreader.unicode_fieldnames:
-            new_fields.append(self._clean_super(col))
+            new_fields.append(unidecode(col))
 
         self.csvreader.unicode_fieldnames = new_fields
 
     def next(self):
         """Wouldn't it be nice to get iterables form csvreader?"""
-        while 1:
+        while True:
             try:
                 yield self.csvreader.next()
             except StopIteration:
@@ -226,6 +232,11 @@ class CSVParser(object):
     def num_columns(self):
         """gets the number of columns for the file"""
         return len(self.csvreader.unicode_fieldnames)
+
+    @property
+    def headers(self):
+        """original ordered list of headers with leading and trailing spaces stripped"""
+        return [entry.strip() for entry in self.csvreader.unicode_fieldnames]
 
 
 class MCMParser(object):
@@ -254,7 +265,7 @@ class MCMParser(object):
         self.reader = self._get_reader(import_file)
         self.import_file = import_file
         if 'matching_func' not in kwargs:
-            # Special note, contains expects argumengs like the following
+            # Special note, contains expects arguments like the following
             # contains(a, b); tests outcome of ``b in a``
             self.matching_func = operator.contains
 
@@ -303,6 +314,55 @@ class MCMParser(object):
     def num_columns(self):
         """returns the number of columns of the file"""
         return self.reader.num_columns()
+
+    @property
+    def headers(self):
+        """original ordered list of spreadsheet headers that are not cleaned"""
+        return self.reader.headers
+
+    @property
+    def first_five_rows(self):
+        """
+        Return the first five rows of the file.
+
+        :return: list of rows with ROW_DELIMITER
+        """
+        self.seek_to_beginning()
+        rows = self.next()
+
+        validation_rows = []
+        for i in range(5):
+            try:
+                row = rows.next()
+                if row:
+                    # Trim out the spaces around the keys
+                    new_row = {}
+                    for k, v in row.iteritems():
+                        new_row[k.strip()] = v
+                    validation_rows.append(new_row)
+            except StopIteration:
+                """Less than 5 rows in file"""
+                break
+
+        # return the first row of the headers which are cleaned
+        first_row = self.headers
+
+        tmp = []
+        for r in validation_rows:
+            row_arr = []
+            for x in first_row:
+                row_field = r[x]
+                if isinstance(row_field, unicode):
+                    row_field = unidecode(r[x])
+                else:
+                    row_field = str(r[x])
+                row_arr.append(row_field.strip())
+
+            tmp.append(ROW_DELIMITER.join(row_arr))
+
+        self.seek_to_beginning()
+
+        return tmp
 
 
 def main():

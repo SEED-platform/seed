@@ -1,9 +1,12 @@
+# !/usr/bin/env python
+# encoding: utf-8
 """
-:copyright: (c) 2014 Building Energy Inc
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
 """
 import random
 
-from seed.models import (BuildingSnapshot)
+from seed.models import BuildingSnapshot
 from seed.test_helpers.factory.helpers import DjangoFunctionalFactory
 
 
@@ -18,15 +21,16 @@ class SEEDFactory(DjangoFunctionalFactory):
            CanonicalBuilding inst. is created and a BuildingSnapshot inst. is
            created and linked to the CanonicalBuilding inst.
 
-           Usage:
-            ab = SEEDFactory.assessed_building()
-            cb = ab.canonical_building
-            b_snapshot = cb.canonical_snapshot
-            print ab.year_built == b_snapshot.year_built  # True
+           .. code-block::python
 
-           or loop through to create a whole bunch:
-            for i in range(10):
-                SEEDFactory.building_snapshot(name='tester_' % i)
+                ab = SEEDFactory.assessed_building()
+                cb = ab.canonical_building
+                b_snapshot = cb.canonical_snapshot
+                print ab.year_built == b_snapshot.year_built  # True
+
+                # or loop through to create a whole bunch:
+                for i in range(10):
+                    SEEDFactory.building_snapshot(name='tester_' % i)
 
         """
 

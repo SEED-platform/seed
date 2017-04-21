@@ -1,8 +1,5 @@
-{% extends "landing/base.html" %}{% load compress %}
-
-{% block js_scripts %}{{block.super}}
-<script type="text/javascript" src="//www.prefinery.com/javascripts/widget.js"></script>
-{% endblock %}
+{% extends "landing/base.html" %}
+{% load compress %}
 
 {% block content %}
 <div class="page">
@@ -11,7 +8,7 @@
     <div class="page_section">
         {% include "landing/_marketing_bullets.html" %}
 
-		<div class="section_forms">	
+		<div class="section_forms">
 			{% include "landing/_browser_supported.html" %}
 			<div class="clearfix"></div>
 			<div class="form_title">
@@ -22,10 +19,11 @@
 				    <table class="signup_table">
 				        {{login_form.as_table}}
 				    </table>
-				    <input type="submit" class="btn btn-primary" value="Log In"/>
-				    <input type="reset" class="btn btn-default" value="Cancel"/>
+				    <input type="submit" class="btn btn-primary" value="Log In">
+				    <input type="reset" class="btn btn-default" value="Cancel">
 				    <a class="forgot_password" href="{% url "landing:password_reset" %}">Forgot password?</a>
 				</form>
+                {% include "landing/_password_note.html" %}
 			</div>
 		</div>
 		<!-- END .section_forms -->

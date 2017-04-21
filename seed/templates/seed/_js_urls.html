@@ -1,56 +1,35 @@
 {% load app_urls %}
-<script>
-        // config urls
-        window.BE = window.BE || {};
-        // new urls
-        window.BE.app_urls = {% namespaced_urls %};
-        window.BE.app_urls.STATIC_URL = "{{ STATIC_URL }}";
+        <script type="text/javascript">
+            // config URLs
+            window.BE = window.BE || {};
+            // new URLs
+            window.BE.app_urls = {% namespaced_urls %};
+            window.BE.app_urls.STATIC_URL = "{{ STATIC_URL }}";
 
-        // old urls
-        window.BE.urls = window.BE.urls || {};
-        // static url
-        window.BE.urls.STATIC_URL = "{{ STATIC_URL }}";
+            // old URLs
+            window.BE.urls = window.BE.urls || {};
+            // static URLs
+            window.BE.urls.STATIC_URL = "{{ STATIC_URL }}";
 
-        window.BE.urls.get_building_url = "{% url "seed:get_building" %}";
-        window.BE.urls.get_total_number_of_buildings_for_user_url = "{% url "seed:get_total_number_of_buildings_for_user" %}";
-        window.BE.urls.search_buildings_url = "{% url "seed:search_buildings" %}";
-        window.BE.urls.search_building_snapshots_url = "{% url "seed:search_building_snapshots" %}";
-        window.BE.urls.save_match_url = "{% url "seed:save_match" %}";
-        window.BE.urls.get_columns_url = "{% url "seed:get_columns" %}";
-        window.BE.urls.get_PM_filter_by_counts_url = "{% url "seed:get_PM_filter_by_counts" %}";
-        window.BE.urls.seed_home = "{% url "seed:home" %}";
+            window.BE.urls.get_building_url = '{% url "seed:get_building" %}';
+            window.BE.urls.get_total_number_of_buildings_for_user_url = '{% url "seed:get_total_number_of_buildings_for_user" %}';
+            window.BE.urls.search_buildings_url = '{% url "seed:search_buildings" %}';
+            window.BE.urls.save_match_url = '{% url "seed:save_match" %}';
+            window.BE.urls.get_columns_url = '{% url "seed:get_columns" %}';
+            window.BE.urls.seed_home = '{% url "seed:home" %}';
 
-        window.BE.urls.create_dataset = "{% url "seed:create_dataset" %}";
-        window.BE.urls.get_datasets = "{% url "seed:get_datasets" %}";
-        window.BE.urls.get_dataset = "{% url "seed:get_dataset" %}";
-        window.BE.urls.get_import_file = "{% url "seed:get_import_file" %}";
-        window.BE.urls.delete_file = "{% url "seed:delete_file" %}";
-        window.BE.urls.delete_dataset = "{% url "seed:delete_dataset" %}";
-        window.BE.urls.update_dataset = "{% url "seed:update_dataset" %}";
-        window.BE.urls.update_building = "{% url "seed:update_building" %}";
+            window.BE.urls.delete_file      = '{% url "seed:delete_file" %}';
 
-        // uploader URLS
-        window.BE.urls.uploader_signature_endpoint = '{% url "data_importer:sign_policy_document" %}';
-        window.BE.urls.uploader_success_endpoint = '{% url "data_importer:s3_upload_complete" %}';
-        window.BE.urls.uploader_local_endpoint = '{% url "data_importer:local_uploader" %}'
-        window.BE.urls.save_raw_data = '{% url "seed:save_raw_data" %}';
-        window.BE.urls.get_raw_column_names = '{% url "seed:get_raw_column_names" %}';
-        window.BE.urls.get_first_five_rows = '{% url "seed:get_first_five_rows" %}';
+            // Reports URLS
+            window.BE.urls.get_inventory_report_data             = '{% url "app:property_report_data" %}';
+            window.BE.urls.get_aggregated_inventory_report_data  = '{% url "app:aggregated_property_report_data" %}';
 
-        window.BE.urls.get_column_mapping_suggestions = '{% url "seed:get_column_mapping_suggestions" %}';
-        window.BE.urls.save_column_mappings = '{% url "seed:save_column_mappings" %}';
-        window.BE.urls.start_mapping = '{% url "seed:start_mapping" %}';
-        window.BE.urls.remap_buildings = '{% url "seed:remap_buildings" %}';
-        window.BE.urls.start_system_matching = '{% url "seed:start_system_matching" %}';
-        window.BE.urls.progress = '{% url "seed:progress" %}';
+            // export URLs
+            window.BE.urls.export_buildings             = '{% url "seed:export_buildings" %}';
+            window.BE.urls.export_buildings_progress    = '{% url "seed:export_buildings_progress" %}';
+            window.BE.urls.export_buildings_download    = '{% url "seed:export_buildings_download" %}';
 
-        // export urls
-        window.BE.urls.export_buildings = '{% url "seed:export_buildings" %}';
-        window.BE.urls.export_buildings_progress = '{% url "seed:export_buildings_progress" %}';
-        window.BE.urls.export_buildings_download = '{% url "seed:export_buildings_download" %}';
-
-        // org
-        window.BE.urls.delete_organization_buildings = '{% url "seed:delete_organization_buildings" %}';
-
-
-    </script>
+            // org
+            window.BE.urls.delete_organization_buildings = '{% url "seed:delete_organization_buildings" %}';
+            window.BE.urls.delete_organization_inventory = '{% url "seed:delete_organization_inventory" %}';
+        </script>

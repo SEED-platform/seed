@@ -1,0 +1,49 @@
+[{
+    "model": "sites.site",
+    "pk": 1,
+    "fields": {
+        "domain": "example.com",
+        "name": "example.com"
+    }
+}, {
+    "model": "orgs.organization",
+    "pk": 1,
+    "fields": {
+        "name": "",
+        "parent_org": null,
+        "created": "2016-05-17T18:29:11.720Z",
+        "modified": "2016-05-17T18:29:11.720Z",
+        "query_threshold": null
+    }
+}, {
+    "model": "landing.seeduser",
+    "pk": 1,
+    "fields": {
+        "password": "pbkdf2_sha256$24000$E7TPMNzyzqiM$nATfeY0Xw+c083cs4fZdRDxY1Zce7zVVdS/rPkEgT8M=",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "bravache@lbl.gov",
+        "first_name": "",
+        "last_name": "",
+        "email": "bravache@lbl.gov",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2016-05-17T18:27:25.764Z",
+        "default_custom_columns": "{}",
+        "default_building_detail_custom_columns": "{}",
+        "show_shared_buildings": false,
+        "default_organization": null,
+        "api_key": "4c1de85424dfd5ca7267e415404af8597304422d",
+        "groups": [],
+        "user_permissions": []
+    }
+}, {
+    "model": "orgs.organizationuser",
+    "pk": 1,
+    "fields": {
+        "user": 1,
+        "organization": 1,
+        "status": "pending",
+        "role_level": 20
+    }
+}]

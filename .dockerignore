@@ -1,0 +1,6 @@
+.idea
+.git
+.tox
+collected_static
+node_modules
+seed/static/vendors

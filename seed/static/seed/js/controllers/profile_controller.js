@@ -1,5 +1,6 @@
-/**
- * :copyright: (c) 2014 Building Energy Inc
+/*
+ * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :author
  */
 angular.module('BE.seed.controller.profile', [])
 .controller('profile_controller', [
@@ -16,11 +17,10 @@ angular.module('BE.seed.controller.profile', [])
       user_service
     ) {
     $scope.auth = auth_payload.auth;
-    $scope.user = user_profile_payload.user;
+    $scope.user = user_profile_payload;
     $scope.user_updated = false;
     var user_copy = angular.copy($scope.user);
-    $scope.username = user_profile_payload.user.first_name + " " + 
-        user_profile_payload.user.last_name;
+    $scope.username = user_profile_payload.first_name + ' ' + user_profile_payload.last_name;
 
     /**
      * updates the user's PI
@@ -29,8 +29,7 @@ angular.module('BE.seed.controller.profile', [])
         user_service.update_user($scope.user).then(function (data) {
             $scope.user_updated = true;
             user_copy = angular.copy($scope.user);
-            $scope.username = user_profile_payload.user.first_name + " " + 
-              user_profile_payload.user.last_name;
+            $scope.username = user_profile_payload.first_name + ' ' + user_profile_payload.last_name;
         });
     };
 

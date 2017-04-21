@@ -1,14 +1,14 @@
 """
-:copyright: (c) 2014 Building Energy Inc
-
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
 """
+from __future__ import absolute_import
 
+import sys
 from config.settings.common import *  # noqa
 from kombu import Exchange, Queue
-import djcelery
 
 DEBUG = True
-TEMPLATE_DEBUG = DEBUG
 SESSION_COOKIE_SECURE = False
 
 # AWS credentials for S3.  Set them in environment or local_untracked.py
@@ -50,52 +50,36 @@ else:
     }
     LOGGING = {
         'version': 1,
-        'disable_existing_loggers': True,
+        'disable_existing_loggers': False,
+        'formatters': {
+            'plain': {
+                'format': '%(message)s'
+            },
+            'file_line_number': {
+                'format': "%(pathname)s:%(lineno)d - %(message)s"
+            }
+        },
         # set up some log message handlers to choose from
         'handlers': {
-            'sentry': {
-                'level': 'ERROR',
-                'class': 'raven.contrib.django.handlers.SentryHandler',
-            },
             'console': {
-                'level': 'INFO',
-                'class': 'logging.StreamHandler'
+                'level': 'DEBUG',
+                'class': 'logging.StreamHandler',
+                'formatter': 'file_line_number',
             }
         },
         'loggers': {
             # the name of the logger, if empty, then this is the default logger
             '': {
-                'level': 'INFO',
-                'handlers': ['console'],
-            },
-            # sentry.errors are any error messages associated with failed
-            # connections to sentry
-            'sentry.errors': {
                 'level': 'DEBUG',
                 'handlers': ['console'],
-                'propagate': False,
-            },
+            }
         },
     }
-
-# django-debug-toolbar
-# ------------------------------------------------------------------------------
-# This isn't working right at the moment. Wait until after upgrade to 1.8
-# DEBUG_TOOLBAR_PATCH_SETTINGS = False
-# MIDDLEWARE_CLASSES += ('debug_toolbar.middleware.DebugToolbarMiddleware',)
-# INSTALLED_APPS += ('debug_toolbar', )
-# INTERNAL_IPS = ('127.0.0.1',)
-# DEBUG_TOOLBAR_CONFIG = {
-#     'DISABLE_PANELS': [
-#         'debug_toolbar.panels.redirects.RedirectsPanel',
-#     ],
-#     'SHOW_TEMPLATE_CONTEXT': True,
-# }
 
 # BROKER_URL with AWS ElastiCache redis looks something like:
 # 'redis://xx-yy-zzrr0aax9a.ntmprk.0001.usw2.cache.amazonaws.com:6379/1'
 BROKER_URL = 'redis://127.0.0.1:6379/1'
-BROKER_HOST = '127.0.0.1'
+CELERY_RESULT_BACKEND = BROKER_URL
 CELERY_DEFAULT_QUEUE = 'seed-dev'
 CELERY_QUEUES = (
     Queue(
@@ -104,15 +88,10 @@ CELERY_QUEUES = (
         routing_key=CELERY_DEFAULT_QUEUE
     ),
 )
-djcelery.setup_loader()
 
 REQUIRE_UNIQUE_EMAIL = False
 
 COMPRESS_ENABLED = False
-if "COMPRESS_ENABLED" not in locals() or not COMPRESS_ENABLED:
-    COMPRESS_PRECOMPILERS = ()
-    COMPRESS_CSS_FILTERS = ['compressor.filters.css_default.CssAbsoluteFilter']
-    COMPRESS_JS_FILTERS = []
 
 ALLOWED_HOSTS = ['*']
 

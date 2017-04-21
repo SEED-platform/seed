@@ -1,0 +1,35 @@
+<div class="modal-header">
+    <button type="button" class="close" ng-click="close()" aria-hidden="true"><i class="fa fa-times"></i></button>
+    <h4 class="modal-title" id="createOrganizationLabel">Create a New Sub-Organization</h4>
+</div>
+<form class="form-horizontal" role="form" name="sub_org_form" ng-submit="submit_form(sub_org_form.$valid)">
+    <div class="modal-body">
+        <div class="form-group" ng-class="{ 'has-error' : sub_org_form.name.$invalid && !sub_org_form.name.$pristine }">
+            <label class="control-label col-sm-3" for="createOrganizationName">Sub-Org Name:</label>
+            <div class="col-sm-8">
+                <input type="text" class="form-control" name="name" id="createOrganizationName" placeholder="Enter sub-organization name" ng-model="sub_org.name" required>
+                <p ng-show="sub_org_form.name.$invalid && !sub_org_form.name.$pristine" class="help-block">Sub-Org name is required.</p>
+            </div>
+        </div>
+        <div class="form-group" ng-class="{ 'has-error' : (sub_org_form.email.$invalid && !sub_org_form.email.$pristine) || error_message.length > 0 }">
+            <label class="control-label col-sm-3" for="createOrganizationInvite">Invite an Owner:</label>
+            <div class="col-sm-8">
+                <input type="email" class="form-control" name="email" id="createOrganizationInvite" placeholder="Enter email address" ng-model="sub_org.email" required>
+                <p ng-show="sub_org_form.email.$invalid && !sub_org_form.email.$pristine" class="help-block">Enter a valid email address.</p>
+                <p ng-show="error_message.length > 0" class="help-block">{$ error_message $}</p>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-3"></div>
+            <div class="col-sm-8">
+                <p>Note 1: Sub-organizations cannot be deleted.</p>
+                <p>Note 2: Parent organization members are not automatically made members of sub-organizations.</p>
+                
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default" ng-click="cancel()">Cancel</button>
+        <button type="submit" class="btn btn-primary" ng-disabled="sub_org_form.$invalid">Create New Sub-Organization</button>
+    </div>
+</form>

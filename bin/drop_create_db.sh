@@ -1,6 +1,6 @@
 #!/bin/bash
 # drops the ``seed`` DB, then creates it. Add a super_user
-# demo@buidlingenergy.com with password demo
+# demo@seed.lbl.gov with password demo
 
 dropdb seed
 createdb seed

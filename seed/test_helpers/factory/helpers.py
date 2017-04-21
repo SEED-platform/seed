@@ -1,16 +1,17 @@
+# !/usr/bin/env python
+# encoding: utf-8
 """
-:copyright: (c) 2014 Building Energy Inc
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
 """
 import random
 import datetime
 import base64
 from decimal import getcontext, Decimal
 
-from django.contrib.webdesign import lorem_ipsum
-
 getcontext().prec = 7
-from localflavor.us.us_states import STATE_CHOICES
 from seed.test_helpers.factory.lib.chomsky import generate_chomsky
+
 
 class DjangoFunctionalFactory:
 
@@ -33,12 +34,6 @@ class DjangoFunctionalFactory:
         newlen = int(len(uc) / 2) * 2
         ba = bytearray.fromhex(uc[:newlen])
         return base64.urlsafe_b64encode(str(ba))[:length]
-
-    @classmethod
-    def rand_text(cls, num_paragraphs=None):
-        if not num_paragraphs:
-            num_paragraphs = cls.rand_int(start=1, end=5)
-        return lorem_ipsum.paragraphs(num_paragraphs, common=False)
 
     @classmethod
     def rand_phone(cls):
@@ -91,10 +86,6 @@ class DjangoFunctionalFactory:
     @classmethod
     def rand_domain(cls):
         return RANDOM_EMAIL_DOMAINS[cls.rand_int(0, len(RANDOM_EMAIL_DOMAINS) - 1)]
-
-    @classmethod
-    def rand_us_state(cls):
-        return STATE_CHOICES[cls.rand_int(0, len(STATE_CHOICES) - 1)][0]
 
     @classmethod
     def valid_test_cc_number(cls):

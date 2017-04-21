@@ -1,16 +1,23 @@
+# !/usr/bin/env python
+# encoding: utf-8
 """
-:copyright: (c) 2014 Building Energy Inc
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
 """
 
-from seed.landing.models import SEEDUser as User
 from django.test import TestCase
 
-from seed.models import Project, Compliance, BuildingSnapshot, CanonicalBuilding
-from seed.utils.organizations import create_organization
+from seed.landing.models import SEEDUser as User
+from seed.models import (
+    Compliance, BuildingSnapshot, CanonicalBuilding, Project
+)
+from seed.models.projects import ACTIVE_STATUS
 from seed.utils.buildings import get_buildings_for_user_count
+from seed.utils.organizations import create_organization
 
 
 class ProjectTestCase(TestCase):
+
     def test_basic_project_creation(self):
         user = User.objects.create(username='test', first_name='t', last_name='est')
         org, user_role, _user_created = create_organization(
@@ -27,7 +34,7 @@ class ProjectTestCase(TestCase):
         self.assertTrue('Test Project' in str(p))
         self.assertEqual(p.owner, user)
         self.assertEqual(p.super_organization, org)
-        self.assertEqual(p.status, Project.ACTIVE_STATUS)
+        self.assertEqual(p.status, ACTIVE_STATUS)
         self.assertEqual(p.description, 'A really great test organization.')
         self.assertEqual(p.slug, 'test-project')
         user.delete()
@@ -35,6 +42,7 @@ class ProjectTestCase(TestCase):
 
 
 class ComplianceTestCase(TestCase):
+
     def test_basic_compliance_creation(self):
         p = Project(name='test project')
         p.save()
@@ -53,6 +61,7 @@ class ComplianceTestCase(TestCase):
 
 
 class UtilsTests(TestCase):
+
     def setUp(self):
         self.user = User.objects.create(
             username='test',
@@ -80,7 +89,7 @@ class UtilsTests(TestCase):
             c.canonical_snapshot = b
             b.save()
             c.save()
-        # make a couple extra buidlings
+        # make a couple extra buildings
         BuildingSnapshot.objects.create()
         BuildingSnapshot.objects.create()
         self.assertEqual(get_buildings_for_user_count(self.user), 5)

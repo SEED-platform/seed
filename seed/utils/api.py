@@ -1,3 +1,9 @@
+# !/usr/bin/env python
+# encoding: utf-8
+"""
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
+"""
 import re
 from importlib import import_module
 from functools import wraps
@@ -10,8 +16,8 @@ def get_api_endpoints():
     Examines all views and returns those with is_api_endpoint set
     to true (done by the @api_endpoint decorator).
 
-    TODO: this isn't particularly expensive now, but if the number of urls
-    grows a lot, it may be worth caching this somewhere.
+    ..:todo: this isn't particularly expensive now, but if the number of URLs grows a lot, it may be worth caching
+    this somewhere.
     """
     urlconf = import_module(settings.ROOT_URLCONF)
     urllist = urlconf.urlpatterns
@@ -51,7 +57,7 @@ def clean_api_regex(url):
 
 def get_all_urls(urllist, prefix=''):
     """
-    Recursive generator that traverses entire tree of urls, starting with
+    Recursive generator that traverses entire tree of URLs, starting with
     urllist, yielding a tuple of (url_pattern, view_function) for each
     one.
     """
@@ -63,8 +69,9 @@ def get_all_urls(urllist, prefix=''):
         else:
             yield (prefix + entry.regex.pattern, entry.callback)
 
-#API endpoint decorator
-#simple list of all 'registered' endpoints
+
+# API endpoint decorator
+# simple list of all 'registered' endpoints
 endpoints = []
 
 
@@ -75,21 +82,58 @@ def api_endpoint(fn):
     Decorator must be used before login_required or has_perm to set
     request.user for those decorators.
     """
-    #mark this function as an api endpoint for get_api_endpoints to find
+    # mark this function as an api endpoint for get_api_endpoints to find
     fn.is_api_endpoint = True
     global endpoints
     endpoints.append(fn)
 
     @wraps(fn)
     def _wrapped(request, *args, **kwargs):
-
         user = get_api_request_user(request)
         if user:
             request.is_api_request = True
             request.user = user
 
         return fn(request, *args, **kwargs)
+
     return _wrapped
+
+
+def api_endpoint_class(fn):
+    """
+    Decorator function to mark a view as allowed to authenticate via API key.
+
+    Decorator must be used before login_required or has_perm to set
+    request.user for those decorators.
+    """
+    # mark this function as an api endpoint for get_api_endpoints to find
+    fn.is_api_endpoint = True
+    global endpoints
+    endpoints.append(fn)
+
+    @wraps(fn)
+    def _wrapped(self, request, *args, **kwargs):
+        user = get_api_request_user(request)
+        if user:
+            request.is_api_request = True
+            request.user = user
+
+        return fn(self, request, *args, **kwargs)
+
+    return _wrapped
+
+
+def drf_api_endpoint(fn):
+    """
+    Decorator to register a Django Rest Framework view with the list of API
+    endpoints.  Marks it with `is_api_endpoint = True` as well as appending it
+    to the global `endpoints` list.
+    """
+    fn.is_api_endpoint = True
+    global endpoints
+    endpoints.append(fn)
+
+    return fn
 
 
 def get_api_request_user(request):
@@ -104,7 +148,7 @@ def get_api_request_user(request):
     if not auth_header:
         return False
     try:
-        #late import
+        # late import
         from seed.landing.models import SEEDUser as User
         username, api_key = auth_header.split(':')
         return User.objects.get(api_key=api_key, username=username)

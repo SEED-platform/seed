@@ -4,7 +4,7 @@
 // create dummy angularJS app to attach filter(s)
 var myignoremapApp = angular.module('myignoremapApp', ['ignoremap']);
 
-describe("The ignoremap filter", function() {
+describe('The ignoremap filter', function() {
     beforeEach(module('myignoremapApp'));
     it('replaces `""` with `------ Ignore Row ------`',
         inject(function(ignoremapFilter) {

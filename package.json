@@ -1,0 +1,36 @@
+{
+  "name": "SEED",
+  "version": "2.0.2",
+  "description": "Standard Energy Efficiency Data (SEED) Platform™",
+  "license": "SEE LICENSE IN LICENSE",
+  "directories": {
+    "doc": "docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SEED-platform/seed"
+  },
+  "bugs": {
+    "url": "https://github.com/SEED-platform/seed/issues"
+  },
+  "devDependencies": {
+    "bower": "^1.7.9",
+    "eslint-plugin-angular": "^1.0.0",
+    "eslint-plugin-lodash": "^1.4.2",
+    "grunt-cli": "^1.2.0",
+    "gulp": "^3.9.1",
+    "gulp-autoprefixer": "^3.1.0",
+    "gulp-csso": "^1.1.0",
+    "gulp-eslint": "^2.0.0",
+    "gulp-load-plugins": "^1.2.0",
+    "gulp-sass": "^2.2.0",
+    "gulp-sourcemaps": "^1.6.0",
+    "gulp-util": "^3.0.7",
+    "protractor": "^4.0.14"
+  },
+  "scripts": {
+    "bower": "bower",
+    "gulp": "gulp",
+    "test": "protractor seed/static/seed/tests/protractor-tests/protractorConfig.js"
+  }
+}

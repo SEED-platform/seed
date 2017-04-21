@@ -1,3 +1,9 @@
+# !/usr/bin/env python
+# encoding: utf-8
+"""
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
+"""
 import datetime
 import json
 
@@ -159,7 +165,7 @@ class TestMeterViews(TestCase):
         self.assertEqual(len(resp['timeseries']), 5)
 
     def test_add_timeseries(self):
-        """Adding timeseries works."""
+        """Adding time series works."""
         meter = Meter.objects.create(
             name='test', energy_type=ELECTRICITY, energy_units=KILOWATT_HOURS
         )

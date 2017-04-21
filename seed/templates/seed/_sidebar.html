@@ -1,41 +1,51 @@
 {% load compress %}
-{# requires seed_menu_controller angularjs controller and menu_controller.js #}
-    <div ng-class="{expanded: expanded_controller, collapsed: collapsed_controller, sidebar: true}">
+{# requires menu_controller angularjs controller and menu_controller.js #}
+    <div ng-class="{expanded: expanded_controller, collapsed: collapsed_controller, sidebar: true, hide_transition:is_initial_state}">
         <div class="menu" ng-click="reset_search_field()">
-            <a ng-class="{item: true, active: is_active('/profile')}" href="{% url "seed:home" %}#/profile">
+            <a id="sidebar-profile" class="item" ui-sref="profile" ui-sref-active="active">
                 <div class="icon"><i class="fa fa-cog"></i></div>
-                <div ng-show="!is_initial_state()" class="item_name">{$ username $}</div>
-                <div ng-show="!is_initial_state()" class="badge badge_menu" ng-click="href('{% url "landing:logout" %}')">Log Out</div>
+                <div ng-show="!is_initial_state" class="item_name">{$ username $}</div>
             </a>
             <div class="divider"></div>
-            <a ng-class="{item: true, active: is_active('/projects')}" href="{% url "seed:home" %}#/projects">
+            <a id="sidebar-projects" ng-class="{item: true, active: is_active('/projects')}" href="{% url "seed:home" %}#/projects" disabled>
                 <div class="icon"><i class="fa fa-folder-o"></i></div>
-                <div ng-show="!is_initial_state()" class="item_name">Projects</div>
-                <div ng-show="!is_initial_state()" class="badge badge_menu">{$ projects_count | number:0 $}</div>
+                <div ng-show="!is_initial_state" class="item_name">Projects</div>
+                <!--<div ng-show="!is_initial_state" class="badge badge_menu">{$ projects_count | number:0 $}</div>-->
             </a>
-            <a ng-class="{item: true, active: is_active('/buildings')}" href="{% url "seed:home" %}#/buildings">
-                <div class="icon"><i class="fa fa-building-o"></i></div>
-                <div ng-show="!is_initial_state()" class="item_name">Buildings</div>
-                <div ng-show="!is_initial_state()" class="badge badge_menu">{$ buildings_count | number:0 $}</div>
+            <a id="sidebar-inventory"
+               ng-class="{item: true, active: is_active('/properties') || is_active('/taxlots')}"
+               href="{% url "seed:home" %}#/properties"
+               >
+                <div class="icon"><img src="{{STATIC_URL}}seed/images/icon-city.svg" title="Inventory"></div>
+                <div ng-show="!is_initial_state" class="item_name">Inventory</div>
             </a>
-            <a ng-class="{item: true, active: is_active('/data')}" href="{% url "seed:home" %}#/data" ng-show="menu.user.organization.user_role !== 'viewer'">
+            <a id="sidebar-data" ng-class="{item: true, active: is_active('/data')}" title="Data" href="{% url "seed:home" %}#/data" ng-show="menu.user.organization.user_role !== 'viewer'">
                 <div class="icon"><i class="fa fa-sitemap"></i></div>
-                <div ng-show="!is_initial_state()" class="item_name">Data</div>
-                <div ng-show="!is_initial_state()" class="badge badge_menu">{$ datasets_count | number:0 $}</div>
+                <div ng-show="!is_initial_state" class="item_name">Data</div>
+                <div ng-show="!is_initial_state" class="badge badge_menu">{$ datasets_count | number:0 $}</div>
             </a>
-            <a ng-class="{item: true, active: is_active('/accounts')}" href="{% url "seed:home" %}#/accounts">
+            <a id="sidebar-accounts" ng-class="{item: true, active: is_active('/accounts')}" title="Organizations"  href="{% url "seed:home" %}#/accounts">
                 <div class="icon"><i class="fa fa-users"></i></div>
-                <div ng-show="!is_initial_state()" class="item_name">Organizations</div>
-                <div ng-show="!is_initial_state()" class="badge badge_menu">{$ menu.user.organizations.length | number:0 $}</div>
+                <div ng-show="!is_initial_state" class="item_name">Organizations</div>
+                <div ng-show="!is_initial_state" class="badge badge_menu">{$ organizations_count | number:0 $}</div>
             </a>
+
             <div class="divider"></div>
-            <a ng-class="{item: true, active: is_active('/feedback')}" href="{% url "seed:home" %}#/feedback">
-                <div class="icon"><i class="fa fa-certificate"></i></div>
-                <div ng-show="!is_initial_state()" class="item_name">Contact</div>
+            <a id="sidebar-api" ng-class="{item: true, active: is_active('/api/swagger/')}" title="API Documentation" href="{% url "seed:home" %}#/api/swagger">
+                <div class="icon"><i class="fa fa-code"></i></div>
+                <div ng-show="!is_initial_state" class="item_name">API Documentation</div>
             </a>
-            <a ng-class="{item: true, active: is_active('/about')}" href="{% url "seed:home" %}#/about">
+            <a id="sidebar-contact" ng-class="{item: true, active: is_active('/contact')}" title="Contact" href="{% url "seed:home" %}#/contact">
+                <div class="icon"><i class="fa fa-question-circle"></i></div>
+                <div ng-show="!is_initial_state" class="item_name">Contact</div>
+            </a>
+            <a id="sidebar-about" ng-class="{item: true, active: is_active('/about')}" title="About" href="{% url "seed:home" %}#/about">
                 <div class="icon"><i class="fa fa-info-circle"></i></div>
-                <div ng-show="!is_initial_state()" class="item_name">About</div>
+                <div ng-show="!is_initial_state" class="item_name">About</div>
+            </a>
+            <a id="sidebar-logout" class="item" title="Log Out" href="{% url "landing:logout" %}">
+                <div class="icon"><i class="fa fa-sign-out"></i></div>
+                <div ng-show="!is_initial_state" class="item_name">Log Out</div>
             </a>
         </div>
     </div>

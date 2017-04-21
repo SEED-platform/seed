@@ -1,26 +1,25 @@
 <div class="page_header_container">
     <div class="page_header">
         <div class="left page_action_container">
-            
+
         </div>
         <div class="page_title">
-            <h1><i class="fa fa-folder-o"></i> {$ projects_count | number:0 $} Projects</h1>
+            <h1><i class="fa fa-folder-o"></i>
+                {$ projects_count | number:0 $}
+                <ng-pluralize count="projects_count"
+                              when="{'one': 'Project','other': 'Projects'}">
+                </ng-pluralize>
+            </h1>
         </div>
         <div class="right page_action_container">
-            
+
         </div>
     </div>
 </div>
 <div class="section">
-    <div class="alert_container" ng-hide="true">
-        <div class="alert alert-success">
-            <button type="button" class="close">&times;</button>
-            You successfully created the project <a href="#"><strong>John's Incredible Project</strong></a>.
-        </div>
-    </div>
     <div class="section_content_container">
         <div class="section_content">
-            <div class="table_list_container">
+            <div id="project-table" class="table_list_container">
                 <table class="table table-striped">
                     <thead>
                         <tr>
@@ -37,7 +36,7 @@
                     <tbody>
                         <tr ng-repeat="p in user.projects">
                             <td class="project_name">
-                                <a class="table_name_link" ng-href="#/projects/{$ p.slug $}" ng-show="!p.edit_form_showing">{$ p.name $}</a>
+                                <a class="table_name_link" ui-sref="project_detail({project_id: p.slug})" ng-show="!p.edit_form_showing">{$ p.name $}</a>
                                 <a class="table_action_link" ng-click="delete_project(p)" ng-show="!p.edit_form_showing && menu.user.organization.user_role !== 'viewer'"><i class="fa fa-trash-o"></i></a>
                                 <a class="table_action_link" ng-click="open_edit_modal(p)" ng-show="!p.edit_form_showing && menu.user.organization.user_role !== 'viewer'"><i class="fa fa-pencil"></i></a>
                             </td>

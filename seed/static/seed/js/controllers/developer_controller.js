@@ -16,10 +16,9 @@ angular.module('BE.seed.controller.developer', [])
       user_service
     ) {
     $scope.auth = auth_payload.auth;
-    $scope.user = user_profile_payload.user;
+    $scope.user = user_profile_payload;
     $scope.new_key_generated = false;
-    $scope.username = user_profile_payload.user.first_name + " " + 
-        user_profile_payload.user.last_name;
+    $scope.username = user_profile_payload.first_name + ' ' + user_profile_payload.last_name;
 
     /**
      * generates a new API key for the user

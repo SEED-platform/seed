@@ -1,9 +1,12 @@
+# !/usr/bin/env python
+# encoding: utf-8
 """
-:copyright: (c) 2014 Building Energy Inc
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
 """
 import json
 
-from django.utils.unittest import TestCase
+from django.test import TestCase
 from django.http import HttpResponse, HttpResponseForbidden
 from seed.lib.superperms.orgs.models import (
     ROLE_VIEWER,

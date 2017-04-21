@@ -1,11 +1,18 @@
+# !/usr/bin/env python
+# encoding: utf-8
+"""
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
+"""
 from django.test import TestCase
 from seed.models import BuildingSnapshot
 
 
 class TestBuildingSnapshot(TestCase):
+
     def setUp(self):
         self.bs = BuildingSnapshot()
-        
+
     def tearDown(self):
         self.bs = None
 
@@ -154,5 +161,3 @@ class TestBuildingSnapshot(TestCase):
         self.bs.building_certification = '-' * 260
         self.bs.save()
         self.assertEqual(len(self.bs.building_certification), 255)
-
-

@@ -1,63 +1,58 @@
+# !/usr/bin/env python
+# encoding: utf-8
 """
-:copyright: (c) 2014 Building Energy Inc
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
 """
-import json
 
-import matchers
+import copy
+import logging
+import re
+import itertools
+
 from cleaners import default_cleaner
+from seed.lib.mappings.mapping_columns import MappingColumns
+
+_log = logging.getLogger(__name__)
 
 
-def build_column_mapping(
-    raw_columns,
-    dest_columns,
-    previous_mapping=None,
-    map_args=None,
-    thresh=None
-):
-    """Build a probabalistic mapping structure for mapping raw to dest.
+def build_pm_mapping():
+    """
+    Build the Portfolio Manager mappings.
 
-    :param raw_columns: list of str. The column names we're trying to map.
-    :param dest_columns: list of str. The columns we're mapping to.
-    :param previous_mapping: callable. Used to return the previous mapping
-        for a given field.
+    :return:
+    """
 
-        Example:
-        ``
-        # The expectation is that our callable always gets passed a
-        # raw key. If it finds a match, it returns the raw_column and score.
-        previous_mapping('example field', *map_args) ->
-            ('field_1', 0.93)
-        ``
+    return True
 
-    :returns dict: {'raw_column': [('dest_column', score)...],...}
+
+def build_column_mapping(raw_columns, dest_columns, previous_mapping=None, map_args=None, thresh=0):
+    """
+    Wrapper around the MappingColumns class to create the list of suggested mappings
+
+    Args:
+        raw_columns: list of str. The column names we're trying to map.
+        dest_columns: list of str. The columns we're mapping to.
+        previous_mapping:  callable. Used to return the previous mapping
+            for a given field.
+
+            .. code:
+
+                The expectation is that our callable always gets passed a raw key. If
+                it finds a match, it returns the raw_column and score.
+                previous_mapping('example field', *map_args) ->
+                    ('field_1', 0.93)
+
+        map_args: .. todo: document
+        thresh: .. todo: document
+
+    Returns:
+        dict: {'raw_column': ('dest_column', score)
 
     """
-    probable_mapping = {}
-    thresh = thresh or 0
-    for raw in raw_columns:
-        result = []
-        conf = 0
-        # We want previous mappings to be at the top of the list.
-        if previous_mapping and callable(previous_mapping):
-            args = map_args or []
-            mapping = previous_mapping(raw, *args)
-            if mapping:
-                result, conf = mapping
 
-        # Only enter this flow if we haven't already selected a result.
-        if not result and result is not None:
-            best_match, conf = matchers.best_match(
-                raw, dest_columns, top_n=1
-            )[0]
-            if conf > thresh:
-                result = best_match
-            else:
-                result = None
-                conf = 0
-
-        probable_mapping[raw] = [result, conf]
-
-    return probable_mapping
+    return MappingColumns(raw_columns, dest_columns, previous_mapping, map_args,
+                          thresh).final_mappings
 
 
 def apply_initial_data(model, initial_data):
@@ -72,9 +67,7 @@ def apply_initial_data(model, initial_data):
         value = initial_data[item]
         if hasattr(model, item):
             setattr(model, item, value)
-        elif (
-            hasattr(model, 'extra_data') and isinstance(model.extra_data, dict)
-        ):
+        elif hasattr(model, 'extra_data') and isinstance(model.extra_data, dict):
             model.extra_data[item] = value
 
     return model
@@ -89,43 +82,41 @@ def _concat_values(concat_columns, column_values, delimiter):
     return delimiter.join(values) or None
 
 
-def apply_column_value(item, value, model, mapping, cleaner, apply_func=None):
+def apply_column_value(raw_field, value, model, mapping, is_extra_data, cleaner):
     """Set the column value as the target attr on our model.
 
-    :param item: str, the column name as the mapping understands it.
+    :param raw_field: str, the raw imported column name as the mapping understands it.
     :param value: dict, the value of that column for a given row.
     :param model: inst, the object we're mapping data to.
     :param mapping: dict, the mapping of row data to attribute data.
+    :param is_extra_data: bool, is the column supposed to be extra_data
     :param cleaner: runnable, something to clean data values.
-    :param apply: (optional), function to apply value to our model.
+
     :rtype: model inst
-
     """
-    column_name = item
-    if cleaner:
-        if item not in (cleaner.float_columns or cleaner.date_columns):
-            # Try using a reverse mapping for dynamic maps;
-            # default to row name if it's not mapped
-            column_name = mapping.get(item, column_name)
 
-        cleaned_value = cleaner.clean_value(value, column_name)
-    else:
-        cleaned_value = default_cleaner(value)
-    if item in mapping:
-        if apply_func and callable(apply_func):
-            # If we need to call a function to apply our value, do so.
-            # We use the 'mapped' name of the column, and the cleaned value.
-            apply_func(model, mapping.get(item), cleaned_value)
+    # If the item is the extra_data column, then make sure to save it to the
+    # extra_data field of the database
+    if raw_field in mapping:
+        table_name, field_name = mapping.get(raw_field)
+        # NL: 9/29/16 turn off all the debug logging because it was too verbose.
+        # _log.debug("item is in the mapping: %s -- %s" % (table_name, field_name))
+
+        cleaned_value = None
+        if cleaner:
+            cleaned_value = cleaner.clean_value(value, field_name)
         else:
-            setattr(model, mapping.get(item), cleaned_value)
-    elif hasattr(model, 'extra_data'):
-        if not isinstance(model.extra_data, dict):
-            # sometimes our dict is returned as JSON string.
-            # TODO: Need to resolve this upstream with djorm-ext-jsonfield.
-            model.extra_data = json.loads(model.extra_data)
-        model.extra_data[item] = cleaned_value
-    else:
-        model.extra_data = {item: cleaned_value}
+            cleaned_value = default_cleaner(value)
+
+        if is_extra_data:
+            if hasattr(model, 'extra_data'):
+                # only save it if the model and the mapping are the same
+                if model.__class__.__name__ == table_name:
+                    model.extra_data[field_name] = cleaned_value
+        else:
+            # Simply set the field to the cleaned value if it is the correct model
+            if model.__class__.__name__ == table_name:
+                setattr(model, field_name, cleaned_value)
 
     return model
 
@@ -144,64 +135,145 @@ def _set_default_concat_config(concat):
     return concat
 
 
-def map_row(row, mapping, model_class, cleaner=None, concat=None, **kwargs):
+def _normalize_expanded_field(value):
+    """
+    Fields that are expanded (typically tax lot id) are also in need of normalization to remove
+    characters that prevent easy matching.
+
+    This method will remove unwanted characters from the jurisdiction tax lot id.
+
+    :param value: string
+    :return: string
+    """
+    return re.sub(r'[-\s/\\]', '', value).upper()
+
+
+def expand_and_normalize_field(field, return_list=False):
+    """
+    take a field from the csv and expand/split on a delimiter and return a list of individual
+    values. If the return_list flag is set to true, then this method will return the data back
+    as a list of new fields instead of a cleaned up string and normalized with semicolon delimiter
+
+    :param field: str, value to parse
+
+    :return: list of individual values after after delimiting
+    """
+
+    if isinstance(field, str) or isinstance(field, unicode):
+        field = field.rstrip(';:,')
+        data = [_normalize_expanded_field(r) for r in re.split(",|;|:", field)]
+        if return_list:
+            return data
+        else:
+            return ";".join(data)
+    else:
+        if return_list:
+            return [field]
+        else:
+            return field
+
+
+def expand_rows(row, delimited_fields, expand_row):
+    """
+    Take a row and a field which may have delimited values and convert into a list of new rows
+    with the same data expect for the replaced delimited value.
+
+    :param row: dict, original row to split out
+    :param delimited_fields: list of dicts, columns to clean/expand/split
+    :param expand_row: boolean, expand the row on delimited fields or not.
+
+    :return: list
+    """
+
+    # _log.debug('expand_row is {}'.format(expand_row))
+    # go through the delimited fields and clean up the rows
+    copy_row = copy.deepcopy(row)
+    for d in delimited_fields:
+        if d in copy_row:
+            copy_row[d] = expand_and_normalize_field(copy_row[d], False)
+
+    if expand_row:
+        new_values = []
+        for d in delimited_fields:
+            fields = []
+            if d in copy_row.keys():
+                for value in expand_and_normalize_field(copy_row[d], True):
+                    fields.append({d: value})
+                new_values.append(fields)
+
+        # return all combinations of the lists
+        combinations = list(itertools.product(*new_values))
+
+        new_rows = []
+        for c in combinations:
+            new_row = copy.deepcopy(copy_row)
+            # c is a tuple because of the .product command
+            for item in c:
+                for k, v in item.iteritems():
+                    new_row[k] = v
+            new_rows.append(new_row)
+
+        return new_rows
+    else:
+        return [copy_row]
+
+
+def map_row(row, mapping, model_class, extra_data_fields=[], cleaner=None, concat=None, **kwargs):
     """Apply mapping of row data to model.
 
     :param row: dict, parsed row data from csv.
     :param mapping: dict, keys map row columns to model_class attrs.
     :param model_class: class, reference to model class we map against.
+    :param extra_data_fields: list, list of raw columns that are considered extra data (per mapping)
     :param cleaner: (optional) inst, cleaner instance for row values.
-    :param concat: (optional) list of dict,
-        config for concatenating rows into an attr.
-    :rtype: model_inst, with mapped data attributes; ready to save.
+    :param concat: (optional) list of dict, config for concatenating rows into an attr.
+
+    :rtype: list of model instances that were created
 
     """
     initial_data = kwargs.get('initial_data', None)
-    apply_columns = kwargs.get('apply_columns', [])
-    apply_func = kwargs.get('apply_func', None)
     model = model_class()
+
+    # _log.debug("map_row's mappings {}".format(mapping))
+
     # If there are any initial states we need to set prior to mapping.
     if initial_data:
         model = apply_initial_data(model, initial_data)
 
-    concat = _set_default_concat_config(concat)
+    # concat is not used as of 2016-09-14
+    # concat = _set_default_concat_config(concat)
 
-    # In case we need to look up cleaner by dynamic field mapping.
-    for item, value in row.items():
+    for raw_field, value in row.items():
         # Look through any of our concatenation configs to see if this row
-        # needs to be set aside for mergning with others at the end of the map.
-        for concat_column in concat:
-            if item in concat_column['concat_columns']:
-                concat_column['concat_values'][item] = value
-                continue
+        # needs to be set aside for merging with others at the end of the map.
+        #
+        # concat is not used as of 2016-09-14
+        # for concat_column in concat:
+        #     if item in concat_column['concat_columns']:
+        #         concat_column['concat_values'][item] = value
+        #         continue
 
         # If our item is a column which requires that we apply the function
         # then, send_apply_func will reference this function and be sent
         # to the ``apply_column_value`` function.
-        send_apply_func = apply_func if item in apply_columns else None
-        if value and value != '':
-            model = apply_column_value(
-                item, value, model, mapping, cleaner,
-                apply_func=send_apply_func
-            )
+        is_extra_data = True if raw_field in extra_data_fields else False
 
-    if concat and [c['concat_values'] for c in concat]:
-        # We've skipped mapping any columns which we're going to concat.
-        # Now we concatenate them all and save to their designated target.
-        for c in concat:
-            mapping[c['target']] = c['target']
-            concated_vals = _concat_values(
-                c['concat_columns'],
-                c['concat_values'],
-                c['delimiter']
-            )
-            model = apply_column_value(
-                c['target'],
-                concated_vals,
-                model,
-                mapping,
-                cleaner,
-                apply_func=apply_func,
-            )
+        # Save the value if is is not None, keep empty fields.
+        if value is not None:
+            model = apply_column_value(raw_field, value, model, mapping, is_extra_data, cleaner)
+
+    # concat is not used as of 2016-09-14
+    # if concat and [c['concat_values'] for c in concat]:
+    #     # We've skipped mapping any columns which we're going to concat.
+    #     # Now we concatenate them all and save to their designated target.
+    #     for c in concat:
+    #         mapping[c['target']] = c['target']
+    #         concated_vals = _concat_values(
+    #             c['concat_columns'],
+    #             c['concat_values'],
+    #             c['delimiter']
+    #         )
+    #         model = apply_column_value(c['target'], concated_vals, model, mapping, apply_columns,
+    #                                    cleaner, apply_func=apply_func)
 
     return model

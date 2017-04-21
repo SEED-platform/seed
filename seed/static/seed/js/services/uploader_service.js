@@ -1,5 +1,6 @@
-/**
- * :copyright: (c) 2014 Building Energy Inc
+/*
+ * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :author
  */
 // uploader services
 angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
@@ -11,18 +12,10 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
 
     var uploader_factory = {};
 
-    uploader_factory.get_AWS_creds = function() {
-        var defer = $q.defer();
-        $http({
-            method: 'GET',
-            'url': window.BE.urls.get_AWS_creds
-        }).success(function(data) {
-            defer.resolve(data);
-        }).error(function(data, status) {
-            defer.reject(data, status);
-
-        });
-        return defer.promise;
+    uploader_factory.get_AWS_creds = function () {
+      return $http.get(window.BE.urls.get_AWS_creds).then(function (response) {
+        return response.data;
+      });
     };
     /**
      * create_dataset: AJAX request to create a new dataset/import record
@@ -38,75 +31,45 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
      *        "message": "name already in use"
      *  }
      */
-    uploader_factory.create_dataset = function(dataset_name) {
-        // timeout here for testing
-        var defer = $q.defer();
-        $http({
-            method: 'POST',
-            'url': window.BE.urls.create_dataset,
-            'data': {
-                'name': dataset_name,
-                'organization_id': user_service.get_organization().id
-            }
-        }).success(function(data, status) {
-            if (data.status === "error"){
-                defer.reject(data, status);
-            } else {
-                defer.resolve(data);
-            }
-        }).error(function(data, status) {
-            defer.reject(data, status);
-        });
-        return defer.promise;
+    uploader_factory.create_dataset = function (dataset_name) {
+      // timeout here for testing
+      return $http.post('/api/v2/datasets/', {
+        name: dataset_name
+      }, {
+        params: {
+          organization_id: user_service.get_organization().id
+        }
+      }).then(function (response) {
+        return response.data;
+      })
     };
 
     /*
-    * save_raw_data
-    * This service call will simply call a view on the backend to save raw
-    * data into BuildingSnapshot instances.
-    * @param file_id: the pk of a ImportFile object we're going to save raw.
-    */
-    uploader_factory.save_raw_data = function(file_id) {
-        var defer = $q.defer();
-        $http({
-            method: 'POST',
-            url: window.BE.urls.save_raw_data,
-            'data': {
-              'file_id': file_id,
-              'organization_id': user_service.get_organization().id
-            }
-        }).success(function(data, status) {
-            if (data.status === "error"){
-                defer.reject(data, status);
-            } else {
-                defer.resolve(data);
-            }
-        }).error(function(data, status) {
-            defer.reject(data, status);
-        });
-        return defer.promise;
+     * save_raw_data
+     * This service call will simply call a view on the backend to save raw
+     * data into BuildingSnapshot instances.
+     * @param file_id: the pk of a ImportFile object we're going to save raw.
+     */
+    uploader_factory.save_raw_data = function (file_id, cycle_id) {
+      return $http.post('/api/v2/import_files/' + file_id + '/save_raw_data/', {
+        cycle_id: cycle_id,
+        organization_id: user_service.get_organization().id
+      }).then(function (response) {
+        return response.data;
+      });
     };
 
     /*
-    * check_progress: gets the progress for saves, maps, and matches
-    * @param progress_key: progress_key to grab the progress
-    */
-    uploader_factory.check_progress = function(progress_key) {
-        var defer = $q.defer();
-        $http({
-            method: 'POST',
-            url: window.BE.urls.progress,
-            'data': {'progress_key': progress_key}
-        }).success(function(data, status) {
-            if (data.status === "error"){
-                defer.reject(data, status);
-            } else {
-                defer.resolve(data);
-            }
-        }).error(function(data, status) {
-            defer.reject(data, status);
-        });
-        return defer.promise;
+     * check_progress: gets the progress for saves, maps, and matches
+     * @param progress_key: progress_key to grab the progress
+     */
+    uploader_factory.check_progress = function (progress_key) {
+      return $http.post('/api/v2/progress/', {
+        progress_key: progress_key
+      }).then(function (response) {
+        if (response.data.status === 'error') return $q.reject(response);
+        else return response.data;
+      });
     };
     /*
      * check_progress_loop: check loop to update the progress bar
@@ -119,27 +82,19 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
      * @param {obj} progress_bar_obj: progress bar object, attr 'progress'
      *   is set with the progress
      */
-    uploader_factory.check_progress_loop = function(progress_key, offset, multiplier, success_fn, failure_fn, progress_bar_obj, debug) {
-        if (typeof debug === 'undefined') {
-            debug = false;
-        }
-        uploader_factory.check_progress(progress_key).then(function (data){
-            if (debug) {
-                console.log({progress: data.progress});
-            }
-            var stop = $timeout(function(){
-                progress_bar_obj.progress = (data.progress * multiplier) + offset;
-                if (data.progress < 100) {
-                    uploader_factory.check_progress_loop(progress_key, offset, multiplier, success_fn, failure_fn, progress_bar_obj, debug);
-                } else {
-                    success_fn(data);
-                }
-            }, 750);
-        }, function (data) {
-            // reject promise
-            failure_fn(data);
-        });
+    uploader_factory.check_progress_loop = function (progress_key, offset, multiplier, success_fn, failure_fn, progress_bar_obj, debug) {
+      debug = !_.isUndefined(debug);
+      uploader_factory.check_progress(progress_key).then(function (data) {
+        $timeout(function () {
+          progress_bar_obj.progress = (data.progress * multiplier) + offset;
+          if (data.progress < 100) {
+            uploader_factory.check_progress_loop(progress_key, offset, multiplier, success_fn, failure_fn, progress_bar_obj, debug);
+          } else {
+            success_fn(data);
+          }
+        }, 750);
+      }, failure_fn);
     };
 
     return uploader_factory;
-}]);
+  }]);

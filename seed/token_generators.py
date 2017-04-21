@@ -1,9 +1,10 @@
+# !/usr/bin/env python
+# encoding: utf-8
 """
-:copyright: (c) 2014 Building Energy Inc
-"""
-"""
-token_generator.py
-Aleck Landgraf, taken from django core master branch
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author: Aleck Landgraf
+
+token_generator.py - taken from django core master branch
 
 needed a token check that would not expire after three days for sending a
 signup email
@@ -22,6 +23,7 @@ class SignupTokenGenerator(object):
     Strategy object used to generate and check tokens for the password
     reset mechanism.
     """
+
     def make_token(self, user):
         """
         Returns a token that can be used once to do a password reset
@@ -48,16 +50,16 @@ class SignupTokenGenerator(object):
 
         # Check that the timestamp/uid has not been tampered with
         if not constant_time_compare(
-            self._make_token_with_timestamp(user, ts), token
+                self._make_token_with_timestamp(user, ts), token
         ):
             return False
 
         # Check the timestamp is within limit
-        if (
-            (self._num_days(self._today()) - ts) >
-            settings.PASSWORD_RESET_TIMEOUT_DAYS
-            and token_expires
-        ):
+        token_is_expired = all(
+            token_expires,
+            (self._num_days(self._today()) - ts) > settings.PASSWORD_RESET_TIMEOUT_DAYS,
+        )
+        if token_is_expired:
             return False
 
         return True
@@ -91,5 +93,6 @@ class SignupTokenGenerator(object):
     def _today(self):
         # Used for mocking in tests
         return date.today()
+
 
 signup_token_generator = SignupTokenGenerator()

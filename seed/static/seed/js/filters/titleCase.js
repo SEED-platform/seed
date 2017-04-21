@@ -1,5 +1,6 @@
-/**
- * :copyright: (c) 2014 Building Energy Inc
+/*
+ * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :author
  */
 /*
  * TileCase
@@ -10,11 +11,11 @@ angular.module('titleCase', []).filter('titleCase', [
   function($filter) {
 
     return function(input) {
-        if (typeof input === 'undefined' || input === null) {
+        if (_.isNil(input)) {
             return input;
         }
         input = input.toString();
-        input = input.replace(/_/g, " ");
+        input = input.replace(/_/g, ' ');
         input = input.replace(/(?:^|\s)\S/g, function(a) {
             return angular.uppercase(a);
         });

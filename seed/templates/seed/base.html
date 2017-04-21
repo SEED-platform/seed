@@ -1,12 +1,11 @@
-{% load compress analytical %}
+{% load compress %}
 <!DOCTYPE html>
 <html>
+    <!-- :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved. -->
     <head>
-    {% analytical_head_top %}
-
         <title>{% block title %}SEED Platform&#0153;{% endblock title %}</title>
-        <meta charset="utf-8" />
-        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <!--[if lt IE 8]>
             <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js"></script>
 
@@ -30,81 +29,115 @@
             </script>
         <![endif]-->
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-	{# <link rel="Shortcut Icon" href="PATH_TO_FAVICON.ico" type="image/x-icon" /> #}
+        <link rel="shortcut icon" href="{{STATIC_URL}}seed/images/favicon.ico">
         <link href="//fonts.googleapis.com/css?family=PT+Sans:400,700|PT+Sans+Narrow:400,700" rel="stylesheet" type="text/css">
-        <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.2/css/font-awesome.css" rel="stylesheet" type="text/css">
-        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
-        <link href="{{STATIC_URL}}vendors/angular-ui-tree/angular-ui-tree.min.css" rel="stylesheet" type="text/css" />
+        {% compress css %}
+        <link href="/static/vendors/bower_components/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+        <link href="/static/vendors/bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+        <link href="/static/vendors/bower_components/jquery-ui/themes/smoothness/jquery-ui.min.css" rel="stylesheet" type="text/css">
+        <link href="/static/vendors/bower_components/angular-ui-grid/ui-grid.min.css" rel="stylesheet" type="text/css">
+        <link href="/static/vendors/bower_components/angular-ui-tree/dist/angular-ui-tree.min.css" rel="stylesheet" type="text/css">
+        <link href="/static/vendors/bower_components/ng-tags-input/ng-tags-input.css" rel="stylesheet" type="text/css">
+        <link href="/static/vendors/bower_components/ng-tags-input/ng-tags-input.bootstrap.css" rel="stylesheet" type="text/css">
+        <link href="/static/vendors/bower_components/angular-xeditable/dist/css/xeditable.css" rel="stylesheet" type="text/css">
+        <link href="/static/vendors/bower_components/angular-ui-notification/dist/angular-ui-notification.min.css" rel="stylesheet" type="text/css">
+        <link href="/static/vendors/bower_components/angular-dragula/dist/dragula.min.css" rel="stylesheet" type="text/css">
+        {% endcompress %}
 
         {% block css %}{{block.super}}
             {% compress css %}
-                <link href="{{STATIC_URL}}seed/less/style.less" rel="stylesheet" type="text/less">
-                <link href="{{STATIC_URL}}seed/css/mapping.css" rel="stylesheet" type="text/css" />
+        <link href="/static/seed/css/style.css" rel="stylesheet" type="text/css">
             {% endcompress %}
         {% endblock %}
 
-
-
         {% block js %}{{block.super}}
-            <script>
-                window.BE = window.BE || {};
-                // username for sidebar
-                window.BE.username = "{{ username }}";
-                if (window.BE.username === "") {
-                    window.BE.username = "{{ request.user.first_name }} {{ request.user.last_name}}";
-                }
-                window.BE.initial_org_id = "{{ initial_org_id }}";
-                window.BE.initial_org_user_role = "{{ initial_org_user_role }}";
-                window.BE.initial_org_name = "{{ initial_org_name }}";
-                window.BE.FILE_UPLOAD_DESTINATION = "{{FILE_UPLOAD_DESTINATION}}";
-                window.BE.AWS_UPLOAD_BUCKET_NAME = "{{AWS_UPLOAD_BUCKET_NAME}}";
-                window.BE.AWS_CLIENT_ACCESS_KEY = "{{AWS_CLIENT_ACCESS_KEY}}";
+        <script type="text/javascript">
+            window.BE = window.BE || {};
+            // username for sidebar
+            window.BE.username = "{{ username }}";
+            if (window.BE.username === "") {
+                window.BE.username = "{{ request.user.first_name }} {{ request.user.last_name}}";
+            }
+            if (window.BE.username === " ") {
+                window.BE.username = "{{ request.user.email }}"
+            }
+            window.BE.initial_org_id = "{{ initial_org_id }}";
+            window.BE.initial_org_user_role = "{{ initial_org_user_role }}";
+            window.BE.initial_org_name = "{{ initial_org_name }}";
+            window.BE.FILE_UPLOAD_DESTINATION = "{{FILE_UPLOAD_DESTINATION}}";
+            window.BE.AWS_UPLOAD_BUCKET_NAME = "{{AWS_UPLOAD_BUCKET_NAME}}";
+            window.BE.AWS_CLIENT_ACCESS_KEY = "{{AWS_CLIENT_ACCESS_KEY}}";
 
-                {# js CSRF config #}
-                window.BE.csrf_token = "{{ csrf_token }}";
-            </script>
+            {# js CSRF config #}
+            window.BE.csrf_token = "{{ csrf_token }}";
 
-            {# js urls config #}
-            {% include "seed/_js_urls.html" %}
+            {# Django debug mode flag #}
+            window.BE.debug = {{ debug|yesno:"true,false" }};
+        </script>
 
-            {# js vendor imports #}
-            {# todo: switch angular.js to minified version, same with the rest #}
-            <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js"></script>
-            <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.1/js/bootstrap.min.js"></script>
-            <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular.js"></script>
-            <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular-cookies.min.js"></script>
-            <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular-route.min.js"></script>
-            <script src="{{STATIC_URL}}vendors/angular-ui/ui-bootstrap-tpls-0.12.0-SNAPSHOT.min.js"></script>
-            <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.3.1/moment.min.js"></script>
+        {# js urls config #}
+        {% include "seed/_js_urls.html" %}
+
+        {% compress js %}
+        <script src="/static/vendors/bower_components/jquery/dist/jquery.min.js"></script>
+        <script src="/static/vendors/bower_components/jquery-ui/jquery-ui.min.js"></script>
+        <script src="/static/vendors/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+
+        <script src="/static/vendors/bower_components/lodash/dist/lodash.min.js"></script>
+
+            {% if not debug %}
+        <script src="/static/vendors/bower_components/angular/angular.min.js"></script>
+            {% else %}
+        <script src="/static/vendors/bower_components/angular/angular.js"></script>
+            {% endif %}
+        <script src="/static/vendors/bower_components/angular-cookies/angular-cookies.min.js"></script>
+        <script src="/static/vendors/bower_components/angular-ui-router/release/angular-ui-router.min.js"></script>
+        <script src="/static/vendors/bower_components/angular-ui-router.stateHelper/statehelper.min.js"></script>
+
+            {% if not debug and SENTRY_JS_DSN %}
+        <script src="https://cdn.ravenjs.com/2.1.0/angular/raven.min.js"></script>
+        <script>Raven.config('{{ SENTRY_JS_DSN }}').install();</script>
+            {% endif %}
+
+        <script src="/static/vendors/bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+        <script src="/static/vendors/bower_components/angular-ui-grid/ui-grid.min.js"></script>
+        <script src="/static/vendors/bower_components/ui-grid-draggable-rows/js/draggable-rows.js"></script>
+        <script src="/static/vendors/bower_components/angular-ui-tree/dist/angular-ui-tree.min.js"></script>
+        <script src="/static/vendors/bower_components/angular-ui-sortable/sortable.min.js"></script>
+        <script src="/static/vendors/bower_components/angular-dragula/dist/angular-dragula.min.js"></script>
+
+        <script src="/static/vendors/bower_components/moment/min/moment.min.js"></script>
+
+        <!-- reports -->
+        <script src="/static/vendors/bower_components/d3/d3.min.js"></script>
+        <script src="/static/vendors/bower_components/dimple/dist/dimple.latest.min.js"></script>
+        <!-- / reports -->
+
+        <script src="/static/vendors/bower_components/angular-xeditable/dist/js/xeditable.min.js"></script>
+        <script src="/static/vendors/bower_components/ng-tags-input/ng-tags-input.js"></script>
+        <script src="/static/vendors/bower_components/angular-ui-notification/dist/angular-ui-notification.min.js"></script>
+        <script src="/static/vendors/bower_components/spin.js/spin.min.js"></script>
 
             {% ifequal FILE_UPLOAD_DESTINATION 'S3' %}
-            <script src="{{STATIC_URL}}vendors/bower_components/fine-uploader/_build/s3.fineuploader.js" ></script>
+        <script src="/static/vendors/bower_components/fine-uploader/_build/s3.fineuploader.js"></script>
             {% else %}
-            <script src="{{STATIC_URL}}vendors/bower_components/fine-uploader/_build/fineuploader.js" ></script>
+        <script src="/static/vendors/bower_components/fine-uploader/_build/fineuploader.js"></script>
             {% endifequal %}
+        {% endcompress %}
 
-            <script src="{{STATIC_URL}}vendors/angular-ui-tree/angular-ui-tree.min.js"></script>
 
-            {# all seed js files #}
-            {% include "seed/_scripts.html" %}
+        {# all seed js files #}
+        {% include "seed/_scripts.html" %}
 
-            {% if not COMPRESS_ENABLED %}
-                <script src="{{STATIC_URL}}vendors/lesscss_org/js/less-1.5.0.min.js"></script>
-            {% endif %}
         {% endblock js%}
-    {% analytical_head_bottom %}
     </head>
 
     {% block body %}
     <body>
-    {% analytical_body_top %}
-        <div class="app" data-ng-app="BE.seed">
-        {% block content %}{% endblock %}
+        <div class="app" ng-app="BE.seed">
+        {% block content %}
+        {% endblock %}
         </div>
-    {% analytical_body_bottom %}
     </body>
 </html>
 {% endblock %}
-
-{% block js_scripts %}
-{% endblock js_scripts %}

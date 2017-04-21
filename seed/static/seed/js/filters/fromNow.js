@@ -1,5 +1,6 @@
-/**
- * :copyright: (c) 2014 Building Energy Inc
+/*
+ * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :author
  */
 /**
  * filter 'fromNow' using the moment.js function 'fromNow()'
@@ -7,8 +8,9 @@
  */
 angular.module('fromNow', []).filter('fromNow', function() {
     return function(dateString) {
-        if (angular.isNumber(dateString)){
-            return moment(dateString).fromNow();
+        if (_.isNumber(dateString) || /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/.test(dateString)) {
+            var m = moment(dateString);
+            if (m.isValid()) return m.fromNow();
         }
         return 'a few seconds ago';
     };

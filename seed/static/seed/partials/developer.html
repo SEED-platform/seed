@@ -10,9 +10,7 @@
     </div>
 </div>
 <div class="section_nav_container">
-    <div class="section_nav">
-        <a ng-href="#/profile">Profile Info</a><a ng-href="#/profile/security">Security</a><a ng-href="#/profile/admin" ng-show="auth.requires_superuser">Admin</a><a ng-href="#/profile/developer" class="active">Developer</a>
-    </div>
+    <div class="section_nav" ng-include="urls.static_url + 'seed/partials/profile_nav.html'"></div>
 </div>
 <div class="section">
     <div class="section_header_container">
@@ -21,10 +19,10 @@
         </div>
     </div>
     <div class="section_content_container">
-        <div class="section_content with_padding">
+        <div class="section_content with_padding container-fluid">
             <div class="row">
                 <div class="section_form_container col-sm-8">
-                    <p>Manage Your API Key</p>          
+                    <p>Manage Your API Key</p>
                     <div class="table_list_container">
                         <table class="table table-striped">
                             <thead>
@@ -42,7 +40,7 @@
                         </table>
                     </div>
                     <div class="table_footer">
-                        <button type="submit" class="btn btn-primary" ng-click="generate_api_key()">Get a New API Key <i class="fa fa-check" ng-show="new_key_generated"></i></button> 
+                        <button type="submit" class="btn btn-primary" ng-click="generate_api_key()">Get a New API Key <i class="fa fa-check" ng-show="new_key_generated"></i></button>
                     </div>
                 </div>
             </div>

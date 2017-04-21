@@ -1,5 +1,8 @@
+# !/usr/bin/env python
+# encoding: utf-8
 """
-:copyright: (c) 2014 Building Energy Inc
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
 """
 # sys imports
 import json
@@ -22,6 +25,7 @@ from seed.audit_logs.models import AuditLog, LOG, NOTE
 
 
 class AuditLogModelTests(TestCase):
+
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -165,6 +169,7 @@ class AuditLogModelTests(TestCase):
 
 
 class AuditLogViewTests(TestCase):
+
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -233,7 +238,7 @@ class AuditLogViewTests(TestCase):
                 u'audit_type': 'Note',
                 u'content_type': 'canonicalbuilding',
                 u'created': data['audit_logs'][0]['created'],
-                u'id':  data['audit_logs'][0]['id'],
+                u'id': data['audit_logs'][0]['id'],
                 u'model': u'audit_logs.auditlog',
                 u'modified': data['audit_logs'][0]['modified'],
                 u'object_id': data['audit_logs'][0]['object_id'],
@@ -258,7 +263,7 @@ class AuditLogViewTests(TestCase):
                 u'audit_type': 'Log',
                 u'content_type': 'canonicalbuilding',
                 u'created': data['audit_logs'][1]['created'],
-                u'id':  data['audit_logs'][1]['id'],
+                u'id': data['audit_logs'][1]['id'],
                 u'model': u'audit_logs.auditlog',
                 u'modified': data['audit_logs'][1]['modified'],
                 u'object_id': data['audit_logs'][1]['object_id'],

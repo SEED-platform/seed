@@ -6,11 +6,11 @@ var validationTestApp = angular.module(
     'validationTestApp', ['mappingValidatorService']
 );
 
-describe("The MappingValidatorService", function() {
+describe('The MappingValidatorService', function() {
     var mvs;
 
     beforeEach(function () {
-        module("validationTestApp");
+        module('validationTestApp');
         inject(function (mappingValidatorService) {
             mvs = mappingValidatorService;
 

@@ -3,11 +3,11 @@
     <div class="section_content">
       <div class="home_jump_nav_container">
         <div class="home_jump_nav">
-          <a href="#/projects"><i class="fa fa-folder-o"></i>Projects</a>
-          <a href="#/buildings"><i class="fa fa-building-o"></i>Buildings</a>
-          <a href="#/data" ng-show="menu.user.organization.user_role !== 'viewer'"><i class="fa fa-sitemap"></i>Data</a>
-          <a href="#/feedback"><i class="fa fa-certificate"></i>Contact</a>
-        </div>        
+          <a id="nav-projects" ui-sref="projects" disabled><i class="fa fa-folder-o"></i>Projects</a>
+          <a id="nav-inventory" ui-sref="inventory_list({inventory_type: 'properties'})"><span ng-include="'/static/seed/images/icon-city.svg'"></span>Inventory</a>
+          <a id="nav-data" ui-sref="dataset_list" ng-show="menu.user.organization.user_role !== 'viewer'"><i class="fa fa-sitemap"></i>Data</a>
+          <a ui-sref="contact"><i class="fa fa-question-circle"></i>Contact</a>
+        </div>
       </div>
       <div class="jumbotron">
         <div class="home_hero_content_container">
@@ -18,14 +18,14 @@
           a standardized format for collecting, storing and analyzing
           building energy performance information about large
           portfolios. Upload your buildings list to get started.</p>
-          
-          <p><a href="javascript:void(0);" data-toggle="modal" data-target="#dataUploadModal" ng-click="open_data_upload_modal()" class="btn btn-primary btn-lg" role="button" ng-hide="menu.user.organization.user_role === 'viewer'"><i class="fa fa-cloud-upload"></i>&nbsp;&nbsp;Upload your buildings list</a> <a ng-href="{$ urls.static_url $}seed/pdf/SEED_Platform_V1.1_Getting_Started_Guide.pdf" target="_blank" title="SEED_v1.1_User_Guide" class="btn btn-warning btn-lg" role="button"><i class="fa fa-file-text"></i>&nbsp;&nbsp;Getting Started Guide</a></p>
+
+          <p><a data-toggle="modal" data-target="#dataUploadModal" ng-click="open_data_upload_modal()" class="btn btn-primary btn-lg" role="button" ng-hide="menu.user.organization.user_role === 'viewer'"><i class="fa fa-cloud-upload"></i>&nbsp;&nbsp;Upload your buildings list</a> <a ng-href="{$ urls.static_url $}seed/pdf/SEED_Platform_V1_3_Getting_Started_Guide.pdf" target="_blank" title="SEED_v1.3_User_Guide" class="btn btn-warning btn-lg" role="button"><i class="fa fa-file-text"></i>&nbsp;&nbsp;Getting Started Guide</a></p>
         </div>
       </div>
       <div class="whats_new_container">
         <div class="whats_new">
           <h2>Highlights of SEED Platform&#0153;</h2>
-          
+
           <div class="row">
             <div class="content_col col-md-4">
               <div class="content_col_header">
@@ -47,7 +47,7 @@
 
                 <p><a ng-href="{$ urls.static_url $}seed/sample-data/seed-sample-data.zip" class="btn btn-info" role="button"><i class="fa fa-cloud-download"></i>&nbsp;&nbsp;Download Sample Data</a></p>
 
-            
+
               </div>
             </div>
             <div class="content_col col-md-4">
@@ -60,13 +60,13 @@
                 </div>
               </div>
               <div class="copy">
-            
+
                 <p>Match-up your buildings list with the Portfolio
                 Manager dataset to tie building records together. SEED
                 Platform will help you by auto-matching high confidence
                 pairings and then provide you with tools to match the
                 rest of your dataset.</p>
-            
+
               </div>
             </div>
             <div class="content_col col-md-4">
@@ -80,7 +80,7 @@
               </div>
               <div class="copy">
                 <p>Use SEED Platform's flexible, easy-to-use labeling system and project groupings to track the status of data submission, review, and compliance.</p>
-            
+
               </div>
             </div>
           </div>

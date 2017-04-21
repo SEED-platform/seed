@@ -1,19 +1,22 @@
+# !/usr/bin/env python
+# encoding: utf-8
 """
-:copyright: (c) 2014 Building Energy Inc
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
 """
 
 # django imports
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
 from django.db import models
+from django.db.models.query import QuerySet
 
 # vendor imports
 from django_extensions.db.models import TimeStampedModel
-from djorm_expressions.models import ExpressionManager, ExpressionQuerySet
-from djorm_pgjson.fields import JSONField
+from django_pgjson.fields import JsonField
 from seed.lib.superperms.orgs.models import Organization
 
 USER_MODEL = getattr(settings, 'AUTH_USER_MODEL', User)
@@ -32,14 +35,15 @@ ACTION_OPTIONS = {
 }
 
 
-class AuditLogQuerySet(ExpressionQuerySet):
+class AuditLogQuerySet(QuerySet):
+
     def update(self, *args, **kwargs):
         """only notes should be updated, so filter out non-notes"""
         self = self.filter(audit_type=NOTE)
         return super(AuditLogQuerySet, self).update(*args, **kwargs)
 
 
-class AuditLogManager(ExpressionManager):
+class AuditLogManager(models.Manager):
     """ExpressionManager with ``update`` preventing the update of non-notes"""
     use_for_related_fields = True
 
@@ -69,7 +73,7 @@ class AuditLog(TimeStampedModel):
     # Generic Foreign Key next three fields
     content_type = models.ForeignKey(ContentType, null=True, blank=True)
     object_id = models.PositiveIntegerField(null=True)
-    content_object = generic.GenericForeignKey('content_type', 'object_id')
+    content_object = GenericForeignKey('content_type', 'object_id')
     audit_type = models.IntegerField(default=LOG, choices=AUDIT_CHOICES)
     action = models.CharField(
         max_length=128,
@@ -78,7 +82,7 @@ class AuditLog(TimeStampedModel):
         help_text='method triggering audit',
         db_index=True,
     )
-    action_response = JSONField(help_text='HTTP response from action')
+    action_response = JsonField(default={}, help_text='HTTP response from action')
     action_note = models.TextField(
         blank=True,
         null=True,
@@ -92,8 +96,6 @@ class AuditLog(TimeStampedModel):
     class Meta:
         ordering = ('-created', )
 
-    # extends djorm_expressions.models.ExpressionManager to prevent update of
-    # non-notes
     objects = AuditLogManager()
 
     def __unicode__(self):

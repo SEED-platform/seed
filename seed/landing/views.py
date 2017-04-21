@@ -1,14 +1,17 @@
+# !/usr/bin/env python
+# encoding: utf-8
 """
-:copyright: (c) 2014 Building Energy Inc
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
 """
 import logging
 
-from annoying.decorators import render_to
 from django.contrib import auth
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.forms import SetPasswordForm
 from django.conf import settings
 from django.core.urlresolvers import reverse
-from django.forms.util import ErrorList
+from django.forms.utils import ErrorList
 from django.forms.forms import NON_FIELD_ERRORS
 from django.http import HttpResponseRedirect
 from django.template.context import RequestContext
@@ -16,27 +19,30 @@ from django.shortcuts import render_to_response
 from tos.models import (
     has_user_agreed_latest_tos, TermsOfService, NoActiveTermsOfService
 )
-from forms import LoginForm, SetStrongPasswordForm
+from forms import LoginForm
 
 logger = logging.getLogger(__name__)
 
 
-@render_to('landing/home.html')
 def landing_page(request):
     if request.user.is_authenticated():
         return HttpResponseRedirect(reverse('seed:home'))
     login_form = LoginForm()
-    return locals()
+    return render_to_response(
+        'landing/home.html',
+        locals(),
+        context_instance=RequestContext(request),
+    )
 
 
-def _login_view(request):
+def login_view(request):
     """
     Standard Django login, with additions:
         Lowercase the login email (username)
         Check user has accepted ToS, if any.
     """
     if request.method == "POST":
-        redirect_to = request.REQUEST.get('next', False)
+        redirect_to = request.POST.get('next', request.GET.get('next', False))
         if not redirect_to:
             redirect_to = reverse('seed:home')
 
@@ -47,11 +53,11 @@ def _login_view(request):
                 password=form.cleaned_data['password']
             )
             if new_user and new_user.is_active:
-                #determine if user has accepted ToS, if one exists
+                # determine if user has accepted ToS, if one exists
                 try:
                     user_accepted_tos = has_user_agreed_latest_tos(new_user)
                 except NoActiveTermsOfService:
-                    #there's no active ToS, skip interstitial
+                    # there's no active ToS, skip interstitial
                     user_accepted_tos = True
 
                 if user_accepted_tos:
@@ -76,9 +82,11 @@ def _login_view(request):
                 errors.append('Username and/or password were invalid.')
     else:
         form = LoginForm()
-
-    return locals()
-login_view = render_to('landing/login.html')(_login_view)
+    return render_to_response(
+        'landing/login.html',
+        locals(),
+        context_instance=RequestContext(request),
+    )
 
 
 def password_set(request, uidb64=None, token=None):
@@ -115,14 +123,17 @@ def password_reset_confirm(request, uidb64=None, token=None):
         uidb64=uidb64,
         token=token,
         template_name='landing/password_reset_confirm.html',
-        set_password_form=SetStrongPasswordForm,
+        set_password_form=SetPasswordForm,
         post_reset_redirect=reverse('landing:password_reset_complete')
     )
 
 
-@render_to("landing/password_reset_complete.html")
 def password_reset_complete(request):
-    return locals()
+    return render_to_response(
+        "landing/password_reset_complete.html",
+        {},
+        context_instance=RequestContext(request),
+    )
 
 
 def signup(request, uidb64=None, token=None):
@@ -131,6 +142,6 @@ def signup(request, uidb64=None, token=None):
         uidb64=uidb64,
         token=token,
         template_name='landing/signup.html',
-        set_password_form=SetStrongPasswordForm,
+        set_password_form=SetPasswordForm,
         post_reset_redirect=reverse('landing:landing_page') + "?setup_complete"
     )
