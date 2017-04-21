@@ -302,7 +302,7 @@ class Rule(models.Model):
 
 class DataQualityCheck(models.Model):
     """
-    Object that stores the high level configuration per organizaiton of the DataQualityCheck
+    Object that stores the high level configuration per organization of the DataQualityCheck
     """
     REQUIRED_FIELDS = {
         'property': ['address_line_1', 'pm_property_id', 'jurisdiction_property_id'],
