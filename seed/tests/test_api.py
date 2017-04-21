@@ -5,14 +5,13 @@
 :author
 """
 import datetime
-from django.utils import timezone
 import json
 import os
 import time
-from unittest import skip
 
 from django.core.urlresolvers import reverse_lazy, reverse
 from django.test import TestCase
+from django.utils import timezone
 
 from seed.factory import SEEDFactory
 from seed.landing.models import SEEDUser as User
@@ -59,30 +58,6 @@ class ApiAuthenticationTests(TestCase):
             'organization_id': self.org.pk,
         }
         self.auth_string = '%s:%s' % (self.user.username, self.user.api_key)
-
-    # TODO replace with test for inventory report
-    @skip("Fix for new data model")
-    def test_get(self):
-        """
-        Test auth via GET parameter.
-        """
-        headers = {'HTTP_AUTHORIZATION': self.auth_string}
-        resp = self.client.get(self.api_url, data=self.params, **headers)
-        self.assertEqual(resp.status_code, 200)
-        body = json.loads(resp.content)
-        self.assertEqual(body['status'], 'success')
-        self.assertEqual(body['building']['address_line_1'],
-                         self.building.address_line_1)
-
-    # TODO replace with test for inventory report
-    @skip("Fix for new data model")
-    def test_no_auth(self):
-        """
-        Test forgetting to provide API key in any form.
-        """
-        resp = self.client.get(self.api_url, data=self.params)
-        self.assertEqual(resp.status_code, 302)
-        self.assertEqual(resp.content, '')
 
 
 class SchemaGenerationTests(TestCase):
@@ -133,6 +108,7 @@ class TestApi(TestCase):
         self.user = User.objects.create_user(**user_details)
         self.user.generate_key()
         self.org = Organization.objects.create()
+        self.default_cycle = Cycle.objects.filter(organization_id=self.org).first()
         OrganizationUser.objects.create(user=self.user, organization=self.org)
         self.cycle, _ = Cycle.objects.get_or_create(
             name=u'Test Hack Cycle 2015',
@@ -144,7 +120,7 @@ class TestApi(TestCase):
         self.headers = {'HTTP_AUTHORIZATION': '%s:%s' % (self.user.username, self.user.api_key)}
 
     def get_org_id(self, dict, username):
-        '''Return the org id from the passed dictionary and username'''
+        """Return the org id from the passed dictionary and username"""
         id = None
         for ctr in range(len(dict['organizations'])):
             if dict['organizations'][ctr]['owners'][0]['email'] == username:
@@ -200,7 +176,6 @@ class TestApi(TestCase):
         #           }]
         # }
         r = json.loads(r.content)
-        # print json.dumps(r, indent=2)
         self.assertEqual(len(r['organizations']), 1)
         self.assertEqual(len(r['organizations'][0]['sub_orgs']), 0)
         # Num buildings is no longer valid. The count of properties are in the cycle
@@ -210,8 +185,17 @@ class TestApi(TestCase):
         self.assertEqual(r['organizations'][0]['user_role'], 'owner')
         self.assertEqual(r['organizations'][0]['owners'][0]['first_name'], 'Jaqen')
         self.assertEqual(r['organizations'][0]['cycles'], [
-            {u'name': u'Default 2016 Calendar Year', u'num_properties': 0, u'num_taxlots': 0},
-            {u'name': u'Test Hack Cycle 2015', u'num_properties': 0, u'num_taxlots': 0}])
+            {
+                u'name': u'Default 2016 Calendar Year',
+                u'num_properties': 0,
+                u'num_taxlots': 0,
+                u'cycle_id': self.default_cycle.pk,
+            }, {
+                u'name': u'Test Hack Cycle 2015',
+                u'num_properties': 0,
+                u'num_taxlots': 0,
+                u'cycle_id': self.cycle.pk,
+            }])
 
     def test_organization_details(self):
         r = self.client.get('/api/v2/organizations/', follow=True, **self.headers)
@@ -501,11 +485,12 @@ class TestApi(TestCase):
                 }
             ]
         }
-        r = self.client.post('/api/v2/import_files/' + str(import_file_id) + '/save_column_mappings/',
-                             data=json.dumps(payload),
-                             content_type='application/json',
-                             follow=True,
-                             **self.headers)
+        r = self.client.post(
+            '/api/v2/import_files/' + str(import_file_id) + '/save_column_mappings/',
+            data=json.dumps(payload),
+            content_type='application/json',
+            follow=True,
+            **self.headers)
         self.assertEqual(r.status_code, 200)
         r = json.loads(r.content)
 
@@ -520,7 +505,8 @@ class TestApi(TestCase):
             'organization_id': organization_id
         }
         r = self.client.post('/api/v2/import_files/' + str(import_file_id) + '/perform_mapping/',
-                             data=json.dumps(payload), content_type='application/json', follow=True, **self.headers)
+                             data=json.dumps(payload), content_type='application/json', follow=True,
+                             **self.headers)
         self.assertEqual(r.status_code, 200)
         r = json.loads(r.content)
 
@@ -553,8 +539,8 @@ class TestApi(TestCase):
 
         # # Get the mapping suggestions
         r = self.client.post(
-            '/api/v2/data_files/{}/mapping_suggestions/?organization_id={}'.format(import_file_id,
-                                                                                   organization_id),
+            '/api/v2/import_files/{}/mapping_suggestions/?organization_id={}'.format(import_file_id,
+                                                                                     organization_id),
             content_type='application/json',
             follow=True,
             **self.headers

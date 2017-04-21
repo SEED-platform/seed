@@ -18,41 +18,30 @@ from django.core.files.storage import DefaultStorage
 from django.http import JsonResponse
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
-from rest_framework import viewsets
-from rest_framework.authentication import SessionAuthentication
-from rest_framework.decorators import detail_route, api_view
+from rest_framework.decorators import api_view
 
 from seed import tasks
-from seed.authentication import SEEDAuthentication
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.decorators import (
-    ajax_request, ajax_request_class, get_prog_key, require_organization_id
+    ajax_request, get_prog_key, require_organization_id
 )
 from seed.lib.exporter import Exporter
 from seed.lib.mappings import mapper as simple_mapper
 from seed.lib.mappings import mapping_data
 from seed.lib.mcm import mapper
 from seed.lib.superperms.orgs.decorators import has_perm
-from seed.lib.superperms.orgs.models import Organization, OrganizationUser
+from seed.lib.superperms.orgs.models import OrganizationUser
 from seed.models import (
-    ASSESSED_BS,
-    PORTFOLIO_BS,
-    GREEN_BUTTON_BS,
     CanonicalBuilding,
     Column,
     ProjectBuilding,
-    get_ancestors,  # TO REMOVE
     get_column_mapping,
 )
-from seed.utils.api import api_endpoint, api_endpoint_class
+from seed.utils.api import api_endpoint
 from seed.utils.buildings import (
     get_columns as utils_get_columns,
-    get_buildings_for_user_count
 )
 from seed.utils.cache import get_cache, set_cache
-from seed.utils.projects import (
-    get_projects,
-)
 from seed.views.users import _get_js_role
 from .. import search
 
@@ -399,122 +388,6 @@ def export_buildings_download(request):
         }
 
 
-# TODO: TO REMOVE
-@ajax_request
-@login_required
-def get_total_number_of_buildings_for_user(request):
-    """gets a count of all buildings in the user's organizations"""
-    buildings_count = get_buildings_for_user_count(request.user)
-
-    return {'status': 'success', 'buildings_count': buildings_count}
-
-
-# TO REMOVE
-def get_building(request):
-    """
-    Retrieves a building. If user doesn't belong to the building's org,
-    fields will be masked to only those shared within the parent org's
-    structure.
-
-    :GET: Expects building_id and organization_id in query string. building_id should be the `canonical_building` ID  \
-    for the building, not the BuildingSnapshot id.
-
-    Returns::
-
-        {
-             'status': 'success or error',
-             'message': 'error message, if any',
-             'building': {'id': the building's id,
-                          'canonical_building': the canonical building ID,
-                          other fields this user has access to...
-             },
-             'imported_buildings': [ A list of buildings imported to create
-                                     this building's record, in the same
-                                     format as 'building'
-                                   ],
-             'projects': [
-                // A list of the building's projects
-                {
-                    "building": {
-                        "approved_date":07/30/2014,
-                        "compliant": null,
-                        "approver": "demo@seed.lbl.gov"
-                        "approved_date": "07/30/2014"
-                        "compliant": null
-                        "label": {
-                            "color": "red",
-                            "name": "non compliant",
-                            id: 1
-                        }
-                    }
-                    "description": null
-                    "id": 3
-                    "is_compliance": false
-                    "last_modified_by_id": 1
-                    "name": "project 1"
-                    "owner_id": 1
-                    "slug": "project-1"
-                    "status": 1
-                    "super_organization_id": 1
-                },
-                . . .
-            ],
-             'user_role': role of user in this org,
-             'user_org_id': the org id this user belongs to
-        }
-
-    """
-    building_id = request.GET.get('building_id')
-    org = Organization.objects.get(pk=request.GET['organization_id'])
-    canon = CanonicalBuilding.objects.get(pk=building_id)
-    building = canon.canonical_snapshot
-    user_orgs = request.user.orgs.all()
-    parent_org = user_orgs[0].get_parent()
-
-    if (building.super_organization in user_orgs or parent_org in user_orgs):
-        exportable_field_names = None  # show all
-    else:
-        # User isn't in the parent org or the building's org,
-        # so only show shared fields.
-        exportable_fields = parent_org.exportable_fields
-        exportable_field_names = exportable_fields.values_list('name',
-                                                               flat=True)
-
-    building_dict = building.to_dict(exportable_field_names)
-
-    ancestors = get_ancestors(building)
-
-    # Add child node (in case it hasn't yet been matched with any other
-    # buildings). When this happens, ancestors should also be the empty list.
-    if building.source_type in [ASSESSED_BS, PORTFOLIO_BS, GREEN_BUTTON_BS]:
-        ancestors.append(building)
-    imported_buildings_list = []
-    for b in ancestors:
-        d = b.to_dict(exportable_field_names)
-        # get deleted import file names without throwing an error
-        imp_file = ImportFile.raw_objects.get(pk=b.import_file_id)
-        d['import_file_name'] = imp_file.filename_only
-        # do not show deleted import file sources
-        if not imp_file.deleted:
-            imported_buildings_list.append(d)
-    imported_buildings_list.sort(key=lambda x: x['source_type'])
-
-    projects = get_projects(building, org)
-    ou = request.user.organizationuser_set.filter(
-        organization=building.super_organization
-    ).first()
-
-    return {
-        'status': 'success',
-        'building': building_dict,
-        'labels': [l.to_dict() for l in canon.labels.all()],
-        'imported_buildings': imported_buildings_list,
-        'projects': projects,
-        'user_role': _get_js_role(ou.role_level) if ou else "",
-        'user_org_id': ou.organization.pk if ou else "",
-    }
-
-
 @ajax_request
 def public_search(request):
     """the public API unauthenticated endpoint
@@ -704,176 +577,17 @@ def get_columns(request):
     return utils_get_columns(request.GET['organization_id'], all_fields)
 
 
-# @api_endpoint
-# @ajax_request
-# @login_required
-# @has_perm('requires_member')
-def save_match(request):
-    return "DEPRECATE ME"
-
-
-#     """
-#     Adds or removes a match between two BuildingSnapshots.
-#     Creating a match creates a new BuildingSnapshot with merged data.
-#
-#     Payload::
-#
-#         {
-#             'organization_id': current user organization id,
-#             'source_building_id': ID of first BuildingSnapshot,
-#             'target_building_id': ID of second BuildingSnapshot,
-#             'create_match': True to create match, False to remove it,
-#             'organization_id': ID of user's organization
-#         }
-#
-#     Returns::
-#
-#         {
-#             'status': 'success',
-#             'child_id': The ID of the newly-created BuildingSnapshot
-#                         containing merged data from the two parents.
-#         }
-#     """
-#     body = json.loads(request.body)
-#     create = body.get('create_match')
-#     b1_pk = body['source_building_id']
-#     b2_pk = body.get('target_building_id')
-#     child_id = None
-#
-#     # check some perms
-#     b1 = BuildingSnapshot.objects.get(pk=b1_pk)
-#     if create:
-#         b2 = BuildingSnapshot.objects.get(pk=b2_pk)
-#         if b1.super_organization_id != b2.super_organization_id:
-#             return {
-#                 'status': 'error',
-#                 'message': (
-#                     'Only buildings within an organization can be matched'
-#                 )
-#             }
-#     if b1.super_organization_id != int(body.get('organization_id')):
-#         return {
-#             'status': 'error',
-#             'message': (
-#                 'The source building does not belong to the organization'
-#             )
-#         }
-#
-#     if create:
-#         child_id, changelist = save_snapshot_match(
-#             b1_pk, b2_pk, user=request.user, match_type=2, default_pk=b2_pk
-#         )
-#         child_id = child_id.pk
-#         cb = CanonicalBuilding.objects.get(buildingsnapshot__id=child_id)
-#         AuditLog.objects.log_action(
-#             request, cb, body['organization_id'],
-#             action_note='Matched building.'
-#         )
-#     else:
-#         cb = b1.canonical_building or b1.co_parent.canonical_building
-#         AuditLog.objects.log_action(
-#             request, cb, body['organization_id'],
-#             action_note='Unmatched building.'
-#         )
-#         unmatch_snapshot(b1_pk)
-#     resp = {
-#         'status': 'success',
-#         'child_id': child_id,
-#     }
-#     return resp
-
-
-def _parent_tree_coparents(snapshot):
-    """
-    Takes a BuildingSnapshot inst. Climbs the snapshot tree upward and
-    returns (root, parent_coparents,) where parent_coparents is every
-    coparent on the path from the root to the snapshot's coparents and
-    the root node. Does not return internal nodes from the path.
-
-    currently, the order that the coparents are returned is not specified
-    and should not be relied on.
-
-    e.g. given this tree of snapshots
-
-                C0       C1
-                 |       |
-                B0  B1   |
-                 \  /   B3
-                  B2   /
-                   \  /
-                    B4  B5
-                     \  /
-                      B6
-                       |
-                      B7  B8
-                       \  /
-                        B9
-                         \ ...
-
-    if called with B9 as the snapshot node (note that B9's
-    canonical_building will be C0), then this will return:
-    (
-     B0,  # root
-     [B0, B1, B3, B5, B8]  # parent_coparents
-    )
-
-    if called with B4, and B4.canonical_building is C0, this
-    will return:
-    (
-     B0,  # root
-     [B0, B1, B3]  # parent_coparents
-    )
-
-    if called with B4, and B4.canonical_building is C1, this
-    will return:
-    (
-     B3,  # root
-     [B2, B3]  # parent_coparents
-    )
-
-    if called with B5 (and B5 has no canonical_building), this
-    will use B5's coparent's canonical_building and will return:
-    (
-     B0,  # root
-     [B0, B1, B3]  # parent_coparents
-    )
-
-    """
-    result_nodes = []
-    root = snapshot
-    canon = root.canonical_building
-
-    if (not canon) and root.co_parent and root.co_parent.canonical_building:
-        root = root.co_parent
-        canon = root.canonical_building
-
-    while root and not (root.parents.count() == 0):
-        parents = root.parents.all()
-        root = parents.filter(canonical_building=canon).first()
-        coparents = parents.exclude(pk=root.pk)
-        result_nodes = result_nodes + list(coparents)
-
-    result_nodes.append(root)
-
-    return (root, result_nodes,)
-
-
-def _tmp_mapping_suggestions(import_file_id, org_id, user):
+def _mapping_suggestions(import_file_id, org_id, user):
     """
     Temp function for allowing both api version for mapping suggestions to
     return the same data. Move this to the mapping_suggestions once we can
     deprecate the old get_column_mapping_suggestion method.
 
-    Args:
-        import_id_pk: import file id
-        org_id: organization id of user
-        user: user object from request
-
-    Returns:
-        dictionary
-
+    :param import_file_id: import file id
+    :param org_id: organization id of user
+    :param user: user object from request
+    :return: dict
     """
-
     result = {'status': 'success'}
 
     membership = OrganizationUser.objects.select_related('organization') \
@@ -930,55 +644,6 @@ def _tmp_mapping_suggestions(import_file_id, org_id, user):
     result['columns'] = md.data
 
     return result
-
-
-class DataFileViewSet(viewsets.ViewSet):
-    raise_exception = True
-    authentication_classes = (SessionAuthentication, SEEDAuthentication)
-
-    @api_endpoint_class
-    @ajax_request_class
-    @detail_route(methods=['GET'])
-    def mapping_suggestions(self, request, pk):
-        """
-        Returns suggested mappings from an uploaded file's headers to known
-        data fields.
-        ---
-        type:
-            status:
-                required: true
-                type: string
-                description: Either success or error
-            suggested_column_mappings:
-                required: true
-                type: dictionary
-                description: Dictionary where (key, value) = (the column header from the file,
-                      array of tuples (destination column, score))
-            building_columns:
-                required: true
-                type: array
-                description: A list of all possible columns
-            building_column_types:
-                required: true
-                type: array
-                description: A list of column types corresponding to the building_columns array
-        parameter_strategy: replace
-        parameters:
-            - name: pk
-              description: import_file_id
-              required: true
-              paramType: path
-            - name: organization_id
-              description: The organization_id for this user's organization
-              required: true
-              paramType: query
-
-        """
-        org_id = request.query_params.get('organization_id', None)
-
-        result = _tmp_mapping_suggestions(pk, org_id, request.user)
-
-        return JsonResponse(result)
 
 
 @api_endpoint
@@ -1060,52 +725,6 @@ def progress(request):
             'progress': 0,
             'status': 'waiting'
         })
-
-
-# @api_endpoint
-# @ajax_request
-# @login_required
-# @has_perm('can_modify_data')
-# def update_building(request):
-#     """
-#     Manually updates a building's record.  Creates a new BuildingSnapshot for
-#     the resulting changes.
-
-#     :PUT:
-
-#     Payload::
-
-#         {
-#             "organization_id": "organization id as integer",
-#             "building":
-#                 {
-#                     "canonical_building": "canonical building ID as integer"
-#                     "fieldname": "value",
-#                     "...": "Remaining fields in the BuildingSnapshot; see get_columns() endpoint for complete list."
-#                 }
-#         }
-
-#     Returns::
-
-#         {
-#             "status": "success",
-#             "child_id": "The ID of the newly-created BuildingSnapshot"
-#         }
-#     """
-#     body = json.loads(request.body)
-#     # Will be a dict representation of a hydrated building, incl pk.
-#     building = body.get('building')
-#     org_id = body['organization_id']
-#     canon = CanonicalBuilding.objects.get(pk=building['canonical_building'])
-#     old_snapshot = canon.canonical_snapshot
-
-#     new_building = models.update_building(old_snapshot, building, request.user)
-
-#     resp = {'status': 'success',
-#             'child_id': new_building.pk}
-
-#     AuditLog.objects.log_action(request, canon, org_id, resp)
-#     return resp
 
 
 @api_endpoint
@@ -1315,7 +934,6 @@ def delete_buildings(request):
 
 #     """
 
-#     # TODO: Generate this data the right way! Will be implemented by Stephen C.
 #     # The following is just dummy data...
 
 #     if request.method != 'GET':
@@ -1886,7 +1504,6 @@ def delete_buildings(request):
 
 #         """
 
-#     # TODO: Generate this data the right way! The following is just dummy data...
 #     if request.method != 'GET':
 #         return HttpResponseBadRequest('This view replies only to GET methods')
 

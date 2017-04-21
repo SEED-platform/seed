@@ -10,13 +10,16 @@ breadcrumbs.py
 https://bitbucket.org/Mathiasdm/django-simple-breadcrumbs/
 """
 
+import logging
+
 from django import template
 from django.template import Node, Variable
-from django.utils.encoding import smart_unicode
-from django.template.defaulttags import url
 from django.template import VariableDoesNotExist
+from django.template.defaulttags import url
+from django.utils.encoding import smart_unicode
 from django.utils.translation import ugettext as _
 
+_log = logging.getLogger(__name__)
 
 register = template.Library()
 
@@ -177,7 +180,7 @@ class BreadcrumbNode(Node):
             try:
                 url = val.resolve(context)
             except VariableDoesNotExist:
-                print 'URL does not exist', val
+                _log.error('URL does not exist: {}'.format(val))
                 url = None
 
         # add ugettext function for title i18n translation

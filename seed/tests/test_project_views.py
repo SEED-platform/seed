@@ -10,6 +10,7 @@ from django.core.urlresolvers import reverse_lazy
 from django.test import TestCase
 from django.utils.text import slugify
 
+from seed.data_importer.models import ImportRecord
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import (
     ROLE_OWNER,
@@ -18,13 +19,12 @@ from seed.lib.superperms.orgs.models import (
     OrganizationUser,
     Organization
 )
-from seed.test_helpers import fake
-from seed.tests.util import FakeRequest
 from seed.models import (
     Project, ProjectPropertyView,
     Property, PropertyState, PropertyView
 )
-from seed.data_importer.models import ImportRecord
+from seed.test_helpers import fake
+from seed.tests.util import FakeRequest
 
 DEFAULT_NAME = 'proj1'
 

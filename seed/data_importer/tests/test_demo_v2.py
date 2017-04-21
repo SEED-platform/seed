@@ -7,6 +7,8 @@
 import datetime
 import logging
 
+from django.utils import timezone
+
 from seed.data_importer import tasks
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tests.util import (
@@ -49,8 +51,8 @@ class TestDemoV2(DataMappingBaseTestCase):
         cycle, _ = Cycle.objects.get_or_create(
             name=u'Test Hack Cycle 2015',
             organization=org,
-            start=datetime.datetime(2015, 1, 1),
-            end=datetime.datetime(2015, 12, 31),
+            start=datetime.datetime(2015, 1, 1, tzinfo=timezone.get_current_timezone()),
+            end=datetime.datetime(2015, 12, 31, tzinfo=timezone.get_current_timezone()),
         )
 
         # Create an org user

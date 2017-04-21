@@ -31,7 +31,6 @@ def _sanitize_and_convert_keys_to_regex(key):
     # force unicode
     if isinstance(key, unicode):
         key = unidecode(key)
-        # _log.info("Mapping key was unicode, converted key to  {}".format(key))
 
     # fix superscripts - copied from old code
     found = False

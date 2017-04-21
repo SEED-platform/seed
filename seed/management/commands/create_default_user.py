@@ -57,6 +57,9 @@ class Command(BaseCommand):
                 options['username'],
                 options['password']
             )
+            self.stdout.write('Creating API Key', ending='\n')
+            u.generate_key()
+
             self.stdout.write('Created!', ending='\n')
 
         if Organization.objects.filter(name=options['organization']).exists():

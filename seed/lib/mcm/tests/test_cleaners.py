@@ -104,7 +104,7 @@ class TestCleaners(TestCase):
             float_expected
         )
 
-        self.assertListEqual(self.cleaner.date_columns, ['heading2', 'heading3'])
+        self.assertListEqual(sorted(self.cleaner.date_columns), ['heading2', 'heading3'])
         self.assertEqual(self.cleaner.float_columns, ['heading_data1'])
         self.assertEqual(self.cleaner.string_columns, ['str_1'])
         self.assertEqual(self.cleaner.int_columns, ['int_1'])

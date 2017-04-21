@@ -11,13 +11,8 @@
             // static URLs
             window.BE.urls.STATIC_URL = "{{ STATIC_URL }}";
 
-            window.BE.urls.get_building_url = '{% url "seed:get_building" %}';
-            window.BE.urls.get_total_number_of_buildings_for_user_url = '{% url "seed:get_total_number_of_buildings_for_user" %}';
             window.BE.urls.search_buildings_url = '{% url "seed:search_buildings" %}';
-            window.BE.urls.save_match_url = '{% url "seed:save_match" %}';
-            window.BE.urls.get_columns_url = '{% url "seed:get_columns" %}';
             window.BE.urls.seed_home = '{% url "seed:home" %}';
-
             window.BE.urls.delete_file      = '{% url "seed:delete_file" %}';
 
             // Reports URLS

@@ -4,7 +4,6 @@ from __future__ import unicode_literals
 
 from django.db import migrations
 
-from seed.models.columns import Column, ColumnMapping
 
 def duplicate_column(apps, column):
     Column = apps.get_model("seed", "Column")
@@ -78,12 +77,11 @@ def forwards(apps, schema_editor):
             # someday... if you see it now, then raise and exception
             raise Exception("this is bad, very bad... talk to @nllong")
 
-    print ""
-    print ""
-    print "-------------------------------------------------------------------"
-    print "Total Columns: {}".format(Column.objects.all().count())
+        # print ""
+        # print ""
+        # print "-------------------------------------------------------------------"
+        # print "Total Columns: {}".format(Column.objects.all().count())
 
-    # exit()
 
 class Migration(migrations.Migration):
     dependencies = [
