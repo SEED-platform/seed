@@ -7,7 +7,8 @@ Run utility functions from a command-line driver
 import argparse
 import logging
 import sys
-from seed.common import util
+
+from seed.lib import util
 
 DEBUG = True
 

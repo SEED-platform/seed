@@ -35,24 +35,16 @@ describe('Controller: matching_list_controller', function () {
               }
             });
         });
-    spyOn(mock_inventory_services, 'save_property_match')
-      .andCallFake(function (b1, b2, create) {
-          return $q.when({
-            status: 'success',
-            child_id: 3
-          });
+
+    mock_spinner_utility = spinner_utility;
+    spyOn(mock_spinner_utility, 'show')
+        .andCallFake(function(){
+            //do nothing
         });
-
-      mock_spinner_utility = spinner_utility;
-
-      spyOn(mock_spinner_utility, 'show')
-          .andCallFake(function(){
-              //do nothing
-          });
-      spyOn(mock_spinner_utility, 'hide')
-          .andCallFake(function(){
-              //do nothing
-          });
+    spyOn(mock_spinner_utility, 'hide')
+        .andCallFake(function(){
+            //do nothing
+        });
   }));
 
   // this is outside the beforeEach so it can be configured by each unit test

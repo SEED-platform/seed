@@ -5,6 +5,7 @@
 :author
 """
 from django.test import TestCase
+
 from seed.utils.generic import split_model_fields
 
 

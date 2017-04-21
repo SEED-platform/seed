@@ -18,6 +18,7 @@ from seed.models import CanonicalBuilding
 from seed.audit_logs.models import AuditLog, NOTE
 
 
+# TODO: CLEANUP move to deprecate
 @require_organization_id
 @api_endpoint
 @ajax_request

@@ -65,7 +65,6 @@ from seed.models import (
     TaxLotAuditLog,
     PropertyView,
     TaxLotView,
-    USER_MATCH,
     AUDIT_IMPORT,
     AUDIT_USER_EDIT,
     Property,
@@ -73,6 +72,7 @@ from seed.models import (
     TaxLotProperty)
 from seed.utils.api import api_endpoint, api_endpoint_class
 from seed.utils.cache import get_cache_raw, get_cache
+from seed.views.main import _mapping_suggestions
 
 _log = logging.getLogger(__name__)
 
@@ -622,14 +622,14 @@ class ImportFileViewSet(viewsets.ViewSet):
             taxlots_to_remove = list()
             for p in properties:
                 if PropertyAuditLog.objects.filter(
-                    state_id=p['id'],
-                    name='Manual Edit'
+                        state_id=p['id'],
+                        name='Manual Edit'
                 ).exists():
                     properties_to_remove.append(p['id'])
             for t in tax_lots:
                 if TaxLotAuditLog.objects.filter(
-                    state_id=t['id'],
-                    name='Manual Edit'
+                        state_id=t['id'],
+                        name='Manual Edit'
                 ).exists():
                     taxlots_to_remove.append(t['id'])
 
@@ -708,7 +708,8 @@ class ImportFileViewSet(viewsets.ViewSet):
             return result
 
         if inventory_type == 'properties':
-            views = PropertyView.objects.filter(cycle_id=import_file.cycle_id).select_related('state')
+            views = PropertyView.objects.filter(cycle_id=import_file.cycle_id).select_related(
+                'state')
         else:
             views = TaxLotView.objects.filter(cycle_id=import_file.cycle_id).select_related('state')
 
@@ -791,9 +792,13 @@ class ImportFileViewSet(viewsets.ViewSet):
             return False
 
         if merged_record.count() > 1:
-            return JsonResponse({'status': 'error',
-                                 'message': 'Internal problem occurred, more than one merge record found'},
-                                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return JsonResponse(
+                {
+                    'status': 'error',
+                    'message': 'Internal problem occurred, more than one merge record found'
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
         audit_entry = merged_record.first()
         state_id1 = audit_entry.parent_state1_id
@@ -928,10 +933,12 @@ class ImportFileViewSet(viewsets.ViewSet):
             # Duplicate pairing
             if inventory_type == 'properties':
                 paired_view_ids = list(TaxLotProperty.objects.filter(property_view_id=old_view.id)
-                                       .order_by('taxlot_view_id').values_list('taxlot_view_id', flat=True))
+                                       .order_by('taxlot_view_id').values_list('taxlot_view_id',
+                                                                               flat=True))
             else:
                 paired_view_ids = list(TaxLotProperty.objects.filter(taxlot_view_id=old_view.id)
-                                       .order_by('property_view_id').values_list('property_view_id', flat=True))
+                                       .order_by('property_view_id').values_list('property_view_id',
+                                                                                 flat=True))
 
             old_view.delete()
             new_view1.save()
@@ -969,7 +976,8 @@ class ImportFileViewSet(viewsets.ViewSet):
                 #     parent_state2__in=[state1, state2]
                 # )
                 record = audit_log.objects.only('parent1_id', 'parent2_id') \
-                    .filter(Q(parent1_id=current_merged_record.id) | Q(parent2_id=current_merged_record.id))
+                    .filter(
+                    Q(parent1_id=current_merged_record.id) | Q(parent2_id=current_merged_record.id))
                 if record.exists():
                     current_merged_record = record.first()
                 else:
@@ -1040,10 +1048,12 @@ class ImportFileViewSet(viewsets.ViewSet):
             # Duplicate pairing
             if inventory_type == 'properties':
                 paired_view_ids = list(TaxLotProperty.objects.filter(property_view_id=old_view.id)
-                                       .order_by('taxlot_view_id').values_list('taxlot_view_id', flat=True))
+                                       .order_by('taxlot_view_id').values_list('taxlot_view_id',
+                                                                               flat=True))
             else:
                 paired_view_ids = list(TaxLotProperty.objects.filter(taxlot_view_id=old_view.id)
-                                       .order_by('property_view_id').values_list('property_view_id', flat=True))
+                                       .order_by('property_view_id').values_list('property_view_id',
+                                                                                 flat=True))
 
             new_view.save()
 
@@ -1104,9 +1114,7 @@ class ImportFileViewSet(viewsets.ViewSet):
                                                     state1,
                                                     state2,
                                                     merging.get_state_attrs([state1, state2]),
-                                                    conf=None,
-                                                    default=state2,
-                                                    match_type=USER_MATCH)
+                                                    default=state2)
 
         state_1_audit_log = audit_log.objects.filter(state=state1).first()
         state_2_audit_log = audit_log.objects.filter(state=state2).first()
@@ -1160,11 +1168,13 @@ class ImportFileViewSet(viewsets.ViewSet):
         if inventory_type == 'properties':
             for label_id in label_ids:
                 label(property_id=inventory_record.id, statuslabel_id=label_id).save()
-            new_view = view(cycle_id=cycle_id, state_id=merged_state.id, property_id=inventory_record.id)
+            new_view = view(cycle_id=cycle_id, state_id=merged_state.id,
+                            property_id=inventory_record.id)
         else:
             for label_id in label_ids:
                 label(taxlot_id=inventory_record.id, statuslabel_id=label_id).save()
-            new_view = view(cycle_id=cycle_id, state_id=merged_state.id, taxlot_id=inventory_record.id)
+            new_view = view(cycle_id=cycle_id, state_id=merged_state.id,
+                            taxlot_id=inventory_record.id)
         new_view.save()
 
         # Delete existing pairs and re-pair all to new view
@@ -1572,19 +1582,20 @@ class ImportFileViewSet(viewsets.ViewSet):
         properties_to_remove = list()
         for p in properties:
             if PropertyAuditLog.objects.filter(
-                state_id=p.id,
-                name='Manual Edit'
+                    state_id=p.id,
+                    name='Manual Edit'
             ).exists():
                 properties_to_remove.append(p.id)
         properties = [p for p in properties if p.id not in properties_to_remove]
 
         for state in properties:
-            audit_creation_id = PropertyAuditLog.objects.only('id').exclude(import_filename=None).get(
+            audit_creation_id = PropertyAuditLog.objects.only('id').exclude(
+                import_filename=None).get(
                 state_id=state.id,
                 name='Import Creation'
             )
             if PropertyAuditLog.objects.exclude(record_type=AUDIT_USER_EDIT).filter(
-                parent1_id=audit_creation_id
+                    parent1_id=audit_creation_id
             ).exists():
                 properties_matched.append(state.id)
             else:
@@ -1607,8 +1618,8 @@ class ImportFileViewSet(viewsets.ViewSet):
         taxlots_to_remove = list()
         for t in taxlots:
             if TaxLotAuditLog.objects.filter(
-                state_id=t.id,
-                name='Manual Edit'
+                    state_id=t.id,
+                    name='Manual Edit'
             ).exists():
                 taxlots_to_remove.append(t.id)
         taxlots = [t for t in taxlots if t.id not in taxlots_to_remove]
@@ -1619,7 +1630,7 @@ class ImportFileViewSet(viewsets.ViewSet):
                 name='Import Creation'
             )
             if TaxLotAuditLog.objects.exclude(record_type=AUDIT_USER_EDIT).filter(
-                parent1_id=audit_creation_id
+                    parent1_id=audit_creation_id
             ).exists():
                 tax_lots_matched.append(state.id)
             else:
@@ -1640,3 +1651,48 @@ class ImportFileViewSet(viewsets.ViewSet):
                 'unmatched_ids': tax_lots_new
             }
         }
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_member')
+    @detail_route(methods=['GET'])
+    def mapping_suggestions(self, request, pk):
+        """
+        Returns suggested mappings from an uploaded file's headers to known
+        data fields.
+        ---
+        type:
+            status:
+                required: true
+                type: string
+                description: Either success or error
+            suggested_column_mappings:
+                required: true
+                type: dictionary
+                description: Dictionary where (key, value) = (the column header from the file,
+                      array of tuples (destination column, score))
+            building_columns:
+                required: true
+                type: array
+                description: A list of all possible columns
+            building_column_types:
+                required: true
+                type: array
+                description: A list of column types corresponding to the building_columns array
+        parameter_strategy: replace
+        parameters:
+            - name: pk
+              description: import_file_id
+              required: true
+              paramType: path
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+
+        """
+        org_id = request.query_params.get('organization_id', None)
+
+        result = _mapping_suggestions(pk, org_id, request.user)
+
+        return JsonResponse(result)

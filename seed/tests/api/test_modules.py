@@ -50,7 +50,7 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, f
     print('API Function: get_column_mapping_suggestions\n'),
     partmsg = 'get_column_mapping_suggestions'
     result = requests.get(
-        main_url + '/api/v2/data_files/{}/mapping_suggestions/'.format(import_id),
+        main_url + '/api/v2/import_files/{}/mapping_suggestions/'.format(import_id),
         params={"organization_id": organization_id},
         headers=header)
     check_status(result, partmsg, log, piid_flag='mappings')
@@ -348,7 +348,6 @@ def cycles(header, main_url, organization_id, log):
     result = requests.get(main_url + '/api/v2/cycles/',
                           headers=header,
                           params={'organization_id': organization_id})
-    print result
     check_status(result, partmsg, log, piid_flag='cycles')
 
     cycles = result.json()['cycles']
@@ -377,7 +376,6 @@ def cycles(header, main_url, organization_id, log):
     # Update cycle
     print ('\nAPI Function: update_cycle')
     partmsg = 'update_cycle'
-    print cycle_id
     payload = {
         'start': "2015-01-01T08:00:00.000Z",
         'end': "2016-01-01T08:00:00.000Z",

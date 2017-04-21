@@ -18,14 +18,14 @@ from collections import namedtuple
 from functools import reduce
 from itertools import chain
 
-from celery import chord
-from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.db import IntegrityError
 from django.db.models import Q
 from django.utils import timezone
 from unidecode import unidecode
 
+from celery import chord
+from celery import shared_task
 from seed.cleansing.models import Cleansing
 from seed.cleansing.tasks import (
     finish_cleansing,
@@ -53,7 +53,6 @@ from seed.models import (
     GREEN_BUTTON_RAW,
     PORTFOLIO_BS,
     PORTFOLIO_RAW,
-    SYSTEM_MATCH,
     Column,
     ColumnMapping,
     PropertyState,
@@ -159,7 +158,7 @@ def _build_cleaner(org):
 
 
 @shared_task
-def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwargs):
+def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
     """Does the work of matching a mapping to a source type and saving
 
     :param ids: list of PropertyState IDs to map.
@@ -167,10 +166,6 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
     :param source_type: int, represented by either ASSESSED_RAW or PORTFOLIO_RAW.
     :param prog_key: string, key of the progress key
     :param increment: double, value by which to increment progress key
-    :param cleaner: (optional), the cleaner class you want to send to mapper.map_row.
-                    (e.g. turn numbers into floats.).
-    :param raw_ids: (optional kwarg), the list of ids in chunk order.
-
     """
 
     _log.debug('Mapping row chunks')
@@ -296,7 +291,6 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
                     STR_TO_CLASS[table],
                     extra_data_fields,
                     cleaner=map_cleaner,
-                    *args,
                     **kwargs
                 )
 
@@ -356,7 +350,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
 
 @shared_task
 @lock_and_track
-def _map_data(import_file_id, mark_as_done, *args, **kwargs):
+def _map_data(import_file_id, mark_as_done):
     """
     Get all of the raw data and process it using appropriate mapping.
     @lock_and_track returns a progress_key
@@ -476,7 +470,7 @@ def _cleanse_data(import_file_id, record_type='property'):
 
 
 @shared_task
-def map_data(import_file_id, remap=False, mark_as_done=True, *args, **kwargs):
+def map_data(import_file_id, remap=False, mark_as_done=True):
     """
     Map data task. By default this method will run through the mapping and mark it as complete.
     :param import_file_id: Import File ID
@@ -522,8 +516,17 @@ def map_data(import_file_id, remap=False, mark_as_done=True, *args, **kwargs):
 
 
 @shared_task
-def _save_raw_data_chunk(chunk, file_pk, prog_key, increment, *args, **kwargs):
-    """Save the raw data to the database."""
+def _save_raw_data_chunk(chunk, file_pk, prog_key, increment):
+    """
+    Save the raw data to the database
+
+    :param chunk: list, ids to process
+    :param file_pk: ImportFile Primary Key
+    :param prog_key: string, Progress Key to append progress
+    :param increment: Float, Value by which to increment the progress
+    :return: Bool, Always true
+    """
+
     import_file = ImportFile.objects.get(pk=file_pk)
 
     # Save our "column headers" and sample rows for F/E.
@@ -552,7 +555,6 @@ def _save_raw_data_chunk(chunk, file_pk, prog_key, increment, *args, **kwargs):
         super_org = import_file.import_record.super_organization
         raw_property.organization = super_org
 
-        # set_initial_sources(raw_property)
         raw_property.save()
 
     # Indicate progress
@@ -567,9 +569,8 @@ def finish_raw_save(file_pk):
     """
     Finish importing the raw file.
 
-    :param results: results from the other tasks before the chord ran
     :param file_pk: ID of the file that was being imported
-    :return: None
+    :return: results: results from the other tasks before the chord ran
     """
     import_file = ImportFile.objects.get(pk=file_pk)
     import_file.raw_save_done = True
@@ -607,7 +608,7 @@ def cache_first_rows(import_file, parser):
 
 @shared_task
 @lock_and_track
-def _save_raw_green_button_data(file_pk, *args, **kwargs):
+def _save_raw_green_button_data(file_pk):
     """
     Pulls identifying information out of the XML data, find_or_creates
     a building_snapshot for the data, parses and stores the time series
@@ -646,6 +647,13 @@ def _save_raw_green_button_data(file_pk, *args, **kwargs):
 @shared_task
 @lock_and_track
 def _save_raw_data(file_pk, *args, **kwargs):
+    """
+    Worker method for saving raw data
+
+    :param file_pk:
+    :return: Dict, result from Progress Cache
+    """
+
     """Chunk up the CSV or XLSX file and save the raw data into the DB PropertyState table."""
     prog_key = get_prog_key('save_raw_data', file_pk)
     _log.debug("Current cache state")
@@ -666,7 +674,7 @@ def _save_raw_data(file_pk, *args, **kwargs):
             return result
 
         if import_file.source_type == "Green Button Raw":
-            return _save_raw_green_button_data(file_pk, *args, **kwargs)
+            return _save_raw_green_button_data(file_pk)
 
         parser = reader.MCMParser(import_file.local_file)
         cache_first_rows(import_file, parser)
@@ -721,6 +729,12 @@ def _save_raw_data(file_pk, *args, **kwargs):
 @shared_task
 @lock_and_track
 def save_raw_data(file_pk, *args, **kwargs):
+    """
+    Save the raw data from an imported file. This is the entry point into saving the data.
+
+    :param file_pk: ImportFile Primary Key
+    :return: Dict, from cache, containing the progress key to track
+    """
     _log.debug('In save_raw_data')
 
     prog_key = get_prog_key('save_raw_data', file_pk)
@@ -730,62 +744,10 @@ def save_raw_data(file_pk, *args, **kwargs):
         'progress_key': prog_key
     }
     set_cache(prog_key, initializing_key['status'], initializing_key)
-    _save_raw_data.delay(file_pk, *args, **kwargs)
+    _save_raw_data.delay(file_pk)
     _log.debug('Returning from save_raw_data')
     result = get_cache(prog_key)
     return result
-
-
-# def handle_results(results, b_idx, can_rev_idx, unmatched_list, user_pk):
-#     """Seek IDs and save our snapshot match.
-#
-#     :param results: list of tuples. [('match', 0.99999),...]
-#     :param b_idx: int, the index of the current building in the unmatched_list.
-#     :param can_rev_idx: dict, reverse index from match -> canonical PK.
-#     :param user_pk: user ID, used for AuditLog logging
-#     :unmatched_list: list of dicts, the result of a values_list query for
-#         unmatched PropertyState.
-#
-#     """
-#     match_string, confidence = results[0]  # We always care about closest match
-#     match_type = SYSTEM_MATCH
-#     # If we passed the minimum threshold, we're here, but we need to
-#     # distinguish probable matches from good matches.
-#     if confidence < getattr(settings, 'MATCH_MED_THRESHOLD', 0.7):
-#         match_type = POSSIBLE_MATCH
-#
-#     can_snap_pk = can_rev_idx[match_string]
-#     building_pk = unmatched_list[b_idx][0]  # First element is PK
-#
-#     bs, changes = save_snapshot_match(
-#         can_snap_pk,
-#         building_pk,
-#         confidence=confidence,
-#         match_type=match_type,
-#         default_pk=building_pk,
-#     )
-#     canon = bs.canonical_building
-#     action_note = 'System matched building.'
-#     if changes:
-#         action_note += "  Fields changed in cannonical building:\n"
-#         for change in changes:
-#             action_note += "\t{field}:\t".format(
-#                 field=change["field"].replace("_", " ").replace("-",
-#                                                                 "").capitalize(),
-#             )
-#             if "from" in change:
-#                 action_note += "From:\t{prev}\tTo:\t".format(
-#                     prev=change["from"])
-#
-#             action_note += "{value}\n".format(value=change["to"])
-#         action_note = action_note[:-1]
-#     AuditLog.objects.create(
-#         user_id=user_pk,
-#         content_object=canon,
-#         action_note=action_note,
-#         action='save_system_match',
-#         organization=bs.super_organization,
-#     )
 
 
 @shared_task
@@ -793,6 +755,10 @@ def save_raw_data(file_pk, *args, **kwargs):
 def match_buildings(file_pk, user_pk):
     """
     kicks off system matching, returns progress key within the JSON response
+
+    :param file_pk: ImportFile Primary Key
+    :param user_pk: SEEDUser Primary Key
+    :return:
     """
     import_file = ImportFile.objects.get(pk=file_pk)
     prog_key = get_prog_key('match_buildings', file_pk)
@@ -818,7 +784,7 @@ def match_buildings(file_pk, user_pk):
     if import_file.cycle is None:
         _log.warn("This should never happen in production")
 
-    _match_properties_and_taxlots.delay(file_pk, user_pk)
+    _match_properties_and_taxlots.delay(file_pk)
 
     return {
         'status': 'success',
@@ -853,29 +819,23 @@ def _find_matches(un_m_address, canonical_buildings_addresses):
     return match_list
 
 
-# TODO: These are bad bad fields!
-#       Not quite sure what this means?
-# NL: yeah what does this mean?!
-
+# TODO: CLEANUP - What are we doing here?
 md = MappingData()
 ALL_COMPARISON_FIELDS = sorted(list(set([field['name'] for field in md.data])))
 
 
-# all_comparison_fields = sorted(list(set(chain(tax_lot_comparison_fields, property_comparison_fields))))
-
-
 def hash_state_object(obj, include_extra_data=True):
-    def _getFieldFromObj(obj, field):
-        if not hasattr(obj, field):
+    def _get_field_from_obj(field_obj, field):
+        if not hasattr(field_obj, field):
             return "FOO"  # Return a random value so we can distinguish between this and None.
         else:
-            return getattr(obj, field)
+            return getattr(field_obj, field)
 
     m = hashlib.md5()
 
-    for field in ALL_COMPARISON_FIELDS:
-        obj_val = _getFieldFromObj(obj, field)
-        m.update(str(field))
+    for f in ALL_COMPARISON_FIELDS:
+        obj_val = _get_field_from_obj(obj, f)
+        m.update(str(f))
         m.update(str(obj_val))
         # print "{}: {} -> {}".format(field, obj_val, m.hexdigest())
 
@@ -898,11 +858,15 @@ def add_dictionary_repr_to_hash(hash_obj, dict_obj):
 
 
 def filter_duplicated_states(unmatched_states):
-    """Takes a list of states, where some values may contain the same data
+    """
+    Takes a list of states, where some values may contain the same data
     as others, and returns two lists.  The first list consists of a
     single state for each equivalent set of states in
     unmatched_states.  The second list consists of all the
     non-representative states which (for example) could be deleted.
+
+    :param unmatched_states: List, unmatched states
+    :return:
     """
 
     hash_values = map(hash_state_object, unmatched_states)
@@ -911,16 +875,12 @@ def filter_duplicated_states(unmatched_states):
     for (ndx, hashval) in enumerate(hash_values):
         equality_classes[hashval].append(ndx)
 
-    def union_lol(lol):
-        """Union of list of lists"""
-        return list(set(chain.from_iterable(lol)))
-
     canonical_states = [unmatched_states[equality_list[0]] for equality_list in
                         equality_classes.values()]
     canonical_state_ids = set([s.pk for s in unmatched_states])
     noncanonical_states = [u for u in unmatched_states if u.pk not in canonical_state_ids]
 
-    return (canonical_states, noncanonical_states)
+    return canonical_states, noncanonical_states
 
 
 class EquivalencePartitioner(object):
@@ -979,20 +939,21 @@ class EquivalencePartitioner(object):
 
     @classmethod
     def make_default_state_equivalence(kls, equivalence_type):
-        """Class for dynamically constructing an EquivalencePartitioner
+        """
+        Class for dynamically constructing an EquivalencePartitioner
         depending on the type of its parameter.
         """
         if equivalence_type == PropertyState:
-            return kls.make_PropertyState_equivalence()
+            return kls.make_propertystate_equivalence()
         elif equivalence_type == TaxLotState:
-            return kls.make_TaxLotState_equivalence()
+            return kls.make_taxlotstate_equivalence()
         else:
             err_msg = ("Type '{}' does not have a default "
                        "EquivalencePartitioner set.".format(equivalence_type.__class__.__name__))
             raise ValueError(err_msg)
 
     @classmethod
-    def make_PropertyState_equivalence(kls):
+    def make_propertystate_equivalence(kls):
         property_equivalence_fields = [
             ("pm_property_id", "custom_id_1"),
             ("custom_id_1",),
@@ -1003,7 +964,7 @@ class EquivalencePartitioner(object):
         return kls(property_equivalence_fields, property_noequivalence_fields)
 
     @classmethod
-    def make_TaxLotState_equivalence(kls):
+    def make_taxlotstate_equivalence(kls):
         """Return default EquivalencePartitioner for TaxLotStates
 
         Two tax lot states are indentical if:
@@ -1034,35 +995,24 @@ class EquivalencePartitioner(object):
         # The official key can only come from the first field in the
         # list.
         canonical_fields = [fieldlist[0] for fieldlist in list_of_fieldlists]
-        return (lambda obj: tuple([getattr(obj, field) for field in canonical_fields]))
+        return lambda obj: tuple([getattr(obj, field) for field in canonical_fields])
 
     @classmethod
     def make_resolved_key_calculation_function(kls, list_of_fieldlists):
         # This "resolves" the object to the best potential value in
         # each field.
         return (lambda obj: tuple(
-            [kls._getResolvedValueFromObject(obj, list_of_fields) for list_of_fields in
+            [kls._get_resolved_value_from_object(obj, list_of_fields) for list_of_fields in
              list_of_fieldlists]))
 
     @staticmethod
-    def _getResolvedValueFromObject(obj, list_of_fields):
-        for field in list_of_fields:
-            val = getattr(obj, field)
+    def _get_resolved_value_from_object(obj, list_of_fields):
+        for f in list_of_fields:
+            val = getattr(obj, f)
             if val:
                 return val
         else:
             return None
-
-    @staticmethod
-    def makeKeyEquivalenceFunction(list_of_fields):
-        def cmp(key1, key2):
-            for key1_value, key2_value in zip(key1, key2):
-                if key1_value == key2_value and key1_value is not None:
-                    return True
-            else:
-                return False
-
-        return cmp
 
     @staticmethod
     def calculate_key_equivalence(key1, key2):
@@ -1081,13 +1031,16 @@ class EquivalencePartitioner(object):
     def calculate_identity_key(self, obj):
         return self.identity_key_func(obj)
 
-    def key_needs_merging(self, original_key, new_key):
+    @staticmethod
+    def key_needs_merging(original_key, new_key):
         return True in [not a and b for (a, b) in zip(original_key, new_key)]
 
-    def merge_keys(self, key1, key2):
+    @staticmethod
+    def merge_keys(key1, key2):
         return [a if a else b for (a, b) in zip(key1, key2)]
 
-    def identities_are_different(self, key1, key2):
+    @staticmethod
+    def identities_are_different(key1, key2):
         for (x, y) in zip(key1, key2):
             if x is None or y is None:
                 continue
@@ -1137,18 +1090,19 @@ class EquivalencePartitioner(object):
         return equivalence_classes
 
 
-def match_and_merge_unmatched_objects(unmatched_states, partitioner, org, import_file):
-    """Take a list of unmatched_property_states or
-    unmatched_tax_lot_states and returns a set of states that
-    correspond to unmatched states."""
+def match_and_merge_unmatched_objects(unmatched_states, partitioner):
+    """
+    Take a list of unmatched_property_states or unmatched_tax_lot_states and returns a set of
+    states that correspond to unmatched states.
 
+    :param unmatched_states: list, PropertyStates or TaxLotStates
+    :param partitioner: instance of EquivalencePartitioner
+    :return: [list, list], merged_objects, equivalence_classes keys
+    """
     _log.debug("Starting to map_and_merge_unmatched_objects")
 
     # Sort unmatched states/This shouldn't be happening!
     unmatched_states.sort(key=lambda state: state.pk)
-
-    # current_match_cycle = import_file.cycle
-    # current_match_cycle = Cycle.objects.filter(organization = org).order_by('-start').first()
 
     def getattrdef(obj, attr, default):
         if hasattr(obj, attr):
@@ -1177,14 +1131,7 @@ def match_and_merge_unmatched_objects(unmatched_states, partitioner, org, import
         unmatched_state_class = [unmatched_states[ndx] for ndx in class_ndxs]
         merged_result = unmatched_state_class[0]
         for unmatched in unmatched_state_class[1:]:
-            merged_result, changes = save_state_match(merged_result,
-                                                      unmatched,
-                                                      confidence=0.9,  # worthless field
-                                                      match_type=SYSTEM_MATCH,
-                                                      user=import_file.import_record.owner
-                                                      # What does this param do?
-                                                      # default_pk=unmatched_property_states.pk
-                                                      )
+            merged_result, changes = save_state_match(merged_result, unmatched)
 
         else:
             merged_objects.append(merged_result)
@@ -1194,17 +1141,24 @@ def match_and_merge_unmatched_objects(unmatched_states, partitioner, org, import
 
 
 def merge_unmatched_into_views(unmatched_states, partitioner, org, import_file):
-    # This is fairly inefficient, because we grab all the
-    # organization's entire PropertyViews at once.  Surely this can be
-    # improved, but the logic is unusual/particularly dynamic here, so
-    # hopefully this can be refactored into a better, purely database
-    # approach... Perhaps existing_view_states can wrap database
-    # calls. Still the abstractions are subtly different (can I
-    # refactor the partitioner to use Query objects); it may require a
-    # bit of thinking.
+    """
+    This is fairly inefficient, because we grab all the
+    organization's entire PropertyViews at once.  Surely this can be
+    improved, but the logic is unusual/particularly dynamic here, so
+    hopefully this can be refactored into a better, purely database
+    approach... Perhaps existing_view_states can wrap database
+    calls. Still the abstractions are subtly different (can I
+    refactor the partitioner to use Query objects); it may require a
+    bit of thinking.
+
+    :param unmatched_states:
+    :param partitioner:
+    :param org:
+    :param import_file:
+    :return:
+    """
 
     current_match_cycle = import_file.cycle
-    # current_match_cycle = Cycle.objects.filter(organization = org).order_by('-start').first()
 
     if isinstance(unmatched_states[0], PropertyState):
         ObjectViewClass = PropertyView
@@ -1241,11 +1195,7 @@ def merge_unmatched_into_views(unmatched_states, partitioner, org, import_file):
                     current_view = existing_view_states[key][current_match_cycle]
                     current_state = current_view.state
 
-                    merged_state, change_ = save_state_match(current_state,
-                                                             unmatched,
-                                                             confidence=1.0,
-                                                             match_type=SYSTEM_MATCH,
-                                                             user=import_file.import_record.owner)
+                    merged_state, change_ = save_state_match(current_state, unmatched)
 
                     current_view.state = merged_state
                     current_view.save()
@@ -1276,7 +1226,13 @@ def merge_unmatched_into_views(unmatched_states, partitioner, org, import_file):
 
 @shared_task
 @lock_and_track
-def _match_properties_and_taxlots(file_pk, user_pk):
+def _match_properties_and_taxlots(file_pk):
+    """
+    Match the properties and taxlots
+
+    :param file_pk: ImportFile Primary Key
+    :return:
+    """
     import_file = ImportFile.objects.get(pk=file_pk)
     prog_key = get_prog_key('match_buildings', file_pk)
 
@@ -1299,9 +1255,7 @@ def _match_properties_and_taxlots(file_pk, user_pk):
         # provided by the partitioner.
         unmatched_properties, property_equivalence_keys = match_and_merge_unmatched_objects(
             unmatched_properties,
-            property_partitioner,
-            org,
-            import_file)
+            property_partitioner)
 
         # Take the final merged-on-import objects, and find Views that
         # correspond to it and merge those together.
@@ -1329,9 +1283,10 @@ def _match_properties_and_taxlots(file_pk, user_pk):
         # provided by the partitioner.
         unmatched_tax_lots, taxlot_equivalence_keys = match_and_merge_unmatched_objects(
             unmatched_tax_lots,
-            taxlot_partitioner,
-            org,
-            import_file)
+            taxlot_partitioner)
+
+        # Take the final merged-on-import objects, and find Views that
+        # correspond to it and merge those together.
         merged_taxlot_views = merge_unmatched_into_views(
             unmatched_tax_lots,
             taxlot_partitioner,
@@ -1395,11 +1350,10 @@ def query_property_matches(properties, pm_id, custom_id):
     """
     Returns query set of PropertyStates that match at least one of the specified ids
 
-    :param properties: QuerySet of PropertyStates
-    :param pm_id:
-    :param tax_id:
-    :param custom_id:
-    :return:
+    :param properties: QuerySet, PropertyStates
+    :param pm_id: string, PM Property ID
+    :param custom_id: String, Custom ID
+    :return: QuerySet of objects that meet criteria.
     """
 
     """"""
@@ -1451,16 +1405,13 @@ def is_same_snapshot(s1, s2):
     return True
 
 
-def save_state_match(state1, state2, confidence=None, user=None,
-                     match_type=None, default_match=None, import_filename=None):
+def save_state_match(state1, state2):
     merged_state = type(state1).objects.create(organization=state1.organization)
 
     merged_state, changes = merging.merge_state(merged_state,
                                                 state1, state2,
                                                 merging.get_state_attrs([state1, state2]),
-                                                conf=confidence,
-                                                default=state2,
-                                                match_type=SYSTEM_MATCH)
+                                                default=state2)
 
     AuditLogClass = PropertyAuditLog if isinstance(merged_state, PropertyState) else TaxLotAuditLog
 
@@ -1479,7 +1430,7 @@ def save_state_match(state1, state2, confidence=None, user=None,
                                  state=merged_state,
                                  name='System Match',
                                  description='Automatic Merge',
-                                 import_filename=import_filename,
+                                 import_filename=None,
                                  record_type=AUDIT_IMPORT)
 
     # print "merging two properties {}/{}".format(ps1_pk, ps2_pk)
@@ -1495,9 +1446,17 @@ def save_state_match(state1, state2, confidence=None, user=None,
 
 
 def pair_new_states(merged_property_views, merged_taxlot_views):
+    """
+    Pair new states from lists of property views and tax lot views
+
+    :param merged_property_views: list, merged property views
+    :param merged_taxlot_views: list, merged tax lot views
+    :return: None
+    """
     if not merged_property_views and not merged_taxlot_views:
         return
 
+    # Not sure what the below cycle code does.
     cycle = chain(merged_property_views, merged_taxlot_views).next().cycle
 
     tax_cmp_fmt = [('jurisdiction_tax_lot_id', 'custom_id_1'),
@@ -1549,11 +1508,11 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
     property_objects = [prop_type(*attr) for attr in property_views]
     taxlot_objects = [taxlot_type(*attr) for attr in taxlot_views]
 
-    # TODO: I believe this is incorrect, but doing this for simplicity
+    # NA: I believe this is incorrect, but doing this for simplicity
     # now. The logic that is being missed is a pretty extreme corner
     # case.
 
-    # TODO: I should generate one key for each property for each thing in it's lot number state.
+    # NA: I should generate one key for each property for each thing in it's lot number state.
 
     # property_keys = {property_m2m_keygen.calculate_comparison_key(p): p.pk for p in property_objects}
     # taxlot_keys = [taxlot_m2m_keygen.calculate_comparison_key(tl): tl.pk for tl in taxlot_objects}
@@ -1564,7 +1523,6 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
 
     # property_keys = copy.deepcopy(property_keys_orig)
 
-    # TODO: Refactor this somehow
     # Do this inelegant step to make sure we are correctly splitting.
     property_keys = collections.defaultdict(list)
     for k in property_keys_orig:
@@ -1589,7 +1547,7 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
         #     pdb.set_trace()
 
         pv_key = property_m2m_keygen.calculate_comparison_key(pv.state)
-        # TODO: Refactor pronto.  Iterating over the tax lot is ad implementation.
+        # TODO: Refactor pronto.  Iterating over the tax lot is bad implementation.
         for tlk in taxlot_keys:
             if pv_key[0] and ";" in pv_key[0]:
                 for lotnum in map(lambda x: x.strip(), pv_key[0].split(";")):
@@ -1608,21 +1566,27 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
             if property_m2m_keygen.calculate_key_equivalence(tlv_key, pv_key):
                 possible_merges.append((property_keys[pv_key], taxlot_keys[tlv_key]))
 
-    # print "Found {} merges".format(len(possible_merges))
     for m2m in set(possible_merges):
         pv_pk, tlv_pk = m2m
-        pv = PropertyView.objects.get(pk=pv_pk)
-        tlv = TaxLotView.objects.get(pk=tlv_pk)
 
-        connection = TaxLotProperty.objects.filter(property_view_id=pv_pk,
-                                                   taxlot_view_id=tlv_pk).count()
+        # PropertyView.objects.get(pk=pv_pk)
+        # TaxLotView.objects.get(pk=tlv_pk)
+
+        connection = TaxLotProperty.objects.filter(
+            property_view_id=pv_pk,
+            taxlot_view_id=tlv_pk
+        ).count()
+
         if connection:
             continue
 
         is_primary = TaxLotProperty.objects.filter(property_view_id=pv_pk).count() == 0
-
-        m2m_join = TaxLotProperty(property_view_id=pv_pk, taxlot_view_id=tlv_pk, cycle=cycle,
-                                  primary=is_primary)
+        m2m_join = TaxLotProperty(
+            property_view_id=pv_pk,
+            taxlot_view_id=tlv_pk,
+            cycle=cycle,
+            primary=is_primary
+        )
         m2m_join.save()
 
     return

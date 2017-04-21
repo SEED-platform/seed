@@ -103,7 +103,6 @@ SEED_CORE_APPS = (
     'seed.lib.superperms.orgs',
     'seed.audit_logs',
     'seed.cleansing',
-    'seed.functional'  # why is this a core_app?
 )
 
 # Apps with tables created by migrations, but which 3rd-party apps depend on.
@@ -229,8 +228,7 @@ NOSE_PLUGINS = [
 
 # Django 1.5+ way of doing user profiles
 AUTH_USER_MODEL = 'landing.SEEDUser'
-NOSE_ARGS = ['--exclude-dir=libs/dal',
-             '--exclude-dir=seed/common']
+NOSE_ARGS = ['--exclude-dir=libs/dal']
 
 # Matching Settings
 MATCH_MIN_THRESHOLD = 0.3

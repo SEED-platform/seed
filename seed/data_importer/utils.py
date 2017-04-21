@@ -44,14 +44,14 @@ def get_lock_time(name):
     return cache.get(name)
 
 
-def chunk_iterable(iter, chunk_size):
+def chunk_iterable(iterlist, chunk_size):
     """
     Breaks an iterable (e.g. list) into smaller chunks,
     returning a generator of the chunk.
     """
-    assert hasattr(iter, "__iter__"), "iter is not an iterable"
-    for i in xrange(0, len(iter), chunk_size):
-        yield iter[i:i + chunk_size]
+    assert hasattr(iterlist, "__iter__"), "iter is not an iterable"
+    for i in xrange(0, len(iterlist), chunk_size):
+        yield iterlist[i:i + chunk_size]
 
 
 class CoercionRobot(object):
