@@ -30,9 +30,8 @@ from seed.data_importer.models import (
     ImportFile,
     ImportRecord,
     STATUS_READY_TO_MERGE,
-    # DuplicateDataError,
 )
-from seed.data_quality.models import DataQuality
+from seed.data_quality.models import DataQualityCheck
 from seed.data_quality.tasks import (
     finish_checking,
     check_data_chunk,
@@ -444,7 +443,7 @@ def _data_quality_check(import_file_id, record_type='property'):
     ).only('id').iterator()
 
     # initialize the cache for the data_quality results using the data_quality static method
-    DataQuality.initialize_cache(import_file_id)
+    DataQualityCheck.initialize_cache(import_file_id)
 
     prog_key = get_prog_key('check_data', import_file_id)
 

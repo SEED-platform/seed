@@ -9,8 +9,12 @@ import json
 from django.core.urlresolvers import reverse_lazy, NoReverseMatch
 from django.test import TestCase
 
-from seed.data_quality.models import Rules, CATEGORY_MISSING_MATCHING_FIELD, \
-    CATEGORY_MISSING_VALUES, CATEGORY_IN_RANGE_CHECKING
+from seed.data_quality.models import (
+    DataQualityCheck,
+    CATEGORY_MISSING_MATCHING_FIELD,
+    CATEGORY_MISSING_VALUES,
+    CATEGORY_IN_RANGE_CHECKING,
+)
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.exceptions import InsufficientPermission
 from seed.lib.superperms.orgs.models import (
@@ -599,24 +603,36 @@ class AccountsViewTests(TestCase):
         self.assertEqual(len(fields), 2)
 
     def test_get_data_quality_rules_matching(self):
-        Rules.objects.create(org=self.org, category=CATEGORY_MISSING_MATCHING_FIELD,
-                             field='address_line_1', severity=0)
-        response = self.client.get(
-            reverse_lazy('apiv2:organizations-data-quality-rules', args=[self.org.pk]))
+        dq = DataQualityCheck.retrieve(self.org)
+        dq.add_rule({
+            'table_name': 'PropertyState',
+            'field': 'address_line_1',
+            'category': CATEGORY_MISSING_MATCHING_FIELD,
+            'severity': 0,
+        })
+        response = self.client.get(reverse_lazy('apiv2:organizations-data-quality-rules', args=[self.org.pk]))
         self.assertEqual('success', json.loads(response.content)['status'])
 
     def test_get_data_quality_rules_values(self):
-        Rules.objects.create(org=self.org, category=CATEGORY_MISSING_VALUES,
-                             field='address_line_1', severity=0)
-        response = self.client.get(
-            reverse_lazy('apiv2:organizations-data-quality-rules', args=[self.org.pk]))
+        dq = DataQualityCheck.retrieve(self.org)
+        dq.add_rule({
+            'table_name': 'PropertyState',
+            'field': 'address_line_1',
+            'category': CATEGORY_MISSING_VALUES,
+            'severity': 0,
+        })
+        response = self.client.get(reverse_lazy('apiv2:organizations-data-quality-rules', args=[self.org.pk]))
         self.assertEqual('success', json.loads(response.content)['status'])
 
     def test_get_data_quality_rules_range(self):
-        Rules.objects.create(org=self.org, category=CATEGORY_IN_RANGE_CHECKING,
-                             field='address_line_1', severity=0)
-        response = self.client.get(
-            reverse_lazy('apiv2:organizations-data-quality-rules', args=[self.org.pk]))
+        dq = DataQualityCheck.retrieve(self.org)
+        dq.add_rule({
+            'table_name': 'PropertyState',
+            'field': 'address_line_1',
+            'category': CATEGORY_IN_RANGE_CHECKING,
+            'severity': 0,
+        })
+        response = self.client.get(reverse_lazy('apiv2:organizations-data-quality-rules', args=[self.org.pk]))
         self.assertEqual('success', json.loads(response.content)['status'])
 
     def test_save_data_quality_rules(self):
@@ -625,18 +641,21 @@ class AccountsViewTests(TestCase):
             'data_quality_rules': {
                 'missing_matching_field': [
                     {
+                        'table_name': 'PropertyState',
                         'field': 'address_line_1',
                         'severity': 'error'
                     }
                 ],
                 'missing_values': [
                     {
+                        'table_name': 'PropertyState',
                         'field': 'address_line_1',
                         'severity': 'error'
                     }
                 ],
                 'in_range_checking': [
                     {
+                        'table_name': 'PropertyState',
                         'field': 'conditioned_floor_area',
                         'enabled': True,
                         'type': 'number',

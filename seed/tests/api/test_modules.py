@@ -92,8 +92,7 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, f
     # Match uploaded buildings with buildings already in the organization.
     print ('API Function: start_system_matching\n'),
     partmsg = 'start_system_matching'
-    payload = {'file_id': import_id,
-               'organization_id': organization_id}
+    payload = {'file_id': import_id, 'organization_id': organization_id}
 
     result = requests.post(
         main_url + '/api/v2/import_files/{}/start_system_matching/'.format(import_id),
