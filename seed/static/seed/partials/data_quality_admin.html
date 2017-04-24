@@ -48,13 +48,13 @@
                         </tr>
                     </thead>
                     <tbody ng-repeat="rules in rows">
-                        <tr ng-repeat="rule in rules" ng-if="!rule.delete">
+                        <tr ng-repeat="rule in rules" ng-if="!rule.delete" ng-class="{ 'warning' : rule.new}">
                             <td class="check is_aligned_center" style="width: 33px;">
                                 <input type="checkbox" ng-model="rule.enabled">
                             </td>
                             <td>
                                 <!-- <span>{$ rule.title $}</span> -->
-                                <select class="form-control input-sm" ng-model="rule.displayName" ng-options="col.name as col.displayName for col in all_columns.fields" ng-change="change_field(rule)">
+                                <select class="form-control input-sm" ng-model="rule.title" ng-options="col.name as col.displayName for col in all_columns.fields" ng-change="change_field(rule)">
                                 </select>
                             </td>
                             <td>
