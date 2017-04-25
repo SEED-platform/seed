@@ -6,7 +6,9 @@
 """
 
 import copy
+import csv
 import logging
+import os.path
 from collections import OrderedDict
 
 from django.db import models
@@ -23,8 +25,20 @@ from seed.models.models import (
 )
 from seed.utils.constants import VIEW_COLUMNS_PROPERTY
 
-INVENTORY_MAP = {'property': 'PropertyState', 'taxlot': 'TaxLotState'}
-INVENTORY_MAP_PREPEND = {'property': 'tax', 'taxlot': 'property'}
+INVENTORY_MAP = {
+    'property': 'PropertyState',
+    'propertystate': 'PropertyState',
+    'taxlot': 'TaxLotState',
+    'taxlotstate': 'TaxLotState',
+}
+# This is the inverse mapping of the property and tax lots that are prepended to the fields
+# for the other table.
+INVENTORY_MAP_PREPEND = {
+    'property': 'tax',
+    'propertystate': 'tax',
+    'taxlot': 'property',
+    'taxlotstate': 'property',
+}
 _log = logging.getLogger(__name__)
 
 
@@ -121,6 +135,47 @@ class Column(models.Model):
 
     def __unicode__(self):
         return u'{} - {}'.format(self.pk, self.column_name)
+
+    @staticmethod
+    def create_mappings_from_file(filename, organization, user):
+        """
+        Load the mappings in from a file in a very specific file format. The columns in the file
+        must be:
+
+            1. raw field
+            2. table name
+            3. field name
+            4. field display name
+            5. field data type
+            6. field unit type
+
+        :param filename: string, absolute path and name of file to load
+        :param organization: id, organization id
+        :param user: id, user id
+
+        :return: ColumnMapping, True
+        """
+
+        mappings = []
+        if os.path.isfile(filename):
+            with open(filename, 'rU') as csvfile:
+                for row in csv.reader(csvfile):
+                    data = {
+                        "from_field": row[0],
+                        "to_table_name": row[1],
+                        "to_field": row[2],
+                        # "to_display_name": row[3],
+                        # "to_data_type": row[4],
+                        # "to_unit_type": row[5],
+                    }
+                    mappings.append(data)
+        else:
+            raise Exception("Mapping file does not exist: {}".format(filename))
+
+        if len(mappings) == 0:
+            raise Exception("No mappings in file: {}".format(filename))
+        else:
+            return Column.create_mappings(mappings, organization, user)
 
     @staticmethod
     def create_mappings(mappings, organization, user):
@@ -519,7 +574,7 @@ class Column(models.Model):
 
         # Clean up the columns
         for c in columns:
-            if c['table'] == INVENTORY_MAP[inventory_type]:
+            if c['table'] == INVENTORY_MAP[inventory_type.lower()]:
                 c['related'] = False
                 if c.get('pinIfNative', False):
                     c['pinnedLeft'] = True
@@ -527,7 +582,8 @@ class Column(models.Model):
                 c['related'] = True
                 # For now, a related field has a prepended value to make the columns unique.
                 if c.get('duplicateNameInOtherTable', False):
-                    c['name'] = "{}_{}".format(INVENTORY_MAP_PREPEND[inventory_type], c['name'])
+                    c['name'] = "{}_{}".format(INVENTORY_MAP_PREPEND[inventory_type.lower()],
+                                               c['name'])
 
             # Remove some keys that are not needed for the API
             try:
@@ -578,7 +634,7 @@ class Column(models.Model):
                     'table': edc.table_name,
                     'displayName': display_name,
                     # 'dataType': 'string',  # TODO: how to check dataTypes on extra_data!
-                    'related': edc.table_name != INVENTORY_MAP[inventory_type],
+                    'related': edc.table_name != INVENTORY_MAP[inventory_type.lower()],
                     'extraData': True
                 }
             )
@@ -725,15 +781,6 @@ class ColumnMapping(models.Model):
 
             key = key[0]
             value = value[0]
-
-            # Concat is not used as of 2016-09-14: commenting out.
-            # if isinstance(key, list) and len(key) > 1:
-            #     concat_confs.append({
-            #         'concat_columns': key,
-            #         'target': value,
-            #         'delimiter': ' '
-            #     })
-            #     continue
 
             # These should be lists of one element each.
             mapping[key[1]] = value

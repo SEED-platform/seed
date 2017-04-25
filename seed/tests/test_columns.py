@@ -5,6 +5,8 @@
 :author
 """
 
+import os.path
+
 from django.test import TestCase
 
 from seed import models as seed_models
@@ -187,6 +189,34 @@ class TestColumns(TestCase):
         self.assertEqual(c.is_extra_data, True)
         self.assertEqual(c.table_name, 'PropertyState')
         self.assertEqual(ps.extra_data['lab'], 'hawkins national laboratory')
+
+    def test_save_column_mapping_by_file_exception(self):
+        self.mapping_import_file = os.path.abspath("./no-file.csv")
+        with self.assertRaisesRegexp(Exception, "Mapping file does not exist: .*/seed/no-file.csv"):
+            Column.create_mappings_from_file(self.mapping_import_file, self.fake_org, self.fake_user)
+
+    def test_save_column_mapping_by_file(self):
+        self.mapping_import_file = os.path.abspath("./seed/tests/data/test_mapping.csv")
+        Column.create_mappings_from_file(self.mapping_import_file, self.fake_org, self.fake_user)
+
+        expected = {
+            u'City': (u'PropertyState', u'city'),
+            u'Custom ID': (u'PropertyState', u'custom_id_1'),
+            u'Zip': (u'PropertyState', u'postal_code'),
+            u'GBA': (u'PropertyState', u'gross_floor_area'),
+            u'PM Property ID': (u'PropertyState', u'pm_property_id'),
+            u'BLDGS': (u'PropertyState', u'building_count'),
+            u'AYB_YearBuilt': (u'PropertyState', u'year_build'),
+            u'State': (u'PropertyState', u'state'),
+            u'Address': (u'PropertyState', u'address_line_1'),
+            u'Owner': (u'PropertyState', u'owner'),
+            u'Raw Column': (u'Table Name', u'Field Name'),
+            u'Property Type': (u'PropertyState', u'property_type'),
+            u'UBI': (u'TaxLotState', u'jurisdiction_tax_lot_id')
+        }
+
+        test_mapping, _ = ColumnMapping.get_column_mappings(self.fake_org)
+        self.assertItemsEqual(expected, test_mapping)
 
 
 class TestColumnMapping(TestCase):
