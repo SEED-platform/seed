@@ -12,11 +12,13 @@ from django.db import models
 from django.utils.timezone import get_current_timezone, make_aware, make_naive
 
 from seed.lib.superperms.orgs.models import Organization
-from seed.models import StatusLabel
+from seed.models import (
+    Column,
+    StatusLabel,
+)
 from seed.utils.cache import (
     set_cache_raw, get_cache_raw
 )
-from seed.utils.constants import ASSESSOR_FIELDS_BY_COLUMN
 
 _log = logging.getLogger(__name__)
 
@@ -100,31 +102,27 @@ RULES_MISSING_VALUES = [
         'rule_type': RULE_TYPE_DEFAULT,
         'severity': SEVERITY_ERROR,
         'category': CATEGORY_MISSING_VALUES,
-    },
-    {
-        'table_name': 'TaxLotState',
-        'field': 'address_line_1',
-        'rule_type': RULE_TYPE_DEFAULT,
-        'severity': SEVERITY_ERROR,
-        'category': CATEGORY_MISSING_VALUES,
-    },
-    {
+    }, {
         'table_name': 'PropertyState',
         'field': 'pm_property_id',
         'rule_type': RULE_TYPE_DEFAULT,
         'severity': SEVERITY_ERROR,
         'category': CATEGORY_MISSING_VALUES,
-    },
-    {
+    }, {
         'table_name': 'PropertyState',
         'field': 'custom_id_1',
         'rule_type': RULE_TYPE_DEFAULT,
         'severity': SEVERITY_ERROR,
         'category': CATEGORY_MISSING_VALUES,
-    },
-    {
+    }, {
         'table_name': 'TaxLotState',
         'field': 'jurisdiction_tax_lot_id',
+        'rule_type': RULE_TYPE_DEFAULT,
+        'severity': SEVERITY_ERROR,
+        'category': CATEGORY_MISSING_VALUES,
+    }, {
+        'table_name': 'TaxLotState',
+        'field': 'address_line_1',
         'rule_type': RULE_TYPE_DEFAULT,
         'severity': SEVERITY_ERROR,
         'category': CATEGORY_MISSING_VALUES,
@@ -366,18 +364,18 @@ class DataQualityCheck(models.Model):
     Object that stores the high level configuration per organization of the DataQualityCheck
     """
     REQUIRED_FIELDS = {
-        'property': ['address_line_1', 'pm_property_id', 'jurisdiction_property_id'],
-        'taxlot': ['jurisdiction_tax_lot_id', 'address_line_1'],
+        'PropertyState': ['address_line_1', 'pm_property_id'],
+        'TaxLotState': ['jurisdiction_tax_lot_id', 'address_line_1'],
     }
 
     organization = models.ForeignKey(Organization)
     name = models.CharField(max_length=255, blank='Default Data Quality Check')
 
     @classmethod
-    def retrieve(klass, organization):
+    def retrieve(cls, organization):
         """
-        DataQualityCheck was previously a simple object but has been migrated to a django model. This
-        method ensures that the data quality model will be backwards compatible.
+        DataQualityCheck was previously a simple object but has been migrated to a django model.
+        This method ensures that the data quality model will be backwards compatible.
 
         This is the preferred method to initialize a new object.
 
@@ -388,7 +386,7 @@ class DataQualityCheck(models.Model):
         """
         dq, _ = DataQualityCheck.objects.get_or_create(organization=organization)
         if dq.rules.count() == 0:
-            _log.info("No rules found in DataQualityCheck, initializing default rules")
+            # _log.debug("No rules found in DataQualityCheck, initializing default rules")
             dq.initialize_rules()
 
         return dq
@@ -397,6 +395,11 @@ class DataQualityCheck(models.Model):
         # Add member variable for temp storage of results
         self.results = {}
         self.reset_results()
+
+        # tuple based column lookup for the display name, initialize to blank here,
+        # set in check_data
+        self.column_lookup = {}
+
         super(DataQualityCheck, self).__init__(*args, **kwargs)
 
     @staticmethod
@@ -431,6 +434,15 @@ class DataQualityCheck(models.Model):
         :param data: rows of data to be checked for data quality
         :return:
         """
+
+        # grab the columns in order to grab the display names
+        columns = Column.retrieve_all(self.organization, record_type)
+        self.column_lookup = {}
+
+        # create lookup tuple for the display name
+        for c in columns:
+            self.column_lookup[(c['table'], c['name'])] = c['displayName']
+
         fields = self.get_fieldnames(record_type)
         for datum in data:
             # Initialize the ID if it doesn't exist yet. Add in the other
@@ -475,16 +487,16 @@ class DataQualityCheck(models.Model):
                                       enabled=True).order_by('field', 'severity'):
             if hasattr(datum, rule.field):
                 value = getattr(datum, rule.field)
-                formatted_field = ASSESSOR_FIELDS_BY_COLUMN[rule.field]['title']
+                display_name = self.column_lookup[(rule.table_name, rule.field)]
                 if value is None:
                     # Field exists but the value is None. Register a data_quality error
                     self.results[datum.id]['data_quality_results'].append({
                         'field': rule.field,
-                        'formatted_field': formatted_field,
+                        'formatted_field': display_name,
                         'value': value,
-                        'message': formatted_field + ' field not found',
-                        'detailed_message': formatted_field + ' field not found',
-                        'severity': dict(SEVERITY)[rule.severity]
+                        'message': display_name + ' field not found',
+                        'detailed_message': display_name + ' field not found',
+                        'severity': rule.get_severity_display(),
                     })
 
     def _missing_values(self, datum):
@@ -498,26 +510,26 @@ class DataQualityCheck(models.Model):
 
         :param datum: Database record containing the BS version of the fields populated
         :return: None
-
-        # TODO: Check the extra_data field for the data?
         """
-
         for rule in self.rules.filter(category=CATEGORY_MISSING_VALUES,
                                       enabled=True).order_by('field', 'severity'):
             if hasattr(datum, rule.field):
                 value = getattr(datum, rule.field)
-                formatted_field = ASSESSOR_FIELDS_BY_COLUMN[rule.field]['title']
+                display_name = ''
+                try:
+                    display_name = self.column_lookup[(rule.table_name, rule.field)]
+                except KeyError:
+                    pass
 
                 if value == '':
-                    # TODO: check if the value is zero?
                     # Field exists but the value is empty. Register a data_quality error
                     self.results[datum.id]['data_quality_results'].append({
                         'field': rule.field,
-                        'formatted_field': formatted_field,
+                        'formatted_field': display_name,
                         'value': value,
-                        'message': formatted_field + ' is missing',
-                        'detailed_message': formatted_field + ' is missing',
-                        'severity': dict(SEVERITY)[rule.severity]
+                        'message': display_name + ' is missing',
+                        'detailed_message': display_name + ' is missing',
+                        'severity': rule.get_severity_display()
                     })
 
     def _in_range_checking(self, datum):
@@ -533,14 +545,16 @@ class DataQualityCheck(models.Model):
             # check if the field exists
             if hasattr(datum, rule.field):
                 value = getattr(datum, rule.field)
-                formatted_field = ASSESSOR_FIELDS_BY_COLUMN[rule.field]['title']
+                display_name = self.column_lookup[(rule.table_name, rule.field)]
 
                 # Don't check the out of range errors if the data are empty
                 if value is None:
                     continue
 
                 rule_min = rule.min
+                formatted_rule_min = ''
                 rule_max = rule.max
+                formatted_rule_max = ''
                 if rule.data_type == TYPE_YEAR:
                     rule_min = int(rule_min)
                     rule_max = int(rule_max)
@@ -568,21 +582,23 @@ class DataQualityCheck(models.Model):
                 if rule_min is not None and value < rule_min:
                     self.results[datum.id]['data_quality_results'].append({
                         'field': rule.field,
-                        'formatted_field': formatted_field,
+                        'formatted_field': display_name,
                         'value': value,
-                        'message': formatted_field + ' out of range',
-                        'detailed_message': formatted_field + ' [' + formatted_value + '] < ' + formatted_rule_min,
-                        'severity': dict(SEVERITY)[rule.severity]
+                        'message': display_name + ' out of range',
+                        'detailed_message': display_name + ' [' + formatted_value + '] < ' +
+                        formatted_rule_min,
+                        'severity': rule.get_severity_display(),
                     })
 
                 if rule_max is not None and value > rule_max:
                     self.results[datum.id]['data_quality_results'].append({
                         'field': rule.field,
-                        'formatted_field': formatted_field,
+                        'formatted_field': display_name,
                         'value': value,
-                        'message': formatted_field + ' out of range',
-                        'detailed_message': formatted_field + ' [' + formatted_value + '] > ' + formatted_rule_max,
-                        'severity': dict(SEVERITY)[rule.severity]
+                        'message': display_name + ' out of range',
+                        'detailed_message': display_name + ' [' + formatted_value + '] > ' +
+                        formatted_rule_max,
+                        'severity': rule.get_severity_display(),
                     })
 
     def _data_type_check(self, datum):
@@ -601,7 +617,7 @@ class DataQualityCheck(models.Model):
             # check if the field exists
             if hasattr(datum, rule.field):
                 value = getattr(datum, rule.field)
-                formatted_field = ASSESSOR_FIELDS_BY_COLUMN[rule.field]['title']
+                display_name = self.column_lookup[(rule.table_name, rule.field)]
 
                 # Don't check the out of range errors if the data are empty
                 if value is None:
@@ -610,12 +626,12 @@ class DataQualityCheck(models.Model):
                 if type(value).__name__ != rule.data_type:
                     self.results[datum.id]['data_quality_results'].append({
                         'field': rule.field,
-                        'formatted_field': formatted_field,
+                        'formatted_field': display_name,
                         'value': value,
-                        'message': formatted_field + ' value has incorrect data type',
-                        'detailed_message': formatted_field + ' value ' + str(
+                        'message': display_name + ' value has incorrect data type',
+                        'detailed_message': display_name + ' value ' + str(
                             value) + ' is not a recognized ' + rule.data_type + ' format',
-                        'severity': dict(SEVERITY)[rule.severity]
+                        'severity': rule.get_severity_display(),
                     })
 
     def save_to_cache(self, file_pk):

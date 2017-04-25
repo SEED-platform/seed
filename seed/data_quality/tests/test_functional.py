@@ -20,6 +20,7 @@ from seed.models import (
     ASSESSED_BS,
     PORTFOLIO_BS,
     PropertyState,
+    TaxLotState,
     Column,
 )
 
@@ -50,111 +51,108 @@ class DataQualityTestCoveredBuilding(TestCase):
         self.import_file.is_espm = False
         self.import_file.source_type = 'ASSESSED_RAW'
         self.import_file.file = File(
-            open(path.join(path.dirname(__file__), '../tests/test_data',
-                           'covered-buildings-sample-with-errors.csv'))
+            open(path.join(
+                path.dirname(__file__),
+                '../tests/test_data/covered-buildings-sample-with-errors.csv')
+            )
+        )
+        self.import_file.save()
+        self.import_file_mapping = path.join(
+            path.dirname(__file__), "test_data/covered-buildings-sample-with-errors-mappings.csv"
         )
 
-        self.import_file.save()
+        tasks.save_raw_data(self.import_file.id)
+        Column.create_mappings_from_file(self.import_file_mapping, self.org, self.user)
+        tasks.map_data(self.import_file.id)
 
     def test_simple_login(self):
         self.client.post(self.login_url, self.user_details, secure=True)
         self.assertTrue('_auth_user_id' in self.client.session)
 
-    # def test_check(self):
-    #     # Import the file and run mapping
-    #
-    #     # This is silly, the mappings are backwards from what you would expect. The key is the BS field, and the
-    #     # value is the value in the CSV
-    #     # fake_mappings = {
-    #     #     'city': 'city',
-    #     #     'postal_code': 'Zip',
-    #     #     'gross_floor_area': 'GBA',
-    #     #     'building_count': 'BLDGS',
-    #     #     'year_built': 'AYB_YearBuilt',
-    #     #     'state_province': 'State',
-    #     #     'address_line_1': 'Address',
-    #     #     'owner': 'Owner',
-    #     #     'property_notes': 'Property Type',
-    #     #     'tax_lot_id': 'UBI',
-    #     #     'custom_id_1': 'Custom ID',
-    #     #     'pm_property_id': 'PM Property ID'
-    #     # }
-    #
-    #     tasks.save_raw_data(self.import_file.id)
-    #     # util.make_fake_mappings(fake_mappings, self.org) -> convert to Column.create_mappings()
-    #     tasks.map_data(self.import_file.id)
-    #
-    #     qs = PropertyState.objects.filter(
-    #         import_file=self.import_file,
-    #         source_type=ASSESSED_BS,
-    #     ).iterator()
-    #
-    #     d = DataQualityCheck.retrieve(self.org)
-    #     d.check_data('property', qs)
-    #
-    #     self.assertEqual(len(d.results), 2)
-    #
-    #     result = [v for v in d.results.values() if
-    #               v['address_line_1'] == '95373 E Peach Avenue']
-    #     if len(result) == 1:
-    #         result = result[0]
-    #     else:
-    #         raise RuntimeError('Non unity results')
-    #
-    #     self.assertTrue(result['address_line_1'], '95373 E Peach Avenue')
-    #     self.assertTrue(result['tax_lot_id'], '10107/c6596')
-    #     res = [{
-    #         'field': u'pm_property_id',
-    #         'formatted_field': u'PM Property ID',
-    #         'value': u'',
-    #         'message': u'PM Property ID is missing',
-    #         'detailed_message': u'PM Property ID is missing',
-    #         'severity': u'error'
-    #     }]
-    #     self.assertEqual(res, result['data_quality_results'])
-    #
-    #     result = [v for v in d.results.values() if
-    #               v['address_line_1'] == '120243 E True Lane']
-    #     if len(result) == 1:
-    #         result = result[0]
-    #     else:
-    #         raise RuntimeError('Non unity results')
-    #
-    #     res = [{
-    #         'field': u'year_built',
-    #         'formatted_field': u'Year Built',
-    #         'value': 0,
-    #         'message': u'Year Built out of range',
-    #         'detailed_message': u'Year Built [0] < 1700',
-    #         'severity': u'error'
-    #     }, {
-    #         'field': u'gross_floor_area',
-    #         'formatted_field': u'Gross Floor Area',
-    #         'value': 10000000000.0,
-    #         'message': u'Gross Floor Area out of range',
-    #         'detailed_message': u'Gross Floor Area [10000000000.0] > 7000000.0',
-    #         'severity': u'error'
-    #     }, {
-    #         'field': u'custom_id_1',
-    #         'formatted_field': u'Custom ID 1',
-    #         'value': u'',
-    #         'message': u'Custom ID 1 is missing',
-    #         'detailed_message': u'Custom ID 1 is missing',
-    #         'severity': u'error'
-    #     }, {
-    #         'field': u'pm_property_id',
-    #         'formatted_field': u'PM Property ID',
-    #         'value': u'',
-    #         'message': u'PM Property ID is missing',
-    #         'detailed_message': u'PM Property ID is missing',
-    #         'severity': u'error'
-    #     }]
-    #     self.assertItemsEqual(res, result['data_quality_results'])
-    #
-    #     result = [v for v in d.results.values() if
-    #               v['address_line_1'] == '1234 Peach Tree Avenue']
-    #     self.assertEqual(len(result), 0)
-    #     self.assertEqual(result, [])
+    def test_property_state_quality(self):
+        # Import the file and run mapping
+        qs = PropertyState.objects.filter(
+            import_file=self.import_file,
+        ).iterator()
+
+        d = DataQualityCheck.retrieve(self.org)
+        d.check_data('PropertyState', qs)
+        # import json
+        # print json.dumps(d.results, indent=2)
+        self.assertEqual(len(d.results), 3)
+
+        result = [v for v in d.results.values() if v['address_line_1'] == '95373 E Peach Avenue']
+        if len(result) == 1:
+            result = result[0]
+        else:
+            raise RuntimeError('Non unity results')
+
+        self.assertTrue(result['address_line_1'], '95373 E Peach Avenue')
+
+        res = [{
+            'field': u'pm_property_id',
+            'formatted_field': u'PM Property ID',
+            'value': u'',
+            'message': u'PM Property ID is missing',
+            'detailed_message': u'PM Property ID is missing',
+            'severity': u'error'
+        }]
+        self.assertEqual(res, result['data_quality_results'])
+
+        result = [v for v in d.results.values() if v['address_line_1'] == '120243 E True Lane']
+        if len(result) == 1:
+            result = result[0]
+        else:
+            raise RuntimeError('Non unity results')
+
+        res = [
+            {
+                'field': u'year_built',
+                'formatted_field': u'Year Built',
+                'value': 0,
+                'message': u'Year Built out of range',
+                'detailed_message': u'Year Built [0] < 1700',
+                'severity': u'error'
+            }, {
+                'field': u'gross_floor_area',
+                'formatted_field': u'Gross Floor Area',
+                'value': 10000000000.0,
+                'message': u'Gross Floor Area out of range',
+                'detailed_message': u'Gross Floor Area [10000000000.0] > 7000000.0',
+                'severity': u'error'
+            }, {
+                'field': u'custom_id_1',
+                'formatted_field': u'Custom ID 1 (Property)',
+                'value': u'',
+                'message': u'Custom ID 1 (Property) is missing',
+                'detailed_message': u'Custom ID 1 (Property) is missing',
+                'severity': u'error'
+            }, {
+                'field': u'pm_property_id',
+                'formatted_field': u'PM Property ID',
+                'value': u'',
+                'message': u'PM Property ID is missing',
+                'detailed_message': u'PM Property ID is missing',
+                'severity': u'error'
+            }
+        ]
+        self.assertItemsEqual(res, result['data_quality_results'])
+
+        result = [v for v in d.results.values() if v['address_line_1'] == '1234 Peach Tree Avenue']
+        self.assertEqual(len(result), 0)
+        self.assertEqual(result, [])
+
+    def test_tax_lot_state_quality(self):
+        # Import the file and run mapping
+        qs = TaxLotState.objects.filter(
+            import_file=self.import_file
+        ).iterator()
+
+        d = DataQualityCheck.retrieve(self.org)
+        d.check_data('TaxLotState', qs)
+        # import json
+        # print json.dumps(d.results, indent=2)
+        self.assertEqual(len(d.results), 1)
 
 
 class DataQualityTestPM(TestCase):
@@ -251,7 +249,7 @@ class DataQualityTestPM(TestCase):
         ).iterator()
 
         d = DataQualityCheck.retrieve(self.org)
-        d.check_data('property', qs)
+        d.check_data('PropertyState', qs)
 
         _log.debug(d.results)
 
@@ -496,8 +494,7 @@ class DataQualitySample(TestCase):
         ).iterator()
 
         d = DataQualityCheck.retrieve(self.org)
-        d.check_data('property', qs)
+        d.check_data('PropertyState', qs)
 
-        # _log.debug(d.results)
         # This only checks to make sure the 34 errors have occurred.
         self.assertEqual(len(d.results), 34)

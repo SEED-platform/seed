@@ -401,7 +401,7 @@ def _map_data(import_file_id, mark_as_done):
 
 @shared_task
 @lock_and_track
-def _data_quality_check(import_file_id, record_type='property'):
+def _data_quality_check(import_file_id):
     """
 
     Get the mapped data and run the data_quality class against it in chunks. The
@@ -410,49 +410,25 @@ def _data_quality_check(import_file_id, record_type='property'):
     @lock_and_track returns a progress_key
 
     :param import_file_id: int, the id of the import_file we're working with.
-    :param report: string, 'property' or 'taxlot', defaults to property
-
     """
-    # TODO Since this function was previously hardcoded to use PropertyState,
-    # but the functions/methods it calls can now handle both, I converted
-    # this function and had record_type to  default to PropertyState,
-    # I did not change anything where it gets called.
-
     import_file = ImportFile.objects.get(pk=import_file_id)
-
-    source_type_dict = {
-        'Portfolio Raw': PORTFOLIO_BS,
-        'Assessed Raw': ASSESSED_BS,
-        'Green Button Raw': GREEN_BUTTON_BS,
-    }
-
-    # This is non-ideal, but the source type of the input file is never
-    # updated, but the data are stages as if it were.
-    #
-    # After the mapping stage occurs, the data end up in the PropertyState
-    # table under the *_BS value.
-    source_type = source_type_dict.get(import_file.source_type, ASSESSED_BS)
-
-    model = {
-        'property': PropertyState, 'taxlot': TaxLotState
-    }.get(record_type)
-
-    qs = model.objects.filter(
-        import_file=import_file,
-        source_type=source_type,
-    ).only('id').iterator()
 
     # initialize the cache for the data_quality results using the data_quality static method
     DataQualityCheck.initialize_cache(import_file_id)
-
     prog_key = get_prog_key('check_data', import_file_id)
 
+    tasks = []
+    qs = PropertyState.objects.filter(import_file=import_file).only('id').iterator()
     id_chunks = [[obj.id for obj in chunk] for chunk in batch(qs, 100)]
     increment = get_cache_increment_value(id_chunks)
-    tasks = [
-        check_data_chunk.s(record_type, ids, import_file_id, increment)
-        for ids in id_chunks
-    ]
+    for ids in id_chunks:
+        tasks.append(check_data_chunk.s(PropertyState, ids, import_file_id, increment))
+
+    tlqs = TaxLotState.objects.filter(import_file=import_file).only('id').iterator()
+    id_chunks_tl = [[obj.id for obj in chunk] for chunk in batch(tlqs, 100)]
+    increment_tl = get_cache_increment_value(id_chunks_tl)
+    for ids in id_chunks_tl:
+        tasks.append(check_data_chunk.s(TaxLotState, ids, import_file_id, increment_tl))
 
     if tasks:
         # specify the chord as an immutable with .si

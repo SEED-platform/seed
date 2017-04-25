@@ -22,6 +22,7 @@ _log = logging.getLogger(__name__)
 
 
 class DataQualityRules(TestCase):
+
     def setUp(self):
         self.org = Organization.objects.create()
 
