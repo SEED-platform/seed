@@ -31,23 +31,36 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
     $scope.units = ['', 'square feet', 'kBtu/sq. ft./year'];
 
-    console.log('col: ', all_columns)
-
     $scope.all_columns = all_columns;
     $scope.all_labels  = labels_payload;
+    $scope.rules_type  = 'properties';
+
+    /* TEMP - split data into assumed structure for properties and taxlots.  TODO - remove once structure is in place.
+    var len = data_quality_rules_payload.in_range_checking.length;
+    var results = {
+      properties: data_quality_rules_payload.in_range_checking.slice(0, len/2),
+      taxlots:    data_quality_rules_payload.in_range_checking.slice(len/2)
+    }
+    data_quality_rules_payload.in_range_checking = results;
+    */
 
     var loadRules = function (rules) {
-      $scope.rows = {};
-      _.forEach(rules.in_range_checking, function (rule) {
-        if (!$scope.rows.hasOwnProperty(rule.field)) $scope.rows[rule.field] = [];
-        var row = _.pick(rule, ['enabled', 'type', 'min', 'max', 'severity', 'units', 'label']);
-        row.title = _.find(all_columns.fields, {name: rule.field}).name;
-        row.displayName = _.find(all_columns.fields, {name: rule.field}).displayName; 
-        if (row.type === 'date') {
-          if (row.min) row.min = moment(row.min, 'YYYYMMDD').toDate();
-          if (row.max) row.max = moment(row.max, 'YYYYMMDD').toDate();
-        }
-        $scope.rows[rule.field].push(row);
+      $scope.rows = {
+        properties: {},
+        taxlots:    {}
+      };
+      _.forEach(rules.in_range_checking, function (type, index) {
+        _.forEach(type, function (rule) {
+          if (!$scope.rows[index].hasOwnProperty(rule.field)) $scope.rows[index][rule.field] = [];
+          var row         = _.pick(rule, ['enabled', 'type', 'min', 'max', 'severity', 'units', 'label']);
+          row.field       = _.find(all_columns.fields, {name: rule.field}).name;
+          row.displayName = _.find(all_columns.fields, {name: rule.field}).displayName;
+          if (row.type === 'date') {
+            if (row.min) row.min = moment(row.min, 'YYYYMMDD').toDate();
+            if (row.max) row.max = moment(row.max, 'YYYYMMDD').toDate();
+          }
+          $scope.rows[index][rule.field].push(row);
+        });
       });
     };
     loadRules(data_quality_rules_payload);
@@ -69,67 +82,71 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       var rules = {
         missing_matching_field: data_quality_rules_payload.missing_matching_field,
         missing_values: data_quality_rules_payload.missing_values,
-        in_range_checking: []
+        in_range_checking: {
+          properties: [],
+          taxlots:    []
+        }
       };
       var promises = [];
-      _.forEach($scope.rows, function (field_rules, field) {
-        _.forEach(field_rules, function (row) {
-          var d = $q.defer();
-          promises.push(d.promise);
-          var r = {
-            field: field,
-            type: row.type,
-            required: row.required,
-            null: row.null,
-            enabled: row.enabled,
-            type: row.type,
-            min: row.min || null,
-            max: row.max || null,
-            severity: row.severity,
-            units: row.units,
-            label: row.label,
-            delete: row.delete
-          };
-          if (row.type === 'date') {
-            if (row.min) r.min = Number(moment(row.min).format('YYYYMMDD'));
-            if (row.max) r.max = Number(moment(row.max).format('YYYYMMDD'));
-          }
-          if (row.new) {
-            var match = _.find(labels_payload, function(label) {
-              return label.name === row.label;
-            });
-            if(!match) {
-              var newLabel = {
-                name:  row.label,
-                color: 'gray',
-                label: 'default'
-              };
-              label_service.create_label_for_org($scope.org.id, newLabel).then(function(result) {
-                r.label = result.id;
-                rules.in_range_checking.push(r);
-                d.resolve();
-              },
-              function(message) {
-                $log.error('Error creating new label.', message);
-                d.reject();
+      _.forEach($scope.rows, function (rules_types, rule_type) {
+        _.forEach(rules_types, function (field_rules, field) {
+          _.forEach(field_rules, function (row) {
+            var d = $q.defer();
+            promises.push(d.promise);
+            var r = {
+              field:    row.field,
+              type:     row.type,
+              required: row.required,
+              null:     row.null,
+              enabled:  row.enabled,
+              type:     row.type,
+              min:      row.min || null,
+              max:      row.max || null,
+              severity: row.severity,
+              units:    row.units,
+              label:    row.label,
+              delete:   row.delete
+            };
+            if (row.type === 'date') {
+              if (row.min) r.min = Number(moment(row.min).format('YYYYMMDD'));
+              if (row.max) r.max = Number(moment(row.max).format('YYYYMMDD'));
+            }
+            if (row.new) {
+              var match = _.find(labels_payload, function(label) {
+                return label.name === row.label;
               });
+              if(!match) {
+                var newLabel = {
+                  name:  row.label,
+                  color: 'gray',
+                  label: 'default'
+                };
+                label_service.create_label_for_org($scope.org.id, newLabel).then(angular.bind(this, function(result) {
+                  r.label = result.id;
+                  rules.in_range_checking[rule_type].push(r);
+                  d.resolve();
+                }, rule_type),
+                function(message) {
+                  $log.error('Error creating new label.', message);
+                  d.reject();
+                });
+              }
+              else {
+                r.label = match.id;
+                rules.in_range_checking[rule_type].push(r);
+                d.resolve();
+              }
+              row.new = null;
             }
             else {
-              r.label = match.id;
-              rules.in_range_checking.push(r);
+              rules.in_range_checking[rule_type].push(r);
               d.resolve();
             }
-            row.new = null;
-          }
-          else {
-            rules.in_range_checking.push(r);
-            d.resolve();            
-          }
+          });
         });
       });
       $q.all(promises)
       .then(function() {
-        console.log('rules: ', rules)
       	organization_service.save_data_quality_rules($scope.org.org_id, rules).then(function (data) {
           $scope.rules_updated = true;
         }, function (data, status) {
@@ -141,9 +158,9 @@ angular.module('BE.seed.controller.data_quality_admin', [])
     };
 
     // capture rule field dropdown change.
-    $scope.change_field = function(rule) {
+    $scope.change_field = function(rule, oldField, index) {
       var original = rule.type;
-      var newType  = _.find(all_columns.fields, { name: rule.title }).type;
+      var newType  = _.find(all_columns.fields, { name: rule.field }).type;
 
       // clear columns that are type specific.
       if(newType !== original) {
@@ -156,8 +173,14 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
       // modify the custom label if the rule is recently added.
       if(rule.new) {
-        rule.label = 'Invalid ' + _.find(all_columns.fields, { name: rule.title }).displayName;
+        rule.label = 'Invalid ' + _.find(all_columns.fields, { name: rule.field }).displayName;
       }
+
+      // move rule to appropriate spot in array.
+      if (!$scope.rows[$scope.rules_type].hasOwnProperty(rule.field)) $scope.rows[$scope.rules_type][rule.field] = [];
+      $scope.rows[$scope.rules_type][rule.field].push(rule);
+      // remove old rule.
+      $scope.rows[$scope.rules_type][oldField].splice(index, 1);
     };
 
     // create a new rule.
@@ -167,21 +190,21 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       var type  = all_columns.fields[0].type || null;
 
       if(field) {
-        if (!$scope.rows.hasOwnProperty(field)) $scope.rows[field] = [];
+        if (!$scope.rows[$scope.rules_type].hasOwnProperty(field)) $scope.rows[$scope.rules_type][field] = [];
 
-        $scope.rows[field].push({
-          enabled:  false,
-          title:    field,
+        $scope.rows[$scope.rules_type][field].push({
+          enabled:     true,
+          field:       field,
           displayName: label,
-          type:     type,
-          required: null,
-          null:     null,
-          max:      null,
-          min:      null,
-          severity: 'error',
-          units:    '',
-          label:    'Invalid ' + label,
-          new:      true
+          type:        type,
+          required:    null,
+          null:        null,
+          max:         null,
+          min:         null,
+          severity:    'error',
+          units:       '',
+          label:       'Invalid ' + label,
+          new:         true
         });
       }
     };
@@ -190,8 +213,12 @@ angular.module('BE.seed.controller.data_quality_admin', [])
     $scope.delete_rule = function(rule, index) {
       rule.delete = true;
       if(rule.new) {
-        $scope.rows[rule.title].splice(index, 1);
+        $scope.rows[$scope.rules_type][rule.field].splice(index, 1);
       }
     };
 
+    // change list view.
+    $scope.view = function(type) {
+      $scope.rules_type = type;
+    };
   }]);

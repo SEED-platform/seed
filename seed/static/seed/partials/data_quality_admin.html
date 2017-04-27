@@ -30,6 +30,16 @@
             <h3>In-Range Checking: Modifying Data Quality Rules</h3>
             <p>From the table below, select the rules that you want to: 1) enable/disable within your organization, and 2) modify the minimum/maximum values to validate against on file upload.</p>
             <div class="right_wide section_action_container"><a ng-click="create_new_rule()">Create a new rule</a></div>
+            <div class="inventory-list-tab-container">
+                <ul class="nav nav-tabs" style="margin-bottom:1px;">
+                    <li ng-class="{active: rules_type=='properties'}" heading="View by Property">
+                        <a ng-click="view('properties')">View by Property</a>
+                    </li>
+                    <li ng-class="{active: rules_type=='taxlots'}" heading="View by Tax Lot">
+                        <a ng-click="view('taxlots')">View by Tax Lot</a>
+                    </li>
+                </ul>
+            </div>
             <div class="table_list_container has_borders">
                 <table class="table has_no_btm_margin tbody-striped">
                     <thead>
@@ -47,14 +57,13 @@
                             <th class="condensed_head" style="min-width: 33px; width: 33px;"></th>
                         </tr>
                     </thead>
-                    <tbody ng-repeat="rules in rows">
+                    <tbody ng-repeat="rules in rows[rules_type]">
                         <tr ng-repeat="rule in rules" ng-if="!rule.delete" ng-class="{ 'warning' : rule.new}">
                             <td class="check is_aligned_center" style="width: 33px;">
                                 <input type="checkbox" ng-model="rule.enabled">
                             </td>
                             <td>
-                                <!-- <span>{$ rule.title $}</span> -->
-                                <select class="form-control input-sm" ng-model="rule.title" ng-options="col.name as col.displayName for col in all_columns.fields" ng-change="change_field(rule)">
+                                <select class="form-control input-sm" ng-model="rule.field" ng-options="col.name as col.displayName for col in all_columns.fields" ng-change="change_field(rule, '{$ rule.field $}', $index)">
                                 </select>
                             </td>
                             <td>
