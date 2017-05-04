@@ -104,6 +104,10 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
+      $scope.run_data_quality_check = function () {
+        console.log('run_data_quality_check called');
+      };
+
 
       var lastCycleId = inventory_service.get_last_cycle();
       $scope.cycle = {

@@ -22,17 +22,6 @@ from seed.utils.cache import (
 
 _log = logging.getLogger(__name__)
 
-CATEGORY_MISSING_MATCHING_FIELD = 0
-CATEGORY_MISSING_VALUES = 1
-CATEGORY_IN_RANGE_CHECKING = 2
-CATEGORY_DATA_TYPE_CHECK = 3
-CATEGORIES = [
-    (CATEGORY_MISSING_MATCHING_FIELD, "Missing Matching Field"),
-    (CATEGORY_MISSING_VALUES, "Missing Values"),
-    (CATEGORY_IN_RANGE_CHECKING, "In-range Checking"),
-    (CATEGORY_DATA_TYPE_CHECK, "Data Type Check")
-]
-
 RULE_TYPE_DEFAULT = 0
 RULE_TYPE_CUSTOM = 1
 RULE_TYPE = [
@@ -45,90 +34,52 @@ TYPE_STRING = 1
 TYPE_DATE = 2
 TYPE_YEAR = 3
 DATA_TYPES = [
-    (TYPE_NUMBER, "number"),
-    (TYPE_STRING, "string"),
-    (TYPE_DATE, "date"),
-    (TYPE_YEAR, "year")
+    (TYPE_NUMBER, 'number'),
+    (TYPE_STRING, 'string'),
+    (TYPE_DATE, 'date'),
+    (TYPE_YEAR, 'year')
 ]
 
 SEVERITY_ERROR = 0
 SEVERITY_WARNING = 1
 SEVERITY = [
-    (SEVERITY_ERROR, "error"),
-    (SEVERITY_WARNING, "warning")
+    (SEVERITY_ERROR, 'error'),
+    (SEVERITY_WARNING, 'warning')
 ]
 
-RULES_MISSING_MATCHES = [
+DEFAULT_RULES = [
     {
         'table_name': 'PropertyState',
         'field': 'address_line_1',
+        'not_null': True,
         'rule_type': RULE_TYPE_DEFAULT,
         'severity': SEVERITY_ERROR,
-        'category': CATEGORY_MISSING_MATCHING_FIELD,
-    },
-    {
-        'table_name': 'TaxLotState',
-        'field': 'address_line_1',
-        'rule_type': RULE_TYPE_DEFAULT,
-        'severity': SEVERITY_ERROR,
-        'category': CATEGORY_MISSING_MATCHING_FIELD,
-    },
-    {
-        'table_name': 'PropertyState',
-        'field': 'custom_id_1',
-        'rule_type': RULE_TYPE_DEFAULT,
-        'severity': SEVERITY_ERROR,
-        'category': CATEGORY_MISSING_MATCHING_FIELD,
-    },
-    {
-        'table_name': 'PropertyState',
-        'field': 'pm_property_id',
-        'rule_type': RULE_TYPE_DEFAULT,
-        'severity': SEVERITY_ERROR,
-        'category': CATEGORY_MISSING_MATCHING_FIELD,
-    },
-    {
-        'table_name': 'TaxLotState',
-        'field': 'jurisdiction_tax_lot_id',
-        'rule_type': RULE_TYPE_DEFAULT,
-        'severity': SEVERITY_ERROR,
-        'category': CATEGORY_MISSING_MATCHING_FIELD,
-    },
-]
-RULES_MISSING_VALUES = [
-    {
-        'table_name': 'PropertyState',
-        'field': 'address_line_1',
-        'rule_type': RULE_TYPE_DEFAULT,
-        'severity': SEVERITY_ERROR,
-        'category': CATEGORY_MISSING_VALUES,
     }, {
         'table_name': 'PropertyState',
         'field': 'pm_property_id',
+        'not_null': True,
         'rule_type': RULE_TYPE_DEFAULT,
         'severity': SEVERITY_ERROR,
-        'category': CATEGORY_MISSING_VALUES,
     }, {
         'table_name': 'PropertyState',
         'field': 'custom_id_1',
+        'not_null': True,
         'rule_type': RULE_TYPE_DEFAULT,
         'severity': SEVERITY_ERROR,
-        'category': CATEGORY_MISSING_VALUES,
     }, {
         'table_name': 'TaxLotState',
         'field': 'jurisdiction_tax_lot_id',
+        'not_null': True,
         'rule_type': RULE_TYPE_DEFAULT,
         'severity': SEVERITY_ERROR,
-        'category': CATEGORY_MISSING_VALUES,
     }, {
         'table_name': 'TaxLotState',
         'field': 'address_line_1',
+        'not_null': True,
         'rule_type': RULE_TYPE_DEFAULT,
         'severity': SEVERITY_ERROR,
-        'category': CATEGORY_MISSING_VALUES,
     },
-]
-RULES_RANGE_CHECKS = [
+
     {
         'table_name': 'PropertyState',
         'field': 'year_built',
@@ -137,7 +88,6 @@ RULES_RANGE_CHECKS = [
         'min': 1700,
         'max': 2019,
         'severity': SEVERITY_ERROR,
-        'category': CATEGORY_IN_RANGE_CHECKING,
     }, {
         'table_name': 'PropertyState',
         'field': 'year_ending',
@@ -146,7 +96,6 @@ RULES_RANGE_CHECKS = [
         'min': 18890101,
         'max': 20201231,
         'severity': SEVERITY_ERROR,
-        'category': CATEGORY_IN_RANGE_CHECKING,
     }, {
         'table_name': 'PropertyState',
         'field': 'conditioned_floor_area',
@@ -156,7 +105,6 @@ RULES_RANGE_CHECKS = [
         'max': 7000000,
         'severity': SEVERITY_ERROR,
         'units': 'square feet',
-        'category': CATEGORY_IN_RANGE_CHECKING,
     }, {
         'table_name': 'PropertyState',
         'field': 'conditioned_floor_area',
@@ -165,7 +113,6 @@ RULES_RANGE_CHECKS = [
         'min': 100,
         'severity': SEVERITY_WARNING,
         'units': 'square feet',
-        'category': CATEGORY_IN_RANGE_CHECKING,
     }, {
         'table_name': 'PropertyState',
         'field': 'energy_score',
@@ -174,7 +121,6 @@ RULES_RANGE_CHECKS = [
         'min': 0,
         'max': 100,
         'severity': SEVERITY_ERROR,
-        'category': CATEGORY_IN_RANGE_CHECKING,
     }, {
         'table_name': 'PropertyState',
         'field': 'energy_score',
@@ -182,7 +128,6 @@ RULES_RANGE_CHECKS = [
         'rule_type': RULE_TYPE_DEFAULT,
         'min': 10,
         'severity': SEVERITY_WARNING,
-        'category': CATEGORY_IN_RANGE_CHECKING,
     }, {
         'table_name': 'PropertyState',
         'field': 'generation_date',
@@ -191,7 +136,6 @@ RULES_RANGE_CHECKS = [
         'min': 18890101,
         'max': 20201231,
         'severity': SEVERITY_ERROR,
-        'category': CATEGORY_IN_RANGE_CHECKING,
     }, {
         'table_name': 'PropertyState',
         'field': 'gross_floor_area',
@@ -201,7 +145,6 @@ RULES_RANGE_CHECKS = [
         'max': 7000000,
         'severity': SEVERITY_ERROR,
         'units': 'square feet',
-        'category': CATEGORY_IN_RANGE_CHECKING,
     }, {
         'table_name': 'PropertyState',
         'field': 'occupied_floor_area',
@@ -211,7 +154,6 @@ RULES_RANGE_CHECKS = [
         'max': 7000000,
         'severity': SEVERITY_ERROR,
         'units': 'square feet',
-        'category': CATEGORY_IN_RANGE_CHECKING,
     }, {
         'table_name': 'PropertyState',
         'field': 'recent_sale_date',
@@ -220,7 +162,6 @@ RULES_RANGE_CHECKS = [
         'min': 18890101,
         'max': 20201231,
         'severity': SEVERITY_ERROR,
-        'category': CATEGORY_IN_RANGE_CHECKING,
     }, {
         'table_name': 'PropertyState',
         'field': 'release_date',
@@ -229,7 +170,6 @@ RULES_RANGE_CHECKS = [
         'min': 18890101,
         'max': 20201231,
         'severity': SEVERITY_ERROR,
-        'category': CATEGORY_IN_RANGE_CHECKING,
     }, {
         'table_name': 'PropertyState',
         'field': 'site_eui',
@@ -239,7 +179,6 @@ RULES_RANGE_CHECKS = [
         'max': 1000,
         'severity': SEVERITY_ERROR,
         'units': 'kBtu/sq. ft./year',
-        'category': CATEGORY_IN_RANGE_CHECKING,
     }, {
         'table_name': 'PropertyState',
         'field': 'site_eui',
@@ -248,7 +187,6 @@ RULES_RANGE_CHECKS = [
         'min': 10,
         'severity': SEVERITY_WARNING,
         'units': 'kBtu/sq. ft./year',
-        'category': CATEGORY_IN_RANGE_CHECKING,
     }, {
         'table_name': 'PropertyState',
         'field': 'site_eui_weather_normalized',
@@ -258,7 +196,6 @@ RULES_RANGE_CHECKS = [
         'max': 1000,
         'severity': SEVERITY_ERROR,
         'units': 'kBtu/sq. ft./year',
-        'category': CATEGORY_IN_RANGE_CHECKING,
     }, {
         'table_name': 'PropertyState',
         'field': 'source_eui',
@@ -268,7 +205,6 @@ RULES_RANGE_CHECKS = [
         'max': 1000,
         'severity': SEVERITY_ERROR,
         'units': 'kBtu/sq. ft./year',
-        'category': CATEGORY_IN_RANGE_CHECKING,
     }, {
         'table_name': 'PropertyState',
         'field': 'source_eui',
@@ -277,7 +213,6 @@ RULES_RANGE_CHECKS = [
         'min': 10,
         'severity': SEVERITY_WARNING,
         'units': 'kBtu/sq. ft./year',
-        'category': CATEGORY_IN_RANGE_CHECKING,
     }, {
         'table_name': 'PropertyState',
         'field': 'source_eui_weather_normalized',
@@ -287,7 +222,6 @@ RULES_RANGE_CHECKS = [
         'max': 1000,
         'severity': SEVERITY_ERROR,
         'units': 'kBtu/sq. ft./year',
-        'category': CATEGORY_IN_RANGE_CHECKING,
     }
 ]
 
@@ -345,9 +279,10 @@ class Rule(models.Model):
     table_name = models.CharField(max_length=200, default='PropertyState', blank=True)
     field = models.CharField(max_length=200)
     enabled = models.BooleanField(default=True)
-    category = models.IntegerField(choices=CATEGORIES)
     data_type = models.IntegerField(choices=DATA_TYPES, null=True)
     rule_type = models.IntegerField(choices=RULE_TYPE, null=True)
+    required = models.BooleanField(default=False)
+    not_null = models.BooleanField(default=False)
     min = models.FloatField(null=True)
     max = models.FloatField(null=True)
     severity = models.IntegerField(choices=SEVERITY)
@@ -453,7 +388,6 @@ class DataQualityCheck(models.Model):
                     self.results[datum.id][field] = getattr(datum, field)
                 self.results[datum.id]['data_quality_results'] = []
 
-            # self._missing_matching_field(datum)
             self._in_range_checking(datum)
             self._missing_values(datum)
             # self._data_type_check(datum)
@@ -472,65 +406,38 @@ class DataQualityCheck(models.Model):
     def reset_results(self):
         self.results = {}
 
-    def _missing_matching_field(self, datum):
-        """
-        Look for fields in the database that are not matched. Missing is
-        defined as a None in the database
-
-        :param datum: Database record containing the BS version of the fields populated
-        :return: None
-
-        # TODO: NL: Should we check the extra_data field for the data?
-        """
-
-        for rule in self.rules.filter(category=CATEGORY_MISSING_MATCHING_FIELD,
-                                      enabled=True).order_by('field', 'severity'):
-            if hasattr(datum, rule.field):
-                value = getattr(datum, rule.field)
-                display_name = self.column_lookup[(rule.table_name, rule.field)]
-                if value is None:
-                    # Field exists but the value is None. Register a data_quality error
-                    self.results[datum.id]['data_quality_results'].append({
-                        'field': rule.field,
-                        'formatted_field': display_name,
-                        'value': value,
-                        'message': display_name + ' field not found',
-                        'detailed_message': display_name + ' field not found',
-                        'severity': rule.get_severity_display(),
-                    })
-
-    def _missing_values(self, datum):
-        """
-        Look for fields in the database that are empty. Need to know the list
-        of fields that are part of the data_quality section.
-
-        The original intent of this method would be very intensive to run
-        (looking at all fields except the ignored).
-        This method was changed to check for required values.
-
-        :param datum: Database record containing the BS version of the fields populated
-        :return: None
-        """
-        for rule in self.rules.filter(category=CATEGORY_MISSING_VALUES,
-                                      enabled=True).order_by('field', 'severity'):
-            if hasattr(datum, rule.field):
-                value = getattr(datum, rule.field)
-                display_name = ''
-                try:
-                    display_name = self.column_lookup[(rule.table_name, rule.field)]
-                except KeyError:
-                    pass
-
-                if value == '':
-                    # Field exists but the value is empty. Register a data_quality error
-                    self.results[datum.id]['data_quality_results'].append({
-                        'field': rule.field,
-                        'formatted_field': display_name,
-                        'value': value,
-                        'message': display_name + ' is missing',
-                        'detailed_message': display_name + ' is missing',
-                        'severity': rule.get_severity_display()
-                    })
+    # def _missing_values(self, datum):
+    #     """
+    #     Look for fields in the database that are empty. Need to know the list
+    #     of fields that are part of the data_quality section.
+    #
+    #     The original intent of this method would be very intensive to run
+    #     (looking at all fields except the ignored).
+    #     This method was changed to check for required values.
+    #
+    #     :param datum: Database record containing the BS version of the fields populated
+    #     :return: None
+    #     """
+    #     for rule in self.rules.filter(category=CATEGORY_MISSING_VALUES,
+    #                                   enabled=True).order_by('field', 'severity'):
+    #         if hasattr(datum, rule.field):
+    #             value = getattr(datum, rule.field)
+    #             display_name = ''
+    #             try:
+    #                 display_name = self.column_lookup[(rule.table_name, rule.field)]
+    #             except KeyError:
+    #                 pass
+    #
+    #             if value == '':
+    #                 # Field exists but the value is empty. Register a data_quality error
+    #                 self.results[datum.id]['data_quality_results'].append({
+    #                     'field': rule.field,
+    #                     'formatted_field': display_name,
+    #                     'value': value,
+    #                     'message': display_name + ' is missing',
+    #                     'detailed_message': display_name + ' is missing',
+    #                     'severity': rule.get_severity_display()
+    #                 })
 
     def _in_range_checking(self, datum):
         """
@@ -540,8 +447,7 @@ class DataQualityCheck(models.Model):
         :return: None
         """
 
-        for rule in self.rules.filter(
-                category=CATEGORY_IN_RANGE_CHECKING, enabled=True).order_by('field', 'severity'):
+        for rule in self.rules.filter(enabled=True).order_by('field', 'severity'):
             # check if the field exists
             if hasattr(datum, rule.field):
                 value = getattr(datum, rule.field)
@@ -601,38 +507,37 @@ class DataQualityCheck(models.Model):
                         'severity': rule.get_severity_display(),
                     })
 
-    def _data_type_check(self, datum):
-        """
-        Check the data types of the fields. These should never be wrong as
-        these are the data in the database.
-
-        This chunk of code is currently ignored.
-
-        :param datum: Database record containing the BS version of the fields populated
-        :return: None
-        """
-
-        for rule in self.rules.filter(
-                category=CATEGORY_DATA_TYPE_CHECK, enabled=True).order_by('field', 'severity'):
-            # check if the field exists
-            if hasattr(datum, rule.field):
-                value = getattr(datum, rule.field)
-                display_name = self.column_lookup[(rule.table_name, rule.field)]
-
-                # Don't check the out of range errors if the data are empty
-                if value is None:
-                    continue
-
-                if type(value).__name__ != rule.data_type:
-                    self.results[datum.id]['data_quality_results'].append({
-                        'field': rule.field,
-                        'formatted_field': display_name,
-                        'value': value,
-                        'message': display_name + ' value has incorrect data type',
-                        'detailed_message': display_name + ' value ' + str(
-                            value) + ' is not a recognized ' + rule.data_type + ' format',
-                        'severity': rule.get_severity_display(),
-                    })
+    # def _data_type_check(self, datum):
+    #     """
+    #     Check the data types of the fields. These should never be wrong as
+    #     these are the data in the database.
+    #
+    #     This chunk of code is currently ignored.
+    #
+    #     :param datum: Database record containing the BS version of the fields populated
+    #     :return: None
+    #     """
+    #
+    #     for rule in self.rules.filter(enabled=True).order_by('field', 'severity'):
+    #         # check if the field exists
+    #         if hasattr(datum, rule.field):
+    #             value = getattr(datum, rule.field)
+    #             display_name = self.column_lookup[(rule.table_name, rule.field)]
+    #
+    #             # Don't check the out of range errors if the data are empty
+    #             if value is None:
+    #                 continue
+    #
+    #             if type(value).__name__ != rule.data_type:
+    #                 self.results[datum.id]['data_quality_results'].append({
+    #                     'field': rule.field,
+    #                     'formatted_field': display_name,
+    #                     'value': value,
+    #                     'message': display_name + ' value has incorrect data type',
+    #                     'detailed_message': display_name + ' value ' + str(
+    #                         value) + ' is not a recognized ' + rule.data_type + ' format',
+    #                     'severity': rule.get_severity_display(),
+    #                 })
 
     def save_to_cache(self, file_pk):
         """
@@ -656,8 +561,7 @@ class DataQualityCheck(models.Model):
         existing_results = existing_results + l
 
         z = sorted(existing_results, key=lambda k: k['id'])
-        set_cache_raw(DataQualityCheck.cache_key(file_pk), z,
-                      86400)  # save the results for 24 hours
+        set_cache_raw(DataQualityCheck.cache_key(file_pk), z, 86400)  # save the results for 24 hours
 
     def initialize_rules(self):
         """
@@ -665,12 +569,7 @@ class DataQualityCheck(models.Model):
 
         :return: None
         """
-        for rule in RULES_MISSING_MATCHES:
-            self.rules.add(Rule.objects.create(**rule))
-        for rule in RULES_MISSING_VALUES:
-            self.rules.add(Rule.objects.create(**rule))
-
-        for rule in RULES_RANGE_CHECKS:
+        for rule in DEFAULT_RULES:
             self.rules.add(Rule.objects.create(**rule))
 
     def remove_all_rules(self):

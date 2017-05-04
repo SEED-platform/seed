@@ -30,7 +30,7 @@
             <h3>In-Range Checking: Modifying Data Quality Rules</h3>
             <p>From the table below, select the rules that you want to: 1) enable/disable within your organization, and 2) modify the minimum/maximum values to validate against on file upload.</p>
             <div class="right_wide section_action_container"><a ng-click="create_new_rule()">Create a new rule</a></div>
-            <div class="inventory-list-tab-container">
+            <div class="data-quality-tab-container">
                 <ul class="nav nav-tabs" style="margin-bottom:1px;">
                     <li ng-class="{active: rules_type=='properties'}" heading="View by Property">
                         <a ng-click="view('properties')">View by Property</a>
@@ -41,7 +41,7 @@
                 </ul>
             </div>
             <div class="table_list_container has_borders">
-                <table class="table has_no_btm_margin tbody-striped">
+                <table id="data-quality-admin-table" class="table has_no_btm_margin tbody-striped">
                     <thead>
                         <tr>
                             <th class="condensed_head" style="min-width: 33px; width: 33px;"></th>
@@ -58,28 +58,29 @@
                         </tr>
                     </thead>
                     <tbody ng-repeat="rules in rows[rules_type]">
-                        <tr ng-repeat="rule in rules" ng-if="!rule.delete" ng-class="{ 'warning' : rule.new}">
-                            <td class="check is_aligned_center" style="width: 33px;">
-                                <input type="checkbox" ng-model="rule.enabled">
+                        <tr ng-repeat="rule in rules" ng-if="!rule.delete" ng-class="{ 'warning' : rule.new, 'disabled' : !rule.enabled }">
+                            <td class="check is_aligned_center" style="width: 33px;" ng-click="rule.enabled = !rule.enabled">
+                                <input type="checkbox" ng-model="rule.enabled" class="no-click">
                             </td>
                             <td>
                                 <select class="form-control input-sm" ng-model="rule.field" ng-options="col.name as col.displayName for col in all_columns.fields" ng-change="change_field(rule, '{$ rule.field $}', $index)">
                                 </select>
                             </td>
                             <td>
-                                <span>{$ rule.type $}</span>
+                                <select class="form-control input-sm" ng-model="rule.type" ng-options="type.id as type.label for type in field_types"></select>
                             </td>
-                            <td>
-                                <input type="checkbox" ng-model="rule.required">
+                            <td ng-click="rule.required = !rule.required">
+                                <input type="checkbox" ng-model="rule.required" class="no-click">
                             </td>
-                            <td>
-                                <input type="checkbox" ng-model="rule.null">
+                            <td ng-click="rule.null = !rule.null">
+                                <input type="checkbox" ng-model="rule.null" class="no-click">
                             </td>
-                            <td>
-                                <input class="form-control input-sm" type="number" ng-model="rule.min" ng-if="rule.type != 'date'" placeholder="(no minimum)">
+                            <td ng-attr-colspan="{$ rule.type == 'string' && '2' || '1' $}">
+                                <input class="form-control input-sm" type="number" ng-model="rule.min" ng-if="_.includes([null, 'number', 'year'], rule.type)" placeholder="(no minimum)">
+                                <input class="form-control input-sm" type="text" ng-model="rule.min" ng-if="rule.type == 'string'" placeholder="(no text match)">
                                 <input class="form-control input-sm" type="date" ng-model="rule.min" ng-if="rule.type == 'date'">
                             </td>
-                            <td>
+                            <td ng-if="rule.type != 'string'">
                                 <input class="form-control input-sm" type="number" ng-model="rule.max" ng-if="rule.type != 'date'" placeholder="(no maximum)">
                                 <input class="form-control input-sm" type="date" ng-model="rule.max" ng-if="rule.type == 'date'">
                             </td>
@@ -107,7 +108,7 @@
             </div>
         </div>
         <div class="section_content_container">
-            <div class="section_content with_padding pull-right">
+            <div class="section_content with_padding pull-right" style="padding-bottom: 15px;">
                 <button type="button" class="btn btn-default" ng-click="restore_defaults()">Restore Defaults <i class="fa fa-check" ng-show="defaults_restored"></i></button>
                 <button type="button" class="btn btn-primary" ng-click="save_settings()">Save Changes <i class="fa fa-check" ng-show="rules_updated"></i></button>
             </div>

@@ -18,9 +18,6 @@ from rest_framework.decorators import detail_route
 from seed import tasks
 from seed.authentication import SEEDAuthentication
 from seed.data_quality.models import (
-    CATEGORY_MISSING_MATCHING_FIELD,
-    CATEGORY_MISSING_VALUES,
-    CATEGORY_IN_RANGE_CHECKING,
     DATA_TYPES as DATA_QUALITY_DATA_TYPES,
     SEVERITY as DATA_QUALITY_SEVERITY,
     DataQualityCheck,
@@ -805,42 +802,24 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         result = {
             'status': 'success',
-            'missing_matching_field': [],
-            'missing_values': [],
-            'in_range_checking': [],
-            # 'data_type_check': []
+            'rules': []
         }
 
         dq = DataQualityCheck.retrieve(org)
         rules = dq.rules.order_by('field', 'severity')
         for rule in rules:
-            if rule.category == CATEGORY_MISSING_MATCHING_FIELD:
-                result['missing_matching_field'].append({
-                    'table_name': rule.table_name,
-                    'field': rule.field,
-                    'severity': _get_js_rule_severity(rule.severity),
-                })
-            elif rule.category == CATEGORY_MISSING_VALUES:
-                result['missing_values'].append({
-                    'table_name': rule.table_name,
-                    'field': rule.field,
-                    'severity': _get_js_rule_severity(rule.severity),
-                })
-            elif rule.category == CATEGORY_IN_RANGE_CHECKING:
-                result['in_range_checking'].append({
-                    'table_name': rule.table_name,
-                    'field': rule.field,
-                    'enabled': rule.enabled,
-                    'type': _get_js_rule_type(rule.data_type),
-                    'min': rule.min,
-                    'max': rule.max,
-                    'severity': _get_js_rule_severity(rule.severity),
-                    'units': rule.units
-                })
-                # elif rule.category == CATEGORY_DATA_TYPE_CHECK:
-                #     result['data_type_check'].append({
-                #         'field': rule.field
-                #     })
+            result['rules'].append({
+                'table_name': rule.table_name,
+                'field': rule.field,
+                'enabled': rule.enabled,
+                'type': _get_js_rule_type(rule.data_type),
+                'required': rule.required,
+                'not_null': rule.not_null,
+                'min': rule.min,
+                'max': rule.max,
+                'severity': _get_js_rule_severity(rule.severity),
+                'units': rule.units
+            })
 
         return JsonResponse(result)
 
@@ -883,97 +862,97 @@ class OrganizationViewSet(viewsets.ViewSet):
         dq.reset_default_rules()
         return self.data_quality_rules(request, pk)
 
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class('requires_parent_org_owner')
-    @detail_route(methods=['PUT'])
-    def save_data_quality_rules(self, request, pk=None):
-        """
-        Saves an organization's settings: name, query threshold, shared fields.
-        The method passes in all the fields again, so it is okay to remove
-        all the rules in the db, and just recreate them (albiet inefficient)
-        ---
-        parameter_strategy: replace
-        parameters:
-            - name: pk
-              description: Organization ID (Primary key)
-              type: integer
-              required: true
-              paramType: path
-            - name: body
-              description: JSON body containing organization rules information
-              paramType: body
-              pytype: RulesSerializer
-              required: true
-        type:
-            status:
-                type: string
-                description: success or error
-                required: true
-            message:
-                type: string
-                description: error message, if any
-                required: true
-        """
-        # TODO: NLL Move this to the data_quality_checks/1/ API
-        body = request.data
-        try:
-            org = Organization.objects.get(pk=pk)
-        except Organization.DoesNotExist:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'organization does not exist'
-            }, status=status.HTTP_404_NOT_FOUND)
-        if body.get('data_quality_rules') is None:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'missing the data_quality_rules'
-            }, status=status.HTTP_404_NOT_FOUND)
-
-        posted_rules = body['data_quality_rules']
-        updated_rules = []
-        for rule in posted_rules['missing_matching_field']:
-            updated_rules.append(
-                {
-                    'field': rule['field'],
-                    'category': CATEGORY_MISSING_MATCHING_FIELD,
-                    'severity': _get_severity_from_js(rule['severity']),
-                }
-            )
-        for rule in posted_rules['missing_values']:
-            updated_rules.append(
-                {
-                    'field': rule['field'],
-                    'category': CATEGORY_MISSING_VALUES,
-                    'severity': _get_severity_from_js(rule['severity']),
-                }
-            )
-        for rule in posted_rules['in_range_checking']:
-            updated_rules.append(
-                {
-                    'field': rule['field'],
-                    'enabled': rule['enabled'],
-                    'category': CATEGORY_IN_RANGE_CHECKING,
-                    'data_type': _get_rule_type_from_js(rule['type']),
-                    'min': rule['min'],
-                    'max': rule['max'],
-                    'severity': _get_severity_from_js(rule['severity']),
-                    'units': rule['units'],
-                }
-            )
-
-        dq = DataQualityCheck.retrieve(org)
-        dq.remove_all_rules()
-        for rule in updated_rules:
-            try:
-                dq.add_rule(rule)
-            except TypeError as e:
-                return JsonResponse({
-                    'status': 'error',
-                    'message': e,
-                }, status=status.HTTP_400_BAD_REQUEST)
-
-        return JsonResponse({'status': 'success'})
+    # @api_endpoint_class
+    # @ajax_request_class
+    # @has_perm_class('requires_parent_org_owner')
+    # @detail_route(methods=['PUT'])
+    # def save_data_quality_rules(self, request, pk=None):
+    #     """
+    #     Saves an organization's settings: name, query threshold, shared fields.
+    #     The method passes in all the fields again, so it is okay to remove
+    #     all the rules in the db, and just recreate them (albiet inefficient)
+    #     ---
+    #     parameter_strategy: replace
+    #     parameters:
+    #         - name: pk
+    #           description: Organization ID (Primary key)
+    #           type: integer
+    #           required: true
+    #           paramType: path
+    #         - name: body
+    #           description: JSON body containing organization rules information
+    #           paramType: body
+    #           pytype: RulesSerializer
+    #           required: true
+    #     type:
+    #         status:
+    #             type: string
+    #             description: success or error
+    #             required: true
+    #         message:
+    #             type: string
+    #             description: error message, if any
+    #             required: true
+    #     """
+    #     # TODO: NLL Move this to the data_quality_checks/1/ API
+    #     body = request.data
+    #     try:
+    #         org = Organization.objects.get(pk=pk)
+    #     except Organization.DoesNotExist:
+    #         return JsonResponse({
+    #             'status': 'error',
+    #             'message': 'organization does not exist'
+    #         }, status=status.HTTP_404_NOT_FOUND)
+    #     if body.get('data_quality_rules') is None:
+    #         return JsonResponse({
+    #             'status': 'error',
+    #             'message': 'missing the data_quality_rules'
+    #         }, status=status.HTTP_404_NOT_FOUND)
+    #
+    #     posted_rules = body['data_quality_rules']
+    #     updated_rules = []
+    #     for rule in posted_rules['missing_matching_field']:
+    #         updated_rules.append(
+    #             {
+    #                 'field': rule['field'],
+    #                 'category': CATEGORY_MISSING_MATCHING_FIELD,
+    #                 'severity': _get_severity_from_js(rule['severity']),
+    #             }
+    #         )
+    #     for rule in posted_rules['missing_values']:
+    #         updated_rules.append(
+    #             {
+    #                 'field': rule['field'],
+    #                 'category': CATEGORY_MISSING_VALUES,
+    #                 'severity': _get_severity_from_js(rule['severity']),
+    #             }
+    #         )
+    #     for rule in posted_rules['in_range_checking']:
+    #         updated_rules.append(
+    #             {
+    #                 'field': rule['field'],
+    #                 'enabled': rule['enabled'],
+    #                 'category': CATEGORY_IN_RANGE_CHECKING,
+    #                 'data_type': _get_rule_type_from_js(rule['type']),
+    #                 'min': rule['min'],
+    #                 'max': rule['max'],
+    #                 'severity': _get_severity_from_js(rule['severity']),
+    #                 'units': rule['units'],
+    #             }
+    #         )
+    #
+    #     dq = DataQualityCheck.retrieve(org)
+    #     dq.remove_all_rules()
+    #     for rule in updated_rules:
+    #         try:
+    #             dq.add_rule(rule)
+    #         except TypeError as e:
+    #             return JsonResponse({
+    #                 'status': 'error',
+    #                 'message': e,
+    #             }, status=status.HTTP_400_BAD_REQUEST)
+    #
+    #     return JsonResponse({'status': 'success'})
 
     @api_endpoint_class
     @ajax_request_class
