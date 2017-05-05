@@ -13,7 +13,7 @@ from django.test import TestCase
 
 from seed.data_importer import tasks
 from seed.data_importer.models import ImportFile, ImportRecord
-from seed.data_quality.models import DataQualityCheck
+from seed.models.data_quality import DataQualityCheck
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (

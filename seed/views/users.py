@@ -16,7 +16,7 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import list_route, detail_route
 
 from seed.authentication import SEEDAuthentication
-from seed.data_quality.models import (
+from seed.models.data_quality import (
     DATA_TYPES as DATA_QUALITY_DATA_TYPES,
     SEVERITY as DATA_QUALITY_SEVERITY,
 )

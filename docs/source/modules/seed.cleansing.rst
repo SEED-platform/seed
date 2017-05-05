@@ -13,15 +13,7 @@ Submodules
 Models
 ------
 
-.. automodule:: seed.data_quality.models
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-Tasks
------
-
-.. automodule:: seed.data_quality.tasks
+.. automodule:: seed.models.data_quality
     :members:
     :undoc-members:
     :show-inheritance:
@@ -29,15 +21,7 @@ Tasks
 Tests
 -----
 
-.. automodule:: seed.data_quality.tests
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-URLs
-----
-
-.. automodule:: seed.data_quality.urls
+.. automodule:: seed.tests.data_quality
     :members:
     :undoc-members:
     :show-inheritance:
@@ -45,7 +29,7 @@ URLs
 Views
 -----
 
-.. automodule:: seed.data_quality.views
+.. automodule:: seed.views.data_quality
     :members:
     :undoc-members:
     :show-inheritance:

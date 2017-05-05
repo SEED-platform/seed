@@ -8,8 +8,8 @@ import logging
 
 from django.test import TestCase
 
-from seed.data_quality.models import DataQualityCheck, Rule
-from seed.data_quality.models import (
+from seed.models.data_quality import DataQualityCheck, Rule
+from seed.models.data_quality import (
     TYPE_NUMBER,
     RULE_TYPE_DEFAULT,
     SEVERITY_ERROR,

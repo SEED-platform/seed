@@ -9,7 +9,6 @@ Modules
     modules/config
     modules/seed.data
     modules/seed.data_importer
-    modules/seed.data_quality
     modules/seed.features
     modules/seed.green_button
     modules/seed.landing

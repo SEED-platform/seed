@@ -31,8 +31,8 @@ from seed.data_importer.models import (
     ImportRecord,
     STATUS_READY_TO_MERGE,
 )
-from seed.data_quality.models import DataQualityCheck
-from seed.data_quality.tasks import (
+from seed.models.data_quality import DataQualityCheck
+from seed.views.data_quality import (
     finish_checking,
     check_data_chunk,
 )

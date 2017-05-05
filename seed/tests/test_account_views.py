@@ -9,7 +9,7 @@ import json
 from django.core.urlresolvers import reverse_lazy, NoReverseMatch
 from django.test import TestCase
 
-from seed.data_quality.models import (
+from seed.models.data_quality import (
     DataQualityCheck
 )
 from seed.landing.models import SEEDUser as User

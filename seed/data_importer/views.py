@@ -33,7 +33,7 @@ from rest_framework.decorators import parser_classes
 from rest_framework.parsers import MultiPartParser, FormParser
 
 from seed.authentication import SEEDAuthentication
-from seed.data_quality.models import DataQualityCheck
+from seed.models.data_quality import DataQualityCheck
 from seed.data_importer.models import (
     ImportFile,
     ImportRecord
