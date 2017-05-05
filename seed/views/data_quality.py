@@ -155,8 +155,9 @@ Handles Data Quality API operations within Inventory backend.
               required: true
               paramType: query
             - name: data_quality_ids
-              description: IDs of the records to perform data quality checks upon
-              type: list
+              description: An object containing IDs of the records to perform data quality checks on.
+                           Should contain two keys- property_state_ids and taxlot_state_ids, each of which is an array
+                           of appropriate IDs.
               required: true
               paramType: body
         type:
@@ -165,15 +166,18 @@ Handles Data Quality API operations within Inventory backend.
                 description: success or error
                 required: true
         """
+        # step 0: retrieving the data
+        body = request.data
+        tax_lot_state_ids = body['taxlot_state_ids']
+        prop_state_ids = body['property_state_ids']
         # step 1: validate the check IDs all exist
         # step 2: validate the check IDs all belong to this organization ID
         # step 3: validate the actual user belongs to the passed in org ID
         # step 4: kick off a background task
-        task = {'task_id': 1}  # = celery.blahblah(with parameters)
         # step 5: create a new model instance
-        return JsonResponse(task)
+        return JsonResponse({'num_taxlots': len(tax_lot_state_ids), 'num_props': len(prop_state_ids)})
 
-    @list_route(methods=['GET'])
+    @list_route(methods=['POST'])
     def status(self, request):
         """
         This API endpoint will take a task ID and, assuming this user has access
@@ -187,22 +191,23 @@ Handles Data Quality API operations within Inventory backend.
               paramType: query
             - name: task_id
               description: The task ID that was generated from the POST call
-              type: string
               required: true
-              paramType: body
+              paramType: string
         type:
             status:
                 type: string
                 description: success or error
                 required: true
         """
+        # step 0: retrieve the key
+        print(request.query_params)
+        body = request.data
+        task_id = body['task_id']
         # step 1: validate the actual user belongs to the passed in org ID
         # step 2: filter all cleansing instances to those owned by this users organization
         # step 3: validate this task ID exists in the remaining set
-        task = {'task_id': 1}
         # step 4: check celery for the status of the background task
-        status = task  # = celery.checkstatus(ci.background_task_identifier)
-        return JsonResponse(status)
+        return JsonResponse({'status': 'Yep, Im working on task %s' % task_id})
 
     @api_endpoint_class
     @ajax_request_class

@@ -803,7 +803,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
       })
       .state({
         name: 'organization_data_quality',
-        url: '/accounts/{organization_id:int}/data_quality',
+        url: '/accounts/{organization_id:int}/data_quality',  // TODO: Change this to /api/v2/data_quality_checks/?organization_id=1
         templateUrl: static_url + 'seed/partials/data_quality_admin.html',
         controller: 'data_quality_admin_controller',
         resolve: {
