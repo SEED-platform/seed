@@ -7,22 +7,17 @@
 
 # TODO The API is returning on both a POST and GET. Make sure to authenticate.
 
-from django.http import JsonResponse
-from rest_framework import viewsets, serializers
-from rest_framework.decorators import list_route, detail_route
-
-from rest_framework.authentication import SessionAuthentication
-from seed.authentication import SEEDAuthentication
-
-
 from celery import shared_task
 from celery.utils.log import get_task_logger
-from seed.data_importer.models import ImportFile
-from seed.decorators import get_prog_key
-from seed.utils.cache import set_cache
+from django.http import JsonResponse
+from rest_framework import viewsets, serializers
+from rest_framework.authentication import SessionAuthentication
+from rest_framework.decorators import list_route
 
-from seed.utils.api import api_endpoint_class
+from seed.authentication import SEEDAuthentication
+from seed.data_importer.models import ImportFile
 from seed.decorators import ajax_request_class
+from seed.decorators import get_prog_key
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import (
     Organization,
@@ -32,6 +27,8 @@ from seed.models.data_quality import (
     SEVERITY as DATA_QUALITY_SEVERITY,
     DataQualityCheck,
 )
+from seed.utils.api import api_endpoint_class
+from seed.utils.cache import set_cache
 
 logger = get_task_logger(__name__)
 
@@ -150,10 +147,30 @@ Handles Data Quality API operations within Inventory backend.
         """
         This API endpoint will create a new cleansing operation process in the background,
         on potentially a subset of properties/taxlots, and return back a query key
+        ---
+        parameters:
+            - name: organization_id
+              description: Organization ID
+              type: integer
+              required: true
+              paramType: query
+            - name: data_quality_ids
+              description: IDs of the records to perform data quality checks upon
+              type: list
+              required: true
+              paramType: body
+        type:
+            status:
+                type: string
+                description: success or error
+                required: true
         """
-        # kick off a background task
+        # step 1: validate the check IDs all exist
+        # step 2: validate the check IDs all belong to this organization ID
+        # step 3: validate the actual user belongs to the passed in org ID
+        # step 4: kick off a background task
         task = {'task_id': 1}  # = celery.blahblah(with parameters)
-        # step 2: create a new model instance
+        # step 5: create a new model instance
         return JsonResponse(task)
 
     @list_route(methods=['GET'])
@@ -161,29 +178,46 @@ Handles Data Quality API operations within Inventory backend.
         """
         This API endpoint will take a task ID and, assuming this user has access
         to this cleansing operation, returns back a status update
+        ---
+        parameters:
+            - name: organization_id
+              description: Organization ID
+              type: integer
+              required: true
+              paramType: query
+            - name: task_id
+              description: The task ID that was generated from the POST call
+              type: string
+              required: true
+              paramType: body
+        type:
+            status:
+                type: string
+                description: success or error
+                required: true
         """
-        # step 1: filter all cleansing instances to those owned by this users organization
+        # step 1: validate the actual user belongs to the passed in org ID
+        # step 2: filter all cleansing instances to those owned by this users organization
+        # step 3: validate this task ID exists in the remaining set
         task = {'task_id': 1}
-        # step 2: validate this task
-        # step 3: check celery for the status of the background task
+        # step 4: check celery for the status of the background task
         status = task  # = celery.checkstatus(ci.background_task_identifier)
         return JsonResponse(status)
 
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_parent_org_owner')
-    @detail_route(methods=['GET'])
-    def data_quality_rules(self, request, pk=None):
+    @list_route(methods=['GET'])
+    def data_quality_rules(self, request):
         """
         Returns the data_quality rules for an org.
         ---
-        parameter_strategy: replace
         parameters:
-            - name: pk
-              description: Organization ID (Primary key)
+            - name: organization_id
+              description: Organization ID
               type: integer
               required: true
-              paramType: path
+              paramType: query
         type:
             status:
                 type: string
@@ -202,7 +236,7 @@ Handles Data Quality API operations within Inventory backend.
                 required: true
                 description: An array of fields to ignore missing values
         """
-        org = Organization.objects.get(pk=pk)
+        org = Organization.objects.get(pk=request.query_params['organization_id'])
 
         result = {
             'status': 'success',
@@ -230,18 +264,17 @@ Handles Data Quality API operations within Inventory backend.
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_parent_org_owner')
-    @detail_route(methods=['PUT'])
-    def reset_data_quality_rules(self, request, pk=None):
+    @list_route(methods=['PUT'])
+    def reset_data_quality_rules(self, request):
         """
         Resets an organization's data data_quality rules
         ---
-        parameter_strategy: replace
         parameters:
-            - name: pk
-              description: Organization ID (Primary key)
+            - name: organization_id
+              description: Organization ID
               type: integer
               required: true
-              paramType: path
+              paramType: query
         type:
             status:
                 type: string
@@ -260,100 +293,100 @@ Handles Data Quality API operations within Inventory backend.
                 required: true
                 description: An array of fields to ignore missing values
         """
-        org = Organization.objects.get(pk=pk)
+        org = Organization.objects.get(pk=request.query_params['organization_id'])
 
         dq = DataQualityCheck.retrieve(org)
         dq.reset_default_rules()
-        return self.data_quality_rules(request, pk)
+        return self.data_quality_rules(request, request.query_params['organization_id'])
 
-    # @api_endpoint_class
-    # @ajax_request_class
-    # @has_perm_class('requires_parent_org_owner')
-    # @detail_route(methods=['PUT'])
-    # def save_data_quality_rules(self, request, pk=None):
-    #     """
-    #     Saves an organization's settings: name, query threshold, shared fields.
-    #     The method passes in all the fields again, so it is okay to remove
-    #     all the rules in the db, and just recreate them (albiet inefficient)
-    #     ---
-    #     parameter_strategy: replace
-    #     parameters:
-    #         - name: pk
-    #           description: Organization ID (Primary key)
-    #           type: integer
-    #           required: true
-    #           paramType: path
-    #         - name: body
-    #           description: JSON body containing organization rules information
-    #           paramType: body
-    #           pytype: RulesSerializer
-    #           required: true
-    #     type:
-    #         status:
-    #             type: string
-    #             description: success or error
-    #             required: true
-    #         message:
-    #             type: string
-    #             description: error message, if any
-    #             required: true
-    #     """
-    #     # TODO: NLL Move this to the data_quality_checks/1/ API
-    #     body = request.data
-    #     try:
-    #         org = Organization.objects.get(pk=pk)
-    #     except Organization.DoesNotExist:
-    #         return JsonResponse({
-    #             'status': 'error',
-    #             'message': 'organization does not exist'
-    #         }, status=status.HTTP_404_NOT_FOUND)
-    #     if body.get('data_quality_rules') is None:
-    #         return JsonResponse({
-    #             'status': 'error',
-    #             'message': 'missing the data_quality_rules'
-    #         }, status=status.HTTP_404_NOT_FOUND)
-    #
-    #     posted_rules = body['data_quality_rules']
-    #     updated_rules = []
-    #     for rule in posted_rules['missing_matching_field']:
-    #         updated_rules.append(
-    #             {
-    #                 'field': rule['field'],
-    #                 'category': CATEGORY_MISSING_MATCHING_FIELD,
-    #                 'severity': _get_severity_from_js(rule['severity']),
-    #             }
-    #         )
-    #     for rule in posted_rules['missing_values']:
-    #         updated_rules.append(
-    #             {
-    #                 'field': rule['field'],
-    #                 'category': CATEGORY_MISSING_VALUES,
-    #                 'severity': _get_severity_from_js(rule['severity']),
-    #             }
-    #         )
-    #     for rule in posted_rules['in_range_checking']:
-    #         updated_rules.append(
-    #             {
-    #                 'field': rule['field'],
-    #                 'enabled': rule['enabled'],
-    #                 'category': CATEGORY_IN_RANGE_CHECKING,
-    #                 'data_type': _get_rule_type_from_js(rule['type']),
-    #                 'min': rule['min'],
-    #                 'max': rule['max'],
-    #                 'severity': _get_severity_from_js(rule['severity']),
-    #                 'units': rule['units'],
-    #             }
-    #         )
-    #
-    #     dq = DataQualityCheck.retrieve(org)
-    #     dq.remove_all_rules()
-    #     for rule in updated_rules:
-    #         try:
-    #             dq.add_rule(rule)
-    #         except TypeError as e:
-    #             return JsonResponse({
-    #                 'status': 'error',
-    #                 'message': e,
-    #             }, status=status.HTTP_400_BAD_REQUEST)
-    #
-    #     return JsonResponse({'status': 'success'})
+        # @api_endpoint_class
+        # @ajax_request_class
+        # @has_perm_class('requires_parent_org_owner')
+        # @detail_route(methods=['PUT'])
+        # def save_data_quality_rules(self, request, pk=None):
+        #     """
+        #     Saves an organization's settings: name, query threshold, shared fields.
+        #     The method passes in all the fields again, so it is okay to remove
+        #     all the rules in the db, and just recreate them (albiet inefficient)
+        #     ---
+        #     parameter_strategy: replace
+        #     parameters:
+        #         - name: pk
+        #           description: Organization ID (Primary key)
+        #           type: integer
+        #           required: true
+        #           paramType: path
+        #         - name: body
+        #           description: JSON body containing organization rules information
+        #           paramType: body
+        #           pytype: RulesSerializer
+        #           required: true
+        #     type:
+        #         status:
+        #             type: string
+        #             description: success or error
+        #             required: true
+        #         message:
+        #             type: string
+        #             description: error message, if any
+        #             required: true
+        #     """
+        #     # TODO: NLL Move this to the data_quality_checks/1/ API
+        #     body = request.data
+        #     try:
+        #         org = Organization.objects.get(pk=pk)
+        #     except Organization.DoesNotExist:
+        #         return JsonResponse({
+        #             'status': 'error',
+        #             'message': 'organization does not exist'
+        #         }, status=status.HTTP_404_NOT_FOUND)
+        #     if body.get('data_quality_rules') is None:
+        #         return JsonResponse({
+        #             'status': 'error',
+        #             'message': 'missing the data_quality_rules'
+        #         }, status=status.HTTP_404_NOT_FOUND)
+        #
+        #     posted_rules = body['data_quality_rules']
+        #     updated_rules = []
+        #     for rule in posted_rules['missing_matching_field']:
+        #         updated_rules.append(
+        #             {
+        #                 'field': rule['field'],
+        #                 'category': CATEGORY_MISSING_MATCHING_FIELD,
+        #                 'severity': _get_severity_from_js(rule['severity']),
+        #             }
+        #         )
+        #     for rule in posted_rules['missing_values']:
+        #         updated_rules.append(
+        #             {
+        #                 'field': rule['field'],
+        #                 'category': CATEGORY_MISSING_VALUES,
+        #                 'severity': _get_severity_from_js(rule['severity']),
+        #             }
+        #         )
+        #     for rule in posted_rules['in_range_checking']:
+        #         updated_rules.append(
+        #             {
+        #                 'field': rule['field'],
+        #                 'enabled': rule['enabled'],
+        #                 'category': CATEGORY_IN_RANGE_CHECKING,
+        #                 'data_type': _get_rule_type_from_js(rule['type']),
+        #                 'min': rule['min'],
+        #                 'max': rule['max'],
+        #                 'severity': _get_severity_from_js(rule['severity']),
+        #                 'units': rule['units'],
+        #             }
+        #         )
+        #
+        #     dq = DataQualityCheck.retrieve(org)
+        #     dq.remove_all_rules()
+        #     for rule in updated_rules:
+        #         try:
+        #             dq.add_rule(rule)
+        #         except TypeError as e:
+        #             return JsonResponse({
+        #                 'status': 'error',
+        #                 'message': e,
+        #             }, status=status.HTTP_400_BAD_REQUEST)
+        #
+        #     return JsonResponse({'status': 'success'})
