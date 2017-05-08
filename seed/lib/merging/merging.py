@@ -7,14 +7,12 @@
 import logging
 from collections import defaultdict
 
+from seed.lib.mappings.mapping_data import MappingData
 from seed.models import PropertyState
 from seed.models import TaxLotState
-
-LINEAR_UNITS = set([u'ft', u'm', u'in'])  # ??more??
-
 from seed.utils.mapping import get_mappable_columns
-from seed.lib.mappings.mapping_data import MappingData
-from seed.models.deprecate import SYSTEM_MATCH
+
+LINEAR_UNITS = {u'ft', u'm', u'in'}
 
 # TODO: Fix name of this method / remove if possible.
 BuildingSnapshot_to_BuildingSnapshot = tuple([(k, k) for k in get_mappable_columns()])
@@ -30,10 +28,12 @@ _log = logging.getLogger(__name__)
 
 
 def get_attrs_with_mapping(data_set_buildings, mapping):
-    """Returns a dictionary of attributes from each data_set_building.
+    """
+    Returns a dictionary of attributes from each data_set_building.
 
-    :param buildings: list, group of BS instances to merge.
-    :return: BuildingSnapshot dict: possible attributes keyed on attr name.
+    :param data_set_buildings: list, instances to merge.
+    :param mapping:
+    :return: dict: possible attributes keyed on attr name.
 
     .. code-block::python
 
@@ -108,8 +108,7 @@ def merge_extra_data(b1, b2, default=None):
 
     all_keys = set(default_extra_data.keys() + non_default_extra_data.keys())
     extra_data = {
-        k: default_extra_data.get(k) or non_default_extra_data.get(k)
-        for k in all_keys
+        key: default_extra_data.get(key) or non_default_extra_data.get(key) for key in all_keys
     }
 
     for item in extra_data:
@@ -123,19 +122,18 @@ def merge_extra_data(b1, b2, default=None):
     return extra_data, extra_data_sources
 
 
-def merge_state(merged_state, state1, state2, can_attrs, conf, default=None, match_type=None):
-    """Set attributes on our Canonical model, saving differences.
+def merge_state(merged_state, state1, state2, can_attrs, default=None):
+    """
+    Set attributes on our Canonical model, saving differences.
 
     :param merged_state: PropertyState/TaxLotState model inst.
     :param state1: PropertyState/TaxLotState model inst. Left parent.
     :param state2: PropertyState/TaxLotState model inst. Right parent.
-    :param can_attrs: dict of dicts, {'attr_name': {'dataset1': 'value'...}}.
+    :param can_attrs:  dict of dicts, {'attr_name': {'dataset1': 'value'...}}.
     :param default: (optional), which dataset's value to default to.
     :return: inst(``merged_state``), updated.
-
     """
     default = default or state2
-    match_type = match_type or SYSTEM_MATCH
     changes = []
     for attr in can_attrs:
         # Do we have any differences between these fields?
@@ -179,7 +177,6 @@ def merge_state(merged_state, state1, state2, can_attrs, conf, default=None, mat
             setattr(merged_state, attr, attr_value)
             # setattr(merged_state, '{0}_source'.format(attr), attr_source)
 
-    # TODO - deprecate extra_data_sources
     merged_extra_data, merged_extra_data_sources = merge_extra_data(state1, state2, default=default)
 
     merged_state.extra_data = merged_extra_data

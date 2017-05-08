@@ -12,8 +12,7 @@ from django.test import TestCase
 from seed.cleansing.models import Rules, CATEGORY_MISSING_MATCHING_FIELD, \
     CATEGORY_MISSING_VALUES, CATEGORY_IN_RANGE_CHECKING
 from seed.landing.models import SEEDUser as User
-from seed.views.main import _get_default_org
-from seed.views.users import _get_js_role, _get_role_from_js
+from seed.lib.superperms.orgs.exceptions import InsufficientPermission
 from seed.lib.superperms.orgs.models import (
     ROLE_OWNER,
     ROLE_MEMBER,
@@ -21,11 +20,14 @@ from seed.lib.superperms.orgs.models import (
     OrganizationUser,
     Organization
 )
-from seed.lib.superperms.orgs.exceptions import InsufficientPermission
+from seed.models.cycles import Cycle
+from seed.models.properties import PropertyState
+from seed.models.tax_lots import TaxLotState
 from seed.public.models import SharedBuildingField
 from seed.tests.util import FakeRequest
-from unittest import skip
-from seed.models.deprecate import CanonicalBuilding, BuildingSnapshot
+from seed.views.main import _get_default_org
+from seed.views.organizations import _dict_org
+from seed.views.users import _get_js_role, _get_role_from_js
 
 
 class AccountsViewTests(TestCase):
@@ -43,19 +45,14 @@ class AccountsViewTests(TestCase):
         }
         self.user = User.objects.create_user(**user_details)
         self.org = Organization.objects.create(name='my org')
+        self.cycle = Cycle.objects.filter(organization=self.org).first()
         self.org.add_member(self.user)
         self.client.login(**user_details)
         self.fake_request = FakeRequest(user=self.user)
+        self.maxDiff = None
 
-    @skip("Fix for new model -- _dict_org used CanonicalBuilding")
     def test_dict_org(self):
         """_dict_org turns our org structure into a json payload."""
-
-        # the original _dict_org implementation relies on CanonicalBuilding, etc.,
-        # this test is currently skipped, so for the sake of flake8,
-        # create a dummy _dict_org function here
-        def _dict_org(a, b):
-            return {}
 
         expected_single_org_payload = {
             'sub_orgs': [],
@@ -63,8 +60,7 @@ class AccountsViewTests(TestCase):
                 'first_name': u'Johnny',
                 'last_name': u'Energy',
                 'email': u'test_user@demo.com',
-                'id': self.user.pk
-            }],
+                'id': self.user.pk}],
             'number_of_users': 1,
             'name': 'my org',
             'user_role': 'owner',
@@ -73,68 +69,79 @@ class AccountsViewTests(TestCase):
             'org_id': self.org.pk,
             'id': self.org.pk,
             'user_is_owner': True,
-            'num_buildings': 0,
-            'created': self.org.created.strftime('%Y-%m-%d')
+            'cycles': [{
+                'num_taxlots': 0,
+                'num_properties': 0,
+                'name': u'Default 2016 Calendar Year',
+                'cycle_id': self.cycle.pk
+            }],
+            'created': self.org.created.strftime('%Y-%m-%d'),
         }
 
         org_payload = _dict_org(self.fake_request, [self.org])
-
         self.assertEqual(len(org_payload), 1)
         self.assertDictEqual(org_payload[0], expected_single_org_payload)
 
         # Now let's make sure that we pick up related buildings correctly.
         for x in range(10):
-            can = CanonicalBuilding.objects.create()
-            snap = BuildingSnapshot.objects.create()
-            snap.super_organization = self.org
-            snap.save()
+            ps = PropertyState.objects.create(organization=self.org)
+            ps.promote(self.cycle)
+            ps.save()
 
-            can.canonical_snapshot = snap
-            can.save()
+        for x in range(5):
+            ts = TaxLotState.objects.create(organization=self.org)
+            ts.promote(self.cycle)
+            ts.save()
 
-        expected_single_org_payload['num_buildings'] = 10
+        expected_single_org_payload['cycles'] = [{
+            'num_taxlots': 5,
+            'num_properties': 10,
+            'name': u'Default 2016 Calendar Year',
+            'cycle_id': self.cycle.pk
+        }]
         self.assertDictEqual(
             _dict_org(self.fake_request, [self.org])[0],
             expected_single_org_payload
         )
 
-    @skip("Fix for new model -- _dict_org used CanonicalBuilding")
     def test_dic_org_w_member_in_parent_and_child(self):
         """What happens when a user has a role in parent and child."""
 
-        # the original _dict_org implementation relies on CanonicalBuilding, etc.,
-        # this test is currently skipped, so for the sake of flake8,
-        # create a dummy _dict_org function here
-        def _dict_org(a, b):
-            return {}
-
         new_org = Organization.objects.create(name="sub")
+        new_org.parent_org = self.org
+        new_org.save()
+        new_org.add_member(self.user)
+        new_cycle = Cycle.objects.filter(organization=new_org).first()
+
         expected_multiple_org_payload = {
             'sub_orgs': [{
+                'sub_orgs': [],
                 'owners': [{
                     'first_name': u'Johnny',
                     'last_name': u'Energy',
                     'email': u'test_user@demo.com',
-                    'id': self.user.pk
-                }],
+                    'id': self.user.pk}],
                 'number_of_users': 1,
                 'name': 'sub',
-                'sub_orgs': [],
                 'user_role': 'owner',
                 'is_parent': False,
                 'parent_id': self.org.pk,
                 'org_id': new_org.pk,
                 'id': new_org.pk,
                 'user_is_owner': True,
-                'num_buildings': 0,
-                'created': new_org.created.strftime('%Y-%m-%d')
+                'cycles': [{
+                    'num_taxlots': 0,
+                    'num_properties': 0,
+                    'name': u'Default 2016 Calendar Year',
+                    'cycle_id': new_cycle.pk
+                }],
+                'created': self.org.created.strftime('%Y-%m-%d'),
             }],
             'owners': [{
                 'first_name': u'Johnny',
                 'last_name': u'Energy',
                 'email': u'test_user@demo.com',
-                'id': self.user.pk
-            }],
+                'id': self.user.pk}],
             'number_of_users': 1,
             'name': 'my org',
             'user_role': 'owner',
@@ -143,13 +150,14 @@ class AccountsViewTests(TestCase):
             'org_id': self.org.pk,
             'id': self.org.pk,
             'user_is_owner': True,
-            'num_buildings': 0,
-            'created': self.org.created.strftime('%Y-%m-%d')
+            'cycles': [{
+                'num_taxlots': 0,
+                'num_properties': 0,
+                'name': u'Default 2016 Calendar Year',
+                'cycle_id': self.cycle.pk
+            }],
+            'created': self.org.created.strftime('%Y-%m-%d'),
         }
-
-        new_org.parent_org = self.org
-        new_org.save()
-        new_org.add_member(self.user)
 
         org_payload = _dict_org(self.fake_request, Organization.objects.all())
 
@@ -370,7 +378,8 @@ class AccountsViewTests(TestCase):
         self.assertEquals(ou.role_level, ROLE_VIEWER)
 
         resp = self.client.put(
-            reverse_lazy("apiv2:users-update-role", args=[u.id]) + '?organization_id=' + str(self.org.id),
+            reverse_lazy("apiv2:users-update-role", args=[u.id]) + '?organization_id=' + str(
+                self.org.id),
             data=json.dumps(
                 {
                     'organization_id': self.org.id,
@@ -397,7 +406,8 @@ class AccountsViewTests(TestCase):
         self.assertEquals(ou.role_level, ROLE_OWNER)
 
         resp = self.client.put(
-            reverse_lazy("apiv2:users-update-role", args=[self.user.id]) + '?organization_id=' + str(self.org.id),
+            reverse_lazy("apiv2:users-update-role",
+                         args=[self.user.id]) + '?organization_id=' + str(self.org.id),
             data=json.dumps(
                 {
                     'role': 'member',
@@ -424,7 +434,8 @@ class AccountsViewTests(TestCase):
         self.assertEquals(ou.role_level, ROLE_OWNER)
 
         resp = self.client.put(
-            reverse_lazy("apiv2:users-update-role", args=[self.user.id]) + '?organization_id=' + str(self.org.id),
+            reverse_lazy("apiv2:users-update-role",
+                         args=[self.user.id]) + '?organization_id=' + str(self.org.id),
             data=json.dumps(
                 {
                     'organization_id': self.org.id,
@@ -595,19 +606,22 @@ class AccountsViewTests(TestCase):
     def test_get_cleansing_rules_matching(self):
         Rules.objects.create(org=self.org, category=CATEGORY_MISSING_MATCHING_FIELD,
                              field='address_line_1', severity=0)
-        response = self.client.get(reverse_lazy('apiv2:organizations-cleansing-rules', args=[self.org.pk]))
+        response = self.client.get(
+            reverse_lazy('apiv2:organizations-cleansing-rules', args=[self.org.pk]))
         self.assertEqual('success', json.loads(response.content)['status'])
 
     def test_get_cleansing_rules_values(self):
         Rules.objects.create(org=self.org, category=CATEGORY_MISSING_VALUES,
                              field='address_line_1', severity=0)
-        response = self.client.get(reverse_lazy('apiv2:organizations-cleansing-rules', args=[self.org.pk]))
+        response = self.client.get(
+            reverse_lazy('apiv2:organizations-cleansing-rules', args=[self.org.pk]))
         self.assertEqual('success', json.loads(response.content)['status'])
 
     def test_get_cleansing_rules_range(self):
         Rules.objects.create(org=self.org, category=CATEGORY_IN_RANGE_CHECKING,
                              field='address_line_1', severity=0)
-        response = self.client.get(reverse_lazy('apiv2:organizations-cleansing-rules', args=[self.org.pk]))
+        response = self.client.get(
+            reverse_lazy('apiv2:organizations-cleansing-rules', args=[self.org.pk]))
         self.assertEqual('success', json.loads(response.content)['status'])
 
     def test_save_cleansing_rules(self):
@@ -963,7 +977,8 @@ class AuthViewTests(TestCase):
         resp = self.client.get(reverse_lazy("apiv2:users-current-user-id"))
         pk = json.loads(resp.content)['pk']
         resp = self.client.post(
-            reverse_lazy("apiv2:users-is-authorized", args=[pk]) + '?organization_id=' + str(self.org.id),
+            reverse_lazy("apiv2:users-is-authorized", args=[pk]) + '?organization_id=' + str(
+                self.org.id),
             data=json.dumps({
                 'actions': ['requires_owner', 'can_invite_member']
             }),
@@ -989,7 +1004,8 @@ class AuthViewTests(TestCase):
         other_org.parent_org = self.org
         other_org.save()
         resp = self.client.post(
-            reverse_lazy("apiv2:users-is-authorized", args=[self.user.id]) + '?organization_id=' + str(other_org.id),
+            reverse_lazy("apiv2:users-is-authorized",
+                         args=[self.user.id]) + '?organization_id=' + str(other_org.id),
             data=json.dumps({
                 'actions': ['requires_owner', 'can_invite_member']
             }),
@@ -1013,7 +1029,8 @@ class AuthViewTests(TestCase):
         )
         other_org.add_member(other_user)
         resp = self.client.post(
-            reverse_lazy("apiv2:users-is-authorized", args=[self.user.pk]) + '?organization_id=' + str(other_org.id),
+            reverse_lazy("apiv2:users-is-authorized",
+                         args=[self.user.pk]) + '?organization_id=' + str(other_org.id),
             data=json.dumps({
                 'actions': ['requires_owner', 'can_invite_member']
             }),
@@ -1029,7 +1046,8 @@ class AuthViewTests(TestCase):
     def test_is_authorized_org_DNE(self):
         """DNE == does not exist"""
         resp = self.client.post(
-            reverse_lazy("apiv2:users-is-authorized", args=[self.user.pk]) + '?organization_id=' + '9999999',
+            reverse_lazy("apiv2:users-is-authorized",
+                         args=[self.user.pk]) + '?organization_id=' + '9999999',
             data=json.dumps({
                 'actions': ['requires_owner', 'can_invite_member']
             }),
@@ -1045,7 +1063,8 @@ class AuthViewTests(TestCase):
     def test_is_authorized_actions_DNE(self):
         """DNE == does not exist"""
         resp = self.client.post(
-            reverse_lazy("apiv2:users-is-authorized", args=[self.user.pk]) + '?organization_id=' + str(self.org.id),
+            reverse_lazy("apiv2:users-is-authorized",
+                         args=[self.user.pk]) + '?organization_id=' + str(self.org.id),
             data=json.dumps({
                 'organization_id': self.org.id,
             }),

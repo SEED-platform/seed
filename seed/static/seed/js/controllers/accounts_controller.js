@@ -24,12 +24,11 @@ angular.module('BE.seed.controller.accounts', [])
         modalInstance.result.then(
           // modal close()/submit() function
           function () {
-            organization_service.get_organizations()
-              .then(function (data) {
-                organization_payload = data;
-                $scope.$emit('organization_list_updated');
-                init();
-              });
+            organization_service.get_organizations().then(function (data) {
+              organization_payload = data;
+              $scope.$emit('organization_list_updated');
+              init();
+            });
           }, function (message) {
             // dismiss
           });

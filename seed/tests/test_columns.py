@@ -97,31 +97,6 @@ class TestColumns(TestCase):
         self.assertDictEqual(test_mapping, expected)
         self.assertEqual(no_concat, [])
 
-    # def test_save_mappings(self):
-    #     # Test that we can upload a mapping hash
-    #     test_map = [
-    #         # a: field in the db
-    #         # b: field in the datafile
-    #         ["eui", "my energy use intensity"],
-    #         ["best lab", "hawkins"],
-    #         ["concatenated", ["one", "two"]]
-    #     ]
-    #
-    #     seed_models.Column.create_mappings(test_map, self.fake_org,
-    #                                        self.fake_user)
-    #
-    #     test_mapping, _ = ColumnMapping.get_column_mappings(self.fake_org)
-    #
-    #     expected = {
-    #         u'hawkins': u'best lab',
-    #         u'my energy use intensity': u'eui'
-    #     }
-    #     # TODO: Concatenation is broken or never worked... that is why there is only 2
-    #     self.assertDictEqual(expected, test_mapping)
-    #
-    #     c = Column.objects.filter(column_name='hawkins')[0]
-    #     self.assertEqual(c.is_extra_data, True)
-
     def test_save_mappings_dict(self):
         """
         Test the way of saving mappings, which is dict-based instead of list of list of list.
@@ -240,3 +215,170 @@ class TestColumnMapping(TestCase):
     def test_is_concatenated(self):
         self.assertEqual(self.directMapping.is_concatenated(), False)
         self.assertEqual(self.concatenatedMapping.is_concatenated(), True)
+
+
+class TestColumnsByInventory(TestCase):
+
+    def setUp(self):
+        self.fake_user = User.objects.create(username='test')
+        self.fake_org = Organization.objects.create()
+        OrganizationUser.objects.create(
+            user=self.fake_user,
+            organization=self.fake_org
+        )
+
+    def test_column_retrieve_all(self):
+        seed_models.Column.objects.create(
+            column_name=u'Column A',
+            table_name=u'PropertyState',
+            organization=self.fake_org,
+            is_extra_data=True
+        )
+        seed_models.Column.objects.create(
+            column_name=u'id',
+            table_name=u'PropertyState',
+            organization=self.fake_org,
+            is_extra_data=True
+        )
+        seed_models.Column.objects.create(
+            column_name=u'not extra data',
+            table_name=u'PropertyState',
+            organization=self.fake_org,
+            is_extra_data=False
+        )
+        seed_models.Column.objects.create(
+            column_name=u'not mapped data',
+            organization=self.fake_org,
+        )
+
+        columns = Column.retrieve_all(self.fake_org.pk, 'property')
+        # import json
+        # print json.dumps(columns, indent=2)
+
+        # Check for new column
+        c = {
+            'table': u'PropertyState',
+            'extraData': True,
+            'displayName': u'Column A',
+            'name': u'Column A',
+            'related': False,
+        }
+        self.assertIn(c, columns)
+
+        # Check 'id' field if extra_data
+        c = {
+            "table": "PropertyState",
+            "extraData": True,
+            "displayName": "Id",
+            "name": "id_extra",
+            "related": False,
+        }
+        self.assertIn(c, columns)
+
+        # check the 'pinIfNative' argument
+        c = {
+            "name": "pm_property_id",
+            "related": False,
+            "table": "PropertyState",
+            "displayName": "PM Property ID",
+            "dataType": "string",
+            "type": "number",
+            "pinnedLeft": True,
+        }
+        self.assertIn(c, columns)
+
+        # verity that the 'duplicateNameInOtherTable' is working
+        c = {
+            "related": True,
+            "table": "TaxLotState",
+            "displayName": "State (Tax Lot)",
+            "dataType": "string",
+            "name": "tax_state",
+        }
+        self.assertIn(c, columns)
+        self.assertNotIn('not extra data', [d['name'] for d in columns])
+        self.assertNotIn('not mapped data', [d['name'] for d in columns])
+
+    def test_column_retrieve_all_duplicate_error(self):
+        seed_models.Column.objects.create(
+            column_name=u'custom_id_1',
+            table_name=u'PropertyState',
+            organization=self.fake_org,
+            is_extra_data=True
+        )
+
+        with self.assertRaisesRegexp(Exception, 'Duplicate name'):
+            Column.retrieve_all(self.fake_org.pk, 'property')
+
+    def test_column_retrieve_schema(self):
+        schema = {
+            "types": {
+                "pm_property_id": "string",
+                "pm_parent_property_id": "string",
+                "jurisdiction_tax_lot_id": "string",
+                "jurisdiction_property_id": "string",
+                "custom_id_1": "string",
+                "address_line_1": "string",
+                "address_line_2": "string",
+                "city": "string",
+                "state": "string",
+                "postal_code": "string",
+                "primary_tax_lot_id": "string",
+                "calculated_taxlot_ids": "string",
+                "associated_building_tax_lot_id": "string",
+                "associated_tax_lot_ids": "string",
+                "lot_number": "string",
+                "primary": "boolean",
+                "property_name": "string",
+                "campus": "boolean",
+                "gross_floor_area": "float",
+                "use_description": "string",
+                "energy_score": "integer",
+                "site_eui": "float",
+                "property_notes": "string",
+                "property_type": "string",
+                "year_ending": "date",
+                "owner": "string",
+                "owner_email": "string",
+                "owner_telephone": "string",
+                "building_count": "integer",
+                "year_built": "integer",
+                "recent_sale_date": "datetime",
+                "conditioned_floor_area": "float",
+                "occupied_floor_area": "float",
+                "owner_address": "string",
+                "owner_city_state": "string",
+                "owner_postal_code": "string",
+                "home_energy_score_id": "string",
+                "generation_date": "datetime",
+                "release_date": "datetime",
+                "source_eui_weather_normalized": "float",
+                "site_eui_weather_normalized": "float",
+                "source_eui": "float",
+                "energy_alerts": "string",
+                "space_alerts": "string",
+                "building_certification": "string",
+                "number_properties": "integer",
+                "block_number": "string",
+                "district": "string"
+            }
+        }
+        columns = Column.retrieve_db_types()
+        self.assertEqual(schema, columns)
+
+    def test_column_retrieve_db_fields(self):
+        c = Column.retrieve_db_fields()
+
+        data = ['address_line_1', 'address_line_2', 'block_number', 'building_certification',
+                'building_count', 'campus', 'city', 'conditioned_floor_area', 'custom_id_1',
+                'district',
+                'energy_alerts', 'energy_score', 'generation_date', 'gross_floor_area',
+                'home_energy_score_id', 'jurisdiction_property_id', 'jurisdiction_tax_lot_id',
+                'lot_number', 'number_properties', 'occupied_floor_area', 'owner', 'owner_address',
+                'owner_city_state', 'owner_email', 'owner_postal_code', 'owner_telephone',
+                'pm_parent_property_id', 'pm_property_id', 'postal_code', 'property_name',
+                'property_notes', 'property_type', 'recent_sale_date', 'release_date', 'site_eui',
+                'site_eui_weather_normalized', 'source_eui', 'source_eui_weather_normalized',
+                'space_alerts', 'state', 'use_description', 'year_built', 'year_ending']
+
+        self.assertItemsEqual(data, c)

@@ -4,15 +4,16 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-import logging
-import pprint
-import json
-import os
-import requests
 import csv
 import datetime as dt
+import json
+import logging
+import os
+import pprint
 import time
 from calendar import timegm
+
+import requests
 
 
 # Three-step upload process
@@ -36,7 +37,8 @@ def upload_file(upload_header, upload_filepath, main_url, upload_dataset_id, upl
         1. SEED instance signs the upload request.
         2. File is uploaded to S3 with signature included.
         3. Client notifies SEED instance when upload completed.
-        @TODO: Currently can only upload to s3.amazonaws.com, though there are
+
+        Currently can only upload to s3.amazonaws.com, though there are
             other S3-compatible services that could be drop-in replacements.
 
         Args:
@@ -132,11 +134,9 @@ def upload_file(upload_header, upload_filepath, main_url, upload_dataset_id, upl
             'import_record': upload_dataset_id,
             'source_type': upload_datatype
         }
-
-        print upload_url
         return requests.post(upload_url,
                              params=fsysparams,
-                             files={'filename': open(upload_filepath, 'rb')},
+                             files={'file': open(upload_filepath, 'rb')},
                              headers=upload_header)
 
     # Get the upload details.
@@ -149,69 +149,10 @@ def upload_file(upload_header, upload_filepath, main_url, upload_dataset_id, upl
     if upload_details['upload_mode'] == 'S3':
         return _upload_file_to_aws(upload_details)
     elif upload_details['upload_mode'] == 'filesystem':
-        print upload_details
         return _upload_file_to_file_system(upload_details)
     else:
         raise RuntimeError("Upload mode unknown: %s" %
                            upload_details['upload_mode'])
-
-
-def cycles(header, main_url, organization_id, log):
-    print ('API Function: get_cycles\n')
-    partmsg = 'get_cycles'
-    try:
-        result = requests.get(main_url + '/app/get_cycles/',
-                              headers=header,
-                              params={'organization_id': organization_id})
-        print result
-        check_status(result, partmsg, log, PIIDflag='cycles')
-
-        cycles = result.json()['cycles']
-        print "current cycles are {}".format(cycles)
-        for cyc in cycles:
-            if cyc['name'] == 'TestCycle':
-                cycle_id = cyc['id']
-                break
-        else:
-            # Create cycle (only if it doesn't exist, until there is a function to delete cycles)
-            print ('API Function: create_cycle\n')
-            partmsg = 'create_cycle'
-            payload = {
-                'start': "2015-01-01T08:00:00.000Z",
-                'end': "2016-01-01T08:00:00.000Z",
-                'name': "TestCycle"
-            }
-            result = requests.post(main_url + '/app/create_cycle/',
-                                   headers=header,
-                                   params={'organization_id': organization_id},
-                                   data=json.dumps(payload))
-            check_status(result, partmsg, log)
-
-            cycles = result.json()['cycles']
-            for cyc in cycles:
-                if cyc['name'] == 'TestCycle':
-                    cycle_id = cyc['id']
-                    break
-    except:
-        cycle_id = 138
-
-    # Update cycle
-    print ('\nAPI Function: update_cycle')
-    partmsg = 'update_cycle'
-    print cycle_id
-    payload = {
-        'start': "2015-01-01T08:00:00.000Z",
-        'end': "2016-01-01T08:00:00.000Z",
-        'name': "TestCycle",
-        'id': cycle_id
-    }
-    result = requests.put(main_url + '/app/update_cycle/',
-                          headers=header,
-                          params={'organization_id': organization_id},
-                          data=json.dumps(payload))
-    check_status(result, partmsg, log)
-
-    return cycle_id
 
 
 def check_status(result_out, part_msg, log, piid_flag=None):
@@ -243,11 +184,6 @@ def check_status(result_out, part_msg, log, piid_flag=None):
                     elif piid_flag == 'mappings':
                         msg = pprint.pformat(result_out.json()['suggested_column_mappings'],
                                              indent=2, width=70)
-                    elif piid_flag == 'PM_filter':
-                        msg = "Duplicates: " + str(
-                            result_out.json()['duplicates']) + ", Unmatched: " + str(
-                            result_out.json()['unmatched']) + ", Matched: " + str(
-                            result_out.json()['matched'])
                     else:
                         msg = pprint.pformat(result_out.json(), indent=2, width=70)
             except:
@@ -259,7 +195,6 @@ def check_status(result_out, part_msg, log, piid_flag=None):
         log.debug(msg)
     else:
         msg = result_out.reason
-        print msg.json
         log.error(part_msg + failed)
         log.debug(msg)
         raise RuntimeError
@@ -267,41 +202,45 @@ def check_status(result_out, part_msg, log, piid_flag=None):
     return
 
 
-def check_progress(mainURL, Header, progress_key):
+def check_progress(main_url, header, progress_key):
     """Delays the sequence until progress is at 100 percent."""
-    time.sleep(5)
-    progressResult = requests.post(mainURL + '/api/v2/progress/',
-                                   headers=Header,
-                                   data=json.dumps({'progress_key': progress_key}))
+    print "checking progress {}".format(progress_key)
+    time.sleep(1)
+    progress_result = requests.post(
+        main_url + '/api/v2/progress/',
+        headers=header,
+        json={'progress_key': progress_key}
+    )
+    print "... {} ...".format(progress_result.json()['progress'])
 
-    if progressResult.json()['progress'] == 100:
-        return (progressResult)
+    if progress_result.json()['progress'] == 100:
+        return progress_result
     else:
-        progressResult = check_progress(mainURL, Header, progress_key)
+        progress_result = check_progress(main_url, header, progress_key)
+
+    return progress_result
 
 
-def read_map_file(mapfilePath):
+def read_map_file(mapfile_path):
     """Read in the mapping file"""
 
-    assert (os.path.isfile(mapfilePath)), "Cannot find file:\t" + mapfilePath
+    assert (os.path.isfile(mapfile_path)), "Cannot find file:\t" + mapfile_path
 
-    mapReader = csv.reader(open(mapfilePath, 'r'))
-    mapReader.next()  # Skip the header
+    map_reader = csv.reader(open(mapfile_path, 'r'))
+    map_reader.next()  # Skip the header
 
     # Open the mapping file and fill list
     maplist = list()
 
-    for rowitem in mapReader:
-        # formerly
-        # maplist.append(rowitem)
-        # changed to make the test pass
+    for rowitem in map_reader:
         maplist.append(
             {
-                'to_table_name': rowitem[0], 'to_field': rowitem[1],
-                # rowitem only has 2 values, lets make this one up
-                'from_field': rowitem[0]
+                'from_field': rowitem[0],
+                'to_table_name': rowitem[1],
+                'to_field': rowitem[2],
             }
         )
+
     return maplist
 
 
@@ -310,8 +249,8 @@ def setup_logger(filename, write_file=True):
 
     logging.getLogger("requests").setLevel(logging.WARNING)
 
-    logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG)
+    _log = logging.getLogger()
+    _log.setLevel(logging.DEBUG)
 
     formatter = logging.Formatter('%(message)s')
     formatter_console = logging.Formatter('%(levelname)s - %(message)s')
@@ -320,14 +259,14 @@ def setup_logger(filename, write_file=True):
         fh = logging.FileHandler(filename, mode='a')
         fh.setLevel(logging.DEBUG)
         fh.setFormatter(formatter)
-        logger.addHandler(fh)
+        _log.addHandler(fh)
 
     ch = logging.StreamHandler()
     ch.setLevel(logging.INFO)
     ch.setFormatter(formatter_console)
-    logger.addHandler(ch)
+    _log.addHandler(ch)
 
-    return logger
+    return _log
 
 
 def write_out_django_debug(partmsg, result):

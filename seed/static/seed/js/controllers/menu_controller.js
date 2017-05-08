@@ -200,6 +200,9 @@ angular.module('BE.seed.controller.menu', [])
             },
             dataset: function () {
               return {};
+            },
+            organization: function () {
+              return $scope.menu.user.organization;
             }
           }
         });

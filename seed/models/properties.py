@@ -30,7 +30,7 @@ from seed.utils.address import normalize_address_str
 from seed.utils.generic import split_model_fields, obj_to_dict
 from seed.utils.time import convert_datestr
 
-logger = logging.getLogger(__name__)
+_log = logging.getLogger(__name__)
 
 # Oops! we override a builtin in some of the models
 property_decorator = property
@@ -128,6 +128,7 @@ class PropertyState(models.Model):
     space_alerts = models.TextField(null=True, blank=True)
     building_certification = models.CharField(max_length=255, null=True, blank=True)
 
+    # TODO: CLEANUP -- https://docs.djangoproject.com/en/1.9/ref/contrib/postgres/fields/#jsonfield
     extra_data = JsonField(default={}, blank=True)
 
     def promote(self, cycle):
@@ -147,14 +148,14 @@ class PropertyState(models.Model):
         pvs = PropertyView.objects.filter(cycle=cycle, state=self)
 
         if len(pvs) == 0:
-            logger.debug("Found 0 PropertyViews, adding property, promoting")
+            _log.debug("Found 0 PropertyViews, adding property, promoting")
             # There are no PropertyViews for this property state and cycle.
             # Most likely there is nothing to match right now, so just
             # promote it to the view
 
             # Need to create a property for this state
             if self.organization is None:
-                print "organization is None"
+                _log.debug("organization is None")
 
             if not self.organization:
                 pdb.set_trace()
@@ -169,35 +170,26 @@ class PropertyState(models.Model):
 
             return pv
         elif len(pvs) == 1:
-            logger.debug("Found 1 PropertyView... Nothing to do")
+            _log.debug("Found 1 PropertyView... Nothing to do")
             # PropertyView already exists for cycle and state. Nothing to do.
 
             return pvs[0]
         else:
-            logger.debug("Found %s PropertyView" % len(pvs))
-            logger.debug("This should never occur, famous last words?")
+            _log.debug("Found %s PropertyView" % len(pvs))
+            _log.debug("This should never occur, famous last words?")
 
             return None
 
     def __unicode__(self):
-        return u'Property State - %s' % (self.pk)
+        return u'Property State - %s' % self.pk
 
-    def clean(self, *args, **kwargs):
+    def clean(self):
         date_field_names = (
             'year_ending',
             'generation_date',
             'release_date',
             'recent_sale_date'
         )
-
-        # TODO: Where to put in the custom_id_1
-        # custom_id_1 = getattr(self, 'custom_id_1')
-        # if isinstance(custom_id_1, unicode):
-        #     custom_id_1 = unicodedata.normalize('NFKD', custom_id_1).encode(
-        #         'ascii', 'ignore'
-        #     )
-        # if custom_id_1 and len(str(custom_id_1)) > 128:
-        #     self.custom_id_1 = custom_id_1[:128]
         for field in date_field_names:
             value = getattr(self, field)
             if value and isinstance(value, basestring):
@@ -242,14 +234,6 @@ class PropertyState(models.Model):
         return d
 
     def save(self, *args, **kwargs):
-        # first check if the <unique id> isn't already in the database for the
-        # organization - potential todo--move this to a unique constraint of the db.
-        # TODO: Decide if we should allow the user to define what the unique ID is for the taxlot
-        # if PropertyState.objects.filter(jurisdiction_tax_lot_id=self.jurisdiction_tax_lot_id,
-        #                               organization=self.organization).exists():
-        #     logger.error("PropertyState already exists for the same <unique id> and org")
-        #     return False
-
         # Calculate and save the normalized address
         if self.address_line_1 is not None:
             self.normalized_address = normalize_address_str(self.address_line_1)
@@ -269,7 +253,7 @@ class PropertyView(models.Model):
     # labels = models.ManyToManyField(StatusLabel)
 
     def __unicode__(self):
-        return u'Property View - %s' % (self.pk)
+        return u'Property View - %s' % self.pk
 
     class Meta:
         unique_together = ('property', 'cycle',)

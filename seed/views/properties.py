@@ -7,7 +7,7 @@
 import itertools
 import json
 import re
-
+from collections import defaultdict
 from os import path
 
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -186,24 +186,38 @@ class PropertyViewSet(GenericViewSet):
             pk__in=taxlot_view_ids)
 
         # Map tax lot view id to tax lot view's state data, so we can reference these easily and save some queries.
+        db_columns = Column.retrieve_db_fields()
+        for lot in taxlot_views:
+            # Each object in the response is built from the state data, with related data added on.
+            l = model_to_dict(lot.state, exclude=['extra_data'])
+
+            for extra_data_field, extra_data_value in lot.state.extra_data.items():
+                if extra_data_field == 'id':
+                    extra_data_field += '_extra'
+
+                # Check if the extra data field is already a database field
+                while extra_data_field in db_columns:
+                    extra_data_field += '_extra'
+
         taxlot_map = {}
         for taxlot_view in taxlot_views:
-            taxlot_state_data = model_to_dict(taxlot_view.state, exclude=['extra_data'])
-            taxlot_state_data['taxlot_state_id'] = taxlot_view.state.id
+            l = model_to_dict(taxlot_view.state, exclude=['extra_data'])
+            l['taxlot_state_id'] = taxlot_view.state.id
 
             # Add extra data fields right to this object.
             for extra_data_field, extra_data_value in taxlot_view.state.extra_data.items():
                 if extra_data_field == 'id':
                     extra_data_field += '_extra'
-                while extra_data_field in taxlot_state_data:
+
+                while extra_data_field in db_columns:
                     extra_data_field += '_extra'
-                taxlot_state_data[extra_data_field] = extra_data_value
+
+                l[extra_data_field] = extra_data_value
 
             # Only return the requested rows. speeds up the json string time
-            taxlot_state_data = {key: value for key, value in taxlot_state_data.items() if
-                                 key in columns}
+            l = {key: value for key, value in l.items() if key in columns}
 
-            taxlot_map[taxlot_view.pk] = taxlot_state_data
+            taxlot_map[taxlot_view.pk] = l
             # Replace taxlot_view id with taxlot id
             taxlot_map[taxlot_view.pk]['id'] = taxlot_view.taxlot.id
 
@@ -227,7 +241,8 @@ class PropertyViewSet(GenericViewSet):
             for extra_data_field, extra_data_value in prop.state.extra_data.items():
                 if extra_data_field == 'id':
                     extra_data_field += '_extra'
-                while extra_data_field in p:
+
+                while extra_data_field in db_columns:
                     extra_data_field += '_extra'
 
                 p[extra_data_field] = extra_data_value
@@ -380,8 +395,6 @@ class PropertyViewSet(GenericViewSet):
     @list_route(methods=['GET'])
     def columns(self, request):
         """
-        # TODO: Move this to the columns API as this is not really a properties API
-
         List all property columns
 
         parameters:
@@ -390,276 +403,8 @@ class PropertyViewSet(GenericViewSet):
               required: true
               paramType: query
         """
-
-        """TODO: These property columns should be merged with
-        constants.py:ASSESSOR_FIELDS"""
-
-        columns = [
-            {
-                'name': 'pm_property_id',
-                'displayName': 'PM Property ID',
-                'pinnedLeft': True,
-                'type': 'number',
-                'related': False
-            }, {
-                'name': 'jurisdiction_property_id',
-                'displayName': 'Jurisdiction Property ID',
-                'type': 'numberStr',
-                'related': False
-            }, {
-                'name': 'jurisdiction_tax_lot_id',
-                'displayName': 'Jurisdiction Tax Lot ID',
-                'type': 'numberStr',
-                'related': True
-            }, {
-                'name': 'primary',
-                'displayName': 'Primary/Secondary',
-                'related': True
-            }, {
-                # INCOMPLETE, FIELD DOESN'T EXIST
-                'name': 'associated_tax_lot_ids',
-                'displayName': 'Associated TaxLot IDs',
-                'type': 'number',
-                'related': False
-            }, {
-                'name': 'lot_number',
-                'displayName': 'Associated Building Tax Lot ID',
-                'type': 'numberStr',
-                'related': False
-            }, {
-                'name': 'address_line_1',
-                'displayName': 'Address Line 1 (Property)',
-                'type': 'numberStr',
-                'related': False
-            }, {
-                'name': 'city',
-                'displayName': 'City (Property)',
-                'related': False
-            }, {
-                'name': 'property_name',
-                'displayName': 'Property Name',
-                'related': False
-            }, {
-                'name': 'campus',
-                'displayName': 'Campus',
-                'type': 'boolean',
-                'related': False
-            }, {
-                # INCOMPLETE, FIELD DOESN'T EXIST
-                'name': 'pm_parent_property_id',
-                'displayName': 'PM Parent Property ID',
-                'type': 'numberStr',
-                'related': False
-            }, {
-                'name': 'gross_floor_area',
-                'displayName': 'Gross Floor Area',
-                'type': 'number',
-                'related': False
-            }, {
-                'name': 'use_description',
-                'displayName': 'Use Description',
-                'related': False
-            }, {
-                'name': 'energy_score',
-                'displayName': 'ENERGY STAR Score',
-                'type': 'number',
-                'related': False
-            }, {
-                'name': 'site_eui',
-                'displayName': 'Site EUI',
-                'type': 'number',
-                'related': False
-            }, {
-                'name': 'property_notes',
-                'displayName': 'Property Notes',
-                'related': False
-            }, {
-                'name': 'property_type',
-                'displayName': 'Property Type',
-                'related': False
-            }, {
-                'name': 'year_ending',
-                'displayName': 'Year Ending',
-                'related': False
-            }, {
-                'name': 'owner',
-                'displayName': 'Owner',
-                'related': False
-            }, {
-                'name': 'owner_email',
-                'displayName': 'Owner Email',
-                'related': False
-            }, {
-                'name': 'owner_telephone',
-                'displayName': 'Owner Telephone',
-                'related': False
-            }, {
-                'name': 'address_line_2',
-                'displayName': 'Address Line 2 (Property)',
-                'type': 'numberStr',
-                'related': False
-            }, {
-                'name': 'state',
-                'displayName': 'State (Property)',
-                'related': False
-            }, {
-                'name': 'postal_code',
-                'displayName': 'Postal Code (Property)',
-                'type': 'numberStr',
-                'related': False
-            }, {
-                'name': 'building_count',
-                'displayName': 'Building Count',
-                'type': 'number',
-                'related': False
-            }, {
-                'name': 'year_built',
-                'displayName': 'Year Built',
-                'type': 'number',
-                'related': False
-            }, {
-                'name': 'recent_sale_date',
-                'displayName': 'Recent Sale Date',
-                'type': 'date',
-                'cellFilter': 'date:\'MM-dd-yyyy\'',
-                'related': False,
-            }, {
-                'name': 'conditioned_floor_area',
-                'displayName': 'Conditioned Floor Area',
-                'type': 'number',
-                'related': False
-            }, {
-                'name': 'occupied_floor_area',
-                'displayName': 'Occupied Floor Area',
-                'type': 'number',
-                'related': False
-            }, {
-                'name': 'owner_address',
-                'displayName': 'Owner Address',
-                'type': 'numberStr',
-                'related': False
-            }, {
-                'name': 'owner_city_state',
-                'displayName': 'Owner City/State',
-                'related': False
-            }, {
-                'name': 'owner_postal_code',
-                'displayName': 'Owner Postal Code',
-                'type': 'number',
-                'related': False
-            }, {
-                'name': 'home_energy_score_id',
-                'displayName': 'Home Energy Score ID',
-                'type': 'numberStr',
-                'related': False
-            }, {
-                'name': 'generation_date',
-                'displayName': 'PM Generation Date',
-                'type': 'date',
-                'cellFilter': 'date:\'MM-dd-yyyy\'',
-                'related': False
-            }, {
-                'name': 'release_date',
-                'displayName': 'PM Release Date',
-                'related': False
-            }, {
-                'name': 'source_eui_weather_normalized',
-                'displayName': 'Source EUI Weather Normalized',
-                'type': 'number',
-                'related': False
-            }, {
-                'name': 'site_eui_weather_normalized',
-                'displayName': 'Site EUI Weather Normalized',
-                'type': 'number',
-                'related': False
-            }, {
-                'name': 'source_eui',
-                'displayName': 'Source EUI',
-                'type': 'number',
-                'related': False
-            }, {
-                'name': 'energy_alerts',
-                'displayName': 'Energy Alerts',
-                'related': False
-            }, {
-                'name': 'space_alerts',
-                'displayName': 'Space Alerts',
-                'related': False
-            }, {
-                'name': 'building_certification',
-                'displayName': 'Building Certification',
-                'related': False
-            }, {
-                'name': 'custom_id_1',
-                'displayName': 'Custom ID 1',
-                'related': False
-            }, {
-                # Modified field name
-                'name': 'tax_address_line_1',
-                'displayName': 'Address Line 1 (Tax Lot)',
-                'type': 'numberStr',
-                'related': True
-            }, {
-                # Modified field name
-                'name': 'tax_address_line_2',
-                'displayName': 'Address Line 2 (Tax Lot)',
-                'type': 'numberStr',
-                'related': True
-            }, {
-                # Modified field name
-                'name': 'tax_city',
-                'displayName': 'City (Tax Lot)',
-                'related': True
-            }, {
-                # Modified field name
-                'name': 'tax_state',
-                'displayName': 'State (Tax Lot)',
-                'related': True
-            }, {
-                # Modified field name
-                'name': 'tax_postal_code',
-                'displayName': 'Postal Code (Tax Lot)',
-                'type': 'number',
-                'related': True
-            }, {
-                'name': 'number_properties',
-                'displayName': 'Number Properties',
-                'type': 'number',
-                'related': True
-            }, {
-                'name': 'block_number',
-                'displayName': 'Block Number',
-                'type': 'number',
-                'related': True
-            }, {
-                'name': 'district',
-                'displayName': 'District',
-                'related': True
-            }
-        ]
-
-        # don't return columns that have no table_name as these are the columns of the import files
-        extra_data_columns = Column.objects.filter(
-            organization_id=request.query_params['organization_id'],
-            is_extra_data=True
-        ).exclude(table_name='').exclude(table_name=None)
-
-        for c in extra_data_columns:
-            name = c.column_name
-            if name == 'id':
-                name += '_extra'
-            while any(col['name'] == name and not col['related'] for col in columns):
-                name += '_extra'
-
-            display_name = c.column_name.title().replace('_', ' ')
-            columns.append(
-                {
-                    'name': name,
-                    'displayName': display_name,
-                    'related': c.table_name != 'PropertyState',
-                    'extraData': True
-                }
-            )
+        organization_id = int(request.query_params.get('organization_id'))
+        columns = Column.retrieve_all(organization_id, 'property')
 
         return JsonResponse({'columns': columns})
 
@@ -669,7 +414,7 @@ class PropertyViewSet(GenericViewSet):
     @list_route(methods=['DELETE'])
     def batch_delete(self, request):
         """
-        List all property columns
+        Batch delete several properties
         ---
         parameters:
             - name: selected
@@ -766,12 +511,11 @@ class PropertyViewSet(GenericViewSet):
                 'date_edited': convert_to_js_timestamp(log.created),
                 'source': log.get_record_type_display(),
                 'filename': filename,
-                'changed_fields': json.loads(log.description) if log.record_type == AUDIT_USER_EDIT else None
+                # 'changed_fields': json.loads(log.description) if log.record_type == AUDIT_USER_EDIT else None
             }
 
         log = PropertyAuditLog.objects.select_related('state', 'parent1', 'parent2').filter(
-            state_id=property_view.state_id,
-            view_id__isnull=True
+            state_id=property_view.state_id
         ).order_by('-id').first()
         master = {
             'state': PropertyStateSerializer(log.state).data,
@@ -779,19 +523,28 @@ class PropertyViewSet(GenericViewSet):
         }
 
         # Traverse parents and add to history
-        if log.name in ['Manual Match', 'System Match']:
+        if log.name in ['Manual Match', 'System Match', 'Merge current state in migration']:
             done_searching = False
             while not done_searching:
-                if log.parent1_id is None and log.parent2_id is None:
+                if (log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
                     done_searching = True
+                elif log.name == 'Merge current state in migration':
+                    record = record_dict(log.parent1)
+                    history.append(record)
+                    if log.parent1.name == 'Import Creation':
+                        done_searching = True
+                    else:
+                        tree = log.parent1
+                        log = tree
                 else:
                     tree = None
-                    if log.parent2.name == 'Import Creation':
-                        record = record_dict(log.parent2)
-                        history.append(record)
-                    else:
-                        tree = log.parent2
-                    if log.parent1.name == 'Import Creation':
+                    if log.parent2:
+                        if log.parent2.name in ['Import Creation', 'Manual Edit']:
+                            record = record_dict(log.parent2)
+                            history.append(record)
+                        else:
+                            tree = log.parent2
+                    if log.parent1.name in ['Import Creation', 'Manual Edit']:
                         record = record_dict(log.parent1)
                         history.append(record)
                     else:
@@ -799,6 +552,11 @@ class PropertyViewSet(GenericViewSet):
 
                     if not tree:
                         done_searching = True
+                    else:
+                        log = tree
+        elif log.name == 'Manual Edit':
+            record = record_dict(log.parent1)
+            history.append(record)
         elif log.name == 'Import Creation':
             record = record_dict(log)
             history.append(record)
@@ -864,8 +622,6 @@ class PropertyViewSet(GenericViewSet):
             new_property_state_data = data['state']
 
             changed = True
-            if new_property_state_data == property_state_data:
-                changed = False
             for key, val in new_property_state_data.iteritems():
                 if val == '':
                     new_property_state_data[key] = None
@@ -880,31 +636,72 @@ class PropertyViewSet(GenericViewSet):
                 )
                 status_code = 422  # status.HTTP_422_UNPROCESSABLE_ENTITY
             else:
+                log = PropertyAuditLog.objects.select_related().filter(
+                    state=property_view.state
+                ).order_by('-id').first()
+
+                if 'extra_data' in new_property_state_data.keys():
+                    property_state_data['extra_data'].update(new_property_state_data.pop('extra_data'))
                 property_state_data.update(new_property_state_data)
-                property_state_data.pop('id')
 
-                new_property_state_serializer = PropertyStateSerializer(
-                    data=property_state_data
-                )
-
-                if new_property_state_serializer.is_valid():
-                    new_state = new_property_state_serializer.save()
-                    property_view.update_state(
-                        new_state, description=changed_fields
+                if log.name == 'Import Creation':
+                    # Add new state
+                    property_state_data.pop('id')
+                    new_property_state_serializer = PropertyStateSerializer(
+                        data=property_state_data
                     )
+                    if new_property_state_serializer.is_valid():
+                        new_state = new_property_state_serializer.save()
+                        property_view.state = new_state
+                        property_view.save()
+
+                        PropertyAuditLog.objects.create(organization=log.organization,
+                                                        parent1=log,
+                                                        parent2=None,
+                                                        parent_state1=log.state,
+                                                        parent_state2=None,
+                                                        state=new_state,
+                                                        name='Manual Edit',
+                                                        description=None,
+                                                        import_filename=log.import_filename,
+                                                        record_type=AUDIT_USER_EDIT)
+
+                        result.update(
+                            {'state': new_property_state_serializer.validated_data}
+                        )
+                        # Removing organization key AND import_file key because they're not JSON-serializable
+                        # TODO find better solution
+                        result['state'].pop('organization')
+                        result['state'].pop('import_file')
+                        status_code = status.HTTP_201_CREATED
+                    else:
+                        result.update(
+                            {'status': 'error', 'message': 'Invalid Data'}
+                        )
+                        status_code = 422  # status.HTTP_422_UNPROCESSABLE_ENTITY
+                elif log.name in ['Manual Edit', 'Manual Match', 'System Match',
+                                  'Merge current state in migration']:
+                    # Override previous edit state or merge state
+                    state = property_view.state
+                    for key, value in new_property_state_data.iteritems():
+                        setattr(state, key, value)
+                    state.save()
+
                     result.update(
-                        {'state': new_property_state_serializer.validated_data}
+                        {'state': PropertyStateSerializer(state).data}
                     )
                     # Removing organization key AND import_file key because they're not JSON-serializable
                     # TODO find better solution
                     result['state'].pop('organization')
                     result['state'].pop('import_file')
+
                     status_code = status.HTTP_201_CREATED
                 else:
-                    result.update(
-                        {'status': 'error', 'message': 'Invalid Data'}
-                    )
-                    status_code = 422  # status.HTTP_422_UNPROCESSABLE_ENTITY
+                    result = {'status': 'error',
+                              'message': 'Unrecognized audit log name: ' + log.name}
+                    status_code = 422
+                    return JsonResponse(result, status=status_code)
+
         else:
             status_code = status.HTTP_404_NOT_FOUND
         return JsonResponse(result, status=status_code)
@@ -980,25 +777,30 @@ class TaxLotViewSet(GenericViewSet):
         property_views = PropertyView.objects.select_related('property', 'state', 'cycle').filter(
             pk__in=property_view_ids)
 
-        # Map property view id to property view's state data, so we can reference these easily and save some queries.
+        db_columns = Column.retrieve_db_fields()
+
+        # Map property view id to property view's state data, so we can reference these easily and
+        # save some queries.
         property_map = {}
         for property_view in property_views:
-            property_data = model_to_dict(property_view.state, exclude=['extra_data'])
-            property_data['property_state_id'] = property_view.state.id
-            property_data['campus'] = property_view.property.campus
+            p = model_to_dict(property_view.state, exclude=['extra_data'])
+            p['property_state_id'] = property_view.state.id
+            p['campus'] = property_view.property.campus
 
             # Add extra data fields right to this object.
             for extra_data_field, extra_data_value in property_view.state.extra_data.items():
                 if extra_data_field == 'id':
                     extra_data_field += '_extra'
-                while extra_data_field in property_data:
+
+                while extra_data_field in db_columns:
                     extra_data_field += '_extra'
-                property_data[extra_data_field] = extra_data_value
+
+                p[extra_data_field] = extra_data_value
 
             # Only return the requested rows. speeds up the json string time
-            property_data = {key: value for key, value in property_data.items() if key in columns}
+            p = {key: value for key, value in p.items() if key in columns}
 
-            property_map[property_view.pk] = property_data
+            property_map[property_view.pk] = p
             # Replace property_view id with property id
             property_map[property_view.pk]['id'] = property_view.property.id
 
@@ -1008,7 +810,6 @@ class TaxLotViewSet(GenericViewSet):
         tuplePropToJurisdictionTL = tuple(
             TaxLotProperty.objects.values_list('property_view_id',
                                                'taxlot_view__state__jurisdiction_tax_lot_id'))
-        from collections import defaultdict
 
         # create a mapping that defaults to an empty list
         propToJurisdictionTL = defaultdict(list)
@@ -1043,12 +844,15 @@ class TaxLotViewSet(GenericViewSet):
             # Each object in the response is built from the state data, with related data added on.
             l = model_to_dict(lot.state, exclude=['extra_data'])
 
-            # TODO - can we just return the "extra_data" json string and do this in JS which has faster loops?
             for extra_data_field, extra_data_value in lot.state.extra_data.items():
                 if extra_data_field == 'id':
                     extra_data_field += '_extra'
-                while extra_data_field in l:
+
+                # Check if the extra data field is already a database field
+                while extra_data_field in db_columns:
                     extra_data_field += '_extra'
+
+                # save to dictionary
                 l[extra_data_field] = extra_data_value
 
             # Use taxlot_id instead of default (state_id)
@@ -1197,7 +1001,7 @@ class TaxLotViewSet(GenericViewSet):
     @list_route(methods=['GET'])
     def columns(self, request):
         """
-        List all property columns
+        List all tax lot columns
         ---
         parameters:
             - name: organization_id
@@ -1205,277 +1009,8 @@ class TaxLotViewSet(GenericViewSet):
               required: true
               paramType: query
         """
-
-        # TODO: Merge this with other schemas. Check https://github.com/SEED-platform/seed/blob/d2bfe96e7503f670300448d5967a2bd6d5863634/seed/lib/mcm/data/SEED/seed.py and  https://github.com/SEED-platform/seed/blob/41c104cd105161c949e9cb379aac946ea9202c74/seed/lib/mappings/mapping_data.py  # noqa
-        columns = [
-            {
-                'name': 'jurisdiction_tax_lot_id',
-                'displayName': 'Jurisdiction Tax Lot ID',
-                'pinnedLeft': True,
-                'type': 'numberStr',
-                'related': False
-            }, {
-                'name': 'primary',
-                'displayName': 'Primary/Secondary',
-                'related': True
-            }, {
-                # INCOMPLETE, FIELD DOESN'T EXIST
-                'name': 'primary_tax_lot_id',
-                'displayName': 'Primary Tax Lot ID',
-                'type': 'number',
-                'related': False
-            }, {
-                # FIELD DOESN'T EXIST
-                'name': 'calculated_taxlot_ids',
-                'displayName': 'Associated TaxLot IDs',
-                'type': 'numberStr',
-                'related': True
-            }, {
-                # INCOMPLETE, FIELD DOESN'T EXIST
-                'name': 'associated_building_tax_lot_id',
-                'displayName': 'Associated Building Tax Lot ID',
-                'type': 'numberStr',
-                'related': False
-            }, {
-                'name': 'address_line_1',
-                'displayName': 'Address Line 1 (Tax Lot)',
-                'type': 'numberStr',
-                'related': False
-            }, {
-                'name': 'address_line_2',
-                'displayName': 'Address Line 2 (Tax Lot)',
-                'type': 'numberStr',
-                'related': False
-            }, {
-                'name': 'city',
-                'displayName': 'City (Tax Lot)',
-                'related': False
-            }, {
-                # Modified field name
-                'name': 'property_address_line_1',
-                'displayName': 'Address Line 1 (Property)',
-                'type': 'numberStr',
-                'related': True
-            }, {
-                # Modified field name
-                'name': 'property_city',
-                'displayName': 'City (Property)',
-                'related': True
-            }, {
-                'name': 'property_name',
-                'displayName': 'Property Name',
-                'related': True
-            }, {
-                'name': 'jurisdiction_property_id',
-                'displayName': 'Jurisdiction Property ID',
-                'type': 'numberStr',
-                'related': True
-            }, {
-                'name': 'pm_property_id',
-                'displayName': 'PM Property ID',
-                'type': 'number',
-                'related': True
-            }, {
-                'name': 'campus',
-                'displayName': 'Campus',
-                'type': 'boolean',
-                'related': True
-            }, {
-                # INCOMPLETE, FIELD DOESN'T EXIST
-                'name': 'pm_parent_property_id',
-                'displayName': 'PM Parent Property ID',
-                'type': 'numberStr',
-                'related': True
-            }, {
-                'name': 'gross_floor_area',
-                'displayName': 'Gross Floor Area',
-                'type': 'number',
-                'related': True
-            }, {
-                'name': 'use_description',
-                'displayName': 'Use Description',
-                'related': True
-            }, {
-                'name': 'energy_score',
-                'displayName': 'ENERGY STAR Score',
-                'type': 'number',
-                'related': True
-            }, {
-                'name': 'site_eui',
-                'displayName': 'Site EUI',
-                'type': 'number',
-                'related': True
-            }, {
-                'name': 'property_notes',
-                'displayName': 'Property Notes',
-                'related': True
-            }, {
-                'name': 'year_ending',
-                'displayName': 'Year Ending',
-                'related': True
-            }, {
-                'name': 'owner',
-                'displayName': 'Owner',
-                'related': True
-            }, {
-                'name': 'owner_email',
-                'displayName': 'Owner Email',
-                'related': True
-            }, {
-                'name': 'owner_telephone',
-                'displayName': 'Owner Telephone',
-                'related': True
-            }, {
-                # Modified field name
-                'name': 'property_address_line_2',
-                'displayName': 'Address Line 2 (Property)',
-                'type': 'numberStr',
-                'related': True
-            }, {
-                # Modified field name
-                'name': 'property_state',
-                'displayName': 'State (Property)',
-                'related': True
-            }, {
-                # Modified field name
-                'name': 'property_postal_code',
-                'displayName': 'Postal Code (Property)',
-                'type': 'number',
-                'related': True
-            }, {
-                'name': 'building_count',
-                'displayName': 'Building Count',
-                'type': 'number',
-                'related': True
-            }, {
-                'name': 'year_built',
-                'displayName': 'Year Built',
-                'type': 'number',
-                'related': True
-            }, {
-                'name': 'recent_sale_date',
-                'displayName': 'Recent Sale Date',
-                'related': True,
-                'type': 'datetime'
-            }, {
-                'name': 'conditioned_floor_area',
-                'displayName': 'Conditioned Floor Area',
-                'type': 'number',
-                'related': True
-            }, {
-                'name': 'occupied_floor_area',
-                'displayName': 'Occupied Floor Area',
-                'type': 'number',
-                'related': True
-            }, {
-                'name': 'owner_address',
-                'displayName': 'Owner Address',
-                'type': 'numberStr',
-                'related': True
-            }, {
-                'name': 'owner_city_state',
-                'displayName': 'Owner City/State',
-                'related': True
-            }, {
-                'name': 'owner_postal_code',
-                'displayName': 'Owner Postal Code',
-                'type': 'number',
-                'related': True
-            }, {
-                'name': 'home_energy_score_id',
-                'displayName': 'Home Energy Score ID',
-                'type': 'numberStr',
-                'related': True
-            }, {
-                'name': 'generation_date',
-                'displayName': 'PM Generation Date',
-                'related': True
-            }, {
-                'name': 'release_date',
-                'displayName': 'PM Release Date',
-                'related': True
-            }, {
-                'name': 'source_eui_weather_normalized',
-                'displayName': 'Source EUI Weather Normalized',
-                'type': 'number',
-                'related': True
-            }, {
-                'name': 'site_eui_weather_normalized',
-                'displayName': 'Site EUI Weather Normalized',
-                'type': 'number',
-                'related': True
-            }, {
-                'name': 'source_eui',
-                'displayName': 'Source EUI',
-                'type': 'number',
-                'related': True
-            }, {
-                'name': 'energy_alerts',
-                'displayName': 'Energy Alerts',
-                'related': True
-            }, {
-                'name': 'space_alerts',
-                'displayName': 'Space Alerts',
-                'related': True
-            }, {
-                'name': 'building_certification',
-                'displayName': 'Building Certification',
-                'related': True
-            }, {
-                'name': 'state',
-                'displayName': 'State (Tax Lot)',
-                'related': False
-            }, {
-                'name': 'postal_code',
-                'displayName': 'Postal Code (Tax Lot)',
-                'type': 'numberStr',
-                'related': False
-            }, {
-                'name': 'number_properties',
-                'displayName': 'Number Properties',
-                'type': 'number',
-                'related': False
-            }, {
-                'name': 'block_number',
-                'displayName': 'Block Number',
-                'related': False
-            }, {
-                'name': 'district',
-                'displayName': 'District',
-                'related': False
-            }, {
-                'name': 'lot_number',
-                'displayName': 'Associated Tax Lot ID',
-                'related': True
-            }, {
-                'name': 'custom_id_1',
-                'displayName': 'Custom ID 1',
-                'related': True
-            }
-        ]
-
-        # don't return columns that have no table_name as these are the columns of the import files
-        extra_data_columns = Column.objects.filter(
-            organization_id=request.query_params['organization_id'],
-            is_extra_data=True
-        ).exclude(table_name='').exclude(table_name=None)
-
-        for c in extra_data_columns:
-            name = c.column_name
-            if name == 'id':
-                name += '_extra'
-            while any(col['name'] == name and not col['related'] for col in columns):
-                name += '_extra'
-
-            display_name = c.column_name.title().replace('_', ' ')
-            columns.append(
-                {
-                    'name': name,
-                    'displayName': display_name,
-                    'related': c.table_name != 'TaxLotState',
-                    'extraData': True
-                }
-            )
+        organization_id = int(request.query_params.get('organization_id'))
+        columns = Column.retrieve_all(organization_id, 'taxlot')
 
         return JsonResponse({'columns': columns})
 
@@ -1485,7 +1020,7 @@ class TaxLotViewSet(GenericViewSet):
     @list_route(methods=['DELETE'])
     def batch_delete(self, request):
         """
-        List all property columns
+        Batch delete several tax lots
         ---
         parameters:
             - name: selected
@@ -1566,12 +1101,11 @@ class TaxLotViewSet(GenericViewSet):
                 'date_edited': convert_to_js_timestamp(log.created),
                 'source': log.get_record_type_display(),
                 'filename': filename,
-                'changed_fields': json.loads(log.description) if log.record_type == AUDIT_USER_EDIT else None
+                # 'changed_fields': json.loads(log.description) if log.record_type == AUDIT_USER_EDIT else None
             }
 
         log = TaxLotAuditLog.objects.select_related('state', 'parent1', 'parent2').filter(
-            state_id=taxlot_view.state_id,
-            view_id__isnull=True
+            state_id=taxlot_view.state_id
         ).order_by('-id').first()
         master = {
             'state': TaxLotStateSerializer(log.state).data,
@@ -1579,19 +1113,28 @@ class TaxLotViewSet(GenericViewSet):
         }
 
         # Traverse parents and add to history
-        if log.name in ['Manual Match', 'System Match']:
+        if log.name in ['Manual Match', 'System Match', 'Merge current state in migration']:
             done_searching = False
             while not done_searching:
-                if log.parent1_id is None and log.parent2_id is None:
+                if (log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
                     done_searching = True
+                elif log.name == 'Merge current state in migration':
+                    record = record_dict(log.parent1)
+                    history.append(record)
+                    if log.parent1.name == 'Import Creation':
+                        done_searching = True
+                    else:
+                        tree = log.parent1
+                        log = tree
                 else:
                     tree = None
-                    if log.parent2.name == 'Import Creation':
-                        record = record_dict(log.parent2)
-                        history.append(record)
-                    else:
-                        tree = log.parent2
-                    if log.parent1.name == 'Import Creation':
+                    if log.parent2:
+                        if log.parent2.name in ['Import Creation', 'Manual Edit']:
+                            record = record_dict(log.parent2)
+                            history.append(record)
+                        else:
+                            tree = log.parent2
+                    if log.parent1.name in ['Import Creation', 'Manual Edit']:
                         record = record_dict(log.parent1)
                         history.append(record)
                     else:
@@ -1599,6 +1142,11 @@ class TaxLotViewSet(GenericViewSet):
 
                     if not tree:
                         done_searching = True
+                    else:
+                        log = tree
+        elif log.name == 'Manual Edit':
+            record = record_dict(log.parent1)
+            history.append(record)
         elif log.name == 'Import Creation':
             record = record_dict(log)
             history.append(record)
@@ -1685,8 +1233,6 @@ class TaxLotViewSet(GenericViewSet):
             new_taxlot_state_data = data['state']
 
             changed = True
-            if new_taxlot_state_data == taxlot_state_data:
-                changed = False
             for key, val in new_taxlot_state_data.iteritems():
                 if val == '':
                     new_taxlot_state_data[key] = None
@@ -1701,31 +1247,72 @@ class TaxLotViewSet(GenericViewSet):
                 )
                 status_code = 422  # status.HTTP_422_UNPROCESSABLE_ENTITY
             else:
+                log = TaxLotAuditLog.objects.select_related().filter(
+                    state=taxlot_view.state
+                ).order_by('-id').first()
+
+                if 'extra_data' in new_taxlot_state_data.keys():
+                    taxlot_state_data['extra_data'].update(new_taxlot_state_data.pop('extra_data'))
                 taxlot_state_data.update(new_taxlot_state_data)
-                taxlot_state_data.pop('id')
 
-                new_taxlot_state_serializer = TaxLotStateSerializer(
-                    data=taxlot_state_data
-                )
-
-                if new_taxlot_state_serializer.is_valid():
-                    new_state = new_taxlot_state_serializer.save()
-                    taxlot_view.update_state(
-                        new_state, description=changed_fields
+                if log.name == 'Import Creation':
+                    # Add new state
+                    taxlot_state_data.pop('id')
+                    new_taxlot_state_serializer = TaxLotStateSerializer(
+                        data=taxlot_state_data
                     )
+                    if new_taxlot_state_serializer.is_valid():
+                        new_state = new_taxlot_state_serializer.save()
+                        taxlot_view.state = new_state
+                        taxlot_view.save()
+
+                        TaxLotAuditLog.objects.create(organization=log.organization,
+                                                      parent1=log,
+                                                      parent2=None,
+                                                      parent_state1=log.state,
+                                                      parent_state2=None,
+                                                      state=new_state,
+                                                      name='Manual Edit',
+                                                      description=None,
+                                                      import_filename=log.import_filename,
+                                                      record_type=AUDIT_USER_EDIT)
+
+                        result.update(
+                            {'state': new_taxlot_state_serializer.validated_data}
+                        )
+                        # Removing organization key AND import_file key because they're not JSON-serializable
+                        # TODO find better solution
+                        result['state'].pop('organization')
+                        result['state'].pop('import_file')
+                        status_code = status.HTTP_201_CREATED
+                    else:
+                        result.update(
+                            {'status': 'error', 'message': 'Invalid Data'}
+                        )
+                        status_code = 422  # status.HTTP_422_UNPROCESSABLE_ENTITY
+                elif log.name in ['Manual Edit', 'Manual Match', 'System Match',
+                                  'Merge current state in migration']:
+                    # Override previous edit state or merge state
+                    state = taxlot_view.state
+                    for key, value in new_taxlot_state_data.iteritems():
+                        setattr(state, key, value)
+                    state.save()
+
                     result.update(
-                        {'state': new_taxlot_state_serializer.validated_data}
+                        {'state': TaxLotStateSerializer(state).data}
                     )
                     # Removing organization key AND import_file key because they're not JSON-serializable
                     # TODO find better solution
                     result['state'].pop('organization')
                     result['state'].pop('import_file')
+
                     status_code = status.HTTP_201_CREATED
                 else:
-                    result.update(
-                        {'status': 'error', 'message': 'Invalid Data'}
-                    )
-                    status_code = 422  # status.HTTP_422_UNPROCESSABLE_ENTITY
+                    result = {'status': 'error',
+                              'message': 'Unrecognized audit log name: ' + log.name}
+                    status_code = 422
+                    return JsonResponse(result, status=status_code)
+
         else:
             status_code = status.HTTP_404_NOT_FOUND
         return JsonResponse(result, status=status_code)

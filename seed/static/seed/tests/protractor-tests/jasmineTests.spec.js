@@ -9,7 +9,7 @@ describe('When I go to jasmine tests', function () {
      it('should run jasmine unit tests and pass', function () {
         browser.get("/app/angular_js_tests");
         var passingBar = $('.passingAlert.bar');
-        browser.wait(EC.presenceOf(passingBar), 15000);
+        browser.wait(EC.presenceOf(passingBar), 20000);
         expect($('.passingAlert.bar').isPresent()).toBe(true);
      });
 });

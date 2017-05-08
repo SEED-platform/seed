@@ -52,7 +52,7 @@
                     </div>
                 </div>
                 <div class="pairing-rows" dragula='"drag-pairing-row"'>
-                    <div class="pairing-data-row grab-pairing-left" ng-repeat="row in newLeftData | filter:leftSearch track by $index ">
+                    <div class="pairing-data-row grab-pairing-left" ng-repeat="row in newLeftData | filter:leftSearch track by $index " title="Drag from here" ng-click="doubleClick('left',$event)">
                         <div class="pairing-data-row-col" leftParentId="{$ getLeftParentId(row) $}" ng-repeat="col in whichColumns('left') track by $index">
                             <div class="pairing-cell">
                                 <span class="pairing-text">{$ row[col] $}</span>
@@ -76,13 +76,13 @@
                     </div>
                 </div>
                 <div class="pairing-rows">
-                    <div class="pairing-data-row" ng-repeat="row in rightData | filter:rightSearch track by $index">
+                    <div class="pairing-data-row" ng-repeat="row in rightData | filter:rightSearch track by $index" title="Drag to here">
                         <div class="pairing-data-row-col" ng-repeat="col in whichColumns('right') track by $index">
                             <div class="pairing-cell">
                                 <span class="pairing-text">{$ row[col] $}</span>
                             </div>
                         </div>
-                        <div class="pairing-child cant-move" rightParentId="{$ getRightParentId(row) $}" dragula='"drag-pairing-row"'>
+                        <div class="pairing-child cant-move" rightParentId="{$ getRightParentId(row) $}" dragula='"drag-pairing-row"' ng-click="doubleClick('right',$event)">
                             <div class="pairing-data-row-indent" ng-if="!whichChildren(row)">
                                 <div class="pairing-data-row-col-indent unpaired">
                                     <div class="pairing-cell">

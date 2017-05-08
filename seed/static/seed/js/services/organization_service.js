@@ -5,13 +5,17 @@
 // organization services
 angular.module('BE.seed.service.organization', []).factory('organization_service', [
   '$http',
-  function ($http) {
+  'naturalSort',
+  function ($http, naturalSort) {
 
     var organization_factory = {total_organizations_for_user: 0};
 
     organization_factory.get_organizations = function () {
       return $http.get('/api/v2/organizations/').then(function (response) {
         organization_factory.total_organizations_for_user = _.has(response.data.organizations, 'length') ? response.data.organizations.length : 0;
+        response.data.organizations = response.data.organizations.sort(function (a, b) {
+          return naturalSort(a.name, b.name);
+        });
         return response.data;
       });
     };
@@ -23,6 +27,9 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
         }
       }).then(function (response) {
         organization_factory.total_organizations_for_user = _.has(response.data.organizations, 'length') ? response.data.organizations.length : 0;
+        response.data.organizations = response.data.organizations.sort(function (a, b) {
+          return naturalSort(a.name, b.name);
+        });
         return response.data;
       });
     };

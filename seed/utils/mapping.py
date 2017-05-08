@@ -40,7 +40,7 @@ def get_mappable_types(exclude_fields=None):
     return results
 
 
-def _get_table_and_column_names(column_mapping, attr_name='column_raw'):
+def get_table_and_column_names(column_mapping, attr_name='column_raw'):
     """Turns the Column.column_names into a serializable list of str."""
     attr = getattr(column_mapping, attr_name, None)
     if not attr:

@@ -13,33 +13,33 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
     'spinner_utility',
     function ($http, urls, label_helper_service, user_service, generated_urls, spinner_utility) {
 
-      var building_factory = {total_number_of_buildings_for_user: 0};
+      var building_factory = {};
 
-      building_factory.get_total_number_of_buildings_for_user = function () {
-        // django uses request.user for user information
-        return $http.get(window.BE.urls.get_total_number_of_buildings_for_user_url).then(function (response) {
-          building_factory.total_number_of_buildings_for_user = response.data.buildings_count;
-          return response.data;
-        });
-      };
-
-      building_factory.get_building = function (building_id) {
-        // django uses request.user for user information
-        return $http.get(window.BE.urls.get_building_url, {
-          params: {
-            building_id: building_id,
-            organization_id: user_service.get_organization().id
-          }
-        }).then(function (response) {
-          _.forEach(response.data.projects, function (project) {
-            var building = project.building;
-            if (building.label) {
-              building.label.label = label_helper_service.lookup_label(building.label.color);
-            }
-          });
-          return response.data;
-        });
-      };
+      // building_factory.get_total_number_of_buildings_for_user = function () {
+      //   // django uses request.user for user information
+      //   return $http.get(window.BE.urls.get_total_number_of_buildings_for_user_url).then(function (response) {
+      //     building_factory.total_number_of_buildings_for_user = response.data.buildings_count;
+      //     return response.data;
+      //   });
+      // };
+      //
+      // building_factory.get_building = function (building_id) {
+      //   // django uses request.user for user information
+      //   return $http.get(window.BE.urls.get_building_url, {
+      //     params: {
+      //       building_id: building_id,
+      //       organization_id: user_service.get_organization().id
+      //     }
+      //   }).then(function (response) {
+      //     _.forEach(response.data.projects, function (project) {
+      //       var building = project.building;
+      //       if (building.label) {
+      //         building.label.label = label_helper_service.lookup_label(building.label.color);
+      //       }
+      //     });
+      //     return response.data;
+      //   });
+      // };
 
       /**
        *
@@ -66,39 +66,6 @@ angular.module('BE.seed.service.building', ['BE.seed.services.label_helper'])
           project_slug: project_slug
         }).then(function (response) {
           spinner_utility.hide();
-          return response.data;
-        });
-      };
-
-      building_factory.save_match = function (source_building_id, target_building_id, create_match) {
-        return $http.post(urls.save_match, {
-          source_building_id: source_building_id,
-          target_building_id: target_building_id,
-          create_match: create_match,
-          organization_id: user_service.get_organization().id
-        }).then(function (response) {
-          return response.data;
-        });
-      };
-
-      building_factory.update_building = function (building, organization_id) {
-        return $http.put(urls.update_building, {
-          building: building,
-          organization_id: organization_id
-        }).then(function (response) {
-          return response.data;
-        });
-      };
-
-
-      building_factory.get_columns = function (all_fields) {
-        all_fields = all_fields || '';
-        return $http.get(window.BE.urls.get_columns_url, {
-          params: {
-            all_fields: all_fields,
-            organization_id: user_service.get_organization().id
-          }
-        }).then(function (response) {
           return response.data;
         });
       };

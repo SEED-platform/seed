@@ -7,7 +7,6 @@ Submodules
 .. toctree::
     :maxdepth: 2
 
-    seed.tests.functional
     seed.test_helpers
 
 Admin Views

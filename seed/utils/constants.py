@@ -4,6 +4,8 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+# These are fields that are ignored when using methods that automatically determine names and
+# cloning records
 EXCLUDE_FIELDS = [
     'best_guess_canonical_building',
     'best_guess_confidence',
@@ -445,3 +447,392 @@ ASSESSOR_FIELDS = [
 
 ASSESSOR_FIELDS_BY_COLUMN = {field['sort_column']: field
                              for field in ASSESSOR_FIELDS}
+
+# TODO: Merge this with other schema
+# https://github.com/SEED-platform/seed/blob/41c104cd105161c949e9cb379aac946ea9202c74/seed/lib/mappings/mapping_data.py  # noqa
+
+
+VIEW_COLUMNS_PROPERTY = [
+    {
+        'name': 'pm_property_id',
+        'table': 'PropertyState',
+        'displayName': 'PM Property ID',
+        'dataType': 'string',
+        'type': 'number',
+        'pinIfNative': True,
+        'dbField': True,
+    }, {
+        'name': 'pm_parent_property_id',
+        'table': 'PropertyState',
+        'displayName': 'PM Parent Property ID',
+        'dataType': 'string',
+        'type': 'numberStr',
+        'dbField': True,
+    }, {
+        'name': 'jurisdiction_tax_lot_id',
+        'table': 'TaxLotState',
+        'displayName': 'Jurisdiction Tax Lot ID',
+        'dataType': 'string',
+        'type': 'numberStr',
+        'pinIfNative': True,
+        'dbField': True,
+    }, {
+        'name': 'jurisdiction_property_id',
+        'table': 'PropertyState',
+        'displayName': 'Jurisdiction Property ID',
+        'dataType': 'string',
+        'type': 'numberStr',
+        'dbField': True,
+    }, {
+        'name': 'custom_id_1',
+        'table': 'PropertyState',
+        'displayName': 'Custom ID 1 (Property)',
+        'dataType': 'string',
+        'duplicateNameInOtherTable': True,
+        'dbField': True,
+    }, {
+        'name': 'custom_id_1',
+        'table': 'TaxLotState',
+        'displayName': 'Custom ID 1 (Tax Lot)',
+        'dataType': 'string',
+        'duplicateNameInOtherTable': True,
+        'dbField': True,
+    }, {
+        'name': 'address_line_1',
+        'table': 'PropertyState',
+        'displayName': 'Address Line 1 (Property)',
+        'dataType': 'string',
+        'type': 'numberStr',
+        'duplicateNameInOtherTable': True,
+        'dbField': True,
+    }, {
+        'name': 'address_line_1',
+        'table': 'TaxLotState',
+        'displayName': 'Address Line 1 (Tax Lot)',
+        'dataType': 'string',
+        'type': 'numberStr',
+        'duplicateNameInOtherTable': True,
+        'dbField': True,
+    }, {
+        'name': 'address_line_2',
+        'table': 'PropertyState',
+        'displayName': 'Address Line 2 (Property)',
+        'dataType': 'string',
+        'type': 'numberStr',
+        'duplicateNameInOtherTable': True,
+        'dbField': True,
+    }, {
+        'name': 'address_line_2',
+        'table': 'TaxLotState',
+        'displayName': 'Address Line 2 (Tax Lot)',
+        'dataType': 'string',
+        'type': 'numberStr',
+        'duplicateNameInOtherTable': True,
+        'dbField': True,
+    }, {
+        'name': 'city',
+        'table': 'PropertyState',
+        'displayName': 'City (Property)',
+        'duplicateNameInOtherTable': True,
+        'dbField': True,
+    }, {
+        'name': 'city',
+        'table': 'TaxLotState',
+        'displayName': 'City (Tax Lot)',
+        'dataType': 'string',
+        'duplicateNameInOtherTable': True,
+        'dbField': True,
+    }, {
+        'name': 'state',
+        'table': 'PropertyState',
+        'displayName': 'State (Property)',
+        'dataType': 'string',
+        'duplicateNameInOtherTable': True,
+        'dbField': True,
+    }, {
+        'name': 'state',
+        'table': 'TaxLotState',
+        'displayName': 'State (Tax Lot)',
+        'dataType': 'string',
+        'duplicateNameInOtherTable': True,
+        'dbField': True,
+    }, {
+        'name': 'postal_code',
+        'table': 'PropertyState',
+        'displayName': 'Postal Code (Property)',
+        'dataType': 'string',
+        'type': 'numberStr',
+        'duplicateNameInOtherTable': True,
+        'dbField': True,
+    }, {
+        'name': 'postal_code',
+        'table': 'TaxLotState',
+        'displayName': 'Postal Code (Tax Lot)',
+        'dataType': 'string',
+        'type': 'numberStr',
+        'duplicateNameInOtherTable': True,
+        'dbField': True,
+    }, {
+        # INCOMPLETE, FIELD DOESN'T EXIST
+        'name': 'primary_tax_lot_id',
+        'table': None,
+        'displayName': 'Primary Tax Lot ID',
+        'dataType': 'string',
+        'type': 'number',
+        # 'dbField': False,
+    }, {
+        # FIELD DOESN'T EXIST
+        'name': 'calculated_taxlot_ids',
+        'table': None,
+        'displayName': 'Associated TaxLot IDs',
+        'dataType': 'string',
+        'type': 'numberStr',
+        'dbField': False,
+    }, {
+        # INCOMPLETE, FIELD DOESN'T EXIST
+        'name': 'associated_building_tax_lot_id',
+        'table': None,
+        'displayName': 'Associated Building Tax Lot ID',
+        'dataType': 'string',
+        'type': 'numberStr',
+        'dbField': False,
+    }, {
+        # INCOMPLETE, FIELD DOESN'T EXIST
+        'name': 'associated_tax_lot_ids',
+        'table': None,
+        'displayName': 'Associated TaxLot IDs',
+        'dataType': 'string',
+        'type': 'number',
+        'dbField': False,
+    }, {
+        # This field should never be mapped to!
+        'name': 'lot_number',
+        'table': 'PropertyState',
+        'displayName': 'Associated Tax Lot ID',
+        'dataType': 'string',
+        'type': 'numberStr',
+        'dbField': True,
+    }, {
+        # INCOMPLETE, FIELD DOESN'T EXIST
+        'name': 'primary',
+        'table': 'TaxLotState',
+        'displayName': 'Primary/Secondary',
+        'dataType': 'boolean',
+        'dbField': False,
+    }, {
+        'name': 'property_name',
+        'table': 'PropertyState',
+        'displayName': 'Property Name',
+        'dataType': 'string',
+        'dbField': True,
+    }, {
+        # This is attached to Property object, not sure what to do here.
+        'name': 'campus',
+        'table': 'PropertyState',
+        'displayName': 'Campus',
+        'dataType': 'boolean',
+        'type': 'boolean',
+        'dbField': True,
+    }, {
+        'name': 'gross_floor_area',
+        'table': 'PropertyState',
+        'displayName': 'Gross Floor Area',
+        'dataType': 'float',
+        'type': 'number',
+        'dbField': True,
+    }, {
+        'name': 'use_description',
+        'table': 'PropertyState',
+        'displayName': 'Use Description',
+        'dataType': 'string',
+        'dbField': True,
+    }, {
+        'name': 'energy_score',
+        'table': 'PropertyState',
+        'displayName': 'ENERGY STAR Score',
+        'dataType': 'integer',
+        'type': 'number',
+        'dbField': True,
+    }, {
+        'name': 'site_eui',
+        'table': 'PropertyState',
+        'displayName': 'Site EUI',
+        'dataType': 'float',
+        'type': 'number',
+        'dbField': True,
+    }, {
+        'name': 'property_notes',
+        'table': 'PropertyState',
+        'displayName': 'Property Notes',
+        'dataType': 'string',
+        'dbField': True,
+    }, {
+        'name': 'property_type',
+        'table': 'PropertyState',
+        'displayName': 'Property Type',
+        'dataType': 'string',
+        'dbField': True,
+    }, {
+        'name': 'year_ending',
+        'table': 'PropertyState',
+        'displayName': 'Year Ending',
+        'dataType': 'date',
+        'dbField': True,
+    }, {
+        'name': 'owner',
+        'table': 'PropertyState',
+        'displayName': 'Owner',
+        'dataType': 'string',
+        'dbField': True,
+    }, {
+        'name': 'owner_email',
+        'table': 'PropertyState',
+        'displayName': 'Owner Email',
+        'dataType': 'string',
+        'dbField': True,
+    }, {
+        'name': 'owner_telephone',
+        'table': 'PropertyState',
+        'displayName': 'Owner Telephone',
+        'dataType': 'string',
+        'dbField': True,
+    }, {
+        'name': 'building_count',
+        'table': 'PropertyState',
+        'displayName': 'Building Count',
+        'dataType': 'integer',
+        'type': 'number',
+        'dbField': True,
+    }, {
+        'name': 'year_built',
+        'table': 'PropertyState',
+        'displayName': 'Year Built',
+        'dataType': 'integer',
+        'type': 'number',
+        'dbField': True,
+    }, {
+        'name': 'recent_sale_date',
+        'table': 'PropertyState',
+        'displayName': 'Recent Sale Date',
+        'dataType': 'datetime',
+        'type': 'date',
+        'cellFilter': 'date:\'MM-dd-yyyy\'',
+        'dbField': True,
+    }, {
+        'name': 'conditioned_floor_area',
+        'table': 'PropertyState',
+        'displayName': 'Conditioned Floor Area',
+        'dataType': 'float',
+        'type': 'number',
+        'dbField': True,
+    }, {
+        'name': 'occupied_floor_area',
+        'table': 'PropertyState',
+        'displayName': 'Occupied Floor Area',
+        'dataType': 'float',
+        'type': 'number',
+        'dbField': True,
+    }, {
+        'name': 'owner_address',
+        'table': 'PropertyState',
+        'displayName': 'Owner Address',
+        'dataType': 'string',
+        'type': 'numberStr',
+        'dbField': True,
+    }, {
+        'name': 'owner_city_state',
+        'table': 'PropertyState',
+        'displayName': 'Owner City/State',
+        'dataType': 'string',
+        'dbField': True,
+    }, {
+        'name': 'owner_postal_code',
+        'table': 'PropertyState',
+        'displayName': 'Owner Postal Code',
+        'dataType': 'string',
+        'type': 'numberStr',
+        'dbField': True,
+    }, {
+        'name': 'home_energy_score_id',
+        'table': 'PropertyState',
+        'displayName': 'Home Energy Score ID',
+        'dataType': 'string',
+        'type': 'numberStr',
+        'dbField': True,
+    }, {
+        'name': 'generation_date',
+        'table': 'PropertyState',
+        'displayName': 'PM Generation Date',
+        'dataType': 'datetime',
+        'type': 'date',
+        'cellFilter': 'date:\'MM-dd-yyyy\'',
+        'dbField': True,
+    }, {
+        'name': 'release_date',
+        'table': 'PropertyState',
+        'displayName': 'PM Release Date',
+        'dataType': 'datetime',
+        'type': 'date',
+        'cellFilter': 'date:\'MM-dd-yyyy\'',
+        'dbField': True,
+    }, {
+        'name': 'source_eui_weather_normalized',
+        'table': 'PropertyState',
+        'displayName': 'Source EUI Weather Normalized',
+        'dataType': 'float',
+        'type': 'number',
+        'dbField': True,
+    }, {
+        'name': 'site_eui_weather_normalized',
+        'table': 'PropertyState',
+        'displayName': 'Site EUI Weather Normalized',
+        'dataType': 'float',
+        'type': 'number',
+        'dbField': True,
+    }, {
+        'name': 'source_eui',
+        'table': 'PropertyState',
+        'displayName': 'Source EUI',
+        'dataType': 'float',
+        'type': 'number',
+        'dbField': True,
+    }, {
+        'name': 'energy_alerts',
+        'table': 'PropertyState',
+        'displayName': 'Energy Alerts',
+        'dataType': 'string',
+        'dbField': True,
+    }, {
+        'name': 'space_alerts',
+        'table': 'PropertyState',
+        'displayName': 'Space Alerts',
+        'dataType': 'string',
+        'dbField': True,
+    }, {
+        'name': 'building_certification',
+        'table': 'PropertyState',
+        'displayName': 'Building Certification',
+        'dataType': 'string',
+        'dbField': True,
+    }, {
+        'name': 'number_properties',
+        'table': 'TaxLotState',
+        'displayName': 'Number Properties',
+        'dataType': 'integer',
+        'type': 'number',
+        'dbField': True,
+    }, {
+        'name': 'block_number',
+        'table': 'TaxLotState',
+        'displayName': 'Block Number',
+        'dataType': 'string',
+        'type': 'numberStr',
+        'dbField': True,
+    }, {
+        'name': 'district',
+        'table': 'TaxLotState',
+        'displayName': 'District',
+        'dataType': 'string',
+        'dbField': True,
+    }
+]

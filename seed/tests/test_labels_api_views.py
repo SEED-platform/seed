@@ -6,11 +6,10 @@
 
 Unit tests for seed/views/labels.py
 """
-from django.test import TestCase
 from django.core.urlresolvers import reverse
-
-from rest_framework.test import APIClient
+from django.test import TestCase
 from rest_framework import status
+from rest_framework.test import APIClient
 
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser

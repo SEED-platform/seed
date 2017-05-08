@@ -23,7 +23,7 @@ angular.module('BE.seed.service.mapping', []).factory('mapping_service', [
      *  }
      */
     mapping_factory.get_column_mapping_suggestions = function (import_file_id) {
-      return $http.get('/api/v2/data_files/' + import_file_id + '/mapping_suggestions/', {
+      return $http.get('/api/v2/import_files/' + import_file_id + '/mapping_suggestions/', {
         params: {
           organization_id: user_service.get_organization().id
         }

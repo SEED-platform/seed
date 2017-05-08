@@ -17,16 +17,18 @@ describe('When I go to the taxlot page', function () {
 		})
 	});
 
-	it('should filter semi colon and expand', function () {
-		var jurisTL = $$('[role="columnheader"]').filter(function(elm) {
-			return elm.getText().then(function (label) {
-				return label.includes('Associated TaxLot IDs');
-			});
-		}).first();
-		jurisTL.$$('[ng-model="colFilter.term"]').first().sendKeys(';');
-	});
+	//Not sure we need this one:
+	// it('should filter semi colon and expand', function () {
+	// 	var jurisTL = $$('[role="columnheader"]').filter(function(elm) {
+	// 		return elm.getText().then(function (label) {
+	// 			return label.includes('Associated TaxLot IDs');
+	// 		});
+	// 	}).first();
+	// 	jurisTL.$$('[ng-model="colFilter.term"]').first().sendKeys(';');
+	// });
 
 	it('should filter', function () {
+		// browser.executeScript("arguments[0].scrollIntoView();", elm.getWebElement());
 		var rows = $('.left.ui-grid-render-container-left.ui-grid-render-container')
 					.all(by.repeater('(rowRenderIndex, row) in rowContainer.renderedRows'));
 
@@ -34,7 +36,7 @@ describe('When I go to the taxlot page', function () {
 			$$('[ng-model="colFilter.term"]').first().sendKeys(label);
 		});
 		//after filter
-		expect(rows.count()).not.toBeLessThan(1);
+		expect(rows.count()).toBe(1);
 
 		//clear by clicking the 'x' -> child of sibling of text input
 		$$('[ng-model="colFilter.term"]').first().element(by.xpath('..')).$('[ui-grid-one-bind-aria-label="aria.removeFilter"]').click();

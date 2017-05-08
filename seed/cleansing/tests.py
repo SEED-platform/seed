@@ -262,9 +262,6 @@ class CleansingDataTestPM(TestCase):
 
         c = Cleansing(self.org)
         c.cleanse('property', qs)
-
-        _log.debug(c.results)
-
         self.assertEqual(len(c.results), 2)
 
         result = [v for v in c.results.values() if v['address_line_1'] == '120243 E True Lane']

@@ -32,7 +32,8 @@ class ColumnViewSet(viewsets.ViewSet):
     @ajax_request_class
     def list(self, request):
         """
-        Retrieves all columns for the user's organization.
+        Retrieves all columns for the user's organization directly from the database. It is
+        typically recommended to use the retrieve_all API endpoint.
         ---
         type:
             status:
@@ -52,8 +53,8 @@ class ColumnViewSet(viewsets.ViewSet):
               paramType: query
         """
 
-        org_id = request.query_params.get('organization_id', None)
-        org = Organization.objects.get(pk=org_id)
+        organization_id = request.query_params.get('organization_id', None)
+        org = Organization.objects.get(pk=organization_id)
         columns = []
         for c in Column.objects.filter(organization=org).order_by('table_name', 'column_name'):
             columns.append(c.to_dict())
@@ -63,6 +64,51 @@ class ColumnViewSet(viewsets.ViewSet):
             'columns': columns,
         })
 
+    @require_organization_id_class
+    @api_endpoint_class
+    @ajax_request_class
+    @list_route(methods=['GET'])
+    def retrieve_all(self, request):
+        """
+        Retrieves all columns for the user's organization including the raw database columns
+
+        Example:
+            /api/v2/columns/retrieve_all/?inventory_type=(property|taxlot)
+        ---
+        type:
+            status:
+                required: true
+                type: string
+                description: Either success or error
+            columns:
+                required: true
+                type: array[column]
+                description: Returns an array where each item is a full column structure.
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+            - name: inventory_type
+              description: Which inventory type is being matched (for related fields and naming).
+                property or taxlot
+              required: true
+              paramType: query
+        """
+        organization_id = request.query_params.get('organization_id', None)
+        inventory_type = request.query_params.get('inventory_type', 'property')
+
+        columns = Column.retrieve_all(organization_id, inventory_type)
+
+        # for c in Column.objects.filter(organization=org).order_by('table_name', 'column_name'):
+        #     columns.append(c.to_dict())
+
+        return JsonResponse({
+            'status': 'success',
+            'columns': columns,
+        })
+
+    @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
     def retrieve(self, request, pk=None):
@@ -87,16 +133,6 @@ class ColumnViewSet(viewsets.ViewSet):
                   paramType: query
         """
         organization_id = request.query_params.get('organization_id', None)
-        if organization_id is None:
-            return JsonResponse(
-                {'status': 'error', 'message': 'Missing organization_id query parameter'},
-                status=status.HTTP_400_BAD_REQUEST)
-        try:
-            organization_id = int(organization_id)
-        except ValueError:
-            return JsonResponse({'status': 'error', 'message': 'Bad (non-numeric) organization_id'},
-                                status=status.HTTP_400_BAD_REQUEST)
-
         valid_orgs = OrganizationUser.objects.filter(
             user_id=request.user.id
         ).values_list('organization_id', flat=True).order_by('organization_id')
@@ -125,6 +161,55 @@ class ColumnViewSet(viewsets.ViewSet):
             'status': 'success',
             'column': c.to_dict(),
         })
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('can_modify_data')
+    @require_organization_id_class
+    @list_route(methods=['POST'])
+    def delete_all(self, request):
+        """
+        Delete all columns for an organization. This method is typically not recommended if there
+        are data in the inventory as it will invalidate all extra_data fields. This also removes
+        all the column mappings that existed.
+
+        ---
+        parameters:
+            - name: organization_id
+              description: The organization_id
+              required: true
+              paramType: query
+        type:
+            status:
+                description: success or error
+                type: string
+                required: true
+            column_mappings_deleted_count:
+                description: Number of column_mappings that were deleted
+                type: integer
+                required: true
+            columns_deleted_count:
+                description: Number of columns that were deleted
+                type: integer
+                required: true
+        """
+        organization_id = request.query_params.get('organization_id', None)
+
+        try:
+            org = Organization.objects.get(pk=organization_id)
+            c_count, cm_count = Column.delete_all(org)
+            return JsonResponse(
+                {
+                    'status': 'success',
+                    'column_mappings_deleted_count': cm_count,
+                    'columns_deleted_count': c_count,
+                }
+            )
+        except Organization.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'organization with with id {} does not exist'.format(organization_id)
+            }, status=status.HTTP_404_NOT_FOUND)
 
 
 class ColumnMappingViewSet(viewsets.ViewSet):
@@ -156,8 +241,8 @@ class ColumnMappingViewSet(viewsets.ViewSet):
               paramType: query
         """
 
-        org_id = request.query_params.get('organization_id', None)
-        org = Organization.objects.get(pk=org_id)
+        organization_id = request.query_params.get('organization_id', None)
+        org = Organization.objects.get(pk=organization_id)
         column_mappings = []
         for cm in ColumnMapping.objects.filter(super_organization=org):
             # find the raw and mapped column
@@ -168,6 +253,7 @@ class ColumnMappingViewSet(viewsets.ViewSet):
             'column_mappings': column_mappings,
         })
 
+    @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
     def retrieve(self, request, pk=None):
@@ -192,16 +278,6 @@ class ColumnMappingViewSet(viewsets.ViewSet):
                   paramType: query
         """
         organization_id = request.query_params.get('organization_id', None)
-        if organization_id is None:
-            return JsonResponse(
-                {'status': 'error', 'message': 'Missing organization_id query parameter'},
-                status=status.HTTP_400_BAD_REQUEST)
-        try:
-            organization_id = int(organization_id)
-        except ValueError:
-            return JsonResponse({'status': 'error', 'message': 'Bad (non-numeric) organization_id'},
-                                status=status.HTTP_400_BAD_REQUEST)
-
         valid_orgs = OrganizationUser.objects.filter(
             user_id=request.user.id
         ).values_list('organization_id', flat=True).order_by('organization_id')
@@ -255,10 +331,10 @@ class ColumnMappingViewSet(viewsets.ViewSet):
                 type: integer
                 required: true
         """
-        org_id = int(request.query_params.get('organization_id', None))
+        organization_id = request.query_params.get('organization_id')
 
         try:
-            org = Organization.objects.get(pk=org_id)
+            org = Organization.objects.get(pk=organization_id)
             delete_count = ColumnMapping.delete_mappings(org)
             return JsonResponse(
                 {
@@ -269,5 +345,5 @@ class ColumnMappingViewSet(viewsets.ViewSet):
         except Organization.DoesNotExist:
             return JsonResponse({
                 'status': 'error',
-                'message': 'organization with with id {} does not exist'.format(org_id)
+                'message': 'organization with with id {} does not exist'.format(organization_id)
             }, status=status.HTTP_404_NOT_FOUND)

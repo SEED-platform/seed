@@ -15,9 +15,6 @@ def get_api_endpoints():
     """
     Examines all views and returns those with is_api_endpoint set
     to true (done by the @api_endpoint decorator).
-
-    ..:todo: this isn't particularly expensive now, but if the number of URLs grows a lot, it may be worth caching
-    this somewhere.
     """
     urlconf = import_module(settings.ROOT_URLCONF)
     urllist = urlconf.urlpatterns

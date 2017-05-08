@@ -44,7 +44,6 @@ from seed.utils.buildings import get_columns as utils_get_columns
 from seed.utils.organizations import create_organization
 
 
-# TODO: _dict_org uses CanonicalBuilding; delete or fix
 def _dict_org(request, organizations):
     """returns a dictionary of an organization's data."""
 
@@ -55,6 +54,7 @@ def _dict_org(request, organizations):
         for c in org_cycles:
             cycles.append({
                 'name': c.name,
+                'cycle_id': c.pk,
                 'num_properties': PropertyView.objects.filter(cycle=c).count(),
                 'num_taxlots': TaxLotView.objects.filter(cycle=c).count()
             })
@@ -441,13 +441,6 @@ class OrganizationViewSet(viewsets.ViewSet):
               required: true
               paramType: path
         """
-        """
-        .. todo::
-
-            check permissions that request.user is owner or admin
-            and get more info about the users.
-        """
-
         try:
             org = Organization.objects.get(pk=pk)
         except ObjectDoesNotExist:
@@ -519,7 +512,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             }, status=status.HTTP_404_NOT_FOUND)
 
         if not OrganizationUser.objects.filter(
-            user=request.user, organization=org, role_level=ROLE_OWNER
+                user=request.user, organization=org, role_level=ROLE_OWNER
         ).exists():
             return JsonResponse({
                 'status': 'error',
@@ -666,7 +659,8 @@ class OrganizationViewSet(viewsets.ViewSet):
         org = Organization.objects.get(pk=pk)
         posted_org = body.get('organization', None)
         if posted_org is None:
-            return JsonResponse({'status': 'error', 'message': 'malformed request'}, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({'status': 'error', 'message': 'malformed request'},
+                                status=status.HTTP_400_BAD_REQUEST)
 
         desired_threshold = posted_org.get('query_threshold', None)
         if desired_threshold is not None:
@@ -760,13 +754,13 @@ class OrganizationViewSet(viewsets.ViewSet):
         }
 
         for exportable_field in SharedBuildingField.objects.filter(
-            org=org, field_type=INTERNAL
+                org=org, field_type=INTERNAL
         ).select_related('field'):
             field_name = exportable_field.field.name
             shared_field = columns[field_name]
             result['shared_fields'].append(shared_field)
         for exportable_field in SharedBuildingField.objects.filter(
-            org=org, field_type=PUBLIC
+                org=org, field_type=PUBLIC
         ).select_related('field'):
             field_name = exportable_field.field.name
             shared_field = columns[field_name]
@@ -842,10 +836,10 @@ class OrganizationViewSet(viewsets.ViewSet):
                     'severity': _get_js_rule_severity(rule.severity),
                     'units': rule.units
                 })
-            # elif rule.category == CATEGORY_DATA_TYPE_CHECK:
-            #     result['data_type_check'].append({
-            #         'field': rule.field
-            #     })
+                # elif rule.category == CATEGORY_DATA_TYPE_CHECK:
+                #     result['data_type_check'].append({
+                #         'field': rule.field
+                #     })
 
         return JsonResponse(result)
 

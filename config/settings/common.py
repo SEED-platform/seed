@@ -103,7 +103,6 @@ SEED_CORE_APPS = (
     'seed.lib.superperms.orgs',
     'seed.audit_logs',
     'seed.cleansing',
-    'seed.functional'  # why is this a core_app?
 )
 
 # Apps with tables created by migrations, but which 3rd-party apps depend on.
@@ -205,7 +204,7 @@ register('seed_json', CeleryDatetimeSerializer.seed_dumps,
 CELERY_ACCEPT_CONTENT = ['seed_json']
 CELERY_TASK_SERIALIZER = 'seed_json'
 CELERY_RESULT_SERIALIZER = 'seed_json'
-CELERY_TASK_RESULT_EXPIRES = 18000  # 5 hours
+CELERY_TASK_RESULT_EXPIRES = 86400  # 24 hours
 CELERY_MESSAGE_COMPRESSION = 'gzip'
 
 BROKER_URL = 'amqp://guest:guest@localhost:5672//'
@@ -229,8 +228,7 @@ NOSE_PLUGINS = [
 
 # Django 1.5+ way of doing user profiles
 AUTH_USER_MODEL = 'landing.SEEDUser'
-NOSE_ARGS = ['--exclude-dir=libs/dal',
-             '--exclude-dir=seed/common']
+NOSE_ARGS = ['--exclude-dir=libs/dal']
 
 # Matching Settings
 MATCH_MIN_THRESHOLD = 0.3

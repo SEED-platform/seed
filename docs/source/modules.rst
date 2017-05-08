@@ -7,7 +7,6 @@ Modules
 
     modules/seed.audit_logs
     modules/seed.cleansing
-    modules/seed.common
     modules/config
     modules/seed.data
     modules/seed.data_importer
