@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ('orgs', '0003_auto_20160412_1123'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('seed', '0052_auto_20170307_0955'),
+        ('seed', '0060_column_import_file'),
     ]
 
     operations = [
