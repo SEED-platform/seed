@@ -803,7 +803,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
       })
       .state({
         name: 'organization_data_quality',
-        url: '/accounts/{organization_id:int}/data_quality',  // TODO: Change this to /api/v2/data_quality_checks/?organization_id=1
+        url: '/accounts/{organization_id:int}/data_quality/{inventory_type:properties|taxlots}',
         templateUrl: static_url + 'seed/partials/data_quality_admin.html',
         controller: 'data_quality_admin_controller',
         resolve: {
@@ -816,9 +816,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             var organization_id = $stateParams.organization_id;
             return organization_service.get_organization(organization_id);
           }],
-          data_quality_rules_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
+          data_quality_rules_payload: ['data_quality_service', '$stateParams', function (data_quality_service, $stateParams) {
             var organization_id = $stateParams.organization_id;
-            return organization_service.get_data_quality_rules(organization_id);
+            return data_quality_service.data_quality_rules(organization_id);
           }],
           labels_payload: ['label_service', '$stateParams', function (label_service, $stateParams) {
             var organization_id = $stateParams.organization_id;

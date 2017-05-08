@@ -6,24 +6,29 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 .controller('data_quality_admin_controller', [
   '$scope',
   '$q',
+  '$stateParams',
   'all_columns',
   'organization_payload',
   'data_quality_rules_payload',
   'auth_payload',
   'labels_payload',
+  'data_quality_service',
   'organization_service',
   'label_service',
   function (
     $scope,
     $q,
+    $stateParams,
     all_columns,
     organization_payload,
     data_quality_rules_payload,
     auth_payload,
     labels_payload,
+    data_quality_service,
     organization_service,
     label_service
   ) {
+    $scope.inventory_type = $stateParams.inventory_type;
     $scope.org = organization_payload.organization;
     $scope.auth = auth_payload.auth;
 
@@ -47,33 +52,21 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
     $scope.all_columns = all_columns;
     $scope.all_labels = labels_payload;
-    $scope.rules_type = 'properties';
-
-    // TEMP - split data into assumed structure for properties and taxlots.  TODO - remove once structure is in place.
-    var len = data_quality_rules_payload.rules.length;
-    var results = {
-      properties: data_quality_rules_payload.rules.slice(0, len / 2),
-      taxlots: data_quality_rules_payload.rules.slice(len / 2)
-    };
-    data_quality_rules_payload.rules = results;
-
 
     var loadRules = function (rules) {
-      $scope.rows = {
+      $scope.ruleGroups = {
         properties: {},
         taxlots: {}
       };
       _.forEach(data_quality_rules_payload.rules, function (type, index) {
         _.forEach(type, function (rule) {
-          if (!$scope.rows[index].hasOwnProperty(rule.field)) $scope.rows[index][rule.field] = [];
-          var row = _.pick(rule, ['enabled', 'type', 'min', 'max', 'severity', 'units', 'label']);
-          row.field = _.find(all_columns.fields, {name: rule.field}).name;
-          row.displayName = _.find(all_columns.fields, {name: rule.field}).displayName;
+          if (!_.has($scope.ruleGroups[index], rule.field)) $scope.ruleGroups[index][rule.field] = [];
+          var row = rule;
           if (row.type === 'date') {
             if (row.min) row.min = moment(row.min, 'YYYYMMDD').toDate();
             if (row.max) row.max = moment(row.max, 'YYYYMMDD').toDate();
           }
-          $scope.rows[index][rule.field].push(row);
+          $scope.ruleGroups[index][rule.field].push(row);
         });
       });
     };
@@ -82,9 +75,20 @@ angular.module('BE.seed.controller.data_quality_admin', [])
     // Restores the default rules
     $scope.restore_defaults = function () {
       $scope.defaults_restored = false;
-      organization_service.reset_data_quality_rules($scope.org.org_id).then(function (rules) {
+      data_quality_service.reset_default_data_quality_rules($scope.org.org_id).then(function (rules) {
         loadRules(rules);
         $scope.defaults_restored = true;
+      }, function (data, status) {
+        $scope.$emit('app_error', data);
+      });
+    };
+
+    // Reset all rules
+    $scope.reset_all_rules = function () {
+      $scope.rules_reset = false;
+      data_quality_service.reset_all_data_quality_rules($scope.org.org_id).then(function (rules) {
+        loadRules(rules);
+        $scope.rules_reset = true;
       }, function (data, status) {
         $scope.$emit('app_error', data);
       });
@@ -98,7 +102,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         taxlots: []
       };
       var promises = [];
-      _.forEach($scope.rows, function (rules_types, rule_type) {
+      _.forEach($scope.ruleGroups, function (rules_types, rule_type) {
         _.forEach(rules_types, function (field_rules, field) {
           _.forEach(field_rules, function (row) {
             var d = $q.defer();
@@ -185,11 +189,38 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         rule.label = 'Invalid ' + _.find(all_columns.fields, {name: rule.field}).displayName;
       }
 
-      // move rule to appropriate spot in array.
-      if (!$scope.rows[$scope.rules_type].hasOwnProperty(rule.field)) $scope.rows[$scope.rules_type][rule.field] = [];
-      $scope.rows[$scope.rules_type][rule.field].push(rule);
+      // move rule to appropriate spot in ruleGroups.
+      if (!_.has($scope.ruleGroups[$scope.inventory_type], rule.field)) $scope.ruleGroups[$scope.inventory_type][rule.field] = [];
+      $scope.ruleGroups[$scope.inventory_type][rule.field].push(rule);
       // remove old rule.
-      $scope.rows[$scope.rules_type][oldField].splice(index, 1);
+      if ($scope.ruleGroups[$scope.inventory_type][oldField].length === 1) delete $scope.ruleGroups[$scope.inventory_type][oldField];
+      else $scope.ruleGroups[$scope.inventory_type][oldField].splice(index, 1);
+    };
+
+    // Keep field types consistent for identical fields
+    $scope.change_type = function (rule) {
+      var type = rule.type;
+      _.forEach($scope.ruleGroups[$scope.inventory_type][rule.field], function (currentRule) {
+        currentRule.min = null;
+        currentRule.max = null;
+        currentRule.type = type;
+      });
+    };
+
+    // Keep "required field" consistent for identical fields
+    $scope.change_required = function (rule) {
+      var required = !rule.required;
+      _.forEach($scope.ruleGroups[$scope.inventory_type][rule.field], function (currentRule) {
+        currentRule.required = required;
+      });
+    };
+
+    // Keep "not null" consistent for identical fields
+    $scope.change_not_null = function (rule) {
+      var not_null = !rule.not_null;
+      _.forEach($scope.ruleGroups[$scope.inventory_type][rule.field], function (currentRule) {
+        currentRule.not_null = not_null;
+      });
     };
 
     // create a new rule.
@@ -199,15 +230,15 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       var type = all_columns.fields[0].type || null;
 
       if (field) {
-        if (!$scope.rows[$scope.rules_type].hasOwnProperty(field)) $scope.rows[$scope.rules_type][field] = [];
+        if (!_.has($scope.ruleGroups[$scope.inventory_type], field)) $scope.ruleGroups[$scope.inventory_type][field] = [];
 
-        $scope.rows[$scope.rules_type][field].push({
+        $scope.ruleGroups[$scope.inventory_type][field].push({
           enabled: true,
           field: field,
           displayName: label,
           type: type,
-          required: null,
-          'null': null,
+          required: false,
+          not_null: false,
           max: null,
           min: null,
           severity: 'error',
@@ -222,12 +253,8 @@ angular.module('BE.seed.controller.data_quality_admin', [])
     $scope.delete_rule = function (rule, index) {
       rule.delete = true;
       if (rule.new) {
-        $scope.rows[$scope.rules_type][rule.field].splice(index, 1);
+        if ($scope.ruleGroups[$scope.inventory_type][rule.field].length === 1) delete $scope.ruleGroups[$scope.inventory_type][rule.field];
+        else $scope.ruleGroups[$scope.inventory_type][rule.field].splice(index, 1);
       }
-    };
-
-    // change list view.
-    $scope.view = function (type) {
-      $scope.rules_type = type;
     };
   }]);

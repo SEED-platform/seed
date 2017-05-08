@@ -10,7 +10,7 @@
 from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.http import JsonResponse
-from rest_framework import viewsets, serializers
+from rest_framework import viewsets, serializers, status
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import list_route
 
@@ -122,16 +122,16 @@ def _get_js_rule_severity(severity):
 #     """
 #     d = {v: k for k, v in dict(DATA_QUALITY_DATA_TYPES).items()}
 #     return d.get(data_type)
-#
-#
-# def _get_severity_from_js(severity):
-#     """return the Rules SEVERITY from the JS friendly severity
-#
-#     :param severity: 'error', or 'warning'
-#     :returns: int severity as defined in data_quality.models
-#     """
-#     d = {v: k for k, v in dict(DATA_QUALITY_SEVERITY).items()}
-#     return d.get(severity)
+
+
+def _get_severity_from_js(severity):
+    """return the Rules SEVERITY from the JS friendly severity
+
+    :param severity: 'error', or 'warning'
+    :returns: int severity as defined in data_quality.models
+    """
+    d = {v: k for k, v in dict(DATA_QUALITY_SEVERITY).items()}
+    return d.get(severity)
 
 # TODO: Who owns the cleansing operation once it is started?  Organization level?  Single user?
 
@@ -228,31 +228,25 @@ Handles Data Quality API operations within Inventory backend.
                 type: string
                 required: true
                 description: success or error
-            in_range_checking:
-                type: array[string]
+            rules:
+                type: object
                 required: true
-                description: An array of in-range error rules
-            missing_matching_field:
-                type: array[string]
-                required: true
-                description: An array of fields to verify existence
-            missing_values:
-                type: array[string]
-                required: true
-                description: An array of fields to ignore missing values
+                description: An object containing 'properties' and 'taxlots' arrays of rules
         """
         org = Organization.objects.get(pk=request.query_params['organization_id'])
 
         result = {
             'status': 'success',
-            'rules': []
+            'rules': {
+                'properties': [],
+                'taxlots': []
+            }
         }
 
         dq = DataQualityCheck.retrieve(org)
         rules = dq.rules.order_by('field', 'severity')
         for rule in rules:
-            result['rules'].append({
-                'table_name': rule.table_name,
+            result['rules']['properties' if rule.table_name == 'PropertyState' else 'taxlots'].append({
                 'field': rule.field,
                 'enabled': rule.enabled,
                 'type': _get_js_rule_type(rule.data_type),
@@ -270,7 +264,7 @@ Handles Data Quality API operations within Inventory backend.
     @ajax_request_class
     @has_perm_class('requires_parent_org_owner')
     @list_route(methods=['PUT'])
-    def reset_data_quality_rules(self, request):
+    def reset_all_data_quality_rules(self, request):
         """
         Resets an organization's data data_quality rules
         ---
@@ -304,94 +298,126 @@ Handles Data Quality API operations within Inventory backend.
         dq.reset_default_rules()
         return self.data_quality_rules(request, request.query_params['organization_id'])
 
-        # @api_endpoint_class
-        # @ajax_request_class
-        # @has_perm_class('requires_parent_org_owner')
-        # @detail_route(methods=['PUT'])
-        # def save_data_quality_rules(self, request, pk=None):
-        #     """
-        #     Saves an organization's settings: name, query threshold, shared fields.
-        #     The method passes in all the fields again, so it is okay to remove
-        #     all the rules in the db, and just recreate them (albiet inefficient)
-        #     ---
-        #     parameter_strategy: replace
-        #     parameters:
-        #         - name: pk
-        #           description: Organization ID (Primary key)
-        #           type: integer
-        #           required: true
-        #           paramType: path
-        #         - name: body
-        #           description: JSON body containing organization rules information
-        #           paramType: body
-        #           pytype: RulesSerializer
-        #           required: true
-        #     type:
-        #         status:
-        #             type: string
-        #             description: success or error
-        #             required: true
-        #         message:
-        #             type: string
-        #             description: error message, if any
-        #             required: true
-        #     """
-        #     # TODO: NLL Move this to the data_quality_checks/1/ API
-        #     body = request.data
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_parent_org_owner')
+    @list_route(methods=['PUT'])
+    def reset_default_data_quality_rules(self, request):
+        """
+        Resets an organization's data data_quality rules
+        ---
+        parameters:
+            - name: organization_id
+              description: Organization ID
+              type: integer
+              required: true
+              paramType: query
+        type:
+            status:
+                type: string
+                description: success or error
+                required: true
+            in_range_checking:
+                type: array[string]
+                required: true
+                description: An array of in-range error rules
+            missing_matching_field:
+                type: array[string]
+                required: true
+                description: An array of fields to verify existence
+            missing_values:
+                type: array[string]
+                required: true
+                description: An array of fields to ignore missing values
+        """
+        org = Organization.objects.get(pk=request.query_params['organization_id'])
+
+        dq = DataQualityCheck.retrieve(org)
+        dq.reset_default_rules()
+        return self.data_quality_rules(request)
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_parent_org_owner')
+    @list_route(methods=['POST'])
+    def save_data_quality_rules(self, request, pk=None):
+        """
+        Saves an organization's settings: name, query threshold, shared fields.
+        The method passes in all the fields again, so it is okay to remove
+        all the rules in the db, and just recreate them (albiet inefficient)
+        ---
+        parameter_strategy: replace
+        parameters:
+            - name: organization_id
+              description: Organization ID
+              type: integer
+              required: true
+              paramType: query
+            - name: body
+              description: JSON body containing organization rules information
+              paramType: body
+              pytype: RulesSerializer
+              required: true
+        type:
+            status:
+                type: string
+                description: success or error
+                required: true
+            message:
+                type: string
+                description: error message, if any
+                required: true
+        """
+        org = Organization.objects.get(pk=request.query_params['organization_id'])
+
+        body = request.data
+        # if body.get('data_quality_rules') is None:
+        #     return JsonResponse({
+        #         'status': 'error',
+        #         'message': 'missing the data_quality_rules'
+        #     }, status=status.HTTP_404_NOT_FOUND)
+        #
+        # posted_rules = body['data_quality_rules']
+        # updated_rules = []
+        # for rule in posted_rules['missing_matching_field']:
+        #     updated_rules.append(
+        #         {
+        #             'field': rule['field'],
+        #             'category': CATEGORY_MISSING_MATCHING_FIELD,
+        #             'severity': _get_severity_from_js(rule['severity']),
+        #         }
+        #     )
+        # for rule in posted_rules['missing_values']:
+        #     updated_rules.append(
+        #         {
+        #             'field': rule['field'],
+        #             'category': CATEGORY_MISSING_VALUES,
+        #             'severity': _get_severity_from_js(rule['severity']),
+        #         }
+        #     )
+        # for rule in posted_rules['in_range_checking']:
+        #     updated_rules.append(
+        #         {
+        #             'field': rule['field'],
+        #             'enabled': rule['enabled'],
+        #             'category': CATEGORY_IN_RANGE_CHECKING,
+        #             'data_type': _get_rule_type_from_js(rule['type']),
+        #             'min': rule['min'],
+        #             'max': rule['max'],
+        #             'severity': _get_severity_from_js(rule['severity']),
+        #             'units': rule['units'],
+        #         }
+        #     )
+        #
+        # dq = DataQualityCheck.retrieve(org)
+        # dq.remove_all_rules()
+        # for rule in updated_rules:
         #     try:
-        #         org = Organization.objects.get(pk=pk)
-        #     except Organization.DoesNotExist:
+        #         dq.add_rule(rule)
+        #     except TypeError as e:
         #         return JsonResponse({
         #             'status': 'error',
-        #             'message': 'organization does not exist'
-        #         }, status=status.HTTP_404_NOT_FOUND)
-        #     if body.get('data_quality_rules') is None:
-        #         return JsonResponse({
-        #             'status': 'error',
-        #             'message': 'missing the data_quality_rules'
-        #         }, status=status.HTTP_404_NOT_FOUND)
-        #
-        #     posted_rules = body['data_quality_rules']
-        #     updated_rules = []
-        #     for rule in posted_rules['missing_matching_field']:
-        #         updated_rules.append(
-        #             {
-        #                 'field': rule['field'],
-        #                 'category': CATEGORY_MISSING_MATCHING_FIELD,
-        #                 'severity': _get_severity_from_js(rule['severity']),
-        #             }
-        #         )
-        #     for rule in posted_rules['missing_values']:
-        #         updated_rules.append(
-        #             {
-        #                 'field': rule['field'],
-        #                 'category': CATEGORY_MISSING_VALUES,
-        #                 'severity': _get_severity_from_js(rule['severity']),
-        #             }
-        #         )
-        #     for rule in posted_rules['in_range_checking']:
-        #         updated_rules.append(
-        #             {
-        #                 'field': rule['field'],
-        #                 'enabled': rule['enabled'],
-        #                 'category': CATEGORY_IN_RANGE_CHECKING,
-        #                 'data_type': _get_rule_type_from_js(rule['type']),
-        #                 'min': rule['min'],
-        #                 'max': rule['max'],
-        #                 'severity': _get_severity_from_js(rule['severity']),
-        #                 'units': rule['units'],
-        #             }
-        #         )
-        #
-        #     dq = DataQualityCheck.retrieve(org)
-        #     dq.remove_all_rules()
-        #     for rule in updated_rules:
-        #         try:
-        #             dq.add_rule(rule)
-        #         except TypeError as e:
-        #             return JsonResponse({
-        #                 'status': 'error',
-        #                 'message': e,
-        #             }, status=status.HTTP_400_BAD_REQUEST)
-        #
-        #     return JsonResponse({'status': 'success'})
+        #             'message': e,
+        #         }, status=status.HTTP_400_BAD_REQUEST)
+
+        return JsonResponse({'status': 'success'})

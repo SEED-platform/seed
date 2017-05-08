@@ -127,39 +127,6 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
     };
 
     /**
-     * gets the data quality rules for an org
-     * @param  {int} org_id the id of the organization
-     */
-    organization_factory.get_data_quality_rules = function (org_id) {
-      return $http.get('/api/v2/data_quality_checks/?organization_id=' + org_id).then(function (response) {
-        return response.data;
-      });
-    };
-
-    /**
-     * resets the default data data_quality rules for an org
-     * @param  {int} org_id the id of the organization
-     */
-    organization_factory.reset_data_quality_rules = function (org_id) {
-      return $http.put('/api/v2/data_quality_checks/?organization_id=' + org_id).then(function (response) {
-        return response.data;
-      });
-    };
-
-    /**
-     * saves the organization data data_quality rules
-     * @param  {int} org_id the id of the organization
-     * @param  {obj} data_quality_rules the updated rules to save
-     */
-    organization_factory.save_data_quality_rules = function (org_id, data_quality_rules) { // TODO: I don't think this works!
-      return $http.put('/api/v2/organizations/' + org_id + '/save_data_quality_rules/', {
-        data_quality_rules: data_quality_rules
-      }).then(function (response) {
-        return response.data;
-      });
-    };
-
-    /**
      * gets the query threshold for an org
      * @param  {int} org_id the id of the organization
      */
