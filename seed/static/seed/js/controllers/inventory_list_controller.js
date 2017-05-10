@@ -57,7 +57,7 @@ angular.module('BE.seed.controller.inventory_list', [])
             // Empty query so return the whole list.
             return true;
           } else {
-            // Only include element if it's name contains the query string.
+            // Only include element if its name contains the query string.
             return _.includes(_.toLower(lbl.name), _.toLower(query));
           }
         });
@@ -355,6 +355,9 @@ angular.module('BE.seed.controller.inventory_list', [])
         //   console.info(message);
         //   console.info('Modal dismissed at: ' + new Date());
         // });
+      };
+
+      $scope.labelLogicUpdated = function (labelLogic) {
       };
 
       var saveSettings = function () {

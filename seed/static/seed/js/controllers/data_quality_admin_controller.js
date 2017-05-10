@@ -15,6 +15,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
   'data_quality_service',
   'organization_service',
   'label_service',
+  'spinner_utility',
   function (
     $scope,
     $q,
@@ -26,7 +27,8 @@ angular.module('BE.seed.controller.data_quality_admin', [])
     labels_payload,
     data_quality_service,
     organization_service,
-    label_service
+    label_service,
+    spinner_utility
   ) {
     $scope.inventory_type = $stateParams.inventory_type;
     $scope.org = organization_payload.organization;
@@ -53,12 +55,12 @@ angular.module('BE.seed.controller.data_quality_admin', [])
     $scope.all_columns = all_columns;
     $scope.all_labels = labels_payload;
 
-    var loadRules = function (rules) {
+    var loadRules = function (rules_payload) {
       $scope.ruleGroups = {
         properties: {},
         taxlots: {}
       };
-      _.forEach(data_quality_rules_payload.rules, function (type, index) {
+      _.forEach(rules_payload.rules, function (type, index) {
         _.forEach(type, function (rule) {
           if (!_.has($scope.ruleGroups[index], rule.field)) $scope.ruleGroups[index][rule.field] = [];
           var row = rule;
@@ -74,23 +76,29 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
     // Restores the default rules
     $scope.restore_defaults = function () {
+      spinner_utility.show();
       $scope.defaults_restored = false;
       data_quality_service.reset_default_data_quality_rules($scope.org.org_id).then(function (rules) {
         loadRules(rules);
         $scope.defaults_restored = true;
       }, function (data, status) {
         $scope.$emit('app_error', data);
+      }).finally(function () {
+        spinner_utility.hide();
       });
     };
 
     // Reset all rules
     $scope.reset_all_rules = function () {
+      spinner_utility.show();
       $scope.rules_reset = false;
       data_quality_service.reset_all_data_quality_rules($scope.org.org_id).then(function (rules) {
         loadRules(rules);
         $scope.rules_reset = true;
       }, function (data, status) {
         $scope.$emit('app_error', data);
+      }).finally(function () {
+        spinner_utility.hide();
       });
     };
 

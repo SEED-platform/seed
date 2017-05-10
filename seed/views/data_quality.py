@@ -255,7 +255,8 @@ Handles Data Quality API operations within Inventory backend.
                 'min': rule.min,
                 'max': rule.max,
                 'severity': _get_js_rule_severity(rule.severity),
-                'units': rule.units
+                'units': rule.units,
+                'label': rule.status_label_id
             })
 
         return JsonResponse(result)
@@ -295,8 +296,8 @@ Handles Data Quality API operations within Inventory backend.
         org = Organization.objects.get(pk=request.query_params['organization_id'])
 
         dq = DataQualityCheck.retrieve(org)
-        dq.reset_default_rules()
-        return self.data_quality_rules(request, request.query_params['organization_id'])
+        dq.reset_all_rules()
+        return self.data_quality_rules(request)
 
     @api_endpoint_class
     @ajax_request_class

@@ -82,22 +82,6 @@ DEFAULT_RULES = [
 
     {
         'table_name': 'PropertyState',
-        'field': 'year_built',
-        'data_type': TYPE_YEAR,
-        'rule_type': RULE_TYPE_DEFAULT,
-        'min': 1700,
-        'max': 2019,
-        'severity': SEVERITY_ERROR,
-    }, {
-        'table_name': 'PropertyState',
-        'field': 'year_ending',
-        'data_type': TYPE_DATE,
-        'rule_type': RULE_TYPE_DEFAULT,
-        'min': 18890101,
-        'max': 20201231,
-        'severity': SEVERITY_ERROR,
-    }, {
-        'table_name': 'PropertyState',
         'field': 'conditioned_floor_area',
         'data_type': TYPE_NUMBER,
         'rule_type': RULE_TYPE_DEFAULT,
@@ -222,6 +206,22 @@ DEFAULT_RULES = [
         'max': 1000,
         'severity': SEVERITY_ERROR,
         'units': 'kBtu/sq. ft./year',
+    }, {
+        'table_name': 'PropertyState',
+        'field': 'year_built',
+        'data_type': TYPE_YEAR,
+        'rule_type': RULE_TYPE_DEFAULT,
+        'min': 1700,
+        'max': 2019,
+        'severity': SEVERITY_ERROR,
+    }, {
+        'table_name': 'PropertyState',
+        'field': 'year_ending',
+        'data_type': TYPE_DATE,
+        'rule_type': RULE_TYPE_DEFAULT,
+        'min': 18890101,
+        'max': 20201231,
+        'severity': SEVERITY_ERROR,
     }
 ]
 
@@ -580,12 +580,25 @@ class DataQualityCheck(models.Model):
         """
 
         # call it this way to handle deleting status_labels
-        for r in self.rules.all():
-            r.delete()
+        for rule in self.rules.all():
+            rule.delete()
 
     def reset_default_rules(self):
         """
-        Reset the instances rules back to the default set of rules
+        Reset only the default rules
+
+        :return:
+        """
+        for rule in DEFAULT_RULES:
+            self.rules.filter(
+                field=rule['field'],
+                table_name=rule['table_name']
+            ).delete()
+        self.initialize_rules()
+
+    def reset_all_rules(self):
+        """
+        Delete all rules and reinitialize the default set of rules
 
         :return:
         """

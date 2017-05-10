@@ -67,6 +67,11 @@
         <div class="btn-group building-list-filter-buttons">
             <button type="button" ng-click="clear_labels()" class="btn btn-default btn-sm" ng-disabled="!labels.length">Clear Labels</button>
         </div>
+        <div class="btn-group" ng-init="labelLogic = 'and'">
+            <label class="btn btn-default btn-sm" ng-model="labelLogic" uib-btn-radio="'and'" ng-change="labelLogicUpdated(labelLogic)">AND</label>
+            <label class="btn btn-default btn-sm" ng-model="labelLogic" uib-btn-radio="'or'" ng-change="labelLogicUpdated(labelLogic)">OR</label>
+        </div>
+
     </form>
 
     <div class="form-group" style="padding-top: 20px;">
