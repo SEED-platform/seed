@@ -2491,10 +2491,20 @@ gs-input .tags .tag-item .remove-button {
   .nav-tabs {
     border-bottom: 0;
 
-    > li > a {
-      background-color: #F1F1F1;
-      border: 1px solid #D1D1D1;
-      border-bottom: 0;
+    > li {
+      margin-right: 4px;
+
+      > a {
+        background-color: #F1F1F1;
+        border: 1px solid #D1D1D1;
+        border-bottom: 0;
+        color: #222;
+
+        &:hover {
+          background-color: $blue;
+          color: #FFF;
+        }
+      }
     }
   }
   .nav-tabs > li.active > a, .nav-tabs > li.active > a:hover {

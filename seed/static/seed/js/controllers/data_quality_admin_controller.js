@@ -34,7 +34,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
     $scope.org = organization_payload.organization;
     $scope.auth = auth_payload.auth;
 
-    $scope.field_types = [{
+    $scope.data_types = [{
       id: null,
       label: ''
     }, {
@@ -60,11 +60,11 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         properties: {},
         taxlots: {}
       };
-      _.forEach(rules_payload.rules, function (type, index) {
-        _.forEach(type, function (rule) {
+      _.forEach(rules_payload.rules, function (inventory_type, index) {
+        _.forEach(inventory_type, function (rule) {
           if (!_.has($scope.ruleGroups[index], rule.field)) $scope.ruleGroups[index][rule.field] = [];
           var row = rule;
-          if (row.type === 'date') {
+          if (row.data_type === 'date') {
             if (row.min) row.min = moment(row.min, 'YYYYMMDD').toDate();
             if (row.max) row.max = moment(row.max, 'YYYYMMDD').toDate();
           }
@@ -81,7 +81,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       data_quality_service.reset_default_data_quality_rules($scope.org.org_id).then(function (rules) {
         loadRules(rules);
         $scope.defaults_restored = true;
-      }, function (data, status) {
+      }, function (data) {
         $scope.$emit('app_error', data);
       }).finally(function () {
         spinner_utility.hide();
@@ -95,7 +95,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       data_quality_service.reset_all_data_quality_rules($scope.org.org_id).then(function (rules) {
         loadRules(rules);
         $scope.rules_reset = true;
-      }, function (data, status) {
+      }, function (data) {
         $scope.$emit('app_error', data);
       }).finally(function () {
         spinner_utility.hide();
@@ -109,88 +109,51 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         properties: [],
         taxlots: []
       };
-      var promises = [];
-      _.forEach($scope.ruleGroups, function (rules_types, rule_type) {
-        _.forEach(rules_types, function (field_rules, field) {
-          _.forEach(field_rules, function (row) {
-            var d = $q.defer();
-            promises.push(d.promise);
+      _.forEach($scope.ruleGroups, function (ruleGroups, inventory_type) {
+        _.forEach(ruleGroups, function (ruleGroup) {
+          _.forEach(ruleGroup, function (rule) {
             var r = {
-              field: row.field,
-              type: row.type,
-              required: row.required,
-              not_null: row.not_null,
-              enabled: row.enabled,
-              min: row.min || null,
-              max: row.max || null,
-              severity: row.severity,
-              units: row.units,
-              label: row.label,
-              'delete': row.delete
+              enabled: rule.enabled,
+              field: rule.field,
+              data_type: rule.data_type,
+              rule_type: rule.rule_type,
+              required: rule.required,
+              not_null: rule.not_null,
+              min: rule.min || null,
+              max: rule.max || null,
+              severity: rule.severity,
+              units: rule.units,
+              label: rule.label
             };
-            if (row.type === 'date') {
-              if (row.min) r.min = Number(moment(row.min).format('YYYYMMDD'));
-              if (row.max) r.max = Number(moment(row.max).format('YYYYMMDD'));
+            if (rule.data_type === 'date') {
+              if (rule.min) r.min = Number(moment(rule.min).format('YYYYMMDD'));
+              if (rule.max) r.max = Number(moment(rule.max).format('YYYYMMDD'));
             }
-            if (row.new) {
-              var match = _.find(labels_payload, function (label) {
-                return label.name === row.label;
-              });
-              if (!match) {
-                var newLabel = {
-                  name: row.label,
-                  color: 'gray',
-                  label: 'default'
-                };
-                label_service.create_label_for_org($scope.org.id, newLabel).then(angular.bind(this, function (result) {
-                    r.label = result.id;
-                    rules[rule_type].push(r);
-                    d.resolve();
-                  }, rule_type),
-                  function (message) {
-                    $log.error('Error creating new label.', message);
-                    d.reject();
-                  });
-              }
-              else {
-                r.label = match.id;
-                rules[rule_type].push(r);
-                d.resolve();
-              }
-              row.new = null;
-            }
-            else {
-              rules[rule_type].push(r);
-              d.resolve();
-            }
+            rules[inventory_type].push(r);
           });
         });
       });
-      $q.all(promises)
-        .then(function () {
-          organization_service.save_data_quality_rules($scope.org.org_id, rules).then(function (data) {
-            $scope.rules_updated = true;
-          }, function (data, status) {
-            $scope.$emit('app_error', data);
-          });
-        })
-        .catch(function () {
-        });
+
+      data_quality_service.save_data_quality_rules($scope.org.org_id, rules).then(function (data) {
+        $scope.rules_updated = true;
+      }, function (data) {
+        $scope.$emit('app_error', data);
+      });
     };
 
     // capture rule field dropdown change.
     $scope.change_field = function (rule, oldField, index) {
-      var original = rule.type;
-      var newType = _.find(all_columns.fields, {name: rule.field}).type;
+      var original = rule.data_type;
+      var newDataType = _.find(all_columns.fields, {name: rule.field}).data_type;
 
       // clear columns that are type specific.
-      if (newType !== original) {
+      if (newDataType !== original) {
         rule.min = null;
         rule.max = null;
         rule.units = '';
       }
 
-      rule.type = newType;
+      rule.data_type = newDataType;
 
       // modify the custom label if the rule is recently added.
       if (rule.new) {
@@ -206,12 +169,12 @@ angular.module('BE.seed.controller.data_quality_admin', [])
     };
 
     // Keep field types consistent for identical fields
-    $scope.change_type = function (rule) {
-      var type = rule.type;
+    $scope.change_data_type = function (rule) {
+      var data_type = rule.data_type;
       _.forEach($scope.ruleGroups[$scope.inventory_type][rule.field], function (currentRule) {
         currentRule.min = null;
         currentRule.max = null;
-        currentRule.type = type;
+        currentRule.data_type = data_type;
       });
     };
 
@@ -235,7 +198,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
     $scope.create_new_rule = function () {
       var field = all_columns.fields[0].name || null;
       var label = all_columns.fields[0].displayName || '';
-      var type = all_columns.fields[0].type || null;
+      var data_type = all_columns.fields[0].data_type || null;
 
       if (field) {
         if (!_.has($scope.ruleGroups[$scope.inventory_type], field)) $scope.ruleGroups[$scope.inventory_type][field] = [];
@@ -244,7 +207,8 @@ angular.module('BE.seed.controller.data_quality_admin', [])
           enabled: true,
           field: field,
           displayName: label,
-          type: type,
+          data_type: data_type,
+          rule_type: 1,
           required: false,
           not_null: false,
           max: null,
@@ -259,10 +223,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
     // set rule as deleted.
     $scope.delete_rule = function (rule, index) {
-      rule.delete = true;
-      if (rule.new) {
-        if ($scope.ruleGroups[$scope.inventory_type][rule.field].length === 1) delete $scope.ruleGroups[$scope.inventory_type][rule.field];
-        else $scope.ruleGroups[$scope.inventory_type][rule.field].splice(index, 1);
-      }
+      if ($scope.ruleGroups[$scope.inventory_type][rule.field].length === 1) delete $scope.ruleGroups[$scope.inventory_type][rule.field];
+      else $scope.ruleGroups[$scope.inventory_type][rule.field].splice(index, 1);
     };
   }]);
