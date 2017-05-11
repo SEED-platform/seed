@@ -69,10 +69,10 @@
                                 <input type="checkbox" ng-model="rule.enabled" class="no-click">
                             </td>
                             <td>
-                                <select class="form-control input-sm" ng-model="rule.field" ng-options="col.name as col.displayName for col in all_columns.fields" ng-change="rule.rule_type = 1; change_field(rule, '{$ rule.field $}', $index)" title="{$ rule.field $}"></select>
+                                <select class="form-control input-sm" ng-model="rule.field" ng-options="col.name as col.displayName for col in columns" ng-change="rule.rule_type = 1; change_field(rule, '{$ rule.field $}', $index)" title="{$ rule.field $}"></select>
                             </td>
                             <td>
-                                <select class="form-control input-sm" ng-model="rule.data_type" ng-options="type.id as type.label for type in data_types" ng-change="rule.rule_type = 1; change_data_type(rule, $index)"></select>
+                                <select class="form-control input-sm" ng-model="rule.data_type" ng-options="type.id as type.label for type in data_types" ng-change="rule.rule_type = 1; change_data_type(rule, '{$rule.data_type$}')"></select>
                             </td>
                             <td ng-click="change_required(rule)" class="text-center">
                                 <input type="checkbox" ng-model="rule.required" class="no-click" ng-change="rule.rule_type = 1">
@@ -99,8 +99,7 @@
                                 <select class="form-control input-sm" ng-options="u for u in units" ng-model="rule.units" ng-change="rule.rule_type = 1"></select>
                             </td>
                             <td>
-                                <input class="form-control input-sm" ng-model="rule.label" ng-change="rule.rule_type = 1" ng-if="rule.new">
-                                <select class="form-control input-sm" ng-model="rule.label" ng-change="rule.rule_type = 1" ng-options="label.id as label.name for label in all_labels" ng-if="!rule.new"></select>
+                                <select class="form-control input-sm" ng-model="rule.label" ng-change="rule.rule_type = 1" ng-options="label.id as label.name for label in all_labels"></select>
                             </td>
                             <td class="check is_aligned_center">
                                 <button class="btn btn-danger btn-rowform" ng-click="delete_rule(rule, $index)">X</button>

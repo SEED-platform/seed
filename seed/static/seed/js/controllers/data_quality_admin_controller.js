@@ -7,7 +7,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
   '$scope',
   '$q',
   '$stateParams',
-  'all_columns',
+  'columns',
   'organization_payload',
   'data_quality_rules_payload',
   'auth_payload',
@@ -20,7 +20,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
     $scope,
     $q,
     $stateParams,
-    all_columns,
+    columns,
     organization_payload,
     data_quality_rules_payload,
     auth_payload,
@@ -52,7 +52,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
     }];
     $scope.units = ['', 'square feet', 'kBtu/sq. ft./year'];
 
-    $scope.all_columns = all_columns;
+    $scope.columns = columns;
     $scope.all_labels = labels_payload;
 
     var loadRules = function (rules_payload) {
@@ -144,7 +144,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
     // capture rule field dropdown change.
     $scope.change_field = function (rule, oldField, index) {
       var original = rule.data_type;
-      var newDataType = _.find(all_columns.fields, {name: rule.field}).data_type;
+      var newDataType = _.find(columns, {name: rule.field}).data_type;
 
       // clear columns that are type specific.
       if (newDataType !== original) {
@@ -155,13 +155,15 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
       rule.data_type = newDataType;
 
-      // modify the custom label if the rule is recently added.
-      if (rule.new) {
-        rule.label = 'Invalid ' + _.find(all_columns.fields, {name: rule.field}).displayName;
-      }
-
       // move rule to appropriate spot in ruleGroups.
       if (!_.has($scope.ruleGroups[$scope.inventory_type], rule.field)) $scope.ruleGroups[$scope.inventory_type][rule.field] = [];
+      else {
+        // Rules already exist for the new field name, so match the data_type, required, and not_null columns
+        var existingRule = _.first($scope.ruleGroups[$scope.inventory_type][rule.field]);
+        rule.data_type = existingRule.data_type;
+        rule.required = existingRule.required;
+        rule.not_null = existingRule.not_null;
+      }
       $scope.ruleGroups[$scope.inventory_type][rule.field].push(rule);
       // remove old rule.
       if ($scope.ruleGroups[$scope.inventory_type][oldField].length === 1) delete $scope.ruleGroups[$scope.inventory_type][oldField];
@@ -169,11 +171,14 @@ angular.module('BE.seed.controller.data_quality_admin', [])
     };
 
     // Keep field types consistent for identical fields
-    $scope.change_data_type = function (rule) {
+    $scope.change_data_type = function (rule, oldValue) {
       var data_type = rule.data_type;
       _.forEach($scope.ruleGroups[$scope.inventory_type][rule.field], function (currentRule) {
-        currentRule.min = null;
-        currentRule.max = null;
+        if (!_.includes(['', 'number'], oldValue) || !_.includes([null, 'number'], data_type)) {
+          // Reset min/max if the data type is something other than null <-> number
+          currentRule.min = null;
+          currentRule.max = null;
+        }
         currentRule.data_type = data_type;
       });
     };
@@ -196,12 +201,13 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
     // create a new rule.
     $scope.create_new_rule = function () {
-      var field = all_columns.fields[0].name || null;
-      var label = all_columns.fields[0].displayName || '';
-      var data_type = all_columns.fields[0].data_type || null;
+      var field = _.get(columns, '[0].name', null);
+      var label = _.get(columns, '[0].displayName', '');
+      var data_type = null;
 
       if (field) {
         if (!_.has($scope.ruleGroups[$scope.inventory_type], field)) $scope.ruleGroups[$scope.inventory_type][field] = [];
+        else data_type = _.first($scope.ruleGroups[$scope.inventory_type][field]).data_type;
 
         $scope.ruleGroups[$scope.inventory_type][field].push({
           enabled: true,
@@ -215,7 +221,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
           min: null,
           severity: 'error',
           units: '',
-          label: 'Invalid ' + label,
+          label: null,
           'new': true
         });
       }
