@@ -80,9 +80,11 @@
                             <td ng-click="change_not_null(rule)" class="text-center">
                                 <input type="checkbox" ng-model="rule.not_null" class="no-click" ng-change="rule.rule_type = 1">
                             </td>
-                            <td ng-attr-colspan="{$ rule.data_type == 'string' && '2' || '1' $}">
+                            <td ng-if="rule.data_type == 'string'" colspan="2">
+                                <input class="form-control input-sm" type="text" maxlength="200" ng-model="rule.text_match" ng-change="rule.rule_type = 1" placeholder="(no text match)">
+                            </td>
+                            <td ng-if="rule.data_type != 'string'">
                                 <input class="form-control input-sm" type="number" ng-model="rule.min" ng-change="rule.rule_type = 1" ng-if="_.includes([null, 'number', 'year'], rule.data_type)" placeholder="(no minimum)">
-                                <input class="form-control input-sm" type="text" ng-model="rule.min" ng-change="rule.rule_type = 1" ng-if="rule.data_type == 'string'" placeholder="(no text match)">
                                 <input class="form-control input-sm" type="date" ng-model="rule.min" ng-change="rule.rule_type = 1" ng-if="rule.data_type == 'date'">
                             </td>
                             <td ng-if="rule.data_type != 'string'">

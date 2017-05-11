@@ -12,8 +12,7 @@ from seed.models.data_quality import DataQualityCheck, Rule
 from seed.models.data_quality import (
     TYPE_NUMBER,
     RULE_TYPE_DEFAULT,
-    SEVERITY_ERROR,
-    CATEGORY_IN_RANGE_CHECKING
+    SEVERITY_ERROR
 )
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import StatusLabel
@@ -72,15 +71,14 @@ class DataQualityRules(TestCase):
             'min': 0,
             'max': 7000000,
             'severity': SEVERITY_ERROR,
-            'units': 'square feet',
-            'category': CATEGORY_IN_RANGE_CHECKING,
+            'units': 'square feet'
         }
         dq.add_rule(new_rule)
         self.assertEqual(dq.rules.count(), 28)
 
     def test_filter_rules(self):
         dq = DataQualityCheck.retrieve(self.org)
-        rules = dq.rules.filter(category=CATEGORY_IN_RANGE_CHECKING, enabled=True)
+        rules = dq.rules.filter(enabled=True)
         self.assertEqual(rules.count(), 17)
 
     def test_rule_with_label(self):
@@ -101,7 +99,6 @@ class DataQualityRules(TestCase):
             'max': 7000000,
             'severity': SEVERITY_ERROR,
             'units': 'square feet',
-            'category': CATEGORY_IN_RANGE_CHECKING,
             'status_label': status_label
         }
         dq.add_rule(new_rule)
@@ -128,7 +125,6 @@ class DataQualityRules(TestCase):
             'max': 7000000,
             'severity': SEVERITY_ERROR,
             'units': 'square feet',
-            'category': CATEGORY_IN_RANGE_CHECKING,
             'status_label': status_label
         }
         dq.add_rule(new_rule)

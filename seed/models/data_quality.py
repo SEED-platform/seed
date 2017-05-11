@@ -285,6 +285,7 @@ class Rule(models.Model):
     not_null = models.BooleanField(default=False)
     min = models.FloatField(null=True)
     max = models.FloatField(null=True)
+    text_match = models.CharField(max_length=200, null=True)
     severity = models.IntegerField(choices=SEVERITY)
     units = models.CharField(max_length=100, blank=True)
 

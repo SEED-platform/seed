@@ -62,7 +62,11 @@ angular.module('BE.seed.service.data_quality', []).factory('data_quality_service
       });
     };
 
-    data_quality_factory.start_data_quality_rules = function (org_id, property_state_ids, taxlot_state_ids) {
+    data_quality_factory.start_data_quality_checks = function (property_state_ids, taxlot_state_ids) {
+      return data_quality_factory.start_data_quality_checks_for_org(user_service.get_organization().id, property_state_ids, taxlot_state_ids);
+    };
+
+    data_quality_factory.start_data_quality_checks_for_org = function (org_id, property_state_ids, taxlot_state_ids) {
       return $http.post('/api/v2/data_quality_checks/?organization_id=' + org_id, {
         property_state_ids: property_state_ids,
         taxlot_state_ids: taxlot_state_ids
@@ -71,7 +75,11 @@ angular.module('BE.seed.service.data_quality', []).factory('data_quality_service
       });
     };
 
-    data_quality_factory.start_data_quality_rules = function (org_id, task_id) {
+    data_quality_factory.data_quality_checks_status = function (task_id) {
+      return data_quality_factory.data_quality_checks_status_for_org(user_service.get_organization().id, task_id);
+    };
+
+    data_quality_factory.data_quality_checks_status_for_org = function (org_id, task_id) {
       return $http.post('/api/v2/data_quality_checks/status/?organization_id=' + org_id, {
         task_id: task_id
       }).then(function (response) {

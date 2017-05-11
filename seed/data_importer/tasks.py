@@ -65,7 +65,7 @@ from seed.models import TaxLotAuditLog
 from seed.models import TaxLotProperty
 from seed.models.auditlog import AUDIT_IMPORT
 from seed.utils.buildings import get_source_type
-from seed.utils.cache import set_cache, increment_cache, get_cache, delete_cache
+from seed.utils.cache import set_cache, increment_cache, get_cache, delete_cache, get_cache_raw
 from random import randint
 
 _log = get_task_logger(__name__)
@@ -106,10 +106,12 @@ def finish_checking(identifier):
     """
 
     prog_key = get_prog_key('check_data', identifier)
+    data_quality_results = get_cache_raw(DataQualityCheck.cache_key(identifier))
     result = {
         'status': 'success',
         'progress': 100,
-        'message': 'data quality check complete'
+        'message': 'data quality check complete',
+        'data': data_quality_results
     }
     set_cache(prog_key, result['status'], result)
 
@@ -176,8 +178,8 @@ def finish_mapping(import_file_id, mark_as_done):
     }
     set_cache(prog_key, result['status'], result)
 
-    property_state_ids = list(PropertyState.objects.filter(import_file=import_file).only('id'))
-    taxlot_state_ids = list(TaxLotState.objects.filter(import_file=import_file).only('id'))
+    property_state_ids = list(PropertyState.objects.filter(import_file=import_file).values_list('id', flat=True))
+    taxlot_state_ids = list(TaxLotState.objects.filter(import_file=import_file).values_list('id', flat=True))
 
     # now call data_quality
     _data_quality_check(property_state_ids, taxlot_state_ids, import_file_id)
@@ -472,12 +474,12 @@ def _data_quality_check(property_state_ids, taxlot_state_ids, identifier):
     """
     # initialize the cache for the data_quality results using the data_quality static method
     tasks = []
-    id_chunks = [[obj.id for obj in chunk] for chunk in batch(property_state_ids, 100)]
+    id_chunks = [[obj for obj in chunk] for chunk in batch(property_state_ids, 100)]
     increment = get_cache_increment_value(id_chunks)
     for ids in id_chunks:
         tasks.append(check_data_chunk.s(PropertyState, ids, identifier, increment))
 
-    id_chunks_tl = [[obj.id for obj in chunk] for chunk in batch(taxlot_state_ids, 100)]
+    id_chunks_tl = [[obj for obj in chunk] for chunk in batch(taxlot_state_ids, 100)]
     increment_tl = get_cache_increment_value(id_chunks_tl)
     for ids in id_chunks_tl:
         tasks.append(check_data_chunk.s(TaxLotState, ids, identifier, increment_tl))

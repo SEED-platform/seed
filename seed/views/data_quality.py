@@ -215,6 +215,7 @@ Handles Data Quality API operations within Inventory backend.
                 'not_null': rule.not_null,
                 'min': rule.min,
                 'max': rule.max,
+                'text_match': rule.text_match,
                 'severity': _get_js_rule_severity(rule.severity),
                 'units': rule.units,
                 'label': rule.status_label_id
@@ -353,6 +354,7 @@ Handles Data Quality API operations within Inventory backend.
                     'not_null': rule['not_null'],
                     'min': rule['min'],
                     'max': rule['max'],
+                    'text_match': rule['text_match'],
                     'severity': _get_severity_from_js(rule['severity']),
                     'units': rule['units'],
                     'status_label_id': rule['label']
@@ -371,6 +373,7 @@ Handles Data Quality API operations within Inventory backend.
                     'not_null': rule['not_null'],
                     'min': rule['min'],
                     'max': rule['max'],
+                    'text_match': rule['text_match'],
                     'severity': _get_severity_from_js(rule['severity']),
                     'units': rule['units'],
                     'status_label_id': rule['label']

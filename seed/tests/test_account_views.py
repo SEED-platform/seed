@@ -626,7 +626,6 @@ class AccountsViewTests(TestCase):
     #     dq.add_rule({
     #         'table_name': 'PropertyState',
     #         'field': 'address_line_1',
-    #         'category': CATEGORY_IN_RANGE_CHECKING,
     #         'severity': 0,
     #     })
     #     response = self.client.get(reverse_lazy('apiv2:organizations-data-quality-rules', args=[self.org.pk]))

@@ -129,6 +129,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
               not_null: rule.not_null,
               min: rule.min || null,
               max: rule.max || null,
+              text_match: rule.text_match,
               severity: rule.severity,
               units: rule.units,
               label: rule.label
@@ -158,7 +159,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
             //         d.reject();
             //       }).then(function () {
             //         label_service.get_labels_for_org($scope.org.id).then(function (labels) {
-            //           $scope.all_labels = labels;  
+            //           $scope.all_labels = labels;
             //         });
             //       });
             //   }
@@ -194,9 +195,14 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
       // clear columns that are type specific.
       if (newDataType !== original) {
-        rule.min = null;
-        rule.max = null;
+        rule.text_match = null;
         rule.units = '';
+
+        if (!_.includes([null, 'number'], original) || !_.includes([null, 'number'], newDataType)) {
+          // Reset min/max if the data type is something other than null <-> number
+          rule.min = null;
+          rule.max = null;
+        }
       }
 
       rule.data_type = newDataType;
@@ -221,6 +227,8 @@ angular.module('BE.seed.controller.data_quality_admin', [])
     $scope.change_data_type = function (rule, oldValue) {
       var data_type = rule.data_type;
       _.forEach($scope.ruleGroups[$scope.inventory_type][rule.field], function (currentRule) {
+        currentRule.text_match = null;
+
         if (!_.includes(['', 'number'], oldValue) || !_.includes([null, 'number'], data_type)) {
           // Reset min/max if the data type is something other than null <-> number
           currentRule.min = null;
@@ -269,11 +277,12 @@ angular.module('BE.seed.controller.data_quality_admin', [])
           not_null: false,
           max: null,
           min: null,
+          text_match: null,
           severity: 'error',
           units: '',
           // label: 'Invalid ' + label,
           label: null,
-          new: true,
+          'new': true,
           autofocus: true
         });
       }
