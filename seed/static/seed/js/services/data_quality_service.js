@@ -8,17 +8,16 @@ angular.module('BE.seed.service.data_quality', []).factory('data_quality_service
   function ($http) {
     var data_quality_factory = {};
 
-    // /*
-    //  * get_data_quality_results
-    //  * return data_quality results.
-    //  * @param import_file_id: int, represents file import id.
-    //  */
-    // data_quality_factory.get_data_quality_results = function (import_file_id) {
-    //   console.debug('Fetching ', '/api/v2/import_files/' + import_file_id + '/data_quality_results');
-    //   return $http.get('/api/v2/import_files/' + import_file_id + '/data_quality_results').then(function (response) {
-    //     return response.data.data;
-    //   });
-    // };
+    /*
+     * get_data_quality_results
+     * return data_quality results.
+     * @param import_file_id: int, represents file import id.
+     */
+    data_quality_factory.get_data_quality_results = function (import_file_id) {
+      return $http.get('/api/v2/import_files/' + import_file_id + '/data_quality_results').then(function (response) {
+        return response.data.data;
+      });
+    };
 
     /**
      * gets the data quality rules for an org
@@ -58,6 +57,23 @@ angular.module('BE.seed.service.data_quality', []).factory('data_quality_service
     data_quality_factory.save_data_quality_rules = function (org_id, data_quality_rules) {
       return $http.post('/api/v2/data_quality_checks/save_data_quality_rules/?organization_id=' + org_id, {
         data_quality_rules: data_quality_rules
+      }).then(function (response) {
+        return response.data;
+      });
+    };
+
+    data_quality_factory.start_data_quality_rules = function (org_id, property_state_ids, taxlot_state_ids) {
+      return $http.post('/api/v2/data_quality_checks/?organization_id=' + org_id, {
+        property_state_ids: property_state_ids,
+        taxlot_state_ids: taxlot_state_ids
+      }).then(function (response) {
+        return response.data;
+      });
+    };
+
+    data_quality_factory.start_data_quality_rules = function (org_id, task_id) {
+      return $http.post('/api/v2/data_quality_checks/status/?organization_id=' + org_id, {
+        task_id: task_id
       }).then(function (response) {
         return response.data;
       });

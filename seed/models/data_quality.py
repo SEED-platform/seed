@@ -388,8 +388,9 @@ class DataQualityCheck(models.Model):
                     self.results[datum.id][field] = getattr(datum, field)
                 self.results[datum.id]['data_quality_results'] = []
 
+            # self._missing_matching_field(datum)
             self._in_range_checking(datum)
-            self._missing_values(datum)
+            # self._missing_values(datum)
             # self._data_type_check(datum)
 
         # Prune the results will remove any entries that have zero data_quality_results
@@ -405,6 +406,34 @@ class DataQualityCheck(models.Model):
 
     def reset_results(self):
         self.results = {}
+
+    # def missing_matching_field(self, datum):
+    #     """
+    #     Look for fields in the database that are not matched. Missing is
+    #     defined as a None in the database
+    #     :param datum: Database record containing the BS version of the fields populated
+    #     :return: None
+    #     # TODO: NL: Should we check the extra_data field for the data?
+    #     """
+    #
+    #     for rule in Rules.objects.filter(
+    #             org=self.org,
+    #             category=CATEGORY_MISSING_MATCHING_FIELD,
+    #             enabled=True
+    #     ).order_by('field', 'severity'):
+    #         if hasattr(datum, rule.field):
+    #             value = getattr(datum, rule.field)
+    #             formatted_field = ASSESSOR_FIELDS_BY_COLUMN[rule.field]['title']
+    #             if value is None:
+    #                 # Field exists but the value is None. Register a cleansing error
+    #                 self.results[datum.id]['cleansing_results'].append({
+    #                     'field': rule.field,
+    #                     'formatted_field': formatted_field,
+    #                     'value': value,
+    #                     'message': formatted_field + ' field not found',
+    #                     'detailed_message': formatted_field + ' field not found',
+    #                     'severity': dict(SEVERITY)[rule.severity]
+    #                 })
 
     # def _missing_values(self, datum):
     #     """
@@ -451,6 +480,10 @@ class DataQualityCheck(models.Model):
             # check if the field exists
             if hasattr(datum, rule.field):
                 value = getattr(datum, rule.field)
+                # If column has never been mapped, ignore rule
+                if (rule.table_name, rule.field) not in self.column_lookup:
+                    continue
+
                 display_name = self.column_lookup[(rule.table_name, rule.field)]
 
                 # Don't check the out of range errors if the data are empty

@@ -88,11 +88,11 @@ def check_data_chunk(model, ids, identifier, increment):
     :param increment: currently unused, but needed because of the special method that appends this onto the function  # NOQA
     :return: None
     """
-    qs = model.objects.filter(id__in=ids).iterator()
-    super_org = qs[0].organization_id
+    qs = model.objects.filter(id__in=ids)
+    super_org = qs.first().organization
 
     d = DataQualityCheck.retrieve(super_org.get_parent())
-    d.check_data(model.__name__, qs)
+    d.check_data(model.__name__, qs.iterator())
     d.save_to_cache(identifier)
 
 
@@ -176,11 +176,11 @@ def finish_mapping(import_file_id, mark_as_done):
     }
     set_cache(prog_key, result['status'], result)
 
-    qs = PropertyState.objects.filter(import_file=import_file).only('id').iterator()
-    tlqs = TaxLotState.objects.filter(import_file=import_file).only('id').iterator()
+    property_state_ids = list(PropertyState.objects.filter(import_file=import_file).only('id'))
+    taxlot_state_ids = list(TaxLotState.objects.filter(import_file=import_file).only('id'))
 
     # now call data_quality
-    _data_quality_check(qs, tlqs, import_file_id)
+    _data_quality_check(property_state_ids, taxlot_state_ids, import_file_id)
 
 
 def _translate_unit_to_type(unit):
@@ -460,7 +460,7 @@ def _map_data(import_file_id, mark_as_done):
 
 @shared_task
 @lock_and_track
-def _data_quality_check(prop_state_ids, taxlot_state_ids, identifier):
+def _data_quality_check(property_state_ids, taxlot_state_ids, identifier):
     """
 
     Get the mapped data and run the data_quality class against it in chunks. The
@@ -472,7 +472,7 @@ def _data_quality_check(prop_state_ids, taxlot_state_ids, identifier):
     """
     # initialize the cache for the data_quality results using the data_quality static method
     tasks = []
-    id_chunks = [[obj.id for obj in chunk] for chunk in batch(prop_state_ids, 100)]
+    id_chunks = [[obj.id for obj in chunk] for chunk in batch(property_state_ids, 100)]
     increment = get_cache_increment_value(id_chunks)
     for ids in id_chunks:
         tasks.append(check_data_chunk.s(PropertyState, ids, identifier, increment))
