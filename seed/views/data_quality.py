@@ -41,7 +41,7 @@ class RulesSubSerializer(serializers.Serializer):
 class RulesSubSerializerB(serializers.Serializer):
     field = serializers.CharField(max_length=100)
     enabled = serializers.BooleanField()
-    type = serializers.CharField(max_length=100)
+    data_type = serializers.CharField(max_length=100)
     min = serializers.FloatField()
     max = serializers.FloatField()
     severity = serializers.CharField(max_length=100)
@@ -112,14 +112,14 @@ def _get_js_rule_severity(severity):
     return dict(DATA_QUALITY_SEVERITY).get(severity)
 
 
-# def _get_rule_type_from_js(data_type):
-#     """return the Rules TYPE from the JS friendly data type
-#
-#     :param data_type: 'string', 'number', 'date', or 'year'
-#     :returns: int data type as defined in data_quality.models
-#     """
-#     d = {v: k for k, v in dict(DATA_QUALITY_DATA_TYPES).items()}
-#     return d.get(data_type)
+def _get_rule_type_from_js(data_type):
+    """return the Rules TYPE from the JS friendly data type
+
+    :param data_type: 'string', 'number', 'date', or 'year'
+    :returns: int data type as defined in data_quality.models
+    """
+    d = {v: k for k, v in dict(DATA_QUALITY_DATA_TYPES).items()}
+    return d.get(data_type)
 
 
 def _get_severity_from_js(severity):
@@ -250,7 +250,8 @@ Handles Data Quality API operations within Inventory backend.
             result['rules']['properties' if rule.table_name == 'PropertyState' else 'taxlots'].append({
                 'field': rule.field,
                 'enabled': rule.enabled,
-                'type': _get_js_rule_type(rule.data_type),
+                'data_type': _get_js_rule_type(rule.data_type),
+                'rule_type': rule.rule_type,
                 'required': rule.required,
                 'not_null': rule.not_null,
                 'min': rule.min,
@@ -346,7 +347,7 @@ Handles Data Quality API operations within Inventory backend.
         """
         Saves an organization's settings: name, query threshold, shared fields.
         The method passes in all the fields again, so it is okay to remove
-        all the rules in the db, and just recreate them (albiet inefficient)
+        all the rules in the db, and just recreate them (albeit inefficient)
         ---
         parameter_strategy: replace
         parameters:
@@ -373,53 +374,59 @@ Handles Data Quality API operations within Inventory backend.
         org = Organization.objects.get(pk=request.query_params['organization_id'])
 
         body = request.data
-        # if body.get('data_quality_rules') is None:
-        #     return JsonResponse({
-        #         'status': 'error',
-        #         'message': 'missing the data_quality_rules'
-        #     }, status=status.HTTP_404_NOT_FOUND)
-        #
-        # posted_rules = body['data_quality_rules']
-        # updated_rules = []
-        # for rule in posted_rules['missing_matching_field']:
-        #     updated_rules.append(
-        #         {
-        #             'field': rule['field'],
-        #             'category': CATEGORY_MISSING_MATCHING_FIELD,
-        #             'severity': _get_severity_from_js(rule['severity']),
-        #         }
-        #     )
-        # for rule in posted_rules['missing_values']:
-        #     updated_rules.append(
-        #         {
-        #             'field': rule['field'],
-        #             'category': CATEGORY_MISSING_VALUES,
-        #             'severity': _get_severity_from_js(rule['severity']),
-        #         }
-        #     )
-        # for rule in posted_rules['in_range_checking']:
-        #     updated_rules.append(
-        #         {
-        #             'field': rule['field'],
-        #             'enabled': rule['enabled'],
-        #             'category': CATEGORY_IN_RANGE_CHECKING,
-        #             'data_type': _get_rule_type_from_js(rule['type']),
-        #             'min': rule['min'],
-        #             'max': rule['max'],
-        #             'severity': _get_severity_from_js(rule['severity']),
-        #             'units': rule['units'],
-        #         }
-        #     )
-        #
-        # dq = DataQualityCheck.retrieve(org)
-        # dq.remove_all_rules()
-        # for rule in updated_rules:
-        #     try:
-        #         dq.add_rule(rule)
-        #     except TypeError as e:
-        #         return JsonResponse({
-        #             'status': 'error',
-        #             'message': e,
-        #         }, status=status.HTTP_400_BAD_REQUEST)
+        if body.get('data_quality_rules') is None:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'missing the data_quality_rules'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        posted_rules = body['data_quality_rules']
+        updated_rules = []
+        for rule in posted_rules['properties']:
+            updated_rules.append(
+                {
+                    'field': rule['field'],
+                    'table_name': 'PropertyState',
+                    'enabled': rule['enabled'],
+                    'data_type': _get_rule_type_from_js(rule['data_type']),
+                    'rule_type': rule['rule_type'],
+                    'required': rule['required'],
+                    'not_null': rule['not_null'],
+                    'min': rule['min'],
+                    'max': rule['max'],
+                    'severity': _get_severity_from_js(rule['severity']),
+                    'units': rule['units'],
+                    'status_label_id': rule['label']
+                }
+            )
+
+        for rule in posted_rules['taxlots']:
+            updated_rules.append(
+                {
+                    'field': rule['field'],
+                    'table_name': 'TaxLotState',
+                    'enabled': rule['enabled'],
+                    'data_type': _get_rule_type_from_js(rule['data_type']),
+                    'rule_type': rule['rule_type'],
+                    'required': rule['required'],
+                    'not_null': rule['not_null'],
+                    'min': rule['min'],
+                    'max': rule['max'],
+                    'severity': _get_severity_from_js(rule['severity']),
+                    'units': rule['units'],
+                    'status_label_id': rule['label']
+                }
+            )
+
+        dq = DataQualityCheck.retrieve(org)
+        dq.remove_all_rules()
+        for rule in updated_rules:
+            try:
+                dq.add_rule(rule)
+            except TypeError as e:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': e,
+                }, status=status.HTTP_400_BAD_REQUEST)
 
         return JsonResponse({'status': 'success'})

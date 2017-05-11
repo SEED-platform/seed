@@ -275,7 +275,7 @@ class Rule(models.Model):
     description = models.CharField(max_length=1000, blank=True)
     data_quality_check = models.ForeignKey('DataQualityCheck', related_name='rules',
                                            on_delete=models.CASCADE, null=True)
-    status_label = models.OneToOneField(StatusLabel, null=True, on_delete=models.SET_NULL)
+    status_label = models.ForeignKey(StatusLabel, null=True, on_delete=models.DO_NOTHING)
     table_name = models.CharField(max_length=200, default='PropertyState', blank=True)
     field = models.CharField(max_length=200)
     enabled = models.BooleanField(default=True)
@@ -288,10 +288,10 @@ class Rule(models.Model):
     severity = models.IntegerField(choices=SEVERITY)
     units = models.CharField(max_length=100, blank=True)
 
-    def delete(self, *args, **kwargs):
-        if self.status_label:
-            self.status_label.delete()
-        return super(self.__class__, self).delete(*args, **kwargs)
+    # def delete(self, *args, **kwargs):
+    #     if self.status_label:
+    #         self.status_label.delete()
+    #     return super(self.__class__, self).delete(*args, **kwargs)
 
 
 class DataQualityCheck(models.Model):
