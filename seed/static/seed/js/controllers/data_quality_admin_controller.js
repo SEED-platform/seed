@@ -66,6 +66,14 @@ angular.module('BE.seed.controller.data_quality_admin', [])
             if (row.min) row.min = moment(row.min, 'YYYYMMDD').toDate();
             if (row.max) row.max = moment(row.max, 'YYYYMMDD').toDate();
           }
+          if (rule.label) {
+            var match = _.find(labels_payload, function (label) {
+              return label.id === rule.label;
+            });
+            if (match) {
+              row.label = match.name;
+            }
+          }
           $scope.ruleGroups[index][rule.field].push(row);
         });
       });
@@ -142,6 +150,10 @@ angular.module('BE.seed.controller.data_quality_admin', [])
                   function (message) {
                     $log.error('Error creating new label.', message);
                     d.reject();
+                  }).then(function () {
+                    label_service.get_labels_for_org($scope.org.id).then(function (labels) {
+                      $scope.all_labels = labels;  
+                    });
                   });
               }
               else {
@@ -195,6 +207,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       // remove old rule.
       if ($scope.ruleGroups[$scope.inventory_type][oldField].length === 1) delete $scope.ruleGroups[$scope.inventory_type][oldField];
       else $scope.ruleGroups[$scope.inventory_type][oldField].splice(index, 1);
+      rule.autofocus = true;
     };
 
     // Keep field types consistent for identical fields
@@ -244,7 +257,8 @@ angular.module('BE.seed.controller.data_quality_admin', [])
           severity: 'error',
           units: '',
           label: 'Invalid ' + label,
-          'new': true
+          'new': true,
+          autofocus: true
         });
       }
     };

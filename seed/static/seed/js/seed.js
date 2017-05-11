@@ -26,6 +26,7 @@ angular.module('BE.seed.vendor_dependencies', [
   'ui.router.stateHelper',
   'ui.sortable',
   'ui.tree',
+  'focus-if',
   'xeditable',
   angularDragula(angular)
 ]);
