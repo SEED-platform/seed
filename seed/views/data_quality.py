@@ -133,9 +133,9 @@ Handles Data Quality API operations within Inventory backend.
         # step 2: validate the check IDs all belong to this organization ID
         # step 3: validate the actual user belongs to the passed in org ID
         # step 4: kick off a background task
-        do_checks(prop_state_ids, tax_lot_state_ids)
+        return_value = do_checks(prop_state_ids, tax_lot_state_ids)
         # step 5: create a new model instance
-        return JsonResponse({'num_taxlots': len(tax_lot_state_ids), 'num_props': len(prop_state_ids)})
+        return JsonResponse({'num_taxlots': len(tax_lot_state_ids), 'num_props': len(prop_state_ids), 'prog_key': return_value['progress_key']})
 
     @list_route(methods=['POST'])
     def status(self, request):
