@@ -258,14 +258,16 @@ class OrgMixin(object):
         """
         if not getattr(self, '_organization', None):
             org_id = get_org_id(request)
-            if org_id:
+            org = None
+            if not org_id:
+                org = get_user_org(request.user)
+                org_id = getattr(org, 'pk')
+            if return_obj and not org:
                 try:
                     org = request.user.orgs.get(pk=org_id)
                 except ObjectDoesNotExist:
                     raise PermissionDenied('Incorrect org id.')
-            else:
-                org = get_user_org(request.user)
-            self._organization = getattr(org, 'pk') if not return_obj else org
+            self._organization = org_id if not return_obj else org
         return self._organization
 
     def get_parent_org(self, request):

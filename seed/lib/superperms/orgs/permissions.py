@@ -112,12 +112,11 @@ class SEEDOrgPermissions(BasePermission):
         if not org_id:
             org_id = get_user_org(request.user).pk
         try:
-            org = Organization.objects.get(pk=org_id)
             org_user = OrganizationUser.objects.get(
-                user=request.user, organization=org
+                user=request.user, organization__id=org_id
             )
             has_perm = org_user.role_level >= required_perm
-        except (Organization.DoesNotExist, OrganizationUser.DoesNotExist):
+        except OrganizationUser.DoesNotExist:
             pass
         return has_perm
 
