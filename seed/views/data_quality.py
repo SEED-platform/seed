@@ -7,16 +7,14 @@
 
 # TODO The API is returning on both a POST and GET. Make sure to authenticate.
 
-from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.http import JsonResponse
-from rest_framework import viewsets, serializers
+from rest_framework import viewsets, serializers, status
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import list_route
 
 from seed.authentication import SEEDAuthentication
 from seed.decorators import ajax_request_class
-from seed.decorators import get_prog_key
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import (
     Organization,
@@ -27,7 +25,6 @@ from seed.models.data_quality import (
     DataQualityCheck,
 )
 from seed.utils.api import api_endpoint_class
-from seed.utils.cache import set_cache
 from seed.data_importer.tasks import do_checks
 
 logger = get_task_logger(__name__)
@@ -56,42 +53,6 @@ class RulesIntermediateSerializer(serializers.Serializer):
 
 class RulesSerializer(serializers.Serializer):
     data_quality_rules = RulesIntermediateSerializer()
-
-
-@shared_task
-def check_data_chunk(model, ids, identifier, increment):
-    """
-
-    :param model: one of 'PropertyState' or 'TaxLotState'
-    :param ids: list of primary key ids to process
-    :param file_pk: import file primary key
-    :param increment: currently unused, but needed because of the special method that appends this onto the function  # NOQA
-    :return: None
-    """
-    qs = model.objects.filter(id__in=ids).iterator()
-    super_org = qs[0].organization_id
-
-    d = DataQualityCheck.retrieve(super_org.get_parent())
-    d.check_data(model.__name__, qs)
-    d.save_to_cache(identifier)
-
-
-@shared_task
-def finish_checking(identifier):
-    """
-    Chord that is called after the data quality check is complete
-
-    :param identifier: import file primary key
-    :return:
-    """
-
-    prog_key = get_prog_key('check_data', identifier)
-    result = {
-        'status': 'success',
-        'progress': 100,
-        'message': 'data quality check complete'
-    }
-    set_cache(prog_key, result['status'], result)
 
 
 def _get_js_rule_type(data_type):
@@ -130,8 +91,6 @@ def _get_severity_from_js(severity):
     """
     d = {v: k for k, v in dict(DATA_QUALITY_SEVERITY).items()}
     return d.get(severity)
-
-# TODO: Who owns the cleansing operation once it is started?  Organization level?  Single user?
 
 
 class DataQualityViews(viewsets.ViewSet):

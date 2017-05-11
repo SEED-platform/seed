@@ -32,10 +32,6 @@ from seed.data_importer.models import (
     STATUS_READY_TO_MERGE,
 )
 from seed.models.data_quality import DataQualityCheck
-from seed.views.data_quality import (
-    finish_checking,
-    check_data_chunk,
-)
 from seed.decorators import get_prog_key
 from seed.decorators import lock_and_track
 from seed.green_button import xml_importer
@@ -83,6 +79,66 @@ def get_cache_increment_value(chunk):
 
 
 @shared_task
+def check_data_chunk(model, ids, identifier, increment):
+    """
+
+    :param model: one of 'PropertyState' or 'TaxLotState'
+    :param ids: list of primary key ids to process
+    :param file_pk: import file primary key
+    :param increment: currently unused, but needed because of the special method that appends this onto the function  # NOQA
+    :return: None
+    """
+    qs = model.objects.filter(id__in=ids).iterator()
+    super_org = qs[0].organization_id
+
+    d = DataQualityCheck.retrieve(super_org.get_parent())
+    d.check_data(model.__name__, qs)
+    d.save_to_cache(identifier)
+
+
+@shared_task
+def finish_checking(identifier):
+    """
+    Chord that is called after the data quality check is complete
+
+    :param identifier: import file primary key
+    :return:
+    """
+
+    prog_key = get_prog_key('check_data', identifier)
+    result = {
+        'status': 'success',
+        'progress': 100,
+        'message': 'data quality check complete'
+    }
+    set_cache(prog_key, result['status'], result)
+
+
+@shared_task
+def do_checks(propertystate_ids, taxlotstate_ids):
+    identifier = randint(100, 10000)
+    DataQualityCheck.initialize_cache(identifier)
+    prog_key = get_prog_key('check_data', identifier)
+    trigger_data_quality_checks.delay(propertystate_ids, taxlotstate_ids, identifier)
+    return {'status': 'success', 'progress_key': prog_key}
+
+
+@shared_task
+def trigger_data_quality_checks(qs, tlqs, identifier):
+
+    prog_key = get_prog_key('map_data', identifier)
+    result = {
+        'status': 'success',
+        'progress': 100,
+        'progress_key': prog_key
+    }
+    set_cache(prog_key, result['status'], result)
+
+    # now call data_quality
+    _data_quality_check(qs, tlqs, identifier)
+
+
+@shared_task
 def finish_import_record(import_record_pk):
     """Set all statuses to Done, etc."""
     states = ('done', 'active', 'queued')
@@ -125,21 +181,6 @@ def finish_mapping(import_file_id, mark_as_done):
 
     # now call data_quality
     _data_quality_check(qs, tlqs, import_file_id)
-
-
-@shared_task
-def _trigger_data_quality_checks(qs, tlqs, identifier):
-
-    prog_key = get_prog_key('map_data', identifier)
-    result = {
-        'status': 'success',
-        'progress': 100,
-        'progress_key': prog_key
-    }
-    set_cache(prog_key, result['status'], result)
-
-    # now call data_quality
-    _data_quality_check(qs, tlqs, identifier)
 
 
 def _translate_unit_to_type(unit):
@@ -499,15 +540,6 @@ def map_data(import_file_id, remap=False, mark_as_done=True):
     prog_key = get_prog_key('map_data', import_file_id)
     delete_cache(prog_key)
     _map_data.delay(import_file_id, mark_as_done)
-    return {'status': 'success', 'progress_key': prog_key}
-
-
-@shared_task
-def do_checks(propertystate_ids, taxlotstate_ids):
-    identifier = randint(100, 10000)
-    DataQualityCheck.initialize_cache(identifier)
-    prog_key = get_prog_key('check_data', identifier)
-    _trigger_data_quality_checks.delay(propertystate_ids, taxlotstate_ids, identifier)
     return {'status': 'success', 'progress_key': prog_key}
 
 
