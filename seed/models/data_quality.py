@@ -338,28 +338,28 @@ class DataQualityCheck(models.Model):
         super(DataQualityCheck, self).__init__(*args, **kwargs)
 
     @staticmethod
-    def initialize_cache(file_pk):
+    def initialize_cache(identifier):
         """
         Initialize the cache for storing the results. This is called before the
         celery tasks are chunked up.
 
-        :param file_pk: Import file primary key
+        :param identifier: Import file primary key
         :return: string, cache key
         """
 
-        k = DataQualityCheck.cache_key(file_pk)
+        k = DataQualityCheck.cache_key(identifier)
         set_cache_raw(k, [])
         return k
 
     @staticmethod
-    def cache_key(file_pk):
+    def cache_key(identifier):
         """
         Static method to return the location of the data_quality results from redis.
 
-        :param file_pk: Import file primary key
+        :param identifier: Import file primary key
         :return:
         """
-        return "data_quality_results__%s" % file_pk
+        return "data_quality_results__%s" % identifier
 
     def check_data(self, record_type, data):
         """
@@ -539,29 +539,29 @@ class DataQualityCheck(models.Model):
     #                     'severity': rule.get_severity_display(),
     #                 })
 
-    def save_to_cache(self, file_pk):
+    def save_to_cache(self, identifier):
         """
         Save the results to the cache database. The data in the cache are
         stored as a list of dictionaries. The data in this class are stored as
         a dict of dict. This is important to remember because the data from the
         cache cannot be simply loaded into the above structure.
 
-        :param file_pk: Import file primary key
+        :param identifier: Import file primary key
         :return: None
         """
 
         # change the format of the data in the cache. Make this a list of
         # objects instead of object of objects.
-        existing_results = get_cache_raw(DataQualityCheck.cache_key(file_pk))
+        existing_results = get_cache_raw(DataQualityCheck.cache_key(identifier))
 
         l = []
         for key, value in self.results.iteritems():
             l.append(value)
 
-        existing_results = existing_results + l
+        existing_results += l
 
         z = sorted(existing_results, key=lambda k: k['id'])
-        set_cache_raw(DataQualityCheck.cache_key(file_pk), z, 86400)  # save the results for 24 hours
+        set_cache_raw(DataQualityCheck.cache_key(identifier), z, 86400)  # save the results for 24 hours
 
     def initialize_rules(self):
         """

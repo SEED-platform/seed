@@ -70,6 +70,7 @@ from seed.models import TaxLotProperty
 from seed.models.auditlog import AUDIT_IMPORT
 from seed.utils.buildings import get_source_type
 from seed.utils.cache import set_cache, increment_cache, get_cache, delete_cache
+from random import randint
 
 _log = get_task_logger(__name__)
 
@@ -119,8 +120,26 @@ def finish_mapping(import_file_id, mark_as_done):
     }
     set_cache(prog_key, result['status'], result)
 
+    qs = PropertyState.objects.filter(import_file=import_file).only('id').iterator()
+    tlqs = TaxLotState.objects.filter(import_file=import_file).only('id').iterator()
+
     # now call data_quality
-    _data_quality_check(import_file_id)
+    _data_quality_check(qs, tlqs, import_file_id)
+
+
+@shared_task
+def _trigger_data_quality_checks(qs, tlqs, identifier):
+
+    prog_key = get_prog_key('map_data', identifier)
+    result = {
+        'status': 'success',
+        'progress': 100,
+        'progress_key': prog_key
+    }
+    set_cache(prog_key, result['status'], result)
+
+    # now call data_quality
+    _data_quality_check(qs, tlqs, identifier)
 
 
 def _translate_unit_to_type(unit):
@@ -400,7 +419,7 @@ def _map_data(import_file_id, mark_as_done):
 
 @shared_task
 @lock_and_track
-def _data_quality_check(import_file_id):
+def _data_quality_check(prop_state_ids, taxlot_state_ids, identifier):
     """
 
     Get the mapped data and run the data_quality class against it in chunks. The
@@ -410,31 +429,24 @@ def _data_quality_check(import_file_id):
 
     :param import_file_id: int, the id of the import_file we're working with.
     """
-    import_file = ImportFile.objects.get(pk=import_file_id)
-
     # initialize the cache for the data_quality results using the data_quality static method
-    DataQualityCheck.initialize_cache(import_file_id)
-    prog_key = get_prog_key('check_data', import_file_id)
-
     tasks = []
-    qs = PropertyState.objects.filter(import_file=import_file).only('id').iterator()
-    id_chunks = [[obj.id for obj in chunk] for chunk in batch(qs, 100)]
+    id_chunks = [[obj.id for obj in chunk] for chunk in batch(prop_state_ids, 100)]
     increment = get_cache_increment_value(id_chunks)
     for ids in id_chunks:
-        tasks.append(check_data_chunk.s(PropertyState, ids, import_file_id, increment))
+        tasks.append(check_data_chunk.s(PropertyState, ids, identifier, increment))
 
-    tlqs = TaxLotState.objects.filter(import_file=import_file).only('id').iterator()
-    id_chunks_tl = [[obj.id for obj in chunk] for chunk in batch(tlqs, 100)]
+    id_chunks_tl = [[obj.id for obj in chunk] for chunk in batch(taxlot_state_ids, 100)]
     increment_tl = get_cache_increment_value(id_chunks_tl)
     for ids in id_chunks_tl:
-        tasks.append(check_data_chunk.s(TaxLotState, ids, import_file_id, increment_tl))
+        tasks.append(check_data_chunk.s(TaxLotState, ids, identifier, increment_tl))
 
     if tasks:
         # specify the chord as an immutable with .si
-        chord(tasks, interval=15)(finish_checking.si(import_file_id))
+        chord(tasks, interval=15)(finish_checking.si(identifier))
     else:
-        finish_checking.s(import_file_id)
-
+        finish_checking.s(identifier)
+    prog_key = get_prog_key('check_data', identifier)
     result = {
         'status': 'success',
         'progress': 100,
@@ -453,7 +465,8 @@ def map_data(import_file_id, remap=False, mark_as_done=True):
     end.
     :return: JSON
     """
-
+    DataQualityCheck.initialize_cache(import_file_id)
+    prog_key = get_prog_key('check_data', import_file_id)
     import_file = ImportFile.objects.get(pk=import_file_id)
     if remap:
         # Check to ensure that import files has not already been matched/merged.
@@ -486,6 +499,15 @@ def map_data(import_file_id, remap=False, mark_as_done=True):
     prog_key = get_prog_key('map_data', import_file_id)
     delete_cache(prog_key)
     _map_data.delay(import_file_id, mark_as_done)
+    return {'status': 'success', 'progress_key': prog_key}
+
+
+@shared_task
+def do_checks(propertystate_ids, taxlotstate_ids):
+    identifier = randint(100, 10000)
+    DataQualityCheck.initialize_cache(identifier)
+    prog_key = get_prog_key('check_data', identifier)
+    _trigger_data_quality_checks.delay(propertystate_ids, taxlotstate_ids, identifier)
     return {'status': 'success', 'progress_key': prog_key}
 
 

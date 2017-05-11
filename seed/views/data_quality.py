@@ -10,12 +10,11 @@
 from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.http import JsonResponse
-from rest_framework import viewsets, serializers, status
+from rest_framework import viewsets, serializers
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import list_route
 
 from seed.authentication import SEEDAuthentication
-from seed.data_importer.models import ImportFile
 from seed.decorators import ajax_request_class
 from seed.decorators import get_prog_key
 from seed.lib.superperms.orgs.decorators import has_perm_class
@@ -29,6 +28,7 @@ from seed.models.data_quality import (
 )
 from seed.utils.api import api_endpoint_class
 from seed.utils.cache import set_cache
+from seed.data_importer.tasks import do_checks
 
 logger = get_task_logger(__name__)
 
@@ -59,7 +59,7 @@ class RulesSerializer(serializers.Serializer):
 
 
 @shared_task
-def check_data_chunk(model, ids, file_pk, increment):
+def check_data_chunk(model, ids, identifier, increment):
     """
 
     :param model: one of 'PropertyState' or 'TaxLotState'
@@ -68,26 +68,24 @@ def check_data_chunk(model, ids, file_pk, increment):
     :param increment: currently unused, but needed because of the special method that appends this onto the function  # NOQA
     :return: None
     """
-
     qs = model.objects.filter(id__in=ids).iterator()
-    import_file = ImportFile.objects.get(pk=file_pk)
-    super_org = import_file.import_record.super_organization
+    super_org = qs[0].organization_id
 
     d = DataQualityCheck.retrieve(super_org.get_parent())
     d.check_data(model.__name__, qs)
-    d.save_to_cache(file_pk)
+    d.save_to_cache(identifier)
 
 
 @shared_task
-def finish_checking(file_pk):
+def finish_checking(identifier):
     """
     Chord that is called after the data quality check is complete
 
-    :param file_pk: import file primary key
+    :param identifier: import file primary key
     :return:
     """
 
-    prog_key = get_prog_key('check_data', file_pk)
+    prog_key = get_prog_key('check_data', identifier)
     result = {
         'status': 'success',
         'progress': 100,
@@ -135,6 +133,7 @@ def _get_severity_from_js(severity):
 
 # TODO: Who owns the cleansing operation once it is started?  Organization level?  Single user?
 
+
 class DataQualityViews(viewsets.ViewSet):
     """
 Handles Data Quality API operations within Inventory backend.
@@ -170,10 +169,12 @@ Handles Data Quality API operations within Inventory backend.
         body = request.data
         tax_lot_state_ids = body['taxlot_state_ids']
         prop_state_ids = body['property_state_ids']
+
         # step 1: validate the check IDs all exist
         # step 2: validate the check IDs all belong to this organization ID
         # step 3: validate the actual user belongs to the passed in org ID
         # step 4: kick off a background task
+        do_checks(prop_state_ids, tax_lot_state_ids)
         # step 5: create a new model instance
         return JsonResponse({'num_taxlots': len(tax_lot_state_ids), 'num_props': len(prop_state_ids)})
 
