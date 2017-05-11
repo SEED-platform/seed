@@ -19,10 +19,10 @@
                 <h2><i class="fa fa-flag"></i> Data Quality</h2>
             </div>
             <div class="section_action_container right_40 section_action_btn pull-right">
-                <button type="button" class="btn btn-default" ng-click="restore_defaults()">Restore Default Rules
+                <button type="button" class="btn btn-danger" ng-click="restore_defaults()">Restore Default Rules
                     <i class="fa fa-check" ng-show="defaults_restored"></i>
                 </button>
-                <button type="button" class="btn btn-default" ng-click="reset_all_rules()">Reset All Rules
+                <button type="button" class="btn btn-danger" ng-click="reset_all_rules()">Reset All Rules
                     <i class="fa fa-check" ng-show="rules_reset"></i>
                 </button>
                 <button type="button" class="btn btn-primary" ng-click="save_settings()">Save Changes
@@ -35,7 +35,7 @@
         <div class="section_content with_padding" ng-if="org.is_parent && auth.requires_owner" style="margin-bottom:15px;">
             <h3>In-Range Checking: Modifying Data Quality Rules</h3>
             <p>From the table below, select the rules that you want to: 1) enable/disable within your organization, and 2) modify the minimum/maximum values to validate against on file upload.</p>
-            <div class="right_wide section_action_container"><a ng-click="create_new_rule()">Create a new rule</a></div>
+            <button class="btn btn-info btn-sm" style="margin-bottom: 15px;" ng-click="create_new_rule()">Create a new rule</button>
             <div class="data-quality-tab-container">
                 <ul class="nav nav-tabs" style="margin-bottom:1px;">
                     <li ui-sref-active="active" heading="View by Property">
@@ -52,57 +52,56 @@
                         <tr>
                             <th class="condensed_head" style="min-width: 33px; width: 33px;"></th>
                             <th>Field</th>
-                            <th style="min-width: 100px;">Field Type</th>
-                            <th style="width: 70px;">Required</th>
-                            <th style="width: 70px;">Not Null</th>
+                            <th style="min-width: 100px; width: 100px;">Data Type</th>
+                            <th style="min-width: 70px; width: 70px;">Required</th>
+                            <th style="min-width: 70px; width: 70px;">Not Null</th>
                             <th>Minimum</th>
                             <th>Maximum</th>
-                            <th style="min-width: 100px;">Severity</th>
+                            <th style="min-width: 100px; width: 100px;">Severity</th>
                             <th>Units</th>
                             <th>Label</th>
-                            <th class="condensed_head" style="min-width: 33px; width: 33px;"></th>
+                            <th style="min-width: 54px; width: 54px;"></th>
                         </tr>
                     </thead>
                     <tbody ng-repeat="ruleGroup in ruleGroups[inventory_type]">
                         <tr ng-repeat="rule in ruleGroup" ng-if="!rule.delete" ng-class="{ 'warning' : rule.new, 'disabled' : !rule.enabled }">
-                            <td class="check is_aligned_center" style="width: 33px;" ng-click="rule.enabled = !rule.enabled">
+                            <td class="check is_aligned_center" style="width: 33px;" ng-click="rule.rule_type = 1; rule.enabled = !rule.enabled">
                                 <input type="checkbox" ng-model="rule.enabled" class="no-click">
                             </td>
                             <td>
-                                <select class="form-control input-sm" ng-model="rule.field" ng-options="col.name as col.displayName for col in all_columns.fields" ng-change="change_field(rule, '{$ rule.field $}', $index)" title="{$ rule.field $}" focus-if="{$ rule.autofocus || 'false' $}"></select>
+                                <select class="form-control input-sm" ng-model="rule.field" ng-options="col.name as col.displayName for col in columns" ng-change="rule.rule_type = 1; change_field(rule, '{$ rule.field $}', $index)" title="{$ rule.field $}" focus-if="{$ rule.autofocus || 'false' $}"></select>
                             </td>
                             <td>
-                                <select class="form-control input-sm" ng-model="rule.type" ng-options="type.id as type.label for type in field_types" ng-change="change_type(rule, $index)"></select>
+                                <select class="form-control input-sm" ng-model="rule.data_type" ng-options="type.id as type.label for type in data_types" ng-change="rule.rule_type = 1; change_data_type(rule, '{$rule.data_type$}')"></select>
                             </td>
                             <td ng-click="change_required(rule)" class="text-center">
-                                <input type="checkbox" ng-model="rule.required" class="no-click">
+                                <input type="checkbox" ng-model="rule.required" class="no-click" ng-change="rule.rule_type = 1">
                             </td>
                             <td ng-click="change_not_null(rule)" class="text-center">
-                                <input type="checkbox" ng-model="rule.not_null" class="no-click">
+                                <input type="checkbox" ng-model="rule.not_null" class="no-click" ng-change="rule.rule_type = 1">
                             </td>
-                            <td ng-attr-colspan="{$ rule.type == 'string' && '2' || '1' $}">
-                                <input class="form-control input-sm" type="number" ng-model="rule.min" ng-if="_.includes([null, 'number', 'year'], rule.type)" placeholder="(no minimum)">
-                                <input class="form-control input-sm" type="text" ng-model="rule.min" ng-if="rule.type == 'string'" placeholder="(no text match)">
-                                <input class="form-control input-sm" type="date" ng-model="rule.min" ng-if="rule.type == 'date'">
+                            <td ng-attr-colspan="{$ rule.data_type == 'string' && '2' || '1' $}">
+                                <input class="form-control input-sm" type="number" ng-model="rule.min" ng-change="rule.rule_type = 1" ng-if="_.includes([null, 'number', 'year'], rule.data_type)" placeholder="(no minimum)">
+                                <input class="form-control input-sm" type="text" ng-model="rule.min" ng-change="rule.rule_type = 1" ng-if="rule.data_type == 'string'" placeholder="(no text match)">
+                                <input class="form-control input-sm" type="date" ng-model="rule.min" ng-change="rule.rule_type = 1" ng-if="rule.data_type == 'date'">
                             </td>
-                            <td ng-if="rule.type != 'string'">
-                                <input class="form-control input-sm" type="number" ng-model="rule.max" ng-if="rule.type != 'date'" placeholder="(no maximum)">
-                                <input class="form-control input-sm" type="date" ng-model="rule.max" ng-if="rule.type == 'date'">
+                            <td ng-if="rule.data_type != 'string'">
+                                <input class="form-control input-sm" type="number" ng-model="rule.max" ng-change="rule.rule_type = 1" ng-if="rule.data_type != 'date'" placeholder="(no maximum)">
+                                <input class="form-control input-sm" type="date" ng-model="rule.max" ng-change="rule.rule_type = 1" ng-if="rule.data_type == 'date'">
                             </td>
                             <td>
-                                <select class="form-control input-sm" ng-model="rule.severity" ng-class="{'error-bg': rule.severity=='error', 'warning-bg': rule.severity=='warning'}">
+                                <select class="form-control input-sm" ng-model="rule.severity" ng-change="rule.rule_type = 1" ng-class="{'error-bg': rule.severity=='error', 'warning-bg': rule.severity=='warning'}">
                                     <option value="error">Error</option>
                                     <option value="warning">Warning</option>
                                 </select>
                             </td>
                             <td>
-                                <select class="form-control input-sm" ng-options="u for u in units" ng-model="rule.units"></select>
+                                <select class="form-control input-sm" ng-options="u for u in units" ng-model="rule.units" ng-change="rule.rule_type = 1"></select>
                             </td>
                             <td>
-                                <input class="form-control input-sm" ng-model="rule.label" ng-if="rule.new">
-                                <select class="form-control input-sm" ng-model="rule.label" ng-options="label.id as label.name for label in all_labels" ng-if="!rule.new"> </select>
+                                <select class="form-control input-sm" ng-model="rule.label" ng-change="rule.rule_type = 1" ng-options="label.id as label.name for label in all_labels"></select>
                             </td>
-                            <td class="check is_aligned_center" style="width: 33px;">
+                            <td class="check is_aligned_center">
                                 <button class="btn btn-danger btn-rowform" ng-click="delete_rule(rule, $index)">X</button>
                             </td>
                         </tr>
@@ -112,10 +111,10 @@
         </div>
         <div class="section_content_container">
             <div class="section_content with_padding pull-right" style="padding-bottom: 15px;">
-                <button type="button" class="btn btn-default" ng-click="restore_defaults()">Restore Default Rules
+                <button type="button" class="btn btn-danger" ng-click="restore_defaults()">Restore Default Rules
                     <i class="fa fa-check" ng-show="defaults_restored"></i>
                 </button>
-                <button type="button" class="btn btn-default" ng-click="reset_all_rules()">Reset All Rules
+                <button type="button" class="btn btn-danger" ng-click="reset_all_rules()">Reset All Rules
                     <i class="fa fa-check" ng-show="rules_reset"></i>
                 </button>
                 <button type="button" class="btn btn-primary" ng-click="save_settings()">Save Changes

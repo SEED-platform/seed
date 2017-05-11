@@ -57,7 +57,7 @@ angular.module('BE.seed.controller.inventory_list', [])
             // Empty query so return the whole list.
             return true;
           } else {
-            // Only include element if it's name contains the query string.
+            // Only include element if its name contains the query string.
             return _.includes(_.toLower(lbl.name), _.toLower(query));
           }
         });
@@ -65,7 +65,12 @@ angular.module('BE.seed.controller.inventory_list', [])
 
       var filterUsingLabels = function () {
         // Only submit the `id` of the label to the API.
-        var ids = _.intersection.apply(null, _.map($scope.selected_labels, 'is_applied'));
+        var ids;
+        if ($scope.labelLogic === 'and') {
+          ids = _.intersection.apply(null, _.map($scope.selected_labels, 'is_applied'));
+        } else if ($scope.labelLogic === 'or') {
+          ids = _.uniq(_.flatten(_.map($scope.selected_labels, 'is_applied')));
+        }
         if ($scope.selected_labels.length) {
           _.forEach($scope.gridApi.grid.rows, function (row) {
             if ((!_.includes(ids, row.entity.id) && row.treeLevel === 0) || !_.has(row, 'treeLevel')) $scope.gridApi.core.setRowInvisible(row);
@@ -75,6 +80,13 @@ angular.module('BE.seed.controller.inventory_list', [])
           _.forEach($scope.gridApi.grid.rows, $scope.gridApi.core.clearRowInvisible);
         }
         _.delay($scope.updateHeight, 150);
+      };
+
+      $scope.labelLogic = localStorage.getItem('labelLogic');
+      $scope.labelLogic = _.includes(['and', 'or'], $scope.labelLogic) ? $scope.labelLogic : 'and';
+      $scope.labelLogicUpdated = function () {
+        localStorage.setItem('labelLogic', $scope.labelLogic);
+        filterUsingLabels();
       };
 
       $scope.$watchCollection('selected_labels', filterUsingLabels);

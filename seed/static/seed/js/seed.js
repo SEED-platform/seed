@@ -808,10 +808,12 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/data_quality_admin.html',
         controller: 'data_quality_admin_controller',
         resolve: {
-          all_columns: ['$q', 'inventory_service', function ($q, inventory_service) {
-            return $q.all([inventory_service.get_property_columns(), inventory_service.get_taxlot_columns()]).then(function (columns) {
-              return {fields: _.flatten(columns)};
-            })
+          columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+            if ($stateParams.inventory_type === 'properties') {
+              return inventory_service.get_property_columns();
+            } else if ($stateParams.inventory_type === 'taxlots') {
+              return inventory_service.get_taxlot_columns();
+            }
           }],
           organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
             var organization_id = $stateParams.organization_id;
