@@ -134,6 +134,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         data_quality_service.start_data_quality_checks(property_states, taxlot_states).then(function (response) {
           data_quality_service.data_quality_checks_status(response.progress_key).then(function (result) {
             console.debug(result);
+            get_labels();
           }).finally(function () {
             spinner_utility.hide();
           });

@@ -8,6 +8,7 @@ import logging
 from datetime import date, datetime
 
 import pytz
+from django.apps import apps
 from django.db import models
 from django.db.models import Q
 from django.utils.timezone import get_current_timezone, make_aware, make_naive
@@ -440,6 +441,7 @@ class DataQualityCheck(models.Model):
         """
 
         linked_id = None
+        label_applied = False
 
         for rule in self.rules.filter(enabled=True, table_name=type(datum).__name__).order_by('field', 'severity'):
             # check if the field exists
@@ -459,6 +461,19 @@ class DataQualityCheck(models.Model):
                 if value is None:
                     continue
 
+                if rule.table_name == 'PropertyState':
+                    label = apps.get_model('seed', 'Property_labels')
+                    if rule.status_label_id is not None and linked_id is None:
+                        pv = PropertyView.objects.filter(state=datum)
+                        if pv.count() > 0:
+                            linked_id = pv[0].property_id
+                else:
+                    label = apps.get_model('seed', 'TaxLot_labels')
+                    if rule.status_label_id is not None and linked_id is None:
+                        tv = TaxLotView.objects.filter(state=datum)
+                        if tv.count() > 0:
+                            linked_id = tv[0].taxlot_id
+
                 # Check string matches first
                 if rule.data_type == TYPE_STRING:
                     if rule.text_match is None or rule.text_match == '':
@@ -473,6 +488,22 @@ class DataQualityCheck(models.Model):
                             'detailed_message': display_name + ' [' + str(value) + '] != ' + rule.text_match,
                             'severity': rule.get_severity_display(),
                         })
+                        if rule.status_label_id is not None and linked_id is not None:
+                            if rule.table_name == 'PropertyState':
+                                label.objects.get_or_create(property_id=linked_id,
+                                                            statuslabel_id=rule.status_label_id)
+                            else:
+                                label.objects.get_or_create(taxlot_id=linked_id,
+                                                            statuslabel_id=rule.status_label_id)
+                            label_applied = True
+                    else:
+                        # Remove label because it matched the text
+                        if rule.table_name == 'PropertyState':
+                            label.objects.filter(property_id=linked_id,
+                                                 statuslabel_id=rule.status_label_id).delete()
+                        else:
+                            label.objects.filter(taxlot_id=linked_id,
+                                                 statuslabel_id=rule.status_label_id).delete()
                     continue
 
                 rule_min = rule.min
@@ -503,15 +534,6 @@ class DataQualityCheck(models.Model):
                     formatted_rule_min = str(rule_min)
                     formatted_rule_max = str(rule_max)
 
-                # if rule.table_name == 'PropertyState':
-                #     label = apps.get_model('seed', 'Property_labels')
-                #     if rule.status_label_id is not None and linked_id is None:
-                #         linked_id = PropertyView.objects.get(state=datum).values_list('property_id', flat=True)
-                # else:
-                #     label = apps.get_model('seed', 'TaxLot_labels')
-                #     if rule.status_label_id is not None and linked_id is None:
-                #         linked_id = TaxLotView.objects.get(state=datum).values_list('taxlot_id', flat=True)
-
                 if rule_min is not None and value != '':
                     try:
                         value = float(value)
@@ -527,11 +549,14 @@ class DataQualityCheck(models.Model):
                                 'severity': rule.get_severity_display(),
                             })
 
-                            # if rule.status_label_id is not None:
-                            #     if rule.table_name == 'PropertyState':
-                            #         label(property_id=linked_id, statuslabel_id=rule.status_label_id).save()
-                            #     else:
-                            #         label(taxlot_id=linked_id, statuslabel_id=rule.status_label_id).save()
+                            if rule.status_label_id is not None and linked_id is not None:
+                                if rule.table_name == 'PropertyState':
+                                    label.objects.get_or_create(property_id=linked_id,
+                                                                statuslabel_id=rule.status_label_id)
+                                else:
+                                    label.objects.get_or_create(taxlot_id=linked_id,
+                                                                statuslabel_id=rule.status_label_id)
+                                label_applied = True
                     except ValueError:
                         self.results[datum.id]['data_quality_results'].append({
                             'field': rule.field,
@@ -542,6 +567,7 @@ class DataQualityCheck(models.Model):
                             'detailed_message': display_name + ' [' + formatted_value + '] < ' + formatted_rule_min,
                             'severity': rule.get_severity_display(),
                         })
+                        continue
 
                 if rule_max is not None and value != '':
                     try:
@@ -557,11 +583,14 @@ class DataQualityCheck(models.Model):
                                 'severity': rule.get_severity_display(),
                             })
 
-                            # if rule.status_label_id is not None:
-                            #     if rule.table_name == 'PropertyState':
-                            #         label(property_id=linked_id, statuslabel_id=rule.status_label_id).save()
-                            #     else:
-                            #         label(taxlot_id=linked_id, statuslabel_id=rule.status_label_id).save()
+                            if rule.status_label_id is not None and linked_id is not None:
+                                if rule.table_name == 'PropertyState':
+                                    label.objects.get_or_create(property_id=linked_id,
+                                                                statuslabel_id=rule.status_label_id)
+                                else:
+                                    label.objects.get_or_create(taxlot_id=linked_id,
+                                                                statuslabel_id=rule.status_label_id)
+                                label_applied = True
                     except ValueError:
                         self.results[datum.id]['data_quality_results'].append({
                             'field': rule.field,
@@ -572,6 +601,16 @@ class DataQualityCheck(models.Model):
                             'detailed_message': display_name + ' [' + formatted_value + '] < ' + formatted_rule_min,
                             'severity': rule.get_severity_display(),
                         })
+                        continue
+
+                if not label_applied:
+                    # Remove label because it didn't match any of the range exceptions
+                    if rule.table_name == 'PropertyState':
+                        label.objects.filter(property_id=linked_id,
+                                             statuslabel_id=rule.status_label_id).delete()
+                    else:
+                        label.objects.filter(taxlot_id=linked_id,
+                                             statuslabel_id=rule.status_label_id).delete()
 
     def _missing_values(self, datum):
         """
