@@ -88,11 +88,16 @@ def check_data_chunk(model, ids, identifier, increment):
     :param increment: currently unused, but needed because of the special method that appends this onto the function  # NOQA
     :return: None
     """
-    qs = model.objects.filter(id__in=ids)
+    if model == 'PropertyState':
+        qs = PropertyState.objects.filter(id__in=ids)
+    elif model == 'TaxLotState':
+        qs = TaxLotState.objects.filter(id__in=ids)
+    else:
+        qs = None
     super_org = qs.first().organization
 
     d = DataQualityCheck.retrieve(super_org.get_parent())
-    d.check_data(model.__name__, qs.iterator())
+    d.check_data(model, qs.iterator())
     d.save_to_cache(identifier)
 
 
@@ -481,12 +486,12 @@ def _data_quality_check(property_state_ids, taxlot_state_ids, identifier):
     id_chunks = [[obj for obj in chunk] for chunk in batch(property_state_ids, 100)]
     increment = get_cache_increment_value(id_chunks)
     for ids in id_chunks:
-        tasks.append(check_data_chunk.s(PropertyState, ids, identifier, increment))
+        tasks.append(check_data_chunk.s("PropertyState", ids, identifier, increment))
 
     id_chunks_tl = [[obj for obj in chunk] for chunk in batch(taxlot_state_ids, 100)]
     increment_tl = get_cache_increment_value(id_chunks_tl)
     for ids in id_chunks_tl:
-        tasks.append(check_data_chunk.s(TaxLotState, ids, identifier, increment_tl))
+        tasks.append(check_data_chunk.s("TaxLotState", ids, identifier, increment_tl))
 
     if tasks:
         # specify the chord as an immutable with .si
