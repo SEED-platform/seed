@@ -180,9 +180,10 @@ class TaxLotState(models.Model):
 
 
 class TaxLotView(models.Model):
-    taxlot = models.ForeignKey(TaxLot, related_name='views', null=True)
-    state = models.ForeignKey(TaxLotState)
-    cycle = models.ForeignKey(Cycle)
+    taxlot = models.ForeignKey(TaxLot, related_name='views', null=True,
+                               on_delete=models.CASCADE)
+    state = models.ForeignKey(TaxLotState, on_delete=models.CASCADE)
+    cycle = models.ForeignKey(Cycle, on_delete=models.PROTECT)
 
     # labels = models.ManyToManyField(StatusLabel)
 
