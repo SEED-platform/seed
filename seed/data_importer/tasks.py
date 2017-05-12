@@ -59,7 +59,7 @@ from seed.models import (
     DATA_STATE_DELETE,
     MERGE_STATE_MERGED,
     MERGE_STATE_NEW,
-)
+    DATA_STATE_UNKNOWN)
 from seed.models import PropertyAuditLog
 from seed.models import TaxLotAuditLog
 from seed.models import TaxLotProperty
@@ -178,8 +178,12 @@ def finish_mapping(import_file_id, mark_as_done):
     }
     set_cache(prog_key, result['status'], result)
 
-    property_state_ids = list(PropertyState.objects.filter(import_file=import_file).values_list('id', flat=True))
-    taxlot_state_ids = list(TaxLotState.objects.filter(import_file=import_file).values_list('id', flat=True))
+    property_state_ids = list(PropertyState.objects.filter(import_file=import_file)
+                              .exclude(data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT])
+                              .values_list('id', flat=True))
+    taxlot_state_ids = list(TaxLotState.objects.filter(import_file=import_file)
+                            .exclude(data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT])
+                            .values_list('id', flat=True))
 
     # now call data_quality
     _data_quality_check(property_state_ids, taxlot_state_ids, import_file_id)

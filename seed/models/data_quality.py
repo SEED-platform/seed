@@ -9,13 +9,14 @@ from datetime import date, datetime
 
 import pytz
 from django.db import models
+from django.db.models import Q
 from django.utils.timezone import get_current_timezone, make_aware, make_naive
 
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     Column,
     StatusLabel,
-)
+    PropertyView, TaxLotView)
 from seed.utils.cache import (
     set_cache_raw, get_cache_raw
 )
@@ -300,8 +301,8 @@ class DataQualityCheck(models.Model):
     Object that stores the high level configuration per organization of the DataQualityCheck
     """
     REQUIRED_FIELDS = {
-        'PropertyState': ['address_line_1', 'pm_property_id'],
-        'TaxLotState': ['jurisdiction_tax_lot_id', 'address_line_1'],
+        'PropertyState': ['address_line_1', 'custom_id_1', 'pm_property_id'],
+        'TaxLotState': ['address_line_1', 'custom_id_1', 'jurisdiction_tax_lot_id'],
     }
 
     organization = models.ForeignKey(Organization)
@@ -391,7 +392,7 @@ class DataQualityCheck(models.Model):
 
             # self._missing_matching_field(datum)
             self._in_range_checking(datum)
-            # self._missing_values(datum)
+            self._missing_values(datum)
             # self._data_type_check(datum)
 
         # Prune the results will remove any entries that have zero data_quality_results
@@ -408,20 +409,14 @@ class DataQualityCheck(models.Model):
     def reset_results(self):
         self.results = {}
 
-    # def missing_matching_field(self, datum):
+    # def _missing_matching_field(self, datum):
     #     """
-    #     Look for fields in the database that are not matched. Missing is
-    #     defined as a None in the database
+    #     Look for at least one required matching field
     #     :param datum: Database record containing the BS version of the fields populated
     #     :return: None
-    #     # TODO: NL: Should we check the extra_data field for the data?
     #     """
     #
-    #     for rule in Rules.objects.filter(
-    #             org=self.org,
-    #             category=CATEGORY_MISSING_MATCHING_FIELD,
-    #             enabled=True
-    #     ).order_by('field', 'severity'):
+    #     for rule in self.rules.filter(enabled=True).order_by('field', 'severity'):
     #         if hasattr(datum, rule.field):
     #             value = getattr(datum, rule.field)
     #             formatted_field = ASSESSOR_FIELDS_BY_COLUMN[rule.field]['title']
@@ -436,39 +431,6 @@ class DataQualityCheck(models.Model):
     #                     'severity': dict(SEVERITY)[rule.severity]
     #                 })
 
-    # def _missing_values(self, datum):
-    #     """
-    #     Look for fields in the database that are empty. Need to know the list
-    #     of fields that are part of the data_quality section.
-    #
-    #     The original intent of this method would be very intensive to run
-    #     (looking at all fields except the ignored).
-    #     This method was changed to check for required values.
-    #
-    #     :param datum: Database record containing the BS version of the fields populated
-    #     :return: None
-    #     """
-    #     for rule in self.rules.filter(category=CATEGORY_MISSING_VALUES,
-    #                                   enabled=True).order_by('field', 'severity'):
-    #         if hasattr(datum, rule.field):
-    #             value = getattr(datum, rule.field)
-    #             display_name = ''
-    #             try:
-    #                 display_name = self.column_lookup[(rule.table_name, rule.field)]
-    #             except KeyError:
-    #                 pass
-    #
-    #             if value == '':
-    #                 # Field exists but the value is empty. Register a data_quality error
-    #                 self.results[datum.id]['data_quality_results'].append({
-    #                     'field': rule.field,
-    #                     'formatted_field': display_name,
-    #                     'value': value,
-    #                     'message': display_name + ' is missing',
-    #                     'detailed_message': display_name + ' is missing',
-    #                     'severity': rule.get_severity_display()
-    #                 })
-
     def _in_range_checking(self, datum):
         """
         Check for errors in the min/max of the values.
@@ -477,7 +439,9 @@ class DataQualityCheck(models.Model):
         :return: None
         """
 
-        for rule in self.rules.filter(enabled=True).order_by('field', 'severity'):
+        linked_id = None
+
+        for rule in self.rules.filter(enabled=True, table_name=type(datum).__name__).order_by('field', 'severity'):
             # check if the field exists
             if hasattr(datum, rule.field) or rule.field in datum.extra_data:
                 if hasattr(datum, rule.field):
@@ -495,6 +459,22 @@ class DataQualityCheck(models.Model):
                 if value is None:
                     continue
 
+                # Check string matches first
+                if rule.data_type == TYPE_STRING:
+                    if rule.text_match is None or rule.text_match == '':
+                        continue
+                    if value != rule.text_match:
+                        self.results[datum.id]['data_quality_results'].append({
+                            'field': rule.field,
+                            'formatted_field': display_name,
+                            'value': value,
+                            'table_name': rule.table_name,
+                            'message': display_name + ' does not match expected value',
+                            'detailed_message': display_name + ' [' + str(value) + '] != ' + rule.text_match,
+                            'severity': rule.get_severity_display(),
+                        })
+                    continue
+
                 rule_min = rule.min
                 formatted_rule_min = ''
                 rule_max = rule.max
@@ -502,7 +482,7 @@ class DataQualityCheck(models.Model):
                 if rule.data_type == TYPE_YEAR:
                     rule_min = int(rule_min)
                     rule_max = int(rule_max)
-                if rule.data_type == TYPE_DATE:
+                elif rule.data_type == TYPE_DATE:
                     rule_min = str(int(rule_min))
                     rule_max = str(int(rule_max))
 
@@ -523,6 +503,15 @@ class DataQualityCheck(models.Model):
                     formatted_rule_min = str(rule_min)
                     formatted_rule_max = str(rule_max)
 
+                # if rule.table_name == 'PropertyState':
+                #     label = apps.get_model('seed', 'Property_labels')
+                #     if rule.status_label_id is not None and linked_id is None:
+                #         linked_id = PropertyView.objects.get(state=datum).values_list('property_id', flat=True)
+                # else:
+                #     label = apps.get_model('seed', 'TaxLot_labels')
+                #     if rule.status_label_id is not None and linked_id is None:
+                #         linked_id = TaxLotView.objects.get(state=datum).values_list('taxlot_id', flat=True)
+
                 if rule_min is not None and value != '':
                     try:
                         value = float(value)
@@ -531,16 +520,24 @@ class DataQualityCheck(models.Model):
                                 'field': rule.field,
                                 'formatted_field': display_name,
                                 'value': value,
+                                'table_name': rule.table_name,
                                 'message': display_name + ' out of range',
                                 'detailed_message': display_name + ' [' + formatted_value + '] < ' +
                                 formatted_rule_min,
                                 'severity': rule.get_severity_display(),
                             })
+
+                            # if rule.status_label_id is not None:
+                            #     if rule.table_name == 'PropertyState':
+                            #         label(property_id=linked_id, statuslabel_id=rule.status_label_id).save()
+                            #     else:
+                            #         label(taxlot_id=linked_id, statuslabel_id=rule.status_label_id).save()
                     except ValueError:
                         self.results[datum.id]['data_quality_results'].append({
                             'field': rule.field,
                             'formatted_field': display_name,
                             'value': value,
+                            'table_name': rule.table_name,
                             'message': display_name + ' could not be compared numerically',
                             'detailed_message': display_name + ' [' + formatted_value + '] < ' + formatted_rule_min,
                             'severity': rule.get_severity_display(),
@@ -554,19 +551,84 @@ class DataQualityCheck(models.Model):
                                 'field': rule.field,
                                 'formatted_field': display_name,
                                 'value': value,
+                                'table_name': rule.table_name,
                                 'message': display_name + ' out of range',
                                 'detailed_message': display_name + ' [' + formatted_value + '] > ' + formatted_rule_max,
                                 'severity': rule.get_severity_display(),
                             })
+
+                            # if rule.status_label_id is not None:
+                            #     if rule.table_name == 'PropertyState':
+                            #         label(property_id=linked_id, statuslabel_id=rule.status_label_id).save()
+                            #     else:
+                            #         label(taxlot_id=linked_id, statuslabel_id=rule.status_label_id).save()
                     except ValueError:
                         self.results[datum.id]['data_quality_results'].append({
                             'field': rule.field,
                             'formatted_field': display_name,
                             'value': value,
+                            'table_name': rule.table_name,
                             'message': display_name + ' could not be compared numerically',
                             'detailed_message': display_name + ' [' + formatted_value + '] < ' + formatted_rule_min,
                             'severity': rule.get_severity_display(),
                         })
+
+    def _missing_values(self, datum):
+        """
+        Ensure that 'required' fields are mapped (with any value) and that 'not_null' fields are non-empty
+
+        :param datum: Database record containing the BS version of the fields populated
+        :return: None
+        """
+        for rule in self.rules\
+                .filter(Q(enabled=True) & Q(table_name=type(datum).__name__) & (Q(required=True) | Q(not_null=True)))\
+                .order_by('field', 'severity'):
+            # check if the field exists
+            if hasattr(datum, rule.field) or rule.field in datum.extra_data:
+                if hasattr(datum, rule.field):
+                    value = getattr(datum, rule.field)
+                elif rule.field in datum.extra_data:
+                    value = datum.extra_data[rule.field]
+
+                display_name = rule.field
+                if (rule.table_name, rule.field) in self.column_lookup:
+                    display_name = self.column_lookup[(rule.table_name, rule.field)]
+
+                if rule.required and (rule.table_name, rule.field) not in self.column_lookup:
+                    # If required and column has never been mapped, register error
+                    self.results[datum.id]['data_quality_results'].append({
+                        'field': rule.field,
+                        'formatted_field': rule.field,
+                        'value': value,
+                        'table_name': rule.table_name,
+                        'message': rule.field + ' is missing',
+                        'detailed_message': rule.field + ' is required and missing',
+                        'severity': dict(SEVERITY)[SEVERITY_ERROR]
+                    })
+                elif rule.required and value is None:
+                    # If 'required' and value is None, register error
+                    self.results[datum.id]['data_quality_results'].append({
+                        'field': rule.field,
+                        'formatted_field': display_name,
+                        'value': value,
+                        'table_name': rule.table_name,
+                        'message': display_name + ' is missing',
+                        'detailed_message': display_name + ' is required and is None',
+                        'severity': dict(SEVERITY)[SEVERITY_ERROR]
+                    })
+                    continue
+
+                if rule.not_null and (value is None or value == ''):
+                    # If 'not_null' and value is empty, register error
+                    self.results[datum.id]['data_quality_results'].append({
+                        'field': rule.field,
+                        'formatted_field': display_name,
+                        'value': value,
+                        'table_name': rule.table_name,
+                        'message': display_name + ' is null',
+                        'detailed_message': display_name + ' is null',
+                        'severity': dict(SEVERITY)[SEVERITY_ERROR]
+                    })
 
     # def _data_type_check(self, datum):
     #     """
