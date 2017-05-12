@@ -4,10 +4,11 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
-All rights reserved.  # NOQA
-:author
+All rights reserved.
+ 
+:author Fable Turas <fable@raintechpdx.com>
 
-# TODO
+provides function for handling exceptions not otherwise handled by DRF
 """
 
 # Imports from Standard Library
@@ -47,4 +48,4 @@ def custom_exception_handler(exc, context):
 
             set_rollback()
             return Response(data, status=status.HTTP_400_BAD_REQUEST)
-
+    return None
