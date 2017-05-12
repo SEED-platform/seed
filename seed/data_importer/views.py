@@ -1005,7 +1005,7 @@ class ImportFileViewSet(viewsets.ViewSet):
                 new_inventory.save()
 
                 for label_id in label_ids:
-                    label(taxlot_id=new_inventory.id, tatuslabel_id=label_id).save()
+                    label(taxlot_id=new_inventory.id, statuslabel_id=label_id).save()
 
             # Create the view
             if inventory_type == 'properties':
