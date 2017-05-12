@@ -6,6 +6,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 .controller('data_quality_admin_controller', [
   '$scope',
   '$q',
+  '$state',
   '$stateParams',
   'columns',
   'organization_payload',
@@ -19,6 +20,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
   function (
     $scope,
     $q,
+    $state,
     $stateParams,
     columns,
     organization_payload,
@@ -33,6 +35,8 @@ angular.module('BE.seed.controller.data_quality_admin', [])
     $scope.inventory_type = $stateParams.inventory_type;
     $scope.org = organization_payload.organization;
     $scope.auth = auth_payload.auth;
+
+    $scope.state = $state.current;
 
     $scope.data_types = [{
       id: null,

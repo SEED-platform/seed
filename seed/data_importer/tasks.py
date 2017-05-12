@@ -118,7 +118,7 @@ def finish_checking(identifier):
 
 @shared_task
 def do_checks(propertystate_ids, taxlotstate_ids):
-    identifier = randint(100, 10000)
+    identifier = randint(100, 100000)
     DataQualityCheck.initialize_cache(identifier)
     prog_key = get_prog_key('check_data', identifier)
     trigger_data_quality_checks.delay(propertystate_ids, taxlotstate_ids, identifier)

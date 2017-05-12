@@ -64,9 +64,9 @@
                 </tags-input>
             </div>
         </div>
-        <div class="btn-group">
-            <label class="btn btn-default btn-sm" ng-model="labelLogic" uib-btn-radio="'and'" ng-change="labelLogicUpdated()">AND</label>
-            <label class="btn btn-default btn-sm" ng-model="labelLogic" uib-btn-radio="'or'" ng-change="labelLogicUpdated()">OR</label>
+        <div class="form-group btn-group">
+            <label class="btn btn-default btn-sm" style="width:50px;" ng-model="labelLogic" uib-btn-radio="'and'" ng-change="labelLogicUpdated()" ng-disabled="!labels.length">AND</label>
+            <label class="btn btn-default btn-sm" style="width:50px;" ng-model="labelLogic" uib-btn-radio="'or'" ng-change="labelLogicUpdated()" ng-disabled="!labels.length">OR</label>
         </div>
         <div class="btn-group building-list-filter-buttons">
             <button type="button" ng-click="clear_labels()" class="btn btn-default btn-sm" ng-disabled="!labels.length">Clear Labels</button>

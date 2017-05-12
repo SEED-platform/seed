@@ -479,8 +479,12 @@ class DataQualityCheck(models.Model):
 
         for rule in self.rules.filter(enabled=True).order_by('field', 'severity'):
             # check if the field exists
-            if hasattr(datum, rule.field):
-                value = getattr(datum, rule.field)
+            if hasattr(datum, rule.field) or rule.field in datum.extra_data:
+                if hasattr(datum, rule.field):
+                    value = getattr(datum, rule.field)
+                elif rule.field in datum.extra_data:
+                    value = datum.extra_data[rule.field]
+
                 # If column has never been mapped, ignore rule
                 if (rule.table_name, rule.field) not in self.column_lookup:
                     continue
@@ -519,27 +523,50 @@ class DataQualityCheck(models.Model):
                     formatted_rule_min = str(rule_min)
                     formatted_rule_max = str(rule_max)
 
-                if rule_min is not None and value < rule_min:
-                    self.results[datum.id]['data_quality_results'].append({
-                        'field': rule.field,
-                        'formatted_field': display_name,
-                        'value': value,
-                        'message': display_name + ' out of range',
-                        'detailed_message': display_name + ' [' + formatted_value + '] < ' +
-                        formatted_rule_min,
-                        'severity': rule.get_severity_display(),
-                    })
+                if rule_min is not None and value != '':
+                    try:
+                        value = float(value)
+                        if value < rule_min:
+                            self.results[datum.id]['data_quality_results'].append({
+                                'field': rule.field,
+                                'formatted_field': display_name,
+                                'value': value,
+                                'message': display_name + ' out of range',
+                                'detailed_message': display_name + ' [' + formatted_value + '] < ' +
+                                formatted_rule_min,
+                                'severity': rule.get_severity_display(),
+                            })
+                    except ValueError:
+                        self.results[datum.id]['data_quality_results'].append({
+                            'field': rule.field,
+                            'formatted_field': display_name,
+                            'value': value,
+                            'message': display_name + ' could not be compared numerically',
+                            'detailed_message': display_name + ' [' + formatted_value + '] < ' + formatted_rule_min,
+                            'severity': rule.get_severity_display(),
+                        })
 
-                if rule_max is not None and value > rule_max:
-                    self.results[datum.id]['data_quality_results'].append({
-                        'field': rule.field,
-                        'formatted_field': display_name,
-                        'value': value,
-                        'message': display_name + ' out of range',
-                        'detailed_message': display_name + ' [' + formatted_value + '] > ' +
-                        formatted_rule_max,
-                        'severity': rule.get_severity_display(),
-                    })
+                if rule_max is not None and value != '':
+                    try:
+                        value = float(value)
+                        if value > rule_max:
+                            self.results[datum.id]['data_quality_results'].append({
+                                'field': rule.field,
+                                'formatted_field': display_name,
+                                'value': value,
+                                'message': display_name + ' out of range',
+                                'detailed_message': display_name + ' [' + formatted_value + '] > ' + formatted_rule_max,
+                                'severity': rule.get_severity_display(),
+                            })
+                    except ValueError:
+                        self.results[datum.id]['data_quality_results'].append({
+                            'field': rule.field,
+                            'formatted_field': display_name,
+                            'value': value,
+                            'message': display_name + ' could not be compared numerically',
+                            'detailed_message': display_name + ' [' + formatted_value + '] < ' + formatted_rule_min,
+                            'severity': rule.get_severity_display(),
+                        })
 
     # def _data_type_check(self, datum):
     #     """

@@ -9,9 +9,9 @@ import json
 from django.core.urlresolvers import reverse_lazy, NoReverseMatch
 from django.test import TestCase
 
-from seed.models.data_quality import (
-    DataQualityCheck
-)
+# from seed.models.data_quality import (
+#     DataQualityCheck
+# )
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.exceptions import InsufficientPermission
 from seed.lib.superperms.orgs.models import (

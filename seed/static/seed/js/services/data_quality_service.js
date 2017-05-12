@@ -5,7 +5,10 @@
 // data_quality services
 angular.module('BE.seed.service.data_quality', []).factory('data_quality_service', [
   '$http',
-  function ($http) {
+  '$q',
+  '$timeout',
+  'user_service',
+  function ($http, $q, $timeout, user_service) {
     var data_quality_factory = {};
 
     /*
@@ -75,15 +78,25 @@ angular.module('BE.seed.service.data_quality', []).factory('data_quality_service
       });
     };
 
-    data_quality_factory.data_quality_checks_status = function (task_id) {
-      return data_quality_factory.data_quality_checks_status_for_org(user_service.get_organization().id, task_id);
+    data_quality_factory.data_quality_checks_status = function (progress_key) {
+      var deferred = $q.defer();
+      checkStatusLoop(deferred, progress_key);
+      return deferred.promise;
     };
 
-    data_quality_factory.data_quality_checks_status_for_org = function (org_id, task_id) {
-      return $http.post('/api/v2/data_quality_checks/status/?organization_id=' + org_id, {
-        task_id: task_id
+    var checkStatusLoop = function (deferred, progress_key) {
+      $http.post('/api/v2/progress/', {
+        progress_key: progress_key
       }).then(function (response) {
-        return response.data;
+        $timeout(function () {
+          if (response.data.progress < 100) {
+            checkStatusLoop(deferred, progress_key);
+          } else {
+            deferred.resolve(response.data.data);
+          }
+        }, 750);
+      }, function (error) {
+        deferred.reject(error);
       });
     };
 

@@ -10,6 +10,7 @@ angular.module('BE.seed.controller.inventory_list', [])
     '$stateParams',
     'inventory_service',
     'label_service',
+    'data_quality_service',
     'inventory',
     'cycles',
     'labels',
@@ -23,6 +24,7 @@ angular.module('BE.seed.controller.inventory_list', [])
               $stateParams,
               inventory_service,
               label_service,
+              data_quality_service,
               inventory,
               cycles,
               labels,
@@ -117,7 +119,25 @@ angular.module('BE.seed.controller.inventory_list', [])
       };
 
       $scope.run_data_quality_check = function () {
-        console.log('run_data_quality_check called');
+        spinner_utility.show();
+
+        var property_states = _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
+          if ($scope.inventory_type == 'properties') return row.$$treeLevel == 0;
+          return !_.has(row, '$$treeLevel');
+        }), 'property_state_id');
+
+        var taxlot_states = _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
+          if ($scope.inventory_type == 'taxlots') return row.$$treeLevel == 0;
+          return !_.has(row, '$$treeLevel');
+        }), 'taxlot_state_id');
+
+        data_quality_service.start_data_quality_checks(property_states, taxlot_states).then(function (response) {
+          data_quality_service.data_quality_checks_status(response.progress_key).then(function (result) {
+            console.debug(result);
+          }).finally(function () {
+            spinner_utility.hide();
+          });
+        });
       };
 
 
