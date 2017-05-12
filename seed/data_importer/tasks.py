@@ -848,7 +848,7 @@ def _finish_matching(import_file, progress_key):
     taxlot_state_ids = list(TaxLotState.objects.filter(import_file=import_file)
                             .exclude(data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT])
                             .values_list('id', flat=True))
-    _data_quality_check(property_state_ids, taxlot_state_ids)
+    _data_quality_check(property_state_ids, taxlot_state_ids, import_file.id)
     set_cache(progress_key, result['status'], result)
     return result
 
