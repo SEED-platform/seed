@@ -7,7 +7,7 @@
             <h5 style="padding-bottom: 14px;">No warnings/errors</h5>
         </div>
         <div ng-switch-default>
-            <div class="row">
+            <div class="row" ng-if="name">
                 <h4 class="col-sm-4">File Name:</h4>
                 <h5 class="col-sm-8" style="margin-top: 12px;">{$ name $}</h5>
             </div>
@@ -53,5 +53,5 @@
     </div>
 </div>
 <div class="modal-footer">
-    <a ng-href="/api/v2/import_files/{$ importFileId $}/data_quality_results_csv/" download><button type="button" class="btn btn-default">Export</button></a> <button type="button" class="btn btn-default" ng-click="close()">Close</button>
+    <a ng-href="/api/v2/import_files/{$ importFileId $}/data_quality_results_csv/" download><button type="button" class="btn btn-default" ng-show="importFileId">Export</button></a> <button type="button" class="btn btn-default" ng-click="close()">Close</button>
 </div>

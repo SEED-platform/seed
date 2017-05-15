@@ -134,13 +134,34 @@ angular.module('BE.seed.controller.inventory_list', [])
         data_quality_service.start_data_quality_checks(property_states, taxlot_states).then(function (response) {
           data_quality_service.data_quality_checks_status(response.progress_key).then(function (result) {
             console.debug(result);
-            get_labels();
+            var modalInstance = $uibModal.open({
+              templateUrl: urls.static_url + 'seed/partials/data_quality_modal.html',
+              controller: 'data_quality_modal_controller',
+              size: 'lg',
+              resolve: {
+                dataQualityResults: function () {
+                  return result;
+                },
+                name: function () {
+                  return null;
+                },
+                uploaded: function () {
+                  return null;
+                },
+                importFileId: function () {
+                  return null;
+                }
+              }
+            });
+            modalInstance.result.then(function () {
+              //dialog was closed with 'Done' button.
+              get_labels();
+            });
           }).finally(function () {
             spinner_utility.hide();
           });
         });
       };
-
 
       var lastCycleId = inventory_service.get_last_cycle();
       $scope.cycle = {
