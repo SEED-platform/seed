@@ -56,8 +56,9 @@ class TestOrgMixin(TestCase):
         self.org.delete()
         self.org_user.delete()
 
+    @mock.patch('seed.utils.api.get_user_org')
     @mock.patch('seed.utils.api.get_org_id')
-    def test_get_organization(self, mock_get_org_id):
+    def test_get_organization(self, mock_get_org_id, mock_get_user_org):
         """test get_organization method"""
         mock_request = mock.MagicMock()
         mock_request.user = self.user
@@ -65,19 +66,32 @@ class TestOrgMixin(TestCase):
         # assert raises exception if org_id does not match user
         mock_get_org_id.return_value = self.org.id * 100
         self.assertRaises(
-            PermissionDenied, self.mixin_class.get_organization, mock_request
+            PermissionDenied,
+            self.mixin_class.get_organization,
+            mock_request, True
         )
 
         # test first org id returned if not defined on request
         mock_get_org_id.return_value = None
+        mock_get_user_org.return_value = self.org
         expected = self.org.id
+        self.mixin_class._organization = None
         result = self.mixin_class.get_organization(mock_request)
         self.assertEqual(expected, result)
 
         # test org id returned if defined on request, and matches
         mock_get_org_id.return_value = self.org.id
+        self.mixin_class._organization = None
         result = self.mixin_class.get_organization(mock_request)
         self.assertEqual(expected, result)
+
+        # test org returned if return_obj = True
+        mock_get_org_id.return_value = self.org.id
+        self.mixin_class._organization = None
+        result = self.mixin_class.get_organization(
+            mock_request, return_obj=True
+        )
+        self.assertIsInstance(result, Organization)
 
 
 class TestOrgCreateMixin(TestCase):

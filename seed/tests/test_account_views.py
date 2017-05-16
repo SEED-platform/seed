@@ -8,6 +8,7 @@ import json
 
 from django.core.urlresolvers import reverse_lazy, NoReverseMatch
 from django.test import TestCase
+from rest_framework.exceptions import MethodNotAllowed
 
 # from seed.models.data_quality import (
 #     DataQualityCheck

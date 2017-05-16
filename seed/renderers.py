@@ -39,6 +39,7 @@ class SEEDJSONRenderer(JSONRenderer):
     {"data": {"count": 2, "next": null, "previous": null, "results": data}}
     Setting pagination_class to None returns the desired {'data': data} result.
     """
+    # TODO: add pagination handling
     def render(self, data, accepted_media_type=None, renderer_context=None):
         """
         Render 'data' into JSON in SEED Format.
@@ -47,7 +48,6 @@ class SEEDJSONRenderer(JSONRenderer):
         view = renderer_context.get('view')
         data_name = getattr(view, 'data_name', data_name)
         response = renderer_context.get('response')
-        # status_type = 'error'
         if status.is_success(response.status_code):
             status_type = 'success'
         else:

@@ -17,7 +17,6 @@ from seed.lib.superperms.orgs.models import (
     ROLE_OWNER,
     ROLE_MEMBER,
     ROLE_VIEWER,
-    Organization,
     OrganizationUser
 )
 
@@ -29,6 +28,7 @@ ALLOW_SUPER_USER_PERMS = getattr(settings, 'ALLOW_SUPER_USER_PERMS', True)
 # replace when DRF is upgraded to relevant version
 def is_authenticated(user):
     """Django >=1.10 use user.is_authenticated, not user.is_authenticated()"""
+    # pragma: no cover
     if DJANGO_VERSION < (1, 10):
         return user.is_authenticated()
     return user.is_authenticated
@@ -60,16 +60,17 @@ def get_user_org(user):
     :param user: User object from request.user
     :return: organization object from user profile default_organization
         attribute, if set, or first "parent" organization user is a member
-         of, or first returned organization.
+         of, or first returned organization from user's orgs.
     """
     if user.default_organization:
         return user.default_organization
     else:
         orgs = user.orgs.all()
-        parent_orgs = orgs.filter(parent_org__isnull=True)
+        parent_orgs = [org for org in orgs if org.child_orgs.all()]
+        org = orgs[0]
         if parent_orgs:
-            return parent_orgs[0]
-    return orgs[0]
+            org = parent_orgs[0]
+        return org
 
 
 class SEEDOrgPermissions(BasePermission):
@@ -110,7 +111,8 @@ class SEEDOrgPermissions(BasePermission):
         required_perm = self.perm_map.get(request.method, ROLE_OWNER)
         org_id = get_org_id(request)
         if not org_id:
-            org_id = get_user_org(request.user).pk
+            org = get_user_org(request.user)
+            org_id = getattr(org, 'pk')
         try:
             org_user = OrganizationUser.objects.get(
                 user=request.user, organization__id=org_id
@@ -151,7 +153,7 @@ class SEEDPublicPermissions(SEEDOrgPermissions):
     def has_perm(self, request):
         """Always true for safe methods."""
         has_perm = False
-        if request.METHOD in self.safe_methods:
+        if request.method in self.safe_methods:
             has_perm = True
         elif is_authenticated(request.user):
             has_perm = super(SEEDPublicPermissions, self).has_perm(request)

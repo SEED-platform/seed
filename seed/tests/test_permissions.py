@@ -24,6 +24,7 @@ from seed.lib.superperms.orgs.models import (
 from seed.lib.superperms.orgs.permissions import (
     get_org_or_id,
     get_org_id,
+    get_user_org,
     SEEDOrgPermissions,
     SEEDPublicPermissions
 )
@@ -63,6 +64,39 @@ class PermissionsFunctionsTests(TestCase):
         result = get_org_id(mock_request)
         self.assertEqual(None, result)
 
+    def test_get_user_org(self):
+        """Test getting org from user"""
+        fake_user = User.objects.create(username='test')
+        fake_org_1 = Organization.objects.create()
+        fake_org_2 = Organization.objects.create()
+        fake_org_3 = Organization.objects.create()
+        OrganizationUser.objects.create(
+            user=fake_user, organization=fake_org_1
+        )
+        OrganizationUser.objects.create(
+            user=fake_user, organization=fake_org_2
+        )
+        OrganizationUser.objects.create(
+            user=fake_user, organization=fake_org_3
+        )
+        # no default_organization and no parent org
+        result = get_user_org(fake_user)
+        self.assertIn(result, fake_user.orgs.all())
+
+        # parent org, no default_organization
+        fake_org_1.parent_org = fake_org_2
+        fake_org_1.save()
+        expected = fake_org_2
+        result = get_user_org(fake_user)
+        self.assertEqual(result, expected)
+
+        # user default_organization
+        fake_user.default_organization = fake_org_3
+        fake_user.save()
+        expected = fake_org_3
+        result = get_user_org(fake_user)
+        self.assertEqual(result, expected)
+
 
 class SEEDOrgPermissionsTests(TestCase):
     """Tests for Custom DRF Permissions"""
@@ -91,18 +125,18 @@ class SEEDOrgPermissionsTests(TestCase):
         """Test has_perm method"""
         permissions = SEEDOrgPermissions()
         mock_request = mock.MagicMock()
+        mock_request.user = self.user
 
         # assert False if org/org user does not exist
         mock_get_org_id.return_value = '1000000'
-        mock_request.METHOD = 'GET'
+        mock_request.method = 'GET'
         self.assertFalse(permissions.has_perm(mock_request))
 
         # check self.org_user has right permissions
         mock_get_org_id.return_value = self.org.id
-        mock_request.user = self.user
         assert self.org_user.role_level >= ROLE_MEMBER
         for view_type in SEEDOrgPermissions.perm_map:
-            mock_request.METHOD = view_type
+            mock_request.method = view_type
             self.assertTrue(permissions.has_perm(mock_request))
 
         # test with lower role_level
@@ -110,10 +144,10 @@ class SEEDOrgPermissionsTests(TestCase):
         self.org_user.save()
         assert self.org_user.role_level < ROLE_MEMBER
         for view_type in ['GET', 'OPTIONS', 'HEAD']:
-            mock_request.METHOD = view_type
+            mock_request.method = view_type
             self.assertTrue(permissions.has_perm(mock_request))
         for view_type in ['POST', 'PATCH', 'PUT', 'DELETE']:
-            mock_request.METHOD = view_type
+            mock_request.method = view_type
             self.assertFalse(permissions.has_perm(mock_request))
 
         # test with higher role_level
@@ -121,7 +155,7 @@ class SEEDOrgPermissionsTests(TestCase):
         self.org_user.save()
         assert self.org_user.role_level > ROLE_MEMBER
         for view_type in SEEDOrgPermissions.perm_map:
-            mock_request.METHOD = view_type
+            mock_request.method = view_type
             self.assertTrue(permissions.has_perm(mock_request))
 
     @mock.patch.object(SEEDOrgPermissions, 'has_perm')
@@ -207,10 +241,10 @@ class SEEDPublicPermissionsTests(TestCase):
         # assert can use safe methods if not autheticated
         mock_is_authenticated.return_value = False
         for view_type in ['GET', 'OPTIONS', 'HEAD']:
-            mock_request.METHOD = view_type
+            mock_request.method = view_type
             self.assertTrue(permissions.has_perm(mock_request))
         for view_type in ['POST', 'PATCH', 'PUT', 'DELETE']:
-            mock_request.METHOD = view_type
+            mock_request.method = view_type
             self.assertFalse(permissions.has_perm(mock_request))
 
         # check with authenticated user
@@ -221,7 +255,7 @@ class SEEDPublicPermissionsTests(TestCase):
         mock_request.user = self.user
         assert self.org_user.role_level >= ROLE_MEMBER
         for view_type in SEEDOrgPermissions.perm_map:
-            mock_request.METHOD = view_type
+            mock_request.method = view_type
             self.assertTrue(permissions.has_perm(mock_request))
 
         # test with lower role_level
@@ -229,10 +263,10 @@ class SEEDPublicPermissionsTests(TestCase):
         self.org_user.save()
         assert self.org_user.role_level < ROLE_MEMBER
         for view_type in ['GET', 'OPTIONS', 'HEAD']:
-            mock_request.METHOD = view_type
+            mock_request.method = view_type
             self.assertTrue(permissions.has_perm(mock_request))
         for view_type in ['POST', 'PATCH', 'PUT', 'DELETE']:
-            mock_request.METHOD = view_type
+            mock_request.method = view_type
             self.assertFalse(permissions.has_perm(mock_request))
 
         # test with higher role_level
@@ -240,5 +274,5 @@ class SEEDPublicPermissionsTests(TestCase):
         self.org_user.save()
         assert self.org_user.role_level > ROLE_MEMBER
         for view_type in SEEDOrgPermissions.perm_map:
-            mock_request.METHOD = view_type
+            mock_request.method = view_type
             self.assertTrue(permissions.has_perm(mock_request))

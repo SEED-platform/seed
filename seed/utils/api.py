@@ -226,28 +226,6 @@ class OrgMixin(object):
     """
     Provides get_organization and get_parent_org method
     """
-    def get_user_org(self, user):
-        """
-        Provides a fallback organization retrieval for when id is not supplied
-        by query params or request.data. Makes the assumption that, if set,
-        default_organization would be the highest preference in organization
-        selection, or that an available "parent" organization would logically
-        precede a sub_org in the chain of unspecified preference.
-
-        :param user: User object from request.user
-        :return: organization object from user profile default_organization
-            attribute, if set, or first "parent" organization user is a member
-             of, or first member organization.
-        """
-        # ToDo: this may need adjustment when model permissions are considered.
-        if user.default_organization:
-            return user.default_organization
-        else:
-            orgs = user.orgs.all()
-            parent_orgs = orgs.filter(parent_org__isnull=True)
-            if parent_orgs:
-                return parent_orgs[0]
-            return orgs[0]
 
     def get_organization(self, request, return_obj=None):
         """Get org from query param or request.user.

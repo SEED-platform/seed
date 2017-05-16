@@ -6,7 +6,6 @@ through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
 :author
-
 """
 
 from seed.decorators import ajax_request
