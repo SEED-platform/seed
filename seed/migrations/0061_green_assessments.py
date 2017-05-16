@@ -76,15 +76,6 @@ class Migration(migrations.Migration):
                 ('property_assessment', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='urls', to='seed.GreenAssessmentProperty')),
             ],
         ),
-        migrations.RemoveField(
-            model_name='propertystate',
-            name='normalized_address',
-        ),
-        migrations.AddField(
-            model_name='propertystate',
-            name='_normalized_address',
-            field=models.CharField(blank=True, db_column='normalized_address', editable=False, max_length=255, null=True),
-        ),
         migrations.AlterField(
             model_name='propertyauditlog',
             name='record_type',

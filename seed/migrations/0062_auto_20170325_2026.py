@@ -12,15 +12,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='propertystate',
-            name='_normalized_address',
-        ),
-        migrations.AddField(
-            model_name='propertystate',
-            name='normalized_address',
-            field=models.CharField(blank=True, editable=False, max_length=255, null=True),
-        ),
         migrations.AlterUniqueTogether(
             name='greenassessment',
             unique_together=set([('organization', 'name', 'award_body')]),

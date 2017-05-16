@@ -72,12 +72,13 @@ class GreenAssessmentTests(TestCase):
             source='Assessor', status_date=self.status_date,
             version='1', eligibility=True
         )
+        self.urls = [url.url for url in self.gap.urls.all()]
 
     def tearDown(self):
+        PropertyView.objects.all().delete()
         Cycle.objects.all().delete()
         Property.objects.all().delete()
         PropertyState.objects.all().delete()
-        PropertyView.objects.all().delete()
         GreenAssessmentURL.objects.all().delete()
         GreenAssessmentProperty.objects.all().delete()
         GreenAssessment.objects.all().delete()
@@ -173,13 +174,9 @@ class GreenAssessmentTests(TestCase):
             u'Assessment Year': self.start_date.year,
             u'Assessment Eligibility': True,
             u'Assessment Level': None,
-            u'Assessment Program URL': [
-                u'https://calderon-mcclain.org/sequi-quos-incidunt',
-                u'http://www.reed-horne.com/sint-nostrum-ea',
-                u'http://meyer.com/enim-sequi-quam'
-            ],
+            u'Assessment Program URL': self.urls,
         }
-        self.assertEqual(expected, self.gap.to_bedes_dict())
+        self.assertDictEqual(expected, self.gap.to_bedes_dict())
 
     def test_to_reso(self):
         """Test to_reso_dict method."""
@@ -192,13 +189,9 @@ class GreenAssessmentTests(TestCase):
             u'GreenVerificationRating': None,
             u'GreenVerificationVersion': '1',
             u'GreenVerificationYear': self.start_date.year,
-            u'GreenVerificationURL': [
-                u'https://calderon-mcclain.org/sequi-quos-incidunt',
-                u'http://www.reed-horne.com/sint-nostrum-ea',
-                u'http://meyer.com/enim-sequi-quam'
-            ],
+            u'GreenVerificationURL': self.urls,
         }
-        self.assertEqual(expected, self.gap.to_reso_dict())
+        self.assertDictEqual(expected, self.gap.to_reso_dict())
 
     def test_to_reso_sub_name(self):
         """Test to_reso_dict method with substitution."""
@@ -211,10 +204,7 @@ class GreenAssessmentTests(TestCase):
             u'GreenVerificationGreenTestScoreRating': None,
             u'GreenVerificationGreenTestScoreVersion': '1',
             u'GreenVerificationGreenTestScoreYear': self.start_date.year,
-            u'GreenVerificationGreenTestScoreURL': [
-                u'https://calderon-mcclain.org/sequi-quos-incidunt',
-                u'http://www.reed-horne.com/sint-nostrum-ea',
-                u'http://meyer.com/enim-sequi-quam'
-            ],
+            u'GreenVerificationGreenTestScoreURL': self.urls,
         }
-        self.assertEqual(expected, self.gap.to_reso_dict(sub_name=True))
+        self.assertDictEqual(expected, self.gap.to_reso_dict(sub_name=True))
+

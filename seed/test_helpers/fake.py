@@ -235,7 +235,9 @@ class FakePropertyAuditLogFactory(BaseFake):
         }
         details.update(kw)
         if not details.get('state'):
-            details['state'] = self.state_factory.get_property_state()
+            details['state'] = self.state_factory.get_property_state(
+                organization=self.organization
+            )
         if not details.get('view'):
             details['view'] = self.view_factory.get_property_view()
         return PropertyAuditLog.objects.create(**details)
@@ -257,7 +259,6 @@ class FakePropertyStateFactory(BaseFake):
         """Return a dict of pseudo random data for use with PropertyState"""
         owner = self.fake.random_element(elements=self.owners)
         return {
-            'organization': self.organization,
             'jurisdiction_property_id': self.fake.numerify(text='#####'),
             'pm_parent_property_id': self.fake.numerify(text='#####'),
             'lot_number': self.fake.numerify(text='#####'),
@@ -279,9 +280,13 @@ class FakePropertyStateFactory(BaseFake):
         """Return a property state populated with pseudo random data"""
         property_details = self.get_details()
         property_details.update(kw)
-        ps = PropertyState.objects.create(organization=org, **property_details)
+        ps = PropertyState.objects.create(
+            organization=organization, **property_details
+        )
         auditlog_detail = {}
-        PropertyAuditLog.objects.create(organization=org, state=ps, **auditlog_detail)
+        PropertyAuditLog.objects.create(
+            organization=organization, state=ps, **auditlog_detail
+        )
         return ps
 
 
@@ -538,7 +543,6 @@ class FakeTaxLotStateFactory(BaseFake):
     def get_details(self, organization):
         """Get taxlot details."""
         taxlot_details = {
-            'organization': organization,
             'jurisdiction_tax_lot_id': self.fake.numerify(text='#####'),
             'block_number': self.fake.numerify(text='#####'),
             'address_line_1': self.address_line_1(),
