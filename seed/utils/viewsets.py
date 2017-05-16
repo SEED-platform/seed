@@ -45,16 +45,11 @@ class SEEDOrgModelViewSet(DecoratorMixin(drf_api_endpoint), OrgQuerySetMixin,
         parser_classes: Tuple of classes, default set to drf's JSONParser.
         authentication_classes: Tuple of classes, default set to drf's
             SessionAuthentication and SEEDAuthentication.
-        pagination_class: Default set to None to remove pagination key/value
-            pairs from Json to ensure SEEDJSONRenderer can return correct
-            {'status': 'success', 'data': data} format.
     """
-    # TODO: adjust paginator and renderer to fix pagination into desired output
     renderer_classes = RENDERER_CLASSES
     parser_classes = PARSER_CLASSES
     authentication_classes = AUTHENTICATION_CLASSES
     permission_classes = PERMISSIONS_CLASSES
-    pagination_class = None
 
 
 class SEEDOrgCreateUpdateModelViewSet(OrgCreateUpdateMixin,

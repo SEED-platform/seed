@@ -32,29 +32,40 @@ class SEEDJSONRenderer(JSONRenderer):
 
     if self.data_name is set on the view its will be used in place of data
     as a key.
+    
+    if pagination class is set globally, and/or on the view, pagination results
+    will be included as an additional key/value pair.
+    ie: {
+        'status': 'success',
+        'data': data,
+        'pagination': {'count': count, 'next': next, 'previous': previous}
+        }
 
-    Note: at present, pagination classes throw off the desired results format
-    of this renderer, returning pagination key:value pairs in the data value
-    and the data result nested in "results".
-    {"data": {"count": 2, "next": null, "previous": null, "results": data}}
-    Setting pagination_class to None returns the desired {'data': data} result.
     """
-    # TODO: add pagination handling
     def render(self, data, accepted_media_type=None, renderer_context=None):
         """
         Render 'data' into JSON in SEED Format.
         """
+        pagination = None
+        results = data
         data_name = 'data'
         view = renderer_context.get('view')
         data_name = getattr(view, 'data_name', data_name)
         response = renderer_context.get('response')
         if status.is_success(response.status_code):
             status_type = 'success'
+            if hasattr(data, 'keys'):
+                results = data.pop('results', None)
+                pagination = data
         else:
             status_type = 'error'
             data_name = 'message'
-            data = data.get('detail', data)
-        data = {'status': status_type, data_name: data}
+            results = data.get('detail', data)
+
+        data = {'status': status_type, data_name: results}
+        if pagination:
+            data['pagination'] = pagination
+
         return super(SEEDJSONRenderer, self).render(
             data,
             accepted_media_type=accepted_media_type,
