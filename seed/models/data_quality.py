@@ -560,7 +560,7 @@ class DataQualityCheck(models.Model):
                                 'table_name': rule.table_name,
                                 'message': display_name + ' out of range',
                                 'detailed_message': display_name + ' [' + formatted_value + '] < ' +
-                                                    formatted_rule_min,
+                                formatted_rule_min,
                                 'severity': rule.get_severity_display(),
                             })
 
