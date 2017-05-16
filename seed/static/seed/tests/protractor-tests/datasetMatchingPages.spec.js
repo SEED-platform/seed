@@ -40,7 +40,7 @@ describe('When I go to the dataset options page', function () {
 		});
 		$$('[ng-click="open_data_quality_modal()"]').first().click();
 		browser.wait(EC.presenceOf($('.modal-title')),30000);
-		expect($('.modal-body.ng-scope').getText()).toContain('No warnings/errors');
+		expect($('.modal-body.ng-scope').getText()).toNotContain('No warnings/errors');
 		$$('[ng-click="close()"]').first().click();
 		expect($('.modal-body.ng-scope').isPresent()).toBe(false);
 	});

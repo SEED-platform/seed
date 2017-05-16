@@ -5,6 +5,7 @@
 .coverage
 .noseids
 *~
+*~$*
 *.pyc
 *.swp
 *.swo
