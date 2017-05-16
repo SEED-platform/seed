@@ -276,7 +276,7 @@ class FakePropertyStateFactory(BaseFake):
             'owner_postal_code': owner.postal_code,
         }
 
-    def get_property_state(self, org, **kw):
+    def get_property_state(self, organization, **kw):
         """Return a property state populated with pseudo random data"""
         property_details = self.get_details()
         property_details.update(kw)
