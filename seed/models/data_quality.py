@@ -4,6 +4,7 @@
 :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+import json
 import logging
 from datetime import date, datetime
 
@@ -18,6 +19,7 @@ from seed.models import (
     Column,
     StatusLabel,
     PropertyView, TaxLotView)
+from seed.models import obj_to_dict
 from seed.utils.cache import (
     set_cache_raw, get_cache_raw
 )
@@ -80,9 +82,7 @@ DEFAULT_RULES = [
         'not_null': True,
         'rule_type': RULE_TYPE_DEFAULT,
         'severity': SEVERITY_ERROR,
-    },
-
-    {
+    }, {
         'table_name': 'PropertyState',
         'field': 'conditioned_floor_area',
         'data_type': TYPE_NUMBER,
@@ -291,10 +291,8 @@ class Rule(models.Model):
     severity = models.IntegerField(choices=SEVERITY)
     units = models.CharField(max_length=100, blank=True)
 
-    # def delete(self, *args, **kwargs):
-    #     if self.status_label:
-    #         self.status_label.delete()
-    #     return super(self.__class__, self).delete(*args, **kwargs)
+    def __unicode__(self):
+        return json.dumps(obj_to_dict(self))
 
 
 class DataQualityCheck(models.Model):
@@ -319,9 +317,8 @@ class DataQualityCheck(models.Model):
 
         :param organization: int or instance of Organization
         :return: obj, DataQualityCheck
-
-
         """
+
         dq, _ = DataQualityCheck.objects.get_or_create(organization=organization)
         if dq.rules.count() == 0:
             # _log.debug("No rules found in DataQualityCheck, initializing default rules")
@@ -392,9 +389,9 @@ class DataQualityCheck(models.Model):
                 self.results[datum.id]['data_quality_results'] = []
 
             # self._missing_matching_field(datum)
+            self._data_type_check(datum)
             self._in_range_checking(datum)
             self._missing_values(datum)
-            # self._data_type_check(datum)
 
         # Prune the results will remove any entries that have zero data_quality_results
         for k, v in self.results.items():
@@ -432,6 +429,10 @@ class DataQualityCheck(models.Model):
     #                     'severity': dict(SEVERITY)[rule.severity]
     #                 })
 
+    def _check_something(self, rule, datum):
+
+        pass
+
     def _in_range_checking(self, datum):
         """
         Check for errors in the min/max of the values.
@@ -443,7 +444,8 @@ class DataQualityCheck(models.Model):
         linked_id = None
         label_applied = False
 
-        for rule in self.rules.filter(enabled=True, table_name=type(datum).__name__).order_by('field', 'severity'):
+        for rule in self.rules.filter(enabled=True, table_name=type(datum).__name__).order_by(
+                'field', 'severity'):
             # check if the field exists
             if hasattr(datum, rule.field) or rule.field in datum.extra_data:
                 if hasattr(datum, rule.field):
@@ -451,16 +453,17 @@ class DataQualityCheck(models.Model):
                 elif rule.field in datum.extra_data:
                     value = datum.extra_data[rule.field]
 
-                # If column has never been mapped, ignore rule
+                # If column has not been mapped then ignore rule
                 if (rule.table_name, rule.field) not in self.column_lookup:
                     continue
-
-                display_name = self.column_lookup[(rule.table_name, rule.field)]
 
                 # Don't check the out of range errors if the data are empty
                 if value is None:
                     continue
 
+                display_name = self.column_lookup[(rule.table_name, rule.field)]
+
+                # get the status_labels for the linked properties and tax lots
                 if rule.table_name == 'PropertyState':
                     label = apps.get_model('seed', 'Property_labels')
                     if rule.status_label_id is not None and linked_id is None:
@@ -478,6 +481,7 @@ class DataQualityCheck(models.Model):
                 if rule.data_type == TYPE_STRING:
                     if rule.text_match is None or rule.text_match == '':
                         continue
+
                     if value != rule.text_match:
                         self.results[datum.id]['data_quality_results'].append({
                             'field': rule.field,
@@ -485,7 +489,8 @@ class DataQualityCheck(models.Model):
                             'value': value,
                             'table_name': rule.table_name,
                             'message': display_name + ' does not match expected value',
-                            'detailed_message': display_name + ' [' + str(value) + '] != ' + rule.text_match,
+                            'detailed_message': display_name + ' [' + str(
+                                value) + '] != ' + rule.text_match,
                             'severity': rule.get_severity_display(),
                         })
                         if rule.status_label_id is not None and linked_id is not None:
@@ -504,40 +509,50 @@ class DataQualityCheck(models.Model):
                         else:
                             label.objects.filter(taxlot_id=linked_id,
                                                  statuslabel_id=rule.status_label_id).delete()
+
+                    # yuck, continue in the middle here?
                     continue
 
                 rule_min = rule.min
                 formatted_rule_min = ''
                 rule_max = rule.max
                 formatted_rule_max = ''
-                if rule.data_type == TYPE_YEAR:
-                    rule_min = int(rule_min)
-                    rule_max = int(rule_max)
-                elif rule.data_type == TYPE_DATE:
-                    rule_min = str(int(rule_min))
-                    rule_max = str(int(rule_max))
 
                 if isinstance(value, datetime):
                     value = value.astimezone(get_current_timezone()).replace(tzinfo=pytz.UTC)
-                    rule_min = make_aware(datetime.strptime(rule_min, '%Y%m%d'), pytz.UTC)
-                    rule_max = make_aware(datetime.strptime(rule_max, '%Y%m%d'), pytz.UTC)
+                    rule_min = make_aware(datetime.strptime(str(int(rule_min)), '%Y%m%d'), pytz.UTC)
+                    rule_max = make_aware(datetime.strptime(str(int(rule_max)), '%Y%m%d'), pytz.UTC)
 
                     formatted_value = str(make_naive(value, pytz.UTC))
                     formatted_rule_min = str(make_naive(rule_min, pytz.UTC))
                     formatted_rule_max = str(make_naive(rule_max, pytz.UTC))
                 elif isinstance(value, date):
-                    rule_min = datetime.strptime(rule_min, '%Y%m%d').date()
-                    rule_max = datetime.strptime(rule_max, '%Y%m%d').date()
+                    rule_min = datetime.strptime(str(int(rule_min)), '%Y%m%d').date()
+                    rule_max = datetime.strptime(str(int(rule_max)), '%Y%m%d').date()
 
-                if not isinstance(value, datetime):
+                    formatted_value = str(value)
+                    formatted_rule_min = str(rule_min)
+                    formatted_rule_max = str(rule_max)
+                elif isinstance(value, int):
+                    rule_min = int(rule_min)
+                    if rule_max:
+                        rule_max = int(rule_max)
+
+                    formatted_value = str(value)
+                    formatted_rule_min = str(rule_min)
+                    if rule_max:
+                        formatted_rule_max = str(rule_max)
+                elif not isinstance(value, basestring):
+                    # must be a float...
+                    value = float(value)
+
                     formatted_value = str(value)
                     formatted_rule_min = str(rule_min)
                     formatted_rule_max = str(rule_max)
 
                 if rule_min is not None and value != '':
                     try:
-                        value = float(value)
-                        if value < rule_min:
+                        if rule_min and value < rule_min:
                             self.results[datum.id]['data_quality_results'].append({
                                 'field': rule.field,
                                 'formatted_field': display_name,
@@ -545,7 +560,7 @@ class DataQualityCheck(models.Model):
                                 'table_name': rule.table_name,
                                 'message': display_name + ' out of range',
                                 'detailed_message': display_name + ' [' + formatted_value + '] < ' +
-                                formatted_rule_min,
+                                                    formatted_rule_min,
                                 'severity': rule.get_severity_display(),
                             })
 
@@ -571,8 +586,7 @@ class DataQualityCheck(models.Model):
 
                 if rule_max is not None and value != '':
                     try:
-                        value = float(value)
-                        if value > rule_max:
+                        if rule_max and value > rule_max:
                             self.results[datum.id]['data_quality_results'].append({
                                 'field': rule.field,
                                 'formatted_field': display_name,
@@ -619,8 +633,9 @@ class DataQualityCheck(models.Model):
         :param datum: Database record containing the BS version of the fields populated
         :return: None
         """
-        for rule in self.rules\
-                .filter(Q(enabled=True) & Q(table_name=type(datum).__name__) & (Q(required=True) | Q(not_null=True)))\
+        for rule in self.rules \
+                .filter(Q(enabled=True) & Q(table_name=type(datum).__name__) & (
+                    Q(required=True) | Q(not_null=True))) \
                 .order_by('field', 'severity'):
             # check if the field exists
             if hasattr(datum, rule.field) or rule.field in datum.extra_data:
@@ -669,37 +684,38 @@ class DataQualityCheck(models.Model):
                         'severity': dict(SEVERITY)[SEVERITY_ERROR]
                     })
 
-    # def _data_type_check(self, datum):
-    #     """
-    #     Check the data types of the fields. These should never be wrong as
-    #     these are the data in the database.
-    #
-    #     This chunk of code is currently ignored.
-    #
-    #     :param datum: Database record containing the BS version of the fields populated
-    #     :return: None
-    #     """
-    #
-    #     for rule in self.rules.filter(enabled=True).order_by('field', 'severity'):
-    #         # check if the field exists
-    #         if hasattr(datum, rule.field):
-    #             value = getattr(datum, rule.field)
-    #             display_name = self.column_lookup[(rule.table_name, rule.field)]
-    #
-    #             # Don't check the out of range errors if the data are empty
-    #             if value is None:
-    #                 continue
-    #
-    #             if type(value).__name__ != rule.data_type:
-    #                 self.results[datum.id]['data_quality_results'].append({
-    #                     'field': rule.field,
-    #                     'formatted_field': display_name,
-    #                     'value': value,
-    #                     'message': display_name + ' value has incorrect data type',
-    #                     'detailed_message': display_name + ' value ' + str(
-    #                         value) + ' is not a recognized ' + rule.data_type + ' format',
-    #                     'severity': rule.get_severity_display(),
-    #                 })
+    def _data_type_check(self, datum):
+        """
+        Check the data types of fields. These should never be wrong as
+        these are the data in the database.
+
+        This chunk of code is currently ignored.
+
+        :param datum: Database record containing the BS version of the fields populated
+        :return: None
+        """
+        pass
+
+        # for rule in self.rules.filter(enabled=True).order_by('field', 'severity'):
+        #     # check if the field exists
+        #     if hasattr(datum, rule.field):
+        #         value = getattr(datum, rule.field)
+        #         display_name = self.column_lookup[(rule.table_name, rule.field)]
+        #
+        #         # Don't check the out of range errors if the data are empty
+        #         if value is None:
+        #             continue
+        #
+        #         if type(value).__name__ != rule.data_type:
+        #             self.results[datum.id]['data_quality_results'].append({
+        #                 'field': rule.field,
+        #                 'formatted_field': display_name,
+        #                 'value': value,
+        #                 'message': display_name + ' value has incorrect data type',
+        #                 'detailed_message': display_name + ' value ' + str(
+        #                     value) + ' is not a recognized ' + rule.data_type + ' format',
+        #                 'severity': rule.get_severity_display(),
+        #             })
 
     def save_to_cache(self, identifier):
         """
@@ -723,7 +739,8 @@ class DataQualityCheck(models.Model):
         existing_results += l
 
         z = sorted(existing_results, key=lambda k: k['id'])
-        set_cache_raw(DataQualityCheck.cache_key(identifier), z, 86400)  # save the results for 24 hours
+        set_cache_raw(DataQualityCheck.cache_key(identifier), z,
+                      86400)  # save the results for 24 hours
 
     def initialize_rules(self):
         """

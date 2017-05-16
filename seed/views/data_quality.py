@@ -95,9 +95,9 @@ def _get_severity_from_js(severity):
 
 class DataQualityViews(viewsets.ViewSet):
     """
-Handles Data Quality API operations within Inventory backend.
-(1) Post, wait, get…
-(2) Respond with what changed
+    Handles Data Quality API operations within Inventory backend.
+    (1) Post, wait, get…
+    (2) Respond with what changed
     """
     authentication_classes = (SessionAuthentication, SEEDAuthentication)
 
