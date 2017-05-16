@@ -59,13 +59,13 @@ from seed.models import (
     DATA_STATE_DELETE,
     MERGE_STATE_MERGED,
     MERGE_STATE_NEW,
-)
+    DATA_STATE_UNKNOWN)
 from seed.models import PropertyAuditLog
 from seed.models import TaxLotAuditLog
 from seed.models import TaxLotProperty
 from seed.models.auditlog import AUDIT_IMPORT
 from seed.utils.buildings import get_source_type
-from seed.utils.cache import set_cache, increment_cache, get_cache, delete_cache
+from seed.utils.cache import set_cache, increment_cache, get_cache, delete_cache, get_cache_raw
 from random import randint
 
 _log = get_task_logger(__name__)
@@ -88,11 +88,16 @@ def check_data_chunk(model, ids, identifier, increment):
     :param increment: currently unused, but needed because of the special method that appends this onto the function  # NOQA
     :return: None
     """
-    qs = model.objects.filter(id__in=ids)
+    if model == 'PropertyState':
+        qs = PropertyState.objects.filter(id__in=ids)
+    elif model == 'TaxLotState':
+        qs = TaxLotState.objects.filter(id__in=ids)
+    else:
+        qs = None
     super_org = qs.first().organization
 
     d = DataQualityCheck.retrieve(super_org.get_parent())
-    d.check_data(model.__name__, qs.iterator())
+    d.check_data(model, qs.iterator())
     d.save_to_cache(identifier)
 
 
@@ -106,17 +111,19 @@ def finish_checking(identifier):
     """
 
     prog_key = get_prog_key('check_data', identifier)
+    data_quality_results = get_cache_raw(DataQualityCheck.cache_key(identifier))
     result = {
         'status': 'success',
         'progress': 100,
-        'message': 'data quality check complete'
+        'message': 'data quality check complete',
+        'data': data_quality_results
     }
     set_cache(prog_key, result['status'], result)
 
 
 @shared_task
 def do_checks(propertystate_ids, taxlotstate_ids):
-    identifier = randint(100, 10000)
+    identifier = randint(100, 100000)
     DataQualityCheck.initialize_cache(identifier)
     prog_key = get_prog_key('check_data', identifier)
     trigger_data_quality_checks.delay(propertystate_ids, taxlotstate_ids, identifier)
@@ -176,8 +183,12 @@ def finish_mapping(import_file_id, mark_as_done):
     }
     set_cache(prog_key, result['status'], result)
 
-    property_state_ids = list(PropertyState.objects.filter(import_file=import_file).only('id'))
-    taxlot_state_ids = list(TaxLotState.objects.filter(import_file=import_file).only('id'))
+    property_state_ids = list(PropertyState.objects.filter(import_file=import_file)
+                              .exclude(data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT])
+                              .values_list('id', flat=True))
+    taxlot_state_ids = list(TaxLotState.objects.filter(import_file=import_file)
+                            .exclude(data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT])
+                            .values_list('id', flat=True))
 
     # now call data_quality
     _data_quality_check(property_state_ids, taxlot_state_ids, import_file_id)
@@ -472,15 +483,15 @@ def _data_quality_check(property_state_ids, taxlot_state_ids, identifier):
     """
     # initialize the cache for the data_quality results using the data_quality static method
     tasks = []
-    id_chunks = [[obj.id for obj in chunk] for chunk in batch(property_state_ids, 100)]
+    id_chunks = [[obj for obj in chunk] for chunk in batch(property_state_ids, 100)]
     increment = get_cache_increment_value(id_chunks)
     for ids in id_chunks:
-        tasks.append(check_data_chunk.s(PropertyState, ids, identifier, increment))
+        tasks.append(check_data_chunk.s("PropertyState", ids, identifier, increment))
 
-    id_chunks_tl = [[obj.id for obj in chunk] for chunk in batch(taxlot_state_ids, 100)]
+    id_chunks_tl = [[obj for obj in chunk] for chunk in batch(taxlot_state_ids, 100)]
     increment_tl = get_cache_increment_value(id_chunks_tl)
     for ids in id_chunks_tl:
-        tasks.append(check_data_chunk.s(TaxLotState, ids, identifier, increment_tl))
+        tasks.append(check_data_chunk.s("TaxLotState", ids, identifier, increment_tl))
 
     if tasks:
         # specify the chord as an immutable with .si
@@ -831,6 +842,13 @@ def _finish_matching(import_file, progress_key):
         'progress': 100,
         'progress_key': progress_key
     }
+    property_state_ids = list(PropertyState.objects.filter(import_file=import_file)
+                              .exclude(data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT])
+                              .values_list('id', flat=True))
+    taxlot_state_ids = list(TaxLotState.objects.filter(import_file=import_file)
+                            .exclude(data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT])
+                            .values_list('id', flat=True))
+    _data_quality_check(property_state_ids, taxlot_state_ids, import_file.id)
     set_cache(progress_key, result['status'], result)
     return result
 

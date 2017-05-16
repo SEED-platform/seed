@@ -2,8 +2,8 @@
  * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
-angular.module('BE.seed.controller.data_quality', [])
-.controller('data_quality_controller', [
+angular.module('BE.seed.controller.data_quality_modal', [])
+.controller('data_quality_modal_controller', [
   '$scope',
   '$uibModalInstance',
   'search_service',
@@ -30,9 +30,17 @@ angular.module('BE.seed.controller.data_quality', [])
     };
 
     var fields = [{
+      sort_column: 'table_name',
+      sortable: false,
+      title: 'Table'
+    }, {
       sort_column: 'address_line_1',
       sortable: true,
       title: 'Address Line 1'
+    }, {
+      sort_column: 'jurisdiction_tax_lot_id',
+      sortable: true,
+      title: 'Jurisdiction Tax Lot ID'
     }, {
       sort_column: 'pm_property_id',
       sortable: true,
@@ -65,7 +73,7 @@ angular.module('BE.seed.controller.data_quality', [])
     });
 
     $scope.sortData = function() {
-      $scope.dataQualityResults = _.sortByOrder($scope.dataQualityResults, [$scope.search.sort_column], [$scope.search.sort_reverse ? 'desc' : 'asc']);
+      $scope.dataQualityResults = _.orderBy($scope.dataQualityResults, [$scope.search.sort_column], [$scope.search.sort_reverse ? 'desc' : 'asc']);
     };
 
     $scope.search = angular.copy(search_service);
@@ -134,7 +142,7 @@ angular.module('BE.seed.controller.data_quality', [])
         value = value.toLowerCase();
         _.forEach($scope.dataQualityResults, function (result) {
           if (result.visible) {
-            if (_.includes(['formatted_field', 'detailed_message'], column)) {
+            if (_.includes(['detailed_message', 'formatted_field', 'table_name'], column)) {
               _.forEach(result.data_quality_results, function(row) {
                 if (!_.includes(row[column].toLowerCase(), value)) row.visible = false;
               });

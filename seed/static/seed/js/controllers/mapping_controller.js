@@ -625,7 +625,7 @@ angular.module('BE.seed.controller.mapping', [])
       $scope.open_data_quality_modal = function () {
         $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/data_quality_modal.html',
-          controller: 'data_quality_controller',
+          controller: 'data_quality_modal_controller',
           size: 'lg',
           resolve: {
             dataQualityResults: function () {

@@ -13,7 +13,6 @@ from django.test import TestCase
 
 from seed.data_importer import tasks
 from seed.data_importer.models import ImportFile, ImportRecord
-from seed.models.data_quality import DataQualityCheck
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
@@ -23,12 +22,12 @@ from seed.models import (
     TaxLotState,
     Column,
 )
+from seed.models.data_quality import DataQualityCheck
 
 _log = logging.getLogger(__name__)
 
 
 class DataQualityTestCoveredBuilding(TestCase):
-
     def setUp(self):
         self.user_details = {
             'username': 'testuser@example.com',
@@ -53,12 +52,13 @@ class DataQualityTestCoveredBuilding(TestCase):
         self.import_file.file = File(
             open(path.join(
                 path.dirname(__file__),
-                '../tests/test_data/covered-buildings-sample-with-errors.csv')
+                '../data/covered-buildings-sample-with-errors.csv')
             )
         )
         self.import_file.save()
         self.import_file_mapping = path.join(
-            path.dirname(__file__), "test_data/covered-buildings-sample-with-errors-mappings.csv"
+            path.dirname(__file__),
+            "../data/covered-buildings-sample-with-errors-mappings.csv"
         )
 
         tasks.save_raw_data(self.import_file.id)
@@ -79,7 +79,7 @@ class DataQualityTestCoveredBuilding(TestCase):
         d.check_data('PropertyState', qs)
         # import json
         # print json.dumps(d.results, indent=2)
-        self.assertEqual(len(d.results), 3)
+        self.assertEqual(len(d.results), 7)
 
         result = [v for v in d.results.values() if v['address_line_1'] == '95373 E Peach Avenue']
         if len(result) == 1:
@@ -90,12 +90,13 @@ class DataQualityTestCoveredBuilding(TestCase):
         self.assertTrue(result['address_line_1'], '95373 E Peach Avenue')
 
         res = [{
-            'field': u'pm_property_id',
-            'formatted_field': u'PM Property ID',
-            'value': u'',
-            'message': u'PM Property ID is missing',
-            'detailed_message': u'PM Property ID is missing',
-            'severity': u'error'
+            "severity": "error",
+            "value": "",
+            "field": "pm_property_id",
+            "table_name": "PropertyState",
+            "message": "PM Property ID is null",
+            "detailed_message": "PM Property ID is null",
+            "formatted_field": "PM Property ID"
         }]
         self.assertEqual(res, result['data_quality_results'])
 
@@ -107,33 +108,40 @@ class DataQualityTestCoveredBuilding(TestCase):
 
         res = [
             {
-                'field': u'year_built',
-                'formatted_field': u'Year Built',
-                'value': 0,
-                'message': u'Year Built out of range',
-                'detailed_message': u'Year Built [0] < 1700',
-                'severity': u'error'
-            }, {
-                'field': u'gross_floor_area',
-                'formatted_field': u'Gross Floor Area',
-                'value': 10000000000.0,
-                'message': u'Gross Floor Area out of range',
-                'detailed_message': u'Gross Floor Area [10000000000.0] > 7000000.0',
-                'severity': u'error'
-            }, {
-                'field': u'custom_id_1',
-                'formatted_field': u'Custom ID 1 (Property)',
-                'value': u'',
-                'message': u'Custom ID 1 (Property) is missing',
-                'detailed_message': u'Custom ID 1 (Property) is missing',
-                'severity': u'error'
-            }, {
-                'field': u'pm_property_id',
-                'formatted_field': u'PM Property ID',
-                'value': u'',
-                'message': u'PM Property ID is missing',
-                'detailed_message': u'PM Property ID is missing',
-                'severity': u'error'
+                "severity": "error",
+                "value": 10000000000.0,
+                "field": "gross_floor_area",
+                "table_name": "PropertyState",
+                "message": "Gross Floor Area out of range",
+                "detailed_message": "Gross Floor Area [10000000000.0] > 7000000.0",
+                "formatted_field": "Gross Floor Area"
+            },
+            {
+                "severity": "error",
+                "value": 0.0,
+                "field": "year_built",
+                "table_name": "PropertyState",
+                "message": "Year Built out of range",
+                "detailed_message": "Year Built [0] < 1700",
+                "formatted_field": "Year Built"
+            },
+            {
+                "severity": "error",
+                "value": "",
+                "field": "custom_id_1",
+                "table_name": "PropertyState",
+                "message": "Custom ID 1 (Property) is null",
+                "detailed_message": "Custom ID 1 (Property) is null",
+                "formatted_field": "Custom ID 1 (Property)"
+            },
+            {
+                "severity": "error",
+                "value": "",
+                "field": "pm_property_id",
+                "table_name": "PropertyState",
+                "message": "PM Property ID is null",
+                "detailed_message": "PM Property ID is null",
+                "formatted_field": "PM Property ID"
             }
         ]
         self.assertItemsEqual(res, result['data_quality_results'])
@@ -152,11 +160,10 @@ class DataQualityTestCoveredBuilding(TestCase):
         d.check_data('TaxLotState', qs)
         # import json
         # print json.dumps(d.results, indent=2)
-        self.assertEqual(len(d.results), 1)
+        self.assertEqual(len(d.results), 4)
 
 
 class DataQualityTestPM(TestCase):
-
     def setUp(self):
         self.user_details = {
             'username': 'testuser@example.com',
@@ -179,8 +186,8 @@ class DataQualityTestPM(TestCase):
         self.import_file.is_espm = True
         self.import_file.source_type = 'Portfolio Raw'
         self.import_file.file = File(
-            open(path.join(path.dirname(__file__), '../tests/test_data',
-                           'portfolio-manager-sample-with-errors.csv'))
+            open(path.join(path.dirname(__file__),
+                           '../data/portfolio-manager-sample-with-errors.csv'))
         )
         self.import_file.save()
 
@@ -261,14 +268,25 @@ class DataQualityTestPM(TestCase):
         else:
             raise RuntimeError('Non unity results')
 
-        res = [{
-            'field': u'pm_property_id',
-            'formatted_field': u'PM Property ID',
-            'value': u'',
-            'message': u'PM Property ID is missing',
-            'detailed_message': u'PM Property ID is missing',
-            'severity': u'error'
-        }]
+        res = [
+            {
+                'severity': 'error',
+                'value': None,
+                'field': u'custom_id_1',
+                'table_name': u'PropertyState',
+                'message': 'Custom ID 1 (Property) is null',
+                'detailed_message': 'Custom ID 1 (Property) is null',
+                'formatted_field': 'Custom ID 1 (Property)'},
+            {
+                'severity': 'error',
+                'value': u'',
+                'field': u'pm_property_id',
+                'table_name': u'PropertyState',
+                'message': 'PM Property ID is null',
+                'detailed_message': 'PM Property ID is null',
+                'formatted_field': 'PM Property ID'
+            }
+        ]
         self.assertEqual(res, result['data_quality_results'])
 
         result = [v for v in d.results.values() if v['address_line_1'] == '95373 E Peach Avenue']
@@ -277,19 +295,29 @@ class DataQualityTestPM(TestCase):
         else:
             raise RuntimeError('Non unity results')
 
-        res = [{
-            'field': u'site_eui',
-            'formatted_field': u'Site EUI',
-            'value': 0.1,
-            'message': u'Site EUI out of range',
-            'detailed_message': u'Site EUI [0.1] < 10.0',
-            'severity': u'warning'
-        }]
+        res = [
+            {
+                'field': u'site_eui',
+                'formatted_field': u'Site EUI',
+                'value': 0.1,
+                'table_name': u'PropertyState',
+                'message': u'Site EUI out of range',
+                'detailed_message': u'Site EUI [0.1] < 10.0',
+                'severity': u'warning'
+            },
+            {
+                'severity': 'error',
+                'value': None, 'field': u'custom_id_1',
+                'table_name': u'PropertyState',
+                'message': 'Custom ID 1 (Property) is null',
+                'detailed_message': 'Custom ID 1 (Property) is null',
+                'formatted_field': 'Custom ID 1 (Property)'
+            }
+        ]
         self.assertEqual(res, result['data_quality_results'])
 
 
 class DataQualitySample(TestCase):
-
     def setUp(self):
         self.user_details = {
             'username': 'testuser@example.com',
@@ -312,8 +340,8 @@ class DataQualitySample(TestCase):
         self.import_file.is_espm = False
         self.import_file.source_type = 'ASSESSED_RAW'
         self.import_file.file = File(
-            open(path.join(path.dirname(__file__), '../tests/test_data',
-                           'data-quality-check-sample.csv')))
+            open(path.join(path.dirname(__file__),
+                           '../data/data-quality-check-sample.csv')))
 
         self.import_file.save()
 
@@ -496,5 +524,5 @@ class DataQualitySample(TestCase):
         d = DataQualityCheck.retrieve(self.org)
         d.check_data('PropertyState', qs)
 
-        # This only checks to make sure the 34 errors have occurred.
-        self.assertEqual(len(d.results), 34)
+        # This only checks to make sure the 33 errors have occurred.
+        self.assertEqual(len(d.results), 33)

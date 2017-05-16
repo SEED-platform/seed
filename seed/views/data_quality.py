@@ -95,9 +95,9 @@ def _get_severity_from_js(severity):
 
 class DataQualityViews(viewsets.ViewSet):
     """
-Handles Data Quality API operations within Inventory backend.
-(1) Post, wait, get…
-(2) Respond with what changed
+    Handles Data Quality API operations within Inventory backend.
+    (1) Post, wait, get…
+    (2) Respond with what changed
     """
     authentication_classes = (SessionAuthentication, SEEDAuthentication)
 
@@ -126,48 +126,19 @@ Handles Data Quality API operations within Inventory backend.
         """
         # step 0: retrieving the data
         body = request.data
-        tax_lot_state_ids = body['taxlot_state_ids']
-        prop_state_ids = body['property_state_ids']
+        property_state_ids = body['property_state_ids']
+        taxlot_state_ids = body['taxlot_state_ids']
 
         # step 1: validate the check IDs all exist
         # step 2: validate the check IDs all belong to this organization ID
         # step 3: validate the actual user belongs to the passed in org ID
         # step 4: kick off a background task
-        return_value = do_checks(prop_state_ids, tax_lot_state_ids)
+        return_value = do_checks(property_state_ids, taxlot_state_ids)
         # step 5: create a new model instance
-        return JsonResponse({'num_taxlots': len(tax_lot_state_ids), 'num_props': len(prop_state_ids), 'prog_key': return_value['progress_key']})
-
-    @list_route(methods=['POST'])
-    def status(self, request):
-        """
-        This API endpoint will take a task ID and, assuming this user has access
-        to this cleansing operation, returns back a status update
-        ---
-        parameters:
-            - name: organization_id
-              description: Organization ID
-              type: integer
-              required: true
-              paramType: query
-            - name: task_id
-              description: The task ID that was generated from the POST call
-              required: true
-              paramType: string
-        type:
-            status:
-                type: string
-                description: success or error
-                required: true
-        """
-        # step 0: retrieve the key
-        print(request.query_params)
-        body = request.data
-        task_id = body['task_id']
-        # step 1: validate the actual user belongs to the passed in org ID
-        # step 2: filter all cleansing instances to those owned by this users organization
-        # step 3: validate this task ID exists in the remaining set
-        # step 4: check celery for the status of the background task
-        return JsonResponse({'status': 'Yep, Im working on task %s' % task_id})
+        return JsonResponse({
+            'num_properties': len(property_state_ids),
+            'num_taxlots': len(taxlot_state_ids),
+            'progress_key': return_value['progress_key']})
 
     @api_endpoint_class
     @ajax_request_class
@@ -215,6 +186,7 @@ Handles Data Quality API operations within Inventory backend.
                 'not_null': rule.not_null,
                 'min': rule.min,
                 'max': rule.max,
+                'text_match': rule.text_match,
                 'severity': _get_js_rule_severity(rule.severity),
                 'units': rule.units,
                 'label': rule.status_label_id
@@ -353,6 +325,7 @@ Handles Data Quality API operations within Inventory backend.
                     'not_null': rule['not_null'],
                     'min': rule['min'],
                     'max': rule['max'],
+                    'text_match': rule['text_match'],
                     'severity': _get_severity_from_js(rule['severity']),
                     'units': rule['units'],
                     'status_label_id': rule['label']
@@ -371,6 +344,7 @@ Handles Data Quality API operations within Inventory backend.
                     'not_null': rule['not_null'],
                     'min': rule['min'],
                     'max': rule['max'],
+                    'text_match': rule['text_match'],
                     'severity': _get_severity_from_js(rule['severity']),
                     'units': rule['units'],
                     'status_label_id': rule['label']

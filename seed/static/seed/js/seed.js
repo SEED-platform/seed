@@ -35,8 +35,8 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.accounts',
   'BE.seed.controller.admin',
   'BE.seed.controller.api',
-  'BE.seed.controller.data_quality',
   'BE.seed.controller.data_quality_admin',
+  'BE.seed.controller.data_quality_modal',
   'BE.seed.controller.cycle_admin',
   'BE.seed.controller.concat_modal',
   'BE.seed.controller.create_note_modal',
@@ -810,9 +810,23 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         resolve: {
           columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             if ($stateParams.inventory_type === 'properties') {
-              return inventory_service.get_property_columns();
+              return inventory_service.get_property_columns().then(function (columns) {
+                _.remove(columns, function (col) {
+                  return col.related === true;
+                });
+                return _.map(columns, function (col) {
+                  return _.omit(col, ['pinnedLeft', 'related']);
+                });
+              });
             } else if ($stateParams.inventory_type === 'taxlots') {
-              return inventory_service.get_taxlot_columns();
+              return inventory_service.get_taxlot_columns().then(function (columns) {
+                _.remove(columns, function (col) {
+                  return col.related === true;
+                });
+                return _.map(columns, function (col) {
+                  return _.omit(col, ['pinnedLeft', 'related']);
+                });
+              });
             }
           }],
           organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {

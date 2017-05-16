@@ -9,9 +9,9 @@ import json
 from django.core.urlresolvers import reverse_lazy, NoReverseMatch
 from django.test import TestCase
 
-from seed.models.data_quality import (
-    DataQualityCheck
-)
+# from seed.models.data_quality import (
+#     DataQualityCheck
+# )
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.exceptions import InsufficientPermission
 from seed.lib.superperms.orgs.models import (
@@ -626,7 +626,6 @@ class AccountsViewTests(TestCase):
     #     dq.add_rule({
     #         'table_name': 'PropertyState',
     #         'field': 'address_line_1',
-    #         'category': CATEGORY_IN_RANGE_CHECKING,
     #         'severity': 0,
     #     })
     #     response = self.client.get(reverse_lazy('apiv2:organizations-data-quality-rules', args=[self.org.pk]))
