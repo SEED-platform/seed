@@ -30,9 +30,7 @@ class TestMappingData(TestCase):
         # verify that the data loaded as expected
         fake_data_0 = {
             "js_type": u"",
-            # "name": "address_line_1",         # not sure what it should be
-            'name': '_normalized_address',      # fixed failing test to
-                                                # reflect what it is
+            "name": "address_line_1",
             "schema": "BEDES",
             "table": "PropertyState",
             "type": u"CharField",

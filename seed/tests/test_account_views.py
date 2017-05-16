@@ -798,6 +798,29 @@ class AccountsViewTests(TestCase):
         user = User.objects.get(pk=self.user.pk)
         self.assertFalse(user.check_password('new password'))
 
+        resp = self.client.post(
+            reverse_lazy("apiv2:users-set-password", args=[self.user.pk]),
+            json.dumps(password_payload),
+            content_type='application/json',
+        )
+        user = User.objects.get(pk=self.user.pk)
+        self.assertFalse(user.check_password('new password'))
+
+        self.assertEquals(resp.status_code, 405)
+        self.assertEquals(
+            json.loads(resp.content),
+            {
+                'detail': 'Method \"POST\" not allowed.',
+            })
+
+        resp = self.client.get(
+            reverse_lazy("apiv2:users-set-password", args=[self.user.pk]),
+            password_payload,
+            content_type='application/json',
+        )
+        user = User.objects.get(pk=self.user.pk)
+        self.assertFalse(user.check_password('new password'))
+
         self.assertEquals(resp.status_code, 405)
         self.assertEquals(
             json.loads(resp.content),
