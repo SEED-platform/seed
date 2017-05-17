@@ -36,7 +36,13 @@ def is_authenticated(user):
 
 def get_org_or_id(dictlike):
     """Get value of organization or organization_id"""
-    return dictlike.get('organization', dictlike.get('organization_id'))
+    org_query_strings = ['organization', 'organization_id', 'org_id', 'org']
+    org_id = None
+    for org_str in org_query_strings:
+        org_id = dictlike.get(org_str)
+        if org_id:
+            break
+    return org_id
 
 
 def get_org_id(request):
