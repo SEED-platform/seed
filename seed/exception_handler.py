@@ -48,4 +48,4 @@ def custom_exception_handler(exc, context):
 
             set_rollback()
             return Response(data, status=status.HTTP_400_BAD_REQUEST)
-    return None
+    return response
