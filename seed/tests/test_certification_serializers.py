@@ -69,11 +69,11 @@ class TestFields(TestCase):
         )
 
     def tearDown(self):
-        Cycle.objects.all().delete()
         Property.objects.all().delete()
         PropertyState.objects.all().delete()
         PropertyView.objects.all().delete()
         GreenAssessment.objects.all().delete()
+        Cycle.objects.all().delete()
         self.user.delete()
         self.org.delete()
 
@@ -184,13 +184,13 @@ class TestGreenAssessmentPropertySerializer(TestCase):
         ]
 
     def tearDown(self):
-        Cycle.objects.all().delete()
         Property.objects.all().delete()
         PropertyState.objects.all().delete()
         PropertyView.objects.all().delete()
         GreenAssessmentURL.objects.all().delete()
         GreenAssessmentProperty.objects.all().delete()
         GreenAssessment.objects.all().delete()
+        Cycle.objects.all().delete()
         self.user.delete()
         self.org.delete()
 
