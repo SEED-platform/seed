@@ -17,6 +17,8 @@ angular.module('BE.seed.controller.data_quality_admin', [])
   'organization_service',
   'label_service',
   'spinner_utility',
+  '$uibModal',
+  'urls',
   function (
     $scope,
     $q,
@@ -30,7 +32,9 @@ angular.module('BE.seed.controller.data_quality_admin', [])
     data_quality_service,
     organization_service,
     label_service,
-    spinner_utility
+    spinner_utility,
+    $uibModal,
+    urls
   ) {
     $scope.inventory_type = $stateParams.inventory_type;
     $scope.org = organization_payload.organization;
@@ -72,14 +76,14 @@ angular.module('BE.seed.controller.data_quality_admin', [])
             if (row.min) row.min = moment(row.min, 'YYYYMMDD').toDate();
             if (row.max) row.max = moment(row.max, 'YYYYMMDD').toDate();
           }
-          // if (rule.label) {
-          //   var match = _.find(labels_payload, function (label) {
-          //     return label.id === rule.label;
-          //   });
-          //   if (match) {
-          //     row.label = match.name;
-          //   }
-          // }
+          if (rule.label) {
+            var match = _.find(labels_payload, function (label) {
+              return label.id === rule.label;
+            });
+            if (match) {
+              row.label = match;
+            }
+          }
           $scope.ruleGroups[index][rule.field].push(row);
         });
       });
@@ -136,47 +140,25 @@ angular.module('BE.seed.controller.data_quality_admin', [])
               text_match: rule.text_match,
               severity: rule.severity,
               units: rule.units,
-              label: rule.label
+              label: null
             };
             if (rule.data_type === 'date') {
               if (rule.min) r.min = Number(moment(rule.min).format('YYYYMMDD'));
               if (rule.max) r.max = Number(moment(rule.max).format('YYYYMMDD'));
+            }
+            if (rule.label) {
+              // console.log('la: ', rule.label)
+              r.label = rule.label.id;
             }
             if (rule.new) {
               rule.new = null;
               var match = _.find(labels_payload, function (label) {
                 return label.name === rule.label;
               });
-            //   if (!match) {
-            //     var newLabel = {
-            //       name: rule.label,
-            //       color: 'gray',
-            //       label: 'default'
-            //     };
-            //     label_service.create_label_for_org($scope.org.id, newLabel).then(angular.bind(this, function (result) {
-            //         r.label = result.id;
-            //         rules[rule_type].push(r);
-            //         d.resolve();
-            //       }, rule_type),
-            //       function (message) {
-            //         $log.error('Error creating new label.', message);
-            //         d.reject();
-            //       }).then(function () {
-            //         label_service.get_labels_for_org($scope.org.id).then(function (labels) {
-            //           $scope.all_labels = labels;
-            //         });
-            //       });
-            //   }
-            //   else {
+
               if (match) {
                 r.label = match.id;
-                // d.resolve();
               }
-            //   rule.new = null;
-            // }
-            // else {
-            //   rules[rule_type].push(r);
-            //   d.resolve();
             }
             rules[inventory_type].push(r);
           });
@@ -258,6 +240,10 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       });
     };
 
+    $scope.removeLabelFromRule = function (rule) {
+      rule.label = null;
+    }
+
     // create a new rule.
     $scope.create_new_rule = function () {
       var field = _.get(columns, '[0].name', null);
@@ -290,6 +276,52 @@ angular.module('BE.seed.controller.data_quality_admin', [])
           autofocus: true
         });
       }
+    };
+
+    // create label and assign to that rule
+    $scope.create_label = function (rule, index) {
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/data_quality_labels_modal.html',
+          controller: 'data_quality_labels_modal_controller',
+          resolve: { }
+        });
+        modalInstance.result.then(function (returnedLabels) {
+            
+            rule.label = returnedLabels;
+
+            //code for multiple labels
+            // label_service.get_labels().then(function (allLabels) {
+            //   console.log('all: ', allLabels)
+            //   rule.label = _.filter(allLabels, function (label) {
+            //     // console.log(label.id + ' and ' + returnedLabels)
+            //     return _.includes(returnedLabels, label.id);
+            //   });
+            // });
+
+
+          }, function (message) {
+            //dialog was 'dismissed,' which means it was cancelled...so nothing to do.
+          }
+        );      
+      //   var newLabel = {
+      //     name: rule.label,
+      //     color: 'gray',
+      //     label: 'default'
+      //   };
+      //   label_service.create_label_for_org($scope.org.id, newLabel).then(angular.bind(this, function (result) {
+      //       r.label = result.id;
+      //       rules[rule_type].push(r);
+      //       d.resolve();
+      //     }, rule_type),
+      //     function (message) {
+      //       $log.error('Error creating new label.', message);
+      //       d.reject();
+      //     }).then(function () {
+      //       label_service.get_labels_for_org($scope.org.id).then(function (labels) {
+      //         $scope.all_labels = labels;
+      //       });
+      //     });
+      // }
     };
 
     // set rule as deleted.

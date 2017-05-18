@@ -59,8 +59,9 @@
                             <th>Maximum</th>
                             <th style="min-width: 100px; width: 100px;">Severity</th>
                             <th>Units</th>
-                            <th>Label</th>
-                            <th style="min-width: 54px; width: 54px;"></th>
+                            <th>Labels</th>
+                            <th style="min-width: 100px; width: 100px;">Add/Create Label</th>
+                            <th style="min-width: 54px; width: 54px;">Delete</th>
                         </tr>
                     </thead>
                     <tbody ng-repeat="ruleGroup in ruleGroups[inventory_type]">
@@ -101,7 +102,18 @@
                                 <select class="form-control input-sm" ng-options="u for u in units" ng-model="rule.units" ng-change="rule.rule_type = 1"></select>
                             </td>
                             <td>
-                                <select class="form-control input-sm" ng-model="rule.label" ng-change="rule.rule_type = 1" ng-options="label.id as label.name for label in all_labels"></select>
+                                <div style="display: flex; justify-content: space-between">
+                                    <div class="label label-{$ rule.label.label $}" style="margin-top: 7px; padding: 4.6px 7px;" >{$ rule.label.name $}</div>
+                                    <div class="btn label btn-danger" ng-if="rule.label" ng-click="removeLabelFromRule(rule)" style="margin-top: 7px; padding: 4.6px 7px;">x</div>
+                                </div>
+                                <!-- code for muliple labels -->
+                                <!-- <span ng-repeat="label in rule.label" class="label label-{$ label.label $}" style="display: block; margin-top: 7px; padding: 4.6px 7px;">{$ label.name $}</span> -->
+
+                                <!-- old code -->
+                                <!-- <select class="form-control input-sm" ng-model="rule.label" ng-change="rule.rule_type = 1" ng-options="label.id as label.name for label in all_labels"></select> -->
+                            </td>
+                            <td class="check is_aligned_center">
+                                <button class="btn btn-info btn-sm" ng-click="create_label(rule, $index)">Add/Create Label</button>
                             </td>
                             <td class="check is_aligned_center">
                                 <button class="btn btn-danger btn-rowform" ng-click="delete_rule(rule, $index)">X</button>
