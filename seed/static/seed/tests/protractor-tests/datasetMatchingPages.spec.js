@@ -8,11 +8,10 @@ describe('When I go to the dataset options page', function () {
 		$$('[ui-sref="dataset_detail({dataset_id: d.id})"]').first().click();
 		var rows = element.all(by.repeater('f in dataset.importfiles'));
 		expect(rows.count()).toBe(2);
-
 	});
 
 	//Mapping
-	it('should edit mappings', function () {
+	it('should go to mappings', function () {
 		$$('#data-mapping-0').first().click()
 		expect($('.page_title').getText()).toContain('Data Mapping & Validation');
 	});
@@ -29,7 +28,8 @@ describe('When I go to the dataset options page', function () {
 		});
 	});
 
-	it('should go to mapping Validation', function () {
+	it('should go to mapping Validation', function () {	
+		var rowC = element.all(by.repeater('result in row.data_quality_results'));
 		$$('[ng-click="get_mapped_buildings()"]').first().click();
 		browser.wait(EC.presenceOf($('.inventory-list-tab-container.ng-scope')),30000);
 		expect($('[heading="View by Property"]').isPresent()).toBe(true);
@@ -40,6 +40,9 @@ describe('When I go to the dataset options page', function () {
 		});
 		$$('[ng-click="open_data_quality_modal()"]').first().click();
 		browser.wait(EC.presenceOf($('.modal-title')),30000);
+		//row count inconsistent, not sure why this is happening, returns 64, 0 and 128
+		expect(rowC.count()).toBe(64);
+		// Recent pull populated errors, not sure if we should expect no errors anywhere else
 		// expect($('.modal-body.ng-scope').getText()).toContain('No warnings/errors');
 		$$('[ng-click="close()"]').first().click();
 		expect($('.modal-body.ng-scope').isPresent()).toBe(false);
@@ -76,88 +79,4 @@ describe('When I go to the dataset options page', function () {
         expect($('.table_footer').getText()).toContain('4 unmatched');
 	});
 
-	//Pairing
-	it('should edit pairing', function () {
-		// should be later: $$('[ui-sref="dataset_detail({dataset_id: import_file.dataset.id})"]').first().click();
-
-		//temp
-		browser.get("/app/#/data");
-		$('.import_name').click();
-		// temp
-		browser.wait( EC.presenceOf( $('.data_file_name'), 5000 ));
-		$$('#data-pairing-0').first().click()
-		expect($('.page_title').getText()).toContain('Pair Properties to Tax Lots');
-		element(by.cssContainingText('[ng-model="cycle.selected_cycle"] option', browser.params.testOrg.cycle)).click();
-		browser.sleep(2000);
-
-		// Gotta figure this out, remote has 1 unpaired.
-		expect($('.pairing-text-left').getText()).toContain('Showing 18 Properties');
-		expect($('.pairing-text-right').getText()).toContain('Showing 11 Tax Lots');
-	});
-
-
-	it('should edit delete pairings', function () {
-		$$('.unpair-child').count().then( function (count) {
-			for (var index = 0; index < count; index++) {
-				// console.log('index: ', index, count)
-				var option = $$('.unpair-child').first();
-				option.click();
-				browser.sleep(200);
-			};
-		});
-
-		expect($$('.unpair-child').count()).toBeLessThan(1);
-	}, 60000);
-
-	it('should edit change pair view', function () {
-		browser.sleep(2000);
-		element(by.cssContainingText('[ng-change="inventoryTypeChanged()"] option', "Tax Lot")).click();
-		// browser.wait(EC.presenceOf($('.inventory-list-tab-container.ng-scope')),30000);
-		expect($('.page_title').getText()).toContain('Pair Tax Lots to Properties');
-
-		expect($('.pairing-text-right').getText()).toContain('Showing 18 Properties (18 unpaired)');
-		expect($('.pairing-text-left').getText()).toContain('Showing 11 Tax Lots (11 unpaired)');
-
-		browser.sleep(2000);
-	});
-
-
-
-	it('should edit drag pairs', function () {
-		browser.ignoreSynchronization = true;
-		// var dragElement = $$('.pairing-data-row.grab-pairing-left').first();
-		var dragElement = element.all(by.repeater('row in newLeftData')).first();
-		var dropElement = $$('.pairing-data-row-indent').first();
-		var lastDropElement = $$('.pairing-data-row-indent').last();
-		// console.log('drag: ', dragElement);
-		// console.log('drop: ', dropElement);
-
-		// drag doesn't work on chrome....so use click functionality
-		dragElement.click();
-		browser.sleep(200);
-		dropElement.click();
-		browser.sleep(200);
-		lastDropElement.click();
-		browser.sleep(200);
-
-		expect($('.pairing-text-right').getText()).toContain('Showing 18 Properties (16 unpaired)');
-		expect($('.pairing-text-left').getText()).toContain('Showing 11 Tax Lots (10 unpaired)');
-		browser.sleep(2000);
-	});
-
-	//Delete
-	it('should delete data stuffs', function () {
-		browser.ignoreSynchronization = false;
-		browser.get("/app/#/data");
-		$$('[ui-sref="dataset_detail({dataset_id: d.id})"]').first().click();
-		$$('.delete_link').get(1).click();
-		$$('[ng-click="delete_file()"]').click();
-		var rows = element.all(by.repeater('f in dataset.importfiles'));
-		expect(rows.count()).toBe(1);
-		$$('[ui-sref="dataset_list"]').first().click();
-		$$('[ng-click="confirm_delete(d)"]').first().click();
-		$$('[ng-click="delete_dataset()"]').first().click();
-		rows = element.all(by.repeater('d in datasets'));
-		expect(rows.count()).toBe(0);
-	});
 });
