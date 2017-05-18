@@ -305,7 +305,7 @@ class DataQualityCheck(models.Model):
     }
 
     organization = models.ForeignKey(Organization)
-    name = models.CharField(max_length=255, blank='Default Data Quality Check')
+    name = models.CharField(max_length=255, default='Default Data Quality Check')
 
     @classmethod
     def retrieve(cls, organization):
@@ -319,7 +319,20 @@ class DataQualityCheck(models.Model):
         :return: obj, DataQualityCheck
         """
 
+        if DataQualityCheck.objects.filter(organization=organization).count() > 1:
+            # Ensure that only one object is returned. For an unknown reason, the production
+            # database has multiple DataQualityCheck objects for an organizaiton, but there are no
+            # calls to create a DataQualityCheck other than the .retrieve method.
+            first = DataQualityCheck.objects.filter(organization=organization).first()
+            dqcs = DataQualityCheck.objects.filter(organization=organization).exclude(
+                id__in=[first.pk])
+            for dqc in dqcs:
+                _log.info(
+                    "More than one DataQualityCheck for organization. Deleting {}".format(dqc.name))
+                dqc.delete()
+
         dq, _ = DataQualityCheck.objects.get_or_create(organization=organization)
+
         if dq.rules.count() == 0:
             # _log.debug("No rules found in DataQualityCheck, initializing default rules")
             dq.initialize_rules()
@@ -560,7 +573,7 @@ class DataQualityCheck(models.Model):
                                 'table_name': rule.table_name,
                                 'message': display_name + ' out of range',
                                 'detailed_message': display_name + ' [' + formatted_value + '] < ' +
-                                formatted_rule_min,
+                                                    formatted_rule_min,
                                 'severity': rule.get_severity_display(),
                             })
 

@@ -8,6 +8,8 @@ import logging
 
 from django.test import TestCase
 
+from seed.lib.superperms.orgs.models import Organization
+from seed.models import StatusLabel
 from seed.models.data_quality import (
     DataQualityCheck,
     Rule,
@@ -16,14 +18,28 @@ from seed.models.data_quality import (
     RULE_TYPE_DEFAULT,
     SEVERITY_ERROR
 )
-from seed.lib.superperms.orgs.models import Organization
-from seed.models import StatusLabel
 
 _log = logging.getLogger(__name__)
 
 
-class DataQualityRules(TestCase):
+class DataQualityCheckCase(TestCase):
+    def setUp(self):
+        self.org = Organization.objects.create()
 
+    def test_multiple_data_quality_check_objects(self):
+        dq = DataQualityCheck.retrieve(self.org)
+        self.assertEqual(dq.name, 'Default Data Quality Check')
+
+        DataQualityCheck.objects.create(organization=self.org, name='test manual creation')
+        DataQualityCheck.objects.create(organization=self.org, name='test manual creation 2')
+        DataQualityCheck.objects.create(organization=self.org, name='test manual creation 3')
+        dq = DataQualityCheck.retrieve(self.org)
+
+        # The method above will delete the multiple objects and return the original
+        self.assertEqual(dq.name, 'Default Data Quality Check')
+
+
+class DataQualityCheckRules(TestCase):
     def setUp(self):
         self.org = Organization.objects.create()
 
