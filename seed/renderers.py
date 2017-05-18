@@ -54,7 +54,7 @@ class SEEDJSONRenderer(JSONRenderer):
         response = renderer_context.get('response')
         if status.is_success(response.status_code):
             status_type = 'success'
-            if hasattr(data, 'keys'):
+            if hasattr(data, 'keys') and 'results' in data.keys():
                 results = data.pop('results', None)
                 pagination = data
         else:
