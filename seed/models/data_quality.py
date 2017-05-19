@@ -296,9 +296,9 @@ class Rule(models.Model):
 
     def valid(self, value):
         """
-        
-        :param value: Value to validate rule against 
-        :return: 
+
+        :param value: Value to validate rule against
+        :return:
         """
 
         if self.data_type == TYPE_STRING:
@@ -306,10 +306,6 @@ class Rule(models.Model):
                 return True
 
             pass
-
-
-
-
 
 
 class DataQualityCheck(models.Model):
@@ -591,8 +587,7 @@ class DataQualityCheck(models.Model):
                                 'value': value,
                                 'table_name': rule.table_name,
                                 'message': display_name + ' out of range',
-                                'detailed_message': display_name + ' [' + formatted_value + '] < ' +
-                                                    formatted_rule_min,
+                                'detailed_message': display_name + ' [' + formatted_value + '] < ' + formatted_rule_min,
                                 'severity': rule.get_severity_display(),
                             })
 
@@ -611,7 +606,7 @@ class DataQualityCheck(models.Model):
                             'value': value,
                             'table_name': rule.table_name,
                             'message': display_name + ' could not be compared numerically',
-                            'detailed_message': display_name + ' [' + formatted_value + '] < ' + formatted_rule_min,
+                            'detailed_message': display_name + ' [' + str(value) + '] < ' + formatted_rule_min,
                             'severity': rule.get_severity_display(),
                         })
                         continue
@@ -644,7 +639,7 @@ class DataQualityCheck(models.Model):
                             'value': value,
                             'table_name': rule.table_name,
                             'message': display_name + ' could not be compared numerically',
-                            'detailed_message': display_name + ' [' + formatted_value + '] < ' + formatted_rule_min,
+                            'detailed_message': display_name + ' [' + str(value) + '] < ' + formatted_rule_min,
                             'severity': rule.get_severity_display(),
                         })
                         continue

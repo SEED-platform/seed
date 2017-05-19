@@ -63,7 +63,7 @@
                             <th style="min-width: 54px; width: 54px;">Delete</th>
                         </tr>
                     </thead>
-                    <tbody ng-repeat="ruleGroup in ruleGroups[inventory_type]">
+                    <tbody ng-repeat="field in sortedRuleGroups()" ng-init="ruleGroup = ruleGroups[inventory_type][field]">
                         <tr ng-repeat="rule in ruleGroup" ng-if="!rule.delete" ng-class="{ 'warning' : rule.new, 'disabled' : !rule.enabled }">
                             <td class="check is_aligned_center" style="width: 33px;" ng-click="rule.rule_type = 1; rule.enabled = !rule.enabled">
                                 <input type="checkbox" ng-model="rule.enabled" class="no-click">

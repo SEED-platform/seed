@@ -25,10 +25,10 @@ from seed.models import (
 )
 from seed.models.data_quality import (
     DataQualityCheck,
-    TYPE_NUMBER,
-    RULE_TYPE_DEFAULT,
-    RULE_TYPE_CUSTOM,
-    SEVERITY_ERROR,
+    # TYPE_NUMBER,
+    # RULE_TYPE_DEFAULT,
+    # RULE_TYPE_CUSTOM,
+    # SEVERITY_ERROR,
 )
 
 _log = logging.getLogger(__name__)
@@ -566,7 +566,6 @@ class DataQualitySample(TestCase):
         # from seed.utils.generic import json_serializer
         # print json.dumps(d.results, default=json_serializer, indent=2)
         #
-
 
         # This only checks to make sure the 36 errors have occurred.
         self.assertEqual(len(d.results), 33)
