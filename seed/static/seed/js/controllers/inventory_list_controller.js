@@ -133,7 +133,6 @@ angular.module('BE.seed.controller.inventory_list', [])
 
         data_quality_service.start_data_quality_checks(property_states, taxlot_states).then(function (response) {
           data_quality_service.data_quality_checks_status(response.progress_key).then(function (result) {
-            console.debug(result);
             var modalInstance = $uibModal.open({
               templateUrl: urls.static_url + 'seed/partials/data_quality_modal.html',
               controller: 'data_quality_modal_controller',
