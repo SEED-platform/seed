@@ -1,0 +1,145 @@
+<div class="page_header_container">
+    <div class="page_header">
+        <div class="left page_action_container">
+            <a ui-sref="organizations" class="page_action"><i class="fa fa-chevron-left"></i> Organizations</a>
+        </div>
+        <div class="page_title">
+            <h1>{$ org.name $}</h1>
+        </div>
+        <div class="right page_action_container"></div>
+    </div>
+</div>
+<div class="section_nav_container">
+    <div class="section_nav" ng-include="urls.static_url + 'seed/partials/accounts_nav.html'"></div>
+</div>
+<div class="section">
+    <div class="section_header_container">
+        <div class="section_header has_no_padding fixed_height_short">
+            <div class="section_action_container left_40">
+                <h2><i class="fa fa-flag"></i> Data Quality</h2>
+            </div>
+            <div class="section_action_container right_40 section_action_btn pull-right">
+                <button type="button" class="btn btn-danger" ng-click="restore_defaults()">Restore Default Rules
+                    <i class="fa fa-check" ng-show="defaults_restored"></i>
+                </button>
+                <button type="button" class="btn btn-danger" ng-click="reset_all_rules()">Reset All Rules
+                    <i class="fa fa-check" ng-show="rules_reset"></i>
+                </button>
+                <button type="button" class="btn btn-primary" ng-click="save_settings()">Save Changes
+                    <i class="fa fa-check" ng-show="rules_updated"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="section_content_container">
+        <div class="section_content with_padding" ng-if="org.is_parent && auth.requires_owner" style="margin-bottom:15px;">
+            <h3>Modifying Data Quality Rules</h3>
+            <p>From the table below, select the rules that you want to: 1) enable/disable within your organization, 2) modify the minimum/maximum values to validate against on file upload, and 3) optionally assign or remove a label if the condition is not met.</p>
+            <button class="btn btn-info btn-sm" style="margin-bottom: 15px;" ng-click="create_new_rule()">Create a new rule</button>
+            <div class="data-quality-tab-container">
+                <ul class="nav nav-tabs" style="margin-bottom:1px;">
+                    <li ui-sref-active="active" heading="View by Property">
+                        <a ui-sref="organization_data_quality({organization_id: org.id, inventory_type: 'properties'})">View by Property</a>
+                    </li>
+                    <li ui-sref-active="active" heading="View by Tax Lot">
+                        <a ui-sref="organization_data_quality({organization_id: org.id, inventory_type: 'taxlots'})">View by Tax Lot</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="table_list_container has_borders">
+                <table id="data-quality-admin-table" class="table has_no_btm_margin tbody-striped">
+                    <thead>
+                        <tr>
+                            <th class="condensed_head" style="min-width: 33px; width: 33px;"></th>
+                            <th>Field</th>
+                            <th style="min-width: 100px; width: 100px;">Data Type</th>
+                            <th style="min-width: 70px; width: 70px;">Required</th>
+                            <th style="min-width: 70px; width: 70px;">Not Null</th>
+                            <th>Minimum</th>
+                            <th>Maximum</th>
+                            <th style="min-width: 100px; width: 100px;">Severity</th>
+                            <th>Units</th>
+                            <th>Label</th>
+                            <th style="min-width: 54px; width: 54px;">Delete</th>
+                        </tr>
+                    </thead>
+                    <tbody ng-repeat="field in sortedRuleGroups()" ng-init="ruleGroup = ruleGroups[inventory_type][field]">
+                        <tr ng-repeat="rule in ruleGroup" ng-if="!rule.delete" ng-class="{ 'warning' : rule.new, 'disabled' : !rule.enabled }">
+                            <td class="check is_aligned_center" style="width: 33px;" ng-click="rule.rule_type = 1; rule.enabled = !rule.enabled">
+                                <input type="checkbox" ng-model="rule.enabled" class="no-click">
+                            </td>
+                            <td>
+                                <select class="form-control input-sm" ng-model="rule.field" ng-options="col.name as col.displayName for col in columns" ng-change="rule.rule_type = 1; change_field(rule, '{$ rule.field $}', $index)" title="{$ rule.field $}" focus-if="{$ rule.autofocus || 'false' $}"></select>
+                            </td>
+                            <td>
+                                <select class="form-control input-sm" ng-model="rule.data_type" ng-options="type.id as type.label for type in data_types" ng-change="rule.rule_type = 1; change_data_type(rule, '{$rule.data_type$}')"></select>
+                            </td>
+                            <td ng-click="change_required(rule)" class="text-center">
+                                <input type="checkbox" ng-model="rule.required" class="no-click" ng-change="rule.rule_type = 1">
+                            </td>
+                            <td ng-click="change_not_null(rule)" class="text-center">
+                                <input type="checkbox" ng-model="rule.not_null" class="no-click" ng-change="rule.rule_type = 1">
+                            </td>
+                            <td ng-if="rule.data_type == 'string'" colspan="2">
+                                <input class="form-control input-sm" type="text" maxlength="200" ng-model="rule.text_match" ng-change="rule.rule_type = 1" placeholder="(no text match)">
+                            </td>
+                            <td ng-if="rule.data_type != 'string'">
+                                <input class="form-control input-sm" type="number" ng-model="rule.min" ng-change="rule.rule_type = 1" ng-if="_.includes([null, 'number', 'year'], rule.data_type)" placeholder="(no minimum)">
+                                <input class="form-control input-sm" type="date" ng-model="rule.min" ng-change="rule.rule_type = 1" ng-if="rule.data_type == 'date'">
+                            </td>
+                            <td ng-if="rule.data_type != 'string'">
+                                <input class="form-control input-sm" type="number" ng-model="rule.max" ng-change="rule.rule_type = 1" ng-if="rule.data_type != 'date'" placeholder="(no maximum)">
+                                <input class="form-control input-sm" type="date" ng-model="rule.max" ng-change="rule.rule_type = 1" ng-if="rule.data_type == 'date'">
+                            </td>
+                            <td>
+                                <select class="form-control input-sm" ng-model="rule.severity" ng-change="rule.rule_type = 1" ng-class="{'error-bg': rule.severity=='error', 'warning-bg': rule.severity=='warning'}">
+                                    <option value="error">Error</option>
+                                    <option value="warning">Warning</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select class="form-control input-sm" ng-options="u for u in units" ng-model="rule.units" ng-change="rule.rule_type = 1"></select>
+                            </td>
+                            <td class="text-right">
+                                <div class="input-group input-group-sm" ng-if="rule.label">
+                                    <span class="form-control label label-{$ rule.label.label $}" style="border: 0 none;">{$ rule.label.name $}</span>
+                                    <span class="input-group-btn">
+                                        <button class="btn btn-danger" type="button" ng-click="removeLabelFromRule(rule)">
+                                            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                                        </button>
+                                    </span>
+                                </div>
+                                <button class="btn btn-xs btn-info btn-rowform" ng-click="create_label(rule, $index)" ng-if="!rule.label">
+                                    <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                                </button>
+                                <!-- code for multiple labels -->
+                                <!-- <span ng-repeat="label in rule.label" class="label label-{$ label.label $}" style="display: block; margin-top: 7px; padding: 4.6px 7px;">{$ label.name $}</span> -->
+
+                                <!-- old code -->
+                                <!-- <select class="form-control input-sm" ng-model="rule.label" ng-change="rule.rule_type = 1" ng-options="label.id as label.name for label in all_labels"></select> -->
+                            </td>
+                            <td class="check is_aligned_center">
+                                <button class="btn btn-xs btn-danger btn-rowform" ng-click="delete_rule(rule, $index)">
+                                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="section_content_container">
+            <div class="section_content with_padding pull-right" style="padding-bottom: 15px;">
+                <button type="button" class="btn btn-danger" ng-click="restore_defaults()">Restore Default Rules
+                    <i class="fa fa-check" ng-show="defaults_restored"></i>
+                </button>
+                <button type="button" class="btn btn-danger" ng-click="reset_all_rules()">Reset All Rules
+                    <i class="fa fa-check" ng-show="rules_reset"></i>
+                </button>
+                <button type="button" class="btn btn-primary" ng-click="save_settings()">Save Changes
+                    <i class="fa fa-check" ng-show="rules_updated"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

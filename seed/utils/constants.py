@@ -445,8 +445,7 @@ ASSESSOR_FIELDS = [
     }
 ]
 
-ASSESSOR_FIELDS_BY_COLUMN = {field['sort_column']: field
-                             for field in ASSESSOR_FIELDS}
+ASSESSOR_FIELDS_BY_COLUMN = {field['sort_column']: field for field in ASSESSOR_FIELDS}
 
 # TODO: Merge this with other schema
 # https://github.com/SEED-platform/seed/blob/41c104cd105161c949e9cb379aac946ea9202c74/seed/lib/mappings/mapping_data.py  # noqa

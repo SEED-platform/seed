@@ -9,8 +9,9 @@ import json
 from django.core.urlresolvers import reverse_lazy, NoReverseMatch
 from django.test import TestCase
 
-from seed.cleansing.models import Rules, CATEGORY_MISSING_MATCHING_FIELD, \
-    CATEGORY_MISSING_VALUES, CATEGORY_IN_RANGE_CHECKING
+# from seed.models.data_quality import (
+#     DataQualityCheck
+# )
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.exceptions import InsufficientPermission
 from seed.lib.superperms.orgs.models import (
@@ -165,10 +166,9 @@ class AccountsViewTests(TestCase):
         self.assertEqual(org_payload[0], expected_multiple_org_payload)
 
     def test_get_organizations(self):
-        """ tests accounts.get_organizations
-        """
+        """ tests accounts.get_organizations """
         resp = self.client.get(
-            reverse_lazy("apiv2:organizations-list"),
+            reverse_lazy('apiv2:organizations-list'),
             content_type='application/json',
         )
         orgs = json.loads(resp.content)['organizations']
@@ -190,14 +190,14 @@ class AccountsViewTests(TestCase):
         """test for error when no organization_id sent"""
         with self.assertRaises(NoReverseMatch):
             self.client.get(
-                reverse_lazy("apiv2:organizations-detail"),
+                reverse_lazy('apiv2:organizations-detail'),
                 content_type='application/json',
             )
 
     def test_get_organization_std_case(self):
         """test normal case"""
         resp = self.client.get(
-            reverse_lazy("apiv2:organizations-detail", args=[self.org.id]),
+            reverse_lazy('apiv2:organizations-detail', args=[self.org.id]),
             content_type='application/json',
         )
 
@@ -219,13 +219,13 @@ class AccountsViewTests(TestCase):
         """test for the case where a user doesn't have access"""
         other_org = Organization.objects.create(name='not my org')
         other_user = User.objects.create(
-            username="tester@be.com",
-            email="tester@be.com",
+            username='tester@be.com',
+            email='tester@be.com',
         )
         other_org.add_member(other_user)
 
         resp = self.client.get(
-            reverse_lazy("apiv2:organizations-detail", args=[other_org.id]),
+            reverse_lazy('apiv2:organizations-detail', args=[other_org.id]),
             content_type='application/json',
         )
         self.assertEquals(
@@ -238,7 +238,7 @@ class AccountsViewTests(TestCase):
     def test_get_organization_org_doesnt_exist(self):
         """test for the case where a user doesn't have access"""
         resp = self.client.get(
-            reverse_lazy("apiv2:organizations-detail", args=[self.org.id + 100]),
+            reverse_lazy('apiv2:organizations-detail', args=[self.org.id + 100]),
             content_type='application/json',
         )
         self.assertEquals(
@@ -251,11 +251,11 @@ class AccountsViewTests(TestCase):
     def test_remove_user_from_org_std(self):
         """test removing a user"""
         # normal case
-        u = User.objects.create(username="b@b.com", email="b@be.com")
+        u = User.objects.create(username='b@b.com', email='b@be.com')
         self.org.add_member(u)
 
         resp = self.client.delete(
-            reverse_lazy("apiv2:organizations-remove-user", args=[self.org.id]),
+            reverse_lazy('apiv2:organizations-remove-user', args=[self.org.id]),
             data=json.dumps({'user_id': u.id}),
             content_type='application/json',
         )
@@ -270,7 +270,7 @@ class AccountsViewTests(TestCase):
         self.assertEqual(self.org.users.count(), 1)
 
         resp = self.client.delete(
-            reverse_lazy("apiv2:organizations-remove-user", args=[self.org.id]),
+            reverse_lazy('apiv2:organizations-remove-user', args=[self.org.id]),
             data=json.dumps({'user_id': self.user.id}),
             content_type='application/json',
         )
@@ -283,12 +283,12 @@ class AccountsViewTests(TestCase):
 
     def test_cannot_leave_org_with_no_owner(self):
         """test removing a user"""
-        u = User.objects.create(username="b@b.com", email="b@be.com")
+        u = User.objects.create(username='b@b.com', email='b@be.com')
         self.org.add_member(u, role=ROLE_MEMBER)
         self.assertEqual(self.org.users.count(), 2)
 
         resp = self.client.delete(
-            reverse_lazy("apiv2:organizations-remove-user", args=[self.org.id]),
+            reverse_lazy('apiv2:organizations-remove-user', args=[self.org.id]),
             data=json.dumps({'user_id': self.user.id}),
             content_type='application/json',
         )
@@ -300,22 +300,22 @@ class AccountsViewTests(TestCase):
             })
 
     def test_remove_user_from_org_missing_org_id(self):
-        u = User.objects.create(username="b@b.com", email="b@be.com")
+        u = User.objects.create(username='b@b.com', email='b@be.com')
         self.org.add_member(u)
         with self.assertRaises(NoReverseMatch):
             self.client.delete(
-                reverse_lazy("apiv2:organizations-remove-user") + '?organization_id=' + str(
+                reverse_lazy('apiv2:organizations-remove-user') + '?organization_id=' + str(
                     self.org.id),
                 data=json.dumps({'user_id': u.id}),
                 content_type='application/json',
             )
 
     def test_remove_user_from_org_missing_user_id(self):
-        u = User.objects.create(username="b@b.com", email="b@be.com")
+        u = User.objects.create(username='b@b.com', email='b@be.com')
         self.org.add_member(u)
 
         resp = self.client.delete(
-            reverse_lazy("apiv2:organizations-remove-user", args=[self.org.id]),
+            reverse_lazy('apiv2:organizations-remove-user', args=[self.org.id]),
             content_type='application/json',
         )
         self.assertDictEqual(
@@ -327,11 +327,11 @@ class AccountsViewTests(TestCase):
 
     def test_remove_user_from_org_user_DNE(self):
         """DNE = does not exist"""
-        u = User.objects.create(username="b@b.com", email="b@be.com")
+        u = User.objects.create(username='b@b.com', email='b@be.com')
         self.org.add_member(u)
 
         resp = self.client.delete(
-            reverse_lazy("apiv2:organizations-remove-user", args=[self.org.id]),
+            reverse_lazy('apiv2:organizations-remove-user', args=[self.org.id]),
             data=json.dumps({'user_id': 9999}),
             content_type='application/json',
         )
@@ -344,11 +344,11 @@ class AccountsViewTests(TestCase):
 
     def test_remove_user_from_org_org_DNE(self):
         """DNE = does not exist"""
-        u = User.objects.create(username="b@b.com", email="b@be.com")
+        u = User.objects.create(username='b@b.com', email='b@be.com')
         self.org.add_member(u)
 
         resp = self.client.delete(
-            reverse_lazy("apiv2:organizations-remove-user", args=[9999]),
+            reverse_lazy('apiv2:organizations-remove-user', args=[9999]),
             data=json.dumps({'user_id': u.id}),
             content_type='application/json',
         )
@@ -370,7 +370,7 @@ class AccountsViewTests(TestCase):
         self.assertEquals(_get_role_from_js('viewer'), ROLE_VIEWER)
 
     def test_update_role(self):
-        u = User.objects.create(username="b@b.com", email="b@be.com")
+        u = User.objects.create(username='b@b.com', email='b@be.com')
         self.org.add_member(u, role=ROLE_VIEWER)
 
         ou = OrganizationUser.objects.get(
@@ -398,7 +398,7 @@ class AccountsViewTests(TestCase):
         self.assertEquals(ou.role_level, ROLE_MEMBER)
 
     def test_allowed_to_update_role_if_not_last_owner(self):
-        u = User.objects.create(username="b@b.com", email="b@be.com")
+        u = User.objects.create(username='b@b.com', email='b@be.com')
         self.org.add_member(u, role=ROLE_OWNER)
 
         ou = OrganizationUser.objects.get(
@@ -426,7 +426,7 @@ class AccountsViewTests(TestCase):
         self.assertEquals(ou.role_level, ROLE_MEMBER)
 
     def test_cannot_update_role_if_last_owner(self):
-        u = User.objects.create(username="b@b.com", email="b@be.com")
+        u = User.objects.create(username='b@b.com', email='b@be.com')
         self.org.add_member(u, role=ROLE_MEMBER)
 
         ou = OrganizationUser.objects.get(
@@ -455,15 +455,13 @@ class AccountsViewTests(TestCase):
         self.assertEquals(ou.role_level, ROLE_OWNER)
 
     def test_update_role_no_perms(self):
-        """
-        Test trying to change your own role when you aren't an owner.
-        """
+        """ Test trying to change your own role when you aren't an owner. """
         ou = OrganizationUser.objects.get(user=self.user,
                                           organization=self.org)
         ou.role_level = ROLE_MEMBER
         ou.save()
 
-        url = reverse_lazy("apiv2:users-update-role", args=[self.user.id])
+        url = reverse_lazy('apiv2:users-update-role', args=[self.user.id])
         post_data = {'organization_id': self.org.id,
                      'role': 'owner'}
         try:
@@ -481,9 +479,7 @@ class AccountsViewTests(TestCase):
         self.assertFalse(self.org.is_owner(self.user))
 
     def test_bad_save_request(self):
-        """
-        A malformed request should return error-containing json.
-        """
+        """ A malformed request should return error-containing json. """
         url = reverse_lazy('apiv2:organizations-save-settings', args=[self.org.id])
 
         res = self.client.put(
@@ -518,9 +514,9 @@ class AccountsViewTests(TestCase):
         res = self.client.get(url)
         response = json.loads(res.content)
         self.assertEqual(response,
-                         {"status": "success",
-                          "shared_fields": [],
-                          "public_fields": []})
+                         {'status': 'success',
+                          'shared_fields': [],
+                          'public_fields': []})
 
     def test_get_shared_fields(self):
         field1 = self.org.exportable_fields.create(
@@ -603,63 +599,77 @@ class AccountsViewTests(TestCase):
         self.assertTrue('pm_property_id' in fields)
         self.assertEqual(len(fields), 2)
 
-    def test_get_cleansing_rules_matching(self):
-        Rules.objects.create(org=self.org, category=CATEGORY_MISSING_MATCHING_FIELD,
-                             field='address_line_1', severity=0)
-        response = self.client.get(
-            reverse_lazy('apiv2:organizations-cleansing-rules', args=[self.org.pk]))
-        self.assertEqual('success', json.loads(response.content)['status'])
-
-    def test_get_cleansing_rules_values(self):
-        Rules.objects.create(org=self.org, category=CATEGORY_MISSING_VALUES,
-                             field='address_line_1', severity=0)
-        response = self.client.get(
-            reverse_lazy('apiv2:organizations-cleansing-rules', args=[self.org.pk]))
-        self.assertEqual('success', json.loads(response.content)['status'])
-
-    def test_get_cleansing_rules_range(self):
-        Rules.objects.create(org=self.org, category=CATEGORY_IN_RANGE_CHECKING,
-                             field='address_line_1', severity=0)
-        response = self.client.get(
-            reverse_lazy('apiv2:organizations-cleansing-rules', args=[self.org.pk]))
-        self.assertEqual('success', json.loads(response.content)['status'])
-
-    def test_save_cleansing_rules(self):
-        payload = {
-            'organization_id': self.org.pk,
-            'cleansing_rules': {
-                'missing_matching_field': [
-                    {
-                        'field': 'address_line_1',
-                        'severity': 'error'
-                    }
-                ],
-                'missing_values': [
-                    {
-                        'field': 'address_line_1',
-                        'severity': 'error'
-                    }
-                ],
-                'in_range_checking': [
-                    {
-                        'field': 'conditioned_floor_area',
-                        'enabled': True,
-                        'type': 'number',
-                        'min': None,
-                        'max': 7000000,
-                        'severity': 'error',
-                        'units': 'square feet'
-                    },
-                ]
-            }
-        }
-
-        resp = self.client.put(
-            reverse_lazy("apiv2:organizations-save-cleansing-rules", args=[self.org.pk]),
-            data=json.dumps(payload),
-            content_type='application/json',
-        )
-        self.assertEqual('success', json.loads(resp.content)['status'])
+    # def test_get_data_quality_rules_matching(self):
+    #     dq = DataQualityCheck.retrieve(self.org)
+    #     dq.add_rule({
+    #         'table_name': 'PropertyState',
+    #         'field': 'address_line_1',
+    #         'category': CATEGORY_MISSING_MATCHING_FIELD,
+    #         'severity': 0,
+    #     })
+    #     response = self.client.get(reverse_lazy('apiv2:organizations-data-quality-rules', args=[self.org.pk]))
+    #     self.assertEqual('success', json.loads(response.content)['status'])
+    #
+    # def test_get_data_quality_rules_values(self):
+    #     dq = DataQualityCheck.retrieve(self.org)
+    #     dq.add_rule({
+    #         'table_name': 'PropertyState',
+    #         'field': 'address_line_1',
+    #         'category': CATEGORY_MISSING_VALUES,
+    #         'severity': 0,
+    #     })
+    #     response = self.client.get(reverse_lazy('apiv2:organizations-data-quality-rules', args=[self.org.pk]))
+    #     self.assertEqual('success', json.loads(response.content)['status'])
+    #
+    # def test_get_data_quality_rules_range(self):
+    #     dq = DataQualityCheck.retrieve(self.org)
+    #     dq.add_rule({
+    #         'table_name': 'PropertyState',
+    #         'field': 'address_line_1',
+    #         'severity': 0,
+    #     })
+    #     response = self.client.get(reverse_lazy('apiv2:organizations-data-quality-rules', args=[self.org.pk]))
+    #     self.assertEqual('success', json.loads(response.content)['status'])
+    #
+    # def test_save_data_quality_rules(self):
+    #     payload = {
+    #         'organization_id': self.org.pk,
+    #         'data_quality_rules': {
+    #             'missing_matching_field': [
+    #                 {
+    #                     'table_name': 'PropertyState',
+    #                     'field': 'address_line_1',
+    #                     'severity': 'error'
+    #                 }
+    #             ],
+    #             'missing_values': [
+    #                 {
+    #                     'table_name': 'PropertyState',
+    #                     'field': 'address_line_1',
+    #                     'severity': 'error'
+    #                 }
+    #             ],
+    #             'in_range_checking': [
+    #                 {
+    #                     'table_name': 'PropertyState',
+    #                     'field': 'conditioned_floor_area',
+    #                     'enabled': True,
+    #                     'type': 'number',
+    #                     'min': None,
+    #                     'max': 7000000,
+    #                     'severity': 'error',
+    #                     'units': 'square feet'
+    #                 },
+    #             ]
+    #         }
+    #     }
+    #
+    #     resp = self.client.put(
+    #         reverse_lazy('apiv2:organizations-save-data-quality-rules', args=[self.org.pk]),
+    #         data=json.dumps(payload),
+    #         content_type='application/json',
+    #     )
+    #     self.assertEqual('success', json.loads(resp.content)['status'])
 
     def test_update_user(self):
         """test for update_user"""
@@ -669,7 +679,7 @@ class AccountsViewTests(TestCase):
             'email': 'some@hgg.com'
         }
         resp = self.client.put(
-            reverse_lazy("apiv2:users-detail", args=[self.user.pk]),
+            reverse_lazy('apiv2:users-detail', args=[self.user.pk]),
             json.dumps(user_data),
             content_type='application/json',
         )
@@ -687,7 +697,7 @@ class AccountsViewTests(TestCase):
     def test_get_user_profile(self):
         """test for get_user_profile"""
         resp = self.client.get(
-            reverse_lazy("apiv2:users-detail", args=[self.user.pk]),
+            reverse_lazy('apiv2:users-detail', args=[self.user.pk]),
             content_type='application/json',
         )
         self.assertEquals(
@@ -701,11 +711,11 @@ class AccountsViewTests(TestCase):
 
             })
         resp = self.client.post(
-            reverse_lazy("apiv2:users-generate-api-key", args=[self.user.pk]),
+            reverse_lazy('apiv2:users-generate-api-key', args=[self.user.pk]),
             content_type='application/json',
         )
         resp = self.client.get(
-            reverse_lazy("apiv2:users-detail", args=[self.user.pk]),
+            reverse_lazy('apiv2:users-detail', args=[self.user.pk]),
             content_type='application/json',
         )
         self.assertEquals(
@@ -723,7 +733,7 @@ class AccountsViewTests(TestCase):
             will pick up user.api_key when it's ready
         """
         resp = self.client.get(
-            reverse_lazy("apiv2:users-generate-api-key", args=[self.user.pk]),
+            reverse_lazy('apiv2:users-generate-api-key', args=[self.user.pk]),
             content_type='application/json',
         )
         user = User.objects.get(pk=self.user.pk)
@@ -737,15 +747,14 @@ class AccountsViewTests(TestCase):
             })
 
     def test_set_password(self):
-        """test for set_password
-        """
+        """test for set_password"""
         password_payload = {
             'current_password': 'test_pass',
             'password_1': 'new passwordD3',
             'password_2': 'new passwordD3'
         }
         resp = self.client.put(
-            reverse_lazy("apiv2:users-set-password", args=[self.user.pk]),
+            reverse_lazy('apiv2:users-set-password', args=[self.user.pk]),
             json.dumps(password_payload),
             content_type='application/json',
         )
@@ -766,7 +775,7 @@ class AccountsViewTests(TestCase):
             'password_2': 'new password'
         }
         resp = self.client.post(
-            reverse_lazy("apiv2:users-set-password", args=[self.user.pk]),
+            reverse_lazy('apiv2:users-set-password', args=[self.user.pk]),
             json.dumps(password_payload),
             content_type='application/json',
         )
@@ -781,7 +790,7 @@ class AccountsViewTests(TestCase):
             })
 
         resp = self.client.get(
-            reverse_lazy("apiv2:users-set-password", args=[self.user.pk]),
+            reverse_lazy('apiv2:users-set-password', args=[self.user.pk]),
             password_payload,
             content_type='application/json',
         )
@@ -804,7 +813,7 @@ class AccountsViewTests(TestCase):
             'password_2': 'new password'
         }
         resp = self.client.put(
-            reverse_lazy("apiv2:users-set-password", args=[self.user.pk]),
+            reverse_lazy('apiv2:users-set-password', args=[self.user.pk]),
             json.dumps(password_payload),
             content_type='application/json',
         )
@@ -823,7 +832,7 @@ class AccountsViewTests(TestCase):
             'password_2': 'non matching password'
         }
         resp = self.client.put(
-            reverse_lazy("apiv2:users-set-password", args=[self.user.pk]),
+            reverse_lazy('apiv2:users-set-password', args=[self.user.pk]),
             json.dumps(password_payload),
             content_type='application/json',
         )
@@ -845,7 +854,7 @@ class AccountsViewTests(TestCase):
             'password_2': 'new1234'
         }
         resp = self.client.put(
-            reverse_lazy("apiv2:users-set-password", args=[self.user.pk]),
+            reverse_lazy('apiv2:users-set-password', args=[self.user.pk]),
             json.dumps(password_payload),
             content_type='application/json',
         )
@@ -865,7 +874,7 @@ class AccountsViewTests(TestCase):
             'password_2': 'newnewnew'
         }
         resp = self.client.put(
-            reverse_lazy("apiv2:users-set-password", args=[self.user.pk]),
+            reverse_lazy('apiv2:users-set-password', args=[self.user.pk]),
             json.dumps(password_payload),
             content_type='application/json',
         )
@@ -887,7 +896,7 @@ class AccountsViewTests(TestCase):
             'password_2': 'NEWNEWNEW'
         }
         resp = self.client.put(
-            reverse_lazy("apiv2:users-set-password", args=[self.user.pk]),
+            reverse_lazy('apiv2:users-set-password', args=[self.user.pk]),
             json.dumps(password_payload),
             content_type='application/json',
         )
@@ -909,7 +918,7 @@ class AccountsViewTests(TestCase):
             'password_2': 'nNEWNEWNEW'
         }
         resp = self.client.put(
-            reverse_lazy("apiv2:users-set-password", args=[self.user.pk]),
+            reverse_lazy('apiv2:users-set-password', args=[self.user.pk]),
             json.dumps(password_payload),
             content_type='application/json',
         )
@@ -930,7 +939,7 @@ class AccountsViewTests(TestCase):
             'password_2': '12345678'
         }
         resp = self.client.put(
-            reverse_lazy("apiv2:users-set-password", args=[self.user.pk]),
+            reverse_lazy('apiv2:users-set-password', args=[self.user.pk]),
             json.dumps(password_payload),
             content_type='application/json',
         )
@@ -950,7 +959,7 @@ class AccountsViewTests(TestCase):
             'sub_org_owner_email': self.user.email
         }
         resp = self.client.post(
-            reverse_lazy("apiv2:organizations-sub-org", args=[self.org.pk]),
+            reverse_lazy('apiv2:organizations-sub-org', args=[self.org.pk]),
             data=json.dumps(payload),
             content_type='application/json',
         )
@@ -974,7 +983,7 @@ class AuthViewTests(TestCase):
         self.client.login(**user_details)
 
     def test_is_authorized_base(self):
-        resp = self.client.get(reverse_lazy("apiv2:users-current-user-id"))
+        resp = self.client.get(reverse_lazy('apiv2:users-current-user-id'))
         pk = json.loads(resp.content)['pk']
         resp = self.client.post(
             reverse_lazy("apiv2:users-is-authorized", args=[pk]) + '?organization_id=' + str(
@@ -997,14 +1006,14 @@ class AuthViewTests(TestCase):
     def test_is_authorized_parent_org_owner(self):
         other_org = Organization.objects.create(name='not my org')
         other_user = User.objects.create(
-            username="tester@be.com",
-            email="tester@be.com",
+            username='tester@be.com',
+            email='tester@be.com',
         )
         other_org.add_member(other_user)
         other_org.parent_org = self.org
         other_org.save()
         resp = self.client.post(
-            reverse_lazy("apiv2:users-is-authorized",
+            reverse_lazy('apiv2:users-is-authorized',
                          args=[self.user.id]) + '?organization_id=' + str(other_org.id),
             data=json.dumps({
                 'actions': ['requires_owner', 'can_invite_member']
@@ -1024,8 +1033,8 @@ class AuthViewTests(TestCase):
     def test_is_authorized_not_in_org(self):
         other_org = Organization.objects.create(name='not my org')
         other_user = User.objects.create(
-            username="tester@be.com",
-            email="tester@be.com",
+            username='tester@be.com',
+            email='tester@be.com',
         )
         other_org.add_member(other_user)
         resp = self.client.post(
@@ -1080,7 +1089,7 @@ class AuthViewTests(TestCase):
     def test_set_default_organization(self):
         """test seed.views.accounts.set_default_organization"""
         resp = self.client.put(
-            reverse_lazy("apiv2:users-default-organization", args=[self.user.id]),
+            reverse_lazy('apiv2:users-default-organization', args=[self.user.id]),
             data=json.dumps({'organization_id': self.org.id}),
             content_type='application/json',
         )
@@ -1100,21 +1109,21 @@ class AuthViewTests(TestCase):
         # check standard case
         self.assertEqual(org_id, self.org.id)
         self.assertEqual(org_name, self.org.name)
-        self.assertEqual(org_role, "owner")
+        self.assertEqual(org_role, 'owner')
 
         # check that the default org was set
         u = User.objects.get(pk=self.user.pk)
         self.assertEqual(u.default_organization, self.org)
 
-        # check that "" is returned for a user without an org
+        # check that '' is returned for a user without an org
         other_user = User.objects.create(
-            username="tester@be.com",
-            email="tester@be.com",
+            username='tester@be.com',
+            email='tester@be.com',
         )
         org_id, org_name, org_role = _get_default_org(other_user)
-        self.assertEqual(org_id, "")
-        self.assertEqual(org_name, "")
-        self.assertEqual(org_role, "")
+        self.assertEqual(org_id, '')
+        self.assertEqual(org_name, '')
+        self.assertEqual(org_role, '')
 
         # check that the user is still in the default org, or update
         other_user.default_organization = self.org
@@ -1122,8 +1131,8 @@ class AuthViewTests(TestCase):
         other_user = User.objects.get(pk=other_user.pk)
         self.assertEqual(other_user.default_organization, self.org)
         # _get_default_org should remove the user from the org and set the
-        # next available org as default or set to ""
+        # next available org as default or set to ''
         org_id, org_name, org_role = _get_default_org(other_user)
-        self.assertEqual(org_id, "")
-        self.assertEqual(org_name, "")
-        self.assertEqual(org_role, "")
+        self.assertEqual(org_id, '')
+        self.assertEqual(org_name, '')
+        self.assertEqual(org_role, '')

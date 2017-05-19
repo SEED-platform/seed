@@ -157,6 +157,7 @@ paramType
 pk
 pks
 py
+pytype
 postfix
 postgres
 postgresql

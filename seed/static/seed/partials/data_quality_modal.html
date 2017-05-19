@@ -1,13 +1,13 @@
 <div class="modal-header">
-    <h4 class="modal-title">Data Cleansing Results</h4>
+    <h4 class="modal-title">Data Quality Results</h4>
 </div>
 <div class="modal-body" style="padding-bottom: 0;">
-    <div ng-switch on="cleansingResults.length">
+    <div ng-switch on="dataQualityResults.length">
         <div ng-switch-when="0" style="text-align: center;">
             <h5 style="padding-bottom: 14px;">No warnings/errors</h5>
         </div>
         <div ng-switch-default>
-            <div class="row">
+            <div class="row" ng-if="name">
                 <h4 class="col-sm-4">File Name:</h4>
                 <h5 class="col-sm-8" style="margin-top: 12px;">{$ name $}</h5>
             </div>
@@ -38,10 +38,10 @@
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody ng-repeat="row in cleansingResults | filter: {visible: true}">
-                                <tr ng-repeat="result in row.cleansing_results | filter: {visible: true}" ng-class="{'cleansing-error': result.severity == 'error', 'cleansing-warning': result.severity == 'warning'}">
+                            <tbody ng-repeat="row in dataQualityResults | filter: {visible: true}">
+                                <tr ng-repeat="result in row.data_quality_results | filter: {visible: true}" ng-class="{'data-quality-error': result.severity == 'error', 'data-quality-warning': result.severity == 'warning'}">
                                     <td ng-repeat="c in columns" class="{$ c.class $}" ng-class="{sorted: search.sort_column == c.sort_column}">
-                                        {$ ((c.sort_column == 'formatted_field' || c.sort_column == 'detailed_message') ? result[c.sort_column] : row[c.sort_column]) || '--' $}
+                                        {$ (_.includes(['detailed_message', 'formatted_field', 'table_name'], c.sort_column) ? result[c.sort_column] : row[c.sort_column]) || '--' $}
                                     </td>
                                 </tr>
                             </tbody>
@@ -53,5 +53,5 @@
     </div>
 </div>
 <div class="modal-footer">
-    <a ng-href="{$ '/cleansing/download/?import_file_id=' + importFileId $}" download><button type="button" class="btn btn-default">Export</button></a> <button type="button" class="btn btn-default" ng-click="close()">Close</button>
+    <a ng-href="/api/v2/import_files/{$ importFileId $}/data_quality_results_csv/" download><button type="button" class="btn btn-default" ng-show="importFileId">Export</button></a> <button type="button" class="btn btn-default" ng-click="close()">Close</button>
 </div>

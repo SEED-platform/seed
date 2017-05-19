@@ -18,6 +18,7 @@ from seed.data_importer.views import (
 from seed.views.api import get_api_schema
 from seed.views.columns import ColumnViewSet, ColumnMappingViewSet
 from seed.views.cycles import CycleView
+from seed.views.data_quality import DataQualityViews
 from seed.views.datasets import DatasetViewSet
 from seed.views.labels import LabelViewSet, UpdateInventoryLabelsAPIView
 from seed.views.main import version, progress
@@ -41,6 +42,7 @@ api_v2_router.register(r'properties', PropertyViewSet, base_name="properties")
 api_v2_router.register(r'taxlots', TaxLotViewSet, base_name="taxlots")
 api_v2_router.register(r'reverse_and_test', TestReverseViewSet, base_name="reverse_and_test")
 api_v2_router.register(r'upload', LocalUploaderViewSet, base_name='local_uploader')
+api_v2_router.register(r'data_quality_checks', DataQualityViews, base_name='data_quality_checks')
 
 urlpatterns = [
     # v2 api

@@ -116,9 +116,6 @@ class TestMappingPortfolioData(DataMappingBaseTestCase):
         self.assertEqual(len(mapped_bs), 1)
 
         test_bs = mapped_bs[0]
-
-        from seed.utils.generic import pp
-        pp(test_bs)
         self.assertNotEqual(test_bs.pk, fake_raw_bs.pk)
         self.assertEqual(test_bs.property_name, self.fake_row['Name'])
         self.assertEqual(test_bs.address_line_1, self.fake_row['Address Line 1'])

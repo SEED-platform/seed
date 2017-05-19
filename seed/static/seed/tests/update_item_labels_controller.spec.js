@@ -23,16 +23,16 @@ describe('controller: update_item_labels_modal_controller', function () {
     color: 'orange',
     is_applied: false,
     id: 44,
-    name: 'data cleansing warning3',
+    name: 'data quality warning3',
     label: 'warning',
-    text: 'data cleansing warning3'
+    text: 'data quality warning3'
   }, {
     color: 'red',
     is_applied: false,
     id: 43,
-    name: 'data cleansing error!',
+    name: 'data quality error!',
     label: 'danger',
-    text: 'data cleansing error!'
+    text: 'data quality error!'
   }, {
     color: 'green',
     is_applied: true,

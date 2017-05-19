@@ -1572,9 +1572,9 @@ a:not([href]) {
   }
 }
 
-@media (min-width: 1200px) {
+@media (min-width: 1300px) {
   .modal-lg {
-    width: 1108px;
+    width: 1230px;
   }
 }
 
@@ -1832,11 +1832,11 @@ div[sd-uploader][disabled] {
   background-color: #F9F9F9
 }
 
-.cleansing-error td:last-child {
+.data-quality-error td:last-child {
   background-color: #FFB7B7 !important;
 }
 
-.cleansing-warning td:last-child {
+.data-quality-warning td:last-child {
   background-color: #FDF4BF !important;
 }
 
@@ -2439,16 +2439,24 @@ gs-input .tags .tag-item .remove-button {
     position: relative;
     margin-bottom: -2px;
     z-index: 99;
+
+    > li {
+      margin-right: 4px;
+
+      > a {
+        background-color: #D6D6D6;
+        border: 1px solid #bbb;
+        color: #222;
+        border-radius: 6px 6px 0 0;
+
+        &:hover {
+          background-color: $blue;
+          color: #FFF;
+        }
+      }
+    }
   }
-  .nav-tabs > li {
-    margin-right: 4px;
-  }
-  .nav-tabs > li > a {
-    background-color: #D6D6D6;
-    border: 1px solid #bbb;
-    color: #222;
-    border-radius: 6px 6px 0 0;
-  }
+
   .nav-tabs > li.active > a, .nav-tabs > li.active > a:hover {
     background-color: #F1F1F1;
     border: 1px solid #D1D1D1;
@@ -2456,27 +2464,54 @@ gs-input .tags .tag-item .remove-button {
     color: #000;
     border-bottom: 1px solid #F1F1F1;
   }
-  .nav-tabs > li > a:hover {
-    background-color: $blue;
-    color: #FFF;
-  }
 }
 
 .matching-tab-container {
   margin-bottom: -1px;
   .nav-tabs {
     border-bottom: 0;
-  }
-  .nav-tabs > li > a {
-    background-color: #F1F1F1;
-    border: 1px solid #D1D1D1;
-    border-bottom: 0;
+
+    > li > a {
+      background-color: #F1F1F1;
+      border: 1px solid #D1D1D1;
+      border-bottom: 0;
+    }
   }
   .nav-tabs > li.active > a, .nav-tabs > li.active > a:hover {
     background-color: #7B7B87;
     border: 1px solid #D1D1D1;
     border-bottom: 1px solid #7B7B87;
     color: #FFF;
+    font-weight: bold;
+  }
+}
+
+.data-quality-tab-container {
+  margin-bottom: 0;
+  .nav-tabs {
+    border-bottom: 0;
+
+    > li {
+      margin-right: 4px;
+
+      > a {
+        background-color: #F1F1F1;
+        border: 1px solid #D1D1D1;
+        border-bottom: 0;
+        color: #222;
+
+        &:hover {
+          background-color: $blue;
+          color: #FFF;
+        }
+      }
+    }
+  }
+  .nav-tabs > li.active > a, .nav-tabs > li.active > a:hover {
+    background-color: #CDCDCD;
+    border: 1px solid #D1D1D1;
+    border-bottom: 0;
+    color: #000;
     font-weight: bold;
   }
 }
@@ -2614,6 +2649,10 @@ gs-input .tags .tag-item .remove-button {
 }
 
 #inventory-actions-dropdown, #inventory-detail-edit {
+  li {
+    cursor: default;
+  }
+
   a[disabled] {
     color: gray;
     pointer-events: none;
@@ -2753,4 +2792,14 @@ table.import_results a[disabled] {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+#data-quality-admin-table {
+  tr.disabled {
+    opacity: 0.4;
+  }
+}
+
+.no-click {
+  pointer-events: none;
 }

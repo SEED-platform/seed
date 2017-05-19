@@ -26,6 +26,7 @@ angular.module('BE.seed.vendor_dependencies', [
   'ui.router.stateHelper',
   'ui.sortable',
   'ui.tree',
+  'focus-if',
   'xeditable',
   angularDragula(angular)
 ]);
@@ -34,8 +35,9 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.accounts',
   'BE.seed.controller.admin',
   'BE.seed.controller.api',
-  'BE.seed.controller.cleansing',
-  'BE.seed.controller.cleansing_admin',
+  'BE.seed.controller.data_quality_admin',
+  'BE.seed.controller.data_quality_modal',
+  'BE.seed.controller.data_quality_labels_modal',
   'BE.seed.controller.cycle_admin',
   'BE.seed.controller.concat_modal',
   'BE.seed.controller.create_note_modal',
@@ -95,7 +97,7 @@ angular.module('BE.seed.directives', [
 angular.module('BE.seed.services', [
   'BE.seed.service.audit',
   'BE.seed.service.auth',
-  'BE.seed.service.cleansing',
+  'BE.seed.service.data_quality',
   'BE.seed.service.column_mappings',
   'BE.seed.service.cycle',
   'BE.seed.service.dataset',
@@ -802,21 +804,43 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         }
       })
       .state({
-        name: 'organization_cleansing',
-        url: '/accounts/{organization_id:int}/data_cleansing',
-        templateUrl: static_url + 'seed/partials/cleansing_admin.html',
-        controller: 'cleansing_admin_controller',
+        name: 'organization_data_quality',
+        url: '/accounts/{organization_id:int}/data_quality/{inventory_type:properties|taxlots}',
+        templateUrl: static_url + 'seed/partials/data_quality_admin.html',
+        controller: 'data_quality_admin_controller',
         resolve: {
-          all_columns: ['inventory_service', function (inventory_service) {
-            return inventory_service.get_columns();
+          columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+            if ($stateParams.inventory_type === 'properties') {
+              return inventory_service.get_property_columns().then(function (columns) {
+                _.remove(columns, function (col) {
+                  return col.related === true;
+                });
+                return _.map(columns, function (col) {
+                  return _.omit(col, ['pinnedLeft', 'related']);
+                });
+              });
+            } else if ($stateParams.inventory_type === 'taxlots') {
+              return inventory_service.get_taxlot_columns().then(function (columns) {
+                _.remove(columns, function (col) {
+                  return col.related === true;
+                });
+                return _.map(columns, function (col) {
+                  return _.omit(col, ['pinnedLeft', 'related']);
+                });
+              });
+            }
           }],
           organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
             var organization_id = $stateParams.organization_id;
             return organization_service.get_organization(organization_id);
           }],
-          cleansing_rules_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
+          data_quality_rules_payload: ['data_quality_service', '$stateParams', function (data_quality_service, $stateParams) {
             var organization_id = $stateParams.organization_id;
-            return organization_service.get_cleansing_rules(organization_id);
+            return data_quality_service.data_quality_rules(organization_id);
+          }],
+          labels_payload: ['label_service', '$stateParams', function (label_service, $stateParams) {
+            var organization_id = $stateParams.organization_id;
+            return label_service.get_labels_for_org(organization_id);
           }],
           auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
             var organization_id = $stateParams.organization_id;

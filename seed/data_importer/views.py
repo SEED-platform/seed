@@ -33,7 +33,7 @@ from rest_framework.decorators import parser_classes
 from rest_framework.parsers import MultiPartParser, FormParser
 
 from seed.authentication import SEEDAuthentication
-from seed.cleansing.models import Cleansing
+from seed.models.data_quality import DataQualityCheck
 from seed.data_importer.models import (
     ImportFile,
     ImportRecord
@@ -1005,7 +1005,7 @@ class ImportFileViewSet(viewsets.ViewSet):
                 new_inventory.save()
 
                 for label_id in label_ids:
-                    label(taxlot_id=new_inventory.id, tatuslabel_id=label_id).save()
+                    label(taxlot_id=new_inventory.id, statuslabel_id=label_id).save()
 
             # Create the view
             if inventory_type == 'properties':
@@ -1265,10 +1265,10 @@ class ImportFileViewSet(viewsets.ViewSet):
 
     @api_endpoint_class
     @ajax_request_class
-    @detail_route(methods=['GET'], url_path='cleansing_results.json')
-    def get_cleansing_results(self, request, pk=None):
+    @detail_route(methods=['GET'], url_path='data_quality_results')
+    def get_data_quality_results(self, request, pk=None):
         """
-        Retrieve the details of the cleansing script.
+        Retrieve the details of the data quality check.
         ---
         type:
             status:
@@ -1283,7 +1283,7 @@ class ImportFileViewSet(viewsets.ViewSet):
                 description: integer percent of completion
             data:
                 type: JSON
-                description: object describing the results of the cleansing
+                description: object describing the results of the data quality check
         parameter_strategy: replace
         parameters:
             - name: pk
@@ -1292,20 +1292,20 @@ class ImportFileViewSet(viewsets.ViewSet):
               paramType: path
         """
         import_file_id = pk
-        cleansing_results = get_cache_raw(Cleansing.cache_key(import_file_id))
+        data_quality_results = get_cache_raw(DataQualityCheck.cache_key(import_file_id))
         return JsonResponse({
             'status': 'success',
-            'message': 'Cleansing complete',
+            'message': 'data quality check complete',
             'progress': 100,
-            'data': cleansing_results
+            'data': data_quality_results
         })
 
     @api_endpoint_class
     @ajax_request_class
     @detail_route(methods=['GET'])
-    def cleansing_progress(self, request, pk=None):
+    def data_quality_progress(self, request, pk=None):
         """
-        Return the progress of the cleansing.
+        Return the progress of the data quality check.
         ---
         type:
             status:
@@ -1314,7 +1314,7 @@ class ImportFileViewSet(viewsets.ViewSet):
                 description: either success or error
             progress:
                 type: integer
-                description: status of background cleansing task
+                description: status of background data quality task
         parameter_strategy: replace
         parameters:
             - name: pk
@@ -1330,7 +1330,7 @@ class ImportFileViewSet(viewsets.ViewSet):
 
     @api_endpoint_class
     @ajax_request_class
-    @detail_route(methods=['GET'], url_path='cleansing_results.csv')
+    @detail_route(methods=['GET'], url_path='data_quality_results_csv')
     def get_csv(self, request, pk=None):
         """
         Download a csv of the results.
@@ -1352,15 +1352,21 @@ class ImportFileViewSet(viewsets.ViewSet):
         """
 
         import_file_id = pk
-        cleansing_results = get_cache_raw(Cleansing.cache_key(import_file_id))
+        data_quality_results = get_cache_raw(DataQualityCheck.cache_key(import_file_id))
         response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="Data Cleansing Results.csv"'
+        response['Content-Disposition'] = 'attachment; filename="Data Quality Check Results.csv"'
 
         writer = csv.writer(response)
+        if data_quality_results is None:
+            writer.writerow(['Error'])
+            writer.writerow(['data quality results not found'])
+            return response
+
         writer.writerow(['Address Line 1', 'PM Property ID', 'Tax Lot ID', 'Custom ID', 'Field',
                          'Error Message', 'Severity'])
-        for row in cleansing_results:
-            for result in row['cleansing_results']:
+
+        for row in data_quality_results:
+            for result in row['data_quality_results']:
                 writer.writerow([
                     row['address_line_1'],
                     row['pm_property_id'],

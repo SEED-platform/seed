@@ -20,7 +20,7 @@ angular.module('BE.seed.controller.mapping', [])
     'uploader_service',
     '$http',
     '$filter',
-    'cleansing_service',
+    'data_quality_service',
     'inventory_service',
     function ($scope,
               import_file_payload,
@@ -38,7 +38,7 @@ angular.module('BE.seed.controller.mapping', [])
               uploader_service,
               $http,
               $filter,
-              cleansing_service,
+              data_quality_service,
               inventory_service) {
       var db_field_columns = suggested_mappings_payload.column_names;
       var columns = suggested_mappings_payload.columns;
@@ -620,16 +620,16 @@ angular.module('BE.seed.controller.mapping', [])
       };
 
       /**
-       * open_cleansing_modal: modal to present data cleansing warnings and errors
+       * open_data_quality_modal: modal to present data data_quality warnings and errors
        */
-      $scope.open_cleansing_modal = function () {
+      $scope.open_data_quality_modal = function () {
         $uibModal.open({
-          templateUrl: urls.static_url + 'seed/partials/cleansing_modal.html',
-          controller: 'cleansing_controller',
+          templateUrl: urls.static_url + 'seed/partials/data_quality_modal.html',
+          controller: 'data_quality_modal_controller',
           size: 'lg',
           resolve: {
-            cleansingResults: function () {
-              return cleansing_service.get_cleansing_results($scope.import_file.id);
+            dataQualityResults: function () {
+              return data_quality_service.get_data_quality_results($scope.import_file.id);
             },
             name: function () {
               return $scope.import_file.uploaded_filename;

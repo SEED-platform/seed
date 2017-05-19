@@ -1,6 +1,6 @@
         <a ui-sref="organization_settings({organization_id: org.id})" ui-sref-active="active">Settings</a><!--
      --><a ui-sref="organization_sharing({organization_id: org.id})" ng-if="org.is_parent && auth.requires_owner" ui-sref-active="active">Sharing</a><!--
-     --><a ui-sref="organization_cleansing({organization_id: org.id})" ng-if="org.is_parent && auth.requires_owner" ui-sref-active="active">Data Cleansing</a><!--
+     --><a ui-sref="organization_data_quality({organization_id: org.id, inventory_type: 'properties'})" ng-if="org.is_parent && auth.requires_owner" ng-class="{active: state.name == 'organization_data_quality'}">Data Quality</a><!--
      --><a ui-sref="organization_cycles({organization_id: org.id})" ng-if="org.is_parent && auth.requires_owner" ui-sref-active="active">Cycles</a><!--
      --><a ui-sref="organization_labels({organization_id: org.id})" ui-sref-active="active">Labels</a><!--
      --><a ui-sref="organization_sub_orgs({organization_id: org.id})" ng-if="org.is_parent && auth.requires_owner" ui-sref-active="active">Sub-Organizations</a><!--

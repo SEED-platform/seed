@@ -2,12 +2,12 @@
  * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
-angular.module('BE.seed.controller.cleansing', [])
-.controller('cleansing_controller', [
+angular.module('BE.seed.controller.data_quality_modal', [])
+.controller('data_quality_modal_controller', [
   '$scope',
   '$uibModalInstance',
   'search_service',
-  'cleansingResults',
+  'dataQualityResults',
   'name',
   'uploaded',
   'importFileId',
@@ -15,14 +15,14 @@ angular.module('BE.seed.controller.cleansing', [])
     $scope,
     $uibModalInstance,
     search_service,
-    cleansingResults,
+    dataQualityResults,
     name,
     uploaded,
     importFileId
   ) {
     $scope.name = name;
     $scope.uploaded = moment.utc(uploaded).local().format('MMMM Do YYYY, h:mm:ss A Z');
-    $scope.cleansingResults = cleansingResults || [];
+    $scope.dataQualityResults = dataQualityResults || [];
     $scope.importFileId = importFileId;
 
     $scope.close = function () {
@@ -30,9 +30,17 @@ angular.module('BE.seed.controller.cleansing', [])
     };
 
     var fields = [{
+      sort_column: 'table_name',
+      sortable: false,
+      title: 'Table'
+    }, {
       sort_column: 'address_line_1',
       sortable: true,
       title: 'Address Line 1'
+    }, {
+      sort_column: 'jurisdiction_tax_lot_id',
+      sortable: true,
+      title: 'Jurisdiction Tax Lot ID'
     }, {
       sort_column: 'pm_property_id',
       sortable: true,
@@ -65,7 +73,7 @@ angular.module('BE.seed.controller.cleansing', [])
     });
 
     $scope.sortData = function() {
-      $scope.cleansingResults = _.sortByOrder($scope.cleansingResults, [$scope.search.sort_column], [$scope.search.sort_reverse ? 'desc' : 'asc']);
+      $scope.dataQualityResults = _.orderBy($scope.dataQualityResults, [$scope.search.sort_column], [$scope.search.sort_reverse ? 'desc' : 'asc']);
     };
 
     $scope.search = angular.copy(search_service);
@@ -124,18 +132,18 @@ angular.module('BE.seed.controller.cleansing', [])
     };
     $scope.search.filter_search = function () {
       $scope.search.sanitize_params();
-      _.forEach($scope.cleansingResults, function (result) {
+      _.forEach($scope.dataQualityResults, function (result) {
         if (!result.visible) result.visible = true;
-        _.forEach(result.cleansing_results, function(row) {
+        _.forEach(result.data_quality_results, function(row) {
           if (!row.visible) row.visible = true;
         });
       });
       _.forEach(this.filter_params, function(value, column) {
         value = value.toLowerCase();
-        _.forEach($scope.cleansingResults, function (result) {
+        _.forEach($scope.dataQualityResults, function (result) {
           if (result.visible) {
-            if (_.includes(['formatted_field', 'detailed_message'], column)) {
-              _.forEach(result.cleansing_results, function(row) {
+            if (_.includes(['detailed_message', 'formatted_field', 'table_name'], column)) {
+              _.forEach(result.data_quality_results, function(row) {
                 if (!_.includes(row[column].toLowerCase(), value)) row.visible = false;
               });
             } else {
@@ -149,9 +157,9 @@ angular.module('BE.seed.controller.cleansing', [])
       }
     };
     $scope.search.num_pages = 1;
-    $scope.search.number_per_page = $scope.cleansingResults.length;
+    $scope.search.number_per_page = $scope.dataQualityResults.length;
     $scope.search.sort_column = null;
-    $scope.search.init_storage('cleansing');
+    $scope.search.init_storage('data_quality');
     if ($scope.search.sort_column !== null) $scope.sortData();
     $scope.search.filter_search();
 

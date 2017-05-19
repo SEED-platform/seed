@@ -18,25 +18,20 @@ from collections import namedtuple
 from functools import reduce
 from itertools import chain
 
+from celery import chord
+from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.db import IntegrityError
 from django.db.models import Q
 from django.utils import timezone
 from unidecode import unidecode
 
-from celery import chord
-from celery import shared_task
-from seed.cleansing.models import Cleansing
-from seed.cleansing.tasks import (
-    finish_cleansing,
-    cleanse_data_chunk,
-)
 from seed.data_importer.models import (
     ImportFile,
     ImportRecord,
     STATUS_READY_TO_MERGE,
-    # DuplicateDataError,
 )
+from seed.models.data_quality import DataQualityCheck
 from seed.decorators import get_prog_key
 from seed.decorators import lock_and_track
 from seed.green_button import xml_importer
@@ -49,7 +44,6 @@ from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     ASSESSED_BS,
     ASSESSED_RAW,
-    GREEN_BUTTON_BS,
     GREEN_BUTTON_RAW,
     PORTFOLIO_BS,
     PORTFOLIO_RAW,
@@ -65,13 +59,14 @@ from seed.models import (
     DATA_STATE_DELETE,
     MERGE_STATE_MERGED,
     MERGE_STATE_NEW,
-)
+    DATA_STATE_UNKNOWN)
 from seed.models import PropertyAuditLog
 from seed.models import TaxLotAuditLog
 from seed.models import TaxLotProperty
 from seed.models.auditlog import AUDIT_IMPORT
 from seed.utils.buildings import get_source_type
-from seed.utils.cache import set_cache, increment_cache, get_cache, delete_cache
+from seed.utils.cache import set_cache, increment_cache, get_cache, delete_cache, get_cache_raw
+from random import randint
 
 _log = get_task_logger(__name__)
 
@@ -81,6 +76,73 @@ STR_TO_CLASS = {'TaxLotState': TaxLotState, 'PropertyState': PropertyState}
 def get_cache_increment_value(chunk):
     denom = len(chunk) or 1
     return 1.0 / denom * 100
+
+
+@shared_task
+def check_data_chunk(model, ids, identifier, increment):
+    """
+
+    :param model: one of 'PropertyState' or 'TaxLotState'
+    :param ids: list of primary key ids to process
+    :param file_pk: import file primary key
+    :param increment: currently unused, but needed because of the special method that appends this onto the function  # NOQA
+    :return: None
+    """
+    if model == 'PropertyState':
+        qs = PropertyState.objects.filter(id__in=ids)
+    elif model == 'TaxLotState':
+        qs = TaxLotState.objects.filter(id__in=ids)
+    else:
+        qs = None
+    super_org = qs.first().organization
+
+    d = DataQualityCheck.retrieve(super_org.get_parent())
+    d.check_data(model, qs.iterator())
+    d.save_to_cache(identifier)
+
+
+@shared_task
+def finish_checking(identifier):
+    """
+    Chord that is called after the data quality check is complete
+
+    :param identifier: import file primary key
+    :return:
+    """
+
+    prog_key = get_prog_key('check_data', identifier)
+    data_quality_results = get_cache_raw(DataQualityCheck.cache_key(identifier))
+    result = {
+        'status': 'success',
+        'progress': 100,
+        'message': 'data quality check complete',
+        'data': data_quality_results
+    }
+    set_cache(prog_key, result['status'], result)
+
+
+@shared_task
+def do_checks(propertystate_ids, taxlotstate_ids):
+    identifier = randint(100, 100000)
+    DataQualityCheck.initialize_cache(identifier)
+    prog_key = get_prog_key('check_data', identifier)
+    trigger_data_quality_checks.delay(propertystate_ids, taxlotstate_ids, identifier)
+    return {'status': 'success', 'progress_key': prog_key}
+
+
+@shared_task
+def trigger_data_quality_checks(qs, tlqs, identifier):
+
+    prog_key = get_prog_key('map_data', identifier)
+    result = {
+        'status': 'success',
+        'progress': 100,
+        'progress_key': prog_key
+    }
+    set_cache(prog_key, result['status'], result)
+
+    # now call data_quality
+    _data_quality_check(qs, tlqs, identifier)
 
 
 @shared_task
@@ -121,8 +183,15 @@ def finish_mapping(import_file_id, mark_as_done):
     }
     set_cache(prog_key, result['status'], result)
 
-    # now call cleansing
-    _cleanse_data(import_file_id)
+    property_state_ids = list(PropertyState.objects.filter(import_file=import_file)
+                              .exclude(data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT])
+                              .values_list('id', flat=True))
+    taxlot_state_ids = list(TaxLotState.objects.filter(import_file=import_file)
+                            .exclude(data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT])
+                            .values_list('id', flat=True))
+
+    # now call data_quality
+    _data_quality_check(property_state_ids, taxlot_state_ids, import_file_id)
 
 
 def _translate_unit_to_type(unit):
@@ -402,65 +471,34 @@ def _map_data(import_file_id, mark_as_done):
 
 @shared_task
 @lock_and_track
-def _cleanse_data(import_file_id, record_type='property'):
+def _data_quality_check(property_state_ids, taxlot_state_ids, identifier):
     """
 
-    Get the mapped data and run the cleansing class against it in chunks. The
+    Get the mapped data and run the data_quality class against it in chunks. The
     mapped data are pulled from the PropertyState(or Taxlot) table.
 
     @lock_and_track returns a progress_key
 
     :param import_file_id: int, the id of the import_file we're working with.
-    :param report: string, 'property' or 'taxlot', defaults to property
-
     """
-    # TODO Since this function was previously hardcoded to use PropertyState,
-    # but the functions/methods it calls can now handle both, I converted
-    # this function and had record_type to  default to PropertyState,
-    # I did not change anything where it gets called.
-
-    import_file = ImportFile.objects.get(pk=import_file_id)
-
-    source_type_dict = {
-        'Portfolio Raw': PORTFOLIO_BS,
-        'Assessed Raw': ASSESSED_BS,
-        'Green Button Raw': GREEN_BUTTON_BS,
-    }
-
-    # This is non-ideal, but the source type of the input file is never
-    # updated, but the data are stages as if it were.
-    #
-    # After the mapping stage occurs, the data end up in the PropertyState
-    # table under the *_BS value.
-    source_type = source_type_dict.get(import_file.source_type, ASSESSED_BS)
-
-    model = {
-        'property': PropertyState, 'taxlot': TaxLotState
-    }.get(record_type)
-
-    qs = model.objects.filter(
-        import_file=import_file,
-        source_type=source_type,
-    ).only('id').iterator()
-
-    # initialize the cache for the cleansing results using the cleansing static method
-    Cleansing.initialize_cache(import_file_id)
-
-    prog_key = get_prog_key('cleanse_data', import_file_id)
-
-    id_chunks = [[obj.id for obj in chunk] for chunk in batch(qs, 100)]
+    # initialize the cache for the data_quality results using the data_quality static method
+    tasks = []
+    id_chunks = [[obj for obj in chunk] for chunk in batch(property_state_ids, 100)]
     increment = get_cache_increment_value(id_chunks)
-    tasks = [
-        cleanse_data_chunk.s(record_type, ids, import_file_id, increment)
-        for ids in id_chunks
-    ]
+    for ids in id_chunks:
+        tasks.append(check_data_chunk.s("PropertyState", ids, identifier, increment))
+
+    id_chunks_tl = [[obj for obj in chunk] for chunk in batch(taxlot_state_ids, 100)]
+    increment_tl = get_cache_increment_value(id_chunks_tl)
+    for ids in id_chunks_tl:
+        tasks.append(check_data_chunk.s("TaxLotState", ids, identifier, increment_tl))
 
     if tasks:
         # specify the chord as an immutable with .si
-        chord(tasks, interval=15)(finish_cleansing.si(import_file_id))
+        chord(tasks, interval=15)(finish_checking.si(identifier))
     else:
-        finish_cleansing.s(import_file_id)
-
+        finish_checking.s(identifier)
+    prog_key = get_prog_key('check_data', identifier)
     result = {
         'status': 'success',
         'progress': 100,
@@ -479,7 +517,8 @@ def map_data(import_file_id, remap=False, mark_as_done=True):
     end.
     :return: JSON
     """
-
+    DataQualityCheck.initialize_cache(import_file_id)
+    prog_key = get_prog_key('check_data', import_file_id)
     import_file = ImportFile.objects.get(pk=import_file_id)
     if remap:
         # Check to ensure that import files has not already been matched/merged.
@@ -803,6 +842,13 @@ def _finish_matching(import_file, progress_key):
         'progress': 100,
         'progress_key': progress_key
     }
+    property_state_ids = list(PropertyState.objects.filter(import_file=import_file)
+                              .exclude(data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT])
+                              .values_list('id', flat=True))
+    taxlot_state_ids = list(TaxLotState.objects.filter(import_file=import_file)
+                            .exclude(data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT])
+                            .values_list('id', flat=True))
+    _data_quality_check(property_state_ids, taxlot_state_ids, import_file.id)
     set_cache(progress_key, result['status'], result)
     return result
 

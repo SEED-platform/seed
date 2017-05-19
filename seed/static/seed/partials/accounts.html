@@ -60,7 +60,7 @@
                             <td class="account_org right">
                                 <a ui-sref="organization_settings({organization_id: org.id})"><i class="fa fa-cogs"></i>Settings</a>
                                 <a ui-sref="organization_sharing({organization_id: org.id})" ng-if="org.is_parent"><i class="fa fa-share-square-o"></i>Sharing</a>
-                                <a ui-sref="organization_cleansing({organization_id: org.id})" ng-if="org.is_parent"><i class="fa fa-flag"></i>Data Cleansing</a>
+                                <a ui-sref="organization_data_quality({organization_id: org.id, inventory_type: 'properties'})" ng-if="org.is_parent"><i class="fa fa-flag"></i>Data Quality</a>
                                 <a ui-sref="organization_cycles({organization_id: org.id})" ng-if="org.is_parent"><i class="fa fa-calendar"></i>Cycles</a>
                                 <a ui-sref="organization_labels({organization_id: org.id})"><i class="fa fa-tags"></i>Labels</a>
                                 <a ui-sref="organization_sub_orgs({organization_id: org.id})" ng-if="org.is_parent"><i class="fa fa-users"></i>Sub-Organizations</a>

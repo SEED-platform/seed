@@ -16,9 +16,9 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import list_route, detail_route
 
 from seed.authentication import SEEDAuthentication
-from seed.cleansing.models import (
-    DATA_TYPES as CLEANSING_DATA_TYPES,
-    SEVERITY as CLEANSING_SEVERITY,
+from seed.models.data_quality import (
+    DATA_TYPES as DATA_QUALITY_DATA_TYPES,
+    SEVERITY as DATA_QUALITY_SEVERITY,
 )
 from seed.decorators import ajax_request_class
 from seed.landing.models import SEEDUser as User
@@ -68,40 +68,40 @@ def _get_role_from_js(role):
 
 
 def _get_js_rule_type(data_type):
-    """return the JS friendly data type name for the data cleansing rule
+    """return the JS friendly data type name for the data data_quality rule
 
-    :param data_type: data cleansing rule data type as defined in cleansing.models
+    :param data_type: data data_quality rule data type as defined in data_quality.models
     :returns: (string) JS data type name
     """
-    return dict(CLEANSING_DATA_TYPES).get(data_type)
+    return dict(DATA_QUALITY_DATA_TYPES).get(data_type)
 
 
 def _get_rule_type_from_js(data_type):
     """return the Rules TYPE from the JS friendly data type
 
     :param data_type: 'string', 'number', 'date', or 'year'
-    :returns: int data type as defined in cleansing.models
+    :returns: int data type as defined in data_quality.models
     """
-    d = {v: k for k, v in dict(CLEANSING_DATA_TYPES).items()}
+    d = {v: k for k, v in dict(DATA_QUALITY_DATA_TYPES).items()}
     return d.get(data_type)
 
 
 def _get_js_rule_severity(severity):
-    """return the JS friendly severity name for the data cleansing rule
+    """return the JS friendly severity name for the data data_quality rule
 
-    :param severity: data cleansing rule severity as defined in cleansing.models
+    :param severity: data data_quality rule severity as defined in data_quality.models
     :returns: (string) JS severity name
     """
-    return dict(CLEANSING_SEVERITY).get(severity)
+    return dict(DATA_QUALITY_SEVERITY).get(severity)
 
 
 def _get_severity_from_js(severity):
     """return the Rules SEVERITY from the JS friendly severity
 
     :param severity: 'error', or 'warning'
-    :returns: int severity as defined in cleansing.models
+    :returns: int severity as defined in data_quality.models
     """
-    d = {v: k for k, v in dict(CLEANSING_SEVERITY).items()}
+    d = {v: k for k, v in dict(DATA_QUALITY_SEVERITY).items()}
     return d.get(severity)
 
 

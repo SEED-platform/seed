@@ -127,39 +127,6 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
     };
 
     /**
-     * gets the data cleansing rules for an org
-     * @param  {int} org_id the id of the organization
-     */
-    organization_factory.get_cleansing_rules = function (org_id) {
-      return $http.get('/api/v2/organizations/' + org_id + '/cleansing_rules/').then(function (response) {
-        return response.data;
-      });
-    };
-
-    /**
-     * resets the default data cleansing rules for an org
-     * @param  {int} org_id the id of the organization
-     */
-    organization_factory.reset_cleansing_rules = function (org_id) {
-      return $http.put('/api/v2/organizations/' + org_id + '/reset_cleansing_rules/').then(function (response) {
-        return response.data;
-      });
-    };
-
-    /**
-     * saves the organization data cleansing rules
-     * @param  {int} org_id the id of the organization
-     * @param  {obj} cleansing_rules the updated rules to save
-     */
-    organization_factory.save_cleansing_rules = function (org_id, cleansing_rules) {
-      return $http.put('/api/v2/organizations/' + org_id + '/save_cleansing_rules/', {
-        cleansing_rules: cleansing_rules
-      }).then(function (response) {
-        return response.data;
-      });
-    };
-
-    /**
      * gets the query threshold for an org
      * @param  {int} org_id the id of the organization
      */

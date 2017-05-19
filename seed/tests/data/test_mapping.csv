@@ -1,0 +1,13 @@
+Raw Column,Table Name,Field Name,Field Display Name,Field Data Type,Field Unit Type
+UBI,TaxLotState,jurisdiction_tax_lot_id,,,
+GBA,PropertyState,gross_floor_area,,,
+BLDGS,PropertyState,building_count,,,
+Address,PropertyState,address_line_1,,,
+Owner,PropertyState,owner,,,
+City,PropertyState,city,,,
+State,PropertyState,state,,,
+Zip,PropertyState,postal_code,,,
+Property Type,PropertyState,property_type,,,
+AYB_YearBuilt,PropertyState,year_built,,,
+Custom ID,PropertyState,custom_id_1,,,
+PM Property ID,PropertyState,pm_property_id,,,

@@ -78,22 +78,21 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, f
     check_progress(main_url, header, result.json()['progress_key'])
     check_status(result, partmsg, log)
 
-    # Get Data Cleansing Message
-    print ('API Function: cleansing\n'),
-    partmsg = 'cleansing'
+    # Get Data Quality Message
+    print ('API Function: data_quality\n'),
+    partmsg = 'data_quality'
 
     result = requests.get(
-        main_url + '/api/v2/import_files/{}/cleansing_results.json/'.format(import_id),
+        main_url + '/api/v2/import_files/{}/data_quality_results/'.format(import_id),
         headers=header,
         params={"organization_id": organization_id}
     )
-    check_status(result, partmsg, log, piid_flag='cleansing')
+    check_status(result, partmsg, log, piid_flag='data_quality')
 
     # Match uploaded buildings with buildings already in the organization.
     print ('API Function: start_system_matching\n'),
     partmsg = 'start_system_matching'
-    payload = {'file_id': import_id,
-               'organization_id': organization_id}
+    payload = {'file_id': import_id, 'organization_id': organization_id}
 
     result = requests.post(
         main_url + '/api/v2/import_files/{}/start_system_matching/'.format(import_id),
