@@ -77,7 +77,7 @@ class DataQualityCheckRules(TestCase):
         ):
             dq.add_rule(new_rule)
 
-    def test_add_new_rule(self):
+    def test_add_new_rule_and_reset(self):
         dq = DataQualityCheck.retrieve(self.org)
 
         new_rule = {
@@ -92,6 +92,39 @@ class DataQualityCheckRules(TestCase):
         }
         dq.add_rule(new_rule)
         self.assertEqual(dq.rules.count(), len(DEFAULT_RULES) + 1)
+
+        dq.reset_all_rules()
+        self.assertEqual(dq.rules.count(), len(DEFAULT_RULES))
+
+    def test_reset_default_rules(self):
+        dq = DataQualityCheck.retrieve(self.org)
+
+        new_rule = {
+            'table_name': 'PropertyState',
+            'field': 'test_floor_area',
+            'data_type': TYPE_NUMBER,
+            'rule_type': RULE_TYPE_DEFAULT,
+            'min': 0,
+            'max': 7000000,
+            'severity': SEVERITY_ERROR,
+            'units': 'square feet'
+        }
+        dq.add_rule(new_rule)
+        self.assertEqual(dq.rules.count(), len(DEFAULT_RULES) + 1)
+
+        # change one of the default rules
+        rule = dq.rules.filter(field='gross_floor_area').first()
+        rule.min = -10000
+        rule.save()
+
+        self.assertEqual(dq.rules.filter(field='gross_floor_area').first().min, -10000)
+        dq.reset_default_rules()
+
+        self.assertEqual(dq.rules.filter(field='gross_floor_area').first().min, 100)
+
+        # ensure non-default rule still exists
+        non_def_rules = dq.rules.filter(field='test_floor_area')
+        self.assertEqual(non_def_rules.count(), 1)
 
     def test_filter_rules(self):
         dq = DataQualityCheck.retrieve(self.org)
