@@ -24,6 +24,7 @@ _log = logging.getLogger(__name__)
 
 
 class RuleTests(TestCase):
+
     def setUp(self):
         self.org = Organization.objects.create()
 
@@ -52,6 +53,7 @@ class RuleTests(TestCase):
 
 
 class DataQualityCheckCase(TestCase):
+
     def setUp(self):
         self.org = Organization.objects.create()
 
@@ -69,6 +71,7 @@ class DataQualityCheckCase(TestCase):
 
 
 class DataQualityCheckRules(TestCase):
+
     def setUp(self):
         self.org = Organization.objects.create()
 

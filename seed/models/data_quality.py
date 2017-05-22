@@ -579,6 +579,28 @@ class DataQualityCheck(models.Model):
                     formatted_rule_min = ''
                     formatted_rule_max = ''
 
+                    # If the check is coming from a field in the database then it will be typed
+                    # correctly, however, for extra_data, the values are typically strings or
+                    # unicode. Therefore, the values are typed before they are checked using
+                    # the rule's data type definition.
+                    if isinstance(value, (str, unicode)):
+                        # check if we can type cast the value
+                        try:
+                            if value is not None and value != '':
+                                if rule.data_type == TYPE_NUMBER:
+                                    value = float(value)
+                                elif rule.data_type == TYPE_STRING:
+                                    value = str(value)
+                                elif rule.data_type == TYPE_DATE:
+                                    # TODO: Add date type case
+                                    pass
+                                elif rule.data_type == TYPE_YEAR:
+                                    # TODO: Add Year type cast
+                                    pass
+                        except ValueError as e:
+                            raise RuntimeError("Error converting {} with {}".format(value, e))
+
+                    # Get the formatted values for reporting
                     if isinstance(value, datetime):
                         formatted_value = str(make_naive(value, pytz.UTC))
                         formatted_rule_min = str(datetime.strptime(str(int(rule.min)), '%Y%m%d'))
@@ -594,10 +616,16 @@ class DataQualityCheck(models.Model):
                         formatted_rule_min = str(int(rule.min))
                         if rule.max:
                             formatted_rule_max = str(int(rule.max))
-                    elif not isinstance(value, (str, unicode)):
+                    elif isinstance(value, (str, unicode)):
+                        formatted_value = str(value)
+                        formatted_rule_min = str(rule.min)
+                        formatted_rule_max = str(rule.max)
+                    elif isinstance(value, float):
                         formatted_value = str(float(value))
                         formatted_rule_min = str(rule.min)
                         formatted_rule_max = str(rule.max)
+                    else:
+                        raise Exception("Unknown data type ({}:{})".format(value, value.__class__))
 
                     try:
                         if not rule.minimum_valid(value):
@@ -882,6 +910,22 @@ class DataQualityCheck(models.Model):
         else:
             label_class.objects.filter(taxlot_id=linked_id,
                                        statuslabel_id=rule.status_label_id).delete()
+
+    def retrieve_result_by_address(self, address):
+        """
+        Retrieve the results of the data quality checks for a specific address.
+
+        :param address: string, address to find the result for
+        :return: dict, results of data quality check for specific building
+        """
+
+        result = [v for v in self.results.values() if v['address_line_1'] == address]
+        if len(result) == 0:
+            return None
+        elif len(result) == 1:
+            return result[0]
+        else:
+            raise RuntimeError("More than 1 data quality results for address '{}'".format(address))
 
     def __unicode__(self):
         return u'DataQuality ({}:{}) - Rule Count: {}'.format(self.pk, self.name,
