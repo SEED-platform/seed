@@ -25,16 +25,16 @@ from seed.models import (
 )
 from seed.models.data_quality import (
     DataQualityCheck,
-    # TYPE_NUMBER,
-    # RULE_TYPE_DEFAULT,
-    # RULE_TYPE_CUSTOM,
-    # SEVERITY_ERROR,
+    TYPE_NUMBER,
+    RULE_TYPE_CUSTOM,
+    SEVERITY_ERROR,
 )
 
 _log = logging.getLogger(__name__)
 
 
 class DataQualityTestCoveredBuilding(TestCase):
+
     def setUp(self):
         self.user_details = {
             'username': 'testuser@example.com',
@@ -171,6 +171,7 @@ class DataQualityTestCoveredBuilding(TestCase):
 
 
 class DataQualityTestPM(TestCase):
+
     def setUp(self):
         self.user_details = {
             'username': 'testuser@example.com',
@@ -326,6 +327,7 @@ class DataQualityTestPM(TestCase):
 
 
 class DataQualitySample(TestCase):
+
     def setUp(self):
         self.user_details = {
             'username': 'testuser@example.com',
@@ -547,26 +549,25 @@ class DataQualitySample(TestCase):
         rule.status_label = status_label
         rule.save()
 
-        # sl_data = {'name': 'extra data pa float error', 'super_organization': self.org}
-        # status_label, _ = StatusLabel.objects.get_or_create(**sl_data)
-        # new_rule = {
-        #     'table_name': 'PropertyState',
-        #     'field': 'extra_data_ps_float',
-        #     'data_type': TYPE_NUMBER,
-        #     'rule_type': RULE_TYPE_CUSTOM,
-        #     'min': 9999,
-        #     'max': 10001,
-        #     'severity': SEVERITY_ERROR,
-        #     'units': 'square feet',
-        #     'status_label': status_label
-        # }
-        # d.add_rule(new_rule)
+        sl_data = {'name': 'extra data pa float error', 'super_organization': self.org}
+        status_label, _ = StatusLabel.objects.get_or_create(**sl_data)
+        new_rule = {
+            'table_name': 'PropertyState',
+            'field': 'extra_data_ps_float',
+            'data_type': TYPE_NUMBER,
+            'rule_type': RULE_TYPE_CUSTOM,
+            'min': 9999,
+            'max': 10001,
+            'severity': SEVERITY_ERROR,
+            'units': 'square feet',
+            'status_label': status_label
+        }
+        d.add_rule(new_rule)
 
         d.check_data('PropertyState', qs)
-        # import json
-        # from seed.utils.generic import json_serializer
-        # print json.dumps(d.results, default=json_serializer, indent=2)
-        #
+        import json
+        from seed.utils.generic import json_serializer
+        print json.dumps(d.results, default=json_serializer, indent=2)
 
         # This only checks to make sure the 36 errors have occurred.
         self.assertEqual(len(d.results), 33)

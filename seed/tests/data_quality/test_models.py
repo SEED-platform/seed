@@ -15,11 +15,40 @@ from seed.models.data_quality import (
     Rule,
     DEFAULT_RULES,
     TYPE_NUMBER,
+    TYPE_STRING,
     RULE_TYPE_DEFAULT,
-    SEVERITY_ERROR
+    SEVERITY_ERROR,
 )
 
 _log = logging.getLogger(__name__)
+
+
+class RuleTests(TestCase):
+    def setUp(self):
+        self.org = Organization.objects.create()
+
+    def test_min_max(self):
+        new_rule = {
+            'data_type': TYPE_NUMBER,
+            'min': 0,
+            'max': 100,
+        }
+        r = Rule.objects.create(**new_rule)
+        self.assertTrue(r.minimum_valid(0))
+        self.assertFalse(r.minimum_valid(-1))
+        self.assertTrue(r.maximum_valid(100))
+        self.assertFalse(r.maximum_valid(101))
+
+    def test_valid_enum(self):
+        new_rule = {
+            'data_type': TYPE_STRING,
+            'text_match': 'alpha',
+        }
+        r = Rule.objects.create(**new_rule)
+        self.assertTrue(r.valid_enum('alpha'))
+        self.assertFalse(r.valid_enum('beta'))
+        self.assertTrue(r.valid_enum(u'alpha'))
+        self.assertFalse(r.valid_enum(u'beta'))
 
 
 class DataQualityCheckCase(TestCase):

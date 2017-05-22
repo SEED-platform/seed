@@ -270,7 +270,7 @@ DEFAULT_RULES = [
 #     {'year_ending': TYPE_DATE}
 # ]
 
-class ComparisonError(StandardError):
+class ComparisonError(Exception):
     pass
 
 
@@ -293,7 +293,7 @@ class Rule(models.Model):
     min = models.FloatField(null=True)
     max = models.FloatField(null=True)
     text_match = models.CharField(max_length=200, null=True)
-    severity = models.IntegerField(choices=SEVERITY)
+    severity = models.IntegerField(choices=SEVERITY, default=SEVERITY_ERROR)
     units = models.CharField(max_length=100, blank=True)
 
     def __unicode__(self):
@@ -301,12 +301,14 @@ class Rule(models.Model):
 
     def valid_enum(self, value):
         """
+        Validate the rule matches the specified text. Right now this is an exact match and
+        does not look at enumerations.
 
         :param value: Value to validate rule against
-        :return:
+        :return: bool, True is valid, False if the value does not match
         """
 
-        if self.data_type == TYPE_STRING and isinstance(value, basestring):
+        if self.data_type == TYPE_STRING and isinstance(value, (str, unicode)):
             if self.text_match is None or self.text_match == '':
                 return True
 
@@ -316,6 +318,12 @@ class Rule(models.Model):
         return True
 
     def minimum_valid(self, value):
+        """
+        Validate that the value is not less than the minimum specified by the rule.
+
+        :param value: Value to validate rule against
+        :return: bool, True is valid, False if the value is out of range
+        """
         # Convert the rule into the correct types for checking the data
         rule_min = self.min
         if isinstance(value, datetime):
@@ -326,19 +334,26 @@ class Rule(models.Model):
             rule_min = datetime.strptime(str(int(rule_min)), '%Y%m%d').date()
         elif isinstance(value, int):
             rule_min = int(rule_min)
-        elif not isinstance(value, basestring):
+        elif not isinstance(value, (str, unicode)):
             # must be a float...
             value = float(value)
 
         try:
-            if rule_min and value < rule_min:
+            if rule_min is not None and value < rule_min:
                 return False
             else:
+                # If rule_min is undefined/None or value is okay, then it is valid.
                 return True
         except ValueError:
             raise ComparisonError("Value could not be compared numerically")
 
     def maximum_valid(self, value):
+        """
+        Validate that the value is not greater than the maximum specified by the rule.
+
+        :param value: Value to validate rule against
+        :return: bool, True is valid, False if the value is out of range
+        """
         # Convert the rule into the correct types for checking the data
         rule_max = self.max
         if isinstance(value, datetime):
@@ -355,7 +370,7 @@ class Rule(models.Model):
             value = float(value)
 
         try:
-            if rule_max and value > rule_max:
+            if rule_max is not None and value > rule_max:
                 return False
             else:
                 return True
@@ -511,9 +526,6 @@ class DataQualityCheck(models.Model):
     #                     'severity': dict(SEVERITY)[rule.severity]
     #                 })
 
-    def _check_something(self, rule, datum):
-        pass
-
     def _in_range_checking(self, row):
         """
         Check for errors in the min/max of the values.
@@ -619,7 +631,7 @@ class DataQualityCheck(models.Model):
     def _missing_values(self, datum):
         """
         Ensure that 'required' fields are mapped (with any value) and that 'not_null' fields are non-empty
-    
+
         :param datum: Database record containing the BS version of the fields populated
         :return: None
         """
@@ -678,9 +690,9 @@ class DataQualityCheck(models.Model):
         """
         Check the data types of fields. These should never be wrong as
         these are the data in the database.
-    
+
         This chunk of code is currently ignored.
-    
+
         :param datum: Database record containing the BS version of the fields populated
         :return: None
         """
@@ -713,7 +725,7 @@ class DataQualityCheck(models.Model):
         stored as a list of dictionaries. The data in this class are stored as
         a dict of dict. This is important to remember because the data from the
         cache cannot be simply loaded into the above structure.
-    
+
         :param identifier: Import file primary key
         :return: None
         """
@@ -734,7 +746,7 @@ class DataQualityCheck(models.Model):
     def initialize_rules(self):
         """
         Initialize the default rules for a DataQualityCheck object
-    
+
         :return: None
         """
         for rule in DEFAULT_RULES:
@@ -743,7 +755,7 @@ class DataQualityCheck(models.Model):
     def remove_all_rules(self):
         """
         Removes all the rules associated with this DataQualityCheck instance.
-    
+
         :return: None
         """
 
@@ -754,7 +766,7 @@ class DataQualityCheck(models.Model):
     def reset_default_rules(self):
         """
         Reset only the default rules
-    
+
         :return:
         """
         for rule in DEFAULT_RULES:
@@ -764,7 +776,7 @@ class DataQualityCheck(models.Model):
     def reset_all_rules(self):
         """
         Delete all rules and reinitialize the default set of rules
-    
+
         :return: None
         """
         self.remove_all_rules()
@@ -773,7 +785,7 @@ class DataQualityCheck(models.Model):
     def add_rule(self, rule):
         """
         Add a new rule to the Data Quality Checks
-    
+
         :param rule: dict to be added as a new rule
         :return: None
         """
@@ -838,9 +850,9 @@ class DataQualityCheck(models.Model):
 
     def update_status_label(self, label_class, rule, linked_id):
         """
-        
-        :param label_class: statuslabel object, either property label or taxlot label 
-        :param rule: rule object 
+
+        :param label_class: statuslabel object, either property label or taxlot label
+        :param rule: rule object
         :param linked_id: id of propertystate or taxlotstate object
         :return: boolean, if labeled was applied
         """
@@ -857,9 +869,9 @@ class DataQualityCheck(models.Model):
     def remove_status_label(self, label_class, rule, linked_id):
         """
         Remove label because it didn't match any of the range exceptions
-    
-        :param label_class: statuslabel object, either property label or taxlot label 
-        :param rule: rule object 
+
+        :param label_class: statuslabel object, either property label or taxlot label
+        :param rule: rule object
         :param linked_id: id of propertystate or taxlotstate object
         :return: boolean, if labeled was applied
         """
