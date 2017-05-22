@@ -9,6 +9,7 @@ import logging
 from datetime import date, datetime
 
 import pytz
+import re
 from django.apps import apps
 from django.db import models
 from django.db.models import Q
@@ -312,7 +313,7 @@ class Rule(models.Model):
             if self.text_match is None or self.text_match == '':
                 return True
 
-            if value != self.text_match:
+            if not re.search(self.text_match, value, re.IGNORECASE):
                 return False
 
         return True
@@ -832,7 +833,7 @@ class DataQualityCheck(models.Model):
                 'value': value,
                 'table_name': rule.table_name,
                 'message': display_name + ' does not match expected value',
-                'detailed_message': display_name + ' [' + str(value) + '] != ' + rule.text_match,
+                'detailed_message': display_name + ' [' + str(value) + '] does not contain "' + rule.text_match + '"',
                 'severity': rule.get_severity_display(),
             }
         )
