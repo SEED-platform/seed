@@ -19,6 +19,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
   'spinner_utility',
   '$uibModal',
   'urls',
+  'naturalSort',
   function ($scope,
             $q,
             $state,
@@ -33,7 +34,8 @@ angular.module('BE.seed.controller.data_quality_admin', [])
             label_service,
             spinner_utility,
             $uibModal,
-            urls) {
+            urls,
+            naturalSort) {
     $scope.inventory_type = $stateParams.inventory_type;
     $scope.org = organization_payload.organization;
     $scope.auth = auth_payload.auth;
@@ -329,13 +331,20 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       else $scope.ruleGroups[$scope.inventory_type][rule.field].splice(index, 1);
     };
 
+    var displayNames = {};
+    _.forEach($scope.columns, function (column) {
+      displayNames[column.name] = column.displayName;
+    });
+
     $scope.sortedRuleGroups = function () {
-      var keys = _.keys($scope.ruleGroups[$scope.inventory_type]).sort();
-      var nullKey = _.remove(keys, function (key) {
+      var sortedKeys = _.keys($scope.ruleGroups[$scope.inventory_type]).sort(function (a, b) {
+        return naturalSort(displayNames[a], displayNames[b]);
+      });
+      var nullKey = _.remove(sortedKeys, function (key) {
         return key === 'null';
       });
 
       // Put created unassigned rows first
-      return nullKey.concat(keys);
+      return nullKey.concat(sortedKeys);
     }
   }]);
