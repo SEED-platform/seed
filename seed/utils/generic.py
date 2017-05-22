@@ -88,8 +88,9 @@ def json_serializer(obj):
     """
     Serialize JSON with date times. When using json.dumps use call it with:
 
+    import json
     from seed.utils.generic import json_serializer
-    json.dumps(data, default=json_serializer)
+    json.dumps(data, default=json_serializer, indent=2)
     """
     if isinstance(obj, datetime):
         serial = obj.isoformat()

@@ -55,12 +55,14 @@ DEFAULT_RULES = [
     {
         'table_name': 'PropertyState',
         'field': 'address_line_1',
+        'data_type': TYPE_STRING,
         'not_null': True,
         'rule_type': RULE_TYPE_DEFAULT,
         'severity': SEVERITY_ERROR,
     }, {
         'table_name': 'PropertyState',
         'field': 'pm_property_id',
+        'data_type': TYPE_STRING,
         'not_null': True,
         'rule_type': RULE_TYPE_DEFAULT,
         'severity': SEVERITY_ERROR,
@@ -268,6 +270,9 @@ DEFAULT_RULES = [
 #     {'year_ending': TYPE_DATE}
 # ]
 
+class ComparisonError(StandardError):
+    pass
+
 
 class Rule(models.Model):
     """
@@ -294,18 +299,68 @@ class Rule(models.Model):
     def __unicode__(self):
         return json.dumps(obj_to_dict(self))
 
-    def valid(self, value):
+    def valid_enum(self, value):
         """
 
         :param value: Value to validate rule against
         :return:
         """
 
-        if self.data_type == TYPE_STRING:
+        if self.data_type == TYPE_STRING and isinstance(value, basestring):
             if self.text_match is None or self.text_match == '':
                 return True
 
-            pass
+            if value != self.text_match:
+                return False
+
+        return True
+
+    def minimum_valid(self, value):
+        # Convert the rule into the correct types for checking the data
+        rule_min = self.min
+        if isinstance(value, datetime):
+            value = value.astimezone(get_current_timezone()).replace(tzinfo=pytz.UTC)
+            rule_min = make_aware(datetime.strptime(str(int(rule_min)), '%Y%m%d'), pytz.UTC)
+        elif isinstance(value, date):
+            value = value
+            rule_min = datetime.strptime(str(int(rule_min)), '%Y%m%d').date()
+        elif isinstance(value, int):
+            rule_min = int(rule_min)
+        elif not isinstance(value, basestring):
+            # must be a float...
+            value = float(value)
+
+        try:
+            if rule_min and value < rule_min:
+                return False
+            else:
+                return True
+        except ValueError:
+            raise ComparisonError("Value could not be compared numerically")
+
+    def maximum_valid(self, value):
+        # Convert the rule into the correct types for checking the data
+        rule_max = self.max
+        if isinstance(value, datetime):
+            value = value.astimezone(get_current_timezone()).replace(tzinfo=pytz.UTC)
+            rule_max = make_aware(datetime.strptime(str(int(rule_max)), '%Y%m%d'), pytz.UTC)
+        elif isinstance(value, date):
+            value = value
+            rule_max = datetime.strptime(str(int(rule_max)), '%Y%m%d').date()
+        elif isinstance(value, int):
+            if rule_max:
+                rule_max = int(rule_max)
+        elif not isinstance(value, (str, unicode)):
+            # must be a float...
+            value = float(value)
+
+        try:
+            if rule_max and value > rule_max:
+                return False
+            else:
+                return True
+        except ValueError:
+            raise ComparisonError("Value could not be compared numerically")
 
 
 class DataQualityCheck(models.Model):
@@ -505,158 +560,66 @@ class DataQualityCheck(models.Model):
                         if tv.count() > 0:
                             linked_id = tv[0].taxlot_id
 
-                # Check string matches first
-                if rule.data_type == TYPE_STRING:
-                    if rule.text_match is None or rule.text_match == '':
+                if not rule.valid_enum(value):
+                    self.add_result_string_error(row.id, rule, display_name, value)
+                    label_applied = self.update_status_label(label, rule, linked_id)
+                else:
+                    formatted_rule_min = ''
+                    formatted_rule_max = ''
+
+                    if isinstance(value, datetime):
+                        formatted_value = str(make_naive(value, pytz.UTC))
+                        formatted_rule_min = str(datetime.strptime(str(int(rule.min)), '%Y%m%d'))
+                        formatted_rule_max = str(datetime.strptime(str(int(rule.max)), '%Y%m%d'))
+                    elif isinstance(value, date):
+                        formatted_value = str(value)
+                        formatted_rule_min = str(
+                            datetime.strptime(str(int(rule.min)), '%Y%m%d').date())
+                        formatted_rule_max = str(
+                            datetime.strptime(str(int(rule.max)), '%Y%m%d').date())
+                    elif isinstance(value, int):
+                        formatted_value = str(value)
+                        formatted_rule_min = str(int(rule.min))
+                        if rule.max:
+                            formatted_rule_max = str(int(rule.max))
+                    elif not isinstance(value, (str, unicode)):
+                        formatted_value = str(float(value))
+                        formatted_rule_min = str(rule.min)
+                        formatted_rule_max = str(rule.max)
+
+                    try:
+                        if not rule.minimum_valid(value):
+                            self.add_result_minimum_error(row.id, rule, display_name,
+                                                          formatted_value,
+                                                          formatted_rule_min)
+                            label_applied = label_applied or self.update_status_label(label, rule,
+                                                                                      linked_id)
+                    except ComparisonError:
+                        self.add_result_comparison_error(row.id, rule, display_name,
+                                                         formatted_value,
+                                                         formatted_rule_min)
                         continue
 
-                    if value != rule.text_match:
-                        self.results[row.id]['data_quality_results'].append({
-                            'field': rule.field,
-                            'formatted_field': display_name,
-                            'value': value,
-                            'table_name': rule.table_name,
-                            'message': display_name + ' does not match expected value',
-                            'detailed_message': display_name + ' [' + str(
-                                value) + '] != ' + rule.text_match,
-                            'severity': rule.get_severity_display(),
-                        })
-                        if rule.status_label_id is not None and linked_id is not None:
-                            if rule.table_name == 'PropertyState':
-                                label.objects.get_or_create(property_id=linked_id,
-                                                            statuslabel_id=rule.status_label_id)
-                            else:
-                                label.objects.get_or_create(taxlot_id=linked_id,
-                                                            statuslabel_id=rule.status_label_id)
-                            label_applied = True
-                    else:
-                        # Remove label because it matched the text
-                        if rule.table_name == 'PropertyState':
-                            label.objects.filter(property_id=linked_id,
-                                                 statuslabel_id=rule.status_label_id).delete()
-                        else:
-                            label.objects.filter(taxlot_id=linked_id,
-                                                 statuslabel_id=rule.status_label_id).delete()
-
-                    # yuck, continue in the middle here?
-                    continue
-
-                rule_min = rule.min
-                formatted_rule_min = ''
-                rule_max = rule.max
-                formatted_rule_max = ''
-
-                if isinstance(value, datetime):
-                    value = value.astimezone(get_current_timezone()).replace(tzinfo=pytz.UTC)
-                    rule_min = make_aware(datetime.strptime(str(int(rule_min)), '%Y%m%d'), pytz.UTC)
-                    rule_max = make_aware(datetime.strptime(str(int(rule_max)), '%Y%m%d'), pytz.UTC)
-
-                    formatted_value = str(make_naive(value, pytz.UTC))
-                    formatted_rule_min = str(make_naive(rule_min, pytz.UTC))
-                    formatted_rule_max = str(make_naive(rule_max, pytz.UTC))
-                elif isinstance(value, date):
-                    rule_min = datetime.strptime(str(int(rule_min)), '%Y%m%d').date()
-                    rule_max = datetime.strptime(str(int(rule_max)), '%Y%m%d').date()
-
-                    formatted_value = str(value)
-                    formatted_rule_min = str(rule_min)
-                    formatted_rule_max = str(rule_max)
-                elif isinstance(value, int):
-                    rule_min = int(rule_min)
-                    if rule_max:
-                        rule_max = int(rule_max)
-
-                    formatted_value = str(value)
-                    formatted_rule_min = str(rule_min)
-                    if rule_max:
-                        formatted_rule_max = str(rule_max)
-                elif not isinstance(value, basestring):
-                    # must be a float...
-                    value = float(value)
-
-                    formatted_value = str(value)
-                    formatted_rule_min = str(rule_min)
-                    formatted_rule_max = str(rule_max)
-
-                if rule_min is not None and value != '':
                     try:
-                        if rule_min and value < rule_min:
-                            self.results[row.id]['data_quality_results'].append({
-                                'field': rule.field,
-                                'formatted_field': display_name,
-                                'value': value,
-                                'table_name': rule.table_name,
-                                'message': display_name + ' out of range',
-                                'detailed_message': display_name + ' [' + formatted_value + '] < ' + formatted_rule_min,
-                                'severity': rule.get_severity_display(),
-                            })
-
-                            if rule.status_label_id is not None and linked_id is not None:
-                                if rule.table_name == 'PropertyState':
-                                    label.objects.get_or_create(property_id=linked_id,
-                                                                statuslabel_id=rule.status_label_id)
-                                else:
-                                    label.objects.get_or_create(taxlot_id=linked_id,
-                                                                statuslabel_id=rule.status_label_id)
-                                label_applied = True
-                    except ValueError:
-                        self.results[row.id]['data_quality_results'].append({
-                            'field': rule.field,
-                            'formatted_field': display_name,
-                            'value': value,
-                            'table_name': rule.table_name,
-                            'message': display_name + ' could not be compared numerically',
-                            'detailed_message': display_name + ' [' + str(value) + '] < ' + formatted_rule_min,
-                            'severity': rule.get_severity_display(),
-                        })
-                        continue
-
-                if rule_max is not None and value != '':
-                    try:
-                        if rule_max and value > rule_max:
-                            self.results[row.id]['data_quality_results'].append({
-                                'field': rule.field,
-                                'formatted_field': display_name,
-                                'value': value,
-                                'table_name': rule.table_name,
-                                'message': display_name + ' out of range',
-                                'detailed_message': display_name + ' [' + formatted_value + '] > ' + formatted_rule_max,
-                                'severity': rule.get_severity_display(),
-                            })
-
-                            if rule.status_label_id is not None and linked_id is not None:
-                                if rule.table_name == 'PropertyState':
-                                    label.objects.get_or_create(property_id=linked_id,
-                                                                statuslabel_id=rule.status_label_id)
-                                else:
-                                    label.objects.get_or_create(taxlot_id=linked_id,
-                                                                statuslabel_id=rule.status_label_id)
-                                label_applied = True
-                    except ValueError:
-                        self.results[row.id]['data_quality_results'].append({
-                            'field': rule.field,
-                            'formatted_field': display_name,
-                            'value': value,
-                            'table_name': rule.table_name,
-                            'message': display_name + ' could not be compared numerically',
-                            'detailed_message': display_name + ' [' + str(value) + '] < ' + formatted_rule_min,
-                            'severity': rule.get_severity_display(),
-                        })
+                        if not rule.maximum_valid(value):
+                            self.add_result_maximum_error(row.id, rule, display_name,
+                                                          formatted_value,
+                                                          formatted_rule_max)
+                            label_applied = label_applied or self.update_status_label(label, rule,
+                                                                                      linked_id)
+                    except ComparisonError:
+                        self.add_result_comparison_error(row.id, rule, display_name,
+                                                         formatted_value,
+                                                         formatted_rule_max)
                         continue
 
                 if not label_applied:
-                    # Remove label because it didn't match any of the range exceptions
-                    if rule.table_name == 'PropertyState':
-                        label.objects.filter(property_id=linked_id,
-                                             statuslabel_id=rule.status_label_id).delete()
-                    else:
-                        label.objects.filter(taxlot_id=linked_id,
-                                             statuslabel_id=rule.status_label_id).delete()
+                    self.remove_status_label(label, rule, linked_id)
 
     def _missing_values(self, datum):
         """
         Ensure that 'required' fields are mapped (with any value) and that 'not_null' fields are non-empty
-
+    
         :param datum: Database record containing the BS version of the fields populated
         :return: None
         """
@@ -715,9 +678,9 @@ class DataQualityCheck(models.Model):
         """
         Check the data types of fields. These should never be wrong as
         these are the data in the database.
-
+    
         This chunk of code is currently ignored.
-
+    
         :param datum: Database record containing the BS version of the fields populated
         :return: None
         """
@@ -750,7 +713,7 @@ class DataQualityCheck(models.Model):
         stored as a list of dictionaries. The data in this class are stored as
         a dict of dict. This is important to remember because the data from the
         cache cannot be simply loaded into the above structure.
-
+    
         :param identifier: Import file primary key
         :return: None
         """
@@ -771,7 +734,7 @@ class DataQualityCheck(models.Model):
     def initialize_rules(self):
         """
         Initialize the default rules for a DataQualityCheck object
-
+    
         :return: None
         """
         for rule in DEFAULT_RULES:
@@ -780,7 +743,7 @@ class DataQualityCheck(models.Model):
     def remove_all_rules(self):
         """
         Removes all the rules associated with this DataQualityCheck instance.
-
+    
         :return: None
         """
 
@@ -791,7 +754,7 @@ class DataQualityCheck(models.Model):
     def reset_default_rules(self):
         """
         Reset only the default rules
-
+    
         :return:
         """
         for rule in DEFAULT_RULES:
@@ -801,7 +764,7 @@ class DataQualityCheck(models.Model):
     def reset_all_rules(self):
         """
         Delete all rules and reinitialize the default set of rules
-
+    
         :return: None
         """
         self.remove_all_rules()
@@ -810,7 +773,7 @@ class DataQualityCheck(models.Model):
     def add_rule(self, rule):
         """
         Add a new rule to the Data Quality Checks
-
+    
         :param rule: dict to be added as a new rule
         :return: None
         """
@@ -820,6 +783,93 @@ class DataQualityCheck(models.Model):
             raise TypeError("Rule data is not defined correctly: {}".format(e))
 
         self.rules.add(r)
+
+    def add_result_string_error(self, row_id, rule, display_name, value):
+        self.results[row_id]['data_quality_results'].append(
+            {
+                'field': rule.field,
+                'formatted_field': display_name,
+                'value': value,
+                'table_name': rule.table_name,
+                'message': display_name + ' does not match expected value',
+                'detailed_message': display_name + ' [' + str(value) + '] != ' + rule.text_match,
+                'severity': rule.get_severity_display(),
+            }
+        )
+
+    def add_result_minimum_error(self, row_id, rule, display_name, value, rule_min):
+        self.results[row_id]['data_quality_results'].append(
+            {
+                'field': rule.field,
+                'formatted_field': display_name,
+                'value': value,
+                'table_name': rule.table_name,
+                'message': display_name + ' out of range',
+                'detailed_message': display_name + ' [' + value + '] < ' + rule_min,
+                'severity': rule.get_severity_display(),
+            }
+        )
+
+    def add_result_maximum_error(self, row_id, rule, display_name, value, rule_max):
+        self.results[row_id]['data_quality_results'].append(
+            {
+                'field': rule.field,
+                'formatted_field': display_name,
+                'value': value,
+                'table_name': rule.table_name,
+                'message': display_name + ' out of range',
+                'detailed_message': display_name + ' [' + value + '] > ' + rule_max,
+                'severity': rule.get_severity_display(),
+            }
+        )
+
+    def add_result_comparison_error(self, row_id, rule, display_name, value, rule_check):
+        self.results[row_id]['data_quality_results'].append(
+            {
+                'field': rule.field,
+                'formatted_field': display_name,
+                'value': value,
+                'table_name': rule.table_name,
+                'message': display_name + ' could not be compared numerically',
+                'detailed_message': display_name + ' [' + value + '] <> ' + rule_check,
+                'severity': rule.get_severity_display(),
+            }
+        )
+
+    def update_status_label(self, label_class, rule, linked_id):
+        """
+        
+        :param label_class: statuslabel object, either property label or taxlot label 
+        :param rule: rule object 
+        :param linked_id: id of propertystate or taxlotstate object
+        :return: boolean, if labeled was applied
+        """
+
+        if rule.status_label_id is not None and linked_id is not None:
+            if rule.table_name == 'PropertyState':
+                label_class.objects.get_or_create(property_id=linked_id,
+                                                  statuslabel_id=rule.status_label_id)
+            else:
+                label_class.objects.get_or_create(taxlot_id=linked_id,
+                                                  statuslabel_id=rule.status_label_id)
+            return True
+
+    def remove_status_label(self, label_class, rule, linked_id):
+        """
+        Remove label because it didn't match any of the range exceptions
+    
+        :param label_class: statuslabel object, either property label or taxlot label 
+        :param rule: rule object 
+        :param linked_id: id of propertystate or taxlotstate object
+        :return: boolean, if labeled was applied
+        """
+
+        if rule.table_name == 'PropertyState':
+            label_class.objects.filter(property_id=linked_id,
+                                       statuslabel_id=rule.status_label_id).delete()
+        else:
+            label_class.objects.filter(taxlot_id=linked_id,
+                                       statuslabel_id=rule.status_label_id).delete()
 
     def __unicode__(self):
         return u'DataQuality ({}:{}) - Rule Count: {}'.format(self.pk, self.name,

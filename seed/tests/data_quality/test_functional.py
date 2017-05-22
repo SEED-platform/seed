@@ -116,7 +116,7 @@ class DataQualityTestCoveredBuilding(TestCase):
         res = [
             {
                 "severity": "error",
-                "value": 10000000000.0,
+                "value": "10000000000.0",
                 "field": "gross_floor_area",
                 "table_name": "PropertyState",
                 "message": "Gross Floor Area out of range",
@@ -125,7 +125,7 @@ class DataQualityTestCoveredBuilding(TestCase):
             },
             {
                 "severity": "error",
-                "value": 0.0,
+                "value": "0",
                 "field": "year_built",
                 "table_name": "PropertyState",
                 "message": "Year Built out of range",
@@ -306,7 +306,7 @@ class DataQualityTestPM(TestCase):
             {
                 'field': u'site_eui',
                 'formatted_field': u'Site EUI',
-                'value': 0.1,
+                'value': '0.1',
                 'table_name': u'PropertyState',
                 'message': u'Site EUI out of range',
                 'detailed_message': u'Site EUI [0.1] < 10.0',
@@ -314,7 +314,8 @@ class DataQualityTestPM(TestCase):
             },
             {
                 'severity': 'error',
-                'value': None, 'field': u'custom_id_1',
+                'value': None,
+                'field': u'custom_id_1',
                 'table_name': u'PropertyState',
                 'message': 'Custom ID 1 (Property) is null',
                 'detailed_message': 'Custom ID 1 (Property) is null',
