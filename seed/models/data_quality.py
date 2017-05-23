@@ -9,6 +9,7 @@ import logging
 import re
 from datetime import date, datetime
 
+from seed.utils.time import convert_datestr
 import pytz
 from django.apps import apps
 from django.db import models
@@ -383,6 +384,45 @@ class Rule(models.Model):
             except ValueError:
                 raise ComparisonError("Value could not be compared numerically")
 
+    def str_to_data_type(self, value):
+        """
+        If the check is coming from a field in the database then it will be typed correctly;
+        however, for extra_data, the values are typically strings or unicode. Therefore, the
+        values are typed before they are checked using the rule's data type definition.
+
+        :param value: variant, value to type
+        :return: typed value
+        """
+
+        if isinstance(value, (str, unicode)):
+            # check if we can type cast the value
+            try:
+                # since we already checked for data type, does this mean it isn't None, ever?
+                if value is not None:
+                    if self.data_type == TYPE_NUMBER:
+                        if value == '':
+                            return None
+                        else:
+                            return float(value)
+                    elif self.data_type == TYPE_STRING:
+                        return str(value)
+                    elif self.data_type == TYPE_DATE:
+                        if value == '':
+                            return None
+                        else:
+                            return convert_datestr(value, True)
+                    elif self.data_type == TYPE_YEAR:
+                        if value == '':
+                            return None
+                        else:
+                            dt = convert_datestr(value, True)
+                            if dt is not None:
+                                return dt.date()
+            except ValueError as e:
+                raise TypeError("Error converting {} with {}".format(value, e))
+        else:
+            return value
+
     def format_rule_strings(self, value):
         f_min = self.min
         f_max = self.max
@@ -592,36 +632,7 @@ class DataQualityCheck(models.Model):
                     value = getattr(row, rule.field)
                 elif rule.field in row.extra_data:
                     value = row.extra_data[rule.field]
-
-                    # If the check is coming from a field in the database then it will be typed
-                    # correctly, however, for extra_data, the values are typically strings or
-                    # unicode. Therefore, the values are typed before they are checked using
-                    # the rule's data type definition.
-                    if isinstance(value, (str, unicode)):
-                        # check if we can type cast the value
-                        try:
-                            if value is not None:
-                                if rule.data_type == TYPE_NUMBER:
-                                    if value == '':
-                                        value = None
-                                    else:
-                                        value = float(value)
-                                elif rule.data_type == TYPE_STRING:
-                                    value = str(value)
-                                elif rule.data_type == TYPE_DATE:
-                                    if value == '':
-                                        value = None
-                                    else:
-                                        # TODO: Add date type case
-                                        pass
-                                elif rule.data_type == TYPE_YEAR:
-                                    if value == '':
-                                        value = None
-                                    else:
-                                        # TODO: Add Year type cast
-                                        pass
-                        except ValueError as e:
-                            raise RuntimeError("Error converting {} with {}".format(value, e))
+                    value = rule.str_to_data_type(value)
 
                 # Don't check the out of range errors if the data are empty
                 if value is None:
