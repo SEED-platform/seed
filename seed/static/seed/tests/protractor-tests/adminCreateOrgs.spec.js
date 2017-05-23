@@ -40,7 +40,7 @@ describe('When I go to admin page', function () {
             $('#last-name-text').sendKeys("NotYou");                  
         });
         $('#update_profile').click();
-        expect($('i.ng-hide').isPresent()).toBe(false);
+        browser.wait(EC.presenceOf($('.fa-check')),10000);
         $('#first-name-text').clear().then(function(){
             $('#first-name-text').sendKeys("ME");                  
         });

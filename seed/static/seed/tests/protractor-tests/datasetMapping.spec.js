@@ -46,7 +46,7 @@ describe('When I go to the dataset options page', function () {
 		});
 		$$('[ng-click="open_data_quality_modal()"]').first().click();
 		browser.wait(EC.presenceOf($('.modal-title')),30000);
-		expect(rowC.count()).toBe(48);
+		expect(rowC.count()).toBe(49);
 		// expect($('.modal-body.ng-scope').getText()).toContain('No warnings/errors');
 		$$('[ng-click="close()"]').first().click();
 		expect($('.modal-body.ng-scope').isPresent()).toBe(false);
@@ -83,7 +83,8 @@ describe('When I go to the dataset options page', function () {
 		browser.wait(EC.presenceOf($('.modal-title')),30000);
 		expect($('.modal-body.ng-scope').getText()).toContain('File Name:');
 		var rows1 = element.all(by.repeater('row in dataQualityResults'));
-		expect(rowC.count()).toBe(48);
+		var rowC = element.all(by.repeater('result in row.data_quality_results'));
+		expect(rowC.count()).toBe(64);
 		$('[ng-show="importFileId"]').click();
 		$$('[ng-click="close()"]').first().click();
 		expect($('.modal-body.ng-scope').isPresent()).toBe(false);

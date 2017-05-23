@@ -2,7 +2,7 @@
 var EC = protractor.ExpectedConditions;
 
 
-describe('When I go to the dataset options page', function () {
+describe('When I do miscellaneous things', function () {
 
 	it ('should reset sync', function () {
 		browser.ignoreSynchronization = false;
@@ -42,27 +42,28 @@ describe('When I go to the dataset options page', function () {
 		});
 		$$('[ng-click="create_new_rule()"]').first().click();         
 		expect(rowCount.count()).toBe(2);
-			 
-		//test new rule is enabled by default
-		var box = $$('[ng-model="rule.enabled"]').get(1);
-		expect(element(by.model('rule.enabled').get(1)).isSelected()).toBeTruthy();
-		// not working, attempted to do same as above
-		// $$('[ng-model="rule.enabled"]').then(function(btn) {
-		// 	expect(btn[9].attr('checked')).toBe('true');
-		// });
-
+			
 		$$('[ng-click="save_settings()"]').first().click();  
 		browser.wait(EC.presenceOf($('.fa-check')),10000);
+		browser.driver.navigate().refresh();
 		expect(rowCount.count()).toBe(1);
 
-		element(by.cssContainingText('[ng-model="rule.data_type"]', 'Number'));
-		$('[ng-click="change_required(rule)"]').click();
-		element(by.cssContainingText('[ng-model="rule.severity"]', 'Warning'));
-		element(by.cssContainingText('[ng-model="rule.units"]', 'square feet'));
-		$('[ng-click="rule.rule_type = 1; rule.enabled = !rule.enabled"]').click().click();
+		$$('[ng-model="rule.data_type"]').first().click();
+		$('[label="Number"]').click();
+
+		$$('[ng-click="change_required(rule)"]').first().click();
+
+		$$('[ng-model="rule.severity"]').first().click();
+		$('[value="warning"]').click();
+
+		$$('[ng-model="rule.units"]').first().click();
+		$('[label="square feet"]').click();
+
+		$$('[ng-click="rule.rule_type = 1; rule.enabled = !rule.enabled"]').first().click().click();
+		
 		$$('[ng-click="save_settings()"]').first().click();  
 		browser.wait(EC.presenceOf($('.fa-check')),10000);
-
+		browser.driver.navigate().refresh();
 	});    
 
 	it('should create new label and associate with rule', function () {
@@ -70,24 +71,35 @@ describe('When I go to the dataset options page', function () {
 		expect($('.form-control.label.label-primary').isPresent()).toBe(false);
 
 		//create label but select not created one
-		$('[ng-click="create_label(rule, $index)"]').click();
+		$$('[ng-click="create_label(rule, $index)"]').first().click();
 		expect($('.modal-title').isPresent()).toBe(true);
 		$('#labelName').sendKeys('ruleLabel');
 		$$('.btn.btn-primary').first().click();
-		$$('.btn.btn-sm.btn-default.action_link').first().click();
+		$$('.btn-default.action_link').get(1).click();
 
 		//check label was attached after save and refresh
 		$$('[ng-click="save_settings()"]').first().click();
 		browser.driver.navigate().refresh();
-		expect($('.form-control.label.label-primary').isPresent()).toBe(true);
 	});
 
-	it('should reset all rules', function () {
-		$('[ng-click="restore_defaults()"]').click();
+	it('should reset all rules and add labels', function () {
+		$$('[ng-click="restore_defaults()"]').first().click();
 		var rowCount = element.all(by.repeater('rule in ruleGroup'));
 		expect(rowCount.count()).toBe(21);
-		$('[ng-click="reset_all_rules()"]').click();
+		$$('[ng-click="reset_all_rules()"]').first().click();
 		expect(rowCount.count()).toBe(20);
+
+		$('[ui-sref="organization_data_quality({organization_id: org.id, inventory_type: \'taxlots\'})"]').click();
+		$$('[ng-click="create_label(rule, $index)"]').first().click();
+		$$('.btn.btn-sm.btn-default.action_link').first().click();
+
+		var secondRow = $$('[ng-repeat="rule in ruleGroup"]').get(1);
+		secondRow.$('[ng-model="rule.max"]').sendKeys(1235);
+		$$('[ng-click="create_label(rule, $index)"]').first().click();
+		$$('.btn-default.action_link').get(2).click();
+		$$('[ng-click="save_settings()"]').first().click();
+		browser.driver.navigate().refresh();
+		expect(element.all(by.repeater('rule in ruleGroup')).first().$('.form-control.label.label-primary').isPresent()).toBe(true);
 	});    
 
 	it('should go to labels page and check that new label was created with new rule', function () {
@@ -99,7 +111,6 @@ describe('When I go to the dataset options page', function () {
 		myOptions2.click();
 		expect($('b').getText()).toContain('Existing Labels');
 
-		//might not need this, testing rowcount in label tab, was checking auto-population of label on create rule, but no longer testing for creation of label. 
 		var labelRowCount = element.all(by.repeater('label in labels'));
 		expect(labelRowCount.count()).toBe(15);
 	});
@@ -114,13 +125,27 @@ describe('When I go to the dataset options page', function () {
 		expect(rowCount2.count()).toBe(0);
 		$$('[ng-click="close()"]').click();
 
-		// getting celery error for this.
-		// $('[ng-click="headerButtonClick($event)"]').click();
-		// $$('[ng-click="run_data_quality_check()"]').click();
-		// expect($('.modal-title').getText()).toContain('Data Quality Results');
-		// var rowCount2 = element.all(by.repeater('result in row.data_quality_results'));
-		// expect(rowCount2.count()).toBe(0);
-		// $$('[ng-click="close()"]').click();
+		$('[ng-click="headerButtonClick($event)"]').click();
+		$$('[ng-click="run_data_quality_check()"]').click();
+		expect($('.modal-title').getText()).toContain('Data Quality Results');
+		var rowCount2 = element.all(by.repeater('result in row.data_quality_results'));
+		expect(rowCount2.count()).toBe(22);
+		$$('[ng-click="close()"]').click();
+
+		//check labels - add back when working
+		// $('[ui-sref="inventory_list({inventory_type: \'taxlots\'})"]').click();
+		// $('#tagsInput').click();
+		// $$('.suggestion-item.selected').first().click();
+		// var rows = $('.left.ui-grid-render-container-left.ui-grid-render-container')
+		// 		.all(by.repeater('(rowRenderIndex, row) in rowContainer.renderedRows'));
+		// expect(rows.count()).toBe(10);
+		// $$('.suggestion-item.selected').get(1).click();
+		// expect(rows.count()).toBe(11);
+		// $('[uib-btn-radio="'or'"]').click();
+		// expect(rows.count()).toBe(1);
+		// $('[ng-click="clear_labels()"]').click();
+		// expect(rows.count()).toBe(11);
+
 	});
 
 	//Delete

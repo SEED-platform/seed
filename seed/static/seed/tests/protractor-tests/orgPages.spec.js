@@ -137,9 +137,8 @@ describe('When I visit the the parent org', function () {
 		expect(rowCheck.count()).not.toBeLessThan(1); 
 		
 		var delRules = $$('[ng-click="delete_rule(rule, $index)"]').filter(function (elm) {
-			elm.click();
-			return;
-		});
+			return true;
+		}).click();
 
 		expect(rowCheck.count()).toBeLessThan(1);
 	});  
@@ -147,11 +146,13 @@ describe('When I visit the the parent org', function () {
 
 	it('should create 1 data quality rule for properties', function () {
 		$('[ng-click="create_new_rule()"]').click();
-		var myNewOrg = element(by.cssContainingText('[ng-model="rule.field"]', 'PM Property ID'));
-		$('[ng-click="change_not_null(rule)"]').click()
-		$('[ng-click="save_settings()"]').click();
+		$$('[ng-model="rule.field"]').first().click();
+		$('[label="Postal Code (Property)"]').click();
+		// element(by.cssContainingText('[ng-model="rule.field"]', 'PM Property ID')).click();
+		$$('[ng-click="change_not_null(rule)"]').first().click()
+		$$('[ng-click="save_settings()"]').first().click();
 		//should show checkmark
-		expect($('[ng-click="save_settings()"]').$('i.ng-hide').isPresent()).toBe(false);
+		expect($$('[ng-click="save_settings()"]').first().$('i.ng-hide').isPresent()).toBe(false);
 
 	});  
 
@@ -163,27 +164,25 @@ describe('When I visit the the parent org', function () {
 		expect(rowCheck.count()).not.toBeLessThan(1); 
 		
 		var delRules = $$('[ng-click="delete_rule(rule, $index)"]').filter(function (elm) {
-			elm.click();
-			return;
-		});
+			return true;
+		}).click();
 
 		expect(rowCheck.count()).toBeLessThan(1);
 	}); 
 
 	it('should create 1 data quality rule for taxlots', function () {
 		$('[ng-click="create_new_rule()"]').click();
-		var myNewOrg = element(by.cssContainingText('[ng-model="rule.field"]', 'Address Line 1 (Tax Lot)'));
-		$('[ng-click="change_not_null(rule)"]').click()
-		$('[ng-click="save_settings()"]').click();
+		$$('[ng-model="rule.field"]').first().click();
+		$('[label="Address Line 1 (Tax Lot)"]').click();
+		// element(by.cssContainingText('[ng-model="rule.field"]', 'Address Line 1 (Tax Lot)')).click();
+		$$('[ng-click="change_not_null(rule)"]').first().click()
+		$$('[ng-click="save_settings()"]').first().click();
 		//should show checkmark
-		expect($('[ng-click="save_settings()"]').$('i.ng-hide').isPresent()).toBe(false);
+		expect($$('[ng-click="save_settings()"]').first().$('i.ng-hide').isPresent()).toBe(false);
 
 	});  
 
-	// ********************
-	// Sharing page needs updates!
-	// ******************
-
+	// sharing page...what else can we test here?
 	it('should go to parent organization and select Sharing', function () {
 		var myOptions3 = element.all(by.css('a')).filter(function (elm) {
 			return elm.getText().then(function(label) { 
