@@ -8,7 +8,7 @@ from rest_framework import serializers
 
 from seed.models import (
     StatusLabel as Label,
-)
+    Property, TaxLot, PropertyView, TaxLotView)
 
 
 class LabelSerializer(serializers.ModelSerializer):
@@ -50,13 +50,16 @@ class LabelSerializer(serializers.ModelSerializer):
         model = Label
 
     def get_is_applied(self, obj):
-        result = False
+        filtered_result = False
         if self.inventory:
             result = self.inventory.filter(
                 labels=obj,
             ).values_list('id', flat=True)
 
-            # result = self.inventory.filter(
-            #     labels=obj,
-            # ).exists()
-        return result
+            # Limit results to ones attached to view
+            if self.inventory.model is Property:
+                filtered_result = PropertyView.objects.filter(property_id__in=result).values_list('property_id', flat=True)
+            elif self.inventory.model is TaxLot:
+                filtered_result = TaxLotView.objects.filter(taxlot_id__in=result).values_list('taxlot_id', flat=True)
+
+        return filtered_result

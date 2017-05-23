@@ -21,8 +21,14 @@ from seed.models import (
     PropertyState,
     TaxLotState,
     Column,
+    StatusLabel,
 )
-from seed.models.data_quality import DataQualityCheck
+from seed.models.data_quality import (
+    DataQualityCheck,
+    TYPE_NUMBER,
+    RULE_TYPE_CUSTOM,
+    SEVERITY_ERROR,
+)
 
 _log = logging.getLogger(__name__)
 
@@ -78,18 +84,10 @@ class DataQualityTestCoveredBuilding(TestCase):
 
         d = DataQualityCheck.retrieve(self.org)
         d.check_data('PropertyState', qs)
-        # import json
-        # print json.dumps(d.results, indent=2)
         self.assertEqual(len(d.results), 7)
 
-        result = [v for v in d.results.values() if v['address_line_1'] == '95373 E Peach Avenue']
-        if len(result) == 1:
-            result = result[0]
-        else:
-            raise RuntimeError('Non unity results')
-
+        result = d.retrieve_result_by_address('95373 E Peach Avenue')
         self.assertTrue(result['address_line_1'], '95373 E Peach Avenue')
-
         res = [{
             "severity": "error",
             "value": "",
@@ -101,16 +99,11 @@ class DataQualityTestCoveredBuilding(TestCase):
         }]
         self.assertEqual(res, result['data_quality_results'])
 
-        result = [v for v in d.results.values() if v['address_line_1'] == '120243 E True Lane']
-        if len(result) == 1:
-            result = result[0]
-        else:
-            raise RuntimeError('Non unity results')
-
+        result = d.retrieve_result_by_address('120243 E True Lane')
         res = [
             {
                 "severity": "error",
-                "value": 10000000000.0,
+                "value": "10000000000.0",
                 "field": "gross_floor_area",
                 "table_name": "PropertyState",
                 "message": "Gross Floor Area out of range",
@@ -119,7 +112,7 @@ class DataQualityTestCoveredBuilding(TestCase):
             },
             {
                 "severity": "error",
-                "value": 0.0,
+                "value": "0",
                 "field": "year_built",
                 "table_name": "PropertyState",
                 "message": "Year Built out of range",
@@ -147,9 +140,8 @@ class DataQualityTestCoveredBuilding(TestCase):
         ]
         self.assertItemsEqual(res, result['data_quality_results'])
 
-        result = [v for v in d.results.values() if v['address_line_1'] == '1234 Peach Tree Avenue']
-        self.assertEqual(len(result), 0)
-        self.assertEqual(result, [])
+        result = d.retrieve_result_by_address('1234 Peach Tree Avenue')
+        self.assertEqual(result, None)
 
     def test_tax_lot_state_quality(self):
         # Import the file and run mapping
@@ -264,12 +256,7 @@ class DataQualityTestPM(TestCase):
 
         self.assertEqual(len(d.results), 2)
 
-        result = [v for v in d.results.values() if v['address_line_1'] == '120243 E True Lane']
-        if len(result) == 1:
-            result = result[0]
-        else:
-            raise RuntimeError('Non unity results')
-
+        result = d.retrieve_result_by_address('120243 E True Lane')
         res = [
             {
                 'severity': 'error',
@@ -291,17 +278,12 @@ class DataQualityTestPM(TestCase):
         ]
         self.assertEqual(res, result['data_quality_results'])
 
-        result = [v for v in d.results.values() if v['address_line_1'] == '95373 E Peach Avenue']
-        if len(result) == 1:
-            result = result[0]
-        else:
-            raise RuntimeError('Non unity results')
-
+        result = d.retrieve_result_by_address('95373 E Peach Avenue')
         res = [
             {
                 'field': u'site_eui',
                 'formatted_field': u'Site EUI',
-                'value': 0.1,
+                'value': '0.1',
                 'table_name': u'PropertyState',
                 'message': u'Site EUI out of range',
                 'detailed_message': u'Site EUI [0.1] < 10.0',
@@ -309,7 +291,8 @@ class DataQualityTestPM(TestCase):
             },
             {
                 'severity': 'error',
-                'value': None, 'field': u'custom_id_1',
+                'value': None,
+                'field': u'custom_id_1',
                 'table_name': u'PropertyState',
                 'message': 'Custom ID 1 (Property) is null',
                 'detailed_message': 'Custom ID 1 (Property) is null',
@@ -511,6 +494,14 @@ class DataQualitySample(TestCase):
                 "from_field": u'year_ending',
                 "to_table_name": u'PropertyState',
                 "to_field": u'year_ending',
+            }, {
+                "from_field": u'extra_data_ps_alpha',
+                "to_table_name": u'PropertyState',
+                "to_field": u'extra_data_ps_alpha'
+            }, {
+                "from_field": u'extra_data_ps_float',
+                "to_table_name": u'PropertyState',
+                "to_field": u'extra_data_ps_float'
             }
         ]
 
@@ -524,8 +515,78 @@ class DataQualitySample(TestCase):
             source_type=ASSESSED_BS,
         ).iterator()
 
+        # data quality check
         d = DataQualityCheck.retrieve(self.org)
+
+        # create some status labels for testing
+        sl_data = {'name': 'year - old or future', 'super_organization': self.org}
+        status_label, _ = StatusLabel.objects.get_or_create(**sl_data)
+        rule = d.rules.filter(field='year_built').first()
+        rule.status_label = status_label
+        rule.save()
+
+        sl_data = {'name': 'extra data pa float error', 'super_organization': self.org}
+        status_label, _ = StatusLabel.objects.get_or_create(**sl_data)
+        new_rule = {
+            'table_name': 'PropertyState',
+            'field': 'extra_data_ps_float',
+            'data_type': TYPE_NUMBER,
+            'rule_type': RULE_TYPE_CUSTOM,
+            'min': 9999,
+            'max': 10001,
+            'severity': SEVERITY_ERROR,
+            'units': 'square feet',
+            'status_label': status_label
+        }
+        d.add_rule(new_rule)
+
         d.check_data('PropertyState', qs)
 
-        # This only checks to make sure the 33 errors have occurred.
-        self.assertEqual(len(d.results), 33)
+        result = d.retrieve_result_by_address('4 Myrtle Parkway')
+        res = [
+            {
+                "severity": "error",
+                "value": "27.0",
+                "field": "extra_data_ps_float",
+                "table_name": "PropertyState",
+                "message": "Extra Data Ps Float out of range",
+                "detailed_message": "Extra Data Ps Float [27.0] < 9999.0",
+                "formatted_field": "Extra Data Ps Float"
+            }, {
+                "severity": "error",
+                "value": "5.0",
+                "field": "gross_floor_area",
+                "table_name": "PropertyState",
+                "message": "Gross Floor Area out of range",
+                "detailed_message": "Gross Floor Area [5.0] < 100.0",
+                "formatted_field": "Gross Floor Area"
+            }
+        ]
+        self.assertListEqual(result['data_quality_results'], res)
+
+        result = d.retrieve_result_by_address('94 Oxford Hill')
+        res = [
+            {
+                "severity": "error",
+                "value": "20000.0",
+                "field": "extra_data_ps_float",
+                "table_name": "PropertyState",
+                "message": "Extra Data Ps Float out of range",
+                "detailed_message": "Extra Data Ps Float [20000.0] > 10001.0",
+                "formatted_field": "Extra Data Ps Float"
+            },
+            {
+                "severity": "error",
+                "value": "1888-01-01 08:00:00",
+                "field": "recent_sale_date",
+                "table_name": "PropertyState",
+                "message": "Recent Sale Date out of range",
+                "detailed_message": "Recent Sale Date [1888-01-01 08:00:00] < 1889-01-01 00:00:00",
+                "formatted_field": "Recent Sale Date"
+            }
+        ]
+        self.assertListEqual(result['data_quality_results'], res)
+
+        # import json
+        # from seed.utils.generic import json_serializer
+        # print json.dumps(result, default=json_serializer, indent=2)

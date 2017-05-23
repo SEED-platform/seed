@@ -362,4 +362,4 @@ class DataQualityViews(viewsets.ViewSet):
                     'message': e,
                 }, status=status.HTTP_400_BAD_REQUEST)
 
-        return JsonResponse({'status': 'success'})
+        return self.data_quality_rules(request)
