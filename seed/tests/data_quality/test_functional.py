@@ -281,6 +281,15 @@ class DataQualityTestPM(TestCase):
         result = d.retrieve_result_by_address('95373 E Peach Avenue')
         res = [
             {
+                'severity': 'error',
+                'value': None,
+                'field': u'custom_id_1',
+                'table_name': u'PropertyState',
+                'message': 'Custom ID 1 (Property) is null',
+                'detailed_message': 'Custom ID 1 (Property) is null',
+                'formatted_field': 'Custom ID 1 (Property)'
+            },
+            {
                 'field': u'site_eui',
                 'formatted_field': u'Site EUI',
                 'value': '0.1',
@@ -289,15 +298,6 @@ class DataQualityTestPM(TestCase):
                 'detailed_message': u'Site EUI [0.1] < 10.0',
                 'severity': u'warning'
             },
-            {
-                'severity': 'error',
-                'value': None,
-                'field': u'custom_id_1',
-                'table_name': u'PropertyState',
-                'message': 'Custom ID 1 (Property) is null',
-                'detailed_message': 'Custom ID 1 (Property) is null',
-                'formatted_field': 'Custom ID 1 (Property)'
-            }
         ]
         self.assertEqual(res, result['data_quality_results'])
 

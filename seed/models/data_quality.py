@@ -530,8 +530,7 @@ class DataQualityCheck(models.Model):
                 self.results[row.id]['data_quality_results'] = []
 
             # Run the checks
-            self._in_range_checking(row)
-            self._missing_values(row)
+            self._check(row)
 
         # Prune the results will remove any entries that have zero data_quality_results
         for k, v in self.results.items():
@@ -547,23 +546,18 @@ class DataQualityCheck(models.Model):
     def reset_results(self):
         self.results = {}
 
-    def _in_range_checking(self, row):
+    def _check(self, row):
         """
         Check for errors in the min/max of the values.
 
         :param row: Database record containing the BS version of the fields populated
         :return: None
         """
-
         linked_id = None
         label_applied = False
 
-        for rule in self.rules.filter(enabled=True, table_name=type(row).__name__).order_by(
-                'field', 'severity'):
-
-            # Only look at rules that are in the column_lookup, which is all the mapped columns
-            if (rule.table_name, rule.field) not in self.column_lookup:
-                continue
+        for rule in self.rules.filter(enabled=True,
+                                      table_name=type(row).__name__).order_by('field', 'severity'):
 
             # check if the field exists
             if hasattr(row, rule.field) or rule.field in row.extra_data:
@@ -574,11 +568,9 @@ class DataQualityCheck(models.Model):
                     value = row.extra_data[rule.field]
                     value = rule.str_to_data_type(value)
 
-                # Don't check the out of range errors if the data are empty
-                if value is None:
-                    continue
-
-                display_name = self.column_lookup[(rule.table_name, rule.field)]
+                display_name = rule.field
+                if (rule.table_name, rule.field) in self.column_lookup:
+                    display_name = self.column_lookup[(rule.table_name, rule.field)]
 
                 # get the status_labels for the linked properties and tax lots
                 if rule.table_name == 'PropertyState':
@@ -594,16 +586,34 @@ class DataQualityCheck(models.Model):
                         if tv.count() > 0:
                             linked_id = tv[0].taxlot_id
 
-                if not rule.valid_enum(value):
+                if (rule.table_name, rule.field) not in self.column_lookup:
+                    # If the rule is not in the column lookup, then it may have been a required
+                    # field that wasn't mapped
+                    if rule.required:
+                        self.add_result_missing_req(row.id, rule, display_name, value)
+                        label_applied = label_applied or \
+                            self.update_status_label(label, rule, linked_id)
+                elif value is None or value == '':
+                    # Empty fields
+                    if rule.required:
+                        self.add_result_missing_and_none(row.id, rule, display_name, value)
+                        label_applied = label_applied or \
+                            self.update_status_label(label, rule, linked_id)
+                    elif rule.not_null:
+                        self.add_result_is_null(row.id, rule, display_name, value)
+                        label_applied = label_applied or \
+                            self.update_status_label(label, rule, linked_id)
+                elif not rule.valid_enum(value):
                     self.add_result_string_error(row.id, rule, display_name, value)
-                    label_applied = self.update_status_label(label, rule, linked_id)
+                    label_applied = label_applied or \
+                        self.update_status_label(label, rule, linked_id)
                 else:
                     try:
                         if not rule.minimum_valid(value):
                             s_min, s_max, s_value = rule.format_strings(value)
                             self.add_result_min_error(row.id, rule, display_name, s_value, s_min)
-                            label_applied = label_applied or self.update_status_label(label, rule,
-                                                                                      linked_id)
+                            label_applied = label_applied or \
+                                self.update_status_label(label, rule, linked_id)
                     except ComparisonError:
                         s_min, s_max, s_value = rule.format_strings(value)
                         self.add_result_comparison_error(row.id, rule, display_name, s_value, s_min)
@@ -613,8 +623,8 @@ class DataQualityCheck(models.Model):
                         if not rule.maximum_valid(value):
                             s_min, s_max, s_value = rule.format_strings(value)
                             self.add_result_max_error(row.id, rule, display_name, s_value, s_max)
-                            label_applied = label_applied or self.update_status_label(label, rule,
-                                                                                      linked_id)
+                            label_applied = label_applied or \
+                                self.update_status_label(label, rule, linked_id)
                     except ComparisonError:
                         s_min, s_max, s_value = rule.format_strings(value)
                         self.add_result_comparison_error(row.id, rule, display_name, s_value, s_max)
@@ -622,64 +632,6 @@ class DataQualityCheck(models.Model):
 
                 if not label_applied:
                     self.remove_status_label(label, rule, linked_id)
-
-    def _missing_values(self, datum):
-        """
-        Ensure that 'required' fields are mapped (with any value) and that 'not_null' fields are non-empty
-
-        :param datum: Database record containing the BS version of the fields populated
-        :return: None
-        """
-        for rule in self.rules \
-                .filter(Q(enabled=True) & Q(table_name=type(datum).__name__) & (
-                    Q(required=True) | Q(not_null=True))) \
-                .order_by('field', 'severity'):
-            # check if the field exists
-            if hasattr(datum, rule.field) or rule.field in datum.extra_data:
-                if hasattr(datum, rule.field):
-                    value = getattr(datum, rule.field)
-                elif rule.field in datum.extra_data:
-                    value = datum.extra_data[rule.field]
-
-                display_name = rule.field
-                if (rule.table_name, rule.field) in self.column_lookup:
-                    display_name = self.column_lookup[(rule.table_name, rule.field)]
-
-                if rule.required and (rule.table_name, rule.field) not in self.column_lookup:
-                    # If required and column has never been mapped, register error
-                    self.results[datum.id]['data_quality_results'].append({
-                        'field': rule.field,
-                        'formatted_field': rule.field,
-                        'value': value,
-                        'table_name': rule.table_name,
-                        'message': rule.field + ' is missing',
-                        'detailed_message': rule.field + ' is required and missing',
-                        'severity': dict(SEVERITY)[SEVERITY_ERROR]
-                    })
-                elif rule.required and value is None:
-                    # If 'required' and value is None, register error
-                    self.results[datum.id]['data_quality_results'].append({
-                        'field': rule.field,
-                        'formatted_field': display_name,
-                        'value': value,
-                        'table_name': rule.table_name,
-                        'message': display_name + ' is missing',
-                        'detailed_message': display_name + ' is required and is None',
-                        'severity': dict(SEVERITY)[SEVERITY_ERROR]
-                    })
-                    continue
-
-                if rule.not_null and (value is None or value == ''):
-                    # If 'not_null' and value is empty, register error
-                    self.results[datum.id]['data_quality_results'].append({
-                        'field': rule.field,
-                        'formatted_field': display_name,
-                        'value': value,
-                        'table_name': rule.table_name,
-                        'message': display_name + ' is null',
-                        'detailed_message': display_name + ' is null',
-                        'severity': dict(SEVERITY)[SEVERITY_ERROR]
-                    })
 
     def save_to_cache(self, identifier):
         """
@@ -810,6 +762,39 @@ class DataQualityCheck(models.Model):
                 'severity': rule.get_severity_display(),
             }
         )
+
+    def add_result_missing_req(self, row_id, rule, display_name, value):
+        self.results[row_id]['data_quality_results'].append({
+            'field': rule.field,
+            'formatted_field': rule.field,
+            'value': value,
+            'table_name': rule.table_name,
+            'message': rule.field + ' is missing',
+            'detailed_message': rule.field + ' is required and missing',
+            'severity': rule.get_severity_display(),
+        })
+
+    def add_result_missing_and_none(self, row_id, rule, display_name, value):
+        self.results[row_id]['data_quality_results'].append({
+            'field': rule.field,
+            'formatted_field': display_name,
+            'value': value,
+            'table_name': rule.table_name,
+            'message': display_name + ' is missing',
+            'detailed_message': display_name + ' is required and is None',
+            'severity': rule.get_severity_display(),
+        })
+
+    def add_result_is_null(self, row_id, rule, display_name, value):
+        self.results[row_id]['data_quality_results'].append({
+            'field': rule.field,
+            'formatted_field': display_name,
+            'value': value,
+            'table_name': rule.table_name,
+            'message': display_name + ' is null',
+            'detailed_message': display_name + ' is null',
+            'severity': rule.get_severity_display(),
+        })
 
     def update_status_label(self, label_class, rule, linked_id):
         """
