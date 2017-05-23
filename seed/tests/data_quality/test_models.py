@@ -5,8 +5,11 @@
 :author
 """
 import logging
+from datetime import datetime
 
+import pytz
 from django.test import TestCase
+from django.utils.timezone import make_aware
 
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import StatusLabel
@@ -15,6 +18,8 @@ from seed.models.data_quality import (
     Rule,
     DEFAULT_RULES,
     TYPE_NUMBER,
+    TYPE_DATE,
+    TYPE_YEAR,
     TYPE_STRING,
     RULE_TYPE_DEFAULT,
     SEVERITY_ERROR,
@@ -40,6 +45,28 @@ class RuleTests(TestCase):
         self.assertTrue(r.maximum_valid(100))
         self.assertFalse(r.maximum_valid(101))
 
+    def text_min_only(self):
+        new_rule = {
+            'data_type': TYPE_NUMBER,
+            'min': 5,
+        }
+        r = Rule.objects.create(**new_rule)
+        self.assertTrue(r.minimum_valid(0))
+        self.assertFalse(r.minimum_valid(10))
+        self.assertTrue(r.maximum_valid(100))
+        self.assertTrue(r.maximum_valid(999999))
+
+    def text_max_only(self):
+        new_rule = {
+            'data_type': TYPE_NUMBER,
+            'max': 100,
+        }
+        r = Rule.objects.create(**new_rule)
+        self.assertTrue(r.minimum_valid(0))
+        self.assertTrue(r.minimum_valid(999999))
+        self.assertTrue(r.maximum_valid(50))
+        self.assertFalse(r.maximum_valid(200))
+
     def test_valid_enum(self):
         new_rule = {
             'data_type': TYPE_STRING,
@@ -50,6 +77,61 @@ class RuleTests(TestCase):
         self.assertFalse(r.valid_enum('beta'))
         self.assertTrue(r.valid_enum(u'alpha'))
         self.assertFalse(r.valid_enum(u'beta'))
+
+    def test_type_value_return(self):
+        new_rule = {
+            'data_type': TYPE_STRING,
+        }
+        r = Rule.objects.create(**new_rule)
+        self.assertEqual(r.str_to_data_type(int(576)), 576)
+        self.assertEqual(r.str_to_data_type(576.5), 576.5)
+
+    def test_type_value_string(self):
+        new_rule = {
+            'data_type': TYPE_STRING,
+        }
+        r = Rule.objects.create(**new_rule)
+        self.assertEqual(r.str_to_data_type(None), None)
+        self.assertEqual(r.str_to_data_type(''), '')
+        self.assertEqual(r.str_to_data_type('576'), '576')
+        self.assertEqual(r.str_to_data_type('abcd'), 'abcd')
+        self.assertEqual(r.str_to_data_type(u'abcd'), u'abcd')
+
+    def test_type_value_number(self):
+        new_rule = {
+            'data_type': TYPE_NUMBER,
+        }
+        r = Rule.objects.create(**new_rule)
+        self.assertEqual(r.str_to_data_type(None), None)
+        self.assertEqual(r.str_to_data_type(''), None)
+        self.assertEqual(r.str_to_data_type('576'), 576)
+        self.assertEqual(r.str_to_data_type('576.5'), 576.5)
+        with self.assertRaisesRegexp(TypeError, ".*string to float.*abcd"):
+            r.str_to_data_type('abcd')
+
+    def test_type_value_date(self):
+        new_rule = {
+            'data_type': TYPE_DATE,
+        }
+        r = Rule.objects.create(**new_rule)
+
+        self.assertEqual(r.str_to_data_type(None), None)
+        self.assertEqual(r.str_to_data_type(''), None)
+        dt = make_aware(datetime(2016, 0o7, 15, 12, 30), pytz.UTC)
+        self.assertEqual(r.str_to_data_type(dt.strftime("%Y-%m-%d %H:%M")), dt)
+        self.assertEqual(r.str_to_data_type('abcd'), None)
+
+    def test_type_value_year(self):
+        new_rule = {
+            'data_type': TYPE_YEAR,
+        }
+        r = Rule.objects.create(**new_rule)
+
+        self.assertEqual(r.str_to_data_type(None), None)
+        self.assertEqual(r.str_to_data_type(''), None)
+        dt = make_aware(datetime(2016, 0o7, 15, 12, 30), pytz.UTC)
+        self.assertEqual(r.str_to_data_type(dt.strftime("%Y-%m-%d %H:%M")), dt.date())
+        self.assertEqual(r.str_to_data_type('abcd'), None)
 
 
 class DataQualityCheckCase(TestCase):
