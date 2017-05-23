@@ -9,7 +9,7 @@ from datetime import datetime
 
 import pytz
 from django.test import TestCase
-from django.utils.timezone import make_aware
+from django.utils.timezone import make_aware, make_naive
 
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import StatusLabel
@@ -29,7 +29,6 @@ _log = logging.getLogger(__name__)
 
 
 class RuleTests(TestCase):
-
     def setUp(self):
         self.org = Organization.objects.create()
 
@@ -79,6 +78,7 @@ class RuleTests(TestCase):
         self.assertFalse(r.valid_enum(u'beta'))
 
     def test_type_value_return(self):
+        """Test to make sure that the return is correct if value is not a string"""
         new_rule = {
             'data_type': TYPE_STRING,
         }
@@ -133,9 +133,84 @@ class RuleTests(TestCase):
         self.assertEqual(r.str_to_data_type(dt.strftime("%Y-%m-%d %H:%M")), dt.date())
         self.assertEqual(r.str_to_data_type('abcd'), None)
 
+    def test_format_rule_string_string(self):
+        new_rule = {
+            'data_type': TYPE_STRING,
+            'max': 27,
+        }
+        r = Rule.objects.create(**new_rule)
+        self.assertEqual(r.format_strings('something blue'), ['None', '27', 'something blue'])
+
+    def test_format_strings_int(self):
+        new_rule = {
+            'data_type': TYPE_NUMBER,
+            'min': 27,
+        }
+        r = Rule.objects.create(**new_rule)
+        self.assertEqual(r.format_strings(int(100)), ['27', None, '100'])
+
+        new_rule = {
+            'data_type': TYPE_NUMBER,
+            'max': 27,
+        }
+        r = Rule.objects.create(**new_rule)
+        self.assertEqual(r.format_strings(int(100)), [None, '27', '100'])
+
+    def test_format_strings_float(self):
+        new_rule = {
+            'data_type': TYPE_NUMBER,
+            'min': 27,
+        }
+        r = Rule.objects.create(**new_rule)
+        self.assertEqual(r.format_strings(100.0), ['27', None, '100.0'])
+
+        new_rule = {
+            'data_type': TYPE_NUMBER,
+            'max': 27,
+        }
+        r = Rule.objects.create(**new_rule)
+        self.assertEqual(r.format_strings(123.45), [None, '27', '123.45'])
+
+    def test_format_strings_datetime(self):
+        new_rule = {
+            'data_type': TYPE_YEAR,
+            'min': '20170101'
+        }
+        r = Rule.objects.create(**new_rule)
+        # the strings are tz naive, but must be passed in as tz aware.
+        dt = make_aware(datetime(2016, 07, 15, 12, 30), pytz.UTC)
+        self.assertEqual(r.format_strings(dt),
+                         ['2017-01-01 00:00:00', None, str(make_naive(dt, pytz.UTC))])
+
+        new_rule = {
+            'data_type': TYPE_YEAR,
+            'max': '20170101'
+        }
+        r = Rule.objects.create(**new_rule)
+        self.assertEqual(r.format_strings(dt),
+                         [None, '2017-01-01 00:00:00', str(make_naive(dt, pytz.UTC))])
+
+    def test_format_strings_date(self):
+        new_rule = {
+            'data_type': TYPE_YEAR,
+            'min': '20170101'
+        }
+        r = Rule.objects.create(**new_rule)
+        # the strings are tz naive, but must be passed in as tz aware.
+        dt = make_aware(datetime(2016, 07, 15, 12, 30), pytz.UTC).date()
+        self.assertEqual(r.format_strings(dt),
+                         ['2017-01-01', None, str(dt)])
+
+        new_rule = {
+            'data_type': TYPE_YEAR,
+            'max': '20170101'
+        }
+        r = Rule.objects.create(**new_rule)
+        self.assertEqual(r.format_strings(dt),
+                         [None, '2017-01-01', str(dt)])
+
 
 class DataQualityCheckCase(TestCase):
-
     def setUp(self):
         self.org = Organization.objects.create()
 
@@ -153,7 +228,6 @@ class DataQualityCheckCase(TestCase):
 
 
 class DataQualityCheckRules(TestCase):
-
     def setUp(self):
         self.org = Organization.objects.create()
 
