@@ -55,28 +55,6 @@ describe('When I go to admin page', function () {
         $$('#user_emails').first().element(by.cssContainingText('option', browser.params.login.user)).click();
         $('[ng-click="org_form.add(org)"]').click();
 
-        //  browser.wait(function() {
-        //     var myNewOrg;
-        //     return element.all(by.repeater('org in org_user.organizations')).then(function(rows) {
-        //         expect(rows.length).not.toBeLessThan(1);
-        //         for(var i=0;i<rows.length;i++){
-        //             rows[i].all(by.tagName('td')).then(function(inner) {
-        //                 for(var j=0;j<inner.length;j++){
-        //                     inner[j].getText().then(function(text) {
-        //                         if (text.includes(browser.params.testOrg.parent)) {
-        //                             myNewOrg = inner;
-        //                         }
-        //                     });
-        //                     if(myNewOrg) break;
-        //                 }
-        //             });
-        //             if(myNewOrg) break;
-        //         }
-        //     });
-        // }, 2000).then(function(){
-        //     expect(myNewOrg.isPresent()).toBe(true);
-        // });
-
         var myNewOrg = element.all(by.repeater('org in org_user.organizations')).filter(function (rows) {
             expect(rows.length).not.toBeLessThan(1);
             return rows.getText().then(function (label) {
@@ -86,6 +64,7 @@ describe('When I go to admin page', function () {
         expect(myNewOrg.isPresent()).toBe(true);
 
      });
+     
     it('should create new user for test org', function () {
         $('#first_name').sendKeys('Test');
         $('#last_name').sendKeys('Testy');

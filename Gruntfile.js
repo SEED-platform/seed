@@ -64,7 +64,7 @@ module.exports = function(grunt) {
         },
         protractor_coverage: {
             options: {
-                keepAlive: false, // If false, the grunt process stops when the test fails.
+                keepAlive: true, // If false, the grunt process stops when the test fails.
                 noColor: false,
                 coverageDir: 'protractorCoverage',
                 args: {
@@ -109,13 +109,13 @@ module.exports = function(grunt) {
     // plugin's task(s), then test the result.
 
     //same as npm test more or less
-    grunt.registerTask('coverage', ['protractor_coverage:local']);
+    // grunt.registerTask('coverage', ['protractor_coverage:local']);
     
     //don't use instrumented code
     // grunt.registerTask('coverage', ['clean', 'copy:save', 'instrument', 'protractor_coverage:local', 'copy:copyBack']);    
 
     //without coveralls
-    // grunt.registerTask('coverage', ['clean', 'copy:save', 'instrument', 'copy:instrument', 'protractor_coverage:local', 'copy:copyBack', 'makeReport']);
+    grunt.registerTask('coverage', ['clean', 'copy:save', 'instrument', 'copy:instrument', 'protractor_coverage:local', 'copy:copyBack', 'makeReport']);
 
     //with coveralls
     // grunt.registerTask('coverage', ['clean', 'copy:save', 'instrument', 'copy:instrument', 'protractor_coverage:local', 'copy:copyBack', 'makeReport', 'coveralls']);
