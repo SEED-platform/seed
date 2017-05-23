@@ -32,7 +32,7 @@
         </div>
     </div>
     <div class="section_content_container">
-        <div class="section_content with_padding" ng-if="org.is_parent && auth.requires_owner" style="margin-bottom:15px;">
+        <div class="section_content with_padding" style="margin-bottom:15px;">
             <h3>Modifying Data Quality Rules</h3>
             <p>From the table below, select the rules that you want to: 1) enable/disable within your organization, 2) modify the minimum/maximum values to validate against on file upload, and 3) optionally assign or remove a label if the condition is not met.</p>
             <button class="btn btn-info btn-sm" style="margin-bottom: 15px;" ng-click="create_new_rule()">Create a new rule</button>
@@ -63,8 +63,8 @@
                             <th style="min-width: 54px; width: 54px;">Delete</th>
                         </tr>
                     </thead>
-                    <tbody ng-repeat="field in sortedRuleGroups()" ng-init="ruleGroup = ruleGroups[inventory_type][field]">
-                        <tr ng-repeat="rule in ruleGroup" ng-if="!rule.delete" ng-class="{ 'warning' : rule.new, 'disabled' : !rule.enabled }">
+                    <tbody ng-repeat="field in sortedRuleGroups()">
+                        <tr ng-repeat="rule in ruleGroups[inventory_type][field]" ng-class="{ 'warning' : rule.new, 'disabled' : !rule.enabled }">
                             <td class="check is_aligned_center" style="width: 33px;" ng-click="rule.rule_type = 1; rule.enabled = !rule.enabled">
                                 <input type="checkbox" ng-model="rule.enabled" class="no-click">
                             </td>
