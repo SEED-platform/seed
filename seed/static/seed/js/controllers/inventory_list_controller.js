@@ -45,9 +45,15 @@ angular.module('BE.seed.controller.inventory_list', [])
       $scope.restoring = false;
 
       $scope.labels = labels;
-      $scope.selected_labels = [];
 
       var localStorageKey = 'grid.' + $scope.inventory_type;
+      var localStorageLabelKey = 'grid.' + $scope.inventory_type + '.labels';
+
+      // Reapply valid previously-applied labels
+      var ids = inventory_service.loadSelectedLabels(localStorageLabelKey);
+      $scope.selected_labels = _.filter($scope.labels, function (label) {
+        return _.includes(ids, label.id);
+      });
 
       $scope.clear_labels = function () {
         $scope.selected_labels = [];
@@ -73,6 +79,9 @@ angular.module('BE.seed.controller.inventory_list', [])
         } else if ($scope.labelLogic === 'or') {
           ids = _.uniq(_.flatten(_.map($scope.selected_labels, 'is_applied')));
         }
+
+        inventory_service.saveSelectedLabels(localStorageLabelKey, _.map($scope.selected_labels, 'id'));
+
         if ($scope.selected_labels.length) {
           _.forEach($scope.gridApi.grid.rows, function (row) {
             if ((!_.includes(ids, row.entity.id) && row.treeLevel === 0) || !_.has(row, 'treeLevel')) $scope.gridApi.core.setRowInvisible(row);
