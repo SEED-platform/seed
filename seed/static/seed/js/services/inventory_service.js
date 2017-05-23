@@ -585,6 +585,16 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }
     };
 
+    inventory_service.saveSelectedLabels = function (key, ids) {
+      key += '.' + user_service.get_organization().id;
+      localStorage.setItem(key, JSON.stringify(ids));
+    };
+
+    inventory_service.loadSelectedLabels = function (key) {
+      key += '.' + user_service.get_organization().id;
+      return JSON.parse(localStorage.getItem(key)) || [];
+    };
+
     // Save non-empty sort/filter states
     inventory_service.saveGridSettings = function (key, settings) {
       key += '.' + user_service.get_organization().id;
