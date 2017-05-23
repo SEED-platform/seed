@@ -50,7 +50,9 @@
                 <table id="data-quality-admin-table" class="table has_no_btm_margin tbody-striped">
                     <thead>
                         <tr>
-                            <th class="condensed_head" style="min-width: 33px; width: 33px;"></th>
+                            <th class="condensed_head" style="min-width: 33px; width: 33px; padding-left: 0; padding-right: 0;" ng-click="selectAll()">
+                                <input type="checkbox" ng-checked="allEnabled()" class="no-click">
+                            </th>
                             <th>Field</th>
                             <th style="min-width: 100px; width: 100px;">Data Type</th>
                             <th style="min-width: 70px; width: 70px;">Required</th>
@@ -65,7 +67,7 @@
                     </thead>
                     <tbody ng-repeat="field in sortedRuleGroups()">
                         <tr ng-repeat="rule in ruleGroups[inventory_type][field]" ng-class="{ 'warning' : rule.new, 'disabled' : !rule.enabled }">
-                            <td class="check is_aligned_center" style="width: 33px;" ng-click="rule.rule_type = 1; rule.enabled = !rule.enabled">
+                            <td class="check is_aligned_center" ng-click="rule.rule_type = 1; rule.enabled = !rule.enabled">
                                 <input type="checkbox" ng-model="rule.enabled" class="no-click">
                             </td>
                             <td>

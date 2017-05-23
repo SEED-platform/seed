@@ -349,5 +349,24 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
       // Put created unassigned rows first
       return nullKey.concat(sortedKeys);
-    }
+    };
+
+    $scope.selectAll = function () {
+      var allEnabled = $scope.allEnabled();
+      _.forEach($scope.ruleGroups[$scope.inventory_type], function (ruleGroup) {
+        _.forEach(ruleGroup, function(rule) {
+          rule.enabled = !allEnabled;
+        });
+      });
+    };
+
+    $scope.allEnabled = function () {
+      var total = 0;
+      var enabled = _.reduce($scope.ruleGroups[$scope.inventory_type], function (result, ruleGroup) {
+        total += ruleGroup.length;
+        return result + _.filter(ruleGroup, 'enabled').length;
+      }, 0);
+      return total === enabled;
+    };
+
   }]);
