@@ -39,6 +39,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
     $scope.inventory_type = $stateParams.inventory_type;
     $scope.org = organization_payload.organization;
     $scope.auth = auth_payload.auth;
+    $scope.ruleGroups = {};
 
     $scope.state = $state.current;
 
@@ -64,13 +65,13 @@ angular.module('BE.seed.controller.data_quality_admin', [])
     $scope.all_labels = labels_payload;
 
     var loadRules = function (rules_payload) {
-      $scope.ruleGroups = {
+      var ruleGroups = {
         properties: {},
         taxlots: {}
       };
       _.forEach(rules_payload.rules, function (inventory_type, index) {
         _.forEach(inventory_type, function (rule) {
-          if (!_.has($scope.ruleGroups[index], rule.field)) $scope.ruleGroups[index][rule.field] = [];
+          if (!_.has(ruleGroups[index], rule.field)) ruleGroups[index][rule.field] = [];
           var row = rule;
           if (row.data_type === 'date') {
             if (row.min) row.min = moment(row.min, 'YYYYMMDD').toDate();
@@ -84,9 +85,11 @@ angular.module('BE.seed.controller.data_quality_admin', [])
               row.label = match;
             }
           }
-          $scope.ruleGroups[index][rule.field].push(row);
+          ruleGroups[index][rule.field].push(row);
         });
       });
+
+      $scope.ruleGroups = ruleGroups;
     };
     loadRules(data_quality_rules_payload);
 
@@ -346,5 +349,24 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
       // Put created unassigned rows first
       return nullKey.concat(sortedKeys);
-    }
+    };
+
+    $scope.selectAll = function () {
+      var allEnabled = $scope.allEnabled();
+      _.forEach($scope.ruleGroups[$scope.inventory_type], function (ruleGroup) {
+        _.forEach(ruleGroup, function(rule) {
+          rule.enabled = !allEnabled;
+        });
+      });
+    };
+
+    $scope.allEnabled = function () {
+      var total = 0;
+      var enabled = _.reduce($scope.ruleGroups[$scope.inventory_type], function (result, ruleGroup) {
+        total += ruleGroup.length;
+        return result + _.filter(ruleGroup, 'enabled').length;
+      }, 0);
+      return total === enabled;
+    };
+
   }]);
