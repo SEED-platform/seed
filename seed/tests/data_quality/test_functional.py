@@ -34,7 +34,6 @@ _log = logging.getLogger(__name__)
 
 
 class DataQualityTestCoveredBuilding(TestCase):
-
     def setUp(self):
         self.user_details = {
             'username': 'testuser@example.com',
@@ -157,7 +156,6 @@ class DataQualityTestCoveredBuilding(TestCase):
 
 
 class DataQualityTestPM(TestCase):
-
     def setUp(self):
         self.user_details = {
             'username': 'testuser@example.com',
@@ -303,7 +301,6 @@ class DataQualityTestPM(TestCase):
 
 
 class DataQualitySample(TestCase):
-
     def setUp(self):
         self.user_details = {
             'username': 'testuser@example.com',

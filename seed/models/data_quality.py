@@ -6,10 +6,10 @@
 """
 import json
 import logging
+import re
 from datetime import date, datetime
 
 import pytz
-import re
 from django.apps import apps
 from django.db import models
 from django.db.models import Q
@@ -327,26 +327,29 @@ class Rule(models.Model):
         """
         # Convert the rule into the correct types for checking the data
         rule_min = self.min
-        if isinstance(value, datetime):
-            value = value.astimezone(get_current_timezone()).replace(tzinfo=pytz.UTC)
-            rule_min = make_aware(datetime.strptime(str(int(rule_min)), '%Y%m%d'), pytz.UTC)
-        elif isinstance(value, date):
-            value = value
-            rule_min = datetime.strptime(str(int(rule_min)), '%Y%m%d').date()
-        elif isinstance(value, int):
-            rule_min = int(rule_min)
-        elif not isinstance(value, (str, unicode)):
-            # must be a float...
-            value = float(value)
+        if rule_min is None:
+            return True
+        else:
+            if isinstance(value, datetime):
+                value = value.astimezone(get_current_timezone()).replace(tzinfo=pytz.UTC)
+                rule_min = make_aware(datetime.strptime(str(int(rule_min)), '%Y%m%d'), pytz.UTC)
+            elif isinstance(value, date):
+                value = value
+                rule_min = datetime.strptime(str(int(rule_min)), '%Y%m%d').date()
+            elif isinstance(value, int):
+                rule_min = int(rule_min)
+            elif not isinstance(value, (str, unicode)):
+                # must be a float...
+                value = float(value)
 
-        try:
-            if rule_min is not None and value < rule_min:
-                return False
-            else:
-                # If rule_min is undefined/None or value is okay, then it is valid.
-                return True
-        except ValueError:
-            raise ComparisonError("Value could not be compared numerically")
+            try:
+                if value < rule_min:
+                    return False
+                else:
+                    # If rule_min is undefined/None or value is okay, then it is valid.
+                    return True
+            except ValueError:
+                raise ComparisonError("Value could not be compared numerically")
 
     def maximum_valid(self, value):
         """
@@ -357,26 +360,63 @@ class Rule(models.Model):
         """
         # Convert the rule into the correct types for checking the data
         rule_max = self.max
-        if isinstance(value, datetime):
-            value = value.astimezone(get_current_timezone()).replace(tzinfo=pytz.UTC)
-            rule_max = make_aware(datetime.strptime(str(int(rule_max)), '%Y%m%d'), pytz.UTC)
-        elif isinstance(value, date):
-            value = value
-            rule_max = datetime.strptime(str(int(rule_max)), '%Y%m%d').date()
-        elif isinstance(value, int):
-            if rule_max:
+        if rule_max is None:
+            return True
+        else:
+            if isinstance(value, datetime):
+                value = value.astimezone(get_current_timezone()).replace(tzinfo=pytz.UTC)
+                rule_max = make_aware(datetime.strptime(str(int(rule_max)), '%Y%m%d'), pytz.UTC)
+            elif isinstance(value, date):
+                value = value
+                rule_max = datetime.strptime(str(int(rule_max)), '%Y%m%d').date()
+            elif isinstance(value, int):
                 rule_max = int(rule_max)
-        elif not isinstance(value, (str, unicode)):
-            # must be a float...
-            value = float(value)
+            elif not isinstance(value, (str, unicode)):
+                # must be a float...
+                value = float(value)
 
-        try:
-            if rule_max is not None and value > rule_max:
-                return False
-            else:
-                return True
-        except ValueError:
-            raise ComparisonError("Value could not be compared numerically")
+            try:
+                if value > rule_max:
+                    return False
+                else:
+                    return True
+            except ValueError:
+                raise ComparisonError("Value could not be compared numerically")
+
+    def format_rule_strings(self, value):
+        f_min = self.min
+        f_max = self.max
+        f_value = value
+
+        # Get the formatted values for reporting
+        if isinstance(value, datetime):
+            f_value = str(make_naive(value, pytz.UTC))
+            f_min = str(datetime.strptime(str(int(self.min)), '%Y%m%d'))
+            f_max = str(datetime.strptime(str(int(self.max)), '%Y%m%d'))
+        elif isinstance(value, date):
+            f_value = str(value)
+            f_min = str(
+                datetime.strptime(str(int(self.min)), '%Y%m%d').date())
+            f_max = str(
+                datetime.strptime(str(int(self.max)), '%Y%m%d').date())
+        elif isinstance(value, int):
+            f_value = str(value)
+            if self.min is not None:
+                f_min = str(int(self.min))
+            if self.max is not None:
+                f_max = str(int(self.max))
+        elif isinstance(value, (str, unicode)):
+            f_value = str(value)
+            f_min = str(self.min)
+            f_max = str(self.max)
+        elif isinstance(value, float):
+            f_value = str(float(value))
+            f_min = str(self.min)
+            f_max = str(self.max)
+        else:
+            raise Exception("Unknown data type ({}:{})".format(value, value.__class__))
+
+        return [f_min, f_max, f_value]
 
 
 class DataQualityCheck(models.Model):
@@ -553,6 +593,36 @@ class DataQualityCheck(models.Model):
                 elif rule.field in row.extra_data:
                     value = row.extra_data[rule.field]
 
+                    # If the check is coming from a field in the database then it will be typed
+                    # correctly, however, for extra_data, the values are typically strings or
+                    # unicode. Therefore, the values are typed before they are checked using
+                    # the rule's data type definition.
+                    if isinstance(value, (str, unicode)):
+                        # check if we can type cast the value
+                        try:
+                            if value is not None:
+                                if rule.data_type == TYPE_NUMBER:
+                                    if value == '':
+                                        value = None
+                                    else:
+                                        value = float(value)
+                                elif rule.data_type == TYPE_STRING:
+                                    value = str(value)
+                                elif rule.data_type == TYPE_DATE:
+                                    if value == '':
+                                        value = None
+                                    else:
+                                        # TODO: Add date type case
+                                        pass
+                                elif rule.data_type == TYPE_YEAR:
+                                    if value == '':
+                                        value = None
+                                    else:
+                                        # TODO: Add Year type cast
+                                        pass
+                        except ValueError as e:
+                            raise RuntimeError("Error converting {} with {}".format(value, e))
+
                 # Don't check the out of range errors if the data are empty
                 if value is None:
                     continue
@@ -577,81 +647,26 @@ class DataQualityCheck(models.Model):
                     self.add_result_string_error(row.id, rule, display_name, value)
                     label_applied = self.update_status_label(label, rule, linked_id)
                 else:
-                    formatted_rule_min = ''
-                    formatted_rule_max = ''
-
-                    # If the check is coming from a field in the database then it will be typed
-                    # correctly, however, for extra_data, the values are typically strings or
-                    # unicode. Therefore, the values are typed before they are checked using
-                    # the rule's data type definition.
-                    if isinstance(value, (str, unicode)):
-                        # check if we can type cast the value
-                        try:
-                            if value is not None and value != '':
-                                if rule.data_type == TYPE_NUMBER:
-                                    value = float(value)
-                                elif rule.data_type == TYPE_STRING:
-                                    value = str(value)
-                                elif rule.data_type == TYPE_DATE:
-                                    # TODO: Add date type case
-                                    pass
-                                elif rule.data_type == TYPE_YEAR:
-                                    # TODO: Add Year type cast
-                                    pass
-                        except ValueError as e:
-                            raise RuntimeError("Error converting {} with {}".format(value, e))
-
-                    # Get the formatted values for reporting
-                    if isinstance(value, datetime):
-                        formatted_value = str(make_naive(value, pytz.UTC))
-                        formatted_rule_min = str(datetime.strptime(str(int(rule.min)), '%Y%m%d'))
-                        formatted_rule_max = str(datetime.strptime(str(int(rule.max)), '%Y%m%d'))
-                    elif isinstance(value, date):
-                        formatted_value = str(value)
-                        formatted_rule_min = str(
-                            datetime.strptime(str(int(rule.min)), '%Y%m%d').date())
-                        formatted_rule_max = str(
-                            datetime.strptime(str(int(rule.max)), '%Y%m%d').date())
-                    elif isinstance(value, int):
-                        formatted_value = str(value)
-                        formatted_rule_min = str(int(rule.min))
-                        if rule.max:
-                            formatted_rule_max = str(int(rule.max))
-                    elif isinstance(value, (str, unicode)):
-                        formatted_value = str(value)
-                        formatted_rule_min = str(rule.min)
-                        formatted_rule_max = str(rule.max)
-                    elif isinstance(value, float):
-                        formatted_value = str(float(value))
-                        formatted_rule_min = str(rule.min)
-                        formatted_rule_max = str(rule.max)
-                    else:
-                        raise Exception("Unknown data type ({}:{})".format(value, value.__class__))
-
                     try:
                         if not rule.minimum_valid(value):
-                            self.add_result_minimum_error(row.id, rule, display_name,
-                                                          formatted_value,
-                                                          formatted_rule_min)
+                            s_min, s_max, s_value = rule.format_rule_strings(value)
+                            self.add_result_min_error(row.id, rule, display_name, s_value, s_min)
                             label_applied = label_applied or self.update_status_label(label, rule,
                                                                                       linked_id)
                     except ComparisonError:
-                        self.add_result_comparison_error(row.id, rule, display_name,
-                                                         formatted_value,
-                                                         formatted_rule_min)
+                        s_min, s_max, s_value = rule.format_rule_strings(value)
+                        self.add_result_comparison_error(row.id, rule, display_name, s_value, s_min)
                         continue
 
                     try:
                         if not rule.maximum_valid(value):
-                            self.add_result_maximum_error(row.id, rule, display_name,
-                                                          formatted_value,
-                                                          formatted_rule_max)
+                            s_min, s_max, s_value = rule.format_rule_strings(value)
+                            self.add_result_max_error(row.id, rule, display_name, s_value, s_max)
                             label_applied = label_applied or self.update_status_label(label, rule,
                                                                                       linked_id)
                     except ComparisonError:
-                        self.add_result_comparison_error(row.id, rule, display_name,
-                                                         formatted_value,
-                                                         formatted_rule_max)
+                        s_min, s_max, s_value = rule.format_rule_strings(value)
+                        self.add_result_comparison_error(row.id, rule, display_name, s_value, s_max)
                         continue
 
                 if not label_applied:
@@ -833,12 +848,13 @@ class DataQualityCheck(models.Model):
                 'value': value,
                 'table_name': rule.table_name,
                 'message': display_name + ' does not match expected value',
-                'detailed_message': display_name + ' [' + str(value) + '] does not contain "' + rule.text_match + '"',
+                'detailed_message': display_name + ' [' + str(
+                    value) + '] does not contain "' + rule.text_match + '"',
                 'severity': rule.get_severity_display(),
             }
         )
 
-    def add_result_minimum_error(self, row_id, rule, display_name, value, rule_min):
+    def add_result_min_error(self, row_id, rule, display_name, value, rule_min):
         self.results[row_id]['data_quality_results'].append(
             {
                 'field': rule.field,
@@ -851,7 +867,7 @@ class DataQualityCheck(models.Model):
             }
         )
 
-    def add_result_maximum_error(self, row_id, rule, display_name, value, rule_max):
+    def add_result_max_error(self, row_id, rule, display_name, value, rule_max):
         self.results[row_id]['data_quality_results'].append(
             {
                 'field': rule.field,

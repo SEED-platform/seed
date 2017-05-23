@@ -40,6 +40,28 @@ class RuleTests(TestCase):
         self.assertTrue(r.maximum_valid(100))
         self.assertFalse(r.maximum_valid(101))
 
+    def text_max_only(self):
+        new_rule = {
+            'data_type': TYPE_NUMBER,
+            'max': 100,
+        }
+        r = Rule.objects.create(**new_rule)
+        self.assertTrue(r.minimum_valid(0))
+        self.assertTrue(r.minimum_valid(999999))
+        self.assertTrue(r.maximum_valid(50))
+        self.assertFalse(r.maximum_valid(200))
+
+    def text_min_only(self):
+        new_rule = {
+            'data_type': TYPE_NUMBER,
+            'min': 5,
+        }
+        r = Rule.objects.create(**new_rule)
+        self.assertTrue(r.minimum_valid(0))
+        self.assertFalse(r.minimum_valid(10))
+        self.assertTrue(r.maximum_valid(100))
+        self.assertTrue(r.maximum_valid(999999))
+
     def test_valid_enum(self):
         new_rule = {
             'data_type': TYPE_STRING,
