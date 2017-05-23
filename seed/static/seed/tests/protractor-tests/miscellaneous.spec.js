@@ -3,6 +3,11 @@ var EC = protractor.ExpectedConditions;
 
 
 describe('When I go to the dataset options page', function () {
+
+    it ('should reset sync', function () {
+        browser.ignoreSynchronization = false;
+    });
+
 	it('should delete a single file', function () {
 		$('#sidebar-data').click();
 		$$('[ui-sref="dataset_detail({dataset_id: d.id})"]').first().click();
@@ -243,12 +248,12 @@ describe('When I go to the dataset options page', function () {
         expect($('.ui-grid-contents-wrapper').isPresent()).toBe(true);
         expect($('.page_title').getText()).toContain('Properties');
         $('.form-control.input-sm').element(by.cssContainingText('option', 'Protractor test cycle')).click();
-        expect($('.item-count').getText()).toContain('18 Properties');
+        expect($('.item-count').getText()).toContain('19 Properties');
         $$('[ng-model="colFilter.term"]').first().click().sendKeys('2342').then();
         expect($('[ng-model="cycle.selected_cycle"]').getText()).toContain('Protractor test cycle');
         expect($('.item-count').getText()).toContain('1 Property');
         $$('[ng-model="colFilter.term"]').first().clear();
-        expect($('.item-count').getText()).toContain('18 Properties');
+        expect($('.item-count').getText()).toContain('19 Properties');
         $$('[ui-sref="inventory_list({inventory_type: \'taxlots\'})"]').click();
         expect($('.page_title').getText()).toContain('Tax Lots');
         expect($('.item-count').getText()).toContain('11 Tax Lots');
@@ -290,7 +295,7 @@ describe('When I go to the dataset options page', function () {
 		browser.sleep(2000);
 
 		// Gotta figure this out, remote has 1 unpaired.
-		expect($('.pairing-text-left').getText()).toContain('Showing 18 Properties');
+		expect($('.pairing-text-left').getText()).toContain('Showing 19 Properties');
 		expect($('.pairing-text-right').getText()).toContain('Showing 11 Tax Lots');
 	});
 
@@ -312,13 +317,12 @@ describe('When I go to the dataset options page', function () {
 		element(by.cssContainingText('[ng-change="inventoryTypeChanged()"] option', "Tax Lot")).click();
 		// browser.wait(EC.presenceOf($('.inventory-list-tab-container.ng-scope')),30000);
 		expect($('.page_title').getText()).toContain('Pair Tax Lots to Properties');
-		expect($('.pairing-text-right').getText()).toContain('Showing 18 Properties (18 unpaired)');
+		expect($('.pairing-text-right').getText()).toContain('Showing 19 Properties (19 unpaired)');
 		expect($('.pairing-text-left').getText()).toContain('Showing 11 Tax Lots (11 unpaired)');
 		browser.sleep(2000);
 	});
 
 	it('should edit drag pairs', function () {
-		browser.ignoreSynchronization = true;
 		// var dragElement = $$('.pairing-data-row.grab-pairing-left').first();
 		var dragElement = element.all(by.repeater('row in newLeftData')).first();
 		var dropElement = $$('.pairing-data-row-indent').first();
@@ -334,14 +338,13 @@ describe('When I go to the dataset options page', function () {
 		lastDropElement.click();
 		browser.sleep(200);
 
-		expect($('.pairing-text-right').getText()).toContain('Showing 18 Properties (16 unpaired)');
+		expect($('.pairing-text-right').getText()).toContain('Showing 19 Properties (17 unpaired)');
 		expect($('.pairing-text-left').getText()).toContain('Showing 11 Tax Lots (10 unpaired)');
 		browser.sleep(2000);
 	});
 
     //Delete
 	it('should delete data stuffs', function () {
-		browser.ignoreSynchronization = false;
 		browser.get("/app/#/data");
 		$$('[ui-sref="dataset_detail({dataset_id: d.id})"]').first().click();
 		$$('.delete_link').get(1).click();
@@ -349,6 +352,18 @@ describe('When I go to the dataset options page', function () {
 		var rows = element.all(by.repeater('f in dataset.importfiles'));
 		expect(rows.count()).toBe(1);
 		$$('[ui-sref="dataset_list"]').first().click();
+
+        $('[ng-click="open_data_upload_modal(d)"]').click();
+        $('[ng-click="cancel()"].btn-default').click();
+        browser.sleep(1000);
+        $('[ng-click="edit_dataset_name(d)"]').click();
+        $('[ng-click="cancel_edit_name(d)"]').click();
+        browser.sleep(2000);
+        $('[ng-click="edit_dataset_name(d)"]').click();
+        $('#editDatasetName').sendKeys('2');
+        $('[ng-click="save_dataset_name(d)"]').click();
+        browser.sleep(2000);
+
 		$$('[ng-click="confirm_delete(d)"]').first().click();
 		$$('[ng-click="delete_dataset()"]').first().click();
 		rows = element.all(by.repeater('d in datasets'));

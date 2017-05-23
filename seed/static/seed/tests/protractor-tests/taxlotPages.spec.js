@@ -2,8 +2,12 @@
 var EC = protractor.ExpectedConditions;
 // Check inventory Page:
 describe('When I go to the taxlot page', function () {
+	    // manually
+    it ('should reset sync', function () {
+        browser.ignoreSynchronization = false;
+    });
+
 	it('should change to our test cycle', function () {
-		browser.ignoreSynchronization = false;
 		browser.get("/app/#/taxlots");
 		$('[ng-change="update_cycle(cycle.selected_cycle)"]').element(by.cssContainingText('option', browser.params.testOrg.cycle)).click();
 

@@ -5,8 +5,12 @@ var EC = protractor.ExpectedConditions;
 
 // Admin page last:
 describe('When I go to admin page', function () {
-    it('should delete new test org inventory', function () {
+    // manually
+    it ('should reset sync', function () {
         browser.ignoreSynchronization = false;
+    });
+    
+    it('should delete new test org inventory', function () {
         browser.get("/app/#/profile/admin");
         var myNewOrg = element.all(by.repeater('org in org_user.organizations')).filter(function (rows) {
             expect(rows.length).not.toBeLessThan(1);
@@ -25,7 +29,6 @@ describe('When I go to admin page', function () {
     });
 
     it('should delete new test sub org', function () {
-        browser.ignoreSynchronization = false;
         // browser.get("/app/#/profile/admin");
         var myNewSubOrg = element.all(by.repeater('org in org_user.organizations')).filter(function (rows) {
             expect(rows.length).not.toBeLessThan(1);
@@ -49,7 +52,6 @@ describe('When I go to admin page', function () {
     }, 30000);
 
     it('should delete new test org', function () {
-        browser.ignoreSynchronization = false;
         // browser.get("/app/#/profile/admin");
         var myNewOrg = element.all(by.repeater('org in org_user.organizations')).filter(function (rows) {
             expect(rows.length).not.toBeLessThan(1);

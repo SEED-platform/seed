@@ -2,9 +2,55 @@
 var EC = protractor.ExpectedConditions;
 // Admin page:
 describe('When I go to admin page', function () {
-     it('should create new test org', function () {
+
+    // manually
+    it ('should reset sync', function () {
+        browser.ignoreSynchronization = true;
+    });
+
+
+     it('should test admin pages', function () {
+        browser.get("/app/#/api/swagger");
+        browser.sleep(5000);
+        expect(browser.getTitle()).toContain('SEED Platform');
+        browser.get("/app/#/contact");
+        browser.sleep(5000);
+        expect(browser.getTitle()).toContain('SEED Platform');
+        browser.get("/app/#/profile/security");
+        browser.sleep(5000);
+        expect(browser.getTitle()).toContain('SEED Platform');
+        browser.get("/app/#/profile/developer");
+        browser.sleep(5000);
+        expect(browser.getTitle()).toContain('SEED Platform');
+    });
+
+
+    // manually
+    it ('should reset sync', function () {
         browser.ignoreSynchronization = false;
+    });
+
+        
+     it('should test adding profile name', function () {
+        browser.get("/app/#/profile");
+        $('#first-name-text').clear().then(function(){
+            $('#first-name-text').sendKeys("ME");                  
+        });
+        $('#last-name-text').clear().then(function(){
+            $('#last-name-text').sendKeys("NotYou");                  
+        });
+        $('#update_profile').click();
+        expect($('i.ng-hide').isPresent()).toBe(false);
+        $('#first-name-text').clear().then(function(){
+            $('#first-name-text').sendKeys("ME");                  
+        });
+        $('[ng-click="reset_form()"]').click();
+    });
+
+
+     it('should create new test org', function () {
         browser.get("/app/#/profile/admin");
+        // browser.sleep(5000);
         $('#org_name').sendKeys(browser.params.testOrg.parent);
         $$('#user_emails').first().element(by.cssContainingText('option', browser.params.login.user)).click();
         $('[ng-click="org_form.add(org)"]').click();
@@ -70,4 +116,3 @@ describe('When I go to admin page', function () {
         expect(myNewUser.isPresent()).toBe(false);
     });
 });
-

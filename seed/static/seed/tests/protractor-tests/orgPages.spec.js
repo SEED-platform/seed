@@ -2,8 +2,10 @@
 var EC = protractor.ExpectedConditions;
 // Accounts page
 describe('When I visit the accounts page', function () {
-    it('should see my organizations', function () {
+    it ('should reset sync', function () {
         browser.ignoreSynchronization = false;
+    });
+    it('should see my organizations', function () {
         browser.get("/app/#/accounts");
 
         var rows = element.all(by.repeater('org in orgs_I_own'));
@@ -41,6 +43,9 @@ describe('When I visit the accounts page', function () {
     });
 });
 describe('When I visit the the parent org', function () {
+    it ('should reset sync', function () {
+        browser.ignoreSynchronization = false;
+    });
     it('should go to parent organization', function () {
         var myNewOrg = element(by.cssContainingText('.account_org.parent_org', browser.params.testOrg.parent))
             .element(by.xpath('..')).$('.account_org.right');
@@ -58,11 +63,20 @@ describe('When I visit the the parent org', function () {
         expect($('.table_list_container').isPresent()).toBe(true);
     });
     it('should create new cycle', function () {
-        $('[ng-model="new_cycle.name"]').sendKeys(browser.params.testOrg.cycle);
+        $('[ng-model="new_cycle.name"]').sendKeys('faketest121212');
         $('[ng-model="new_cycle.start"]').sendKeys('01-01-2017');
         $('[ng-model="new_cycle.end"]').sendKeys('12-31-2017');
         $('#btnCreateCycle').click();
-        
+        });    
+    
+    it('should edit created cycle', function () {
+        $$('.btn-default.btn-rowform').last().click();
+        var editCycle = $$('.editable-wrap.editable-text').first();
+        editCycle.$('.ng-not-empty').clear().then(function(){
+            editCycle.$('.ng-empty').sendKeys(browser.params.testOrg.cycle);                  
+        });
+
+        $$('.btn-primary.btn-rowform').last().click();
         var myNewCycle = element.all(by.repeater('cycle in cycles')).filter(function(sub) {
             return sub.all(by.tagName('td')).first().$('[ng-show="!rowform.$visible"]').getText().then(function(label) { 
                 return label == browser.params.testOrg.cycle;
@@ -70,6 +84,7 @@ describe('When I visit the the parent org', function () {
         }).first();
         expect(myNewCycle.all(by.tagName('td')).first().$('[ng-show="!rowform.$visible"]').getText()).toEqual(browser.params.testOrg.cycle);
     });
+
     it('should create new label', function () {
         var myOptions = element.all(by.css('a')).filter(function (elm) {
             return elm.getText().then(function(label) { 
@@ -87,9 +102,50 @@ describe('When I visit the the parent org', function () {
 
         expect(myNewLabel.isPresent()).toBe(true);
         myNewLabel.$('[ng-click="deleteLabel(label, $index)"]').click();
-        browser.sleep(300);
+        browser.sleep(2000);
         $('.btn.btn-primary.ng-binding').click();
         expect(myNewLabel.isPresent()).toBe(false);
     });
+
+    // manually
+    it ('should reset sync', function () {
+        browser.ignoreSynchronization = false;
+    });
+
+    it('should create other sub org', function () {
+        $('[ui-sref="organization_sub_orgs({organization_id: org.id})"]').click();
+        $('[ng-click="create_sub_organization_modal()"]').click();
+        $('[ng-click="cancel()"]').click()
+        $('[ng-click="create_sub_organization_modal()"]').click();
+        $('#createOrganizationName').sendKeys('protractor yet another fake sub org');
+        $('#createOrganizationInvite').sendKeys(browser.params.login.user);
+        $('[type="submit"]').click();
+        var rows = element.all(by.repeater('sub_org in org.sub_orgs'));
+        expect(rows.count()).toBe(2);
+    });
+    
+    // ********************
+    // Sharing page needs updates!
+    // ******************
+
+    it('should go to parent organization and select Sharing', function () {
+        var myOptions3 = element.all(by.css('a')).filter(function (elm) {
+            return elm.getText().then(function(label) { 
+                return label == 'Sharing';
+            });
+        }).first();
+        myOptions3.click();
+        expect($('.table_list_container').isPresent()).toBe(true);
+        $$('[ng-model="controls.public_select_all"]').first().click();
+        var rowCheck = element.all(by.repeater('field in fields'));
+        // expect(rowCheck.count()).not.toBeLessThan(1); 
+        $$('[ng-model="filter_params.title"]').first().click().sendKeys('this is some fake stuff to test filter');
+        // expect(rowCheck.count()).toBe(0);
+        $$('[ng-model="filter_params.title"]').first().click().clear();
+        // expect(rowCheck.count()).not.toBeLessThan(1); 
+        $$('[ng-click="save_settings()"]').first().click();
+        browser.wait(EC.presenceOf($('.fa-check')),10000);
+    });
+
 });
 
