@@ -93,13 +93,20 @@ describe('When I do miscellaneous things', function () {
 		$$('[ng-click="create_label(rule, $index)"]').first().click();
 		$$('.btn.btn-sm.btn-default.action_link').first().click();
 
-		var secondRow = $$('[ng-repeat="rule in ruleGroup"]').get(1);
-		secondRow.$('[ng-model="rule.max"]').sendKeys(1235);
+		$$('[ng-repeat="field in sortedRuleGroups()"]').get(1).$('[ng-model="rule.max"]').sendKeys(1235);
 		$$('[ng-click="create_label(rule, $index)"]').first().click();
 		$$('.btn-default.action_link').get(2).click();
 		$$('[ng-click="save_settings()"]').first().click();
 		browser.driver.navigate().refresh();
 		expect(element.all(by.repeater('rule in ruleGroup')).first().$('.form-control.label.label-primary').isPresent()).toBe(true);
+		$$('[ng-click="removeLabelFromRule(rule)"]').first().click();
+		expect(element.all(by.repeater('rule in ruleGroup')).first().$('.form-control.label.label-primary').isPresent()).toBe(false);
+		$$('[ng-click="save_settings()"]').first().click();
+		browser.driver.navigate().refresh();
+		expect(element.all(by.repeater('rule in ruleGroup')).first().$('.form-control.label.label-primary').isPresent()).toBe(false);
+		$$('[ng-click="create_label(rule, $index)"]').first().click();
+		$$('.btn.btn-sm.btn-default.action_link').first().click();
+		$$('[ng-click="save_settings()"]').first().click();
 	});    
 
 	it('should go to labels page and check that new label was created with new rule', function () {
@@ -119,32 +126,35 @@ describe('When I do miscellaneous things', function () {
 	it('should select first item and test data quality modal and presence of rows', function () {
 		$('#sidebar-inventory').click();
 		$$('[ng-click="selectButtonClick(row, $event)"]').first().click();
+		$('#btnInventoryActions').click();
 		$$('[ng-click="run_data_quality_check()"]').click();
 		expect($('.modal-title').getText()).toContain('Data Quality Results');
 		var rowCount2 = element.all(by.repeater('result in row.data_quality_results'));
-		expect(rowCount2.count()).toBe(0);
+		expect(rowCount2.count()).toBe(1);
 		$$('[ng-click="close()"]').click();
 
-		$('[ng-click="headerButtonClick($event)"]').click();
+		$('[ng-class="{\'ui-grid-all-selected\': grid.selection.selectAll}"]').click();
+		$('#btnInventoryActions').click();
 		$$('[ng-click="run_data_quality_check()"]').click();
 		expect($('.modal-title').getText()).toContain('Data Quality Results');
 		var rowCount2 = element.all(by.repeater('result in row.data_quality_results'));
-		expect(rowCount2.count()).toBe(22);
+		expect(rowCount2.count()).toBe(15);
 		$$('[ng-click="close()"]').click();
 
-		//check labels - add back when working
-		// $('[ui-sref="inventory_list({inventory_type: \'taxlots\'})"]').click();
-		// $('#tagsInput').click();
-		// $$('.suggestion-item.selected').first().click();
-		// var rows = $('.left.ui-grid-render-container-left.ui-grid-render-container')
-		// 		.all(by.repeater('(rowRenderIndex, row) in rowContainer.renderedRows'));
-		// expect(rows.count()).toBe(10);
-		// $$('.suggestion-item.selected').get(1).click();
-		// expect(rows.count()).toBe(11);
-		// $('[uib-btn-radio="'or'"]').click();
-		// expect(rows.count()).toBe(1);
-		// $('[ng-click="clear_labels()"]').click();
-		// expect(rows.count()).toBe(11);
+		//check labels - 
+		$('[ui-sref="inventory_list({inventory_type: \'taxlots\'})"]').click();
+		$('#tagsInput').click();
+		$$('.suggestion-item.selected').first().click();
+		var rows = $('.left.ui-grid-render-container-left.ui-grid-render-container')
+				.all(by.repeater('(rowRenderIndex, row) in rowContainer.renderedRows'));
+		expect(rows.count()).toBe(11);
+		$('[ng-click="clear_labels()"]').click();
+		$$('.suggestion-item.selected').get(1).click();
+		expect(rows.count()).toBe(10);
+		$('[uib-btn-radio="\'or\'"]').click();
+		expect(rows.count()).toBe(11);
+		$('[ng-click="clear_labels()"]').click();
+		expect(rows.count()).toBe(11);
 
 	});
 
