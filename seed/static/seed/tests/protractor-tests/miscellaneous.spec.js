@@ -93,7 +93,9 @@ describe('When I do miscellaneous things', function () {
 		$$('[ng-click="create_label(rule, $index)"]').first().click();
 		$$('.btn.btn-sm.btn-default.action_link').first().click();
 
-		$$('[ng-repeat="field in sortedRuleGroups()"]').get(1).$('[ng-model="rule.max"]').sendKeys(1235);
+		$$('[label="Text"]').get(1).click();
+
+		$$('[ng-repeat="field in sortedRuleGroups()"]').get(1).$('[ng-model="rule.text_match"]').sendKeys("1235");
 		$$('[ng-click="create_label(rule, $index)"]').first().click();
 		$$('.btn-default.action_link').get(2).click();
 		$$('[ng-click="save_settings()"]').first().click();
@@ -130,7 +132,7 @@ describe('When I do miscellaneous things', function () {
 		$$('[ng-click="run_data_quality_check()"]').click();
 		expect($('.modal-title').getText()).toContain('Data Quality Results');
 		var rowCount2 = element.all(by.repeater('result in row.data_quality_results'));
-		expect(rowCount2.count()).toBe(1);
+		expect(rowCount2.count()).toBe(2);
 		$$('[ng-click="close()"]').click();
 
 		$('[ng-class="{\'ui-grid-all-selected\': grid.selection.selectAll}"]').click();
