@@ -9,7 +9,7 @@ cache:
     - ".tox"
 language: python
 python:
-  - 2.7.11
+  - 2.7.6
 addons:
   postgresql: '9.4'
   sauce_connect: true
@@ -43,6 +43,5 @@ before_script:
   - sleep 3
   - psql -c "create database seeddb;" -U postgres
   - mv config/settings/test_local_untracked.py config/settings/local_untracked.py
-  - ./manage.py --version
 script:
   - tox -e $TOX_ENV
