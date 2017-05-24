@@ -19,15 +19,21 @@ from seed.models import (
     ASSESSED_BS,
     PORTFOLIO_BS,
     PropertyState,
+    PropertyView,
     TaxLotState,
     Column,
+    Cycle,
     StatusLabel,
 )
 from seed.models.data_quality import (
     DataQualityCheck,
     TYPE_NUMBER,
+    TYPE_STRING,
     RULE_TYPE_CUSTOM,
     SEVERITY_ERROR,
+    TYPE_YEAR,
+    TYPE_DATE,
+    RULE_TYPE_DEFAULT,
 )
 
 _log = logging.getLogger(__name__)
@@ -314,13 +320,16 @@ class DataQualitySample(TestCase):
         self.login_url = reverse('landing:login')
 
         self.org = Organization.objects.create()
+        self.org.save()  # need to save for cycle to be created
         OrganizationUser.objects.create(user=self.user, organization=self.org)
+        cycle = Cycle.objects.filter(organization=self.org).first()
 
         self.import_record = ImportRecord.objects.create(owner=self.user)
         self.import_record.super_organization = self.org
         self.import_record.save()
         self.import_file = ImportFile.objects.create(
-            import_record=self.import_record
+            import_record=self.import_record,
+            cycle=cycle,
         )
 
         self.import_file.is_espm = False
@@ -332,11 +341,6 @@ class DataQualitySample(TestCase):
         self.import_file.save()
 
     def test_check(self):
-        # Import the file and run mapping
-
-        # This is silly, the mappings are backwards from what you would expect.
-        # The key is the BS field, and the value is the value in the CSV
-
         fake_mappings = [
             {
                 "from_field": u'block_number',
@@ -505,28 +509,61 @@ class DataQualitySample(TestCase):
             }
         ]
 
-        tasks.save_raw_data(self.import_file.id)
-
-        Column.create_mappings(fake_mappings, self.org, self.user)
-        tasks.map_data(self.import_file.id)
-
-        qs = PropertyState.objects.filter(
-            import_file=self.import_file,
-            source_type=ASSESSED_BS,
-        ).iterator()
-
         # data quality check
         d = DataQualityCheck.retrieve(self.org)
+        d.remove_all_rules()
 
+        d.add_rule({
+            'table_name': 'PropertyState',
+            'field': 'gross_floor_area',
+            'data_type': TYPE_NUMBER,
+            'rule_type': RULE_TYPE_DEFAULT,
+            'min': 100,
+            'max': 7000000,
+            'severity': SEVERITY_ERROR,
+            'units': 'square feet',
+        })
+
+        d.add_rule({
+            'table_name': 'PropertyState',
+            'field': 'recent_sale_date',
+            'data_type': TYPE_DATE,
+            'rule_type': RULE_TYPE_DEFAULT,
+            'min': 18890101,
+            'max': 20201231,
+            'severity': SEVERITY_ERROR,
+        })
         # create some status labels for testing
         sl_data = {'name': 'year - old or future', 'super_organization': self.org}
-        status_label, _ = StatusLabel.objects.get_or_create(**sl_data)
-        rule = d.rules.filter(field='year_built').first()
-        rule.status_label = status_label
-        rule.save()
+        sl_year, _ = StatusLabel.objects.get_or_create(**sl_data)
+        new_rule = {
+            'table_name': 'PropertyState',
+            'field': 'year_built',
+            'data_type': TYPE_YEAR,
+            'rule_type': RULE_TYPE_DEFAULT,
+            'min': 1700,
+            'max': 2019,
+            'severity': SEVERITY_ERROR,
+            'status_label': sl_year,
+        }
+        d.add_rule(new_rule)
 
-        sl_data = {'name': 'extra data pa float error', 'super_organization': self.org}
-        status_label, _ = StatusLabel.objects.get_or_create(**sl_data)
+        sl_data = {'name': 'extra data ps float error', 'super_organization': self.org}
+        sl_string, _ = StatusLabel.objects.get_or_create(**sl_data)
+        new_rule = {
+            'table_name': 'PropertyState',
+            'field': 'extra_data_ps_alpha',
+            'data_type': TYPE_STRING,
+            'rule_type': RULE_TYPE_CUSTOM,
+            'text_match': 'alpha',
+            'severity': SEVERITY_ERROR,
+            'units': 'square feet',
+            'status_label': sl_string,
+        }
+        d.add_rule(new_rule)
+
+        sl_data = {'name': 'extra data ps string error', 'super_organization': self.org}
+        sl_float, _ = StatusLabel.objects.get_or_create(**sl_data)
         new_rule = {
             'table_name': 'PropertyState',
             'field': 'extra_data_ps_float',
@@ -535,10 +572,20 @@ class DataQualitySample(TestCase):
             'min': 9999,
             'max': 10001,
             'severity': SEVERITY_ERROR,
-            'units': 'square feet',
-            'status_label': status_label
+            'status_label': sl_float,
         }
         d.add_rule(new_rule)
+
+        # import data
+        tasks.save_raw_data(self.import_file.id)
+        Column.create_mappings(fake_mappings, self.org, self.user)
+        tasks.map_data(self.import_file.id)
+        tasks.match_buildings(self.import_file.id)
+
+        qs = PropertyState.objects.filter(
+            import_file=self.import_file,
+            source_type=ASSESSED_BS,
+        ).iterator()
 
         d.check_data('PropertyState', qs)
 
@@ -587,6 +634,35 @@ class DataQualitySample(TestCase):
         ]
         self.assertListEqual(result['data_quality_results'], res)
 
-        # import json
-        # from seed.utils.generic import json_serializer
-        # print json.dumps(result, default=json_serializer, indent=2)
+        result = d.retrieve_result_by_address("3 Portage Alley")
+        res = [
+            {
+                'severity': u'error',
+                'value': 'beta',
+                'field': u'extra_data_ps_alpha',
+                'table_name': u'PropertyState',
+                'message': u'Extra Data Ps Alpha does not match expected value',
+                'detailed_message': u'Extra Data Ps Alpha [beta] does not contain "alpha"',
+                'formatted_field': u'Extra Data Ps Alpha'
+            }
+        ]
+        self.assertListEqual(result['data_quality_results'], res)
+
+        # make sure that the label has been applied
+        props = PropertyView.objects.filter(property__labels=sl_year).select_related(
+            'state')
+        addresses = [p.state.address_line_1 for p in props]
+        expected = [u'84807 Buell Trail', u'1 International Road']
+        self.assertListEqual(expected, addresses)
+
+        props = PropertyView.objects.filter(property__labels=sl_float).select_related(
+            'state')
+        addresses = [p.state.address_line_1 for p in props]
+        expected = [u'4 Myrtle Parkway', u'94 Oxford Hill']
+        self.assertListEqual(expected, addresses)
+
+        props = PropertyView.objects.filter(property__labels=sl_string).select_related(
+            'state')
+        addresses = [p.state.address_line_1 for p in props]
+        expected = [u'3 Portage Alley']
+        self.assertListEqual(expected, addresses)

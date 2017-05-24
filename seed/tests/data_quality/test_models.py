@@ -78,6 +78,18 @@ class RuleTests(TestCase):
         self.assertTrue(r.valid_enum(u'alpha'))
         self.assertFalse(r.valid_enum(u'beta'))
 
+    def test_valid_enum_regex(self):
+        # test with regex
+        new_rule = {
+            'data_type': TYPE_STRING,
+            'text_match': '.*(a|b)cd(4|8).*'
+        }
+        r = Rule.objects.create(**new_rule)
+        self.assertTrue(r.valid_enum('bcd8'))
+        self.assertTrue(r.valid_enum('pretext acd4 posttext'))
+        self.assertTrue(r.valid_enum('pretextbcd8posttext'))
+        self.assertFalse(r.valid_enum('pretextbcd6posttext'))
+
     def test_type_value_return(self):
         """Test to make sure that the return is correct if value is not a string"""
         new_rule = {

@@ -17,6 +17,7 @@ from _csv import Error
 from collections import namedtuple
 from functools import reduce
 from itertools import chain
+from random import randint
 
 from celery import chord
 from celery import shared_task
@@ -31,7 +32,6 @@ from seed.data_importer.models import (
     ImportRecord,
     STATUS_READY_TO_MERGE,
 )
-from seed.models.data_quality import DataQualityCheck
 from seed.decorators import get_prog_key
 from seed.decorators import lock_and_track
 from seed.green_button import xml_importer
@@ -64,9 +64,9 @@ from seed.models import PropertyAuditLog
 from seed.models import TaxLotAuditLog
 from seed.models import TaxLotProperty
 from seed.models.auditlog import AUDIT_IMPORT
+from seed.models.data_quality import DataQualityCheck
 from seed.utils.buildings import get_source_type
 from seed.utils.cache import set_cache, increment_cache, get_cache, delete_cache, get_cache_raw
-from random import randint
 
 _log = get_task_logger(__name__)
 
@@ -132,7 +132,6 @@ def do_checks(propertystate_ids, taxlotstate_ids):
 
 @shared_task
 def trigger_data_quality_checks(qs, tlqs, identifier):
-
     prog_key = get_prog_key('map_data', identifier)
     result = {
         'status': 'success',
@@ -810,9 +809,7 @@ def match_buildings(file_pk):
 
     if not import_file.mapping_done:
         # Re-add to the queue, hopefully our mapping will be done by then.
-        match_buildings.apply_async(
-            args=[file_pk], countdown=10, expires=20
-        )
+        match_buildings.apply_async(args=[file_pk], countdown=10, expires=20)
         return {
             'status': 'error',
             'message': 'waiting for mapping to complete',
