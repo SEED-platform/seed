@@ -12,7 +12,6 @@ from datetime import date, datetime
 import pytz
 from django.apps import apps
 from django.db import models
-from django.db.models import Q
 from django.utils.timezone import get_current_timezone, make_aware, make_naive
 
 from seed.lib.superperms.orgs.models import Organization

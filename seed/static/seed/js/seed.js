@@ -809,24 +809,32 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/data_quality_admin.html',
         controller: 'data_quality_admin_controller',
         resolve: {
-          columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+          columns: ['$stateParams', 'inventory_service', 'naturalSort', function ($stateParams, inventory_service, naturalSort) {
             if ($stateParams.inventory_type === 'properties') {
               return inventory_service.get_property_columns().then(function (columns) {
                 _.remove(columns, function (col) {
                   return col.related === true;
                 });
-                return _.map(columns, function (col) {
+                columns = _.map(columns, function (col) {
                   return _.omit(col, ['pinnedLeft', 'related']);
                 });
+                columns.sort(function (a, b) {
+                  return naturalSort(a.displayName, b.displayName);
+                });
+                return columns;
               });
             } else if ($stateParams.inventory_type === 'taxlots') {
               return inventory_service.get_taxlot_columns().then(function (columns) {
                 _.remove(columns, function (col) {
                   return col.related === true;
                 });
-                return _.map(columns, function (col) {
+                columns = _.map(columns, function (col) {
                   return _.omit(col, ['pinnedLeft', 'related']);
                 });
+                columns.sort(function (a, b) {
+                  return naturalSort(a.displayName, b.displayName);
+                });
+                return columns;
               });
             }
           }],

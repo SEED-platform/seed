@@ -46,10 +46,6 @@ angular.module('BE.seed.controller.data_quality_modal', [])
       sortable: true,
       title: 'PM Property ID'
     }, {
-      sort_column: 'tax_lot_id',
-      sortable: true,
-      title: 'Tax Lot ID'
-    }, {
       sort_column: 'custom_id_1',
       sortable: true,
       title: 'Custom ID'
