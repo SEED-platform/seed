@@ -95,7 +95,7 @@ describe('When I do miscellaneous things', function () {
 
 		$$('[label="Text"]').get(1).click();
 
-		$$('[ng-repeat="field in sortedRuleGroups()"]').get(1).$('[ng-model="rule.text_match"]').sendKeys("1235");
+		$$('[ng-repeat="field in sortedRuleGroups()"]').get(1).$('[ng-model="rule.text_match"]').sendKeys("1234");
 		$$('[ng-click="create_label(rule, $index)"]').first().click();
 		$$('.btn-default.action_link').get(2).click();
 		$$('[ng-click="save_settings()"]').first().click();
