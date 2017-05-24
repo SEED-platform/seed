@@ -37,6 +37,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.api',
   'BE.seed.controller.data_quality_admin',
   'BE.seed.controller.data_quality_modal',
+  'BE.seed.controller.data_quality_labels_modal',
   'BE.seed.controller.cycle_admin',
   'BE.seed.controller.concat_modal',
   'BE.seed.controller.create_note_modal',

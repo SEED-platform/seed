@@ -294,6 +294,19 @@ class Rule(models.Model):
     def __unicode__(self):
         return json.dumps(obj_to_dict(self))
 
+    def valid(self, value):
+        """
+
+        :param value: Value to validate rule against
+        :return:
+        """
+
+        if self.data_type == TYPE_STRING:
+            if self.text_match is None or self.text_match == '':
+                return True
+
+            pass
+
 
 class DataQualityCheck(models.Model):
     """
@@ -305,7 +318,7 @@ class DataQualityCheck(models.Model):
     }
 
     organization = models.ForeignKey(Organization)
-    name = models.CharField(max_length=255, blank='Default Data Quality Check')
+    name = models.CharField(max_length=255, default='Default Data Quality Check')
 
     @classmethod
     def retrieve(cls, organization):
@@ -319,9 +332,22 @@ class DataQualityCheck(models.Model):
         :return: obj, DataQualityCheck
         """
 
+        if DataQualityCheck.objects.filter(organization=organization).count() > 1:
+            # Ensure that only one object is returned. For an unknown reason, the production
+            # database has multiple DataQualityCheck objects for an organizaiton, but there are no
+            # calls to create a DataQualityCheck other than the .retrieve method.
+            first = DataQualityCheck.objects.filter(organization=organization).first()
+            dqcs = DataQualityCheck.objects.filter(organization=organization).exclude(
+                id__in=[first.pk])
+            for dqc in dqcs:
+                _log.info(
+                    "More than one DataQualityCheck for organization. Deleting {}".format(dqc.name))
+                dqc.delete()
+
         dq, _ = DataQualityCheck.objects.get_or_create(organization=organization)
+
         if dq.rules.count() == 0:
-            # _log.debug("No rules found in DataQualityCheck, initializing default rules")
+            _log.debug("No rules found in DataQualityCheck, initializing default rules")
             dq.initialize_rules()
 
         return dq
@@ -361,37 +387,38 @@ class DataQualityCheck(models.Model):
         """
         return "data_quality_results__%s" % identifier
 
-    def check_data(self, record_type, data):
+    def check_data(self, record_type, rows):
         """
         Send in data as a queryset from the Property/Taxlot ids.
 
         :param record_type: one of property/taxlot
-        :param data: rows of data to be checked for data quality
-        :return:
+        :param rows: rows of data to be checked for data quality
+        :return: None
         """
 
         # grab the columns in order to grab the display names
         columns = Column.retrieve_all(self.organization, record_type)
-        self.column_lookup = {}
 
         # create lookup tuple for the display name
         for c in columns:
             self.column_lookup[(c['table'], c['name'])] = c['displayName']
 
+        # Get the list of the field names that will show in every result
         fields = self.get_fieldnames(record_type)
-        for datum in data:
+        for row in rows:
             # Initialize the ID if it doesn't exist yet. Add in the other
             # fields that are of interest to the GUI
-            if datum.id not in self.results:
-                self.results[datum.id] = {}
+            if row.id not in self.results:
+                self.results[row.id] = {}
                 for field in fields:
-                    self.results[datum.id][field] = getattr(datum, field)
-                self.results[datum.id]['data_quality_results'] = []
+                    self.results[row.id][field] = getattr(row, field)
+                self.results[row.id]['data_quality_results'] = []
 
-            # self._missing_matching_field(datum)
-            self._data_type_check(datum)
-            self._in_range_checking(datum)
-            self._missing_values(datum)
+            # Run the checks
+            # self._missing_matching_field(row)
+            self._data_type_check(row)
+            self._in_range_checking(row)
+            self._missing_values(row)
 
         # Prune the results will remove any entries that have zero data_quality_results
         for k, v in self.results.items():
@@ -430,32 +457,33 @@ class DataQualityCheck(models.Model):
     #                 })
 
     def _check_something(self, rule, datum):
-
         pass
 
-    def _in_range_checking(self, datum):
+    def _in_range_checking(self, row):
         """
         Check for errors in the min/max of the values.
 
-        :param datum: Database record containing the BS version of the fields populated
+        :param row: Database record containing the BS version of the fields populated
         :return: None
         """
 
         linked_id = None
         label_applied = False
 
-        for rule in self.rules.filter(enabled=True, table_name=type(datum).__name__).order_by(
+        for rule in self.rules.filter(enabled=True, table_name=type(row).__name__).order_by(
                 'field', 'severity'):
-            # check if the field exists
-            if hasattr(datum, rule.field) or rule.field in datum.extra_data:
-                if hasattr(datum, rule.field):
-                    value = getattr(datum, rule.field)
-                elif rule.field in datum.extra_data:
-                    value = datum.extra_data[rule.field]
 
-                # If column has not been mapped then ignore rule
-                if (rule.table_name, rule.field) not in self.column_lookup:
-                    continue
+            # Only look at rules that are in the column_lookup, which is all the mapped columns
+            if (rule.table_name, rule.field) not in self.column_lookup:
+                continue
+
+            # check if the field exists
+            if hasattr(row, rule.field) or rule.field in row.extra_data:
+                value = None
+                if hasattr(row, rule.field):
+                    value = getattr(row, rule.field)
+                elif rule.field in row.extra_data:
+                    value = row.extra_data[rule.field]
 
                 # Don't check the out of range errors if the data are empty
                 if value is None:
@@ -467,13 +495,13 @@ class DataQualityCheck(models.Model):
                 if rule.table_name == 'PropertyState':
                     label = apps.get_model('seed', 'Property_labels')
                     if rule.status_label_id is not None and linked_id is None:
-                        pv = PropertyView.objects.filter(state=datum)
+                        pv = PropertyView.objects.filter(state=row)
                         if pv.count() > 0:
                             linked_id = pv[0].property_id
                 else:
                     label = apps.get_model('seed', 'TaxLot_labels')
                     if rule.status_label_id is not None and linked_id is None:
-                        tv = TaxLotView.objects.filter(state=datum)
+                        tv = TaxLotView.objects.filter(state=row)
                         if tv.count() > 0:
                             linked_id = tv[0].taxlot_id
 
@@ -483,7 +511,7 @@ class DataQualityCheck(models.Model):
                         continue
 
                     if value != rule.text_match:
-                        self.results[datum.id]['data_quality_results'].append({
+                        self.results[row.id]['data_quality_results'].append({
                             'field': rule.field,
                             'formatted_field': display_name,
                             'value': value,
@@ -553,14 +581,13 @@ class DataQualityCheck(models.Model):
                 if rule_min is not None and value != '':
                     try:
                         if rule_min and value < rule_min:
-                            self.results[datum.id]['data_quality_results'].append({
+                            self.results[row.id]['data_quality_results'].append({
                                 'field': rule.field,
                                 'formatted_field': display_name,
                                 'value': value,
                                 'table_name': rule.table_name,
                                 'message': display_name + ' out of range',
-                                'detailed_message': display_name + ' [' + formatted_value + '] < ' +
-                                formatted_rule_min,
+                                'detailed_message': display_name + ' [' + formatted_value + '] < ' + formatted_rule_min,
                                 'severity': rule.get_severity_display(),
                             })
 
@@ -573,13 +600,13 @@ class DataQualityCheck(models.Model):
                                                                 statuslabel_id=rule.status_label_id)
                                 label_applied = True
                     except ValueError:
-                        self.results[datum.id]['data_quality_results'].append({
+                        self.results[row.id]['data_quality_results'].append({
                             'field': rule.field,
                             'formatted_field': display_name,
                             'value': value,
                             'table_name': rule.table_name,
                             'message': display_name + ' could not be compared numerically',
-                            'detailed_message': display_name + ' [' + formatted_value + '] < ' + formatted_rule_min,
+                            'detailed_message': display_name + ' [' + str(value) + '] < ' + formatted_rule_min,
                             'severity': rule.get_severity_display(),
                         })
                         continue
@@ -587,7 +614,7 @@ class DataQualityCheck(models.Model):
                 if rule_max is not None and value != '':
                     try:
                         if rule_max and value > rule_max:
-                            self.results[datum.id]['data_quality_results'].append({
+                            self.results[row.id]['data_quality_results'].append({
                                 'field': rule.field,
                                 'formatted_field': display_name,
                                 'value': value,
@@ -606,13 +633,13 @@ class DataQualityCheck(models.Model):
                                                                 statuslabel_id=rule.status_label_id)
                                 label_applied = True
                     except ValueError:
-                        self.results[datum.id]['data_quality_results'].append({
+                        self.results[row.id]['data_quality_results'].append({
                             'field': rule.field,
                             'formatted_field': display_name,
                             'value': value,
                             'table_name': rule.table_name,
                             'message': display_name + ' could not be compared numerically',
-                            'detailed_message': display_name + ' [' + formatted_value + '] < ' + formatted_rule_min,
+                            'detailed_message': display_name + ' [' + str(value) + '] < ' + formatted_rule_min,
                             'severity': rule.get_severity_display(),
                         })
                         continue
@@ -739,8 +766,7 @@ class DataQualityCheck(models.Model):
         existing_results += l
 
         z = sorted(existing_results, key=lambda k: k['id'])
-        set_cache_raw(DataQualityCheck.cache_key(identifier), z,
-                      86400)  # save the results for 24 hours
+        set_cache_raw(DataQualityCheck.cache_key(identifier), z, 86400)  # 24 hours
 
     def initialize_rules(self):
         """
@@ -769,23 +795,21 @@ class DataQualityCheck(models.Model):
         :return:
         """
         for rule in DEFAULT_RULES:
-            self.rules.filter(
-                field=rule['field'],
-                table_name=rule['table_name']
-            ).delete()
+            self.rules.filter(field=rule['field'], table_name=rule['table_name']).delete()
         self.initialize_rules()
 
     def reset_all_rules(self):
         """
         Delete all rules and reinitialize the default set of rules
 
-        :return:
+        :return: None
         """
         self.remove_all_rules()
         self.initialize_rules()
 
     def add_rule(self, rule):
         """
+        Add a new rule to the Data Quality Checks
 
         :param rule: dict to be added as a new rule
         :return: None

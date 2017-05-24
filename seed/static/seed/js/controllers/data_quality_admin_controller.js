@@ -17,21 +17,23 @@ angular.module('BE.seed.controller.data_quality_admin', [])
   'organization_service',
   'label_service',
   'spinner_utility',
-  function (
-    $scope,
-    $q,
-    $state,
-    $stateParams,
-    columns,
-    organization_payload,
-    data_quality_rules_payload,
-    auth_payload,
-    labels_payload,
-    data_quality_service,
-    organization_service,
-    label_service,
-    spinner_utility
-  ) {
+  '$uibModal',
+  'urls',
+  function ($scope,
+            $q,
+            $state,
+            $stateParams,
+            columns,
+            organization_payload,
+            data_quality_rules_payload,
+            auth_payload,
+            labels_payload,
+            data_quality_service,
+            organization_service,
+            label_service,
+            spinner_utility,
+            $uibModal,
+            urls) {
     $scope.inventory_type = $stateParams.inventory_type;
     $scope.org = organization_payload.organization;
     $scope.auth = auth_payload.auth;
@@ -72,14 +74,14 @@ angular.module('BE.seed.controller.data_quality_admin', [])
             if (row.min) row.min = moment(row.min, 'YYYYMMDD').toDate();
             if (row.max) row.max = moment(row.max, 'YYYYMMDD').toDate();
           }
-          // if (rule.label) {
-          //   var match = _.find(labels_payload, function (label) {
-          //     return label.id === rule.label;
-          //   });
-          //   if (match) {
-          //     row.label = match.name;
-          //   }
-          // }
+          if (rule.label) {
+            var match = _.find(labels_payload, function (label) {
+              return label.id === rule.label;
+            });
+            if (match) {
+              row.label = match;
+            }
+          }
           $scope.ruleGroups[index][rule.field].push(row);
         });
       });
@@ -124,6 +126,9 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       _.forEach($scope.ruleGroups, function (ruleGroups, inventory_type) {
         _.forEach(ruleGroups, function (ruleGroup) {
           _.forEach(ruleGroup, function (rule) {
+            // Skip rules that haven't been assigned to a field yet
+            if (rule.field === null) return;
+
             var r = {
               enabled: rule.enabled,
               field: rule.field,
@@ -136,62 +141,45 @@ angular.module('BE.seed.controller.data_quality_admin', [])
               text_match: rule.text_match,
               severity: rule.severity,
               units: rule.units,
-              label: rule.label
+              label: null
             };
             if (rule.data_type === 'date') {
               if (rule.min) r.min = Number(moment(rule.min).format('YYYYMMDD'));
               if (rule.max) r.max = Number(moment(rule.max).format('YYYYMMDD'));
+            }
+            if (rule.label) {
+              // console.log('la: ', rule.label)
+              r.label = rule.label.id;
             }
             if (rule.new) {
               rule.new = null;
               var match = _.find(labels_payload, function (label) {
                 return label.name === rule.label;
               });
-            //   if (!match) {
-            //     var newLabel = {
-            //       name: rule.label,
-            //       color: 'gray',
-            //       label: 'default'
-            //     };
-            //     label_service.create_label_for_org($scope.org.id, newLabel).then(angular.bind(this, function (result) {
-            //         r.label = result.id;
-            //         rules[rule_type].push(r);
-            //         d.resolve();
-            //       }, rule_type),
-            //       function (message) {
-            //         $log.error('Error creating new label.', message);
-            //         d.reject();
-            //       }).then(function () {
-            //         label_service.get_labels_for_org($scope.org.id).then(function (labels) {
-            //           $scope.all_labels = labels;
-            //         });
-            //       });
-            //   }
-            //   else {
+
               if (match) {
                 r.label = match.id;
-                // d.resolve();
               }
-            //   rule.new = null;
-            // }
-            // else {
-            //   rules[rule_type].push(r);
-            //   d.resolve();
             }
             rules[inventory_type].push(r);
           });
         });
       });
 
-      data_quality_service.save_data_quality_rules($scope.org.org_id, rules).then(function (data) {
+      spinner_utility.show();
+      data_quality_service.save_data_quality_rules($scope.org.org_id, rules).then(function (rules) {
+        loadRules(rules);
         $scope.rules_updated = true;
       }, function (data) {
         $scope.$emit('app_error', data);
+      }).finally(function () {
+        spinner_utility.hide();
       });
     };
 
     // capture rule field dropdown change.
     $scope.change_field = function (rule, oldField, index) {
+      if (oldField === '') oldField = null;
       var original = rule.data_type;
       var newDataType = _.find(columns, {name: rule.field}).data_type;
 
@@ -258,38 +246,81 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       });
     };
 
+    $scope.removeLabelFromRule = function (rule) {
+      rule.label = null;
+    };
+
     // create a new rule.
     $scope.create_new_rule = function () {
-      var field = _.get(columns, '[0].name', null);
-      var displayName = _.get(columns, '[0].displayName', '');
-      var data_type = _.get(columns, '[0].dataType', null);
-
-      if (field) {
-        if (!_.has($scope.ruleGroups[$scope.inventory_type], field)) {
-          $scope.ruleGroups[$scope.inventory_type][field] = [];
-        } else {
-          data_type = _.first($scope.ruleGroups[$scope.inventory_type][field]).data_type;
-        }
-
-        $scope.ruleGroups[$scope.inventory_type][field].push({
-          enabled: true,
-          field: field,
-          displayName: displayName,
-          data_type: data_type,
-          rule_type: 1,
-          required: false,
-          not_null: false,
-          max: null,
-          min: null,
-          text_match: null,
-          severity: 'error',
-          units: '',
-          // label: 'Invalid ' + label,
-          label: null,
-          'new': true,
-          autofocus: true
-        });
+      var field = null;
+      if (!_.has($scope.ruleGroups[$scope.inventory_type], field)) {
+        $scope.ruleGroups[$scope.inventory_type][field] = [];
       }
+
+      $scope.ruleGroups[$scope.inventory_type][field].push({
+        enabled: true,
+        field: field,
+        displayName: field,
+        data_type: 'number',
+        rule_type: 1,
+        required: false,
+        not_null: false,
+        max: null,
+        min: null,
+        text_match: null,
+        severity: 'error',
+        units: '',
+        // label: 'Invalid ' + label,
+        label: null,
+        'new': true,
+        autofocus: true
+      });
+    };
+
+    // create label and assign to that rule
+    $scope.create_label = function (rule, index) {
+      var modalInstance = $uibModal.open({
+        templateUrl: urls.static_url + 'seed/partials/data_quality_labels_modal.html',
+        controller: 'data_quality_labels_modal_controller',
+        resolve: {}
+      });
+      modalInstance.result.then(function (returnedLabels) {
+
+          rule.label = returnedLabels;
+
+          //code for multiple labels
+          // label_service.get_labels().then(function (allLabels) {
+          //   console.log('all: ', allLabels)
+          //   rule.label = _.filter(allLabels, function (label) {
+          //     // console.log(label.id + ' and ' + returnedLabels)
+          //     return _.includes(returnedLabels, label.id);
+          //   });
+          // });
+
+
+        }, function (message) {
+          //dialog was 'dismissed,' which means it was cancelled...so nothing to do.
+        }
+      );
+      //   var newLabel = {
+      //     name: rule.label,
+      //     color: 'gray',
+      //     label: 'default'
+      //   };
+      //   label_service.create_label_for_org($scope.org.id, newLabel).then(angular.bind(this, function (result) {
+      //       r.label = result.id;
+      //       rules[rule_type].push(r);
+      //       d.resolve();
+      //     }, rule_type),
+      //     function (message) {
+      //       $log.error('Error creating new label.', message);
+      //       d.reject();
+      //     }).then(function () {
+      //       label_service.get_labels_for_org($scope.org.id).then(function (labels) {
+      //         $scope.all_labels = labels;
+      //       });
+      //     });
+      // }
     };
 
     // set rule as deleted.
@@ -297,4 +328,14 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       if ($scope.ruleGroups[$scope.inventory_type][rule.field].length === 1) delete $scope.ruleGroups[$scope.inventory_type][rule.field];
       else $scope.ruleGroups[$scope.inventory_type][rule.field].splice(index, 1);
     };
+
+    $scope.sortedRuleGroups = function () {
+      var keys = _.keys($scope.ruleGroups[$scope.inventory_type]).sort();
+      var nullKey = _.remove(keys, function (key) {
+        return key === 'null';
+      });
+
+      // Put created unassigned rows first
+      return nullKey.concat(keys);
+    }
   }]);

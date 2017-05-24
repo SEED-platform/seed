@@ -8,6 +8,8 @@ import logging
 
 from django.test import TestCase
 
+from seed.lib.superperms.orgs.models import Organization
+from seed.models import StatusLabel
 from seed.models.data_quality import (
     DataQualityCheck,
     Rule,
@@ -16,14 +18,28 @@ from seed.models.data_quality import (
     RULE_TYPE_DEFAULT,
     SEVERITY_ERROR
 )
-from seed.lib.superperms.orgs.models import Organization
-from seed.models import StatusLabel
 
 _log = logging.getLogger(__name__)
 
 
-class DataQualityRules(TestCase):
+class DataQualityCheckCase(TestCase):
+    def setUp(self):
+        self.org = Organization.objects.create()
 
+    def test_multiple_data_quality_check_objects(self):
+        dq = DataQualityCheck.retrieve(self.org)
+        self.assertEqual(dq.name, 'Default Data Quality Check')
+
+        DataQualityCheck.objects.create(organization=self.org, name='test manual creation')
+        DataQualityCheck.objects.create(organization=self.org, name='test manual creation 2')
+        DataQualityCheck.objects.create(organization=self.org, name='test manual creation 3')
+        dq = DataQualityCheck.retrieve(self.org)
+
+        # The method above will delete the multiple objects and return the original
+        self.assertEqual(dq.name, 'Default Data Quality Check')
+
+
+class DataQualityCheckRules(TestCase):
     def setUp(self):
         self.org = Organization.objects.create()
 
@@ -61,7 +77,7 @@ class DataQualityRules(TestCase):
         ):
             dq.add_rule(new_rule)
 
-    def test_add_new_rule(self):
+    def test_add_new_rule_and_reset(self):
         dq = DataQualityCheck.retrieve(self.org)
 
         new_rule = {
@@ -76,6 +92,39 @@ class DataQualityRules(TestCase):
         }
         dq.add_rule(new_rule)
         self.assertEqual(dq.rules.count(), len(DEFAULT_RULES) + 1)
+
+        dq.reset_all_rules()
+        self.assertEqual(dq.rules.count(), len(DEFAULT_RULES))
+
+    def test_reset_default_rules(self):
+        dq = DataQualityCheck.retrieve(self.org)
+
+        new_rule = {
+            'table_name': 'PropertyState',
+            'field': 'test_floor_area',
+            'data_type': TYPE_NUMBER,
+            'rule_type': RULE_TYPE_DEFAULT,
+            'min': 0,
+            'max': 7000000,
+            'severity': SEVERITY_ERROR,
+            'units': 'square feet'
+        }
+        dq.add_rule(new_rule)
+        self.assertEqual(dq.rules.count(), len(DEFAULT_RULES) + 1)
+
+        # change one of the default rules
+        rule = dq.rules.filter(field='gross_floor_area').first()
+        rule.min = -10000
+        rule.save()
+
+        self.assertEqual(dq.rules.filter(field='gross_floor_area').first().min, -10000)
+        dq.reset_default_rules()
+
+        self.assertEqual(dq.rules.filter(field='gross_floor_area').first().min, 100)
+
+        # ensure non-default rule still exists
+        non_def_rules = dq.rules.filter(field='test_floor_area')
+        self.assertEqual(non_def_rules.count(), 1)
 
     def test_filter_rules(self):
         dq = DataQualityCheck.retrieve(self.org)
