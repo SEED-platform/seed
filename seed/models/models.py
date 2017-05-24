@@ -138,11 +138,6 @@ COMPLIANCE_CHOICES = (
 )
 
 
-#
-# Used in ``tasks.match_buildings``
-#
-
-
 # TO REMOVE
 def get_ancestors(building):
     """gets all the non-raw, non-composite ancestors of a building

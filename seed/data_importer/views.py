@@ -1261,7 +1261,7 @@ class ImportFileViewSet(viewsets.ViewSet):
               required: true
               paramType: path
         """
-        return match_buildings(pk, request.user.pk)
+        return match_buildings(pk)
 
     @api_endpoint_class
     @ajax_request_class

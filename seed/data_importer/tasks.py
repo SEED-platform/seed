@@ -791,12 +791,11 @@ def save_raw_data(file_pk, *args, **kwargs):
 
 @shared_task
 @lock_and_track
-def match_buildings(file_pk, user_pk):
+def match_buildings(file_pk):
     """
     kicks off system matching, returns progress key within the JSON response
 
     :param file_pk: ImportFile Primary Key
-    :param user_pk: SEEDUser Primary Key
     :return:
     """
     import_file = ImportFile.objects.get(pk=file_pk)
@@ -812,7 +811,7 @@ def match_buildings(file_pk, user_pk):
     if not import_file.mapping_done:
         # Re-add to the queue, hopefully our mapping will be done by then.
         match_buildings.apply_async(
-            args=[file_pk, user_pk], countdown=10, expires=20
+            args=[file_pk], countdown=10, expires=20
         )
         return {
             'status': 'error',
