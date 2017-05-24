@@ -9,6 +9,8 @@ angular.module('BE.seed.controller.matching_detail', [])
     '$state',
     '$stateParams',
     'import_file_payload',
+    // 'propertyInventory',
+    // 'taxlotInventory',
     'state_payload',
     'available_matches',
     'columns',
@@ -24,6 +26,8 @@ angular.module('BE.seed.controller.matching_detail', [])
               $state,
               $stateParams,
               import_file_payload,
+              // propertyInventory,
+              // taxlotInventory,
               state_payload,
               available_matches,
               columns,
@@ -40,6 +44,16 @@ angular.module('BE.seed.controller.matching_detail', [])
 
       $scope.import_file = import_file_payload.import_file;
       $scope.available_matches = available_matches.states;
+
+      //added from paring Controller for filter function
+      $scope.inventory_type = $stateParams.inventory_type;
+      //just added
+      // $scope.propertyData = propertyInventory.results;
+      // $scope.taxlotData = taxlotInventory.results;
+      // $scope.allPropertyColumns = propertyInventory.columns;
+      // $scope.propertyColumns = _.reject(propertyInventory.columns, {name: 'jurisdiction_tax_lot_id'});
+      // $scope.taxlotColumns = taxlotInventory.columns;
+
 
       $scope.number_per_page = 10;
       $scope.current_page = 1;
@@ -179,6 +193,35 @@ angular.module('BE.seed.controller.matching_detail', [])
       /**
        * end pagination code
        */
+
+       //custom filter
+      $scope.allSearch = function (value, index, array) {
+        for (var i = 0; i < $scope.reduced_columns.length; i++) {
+            if ($scope.reduced_columns[i].searchText && value[$scope.reduced_columns[i].name]) {
+              return value[$scope.reduced_columns[i].name].indexOf($scope.reduced_columns[i].searchText) > -1;
+            }
+        }
+        return true;
+]      };
+
+      //Sort by Column Ascending and Descending
+      $scope.sortColumn = "name";
+      $scope.reverseSort = false;
+
+      $scope.sortData = function (column) {
+        $scope.reverseSort = ($scope.sortColumn === column) ? !$scope.reverseSort : false;
+        $scope.sortColumn = column;
+      } 
+
+      $scope.getSortClass = function (column) {
+        if ($scope.sortColumn === column) {
+            return $scope.reverseSort ? 'arrow-down' : 'arrow-up'
+        }
+        return 'arrow-down';
+      }
+
+
+
 
       var refresh = function () {
         spinner_utility.show();
