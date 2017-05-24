@@ -30,7 +30,7 @@ env:
     - TOX_ENV=python
     - TOX_ENV=flake8
     - TOX_ENV=spelling
-#    - TOX_ENV=functional
+    - TOX_ENV=functional
     - TOX_ENV=apitest
 install:
   - pip install --upgrade pip
@@ -42,6 +42,7 @@ before_script:
   - sh -e /etc/init.d/xvfb start &
   - sleep 3
   - psql -c "create database seeddb;" -U postgres
-#  - mv config/settings/test_local_untracked.py config/settings/local_untracked.py
+  - mv config/settings/test_local_untracked.py config/settings/local_untracked.py
+  - ./manage.py --version
 script:
   - tox -e $TOX_ENV
