@@ -43,6 +43,5 @@ before_script:
   - sleep 3
   - psql -c "create database seeddb;" -U postgres
   - mv config/settings/test_local_untracked.py config/settings/local_untracked.py
-  - /usr/bin/python manage.py migrate
 script:
   - tox -e $TOX_ENV
