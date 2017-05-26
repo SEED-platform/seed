@@ -45,6 +45,7 @@ class DataQualityViewTests(TestCase):
             'tax_lot_id': '',
             'custom_id_1': '',
             'data_quality_results': [{
+                'table_name': 'PropertyState',
                 'formatted_field': '',
                 'detailed_message': '',
                 'severity': '',
