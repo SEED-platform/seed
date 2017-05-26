@@ -260,10 +260,9 @@ class Rule(models.Model):
     def __unicode__(self):
         return json.dumps(obj_to_dict(self))
 
-    def valid_enum(self, value):
+    def valid_text(self, value):
         """
-        Validate the rule matches the specified text. Right now this is an exact match and
-        does not look at enumerations.
+        Validate the rule matches the specified text. Text is matched by regex.
 
         :param value: Value to validate rule against
         :return: bool, True is valid, False if the value does not match
@@ -602,7 +601,7 @@ class DataQualityCheck(models.Model):
                         self.add_result_is_null(row.id, rule, display_name, value)
                         label_applied = label_applied or \
                             self.update_status_label(label, rule, linked_id)
-                elif not rule.valid_enum(value):
+                elif not rule.valid_text(value):
                     self.add_result_string_error(row.id, rule, display_name, value)
                     label_applied = label_applied or \
                         self.update_status_label(label, rule, linked_id)
@@ -845,6 +844,22 @@ class DataQualityCheck(models.Model):
             return result[0]
         else:
             raise RuntimeError("More than 1 data quality results for address '{}'".format(address))
+
+    def retrieve_result_by_tax_lot_id(self, tax_lot_id):
+        """
+        Retrieve the results of the data quality checks by the jurisdiction ID.
+        
+        :param tax_lot_id: string, jurisdiction tax lot id 
+        :return: dict, results of data quality check for specific building
+        """
+
+        result = [v for v in self.results.values() if v['jurisdiction_tax_lot_id'] == tax_lot_id]
+        if len(result) == 0:
+            return None
+        elif len(result) == 1:
+            return result[0]
+        else:
+            raise RuntimeError("More than 1 data quality results for tax lot id '{}'".format(tax_lot_id))
 
     def __unicode__(self):
         return u'DataQuality ({}:{}) - Rule Count: {}'.format(self.pk, self.name,

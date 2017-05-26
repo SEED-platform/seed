@@ -21,6 +21,7 @@ from seed.models import (
     PropertyState,
     PropertyView,
     TaxLotState,
+    TaxLotView,
     Column,
     Cycle,
     StatusLabel,
@@ -40,7 +41,6 @@ _log = logging.getLogger(__name__)
 
 
 class DataQualityTestCoveredBuilding(TestCase):
-
     def setUp(self):
         self.user_details = {
             'username': 'testuser@example.com',
@@ -163,7 +163,6 @@ class DataQualityTestCoveredBuilding(TestCase):
 
 
 class DataQualityTestPM(TestCase):
-
     def setUp(self):
         self.user_details = {
             'username': 'testuser@example.com',
@@ -309,7 +308,6 @@ class DataQualityTestPM(TestCase):
 
 
 class DataQualitySample(TestCase):
-
     def setUp(self):
         self.user_details = {
             'username': 'testuser@example.com',
@@ -468,8 +466,8 @@ class DataQualitySample(TestCase):
                 "to_field": u'state_province',
             }, {
                 "from_field": u'tax_lot_id',
-                "to_table_name": u'PropertyState',
-                "to_field": u'tax_lot_id',
+                "to_table_name": u'TaxLotState',
+                "to_field": u'jurisdiction_tax_lot_id',
             }, {
                 "from_field": u'use_description',
                 "to_table_name": u'PropertyState',
@@ -512,7 +510,6 @@ class DataQualitySample(TestCase):
         # data quality check
         d = DataQualityCheck.retrieve(self.org)
         d.remove_all_rules()
-
         d.add_rule({
             'table_name': 'PropertyState',
             'field': 'gross_floor_area',
@@ -576,6 +573,19 @@ class DataQualitySample(TestCase):
         }
         d.add_rule(new_rule)
 
+        sl_data = {'name': 'jurisdiction id does not match', 'super_organization': self.org}
+        sl_jurid, _ = StatusLabel.objects.get_or_create(**sl_data)
+        new_rule = {
+            'table_name': 'TaxLotState',
+            'field': 'jurisdiction_tax_lot_id',
+            'data_type': TYPE_STRING,
+            'rule_type': RULE_TYPE_CUSTOM,
+            'text_match': '1235',
+            'severity': SEVERITY_ERROR,
+            'status_label': sl_jurid,
+        }
+        d.add_rule(new_rule)
+
         # import data
         tasks.save_raw_data(self.import_file.id)
         Column.create_mappings(fake_mappings, self.org, self.user)
@@ -586,7 +596,7 @@ class DataQualitySample(TestCase):
             import_file=self.import_file,
             source_type=ASSESSED_BS,
         ).iterator()
-
+        d.reset_results()
         d.check_data('PropertyState', qs)
 
         result = d.retrieve_result_by_address('4 Myrtle Parkway')
@@ -649,20 +659,50 @@ class DataQualitySample(TestCase):
         self.assertListEqual(result['data_quality_results'], res)
 
         # make sure that the label has been applied
-        props = PropertyView.objects.filter(property__labels=sl_year).select_related(
-            'state')
+        props = PropertyView.objects.filter(property__labels=sl_year).select_related('state')
         addresses = [p.state.address_line_1 for p in props]
+        addresses.sort()
         expected = [u'84807 Buell Trail', u'1 International Road']
+        expected.sort()
         self.assertListEqual(expected, addresses)
 
-        props = PropertyView.objects.filter(property__labels=sl_float).select_related(
-            'state')
+        props = PropertyView.objects.filter(property__labels=sl_float).select_related('state')
         addresses = [p.state.address_line_1 for p in props]
+        addresses.sort()
         expected = [u'4 Myrtle Parkway', u'94 Oxford Hill']
+        expected.sort()
         self.assertListEqual(expected, addresses)
 
-        props = PropertyView.objects.filter(property__labels=sl_string).select_related(
-            'state')
+        props = PropertyView.objects.filter(property__labels=sl_string).select_related('state')
         addresses = [p.state.address_line_1 for p in props]
         expected = [u'3 Portage Alley']
         self.assertListEqual(expected, addresses)
+
+        # Check tax lots
+        qs = TaxLotState.objects.filter(
+            import_file=self.import_file,
+        ).iterator()
+        d.reset_results()
+        d.check_data('TaxLotState', qs)
+
+        result = d.retrieve_result_by_tax_lot_id("1234")
+        res = [
+            {
+                "severity": "error",
+                "value": "1234",
+                "field": "jurisdiction_tax_lot_id",
+                "table_name": "TaxLotState",
+                "message": "Jurisdiction Tax Lot ID does not match expected value",
+                "detailed_message": "Jurisdiction Tax Lot ID [1234] does not contain \"1235\"",
+                "formatted_field": "Jurisdiction Tax Lot ID"
+            }
+        ]
+        self.assertListEqual(result['data_quality_results'], res)
+
+        # verify labels
+        taxlots = TaxLotView.objects.filter(taxlot__labels=sl_jurid).select_related('state')
+        ids = [t.state.jurisdiction_tax_lot_id for t in taxlots]
+        expected = '1234'
+        self.assertEqual(expected, ids[0])
+
+

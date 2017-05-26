@@ -73,10 +73,10 @@ class RuleTests(TestCase):
             'text_match': 'alpha',
         }
         r = Rule.objects.create(**new_rule)
-        self.assertTrue(r.valid_enum('alpha'))
-        self.assertFalse(r.valid_enum('beta'))
-        self.assertTrue(r.valid_enum(u'alpha'))
-        self.assertFalse(r.valid_enum(u'beta'))
+        self.assertTrue(r.valid_text('alpha'))
+        self.assertFalse(r.valid_text('beta'))
+        self.assertTrue(r.valid_text(u'alpha'))
+        self.assertFalse(r.valid_text(u'beta'))
 
     def test_valid_enum_regex(self):
         # test with regex
@@ -85,10 +85,10 @@ class RuleTests(TestCase):
             'text_match': '.*(a|b)cd(4|8).*'
         }
         r = Rule.objects.create(**new_rule)
-        self.assertTrue(r.valid_enum('bcd8'))
-        self.assertTrue(r.valid_enum('pretext acd4 posttext'))
-        self.assertTrue(r.valid_enum('pretextbcd8posttext'))
-        self.assertFalse(r.valid_enum('pretextbcd6posttext'))
+        self.assertTrue(r.valid_text('bcd8'))
+        self.assertTrue(r.valid_text('pretext acd4 posttext'))
+        self.assertTrue(r.valid_text('pretextbcd8posttext'))
+        self.assertFalse(r.valid_text('pretextbcd6posttext'))
 
     def test_type_value_return(self):
         """Test to make sure that the return is correct if value is not a string"""
