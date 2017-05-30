@@ -704,3 +704,94 @@ class DataQualitySample(TestCase):
         ids = [t.state.jurisdiction_tax_lot_id for t in taxlots]
         expected = '1234'
         self.assertEqual(expected, ids[0])
+
+       # Check multiple strings
+        props = PropertyView.objects.filter(property__labels=sl_ok_1).select_related('state')
+        addresses = [p.state.address_line_1 for p in props]
+        print addresses
+        # addresses.sort()
+        # expected = [u'84807 Buell Trail', u'1 International Road']
+        # expected.sort()
+        # self.assertListEqual(expected, addresses)
+
+    def test_check_multiple_text_match(self):
+        d = DataQualityCheck.retrieve(self.org)
+        d.remove_all_rules()
+
+        sl_data = {'name': 'No meters present', 'super_organization': self.org}
+        sl_ok_1, _ = StatusLabel.objects.get_or_create(**sl_data)
+        new_rule = {
+            'table_name': 'PropertyState',
+            'field': 'meters_present',
+            'data_type': TYPE_STRING,
+            'rule_type': RULE_TYPE_CUSTOM,
+            'text_match': 'OK',
+            'severity': SEVERITY_ERROR,
+            'status_label': sl_ok_1,
+        }
+        d.add_rule(new_rule)
+
+        sl_data = {'name': 'No 12 Consectutive Months', 'super_organization': self.org}
+        sl_ok_2, _ = StatusLabel.objects.get_or_create(**sl_data)
+        new_rule = {
+            'table_name': 'PropertyState',
+            'field': '12 Consectutive Months',
+            'data_type': TYPE_STRING,
+            'rule_type': RULE_TYPE_CUSTOM,
+            'text_match': 'OK',
+            'severity': SEVERITY_ERROR,
+            'status_label': sl_ok_2,
+        }
+        d.add_rule(new_rule)
+
+        sl_data = {'name': 'No Monthly Data', 'super_organization': self.org}
+        sl_ok_3, _ = StatusLabel.objects.get_or_create(**sl_data)
+        new_rule = {
+            'table_name': 'PropertyState',
+            'field': 'Monthly Data',
+            'data_type': TYPE_STRING,
+            'rule_type': RULE_TYPE_CUSTOM,
+            'text_match': 'OK',
+            'severity': SEVERITY_ERROR,
+            'status_label': sl_ok_3,
+        }
+        d.add_rule(new_rule)
+
+        # import data
+        tasks.save_raw_data(self.import_file.id)
+        Column.create_mappings(self.fake_mappings, self.org, self.user)
+        tasks.map_data(self.import_file.id)
+        tasks.match_buildings(self.import_file.id)
+
+        qs = PropertyState.objects.filter(
+            import_file=self.import_file,
+            source_type=ASSESSED_BS,
+        ).iterator()
+        d.reset_results()
+        d.check_data('PropertyState', qs)
+
+        # Check multiple strings
+        props = PropertyView.objects.filter(property__labels=sl_ok_1).select_related('state')
+        addresses = [p.state.address_line_1 for p in props]
+        addresses.sort()
+        expected = [
+            u'1 International Road',
+            u'17246 Esch Drive',
+            u'2581 Schiller Parkway',
+            u'3 Northport Place',
+            u'84807 Buell Trail'
+        ]
+        self.assertListEqual(expected, addresses)
+
+        props = PropertyView.objects.filter(property__labels=sl_ok_2).select_related('state')
+        addresses = [p.state.address_line_1 for p in props]
+        addresses.sort()
+        expected = [u'1 International Road', u'2581 Schiller Parkway', u'49705 Harper Crossing']
+        self.assertListEqual(expected, addresses)
+
+        props = PropertyView.objects.filter(property__labels=sl_ok_3).select_related('state')
+        addresses = [p.state.address_line_1 for p in props]
+        addresses.sort()
+        expected = [u'1 International Road', u'17246 Esch Drive', u'84807 Buell Trail',
+                    u'88263 Scoville Park']
+        self.assertListEqual(expected, addresses)
