@@ -39,7 +39,7 @@ class Migration(migrations.Migration):
                 ('max', models.FloatField(null=True)),
                 ('severity', models.IntegerField(choices=[(0, b'error'), (1, b'warning')])),
                 ('units', models.CharField(blank=True, max_length=100)),
-                ('data_quality_check', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='rules', to='seed.DataQualityCheck')),
+                ('data_quality_check', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='rules', to='DataQualityCheck')),
                 ('status_label', models.OneToOneField(null=True, on_delete=django.db.models.deletion.SET_NULL, to='seed.StatusLabel')),
             ],
         ),
