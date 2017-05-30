@@ -73,4 +73,15 @@ describe('When I go to admin page', function () {
         browser.wait(EC.not(EC.presenceOf(myNewOrg.$('.progress-bar.progress-bar-danger'))), 15000);
         expect(myNewOrg.isPresent()).toBe(false);
     }, 30000);
+
+    // manually
+    it ('should reset sync', function () {
+        browser.ignoreSynchronization = true;
+    });
+
+    it('should logout user', function () {
+        $('#sidebar-logout').click();
+        browser.wait(EC.presenceOf($('.section_marketing')), 30000);
+        expect($('.section_marketing').isPresent()).toBe(true);
+    });
 });
