@@ -704,5 +704,3 @@ class DataQualitySample(TestCase):
         ids = [t.state.jurisdiction_tax_lot_id for t in taxlots]
         expected = '1234'
         self.assertEqual(expected, ids[0])
-
-

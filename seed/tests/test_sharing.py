@@ -6,7 +6,6 @@
 Tests related to sharing of data between users, orgs, suborgs, etc.
 """
 import json
-from unittest import skip
 
 from django.core.urlresolvers import reverse_lazy
 from django.test import TestCase

@@ -8,21 +8,12 @@
 Unit tests for seed/views/labels.py
 """
 
-from unittest import skip
-
 from django.test import TestCase
 
 from seed.factory import SEEDFactory
-from seed.landing.models import SEEDUser as User
+
 from seed.models import (
     CanonicalBuilding,
-    Project,
-)
-from seed.tasks import (
-    add_buildings,
-)
-from seed.utils.organizations import (
-    create_organization,
 )
 
 

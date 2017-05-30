@@ -848,8 +848,8 @@ class DataQualityCheck(models.Model):
     def retrieve_result_by_tax_lot_id(self, tax_lot_id):
         """
         Retrieve the results of the data quality checks by the jurisdiction ID.
-        
-        :param tax_lot_id: string, jurisdiction tax lot id 
+
+        :param tax_lot_id: string, jurisdiction tax lot id
         :return: dict, results of data quality check for specific building
         """
 
