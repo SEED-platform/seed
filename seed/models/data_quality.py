@@ -552,14 +552,14 @@ class DataQualityCheck(models.Model):
         :return: None
         """
         linked_id = None
-        label_applied = False
-
         for rule in self.rules.filter(enabled=True,
                                       table_name=type(row).__name__).order_by('field', 'severity'):
 
             # check if the field exists
             if hasattr(row, rule.field) or rule.field in row.extra_data:
                 value = None
+                label_applied = False
+
                 if hasattr(row, rule.field):
                     value = getattr(row, rule.field)
                 elif rule.field in row.extra_data:
@@ -589,29 +589,24 @@ class DataQualityCheck(models.Model):
                     # field that wasn't mapped
                     if rule.required:
                         self.add_result_missing_req(row.id, rule, display_name, value)
-                        label_applied = label_applied or \
-                            self.update_status_label(label, rule, linked_id)
+                        label_applied = self.update_status_label(label, rule, linked_id)
                 elif value is None or value == '':
                     # Empty fields
                     if rule.required:
                         self.add_result_missing_and_none(row.id, rule, display_name, value)
-                        label_applied = label_applied or \
-                            self.update_status_label(label, rule, linked_id)
+                        label_applied = self.update_status_label(label, rule, linked_id)
                     elif rule.not_null:
                         self.add_result_is_null(row.id, rule, display_name, value)
-                        label_applied = label_applied or \
-                            self.update_status_label(label, rule, linked_id)
+                        label_applied = self.update_status_label(label, rule, linked_id)
                 elif not rule.valid_text(value):
                     self.add_result_string_error(row.id, rule, display_name, value)
-                    label_applied = label_applied or \
-                        self.update_status_label(label, rule, linked_id)
+                    label_applied = self.update_status_label(label, rule, linked_id)
                 else:
                     try:
                         if not rule.minimum_valid(value):
                             s_min, s_max, s_value = rule.format_strings(value)
                             self.add_result_min_error(row.id, rule, display_name, s_value, s_min)
-                            label_applied = label_applied or \
-                                self.update_status_label(label, rule, linked_id)
+                            label_applied = self.update_status_label(label, rule, linked_id)
                     except ComparisonError:
                         s_min, s_max, s_value = rule.format_strings(value)
                         self.add_result_comparison_error(row.id, rule, display_name, s_value, s_min)
@@ -621,8 +616,7 @@ class DataQualityCheck(models.Model):
                         if not rule.maximum_valid(value):
                             s_min, s_max, s_value = rule.format_strings(value)
                             self.add_result_max_error(row.id, rule, display_name, s_value, s_max)
-                            label_applied = label_applied or \
-                                self.update_status_label(label, rule, linked_id)
+                            label_applied = self.update_status_label(label, rule, linked_id)
                     except ComparisonError:
                         s_min, s_max, s_value = rule.format_strings(value)
                         self.add_result_comparison_error(row.id, rule, display_name, s_value, s_max)
