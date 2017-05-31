@@ -6,6 +6,7 @@
 """
 import logging
 from datetime import date, datetime
+from dateutil.relativedelta import relativedelta
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -141,11 +142,13 @@ class Organization(models.Model):
         cycle_name = 'Default ' + str(year) + ' Calendar Year'
         if not Cycle.objects.filter(name=cycle_name, organization=self).exists():
             _log.debug("Creating default cycle for new organization")
+            start = datetime(year, 1, 1, tzinfo=timezone.get_current_timezone())
+            end = start + relativedelta(years=1) - relativedelta(seconds=1)
             Cycle.objects.create(
                 name=cycle_name,
                 organization=self,
-                start=datetime(year, 1, 1, tzinfo=timezone.get_current_timezone()),
-                end=datetime(year + 1, 12, 31, tzinfo=timezone.get_current_timezone())
+                start=start,
+                end=end
             )
 
     def is_member(self, user):
