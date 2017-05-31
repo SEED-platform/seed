@@ -147,6 +147,9 @@ describe('When I do miscellaneous things', function () {
 		
 		expect(rowCount.count()).toBe(0);
 		$$('[ng-click="close()"]').click();
+	});
+
+	it('should go to taxlots and and test the same', function () {
 
 		//run on taxlots
 		$('[ui-sref="inventory_list({inventory_type: \'taxlots\'})"]').click();
@@ -165,7 +168,9 @@ describe('When I do miscellaneous things', function () {
 		expect(rowCount3.count()).toBe(5);
 		$$('[ng-click="close()"]').click();
 
+	});
 
+	it('should test labels were applied correctly', function () {
 		var rows = $('.left.ui-grid-render-container-left.ui-grid-render-container')
 				.all(by.repeater('(rowRenderIndex, row) in rowContainer.renderedRows'));
 
