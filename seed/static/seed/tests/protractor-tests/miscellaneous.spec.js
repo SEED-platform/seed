@@ -135,44 +135,55 @@ describe('When I do miscellaneous things', function () {
 	// Check data quality on inventory page
 	it('should select first item and test data quality modal and presence of rows', function () {
 		$('#sidebar-inventory').click();
+
+		$$('[ng-click="toggleMenu($event)"]').first().click();
+		$$('[ng-click="itemAction($event, title)"]').first().click();
+
 		$$('[ng-click="selectButtonClick(row, $event)"]').first().click();
 		$('#btnInventoryActions').click();
 		$$('[ng-click="run_data_quality_check()"]').click();
 		expect($('.modal-title').getText()).toContain('Data Quality Results');
-		var rowCount2 = element.all(by.repeater('result in row.data_quality_results'));
+		var rowCount = element.all(by.repeater('result in row.data_quality_results'));
 		
-		//add back when works
-		// expect(rowCount2.count()).toBe(2);
+		expect(rowCount.count()).toBe(0);
 		$$('[ng-click="close()"]').click();
 
-		$('[ng-class="{\'ui-grid-all-selected\': grid.selection.selectAll}"]').click();
+		//run on taxlots
+		$('[ui-sref="inventory_list({inventory_type: \'taxlots\'})"]').click();
+		
+		$$('[ng-click="toggleMenu($event)"]').first().click();
+		$$('[ng-click="itemAction($event, title)"]').first().click();
+
+		$$('[ng-click="selectButtonClick(row, $event)"]').first().click();
+		$$('[ng-click="selectButtonClick(row, $event)"]').get(1).click();
+		$$('[ng-click="selectButtonClick(row, $event)"]').get(2).click();
 		$('#btnInventoryActions').click();
 		$$('[ng-click="run_data_quality_check()"]').click();
 		expect($('.modal-title').getText()).toContain('Data Quality Results');
-		var rowCount2 = element.all(by.repeater('result in row.data_quality_results'));
+		var rowCount3 = element.all(by.repeater('result in row.data_quality_results'));
 		
-		//add back when works
-		// expect(rowCount2.count()).toBe(15);
+		expect(rowCount3.count()).toBe(5);
 		$$('[ng-click="close()"]').click();
 
-		//check labels - 
-		$('[ui-sref="inventory_list({inventory_type: \'taxlots\'})"]').click();
-		$('#tagsInput').click();
-		$$('.suggestion-item.selected').first().click();
+
 		var rows = $('.left.ui-grid-render-container-left.ui-grid-render-container')
 				.all(by.repeater('(rowRenderIndex, row) in rowContainer.renderedRows'));
-		
-		//add back when works
-		// expect(rows.count()).toBe(11);
+
+		//check labels - 
 		$('[ng-click="clear_labels()"]').click();
+		$('#tagsInput').click();
+		$$('.suggestion-item.selected').first().click();
 		
-		//add back when works
-		// $$('.suggestion-item.selected').get(1).click();
-		// expect(rows.count()).toBe(10);
-		// $('[uib-btn-radio="\'or\'"]').click();
-		// expect(rows.count()).toBe(11);
-		// $('[ng-click="clear_labels()"]').click();
-		// expect(rows.count()).toBe(11);
+		expect(rows.count()).toBe(3);		
+		$('[uib-btn-radio="\'and\'"]').click();
+		$('#tagsInput').click();
+		$$('.suggestion-item.selected').first().click();
+
+		expect(rows.count()).toBe(2);
+		$('[uib-btn-radio="\'or\'"]').click();
+		expect(rows.count()).toBe(3);
+		$('[ng-click="clear_labels()"]').click();
+		expect(rows.count()).toBe(11);
 
 	});
 
