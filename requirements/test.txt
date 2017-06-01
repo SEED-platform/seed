@@ -10,6 +10,9 @@ pytest
 pytest-django
 requests==2.10.0
 selenium==2.53.6
+enum34
+configparser
+imagesize
 Sphinx==1.4.5
 tox==2.3.1
 unittest2
