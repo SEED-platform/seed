@@ -2,7 +2,7 @@
 django==1.9.13
 dj-database-url==0.4.2
 django-autoslug==1.9.3
-django-storages==1.4
+django-storages==1.5.2
 # Replace pgjson with https://docs.djangoproject.com/en/1.11/ref/contrib/postgres/fields/
 django-pgjson==0.3.1
 modeltranslation==0.25
@@ -14,9 +14,9 @@ psycopg2==2.7.1
 # background process management
 
 celery==3.1.20
-django-redis-cache==1.6.5
-django_compressor==2.0
-django-extensions==1.6.1
+django-redis-cache==1.7.1
+django_compressor==2.1.1
+django-extensions==1.7.9
 kombu==3.0.32
 redis==2.10.5
 
