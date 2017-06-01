@@ -87,7 +87,7 @@ class Command(BaseCommand):
         # At the end run two checks:
 
         # Go through the tax Lots, collect any that are left, make
-        # sure they aren't a part of any m2m entities.
+        # sure they are not a part of any m2m entities.
         for view in TaxLotView.objects.filter(taxlot__organization_id=org_id).all():
             try:
                 # pdb.set_trace()
@@ -211,7 +211,7 @@ class Command(BaseCommand):
 
 
         # Go through the tax Lots, collect any that are left, make
-        # sure they aren't a part of any m2m entities.
+        # sure they are not a part of any m2m entities.
         for original_taxlot_view in TaxLotView.objects.filter(taxlot__organization=org).all():
             logging_debug("Trying original_taxlot_view jurisdiction {j}".format(j = original_taxlot_view.state.jurisdiction_tax_lot_id))
             try:

@@ -130,7 +130,7 @@ class TestMappingPortfolioData(DataMappingBaseTestCase):
             is_extra_data=True
         ).exclude(table_name='')
 
-        # There's only one piece of data that didn't cleanly map.
+        # There's only one piece of data that did not cleanly map.
         # Note that as of 09/15/2016 - extra data still needs to be defined in the mappings, it
         # will no longer magically appear in the extra_data field if the user did not specify to
         # map it!
@@ -313,7 +313,7 @@ class TestPromotingProperties(DataMappingBaseTestCase):
             for d in data:
                 writer.writerow(d)
 
-        # save the keys         This doesn't appear to be used anywhere
+        # save the keys this does not appear to be used anywhere
         new_file_name = 'tmp_{}_keys.csv'.format(
             os.path.splitext(os.path.basename(filename))[0]
         )

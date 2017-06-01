@@ -21,7 +21,7 @@ from seed.landing.models import SEEDUser as User
 
 
 class TestOrganizationUser(TestCase):
-    # TODO: I know I shouldn't need these. Need to figure out what's up with
+    # TODO: I know I should not need these. Need to figure out what's up with
     # Django's TestCase.
     def setUp(self, *args, **kwargs):
         self.user1 = User.objects.create(
@@ -73,7 +73,7 @@ class TestOrganizationUser(TestCase):
 
 
 class TestOrganization(TestCase):
-    # TODO: I know I shouldn't need these. Need to figure out what's up with
+    # TODO: I know I should not need these. Need to figure out what's up with
     # Django's TestCase.
     def setUp(self, *args, **kwargs):
         self.user = User.objects.create(email='asdf@asdf.com')
@@ -252,11 +252,11 @@ class TestOrganization(TestCase):
         )
         self.assertTrue(org.is_owner(self.user))
 
-        # members aren't owners
+        # members are not owners
         ou.role_level = ROLE_MEMBER
         ou.save()
         self.assertFalse(org.is_owner(self.user))
 
-        # non-members aren't owners
+        # non-members are not owners
         org.remove_member(self.user)
         self.assertFalse(org.is_owner(self.user))

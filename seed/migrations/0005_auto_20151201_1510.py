@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from django.db import models, migrations
 
 #some of the project buildings point at building snapshot records that are not canonical buildings
-#This probably shouldn't be but before the migration for the label changes record them here
+#This probably should not be but before the migration for the label changes record them here
 #so the users can be alerted that the label changes will not be applied.
 def save_non_canonical_project_buildings(app, schema_editor):
     project_building_model = app.get_model("seed", "ProjectBuilding")

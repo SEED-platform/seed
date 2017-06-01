@@ -45,7 +45,7 @@ class UserLoginTest(TestCase):
         expected_action = 'action="%s"' % self.tos_url
         self.assertContains(res, expected_action)
 
-        # django-tos doesn't log the user in yet
+        # django-tos does not log the user in yet
         self.assertFalse('_auth_user_id' in self.client.session)
 
         # and submitting 'accept=accept' to the confirm url logs you in

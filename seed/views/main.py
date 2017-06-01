@@ -77,7 +77,7 @@ def _get_default_org(user):
     """
     org = user.default_organization
     # check if user is still in the org, i.e. s/he wasn't removed from his/her
-    # default org or didn't have a set org and try to set the first one
+    # default org or did not have a set org and try to set the first one
     if not org or not user.orgs.exists():
         org = user.orgs.first()
         user.default_organization = org
@@ -200,7 +200,7 @@ def export_buildings(request):
     export_id = str(uuid.uuid4())
 
     # If we receive a project ID, we don't actually want to export buildings,
-    # we want to export ProjectBuildings -- but the frontend doesn't know that,
+    # we want to export ProjectBuildings -- but the frontend does not know that,
     # so we change the fieldnames on the backend instead so the exporter can
     # resolve them correctly
     if project_id:
@@ -1045,7 +1045,7 @@ def delete_buildings(request):
 #         pass
 
 #     # First get all building records for the orginization in the date range
-#     # Can't just look for those that aren't null since one of the things that
+#     # Can't just look for those that are not null since one of the things that
 #     # needs to get reported is how many for a given year do not have data
 #     # (i.e. have a null value for either x_var or y_var
 #     bldgs = BuildingSnapshot.objects.filter(
@@ -1153,7 +1153,7 @@ def delete_buildings(request):
 #             current_canonical_bldg = canonical_building
 
 #             # progress up the the tree processing merged snapshots until there
-#             # aren't any more
+#             # are not any more
 #             while current_canonical_bldg:
 #                 # unmerged_snapshots = bldg.parents.filter(parents__isnull = True)
 #                 previous_canonical_bldg = current_canonical_bldg.parents.filter(

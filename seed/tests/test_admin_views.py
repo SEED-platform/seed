@@ -88,7 +88,7 @@ class AdminViewsTest(TestCase):
         self.assertEqual(res.body['status'], 'error')
         self.assertEqual(Organization.objects.count(), 1)
 
-        # and most importantly, the admin/owner of the org didn't change
+        # and most importantly, the admin/owner of the org did not change
         org = Organization.objects.first()
         self.assertTrue(self._is_org_owner(self.admin_user, org))
 
@@ -142,7 +142,7 @@ class AdminViewsTest(TestCase):
 
     def test_add_user_no_org(self):
         """
-        Shouldn't be able to create a new user without either
+        Should not be able to create a new user without either
         selecting or creating an org at the same time.
         """
         data = {'first_name': 'New',
@@ -170,7 +170,7 @@ class AdminViewsTest(TestCase):
 
         user = User.objects.get(email=data['email'])
 
-        # user's password doesn't work yet
+        # user's password does not work yet
         self.assertFalse(user.has_usable_password())
 
         token = default_token_generator.make_token(user)
@@ -216,7 +216,7 @@ class AdminViewsTest(TestCase):
 
         user = User.objects.get(email=data['email'])
 
-        # user's password doesn't work yet
+        # user's password does not work yet
         self.assertFalse(user.has_usable_password())
 
         token = default_token_generator.make_token(user)
