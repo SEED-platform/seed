@@ -9,7 +9,7 @@ cache:
     - ".tox"
 language: python
 python:
-  - 2.7.11
+  - 2.7
 addons:
   postgresql: '9.4'
   sauce_connect: true
@@ -27,14 +27,14 @@ env:
     - secure: CpPzxEwVMmfQ7M1eMsrceOjFbjtQ4ZTKV/576UwskPdY1HXj+2tCvZxwWLS0TCmlEicNqpZ3ZOK8/2t654qUbkMNqyzqh5RNtXngBuD5QP4WIxdWJ9WkC801gIm27nmgBxooiVy/UAU+VDKMdw1honfSWou5FISFm+u5ep7DzCU=
     - secure: JTArNnjh+Gir7ck4Kb+zUkfvZPHqi97FQg0YG06pqKoClmbPcFKaW/eiMeY8oJbbsM/R/diIpqskI1U8YpOG3SfILQfsG4bAs7m2x7a72Z2Z/jwWT8AWLc2qwlFNTByeoL3cOQt3sOyBRwC/XxGey4BqUDRkD0LJcRIoEiGGcKw=
   matrix:
-    - TOX_ENV=python
-    - TOX_ENV=flake8
+#    - TOX_ENV=python
+#    - TOX_ENV=flake8
     - TOX_ENV=spelling
-    - TOX_ENV=functional
-    - TOX_ENV=apitest
+#    - TOX_ENV=functional
+#    - TOX_ENV=apitest
 install:
   - pip install --upgrade pip
-  - pip install tox==2.3.2
+  - pip install tox==2.7.0
   - npm install npm@latest -g
   - nvm install stable
 before_script:
