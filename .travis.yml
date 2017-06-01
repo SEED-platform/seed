@@ -29,7 +29,7 @@ env:
   matrix:
     - TOX_ENV=python
     - TOX_ENV=flake8
-    - TOX_ENV=spelling
+    - TOX_ENV=docs
     - TOX_ENV=functional
     - TOX_ENV=apitest
 install:
