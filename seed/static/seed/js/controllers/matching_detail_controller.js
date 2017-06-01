@@ -198,11 +198,34 @@ angular.module('BE.seed.controller.matching_detail', [])
       $scope.allSearch = function (value, index, array) {
         for (var i = 0; i < $scope.reduced_columns.length; i++) {
             if ($scope.reduced_columns[i].searchText && value[$scope.reduced_columns[i].name]) {
-              return value[$scope.reduced_columns[i].name].indexOf($scope.reduced_columns[i].searchText) > -1;
+              //dont return match because it stops the loop, set to variable so even whem matches are found, they continue searching(iterating through the loop) when inputs are processed from other columns
+              var isMatch = value[$scope.reduced_columns[i].name].indexOf($scope.reduced_columns[i].searchText) > -1;
+              //if an item does not match, break the loop
+              if (!isMatch) {
+                  return false;
+              }  
+            } else if ($scope.reduced_columns[i].searchText && !value[$scope.reduced_columns[i].name]) {
+              return false;
             }
+        }        
+      return true;
+    };
+
+
+      //original filter to compare fix to 
+      $scope.allSearch = function (value, index, array) {
+        for (var i = 0; i < $scope.reduced_columns.length; i++) {
+            if ($scope.reduced_columns[i].searchText && value[$scope.reduced_columns[i].name]) {
+              //dont return match because it stops the loop, set to variable so even whem matches are found, they continue searching(iterating through the loop) when inputs are processed from other columns
+              var isMatch = value[$scope.reduced_columns[i].name].indexOf($scope.reduced_columns[i].searchText) > -1;
+              //if an item does not match, break the loop
+              if (!isMatch) {
+                  return false;
+              }  
+            } 
         }
         return true;
-]      };
+      };
 
       //Sort by Column Ascending and Descending
       $scope.sortColumn = "name";
@@ -219,9 +242,6 @@ angular.module('BE.seed.controller.matching_detail', [])
         }
         return 'arrow-down';
       }
-
-
-
 
       var refresh = function () {
         spinner_utility.show();

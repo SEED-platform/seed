@@ -124,7 +124,7 @@
                             <td class="is_aligned_center">
                                 <input type="checkbox" ng-model="state.checked" ng-change="checkbox_match(state)">
                             </td>
-                            <td ng-repeat="col in reduced_columns">
+                            <td ng-model="state.checked" ng-repeat="col in reduced_columns">
                                 <span>
                                     {$ col.extraData ? state.extra_data[col.name] : state[col.name] $}
                                 </span>
