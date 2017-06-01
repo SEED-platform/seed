@@ -179,7 +179,7 @@ describe('When I do miscellaneous things', function () {
     $('#tagsInput').click();
     $$('.suggestion-item.selected').first().click();
 
-    expect(rows.count()).toBe(4);
+    expect(rows.count()).toBe(3);
     $('[uib-btn-radio="\'and\'"]').click();
     $('#tagsInput').click();
     $$('.suggestion-item.selected').first().click();
