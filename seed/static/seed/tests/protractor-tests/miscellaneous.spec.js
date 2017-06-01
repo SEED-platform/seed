@@ -179,14 +179,14 @@ describe('When I do miscellaneous things', function () {
 		$('#tagsInput').click();
 		$$('.suggestion-item.selected').first().click();
 		
-		expect(rows.count()).toBe(3);		
+		expect(rows.count()).toBe(4);
 		$('[uib-btn-radio="\'and\'"]').click();
 		$('#tagsInput').click();
 		$$('.suggestion-item.selected').first().click();
 
 		expect(rows.count()).toBe(2);
 		$('[uib-btn-radio="\'or\'"]').click();
-		expect(rows.count()).toBe(3);
+		expect(rows.count()).toBe(4);
 		$('[ng-click="clear_labels()"]').click();
 		expect(rows.count()).toBe(11);
 
