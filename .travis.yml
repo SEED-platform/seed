@@ -11,7 +11,7 @@ language: python
 python:
   - 2.7
 addons:
-  postgresql: '9.4'
+  postgresql: '9.6'
   sauce_connect: true
   apt:
     packages:
