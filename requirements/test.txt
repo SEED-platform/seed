@@ -12,13 +12,10 @@ django-nose==1.4.4
 Faker==0.7.12
 mock==2.0.0
 nose-exclude==0.5.0
-requests==2.10.0
+requests==2.17.3
 
 # static code analysis
 flake8==3.3.0
-
-# functional tests
-#selenium==2.53.6
 
 # documentation and spelling
 Sphinx==1.6.2

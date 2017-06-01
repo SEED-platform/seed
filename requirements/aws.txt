@@ -1,4 +1,5 @@
 -r base.txt
+boto==2.47.0
 django-ses==0.4.1
 django-sslify==0.2
 

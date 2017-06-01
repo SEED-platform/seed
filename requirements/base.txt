@@ -1,8 +1,9 @@
 # Django
-django==1.9.5
+django==1.9.13
 dj-database-url==0.4.2
 django-autoslug==1.9.3
 django-storages==1.4
+# Replace pgjson with https://docs.djangoproject.com/en/1.11/ref/contrib/postgres/fields/
 django-pgjson==0.3.1
 modeltranslation==0.25
 -e git+https://github.com/revsys/django-tos.git#egg=django_tos-master
@@ -11,7 +12,7 @@ modeltranslation==0.25
 psycopg2==2.7.1
 
 # background process management
-boto==2.39.0
+
 celery==3.1.20
 django-redis-cache==1.6.5
 django_compressor==2.0
