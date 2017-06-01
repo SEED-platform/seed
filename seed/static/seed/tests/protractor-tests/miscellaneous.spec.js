@@ -186,7 +186,7 @@ describe('When I do miscellaneous things', function () {
 
     expect(rows.count()).toBe(2);
     $('[uib-btn-radio="\'or\'"]').click();
-    expect(rows.count()).toBe(4);
+    expect(rows.count()).toBe(3);
     $('[ng-click="clear_labels()"]').click();
     expect(rows.count()).toBe(11);
 
