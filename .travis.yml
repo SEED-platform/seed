@@ -28,7 +28,7 @@ env:
     - secure: JTArNnjh+Gir7ck4Kb+zUkfvZPHqi97FQg0YG06pqKoClmbPcFKaW/eiMeY8oJbbsM/R/diIpqskI1U8YpOG3SfILQfsG4bAs7m2x7a72Z2Z/jwWT8AWLc2qwlFNTByeoL3cOQt3sOyBRwC/XxGey4BqUDRkD0LJcRIoEiGGcKw=
   matrix:
 #    - TOX_ENV=python
-#    - TOX_ENV=flake8
+    - TOX_ENV=flake8
     - TOX_ENV=spelling
 #    - TOX_ENV=functional
 #    - TOX_ENV=apitest
