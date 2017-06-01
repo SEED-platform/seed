@@ -62,7 +62,7 @@ def obj_to_dict(obj, include_m2m=True):
     response = struct['fields']
     response[u'id'] = response[u'pk'] = struct['pk']
     response[u'model'] = struct['model']
-    # JsonField doesn't get serialized by `serialize`
+    # JsonField does not get serialized by `serialize`
     for f in obj._meta.fields:
         if isinstance(f, JsonField):
             e = getattr(obj, f.name)

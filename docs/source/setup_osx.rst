@@ -287,7 +287,7 @@ virtualenv post-activation script (e.g., in
     export DJANGO_SETTINGS_MODULE=config.settings.dev
 
 The combination of Redis, Celery, and Django have been encapsulated in a
-single shell script, which examines existing processes and doesn't start
+single shell script, which examines existing processes and does not start
 duplicate instances:
 
 .. code-block:: bash

@@ -254,7 +254,7 @@ class DataQualityCheckRules(TestCase):
         self.assertEqual(dq.results, {})
         self.assertEqual(initial_pk, dq.pk)
 
-        # check again to make sure that it doesn't append more rules to the same org
+        # check again to make sure that it does not append more rules to the same org
         dq = DataQualityCheck.retrieve(self.org.pk)
         self.assertEqual(dq.rules.count(), len(DEFAULT_RULES))
 

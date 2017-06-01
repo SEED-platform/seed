@@ -186,7 +186,7 @@ def check_status(result_out, part_msg, log, piid_flag=None):
                                              indent=2, width=70)
                     else:
                         msg = pprint.pformat(result_out.json(), indent=2, width=70)
-            except:
+            except BaseException:
                 log.error(part_msg + failed)
                 log.debug('Unknown error during request results recovery')
                 raise RuntimeError

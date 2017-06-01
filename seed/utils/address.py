@@ -106,7 +106,7 @@ def normalize_address_str(address_val):
         # usaddress can't parse this at all
         normalized_address = str(address_val)
     except UnicodeEncodeError:
-        # Some kind of odd character issue that we aren't handling yet.
+        # Some kind of odd character issue that we are not handling yet.
         normalized_address = str(address_val)
     else:
         # Address can be parsed, so let's format it.

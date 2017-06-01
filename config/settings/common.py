@@ -138,7 +138,7 @@ AWS_QUERYSTRING_AUTH = False
 # django-longer-username-and-email
 REQUIRE_UNIQUE_EMAIL = False
 
-# Create a log directory if it doesn't exist. This is not used in production, but is used in dev and test
+# Create a log directory if it does not exist. This is not used in production, but is used in dev and test
 if not os.path.exists('log'):
     os.makedirs('log')
 

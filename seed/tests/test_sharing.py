@@ -216,7 +216,7 @@ class SharingViewTests(TestCase):
         # @skip("Fix for new data model")
         # def test_suborg_view_not_shared(self):
         #     """
-        #     A suborg user that doesn't have 'show_shared_buildings' set
+        #     A suborg user that does not have 'show_shared_buildings' set
         #     should only see their own suborg's buildings.
         #     """
         #     self.assertFalse(self.eng_user.show_shared_buildings)

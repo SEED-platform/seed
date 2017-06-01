@@ -81,7 +81,7 @@ class Command(BaseCommand):
                 if add_property_labels:
                     # This is inefficient, in that it does each
                     # property/tax lot multiple times for each of it's
-                    # views - but it's clear and shouldn't be
+                    # views - but it's clear and should not be
                     # prohibitively wasteful.
 
                     # Alternatively you could grab the first
