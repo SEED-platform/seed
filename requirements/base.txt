@@ -1,43 +1,39 @@
 # Django
-Django==1.9.5
+django==1.9.5
+dj-database-url==0.2.1
+django-autoslug==1.9.3
+django-storages==1.4
+django-pgjson==0.3.1
+modeltranslation==0.25
 
-# Forms
-django_compressor==2.0
-django-extensions==1.6.1
-django-redis-cache==1.6.5
-django-ses==0.4.1
-django-sslify==0.2
-
-# For the persistence stores
+# Persistence stores
 psycopg2==2.6.1
 
-# Unicode slugification
-django-autoslug==1.9.3
+# background process management
+boto==2.39.0
+celery==3.1.20
+django-redis-cache==1.6.5
+django_compressor==2.0
+django-extensions==1.6.1
+kombu==3.0.32
+redis==2.10.5
 
 # Time zones support
 pytz==2012h
 
-# background process management
-celery==3.1.20
-redis==2.10.5
-flower==0.8.4
-kombu==3.0.32
-
-# Custom
-boto==2.39.0
-dj-database-url==0.2.1
+# API
 djangorestframework==3.3.3
 django-rest-swagger==0.3.8
-django-pgjson==0.3.1
-django-storages==1.4
+
+# Various packages
 -e git+https://github.com/revsys/django-tos.git#egg=django_tos-master
 jellyfish==0.3.2
-python-dateutil>=2.4
+python-dateutil==2.6.0
 raven==5.9.0
 street-address==0.3.0
-unicodecsv==0.9.4
-usaddress==0.5.10
-xlrd==0.9.4
-xlwt==0.7.5
-xmltodict==0.9.0
 unidecode==0.04.19
+xlwt==0.7.5
+xlrd==0.9.4
+xmltodict==0.9.0
+usaddress==0.5.10
+unicodecsv==0.9.4

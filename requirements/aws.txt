@@ -1,2 +1,5 @@
 -r base.txt
-uwsgi==2.0.15
+django-ses==0.4.1
+django-sslify==0.2
+
+uWSGI==2.0.15
