@@ -641,7 +641,7 @@ class TestMCMViews(TestCase):
             1
         )
 
-        # the second user in the org makes the same save, which shouldn't be
+        # the second user in the org makes the same save, which should not be
         # unique
         user_2_details = {
             'username': 'test_2_user@demo.com',

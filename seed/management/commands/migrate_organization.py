@@ -790,8 +790,8 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
                 if node_type == MERGE:
                     # Check to make sure the last stuff created is
                     # associated with the same cycle as the merge.
-                    assert last_property_view[m2m_cycle], "Didn't expect NO proeprty view"
-                    assert last_taxlot_view[m2m_cycle], "Didn't expect NO tax lot view"
+                    assert last_property_view[m2m_cycle], "Did not expect NO property view"
+                    assert last_taxlot_view[m2m_cycle], "Did not expect NO tax lot view"
 
                     # # FIXME - bad logic
                     # if m2m_cycle != last_property_view[cycle].cycle:
@@ -800,7 +800,7 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
                     # if m2m_cycle != last_taxlot_view.cycle:
                     #     last_taxlot_view, _ = seed.models.TaxLotView.objects.get_or_create(taxlot=tax_lot, cycle=m2m_cycle, state=last_taxlot_view.state)
 
-                    # assert m2m_cycle == last_taxlot_view.cycle == last_property_view.cycle, "Why aren't all these equal?!"
+                    # assert m2m_cycle == last_taxlot_view.cycle == last_property_view.cycle, "Why are not all these equal?!"
 
 
                     tlp, created = seed.models.TaxLotProperty.objects.get_or_create(

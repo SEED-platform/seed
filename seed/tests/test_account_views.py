@@ -216,7 +216,7 @@ class AccountsViewTests(TestCase):
         self.assertTrue(org['user_is_owner'])
 
     def test_get_organization_user_not_owner(self):
-        """test for the case where a user doesn't have access"""
+        """test for the case where a user does not have access"""
         other_org = Organization.objects.create(name='not my org')
         other_user = User.objects.create(
             username='tester@be.com',
@@ -236,7 +236,7 @@ class AccountsViewTests(TestCase):
             })
 
     def test_get_organization_org_doesnt_exist(self):
-        """test for the case where a user doesn't have access"""
+        """test for the case where a user does not have access"""
         resp = self.client.get(
             reverse_lazy('apiv2:organizations-detail', args=[self.org.id + 100]),
             content_type='application/json',
@@ -455,7 +455,7 @@ class AccountsViewTests(TestCase):
         self.assertEquals(ou.role_level, ROLE_OWNER)
 
     def test_update_role_no_perms(self):
-        """ Test trying to change your own role when you aren't an owner. """
+        """ Test trying to change your own role when you are not an owner. """
         ou = OrganizationUser.objects.get(user=self.user,
                                           organization=self.org)
         ou.role_level = ROLE_MEMBER
@@ -475,7 +475,7 @@ class AccountsViewTests(TestCase):
             # than returning an HttpResponse.  Update this when that changes.
             pass
 
-        # ensure we didn't just become owner
+        # ensure we did not just become owner
         self.assertFalse(self.org.is_owner(self.user))
 
     def test_bad_save_request(self):

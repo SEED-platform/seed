@@ -165,7 +165,7 @@ class TestDemoV2(DataMappingBaseTestCase):
             import_file=self.import_file_property,
         )
 
-        # there shouldn't be any properties left in the mapping state
+        # there should not be any properties left in the mapping state
         self.assertEqual(len(ps), 0)
 
         # psv = PropertyView.objects.filter(state__organization=self.org)

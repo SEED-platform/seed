@@ -5,8 +5,12 @@ var EC = protractor.ExpectedConditions;
 
 // Admin page last:
 describe('When I go to admin page', function () {
-    it('should delete new test org inventory', function () {
+    // manually
+    it ('should reset sync', function () {
         browser.ignoreSynchronization = false;
+    });
+    
+    it('should delete new test org inventory', function () {
         browser.get("/app/#/profile/admin");
         var myNewOrg = element.all(by.repeater('org in org_user.organizations')).filter(function (rows) {
             expect(rows.length).not.toBeLessThan(1);
@@ -25,7 +29,6 @@ describe('When I go to admin page', function () {
     });
 
     it('should delete new test sub org', function () {
-        browser.ignoreSynchronization = false;
         // browser.get("/app/#/profile/admin");
         var myNewSubOrg = element.all(by.repeater('org in org_user.organizations')).filter(function (rows) {
             expect(rows.length).not.toBeLessThan(1);
@@ -49,7 +52,6 @@ describe('When I go to admin page', function () {
     }, 30000);
 
     it('should delete new test org', function () {
-        browser.ignoreSynchronization = false;
         // browser.get("/app/#/profile/admin");
         var myNewOrg = element.all(by.repeater('org in org_user.organizations')).filter(function (rows) {
             expect(rows.length).not.toBeLessThan(1);
@@ -71,4 +73,15 @@ describe('When I go to admin page', function () {
         browser.wait(EC.not(EC.presenceOf(myNewOrg.$('.progress-bar.progress-bar-danger'))), 15000);
         expect(myNewOrg.isPresent()).toBe(false);
     }, 30000);
+
+    // manually
+    it ('should reset sync', function () {
+        browser.ignoreSynchronization = true;
+    });
+
+    it('should logout user', function () {
+        $('#sidebar-logout').click();
+        browser.wait(EC.presenceOf($('.section_marketing')), 30000);
+        expect($('.section_marketing').isPresent()).toBe(true);
+    });
 });

@@ -431,7 +431,7 @@ def _map_data(import_file_id, mark_as_done):
     prog_key = get_prog_key('map_data', import_file_id)
     import_file = ImportFile.objects.get(pk=import_file_id)
 
-    # If we haven't finished saving, we shouldn't proceed with mapping
+    # If we haven't finished saving, we should not proceed with mapping
     # Re-queue this task.
     if not import_file.raw_save_done:
         _log.debug("_map_data raw_save_done is false, queueing the task until raw_save finishes")
@@ -1143,7 +1143,7 @@ def match_and_merge_unmatched_objects(unmatched_states, partitioner):
     """
     _log.debug("Starting to map_and_merge_unmatched_objects")
 
-    # Sort unmatched states/This shouldn't be happening!
+    # Sort unmatched states/This should not be happening!
     unmatched_states.sort(key=lambda state: state.pk)
 
     def getattrdef(obj, attr, default):

@@ -75,7 +75,7 @@ def get_column_mapping(raw_column, organization, attr_name='column_mapped'):
         )
     except ColumnMapping.MultipleObjectsReturned:
         _log.debug("ColumnMapping.MultipleObjectsReturned in get_column_mapping")
-        # handle the special edge-case where remove dupes doesn't get
+        # handle the special edge-case where remove dupes does not get
         # called by ``get_or_create``
         ColumnMapping.objects.filter(super_organization=organization, column_raw__in=cols).delete()
 
@@ -225,7 +225,7 @@ class Column(models.Model):
                     )
                 except ColumnMapping.MultipleObjectsReturned:
                     _log.debug('ColumnMapping.MultipleObjectsReturned in create_mappings')
-                    # handle the special edge-case where remove dupes doesn't get
+                    # handle the special edge-case where remove dupes does not get
                     # called by ``get_or_create``
                     ColumnMapping.objects.filter(
                         super_organization=organization,
@@ -389,7 +389,7 @@ class Column(models.Model):
     def save_column_names(model_obj):
         """Save unique column names for extra_data in this organization.
 
-        This is a record of all the extra_data keys we've ever seen
+        This is a record of all the extra_data keys we have ever seen
         for a particular organization.
 
         :param model_obj: model_obj instance (either PropertyState or TaxLotState).
