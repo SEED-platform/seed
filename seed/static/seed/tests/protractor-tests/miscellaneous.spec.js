@@ -44,11 +44,12 @@ describe('When I do miscellaneous things', function () {
     expect(rowCount.count()).toBe(2);
 
     $$('[ng-click="save_settings()"]').first().click();
-    browser.wait(EC.presenceOf($('.fa-check')), 10000);
+    browser.wait(EC.presenceOf($('.fa-check')), 2000);
     browser.driver.navigate().refresh();
   });
 
   it('should refresh and change a rule', function () {
+    var rowCount = element.all(by.repeater('rule in ruleGroup'));
     expect(rowCount.count()).toBe(1);
 
     $$('[ng-model="rule.data_type"]').first().click();
@@ -65,7 +66,7 @@ describe('When I do miscellaneous things', function () {
     $$('[ng-click="rule.rule_type = 1; rule.enabled = !rule.enabled"]').first().click().click();
 
     $$('[ng-click="save_settings()"]').first().click();
-    browser.wait(EC.presenceOf($('.fa-check')), 10000);
+    browser.wait(EC.presenceOf($('.fa-check')), 2000);
     browser.driver.navigate().refresh();
   });
 
