@@ -46,6 +46,9 @@ describe('When I do miscellaneous things', function () {
     $$('[ng-click="save_settings()"]').first().click();
     browser.wait(EC.presenceOf($('.fa-check')), 10000);
     browser.driver.navigate().refresh();
+  });
+
+  it('should refresh and change a rule', function () {
     expect(rowCount.count()).toBe(1);
 
     $$('[ng-model="rule.data_type"]').first().click();
