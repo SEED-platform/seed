@@ -49,6 +49,7 @@ describe('When I do miscellaneous things', function () {
   });
 
   it('should refresh and change a rule', function () {
+    var rowCount = element.all(by.repeater('rule in ruleGroup'));
     expect(rowCount.count()).toBe(1);
 
     $$('[ng-model="rule.data_type"]').first().click();
