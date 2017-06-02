@@ -11,7 +11,7 @@ angular.module('BE.seed.controller.data_quality_modal', [])
   'name',
   'uploaded',
   'importFileId',
-  function(
+  function (
     $scope,
     $uibModalInstance,
     search_service,
@@ -59,7 +59,7 @@ angular.module('BE.seed.controller.data_quality_modal', [])
       title: 'Error Message'
     }];
     var columns = _.map(fields, 'sort_column');
-    _.forEach(fields, function(field) {
+    _.forEach(fields, function (field) {
       field.checked = false;
       field.class = 'is_aligned_right';
       field.field_type = null;
@@ -68,7 +68,7 @@ angular.module('BE.seed.controller.data_quality_modal', [])
       field.type = 'string';
     });
 
-    $scope.sortData = function() {
+    $scope.sortData = function () {
       $scope.dataQualityResults = _.orderBy($scope.dataQualityResults, [$scope.search.sort_column], [$scope.search.sort_reverse ? 'desc' : 'asc']);
     };
 
@@ -130,16 +130,16 @@ angular.module('BE.seed.controller.data_quality_modal', [])
       $scope.search.sanitize_params();
       _.forEach($scope.dataQualityResults, function (result) {
         if (!result.visible) result.visible = true;
-        _.forEach(result.data_quality_results, function(row) {
+        _.forEach(result.data_quality_results, function (row) {
           if (!row.visible) row.visible = true;
         });
       });
-      _.forEach(this.filter_params, function(value, column) {
+      _.forEach(this.filter_params, function (value, column) {
         value = value.toLowerCase();
         _.forEach($scope.dataQualityResults, function (result) {
           if (result.visible) {
             if (_.includes(['detailed_message', 'formatted_field', 'table_name'], column)) {
-              _.forEach(result.data_quality_results, function(row) {
+              _.forEach(result.data_quality_results, function (row) {
                 if (!_.includes(row[column].toLowerCase(), value)) row.visible = false;
               });
             } else {
@@ -164,4 +164,4 @@ angular.module('BE.seed.controller.data_quality_modal', [])
       columns,
       $scope.search.column_prototype
     );
-}]);
+  }]);

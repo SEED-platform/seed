@@ -6,21 +6,19 @@
  * TileCase
  * For when you want to capitalize each word, remove underscores.
  */
-angular.module('titleCase', []).filter('titleCase', [
-  '$filter',
-  function($filter) {
+angular.module('titleCase', []).filter('titleCase', function () {
 
-    return function(input) {
-        if (_.isNil(input)) {
-            return input;
-        }
-        input = input.toString();
-        input = input.replace(/_/g, ' ');
-        input = input.replace(/(?:^|\s)\S/g, function(a) {
-            return angular.uppercase(a);
-        });
+  return function (input) {
+    if (_.isNil(input)) {
+      return input;
+    }
+    input = input.toString();
+    input = input.replace(/_/g, ' ');
+    input = input.replace(/(?:^|\s)\S/g, function (a) {
+      return angular.uppercase(a);
+    });
 
-        return input;
-    };
+    return input;
+  };
 
-}]);
+});

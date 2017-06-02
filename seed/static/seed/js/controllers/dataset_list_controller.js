@@ -71,14 +71,11 @@ angular.module('BE.seed.controller.dataset', [])
           }
         });
 
-        dataModalInstance.result.then(
-          // modal close() function
-          function () {
-            init();
-            // modal dismiss() function
-          }, function (message) {
-            init();
-          });
+        dataModalInstance.result.then(function () {
+          init();
+        }, function () {
+          init();
+        });
       };
 
       $scope.confirm_delete = function (dataset) {
@@ -90,18 +87,12 @@ angular.module('BE.seed.controller.dataset', [])
           }
         });
 
-        modalInstance.result.then(
-          // modal close() function
-          function () {
-            init();
-            // modal dismiss() function
-          }, function (message) {
-            init();
-          });
+        modalInstance.result.finally(function () {
+          init();
+        });
       };
       $scope.update_dataset = function (dataset) {
-        dataset_service.update_dataset(dataset).then(function (data) {
-          // resolve promise
+        dataset_service.update_dataset(dataset).then(function () {
           init();
         });
       };

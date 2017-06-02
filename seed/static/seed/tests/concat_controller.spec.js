@@ -65,7 +65,7 @@ describe('controller: concat_modal_controller', function () {
   ];
 
   // this is outside the beforeEach so it can be configured by each unit test
-  function create_concat_modal_controller() {
+  function create_concat_modal_controller () {
     concat_modal_controller = controller('concat_modal_controller', {
       $scope: concat_modal_controller_scope,
       $uibModalInstance: {

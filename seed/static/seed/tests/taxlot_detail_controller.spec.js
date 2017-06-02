@@ -19,7 +19,7 @@ describe('controller: inventory_detail_controller', function () {
     function ($controller, $rootScope, $state, $uibModal, $log, $filter, $stateParams, $q, urls, label_service, label_service,
               inventory_service) {
       controller = $controller;
-      state: $state;
+      state = $state;
       ngFilter = $filter;
       ngLog = $log;
       ngUrls = urls;
@@ -37,107 +37,106 @@ describe('controller: inventory_detail_controller', function () {
 
       spyOn(mock_inventory_service, 'update_taxlot')
         .andCallFake(function (taxlot_id, cycle_id, taxlot_state) {
-            inventory_detail_controller_scope.item_state = taxlot_state;
-            return $q.when({
-              status: 'success'
-            });
-          }
-        );
+          inventory_detail_controller_scope.item_state = taxlot_state;
+          return $q.when({
+            status: 'success'
+          });
+        });
     }
   ));
 
   // this is outside the beforeEach so it can be configured by each unit test
-  function create_inventory_detail_controller() {
+  function create_inventory_detail_controller () {
 
     var fake_taxlot_payload = {
-      "taxlot": {
-        "id": 4,
-        "organization": 24
+      taxlot: {
+        id: 4,
+        organization: 24
       },
-      "cycle": {
-        "created": "2016-08-02T16:38:22.925258Z",
-        "end": "2011-01-01T07:59:59Z",
-        "id": 1,
-        "name": "2010 Calendar Year",
-        "organization": 24,
-        "start": "2010-01-01T08:00:00Z",
-        "user": ""
+      cycle: {
+        created: '2016-08-02T16:38:22.925258Z',
+        end: '2011-01-01T07:59:59Z',
+        id: 1,
+        name: '2010 Calendar Year',
+        organization: 24,
+        start: '2010-01-01T08:00:00Z',
+        user: ''
       },
-      "properties": [
+      properties: [
         {
-          "property": {"id": 2},
-          "cycle": {"id": 1},
-          "state": {"address_line_1": "123 Main St. Bldg 1"}
+          property: {id: 2},
+          cycle: {id: 1},
+          state: {address_line_1: '123 Main St. Bldg 1'}
         },
         {
-          "property": {"id": 3},
-          "cycle": {"id": 1},
-          "state": {"address_line_1": "123 Main St. Bldg 2"}
+          property: {id: 3},
+          cycle: {id: 1},
+          state: {address_line_1: '123 Main St. Bldg 2'}
         }
       ],
-      "state": {
-        "address_line_1": "123 Main St.",
-        "address_line_2": "the newest value!",
-        "state": "Illinois",
-        "extra_data": {
-          "some_extra_data_field_1": "1",
-          "some_extra_data_field_2": "2",
-          "some_extra_data_field_3": "3",
-          "some_extra_data_field_4": "4"
+      state: {
+        address_line_1: '123 Main St.',
+        address_line_2: 'the newest value!',
+        state: 'Illinois',
+        extra_data: {
+          some_extra_data_field_1: '1',
+          some_extra_data_field_2: '2',
+          some_extra_data_field_3: '3',
+          some_extra_data_field_4: '4'
         }
       },
-      "extra_data_keys": [
-        "some_extra_data_field_1",
-        "some_extra_data_field_2",
-        "some_extra_data_field_3",
-        "some_extra_data_field_4"
+      extra_data_keys: [
+        'some_extra_data_field_1',
+        'some_extra_data_field_2',
+        'some_extra_data_field_3',
+        'some_extra_data_field_4'
       ],
-      "changed_fields": {
-        "regular_fields": ["address_line_2"],
-        "extra_data_fields": []
+      changed_fields: {
+        regular_fields: ['address_line_2'],
+        extra_data_fields: []
       },
-      "history": [
+      history: [
         {
-          "state": {
-            "address_line_1": "123 Main St.",
-            "address_line_2": "newer value",
-            "state": "Illinois",
-            "extra_data": {
-              "some_extra_data_field_1": "1",
-              "some_extra_data_field_2": "2",
-              "some_extra_data_field_3": "3",
-              "some_extra_data_field_4": "4"
+          state: {
+            address_line_1: '123 Main St.',
+            address_line_2: 'newer value',
+            state: 'Illinois',
+            extra_data: {
+              some_extra_data_field_1: '1',
+              some_extra_data_field_2: '2',
+              some_extra_data_field_3: '3',
+              some_extra_data_field_4: '4'
             }
           },
-          "changed_fields": {
-            "regular_fields": ["address_line_2"],
-            "extra_data_fields": []
+          changed_fields: {
+            regular_fields: ['address_line_2'],
+            extra_data_fields: []
           },
-          "date_edited": "2016-07-26T15:55:10.180Z",
-          "source": "UserEdit"
+          date_edited: '2016-07-26T15:55:10.180Z',
+          source: 'UserEdit'
         },
         {
-          "state": {
-            "address_line_1": "123 Main St.",
-            "address_line_2": "old value",
-            "state": "Illinois",
-            "extra_data": {
-              "some_extra_data_field_1": "1",
-              "some_extra_data_field_2": "2",
-              "some_extra_data_field_3": "3",
-              "some_extra_data_field_4": "4"
+          state: {
+            address_line_1: '123 Main St.',
+            address_line_2: 'old value',
+            state: 'Illinois',
+            extra_data: {
+              some_extra_data_field_1: '1',
+              some_extra_data_field_2: '2',
+              some_extra_data_field_3: '3',
+              some_extra_data_field_4: '4'
             }
           },
-          "changed_fields": {
-            "regular_fields": [],
-            "extra_data_fields": []
+          changed_fields: {
+            regular_fields: [],
+            extra_data_fields: []
           },
-          "date_edited": "2016-07-25T15:55:10.180Z",
-          "source": "ImportFile",
-          "filename": "myfile.csv"
+          date_edited: '2016-07-25T15:55:10.180Z',
+          source: 'ImportFile',
+          filename: 'myfile.csv'
         }
       ],
-      "status": "success"
+      status: 'success'
     };
 
     var fake_all_columns = [
@@ -154,15 +153,15 @@ describe('controller: inventory_detail_controller', function () {
       }
     ];
     inventory_detail_controller = controller('inventory_detail_controller', {
-      $state: state, 
+      $state: state,
       $scope: inventory_detail_controller_scope,
       $uibModal: mock_uib_modal,
       $stateParams: {
-                cycle_id: 2017,
-                inventory_id: 4,
-                inventory_type: 'taxlots',
-                project_id: 2
-            },
+        cycle_id: 2017,
+        inventory_id: 4,
+        inventory_type: 'taxlots',
+        project_id: 2
+      },
       $log: ngLog,
       $filter: ngFilter,
       urls: ngUrls,
@@ -194,7 +193,7 @@ describe('controller: inventory_detail_controller', function () {
     // assertions
     expect(inventory_detail_controller_scope.inventory.id).toBe(4);
     expect(inventory_detail_controller_scope.cycle.id).toBe(1);
-    expect(inventory_detail_controller_scope.item_state.address_line_1).toBe("123 Main St.");
+    expect(inventory_detail_controller_scope.item_state.address_line_1).toBe('123 Main St.');
 
   });
 
@@ -207,10 +206,10 @@ describe('controller: inventory_detail_controller', function () {
     // act
     inventory_detail_controller_scope.$digest();
     inventory_detail_controller_scope.on_edit();
-    inventory_detail_controller_scope.item_state.address_line_1 = "ABC Main St.";
+    inventory_detail_controller_scope.item_state.address_line_1 = 'ABC Main St.';
 
     // assertions
-    expect(inventory_detail_controller_scope.item_copy.address_line_1).toBe("123 Main St.");
+    expect(inventory_detail_controller_scope.item_copy.address_line_1).toBe('123 Main St.');
 
   });
 
@@ -237,11 +236,11 @@ describe('controller: inventory_detail_controller', function () {
     // act
     inventory_detail_controller_scope.$digest();
     inventory_detail_controller_scope.on_edit();
-    inventory_detail_controller_scope.item_state.address_line_1 = "ABC Main St.";
+    inventory_detail_controller_scope.item_state.address_line_1 = 'ABC Main St.';
     inventory_detail_controller_scope.on_cancel();
 
     // assertions
-    expect(inventory_detail_controller_scope.item_state.address_line_1).toBe("123 Main St.");
+    expect(inventory_detail_controller_scope.item_state.address_line_1).toBe('123 Main St.');
     expect(inventory_detail_controller_scope.edit_form_showing).toBe(false);
 
   });
@@ -254,7 +253,7 @@ describe('controller: inventory_detail_controller', function () {
     // act
     inventory_detail_controller_scope.$digest();
     inventory_detail_controller_scope.on_edit();
-    inventory_detail_controller_scope.item_state.address_line_1 = "ABC Main St.";
+    inventory_detail_controller_scope.item_state.address_line_1 = 'ABC Main St.';
     inventory_detail_controller_scope.on_save();
 
     // assertions
@@ -262,7 +261,7 @@ describe('controller: inventory_detail_controller', function () {
       .toHaveBeenCalledWith(inventory_detail_controller_scope.inventory.id,
         inventory_detail_controller_scope.cycle.id,
         inventory_detail_controller_scope.item_state);
-    expect(inventory_detail_controller_scope.item_state.address_line_1).toEqual("ABC Main St.");
+    expect(inventory_detail_controller_scope.item_state.address_line_1).toEqual('ABC Main St.');
   });
 
 

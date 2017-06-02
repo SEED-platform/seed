@@ -10,14 +10,14 @@ describe('When I do miscellaneous things', function () {
 
   //Data Quality
   it('should see my organizations', function () {
-    browser.get("/app/#/accounts");
+    browser.get('/app/#/accounts');
     var rows = element.all(by.repeater('org in orgs_I_own'));
     expect(rows.count()).not.toBeLessThan(1);
   });
 
   it('should go to parent organization', function () {
     var myNewOrg = element(by.cssContainingText('.account_org.parent_org', browser.params.testOrg.parent))
-        .element(by.xpath('..')).$('.account_org.right');
+      .element(by.xpath('..')).$('.account_org.right');
     expect(myNewOrg.isPresent()).toBe(true);
     browser.actions().mouseMove(myNewOrg).perform();
     myNewOrg.$$('a').first().click();
@@ -101,7 +101,7 @@ describe('When I do miscellaneous things', function () {
 
     $$('[label="Text"]').get(1).click();
 
-    $$('[ng-repeat="field in sortedRuleGroups()"]').get(1).$('[ng-model="rule.text_match"]').sendKeys("1234");
+    $$('[ng-repeat="field in sortedRuleGroups()"]').get(1).$('[ng-model="rule.text_match"]').sendKeys('1234');
     $$('[ng-click="create_label(rule, $index)"]').first().click();
     $$('.btn-default.action_link').get(3).click();
     $$('[ng-click="save_settings()"]').first().click();
@@ -176,7 +176,7 @@ describe('When I do miscellaneous things', function () {
 
   it('should test labels were applied correctly', function () {
     var rows = $('.left.ui-grid-render-container-left.ui-grid-render-container')
-        .all(by.repeater('(rowRenderIndex, row) in rowContainer.renderedRows'));
+      .all(by.repeater('(rowRenderIndex, row) in rowContainer.renderedRows'));
 
     //check labels -
     $('[ng-click="clear_labels()"]').click();
@@ -198,7 +198,7 @@ describe('When I do miscellaneous things', function () {
 
   //Delete
   it('should delete data stuffs', function () {
-    browser.get("/app/#/data");
+    browser.get('/app/#/data');
     $$('[ui-sref="dataset_detail({dataset_id: d.id})"]').first().click();
     $$('.delete_link').get(1).click();
     $$('[ng-click="delete_file()"]').click();
