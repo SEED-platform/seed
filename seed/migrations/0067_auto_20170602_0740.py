@@ -23,4 +23,19 @@ class Migration(migrations.Migration):
             name='extra_data',
             field=django.contrib.postgres.fields.jsonb.JSONField(blank=True, default=dict),
         ),
+        migrations.AlterField(
+            model_name='buildingsnapshot',
+            name='extra_data',
+            field=django.contrib.postgres.fields.jsonb.JSONField(default=dict),
+        ),
+        migrations.AlterField(
+            model_name='buildingsnapshot',
+            name='extra_data_sources',
+            field=django.contrib.postgres.fields.jsonb.JSONField(default=dict),
+        ),
+        migrations.AlterField(
+            model_name='custombuildingheaders',
+            name='building_headers',
+            field=django.contrib.postgres.fields.jsonb.JSONField(default=dict),
+        ),
     ]

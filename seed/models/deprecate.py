@@ -607,9 +607,9 @@ class BuildingSnapshot(TimeStampedModel):
     #
 
     # 'key' -> 'value'
-    extra_data = JSONField(default={})
+    extra_data = JSONField(default=dict)
     # 'key' -> ['model', 'fk'], what was the model and its FK?
-    extra_data_sources = JSONField(default={})
+    extra_data_sources = JSONField(default=dict)
 
     objects = JsonManager()
 

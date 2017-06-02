@@ -259,7 +259,7 @@ class CustomBuildingHeaders(models.Model):
 
     # 'existing, normalized name' -> 'preferred display name'
     # e.g. {'district': 'Boro'}
-    building_headers = JSONField(default={})
+    building_headers = JSONField(default=dict)
 
     objects = JsonManager()
 
