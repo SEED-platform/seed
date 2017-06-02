@@ -44,9 +44,9 @@ describe('When I do miscellaneous things', function () {
     expect(rowCount.count()).toBe(2);
 
     $$('[ng-click="save_settings()"]').first().click();
-    browser.wait(EC.presenceOf($('.fa-check')), 2000);
+    browser.wait(EC.presenceOf($('.fa-check')), 5000);
     browser.driver.navigate().refresh();
-  });
+  }, 60000);
 
   it('should refresh and change a rule', function () {
     var rowCount = element.all(by.repeater('rule in ruleGroup'));
@@ -66,9 +66,9 @@ describe('When I do miscellaneous things', function () {
     $$('[ng-click="rule.rule_type = 1; rule.enabled = !rule.enabled"]').first().click().click();
 
     $$('[ng-click="save_settings()"]').first().click();
-    browser.wait(EC.presenceOf($('.fa-check')), 2000);
+    browser.wait(EC.presenceOf($('.fa-check')), 5000);
     browser.driver.navigate().refresh();
-  });
+  }, 60000);
 
   it('should create new label and associate with rule', function () {
     //no rule should have a label
@@ -79,12 +79,12 @@ describe('When I do miscellaneous things', function () {
     expect($('.modal-title').isPresent()).toBe(true);
     $('#labelName').sendKeys('ruleLabel');
     $$('.btn.btn-primary').first().click();
-    $$('.btn-default.action_link').get(1).click();
+    $$('.btn-default.action_link').get(2).click();
 
     //check label was attached after save and refresh
     $$('[ng-click="save_settings()"]').first().click();
     browser.driver.navigate().refresh();
-  });
+  }, 60000);
 
   it('should reset all rules and add labels', function () {
     $$('[ng-click="restore_defaults()"]').first().click();
@@ -97,29 +97,29 @@ describe('When I do miscellaneous things', function () {
   it('should add labels to previous rules', function () {
     $('[ui-sref="organization_data_quality({organization_id: org.id, inventory_type: \'taxlots\'})"]').click();
     $$('[ng-click="create_label(rule, $index)"]').first().click();
-    $$('.btn.btn-sm.btn-default.action_link').first().click();
+    $$('.btn.btn-sm.btn-default.action_link').get(2).click();
 
     $$('[label="Text"]').get(1).click();
 
     $$('[ng-repeat="field in sortedRuleGroups()"]').get(1).$('[ng-model="rule.text_match"]').sendKeys("1234");
     $$('[ng-click="create_label(rule, $index)"]').first().click();
-    $$('.btn-default.action_link').get(2).click();
+    $$('.btn-default.action_link').get(3).click();
     $$('[ng-click="save_settings()"]').first().click();
-  });
+    browser.driver.navigate().refresh();
+  }, 60000);
 
   it('should refesh and rules are correctly saved', function () {
-    browser.driver.navigate().refresh();
     expect(element.all(by.repeater('rule in ruleGroup')).first().$('.form-control.label.label-primary').isPresent()).toBe(true);
     $$('[ng-click="removeLabelFromRule(rule)"]').first().click();
     expect(element.all(by.repeater('rule in ruleGroup')).first().$('.form-control.label.label-primary').isPresent()).toBe(false);
     $$('[ng-click="save_settings()"]').first().click();
-  });
+    browser.driver.navigate().refresh();
+  }, 60000);
 
   it('should refesh again and check rules', function () {
-    browser.driver.navigate().refresh();
     expect(element.all(by.repeater('rule in ruleGroup')).first().$('.form-control.label.label-primary').isPresent()).toBe(false);
     $$('[ng-click="create_label(rule, $index)"]').first().click();
-    $$('.btn.btn-sm.btn-default.action_link').first().click();
+    $$('.btn.btn-sm.btn-default.action_link').get(2).click();
     $$('[ng-click="save_settings()"]').first().click();
   });
 

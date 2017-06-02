@@ -105,7 +105,7 @@ describe('When I visit the the parent org', function () {
 		browser.sleep(2000);
 		$('.btn.btn-primary.ng-binding').click();
 		expect(myNewLabel.isPresent()).toBe(false);
-	});
+	}, 60000);
 
 	// manually
 	it ('should reset sync', function () {
@@ -141,7 +141,7 @@ describe('When I visit the the parent org', function () {
 		}).click();
 
 		expect(rowCheck.count()).toBeLessThan(1);
-	});  
+	}, 120000);  
 
 
 	it('should create 1 data quality rule for properties', function () {
@@ -200,7 +200,7 @@ describe('When I visit the the parent org', function () {
 		expect(rowCheck.count()).not.toBeLessThan(1); 
 		$$('[ng-click="save_settings()"]').first().click();
 		browser.wait(EC.presenceOf($('.fa-check')),10000);
-	});
+	}, 60000);
 
 });
 
