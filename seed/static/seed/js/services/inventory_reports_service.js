@@ -4,10 +4,10 @@
  */
 angular.module('BE.seed.service.inventory_reports',
   []).factory('inventory_reports_service', [
-  '$http',
-  '$log',
-  'user_service',
-  function ($http,
+    '$http',
+    '$log',
+    'user_service',
+    function ($http,
             $log,
             user_service) {
 
@@ -38,42 +38,42 @@ angular.module('BE.seed.service.inventory_reports',
            }, ...
          ]
      }
- */
-    function get_report_data(xVar, yVar, start, end) {
+     */
+      function get_report_data (xVar, yVar, start, end) {
 
       // Error checks (should be able to collapse this...)
-      if (_.isNil(xVar)) {
-        $log.error('#inventory_reports_service.get_report_data(): null \'xVar\' parameter');
-        throw new Error('Invalid Parameter');
-      }
-      if (_.isNil(yVar)) {
-        $log.error('#inventory_reports_service.get_report_data(): null \'yVar\' parameter');
-        throw new Error('Invalid Parameter');
-      }
-      if (_.isNil(start)) {
-        $log.error('#inventory_reports_service.get_report_data(): null \'start\' parameter');
-        throw new Error('Invalid Parameter');
-      }
-      if (_.isNil(end)) {
-        $log.error('#inventory_reports_service.get_report_data(): null \'end\' parameter');
-        throw new Error('Invalid Parameter');
-      }
-
-      return $http.get(window.BE.urls.get_inventory_report_data, {
-        params: {
-          organization_id: user_service.get_organization().id,
-          x_var: xVar,
-          y_var: yVar,
-          start: start,
-          end: end
+        if (_.isNil(xVar)) {
+          $log.error('#inventory_reports_service.get_report_data(): null \'xVar\' parameter');
+          throw new Error('Invalid Parameter');
         }
-      }).then(function (response) {
-        building_reports_factory.report_data = _.has(response.data, 'report_data') ? response.data.report_data : [];
-        return response.data;
-      }).catch(function () {
-        building_reports_factory.reports_data = [];
-      });
-    }
+        if (_.isNil(yVar)) {
+          $log.error('#inventory_reports_service.get_report_data(): null \'yVar\' parameter');
+          throw new Error('Invalid Parameter');
+        }
+        if (_.isNil(start)) {
+          $log.error('#inventory_reports_service.get_report_data(): null \'start\' parameter');
+          throw new Error('Invalid Parameter');
+        }
+        if (_.isNil(end)) {
+          $log.error('#inventory_reports_service.get_report_data(): null \'end\' parameter');
+          throw new Error('Invalid Parameter');
+        }
+
+        return $http.get(window.BE.urls.get_inventory_report_data, {
+          params: {
+            organization_id: user_service.get_organization().id,
+            x_var: xVar,
+            y_var: yVar,
+            start: start,
+            end: end
+          }
+        }).then(function (response) {
+          building_reports_factory.report_data = _.has(response.data, 'report_data') ? response.data.report_data : [];
+          return response.data;
+        }).catch(function () {
+          building_reports_factory.reports_data = [];
+        });
+      }
 
 
     /**
@@ -104,80 +104,58 @@ angular.module('BE.seed.service.inventory_reports',
           ...
        }
  */
-    function get_aggregated_report_data(xVar, yVar, start, end) {
+      function get_aggregated_report_data (xVar, yVar, start, end) {
 
       // Error checks (should be able to collapse this...)
-      if (_.isNil(xVar)) {
-        $log.error('#inventory_reports_service.get_aggregated_report_data(): null \'xVar\' parameter');
-        throw new Error('Invalid Parameter');
-      }
-      if (_.isNil(yVar)) {
-        $log.error('#inventory_reports_service.get_aggregated_report_data(): null \'yVar\' parameter');
-        throw new Error('Invalid Parameter');
-      }
-      if (_.isNil(start)) {
-        $log.error('#inventory_reports_service.get_aggregated_report_data(): null \'start\' parameter');
-        throw new Error('Invalid Parameter');
-      }
-      if (_.isNil(end)) {
-        $log.error('#inventory_reports_service.get_aggregated_report_data(): null \'end\' parameter');
-        throw new Error('Invalid Parameter');
-      }
-
-      return $http.get(window.BE.urls.get_aggregated_inventory_report_data, {
-        params: {
-          organization_id: user_service.get_organization().id,
-          x_var: xVar,
-          y_var: yVar,
-          start: start,
-          end: end
+        if (_.isNil(xVar)) {
+          $log.error('#inventory_reports_service.get_aggregated_report_data(): null \'xVar\' parameter');
+          throw new Error('Invalid Parameter');
         }
-      }).then(function (response) {
-        building_reports_factory.aggregated_reports_data = _.has(response.data, 'report_data') ? response.data.report_data : [];
-        return response.data;
-      }).catch(function () {
-        building_reports_factory.aggregated_reports_data = [];
-      });
-    }
-
-    /*  This method is not currently used in the first version of the building reports page.
-     Uncomment this method when the back end endpoint has been implemented.
-
-     2016-09-06 Note this was never properly implemented in the old
-     version so there is nothing meaningful to base the implementation
-     on. Therefore the endpoint may never get implemented.
-     */
-    function get_summary_data(xVar, yVar, startDate, endDate) {
-      return $http.get(window.BE.urls.get_inventory_summary_report_data, {
-        params: {
-          organization_id: user_service.get_organization().id,
-          start_date: getDateString(startDate),
-          end_date: getDateString(endDate)
+        if (_.isNil(yVar)) {
+          $log.error('#inventory_reports_service.get_aggregated_report_data(): null \'yVar\' parameter');
+          throw new Error('Invalid Parameter');
         }
-      }).then(function (response) {
-        building_reports_factory.summary_data = _.has(response.data, 'summary_data') ? response.data.summary_data : [];
-        return response.data;
-      }).catch(function () {
-        building_reports_factory.summary_data = [];
-      });
-    }
+        if (_.isNil(start)) {
+          $log.error('#inventory_reports_service.get_aggregated_report_data(): null \'start\' parameter');
+          throw new Error('Invalid Parameter');
+        }
+        if (_.isNil(end)) {
+          $log.error('#inventory_reports_service.get_aggregated_report_data(): null \'end\' parameter');
+          throw new Error('Invalid Parameter');
+        }
+
+        return $http.get(window.BE.urls.get_aggregated_inventory_report_data, {
+          params: {
+            organization_id: user_service.get_organization().id,
+            x_var: xVar,
+            y_var: yVar,
+            start: start,
+            end: end
+          }
+        }).then(function (response) {
+          building_reports_factory.aggregated_reports_data = _.has(response.data, 'report_data') ? response.data.report_data : [];
+          return response.data;
+        }).catch(function () {
+          building_reports_factory.aggregated_reports_data = [];
+        });
+      }
 
     /* Public API */
 
-    var building_reports_factory = {
+      var building_reports_factory = {
 
       //properties
-      reports_data: [],
-      aggregated_reports_data: [],
-      summary_data: [],
+        reports_data: [],
+        aggregated_reports_data: [],
+        summary_data: [],
 
       //functions
       //get_summary_data : get_summary_data,
-      get_report_data: get_report_data,
-      get_aggregated_report_data: get_aggregated_report_data
+        get_report_data: get_report_data,
+        get_aggregated_report_data: get_aggregated_report_data
 
-    };
+      };
 
-    return building_reports_factory;
+      return building_reports_factory;
 
-  }]);
+    }]);

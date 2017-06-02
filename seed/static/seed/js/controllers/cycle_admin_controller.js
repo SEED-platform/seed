@@ -27,7 +27,7 @@ angular.module('BE.seed.controller.cycle_admin', [])
       };
       processCycles(cycles_payload);
 
-      function initialize_new_cycle() {
+      function initialize_new_cycle () {
         $scope.new_cycle = {start: null, end: null, name: ''};
       }
 
@@ -37,15 +37,15 @@ angular.module('BE.seed.controller.cycle_admin', [])
         if (form.$invalid) {
           return;
         }
-        cycle_service.create_cycle_for_org($scope.new_cycle, $scope.org.id).then(function (data) {
-            var msg = 'Created new Cycle ' + getTruncatedName($scope.new_cycle.name);
-            Notification.primary(msg);
-            initialize_new_cycle();
-            form.$setPristine();
-            cycle_service.get_cycles_for_org($scope.org.id).then(processCycles);
-          }, function (message) {
-            $log.error('Error creating new cycle.', message);
-          }
+        cycle_service.create_cycle_for_org($scope.new_cycle, $scope.org.id).then(function () {
+          var msg = 'Created new Cycle ' + getTruncatedName($scope.new_cycle.name);
+          Notification.primary(msg);
+          initialize_new_cycle();
+          form.$setPristine();
+          cycle_service.get_cycles_for_org($scope.org.id).then(processCycles);
+        }, function (message) {
+          $log.error('Error creating new cycle.', message);
+        }
         );
       };
 
@@ -58,7 +58,7 @@ angular.module('BE.seed.controller.cycle_admin', [])
         if (isCycleNameUsed(newCycleName)) return 'That Cycle name already exists';
       };
 
-      function isCycleNameUsed(newCycleName) {
+      function isCycleNameUsed (newCycleName) {
         return _.some($scope.cycles, function (obj) {
           return obj.name === newCycleName;
         });
@@ -75,7 +75,7 @@ angular.module('BE.seed.controller.cycle_admin', [])
       $scope.saveCycle = function (cycle, id) {
         //Don't update $scope.cycle until a 'success' from server
         angular.extend(cycle, {id: id});
-        cycle_service.update_cycle_for_org(cycle, $scope.org.id).then(function (data) {
+        cycle_service.update_cycle_for_org(cycle, $scope.org.id).then(function () {
           var msg = 'Cycle updated.';
           Notification.primary(msg);
           cycle_service.get_cycles_for_org($scope.org.id).then(processCycles);
@@ -85,7 +85,7 @@ angular.module('BE.seed.controller.cycle_admin', [])
       };
 
       $scope.deleteCycle = function (cycle) {
-        cycle_service.delete_cycle_for_org(cycle, $scope.org.id).then(function (data) {
+        cycle_service.delete_cycle_for_org(cycle, $scope.org.id).then(function () {
           var msg = 'Cycle deleted.';
           Notification.primary(msg);
           cycle_service.get_cycles_for_org($scope.org.id).then(processCycles);
@@ -122,11 +122,11 @@ angular.module('BE.seed.controller.cycle_admin', [])
         $scope.endDatePickerOpen = !$scope.endDatePickerOpen;
       };
 
-      $scope.$watch('startDate', function (newval, oldval) {
+      $scope.$watch('startDate', function () {
         $scope.checkInvalidDate();
       });
 
-      $scope.$watch('endDate', function (newval, oldval) {
+      $scope.$watch('endDate', function ( ) {
         $scope.checkInvalidDate();
       });
 
@@ -134,7 +134,7 @@ angular.module('BE.seed.controller.cycle_admin', [])
         $scope.invalidDates = ($scope.endDate < $scope.startDate);
       };
 
-      function getTruncatedName(name) {
+      function getTruncatedName (name) {
         if (name && name.length > 20) {
           name = name.substr(0, 20) + '...';
         }

@@ -49,13 +49,10 @@ angular.module('BE.seed.service.mapping', []).factory('mapping_service', [
      * Save the mapping between user input data, and our BS attributes.
      */
     mapping_factory.save_mappings = function (import_file_id, mappings) {
-      return $http.post(
-          '/api/v2/import_files/' + import_file_id + '/save_column_mappings/',
-          {
-            mappings: mappings,
-            organization_id: user_service.get_organization().id
-          }
-      ).then(function (response) {
+      return $http.post('/api/v2/import_files/' + import_file_id + '/save_column_mappings/', {
+        mappings: mappings,
+        organization_id: user_service.get_organization().id
+      }).then(function (response) {
         return response.data;
       });
     };
@@ -66,14 +63,11 @@ angular.module('BE.seed.service.mapping', []).factory('mapping_service', [
      * @param import_file_id: int, represents file import id.
      */
     mapping_factory.start_mapping = function (import_file_id) {
-      return $http.post(
-          '/api/v2/import_files/' + import_file_id + '/perform_mapping/',
-          {
-            remap: false,
-            mark_as_done: false,
-            organization_id: user_service.get_organization().id
-          }
-      ).then(function (response) {
+      return $http.post('/api/v2/import_files/' + import_file_id + '/perform_mapping/', {
+        remap: false,
+        mark_as_done: false,
+        organization_id: user_service.get_organization().id
+      }).then(function (response) {
         return response.data;
       });
     };
@@ -84,14 +78,11 @@ angular.module('BE.seed.service.mapping', []).factory('mapping_service', [
      * @param import_file_id: int, represents file import id.
      */
     mapping_factory.remap_buildings = function (import_file_id) {
-      return $http.post(
-          '/api/v2/import_files/' + import_file_id + '/perform_mapping/',
-          {
-            remap: true,
-            mark_as_done: false,
-            organization_id: user_service.get_organization().id
-          }
-      ).then(function (response) {
+      return $http.post('/api/v2/import_files/' + import_file_id + '/perform_mapping/', {
+        remap: true,
+        mark_as_done: false,
+        organization_id: user_service.get_organization().id
+      }).then(function (response) {
         return response.data;
       });
     };

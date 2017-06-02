@@ -66,33 +66,33 @@ angular.module('BE.seed.controller.menu', [])
         }
         spinner_utility.hide();
       });
-      $rootScope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams, options) {
+      $rootScope.$on('$stateChangeStart', function (event, toState) {
         $scope.menu.loading = toState.controller === 'mapping_controller';
         spinner_utility.show();
       });
-      $rootScope.$on('$stateChangeSuccess', function (event, toState, toParams, fromState, fromParams) {
+      $rootScope.$on('$stateChangeSuccess', function () {
         $scope.menu.loading = false;
         $scope.menu.route_load_error = false;
         spinner_utility.hide();
       });
-      $rootScope.$on('$stateNotFound', function (event, unfoundState, fromState, fromParams) {
+      $rootScope.$on('$stateNotFound', function (event, unfoundState) {
         $log.error('State not found:', unfoundState.to);
       });
       $scope.$on('app_error', function (event, data) {
         $scope.menu.route_load_error = true;
         $scope.menu.error_message = data.message;
       });
-      $scope.$on('project_created', function (event, data) {
+      $scope.$on('project_created', function () {
         init();
       });
-      $scope.$on('show_saving', function (event, data) {
+      $scope.$on('show_saving', function () {
         $scope.saving_indicator = true;
         start_saving_indicator('. . .   ', '');
       });
-      $scope.$on('finished_saving', function (event, data) {
+      $scope.$on('finished_saving', function () {
         $scope.saving_indicator = false;
       });
-      $scope.$on('organization_list_updated', function (event, data) {
+      $scope.$on('organization_list_updated', function () {
         init();
       });
 
@@ -123,7 +123,7 @@ angular.module('BE.seed.controller.menu', [])
       };
 
       //Sets initial expanded/collapse state of sidebar menu
-      function init_menu() {
+      function init_menu () {
         //Default to false but use cookie value if one has been set
         var isNavExpanded = $cookies.seed_nav_is_expanded === 'true';
         $scope.expanded_controller = isNavExpanded;
@@ -151,8 +151,7 @@ angular.module('BE.seed.controller.menu', [])
         try {
           //TODO : refactor to put() when we move to Angular 1.3 or greater
           $cookies.seed_nav_is_expanded = $scope.expanded_controller.toString();
-        }
-        catch (err) {
+        } catch (err) {
           //it's ok if the cookie can't be written, so just report in the log and move along.
           $log.error('Couldn\'t write cookie for nav state. Error: ', err);
         }
@@ -166,9 +165,7 @@ angular.module('BE.seed.controller.menu', [])
             project: function () {
               return $scope.menu.project;
             },
-            create_project: function () {
-              return true;
-            }
+            create_project: _.constant(true)
           }
         });
 
@@ -178,9 +175,9 @@ angular.module('BE.seed.controller.menu', [])
             init();
             $scope.$broadcast('projects_updated');
           }, function (message) {
-            $log.info(message);
-            $log.info('Modal dismissed at: ' + new Date());
-          });
+          $log.info(message);
+          $log.info('Modal dismissed at: ' + new Date());
+        });
       };
 
       /**
@@ -195,9 +192,7 @@ angular.module('BE.seed.controller.menu', [])
             cycles: ['cycle_service', function (cycle_service) {
               return cycle_service.get_cycles();
             }],
-            step: function () {
-              return 1;
-            },
+            step: _.constant(1),
             dataset: function () {
               return {};
             },
@@ -207,17 +202,13 @@ angular.module('BE.seed.controller.menu', [])
           }
         });
 
-        dataModalInstance.result.then(
-          // modal close() function
-          function () {
-            $scope.$broadcast('datasets_updated');
-            init();
-            // modal dismiss() function
-          }, function (message) {
-            // dismiss
-            $scope.$broadcast('datasets_updated');
-            init();
-          });
+        dataModalInstance.result.then(function () {
+          $scope.$broadcast('datasets_updated');
+          init();
+        }, function () {
+          $scope.$broadcast('datasets_updated');
+          init();
+        });
       };
 
       /**
@@ -277,33 +268,24 @@ angular.module('BE.seed.controller.menu', [])
 
       //watch projects
       $scope.$watch(function () {
-          return project_service.total_number_projects_for_user;
-        },
-        function (data) {
-          $scope.projects_count = data;
-        },
-        true
-      );
+        return project_service.total_number_projects_for_user;
+      }, function (data) {
+        $scope.projects_count = data;
+      }, true);
 
       //watch datasets
       $scope.$watch(function () {
-          return dataset_service.total_datasets_for_user;
-        },
-        function (data) {
-          $scope.datasets_count = data;
-        },
-        true
-      );
+        return dataset_service.total_datasets_for_user;
+      }, function (data) {
+        $scope.datasets_count = data;
+      }, true);
 
       //watch organizations
       $scope.$watch(function () {
-          return organization_service.total_organizations_for_user;
-        },
-        function (data) {
-          $scope.organizations_count = data;
-        },
-        true
-      );
+        return organization_service.total_organizations_for_user;
+      }, function (data) {
+        $scope.organizations_count = data;
+      }, true);
 
       var init = function () {
         organization_service.get_organizations_brief().then(function (data) {

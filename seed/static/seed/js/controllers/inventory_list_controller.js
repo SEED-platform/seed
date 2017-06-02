@@ -150,15 +150,9 @@ angular.module('BE.seed.controller.inventory_list', [])
                 dataQualityResults: function () {
                   return result;
                 },
-                name: function () {
-                  return null;
-                },
-                uploaded: function () {
-                  return null;
-                },
-                importFileId: function () {
-                  return null;
-                }
+                name: _.constant(null),
+                uploaded: _.constant(null),
+                importFileId: _.constant(null)
               }
             });
             modalInstance.result.then(function () {
@@ -185,7 +179,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       };
       _.map($scope.columns, function (col) {
         var options = {};
-        if (col.type == 'number') options.filter = inventory_service.numFilter();
+        if (col.type === 'number') options.filter = inventory_service.numFilter();
         else options.filter = inventory_service.textFilter();
         if (col.type == 'text' || col.type == 'numberStr') options.sortingAlgorithm = naturalSort;
         if (col.name == 'number_properties' && col.related) options.treeAggregationType = 'total';
@@ -402,7 +396,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       };
 
       $scope.open_export_modal = function () {
-        var modalInstance = $uibModal.open({
+        $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/export_inventory_modal.html',
           controller: 'export_inventory_modal_controller',
           resolve: {
@@ -411,12 +405,6 @@ angular.module('BE.seed.controller.inventory_list', [])
             }
           }
         });
-
-        // modalInstance.result.then(function () {
-        // }, function (message) {
-        //   console.info(message);
-        //   console.info('Modal dismissed at: ' + new Date());
-        // });
       };
 
       var saveSettings = function () {
@@ -425,7 +413,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           return !_.includes(['treeBaseRowHeaderCol', 'selectionRowHeaderCol', 'id'], col.name);
         });
         _.map(cols, function (col) {
-          col.pinnedLeft = col.renderContainer == 'left' && col.visible;
+          col.pinnedLeft = col.renderContainer === 'left' && col.visible;
           return col;
         });
         var oldSettings = inventory_service.loadSettings(localStorageKey, angular.copy(all_columns));
@@ -470,7 +458,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         enableFiltering: true,
         enableGridMenu: true,
         enableSorting: true,
-        exporterCsvFilename: window.BE.initial_org_name + ($scope.inventory_type == 'taxlots' ? ' Tax Lot ' : ' Property ') + 'Data.csv',
+        exporterCsvFilename: window.BE.initial_org_name + ($scope.inventory_type === 'taxlots' ? ' Tax Lot ' : ' Property ') + 'Data.csv',
         exporterMenuPdf: false,
         fastWatch: true,
         flatEntityAccess: true,
@@ -501,7 +489,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           gridApi.colMovable.on.columnPositionChanged($scope, function () {
             // Ensure that 'id' remains first
             var idIndex = _.findIndex($scope.gridApi.grid.columns, {name: 'id'});
-            if (idIndex != 2) {
+            if (idIndex !== 2) {
               var col = $scope.gridApi.grid.columns[idIndex];
               $scope.gridApi.grid.columns.splice(idIndex, 1);
               $scope.gridApi.grid.columns.splice(2, 0, col);

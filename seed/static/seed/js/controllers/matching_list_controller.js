@@ -5,6 +5,7 @@
 angular.module('BE.seed.controller.matching_list', [])
   .controller('matching_list_controller', [
     '$scope',
+    '$log',
     '$window',
     '$state',
     '$stateParams',
@@ -14,13 +15,13 @@ angular.module('BE.seed.controller.matching_list', [])
     'cycles',
     'urls',
     '$uibModal',
-    'search_service',
     'matching_service',
     'inventory_service',
     'naturalSort',
     'spinner_utility',
     'Notification',
     function ($scope,
+              $log,
               $window,
               $state,
               $stateParams,
@@ -30,7 +31,6 @@ angular.module('BE.seed.controller.matching_list', [])
               cycles,
               urls,
               $uibModal,
-              search_service,
               matching_service,
               inventory_service,
               naturalSort,
@@ -42,16 +42,13 @@ angular.module('BE.seed.controller.matching_list', [])
         return importfile.mapping_done !== true;
       });
 
-      $scope.search = angular.copy(search_service);
-      $scope.search.url = urls.search_buildings;
-
       $scope.import_file = import_file_payload.import_file;
       var validCycles = _.uniq(_.map(import_file_payload.import_file.dataset.importfiles, 'cycle'));
       $scope.cycles = _.filter(cycles.cycles, function (cycle) {
         return _.includes(validCycles, cycle.id);
       });
       $scope.selectedCycle = _.find($scope.cycles, {id: $scope.import_file.cycle});
-      if ($scope.inventory_type == 'properties') {
+      if ($scope.inventory_type === 'properties') {
         $scope.inventory = inventory_payload.properties;
       } else {
         $scope.inventory = inventory_payload.tax_lots;
@@ -79,7 +76,7 @@ angular.module('BE.seed.controller.matching_list', [])
       $scope.all_columns = columns;
       $scope.reduced_columns = _.reject(columns, {extraData: true});
       $scope.columns = [];
-      var inventory = $scope.inventory_type == 'properties' ? inventory_payload.properties : inventory_payload.tax_lots;
+      var inventory = $scope.inventory_type === 'properties' ? inventory_payload.properties : inventory_payload.tax_lots;
       var existing_keys = _.pull(_.keys(_.first(inventory)), 'id', 'matched', 'extra_data', 'coparent');
       var existing_extra_keys = _.keys(_.get(inventory, '[0].extra_data', null));
       _.forEach(columns, function (col) {
@@ -107,14 +104,13 @@ angular.module('BE.seed.controller.matching_list', [])
        *   and pagination here.
        */
       $scope.filter_search = function () {
-        console.debug('filter_search called');
         $scope.update_number_matched();
         inventory_service.search_matching_inventory($scope.file_select.file.id)
           .then(function (data) {
             // safe-guard against future init() calls
             inventory_payload = data;
 
-            if ($scope.inventory_type == 'properties') {
+            if ($scope.inventory_type === 'properties') {
               $scope.inventory = data.properties;
               $scope.num_pages = Math.ceil(data.number_properties_matching_search / $scope.number_per_page);
             } else {
@@ -128,7 +124,7 @@ angular.module('BE.seed.controller.matching_list', [])
             update_start_end_paging();
           })
           .catch(function (data, status) {
-            console.log({data: data, status: status});
+            $log.log({data: data, status: status});
             $scope.alerts.push({type: 'danger', msg: 'Error searching'});
           });
       };
@@ -153,7 +149,7 @@ angular.module('BE.seed.controller.matching_list', [])
       };
       var update_start_end_paging = function () {
         if ($scope.current_page === $scope.num_pages) {
-          if ($scope.inventory_type == 'properties') {
+          if ($scope.inventory_type === 'properties') {
             $scope.showing.end = $scope.number_properties_matching_search;
           } else {
             $scope.showing.end = $scope.number_tax_lots_matching_search;
@@ -219,12 +215,12 @@ angular.module('BE.seed.controller.matching_list', [])
       $scope.unmatch = function (inventory) {
         return matching_service.unmatch($scope.importfile_id, $scope.inventory_type, inventory.id, inventory.coparent.id).then(function () {
           delete inventory.coparent;
-          Notification.success('Successfully unmerged ' + ($scope.inventory_type == 'properties' ? 'properties' : 'tax lots'));
+          Notification.success('Successfully unmerged ' + ($scope.inventory_type === 'properties' ? 'properties' : 'tax lots'));
           return refresh();
         }, function (err) {
-          console.error(err);
+          $log.error(err);
           inventory.matched = true;
-          Notification.error('Failed to unmerge ' + ($scope.inventory_type == 'properties' ? 'properties' : 'tax lots'));
+          Notification.error('Failed to unmerge ' + ($scope.inventory_type === 'properties' ? 'properties' : 'tax lots'));
           return refresh();
         });
       };
@@ -259,7 +255,7 @@ angular.module('BE.seed.controller.matching_list', [])
       $scope.update_number_matched = function () {
         return inventory_service.get_matching_results($scope.file_select.file.id).then(function (data) {
           var unmatched_ids;
-          if ($scope.inventory_type == 'properties') {
+          if ($scope.inventory_type === 'properties') {
             $scope.matched_buildings = data.properties.matched;
             $scope.unmatched_buildings = data.properties.unmatched;
             unmatched_ids = data.properties.unmatched_ids;
@@ -312,7 +308,6 @@ angular.module('BE.seed.controller.matching_list', [])
       };
 
       $scope.updateHeight = function () {
-        console.log('updateHeight called');
         var height = 0;
         _.forEach(['.header', '.page_header_container', '.section .section_tab_container', '.matching-tab-container', '.table_footer'], function (selector) {
           var element = angular.element(selector)[0];
@@ -341,7 +336,7 @@ angular.module('BE.seed.controller.matching_list', [])
         $scope.number_properties_returned = inventory_payload.number_properties_returned;
         $scope.number_tax_lots_returned = inventory_payload.number_tax_lots_returned;
 
-        if ($scope.inventory_type == 'properties') {
+        if ($scope.inventory_type === 'properties') {
           $scope.inventory = inventory_payload.properties;
           $scope.num_pages = Math.ceil(inventory_payload.number_properties_matching_search / $scope.number_per_page);
         } else {

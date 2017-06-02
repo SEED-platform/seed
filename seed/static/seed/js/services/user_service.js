@@ -23,10 +23,10 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
       // front of every request that needs this. window.config.initial_org_id is
       // set in base.html via the seed.views.main home view
       return organization || {
-          id: window.BE.initial_org_id,
-          name: window.BE.initial_org_name,
-          user_role: window.BE.initial_org_user_role
-        };
+        id: window.BE.initial_org_id,
+        name: window.BE.initial_org_name,
+        user_role: window.BE.initial_org_user_role
+      };
     };
 
     /**

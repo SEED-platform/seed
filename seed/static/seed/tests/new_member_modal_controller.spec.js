@@ -20,14 +20,14 @@ describe('controller: new_member_modal_controller', function () {
     mock_user_service = user_service;
     spyOn(mock_user_service, 'add')
       .andCallFake(function (user) {
-          // return $q.reject for error scenario
-          return $q.when({status: 'success'});
-        }
+        // return $q.reject for error scenario
+        return $q.when({status: 'success'});
+      }
       );
   }));
 
   // this is outside the beforeEach so it can be configured by each unit test
-  function create_new_member_controller() {
+  function create_new_member_controller () {
     ctrl = ctrl('new_member_modal_controller', {
       $scope: ctrl_scope,
       $uibModalInstance: {

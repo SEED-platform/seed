@@ -1,8 +1,8 @@
 describe('controller: update_item_labels_modal_controller', function () {
   // globals set up and used in each test scenario
-  var mock_label_service, mock_search_service, scope, controller, modal_state, mock_notification, mock_new_label_form, mock_inventory_ids;
+  var mock_label_service, mock_search_service, scope, controller, modal_state, mock_notification, mock_new_label_form,
+    mock_inventory_ids;
   var update_controller, update_controller_scope, modalInstance, labels;
-
 
   var available_colors = [{
     label: 'success',
