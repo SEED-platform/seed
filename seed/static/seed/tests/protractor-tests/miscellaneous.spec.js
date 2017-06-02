@@ -79,7 +79,7 @@ describe('When I do miscellaneous things', function () {
     expect($('.modal-title').isPresent()).toBe(true);
     $('#labelName').sendKeys('ruleLabel');
     $$('.btn.btn-primary').first().click();
-    $$('.btn-default.action_link').get(1).click();
+    $$('.btn-default.action_link').get(2).click();
 
     //check label was attached after save and refresh
     $$('[ng-click="save_settings()"]').first().click();
@@ -97,13 +97,13 @@ describe('When I do miscellaneous things', function () {
   it('should add labels to previous rules', function () {
     $('[ui-sref="organization_data_quality({organization_id: org.id, inventory_type: \'taxlots\'})"]').click();
     $$('[ng-click="create_label(rule, $index)"]').first().click();
-    $$('.btn.btn-sm.btn-default.action_link').first().click();
+    $$('.btn.btn-sm.btn-default.action_link').get(2).click();
 
     $$('[label="Text"]').get(1).click();
 
     $$('[ng-repeat="field in sortedRuleGroups()"]').get(1).$('[ng-model="rule.text_match"]').sendKeys("1234");
     $$('[ng-click="create_label(rule, $index)"]').first().click();
-    $$('.btn-default.action_link').get(2).click();
+    $$('.btn-default.action_link').get(3).click();
     $$('[ng-click="save_settings()"]').first().click();
     browser.driver.navigate().refresh();
   }, 60000);
@@ -119,7 +119,7 @@ describe('When I do miscellaneous things', function () {
   it('should refesh again and check rules', function () {
     expect(element.all(by.repeater('rule in ruleGroup')).first().$('.form-control.label.label-primary').isPresent()).toBe(false);
     $$('[ng-click="create_label(rule, $index)"]').first().click();
-    $$('.btn.btn-sm.btn-default.action_link').first().click();
+    $$('.btn.btn-sm.btn-default.action_link').get(2).click();
     $$('[ng-click="save_settings()"]').first().click();
   });
 
