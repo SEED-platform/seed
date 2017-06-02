@@ -8,9 +8,9 @@ import types
 import unicodedata
 
 from django.contrib.contenttypes.fields import GenericRelation
+from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django_extensions.db.models import TimeStampedModel
-from django_pgjson.fields import JsonField
 
 from seed.audit_logs.models import AuditLog, LOG
 from seed.data_importer.models import ImportFile, ImportRecord
@@ -607,9 +607,9 @@ class BuildingSnapshot(TimeStampedModel):
     #
 
     # 'key' -> 'value'
-    extra_data = JsonField(default={})
+    extra_data = JSONField(default={})
     # 'key' -> ['model', 'fk'], what was the model and its FK?
-    extra_data_sources = JsonField(default={})
+    extra_data_sources = JSONField(default={})
 
     objects = JsonManager()
 

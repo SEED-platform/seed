@@ -3,8 +3,6 @@ django==1.9.13
 dj-database-url==0.4.2
 django-autoslug==1.9.3
 django-storages==1.5.2
-# Replace pgjson with https://docs.djangoproject.com/en/1.11/ref/contrib/postgres/fields/
-django-pgjson==0.3.1
 modeltranslation==0.25
 -e git+https://github.com/revsys/django-tos.git#egg=django_tos-master
 

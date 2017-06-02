@@ -719,8 +719,7 @@ class DataQualitySample(TestCase):
 
         props = PropertyView.objects.filter(property__labels=sl_float).select_related('state')
         addresses = sorted([p.state.address_line_1 for p in props])
-        expected = [u'4 Myrtle Parkway', u'94 Oxford Hill']
-        expected.sort()
+        expected = sorted([u'4 Myrtle Parkway', u'94 Oxford Hill'])
         self.assertListEqual(expected, addresses)
 
         props = PropertyView.objects.filter(property__labels=sl_string).select_related('state')

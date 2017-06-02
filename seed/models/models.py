@@ -5,10 +5,10 @@
 :author
 """
 
+from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
-from django_pgjson.fields import JsonField
 
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
 from seed.managers.json import JsonManager
@@ -259,7 +259,7 @@ class CustomBuildingHeaders(models.Model):
 
     # 'existing, normalized name' -> 'preferred display name'
     # e.g. {'district': 'Boro'}
-    building_headers = JsonField(default={})
+    building_headers = JSONField(default={})
 
     objects = JsonManager()
 

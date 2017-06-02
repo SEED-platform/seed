@@ -101,7 +101,7 @@ def get_field_value_from_instance(field, obj):
     try:
         return getattr(par, components[-1]) if par else None
     except AttributeError:
-        # try extra_data JsonField
+        # try extra_data JSONField
         return par.extra_data.get(components[-1])
 
 

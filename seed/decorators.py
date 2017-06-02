@@ -18,8 +18,7 @@ LOCK_CACHE_PREFIX = SEED_CACHE_PREFIX + ':LOCK'
 PROGRESS_CACHE_PREFIX = SEED_CACHE_PREFIX + ':PROG'
 
 FORMAT_TYPES = {
-    'application/json': lambda response: json.dumps(response,
-                                                    cls=DjangoJSONEncoder),
+    'application/json': lambda response: json.dumps(response, cls=DjangoJSONEncoder),
     'text/json': lambda response: json.dumps(response, cls=DjangoJSONEncoder),
 }
 

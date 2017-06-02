@@ -363,7 +363,7 @@ class TestApi(TestCase):
         r = json.loads(r.content)
         organization_id = self.get_org_id(r, self.user.username)
 
-        raw_building_file = os.path.relpath(
+        raw_building_file = os.path.abspath(
             os.path.join('seed/tests/data', 'covered-buildings-sample.csv'))
         self.assertTrue(os.path.isfile(raw_building_file), 'could not find file')
 
