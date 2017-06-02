@@ -205,7 +205,7 @@ FAKE_MAPPINGS = {
             "to_field": u'Double Tester',
         }
     ],
-    'short': {  # Short should no longer be used and probably doesn't work anymore.
+    'short': {  # Short should no longer be used and probably does not work anymore.
         'property_name': u'Name',
         'address_line_1': u'Address Line 1',
         'year_built': u'Year Built'

@@ -2,8 +2,12 @@
 var EC = protractor.ExpectedConditions;
 // Check inventory Page:
 describe('When I go to the taxlot page', function () {
+	    // manually
+    it ('should reset sync', function () {
+        browser.ignoreSynchronization = false;
+    });
+
 	it('should change to our test cycle', function () {
-		browser.ignoreSynchronization = false;
 		browser.get("/app/#/taxlots");
 		$('[ng-change="update_cycle(cycle.selected_cycle)"]').element(by.cssContainingText('option', browser.params.testOrg.cycle)).click();
 
@@ -64,7 +68,9 @@ describe('When I go to the taxlot page', function () {
 
 		var labels = element.all(by.repeater('label in labels'));
 		expect(labels.count()).toBeLessThan(1);
+	});
 
+	it('should go to info pages and add remove label', function () {
 		// add label
 		$('[ng-click="open_update_labels_modal(inventory.id, inventory_type)"]').click();
 		$('.modal-title').getText().then(function (label) {
@@ -75,6 +81,13 @@ describe('When I go to the taxlot page', function () {
 
 		var labels = element.all(by.repeater('label in labels'));
 		expect(labels.count()).not.toBeLessThan(1);
+
+		//remove label
+		$('[ng-click="open_update_labels_modal(inventory.id, inventory_type)"]').click();
+		$$('[ng-click="toggle_remove(label)"]').first().click();
+		$('[ng-click="done()"]').click();
+		var labels = element.all(by.repeater('label in labels'));
+		expect(labels.count()).toBeLessThan(1);
 
 		$('a.page_action.ng-binding').click();
 		
@@ -91,24 +104,8 @@ describe('When I go to the taxlot page', function () {
 		expect(browser.getCurrentUrl()).toContain("/app/#/properties");
 	});
 
-	it('should filter labels and see info update', function () {
-		browser.get("/app/#/taxlots");
-		$('[ng-change="update_cycle(cycle.selected_cycle)"]').element(by.cssContainingText('option', browser.params.testOrg.cycle)).click();
-		$('#tagsInput').click();
-		$('#tagsInput').all(by.repeater('item in suggestionList.items')).first().click();
-		var rows = $('.left.ui-grid-render-container-left.ui-grid-render-container')
-				.all(by.repeater('(rowRenderIndex, row) in rowContainer.renderedRows'));
-		expect(rows.count()).toBe(1);
-		rows.first().getText().then(function (label) {
-			expect(label).toContain('protractor unique stuff');
-		});
-		$('[ng-click="clear_labels()"]').click();
-		var rows = $('.left.ui-grid-render-container-left.ui-grid-render-container')
-				.all(by.repeater('(rowRenderIndex, row) in rowContainer.renderedRows'));
-		expect(rows.count()).not.toBeLessThan(2);
-	});
-
 	it('should change columns', function () {
+		browser.get("/app/#/taxlots");
 		$('#list-settings').click();
 		$('[ng-if="grid.options.enableSelectAll"]').click().click();
 		$$('[ng-class="{\'ui-grid-row-selected\': row.isSelected}"]').first().click();

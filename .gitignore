@@ -2,6 +2,7 @@
 .idea/
 .project
 .pydevproject
+.python-version
 .coverage
 .noseids
 *~
@@ -58,3 +59,9 @@ seed/data_importer/tests/data/tmp_*
 seed/data_importer/tests/data/~*
 seed/tests/api/api_test_user.json
 test.sqlite
+
+# Ignore all protractor coverage
+protractorReports/
+protractorInstrumented/
+protractorSaved/
+protractorCoverage/

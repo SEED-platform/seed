@@ -6,7 +6,6 @@
 Tests related to sharing of data between users, orgs, suborgs, etc.
 """
 import json
-from unittest import skip
 
 from django.core.urlresolvers import reverse_lazy
 from django.test import TestCase
@@ -185,86 +184,86 @@ class SharingViewTests(TestCase):
 
         self.assertListEqual(fields, [u'postal_code'])
 
-    # @skip("Fix for new data model")
-    # def test_parent_viewer(self):
-    #     """
-    #     The admin user should be able to see all buildings with all fields.
-    #     """
-    #     self.client.login(**self.admin_details)
-    #
-    #     result = self._search_buildings()
-    #
-    #     self.assertEqual(result['status'], 'success')
-    #     self.assertEqual(result['number_returned'],
-    #                      BuildingSnapshot.objects.count())
-    #     self.assertEqual(len(result['buildings']),
-    #                      BuildingSnapshot.objects.count())
-    #
-    #     # parent org sees all fields on all buildings
-    #     for b in result['buildings']:
-    #         self.assertTrue(b['property_name'] in
-    #                         ('ENG BUILDING', 'DES BUILDING', 'ADMIN BUILDING'))
-    #         if b['property_name'] == 'ENG BUILDING':
-    #             self.assertEqual(b['address_line_1'],
-    #                              '100 Eng St')
-    #         elif b['property_name'] == 'DES BUILDING':
-    #             self.assertEqual(b['address_line_1'],
-    #                              '100 Des St')
-    #         elif b['property_name'] == 'ADMIN_BUILDING':
-    #             self.assertEqual(b['address_line_1'],
-    #                              '100 Admin St')
-    #
-    # @skip("Fix for new data model")
-    # def test_suborg_view_not_shared(self):
-    #     """
-    #     A suborg user that doesn't have 'show_shared_buildings' set
-    #     should only see their own suborg's buildings.
-    #     """
-    #     self.assertFalse(self.eng_user.show_shared_buildings)
-    #     self.client.login(**self.eng_user_details)
-    #     result = self._search_buildings()
-    #
-    #     self.assertEqual(result['status'], 'success')
-    #
-    #     expected_count = self.eng_org.building_snapshots.count()
-    #     self.assertEqual(result['number_returned'],
-    #                      expected_count)
-    #     self.assertEqual(len(result['buildings']),
-    #                      expected_count)
-    #
-    #     # eng org only sees own buildings
-    #     for b in result['buildings']:
-    #         self.assertEqual(b['property_name'], 'ENG BUILDING')
-    #         self.assertEqual(b['address_line_1'], '100 Eng St')
-    #
-    # @skip("Fix for new data model")
-    # def test_suborg_view_show_shared(self):
-    #     """
-    #     A suborg user with 'show_shared_buildings' set should see all buildings
-    #     in the org tree, but only the shared fields for buildings outside
-    #     the suborg.
-    #     """
-    #     self.des_user.show_shared_buildings = True
-    #     self.des_user.save()
-    #     self.client.login(**self.des_user_details)
-    #     result = self._search_buildings()
-    #
-    #     self.assertEqual(result['status'], 'success')
-    #
-    #     expected_count = BuildingSnapshot.objects.count()
-    #     self.assertEqual(result['number_returned'],
-    #                      expected_count)
-    #     self.assertEqual(len(result['buildings']),
-    #                      expected_count)
-    #
-    #     # des org user should see shared fields
-    #     for b in result['buildings']:
-    #         # property_name is shared
-    #         self.assertTrue(b['property_name'] in
-    #                         ('ENG BUILDING', 'DES BUILDING', 'ADMIN BUILDING'))
-    #         if b['property_name'] == 'ENG BUILDING':
-    #             # address_line_1 is unshared
-    #             self.assertTrue('address_line_1' not in b)
-    #         elif b['property_name'] == 'DES BUILDING':
-    #             self.assertEqual(b['address_line_1'],
-    #                              '100 Des St')
+        # @skip("Fix for new data model")
+        # def test_parent_viewer(self):
+        #     """
+        #     The admin user should be able to see all buildings with all fields.
+        #     """
+        #     self.client.login(**self.admin_details)
+        #
+        #     result = self._search_buildings()
+        #
+        #     self.assertEqual(result['status'], 'success')
+        #     self.assertEqual(result['number_returned'],
+        #                      BuildingSnapshot.objects.count())
+        #     self.assertEqual(len(result['buildings']),
+        #                      BuildingSnapshot.objects.count())
+        #
+        #     # parent org sees all fields on all buildings
+        #     for b in result['buildings']:
+        #         self.assertTrue(b['property_name'] in
+        #                         ('ENG BUILDING', 'DES BUILDING', 'ADMIN BUILDING'))
+        #         if b['property_name'] == 'ENG BUILDING':
+        #             self.assertEqual(b['address_line_1'],
+        #                              '100 Eng St')
+        #         elif b['property_name'] == 'DES BUILDING':
+        #             self.assertEqual(b['address_line_1'],
+        #                              '100 Des St')
+        #         elif b['property_name'] == 'ADMIN_BUILDING':
+        #             self.assertEqual(b['address_line_1'],
+        #                              '100 Admin St')
+        #
+        # @skip("Fix for new data model")
+        # def test_suborg_view_not_shared(self):
+        #     """
+        #     A suborg user that does not have 'show_shared_buildings' set
+        #     should only see their own suborg's buildings.
+        #     """
+        #     self.assertFalse(self.eng_user.show_shared_buildings)
+        #     self.client.login(**self.eng_user_details)
+        #     result = self._search_buildings()
+        #
+        #     self.assertEqual(result['status'], 'success')
+        #
+        #     expected_count = self.eng_org.building_snapshots.count()
+        #     self.assertEqual(result['number_returned'],
+        #                      expected_count)
+        #     self.assertEqual(len(result['buildings']),
+        #                      expected_count)
+        #
+        #     # eng org only sees own buildings
+        #     for b in result['buildings']:
+        #         self.assertEqual(b['property_name'], 'ENG BUILDING')
+        #         self.assertEqual(b['address_line_1'], '100 Eng St')
+        #
+        # @skip("Fix for new data model")
+        # def test_suborg_view_show_shared(self):
+        #     """
+        #     A suborg user with 'show_shared_buildings' set should see all buildings
+        #     in the org tree, but only the shared fields for buildings outside
+        #     the suborg.
+        #     """
+        #     self.des_user.show_shared_buildings = True
+        #     self.des_user.save()
+        #     self.client.login(**self.des_user_details)
+        #     result = self._search_buildings()
+        #
+        #     self.assertEqual(result['status'], 'success')
+        #
+        #     expected_count = BuildingSnapshot.objects.count()
+        #     self.assertEqual(result['number_returned'],
+        #                      expected_count)
+        #     self.assertEqual(len(result['buildings']),
+        #                      expected_count)
+        #
+        #     # des org user should see shared fields
+        #     for b in result['buildings']:
+        #         # property_name is shared
+        #         self.assertTrue(b['property_name'] in
+        #                         ('ENG BUILDING', 'DES BUILDING', 'ADMIN BUILDING'))
+        #         if b['property_name'] == 'ENG BUILDING':
+        #             # address_line_1 is unshared
+        #             self.assertTrue('address_line_1' not in b)
+        #         elif b['property_name'] == 'DES BUILDING':
+        #             self.assertEqual(b['address_line_1'],
+        #                              '100 Des St')

@@ -82,7 +82,7 @@ def apply_map(map_path, data_path, out_file):
     # write mapping as a JSON
     try:
         json.dump(d, out_file, ensure_ascii=True)
-    except:
+    except BaseException:
         # print("** Error: While writing:\n{}".format(d))
         pass
     # write stats

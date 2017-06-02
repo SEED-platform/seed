@@ -152,7 +152,7 @@ class TestColumns(TestCase):
         self.assertEqual(c_merovingian.is_extra_data, True)
         self.assertEqual(c_merovingian.table_name, 'TaxLotState')
 
-        # Check the database for the mapped columns since create_mappings doesn't return anything!
+        # Check the database for the mapped columns since create_mappings does not return anything!
         cm = ColumnMapping.objects.filter(super_organization=self.fake_org,
                                           column_raw__in=[c_wookiee]).first()
 

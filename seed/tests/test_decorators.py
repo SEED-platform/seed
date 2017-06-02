@@ -74,7 +74,7 @@ class TestDecorators(TestCase):
         self.assertEqual(int(get_lock(key)), self.unlocked)
 
     def test_locking_w_exception(self):
-        """Make sure we release our lock if we've had an exception."""
+        """Make sure we release our lock if we have had an exception."""
         key = decorators._get_lock_key('fake_func', self.pk)
 
         @decorators.lock_and_track

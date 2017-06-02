@@ -41,6 +41,7 @@ _log = logging.getLogger(__name__)
 
 
 class DataQualityTestCoveredBuilding(TestCase):
+
     def setUp(self):
         self.user_details = {
             'username': 'testuser@example.com',
@@ -163,6 +164,7 @@ class DataQualityTestCoveredBuilding(TestCase):
 
 
 class DataQualityTestPM(TestCase):
+
     def setUp(self):
         self.user_details = {
             'username': 'testuser@example.com',
@@ -308,6 +310,7 @@ class DataQualityTestPM(TestCase):
 
 
 class DataQualitySample(TestCase):
+
     def setUp(self):
         self.user_details = {
             'username': 'testuser@example.com',
@@ -710,10 +713,8 @@ class DataQualitySample(TestCase):
 
         # make sure that the label has been applied
         props = PropertyView.objects.filter(property__labels=sl_year).select_related('state')
-        addresses = [p.state.address_line_1 for p in props]
-        addresses.sort()
-        expected = [u'84807 Buell Trail', u'1 International Road']
-        expected.sort()
+        addresses = sorted([p.state.address_line_1 for p in props])
+        expected = sorted([u'84807 Buell Trail', u'1 International Road'])
         self.assertListEqual(expected, addresses)
 
         props = PropertyView.objects.filter(property__labels=sl_float).select_related('state')
@@ -822,8 +823,7 @@ class DataQualitySample(TestCase):
 
         # Check multiple strings
         props = PropertyView.objects.filter(property__labels=sl_ok_1).select_related('state')
-        addresses = [p.state.address_line_1 for p in props]
-        addresses.sort()
+        addresses = sorted([p.state.address_line_1 for p in props])
         expected = [
             u'1 International Road',
             u'17246 Esch Drive',
@@ -834,8 +834,7 @@ class DataQualitySample(TestCase):
         self.assertListEqual(expected, addresses)
 
         props = PropertyView.objects.filter(property__labels=sl_ok_2).select_related('state')
-        addresses = [p.state.address_line_1 for p in props]
-        addresses.sort()
+        addresses = sorted([p.state.address_line_1 for p in props])
         expected = [u'1 International Road', u'2581 Schiller Parkway', u'49705 Harper Crossing']
         self.assertListEqual(expected, addresses)
 

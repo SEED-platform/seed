@@ -495,7 +495,7 @@ def search_public_buildings(request, orgs):
     params = parse_body(request)
     other_search_params = params['other_search_params']
     # add some filters to the dict of known column names so search_buildings
-    # doesn't think they are part of extra_data
+    # does not think they are part of extra_data
     db_columns, extra_data_sort, params['order_by'] = build_json_params(
         params['order_by'], params['sort_reverse']
     )
@@ -668,7 +668,7 @@ def orchestrate_search_filter_sort(params, user, skip_sort=False):
     """
     other_search_params = params['other_search_params']
     # add some filters to the dict of known column names so search_buildings
-    # doesn't think they are part of extra_data
+    # does not think they are part of extra_data
     db_columns, extra_data_sort, params['order_by'] = build_json_params(
         params['order_by'], params['sort_reverse']
     )

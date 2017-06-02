@@ -63,6 +63,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
     $scope.columns = columns;
     $scope.all_labels = labels_payload;
+    // console.log(labels_payload)
 
     var loadRules = function (rules_payload) {
       var ruleGroups = {
@@ -78,10 +79,13 @@ angular.module('BE.seed.controller.data_quality_admin', [])
             if (row.max) row.max = moment(row.max, 'YYYYMMDD').toDate();
           }
           if (rule.label) {
+            // console.log('load: ', rule.label)
             var match = _.find(labels_payload, function (label) {
+              // console.log('found: ', label)
               return label.id === rule.label;
             });
             if (match) {
+              // console.log('row label: ', match);
               row.label = match;
             }
           }
@@ -287,7 +291,11 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       var modalInstance = $uibModal.open({
         templateUrl: urls.static_url + 'seed/partials/data_quality_labels_modal.html',
         controller: 'data_quality_labels_modal_controller',
-        resolve: {}
+        resolve: {
+          org_id: function () {
+            return $scope.org.org_id;
+          }
+        }
       });
       modalInstance.result.then(function (returnedLabels) {
 
@@ -307,25 +315,6 @@ angular.module('BE.seed.controller.data_quality_admin', [])
           //dialog was 'dismissed,' which means it was cancelled...so nothing to do.
         }
       );
-      //   var newLabel = {
-      //     name: rule.label,
-      //     color: 'gray',
-      //     label: 'default'
-      //   };
-      //   label_service.create_label_for_org($scope.org.id, newLabel).then(angular.bind(this, function (result) {
-      //       r.label = result.id;
-      //       rules[rule_type].push(r);
-      //       d.resolve();
-      //     }, rule_type),
-      //     function (message) {
-      //       $log.error('Error creating new label.', message);
-      //       d.reject();
-      //     }).then(function () {
-      //       label_service.get_labels_for_org($scope.org.id).then(function (labels) {
-      //         $scope.all_labels = labels;
-      //       });
-      //     });
-      // }
     };
 
     // set rule as deleted.

@@ -60,7 +60,7 @@ def forwards(apps, schema_editor):
                         continue
 
                     if cms_raw.count() > 1:
-                        print "  Not sure what to do here but it probably doesn't matter"
+                        print "  Not sure what to do here but it probably does not matter"
 
                     print ColumnMapping.objects.filter(column_raw=m).count()
 

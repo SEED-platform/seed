@@ -1,4 +1,4 @@
-"""Delete all organizations that aren't part of the main 12.
+"""Delete all organizations that are not part of the main 12.
 
 See code for organization list and source documentation.
 """
@@ -15,7 +15,7 @@ from _localtools import get_core_organizations
 logging.basicConfig(level=logging.DEBUG)
 
 def getOrganizationsToDelete():
-    """Get all organizations that aren't in the global white list."""
+    """Get all organizations that are not in the global white list."""
 
     all_organizations = seed.models.Organization.objects.all()
     bad_organizations = [org for org in all_organizations if org.id not in get_core_organizations()]
@@ -31,7 +31,7 @@ def destroyOrganization(org):
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        """Delete all organizations that aren't in Robin's whitelist."""
+        """Delete all organizations that are not in Robin's whitelist."""
 
         logging.debug("**NOTE - Celery server must be running for this operation to work")
 

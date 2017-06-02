@@ -519,7 +519,7 @@ class DataQualityCheck(models.Model):
         # Get the list of the field names that will show in every result
         fields = self.get_fieldnames(record_type)
         for row in rows:
-            # Initialize the ID if it doesn't exist yet. Add in the other
+            # Initialize the ID if it does not exist yet. Add in the other
             # fields that are of interest to the GUI
             if row.id not in self.results:
                 self.results[row.id] = {}
@@ -808,7 +808,7 @@ class DataQualityCheck(models.Model):
 
     def remove_status_label(self, label_class, rule, linked_id):
         """
-        Remove label because it didn't match any of the range exceptions
+        Remove label because it did not match any of the range exceptions
 
         :param label_class: statuslabel object, either property label or taxlot label
         :param rule: rule object
@@ -842,8 +842,8 @@ class DataQualityCheck(models.Model):
     def retrieve_result_by_tax_lot_id(self, tax_lot_id):
         """
         Retrieve the results of the data quality checks by the jurisdiction ID.
-        
-        :param tax_lot_id: string, jurisdiction tax lot id 
+
+        :param tax_lot_id: string, jurisdiction tax lot id
         :return: dict, results of data quality check for specific building
         """
 
