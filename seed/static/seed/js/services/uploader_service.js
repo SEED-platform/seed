@@ -41,7 +41,7 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
         }
       }).then(function (response) {
         return response.data;
-      })
+      });
     };
 
     /*

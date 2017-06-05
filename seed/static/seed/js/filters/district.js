@@ -6,18 +6,16 @@
  * district
  * For when you want to capitalize each word, remove underscores.
  */
-angular.module('district', []).filter('district', [
-  '$filter',
-  function($filter) {
+angular.module('district', []).filter('district', function () {
 
-    return function(input) {
-        if (_.isNil(input)) {
-            return input;
-        }
-        if (angular.uppercase(input) === 'DISTRICT'){
-            return 'County/District/Ward/Borough';
-        }
-        return input;
-    };
+  return function (input) {
+    if (_.isNil(input)) {
+      return input;
+    }
+    if (angular.uppercase(input) === 'DISTRICT') {
+      return 'County/District/Ward/Borough';
+    }
+    return input;
+  };
 
-}]);
+});

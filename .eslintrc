@@ -2,6 +2,7 @@
   "extends": "eslint:recommended",
   "env": {
     "browser": true,
+    "jasmine": true,
     "jquery": true
   },
   "globals": {
@@ -9,32 +10,44 @@
     "$filter": true,
     "$route": true,
     "angular": true,
+    "angularDragula": true,
     "BE": true,
     "dimple": true,
     "inject": true,
     "module": true,
     "moment": true,
+    "protractor": true,
+    "qq": true,
     "Spinner": true
   },
-  "plugins": ["angular", "lodash"],
+  "plugins": ["angular", "lodash", "protractor"],
   "rules": {
     // Possible errors
-    "no-console": "off", // Comment for production
+    "no-console": "warn",
     // Best practices
+    "block-scoped-var": "warn",
     "dot-notation": "warn",
     "no-multi-spaces": "warn",
     // Variables
-    "no-unused-vars": "off", // Set to "warn" for production
+    "no-unused-vars": "warn",
     // Stylistic Issues
     "array-bracket-spacing": "warn",
-    //"camelcase": ["warn", {"properties": "always"}],
+    "brace-style": "warn",
+    // "camelcase": "warn",
+    "comma-dangle": ["error", "never"],
     "comma-spacing": "warn",
-    "consistent-this": ["error", "that", "self"],
+    // "consistent-this": ["error", "that"],
+    "eol-last": "error",
+    "indent": ["error", 2, {"SwitchCase": 1}],
+    "key-spacing": "warn",
     "no-mixed-spaces-and-tabs": "warn",
     "no-trailing-spaces": "warn",
-    "quote-props": ["warn", "as-needed", {"keywords": true}],
+    "quote-props": ["error", "as-needed", {"keywords": true}],
     "quotes": ["warn", "single"],
     "semi": ["error", "always"],
+    "space-before-blocks": "warn",
+    "space-before-function-paren": "warn",
+    "space-infix-ops": "warn",
     // Angular plugin
     "angular/log": "off", // Comment for production
     "angular/no-service-method": "off",
@@ -45,7 +58,7 @@
     "lodash/matches-shorthand": ["warn", "always"],
     "lodash/no-double-unwrap": "error",
     "lodash/no-extra-args": "error",
-    //"lodash/prefer-constant": "warn",
+    "lodash/prefer-constant": "warn",
     "lodash/prefer-filter": ["warn", 3],
     "lodash/prefer-get": ["warn", 2],
     "lodash/prefer-is-nil": "warn",

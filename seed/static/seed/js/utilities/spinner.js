@@ -13,27 +13,27 @@ angular.module('BE.seed.utility.spinner', []).factory('spinner_utility', [
     var spinner_utility = {};
     var _spinner;
 
-    spinner_utility.show = function(params, target) {
+    spinner_utility.show = function (params, target) {
 
       var refresh = !!(params || target);
       target = target || $('.display')[0];
 
       if (!_spinner) {
-          _spinner = new Spinner(params).spin(target);
+        _spinner = new Spinner(params).spin(target);
       } else if (_spinner && refresh) {
-          _spinner.stop();
-          _spinner = new Spinner(params).spin(target);
+        _spinner.stop();
+        _spinner = new Spinner(params).spin(target);
       } else {
-          _spinner.spin(target);
+        _spinner.spin(target);
       }
 
       $('.page')[0].style.opacity = 0.4;
     };
 
-    spinner_utility.hide = function() {
+    spinner_utility.hide = function () {
       _spinner.stop();
       $('.page')[0].style.opacity = 1;
     };
 
     return spinner_utility;
-}]);
+  }]);

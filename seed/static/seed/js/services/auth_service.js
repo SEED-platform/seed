@@ -45,7 +45,7 @@ angular.module('BE.seed.service.auth', []).factory('auth_service', [
      * gets all available actions
      * @return {promise} then an array of actions
      */
-    auth_factory.get_actions = function (user) {
+    auth_factory.get_actions = function () {
       return $http.get(urls.accounts.get_actions).then(function (response) {
         return response.data;
       });

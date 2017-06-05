@@ -21,7 +21,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
      */
     $scope.save_settings = function () {
       $scope.settings_updated = false;
-      organization_service.save_org_settings($scope.org).then(function (data) {
+      organization_service.save_org_settings($scope.org).then(function () {
         $scope.settings_updated = true;
         $scope.org_static = angular.copy($scope.org);
         $scope.$emit('organization_list_updated');

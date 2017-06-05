@@ -8,10 +8,10 @@ angular.module('sdBasicBuildingInfoChart', [])
     restrict: 'E',
     replace: true,
     scope: {
-            onchartrendered: '&',
-            data: '=',
-            chartType: '@',
-            height: '@'
+      onchartrendered: '&',
+      data: '=',
+      chartType: '@',
+      height: '@'
     },
     require: ['sdBasicBuildingInfoChart'],
     link: function (scope, element, attrs, controllers) {
@@ -41,43 +41,41 @@ angular.module('sdBasicBuildingInfoChart', [])
                                 "color"       : A hexadecimal string for the color for this series
 
       */
-      scope.$watch('data', function(newValue) {
+      scope.$watch('data', function (newValue) {
 
         //If the new value is empty or has properties but 'chartData' is empty, just clear the chart and return
-        if (newValue===undefined || newValue.length === 0 || (newValue.chartData && newValue.chartData.length === 0)){
+        if (_.isEmpty(_.get(newValue, 'chartData'))) {
           graphController.clearChart();
           return;
         }
 
-        if (newValue && newValue.chartData) {
+        if (_.get(newValue, 'chartData')) {
           graphController.setYAxisType(newValue.yAxisType);
-          graphController.updateChart( newValue.series,
-                                        newValue.chartData,
-                                        newValue.xAxisTitle,
-                                        newValue.yAxisTitle,
-                                        newValue.yAxisType,
-                                        newValue.yAxisMin,
-                                        newValue.xAxisTickFormat,
-                                        newValue.yAxisTickFormat,
-                                        newValue.colors);
+          graphController.updateChart(newValue.series,
+                                      newValue.chartData,
+                                      newValue.xAxisTitle,
+                                      newValue.yAxisTitle,
+                                      newValue.yAxisType,
+                                      newValue.yAxisMin,
+                                      newValue.xAxisTickFormat,
+                                      newValue.yAxisTickFormat,
+                                      newValue.colors);
           scope.onchartrendered();
         }
       });
 
-      angular.element($window).bind('resize', function() {
-          graphController.resizeChart();
+      angular.element($window).bind('resize', function () {
+        graphController.resizeChart();
       });
 
     },
-    controller: ['$scope', '$element', '$attrs', function($scope, $element, $attrs) {
+    controller: ['$scope', '$element', function ($scope, $element) {
 
       var id;
       var svg;
       var chart;
       var xAxis;
       var yAxis;
-      var legend;
-      var autoresize = false;
       var yAxisType = 'Measure';
       var hasData = false;
       var chartType = '';
@@ -85,41 +83,39 @@ angular.module('sdBasicBuildingInfoChart', [])
       var truncateLength = 15;
 
       var defaultColors = [
-          new dimple.color('#458cc8'),
-          new dimple.color('#c83737'),
-          new dimple.color('#1159a3'),
-          new dimple.color('#f2c41d'),
-          new dimple.color('#939495')
+        new dimple.color('#458cc8'),
+        new dimple.color('#c83737'),
+        new dimple.color('#1159a3'),
+        new dimple.color('#f2c41d'),
+        new dimple.color('#939495')
       ];
 
       var width = '100%';
-      var height= $scope.height;
-      autoresize = true;
+      var height = $scope.height;
 
       /* Create the <div> that holds the svg and the svg itself.
          This method should only be called once. */
       this.createChartSVG = function () {
         var id = (Math.random() * 1e9).toString(36).replace('.', '_');
-        $element.append('<div class="dimple-graph" id="dng-'+ id +'"></div>');
+        $element.append('<div class="dimple-graph" id="dng-' + id + '"></div>');
 
         // create an svg element
-        var svgID = '#dng-'+ id +'';
+        var svgID = '#dng-' + id + '';
         svg = dimple.newSvg(svgID, width, height);
       };
 
       /*  Define the Dimple chart and load data based on the configuration and data arguments passed in.
           We do a complete recreation of the chart each time this method is called.  */
-      this.updateChart = function(series, chartData, xAxisTitle, yAxisTitle, yAxisType, yAxisMin, xAxisTickFormat, yAxisTickFormat, colors){
+      this.updateChart = function (series, chartData, xAxisTitle, yAxisTitle, yAxisType, yAxisMin, xAxisTickFormat, yAxisTickFormat, colors) {
 
         self.clearChart();
         self.createChart();
         self.createChartAxes(yAxisType, yAxisMin, xAxisTickFormat, yAxisTickFormat);
 
         //setup colors
-        if (colors && colors.length>0){
-          var newColors = [];
+        if (colors && colors.length > 0) {
           var numColors = colors.length;
-          for (var index = 0; index<numColors; index++){
+          for (var index = 0; index < numColors; index++) {
             var obj = colors[index];
             chart.assignColor(obj.seriesName, obj.color, obj.color, 1);
           }
@@ -129,17 +125,16 @@ angular.module('sdBasicBuildingInfoChart', [])
 
         //set type of chart and the series it will use to group data
         var s;
-        if (chartType==='bar'){
-           s = chart.addSeries(series, dimple.plot.bar);
+        if (chartType === 'bar') {
+          s = chart.addSeries(series, dimple.plot.bar);
         } else {
           s = chart.addSeries(series, dimple.plot.bubble);
         }
-        s.getTooltipText = function(e){
+        s.getTooltipText = function (e) {
           var arr = [];
-          var yLabel =
           arr.push('Year Ending : ' + e.aggField[1]);
           arr.push( yAxisTitle + ' : ' + e.cy.toString());
-          arr.push( xAxisTitle +' : ' + e.cx.toString());
+          arr.push( xAxisTitle + ' : ' + e.cx.toString());
           return arr;
         };
 
@@ -148,7 +143,7 @@ angular.module('sdBasicBuildingInfoChart', [])
         hasData = chart.data && chart.data.length > 0;
         xAxis.title = xAxisTitle;
         yAxis.title = yAxisTitle;
-        if (yAxisMin){
+        if (yAxisMin) {
           yAxis.overrideMin = yAxisMin;
         }
 
@@ -158,7 +153,7 @@ angular.module('sdBasicBuildingInfoChart', [])
 
       /*  Create the Dimple chart, attaching it to pre-existing svg element.
           This method can be called each time we need a complete refresh.  */
-      this.createChart = function (){
+      this.createChart = function () {
         // create the dimple chart using the d3 selection of our <svg> element
         chart = new dimple.chart(svg, []);
         chart.defaultColors = defaultColors;
@@ -169,17 +164,17 @@ angular.module('sdBasicBuildingInfoChart', [])
       };
 
       /* Create the axes for the chart, using value passed in from external controller. */
-      this.createChartAxes = function (yAxisType, yAxisMin, xAxisTickFormat, yAxisTickFormat){
+      this.createChartAxes = function (yAxisType, yAxisMin, xAxisTickFormat, yAxisTickFormat) {
 
-        if (!xAxisTickFormat){
+        if (!xAxisTickFormat) {
           xAxisTickFormat = ',.0f';
         }
 
         xAxis = chart.addMeasureAxis('x', 'x');
         xAxis.tickFormat = xAxisTickFormat;
 
-        if (yAxisType==='Measure'){
-          if (!yAxisTickFormat){
+        if (yAxisType === 'Measure') {
+          if (!yAxisTickFormat) {
             yAxisTickFormat = ',.0f';
           }
           yAxis = chart.addMeasureAxis('y', 'y');
@@ -187,43 +182,45 @@ angular.module('sdBasicBuildingInfoChart', [])
         } else {
           yAxis = chart.addCategoryAxis('y', ['y', 'yr_e']);
           yAxis.addOrderRule('y', false);
-          yAxis._getFormat = function() { return my_custom_format; };
+          yAxis._getFormat = function () {
+            return my_custom_format;
+          };
         }
       };
 
-      function my_custom_format(value) {
-          if (value && value.length>truncateLength){
-            return value.substring(0, truncateLength) + '...';
-          }
-          return value;
+      function my_custom_format (value) {
+        if (value && value.length > truncateLength) {
+          return value.substring(0, truncateLength) + '...';
+        }
+        return value;
       }
 
-      this.createChartLegend = function (){
-        legend = chart.addLegend(200, 10, 360, 20, 'right bottom');
+      this.createChartLegend = function () {
+        chart.addLegend(200, 10, 360, 20, 'right bottom');
       };
 
-      this.clearChart = function() {
-        if (chart && chart.svg && hasData){
+      this.clearChart = function () {
+        if (_.get(chart, 'svg') && hasData) {
           chart.svg.selectAll('*').remove();
           hasData = false;
         }
       };
 
-      this.setChartType = function(chType){
+      this.setChartType = function (chType) {
         chartType = chType;
       };
 
-      this.resizeChart = function (){
-        if (chart){
+      this.resizeChart = function () {
+        if (chart) {
           chart.draw(0, true);
         }
       };
 
-      this.getYAxisType = function() {
+      this.getYAxisType = function () {
         return yAxisType;
       };
 
-      this.setYAxisType = function(value) {
+      this.setYAxisType = function (value) {
         yAxisType = value;
       };
 

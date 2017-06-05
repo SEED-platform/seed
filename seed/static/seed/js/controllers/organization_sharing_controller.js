@@ -83,11 +83,9 @@ angular.module('BE.seed.controller.organization_sharing', []).controller('organi
       $scope.org.public_fields = $scope.fields.filter(function (f) {
         return f.public_checked;
       });
-      organization_service.save_org_settings($scope.org).then(function (data) {
-        // resolve promise
+      organization_service.save_org_settings($scope.org).then(function () {
         $scope.settings_updated = true;
-      }, function (data, status) {
-        // reject promise
+      }, function (data) {
         $scope.$emit('app_error', data);
       });
     };

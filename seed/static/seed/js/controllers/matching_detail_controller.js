@@ -5,6 +5,7 @@
 angular.module('BE.seed.controller.matching_detail', [])
   .controller('matching_detail_controller', [
     '$scope',
+    '$log',
     '$window',
     '$state',
     '$stateParams',
@@ -14,12 +15,12 @@ angular.module('BE.seed.controller.matching_detail', [])
     'columns',
     'urls',
     '$uibModal',
-    'search_service',
     'matching_service',
     'inventory_service',
     'spinner_utility',
     'Notification',
     function ($scope,
+              $log,
               $window,
               $state,
               $stateParams,
@@ -29,14 +30,11 @@ angular.module('BE.seed.controller.matching_detail', [])
               columns,
               urls,
               $uibModal,
-              search_service,
               matching_service,
               inventory_service,
               spinner_utility,
               Notification) {
       spinner_utility.show();
-      $scope.search = angular.copy(search_service);
-      $scope.search.url = urls.search_buildings;
 
       $scope.import_file = import_file_payload.import_file;
       $scope.available_matches = available_matches.states;
@@ -80,7 +78,6 @@ angular.module('BE.seed.controller.matching_detail', [])
        *   and pagination here.
        */
       $scope.filter_search = function () {
-        console.debug('filter_search called');
         $scope.update_number_matched();
         inventory_service.search_matching_inventory($scope.file_select.file.id, {
           get_coparents: true,
@@ -90,7 +87,7 @@ angular.module('BE.seed.controller.matching_detail', [])
           // safe-guard against future init() calls
           state_payload = data;
 
-          if ($scope.inventory_type == 'properties') {
+          if ($scope.inventory_type === 'properties') {
             $scope.num_pages = Math.ceil(data.number_properties_matching_search / $scope.number_per_page);
           } else {
             $scope.num_pages = Math.ceil(data.number_tax_lots_matching_search / $scope.number_per_page);
@@ -101,7 +98,7 @@ angular.module('BE.seed.controller.matching_detail', [])
           $scope.number_tax_lots_returned = data.number_tax_lots_returned;
           update_start_end_paging();
         }).catch(function (data, status) {
-          console.log({data: data, status: status});
+          $log.log({data: data, status: status});
           $scope.alerts.push({type: 'danger', msg: 'Error searching'});
         });
       };
@@ -120,7 +117,7 @@ angular.module('BE.seed.controller.matching_detail', [])
       };
       var update_start_end_paging = function () {
         if ($scope.current_page === $scope.num_pages) {
-          if ($scope.inventory_type == 'properties') {
+          if ($scope.inventory_type === 'properties') {
             $scope.showing.end = $scope.number_properties_matching_search;
           } else {
             $scope.showing.end = $scope.number_tax_lots_matching_search;
@@ -235,24 +232,24 @@ angular.module('BE.seed.controller.matching_detail', [])
       $scope.unmatch = function () {
         return matching_service.unmatch($scope.importfile_id, $scope.inventory_type, $scope.state_id, $scope.state.coparent.id).then(function () {
           delete $scope.state.coparent;
-          Notification.success('Successfully unmerged ' + ($scope.inventory_type == 'properties' ? 'properties' : 'tax lots'));
+          Notification.success('Successfully unmerged ' + ($scope.inventory_type === 'properties' ? 'properties' : 'tax lots'));
           return refresh();
         }, function (err) {
-          console.error(err);
+          $log.error(err);
           $scope.state.matched = true;
-          Notification.error('Failed to unmerge ' + ($scope.inventory_type == 'properties' ? 'properties' : 'tax lots'));
+          Notification.error('Failed to unmerge ' + ($scope.inventory_type === 'properties' ? 'properties' : 'tax lots'));
           return refresh();
         });
       };
 
       $scope.match = function (state) {
         return matching_service.match($scope.importfile_id, $scope.inventory_type, $scope.state_id, state.id).then(function () {
-          Notification.success('Successfully merged ' + ($scope.inventory_type == 'properties' ? 'properties' : 'tax lots'));
+          Notification.success('Successfully merged ' + ($scope.inventory_type === 'properties' ? 'properties' : 'tax lots'));
           return refresh();
         }, function (err) {
-          console.error(err);
+          $log.error(err);
           $scope.state.matched = false;
-          Notification.error('Failed to merge ' + ($scope.inventory_type == 'properties' ? 'properties' : 'tax lots'));
+          Notification.error('Failed to merge ' + ($scope.inventory_type === 'properties' ? 'properties' : 'tax lots'));
           return refresh();
         });
       };
@@ -270,13 +267,12 @@ angular.module('BE.seed.controller.matching_detail', [])
           });
 
           return modalInstance.result.then(function () {
-              return $scope.unmatch().then(function () {
-                return $scope.match(state);
-              });
-            }, function () {
-              state.checked = false;
-            }
-          );
+            return $scope.unmatch().then(function () {
+              return $scope.match(state);
+            });
+          }, function () {
+            state.checked = false;
+          });
         } else {
           return $scope.match(state);
         }
@@ -305,7 +301,6 @@ angular.module('BE.seed.controller.matching_detail', [])
       // };
 
       $scope.updateHeight = function () {
-        console.log('updateHeight called');
         var height = 0;
         _.forEach(['.header', '.page_header_container', '.section .section_tab_container', '.section .section_header_container', '.matching-tab-container', '.table_footer'], function (selector) {
           var element = angular.element(selector)[0];

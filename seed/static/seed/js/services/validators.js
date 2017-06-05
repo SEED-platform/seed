@@ -42,9 +42,7 @@ angular.module('mappingValidatorService', []).factory('mappingValidatorService',
       return item;
     };
 
-    var pass_validator = function () {
-      return true;
-    };
+    var pass_validator = _.constant(true);
 
     var results = [];
     var converter = pass_converter;
