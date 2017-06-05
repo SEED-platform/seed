@@ -11,7 +11,7 @@
  * @originals - list of str, i.e. a row of CSV data.
  * @type - the data type that they're meant to be coerced into.
  *
- * @returns - a list of strings, all the values which didn't pass the validator.
+ * @returns - a list of strings, all the values which did not pass the validator.
  */
 angular.module('mappingValidatorService', []).factory('mappingValidatorService', function () {
 

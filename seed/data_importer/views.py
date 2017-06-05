@@ -1261,7 +1261,7 @@ class ImportFileViewSet(viewsets.ViewSet):
               required: true
               paramType: path
         """
-        return match_buildings(pk, request.user.pk)
+        return match_buildings(pk)
 
     @api_endpoint_class
     @ajax_request_class
@@ -1362,15 +1362,16 @@ class ImportFileViewSet(viewsets.ViewSet):
             writer.writerow(['data quality results not found'])
             return response
 
-        writer.writerow(['Address Line 1', 'PM Property ID', 'Tax Lot ID', 'Custom ID', 'Field',
+        writer.writerow(['Table', 'Address Line 1', 'PM Property ID', 'Tax Lot ID', 'Custom ID', 'Field',
                          'Error Message', 'Severity'])
 
         for row in data_quality_results:
             for result in row['data_quality_results']:
                 writer.writerow([
+                    row['data_quality_results'][0]['table_name'],
                     row['address_line_1'],
-                    row['pm_property_id'],
-                    row['tax_lot_id'],
+                    row['pm_property_id'] if 'pm_property_id' in row else None,
+                    row['jurisdiction_tax_lot_id'] if 'jurisdiction_tax_lot_id' in row else None,
                     row['custom_id_1'],
                     result['formatted_field'],
                     result['detailed_message'],

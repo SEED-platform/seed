@@ -19,6 +19,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
   'spinner_utility',
   '$uibModal',
   'urls',
+  'naturalSort',
   function ($scope,
             $q,
             $state,
@@ -33,10 +34,12 @@ angular.module('BE.seed.controller.data_quality_admin', [])
             label_service,
             spinner_utility,
             $uibModal,
-            urls) {
+            urls,
+            naturalSort) {
     $scope.inventory_type = $stateParams.inventory_type;
     $scope.org = organization_payload.organization;
     $scope.auth = auth_payload.auth;
+    $scope.ruleGroups = {};
 
     $scope.state = $state.current;
 
@@ -60,31 +63,37 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
     $scope.columns = columns;
     $scope.all_labels = labels_payload;
+    // console.log(labels_payload)
 
     var loadRules = function (rules_payload) {
-      $scope.ruleGroups = {
+      var ruleGroups = {
         properties: {},
         taxlots: {}
       };
       _.forEach(rules_payload.rules, function (inventory_type, index) {
         _.forEach(inventory_type, function (rule) {
-          if (!_.has($scope.ruleGroups[index], rule.field)) $scope.ruleGroups[index][rule.field] = [];
+          if (!_.has(ruleGroups[index], rule.field)) ruleGroups[index][rule.field] = [];
           var row = rule;
           if (row.data_type === 'date') {
             if (row.min) row.min = moment(row.min, 'YYYYMMDD').toDate();
             if (row.max) row.max = moment(row.max, 'YYYYMMDD').toDate();
           }
           if (rule.label) {
+            // console.log('load: ', rule.label)
             var match = _.find(labels_payload, function (label) {
+              // console.log('found: ', label)
               return label.id === rule.label;
             });
             if (match) {
+              // console.log('row label: ', match);
               row.label = match;
             }
           }
-          $scope.ruleGroups[index][rule.field].push(row);
+          ruleGroups[index][rule.field].push(row);
         });
       });
+
+      $scope.ruleGroups = ruleGroups;
     };
     loadRules(data_quality_rules_payload);
 
@@ -282,7 +291,11 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       var modalInstance = $uibModal.open({
         templateUrl: urls.static_url + 'seed/partials/data_quality_labels_modal.html',
         controller: 'data_quality_labels_modal_controller',
-        resolve: {}
+        resolve: {
+          org_id: function () {
+            return $scope.org.org_id;
+          }
+        }
       });
       modalInstance.result.then(function (returnedLabels) {
 
@@ -302,25 +315,6 @@ angular.module('BE.seed.controller.data_quality_admin', [])
           //dialog was 'dismissed,' which means it was cancelled...so nothing to do.
         }
       );
-      //   var newLabel = {
-      //     name: rule.label,
-      //     color: 'gray',
-      //     label: 'default'
-      //   };
-      //   label_service.create_label_for_org($scope.org.id, newLabel).then(angular.bind(this, function (result) {
-      //       r.label = result.id;
-      //       rules[rule_type].push(r);
-      //       d.resolve();
-      //     }, rule_type),
-      //     function (message) {
-      //       $log.error('Error creating new label.', message);
-      //       d.reject();
-      //     }).then(function () {
-      //       label_service.get_labels_for_org($scope.org.id).then(function (labels) {
-      //         $scope.all_labels = labels;
-      //       });
-      //     });
-      // }
     };
 
     // set rule as deleted.
@@ -329,13 +323,39 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       else $scope.ruleGroups[$scope.inventory_type][rule.field].splice(index, 1);
     };
 
+    var displayNames = {};
+    _.forEach($scope.columns, function (column) {
+      displayNames[column.name] = column.displayName;
+    });
+
     $scope.sortedRuleGroups = function () {
-      var keys = _.keys($scope.ruleGroups[$scope.inventory_type]).sort();
-      var nullKey = _.remove(keys, function (key) {
+      var sortedKeys = _.keys($scope.ruleGroups[$scope.inventory_type]).sort(function (a, b) {
+        return naturalSort(displayNames[a], displayNames[b]);
+      });
+      var nullKey = _.remove(sortedKeys, function (key) {
         return key === 'null';
       });
 
       // Put created unassigned rows first
-      return nullKey.concat(keys);
-    }
+      return nullKey.concat(sortedKeys);
+    };
+
+    $scope.selectAll = function () {
+      var allEnabled = $scope.allEnabled();
+      _.forEach($scope.ruleGroups[$scope.inventory_type], function (ruleGroup) {
+        _.forEach(ruleGroup, function(rule) {
+          rule.enabled = !allEnabled;
+        });
+      });
+    };
+
+    $scope.allEnabled = function () {
+      var total = 0;
+      var enabled = _.reduce($scope.ruleGroups[$scope.inventory_type], function (result, ruleGroup) {
+        total += ruleGroup.length;
+        return result + _.filter(ruleGroup, 'enabled').length;
+      }, 0);
+      return total === enabled;
+    };
+
   }]);

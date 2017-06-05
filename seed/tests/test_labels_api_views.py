@@ -78,7 +78,7 @@ class TestLabelsViewSet(TestCase):
         organization_a, _, _ = create_organization(user, "test-organization-a")
         organization_b, _, _ = create_organization(user, "test-organization-b")
 
-        # Ensures that at least a single label exists to ensure that we aren't
+        # Ensures that at least a single label exists to ensure that we are not
         # relying on auto-creation of labels for this test to pass.
         Label.objects.create(
             color="red",

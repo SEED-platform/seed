@@ -356,7 +356,7 @@ def cycles(header, main_url, organization_id, log):
             cycle_id = cyc['id']
             break
     else:
-        # Create cycle (only if it doesn't exist, until there is a function to delete cycles)
+        # Create cycle (only if it does not exist, until there is a function to delete cycles)
         print ('API Function: create_cycle\n')
         partmsg = 'create_cycle'
         payload = {

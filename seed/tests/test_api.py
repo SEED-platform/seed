@@ -76,7 +76,7 @@ class SchemaGenerationTests(TestCase):
                     url.startswith('/api/v2/labels')):
                 self.assertTrue(
                     url.endswith('/'),
-                    "Endpoint %s doesn't end with / as expected" % url
+                    "Endpoint %s does not end with / as expected" % url
                 )
 
     def test_get_api_schema(self):

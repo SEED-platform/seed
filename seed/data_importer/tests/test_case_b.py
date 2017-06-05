@@ -72,7 +72,7 @@ class TestCaseB(DataMappingBaseTestCase):
         ).first()
         self.assertEqual(p_test.lot_number, "33366555;33366125;33366148")
 
-        tasks.match_buildings(self.import_file.id, self.user.id)
+        tasks.match_buildings(self.import_file.id)
 
         # make sure the the property only has one tax lot and vice versa
         tlv = TaxLotView.objects.filter(state__jurisdiction_tax_lot_id='11160509', cycle=self.cycle)

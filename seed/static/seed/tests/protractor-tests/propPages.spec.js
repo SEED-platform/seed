@@ -2,8 +2,13 @@
 var EC = protractor.ExpectedConditions;
 // Check inventory Page:
 describe('When I go to the inventory page', function () {
+
+    // manually
+    it ('should reset sync', function () {
+        browser.ignoreSynchronization = false;
+    });
+
 	it('should change to our test cycle', function () {
-		browser.ignoreSynchronization = false;
 		browser.get("/app/#/properties");
 		$('[ng-change="update_cycle(cycle.selected_cycle)"]').element(by.cssContainingText('option', browser.params.testOrg.cycle)).click();
 
@@ -42,6 +47,7 @@ describe('When I go to the inventory page', function () {
 		$$('[ng-model="colFilter.term"]').first().sendKeys('this is something long and fake to get nothing to filter');
 		expect(rows.count()).toBeLessThan(1);
 		$$('[ng-model="colFilter.term"]').first().element(by.xpath('..')).$('[ui-grid-one-bind-aria-label="aria.removeFilter"]').click();
+		$('[ng-if="grid.options.enableSelectAll"]').click().click();
 	});
 
 	it('should go to info pages', function () {
@@ -68,6 +74,15 @@ describe('When I go to the inventory page', function () {
 
 		var labels = element.all(by.repeater('label in labels'));
 		expect(labels.count()).toBeLessThan(1);
+	});
+ 
+	it('should go to settings in info pages', function () {
+		$('#settings').click();
+		$('[ng-if="grid.options.enableSelectAll"]').click().click();
+		$$('[ng-class="{\'ui-grid-row-selected\': row.isSelected}"]').first().click();
+		$('#item_title').click();
+		var rows = element.all(by.repeater('field in columns'));
+		expect(rows.count()).toBe(1);
 
 		// add label
 		$('[ng-click="open_update_labels_modal(inventory.id, inventory_type)"]').click();
@@ -124,5 +139,31 @@ describe('When I go to the inventory page', function () {
 		expect(cols.count()).toBe(1);
 	});
 
-	//TODO reports?
+	it('should export', function () {
+		$('.ui-grid-icon-menu').click();
+		var myOptions = element.all(by.repeater('item in menuItems')).filter(function (elm) {
+			return elm.getText().then(function(label) { 
+				return label == '  Export all data as csv';
+			});
+		}).first();
+		myOptions.click();		
+	});
+
+		// Reports page from Inventory
+	it('should see inventory page and select reports page', function () {
+        $('[ng-click="toggle_menu()"]').click();
+		$('#sidebar-inventory').click();
+        $('[ng-click="toggle_menu()"]').click();
+
+		$('#reports').click();
+		expect($('.page_title').getText()).toContain('Inventory Reports');
+		expect($('svg').isPresent()).toBe(true);
+
+		$('.btn.btn-primary').click();
+		browser.wait(EC.presenceOf($('#dimple-use-description-2017--0-99k-2017--')), 10000);
+		browser.wait(EC.presenceOf($('#dimple-use-description-2017--500-599k-2017--')), 10000);
+		browser.wait(EC.presenceOf($('.dimple-series-0')), 10000);
+		expect($('.fa.fa-square').isPresent()).toBe(true);
+		expect($('.fa.fa-circle').isPresent()).toBe(true);
+	});
 });

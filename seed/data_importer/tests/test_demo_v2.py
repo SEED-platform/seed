@@ -128,7 +128,7 @@ class TestDemoV2(DataMappingBaseTestCase):
         self.assertEqual(len(ps), 0)
         self.assertEqual(len(ts), 9)
 
-        tasks.match_buildings(self.import_file_tax_lot.id, self.user.id)
+        tasks.match_buildings(self.import_file_tax_lot.id)
 
         # Check a single case of the taxlotstate
         self.assertEqual(TaxLotState.objects.filter(address_line_1='050 Willow Ave SE').count(), 1)
@@ -157,7 +157,7 @@ class TestDemoV2(DataMappingBaseTestCase):
         self.assertEqual(len(ts), 9)
         self.assertEqual(len(ps), 14)
 
-        tasks.match_buildings(self.import_file_property.id, self.user.id)
+        tasks.match_buildings(self.import_file_property.id)
 
         ps = PropertyState.objects.filter(
             data_state=DATA_STATE_MAPPING,
@@ -165,7 +165,7 @@ class TestDemoV2(DataMappingBaseTestCase):
             import_file=self.import_file_property,
         )
 
-        # there shouldn't be any properties left in the mapping state
+        # there should not be any properties left in the mapping state
         self.assertEqual(len(ps), 0)
 
         # psv = PropertyView.objects.filter(state__organization=self.org)

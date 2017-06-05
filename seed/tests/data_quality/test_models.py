@@ -5,8 +5,11 @@
 :author
 """
 import logging
+from datetime import datetime
 
+import pytz
 from django.test import TestCase
+from django.utils.timezone import make_aware, make_naive
 
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import StatusLabel
@@ -15,14 +18,213 @@ from seed.models.data_quality import (
     Rule,
     DEFAULT_RULES,
     TYPE_NUMBER,
+    TYPE_DATE,
+    TYPE_YEAR,
+    TYPE_STRING,
     RULE_TYPE_DEFAULT,
-    SEVERITY_ERROR
+    SEVERITY_ERROR,
 )
 
 _log = logging.getLogger(__name__)
 
 
+class RuleTests(TestCase):
+
+    def setUp(self):
+        self.org = Organization.objects.create()
+
+    def test_min_max(self):
+        new_rule = {
+            'data_type': TYPE_NUMBER,
+            'min': 0,
+            'max': 100,
+        }
+        r = Rule.objects.create(**new_rule)
+        self.assertTrue(r.minimum_valid(0))
+        self.assertFalse(r.minimum_valid(-1))
+        self.assertTrue(r.maximum_valid(100))
+        self.assertFalse(r.maximum_valid(101))
+
+    def text_min_only(self):
+        new_rule = {
+            'data_type': TYPE_NUMBER,
+            'min': 5,
+        }
+        r = Rule.objects.create(**new_rule)
+        self.assertTrue(r.minimum_valid(0))
+        self.assertFalse(r.minimum_valid(10))
+        self.assertTrue(r.maximum_valid(100))
+        self.assertTrue(r.maximum_valid(999999))
+
+    def text_max_only(self):
+        new_rule = {
+            'data_type': TYPE_NUMBER,
+            'max': 100,
+        }
+        r = Rule.objects.create(**new_rule)
+        self.assertTrue(r.minimum_valid(0))
+        self.assertTrue(r.minimum_valid(999999))
+        self.assertTrue(r.maximum_valid(50))
+        self.assertFalse(r.maximum_valid(200))
+
+    def test_valid_enum(self):
+        new_rule = {
+            'data_type': TYPE_STRING,
+            'text_match': 'alpha',
+        }
+        r = Rule.objects.create(**new_rule)
+        self.assertTrue(r.valid_text('alpha'))
+        self.assertFalse(r.valid_text('beta'))
+        self.assertTrue(r.valid_text(u'alpha'))
+        self.assertFalse(r.valid_text(u'beta'))
+
+    def test_valid_enum_regex(self):
+        # test with regex
+        new_rule = {
+            'data_type': TYPE_STRING,
+            'text_match': '.*(a|b)cd(4|8).*'
+        }
+        r = Rule.objects.create(**new_rule)
+        self.assertTrue(r.valid_text('bcd8'))
+        self.assertTrue(r.valid_text('pretext acd4 posttext'))
+        self.assertTrue(r.valid_text('pretextbcd8posttext'))
+        self.assertFalse(r.valid_text('pretextbcd6posttext'))
+
+    def test_type_value_return(self):
+        """Test to make sure that the return is correct if value is not a string"""
+        new_rule = {
+            'data_type': TYPE_STRING,
+        }
+        r = Rule.objects.create(**new_rule)
+        self.assertEqual(r.str_to_data_type(int(576)), 576)
+        self.assertEqual(r.str_to_data_type(576.5), 576.5)
+
+    def test_type_value_string(self):
+        new_rule = {
+            'data_type': TYPE_STRING,
+        }
+        r = Rule.objects.create(**new_rule)
+        self.assertEqual(r.str_to_data_type(None), None)
+        self.assertEqual(r.str_to_data_type(''), '')
+        self.assertEqual(r.str_to_data_type('576'), '576')
+        self.assertEqual(r.str_to_data_type('abcd'), 'abcd')
+        self.assertEqual(r.str_to_data_type(u'abcd'), u'abcd')
+
+    def test_type_value_number(self):
+        new_rule = {
+            'data_type': TYPE_NUMBER,
+        }
+        r = Rule.objects.create(**new_rule)
+        self.assertEqual(r.str_to_data_type(None), None)
+        self.assertEqual(r.str_to_data_type(''), None)
+        self.assertEqual(r.str_to_data_type('576'), 576)
+        self.assertEqual(r.str_to_data_type('576.5'), 576.5)
+        with self.assertRaisesRegexp(TypeError, ".*string to float.*abcd"):
+            r.str_to_data_type('abcd')
+
+    def test_type_value_date(self):
+        new_rule = {
+            'data_type': TYPE_DATE,
+        }
+        r = Rule.objects.create(**new_rule)
+
+        self.assertEqual(r.str_to_data_type(None), None)
+        self.assertEqual(r.str_to_data_type(''), None)
+        dt = make_aware(datetime(2016, 0o7, 15, 12, 30), pytz.UTC)
+        self.assertEqual(r.str_to_data_type(dt.strftime("%Y-%m-%d %H:%M")), dt)
+        self.assertEqual(r.str_to_data_type('abcd'), None)
+
+    def test_type_value_year(self):
+        new_rule = {
+            'data_type': TYPE_YEAR,
+        }
+        r = Rule.objects.create(**new_rule)
+
+        self.assertEqual(r.str_to_data_type(None), None)
+        self.assertEqual(r.str_to_data_type(''), None)
+        dt = make_aware(datetime(2016, 0o7, 15, 12, 30), pytz.UTC)
+        self.assertEqual(r.str_to_data_type(dt.strftime("%Y-%m-%d %H:%M")), dt.date())
+        self.assertEqual(r.str_to_data_type('abcd'), None)
+
+    def test_format_rule_string_string(self):
+        new_rule = {
+            'data_type': TYPE_STRING,
+            'max': 27,
+        }
+        r = Rule.objects.create(**new_rule)
+        self.assertEqual(r.format_strings('something blue'), ['None', '27', 'something blue'])
+
+    def test_format_strings_int(self):
+        new_rule = {
+            'data_type': TYPE_NUMBER,
+            'min': 27,
+        }
+        r = Rule.objects.create(**new_rule)
+        self.assertEqual(r.format_strings(int(100)), ['27', None, '100'])
+
+        new_rule = {
+            'data_type': TYPE_NUMBER,
+            'max': 27,
+        }
+        r = Rule.objects.create(**new_rule)
+        self.assertEqual(r.format_strings(int(100)), [None, '27', '100'])
+
+    def test_format_strings_float(self):
+        new_rule = {
+            'data_type': TYPE_NUMBER,
+            'min': 27,
+        }
+        r = Rule.objects.create(**new_rule)
+        self.assertEqual(r.format_strings(100.0), ['27', None, '100.0'])
+
+        new_rule = {
+            'data_type': TYPE_NUMBER,
+            'max': 27,
+        }
+        r = Rule.objects.create(**new_rule)
+        self.assertEqual(r.format_strings(123.45), [None, '27', '123.45'])
+
+    def test_format_strings_datetime(self):
+        new_rule = {
+            'data_type': TYPE_YEAR,
+            'min': '20170101'
+        }
+        r = Rule.objects.create(**new_rule)
+        # the strings are tz naive, but must be passed in as tz aware.
+        dt = make_aware(datetime(2016, 0o7, 15, 12, 30), pytz.UTC)
+        self.assertEqual(r.format_strings(dt),
+                         ['2017-01-01 00:00:00', None, str(make_naive(dt, pytz.UTC))])
+
+        new_rule = {
+            'data_type': TYPE_YEAR,
+            'max': '20170101'
+        }
+        r = Rule.objects.create(**new_rule)
+        self.assertEqual(r.format_strings(dt),
+                         [None, '2017-01-01 00:00:00', str(make_naive(dt, pytz.UTC))])
+
+    def test_format_strings_date(self):
+        new_rule = {
+            'data_type': TYPE_YEAR,
+            'min': '20170101'
+        }
+        r = Rule.objects.create(**new_rule)
+        # the strings are tz naive, but must be passed in as tz aware.
+        dt = make_aware(datetime(2016, 0o7, 15, 12, 30), pytz.UTC).date()
+        self.assertEqual(r.format_strings(dt),
+                         ['2017-01-01', None, str(dt)])
+
+        new_rule = {
+            'data_type': TYPE_YEAR,
+            'max': '20170101'
+        }
+        r = Rule.objects.create(**new_rule)
+        self.assertEqual(r.format_strings(dt),
+                         [None, '2017-01-01', str(dt)])
+
+
 class DataQualityCheckCase(TestCase):
+
     def setUp(self):
         self.org = Organization.objects.create()
 
@@ -40,6 +242,7 @@ class DataQualityCheckCase(TestCase):
 
 
 class DataQualityCheckRules(TestCase):
+
     def setUp(self):
         self.org = Organization.objects.create()
 
@@ -51,7 +254,7 @@ class DataQualityCheckRules(TestCase):
         self.assertEqual(dq.results, {})
         self.assertEqual(initial_pk, dq.pk)
 
-        # check again to make sure that it doesn't append more rules to the same org
+        # check again to make sure that it does not append more rules to the same org
         dq = DataQualityCheck.retrieve(self.org.pk)
         self.assertEqual(dq.rules.count(), len(DEFAULT_RULES))
 

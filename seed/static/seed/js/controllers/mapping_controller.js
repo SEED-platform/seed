@@ -411,6 +411,21 @@ angular.module('BE.seed.controller.mapping', [])
           $scope.show_mapped_buildings = true;
         }).catch(function (response) {
           console.error(response);
+        }).finally(function() {
+          // Fetch data quality check results
+          $scope.data_quality_results_ready = false;
+          $scope.data_quality_results = data_quality_service.get_data_quality_results($scope.import_file.id);
+          $scope.data_quality_results.then(function (data) {
+            $scope.data_quality_results_ready = true;
+            $scope.data_quality_errors = 0;
+            $scope.data_quality_warnings = 0;
+            _.forEach(data, function (datum) {
+              _.forEach(datum.data_quality_results, function (result) {
+                if (result.severity === 'error') $scope.data_quality_errors++;
+                else if (result.severity === 'warning') $scope.data_quality_warnings++;
+              });
+            });
+          });
         });
       };
 
@@ -629,7 +644,7 @@ angular.module('BE.seed.controller.mapping', [])
           size: 'lg',
           resolve: {
             dataQualityResults: function () {
-              return data_quality_service.get_data_quality_results($scope.import_file.id);
+              return $scope.data_quality_results;
             },
             name: function () {
               return $scope.import_file.uploaded_filename;

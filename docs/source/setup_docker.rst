@@ -277,8 +277,8 @@ Note this process will spit out a warning that some containers are being ignored
 
 **Note that you may need to build the containers a couple times for everything to converge**. You will likely need to do this. Run `docker-compose up` hit Ctrl-C, then run both the commands again to get everything working correctly.
 
-Note for whatever reason things like collectstatic aren't run automatically
-if you aren't using Virtual Box. You can fix it with the following. Use this
+Note for whatever reason things like collectstatic are not run automatically
+if you are not using VirtualBox. You can fix it with the following. Use this
 to connect to a shell in the container.
 
 .. code-block:: bash

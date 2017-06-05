@@ -8,26 +8,15 @@
 Unit tests for seed/views/labels.py
 """
 
-from unittest import skip
-
 from django.test import TestCase
 
 from seed.factory import SEEDFactory
-from seed.landing.models import SEEDUser as User
 from seed.models import (
     CanonicalBuilding,
-    Project,
-)
-from seed.tasks import (
-    add_buildings,
-)
-from seed.utils.organizations import (
-    create_organization,
 )
 
 
 class TestAddBuildingsToProjectTask(TestCase):
-
     def get_filter_params(self, project):
         return {
             "project_slug": project.slug,
@@ -38,7 +27,8 @@ class TestAddBuildingsToProjectTask(TestCase):
             },
             "order_by": "",
             "sort_reverse": False,
-            "project_loading_cache_key": "SEED_PROJECT_ADDING_BUILDINGS_PERCENTAGE_{}".format(project.slug),
+            "project_loading_cache_key": "SEED_PROJECT_ADDING_BUILDINGS_PERCENTAGE_{}".format(
+                project.slug),
         }
 
     @staticmethod
@@ -58,61 +48,61 @@ class TestAddBuildingsToProjectTask(TestCase):
 
         return buildings
 
-    @skip("Fix for new data model")
-    def test_adding_buildings_with_select_all(self):
-        """
-        Ensure that labels are not actually paginated.
-        """
-        user = User.objects.create_superuser(
-            email='test_user@demo.com',
-            username='test_user@demo.com',
-            password='secret',
-        )
-        organization, _, _ = create_organization(user, "test-organization")
-        project = Project.objects.create(
-            name='test-org-1',
-            super_organization=organization,
-            owner=user,
-        )
-
-        self.generate_buildings(organization, 10)
-
-        self.assertFalse(project.building_snapshots.exists())
-
-        params = self.get_filter_params(project)
-        params['select_all_checkbox'] = True
-
-        add_buildings(project.slug, params, user.pk)
-
-        self.assertEqual(project.building_snapshots.count(), 10)
-
-    @skip("Fix for new data model")
-    def test_adding_buildings_with_individual_selection(self):
-        """
-        Ensure that labels are not actually paginated.
-        """
-        user = User.objects.create_superuser(
-            email='test_user@demo.com',
-            username='test_user@demo.com',
-            password='secret',
-        )
-        organization, _, _ = create_organization(user, "test-organization")
-        project = Project.objects.create(
-            name='test-org-1',
-            super_organization=organization,
-            owner=user,
-        )
-
-        buildings = self.generate_buildings(organization, 10)
-
-        self.assertFalse(project.building_snapshots.exists())
-
-        selected_buildings = [b.pk for b in buildings if b.pk % 2 == 0]
-        self.assertEqual(len(selected_buildings), 5)
-
-        params = self.get_filter_params(project)
-        params['selected_buildings'] = selected_buildings
-
-        add_buildings(project.slug, params, user.pk)
-
-        self.assertEqual(project.building_snapshots.count(), 5)
+        # @skip("Fix for new data model")
+        # def test_adding_buildings_with_select_all(self):
+        #     """
+        #     Ensure that labels are not actually paginated.
+        #     """
+        #     user = User.objects.create_superuser(
+        #         email='test_user@demo.com',
+        #         username='test_user@demo.com',
+        #         password='secret',
+        #     )
+        #     organization, _, _ = create_organization(user, "test-organization")
+        #     project = Project.objects.create(
+        #         name='test-org-1',
+        #         super_organization=organization,
+        #         owner=user,
+        #     )
+        #
+        #     self.generate_buildings(organization, 10)
+        #
+        #     self.assertFalse(project.building_snapshots.exists())
+        #
+        #     params = self.get_filter_params(project)
+        #     params['select_all_checkbox'] = True
+        #
+        #     add_buildings(project.slug, params, user.pk)
+        #
+        #     self.assertEqual(project.building_snapshots.count(), 10)
+        #
+        # @skip("Fix for new data model")
+        # def test_adding_buildings_with_individual_selection(self):
+        #     """
+        #     Ensure that labels are not actually paginated.
+        #     """
+        #     user = User.objects.create_superuser(
+        #         email='test_user@demo.com',
+        #         username='test_user@demo.com',
+        #         password='secret',
+        #     )
+        #     organization, _, _ = create_organization(user, "test-organization")
+        #     project = Project.objects.create(
+        #         name='test-org-1',
+        #         super_organization=organization,
+        #         owner=user,
+        #     )
+        #
+        #     buildings = self.generate_buildings(organization, 10)
+        #
+        #     self.assertFalse(project.building_snapshots.exists())
+        #
+        #     selected_buildings = [b.pk for b in buildings if b.pk % 2 == 0]
+        #     self.assertEqual(len(selected_buildings), 5)
+        #
+        #     params = self.get_filter_params(project)
+        #     params['selected_buildings'] = selected_buildings
+        #
+        #     add_buildings(project.slug, params, user.pk)
+        #
+        #     self.assertEqual(project.building_snapshots.count(), 5)

@@ -16,7 +16,8 @@ angular.module('BE.seed.controller.data_quality_labels_modal', [])
     '$uibModalInstance',
     'label_service',
     'Notification',
-    function ($scope, $uibModalInstance, label_service, notification) {
+    'org_id',
+    function ($scope, $uibModalInstance, label_service, notification, org_id) {
       //keep track of status of service call
       $scope.loading = false;
 
@@ -110,7 +111,7 @@ angular.module('BE.seed.controller.data_quality_labels_modal', [])
         $scope.initialize_new_label();
         //get labels with 'is_applied' property by passing in current search state
         $scope.loading = true;
-        label_service.get_labels().then(function (labels) {
+        label_service.get_labels_for_org(org_id).then(function (labels) {
           $scope.labels = labels;
           $scope.loading = false;
         });

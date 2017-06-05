@@ -6,13 +6,27 @@
 """
 import calendar
 import datetime
+
 import dateutil
+import pytz
+from django.utils.timezone import make_aware
 
 
-def convert_datestr(datestr):
-    """Converts dates like `12/31/2010` into datetime objects."""
+def convert_datestr(datestr, make_tz_aware=False):
+    """
+    Converts dates like `12/31/2010` into datetime objects. Dates are returned in UTC time
+
+    TODO: reconcile this with seed/lib/mcm/cleaners.py#L85-L85
+
+    :param datestr: string, value to convert
+    :param make_tz_aware: bool, if set to true, then will convert the timezone into UTC time
+    :return: datetime or None
+    """
     try:
-        return dateutil.parser.parse(datestr)
+        value = dateutil.parser.parse(datestr)
+        if make_tz_aware:
+            value = make_aware(value, pytz.UTC)
+        return value
     except (TypeError, ValueError):
         return None
 

@@ -12,7 +12,7 @@ class TooManyNestedOrgs(Exception):
 
 
 class UserNotInOrganization(Exception):
-    """Raised when a user doesn't exist, or doesn't belong to an org."""
+    """Raised when a user does not exist, or does not belong to an org."""
     pass
 
 

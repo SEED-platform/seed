@@ -192,7 +192,7 @@ class PropertyState(models.Model):
         )
         for field in date_field_names:
             value = getattr(self, field)
-            if value and isinstance(value, basestring):
+            if value and isinstance(value, (str, unicode)):
                 setattr(self, field, convert_datestr(value))
 
     def to_dict(self, fields=None, include_related_data=True):

@@ -155,7 +155,7 @@ def _get_org_id(request):
     """Extract the ``organization_id`` regardless of HTTP method type."""
     # first try to get it from the query parameters
     org_id = request.GET.get('organization_id')
-    # if that doesn't work...
+    # if that does not work...
     if org_id is None:
         # try getting it from the request body itself
         if hasattr(request, 'data'):
@@ -165,7 +165,7 @@ def _get_org_id(request):
             body = request.body
             org_id = json.loads(body).get('organization_id', None)
         if org_id is None:
-            # if that doesn't work, try getting it from the url path itself, i.e. '/api/v2/organizations/12/'
+            # if that does not work, try getting it from the url path itself, i.e. '/api/v2/organizations/12/'
             if hasattr(request, '_request') and 'organizations' in request._request.path:
                 try:
                     org_id = int(request._request.path.split('/')[4])

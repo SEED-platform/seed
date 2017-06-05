@@ -62,7 +62,7 @@ def obj_to_dict(obj, include_m2m=True):
     response = struct['fields']
     response[u'id'] = response[u'pk'] = struct['pk']
     response[u'model'] = struct['model']
-    # JsonField doesn't get serialized by `serialize`
+    # JsonField does not get serialized by `serialize`
     for f in obj._meta.fields:
         if isinstance(f, JsonField):
             e = getattr(obj, f.name)
@@ -88,8 +88,9 @@ def json_serializer(obj):
     """
     Serialize JSON with date times. When using json.dumps use call it with:
 
+    import json
     from seed.utils.generic import json_serializer
-    json.dumps(data, default=json_serializer)
+    json.dumps(data, default=json_serializer, indent=2)
     """
     if isinstance(obj, datetime):
         serial = obj.isoformat()

@@ -86,7 +86,7 @@ def date_cleaner(value, *args):
     """Try to clean value, coerce it into a python datetime."""
     if not value or value == '':
         return None
-    if isinstance(value, datetime) or isinstance(value, date):
+    if isinstance(value, (datetime, date)):
         return value
 
     try:
