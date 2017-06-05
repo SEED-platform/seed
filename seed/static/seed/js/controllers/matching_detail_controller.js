@@ -9,8 +9,6 @@ angular.module('BE.seed.controller.matching_detail', [])
     '$state',
     '$stateParams',
     'import_file_payload',
-    // 'propertyInventory',
-    // 'taxlotInventory',
     'state_payload',
     'available_matches',
     'columns',
@@ -26,8 +24,6 @@ angular.module('BE.seed.controller.matching_detail', [])
               $state,
               $stateParams,
               import_file_payload,
-              // propertyInventory,
-              // taxlotInventory,
               state_payload,
               available_matches,
               columns,
@@ -44,16 +40,6 @@ angular.module('BE.seed.controller.matching_detail', [])
 
       $scope.import_file = import_file_payload.import_file;
       $scope.available_matches = available_matches.states;
-
-      //added from paring Controller for filter function
-      $scope.inventory_type = $stateParams.inventory_type;
-      //just added
-      // $scope.propertyData = propertyInventory.results;
-      // $scope.taxlotData = taxlotInventory.results;
-      // $scope.allPropertyColumns = propertyInventory.columns;
-      // $scope.propertyColumns = _.reject(propertyInventory.columns, {name: 'jurisdiction_tax_lot_id'});
-      // $scope.taxlotColumns = taxlotInventory.columns;
-
 
       $scope.number_per_page = 10;
       $scope.current_page = 1;
@@ -199,7 +185,9 @@ angular.module('BE.seed.controller.matching_detail', [])
         for (var i = 0; i < $scope.reduced_columns.length; i++) {
             if ($scope.reduced_columns[i].searchText && value[$scope.reduced_columns[i].name]) {
               //dont return match because it stops the loop, set to variable so even whem matches are found, they continue searching(iterating through the loop) when inputs are processed from other columns
-              var isMatch = value[$scope.reduced_columns[i].name].indexOf($scope.reduced_columns[i].searchText) > -1;
+              var searchTextLower = $scope.reduced_columns[i].searchText.toLowerCase();
+              var reducedColLower = value[$scope.reduced_columns[i].name].toLowerCase();
+              var isMatch = reducedColLower.indexOf(searchTextLower) > -1;
               //if an item does not match, break the loop
               if (!isMatch) {
                   return false;
@@ -211,23 +199,7 @@ angular.module('BE.seed.controller.matching_detail', [])
       return true;
     };
 
-
-      //original filter to compare fix to 
-      $scope.allSearch = function (value, index, array) {
-        for (var i = 0; i < $scope.reduced_columns.length; i++) {
-            if ($scope.reduced_columns[i].searchText && value[$scope.reduced_columns[i].name]) {
-              //dont return match because it stops the loop, set to variable so even whem matches are found, they continue searching(iterating through the loop) when inputs are processed from other columns
-              var isMatch = value[$scope.reduced_columns[i].name].indexOf($scope.reduced_columns[i].searchText) > -1;
-              //if an item does not match, break the loop
-              if (!isMatch) {
-                  return false;
-              }  
-            } 
-        }
-        return true;
-      };
-
-      //Sort by Column Ascending and Descending
+      //Sort by Columns Ascending and Descending
       $scope.sortColumn = "name";
       $scope.reverseSort = false;
 

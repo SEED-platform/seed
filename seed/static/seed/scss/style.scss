@@ -2752,8 +2752,8 @@ gs-input .tags .tag-item .remove-button {
 }
 
 .pairing-rows {
-  height: 600px;
-  overflow-y: auto;
+  max-height: 600px;
+  overflow-y: scroll;
 }
 
 .pairing-list-controls-full {
@@ -2867,6 +2867,7 @@ table.import_results a[disabled] {
     // background: blue;
     &:nth-child(3) {
       width: 23.33%;
+      padding-left: 3%;
     }
   }
 

@@ -293,8 +293,10 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
     //left and right filters, works with table flip
     $scope.leftSearch = function (value, index, array) {
       for (var i = 0; i < $scope.leftColumns.length; i++) {
-        if ($scope.leftColumns[i].searchText && value[$scope.leftColumns[i].name]) {            
-          var isMatch = value[$scope.leftColumns[i].name].indexOf($scope.leftColumns[i].searchText) > -1;
+        if ($scope.leftColumns[i].searchText && value[$scope.leftColumns[i].name]) { 
+          var searchTextLower = $scope.leftColumns[i].searchText.toLowerCase();
+          var leftColLower = value[$scope.leftColumns[i].name].toLowerCase();           
+          var isMatch = leftColLower.indexOf(searchTextLower) > -1;
             if (!isMatch) {
               return false;
             }
@@ -306,11 +308,12 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
     };
 
     $scope.rightSearch = function (value, index, array) {
-      console.log($scope.rightColumns.length);
       for (var i = 0; i < $scope.rightColumns.length; i++) {
-        console.log("RC V: " + value[$scope.rightColumns[i].name]);
-        if ($scope.rightColumns[i].searchText && value[$scope.rightColumns[i].name]) {            
-          var isMatch = value[$scope.rightColumns[i].name].indexOf($scope.rightColumns[i].searchText) > -1;
+        // console.log("RC V: " + value[$scope.rightColumns[i].name]);
+        if ($scope.rightColumns[i].searchText && value[$scope.rightColumns[i].name]) { 
+          var searchTextLower = $scope.rightColumns[i].searchText.toLowerCase();
+          var rightColLower = value[$scope.rightColumns[i].name].toLowerCase();           
+          var isMatch = rightColLower.indexOf(searchTextLower) > -1;
             if (!isMatch) {
                 return false;
             }
