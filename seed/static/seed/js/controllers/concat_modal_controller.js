@@ -1,8 +1,8 @@
-/*
- * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+/**
+ * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
-/*
+/**
  * concat_modal_controller, controls selecting columns to concatenate together.
  *
  */
@@ -25,7 +25,7 @@ angular.module('BE.seed.controller.concat_modal', [])
     $scope.delimiter = ' ';
     $scope.target_tcm = {};
 
-    /*
+    /**
      * Create a concatenated TCM.
      *
      * Makes new name, and new raw data
@@ -65,7 +65,7 @@ angular.module('BE.seed.controller.concat_modal', [])
 
     };
 
-    /*
+    /**
      * Creates a new TCM in $scope among the ``raw_columns``
      * Disables the concatenees from viewing.
      */

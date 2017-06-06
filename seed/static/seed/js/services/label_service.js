@@ -154,7 +154,7 @@ angular.module('BE.seed.service.label', [])
     /* FUNCTIONS FOR LABELS WITHIN PROPERTIES  */
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-    /*
+    /**
 
      This method updates selected Properties with a group
      of "add" labels and a group of "remove" labels.
@@ -185,7 +185,7 @@ angular.module('BE.seed.service.label', [])
       }
 
 
-    /*
+    /**
      This method updates selected Tax Lots with a group
      of "add" labels and a group of "remove" labels.
 

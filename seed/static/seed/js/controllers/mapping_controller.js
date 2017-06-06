@@ -1,5 +1,5 @@
-/*
- * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+/**
+ * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.mapping', [])
@@ -84,7 +84,7 @@ angular.module('BE.seed.controller.mapping', [])
 
       $scope.isValidCycle = !!_.find(cycles.cycles, {id: $scope.import_file.cycle});
 
-      /*
+      /**
        * Opens modal for making changes to concatenation changes.
        * NL 2016-11-11: hasn't this been deprecated? Backend doesn't have this anymore.
        */
@@ -103,7 +103,7 @@ angular.module('BE.seed.controller.mapping', [])
         });
       };
 
-      /*
+      /**
        * Gets the row-level validity for a Table Column Mapping.
        *
        * @param tcm: table column mapping object.
@@ -128,7 +128,7 @@ angular.module('BE.seed.controller.mapping', [])
       // };
       $scope.get_validity = _.constant('valid');
 
-      /*
+      /**
        * set_td_class
        * Gets called on each cell in a table on the mapping page.
        * Return true if a column value is invalid for a TCM.
@@ -172,7 +172,7 @@ angular.module('BE.seed.controller.mapping', [])
         else $scope.setAllFields = '';
       };
 
-      /*
+      /**
        * Validates example data related to a raw column using a validator service.
        *
        * @param tcm: a table column mapping object.
@@ -206,7 +206,7 @@ angular.module('BE.seed.controller.mapping', [])
         }
       };
 
-      /*
+      /**
        * change: called when a user selects a mapping change. `change` should
        * either save the new mapping to the back-end or wait until all mappings
        * are complete.
@@ -242,7 +242,7 @@ angular.module('BE.seed.controller.mapping', [])
         });
       };
 
-      /*
+      /**
        * update_raw_columns: prototypical inheritance for all the raw columns
        * called by init()
        */
@@ -331,7 +331,7 @@ angular.module('BE.seed.controller.mapping', [])
         $scope.raw_columns = temp_columns;
       };
 
-      /*
+      /**
        * get_mapped_buildings: gets mapped buildings for the preview table
        */
       $scope.get_mapped_buildings = function () {
@@ -424,7 +424,7 @@ angular.module('BE.seed.controller.mapping', [])
         });
       };
 
-      /*
+      /**
        * Get_mappings
        * Pull out the mappings of the TCM objects (stored in raw_columns) list
        * into a data structure in the format of
@@ -464,7 +464,7 @@ angular.module('BE.seed.controller.mapping', [])
       };
 
       // As far as I can tell, this is never used.
-      // /*
+      // /**
       //  * show_mapping_progress: shows the progress bar and kicks off the mapping,
       //  *   after saving column mappings
       //  */
@@ -502,7 +502,7 @@ angular.module('BE.seed.controller.mapping', [])
         return mappings;
       };
 
-      /*
+      /**
        * remap_buildings: shows the progress bar and kicks off the re-mapping,
        *   after saving column mappings, deletes unmatched buildings
        */
@@ -546,7 +546,7 @@ angular.module('BE.seed.controller.mapping', [])
         );
       };
 
-      /*
+      /**
        * monitor_typeahead_list: decide if duplicate checking is required in
        * order to enable or disable map data button
        */
@@ -578,7 +578,7 @@ angular.module('BE.seed.controller.mapping', [])
         }
       };
 
-      /*
+      /**
        * duplicates_present: used to disable or enable the 'show & review
        *   mappings' button.
        */
@@ -586,7 +586,7 @@ angular.module('BE.seed.controller.mapping', [])
         return Boolean(_.find($scope.raw_columns, 'is_duplicate'));
       };
 
-      /*
+      /**
        * empty_fields_present: used to disable or enable the 'show & review
        *   mappings' button.
        */
@@ -594,7 +594,7 @@ angular.module('BE.seed.controller.mapping', [])
         return Boolean(_.find($scope.raw_columns, {suggestion: ''}));
       };
 
-      /*
+      /**
        * check_fields: called by ng-disabled for "Map Your Data" button.  Checks for duplicates and for required fields.
        */
       $scope.check_fields = function () {

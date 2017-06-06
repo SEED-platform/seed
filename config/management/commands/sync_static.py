@@ -1,5 +1,5 @@
 """
-:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 """
@@ -211,7 +211,7 @@ class Command(BaseCommand):
             file_size = os.fstat(file_obj.fileno()).st_size
             filedata = file_obj.read()
             if self.do_gzip:
-                # Gzipping only if file is large enough (>1K is recommended) 
+                # Gzipping only if file is large enough (>1K is recommended)
                 # and only if file is a common text type (not a binary file)
                 if file_size > 1024 and content_type in self.GZIP_CONTENT_TYPES:
                     filedata = self.compress_string(filedata)

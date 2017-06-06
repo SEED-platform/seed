@@ -1,5 +1,6 @@
 /**
- * :copyright: (c) 2014 Building Energy Inc
+ * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :author
  */
 
 // Replaces building detail controller, will test later with both property and taxlot data too
@@ -206,7 +207,7 @@ describe('controller: inventory_detail_controller', function () {
     });
   }
 
-  /*
+  /**
    * Test scenarios
    */
 

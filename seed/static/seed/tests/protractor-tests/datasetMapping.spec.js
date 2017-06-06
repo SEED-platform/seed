@@ -1,9 +1,13 @@
+/**
+ * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :author
+ */
 // check inventory pages after import and delete test dataset
 var EC = protractor.ExpectedConditions;
 
 // Check dataset matching and deleting Pages:
 describe('When I go to the dataset options page', function () {
-  it ('should reset sync', function () {
+  it('should reset sync', function () {
     browser.ignoreSynchronization = false;
   });
 

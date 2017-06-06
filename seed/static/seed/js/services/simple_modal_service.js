@@ -1,8 +1,8 @@
-/*
- * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+/**
+ * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
-/*
+/**
     This service provides a simple, standardized way to show a basic modal dialog.
     Code based on example by Dan Wahlin:
     http://weblogs.asp.net/dwahlin/building-an-angularjs-modal-service
@@ -60,7 +60,7 @@ angular.module('BE.seed.service.simple_modal', [])
         okResult: 'Ok'
       };
 
-      /*
+      /**
        Show a simple modal dialog. Customize the dialog text and behavior by passing in config objects.
 
        @param {object} [modalOptions={}]       Optional, but caller really should provide specific button labels and text.
