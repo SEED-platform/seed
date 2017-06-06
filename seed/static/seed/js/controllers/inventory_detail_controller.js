@@ -1,5 +1,5 @@
-/*
- * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+/**
+ * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.inventory_detail', [])
@@ -21,7 +21,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.inventory = {
         id: $stateParams.inventory_id,
-        related: $scope.inventory_type == 'properties' ? inventory_payload.taxlots : inventory_payload.properties
+        related: $scope.inventory_type === 'properties' ? inventory_payload.taxlots : inventory_payload.properties
       };
       $scope.cycle = inventory_payload.cycle;
       $scope.labels = _.filter(labels_payload, function (label) {
@@ -204,30 +204,27 @@ angular.module('BE.seed.controller.inventory_detail', [])
         $scope.$emit('show_saving');
         if ($scope.inventory_type === 'properties') {
           inventory_service.update_property($scope.inventory.id, $scope.cycle.id, $scope.diff())
-            .then(function (data) {
-                // In the short term, we're just refreshing the page after a save so the table
-                // shows new history.
-                // TODO: Refactor so that table is dynamically updated with new information
-                $scope.$emit('finished_saving');
-                $state.reload();
-              }, function (data, status) {
-                // reject promise
-                $scope.$emit('finished_saving');
-              }
-            )
-            .catch(function (data) {
-              $log.error(String(data));
-            });
-        } else if ($scope.inventory_type === 'taxlots') {
-          inventory_service.update_taxlot($scope.inventory.id, $scope.cycle.id, $scope.diff())
-            .then(function (data) {
+            .then(function () {
               // In the short term, we're just refreshing the page after a save so the table
               // shows new history.
               // TODO: Refactor so that table is dynamically updated with new information
               $scope.$emit('finished_saving');
               $state.reload();
-            }, function (data, status) {
-              // reject promise
+            }, function () {
+              $scope.$emit('finished_saving');
+            })
+            .catch(function (data) {
+              $log.error(String(data));
+            });
+        } else if ($scope.inventory_type === 'taxlots') {
+          inventory_service.update_taxlot($scope.inventory.id, $scope.cycle.id, $scope.diff())
+            .then(function () {
+              // In the short term, we're just refreshing the page after a save so the table
+              // shows new history.
+              // TODO: Refactor so that table is dynamically updated with new information
+              $scope.$emit('finished_saving');
+              $state.reload();
+            }, function () {
               $scope.$emit('finished_saving');
             })
             .catch(function (data) {
@@ -256,17 +253,16 @@ angular.module('BE.seed.controller.inventory_detail', [])
           }
         });
         modalInstance.result.then(function () {
-            label_service.get_labels([inventory_id], {
-              inventory_type: $stateParams.inventory_type
-            }).then(function (labels) {
-              $scope.labels = _.filter(labels, function (label) {
-                return !_.isEmpty(label.is_applied);
-              });
+          label_service.get_labels([inventory_id], {
+            inventory_type: $stateParams.inventory_type
+          }).then(function (labels) {
+            $scope.labels = _.filter(labels, function (label) {
+              return !_.isEmpty(label.is_applied);
             });
-          }, function (message) {
-            //dialog was 'dismissed,' which means it was cancelled...so nothing to do.
-          }
-        );
+          });
+        }, function () {
+          // Do nothing
+        });
       };
 
       /**
@@ -277,9 +273,9 @@ angular.module('BE.seed.controller.inventory_detail', [])
        *
        */
       var init = function () {
-        if ($scope.inventory_type == 'properties') {
+        if ($scope.inventory_type === 'properties') {
           $scope.format_date_values($scope.item_state, inventory_service.property_state_date_columns);
-        } else if ($scope.inventory_type == 'taxlots') {
+        } else if ($scope.inventory_type === 'taxlots') {
           $scope.format_date_values($scope.item_state, inventory_service.taxlot_state_date_columns);
         }
       };

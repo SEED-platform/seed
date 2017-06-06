@@ -1,5 +1,5 @@
-/*
- * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+/**
+ * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.organization_sharing', []).controller('organization_sharing_controller', [
@@ -83,11 +83,9 @@ angular.module('BE.seed.controller.organization_sharing', []).controller('organi
       $scope.org.public_fields = $scope.fields.filter(function (f) {
         return f.public_checked;
       });
-      organization_service.save_org_settings($scope.org).then(function (data) {
-        // resolve promise
+      organization_service.save_org_settings($scope.org).then(function () {
         $scope.settings_updated = true;
-      }, function (data, status) {
-        // reject promise
+      }, function (data) {
         $scope.$emit('app_error', data);
       });
     };

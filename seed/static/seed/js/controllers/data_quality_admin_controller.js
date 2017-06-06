@@ -1,5 +1,5 @@
-/*
- * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+/**
+ * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.data_quality_admin', [])
@@ -287,7 +287,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
     };
 
     // create label and assign to that rule
-    $scope.create_label = function (rule, index) {
+    $scope.create_label = function (rule) {
       var modalInstance = $uibModal.open({
         templateUrl: urls.static_url + 'seed/partials/data_quality_labels_modal.html',
         controller: 'data_quality_labels_modal_controller',
@@ -298,23 +298,20 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         }
       });
       modalInstance.result.then(function (returnedLabels) {
+        rule.label = returnedLabels;
 
-          rule.label = returnedLabels;
+        //code for multiple labels
+        // label_service.get_labels().then(function (allLabels) {
+        //   console.log('all: ', allLabels)
+        //   rule.label = _.filter(allLabels, function (label) {
+        //     // console.log(label.id + ' and ' + returnedLabels)
+        //     return _.includes(returnedLabels, label.id);
+        //   });
+        // });
 
-          //code for multiple labels
-          // label_service.get_labels().then(function (allLabels) {
-          //   console.log('all: ', allLabels)
-          //   rule.label = _.filter(allLabels, function (label) {
-          //     // console.log(label.id + ' and ' + returnedLabels)
-          //     return _.includes(returnedLabels, label.id);
-          //   });
-          // });
-
-
-        }, function (message) {
-          //dialog was 'dismissed,' which means it was cancelled...so nothing to do.
-        }
-      );
+      }, function () {
+        // Do nothing
+      });
     };
 
     // set rule as deleted.
@@ -343,7 +340,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
     $scope.selectAll = function () {
       var allEnabled = $scope.allEnabled();
       _.forEach($scope.ruleGroups[$scope.inventory_type], function (ruleGroup) {
-        _.forEach(ruleGroup, function(rule) {
+        _.forEach(ruleGroup, function (rule) {
           rule.enabled = !allEnabled;
         });
       });

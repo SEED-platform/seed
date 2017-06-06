@@ -1,5 +1,5 @@
-/*
- * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+/**
+ * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 // project services
@@ -7,11 +7,9 @@ angular.module('BE.seed.service.project', [])
   .factory('project_service', [
     '$http',
     'user_service',
-    'generated_urls',
-    function ($http, user_service, generated_urls) {
+    function ($http, user_service) {
 
       var project_factory = {total_number_projects_for_user: 0};
-      var urls = generated_urls;
 
       project_factory.get_projects = function () {
         return $http.get('/api/v2/projects/', {
@@ -31,7 +29,7 @@ angular.module('BE.seed.service.project', [])
             organization_id: user_service.get_organization().id
           }
         }).then(function (response) {
-          return response.data
+          return response.data;
         });
       };
 

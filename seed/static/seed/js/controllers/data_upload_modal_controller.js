@@ -1,5 +1,5 @@
-/*
- * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+/**
+ * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 /**
@@ -109,8 +109,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           params: {
             organization_id: $scope.organization.org_id
           }
-        }).then(function (response) {
-          // console.log(response);
+        }).then(function () {
           $scope.goto_step(7);
           $scope.find_matches();
         });
@@ -155,22 +154,17 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        *  already taken, then the bootstrap alert is shown
        */
       $scope.create_dataset = function (dataset_name) {
-        uploader_service.create_dataset(dataset_name).then(
-          function (data) {
-            // resolve promise
-            $scope.goto_step(2);
-            $scope.dataset.id = data.id;
-            $scope.dataset.name = data.name;
-            $scope.uploader.status_message = 'uploading file';
-          },
-          function (status, error) {
-            // reject promise
-            var message = status.message || '';
-            if (message === 'name already in use') {
-              $scope.dataset.alert = true;
-            }
+        uploader_service.create_dataset(dataset_name).then(function (data) {
+          $scope.goto_step(2);
+          $scope.dataset.id = data.id;
+          $scope.dataset.name = data.name;
+          $scope.uploader.status_message = 'uploading file';
+        }, function (status) {
+          var message = status.message || '';
+          if (message === 'name already in use') {
+            $scope.dataset.alert = true;
           }
-        );
+        });
       };
       /**
        * uploaderfunc: the callback function passed to sdUploader. Depending on
@@ -237,12 +231,12 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        * @param {string} file_id: id of file
        */
       var monitor_save_raw_data = function (progress_key, file_id) {
-        uploader_service.check_progress_loop(progress_key, 25, 0.25, function (data) {
+        uploader_service.check_progress_loop(progress_key, 25, 0.25, function () {
           $scope.uploader.status_message = 'auto-mapping energy data';
-          mapping_service.start_mapping(file_id).then(function (dataa) {
-            monitor_mapping(dataa.progress_key, file_id);
+          mapping_service.start_mapping(file_id).then(function (data) {
+            monitor_mapping(data.progress_key, file_id);
           });
-        }, function (data) {
+        }, function () {
           // Do nothing
         }, $scope.uploader);
       };
@@ -255,12 +249,12 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        * @param {string} file_id: id of file
        */
       var monitor_mapping = function (progress_key, file_id) {
-        uploader_service.check_progress_loop(progress_key, 50, 0.25, function (data) {
+        uploader_service.check_progress_loop(progress_key, 50, 0.25, function () {
           $scope.uploader.status_message = 'auto-matching energy data';
-          matching_service.start_system_matching(file_id).then(function (dataa) {
-            monitor_matching(dataa.progress_key, file_id);
+          matching_service.start_system_matching(file_id).then(function (data) {
+            monitor_matching(data.progress_key, file_id);
           });
-        }, function (data) {
+        }, function () {
           // Do nothing
         }, $scope.uploader);
       };
@@ -272,13 +266,13 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        * @param {string} progress_key: key
        * @param {string} file_id: id of file
        */
-      var monitor_matching = function (progress_key, file_id) {
-        uploader_service.check_progress_loop(progress_key, 75, 0.25, function (data) {
+      var monitor_matching = function (progress_key) {
+        uploader_service.check_progress_loop(progress_key, 75, 0.25, function () {
           $scope.uploader.complete = true;
           $scope.uploader.in_progress = false;
           $scope.uploader.progress = 1;
           $scope.step.number = 5;
-        }, function (data) {
+        }, function () {
           // Do nothing
         }, $scope.uploader);
       };
@@ -287,29 +281,30 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        * save_raw_assessed_data: saves Assessed data
        *
        * @param {string} file_id: the id of the import file
+       * @param cycle_id
+       * @param is_green_button
        */
       var save_raw_assessed_data = function (file_id, cycle_id, is_green_button) {
         $scope.uploader.status_message = 'saving data';
         $scope.uploader.progress = 45;
-        uploader_service.save_raw_data(file_id, cycle_id)
-          .then(function (data) {
-            uploader_service.check_progress_loop(data.progress_key, 45, 0.55, function (data) {
-              $scope.uploader.status_message = 'saving complete';
-              $scope.uploader.progress = 100;
+        uploader_service.save_raw_data(file_id, cycle_id).then(function (data) {
+          uploader_service.check_progress_loop(data.progress_key, 45, 0.55, function () {
+            $scope.uploader.status_message = 'saving complete';
+            $scope.uploader.progress = 100;
 
-              if (is_green_button) {
-                $scope.step.number = 8;
-              } else {
-                $scope.step.number = 3;
-              }
+            if (is_green_button) {
+              $scope.step.number = 8;
+            } else {
+              $scope.step.number = 3;
+            }
 
-            }, function (data) {
-              $log.error(data.message);
-              if (data.hasOwnProperty('stacktrace')) $log.error(data.stacktrace);
-              $scope.step_12_error_message = data.message;
-              $scope.step.number = 12;
-            }, $scope.uploader);
-          });
+          }, function (data) {
+            $log.error(data.message);
+            if (data.hasOwnProperty('stacktrace')) $log.error(data.stacktrace);
+            $scope.step_12_error_message = data.message;
+            $scope.step.number = 12;
+          }, $scope.uploader);
+        });
       };
 
       /**
@@ -329,24 +324,24 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             $scope.step_10_error_message = data.message;
             $scope.step_10_title = data.message;
           } else {
-            uploader_service.check_progress_loop(data.progress_key, 0, 1, function (data) {
-                inventory_service.get_matching_results($scope.dataset.import_file_id).then(function (data) {
-                  $scope.matched_properties = data.properties.matched;
-                  $scope.unmatched_properties = data.properties.unmatched;
-                  $scope.matched_taxlots = data.tax_lots.matched;
-                  $scope.unmatched_taxlots = data.tax_lots.unmatched;
-                  $scope.uploader.complete = true;
-                  $scope.uploader.in_progress = false;
-                  $scope.uploader.progress = 0;
-                  if ($scope.matched_properties + $scope.matched_taxlots > 0) {
-                    $scope.step.number = 8;
-                  } else {
-                    $scope.step.number = 10;
-                  }
-                });
-              }, function (data) {
-                // Do nothing
-              },
+            uploader_service.check_progress_loop(data.progress_key, 0, 1, function () {
+              inventory_service.get_matching_results($scope.dataset.import_file_id).then(function (data) {
+                $scope.matched_properties = data.properties.matched;
+                $scope.unmatched_properties = data.properties.unmatched;
+                $scope.matched_taxlots = data.tax_lots.matched;
+                $scope.unmatched_taxlots = data.tax_lots.unmatched;
+                $scope.uploader.complete = true;
+                $scope.uploader.in_progress = false;
+                $scope.uploader.progress = 0;
+                if ($scope.matched_properties + $scope.matched_taxlots > 0) {
+                  $scope.step.number = 8;
+                } else {
+                  $scope.step.number = 10;
+                }
+              });
+            }, function () {
+              // Do nothing
+            },
               $scope.uploader
             );
           }
@@ -367,7 +362,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         if ($scope.step.number === 7) {
           $scope.find_matches();
         }
-        $timeout(function (name) {
+        $timeout(function () {
           angular.element('#inputDataUploadName').focus();
 
           //suppress the dismissing of the data upload modal when the background is clicked

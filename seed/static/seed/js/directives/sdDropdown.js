@@ -1,5 +1,5 @@
-/*
- * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+/**
+ * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('sdDropdown', [])
@@ -12,8 +12,8 @@ angular.module('sdDropdown', [])
       items: '=',   // items to select from
       callback: '&' // callback
     },
-    link: function(scope, element, attrs) {
-      element.on('click', function(event) {
+    link: function (scope, element, attrs) {
+      element.on('click', function (event) {
         event.preventDefault();
       });
 
@@ -21,7 +21,7 @@ angular.module('sdDropdown', [])
       scope.isButton = 'isButton' in attrs;
 
       // selection changed handler
-      scope.select = function(item) {
+      scope.select = function (item) {
         scope.ngModel = item;
         if (scope.callback) {
           scope.callback({ item: item });

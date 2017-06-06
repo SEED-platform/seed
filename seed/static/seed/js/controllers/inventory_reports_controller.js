@@ -1,5 +1,5 @@
-/*
- * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+/**
+ * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 /**
@@ -160,23 +160,21 @@ angular.module('BE.seed.controller.inventory_reports', [])
 
       // Handle datepicker open/close events
       $scope.openStartDatePicker = function ($event) {
-        console.debug('openStartDatePicker');
         $event.preventDefault();
         $event.stopPropagation();
         $scope.startDatePickerOpen = !$scope.startDatePickerOpen;
       };
       $scope.openEndDatePicker = function ($event) {
-        console.debug('openEndDatePicker');
         $event.preventDefault();
         $event.stopPropagation();
         $scope.endDatePickerOpen = !$scope.endDatePickerOpen;
       };
 
-      $scope.$watch('startDate', function (newval, oldval) {
+      $scope.$watch('startDate', function () {
         $scope.checkInvalidDate();
       });
 
-      $scope.$watch('endDate', function (newval, oldval) {
+      $scope.$watch('endDate', function () {
         $scope.checkInvalidDate();
       });
 
@@ -235,7 +233,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
       /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
       /* Clear the data used by the chart*/
-      function clearChartData() {
+      function clearChartData () {
         $scope.chartData = [];
         $scope.aggChartData = [];
         $scope.propertyCounts = [];
@@ -243,17 +241,9 @@ angular.module('BE.seed.controller.inventory_reports', [])
       }
 
       /* Update the titles above each chart*/
-      function updateChartTitles() {
+      function updateChartTitles () {
         $scope.chart1Title = $scope.xAxisSelectedItem.label + ' vs. ' + $scope.yAxisSelectedItem.label;
         $scope.chart2Title = $scope.xAxisSelectedItem.label + ' vs. ' + $scope.yAxisSelectedItem.label + ' (Aggregated)';
-      }
-
-      function setChartStatusMessages(chartData) {
-        if (chartData.chartData && chartData.chartData.length > 0) {
-          return '';
-        } else {
-          return 'No Data';
-        }
       }
 
 
@@ -269,35 +259,34 @@ angular.module('BE.seed.controller.inventory_reports', [])
        we can pass in different configuration options.
        The chart will update automatically as it's watching the chartData property on the scope.
        */
-      function getChartData() {
+      function getChartData () {
         var xVar = $scope.xAxisSelectedItem.varName;
         var yVar = $scope.yAxisSelectedItem.varName;
         $scope.chartIsLoading = true;
 
         inventory_reports_service.get_report_data(xVar, yVar, $scope.fromCycle.selected_cycle.start, $scope.toCycle.selected_cycle.end)
           .then(function (data) {
-              data = data.data;
-              var yAxisType = ( yVar === 'use_description' ? 'Category' : 'Measure');
-              var propertyCounts = data.property_counts;
-              var colorsArr = mapColors(propertyCounts);
-              $scope.propertyCounts = propertyCounts;
-              $scope.chartData = {
-                series: $scope.chartSeries,
-                chartData: data.chart_data,
-                xAxisTitle: $scope.xAxisSelectedItem.axisLabel,
-                yAxisTitle: $scope.yAxisSelectedItem.axisLabel,
-                yAxisType: $scope.yAxisSelectedItem.axisType,
-                yAxisMin: $scope.yAxisSelectedItem.axisMin,
-                xAxisTickFormat: $scope.xAxisSelectedItem.axisTickFormat,
-                yAxisTickFormat: $scope.yAxisSelectedItem.axisTickFormat,
-                colors: colorsArr
-              };
-              if ($scope.chartData.chartData && $scope.chartData.chartData.length > 0) {
-                $scope.chartStatusMessage = '';
-              } else {
-                $scope.chartStatusMessage = 'No Data';
-              }
-            },
+            data = data.data;
+            var propertyCounts = data.property_counts;
+            var colorsArr = mapColors(propertyCounts);
+            $scope.propertyCounts = propertyCounts;
+            $scope.chartData = {
+              series: $scope.chartSeries,
+              chartData: data.chart_data,
+              xAxisTitle: $scope.xAxisSelectedItem.axisLabel,
+              yAxisTitle: $scope.yAxisSelectedItem.axisLabel,
+              yAxisType: $scope.yAxisSelectedItem.axisType,
+              yAxisMin: $scope.yAxisSelectedItem.axisMin,
+              xAxisTickFormat: $scope.xAxisSelectedItem.axisTickFormat,
+              yAxisTickFormat: $scope.yAxisSelectedItem.axisTickFormat,
+              colors: colorsArr
+            };
+            if ($scope.chartData.chartData && $scope.chartData.chartData.length > 0) {
+              $scope.chartStatusMessage = '';
+            } else {
+              $scope.chartStatusMessage = 'No Data';
+            }
+          },
             function (data, status) {
               $scope.chartStatusMessage = 'Data load error.';
               $log.error('#InventoryReportsController: Error loading chart data : ' + status);
@@ -319,7 +308,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
        we can pass in different configuration options.
 
        **/
-      function getAggChartData() {
+      function getAggChartData () {
 
         var xVar = $scope.xAxisSelectedItem.varName;
         var yVar = $scope.yAxisSelectedItem.varName;
@@ -329,25 +318,25 @@ angular.module('BE.seed.controller.inventory_reports', [])
           $scope.fromCycle.selected_cycle.start,
           $scope.toCycle.selected_cycle.end
         ).then(function (data) {
-            data = data.aggregated_data;
-            $scope.aggPropertyCounts = data.property_counts;
-            var propertyCounts = data.property_counts;
-            var colorsArr = mapColors(propertyCounts);
-            $scope.aggPropertyCounts = propertyCounts;
-            $scope.aggChartData = {
-              series: $scope.aggChartSeries,
-              chartData: data.chart_data,
-              xAxisTitle: $scope.xAxisSelectedItem.axisLabel,
-              yAxisTitle: $scope.yAxisSelectedItem.axisLabel,
-              yAxisType: 'Category',
-              colors: colorsArr
-            };
-            if ($scope.aggChartData.chartData && $scope.aggChartData.chartData.length) {
-              $scope.aggChartStatusMessage = '';
-            } else {
-              $scope.aggChartStatusMessage = 'No Data';
-            }
-          },
+          data = data.aggregated_data;
+          $scope.aggPropertyCounts = data.property_counts;
+          var propertyCounts = data.property_counts;
+          var colorsArr = mapColors(propertyCounts);
+          $scope.aggPropertyCounts = propertyCounts;
+          $scope.aggChartData = {
+            series: $scope.aggChartSeries,
+            chartData: data.chart_data,
+            xAxisTitle: $scope.xAxisSelectedItem.axisLabel,
+            yAxisTitle: $scope.yAxisSelectedItem.axisLabel,
+            yAxisType: 'Category',
+            colors: colorsArr
+          };
+          if (!_.isEmpty($scope.aggChartData.chartData)) {
+            $scope.aggChartStatusMessage = '';
+          } else {
+            $scope.aggChartStatusMessage = 'No Data';
+          }
+        },
           function (data, status) {
             $scope.aggChartStatusMessage = 'Data load error.';
             $log.error('#InventoryReportsController: Error loading agg chart data : ' + status);
@@ -366,7 +355,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
        A side effect of this method is that the colors are also applied to the propertyCounts object
        so that they're available in the table view beneath the chart that lists group details.
        */
-      function mapColors(propertyCounts) {
+      function mapColors (propertyCounts) {
         if (!propertyCounts) return [];
         var colorsArr = [];
         var numPropertyGroups = propertyCounts.length;
@@ -385,7 +374,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
 
       /* Call the update method so the page initializes
        with the values set in the scope */
-      function init() {
+      function init () {
 
         // Initialize pulldowns
         $scope.fromCycle = {
