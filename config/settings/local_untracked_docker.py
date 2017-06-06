@@ -11,7 +11,7 @@ seed local_untracked_docker.py
             or
             $ ./manage.py runserver --settings=config.settings.dev
         - add your setting to the DATABASES, AWS S3 config,
-            CACHES, and BROKER_URL
+            CACHES, and CELERY_BROKER_URL
             i.e. everything here starting with 'your-'
     For local dev, all these services can run locally on localhost or 127.0.0.1 except for S3.
 """
@@ -74,18 +74,18 @@ CACHES = {
 }
 
 # redis celery/message broker config
-BROKER_TRANSPORT = 'redis'
-BROKER_URL = "redis://%s:%s/1" % (DB_REDIS_PORT_6379_TCP_ADDR, DB_REDIS_PORT_6379_TCP_PORT)
+CELERY_BROKER_TRANSPORT = 'redis'
+CELERY_BROKER_URL = "redis://%s:%s/1" % (DB_REDIS_PORT_6379_TCP_ADDR, DB_REDIS_PORT_6379_TCP_PORT)
 # BROKER_URL with AWS ElastiCache redis looks something like:
 # 'redis://xx-yy-zzrr0aax9a.ntmprk.0001.usw2.cache.amazonaws.com:6379/1'
 
-CELERY_RESULT_BACKEND = BROKER_URL
-CELERY_DEFAULT_QUEUE = 'seed-dev'
-CELERY_QUEUES = (
+CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+CELERY_TASK_DEFAULT_QUEUE = 'seed-docker'
+CELERY_TASK_QUEUES = (
     Queue(
-        CELERY_DEFAULT_QUEUE,
-        Exchange(CELERY_DEFAULT_QUEUE),
-        routing_key=CELERY_DEFAULT_QUEUE
+        CELERY_TASK_DEFAULT_QUEUE,
+        Exchange(CELERY_TASK_DEFAULT_QUEUE),
+        routing_key=CELERY_TASK_DEFAULT_QUEUE
     ),
 )
 

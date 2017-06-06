@@ -10,12 +10,10 @@ modeltranslation==0.25
 psycopg2==2.7.1
 
 # background process management
-
-celery==3.1.25
+celery==4.0.2
 django-redis-cache==1.7.1
 django_compressor==2.1.1
 django-extensions==1.7.9
-kombu==3.0.32
 redis==2.10.5
 
 # Time zones support

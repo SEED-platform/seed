@@ -48,14 +48,14 @@ if cache_settings is None:
         'Address': os.environ.get('CACHE_URL', '127.0.0.1'),
         'Port': os.environ.get('CACHE_PORT', 6379)
     }
-BROKER_URL = 'redis://%(Address)s:%(Port)i/1' % cache_settings
-CELERY_RESULT_BACKEND = BROKER_URL
-CELERY_DEFAULT_QUEUE = 'seed-deploy'
-CELERY_QUEUES = (
+CELERY_BROKER_URL = 'redis://%(Address)s:%(Port)i/1' % cache_settings
+CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+CELERY_TASK_DEFAULT_QUEUE = 'seed-deploy'
+CELERY_TASK_QUEUES = (
     Queue(
-        CELERY_DEFAULT_QUEUE,
-        Exchange(CELERY_DEFAULT_QUEUE),
-        routing_key=CELERY_DEFAULT_QUEUE
+        CELERY_TASK_DEFAULT_QUEUE,
+        Exchange(CELERY_TASK_DEFAULT_QUEUE),
+        routing_key=CELERY_TASK_DEFAULT_QUEUE
     ),
 )
 

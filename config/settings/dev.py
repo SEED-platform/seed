@@ -10,6 +10,7 @@ from kombu import Exchange, Queue
 
 DEBUG = True
 SESSION_COOKIE_SECURE = False
+COMPRESS_ENABLED = False
 
 # AWS credentials for S3.  Set them in environment or local_untracked.py
 AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID', '')
@@ -31,72 +32,61 @@ DATABASES = {
     },
 }
 
-if "test" in sys.argv or "harvest" in sys.argv:
-    CACHES = {
-        'default': {
-            'KEY_PREFIX': 'test',
-            'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-            'LOCATION': '/tmp/test-cache'
-        }
+CACHES = {
+    'default': {
+        'BACKEND': 'redis_cache.cache.RedisCache',
+        'LOCATION': "127.0.0.1:6379",
+        'OPTIONS': {'DB': 1},
+        'TIMEOUT': 300
     }
-else:
-    CACHES = {
-        'default': {
-            'BACKEND': 'redis_cache.cache.RedisCache',
-            'LOCATION': "127.0.0.1:6379",
-            'OPTIONS': {'DB': 1},
-            'TIMEOUT': 300
-        }
-    }
-    LOGGING = {
-        'version': 1,
-        'disable_existing_loggers': False,
-        'formatters': {
-            'plain': {
-                'format': '%(message)s'
-            },
-            'file_line_number': {
-                'format': "%(pathname)s:%(lineno)d - %(message)s"
-            }
-        },
-        # set up some log message handlers to choose from
-        'handlers': {
-            'console': {
-                'level': 'DEBUG',
-                'class': 'logging.StreamHandler',
-                'formatter': 'file_line_number',
-            }
-        },
-        'loggers': {
-            # the name of the logger, if empty, then this is the default logger
-            '': {
-                'level': 'DEBUG',
-                'handlers': ['console'],
-            }
-        },
-    }
+}
 
-# BROKER_URL with AWS ElastiCache redis looks something like:
-# 'redis://xx-yy-zzrr0aax9a.ntmprk.0001.usw2.cache.amazonaws.com:6379/1'
-BROKER_URL = 'redis://127.0.0.1:6379/1'
-CELERY_RESULT_BACKEND = BROKER_URL
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'plain': {
+            'format': '%(message)s'
+        },
+        'file_line_number': {
+            'format': "%(pathname)s:%(lineno)d - %(message)s"
+        }
+    },
+    # set up some log message handlers to choose from
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'file_line_number',
+        }
+    },
+    'loggers': {
+        # the name of the logger, if empty, then this is the default logger
+        '': {
+            'level': 'DEBUG',
+            'handlers': ['console'],
+        }
+    },
+}
+
+# CELERY_BROKER_URL with AWS ElastiCache redis looks something like:
+#   'redis://xx-yy-zzrr0aax9a.ntmprk.0001.usw2.cache.amazonaws.com:6379/1'
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379/1'
+CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 CELERY_DEFAULT_QUEUE = 'seed-dev'
 CELERY_QUEUES = (
     Queue(
-        CELERY_DEFAULT_QUEUE,
-        Exchange(CELERY_DEFAULT_QUEUE),
-        routing_key=CELERY_DEFAULT_QUEUE
+        CELERY_TASK_DEFAULT_QUEUE,
+        Exchange(CELERY_TASK_DEFAULT_QUEUE),
+        routing_key=CELERY_TASK_DEFAULT_QUEUE
     ),
 )
 
 REQUIRE_UNIQUE_EMAIL = False
 
-COMPRESS_ENABLED = False
-
 ALLOWED_HOSTS = ['*']
 
 # use imp module to find the local_untracked file rather than a hard-coded path
-# TODO: There seems to be a bunch of loading of other files in these settings. First this loads the common, then this, then anything in the untracked file
 try:
     import imp
     import config.settings

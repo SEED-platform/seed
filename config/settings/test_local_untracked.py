@@ -11,12 +11,14 @@ seed local_untracked.py
             or
             $ ./manage.py runserver --settings=config.settings.dev
         - add your setting to the DATABASES, AWS S3 config,
-            CACHES, and BROKER_URL
+            CACHES, and CELERY_BROKER_URL
             i.e. everything here starting with 'your-'
     For local dev, all these services can run locally on localhost or 127.0.0.1 except for S3.
 """
-DEBUG = True
 import os
+
+DEBUG = True
+
 # postgres DB config
 DATABASES = {
     'default': {
@@ -40,33 +42,32 @@ CACHES = {
         'TIMEOUT': 300
     }
 }
-BROKER_URL = 'redis://127.0.0.1:6379/1'
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379/1'
 DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
 INTERNAL_IPS = ('127.0.0.1',)
 
 LOGGING = {
-   'version': 1,
-   'disable_existing_loggers': False,
-   'handlers': {
-       'console': {
-           'level': 'ERROR',
-           'class': 'logging.StreamHandler'
-       },
-       'console-debug': {
-           'level': 'DEBUG',
-           'class': 'logging.StreamHandler'
-       },
-   },
-   'loggers': {
-       'django': {
-           'handlers': ['console'],
-           'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
-       },
-       'django.db.backends': {
-           'level': 'INFO',
-           'handlers': ['console-debug']
-       },
-   },
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'level': 'ERROR',
+            'class': 'logging.StreamHandler'
+        },
+        'console-debug': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler'
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
+        },
+        'django.db.backends': {
+            'level': 'INFO',
+            'handlers': ['console-debug']
+        },
+    },
 }
-

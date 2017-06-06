@@ -27,7 +27,7 @@ LOGGING = {
     'loggers': {
         # the name of the logger, if empty, then this is the default logger
         '': {
-            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'ERROR'),
             'handlers': ['console', 'file'],
         }
     },
@@ -52,10 +52,9 @@ DATABASES = {
     },
 }
 
-BROKER_BACKEND = 'memory'
-
-CELERY_ALWAYS_EAGER = True
-CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
+CELERY_BROKER_BACKEND = 'memory'
+CELERY_TASK_ALWAYS_EAGER = True
+CELERY_TASK_EAGER_PROPAGATES = True
 CELERY_LOG_LEVEL = LOG_LEVELS['DEBUG']
 
 # Testing
@@ -84,7 +83,6 @@ if "COMPRESS_ENABLED" not in locals() or not COMPRESS_ENABLED:
 ALLOWED_HOSTS = ['*']
 
 # use imp module to find the local_untracked file rather than a hard-coded path
-# TODO: There seems to be a bunch of loading of other files in these settings. First this loads the common, then this, then anything in the untracked file
 try:
     import imp
     import config.settings

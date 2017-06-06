@@ -57,10 +57,7 @@ _log = logging.getLogger(__name__)
 
 
 def angular_js_tests(request):
-    """Jasmine JS unit test code covering AngularJS unit tests and ran
-       by ./manage.py harvest
-
-    """
+    """Jasmine JS unit test code covering AngularJS unit tests"""
     return render_to_response(
         'seed/jasmine_tests/AngularJSTests.html',
         locals(), context_instance=RequestContext(request),
