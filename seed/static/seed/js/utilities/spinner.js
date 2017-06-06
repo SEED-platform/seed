@@ -31,8 +31,10 @@ angular.module('BE.seed.utility.spinner', []).factory('spinner_utility', [
     };
 
     spinner_utility.hide = function () {
-      _spinner.stop();
-      $('.page')[0].style.opacity = 1;
+      if (_spinner) {
+        _spinner.stop();
+        $('.page')[0].style.opacity = 1;
+      }
     };
 
     return spinner_utility;

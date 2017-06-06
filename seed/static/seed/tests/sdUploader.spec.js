@@ -21,7 +21,7 @@ describe('The sdUploader directive', function () {
     $compile = _$compile_;
     $rootScope = _$rootScope_;
     $rootScope.eventfunc = function (fine_object) {
-      console.log({fin: fine_object});
+      // console.log({fin: fine_object});
       g_message = fine_object.message;
       g_file = fine_object.file;
       g_progress = fine_object.progress;
