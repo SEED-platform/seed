@@ -112,6 +112,7 @@ angular.module('BE.seed.services', [
   'BE.seed.service.organization',
   'BE.seed.service.pairing',
   'BE.seed.service.project',
+  'BE.seed.service.search',
   'BE.seed.service.simple_modal',
   'BE.seed.service.uploader',
   'BE.seed.service.user',

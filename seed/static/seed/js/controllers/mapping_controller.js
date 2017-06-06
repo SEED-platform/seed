@@ -13,7 +13,6 @@ angular.module('BE.seed.controller.mapping', [])
     'cycles',
     'mappingValidatorService',
     'mapping_service',
-    'search_service',
     'spinner_utility',
     'urls',
     '$uibModal',
@@ -32,7 +31,6 @@ angular.module('BE.seed.controller.mapping', [])
               cycles,
               mappingValidatorService,
               mapping_service,
-              search_service,
               spinner_utility,
               urls,
               $uibModal,
@@ -83,10 +81,6 @@ angular.module('BE.seed.controller.mapping', [])
 
       $scope.review_mappings = false;
       $scope.show_mapped_buildings = false;
-
-      $scope.search = angular.copy(search_service);
-      $scope.search.has_checkbox = false;
-      $scope.search.update_results();
 
       $scope.isValidCycle = !!_.find(cycles.cycles, {id: $scope.import_file.cycle});
 
