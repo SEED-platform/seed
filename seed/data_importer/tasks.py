@@ -13,6 +13,7 @@ import hashlib
 import operator
 import time
 import traceback
+import datetime
 from _csv import Error
 from collections import namedtuple
 from functools import reduce
@@ -348,11 +349,6 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
 
             # Weeee... the data are in the extra_data column.
             for row in expand_rows(original_row.extra_data, delimited_field_list, expand_row):
-                # TODO: during the mapping the data are saved back in the database
-                # If the user decided to not use the mapped data and go back and remap
-                # then the data will forever be in the property state table for
-                # no reason. FIX THIS!
-
                 map_model_obj = mapper.map_row(
                     row,
                     mappings,
@@ -368,7 +364,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
                 # Assign some other arguments here
                 map_model_obj.import_file = import_file
                 map_model_obj.source_type = save_type
-                map_model_obj.organization = import_file.import_record.super_organization  # Not the best place..
+                map_model_obj.organization = import_file.import_record.super_organization
                 if hasattr(map_model_obj, 'data_state'):
                     map_model_obj.data_state = DATA_STATE_MAPPING
                 if hasattr(map_model_obj, 'organization'):
@@ -391,8 +387,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
                     # There was an error with a field being too long [> 255 chars].
                     map_model_obj.save()
 
-                    # Create an audit log record for the new
-                    # map_model_obj that was created.
+                    # Create an audit log record for the new map_model_obj that was created.
 
                     AuditLogClass = PropertyAuditLog if isinstance(map_model_obj,
                                                                    PropertyState) else TaxLotAuditLog
@@ -404,9 +399,8 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
                                                  record_type=AUDIT_IMPORT)
 
                 except Exception as e:
-                    # Could not save the record for some reason. Report out and keep moving
-                    # TODO: Need to address this and report back to the user which records were not imported  #noqa
-                    _log.error(
+                    # Could not save the record for some reason, raise an exception
+                    raise Exception(
                         "Unable to save row the model with row {}:{}".format(type(e), e.message))
 
         # Make sure that we've saved all of the extra_data column names from the first item in list
@@ -571,7 +565,7 @@ def _save_raw_data_chunk(chunk, file_pk, prog_key, increment):
     source_type = get_source_type(import_file)
     for c in chunk:
         raw_property = PropertyState(organization=import_file.import_record.super_organization)
-        raw_property.import_file = import_file  # not defined in new data model
+        raw_property.import_file = import_file
 
         # sanitize c and remove any diacritics
         new_chunk = {}
@@ -580,6 +574,8 @@ def _save_raw_data_chunk(chunk, file_pk, prog_key, increment):
             key = k.strip()
             if isinstance(v, unicode):
                 new_chunk[key] = unidecode(v)
+            elif isinstance(v, (datetime.datetime, datetime.date)):
+                raise TypeError("Datetime class not supported in Extra Data. Needs to be a string.")
             else:
                 new_chunk[key] = v
         raw_property.extra_data = new_chunk

@@ -457,8 +457,8 @@ def build_json_params(order_by, sort_reverse):
     """returns db_columns, extra_data_sort, and updated order_by
 
     :param str order_by: field to order_by
-    :returns: tuple: db_columns: dict of known DB columns i.e. non-JsonField,
-        extra_data_sort bool if order_by is in ``extra_data`` JsonField,
+    :returns: tuple: db_columns: dict of known DB columns i.e. non-JSONField,
+        extra_data_sort bool if order_by is in ``extra_data`` JSONField,
         order_by str if sort_reverse and DB column prepend a '-' for the django
         order_by
     """

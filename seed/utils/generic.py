@@ -9,7 +9,7 @@ import math
 from datetime import datetime
 
 from django.core import serializers
-from django_pgjson.fields import JsonField
+from django.contrib.postgres.fields import JSONField
 
 
 def split_model_fields(obj, fields):
@@ -48,7 +48,7 @@ def round_down_hundred_thousand(x):
 
 def obj_to_dict(obj, include_m2m=True):
     """
-    serializes obj for a JSON friendly version tries to serialize JsonField
+    serializes obj for a JSON friendly version tries to serialize JSONField
     """
     # http://www.django-rest-framework.org/api-guide/fields/#jsonfield
     if include_m2m:
@@ -62,11 +62,11 @@ def obj_to_dict(obj, include_m2m=True):
     response = struct['fields']
     response[u'id'] = response[u'pk'] = struct['pk']
     response[u'model'] = struct['model']
-    # JsonField does not get serialized by `serialize`
+    # JSONField does not get serialized by `serialize`
     for f in obj._meta.fields:
-        if isinstance(f, JsonField):
+        if isinstance(f, JSONField):
             e = getattr(obj, f.name)
-            # PostgreSQL < 9.3 support
+            # PostgreSQL < 9.3 support -- this should never be run
             while isinstance(e, unicode):
                 e = json.loads(e)
             response[unicode(f.name)] = e

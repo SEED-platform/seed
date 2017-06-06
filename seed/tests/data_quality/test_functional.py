@@ -718,10 +718,8 @@ class DataQualitySample(TestCase):
         self.assertListEqual(expected, addresses)
 
         props = PropertyView.objects.filter(property__labels=sl_float).select_related('state')
-        addresses = [p.state.address_line_1 for p in props]
-        addresses.sort()
-        expected = [u'4 Myrtle Parkway', u'94 Oxford Hill']
-        expected.sort()
+        addresses = sorted([p.state.address_line_1 for p in props])
+        expected = sorted([u'4 Myrtle Parkway', u'94 Oxford Hill'])
         self.assertListEqual(expected, addresses)
 
         props = PropertyView.objects.filter(property__labels=sl_string).select_related('state')
@@ -839,8 +837,7 @@ class DataQualitySample(TestCase):
         self.assertListEqual(expected, addresses)
 
         props = PropertyView.objects.filter(property__labels=sl_ok_3).select_related('state')
-        addresses = [p.state.address_line_1 for p in props]
-        addresses.sort()
+        addresses = sorted([p.state.address_line_1 for p in props])
         expected = [u'1 International Road', u'17246 Esch Drive', u'84807 Buell Trail',
                     u'88263 Scoville Park']
         self.assertListEqual(expected, addresses)

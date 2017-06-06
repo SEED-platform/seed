@@ -20,14 +20,15 @@ import os
 import re
 import string
 from collections import namedtuple
-from django.utils import timezone
 
 import mock
 from django.db.models.fields.files import FieldFile
+from django.utils import timezone
 from faker import Factory
 
 from seed.models import (
-    BuildingSnapshot, Cycle, Column, Property, PropertyState, TaxLotState, TaxLotAuditLog, PropertyAuditLog
+    BuildingSnapshot, Cycle, Column, Property, PropertyState, TaxLotState, TaxLotAuditLog,
+    PropertyAuditLog
 )
 
 Owner = namedtuple(

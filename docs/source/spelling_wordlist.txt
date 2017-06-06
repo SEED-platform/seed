@@ -108,6 +108,7 @@ js
 jshint
 json
 JsonField
+JSONField
 kBtu
 kwargs
 Landgraf
