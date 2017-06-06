@@ -33,7 +33,7 @@ describe('When I visit the data set page', function () {
     // selectDropdownbyText(element, browser.params.testOrg.cycle);
     expect(element(by.cssContainingText('option', browser.params.testOrg.cycle)).isPresent()).toBe(true);
     element(by.cssContainingText('option', browser.params.testOrg.cycle)).click();
-    / $('[buttontext="Upload a Spreadsheet"]').$('.qq-uploader').click();
+    // $('[buttontext="Upload a Spreadsheet"]').$('.qq-uploader').click();
   });
 
   // manually

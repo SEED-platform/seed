@@ -26,7 +26,7 @@ angular.module('BE.seed.controller.delete_modal', [])
           $scope.deletedProperties = 0;
           $scope.deletedTaxlots = 0;
           _.forEach(results, function (result, index) {
-            if (result.data.status == 'success') {
+            if (result.data.status === 'success') {
               if (index == 0 && $scope.property_states.length) $scope.deletedProperties = result.data.properties;
               else $scope.deletedTaxlots = result.data.taxlots;
             }

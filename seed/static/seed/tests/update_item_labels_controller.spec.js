@@ -98,7 +98,7 @@ describe('controller: update_item_labels_modal_controller', function () {
       .andCallFake(function () {
         // return $q.reject for error scenario
         return $q.when(return_obj_for_create_label);
-      };
+      });
     spyOn(mock_label_service, 'get_available_colors')
       .andCallFake(function () {
         return available_colors;
