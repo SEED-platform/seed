@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import csv
@@ -601,7 +601,7 @@ class ImportRecord(NotDeletableModel):
                 'is_mapping_or_cleaning': self.is_mapping_or_cleaning,
                 'num_buildings_imported_total': self.num_buildings_imported_total,
             })
-        except:
+        except BaseException:
             from traceback import print_exc
             print_exc()
             return {}
@@ -641,7 +641,7 @@ class ImportRecord(NotDeletableModel):
                     'force_restart_cleaning_url': f.force_restart_cleaning_url,
                     'is_espm': f.is_espm,
                 })
-        except:
+        except BaseException:
             from traceback import print_exc
             print_exc()
         return json.dumps(progresses)
@@ -747,7 +747,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
                             tcm.datacoercions.all().filter(source_string=val)[0].destination_value)
                     else:
                         cleaned_row.append(val)
-                except:
+                except BaseException:
                     _log.error("problem with val: {}".format(val))
                     from traceback import print_exc
                     print_exc()
@@ -930,7 +930,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
                     'is_mapped': tcm.is_mapped,
                     'error_message_text': error_message_text,
                 })
-        except:
+        except BaseException:
             from traceback import print_exc
             print_exc()
 
@@ -1190,7 +1190,7 @@ class TableColumnMapping(models.Model):
             first_row = None
             try:
                 first_row = self.import_file.first_row_columns[self.order - 1]
-            except:
+            except BaseException:
                 pass
 
             self._first_row = first_row
@@ -1231,7 +1231,7 @@ class TableColumnMapping(models.Model):
     def destination_django_field_choices(self):
         try:
             return sorted(self.destination_django_field.choices, key=lambda choice: choice[1])
-        except:
+        except BaseException:
             return self.destination_django_field.choices
 
     @property
@@ -1269,7 +1269,7 @@ class DataCoercionMapping(models.Model):
                 assert self.destination_value in [f[0] for f in field.choices] or \
                     "%s" % self.destination_value in [f[0] for f in field.choices]
             self.valid_destination_value = True
-        except:
+        except BaseException:
             self.valid_destination_value = False
         self.is_mapped = (
             self.confidence > 0.6 or self.was_a_human_decision) and self.valid_destination_value

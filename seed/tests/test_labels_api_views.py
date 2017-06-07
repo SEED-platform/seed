@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author 'Piper Merriam <pipermerriam@gmail.com>', Paul Munday<paul@paulmunday.net>
 
 Unit tests for seed/views/labels.py
@@ -78,7 +78,7 @@ class TestLabelsViewSet(TestCase):
         organization_a, _, _ = create_organization(user, "test-organization-a")
         organization_b, _, _ = create_organization(user, "test-organization-b")
 
-        # Ensures that at least a single label exists to ensure that we aren't
+        # Ensures that at least a single label exists to ensure that we are not
         # relying on auto-creation of labels for this test to pass.
         Label.objects.create(
             color="red",

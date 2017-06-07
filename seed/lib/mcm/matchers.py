@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import jellyfish
@@ -69,8 +69,8 @@ def best_match(s, categories, top_n=5):
                 table_name,
                 category,
                 jellyfish.jaro_winkler(
-                    s.encode('ascii', 'replace').lower(),
-                    category.encode('ascii', 'replace').lower()
+                    unicode(s.encode('ascii', 'replace').lower()),
+                    unicode(category.encode('ascii', 'replace').lower())
                 )
             )
         )

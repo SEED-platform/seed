@@ -1,5 +1,5 @@
-/*
- * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+/**
+ * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.dataset', [])
@@ -71,14 +71,11 @@ angular.module('BE.seed.controller.dataset', [])
           }
         });
 
-        dataModalInstance.result.then(
-          // modal close() function
-          function () {
-            init();
-            // modal dismiss() function
-          }, function (message) {
-            init();
-          });
+        dataModalInstance.result.then(function () {
+          init();
+        }, function () {
+          init();
+        });
       };
 
       $scope.confirm_delete = function (dataset) {
@@ -90,18 +87,12 @@ angular.module('BE.seed.controller.dataset', [])
           }
         });
 
-        modalInstance.result.then(
-          // modal close() function
-          function () {
-            init();
-            // modal dismiss() function
-          }, function (message) {
-            init();
-          });
+        modalInstance.result.finally(function () {
+          init();
+        });
       };
       $scope.update_dataset = function (dataset) {
-        dataset_service.update_dataset(dataset).then(function (data) {
-          // resolve promise
+        dataset_service.update_dataset(dataset).then(function () {
           init();
         });
       };

@@ -1,5 +1,6 @@
 /**
- * :copyright: (c) 2014 Building Energy Inc
+ * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :author
  */
 angular.module('BE.seed.controller.dataset_detail', [])
   .controller('dataset_detail_controller', [
@@ -13,8 +14,8 @@ angular.module('BE.seed.controller.dataset_detail', [])
     function ($scope, dataset_payload, $log, dataset_service, cycles, $uibModal, urls) {
       $scope.dataset = dataset_payload.dataset;
 
-      _.forOwn($scope.dataset.importfiles, function (value, key) {
-        value['created'] = new Date(value['created']);
+      _.forOwn($scope.dataset.importfiles, function (value) {
+        value.created = new Date(value.created);
       });
 
       $scope.confirm_delete = function (file) {
@@ -26,14 +27,9 @@ angular.module('BE.seed.controller.dataset_detail', [])
           }
         });
 
-        modalInstance.result.then(
-          // modal close() function
-          function () {
-            init();
-            // modal dismiss() function
-          }, function (message) {
-            init();
-          });
+        modalInstance.result.finally(function () {
+          init();
+        });
       };
 
       /**
@@ -47,9 +43,7 @@ angular.module('BE.seed.controller.dataset_detail', [])
             cycles: ['cycle_service', function (cycle_service) {
               return cycle_service.get_cycles();
             }],
-            step: function () {
-              return 2;
-            },
+            step: _.constant(2),
             dataset: function () {
               return $scope.dataset;
             },
@@ -59,15 +53,9 @@ angular.module('BE.seed.controller.dataset_detail', [])
           }
         });
 
-        dataModalInstance.result.then(
-          // modal close() function
-          function () {
-            init();
-            // modal dismiss() function
-          }, function (message) {
-            // dismiss
-            init();
-          });
+        dataModalInstance.result.finally(function () {
+          init();
+        });
       };
 
       $scope.getCycleName = function (id) {
@@ -77,7 +65,6 @@ angular.module('BE.seed.controller.dataset_detail', [])
 
       var init = function () {
         dataset_service.get_dataset($scope.dataset.id).then(function (data) {
-          // resolve promise
           $scope.dataset = data.dataset;
         });
       };

@@ -1,10 +1,11 @@
-/*
- * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+/**
+ * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.mapping', [])
   .controller('mapping_controller', [
     '$scope',
+    '$log',
     'import_file_payload',
     'suggested_mappings_payload',
     'raw_columns_payload',
@@ -12,7 +13,6 @@ angular.module('BE.seed.controller.mapping', [])
     'cycles',
     'mappingValidatorService',
     'mapping_service',
-    'search_service',
     'spinner_utility',
     'urls',
     '$uibModal',
@@ -20,9 +20,10 @@ angular.module('BE.seed.controller.mapping', [])
     'uploader_service',
     '$http',
     '$filter',
-    'cleansing_service',
+    'data_quality_service',
     'inventory_service',
     function ($scope,
+              $log,
               import_file_payload,
               suggested_mappings_payload,
               raw_columns_payload,
@@ -30,7 +31,6 @@ angular.module('BE.seed.controller.mapping', [])
               cycles,
               mappingValidatorService,
               mapping_service,
-              search_service,
               spinner_utility,
               urls,
               $uibModal,
@@ -38,13 +38,13 @@ angular.module('BE.seed.controller.mapping', [])
               uploader_service,
               $http,
               $filter,
-              cleansing_service,
+              data_quality_service,
               inventory_service) {
       var db_field_columns = suggested_mappings_payload.column_names;
       var columns = suggested_mappings_payload.columns;
       var extra_data_columns = _.filter(columns, 'extra_data');
-      var original_columns = _.map(columns, function f(n) {
-        return n['name']
+      var original_columns = _.map(columns, function f (n) {
+        return n.name;
       });
       // var original_columns = angular.copy(db_field_columns.concat(extra_data_columns));
 
@@ -63,7 +63,7 @@ angular.module('BE.seed.controller.mapping', [])
       $scope.import_file = import_file_payload.import_file;
       $scope.import_file.matching_finished = false;
       $scope.suggested_mappings = suggested_mappings_payload.suggested_column_mappings;
-      angular.forEach($scope.suggested_mappings, function (v, k) {
+      angular.forEach($scope.suggested_mappings, function (v) {
         // only title case fields like address_line_1 which have had their
         // typeahead suggestions title cased
         if (!_.includes($scope.typeahead_columns, v[1])) {
@@ -82,18 +82,14 @@ angular.module('BE.seed.controller.mapping', [])
       $scope.review_mappings = false;
       $scope.show_mapped_buildings = false;
 
-      $scope.search = angular.copy(search_service);
-      $scope.search.has_checkbox = false;
-      $scope.search.update_results();
-
       $scope.isValidCycle = !!_.find(cycles.cycles, {id: $scope.import_file.cycle});
 
-      /*
+      /**
        * Opens modal for making changes to concatenation changes.
        * NL 2016-11-11: hasn't this been deprecated? Backend doesn't have this anymore.
        */
       $scope.open_concat_modal = function (building_column_types, raw_columns) {
-        var concatModalInstance = $uibModal.open({
+        $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/concat_modal.html',
           controller: 'concat_modal_controller',
           resolve: {
@@ -107,31 +103,32 @@ angular.module('BE.seed.controller.mapping', [])
         });
       };
 
-      /*
+      /**
        * Gets the row-level validity for a Table Column Mapping.
        *
        * @param tcm: table column mapping object.
        * @param to_validate: array of strings, values from example data.
        */
-      $scope.get_validity = function (tcm) {
-        /*var diff = tcm.raw_data.length - tcm.invalids.length;
-         // Used to display the state of the row overall.
-         if (_.isUndefined(tcm.invalids)) {
-         return undefined;
-         }
-         if ( tcm.invalids.length === 0) {
-         return 'valid';
-         }
-         if (diff > 1) {
-         return 'semivalid';
-         }
-         if (diff < 1) {
-         return 'invalid';
-         }*/
-        return 'valid';
-      };
+      // $scope.get_validity = function (tcm) {
+      //   /*var diff = tcm.raw_data.length - tcm.invalids.length;
+      //    // Used to display the state of the row overall.
+      //    if (_.isUndefined(tcm.invalids)) {
+      //    return undefined;
+      //    }
+      //    if ( tcm.invalids.length === 0) {
+      //    return 'valid';
+      //    }
+      //    if (diff > 1) {
+      //    return 'semivalid';
+      //    }
+      //    if (diff < 1) {
+      //    return 'invalid';
+      //    }*/
+      //   return 'valid';
+      // };
+      $scope.get_validity = _.constant('valid');
 
-      /*
+      /**
        * set_td_class
        * Gets called on each cell in a table on the mapping page.
        * Return true if a column value is invalid for a TCM.
@@ -142,10 +139,7 @@ angular.module('BE.seed.controller.mapping', [])
         if (tcm.suggestion === '') {
           return '';
         }
-        for (
-          var i = 0; _.isUndefined(tcm.invalids) &&
-        i < tcm.invalids.length; i++
-        ) {
+        for (var i = 0; _.isUndefined(tcm.invalids) && i < tcm.invalids.length; i++) {
           if (col_value === tcm.invalids[i]) {
             if (tcm.validity === 'semivalid') {
               return 'warning';
@@ -178,7 +172,7 @@ angular.module('BE.seed.controller.mapping', [])
         else $scope.setAllFields = '';
       };
 
-      /*
+      /**
        * Validates example data related to a raw column using a validator service.
        *
        * @param tcm: a table column mapping object.
@@ -190,7 +184,9 @@ angular.module('BE.seed.controller.mapping', [])
           var type;
 
           // find the column in the list of building_columns
-          type = _.find($scope.building_column_types, {'name': angular.lowercase(tcm.suggestion).replace(/ /g, '_')});
+          type = _.find($scope.building_column_types, {
+            name: angular.lowercase(tcm.suggestion).replace(/ /g, '_')
+          });
 
           // if the suggestion isn't found in the building columns then
           // do we need to do something? Set the unit data type regardless.
@@ -210,7 +206,7 @@ angular.module('BE.seed.controller.mapping', [])
         }
       };
 
-      /*
+      /**
        * change: called when a user selects a mapping change. `change` should
        * either save the new mapping to the back-end or wait until all mappings
        * are complete.
@@ -246,7 +242,7 @@ angular.module('BE.seed.controller.mapping', [])
         });
       };
 
-      /*
+      /**
        * update_raw_columns: prototypical inheritance for all the raw columns
        * called by init()
        */
@@ -298,8 +294,7 @@ angular.module('BE.seed.controller.mapping', [])
             var that = this;
             if (!that.mapped_row) {
               status = 'default';
-            }
-            else if (that.is_duplicate || that.validity === 'invalid') {
+            } else if (that.is_duplicate || that.validity === 'invalid') {
               status = 'danger';
             } else if (that.validity === 'valid') {
               status = 'success';
@@ -318,7 +313,7 @@ angular.module('BE.seed.controller.mapping', [])
           tcm.name = c;
           tcm.row = i;
           tcm.raw_data = [];
-          angular.forEach($scope.first_five, function (value, key) {
+          angular.forEach($scope.first_five, function (value) {
             angular.forEach(value, function (v, k) {
               if (k === tcm.name) {
                 tcm.raw_data.push(v);
@@ -336,7 +331,7 @@ angular.module('BE.seed.controller.mapping', [])
         $scope.raw_columns = temp_columns;
       };
 
-      /*
+      /**
        * get_mapped_buildings: gets mapped buildings for the preview table
        */
       $scope.get_mapped_buildings = function () {
@@ -350,11 +345,11 @@ angular.module('BE.seed.controller.mapping', [])
 
         // Request the columns again because they may (most likely)
         // have changed from the initial import
-        inventory_service.get_property_columns().then(function(data){
+        inventory_service.get_property_columns().then(function (data) {
           $scope.property_columns = data;
         });
-        inventory_service.get_taxlot_columns().then(function(data){
-          $scope.taxlot_columns =  data;
+        inventory_service.get_taxlot_columns().then(function (data) {
+          $scope.taxlot_columns = data;
         });
 
         inventory_service.search_matching_inventory($scope.import_file.id).then(function (data) {
@@ -410,11 +405,26 @@ angular.module('BE.seed.controller.mapping', [])
 
           $scope.show_mapped_buildings = true;
         }).catch(function (response) {
-          console.error(response);
+          $log.error(response);
+        }).finally(function () {
+          // Fetch data quality check results
+          $scope.data_quality_results_ready = false;
+          $scope.data_quality_results = data_quality_service.get_data_quality_results($scope.import_file.id);
+          $scope.data_quality_results.then(function (data) {
+            $scope.data_quality_results_ready = true;
+            $scope.data_quality_errors = 0;
+            $scope.data_quality_warnings = 0;
+            _.forEach(data, function (datum) {
+              _.forEach(datum.data_quality_results, function (result) {
+                if (result.severity === 'error') $scope.data_quality_errors++;
+                else if (result.severity === 'warning') $scope.data_quality_warnings++;
+              });
+            });
+          });
         });
       };
 
-      /*
+      /**
        * Get_mappings
        * Pull out the mappings of the TCM objects (stored in raw_columns) list
        * into a data structure in the format of
@@ -444,19 +454,17 @@ angular.module('BE.seed.controller.mapping', [])
           }
           // don't map ignored rows
           suggestion = tcm.mapped_row ? tcm.suggestion : '';
-          mappings.push(
-            {
-              "from_field": header,
-              "to_field": suggestion,
-              "to_table_name": tcm.suggestion_table_name
-            }
-          );
+          mappings.push({
+            from_field: header,
+            to_field: suggestion,
+            to_table_name: tcm.suggestion_table_name
+          });
         }
         return mappings;
       };
 
       // As far as I can tell, this is never used.
-      // /*
+      // /**
       //  * show_mapping_progress: shows the progress bar and kicks off the mapping,
       //  *   after saving column mappings
       //  */
@@ -483,18 +491,18 @@ angular.module('BE.seed.controller.mapping', [])
         var mappings = $scope.get_mappings();
         _.forEach(mappings, function (m) {
           // Save the field display name here before changing it in the to_field
-          m['to_field_display_name'] = m["to_field"];
-          var mapping = m["to_field"];
+          m.to_field_display_name = m.to_field;
+          var mapping = m.to_field;
           mapping = angular.lowercase(mapping).replace(/ /g, '_');
           if (_.includes(original_columns, mapping)) {
-            m["to_field"] = mapping;
+            m.to_field = mapping;
           }
         });
 
         return mappings;
       };
 
-      /*
+      /**
        * remap_buildings: shows the progress bar and kicks off the re-mapping,
        *   after saving column mappings, deletes unmatched buildings
        */
@@ -507,7 +515,7 @@ angular.module('BE.seed.controller.mapping', [])
           $scope.import_file.id,
           get_untitle_cased_mappings()
         )
-          .then(function (data) {
+          .then(function () {
             // start re-mapping
             mapping_service.remap_buildings($scope.import_file.id).then(function (data) {
               if (data.status === 'error' || data.status === 'warning') {
@@ -529,16 +537,16 @@ angular.module('BE.seed.controller.mapping', [])
           progress_key,  // key
           0, //starting prog bar percentage
           1.0,  // progress multiplier
-          function (data) {  //success fn
+          function () {
             $scope.get_mapped_buildings();
-          }, function (data) {  //failure fn
+          }, function () {
             // Do nothing
           },
           $scope.import_file  // progress bar obj
         );
       };
 
-      /*
+      /**
        * monitor_typeahead_list: decide if duplicate checking is required in
        * order to enable or disable map data button
        */
@@ -554,8 +562,7 @@ angular.module('BE.seed.controller.mapping', [])
               return true;
             }
           }
-        }
-        else {
+        } else {
           if (dropdown.length === 0 || dropdown.css('display') === 'none') {
             var input_focus = $(document.activeElement);
 
@@ -565,13 +572,13 @@ angular.module('BE.seed.controller.mapping', [])
                 return $scope.duplicates_present();
               }
             });
+          } else {
+            return true;
           }
-
-          else return true;
         }
       };
 
-      /*
+      /**
        * duplicates_present: used to disable or enable the 'show & review
        *   mappings' button.
        */
@@ -579,7 +586,7 @@ angular.module('BE.seed.controller.mapping', [])
         return Boolean(_.find($scope.raw_columns, 'is_duplicate'));
       };
 
-      /*
+      /**
        * empty_fields_present: used to disable or enable the 'show & review
        *   mappings' button.
        */
@@ -587,7 +594,7 @@ angular.module('BE.seed.controller.mapping', [])
         return Boolean(_.find($scope.raw_columns, {suggestion: ''}));
       };
 
-      /*
+      /**
        * check_fields: called by ng-disabled for "Map Your Data" button.  Checks for duplicates and for required fields.
        */
       $scope.check_fields = function () {
@@ -607,7 +614,7 @@ angular.module('BE.seed.controller.mapping', [])
           {header: 'Address Line 1', inventory_type: 'TaxLotState'}
         ];
 
-        function compare_fields(x, y) {
+        function compare_fields (x, y) {
           return x.header == y.suggestion && x.inventory_type == y.suggestion_table_name;
         }
 
@@ -620,16 +627,16 @@ angular.module('BE.seed.controller.mapping', [])
       };
 
       /**
-       * open_cleansing_modal: modal to present data cleansing warnings and errors
+       * open_data_quality_modal: modal to present data data_quality warnings and errors
        */
-      $scope.open_cleansing_modal = function () {
+      $scope.open_data_quality_modal = function () {
         $uibModal.open({
-          templateUrl: urls.static_url + 'seed/partials/cleansing_modal.html',
-          controller: 'cleansing_controller',
+          templateUrl: urls.static_url + 'seed/partials/data_quality_modal.html',
+          controller: 'data_quality_modal_controller',
           size: 'lg',
           resolve: {
-            cleansingResults: function () {
-              return cleansing_service.get_cleansing_results($scope.import_file.id);
+            dataQualityResults: function () {
+              return $scope.data_quality_results;
             },
             name: function () {
               return $scope.import_file.uploaded_filename;
@@ -673,7 +680,7 @@ angular.module('BE.seed.controller.mapping', [])
         var ds = angular.copy(dataset);
         ds.filename = $scope.import_file.uploaded_filename;
         ds.import_file_id = $scope.import_file.id;
-        var dataModalInstance = $uibModal.open({
+        $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/data_upload_modal.html',
           controller: 'data_upload_modal_controller',
           resolve: {

@@ -1,9 +1,11 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+
+import os.path
 
 from django.test import TestCase
 
@@ -150,7 +152,7 @@ class TestColumns(TestCase):
         self.assertEqual(c_merovingian.is_extra_data, True)
         self.assertEqual(c_merovingian.table_name, 'TaxLotState')
 
-        # Check the database for the mapped columns since create_mappings doesn't return anything!
+        # Check the database for the mapped columns since create_mappings does not return anything!
         cm = ColumnMapping.objects.filter(super_organization=self.fake_org,
                                           column_raw__in=[c_wookiee]).first()
 
@@ -187,6 +189,34 @@ class TestColumns(TestCase):
         self.assertEqual(c.is_extra_data, True)
         self.assertEqual(c.table_name, 'PropertyState')
         self.assertEqual(ps.extra_data['lab'], 'hawkins national laboratory')
+
+    def test_save_column_mapping_by_file_exception(self):
+        self.mapping_import_file = os.path.abspath("./no-file.csv")
+        with self.assertRaisesRegexp(Exception, "Mapping file does not exist: .*/seed/no-file.csv"):
+            Column.create_mappings_from_file(self.mapping_import_file, self.fake_org, self.fake_user)
+
+    def test_save_column_mapping_by_file(self):
+        self.mapping_import_file = os.path.abspath("./seed/tests/data/test_mapping.csv")
+        Column.create_mappings_from_file(self.mapping_import_file, self.fake_org, self.fake_user)
+
+        expected = {
+            u'City': (u'PropertyState', u'city'),
+            u'Custom ID': (u'PropertyState', u'custom_id_1'),
+            u'Zip': (u'PropertyState', u'postal_code'),
+            u'GBA': (u'PropertyState', u'gross_floor_area'),
+            u'PM Property ID': (u'PropertyState', u'pm_property_id'),
+            u'BLDGS': (u'PropertyState', u'building_count'),
+            u'AYB_YearBuilt': (u'PropertyState', u'year_build'),
+            u'State': (u'PropertyState', u'state'),
+            u'Address': (u'PropertyState', u'address_line_1'),
+            u'Owner': (u'PropertyState', u'owner'),
+            u'Raw Column': (u'Table Name', u'Field Name'),
+            u'Property Type': (u'PropertyState', u'property_type'),
+            u'UBI': (u'TaxLotState', u'jurisdiction_tax_lot_id')
+        }
+
+        test_mapping, _ = ColumnMapping.get_column_mappings(self.fake_org)
+        self.assertItemsEqual(expected, test_mapping)
 
 
 class TestColumnMapping(TestCase):

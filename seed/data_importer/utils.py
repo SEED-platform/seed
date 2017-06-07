@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 """
@@ -16,7 +16,7 @@ def get_core_pk_column(table_column_mappings, primary_field):
     for tcm in table_column_mappings:
         if tcm.destination_field == primary_field:
             return tcm.order - 1
-    raise ValidationError("This file doesn't appear to contain a column mapping to %s" % primary_field)
+    raise ValidationError("This file does not appear to contain a column mapping to %s" % primary_field)
 
 
 def acquire_lock(name, expiration=None):

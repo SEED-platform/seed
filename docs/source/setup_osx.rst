@@ -203,7 +203,7 @@ Edit `local_untracked.py`. Open the file you created in your favorite editor. Th
 
 You may want to comment out the AWS settings.
 
-For Redis, edit the `CACHES` and `BROKER_URL` values to look like this:
+For Redis, edit the `CACHES` and `CELERY_BROKER_URL` values to look like this:
 
 .. code-block:: python
 
@@ -215,7 +215,7 @@ For Redis, edit the `CACHES` and `BROKER_URL` values to look like this:
             'TIMEOUT': 300
         }
     }
-    BROKER_URL = 'redis://127.0.0.1:6379/1'
+    CELERY_BROKER_URL = 'redis://127.0.0.1:6379/1'
 
 Run Django Migrations
 ---------------------
@@ -287,7 +287,7 @@ virtualenv post-activation script (e.g., in
     export DJANGO_SETTINGS_MODULE=config.settings.dev
 
 The combination of Redis, Celery, and Django have been encapsulated in a
-single shell script, which examines existing processes and doesn't start
+single shell script, which examines existing processes and does not start
 duplicate instances:
 
 .. code-block:: bash

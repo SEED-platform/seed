@@ -1,7 +1,7 @@
 ﻿# !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import csv
@@ -161,7 +161,7 @@ def check_status(result_out, part_msg, log, piid_flag=None):
     failed = '\033[1;31m...failed\033[1;0m'
 
     if result_out.status_code in [200, 403, 401]:
-        if piid_flag == 'cleansing':
+        if piid_flag == 'data_quality':
             msg = pprint.pformat(result_out.json(), indent=2, width=70)
         else:
             try:
@@ -186,7 +186,7 @@ def check_status(result_out, part_msg, log, piid_flag=None):
                                              indent=2, width=70)
                     else:
                         msg = pprint.pformat(result_out.json(), indent=2, width=70)
-            except:
+            except BaseException:
                 log.error(part_msg + failed)
                 log.debug('Unknown error during request results recovery')
                 raise RuntimeError

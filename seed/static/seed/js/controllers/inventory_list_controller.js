@@ -1,5 +1,5 @@
-/*
- * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+/**
+ * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.inventory_list', [])
@@ -10,6 +10,7 @@ angular.module('BE.seed.controller.inventory_list', [])
     '$stateParams',
     'inventory_service',
     'label_service',
+    'data_quality_service',
     'inventory',
     'cycles',
     'labels',
@@ -23,6 +24,7 @@ angular.module('BE.seed.controller.inventory_list', [])
               $stateParams,
               inventory_service,
               label_service,
+              data_quality_service,
               inventory,
               cycles,
               labels,
@@ -43,9 +45,15 @@ angular.module('BE.seed.controller.inventory_list', [])
       $scope.restoring = false;
 
       $scope.labels = labels;
-      $scope.selected_labels = [];
 
       var localStorageKey = 'grid.' + $scope.inventory_type;
+      var localStorageLabelKey = 'grid.' + $scope.inventory_type + '.labels';
+
+      // Reapply valid previously-applied labels
+      var ids = inventory_service.loadSelectedLabels(localStorageLabelKey);
+      $scope.selected_labels = _.filter($scope.labels, function (label) {
+        return _.includes(ids, label.id);
+      });
 
       $scope.clear_labels = function () {
         $scope.selected_labels = [];
@@ -57,7 +65,7 @@ angular.module('BE.seed.controller.inventory_list', [])
             // Empty query so return the whole list.
             return true;
           } else {
-            // Only include element if it's name contains the query string.
+            // Only include element if its name contains the query string.
             return _.includes(_.toLower(lbl.name), _.toLower(query));
           }
         });
@@ -65,7 +73,15 @@ angular.module('BE.seed.controller.inventory_list', [])
 
       var filterUsingLabels = function () {
         // Only submit the `id` of the label to the API.
-        var ids = _.intersection.apply(null, _.map($scope.selected_labels, 'is_applied'));
+        var ids;
+        if ($scope.labelLogic === 'and') {
+          ids = _.intersection.apply(null, _.map($scope.selected_labels, 'is_applied'));
+        } else if ($scope.labelLogic === 'or') {
+          ids = _.uniq(_.flatten(_.map($scope.selected_labels, 'is_applied')));
+        }
+
+        inventory_service.saveSelectedLabels(localStorageLabelKey, _.map($scope.selected_labels, 'id'));
+
         if ($scope.selected_labels.length) {
           _.forEach($scope.gridApi.grid.rows, function (row) {
             if ((!_.includes(ids, row.entity.id) && row.treeLevel === 0) || !_.has(row, 'treeLevel')) $scope.gridApi.core.setRowInvisible(row);
@@ -75,6 +91,13 @@ angular.module('BE.seed.controller.inventory_list', [])
           _.forEach($scope.gridApi.grid.rows, $scope.gridApi.core.clearRowInvisible);
         }
         _.delay($scope.updateHeight, 150);
+      };
+
+      $scope.labelLogic = localStorage.getItem('labelLogic');
+      $scope.labelLogic = _.includes(['and', 'or'], $scope.labelLogic) ? $scope.labelLogic : 'and';
+      $scope.labelLogicUpdated = function () {
+        localStorage.setItem('labelLogic', $scope.labelLogic);
+        filterUsingLabels();
       };
 
       $scope.$watchCollection('selected_labels', filterUsingLabels);
@@ -104,6 +127,43 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
+      $scope.run_data_quality_check = function () {
+        spinner_utility.show();
+
+        var property_states = _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
+          if ($scope.inventory_type == 'properties') return row.$$treeLevel == 0;
+          return !_.has(row, '$$treeLevel');
+        }), 'property_state_id');
+
+        var taxlot_states = _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
+          if ($scope.inventory_type == 'taxlots') return row.$$treeLevel == 0;
+          return !_.has(row, '$$treeLevel');
+        }), 'taxlot_state_id');
+
+        data_quality_service.start_data_quality_checks(property_states, taxlot_states).then(function (response) {
+          data_quality_service.data_quality_checks_status(response.progress_key).then(function (result) {
+            var modalInstance = $uibModal.open({
+              templateUrl: urls.static_url + 'seed/partials/data_quality_modal.html',
+              controller: 'data_quality_modal_controller',
+              size: 'lg',
+              resolve: {
+                dataQualityResults: function () {
+                  return result;
+                },
+                name: _.constant(null),
+                uploaded: _.constant(null),
+                importFileId: _.constant(null)
+              }
+            });
+            modalInstance.result.then(function () {
+              //dialog was closed with 'Done' button.
+              get_labels();
+            });
+          }).finally(function () {
+            spinner_utility.hide();
+          });
+        });
+      };
 
       var lastCycleId = inventory_service.get_last_cycle();
       $scope.cycle = {
@@ -119,7 +179,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       };
       _.map($scope.columns, function (col) {
         var options = {};
-        if (col.type == 'number') options.filter = inventory_service.numFilter();
+        if (col.type === 'number') options.filter = inventory_service.numFilter();
         else options.filter = inventory_service.textFilter();
         if (col.type == 'text' || col.type == 'numberStr') options.sortingAlgorithm = naturalSort;
         if (col.name == 'number_properties' && col.related) options.treeAggregationType = 'total';
@@ -336,7 +396,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       };
 
       $scope.open_export_modal = function () {
-        var modalInstance = $uibModal.open({
+        $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/export_inventory_modal.html',
           controller: 'export_inventory_modal_controller',
           resolve: {
@@ -345,12 +405,6 @@ angular.module('BE.seed.controller.inventory_list', [])
             }
           }
         });
-
-        // modalInstance.result.then(function () {
-        // }, function (message) {
-        //   console.info(message);
-        //   console.info('Modal dismissed at: ' + new Date());
-        // });
       };
 
       var saveSettings = function () {
@@ -359,7 +413,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           return !_.includes(['treeBaseRowHeaderCol', 'selectionRowHeaderCol', 'id'], col.name);
         });
         _.map(cols, function (col) {
-          col.pinnedLeft = col.renderContainer == 'left' && col.visible;
+          col.pinnedLeft = col.renderContainer === 'left' && col.visible;
           return col;
         });
         var oldSettings = inventory_service.loadSettings(localStorageKey, angular.copy(all_columns));
@@ -404,7 +458,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         enableFiltering: true,
         enableGridMenu: true,
         enableSorting: true,
-        exporterCsvFilename: window.BE.initial_org_name + ($scope.inventory_type == 'taxlots' ? ' Tax Lot ' : ' Property ') + 'Data.csv',
+        exporterCsvFilename: window.BE.initial_org_name + ($scope.inventory_type === 'taxlots' ? ' Tax Lot ' : ' Property ') + 'Data.csv',
         exporterMenuPdf: false,
         fastWatch: true,
         flatEntityAccess: true,
@@ -435,7 +489,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           gridApi.colMovable.on.columnPositionChanged($scope, function () {
             // Ensure that 'id' remains first
             var idIndex = _.findIndex($scope.gridApi.grid.columns, {name: 'id'});
-            if (idIndex != 2) {
+            if (idIndex !== 2) {
               var col = $scope.gridApi.grid.columns[idIndex];
               $scope.gridApi.grid.columns.splice(idIndex, 1);
               $scope.gridApi.grid.columns.splice(2, 0, col);

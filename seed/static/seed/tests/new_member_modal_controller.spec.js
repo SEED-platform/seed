@@ -1,5 +1,6 @@
 /**
- * :copyright: (c) 2014 Building Energy Inc
+ * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :author
  */
 describe('controller: new_member_modal_controller', function () {
   // globals set up and used in each test scenario
@@ -20,14 +21,14 @@ describe('controller: new_member_modal_controller', function () {
     mock_user_service = user_service;
     spyOn(mock_user_service, 'add')
       .andCallFake(function (user) {
-          // return $q.reject for error scenario
-          return $q.when({status: 'success'});
-        }
+        // return $q.reject for error scenario
+        return $q.when({status: 'success'});
+      }
       );
   }));
 
   // this is outside the beforeEach so it can be configured by each unit test
-  function create_new_member_controller() {
+  function create_new_member_controller () {
     ctrl = ctrl('new_member_modal_controller', {
       $scope: ctrl_scope,
       $uibModalInstance: {
@@ -42,7 +43,7 @@ describe('controller: new_member_modal_controller', function () {
     });
   }
 
-  /*
+  /**
    * Test scenarios
    */
 

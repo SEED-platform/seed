@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 """
@@ -93,7 +93,8 @@ class ExcelParser(object):
 
         if item.ctype == XL_CELL_DATE:
             try:
-                return xldate.xldate_as_datetime(item.value, self._workbook.datemode)
+                date = xldate.xldate_as_datetime(item.value, self._workbook.datemode)
+                return date.strftime("%Y-%m-%d %H:%M:%S")
             except XLDateAmbiguous:
                 raise Exception('Date fields are not in a format that SEED can interpret. '
                                 'A possible solution is to save as a CSV file and reimport.')

@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -13,29 +13,25 @@ import hashlib
 import operator
 import time
 import traceback
+import datetime
 from _csv import Error
 from collections import namedtuple
 from functools import reduce
 from itertools import chain
+from random import randint
 
+from celery import chord
+from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.db import IntegrityError
 from django.db.models import Q
 from django.utils import timezone
 from unidecode import unidecode
 
-from celery import chord
-from celery import shared_task
-from seed.cleansing.models import Cleansing
-from seed.cleansing.tasks import (
-    finish_cleansing,
-    cleanse_data_chunk,
-)
 from seed.data_importer.models import (
     ImportFile,
     ImportRecord,
     STATUS_READY_TO_MERGE,
-    # DuplicateDataError,
 )
 from seed.decorators import get_prog_key
 from seed.decorators import lock_and_track
@@ -49,7 +45,6 @@ from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     ASSESSED_BS,
     ASSESSED_RAW,
-    GREEN_BUTTON_BS,
     GREEN_BUTTON_RAW,
     PORTFOLIO_BS,
     PORTFOLIO_RAW,
@@ -65,13 +60,14 @@ from seed.models import (
     DATA_STATE_DELETE,
     MERGE_STATE_MERGED,
     MERGE_STATE_NEW,
-)
+    DATA_STATE_UNKNOWN)
 from seed.models import PropertyAuditLog
 from seed.models import TaxLotAuditLog
 from seed.models import TaxLotProperty
 from seed.models.auditlog import AUDIT_IMPORT
+from seed.models.data_quality import DataQualityCheck
 from seed.utils.buildings import get_source_type
-from seed.utils.cache import set_cache, increment_cache, get_cache, delete_cache
+from seed.utils.cache import set_cache, increment_cache, get_cache, delete_cache, get_cache_raw
 
 _log = get_task_logger(__name__)
 
@@ -81,6 +77,72 @@ STR_TO_CLASS = {'TaxLotState': TaxLotState, 'PropertyState': PropertyState}
 def get_cache_increment_value(chunk):
     denom = len(chunk) or 1
     return 1.0 / denom * 100
+
+
+@shared_task
+def check_data_chunk(model, ids, identifier, increment):
+    """
+
+    :param model: one of 'PropertyState' or 'TaxLotState'
+    :param ids: list of primary key ids to process
+    :param file_pk: import file primary key
+    :param increment: currently unused, but needed because of the special method that appends this onto the function  # NOQA
+    :return: None
+    """
+    if model == 'PropertyState':
+        qs = PropertyState.objects.filter(id__in=ids)
+    elif model == 'TaxLotState':
+        qs = TaxLotState.objects.filter(id__in=ids)
+    else:
+        qs = None
+    super_org = qs.first().organization
+
+    d = DataQualityCheck.retrieve(super_org.get_parent())
+    d.check_data(model, qs.iterator())
+    d.save_to_cache(identifier)
+
+
+@shared_task
+def finish_checking(identifier):
+    """
+    Chord that is called after the data quality check is complete
+
+    :param identifier: import file primary key
+    :return:
+    """
+
+    prog_key = get_prog_key('check_data', identifier)
+    data_quality_results = get_cache_raw(DataQualityCheck.cache_key(identifier))
+    result = {
+        'status': 'success',
+        'progress': 100,
+        'message': 'data quality check complete',
+        'data': data_quality_results
+    }
+    set_cache(prog_key, result['status'], result)
+
+
+@shared_task
+def do_checks(propertystate_ids, taxlotstate_ids):
+    identifier = randint(100, 100000)
+    DataQualityCheck.initialize_cache(identifier)
+    prog_key = get_prog_key('check_data', identifier)
+    trigger_data_quality_checks.delay(propertystate_ids, taxlotstate_ids, identifier)
+    return {'status': 'success', 'progress_key': prog_key}
+
+
+@shared_task
+def trigger_data_quality_checks(qs, tlqs, identifier):
+    prog_key = get_prog_key('map_data', identifier)
+    result = {
+        'status': 'success',
+        'progress': 100,
+        'progress_key': prog_key
+    }
+    set_cache(prog_key, result['status'], result)
+
+    # now call data_quality
+    _data_quality_check(qs, tlqs, identifier)
 
 
 @shared_task
@@ -121,8 +183,15 @@ def finish_mapping(import_file_id, mark_as_done):
     }
     set_cache(prog_key, result['status'], result)
 
-    # now call cleansing
-    _cleanse_data(import_file_id)
+    property_state_ids = list(PropertyState.objects.filter(import_file=import_file)
+                              .exclude(data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT])
+                              .values_list('id', flat=True))
+    taxlot_state_ids = list(TaxLotState.objects.filter(import_file=import_file)
+                            .exclude(data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT])
+                            .values_list('id', flat=True))
+
+    # now call data_quality
+    _data_quality_check(property_state_ids, taxlot_state_ids, import_file_id)
 
 
 def _translate_unit_to_type(unit):
@@ -280,11 +349,6 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
 
             # Weeee... the data are in the extra_data column.
             for row in expand_rows(original_row.extra_data, delimited_field_list, expand_row):
-                # TODO: during the mapping the data are saved back in the database
-                # If the user decided to not use the mapped data and go back and remap
-                # then the data will forever be in the property state table for
-                # no reason. FIX THIS!
-
                 map_model_obj = mapper.map_row(
                     row,
                     mappings,
@@ -300,7 +364,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
                 # Assign some other arguments here
                 map_model_obj.import_file = import_file
                 map_model_obj.source_type = save_type
-                map_model_obj.organization = import_file.import_record.super_organization  # Not the best place..
+                map_model_obj.organization = import_file.import_record.super_organization
                 if hasattr(map_model_obj, 'data_state'):
                     map_model_obj.data_state = DATA_STATE_MAPPING
                 if hasattr(map_model_obj, 'organization'):
@@ -323,8 +387,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
                     # There was an error with a field being too long [> 255 chars].
                     map_model_obj.save()
 
-                    # Create an audit log record for the new
-                    # map_model_obj that was created.
+                    # Create an audit log record for the new map_model_obj that was created.
 
                     AuditLogClass = PropertyAuditLog if isinstance(map_model_obj,
                                                                    PropertyState) else TaxLotAuditLog
@@ -336,9 +399,8 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
                                                  record_type=AUDIT_IMPORT)
 
                 except Exception as e:
-                    # Could not save the record for some reason. Report out and keep moving
-                    # TODO: Need to address this and report back to the user which records were not imported  #noqa
-                    _log.error(
+                    # Could not save the record for some reason, raise an exception
+                    raise Exception(
                         "Unable to save row the model with row {}:{}".format(type(e), e.message))
 
         # Make sure that we've saved all of the extra_data column names from the first item in list
@@ -363,7 +425,7 @@ def _map_data(import_file_id, mark_as_done):
     prog_key = get_prog_key('map_data', import_file_id)
     import_file = ImportFile.objects.get(pk=import_file_id)
 
-    # If we haven't finished saving, we shouldn't proceed with mapping
+    # If we haven't finished saving, we should not proceed with mapping
     # Re-queue this task.
     if not import_file.raw_save_done:
         _log.debug("_map_data raw_save_done is false, queueing the task until raw_save finishes")
@@ -402,65 +464,34 @@ def _map_data(import_file_id, mark_as_done):
 
 @shared_task
 @lock_and_track
-def _cleanse_data(import_file_id, record_type='property'):
+def _data_quality_check(property_state_ids, taxlot_state_ids, identifier):
     """
 
-    Get the mapped data and run the cleansing class against it in chunks. The
+    Get the mapped data and run the data_quality class against it in chunks. The
     mapped data are pulled from the PropertyState(or Taxlot) table.
 
     @lock_and_track returns a progress_key
 
     :param import_file_id: int, the id of the import_file we're working with.
-    :param report: string, 'property' or 'taxlot', defaults to property
-
     """
-    # TODO Since this function was previously hardcoded to use PropertyState,
-    # but the functions/methods it calls can now handle both, I converted
-    # this function and had record_type to  default to PropertyState,
-    # I did not change anything where it gets called.
-
-    import_file = ImportFile.objects.get(pk=import_file_id)
-
-    source_type_dict = {
-        'Portfolio Raw': PORTFOLIO_BS,
-        'Assessed Raw': ASSESSED_BS,
-        'Green Button Raw': GREEN_BUTTON_BS,
-    }
-
-    # This is non-ideal, but the source type of the input file is never
-    # updated, but the data are stages as if it were.
-    #
-    # After the mapping stage occurs, the data end up in the PropertyState
-    # table under the *_BS value.
-    source_type = source_type_dict.get(import_file.source_type, ASSESSED_BS)
-
-    model = {
-        'property': PropertyState, 'taxlot': TaxLotState
-    }.get(record_type)
-
-    qs = model.objects.filter(
-        import_file=import_file,
-        source_type=source_type,
-    ).only('id').iterator()
-
-    # initialize the cache for the cleansing results using the cleansing static method
-    Cleansing.initialize_cache(import_file_id)
-
-    prog_key = get_prog_key('cleanse_data', import_file_id)
-
-    id_chunks = [[obj.id for obj in chunk] for chunk in batch(qs, 100)]
+    # initialize the cache for the data_quality results using the data_quality static method
+    tasks = []
+    id_chunks = [[obj for obj in chunk] for chunk in batch(property_state_ids, 100)]
     increment = get_cache_increment_value(id_chunks)
-    tasks = [
-        cleanse_data_chunk.s(record_type, ids, import_file_id, increment)
-        for ids in id_chunks
-    ]
+    for ids in id_chunks:
+        tasks.append(check_data_chunk.s("PropertyState", ids, identifier, increment))
+
+    id_chunks_tl = [[obj for obj in chunk] for chunk in batch(taxlot_state_ids, 100)]
+    increment_tl = get_cache_increment_value(id_chunks_tl)
+    for ids in id_chunks_tl:
+        tasks.append(check_data_chunk.s("TaxLotState", ids, identifier, increment_tl))
 
     if tasks:
         # specify the chord as an immutable with .si
-        chord(tasks, interval=15)(finish_cleansing.si(import_file_id))
+        chord(tasks, interval=15)(finish_checking.si(identifier))
     else:
-        finish_cleansing.s(import_file_id)
-
+        finish_checking.s(identifier)
+    prog_key = get_prog_key('check_data', identifier)
     result = {
         'status': 'success',
         'progress': 100,
@@ -479,7 +510,8 @@ def map_data(import_file_id, remap=False, mark_as_done=True):
     end.
     :return: JSON
     """
-
+    DataQualityCheck.initialize_cache(import_file_id)
+    prog_key = get_prog_key('check_data', import_file_id)
     import_file = ImportFile.objects.get(pk=import_file_id)
     if remap:
         # Check to ensure that import files has not already been matched/merged.
@@ -533,7 +565,7 @@ def _save_raw_data_chunk(chunk, file_pk, prog_key, increment):
     source_type = get_source_type(import_file)
     for c in chunk:
         raw_property = PropertyState(organization=import_file.import_record.super_organization)
-        raw_property.import_file = import_file  # not defined in new data model
+        raw_property.import_file = import_file
 
         # sanitize c and remove any diacritics
         new_chunk = {}
@@ -542,6 +574,8 @@ def _save_raw_data_chunk(chunk, file_pk, prog_key, increment):
             key = k.strip()
             if isinstance(v, unicode):
                 new_chunk[key] = unidecode(v)
+            elif isinstance(v, (datetime.datetime, datetime.date)):
+                raise TypeError("Datetime class not supported in Extra Data. Needs to be a string.")
             else:
                 new_chunk[key] = v
         raw_property.extra_data = new_chunk
@@ -752,12 +786,11 @@ def save_raw_data(file_pk, *args, **kwargs):
 
 @shared_task
 @lock_and_track
-def match_buildings(file_pk, user_pk):
+def match_buildings(file_pk):
     """
     kicks off system matching, returns progress key within the JSON response
 
     :param file_pk: ImportFile Primary Key
-    :param user_pk: SEEDUser Primary Key
     :return:
     """
     import_file = ImportFile.objects.get(pk=file_pk)
@@ -772,9 +805,7 @@ def match_buildings(file_pk, user_pk):
 
     if not import_file.mapping_done:
         # Re-add to the queue, hopefully our mapping will be done by then.
-        match_buildings.apply_async(
-            args=[file_pk, user_pk], countdown=10, expires=20
-        )
+        match_buildings.apply_async(args=[file_pk], countdown=10, expires=20)
         return {
             'status': 'error',
             'message': 'waiting for mapping to complete',
@@ -803,6 +834,13 @@ def _finish_matching(import_file, progress_key):
         'progress': 100,
         'progress_key': progress_key
     }
+    property_state_ids = list(PropertyState.objects.filter(import_file=import_file)
+                              .exclude(data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT])
+                              .values_list('id', flat=True))
+    taxlot_state_ids = list(TaxLotState.objects.filter(import_file=import_file)
+                            .exclude(data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT])
+                            .values_list('id', flat=True))
+    _data_quality_check(property_state_ids, taxlot_state_ids, import_file.id)
     set_cache(progress_key, result['status'], result)
     return result
 
@@ -1101,7 +1139,7 @@ def match_and_merge_unmatched_objects(unmatched_states, partitioner):
     """
     _log.debug("Starting to map_and_merge_unmatched_objects")
 
-    # Sort unmatched states/This shouldn't be happening!
+    # Sort unmatched states/This should not be happening!
     unmatched_states.sort(key=lambda state: state.pk)
 
     def getattrdef(obj, attr, default):

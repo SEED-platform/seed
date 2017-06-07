@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 # These are fields that are ignored when using methods that automatically determine names and
@@ -445,8 +445,7 @@ ASSESSOR_FIELDS = [
     }
 ]
 
-ASSESSOR_FIELDS_BY_COLUMN = {field['sort_column']: field
-                             for field in ASSESSOR_FIELDS}
+ASSESSOR_FIELDS_BY_COLUMN = {field['sort_column']: field for field in ASSESSOR_FIELDS}
 
 # TODO: Merge this with other schema
 # https://github.com/SEED-platform/seed/blob/41c104cd105161c949e9cb379aac946ea9202c74/seed/lib/mappings/mapping_data.py  # noqa

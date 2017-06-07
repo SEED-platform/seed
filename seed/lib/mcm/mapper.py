@@ -1,14 +1,15 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
 import copy
+import itertools
 import logging
 import re
-import itertools
+from datetime import datetime, date
 
 from cleaners import default_cleaner
 from seed.lib.mappings.mapping_columns import MappingColumns
@@ -112,7 +113,11 @@ def apply_column_value(raw_field, value, model, mapping, is_extra_data, cleaner)
             if hasattr(model, 'extra_data'):
                 # only save it if the model and the mapping are the same
                 if model.__class__.__name__ == table_name:
-                    model.extra_data[field_name] = cleaned_value
+                    if isinstance(cleaned_value, (datetime, date)):
+                        # TODO: create an encoder for datetime once we are in Django 1.11
+                        model.extra_data[field_name] = cleaned_value.strftime("%Y-%m-%d %H:%M:%S")
+                    else:
+                        model.extra_data[field_name] = cleaned_value
         else:
             # Simply set the field to the cleaned value if it is the correct model
             if model.__class__.__name__ == table_name:

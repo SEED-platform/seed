@@ -1,5 +1,5 @@
-/*
- * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+/**
+ * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  *
  * Controller for the Update Labels modal window.
@@ -13,12 +13,13 @@
 angular.module('BE.seed.controller.update_item_labels_modal', [])
   .controller('update_item_labels_modal_controller', [
     '$scope',
+    '$log',
     '$uibModalInstance',
     'label_service',
     'inventory_ids',
     'inventory_type',
     'Notification',
-    function ($scope, $uibModalInstance, label_service, inventory_ids, inventory_type, notification) {
+    function ($scope, $log, $uibModalInstance, label_service, inventory_ids, inventory_type, notification) {
       $scope.inventory_ids = inventory_ids;
       $scope.inventory_type = inventory_type;
       //keep track of status of service call
@@ -63,7 +64,7 @@ angular.module('BE.seed.controller.update_item_labels_modal', [])
             $scope.labels.unshift(createdLabel);
             $scope.initialize_new_label();
           },
-          function (data, status) {
+          function (data) {
             // reject promise
             // label name already exists
             if (data.message === 'label already exists') {
@@ -101,28 +102,27 @@ angular.module('BE.seed.controller.update_item_labels_modal', [])
 
         if (inventory_type === 'properties') {
           label_service.update_property_labels(addLabelIDs, removeLabelIDs, inventory_ids, {}).then(function (data) {
-              if (data.num_updated === 1) {
-                notification.primary(data.num_updated + ' property updated.');
-              } else {
-                notification.primary(data.num_updated + ' properties updated.');
-              }
-              $uibModalInstance.close();
-            }, function (data, status) {
-              console.error('error:', data, status);
+            if (data.num_updated === 1) {
+              notification.primary(data.num_updated + ' property updated.');
+            } else {
+              notification.primary(data.num_updated + ' properties updated.');
             }
+            $uibModalInstance.close();
+          }, function (data, status) {
+            $log.error('error:', data, status);
+          }
           );
         } else if (inventory_type === 'taxlots') {
           label_service.update_taxlot_labels(addLabelIDs, removeLabelIDs, inventory_ids, {}).then(function (data) {
-              if (data.num_updated === 1) {
-                notification.primary(data.num_updated + ' tax lot updated.');
-              } else {
-                notification.primary(data.num_updated + ' tax lots updated.');
-              }
-              $uibModalInstance.close();
-            }, function (data, status) {
-              console.error('error:', data, status);
+            if (data.num_updated === 1) {
+              notification.primary(data.num_updated + ' tax lot updated.');
+            } else {
+              notification.primary(data.num_updated + ' tax lots updated.');
             }
-          );
+            $uibModalInstance.close();
+          }, function (data, status) {
+            $log.error('error:', data, status);
+          });
         }
 
 

@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from django.test import TestCase
@@ -45,7 +45,7 @@ class UserLoginTest(TestCase):
         expected_action = 'action="%s"' % self.tos_url
         self.assertContains(res, expected_action)
 
-        # django-tos doesn't log the user in yet
+        # django-tos does not log the user in yet
         self.assertFalse('_auth_user_id' in self.client.session)
 
         # and submitting 'accept=accept' to the confirm url logs you in

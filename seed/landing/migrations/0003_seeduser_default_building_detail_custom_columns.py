@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
-import django_pgjson.fields
+import django.contrib.postgres.fields.jsonb
 
 
 class Migration(migrations.Migration):
@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='seeduser',
             name='default_building_detail_custom_columns',
-            field=django_pgjson.fields.JsonField(default={}),
+            field=django.contrib.postgres.fields.jsonb.JSONField(default={}),
             preserve_default=True,
         ),
     ]

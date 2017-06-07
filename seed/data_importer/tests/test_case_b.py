@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import logging
@@ -72,7 +72,7 @@ class TestCaseB(DataMappingBaseTestCase):
         ).first()
         self.assertEqual(p_test.lot_number, "33366555;33366125;33366148")
 
-        tasks.match_buildings(self.import_file.id, self.user.id)
+        tasks.match_buildings(self.import_file.id)
 
         # make sure the the property only has one tax lot and vice versa
         tlv = TaxLotView.objects.filter(state__jurisdiction_tax_lot_id='11160509', cycle=self.cycle)

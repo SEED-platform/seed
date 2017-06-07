@@ -1,5 +1,5 @@
-/*
- * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+/**
+ * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 // inventory services
@@ -48,9 +48,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         }).finally(function () {
           spinner_utility.hide();
         });
-      }).catch(function () {
-        return 'Error fetching cycles';
-      });
+      }).catch(_.constant('Error fetching cycles'));
     };
 
 
@@ -256,9 +254,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         }).finally(function () {
           spinner_utility.hide();
         });
-      }).catch(function () {
-        return 'Error fetching cycles';
-      });
+      }).catch(_.constant('Error fetching cycles'));
     };
 
 
@@ -519,7 +515,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     inventory_service.get_total_properties_for_user = function () {
       // django uses request.user for user information
       return $http.get(window.BE.urls.get_total_number_of_properties_for_user_url).then(function (response) {
-        property_factory.total_properties_for_user = response.data.properties_count;
+        inventory_service.total_properties_for_user = response.data.properties_count;
         return response.data;
       });
     };
@@ -528,7 +524,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     inventory_service.get_total_taxlots_for_user = function () {
       // django uses request.user for user information
       return $http.get(window.BE.urls.get_total_number_of_taxlots_for_user_url).then(function (response) {
-        property_factory.total_taxlots_for_user = response.data.taxlots_count;
+        inventory_service.total_taxlots_for_user = response.data.taxlots_count;
         return response.data;
       });
     };
@@ -585,6 +581,16 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }
     };
 
+    inventory_service.saveSelectedLabels = function (key, ids) {
+      key += '.' + user_service.get_organization().id;
+      localStorage.setItem(key, JSON.stringify(ids));
+    };
+
+    inventory_service.loadSelectedLabels = function (key) {
+      key += '.' + user_service.get_organization().id;
+      return JSON.parse(localStorage.getItem(key)) || [];
+    };
+
     // Save non-empty sort/filter states
     inventory_service.saveGridSettings = function (key, settings) {
       key += '.' + user_service.get_organization().id;
@@ -618,13 +624,13 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
     // TODO: Identify Tax Lot specific values that have dates.
     inventory_service.taxlot_state_date_columns = [
-      "generation_date",
-      "release_date",
-      "recent_sale_date",
-      "year_ending",
-      "record_created",
-      "record_modified",
-      "record_year_ending"
+      'generation_date',
+      'release_date',
+      'recent_sale_date',
+      'year_ending',
+      'record_created',
+      'record_modified',
+      'record_year_ending'
     ];
 
     inventory_service.reorderSettings = function (columns) {
@@ -643,6 +649,18 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         return response.data;
       }).finally(function () {
         spinner_utility.hide();
+      });
+    };
+
+    inventory_service.get_columns = function (all_fields) {
+      all_fields = all_fields || '';
+      return $http.get('/app/get_columns/', {
+        params: {
+          all_fields: all_fields,
+          organization_id: user_service.get_organization().id
+        }
+      }).then(function (response) {
+        return response.data;
       });
     };
 
