@@ -77,19 +77,6 @@ module.exports = function(grunt) {
                 }
             }
         },
-        istanbul_combine: {  
-            options: {
-                dir: 'protractorReports', // output directory for result 
-                pattern: ['protractorCoverage/**/*.json', 'pyCoverage.json'], // json reports to be combined 
-                // base: 'src', // base directory for resolving absolute paths 
-                print: 'summary', // print to the console (summary, detail, both, none) 
-                reporters: {
-                    lcov: {}, // lcov reporter options 
-                    // html: {}, // html reporter options 
-                    // cobertura: {} // cobertura reporter options 
-                },
-            },
-        },
         makeReport: {
             src: 'protractorCoverage/**/*.json',
             options: {
@@ -117,7 +104,6 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-istanbul');
     grunt.loadNpmTasks('grunt-coveralls');
-    grunt.loadNpmTasks('grunt-istanbul-combine');
 
     // Whenever the "test" task is run, first clean the "tmp" dir, then run this
     // plugin's task(s), then test the result.
@@ -129,10 +115,10 @@ module.exports = function(grunt) {
     // grunt.registerTask('coverage', ['clean', 'copy:save', 'instrument', 'protractor_coverage:local', 'copy:copyBack']);    
 
     //without coveralls
-    // grunt.registerTask('coverage', ['clean', 'copy:save', 'instrument', 'copy:instrument', 'protractor_coverage:local', 'copy:copyBack', 'makeReport']);
+    grunt.registerTask('coverage', ['clean', 'copy:save', 'instrument', 'copy:instrument', 'protractor_coverage:local', 'copy:copyBack', 'makeReport']);
 
     //with coveralls
-    grunt.registerTask('coverage', ['clean', 'copy:save', 'instrument', 'copy:instrument', 'protractor_coverage:local', 'copy:copyBack', 'istanbul_combine', 'coveralls']);
+    // grunt.registerTask('coverage', ['clean', 'copy:save', 'instrument', 'copy:instrument', 'protractor_coverage:local', 'copy:copyBack', 'makeReport', coveralls']);
 
     grunt.registerTask('test', ['coverage']);
 };
