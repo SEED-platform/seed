@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import logging
@@ -139,7 +139,7 @@ class Organization(models.Model):
         # Create a default cycle for the organization if there isn't one already
         from seed.models import Cycle
         year = date.today().year - 1
-        cycle_name = 'Default ' + str(year) + ' Calendar Year'
+        cycle_name = '{} Calendar Year'.format(year)
         if not Cycle.objects.filter(name=cycle_name, organization=self).exists():
             _log.debug("Creating default cycle for new organization")
             start = datetime(year, 1, 1, tzinfo=timezone.get_current_timezone())
