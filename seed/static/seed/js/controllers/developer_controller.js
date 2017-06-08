@@ -3,12 +3,12 @@
  */
 angular.module('BE.seed.controller.developer', [])
 .controller('developer_controller', [
-    '$scope',
-    'urls',
-    'auth_payload',
-    'user_profile_payload',
-    'user_service',
-    function (
+  '$scope',
+  'urls',
+  'auth_payload',
+  'user_profile_payload',
+  'user_service',
+  function (
       $scope,
       urls,
       auth_payload,
@@ -23,11 +23,11 @@ angular.module('BE.seed.controller.developer', [])
     /**
      * generates a new API key for the user
      */
-    $scope.generate_api_key = function() {
-        user_service.generate_api_key().then(function (data) {
-            $scope.user.api_key = data.api_key;
-            $scope.new_key_generated = true;
-        });
+    $scope.generate_api_key = function () {
+      user_service.generate_api_key().then(function (data) {
+        $scope.user.api_key = data.api_key;
+        $scope.new_key_generated = true;
+      });
     };
 
-}]);
+  }]);

@@ -28,75 +28,65 @@ describe('controller: dataset_detail_controller', function () {
       mock_dataset_service = dataset_service;
       spyOn(mock_dataset_service, 'get_dataset')
         .andCallFake(function (dataset_id) {
-            // return $q.reject for error scenario
-            var fake_importfiles = [
-              {
-                name: 'DC_CoveredBuildings_50k.csv',
-                number_of_buildings: 511,
-                number_of_mappings: 511,
-                number_of_cleanings: 1349,
-                source_type: 'Assessed Raw',
-                number_of_matchings: 403
-              },
-              {
-                name: 'DC_ESPM_Report.csv',
-                number_of_buildings: 511,
-                number_of_matchings: 403,
-                source_type: 'Portfolio Raw'
-              }
-            ];
-            var fake_dataset = {
-              name: 'DC 2013 data',
-              last_modified: (new Date()).getTime(),
-              last_modified_by: 'john.s@buildingenergy.com',
-              number_of_buildings: 89,
-              id: 1,
-              importfiles: fake_importfiles
-            };
-            var fake_payload = {
-              status: 'success',
-              dataset: fake_dataset
-            };
-            if (delete_called) {
-              fake_payload.dataset.importfiles.pop();
-            }
-            console.log({delete_called: delete_called, ds: fake_payload});
-            return $q.when(fake_payload);
+          // return $q.reject for error scenario
+          var fake_importfiles = [{
+            name: 'DC_CoveredBuildings_50k.csv',
+            number_of_buildings: 511,
+            number_of_mappings: 511,
+            number_of_cleanings: 1349,
+            source_type: 'Assessed Raw',
+            number_of_matchings: 403
+          }, {
+            name: 'DC_ESPM_Report.csv',
+            number_of_buildings: 511,
+            number_of_matchings: 403,
+            source_type: 'Portfolio Raw'
+          }];
+          var fake_dataset = {
+            name: 'DC 2013 data',
+            last_modified: (new Date()).getTime(),
+            last_modified_by: 'john.s@buildingenergy.com',
+            number_of_buildings: 89,
+            id: 1,
+            importfiles: fake_importfiles
+          };
+          var fake_payload = {
+            status: 'success',
+            dataset: fake_dataset
+          };
+          if (delete_called) {
+            fake_payload.dataset.importfiles.pop();
           }
-        );
+          console.log({delete_called: delete_called, ds: fake_payload});
+          return $q.when(fake_payload);
+        });
 
       spyOn(mock_dataset_service, 'delete_file')
         .andCallFake(function (import_file) {
-            delete_called = true;
-            console.log({d: 'delete_called'});
-            return $q.when(
-              {
-                status: 'success'
-              }
-            );
-          }
-        );
+          delete_called = true;
+          console.log({d: 'delete_called'});
+          return $q.when({
+            status: 'success'
+          });
+        });
     }
   ));
 
   // this is outside the beforeEach so it can be configured by each unit test
-  function create_dataset_detail_controller() {
-    var fake_importfiles = [
-      {
-        name: 'DC_CoveredBuildings_50k.csv',
-        number_of_buildings: 511,
-        number_of_mappings: 511,
-        number_of_cleanings: 1349,
-        source_type: 'Assessed Raw',
-        number_of_matchings: 403
-      },
-      {
-        name: 'DC_ESPM_Report.csv',
-        number_of_buildings: 511,
-        number_of_matchings: 403,
-        source_type: 'Portfolio Raw'
-      }
-    ];
+  function create_dataset_detail_controller () {
+    var fake_importfiles = [{
+      name: 'DC_CoveredBuildings_50k.csv',
+      number_of_buildings: 511,
+      number_of_mappings: 511,
+      number_of_cleanings: 1349,
+      source_type: 'Assessed Raw',
+      number_of_matchings: 403
+    }, {
+      name: 'DC_ESPM_Report.csv',
+      number_of_buildings: 511,
+      number_of_matchings: 403,
+      source_type: 'Portfolio Raw'
+    }];
     var fake_dataset = {
       name: 'DC 2013 data',
       last_modified: (new Date()).getTime(),
@@ -119,7 +109,7 @@ describe('controller: dataset_detail_controller', function () {
    * Test scenarios
    */
    // Tested in e2e
-   
+
   // it('should have an data set payload with import files', function () {
   //   // arrange
   //   create_dataset_detail_controller();

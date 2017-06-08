@@ -41,18 +41,14 @@ angular.module('BE.seed.controller.members', [])
        * @param {obj} user The user to be removed
        */
       $scope.remove_member = function (user) {
-        organization_service.remove_user(user.user_id, $scope.org.id)
-          .then(function (data) {
-            // resolve promise
-            organization_service.get_organization_users({org_id: $scope.org.id})
-              .then(function (data) {
-                $scope.users = data.users;
-                init();
-              });
-          }, function (data, status) {
-            // reject promise
-            $scope.$emit('app_error', data);
+        organization_service.remove_user(user.user_id, $scope.org.id).then(function () {
+          organization_service.get_organization_users({org_id: $scope.org.id}).then(function (data) {
+            $scope.users = data.users;
+            init();
           });
+        }, function (data) {
+          $scope.$emit('app_error', data);
+        });
       };
 
       /**
@@ -62,11 +58,9 @@ angular.module('BE.seed.controller.members', [])
       $scope.update_role = function (user) {
         $scope.$emit('show_saving');
         organization_service.update_role(user.user_id, $scope.org.id, user.role)
-          .then(function (data) {
-            // resolve promise
+          .then(function () {
             $scope.$emit('finished_saving');
-          }, function (data, status) {
-            // reject promise
+          }, function (data) {
             $scope.$emit('app_error', data);
           });
 
@@ -85,20 +79,17 @@ angular.module('BE.seed.controller.members', [])
             }
           }
         });
-        modalInstance.result.then(
-          // modal close()/submit() function
-          function () {
-            organization_service.get_organization_users({org_id: $scope.org.id})
-              .then(function (data) {
-                $scope.users = data.users;
-                init();
-              });
-          }, function (message) {
-            // dismiss
+        modalInstance.result.then(function () {
+          organization_service.get_organization_users({org_id: $scope.org.id}).then(function (data) {
+            $scope.users = data.users;
+            init();
           });
+        }, function () {
+          // Do nothing
+        });
       };
       $scope.existing_members_modal = function () {
-        var modalInstance = $uibModal.open({
+        $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/existing_members_modal.html',
           controller: 'existing_members_modal_controller'
         });

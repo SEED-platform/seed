@@ -1,9 +1,9 @@
-angular.module('BE.seed.service.label',
-  []).factory('label_service', [
-  '$http',
-  'user_service',
-  function ($http,
-            user_service) {
+angular.module('BE.seed.service.label', [])
+  .factory('label_service', [
+    '$http',
+    '$log',
+    'user_service',
+    function ($http, $log, user_service) {
 
 
     /** Label Service:
@@ -52,26 +52,26 @@ angular.module('BE.seed.service.label',
      ]
      */
 
-    function get_labels(selected, search_params) {
-      return get_labels_for_org(user_service.get_organization().id, selected, search_params);
-    }
+      function get_labels (selected, search_params) {
+        return get_labels_for_org(user_service.get_organization().id, selected, search_params);
+      }
 
-    function get_labels_for_org(org_id, selected, search_params) {
-      var searchArgs = _.assignIn({
-        organization_id: org_id
-      }, search_params);
+      function get_labels_for_org (org_id, selected, search_params) {
+        var searchArgs = _.assignIn({
+          organization_id: org_id
+        }, search_params);
 
       // If no inventory_type specified use 'property' just to get the list of all labels
-      searchArgs.inventory_type = (searchArgs.inventory_type == 'taxlots') ? 'taxlot' : 'property';
+        searchArgs.inventory_type = (searchArgs.inventory_type == 'taxlots') ? 'taxlot' : 'property';
 
-      return $http.post('/api/v2/labels/filter/', {
-        selected: selected
-      }, {
-        params: searchArgs
-      }).then(function (response) {
-        return _.map(response.data, update_label_w_local_props);
-      });
-    }
+        return $http.post('/api/v2/labels/filter/', {
+          selected: selected
+        }, {
+          params: searchArgs
+        }).then(function (response) {
+          return _.map(response.data, update_label_w_local_props);
+        });
+      }
 
 
     /*  Add a label to an organization's list of labels
@@ -86,20 +86,20 @@ angular.module('BE.seed.service.label',
      Return object should also have a 'label' property assigned
      to the newly created label object.
      */
-    function create_label(label) {
-      return create_label_for_org(user_service.get_organization().id, label);
-    }
+      function create_label (label) {
+        return create_label_for_org(user_service.get_organization().id, label);
+      }
 
-    function create_label_for_org(org_id, label) {
-      return $http.post('/api/v2/labels/', label, {
-        params: {
-          inventory_type: 'property',
-          organization_id: org_id
-        }
-      }).then(function (response) {
-        return update_label_w_local_props(response.data);
-      });
-    }
+      function create_label_for_org (org_id, label) {
+        return $http.post('/api/v2/labels/', label, {
+          params: {
+            inventory_type: 'property',
+            organization_id: org_id
+          }
+        }).then(function (response) {
+          return update_label_w_local_props(response.data);
+        });
+      }
 
 
     /*  Update an existing a label in an organization
@@ -113,19 +113,19 @@ angular.module('BE.seed.service.label',
      Return object will have a 'label' property assigned
      to the updated label object.
      */
-    function update_label(label) {
-      return update_label_for_org(user_service.get_organization().id, label);
-    }
+      function update_label (label) {
+        return update_label_for_org(user_service.get_organization().id, label);
+      }
 
-    function update_label_for_org(org_id, label) {
-      return $http.put('/api/v2/labels/' + label.id + '/', label, {
-        params: {
-          organization_id: org_id
-        }
-      }).then(function (response) {
-        return update_label_w_local_props(response.data);
-      });
-    }
+      function update_label_for_org (org_id, label) {
+        return $http.put('/api/v2/labels/' + label.id + '/', label, {
+          params: {
+            organization_id: org_id
+          }
+        }).then(function (response) {
+          return update_label_w_local_props(response.data);
+        });
+      }
 
     /*  Delete a label from the set of labels for an organization.
 
@@ -136,19 +136,19 @@ angular.module('BE.seed.service.label',
      with either a success if the label was deleted,
      or an error if not.
      */
-    function delete_label(label) {
-      return delete_label_for_org(user_service.get_organization().id, label);
-    }
+      function delete_label (label) {
+        return delete_label_for_org(user_service.get_organization().id, label);
+      }
 
-    function delete_label_for_org(org_id, label) {
-      return $http.delete('/api/v2/labels/' + label.id + '/', {
-        params: {
-          organization_id: org_id
-        }
-      }).then(function (response) {
-        return response.data;
-      });
-    }
+      function delete_label_for_org (org_id, label) {
+        return $http.delete('/api/v2/labels/' + label.id + '/', {
+          params: {
+            organization_id: org_id
+          }
+        }).then(function (response) {
+          return response.data;
+        });
+      }
 
 
     /* FUNCTIONS FOR LABELS WITHIN PROPERTIES  */
@@ -170,19 +170,19 @@ angular.module('BE.seed.service.label',
      (success or error).
 
      */
-    function update_property_labels(add_label_ids, remove_label_ids, selected, search_params) {
-      return $http.put('/api/v2/labels-property/', {
-        inventory_ids: selected,
-        add_label_ids: add_label_ids,
-        remove_label_ids: remove_label_ids
-      }, {
-        params: _.assignIn({
-          organization_id: user_service.get_organization().id
-        }, search_params)
-      }).then(function (response) {
-        return response.data;
-      });
-    }
+      function update_property_labels (add_label_ids, remove_label_ids, selected, search_params) {
+        return $http.put('/api/v2/labels-property/', {
+          inventory_ids: selected,
+          add_label_ids: add_label_ids,
+          remove_label_ids: remove_label_ids
+        }, {
+          params: _.assignIn({
+            organization_id: user_service.get_organization().id
+          }, search_params)
+        }).then(function (response) {
+          return response.data;
+        });
+      }
 
 
     /*
@@ -202,19 +202,19 @@ angular.module('BE.seed.service.label',
      (success or error).
 
      */
-    function update_taxlot_labels(add_label_ids, remove_label_ids, selected, search_params) {
-      return $http.put('/api/v2/labels-taxlot/', {
-        inventory_ids: selected,
-        add_label_ids: add_label_ids,
-        remove_label_ids: remove_label_ids
-      }, {
-        params: _.assignIn({
-          organization_id: user_service.get_organization().id
-        }, search_params)
-      }).then(function (response) {
-        return response.data;
-      });
-    }
+      function update_taxlot_labels (add_label_ids, remove_label_ids, selected, search_params) {
+        return $http.put('/api/v2/labels-taxlot/', {
+          inventory_ids: selected,
+          add_label_ids: add_label_ids,
+          remove_label_ids: remove_label_ids
+        }, {
+          params: _.assignIn({
+            organization_id: user_service.get_organization().id
+          }, search_params)
+        }).then(function (response) {
+          return response.data;
+        });
+      }
 
 
     /*  Gets the list of supported colors for labels, based on default bootstrap
@@ -234,44 +234,44 @@ angular.module('BE.seed.service.label',
      'color-description' (rather than 'label') to make them more clear.
 
      */
-    function get_available_colors() {
-      return [{
-        label: 'success',
-        color: 'green'
-      }, {
-        label: 'danger',
-        color: 'red'
-      }, {
-        label: 'default',
-        color: 'gray'
-      }, {
-        label: 'warning',
-        color: 'orange'
-      }, {
-        label: 'info',
-        color: 'light blue'
-      }, {
-        label: 'primary',
-        color: 'blue'
-      }];
-    }
-
-    function lookup_label (color) {
-      var lookup_colors = {
-        red: 'danger',
-        gray: 'default',
-        orange: 'warning',
-        green: 'success',
-        blue: 'primary',
-        'light blue': 'info'
-      };
-      try {
-        return lookup_colors[color];
-      } catch (err) {
-        console.error(err);
-        return lookup_colors.gray;
+      function get_available_colors () {
+        return [{
+          label: 'success',
+          color: 'green'
+        }, {
+          label: 'danger',
+          color: 'red'
+        }, {
+          label: 'default',
+          color: 'gray'
+        }, {
+          label: 'warning',
+          color: 'orange'
+        }, {
+          label: 'info',
+          color: 'light blue'
+        }, {
+          label: 'primary',
+          color: 'blue'
+        }];
       }
-    }
+
+      function lookup_label (color) {
+        var lookup_colors = {
+          red: 'danger',
+          gray: 'default',
+          orange: 'warning',
+          green: 'success',
+          blue: 'primary',
+          'light blue': 'info'
+        };
+        try {
+          return lookup_colors[color];
+        } catch (err) {
+          $log.error(err);
+          return lookup_colors.gray;
+        }
+      }
 
     /* "PRIVATE" METHODS */
     /* ~~~~~~~~~~~~~~~~~ */
@@ -279,37 +279,37 @@ angular.module('BE.seed.service.label',
     /*  Add a few properties to the label object so that it
      works well with UI components.
      */
-    function update_label_w_local_props(lbl) {
-      if (lbl) {
+      function update_label_w_local_props (lbl) {
+        if (lbl) {
         // add bootstrap label class names
-        lbl.label = lookup_label(lbl.color);
+          lbl.label = lookup_label(lbl.color);
         // create 'text' property needed for ngTagsInput control
-        lbl.text = lbl.name;
+          lbl.text = lbl.name;
+        }
+        return lbl;
       }
-      return lbl;
-    }
 
 
     /* Public API */
 
-    var label_factory = {
+      var label_factory = {
 
       //functions
-      get_labels: get_labels,
-      get_labels_for_org: get_labels_for_org,
-      create_label: create_label,
-      create_label_for_org: create_label_for_org,
-      update_label: update_label,
-      update_label_for_org: update_label_for_org,
-      delete_label: delete_label,
-      delete_label_for_org: delete_label_for_org,
-      update_property_labels: update_property_labels,
-      update_taxlot_labels: update_taxlot_labels,
-      get_available_colors: get_available_colors,
-      lookup_label: lookup_label
+        get_labels: get_labels,
+        get_labels_for_org: get_labels_for_org,
+        create_label: create_label,
+        create_label_for_org: create_label_for_org,
+        update_label: update_label,
+        update_label_for_org: update_label_for_org,
+        delete_label: delete_label,
+        delete_label_for_org: delete_label_for_org,
+        update_property_labels: update_property_labels,
+        update_taxlot_labels: update_taxlot_labels,
+        get_available_colors: get_available_colors,
+        lookup_label: lookup_label
 
-    };
+      };
 
-    return label_factory;
+      return label_factory;
 
-  }]);
+    }]);

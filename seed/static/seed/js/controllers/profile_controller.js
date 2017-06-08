@@ -3,41 +3,39 @@
  * :author
  */
 angular.module('BE.seed.controller.profile', [])
-.controller('profile_controller', [
+  .controller('profile_controller', [
     '$scope',
     'urls',
     'auth_payload',
     'user_profile_payload',
     'user_service',
-    function (
-      $scope,
-      urls,
-      auth_payload,
-      user_profile_payload,
-      user_service
-    ) {
-    $scope.auth = auth_payload.auth;
-    $scope.user = user_profile_payload;
-    $scope.user_updated = false;
-    var user_copy = angular.copy($scope.user);
-    $scope.username = user_profile_payload.first_name + ' ' + user_profile_payload.last_name;
+    function ($scope,
+              urls,
+              auth_payload,
+              user_profile_payload,
+              user_service) {
+      $scope.auth = auth_payload.auth;
+      $scope.user = user_profile_payload;
+      $scope.user_updated = false;
+      var user_copy = angular.copy($scope.user);
+      $scope.username = user_profile_payload.first_name + ' ' + user_profile_payload.last_name;
 
-    /**
-     * updates the user's PI
-     */
-    $scope.submit_form = function () {
-        user_service.update_user($scope.user).then(function (data) {
-            $scope.user_updated = true;
-            user_copy = angular.copy($scope.user);
-            $scope.username = user_profile_payload.first_name + ' ' + user_profile_payload.last_name;
+      /**
+       * updates the user's PI
+       */
+      $scope.submit_form = function () {
+        user_service.update_user($scope.user).then(function () {
+          $scope.user_updated = true;
+          user_copy = angular.copy($scope.user);
+          $scope.username = user_profile_payload.first_name + ' ' + user_profile_payload.last_name;
         });
-    };
+      };
 
-    /**
-     * resets the form
-     */
-    $scope.reset_form = function () {
+      /**
+       * resets the form
+       */
+      $scope.reset_form = function () {
         $scope.user = angular.copy(user_copy);
-    };
+      };
 
-}]);
+    }]);

@@ -12,8 +12,8 @@ angular.module('sdDropdown', [])
       items: '=',   // items to select from
       callback: '&' // callback
     },
-    link: function(scope, element, attrs) {
-      element.on('click', function(event) {
+    link: function (scope, element, attrs) {
+      element.on('click', function (event) {
         event.preventDefault();
       });
 
@@ -21,7 +21,7 @@ angular.module('sdDropdown', [])
       scope.isButton = 'isButton' in attrs;
 
       // selection changed handler
-      scope.select = function(item) {
+      scope.select = function (item) {
         scope.ngModel = item;
         if (scope.callback) {
           scope.callback({ item: item });

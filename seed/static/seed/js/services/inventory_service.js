@@ -48,9 +48,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         }).finally(function () {
           spinner_utility.hide();
         });
-      }).catch(function () {
-        return 'Error fetching cycles';
-      });
+      }).catch(_.constant('Error fetching cycles'));
     };
 
 
@@ -256,9 +254,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         }).finally(function () {
           spinner_utility.hide();
         });
-      }).catch(function () {
-        return 'Error fetching cycles';
-      });
+      }).catch(_.constant('Error fetching cycles'));
     };
 
 
@@ -519,7 +515,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     inventory_service.get_total_properties_for_user = function () {
       // django uses request.user for user information
       return $http.get(window.BE.urls.get_total_number_of_properties_for_user_url).then(function (response) {
-        property_factory.total_properties_for_user = response.data.properties_count;
+        inventory_service.total_properties_for_user = response.data.properties_count;
         return response.data;
       });
     };
@@ -528,7 +524,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     inventory_service.get_total_taxlots_for_user = function () {
       // django uses request.user for user information
       return $http.get(window.BE.urls.get_total_number_of_taxlots_for_user_url).then(function (response) {
-        property_factory.total_taxlots_for_user = response.data.taxlots_count;
+        inventory_service.total_taxlots_for_user = response.data.taxlots_count;
         return response.data;
       });
     };
@@ -628,13 +624,13 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
     // TODO: Identify Tax Lot specific values that have dates.
     inventory_service.taxlot_state_date_columns = [
-      "generation_date",
-      "release_date",
-      "recent_sale_date",
-      "year_ending",
-      "record_created",
-      "record_modified",
-      "record_year_ending"
+      'generation_date',
+      'release_date',
+      'recent_sale_date',
+      'year_ending',
+      'record_created',
+      'record_modified',
+      'record_year_ending'
     ];
 
     inventory_service.reorderSettings = function (columns) {
