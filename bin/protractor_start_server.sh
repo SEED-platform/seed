@@ -16,3 +16,7 @@ echo "starting server"
 sleep 15
 echo "run e2e tests"
 ./node_modules/grunt/bin/grunt test
+echo "run lcov to coveralls json"
+coveralls-lcov -v -n protractorReports/lcov.info > coverage.protractor.json
+echo "merge and post coveralls"
+coveralls-merge coverage.protractor.json
