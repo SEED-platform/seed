@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2016, The Regents of the University of California,
+:copyright (c) 2014 - 2017, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
@@ -32,7 +32,7 @@ class SEEDJSONRenderer(JSONRenderer):
 
     if self.data_name is set on the view its will be used in place of data
     as a key.
-    
+
     if pagination class is set globally, and/or on the view, pagination results
     will be included as an additional key/value pair.
     ie: {
