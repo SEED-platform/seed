@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from django.conf.urls import url, include
@@ -23,6 +23,7 @@ from seed.views.certification import (
     GreenAssessmentPropertyViewSet,
     GreenAssessmentURLViewSet
 )
+from seed.views.data_quality import DataQualityViews
 from seed.views.datasets import DatasetViewSet
 from seed.views.labels import LabelViewSet, UpdateInventoryLabelsAPIView
 from seed.views.main import version, progress
