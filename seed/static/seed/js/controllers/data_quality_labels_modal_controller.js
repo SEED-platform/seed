@@ -1,5 +1,5 @@
-/*
- * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+/**
+ * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  *
  * Controller for the Update Labels modal window.
@@ -46,30 +46,24 @@ angular.module('BE.seed.controller.data_quality_labels_modal', [])
       $scope.submitNewLabelForm = function (form) {
         $scope.createdLabel = null;
         if (form.$invalid) return;
-        label_service.create_label($scope.new_label).then(
-          function (data) {
+        label_service.create_label($scope.new_label).then(function (data) {
+          var createdLabel = data;
 
-            //promise completed successfully
-            var createdLabel = data;
+          //Assume that user wants to apply a label they just created
+          //in this modal...
+          createdLabel.is_checked_add = true;
 
-            //Assume that user wants to apply a label they just created
-            //in this modal...
-            createdLabel.is_checked_add = true;
-
-            $scope.newLabelForm.$setPristine();
-            $scope.labels.unshift(createdLabel);
-            $scope.initialize_new_label();
-          },
-          function (data, status) {
-            // reject promise
-            // label name already exists
-            if (data.message === 'label already exists') {
-              alert('label already exists');
-            } else {
-              alert('error creating new label');
-            }
+          $scope.newLabelForm.$setPristine();
+          $scope.labels.unshift(createdLabel);
+          $scope.initialize_new_label();
+        }, function (data) {
+          // label name already exists
+          if (data.message === 'label already exists') {
+            alert('label already exists');
+          } else {
+            alert('error creating new label');
           }
-        );
+        });
       };
 
       /* Toggle the add button for a label */
@@ -96,7 +90,7 @@ angular.module('BE.seed.controller.data_quality_labels_modal', [])
       $scope.done = function () {
 
         var addLabelIDs = _.chain($scope.labels).filter('is_checked_add').map('id').value().sort();
-        var removeLabelIDs = _.chain($scope.labels).filter('is_checked_remove').map('id').value().sort();
+        // var removeLabelIDs = _.chain($scope.labels).filter('is_checked_remove').map('id').value().sort();
         $uibModalInstance.close(addLabelIDs);
       };
 

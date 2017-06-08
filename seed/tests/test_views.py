@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import json
@@ -840,7 +840,7 @@ class InventoryViewTests(TestCase):
         }
         state = self.property_state_factory.get_property_state(
             self.org,
-            extra_data=json.dumps(extra_data)
+            extra_data=extra_data
         )
         prprty = self.property_factory.get_property()
         PropertyView.objects.create(
@@ -909,7 +909,7 @@ class InventoryViewTests(TestCase):
             self.org,
             address_line_1=property_state.address_line_1,
             postal_code=property_state.postal_code,
-            extra_data=json.dumps(extra_data)
+            extra_data=extra_data,
         )
         taxlot = TaxLot.objects.create(organization=self.org)
         taxlot_view = TaxLotView.objects.create(
@@ -1139,7 +1139,7 @@ class InventoryViewTests(TestCase):
     def test_get_taxlots(self):
         property_state = self.property_state_factory.get_property_state(
             self.org,
-            extra_data=json.dumps({'extra_data_field': 'edfval'})
+            extra_data={'extra_data_field': 'edfval'},
         )
         property_property = self.property_factory.get_property()
         property_view = PropertyView.objects.create(
@@ -1244,7 +1244,7 @@ class InventoryViewTests(TestCase):
     def test_get_taxlots_multiple_taxlots(self):
         property_state = self.property_state_factory.get_property_state(
             self.org,
-            extra_data=json.dumps({'extra_data_field': 'edfval'})
+            extra_data={'extra_data_field': 'edfval'},
         )
         property_property = self.property_factory.get_property()
         property_view = PropertyView.objects.create(
@@ -1322,7 +1322,7 @@ class InventoryViewTests(TestCase):
         taxlot_state = self.taxlot_state_factory.get_taxlot_state(
             self.org,
             postal_code=property_state.postal_code,
-            extra_data=json.dumps({'extra_data_field': 'edfval'})
+            extra_data={'extra_data_field': 'edfval'}
         )
         taxlot = TaxLot.objects.create(organization=self.org)
         taxlot_view = TaxLotView.objects.create(
@@ -1349,7 +1349,7 @@ class InventoryViewTests(TestCase):
     def test_get_taxlots_page_not_an_integer(self):
         property_state = self.property_state_factory.get_property_state(
             self.org,
-            extra_data=json.dumps({'extra_data_field': 'edfval'})
+            extra_data={'extra_data_field': 'edfval'},
         )
         property_property = self.property_factory.get_property()
         property_view = PropertyView.objects.create(
@@ -1387,7 +1387,7 @@ class InventoryViewTests(TestCase):
     def test_get_taxlots_empty_page(self):
         property_state = self.property_state_factory.get_property_state(
             self.org,
-            extra_data=json.dumps({'extra_data_field': 'edfval'})
+            extra_data={'extra_data_field': 'edfval'},
         )
         property_property = self.property_factory.get_property()
         property_view = PropertyView.objects.create(
@@ -1425,7 +1425,7 @@ class InventoryViewTests(TestCase):
     def test_get_taxlots_missing_jurisdiction_tax_lot_id(self):
         property_state = self.property_state_factory.get_property_state(
             self.org,
-            extra_data=json.dumps({'extra_data_field': 'edfval'})
+            extra_data={'extra_data_field': 'edfval'}
         )
         property_property = self.property_factory.get_property(self.org)
         property_view = PropertyView.objects.create(

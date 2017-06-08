@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from django.db import models, migrations
 import django.utils.timezone
-import django_pgjson.fields
+import django.contrib.postgres.fields.jsonb
 import django_extensions.db.fields
 
 
@@ -24,7 +24,7 @@ class Migration(migrations.Migration):
                 ('object_id', models.PositiveIntegerField(null=True)),
                 ('audit_type', models.IntegerField(default=0, choices=[(0, b'Log'), (1, b'Note')])),
                 ('action', models.CharField(help_text=b'method triggering audit', max_length=128, null=True, db_index=True, blank=True)),
-                ('action_response', django_pgjson.fields.JsonField(default={}, help_text=b'HTTP response from action', null=True, blank=True)),
+                ('action_response', django.contrib.postgres.fields.jsonb.JSONField(default={}, help_text=b'HTTP response from action', null=True, blank=True)),
                 ('action_note', models.TextField(help_text=b'either the note text or a description of the action', null=True, blank=True)),
                 ('content_type', models.ForeignKey(blank=True, to='contenttypes.ContentType', null=True)),
                 ('organization', models.ForeignKey(related_name='audit_logs', to='orgs.Organization')),

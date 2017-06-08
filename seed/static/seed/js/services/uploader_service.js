@@ -1,5 +1,5 @@
-/*
- * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+/**
+ * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 // uploader services
@@ -41,10 +41,10 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
         }
       }).then(function (response) {
         return response.data;
-      })
+      });
     };
 
-    /*
+    /**
      * save_raw_data
      * This service call will simply call a view on the backend to save raw
      * data into BuildingSnapshot instances.
@@ -59,7 +59,7 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
       });
     };
 
-    /*
+    /**
      * check_progress: gets the progress for saves, maps, and matches
      * @param progress_key: progress_key to grab the progress
      */
@@ -71,7 +71,7 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
         else return response.data;
       });
     };
-    /*
+    /**
      * check_progress_loop: check loop to update the progress bar
      *
      * @param {string} progress_key: key

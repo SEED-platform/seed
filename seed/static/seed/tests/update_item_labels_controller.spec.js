@@ -1,8 +1,12 @@
+/**
+ * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :author
+ */
 describe('controller: update_item_labels_modal_controller', function () {
   // globals set up and used in each test scenario
-  var mock_label_service, mock_search_service, scope, controller, modal_state, mock_notification, mock_new_label_form, mock_inventory_ids;
+  var mock_label_service, scope, controller, modal_state, mock_notification, mock_new_label_form,
+    mock_inventory_ids;
   var update_controller, update_controller_scope, modalInstance, labels;
-
 
   var available_colors = [{
     label: 'success',
@@ -91,29 +95,25 @@ describe('controller: update_item_labels_modal_controller', function () {
 
     spyOn(mock_label_service, 'get_labels')
       .andCallFake(function () {
-          // return $q.reject for error scenario
-          return $q.when(all_available_labels);
-        }
-      );
+        // return $q.reject for error scenario
+        return $q.when(all_available_labels);
+      });
     spyOn(mock_label_service, 'create_label')
       .andCallFake(function () {
-          // return $q.reject for error scenario
-          return $q.when(return_obj_for_create_label);
-        }
-      );
+        // return $q.reject for error scenario
+        return $q.when(return_obj_for_create_label);
+      });
     spyOn(mock_label_service, 'get_available_colors')
       .andCallFake(function () {
-          return available_colors;
-        }
-      );
+        return available_colors;
+      });
 
     //mock the notification service
     mock_notification = Notification;
     spyOn(mock_notification, 'primary')
       .andCallFake(function () {
-          //do nothing
-        }
-      );
+        // Do nothing
+      });
 
     mock_new_label_form = {
       $dirty: false,
@@ -127,7 +127,7 @@ describe('controller: update_item_labels_modal_controller', function () {
   }));
 
   // this is outside the beforeEach so it can be configured by each unit test
-  function create_update_item_labels_modal_controller() {
+  function create_update_item_labels_modal_controller () {
 
 
     // We only need to mock three properties of the search object for this controller
@@ -173,7 +173,7 @@ describe('controller: update_item_labels_modal_controller', function () {
 
   }
 
-  /*
+  /**
    * Test scenarios
    */
 

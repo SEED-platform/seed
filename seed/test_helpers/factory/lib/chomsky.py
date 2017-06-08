@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -98,7 +98,7 @@ verbs = """can be defined in such a way as to impose
     is necessary to impose an interpretation on
     appears to correlate rather closely with
     is rather different from"""
-#List of VERBs chosen for autorecursive obfuscation.
+# List of VERBs chosen for autorecursive obfuscation.
 
 objects = """ problems of phonemic and morphological analysis.
     a corpus of utterance tokens upon which conformity has been defined \
@@ -122,8 +122,10 @@ scope of a complex symbol.
     the strong generative capacity of the theory."""
 # List of OBJECTs selected for profound sententiousness.
 
-import textwrap, random
+import textwrap
+import random
 from itertools import chain, islice, izip
+
 
 def generate_chomsky(times=5, line_length=72):
     parts = []
@@ -133,6 +135,7 @@ def generate_chomsky(times=5, line_length=72):
         parts.append(phraselist)
     output = chain(*islice(izip(*parts), 0, times))
     return textwrap.fill(string.join(output), line_length)
+
 
 if __name__ == '__main__':
     generate_chomsky()

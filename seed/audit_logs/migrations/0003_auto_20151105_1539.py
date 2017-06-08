@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
-import django_pgjson.fields
+import django.contrib.postgres.fields.jsonb
 
 
 class Migration(migrations.Migration):
@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='auditlog',
             name='action_response',
-            field=django_pgjson.fields.JsonField(default={}, help_text=b'HTTP response from action'),
+            field=django.contrib.postgres.fields.jsonb.JSONField(default={}, help_text=b'HTTP response from action'),
             preserve_default=True,
         ),
     ]

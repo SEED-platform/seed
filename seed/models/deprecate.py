@@ -1,16 +1,16 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import types
 import unicodedata
 
 from django.contrib.contenttypes.fields import GenericRelation
+from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django_extensions.db.models import TimeStampedModel
-from django_pgjson.fields import JsonField
 
 from seed.audit_logs.models import AuditLog, LOG
 from seed.data_importer.models import ImportFile, ImportRecord
@@ -607,9 +607,9 @@ class BuildingSnapshot(TimeStampedModel):
     #
 
     # 'key' -> 'value'
-    extra_data = JsonField(default={})
+    extra_data = JSONField(default=dict)
     # 'key' -> ['model', 'fk'], what was the model and its FK?
-    extra_data_sources = JsonField(default={})
+    extra_data_sources = JSONField(default=dict)
 
     objects = JsonManager()
 

@@ -1,8 +1,7 @@
-/*
- * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+/**
+ * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
-
 angular.module('BE.seed.service.auth', []).factory('auth_service', [
   '$http',
   'user_service',
@@ -45,7 +44,7 @@ angular.module('BE.seed.service.auth', []).factory('auth_service', [
      * gets all available actions
      * @return {promise} then an array of actions
      */
-    auth_factory.get_actions = function (user) {
+    auth_factory.get_actions = function () {
       return $http.get(urls.accounts.get_actions).then(function (response) {
         return response.data;
       });
