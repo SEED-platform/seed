@@ -1,5 +1,6 @@
 /**
- * :copyright: (c) 2014 Building Energy Inc
+ * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :author
  */
 describe('Controller: matching_list_controller', function () {
   // globals set up and used in each test scenario
@@ -24,31 +25,31 @@ describe('Controller: matching_list_controller', function () {
     mock_matching_services = matching_service;
     mock_inventory_services = inventory_service;
     spyOn(mock_inventory_services, 'get_matching_results')
-        .andCallFake(function(import_file){
-            // return $q.reject for error scenario
-            return $q.when({
-              properties: {
-                status: 'success',
-                matched: 10,
-                unmatched: 5,
-                duplicates: 0
-              }
-            });
+        .andCallFake(function (import_file) {
+          // return $q.reject for error scenario
+          return $q.when({
+            properties: {
+              status: 'success',
+              matched: 10,
+              unmatched: 5,
+              duplicates: 0
+            }
+          });
         });
 
     mock_spinner_utility = spinner_utility;
     spyOn(mock_spinner_utility, 'show')
-        .andCallFake(function(){
-            //do nothing
+        .andCallFake(function () {
+          // Do nothing
         });
     spyOn(mock_spinner_utility, 'hide')
-        .andCallFake(function(){
-            //do nothing
+        .andCallFake(function () {
+          // Do nothing
         });
   }));
 
   // this is outside the beforeEach so it can be configured by each unit test
-  function create_dataset_detail_controller() {
+  function create_dataset_detail_controller () {
     var inventory_payload = {
       properties: [
         {
@@ -76,15 +77,17 @@ describe('Controller: matching_list_controller', function () {
       $scope: matching_list_controller_scope,
       inventory_payload: inventory_payload,
       $stateParams: {
-          cycle_id: 2017,
-          inventory_id: 4,
-          inventory_type: 'properties',
-          project_id: 2,
-          import_file_id: 1
+        cycle_id: 2017,
+        inventory_id: 4,
+        inventory_type: 'properties',
+        project_id: 2,
+        import_file_id: 1
       },
-      columns: [ 
-          {name: 'pm_property_id', displayName: "PM Property ID", type: "number"}
-        ],
+      columns: [{
+        name: 'pm_property_id',
+        displayName: 'PM Property ID',
+        type: 'number'
+      }],
       cycles: {
         cycles: [{
           end: '2016-01-01T07:00:00Z',
@@ -117,7 +120,7 @@ describe('Controller: matching_list_controller', function () {
   }
 
 
-  /*
+  /**
    * Test scenarios
    */
 
@@ -169,7 +172,7 @@ describe('Controller: matching_list_controller', function () {
       matching_list_controller_scope.$digest();
 
       // assertions
-      expect(matching_list_controller_scope.columns).toEqual([{name: 'pm_property_id', displayName: "PM Property ID", type: "number"}]);
+      expect(matching_list_controller_scope.columns).toEqual([{name: 'pm_property_id', displayName: 'PM Property ID', type: 'number'}]);
       expect(matching_list_controller_scope.number_properties_matching_search).toEqual(1);
       expect(matching_list_controller_scope.number_properties_returned).toEqual(1);
       expect(matching_list_controller_scope.num_pages).toEqual(1);

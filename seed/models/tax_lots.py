@@ -1,15 +1,15 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from __future__ import unicode_literals
 
 import logging
 
+from django.contrib.postgres.fields import JSONField
 from django.db import models
-from django_pgjson.fields import JsonField
 
 from auditlog import AUDIT_IMPORT
 from auditlog import DATA_UPDATE_TYPE
@@ -70,7 +70,7 @@ class TaxLotState(models.Model):
     postal_code = models.CharField(max_length=255, null=True, blank=True)
     number_properties = models.IntegerField(null=True, blank=True)
 
-    extra_data = JsonField(default={}, blank=True)
+    extra_data = JSONField(default=dict, blank=True)
 
     def __unicode__(self):
         return u'TaxLot State - %s' % self.pk

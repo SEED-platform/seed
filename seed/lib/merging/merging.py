@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author Dan Gunter <dkgunter@lbl.gov>
 """
 import logging
@@ -50,7 +50,7 @@ def get_attrs_with_mapping(data_set_buildings, mapping):
         for data_set_attr, can_attr in mapping:
             # Catch import_file because getattr will not return the ID of the object, rather, the
             # foreign object is returned. If the import_file has been deleted (or at least the
-            # deleted flag is set), then this would crash because the query doesn't return an
+            # deleted flag is set), then this would crash because the query does not return an
             # object.
             if can_attr == 'import_file':
                 data_set_value = data_set_building.import_file_id

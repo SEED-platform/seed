@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import json
@@ -74,7 +74,7 @@ class TestDecorators(TestCase):
         self.assertEqual(int(get_lock(key)), self.unlocked)
 
     def test_locking_w_exception(self):
-        """Make sure we release our lock if we've had an exception."""
+        """Make sure we release our lock if we have had an exception."""
         key = decorators._get_lock_key('fake_func', self.pk)
 
         @decorators.lock_and_track

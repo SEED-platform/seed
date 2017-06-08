@@ -1,5 +1,5 @@
-/*
- * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+/**
+ * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 /**
@@ -26,6 +26,7 @@ angular.module('BE.seed.vendor_dependencies', [
   'ui.router.stateHelper',
   'ui.sortable',
   'ui.tree',
+  'focus-if',
   'xeditable',
   angularDragula(angular)
 ]);
@@ -34,8 +35,9 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.accounts',
   'BE.seed.controller.admin',
   'BE.seed.controller.api',
-  'BE.seed.controller.cleansing',
-  'BE.seed.controller.cleansing_admin',
+  'BE.seed.controller.data_quality_admin',
+  'BE.seed.controller.data_quality_modal',
+  'BE.seed.controller.data_quality_labels_modal',
   'BE.seed.controller.cycle_admin',
   'BE.seed.controller.concat_modal',
   'BE.seed.controller.create_note_modal',
@@ -95,7 +97,7 @@ angular.module('BE.seed.directives', [
 angular.module('BE.seed.services', [
   'BE.seed.service.audit',
   'BE.seed.service.auth',
-  'BE.seed.service.cleansing',
+  'BE.seed.service.data_quality',
   'BE.seed.service.column_mappings',
   'BE.seed.service.cycle',
   'BE.seed.service.dataset',
@@ -121,18 +123,18 @@ angular.module('BE.seed.utilities', [
 ]);
 
 var SEED_app = angular.module('BE.seed', [
-    'BE.seed.angular_dependencies',
-    'BE.seed.vendor_dependencies',
-    'BE.seed.filters',
-    'BE.seed.directives',
-    'BE.seed.services',
-    'BE.seed.controllers',
-    'BE.seed.utilities'
-  ], ['$interpolateProvider', '$qProvider', function ($interpolateProvider, $qProvider) {
-    $interpolateProvider.startSymbol('{$');
-    $interpolateProvider.endSymbol('$}');
-    $qProvider.errorOnUnhandledRejections(false);
-  }]
+  'BE.seed.angular_dependencies',
+  'BE.seed.vendor_dependencies',
+  'BE.seed.filters',
+  'BE.seed.directives',
+  'BE.seed.services',
+  'BE.seed.controllers',
+  'BE.seed.utilities'
+], ['$interpolateProvider', '$qProvider', function ($interpolateProvider, $qProvider) {
+  $interpolateProvider.startSymbol('{$');
+  $interpolateProvider.endSymbol('$}');
+  $qProvider.errorOnUnhandledRejections(false);
+}]
 );
 
 /**
@@ -586,54 +588,54 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           propertyInventory: ['inventory_service', function (inventory_service) {
             var myColumns = [{
-              'displayName': 'Address Line 1 (Property)',
-              'name': 'address_line_1',
-              'type': 'numberStr',
-              'related': false
+              displayName: 'Address Line 1 (Property)',
+              name: 'address_line_1',
+              type: 'numberStr',
+              related: false
             }, {
-              'displayName': 'PM Property ID',
-              'name': 'pm_property_id',
-              'type': 'number',
-              'related': false
+              displayName: 'PM Property ID',
+              name: 'pm_property_id',
+              type: 'number',
+              related: false
             }, {
-              'displayName': 'Jurisdiction Tax Lot ID',
-              'name': 'jurisdiction_tax_lot_id',
-              'type': 'numberStr',
-              'related': false
+              displayName: 'Jurisdiction Tax Lot ID',
+              name: 'jurisdiction_tax_lot_id',
+              type: 'numberStr',
+              related: false
             }, {
-              'displayName': 'Custom ID',
-              'name': 'custom_id_1',
-              'type': 'numberStr',
-              'related': false
+              displayName: 'Custom ID',
+              name: 'custom_id_1',
+              type: 'numberStr',
+              related: false
             }];
             var visibleColumns = _.map(myColumns, 'name');
             // console.log('before: ', myColumns);
             return inventory_service.get_properties(1, undefined, undefined, visibleColumns).then(function (inv) {
               // return inventory_service.get_properties(1).then(function (inv) {
-              return _.extend({'columns': myColumns}, inv);
+              return _.extend({columns: myColumns}, inv);
             });
           }],
           taxlotInventory: ['inventory_service', function (inventory_service) {
             var myColumns = [{
-              'displayName': 'Address Line 1 (Tax Lot)',
-              'name': 'address_line_1',
-              'type': 'numberStr',
-              'related': false
+              displayName: 'Address Line 1 (Tax Lot)',
+              name: 'address_line_1',
+              type: 'numberStr',
+              related: false
             }, /*{
              'displayName': 'Primary Tax Lot ID',
              'name': 'primary_tax_lot_id',
              'type': 'number',
              'related': false
-             },*/ {
-              'displayName': 'Jurisdiction Tax Lot ID',
-              'name': 'jurisdiction_tax_lot_id',
-              'type': 'numberStr',
-              'related': false
+            },*/ {
+              displayName: 'Jurisdiction Tax Lot ID',
+              name: 'jurisdiction_tax_lot_id',
+              type: 'numberStr',
+              related: false
             }];
             var visibleColumns = _.map(myColumns, 'name');
             // console.log('before: ', myColumns);
             return inventory_service.get_taxlots(1, undefined, undefined, visibleColumns).then(function (inv) {
-              return _.extend({'columns': myColumns}, inv);
+              return _.extend({columns: myColumns}, inv);
             });
           }],
           cycles: ['cycle_service', function (cycle_service) {
@@ -802,21 +804,51 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         }
       })
       .state({
-        name: 'organization_cleansing',
-        url: '/accounts/{organization_id:int}/data_cleansing',
-        templateUrl: static_url + 'seed/partials/cleansing_admin.html',
-        controller: 'cleansing_admin_controller',
+        name: 'organization_data_quality',
+        url: '/accounts/{organization_id:int}/data_quality/{inventory_type:properties|taxlots}',
+        templateUrl: static_url + 'seed/partials/data_quality_admin.html',
+        controller: 'data_quality_admin_controller',
         resolve: {
-          all_columns: ['inventory_service', function (inventory_service) {
-            return inventory_service.get_columns();
+          columns: ['$stateParams', 'inventory_service', 'naturalSort', function ($stateParams, inventory_service, naturalSort) {
+            if ($stateParams.inventory_type === 'properties') {
+              return inventory_service.get_property_columns().then(function (columns) {
+                _.remove(columns, function (col) {
+                  return col.related === true;
+                });
+                columns = _.map(columns, function (col) {
+                  return _.omit(col, ['pinnedLeft', 'related']);
+                });
+                columns.sort(function (a, b) {
+                  return naturalSort(a.displayName, b.displayName);
+                });
+                return columns;
+              });
+            } else if ($stateParams.inventory_type === 'taxlots') {
+              return inventory_service.get_taxlot_columns().then(function (columns) {
+                _.remove(columns, function (col) {
+                  return col.related === true;
+                });
+                columns = _.map(columns, function (col) {
+                  return _.omit(col, ['pinnedLeft', 'related']);
+                });
+                columns.sort(function (a, b) {
+                  return naturalSort(a.displayName, b.displayName);
+                });
+                return columns;
+              });
+            }
           }],
           organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
             var organization_id = $stateParams.organization_id;
             return organization_service.get_organization(organization_id);
           }],
-          cleansing_rules_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
+          data_quality_rules_payload: ['data_quality_service', '$stateParams', function (data_quality_service, $stateParams) {
             var organization_id = $stateParams.organization_id;
-            return organization_service.get_cleansing_rules(organization_id);
+            return data_quality_service.data_quality_rules(organization_id);
+          }],
+          labels_payload: ['label_service', '$stateParams', function (label_service, $stateParams) {
+            var organization_id = $stateParams.organization_id;
+            return label_service.get_labels_for_org(organization_id);
           }],
           auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
             var organization_id = $stateParams.organization_id;
@@ -972,11 +1004,11 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             if ($stateParams.inventory_type === 'properties') {
               return inventory_service.get_properties(1, undefined, undefined, visibleColumns).then(function (inv) {
                 // return inventory_service.get_properties(1).then(function (inv) {
-                return _.extend({'columns': myColumns}, inv);
+                return _.extend({columns: myColumns}, inv);
               });
             } else if ($stateParams.inventory_type === 'taxlots') {
               return inventory_service.get_taxlots(1, undefined, undefined, visibleColumns).then(function (inv) {
-                return _.extend({'columns': myColumns}, inv);
+                return _.extend({columns: myColumns}, inv);
               });
             }
           }],
@@ -1091,15 +1123,13 @@ SEED_app.config(['$compileProvider', function ($compileProvider) {
  * creates the object 'urls' which can be injected into a service, controller, etc.
  */
 SEED_app.constant('urls', {
-  search_buildings: BE.urls.search_buildings_url,
   seed_home: BE.urls.seed_home,
-  // update_building: BE.urls.update_building,
   static_url: BE.urls.STATIC_URL
 });
 SEED_app.constant('generated_urls', window.BE.app_urls);
 
 SEED_app.constant('naturalSort', function (a, b) {
-  /*
+  /**
    * Natural Sort algorithm for Javascript - Version 0.8.1 - Released under MIT license
    * Author: Jim Palmer (based on chunking idea from Dave Koelle)
    */
@@ -1139,7 +1169,7 @@ SEED_app.constant('naturalSort', function (a, b) {
       return isNaN(oFxNcL) ? 1 : -1;
     }
     // if unicode use locale comparison
-    if (/[^\x00-\x80]/.test(oFxNcL + oFyNcL) && oFxNcL.localeCompare) {
+    if (/[^\x00-\x80]/.test(oFxNcL + oFyNcL) && oFxNcL.localeCompare) { // eslint-disable-line no-control-regex
       var comp = oFxNcL.localeCompare(oFyNcL);
       return comp / Math.abs(comp);
     }

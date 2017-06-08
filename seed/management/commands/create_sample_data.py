@@ -287,7 +287,7 @@ class CreateSampleDataFakeTaxLotFactory(FakeTaxLotStateFactory):
 
 def get_cycle(org, year=2015):
     """
-    Gets (or creates if it doesn't exist) a year-long cycle for an organization.
+    Gets (or creates if it does not exist) a year-long cycle for an organization.
     :param org: the organization associated with the cycle
     :param year: int, the year for the cycle
     :return: cycle starting on datetime(year, 1, 1, 0, 0, 0) and ending on
@@ -359,7 +359,7 @@ def create_cases(org, cycle, tax_lots, properties):
         # (once for individual, once for _caseALL).  So if the get_or_create returns
         # an existing one then it still is unknown if it is something that already exists.
         # Check the view model to see if there is something with this state and this org.
-        # If it doesn't exist thencreate one.  If it does exist than that is correct (hopefully)
+        # If it does not exist thencreate one.  If it does exist than that is correct (hopefully)
         #
         # FIXME.  In the instance where this script is creating both individual cases and _caseALL this
         # throws an error for some taxlots that multiple are returned.  Since TaxLotState does not depend

@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import csv
@@ -116,9 +116,6 @@ class TestMappingPortfolioData(DataMappingBaseTestCase):
         self.assertEqual(len(mapped_bs), 1)
 
         test_bs = mapped_bs[0]
-
-        from seed.utils.generic import pp
-        pp(test_bs)
         self.assertNotEqual(test_bs.pk, fake_raw_bs.pk)
         self.assertEqual(test_bs.property_name, self.fake_row['Name'])
         self.assertEqual(test_bs.address_line_1, self.fake_row['Address Line 1'])
@@ -133,7 +130,7 @@ class TestMappingPortfolioData(DataMappingBaseTestCase):
             is_extra_data=True
         ).exclude(table_name='')
 
-        # There's only one piece of data that didn't cleanly map.
+        # There's only one piece of data that did not cleanly map.
         # Note that as of 09/15/2016 - extra data still needs to be defined in the mappings, it
         # will no longer magically appear in the extra_data field if the user did not specify to
         # map it!
@@ -316,7 +313,7 @@ class TestPromotingProperties(DataMappingBaseTestCase):
             for d in data:
                 writer.writerow(d)
 
-        # save the keys         This doesn't appear to be used anywhere
+        # save the keys this does not appear to be used anywhere
         new_file_name = 'tmp_{}_keys.csv'.format(
             os.path.splitext(os.path.basename(filename))[0]
         )

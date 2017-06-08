@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 
 This files has faker methods for generating fake data.
 
@@ -20,14 +20,15 @@ import os
 import re
 import string
 from collections import namedtuple
-from django.utils import timezone
 
 import mock
 from django.db.models.fields.files import FieldFile
+from django.utils import timezone
 from faker import Factory
 
 from seed.models import (
-    BuildingSnapshot, Cycle, Column, Property, PropertyState, TaxLotState, TaxLotAuditLog, PropertyAuditLog
+    BuildingSnapshot, Cycle, Column, Property, PropertyState, TaxLotState, TaxLotAuditLog,
+    PropertyAuditLog
 )
 
 Owner = namedtuple(

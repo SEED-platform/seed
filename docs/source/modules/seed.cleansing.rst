@@ -1,10 +1,10 @@
-Cleansing Package
-=================
+Data Quality Package
+====================
 
 Inheritance
 -----------
 
-.. inheritance-diagram:: seed.cleansing.models
+.. inheritance-diagram:: seed.data_quality.models
    :parts: 2
 
 Submodules
@@ -13,15 +13,7 @@ Submodules
 Models
 ------
 
-.. automodule:: seed.cleansing.models
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-Tasks
------
-
-.. automodule:: seed.cleansing.tasks
+.. automodule:: seed.models.data_quality
     :members:
     :undoc-members:
     :show-inheritance:
@@ -29,15 +21,7 @@ Tasks
 Tests
 -----
 
-.. automodule:: seed.cleansing.tests
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-URLs
-----
-
-.. automodule:: seed.cleansing.urls
+.. automodule:: seed.tests.data_quality
     :members:
     :undoc-members:
     :show-inheritance:
@@ -45,7 +29,7 @@ URLs
 Views
 -----
 
-.. automodule:: seed.cleansing.views
+.. automodule:: seed.views.data_quality
     :members:
     :undoc-members:
     :show-inheritance:

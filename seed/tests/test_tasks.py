@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import logging
@@ -110,7 +110,7 @@ class TestTasks(TestCase):
     def test_delete_organization_doesnt_delete_user_if_multiple_memberships(
             self):
         """
-        Deleting an org shouldn't delete the orgs users if the user belongs to many orgs.
+        Deleting an org should not delete the orgs users if the user belongs to many orgs.
         """
         org = Organization.objects.create()
         OrganizationUser.objects.create(organization=org, user=self.fake_user)

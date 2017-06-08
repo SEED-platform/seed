@@ -1,8 +1,8 @@
-/*
- * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+/**
+ * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
-/*
+/**
     This service provides a simple, standardized way to show a basic modal dialog.
     Code based on example by Dan Wahlin:
     http://weblogs.asp.net/dwahlin/building-an-angularjs-modal-service
@@ -32,100 +32,100 @@
 
 */
 angular.module('BE.seed.service.simple_modal', [])
-.factory('simple_modal_service', ['$uibModal',
-                                    'urls',
+  .factory('simple_modal_service', ['$uibModal',
+    'urls',
     function ($uibModal, urls) {
 
-        // Define types of modals allowed.
-        // TODO:    Create more configurations for different types of modals, e.g. standard, error
-        //          Adding each new type to the validModalTypes array
-        // TODO :   turn vars into const when we move to ES6
-        var TYPE_DEFAULT = 'default';
-        var TYPE_ERROR = 'error';
-        var validModalTypes = [TYPE_DEFAULT, TYPE_ERROR];
+      // Define types of modals allowed.
+      // TODO:    Create more configurations for different types of modals, e.g. standard, error
+      //          Adding each new type to the validModalTypes array
+      // TODO :   turn vars into const when we move to ES6
+      var TYPE_DEFAULT = 'default';
+      var TYPE_ERROR = 'error';
+      var validModalTypes = [TYPE_DEFAULT, TYPE_ERROR];
 
-        var modalDefaults = {
-            type: TYPE_DEFAULT,             //can be "default" or "error"
-            backdrop: 'static',             //user cannot click anywhere on screen to close modal, only buttons
-            keyboard: true,                 //user can use ESC key to close
-            modalFade: true,
-            templateUrl: urls.static_url + 'seed/partials/simple_modal.html'
-        };
+      var modalDefaults = {
+        type: TYPE_DEFAULT,             //can be "default" or "error"
+        backdrop: 'static',             //user cannot click anywhere on screen to close modal, only buttons
+        keyboard: true,                 //user can use ESC key to close
+        modalFade: true,
+        templateUrl: urls.static_url + 'seed/partials/simple_modal.html'
+      };
 
-        var modalOptions = {
-            okButtonText: 'Ok',
-            cancelButtonText: 'Cancel',
-            headerText: 'Proceed?',
-            bodyText: 'Perform this action?',
-            okResult: 'Ok'
-        };
+      var modalOptions = {
+        okButtonText: 'Ok',
+        cancelButtonText: 'Cancel',
+        headerText: 'Proceed?',
+        bodyText: 'Perform this action?',
+        okResult: 'Ok'
+      };
 
-        /*
-            Show a simple modal dialog. Customize the dialog text and behavior by passing in config objects.
+      /**
+       Show a simple modal dialog. Customize the dialog text and behavior by passing in config objects.
 
-            @param {object} [modalOptions={}]       Optional, but caller really should provide specific button labels and text.
-            @param {object} [modalDefaults={}]      Optional, and can have one or more of the properties defined above in this class
-        */
-        function showModal(customModalOptions, customModalDefaults) {
-            if (customModalOptions && customModalOptions.type !== null){
-                if (!_.includes(validModalTypes, customModalOptions.type)){
-                    throw 'Invalid modal type';
-                }
-            }
-
-            if (!customModalDefaults) customModalDefaults = {};
-            if (!customModalOptions) customModalOptions = {};
-
-            return show(customModalOptions, customModalDefaults);
+       @param {object} [modalOptions={}]       Optional, but caller really should provide specific button labels and text.
+       @param {object} [modalDefaults={}]      Optional, and can have one or more of the properties defined above in this class
+       */
+      function showModal (customModalOptions, customModalDefaults) {
+        if (customModalOptions && customModalOptions.type !== null) {
+          if (!_.includes(validModalTypes, customModalOptions.type)) {
+            throw 'Invalid modal type';
+          }
         }
 
+        if (!customModalDefaults) customModalDefaults = {};
+        if (!customModalOptions) customModalOptions = {};
 
-        /* Private method. Show Angular UI modal based on config options */
-        var show = function(customModalOptions, customModalDefaults) {
-            //Create temp objects to work with since we're in a singleton service
-            var tempModalDefaults = {};
-            var tempModalOptions = {};
+        return show(customModalOptions, customModalDefaults);
+      }
 
-            //Do styling and modifications specific to "errors"
-            if (customModalOptions.type === TYPE_ERROR){
-                customModalOptions.headerText = 'Error: ' + customModalOptions.headerText;
-            }
 
-            //Map angular-ui modal custom defaults to modal defaults defined in service
-            angular.extend(tempModalDefaults, modalDefaults, customModalDefaults);
+      /* Private method. Show Angular UI modal based on config options */
+      var show = function (customModalOptions, customModalDefaults) {
+        //Create temp objects to work with since we're in a singleton service
+        var tempModalDefaults = {};
+        var tempModalOptions = {};
 
-            //Map modal.html $scope custom properties to defaults defined in service
-            angular.extend(tempModalOptions, modalOptions, customModalOptions);
+        //Do styling and modifications specific to "errors"
+        if (customModalOptions.type === TYPE_ERROR) {
+          customModalOptions.headerText = 'Error: ' + customModalOptions.headerText;
+        }
 
-            tempModalDefaults.controller = function ($scope, $uibModalInstance) {
-                $scope.modalOptions = tempModalOptions;
-                $scope.modalOptions.ok = function (result) {
-                    $uibModalInstance.close(tempModalOptions.okResult);
-                };
-                $scope.modalOptions.cancel = function (result) {
-                    $uibModalInstance.dismiss('cancel');
-                };
-            };
+        //Map angular-ui modal custom defaults to modal defaults defined in service
+        angular.extend(tempModalDefaults, modalDefaults, customModalDefaults);
 
-            return $uibModal.open(tempModalDefaults).result;
+        //Map modal.html $scope custom properties to defaults defined in service
+        angular.extend(tempModalOptions, modalOptions, customModalOptions);
+
+        tempModalDefaults.controller = function ($scope, $uibModalInstance) {
+          $scope.modalOptions = tempModalOptions;
+          $scope.modalOptions.ok = function () {
+            $uibModalInstance.close(tempModalOptions.okResult);
+          };
+          $scope.modalOptions.cancel = function () {
+            $uibModalInstance.dismiss('cancel');
+          };
         };
 
+        return $uibModal.open(tempModalDefaults).result;
+      };
 
-        /* ~~~~~~~~~~ */
-        /* Public API */
-        /* ~~~~~~~~~~ */
 
-        var simple_modal_factory = {
+      /* ~~~~~~~~~~ */
+      /* Public API */
+      /* ~~~~~~~~~~ */
 
-            //properties
-            //(none)
+      var simple_modal_factory = {
 
-            //functions
-            showModal : showModal
+        //properties
+        //(none)
 
-        };
+        //functions
+        showModal: showModal
 
-        return simple_modal_factory;
+      };
+
+      return simple_modal_factory;
 
     }
-]);
+  ]);

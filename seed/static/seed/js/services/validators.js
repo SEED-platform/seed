@@ -1,17 +1,17 @@
-/*
- * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+/**
+ * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
-/*
+/**
  * Validation Libraries
  */
-/*
+/**
  * Mapping Validator
  *
  * @originals - list of str, i.e. a row of CSV data.
  * @type - the data type that they're meant to be coerced into.
  *
- * @returns - a list of strings, all the values which didn't pass the validator.
+ * @returns - a list of strings, all the values which did not pass the validator.
  */
 angular.module('mappingValidatorService', []).factory('mappingValidatorService', function () {
 
@@ -42,9 +42,7 @@ angular.module('mappingValidatorService', []).factory('mappingValidatorService',
       return item;
     };
 
-    var pass_validator = function () {
-      return true;
-    };
+    var pass_validator = _.constant(true);
 
     var results = [];
     var converter = pass_converter;

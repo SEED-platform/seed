@@ -2,17 +2,17 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
 from autoslug import AutoSlugField
 from django.db import models
-from django_extensions.db.models import TimeStampedModel
 from django.utils.translation import ugettext_lazy as _
+from django_extensions.db.models import TimeStampedModel
 
-from seed.lib.superperms.orgs.models import Organization
 from seed.landing.models import SEEDUser as User
+from seed.lib.superperms.orgs.models import Organization
 from seed.utils.generic import obj_to_dict
 
 PROJECT_NAME_MAX_LENGTH = 255

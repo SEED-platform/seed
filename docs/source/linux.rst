@@ -138,7 +138,7 @@ The SEED project relies on `redis`_ for both cache and message brokering, and
 is available as an AWS `ElastiCache`_ service or with the ``redis-server``
 Linux package. (``sudo apt-get install redis-server``)
 
-``local_untracked.py`` should be updated with the ``CACHES`` and ``BROKER_URL``
+``local_untracked.py`` should be updated with the ``CACHES`` and ``CELERY_BROKER_URL``
 settings.
 
 .. _ElastiCache: https://aws.amazon.com/elasticache/
@@ -156,7 +156,7 @@ settings.
             'TIMEOUT': 300
         }
     }
-    BROKER_URL = 'redis://127.0.0.1:6379/1'
+    CELERY_BROKER_URL = 'redis://127.0.0.1:6379/1'
 
 
 Creating the initial user
@@ -252,7 +252,7 @@ Start the web server:
 
 
 
-environmental variables
+Environmental Variables
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 The following environment variables can be set within the ``~/.bashrc`` file to
@@ -268,8 +268,8 @@ override default Django settings.
 SMTP service
 ^^^^^^^^^^^^
 
-In the AWS setup, we use SES to provide an email service Django can use as an
-email backend and configured it in our config/settings/main.py:
+In the AWS setup, we can use SES to provide an email service for Django. The service is
+configured in the config/settings/main.py:
 
 .. code-block:: python
 
@@ -320,17 +320,7 @@ local_untracked.py
             'TIMEOUT': 300
         }
     }
-
-    # redis celery config
-    BROKER_URL = 'redis://127.0.0.1:6379/1'
-    CELERY_DEFAULT_QUEUE = 'seed-dev'
-    CELERY_QUEUES = (
-        Queue(
-            CELERY_DEFAULT_QUEUE,
-            Exchange(CELERY_DEFAULT_QUEUE),
-            routing_key=CELERY_DEFAULT_QUEUE
-        ),
-    )
+    CELERY_BROKER_URL = 'redis://127.0.0.1:6379/1'
 
     # SMTP config
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

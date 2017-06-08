@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import datetime
@@ -76,7 +76,7 @@ class SchemaGenerationTests(TestCase):
                     url.startswith('/api/v2/labels')):
                 self.assertTrue(
                     url.endswith('/'),
-                    "Endpoint %s doesn't end with / as expected" % url
+                    "Endpoint %s does not end with / as expected" % url
                 )
 
     def test_get_api_schema(self):
@@ -363,7 +363,7 @@ class TestApi(TestCase):
         r = json.loads(r.content)
         organization_id = self.get_org_id(r, self.user.username)
 
-        raw_building_file = os.path.relpath(
+        raw_building_file = os.path.abspath(
             os.path.join('seed/tests/data', 'covered-buildings-sample.csv'))
         self.assertTrue(os.path.isfile(raw_building_file), 'could not find file')
 

@@ -1,5 +1,5 @@
-/*
- * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+/**
+ * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 /**
@@ -19,16 +19,16 @@
  */
 var UPLOADER_ALLOWED_EXTENSIONS = ['csv', 'xls', 'xlsx', 'xml'];
 
-var makeS3Uploader = function(scope, element, attrs, filename) {
-    var uploader = new qq.s3.FineUploader({
+var makeS3Uploader = function (scope, element) {
+  var uploader = new qq.s3.FineUploader({
     element: element[0],
     request: {
-        endpoint: document.location.protocol + '//' + window.BE.AWS_UPLOAD_BUCKET_NAME + '.s3.amazonaws.com',
-        accessKey: window.BE.AWS_CLIENT_ACCESS_KEY,
-        params: {category: 'data_imports'}
+      endpoint: document.location.protocol + '//' + window.BE.AWS_UPLOAD_BUCKET_NAME + '.s3.amazonaws.com',
+      accessKey: window.BE.AWS_CLIENT_ACCESS_KEY,
+      params: {category: 'data_imports'}
     },
     validation: {
-        allowedExtensions: UPLOADER_ALLOWED_EXTENSIONS
+      allowedExtensions: UPLOADER_ALLOWED_EXTENSIONS
     },
     /**
      * showMessage: callback override for error messages, e.g.
@@ -37,25 +37,25 @@ var makeS3Uploader = function(scope, element, attrs, filename) {
      * callback in place of `window.alert` (which in turn uses a bootstrap
      * alert).
      */
-    showMessage: function(message){
-        var invalid_extension = 'invalid extension. Valid extension(s):';
-        if (_.includes(message, invalid_extension)) {
-            scope.eventfunc({message: 'invalid_extension'});
-        } else {
-            window.alert(message);
-        }
+    showMessage: function (message) {
+      var invalid_extension = 'invalid extension. Valid extension(s):';
+      if (_.includes(message, invalid_extension)) {
+        scope.eventfunc({message: 'invalid_extension'});
+      } else {
+        window.alert(message);
+      }
     },
     text: {
-        uploadButton: scope.buttontext
+      uploadButton: scope.buttontext
     },
     retry: {
-        enableAuto: true
+      enableAuto: true
     },
     signature: {
-        endpoint: '/api/v2/sign_policy_document/',
-        customHeaders: {
-            'X-CSRFToken': BE.csrftoken
-         }
+      endpoint: '/api/v2/sign_policy_document/',
+      customHeaders: {
+        'X-CSRFToken': BE.csrftoken
+      }
     },
     /**
      * uploadSuccess: makes a POST to `data/s3_upload_complete` with the
@@ -64,28 +64,28 @@ var makeS3Uploader = function(scope, element, attrs, filename) {
      * SEED: a Portfolio Manager file or a covered assessor buildings file
      */
     uploadSuccess: {
-        endpoint: '/api/v2/s3_upload_complete/',
-        params: {
-            csrfmiddlewaretoken: BE.csrftoken,
-            import_record: scope.importrecord,
-            source_type: scope.sourcetype,
-            source_program: scope.sourceprog,
-            source_program_version: scope.sourcever
-        }
+      endpoint: '/api/v2/s3_upload_complete/',
+      params: {
+        csrfmiddlewaretoken: BE.csrftoken,
+        import_record: scope.importrecord,
+        source_type: scope.sourcetype,
+        source_program: scope.sourceprog,
+        source_program_version: scope.sourcever
+      }
     },
     iframeSupport: {
-        localBlankPathPage: '/success.html'
+      localBlankPathPage: '/success.html'
     },
     /**
      * objectProperties: sets the filename to be stored in the S3 bucket
      * i.e. the JS timestamp is appended to the uploaded filename
      */
     objectProperties: {
-        key: function(fileId) {
-                 var filename = encodeURIComponent(uploader.getName(fileId));
-                 var timestamp = Math.round(new Date().getTime() / 1000);
-                 return 'data_imports/' + filename + '.' + timestamp;
-             }
+      key: function (fileId) {
+        var filename = encodeURIComponent(uploader.getName(fileId));
+        var timestamp = Math.round(new Date().getTime() / 1000);
+        return 'data_imports/' + filename + '.' + timestamp;
+      }
     },
     /**
      * multiple: only allow one file to be uploaded at a time
@@ -93,233 +93,222 @@ var makeS3Uploader = function(scope, element, attrs, filename) {
     multiple: false,
     maxConnections: 20,
     callbacks: {
-        /**
-         * onSubmitted: overloaded callback that calls the callback defined
-         * in the element attribute. Passes as arguments to the callback
-         * a message indicating upload has started, "upload_submitted", and
-         * the filename.
-         */
-        onSubmitted: function(id, fileName) {
-            angular.element('.qq-upload-button').hide();
-            scope.eventfunc(
-                {
-                    message: 'upload_submitted',
-                    file: {filename: fileName}
-                }
-            );
-        },
-        /**
-         * onComplete: overloaded callback that calls the callback defined
-         * in the element attribute unless the upload failed, which will
-         * fire a window alert. Passes as arguments to the callback
-         * a message indicating upload has completed, "upload_complete", and
-         * the filename.
-         */
-        onComplete: function(id, fileName, responseJSON) {
-            var errored = false;
-            if(!responseJSON.success) {
-                alert('Upload failed.');
-                errored = true;
-            } else {
-                scope.eventfunc(
-                    {
-                        message: 'upload_complete',
-                        file: {
-                            filename: fileName,
-                            file_id: responseJSON.import_file_id,
-                            source_type: scope.sourcetype,
-                            source_program: scope.sourceprog,
-                            source_program_version: scope.sourcever
-                        }
-                    }
-                );
+      /**
+       * onSubmitted: overloaded callback that calls the callback defined
+       * in the element attribute. Passes as arguments to the callback
+       * a message indicating upload has started, "upload_submitted", and
+       * the filename.
+       */
+      onSubmitted: function (id, fileName) {
+        angular.element('.qq-upload-button').hide();
+        scope.eventfunc(
+          {
+            message: 'upload_submitted',
+            file: {filename: fileName}
+          }
+        );
+      },
+      /**
+       * onComplete: overloaded callback that calls the callback defined
+       * in the element attribute unless the upload failed, which will
+       * fire a window alert. Passes as arguments to the callback
+       * a message indicating upload has completed, "upload_complete", and
+       * the filename.
+       */
+      onComplete: function (id, fileName, responseJSON) {
+        if (!responseJSON.success) {
+          alert('Upload failed.');
+        } else {
+          scope.eventfunc({
+            message: 'upload_complete',
+            file: {
+              filename: fileName,
+              file_id: responseJSON.import_file_id,
+              source_type: scope.sourcetype,
+              source_program: scope.sourceprog,
+              source_program_version: scope.sourcever
             }
-        },
-        /**
-         * onProgress: overloaded callback that calls the callback defined
-         * in the element attribute. Passes as arguments to the callback
-         * a message indicating upload is in progress, "upload_in_progress",
-         * the filename, and a progress object with two keys: loaded - the
-         * bytes of the file loaded, and total - the total number of bytes
-         * for the file.
-         */
-        onProgress: function(id, fileName, loaded, total){
-            scope.eventfunc(
-                {
-                    message: 'upload_in_progress',
-                    file: {filename: fileName},
-                    progress: {
-                        loaded: loaded,
-                        total: total
-                    }
-                }
-            );
+          });
         }
+      },
+      /**
+       * onProgress: overloaded callback that calls the callback defined
+       * in the element attribute. Passes as arguments to the callback
+       * a message indicating upload is in progress, "upload_in_progress",
+       * the filename, and a progress object with two keys: loaded - the
+       * bytes of the file loaded, and total - the total number of bytes
+       * for the file.
+       */
+      onProgress: function (id, fileName, loaded, total) {
+        scope.eventfunc(
+          {
+            message: 'upload_in_progress',
+            file: {filename: fileName},
+            progress: {
+              loaded: loaded,
+              total: total
+            }
+          }
+        );
+      }
     },
     params: {
-        csrf_token: BE.csrftoken,
-        csrf_name: 'csrfmiddlewaretoken',
-        csrf_xname: 'X-CSRFToken',
-        import_record: scope.importrecord
-        }
-    });
-
-    return uploader;
-};
-
-
-var makeFileSystemUploader = function(scope, element, attrs, filename) {
-    var uploader = new qq.FineUploader({
-        element: element[0],
-        request: {
-            endpoint: '/api/v2/upload/',
-            paramsInBody: true,
-            forceMultipart: true,
-            customHeaders: {
-                'X-CSRFToken': BE.csrftoken
-             }
-        },
-        validation: {
-          allowedExtensions: UPLOADER_ALLOWED_EXTENSIONS
-        },
-        /**
-         * showMessage: callback override for error messages, e.g.
-         * "upload failed", "file too large", etc. This checks to see if the
-         * invalid extension message is the message, and uses the directive's
-         * callback in place of `window.alert` (which in turn uses a bootstrap
-         * alert).
-         */
-        showMessage: function(message){
-            var invalid_extension = 'invalid extension. Valid extension(s):';
-            if (_.includes(message, invalid_extension)) {
-                scope.eventfunc({message: 'invalid_extension'});
-            } else {
-                window.alert(message);
-            }
-        },
-        text: {
-            uploadButton: scope.buttontext
-        },
-        retry: {
-            enableAuto: true
-        },
-        iframeSupport: {
-            localBlankPathPage: '/success.html'
-        },
-        /**
-         * multiple: only allow one file to be uploaded at a time
-         */
-        multiple: false,
-        maxConnections: 20,
-        callbacks: {
-            /**
-             * onSubmitted: overloaded callback that calls the callback defined
-             * in the element attribute. Passes as arguments to the callback
-             * a message indicating upload has started, "upload_submitted", and
-             * the filename.
-             */
-            onSubmitted: function(id, fileName) {
-                angular.element('.qq-upload-button').hide();
-                scope.eventfunc(
-                    {
-                        message: 'upload_submitted',
-                        file: {filename: fileName}
-                    }
-                );
-                var params = {
-                        csrf_token: BE.csrftoken,
-                        csrf_name: 'csrfmiddlewaretoken',
-                        csrf_xname: 'X-CSRFToken',
-                        import_record: scope.importrecord,
-                        file: fileName,
-                        source_type: scope.sourcetype,
-                        source_program: scope.sourceprog,
-                        source_program_version: scope.sourcever
-                };
-
-                uploader.setParams(params); //wtf fineuploader
-            },
-            /**
-             * onComplete: overloaded callback that calls the callback defined
-             * in the element attribute unless the upload failed, which will
-             * fire a window alert. Passes as arguments to the callback
-             * a message indicating upload has completed, "upload_complete", and
-             * the filename.
-             */
-            onComplete: function(id, fileName, responseJSON) {
-                var errored = false;
-                if(!responseJSON.success) {
-                    alert('Upload failed.');
-                    errored = true;
-                } else {
-                    scope.eventfunc(
-                        {
-                            message: 'upload_complete',
-                            file: {
-                                filename: fileName,
-                                file_id: responseJSON.import_file_id,
-                                cycle_id: (scope.sourceprog == 'PortfolioManager' && scope.$parent.useField) ? 'year_ending' : scope.$parent.selectedCycle.id,
-                                source_type: scope.sourcetype,
-                                source_program: scope.sourceprog,
-                                source_program_version: scope.sourcever
-                            }
-                        }
-                    );
-                }
-            },
-            /**
-             * onProgress: overloaded callback that calls the callback defined
-             * in the element attribute. Passes as arguments to the callback
-             * a message indicating upload is in progress, "upload_in_progress",
-             * the filename, and a progress object with two keys: loaded - the
-             * bytes of the file loaded, and total - the total number of bytes
-             * for the file.
-             */
-            onProgress: function(id, fileName, loaded, total){
-                scope.eventfunc(
-                    {
-                        message: 'upload_in_progress',
-                        file: {filename: fileName},
-                        progress: {
-                            loaded: loaded,
-                            total: total
-                        }
-                    }
-                );
-            }
-        }
-    });
-    return uploader;
-};
-
-var sdUploaderFineUploader = function(scope, element, attrs, filename) {
-    var dest = window.BE.FILE_UPLOAD_DESTINATION;
-    var uploader;
-    if (dest === 'S3'){
-        uploader = makeS3Uploader(scope, element, attrs, filename);
-    } else if (dest === 'filesystem'){
-        uploader = makeFileSystemUploader(scope, element, attrs, filename);
-    } else {
-        throw 'dest ' + dest + ' not valid!';
+      csrf_token: BE.csrftoken,
+      csrf_name: 'csrfmiddlewaretoken',
+      csrf_xname: 'X-CSRFToken',
+      import_record: scope.importrecord
     }
-    $('.qq-upload-button').addClass('btn button btn-primary').css('display', 'block');
-    return uploader;
+  });
+
+  return uploader;
 };
 
-angular.module('sdUploader', []).directive('sdUploader', function() {
-    return {
-        scope: {
-            buttontext: '@',
-            sourcetype: '@',
-            eventfunc: '&',
-            importrecord: '=',
-            sourceprog: '@',
-            sourcever: '='
-        },
-        restrict: 'A',
-        link: function (scope, element, attrs) {
-            var filename;
-            $(sdUploaderFineUploader(scope, element, attrs, filename));
+
+var makeFileSystemUploader = function (scope, element) {
+  var uploader = new qq.FineUploader({
+    element: element[0],
+    request: {
+      endpoint: '/api/v2/upload/',
+      paramsInBody: true,
+      forceMultipart: true,
+      customHeaders: {
+        'X-CSRFToken': BE.csrftoken
+      }
+    },
+    validation: {
+      allowedExtensions: UPLOADER_ALLOWED_EXTENSIONS
+    },
+    /**
+     * showMessage: callback override for error messages, e.g.
+     * "upload failed", "file too large", etc. This checks to see if the
+     * invalid extension message is the message, and uses the directive's
+     * callback in place of `window.alert` (which in turn uses a bootstrap
+     * alert).
+     */
+    showMessage: function (message) {
+      var invalid_extension = 'invalid extension. Valid extension(s):';
+      if (_.includes(message, invalid_extension)) {
+        scope.eventfunc({message: 'invalid_extension'});
+      } else {
+        window.alert(message);
+      }
+    },
+    text: {
+      uploadButton: scope.buttontext
+    },
+    retry: {
+      enableAuto: true
+    },
+    iframeSupport: {
+      localBlankPathPage: '/success.html'
+    },
+    /**
+     * multiple: only allow one file to be uploaded at a time
+     */
+    multiple: false,
+    maxConnections: 20,
+    callbacks: {
+      /**
+       * onSubmitted: overloaded callback that calls the callback defined
+       * in the element attribute. Passes as arguments to the callback
+       * a message indicating upload has started, "upload_submitted", and
+       * the filename.
+       */
+      onSubmitted: function (id, fileName) {
+        angular.element('.qq-upload-button').hide();
+        scope.eventfunc(
+          {
+            message: 'upload_submitted',
+            file: {filename: fileName}
+          }
+        );
+        var params = {
+          csrf_token: BE.csrftoken,
+          csrf_name: 'csrfmiddlewaretoken',
+          csrf_xname: 'X-CSRFToken',
+          import_record: scope.importrecord,
+          file: fileName,
+          source_type: scope.sourcetype,
+          source_program: scope.sourceprog,
+          source_program_version: scope.sourcever
+        };
+
+        uploader.setParams(params); //wtf fineuploader
+      },
+      /**
+       * onComplete: overloaded callback that calls the callback defined
+       * in the element attribute unless the upload failed, which will
+       * fire a window alert. Passes as arguments to the callback
+       * a message indicating upload has completed, "upload_complete", and
+       * the filename.
+       */
+      onComplete: function (id, fileName, responseJSON) {
+        if (!responseJSON.success) {
+          alert('Upload failed.');
+        } else {
+          scope.eventfunc({
+            message: 'upload_complete',
+            file: {
+              filename: fileName,
+              file_id: responseJSON.import_file_id,
+              cycle_id: (scope.sourceprog === 'PortfolioManager' && scope.$parent.useField) ? 'year_ending' : scope.$parent.selectedCycle.id,
+              source_type: scope.sourcetype,
+              source_program: scope.sourceprog,
+              source_program_version: scope.sourcever
+            }
+          });
         }
-    };
+      },
+      /**
+       * onProgress: overloaded callback that calls the callback defined
+       * in the element attribute. Passes as arguments to the callback
+       * a message indicating upload is in progress, "upload_in_progress",
+       * the filename, and a progress object with two keys: loaded - the
+       * bytes of the file loaded, and total - the total number of bytes
+       * for the file.
+       */
+      onProgress: function (id, fileName, loaded, total) {
+        scope.eventfunc({
+          message: 'upload_in_progress',
+          file: {filename: fileName},
+          progress: {
+            loaded: loaded,
+            total: total
+          }
+        });
+      }
+    }
+  });
+  return uploader;
+};
+
+var sdUploaderFineUploader = function (scope, element, attrs, filename) {
+  var dest = window.BE.FILE_UPLOAD_DESTINATION;
+  var uploader;
+  if (dest === 'S3') {
+    uploader = makeS3Uploader(scope, element, attrs, filename);
+  } else if (dest === 'filesystem') {
+    uploader = makeFileSystemUploader(scope, element, attrs, filename);
+  } else {
+    throw 'dest ' + dest + ' not valid!';
+  }
+  $('.qq-upload-button').addClass('btn button btn-primary').css('display', 'block');
+  return uploader;
+};
+
+angular.module('sdUploader', []).directive('sdUploader', function () {
+  return {
+    scope: {
+      buttontext: '@',
+      sourcetype: '@',
+      eventfunc: '&',
+      importrecord: '=',
+      sourceprog: '@',
+      sourcever: '='
+    },
+    restrict: 'A',
+    link: function (scope, element, attrs) {
+      $(sdUploaderFineUploader(scope, element, attrs));
+    }
+  };
 });

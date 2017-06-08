@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 
 Search methods pertaining to buildings.
@@ -457,8 +457,8 @@ def build_json_params(order_by, sort_reverse):
     """returns db_columns, extra_data_sort, and updated order_by
 
     :param str order_by: field to order_by
-    :returns: tuple: db_columns: dict of known DB columns i.e. non-JsonField,
-        extra_data_sort bool if order_by is in ``extra_data`` JsonField,
+    :returns: tuple: db_columns: dict of known DB columns i.e. non-JSONField,
+        extra_data_sort bool if order_by is in ``extra_data`` JSONField,
         order_by str if sort_reverse and DB column prepend a '-' for the django
         order_by
     """
@@ -495,7 +495,7 @@ def search_public_buildings(request, orgs):
     params = parse_body(request)
     other_search_params = params['other_search_params']
     # add some filters to the dict of known column names so search_buildings
-    # doesn't think they are part of extra_data
+    # does not think they are part of extra_data
     db_columns, extra_data_sort, params['order_by'] = build_json_params(
         params['order_by'], params['sort_reverse']
     )
@@ -668,7 +668,7 @@ def orchestrate_search_filter_sort(params, user, skip_sort=False):
     """
     other_search_params = params['other_search_params']
     # add some filters to the dict of known column names so search_buildings
-    # doesn't think they are part of extra_data
+    # does not think they are part of extra_data
     db_columns, extra_data_sort, params['order_by'] = build_json_params(
         params['order_by'], params['sort_reverse']
     )

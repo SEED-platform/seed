@@ -6,7 +6,6 @@ Modules
     :maxdepth: 3
 
     modules/seed.audit_logs
-    modules/seed.cleansing
     modules/config
     modules/seed.data
     modules/seed.data_importer

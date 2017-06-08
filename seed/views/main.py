@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -57,10 +57,7 @@ _log = logging.getLogger(__name__)
 
 
 def angular_js_tests(request):
-    """Jasmine JS unit test code covering AngularJS unit tests and ran
-       by ./manage.py harvest
-
-    """
+    """Jasmine JS unit test code covering AngularJS unit tests"""
     return render_to_response(
         'seed/jasmine_tests/AngularJSTests.html',
         locals(), context_instance=RequestContext(request),
@@ -77,7 +74,7 @@ def _get_default_org(user):
     """
     org = user.default_organization
     # check if user is still in the org, i.e. s/he wasn't removed from his/her
-    # default org or didn't have a set org and try to set the first one
+    # default org or did not have a set org and try to set the first one
     if not org or not user.orgs.exists():
         org = user.orgs.first()
         user.default_organization = org
@@ -200,7 +197,7 @@ def export_buildings(request):
     export_id = str(uuid.uuid4())
 
     # If we receive a project ID, we don't actually want to export buildings,
-    # we want to export ProjectBuildings -- but the frontend doesn't know that,
+    # we want to export ProjectBuildings -- but the frontend does not know that,
     # so we change the fieldnames on the backend instead so the exporter can
     # resolve them correctly
     if project_id:
@@ -501,7 +498,7 @@ def get_default_columns(request):
     if columns == '{}' or isinstance(columns, dict):
         columns = DEFAULT_CUSTOM_COLUMNS
     if isinstance(columns, unicode):
-        # PostgreSQL 9.1 stores JsonField as unicode
+        # PostgreSQL 9.1 stores JSONField as unicode
         columns = json.loads(columns)
 
     return {
@@ -528,7 +525,7 @@ def get_default_building_detail_columns(request):
         # Return empty result, telling the FE to show all.
         columns = []
     if isinstance(columns, unicode):
-        # PostgreSQL 9.1 stores JsonField as unicode
+        # PostgreSQL 9.1 stores JSONField as unicode
         columns = json.loads(columns)
 
     return {
@@ -1045,7 +1042,7 @@ def delete_buildings(request):
 #         pass
 
 #     # First get all building records for the orginization in the date range
-#     # Can't just look for those that aren't null since one of the things that
+#     # Can't just look for those that are not null since one of the things that
 #     # needs to get reported is how many for a given year do not have data
 #     # (i.e. have a null value for either x_var or y_var
 #     bldgs = BuildingSnapshot.objects.filter(
@@ -1153,7 +1150,7 @@ def delete_buildings(request):
 #             current_canonical_bldg = canonical_building
 
 #             # progress up the the tree processing merged snapshots until there
-#             # aren't any more
+#             # are not any more
 #             while current_canonical_bldg:
 #                 # unmerged_snapshots = bldg.parents.filter(parents__isnull = True)
 #                 previous_canonical_bldg = current_canonical_bldg.parents.filter(

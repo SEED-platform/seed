@@ -1,43 +1,41 @@
 # Django
-Django==1.9.5
-
-# Forms
-django_compressor==2.0
-django-extensions==1.6.1
-django-redis-cache==1.6.5
-django-ses==0.4.1
-django-sslify==0.2
-
-# For the persistence stores
-psycopg2==2.6.1
-
-# Unicode slugification
+django==1.9.13
+dj-database-url==0.4.2
 django-autoslug==1.9.3
+django-storages==1.5.2
+modeltranslation==0.25
+-e git+https://github.com/revsys/django-tos.git#egg=django_tos-master
 
-# Time zones support
-pytz==2012h
+# Persistence stores
+psycopg2==2.7.1
 
 # background process management
-celery==3.1.20
+celery==4.0.2
+django-redis-cache==1.7.1
+django_compressor==2.1.1
+django-extensions==1.7.9
 redis==2.10.5
-flower==0.8.4
-kombu==3.0.32
 
-# Custom
-boto==2.39.0
-dj-database-url==0.2.1
+# Time zones support
+# Do NOT upgrade pytz. Newer versions will not create allow user to construct a datetime with
+# a timezone other than UTC (https://stackoverflow.com/questions/24856643/unexpected-results-converting-timezones-in-python/24856805)
+# If we upgrade, then we must update the code to work in UTC, not local datetime.
+pytz==2012h
+
+# API
 djangorestframework==3.3.3
 django-rest-swagger==0.3.8
-django-pgjson==0.3.1
-django-storages==1.4
--e git+https://github.com/revsys/django-tos.git#egg=django_tos-master
-jellyfish==0.3.2
-python-dateutil>=2.4
-raven==5.9.0
+
+# Server monitoring
+raven==6.1.0
+
+# Various packages
+jellyfish==0.5.6
+python-dateutil==2.6.0
 street-address==0.3.0
-unicodecsv==0.9.4
+unicodecsv==0.14.1
+unidecode==0.4.20
 usaddress==0.5.10
-xlrd==0.9.4
-xlwt==0.7.5
-xmltodict==0.9.0
-unidecode==0.04.19
+xlwt==1.2.0
+xlrd==1.0.0
+xmltodict==0.11.0

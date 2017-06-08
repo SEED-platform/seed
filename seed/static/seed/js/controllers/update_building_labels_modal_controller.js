@@ -1,5 +1,5 @@
-/*
- * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+/**
+ * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.update_building_labels_modal', [])
@@ -25,7 +25,6 @@ angular.module('BE.seed.controller.update_building_labels_modal', [])
       //convenience refs for the parts of the search object we're concerned about in this controller
       var selected_buildings = search.selected_buildings;
       var select_all_checkbox = search.select_all_checkbox;
-      var filter_params = search.filter_params;
 
       //If the user has checkmarked individual buildings, bind how many buildings are selected.
       //Otherwise, UI will show default message ("..from selected buildings")
@@ -72,7 +71,7 @@ angular.module('BE.seed.controller.update_building_labels_modal', [])
             $scope.labels.unshift(createdLabel);
             $scope.initialize_new_label();
           },
-          function (data, status) {
+          function (data) {
             // reject promise
             // label name already exists
             if (data.message === 'label already exists') {
