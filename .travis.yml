@@ -1,4 +1,4 @@
-sudo: false
+sudo: true
 dist: trusty
 cache:
   directories:
@@ -37,7 +37,7 @@ install:
   - pip install tox==2.7.0
   - npm install npm@latest -g
   - nvm install stable
-  - apt-get install -y lcov
+  - sudo apt-get install -y lcov
   - gem install coveralls-lcov 
 before_script:
   - export DISPLAY=:99.0
