@@ -15,4 +15,4 @@ echo "starting server"
 ./manage.py runserver & &> main.log
 sleep 15
 echo "run e2e tests"
-grunt test
+./node_modules/grunt/bin/grunt test
