@@ -24,7 +24,6 @@
     "grunt-contrib-copy": "^1.0.0",
     "grunt-coveralls": "^1.0.1",
     "grunt-istanbul": "^0.7.2",
-    "grunt-istanbul-combine": "^0.1.0",
     "grunt-protractor-coverage": "^0.2.17",
     "gulp": "^3.9.1",
     "gulp-autoprefixer": "^3.1.0",
