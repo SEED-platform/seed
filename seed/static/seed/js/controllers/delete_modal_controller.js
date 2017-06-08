@@ -1,5 +1,5 @@
-/*
- * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+/**
+ * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.delete_modal', [])
@@ -26,7 +26,7 @@ angular.module('BE.seed.controller.delete_modal', [])
           $scope.deletedProperties = 0;
           $scope.deletedTaxlots = 0;
           _.forEach(results, function (result, index) {
-            if (result.data.status == 'success') {
+            if (result.data.status === 'success') {
               if (index == 0 && $scope.property_states.length) $scope.deletedProperties = result.data.properties;
               else $scope.deletedTaxlots = result.data.taxlots;
             }

@@ -1,3 +1,7 @@
+/**
+ * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :author
+ */
 // create and test new dataset with import
 var EC = protractor.ExpectedConditions;
 
@@ -8,7 +12,7 @@ var remote = require('selenium-webdriver/remote');
 // Select my new sub org
 describe('When I click the orgs button', function () {
 
-  it ('should reset sync', function () {
+  it('should reset sync', function () {
     browser.ignoreSynchronization = false;
   });
 
@@ -22,7 +26,7 @@ describe('When I click the orgs button', function () {
 
 describe('When I visit the data set page', function () {
 
-  it ('should reset sync', function () {
+  it('should reset sync', function () {
     browser.ignoreSynchronization = false;
   });
 
@@ -33,11 +37,11 @@ describe('When I visit the data set page', function () {
     // selectDropdownbyText(element, browser.params.testOrg.cycle);
     expect(element(by.cssContainingText('option', browser.params.testOrg.cycle)).isPresent()).toBe(true);
     element(by.cssContainingText('option', browser.params.testOrg.cycle)).click();
-    / $('[buttontext="Upload a Spreadsheet"]').$('.qq-uploader').click();
+    // $('[buttontext="Upload a Spreadsheet"]').$('.qq-uploader').click();
   });
 
   // manually
-  it ('should reset sync', function () {
+  it('should reset sync', function () {
     browser.ignoreSynchronization = true;
   });
 
@@ -55,7 +59,7 @@ describe('When I visit the data set page', function () {
     expect($('[ng-click="goto_data_mapping()"]').isPresent()).toBe(true);
   });
 
-  it ('should reset sync', function () {
+  it('should reset sync', function () {
     browser.ignoreSynchronization = false;
   });
 
@@ -81,7 +85,7 @@ describe('When I visit the data set page', function () {
 
 
   // manually
-  it ('should reset sync', function () {
+  it('should reset sync', function () {
     browser.ignoreSynchronization = true;
   });
 
@@ -93,7 +97,7 @@ describe('When I visit the data set page', function () {
   });
 
 
-  it ('should reset sync', function () {
+  it('should reset sync', function () {
     browser.ignoreSynchronization = false;
   });
 
@@ -107,7 +111,7 @@ describe('When I visit the data set page', function () {
   });
 
   // manually
-  it ('should reset sync', function () {
+  it('should reset sync', function () {
     browser.ignoreSynchronization = true;
   });
 
@@ -129,7 +133,7 @@ describe('When I visit the data set page', function () {
     expect($('[ng-click="goto_data_mapping()"]').isPresent()).toBe(true);
   });
 
-  it ('should reset sync', function () {
+  it('should reset sync', function () {
     browser.ignoreSynchronization = false;
   });
 
@@ -151,7 +155,7 @@ describe('When I visit the data set page', function () {
     $$('[ng-click="remap_buildings()"]').first().click();
   });
 
-  it ('should reset sync', function () {
+  it('should reset sync', function () {
     browser.ignoreSynchronization = true;
   });
 
@@ -165,7 +169,7 @@ describe('When I visit the data set page', function () {
     });
   });
 
-  it ('should reset sync', function () {
+  it('should reset sync', function () {
     browser.ignoreSynchronization = false;
   });
 

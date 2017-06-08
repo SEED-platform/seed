@@ -1,5 +1,5 @@
 """
-:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from __future__ import absolute_import
@@ -17,6 +17,7 @@ SITE_ROOT = abspath(join(dirname(__file__), "..", ".."))
 SESSION_COOKIE_DOMAIN = None
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
+# TODO: remove managers, admins in config files.
 ADMINS = (
     # ('Your Name', 'your_email@domain.com'),
 )
@@ -26,7 +27,6 @@ MANAGERS = ADMINS
 WSGI_APPLICATION = 'config.wsgi.application'
 
 TIME_ZONE = 'America/Los_Angeles'
-# TIME_ZONE = 'UTC'
 USE_TZ = True
 LANGUAGE_CODE = 'en-us'
 SITE_ID = 1
@@ -183,15 +183,15 @@ APPEND_SLASH = True
 PASSWORD_RESET_EMAIL = 'reset@seedplatform.org'
 SERVER_EMAIL = 'no-reply@seedplatform.org'
 
-CELERYD_MAX_TASKS_PER_CHILD = 1
+CELERY_WORKER_MAX_TASKS_PER_CHILD = 1
 
 # Default queue
-CELERY_DEFAULT_QUEUE = 'seed-common'
-CELERY_QUEUES = (
+CELERY_TASK_DEFAULT_QUEUE = 'seed-common'
+CELERY_TASK_QUEUES = (
     Queue(
-        CELERY_DEFAULT_QUEUE,
-        Exchange(CELERY_DEFAULT_QUEUE),
-        routing_key=CELERY_DEFAULT_QUEUE
+        CELERY_TASK_DEFAULT_QUEUE,
+        Exchange(CELERY_TASK_DEFAULT_QUEUE),
+        routing_key=CELERY_TASK_DEFAULT_QUEUE
     ),
 )
 
@@ -203,10 +203,8 @@ register('seed_json', CeleryDatetimeSerializer.seed_dumps,
 CELERY_ACCEPT_CONTENT = ['seed_json']
 CELERY_TASK_SERIALIZER = 'seed_json'
 CELERY_RESULT_SERIALIZER = 'seed_json'
-CELERY_TASK_RESULT_EXPIRES = 86400  # 24 hours
-CELERY_MESSAGE_COMPRESSION = 'gzip'
-
-BROKER_URL = 'amqp://guest:guest@localhost:5672//'
+CELERY_RESULT_EXPIRES = 86400  # 24 hours
+CELERY_TASK_COMPRESSION = 'gzip'
 
 LOG_FILE = join(SITE_ROOT, '../logs/py.log/')
 

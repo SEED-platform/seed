@@ -1,22 +1,20 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
-# django imports
 from django.conf import settings
-from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import PermissionDenied
 from django.db import models
 from django.db.models.query import QuerySet
-
-# vendor imports
 from django_extensions.db.models import TimeStampedModel
-from django_pgjson.fields import JsonField
+
 from seed.lib.superperms.orgs.models import Organization
 
 USER_MODEL = getattr(settings, 'AUTH_USER_MODEL', User)
@@ -36,7 +34,6 @@ ACTION_OPTIONS = {
 
 
 class AuditLogQuerySet(QuerySet):
-
     def update(self, *args, **kwargs):
         """only notes should be updated, so filter out non-notes"""
         self = self.filter(audit_type=NOTE)
@@ -51,7 +48,7 @@ class AuditLogManager(models.Manager):
         return AuditLogQuerySet(model=self.model, using=self._db)
 
     def log_action(self, request, conent_object, organization_id,
-                   action_response=None, action_note=None, audit_type=LOG):
+                   action_note=None, audit_type=LOG):
         if not action_note:
             action_note = ACTION_OPTIONS.get(request.path)
         return AuditLog.objects.create(
@@ -59,7 +56,6 @@ class AuditLogManager(models.Manager):
             content_object=conent_object,
             audit_type=audit_type,
             action=request.path,
-            action_response=action_response,
             action_note=action_note,
             organization_id=organization_id,
         )
@@ -82,7 +78,7 @@ class AuditLog(TimeStampedModel):
         help_text='method triggering audit',
         db_index=True,
     )
-    action_response = JsonField(default={}, help_text='HTTP response from action')
+    action_response = JSONField(default=dict, help_text='HTTP response from action')
     action_note = models.TextField(
         blank=True,
         null=True,
@@ -94,7 +90,7 @@ class AuditLog(TimeStampedModel):
     )
 
     class Meta:
-        ordering = ('-created', )
+        ordering = ('-created',)
 
     objects = AuditLogManager()
 

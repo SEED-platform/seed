@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -57,10 +57,7 @@ _log = logging.getLogger(__name__)
 
 
 def angular_js_tests(request):
-    """Jasmine JS unit test code covering AngularJS unit tests and ran
-       by ./manage.py harvest
-
-    """
+    """Jasmine JS unit test code covering AngularJS unit tests"""
     return render_to_response(
         'seed/jasmine_tests/AngularJSTests.html',
         locals(), context_instance=RequestContext(request),
@@ -501,7 +498,7 @@ def get_default_columns(request):
     if columns == '{}' or isinstance(columns, dict):
         columns = DEFAULT_CUSTOM_COLUMNS
     if isinstance(columns, unicode):
-        # PostgreSQL 9.1 stores JsonField as unicode
+        # PostgreSQL 9.1 stores JSONField as unicode
         columns = json.loads(columns)
 
     return {
@@ -528,7 +525,7 @@ def get_default_building_detail_columns(request):
         # Return empty result, telling the FE to show all.
         columns = []
     if isinstance(columns, unicode):
-        # PostgreSQL 9.1 stores JsonField as unicode
+        # PostgreSQL 9.1 stores JSONField as unicode
         columns = json.loads(columns)
 
     return {

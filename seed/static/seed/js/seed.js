@@ -1,5 +1,5 @@
-/*
- * :copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+/**
+ * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 /**
@@ -112,6 +112,7 @@ angular.module('BE.seed.services', [
   'BE.seed.service.organization',
   'BE.seed.service.pairing',
   'BE.seed.service.project',
+  'BE.seed.service.search',
   'BE.seed.service.simple_modal',
   'BE.seed.service.uploader',
   'BE.seed.service.user',
@@ -1128,7 +1129,7 @@ SEED_app.constant('urls', {
 SEED_app.constant('generated_urls', window.BE.app_urls);
 
 SEED_app.constant('naturalSort', function (a, b) {
-  /*
+  /**
    * Natural Sort algorithm for Javascript - Version 0.8.1 - Released under MIT license
    * Author: Jim Palmer (based on chunking idea from Dave Koelle)
    */

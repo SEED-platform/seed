@@ -1,3 +1,7 @@
+/**
+ * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :author
+ */
 //admin delete test orgs
 
 var EC = protractor.ExpectedConditions;
@@ -6,7 +10,7 @@ var EC = protractor.ExpectedConditions;
 // Admin page last:
 describe('When I go to admin page', function () {
   // manually
-  it ('should reset sync', function () {
+  it('should reset sync', function () {
     browser.ignoreSynchronization = false;
   });
 
@@ -75,7 +79,7 @@ describe('When I go to admin page', function () {
   }, 30000);
 
   // manually
-  it ('should reset sync', function () {
+  it('should reset sync', function () {
     browser.ignoreSynchronization = true;
   });
 

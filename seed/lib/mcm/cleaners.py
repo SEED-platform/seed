@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import re
@@ -53,7 +53,7 @@ def float_cleaner(value, *args):
     if value is None:
         return None
 
-    if isinstance(value, basestring):
+    if isinstance(value, (str, unicode)):
         value = PUNCT_REGEX.sub('', value)
 
     try:
@@ -91,7 +91,7 @@ def date_cleaner(value, *args):
 
     try:
         # the dateutil parser only parses strings, make sure to return None if not a string
-        if isinstance(value, basestring):
+        if isinstance(value, (str, unicode)):
             value = dateutil.parser.parse(value)
             value = timezone.make_aware(value, timezone.get_current_timezone())
         else:
@@ -108,7 +108,7 @@ def int_cleaner(value, *args):
     if value is None:
         return None
 
-    if isinstance(value, basestring):
+    if isinstance(value, (str, unicode)):
         value = PUNCT_REGEX.sub('', value)
 
     try:

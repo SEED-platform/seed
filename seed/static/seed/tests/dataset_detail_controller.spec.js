@@ -1,5 +1,6 @@
 /**
- * :copyright: (c) 2014 Building Energy Inc
+ * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :author
  */
 describe('controller: dataset_detail_controller', function () {
   // globals set up and used in each test scenario
@@ -45,7 +46,7 @@ describe('controller: dataset_detail_controller', function () {
           var fake_dataset = {
             name: 'DC 2013 data',
             last_modified: (new Date()).getTime(),
-            last_modified_by: 'john.s@buildingenergy.com',
+            last_modified_by: 'demo@seed-platform.org',
             number_of_buildings: 89,
             id: 1,
             importfiles: fake_importfiles
@@ -90,7 +91,7 @@ describe('controller: dataset_detail_controller', function () {
     var fake_dataset = {
       name: 'DC 2013 data',
       last_modified: (new Date()).getTime(),
-      last_modified_by: 'john.s@buildingenergy.com',
+      last_modified_by: 'demo@seed-platform.org',
       number_of_buildings: 89,
       id: 1,
       importfiles: fake_importfiles
@@ -105,7 +106,7 @@ describe('controller: dataset_detail_controller', function () {
     });
   }
 
-  /*
+  /**
    * Test scenarios
    */
    // Tested in e2e
