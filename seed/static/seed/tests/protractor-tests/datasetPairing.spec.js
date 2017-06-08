@@ -12,6 +12,13 @@ describe('When I go to the dataset options page', function () {
     browser.ignoreSynchronization = false;
   });
 
+  it('should delete a single file', function () {
+    browser.get('/app/#/data');
+    $$('[ui-sref="dataset_detail({dataset_id: d.id})"]').first().click();
+    var rows = element.all(by.repeater('f in dataset.importfiles'));
+    expect(rows.count()).toBe(2);
+  });
+
   //Pairing
   it('should edit pairing', function () {
     $$('#data-pairing-0').first().click();
@@ -31,7 +38,7 @@ describe('When I go to the dataset options page', function () {
     $$('[ng-model="col.searchText"]').first().click().sendKeys('elm');
     expect(leftRows.count()).toBe(3);
     $$('[ng-model="col.searchText"]').get(4).click().sendKeys('33');
-    expect(rightRows.count()).toBe(9);
+    expect(rightRows.count()).toBe(5);
     $$('[ng-model="col.searchText"]').first().clear();
     $$('[ng-model="col.searchText"]').get(4).clear();
   });

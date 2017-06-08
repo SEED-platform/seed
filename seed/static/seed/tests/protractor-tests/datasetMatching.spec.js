@@ -12,6 +12,13 @@ describe('When I go to the matching page', function () {
     browser.ignoreSynchronization = false;
   });
 
+  it('should delete a single file', function () {
+    browser.get('/app/#/data');
+    $$('[ui-sref="dataset_detail({dataset_id: d.id})"]').first().click();
+    var rows = element.all(by.repeater('f in dataset.importfiles'));
+    expect(rows.count()).toBe(2);
+  });
+
   //Matching
   it('should go to matching and have rows', function () {
     $$('#data-matching-0').first().click();
@@ -51,7 +58,7 @@ describe('When I go to the matching page', function () {
     expect(rows.count()).toBe(1);
     $$('[ng-model="col.searchText"]').get(4).click().clear();
     $$('[ng-model="col.searchText"]').get(9).click().clear();
-    expect(rows.count()).toBe(18);
+    expect(rows.count()).toBe(17);
     $$('[ng-click="sortData(col.name)"]').get(4).click();
     browser.wait(EC.presenceOf($('.arrow-up')), 10000);
     
