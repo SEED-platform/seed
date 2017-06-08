@@ -24,6 +24,18 @@ describe('When I go to the dataset options page', function () {
     expect($('.pairing-text-right').getText()).toContain('Showing 11 Tax Lots');
   });
 
+  it('should test filters and sort on left and right table', function () {
+    var leftRows = element.all(by.repeater('row in newLeftData'));
+    var rightRows = element.all(by.repeater('row in rightData'));
+    expect(leftRows.count()).toBe(19);
+    $$('[ng-model="col.searchText"]').first().click().sendKeys('elm');
+    expect(leftRows.count()).toBe(3);
+    $$('[ng-model="col.searchText"]').get(4).click().sendKeys('33');
+    expect(rightRows.count()).toBe(9);
+    $$('[ng-model="col.searchText"]').first().clear();
+    $$('[ng-model="col.searchText"]').get(4).clear();
+  });
+
   it('should edit delete pairings', function () {
     $$('.unpair-child').count().then( function (count) {
       for (var index = 0; index < count; index++) {
