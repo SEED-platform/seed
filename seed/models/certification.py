@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2016, The Regents of the University of California,
+:copyright (c) 2014 - 2017, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
@@ -174,7 +174,7 @@ class GreenAssessmentProperty(models.Model):
     # optional expiration date
     _expiration_date = models.DateField(null=True, blank=True)
     # Allow for use defined fields
-    extra_data = JSONField(default={}, blank=True)
+    extra_data = JSONField(default=dict, blank=True)
 
     @property
     def expiration_date(self):
@@ -333,7 +333,7 @@ class GreenAssessmentProperty(models.Model):
         if isinstance(sub_name, basestring):
             sub = sub_name
         elif sub_name:
-            sub= sub = "".join([word.title() for word in self.name.split()])
+            sub = sub = "".join([word.title() for word in self.name.split()])
         else:
             sub = ''
         url_field = 'GreenVerification{}URL'.format(sub)

@@ -217,6 +217,7 @@ class FakePropertyAuditLogFactory(BaseFake):
     """
     Factory Class for producing Property Audit Log instances.
     """
+
     def __init__(self, organization=None, user=None):
         self.organization = organization
         self.state_factory = FakePropertyStateFactory(organization=organization)
@@ -536,6 +537,7 @@ class FakeTaxLotStateFactory(BaseFake):
     """
     Factory Class for producing TaxLotState instances.
     """
+
     def __init__(self, organization=None):
         super(FakeTaxLotStateFactory, self).__init__()
         self.organization = organization

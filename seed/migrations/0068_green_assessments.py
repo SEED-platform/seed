@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 from django.conf import settings
 from django.db import migrations, models
 import django.db.models.deletion
-import django.contrib.postgres.fields.jsonb
+import django.contrib.postgres.fields
 
 
 class Migration(migrations.Migration):
@@ -45,7 +45,7 @@ class Migration(migrations.Migration):
                 ('target_date', models.DateField(blank=True, null=True)),
                 ('eligibility', models.NullBooleanField()),
                 ('_expiration_date', models.DateField(blank=True, null=True)),
-                ('extra_data', django.contrib.postgres.fields.jsonb.JSONField(blank=True, default={})),
+                ('extra_data', django.contrib.postgres.fields.JSONField(blank=True, default=dict)),
                 ('assessment', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='seed.GreenAssessment')),
                 ('view', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='seed.PropertyView')),
             ],
