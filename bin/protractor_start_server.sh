@@ -16,10 +16,10 @@ echo "starting server"
 sleep 15
 echo "run e2e tests"
 ./node_modules/grunt/bin/grunt test
-echo "install coverall merge stuffs"
-gem install coveralls-lcov 
+# echo "install coverall merge stuffs"
+# gem install coveralls-lcov 
 # pip install coveralls-merge
-echo "run lcov to coveralls json"
-coveralls-lcov -v -n protractorReports/lcov.info > coverage.protractor.json
+# echo "run lcov to coveralls json"
+# coveralls-lcov -v -n protractorReports/lcov.info > coverage.protractor.json
 # echo "merge and post coveralls"
 # coveralls-merge coverage.protractor.json

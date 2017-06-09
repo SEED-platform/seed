@@ -45,3 +45,8 @@ before_script:
   - mv config/settings/test_local_untracked.py config/settings/local_untracked.py
 script:
   - tox -e $TOX_ENV
+after_script:
+  - gem install coveralls-lcov 
+  - pip install coveralls-merge
+  - coveralls-lcov -v -n protractorReports/lcov.info > coverage.protractor.json
+  - coveralls-merge coverage.protractor.json
