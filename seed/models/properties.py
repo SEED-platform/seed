@@ -249,8 +249,6 @@ class PropertyView(models.Model):
     cycle = models.ForeignKey(Cycle)
     state = models.ForeignKey(PropertyState)
 
-    # labels = models.ManyToManyField(StatusLabel)
-
     def __unicode__(self):
         return u'Property View - %s' % self.pk
 
@@ -337,3 +335,14 @@ class PropertyAuditLog(models.Model):
     record_type = models.IntegerField(choices=DATA_UPDATE_TYPE, null=True,
                                       blank=True)
     created = models.DateTimeField(auto_now_add=True, null=True)
+
+
+class BuildingSyncFile(models.Model):
+    # def upload_path(self):
+    #     if not self.pk:
+    #         i = BuildingSyncFile.objects.create()
+    #         self.id = self.pk = i.id
+    #     return "properties/%s/buildingsync" % str(self.id)
+    simulation = models.ForeignKey(PropertyState, related_name='buildingsync_file')
+    file = models.FileField(upload_to="buildingsync_files", max_length=500, blank=True, null=True)
+    file_size_in_bytes = models.IntegerField(blank=True, null=True)

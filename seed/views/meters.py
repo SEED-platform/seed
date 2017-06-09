@@ -14,7 +14,7 @@ from seed.models import (
     ENERGY_TYPES,
     ENERGY_UNITS,
     obj_to_dict,
-    BuildingSnapshot,
+    PropertyView,
     Meter,
     TimeSeries
 )
@@ -28,17 +28,20 @@ def get_meters(request):
 
     Expected GET params:
 
-    building_id: int, unique identifier for a (canonical) building.
+    building_id: int, unique identifier for a property view
     """
     building_id = request.GET.get('building_id', '')
     if not building_id:
-        return {'status': 'error', 'message': 'No building id specified'}
+        return {
+            'status': 'error',
+            'message': 'No building id specified'
+        }
 
     return {
-        'status': 'success', 'building_id': building_id, 'meters': [
-            obj_to_dict(m) for m in Meter.objects.filter(
-                building_snapshot=building_id
-            )
+        'status': 'success',
+        'building_id': building_id,
+        'meters': [
+            obj_to_dict(m) for m in Meter.objects.filter(property_view=building_id)
         ]
     }
 
@@ -46,16 +49,14 @@ def get_meters(request):
 def _convert_energy_data(name, mapping):
     """Converts human name to integer for DB.
 
-    :parm name: str, the unit or type name from JS.
-    :param mapping: tuple of tuples used for Django Meter choices.
-    :returns: int, the intereger value of the string stored in the DB.
-
     ``mapping`` looks like ((3, 'Electricity'), (4, 'Natural Gas'))
     See ``ENERGY_TYPES`` and ``ENERGY_UNITS`` in ``seed.models``.
+
+    :parm name: str, the unit or type name from JS.
+    :param mapping: tuple of tuples used for Django Meter choices.
+    :return: int, the intereger value of the string stored in the DB.
     """
-    return filter(
-        lambda x: x[1] == name, [t for t in mapping]
-    )[0][0]
+    return filter(lambda x: x[1] == name, [t for t in mapping])[0][0]
 
 
 @ajax_request
@@ -77,7 +78,7 @@ def add_meter_to_building(request):
     body = json.loads(request.body)
     building_id = body.get('building_id', '')
 
-    building = BuildingSnapshot.objects.get(pk=building_id)
+    property_view = PropertyView.objects.get(pk=building_id)
 
     meter_name = body.get('meter_name', '')
     energy_type_name = body.get('energy_type', 'Electricity')
@@ -86,12 +87,12 @@ def add_meter_to_building(request):
     energy_type = _convert_energy_data(energy_type_name, ENERGY_TYPES)
     energy_units = _convert_energy_data(energy_unit_name, ENERGY_UNITS)
 
-    meter = Meter.objects.create(
-        name=meter_name, energy_type=energy_type, energy_units=energy_units
+    Meter.objects.create(
+        name=meter_name,
+        energy_type=energy_type,
+        energy_units=energy_units,
+        property_view=property_view
     )
-
-    meter.building_snapshot.add(building)
-    meter.save()
 
     return {'status': 'success'}
 

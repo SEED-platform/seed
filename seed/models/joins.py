@@ -10,6 +10,8 @@ import logging
 
 from django.db import models
 
+# from seed.models.measures import Measure
+
 logger = logging.getLogger(__name__)
 
 
@@ -29,3 +31,23 @@ class TaxLotProperty(models.Model):
 
     class Meta:
         unique_together = ('property_view', 'taxlot_view',)
+
+
+RECOMMENDED = 1
+PROPOSED = 2
+IMPLEMENTED = 3
+
+IMPLEMENTATION_TYPES = (
+    (RECOMMENDED, 'Recommended'),
+    (PROPOSED, 'Proposed'),
+    (IMPLEMENTED, 'Implemented'),
+)
+
+
+class PropertyMeasure(models.Model):
+    measure = models.ForeignKey('Measure', on_delete=models.DO_NOTHING)
+    property_state = models.ForeignKey('PropertyState', on_delete=models.DO_NOTHING)
+    implementation_status = models.IntegerField(choices=IMPLEMENTATION_TYPES, default=RECOMMENDED)
+
+    def __unicode__(self):
+        return u'Measure %s / PropertyState %s' % (self.name, self.pk)

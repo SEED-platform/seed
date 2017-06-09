@@ -11,14 +11,17 @@ from django.test import TestCase
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
-    ELECTRICITY, KILOWATT_HOURS, BuildingSnapshot, Meter, TimeSeries
+    ELECTRICITY,
+    KILOWATT_HOURS,
+    PropertyState,
+    Meter,
+    TimeSeries,
 )
 from seed.tests.util import FakeRequest
 from seed.views import meters
 
 
 class TestMeterViews(TestCase):
-
     def setUp(self):
         super(TestMeterViews, self).setUp()
         self.org = Organization.objects.create()
@@ -26,6 +29,9 @@ class TestMeterViews(TestCase):
         self.fake_user.active = True
         self.fake_user.save()
         self.org.add_member(self.fake_user)
+        self.cycle = self.org.cycles.first()
+
+        self.maxDiff = None
 
     def test_get_meters_no_building(self):
         """We throw an error when there's no building id passed in."""
@@ -42,54 +48,55 @@ class TestMeterViews(TestCase):
 
     def test_get_meters(self):
         """We get a meter that we saved back."""
-        bs = BuildingSnapshot.objects.create()
-        bs.super_organization = self.org
-        bs.save()
+        ps = PropertyState.objects.create(organization=self.org)
+        property_view = ps.promote(self.cycle)
 
         meter = Meter.objects.create(
-            name='tester', energy_type=ELECTRICITY, energy_units=KILOWATT_HOURS
+            name='tester',
+            energy_type=ELECTRICITY,
+            energy_units=KILOWATT_HOURS,
+            property_view=property_view,
         )
-        meter.building_snapshot.add(bs)
 
         expected = {
-            'status': 'success',
-            'building_id': bs.pk,
-            'meters': [
+            "status": "success",
+            "building_id": property_view.pk,
+            "meters": [
                 {
-                    'name': meter.name,
-                    'building_snapshot': [bs.pk],
-                    'energy_units': KILOWATT_HOURS,
-                    'energy_type': ELECTRICITY,
-                    'pk': meter.pk,
-                    'model': 'seed.meter',
-                    'id': meter.pk
+                    "property_view": property_view.pk,
+                    "name": meter.name,
+                    "energy_units": KILOWATT_HOURS,
+                    "energy_type": ELECTRICITY,
+                    "pk": meter.pk,
+                    "model": "seed.meter",
+                    "id": meter.pk,
                 }
             ]
         }
 
         fake_request = FakeRequest(
-            {'building_id': bs.pk},
+            {
+                'building_id': property_view.pk
+            },
             user=self.fake_user,
             method='GET',
             body=json.dumps({'organization_id': self.org.pk})
         )
 
         resp = meters.get_meters(fake_request)
-
         self.assertDictEqual(json.loads(resp.content), expected)
 
-    def test_add_meter_to_building(self):
+    def test_add_meter_to_property(self):
         """Add a meter to a building."""
-        bs = BuildingSnapshot.objects.create()
-        bs.super_organization = self.org
-        bs.save()
+        ps = PropertyState.objects.create(organization=self.org)
+        pv = ps.promote(self.cycle)
 
         fake_request = FakeRequest(
             {},
             user=self.fake_user,
             body=json.dumps({
                 'organization_id': self.org.pk,
-                'building_id': bs.pk,
+                'building_id': pv.pk,
                 'meter_name': 'Fun',
                 'energy_type': 'Electricity',
                 'energy_units': 'kWh',

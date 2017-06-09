@@ -11,15 +11,12 @@ import xmltodict
 from django.utils import timezone
 
 import seed.models
-from seed.audit_logs.models import AuditLog
 from seed.lib.mcm.reader import ROW_DELIMITER
 from seed.models import (
-    BuildingSnapshot,
-    Meter,
-    TimeSeries,
-    CanonicalBuilding,
+    PropertyState,
     GREEN_BUTTON_BS,
 )
+from seed.models.meters import Meter, TimeSeries
 
 
 def energy_type(service_category):
@@ -40,8 +37,8 @@ def energy_type(service_category):
     # not present in seed.models.ENERGY_TYPES
     service_category = int(service_category)
     category_mapping = {
-        0: seed.models.ELECTRICITY,
-        1: seed.models.NATURAL_GAS,
+        0: seed.models.meters.ELECTRICITY,
+        1: seed.models.meters.NATURAL_GAS,
     }
 
     if service_category in category_mapping:
@@ -240,54 +237,34 @@ def building_data(xml_data):
     return result
 
 
-def create_models(data, import_file):
+def create_models(data, import_file, cycle):
     """
-    Create a BuildingSnapshot, a CanonicalBuilding, and a Meter. Then, create
-    TimeSeries models for each meter reading in data.
+    Create a PropertyState and a Meter. Then, create TimeSeries models for each meter
+    reading in data.
 
-    :param data: dictionary of building data from a Green Button XML file
-        in the form returned by xml_importer.building_data
-    :param import_file: ImportFile referencing the original xml file; needed
-        for linking to BuildingSnapshot and for determining super_organization
-    :returns: the created CanonicalBuilding
+    :param data: dict, building data from a Green Button XML file frm xml_importer.building_data
+    :param import_file: ImportFile, reference to Green Button XML file
+    :param cycle: Cycle, the cycle from which the property view will be attached
+    :returns: PropertyState
     """
+
     # cache data on import_file; this is a proof of concept and we
     # only have two example files available so we hardcode the only
     # heading present.
+
+    # NL: Yuck, not sure that this makes much sense here, or anywhere in this method
     import_file.cached_first_row = ROW_DELIMITER.join(["address"])
-    import_file.cached_second_to_fifth_row = ROW_DELIMITER.join(
-        [data['address']]
-    )
+    import_file.cached_second_to_fifth_row = ROW_DELIMITER.join([data['address']])
     import_file.save()
 
-    raw_bs = BuildingSnapshot()
-    raw_bs.import_file = import_file
+    property_state = PropertyState()
+    property_state.import_file = import_file
+    property_state.organization = import_file.import_record.super_organization
+    property_state.address_line_1 = data['address']
+    property_state.source_type = GREEN_BUTTON_BS  # TODO: Green Button Fix -- prob can be removed
+    property_state.save()
 
-    # We require a save to get our PK
-    # We save here to set our initial source PKs.
-    raw_bs.save()
-    super_org = import_file.import_record.super_organization
-    raw_bs.super_organization = super_org
-
-    raw_bs.address_line_1 = data['address']
-    raw_bs.source_type = GREEN_BUTTON_BS
-
-    raw_bs.save()
-
-    # create canonical building
-    cb = CanonicalBuilding.objects.create(canonical_snapshot=raw_bs)
-
-    raw_bs.canonical_building = cb
-    raw_bs.save()
-
-    # log building creation
-    AuditLog.objects.create(
-        organization=import_file.import_record.super_organization,
-        user=import_file.import_record.owner,
-        content_object=cb,
-        action="create_building",
-        action_note="Created building",
-    )
+    pv = property_state.promote(cycle)
 
     # create meter for this dataset (each dataset is a single energy type)
     e_type = energy_type(data['service_category'])
@@ -295,17 +272,17 @@ def create_models(data, import_file):
         pair[1] for pair in seed.models.ENERGY_TYPES if pair[0] == e_type
     )
 
-    m_name = "gb_{0}[{1}]".format(str(raw_bs.id), e_type_string)
+    m_name = "gb_{0}[{1}]".format(str(property_state.id), e_type_string)
     m_energy_units = energy_units(data['meter']['uom'])
-    meter = Meter.objects.create(
-        name=m_name, energy_type=e_type, energy_units=m_energy_units
-    )
 
-    meter.building_snapshot.add(raw_bs)
+    meter = Meter.objects.create(
+        name=m_name, energy_type=e_type, energy_units=m_energy_units, property_view=pv
+    )
     meter.save()
 
     # now time series data for the meter
     for reading in data['interval']['readings']:
+        # how to deal with timezones?
         start_time = int(reading['start_time'])
         duration = int(reading['duration'])
 
@@ -318,16 +295,15 @@ def create_models(data, import_file):
             begin_time=begin_time,
             end_time=end_time,
             reading=value,
-            cost=cost
+            cost=cost,
+            meter=meter,
         )
-
-        new_ts.meter = meter
         new_ts.save()
 
-    return cb
+    return pv
 
 
-def import_xml(import_file):
+def import_xml(import_file, cycle):
     """
     Given an import_file referencing a raw Green Button XML file, extracts
     building and time series information from the file and constructs
@@ -335,11 +311,12 @@ def import_xml(import_file):
 
     :param import_file: a seed.models.ImportFile instance representing a
         Green Button XML file that has been previously uploaded
-    :returns: the created CanonicalBuilding Inst.
+    :param cycle: which cycle to import the results
+    :returns: PropertyView, attached to cycle
     """
     xml_file = import_file.local_file
     xml_string = xml_file.read()
     raw_data = xmltodict.parse(xml_string)
 
     data = building_data(raw_data)
-    return create_models(data, import_file)
+    return create_models(data, import_file, cycle)
