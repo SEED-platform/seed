@@ -25,7 +25,7 @@ pytz==2012h
 # API
 djangorestframework==3.3.3
 django-rest-swagger==0.3.8
-django-filter==1.0.0
+django-filters==1.0.0
 
 # Server monitoring
 raven==6.1.0
