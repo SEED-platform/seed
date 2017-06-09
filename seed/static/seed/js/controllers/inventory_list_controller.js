@@ -412,9 +412,11 @@ angular.module('BE.seed.controller.inventory_list', [])
         var cols = _.filter($scope.gridApi.grid.columns, function (col) {
           return !_.includes(['treeBaseRowHeaderCol', 'selectionRowHeaderCol', 'id'], col.name);
         });
-        _.map(cols, function (col) {
+        cols = _.map(cols, function (col) {
           col.pinnedLeft = col.renderContainer === 'left' && col.visible;
-          return col;
+          var result = col.colDef;
+          result.pinnedLeft = col.pinnedLeft;
+          return result;
         });
         var oldSettings = inventory_service.loadSettings(localStorageKey, angular.copy(all_columns));
         oldSettings = _.map(oldSettings, function (col) {
