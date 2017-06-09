@@ -448,7 +448,7 @@ def setup(app):
     """
     Called by sphinx to hook up event handlers.
     """
-    app.connect("autodoc-skip-member", skip_non_api_methods)
-    app.connect("autodoc-process-docstring", format_api_docstring)
-    app.connect("autodoc-process-signature", format_api_signature)
+    # app.connect("autodoc-skip-member", skip_non_api_methods)
+    # app.connect("autodoc-process-docstring", format_api_docstring)
+    # app.connect("autodoc-process-signature", format_api_signature)
     app.connect("autodoc-process-docstring", process_remove_copyright_author)

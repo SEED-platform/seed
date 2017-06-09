@@ -242,7 +242,7 @@ def create_models(data, import_file, cycle):
     Create a PropertyState and a Meter. Then, create TimeSeries models for each meter
     reading in data.
 
-    :param data: dict, building data from a Green Button XML file frm xml_importer.building_data
+    :param data: dict, building data from a Green Button XML file from xml_importer.building_data
     :param import_file: ImportFile, reference to Green Button XML file
     :param cycle: Cycle, the cycle from which the property view will be attached
     :returns: PropertyState
