@@ -64,6 +64,17 @@ class TestSEEDJSONRenderer(TestCase):
         self.assertNotIn('data', result.keys())
         self.assertIn(data_name, result.keys())
 
+        # success with pagination
+        fake_data_paginated = {
+            "next": None,
+            "previous": None,
+            "results": fake_data,
+        }
+        result = json.loads(self.fake_renderer.render(
+            fake_data_paginated, renderer_context=self.fake_context
+        ))
+        self.assertIn('pagination', result.keys())
+
         # error
         self.fake_response.status_code = 400
         result = json.loads(self.fake_renderer.render(
