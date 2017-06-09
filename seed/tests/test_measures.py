@@ -7,8 +7,7 @@
 
 from django.test import TestCase
 
-from seed.models.measures import Measure
-from seed.models.measures import _snake_case
+from seed.models.measures import Measure, _snake_case
 
 
 class TestException(TestCase):
