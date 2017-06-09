@@ -82,6 +82,7 @@ def get_all_urls(urllist, prefix=''):
         else:
             yield (prefix + entry.regex.pattern, entry.callback)
 
+
 # pylint: disable=global-variable-not-assigned
 # API endpoint decorator
 # simple list of all 'registered' endpoints
@@ -261,6 +262,7 @@ class OrgCreateMixin(OrgMixin):
     """
     Mixin to add organization when creating model instance
     """
+
     def perform_create(self, serializer):
         """Override to add org"""
         org_id = self.get_organization(self.request)
@@ -271,6 +273,7 @@ class OrgUpdateMixin(OrgMixin):
     """
     Mixin to add organization when updating model instance
     """
+
     def perform_update(self, serializer):
         """Override to add org"""
         org_id = self.get_organization(self.request)
@@ -314,6 +317,7 @@ class OrgValidateMixin(object):
     If you use this Mixin and write a validate method, you must call super
     to ensure validation takes place.
     """
+
     def validate_org(self, instance, user, validator):
         """
         Raise error if orgs do not match.

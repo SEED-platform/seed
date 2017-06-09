@@ -6,6 +6,9 @@ through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.
 :author Paul Munday<paul@paulmunday.net>
+
+Provides permissions classes for use in DRF views and viewsets to control
+access based on Organization and OrganizationUser.role_level.
 """
 from django import VERSION as DJANGO_VERSION
 
@@ -36,6 +39,9 @@ def is_authenticated(user):
 
 def get_org_or_id(dictlike):
     """Get value of organization or organization_id"""
+    # while documentation should encourage the use of one consistent key choice
+    # for supplying an organization to query_params, we check all reasonable
+    # permutations of organization id.
     org_query_strings = ['organization', 'organization_id', 'org_id', 'org']
     org_id = None
     for org_str in org_query_strings:

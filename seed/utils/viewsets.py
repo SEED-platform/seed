@@ -25,7 +25,6 @@ from seed.lib.superperms.orgs.permissions import SEEDOrgPermissions
 from seed.renderers import SEEDJSONRenderer as JSONRenderer
 from seed.utils.api import (OrgCreateUpdateMixin, OrgQuerySetMixin,
                             drf_api_endpoint)
-from seed.utils.pagination import ResultsListPagination
 
 # Constants
 AUTHENTICATION_CLASSES = (SessionAuthentication, SEEDAuthentication)
@@ -56,9 +55,13 @@ class SEEDOrgCreateUpdateModelViewSet(OrgCreateUpdateMixin,
                                       SEEDOrgModelViewSet):
     """Extends SEEDModelViewset to add perform_create method to attach org.
 
-    For use on models that have a foreign key relationship to Organization via
-    fieldname 'organization'. Models using 'super_organization' or having
-    additional foreign key relationships, such as user, should extend
-    SEEDOrgModelViewset and override perform_create/perform_update in the view.
+    Provides the perform_create and update_create methods to save the
+    Organization foreignkey relationship for models that have linked via an
+    'organization' fieldname.
+
+    This viewset is not suitable for models using 'super_organization' or
+    having additional foreign key relationships, such as user. Any such models
+    should instead extend SEEDOrgModelViewset and create perform_create
+    and/or perform_update overrides appropriate to the model's needs.
     """
     pass

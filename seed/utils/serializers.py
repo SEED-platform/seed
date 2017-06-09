@@ -14,6 +14,7 @@ from seed.utils.api import OrgMixin
 
 class CurrentOrganizationIdDefault(OrgMixin):
     """Gets organization to set relevant field default input."""
+
     def set_context(self, serializer_field):
         request = serializer_field.context['request']
         self.organization_id = self.get_organization_id(request)

@@ -42,6 +42,7 @@ class SEEDJSONRenderer(JSONRenderer):
         }
 
     """
+
     def render(self, data, accepted_media_type=None, renderer_context=None):
         """
         Render 'data' into JSON in SEED Format.
