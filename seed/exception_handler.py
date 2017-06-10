@@ -5,7 +5,7 @@
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.
- 
+
 :author Fable Turas <fable@raintechpdx.com>
 
 provides function for handling exceptions not otherwise handled by DRF
