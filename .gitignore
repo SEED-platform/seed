@@ -4,6 +4,7 @@
 .pydevproject
 .python-version
 .coverage
+coverage.protractor.json
 .noseids
 *~
 *~$*

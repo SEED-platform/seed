@@ -77,7 +77,18 @@
                     <thead>
                         <tr>
                             <th class="is_aligned_center">Match</th>
-                            <th ng-repeat="col in reduced_columns">{$ col.displayName $}</th>
+                                <div>
+                                    <th ng-repeat="col in reduced_columns" ng-click="sortData(col.name)">{$ col.displayName $}
+                                        <div ng-class="getSortClass(col.name)"></div>
+                                    </th>
+                                </div>    
+
+                        </tr>
+                        <tr>
+                            <th class="is_aligned_center"></th>
+                            <th class="sub_head" ng-repeat="col in reduced_columns">
+                                <input type="text" ng-model="col.searchText" ng-model-options="{debounce:150}">
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
@@ -95,7 +106,8 @@
                             </td>
                         </tr>
                         <tr>
-                            <td class="potential_matches" colspan="{$ reduced_columns.length + 1 $}"><span>Potential Matches from Source: <strong>Existing {$ inventory_type == 'properties' ? 'Properties' : 'Tax Lots' $}</strong></span>
+                            <td class="potential_matches" colspan="{$ reduced_columns.length + 1 $}">
+                                <span>Potential Matches from Source: <strong>Existing {$ inventory_type == 'properties' ? 'Properties' : 'Tax Lots' $}</strong></span>
                             </td>
                         </tr>
                         <!-- matched record -->
@@ -108,12 +120,14 @@
                             </td>
                         </tr>
                         <!-- search results -->
-                        <tr ng-repeat="state in available_matches">
+                        <tr ng-repeat="state in available_matches | filter: allSearch | orderBy: sortColumn: reverseSort">
                             <td class="is_aligned_center">
                                 <input type="checkbox" ng-model="state.checked" ng-change="checkbox_match(state)">
                             </td>
-                            <td ng-repeat="col in reduced_columns">
-                                <span>{$ col.extraData ? state.extra_data[col.name] : state[col.name] $}</span>
+                            <td ng-model="state.checked" ng-repeat="col in reduced_columns">
+                                <span>
+                                    {$ col.extraData ? state.extra_data[col.name] : state[col.name] $}
+                                </span>
                             </td>
                         </tr>
                     </tbody>

@@ -47,15 +47,19 @@
             <div class="pairing-container">
                 <div class="pairing-headers-row">
                     <div class="pairing-headers" ng-repeat="col in leftColumns track by $index">
-                        <div class="pairing-header">{$ col.displayName $}</div>
-                        <input ng-model="col.searchText" ng-model-options="{debounce:150}">
+                        <!-- <div>     -->
+                            <div class="pairing-header table_header_text" ng-click="leftSortData(col.name)">{$ col.displayName $}
+                                <div ng-class="leftGetSortClass(col.name)"></div>
+                            </div>
+                        <!-- </div> -->
+                            <input class="is_aligned_center column_border" ng-model="col.searchText" ng-model-options="{debounce:150}">
                     </div>
                 </div>
                 <div class="pairing-rows" dragula='"drag-pairing-row"'>
-                    <div class="pairing-data-row grab-pairing-left" ng-repeat="row in newLeftData | filter:leftSearch track by $index " title="Drag from here" ng-click="doubleClick('left',$event)">
+                    <div class="pairing-data-row grab-pairing-left" ng-repeat="row in newLeftData | orderBy: leftSortColumn: leftReverseSort | filter:leftSearch" title="Drag from here" ng-click="doubleClick('left',$event)">
                         <div class="pairing-data-row-col" leftParentId="{$ getLeftParentId(row) $}" ng-repeat="col in whichColumns('left') track by $index">
                             <div class="pairing-cell">
-                                <span class="pairing-text">{$ row[col] $}</span>
+                                <span class="pairing-text data-slide">{$ row[col] $}</span>
                             </div>
                         </div>
                         <div class="is-paired-child" ng-if="leftPaired(row)">paired: {$ leftPaired(row) $}</div>
@@ -70,15 +74,18 @@
         <div class="pairing-inventory-other col-md-6">
             <div class="pairing-container">
                 <div class="pairing-headers-row">
+                    <!-- ng-class to slide text and input headers -->
                     <div class="pairing-headers" ng-repeat="col in rightColumns track by $index">
-                        <div class="pairing-header">{$ col.displayName $}</div>
-                        <input ng-model="col.searchText" ng-model-options="{debounce:150}">
+                        <div class="pairing-header table_header_text is_aligned_center"  ng-click="rightSortData(col.name)">{$ col.displayName $}
+                            <div ng-class="rightGetSortClass(col.name)"></div>
+                        </div>
+                        <input class="is_aligned_center column_border" ng-model="col.searchText" ng-model-options="{debounce:150}">
                     </div>
                 </div>
                 <div class="pairing-rows">
-                    <div class="pairing-data-row" ng-repeat="row in rightData | filter:rightSearch track by $index" title="Drag to here">
+                    <div class="pairing-data-row" ng-repeat="row in rightData | orderBy: rightSortColumn: rightReverseSort | filter:rightSearch" title="Drag to here">
                         <div class="pairing-data-row-col" ng-repeat="col in whichColumns('right') track by $index">
-                            <div class="pairing-cell">
+                            <div class="pairing-cell data-slide">
                                 <span class="pairing-text">{$ row[col] $}</span>
                             </div>
                         </div>
