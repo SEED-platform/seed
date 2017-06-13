@@ -1,5 +1,4 @@
 """
-
 :copyright (c) 2014 - 2017, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
@@ -141,7 +140,6 @@ AWS_QUERYSTRING_AUTH = False
 
 # django-longer-username-and-email
 REQUIRE_UNIQUE_EMAIL = False
-
 
 # Create a log directory if it doesn't exist.
 # This is not used in production, but is used in dev and test

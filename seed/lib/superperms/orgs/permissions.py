@@ -5,7 +5,7 @@
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.
-:author Paul Munday<paul@paulmunday.net>
+:authors Paul Munday<paul@paulmunday.net> Fable Turas<fable@raintechpdx.com>
 
 Provides permissions classes for use in DRF views and viewsets to control
 access based on Organization and OrganizationUser.role_level.
@@ -15,11 +15,13 @@ from django import VERSION as DJANGO_VERSION
 from django.conf import settings
 
 from rest_framework.permissions import BasePermission
+from rest_framework.exceptions import PermissionDenied
 
 from seed.lib.superperms.orgs.models import (
     ROLE_OWNER,
     ROLE_MEMBER,
     ROLE_VIEWER,
+    Organization,
     OrganizationUser
 )
 
@@ -104,6 +106,7 @@ class SEEDOrgPermissions(BasePermission):
     view(set)to do this.
 
     """
+    message = PermissionDenied.default_detail
     authenticated_users_only = True
     perm_map = {
         'GET': ROLE_VIEWER,
@@ -121,6 +124,7 @@ class SEEDOrgPermissions(BasePermission):
         has_perm = False
         # defaults to OWNER if not specified.
         required_perm = self.perm_map.get(request.method, ROLE_OWNER)
+        org = None
         org_id = get_org_id(request)
         if not org_id:
             org = get_user_org(request.user)
@@ -131,7 +135,14 @@ class SEEDOrgPermissions(BasePermission):
             )
             has_perm = org_user.role_level >= required_perm
         except OrganizationUser.DoesNotExist:
-            pass
+            self.message = 'No relationship to organization'
+            # return the right error message. we wait until here to check for
+            # organization so the extra db call is not made if not needed.
+            if not org:
+                try:
+                    org = Organization.objects.get(id=org_id)
+                except Organization.DoesNotExist:
+                    self.message = 'Organization does not exist'
         return has_perm
 
     def has_permission(self, request, view):
