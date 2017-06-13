@@ -21,6 +21,16 @@ class LabelFilterBackend(filters.BaseFilterBackend):
         return queryset
 
 
+class MeterFilterBackend(filters.BaseFilterBackend):
+
+    def filter_queryset(self, request, queryset, view):
+        if 'organization_id' in request.query_params:
+            return queryset.filter(
+                super_organization_id=request.query_params['organization_id'],
+            )
+        return queryset
+
+
 class InventoryFilterBackend(filters.BaseFilterBackend):
     """
     Implements the filtering and searching of buildings as a Django Rest

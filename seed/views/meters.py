@@ -4,46 +4,25 @@
 :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-import json
+# import json
 
-from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+# from django.contrib.auth.decorators import login_required
+from rest_framework import viewsets
+from rest_framework.authentication import SessionAuthentication
+from rest_framework.decorators import detail_route
+from rest_framework.parsers import JSONParser, FormParser
 
-from seed.decorators import ajax_request
-from seed.lib.superperms.orgs.decorators import has_perm
+from seed.authentication import SEEDAuthentication
+from seed.decorators import require_organization_id_class
+# from seed.decorators import ajax_request
+from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (
-    ENERGY_TYPES,
-    ENERGY_UNITS,
     obj_to_dict,
-    PropertyView,
     Meter,
-    TimeSeries
+    PropertyView,
 )
-
-
-@ajax_request
-@login_required
-@has_perm('requires_viewer')
-def get_meters(request):
-    """Returns all of the meters for a building.
-
-    Expected GET params:
-
-    building_id: int, unique identifier for a property view
-    """
-    building_id = request.GET.get('building_id', '')
-    if not building_id:
-        return {
-            'status': 'error',
-            'message': 'No building id specified'
-        }
-
-    return {
-        'status': 'success',
-        'building_id': building_id,
-        'meters': [
-            obj_to_dict(m) for m in Meter.objects.filter(property_view=building_id)
-        ]
-    }
+from seed.utils.api import api_endpoint_class
 
 
 def _convert_energy_data(name, mapping):
@@ -59,111 +38,220 @@ def _convert_energy_data(name, mapping):
     return filter(lambda x: x[1] == name, [t for t in mapping])[0][0]
 
 
-@ajax_request
-@login_required
-@has_perm('can_modify_data')
-def add_meter_to_building(request):
-    """Will add a building to an existing meter.
+class MeterViewSet(viewsets.ViewSet):
+    raise_exception = True
+    authentication_classes = (SessionAuthentication, SEEDAuthentication)
+    parser_classes = (JSONParser, FormParser)
 
-    Payload::
+    @api_endpoint_class
+    @require_organization_id_class
+    @has_perm_class('requires_viewer')
+    def list(self, request):
+        """
+        Returns all of the meters for a property view
+        ---
+        type:
+            status:
+                required: true
+                type: string
+                description: Either success or error
+            property_view_id:
+                required: true
+                type: integer
+                description: property view id of the request
+            meters:
+                required: true
+                type: array[meters]
+                description: list of meters for property_view_id
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+            - name: property_view_id
+              description: The property_view_id of the building holding the meter data
+              required: true
+              paramType: query
+        """
+        pv_id = request.GET.get('property_view_id', '')
+        org_id = request.GET.get('organization_id', '')
 
-        {
-            'organization_id': 435,
-            'building_id': 342,
-            'meter_name': 'Unit 34.',
-            'energy_type': 'Electricity',
-            'energy_units': 'kWh'
-        }
-    """
-    body = json.loads(request.body)
-    building_id = body.get('building_id', '')
+        # verify that the user has access to view property
+        pvs = PropertyView.objects.filter(id=pv_id, state__organization=org_id)
+        if pvs.count() == 0:
+            return JsonResponse({
+                'status': 'success',
+                'message': 'No property_ids found for organization',
+                'meters': []
+            })
+        else:
+            return JsonResponse({
+                'status': 'success',
+                'property_view_id': pv_id,
+                'meters': [
+                    obj_to_dict(m) for m in Meter.objects.filter(property_view=pv_id)
+                ]
+            })
 
-    property_view = PropertyView.objects.get(pk=building_id)
+    @api_endpoint_class
+    @has_perm_class('requires_viewer')
+    def retrieve(self, request, pk=None):
+        """
+        Returns a single meter based on its id
+        ---
+        type:
+            status:
+                required: true
+                type: string
+                description: Either success or error
+            meters:
+                required: true
+                type: dict
+                description: meter object
+        parameters:
+            - name: pk
+              description: Meter primary key
+              required: true
+              paramType: path
+        """
+        meter = Meter.objects.get(pk=pk)
+        res = obj_to_dict(meter)
+        res['timeseries_count'] = meter.timeseries_set.count()
+        return JsonResponse(res)
 
-    meter_name = body.get('meter_name', '')
-    energy_type_name = body.get('energy_type', 'Electricity')
-    energy_unit_name = body.get('energy_units', 'kWh')
-    # Grab the integer representation of the energytype from ENERGY_TYPES.
-    energy_type = _convert_energy_data(energy_type_name, ENERGY_TYPES)
-    energy_units = _convert_energy_data(energy_unit_name, ENERGY_UNITS)
+    @api_endpoint_class
+    @require_organization_id_class
+    @has_perm_class('requires_member')
+    def create(self, request):
+        """
+        Creates a new project
 
-    Meter.objects.create(
-        name=meter_name,
-        energy_type=energy_type,
-        energy_units=energy_units,
-        property_view=property_view
-    )
+        :POST: Expects organization_id in query string.
+        ---
+        parameters:
+            - name: organization_id
+              description: ID of organization to associate new project with
+              type: integer
+              required: true
+              paramType: query
+            - name: property_view_id
+              description: Property view id to which to add the meter
+              required: true
+              paramType: form
+            - name: name
+              description: name of the new meter
+              type: string
+              required: true
+              paramType: form
+            - name: energy_type
+              description: type of metered energy
+              type: integer
+              required: true
+              paramType: form
+            - name: energy_units
+              description: units of energy being metered
+              type: integer
+              required: true
+              paramType: form
+        type:
+            status:
+                required: true
+                type: string
+                description: Either success or error
 
-    return {'status': 'success'}
+        """
+        org_id = request.GET.get('organization_id', '')
 
+        # verify that the user has access to view property
+        pv_id = request.data['property_view_id']
+        pvs = PropertyView.objects.filter(id=pv_id, state__organization=org_id)
+        if pvs.count() == 0 or pvs.count() > 1:
+            return JsonResponse({
+                'status': 'success',
+                'message': 'No property id {} found for organization {}'.format(pv_id, org_id),
+            })
+        else:
+            #     energy_type = _convert_energy_data(energy_type_name, ENERGY_TYPES)
+            #     energy_units = _convert_energy_data(energy_unit_name, ENERGY_UNITS)
+            data = {
+                "name": request.data['name'],
+                "energy_type": request.data['energy_type'],
+                "energy_units": request.data['energy_units'],
+                "property_view": pvs.first(),
+            }
+            m = Meter.objects.create(**data)
 
-@ajax_request
-@login_required
-@has_perm('requires_viewer')
-def get_timeseries(request):
-    """Return all time series data for a building, grouped by meter.
+            return JsonResponse({
+                'status': 'success',
+                'meter': obj_to_dict(m),
+            })
 
-    Expected GET params:
+    @api_endpoint_class
+    @has_perm_class('requires_viewer')
+    def timeseries(self, request, pk=None):
+        """
+        Returns timeseries for meter
+        ---
+        type:
+            status:
+                required: true
+                type: string
+                description: Either success or error
+            meter:
+                required: true
+                type: dict
+                description: meter information
+            data:
+                required: true
+                type: list
+                description: timeseries information
+        parameters:
+            - name: pk
+              description: Meter primary key
+              required: true
+              paramType: path
+        """
+        meter = Meter.objects.get(pk=pk)
+        res = obj_to_dict(meter)
+        res['data'] = []
 
-    meter_id: int, unique identifier for the meter.
-    offset: int, the offset from the most recent meter data to begin showing.
-    num: int, the number of results to show.
-    """
-    meter_id = request.GET.get('meter_id', '')
-    offset = int(request.GET.get('offset', 0))
-    num = int(request.GET.get('num', 12))  # 12 because monthly data.
+        ts = meter.timeseries_set.order_by('begin_time')
+        for t in ts:
+            res['data'].append({
+                'begin': str(t.begin_time),
+                'end': str(t.begin_time),
+                'value': t.reading,
+            })
 
-    if not meter_id:
-        return {'status': 'error', 'message': 'No meter id specified'}
+        return JsonResponse(res)
 
-    result = {'status': 'success', 'meter_id': meter_id, 'timeseries': []}
-
-    paginated_ts = TimeSeries.objects.filter(
-        meter_id=meter_id
-    )[offset:offset + num]
-
-    for ts in paginated_ts:
-        t = obj_to_dict(ts)
-        result['timeseries'].append(t)
-
-    return result
-
-
-@ajax_request
-@login_required
-@has_perm('can_modify_data')
-def add_timeseries(request):
-    """Add time series data for a meter.
-
-    Payload::
-
-        {
-            'organization_id': 435,
-            'meter_id': 34,
-            'timeseries': [
-                {
-                    'begin_time': 2342342232,
-                    'end_time': 23423433433,
-                    'cost': 232.23,
-                }...
-            ]
-        }
-    """
-    body = json.loads(request.body)
-    meter_id = body.get('meter_id', '')
-    ts_data = body.get('timeseries', [])
-    try:
-        meter = Meter.objects.get(pk=meter_id)
-    except Meter.DoesNotExist:
-        return {'status': 'error', 'message': 'Meter ID does not match'}
-
-    for ts_item in ts_data:
-        TimeSeries.objects.create(
-            begin_time=ts_item.get('begin_time', None),
-            end_time=ts_item.get('end_time', None),
-            reading=ts_item.get('reading', None),
-            cost=ts_item.get('cost', None),
-            meter=meter
-        )
-
-    return {'status': 'success'}
+    @api_endpoint_class
+    @has_perm_class('can_modify_data')
+    def add_timeseries(self, request, pk=None):
+        """
+        Returns timeseries for meter
+        ---
+        type:
+            status:
+                required: true
+                type: string
+                description: Either success or error
+            meter:
+                required: true
+                type: dict
+                description: meter information
+            timeseries:
+                required: true
+                type: list
+                description: timeseries information
+        parameters:
+            - name: pk
+              description: Meter primary key
+              required: true
+              paramType: path
+        """
+        # TODO: Finish implementing this
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Not yet implemented'
+        })

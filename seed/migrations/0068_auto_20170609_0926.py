@@ -95,4 +95,18 @@ class Migration(migrations.Migration):
             name='simulation',
             field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='buildingsync_file', to='seed.PropertyState'),
         ),
+        migrations.AlterField(
+            model_name='timeseries',
+            name='begin_time',
+            field=models.DateTimeField(blank=True, db_index=True, null=True),
+        ),
+        migrations.AlterField(
+            model_name='timeseries',
+            name='end_time',
+            field=models.DateTimeField(blank=True, db_index=True, null=True),
+        ),
+        migrations.AlterIndexTogether(
+            name='timeseries',
+            index_together=set([('begin_time', 'end_time')]),
+        ),
     ]

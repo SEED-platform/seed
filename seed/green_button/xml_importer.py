@@ -10,7 +10,6 @@ from datetime import datetime
 import xmltodict
 from django.utils import timezone
 
-import seed.models
 from seed.lib.mcm.reader import ROW_DELIMITER
 from seed.models import (
     PropertyState,
@@ -26,7 +25,7 @@ def energy_type(service_category):
 
     :param service_category: int that is a green button service_category
         (string args will be converted to integers)
-    :returns: int in seed.models.ENERGY_TYPES
+    :returns: int in Meter.ENERGY_TYPES
     """
 
     # Valid values include: 0 - electricity 1 - gas 2 - water 4 - pressure
@@ -34,11 +33,11 @@ def energy_type(service_category):
 
     # green_button example data only contains electricity and gas.
     # We will need to add more energy types to support the types
-    # not present in seed.models.ENERGY_TYPES
+    # not present in Meter.ENERGY_TYPES
     service_category = int(service_category)
     category_mapping = {
-        0: seed.models.meters.ELECTRICITY,
-        1: seed.models.meters.NATURAL_GAS,
+        0: Meter.ELECTRICITY,
+        1: Meter.NATURAL_GAS,
     }
 
     if service_category in category_mapping:
@@ -77,8 +76,8 @@ def energy_units(uom):
     # 140 = PA(gauge) 155 = PA(absolute) 169 = Therm
 
     unit_mapping = {
-        72: seed.models.WATT_HOURS,
-        169: seed.models.THERMS
+        72: Meter.WATT_HOURS,
+        169: Meter.THERMS
     }
 
     if uom in unit_mapping:
@@ -96,11 +95,9 @@ def as_collection(val):
     :param val: any value
     :returns: list containing val or val if it is Iterable and not a string.
     """
-    is_atomic = (
-        isinstance(val, basestring) or
-        isinstance(val, dict) or
-        (not isinstance(val, Iterable))
-    )
+    is_atomic = (isinstance(val, (str, unicode)) or
+                 isinstance(val, dict) or
+                 (not isinstance(val, Iterable)))
 
     if val is None:
         return None
@@ -123,7 +120,8 @@ def interval_data(reading_xml_data):
     :returns: dictionary representing a time series reading with keys
         'cost', 'value', 'start_time', and 'duration'.
     """
-    cost = reading_xml_data.get('cost')
+    cost = reading_xml_data.get(
+        'cost')  # TODO: what is this cost used for? Seems like it should be another field # noqa
     value = reading_xml_data['value']
 
     time_period = reading_xml_data['timePeriod']
@@ -269,7 +267,7 @@ def create_models(data, import_file, cycle):
     # create meter for this dataset (each dataset is a single energy type)
     e_type = energy_type(data['service_category'])
     e_type_string = next(
-        pair[1] for pair in seed.models.ENERGY_TYPES if pair[0] == e_type
+        pair[1] for pair in Meter.ENERGY_TYPES if pair[0] == e_type
     )
 
     m_name = "gb_{0}[{1}]".format(str(property_state.id), e_type_string)

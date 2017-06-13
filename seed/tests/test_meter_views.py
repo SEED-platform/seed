@@ -11,8 +11,6 @@ from django.test import TestCase
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
-    ELECTRICITY,
-    KILOWATT_HOURS,
     PropertyState,
     Meter,
     TimeSeries,
@@ -53,8 +51,8 @@ class TestMeterViews(TestCase):
 
         meter = Meter.objects.create(
             name='tester',
-            energy_type=ELECTRICITY,
-            energy_units=KILOWATT_HOURS,
+            energy_type=Meter.ELECTRICITY,
+            energy_units=Meter.KILOWATT_HOURS,
             property_view=property_view,
         )
 
@@ -65,8 +63,8 @@ class TestMeterViews(TestCase):
                 {
                     "property_view": property_view.pk,
                     "name": meter.name,
-                    "energy_units": KILOWATT_HOURS,
-                    "energy_type": ELECTRICITY,
+                    "energy_units": Meter.KILOWATT_HOURS,
+                    "energy_type": Meter.ELECTRICITY,
                     "pk": meter.pk,
                     "model": "seed.meter",
                     "id": meter.pk,
@@ -97,9 +95,9 @@ class TestMeterViews(TestCase):
             body=json.dumps({
                 'organization_id': self.org.pk,
                 'building_id': pv.pk,
-                'meter_name': 'Fun',
-                'energy_type': 'Electricity',
-                'energy_units': 'kWh',
+                'name': 'Fun',
+                'energy_type': Meter.ELECTRICITY,
+                'energy_units': Meter.KILOWATT_HOURS,
             })
         )
 
@@ -111,7 +109,7 @@ class TestMeterViews(TestCase):
     def test_get_timeseries(self):
         """We get all the times series for a meter."""
         meter = Meter.objects.create(
-            name='test', energy_type=ELECTRICITY, energy_units=KILOWATT_HOURS
+            name='test', energy_type=Meter.ELECTRICITY, energy_units=Meter.KILOWATT_HOURS
         )
 
         for i in range(100):
@@ -140,7 +138,7 @@ class TestMeterViews(TestCase):
     def test_get_timeseries_w_offset_and_num(self):
         """"make sure we support offsets and number of results."""
         meter = Meter.objects.create(
-            name='test', energy_type=ELECTRICITY, energy_units=KILOWATT_HOURS
+            name='test', energy_type=Meter.ELECTRICITY, energy_units=Meter.KILOWATT_HOURS
         )
 
         for i in range(100):
@@ -172,7 +170,7 @@ class TestMeterViews(TestCase):
     def test_add_timeseries(self):
         """Adding time series works."""
         meter = Meter.objects.create(
-            name='test', energy_type=ELECTRICITY, energy_units=KILOWATT_HOURS
+            name='test', energy_type=Meter.ELECTRICITY, energy_units=Meter.KILOWATT_HOURS
         )
 
         fake_request = FakeRequest(

@@ -26,6 +26,7 @@ from seed.views.organizations import OrganizationViewSet
 from seed.views.projects import ProjectViewSet
 from seed.views.properties import PropertyViewSet, TaxLotViewSet
 from seed.views.users import UserViewSet
+from seed.views.meters import MeterViewSet
 
 api_v2_router = routers.DefaultRouter()
 api_v2_router.register(r'columns', ColumnViewSet, base_name="columns")
@@ -43,6 +44,7 @@ api_v2_router.register(r'taxlots', TaxLotViewSet, base_name="taxlots")
 api_v2_router.register(r'reverse_and_test', TestReverseViewSet, base_name="reverse_and_test")
 api_v2_router.register(r'upload', LocalUploaderViewSet, base_name='local_uploader')
 api_v2_router.register(r'data_quality_checks', DataQualityViews, base_name='data_quality_checks')
+api_v2_router.register(r'meters', MeterViewSet, base_name='meters')
 
 urlpatterns = [
     # v2 api
@@ -55,6 +57,12 @@ urlpatterns = [
     url(r'sign_policy_document/$', sign_policy_document, name='sign_policy_document'),
     # api schema
     url(r'^schema/$', get_api_schema, name='schema'),
+    url(r'meters/(?P<pk>\w+)/timeseries/$',
+        MeterViewSet.as_view({'get': 'timeseries'}),
+        name='meters-get-timeseries'),
+    url(r'meters/(?P<pk>\w+)/timeseries/$',
+        MeterViewSet.as_view({'post': 'add_timeseries'}),
+        name='meters-add-timeseries'),
     url(r'^progress/$', progress, name='progress'),
     url(
         r'projects/(?P<pk>\w+)/add/$',

@@ -20,7 +20,7 @@ from seed.green_button import xml_importer
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
-    PropertyState, TimeSeries, Cycle
+    PropertyState, TimeSeries, Cycle, Meter
 )
 
 # sample data corresponds to the data that should be extracted by
@@ -92,8 +92,8 @@ class GreenButtonXMLParsingTests(TestCase):
         """
         expected_mappings = {
             -1: None,  # missing keys should return None
-            0: seed.models.ELECTRICITY,
-            1: seed.models.NATURAL_GAS
+            0: Meter.ELECTRICITY,
+            1: Meter.NATURAL_GAS
         }
 
         self.assert_fn_mapping(xml_importer.energy_type, expected_mappings)
@@ -105,8 +105,8 @@ class GreenButtonXMLParsingTests(TestCase):
         """
         expected_mappings = {
             -1: None,  # missing keys should return None
-            72: seed.models.WATT_HOURS,
-            169: seed.models.THERMS
+            72: Meter.WATT_HOURS,
+            169: Meter.THERMS,
         }
 
         self.assert_fn_mapping(xml_importer.energy_units, expected_mappings)
@@ -345,7 +345,7 @@ class GreenButtonXMLImportTests(TestCase):
         )
         property_view = xml_importer.create_models(b_data, self.import_file, cycle)
         self.assertEqual(property_view.meters.count(), 1)
-        self.assertEqual(property_view.meters.first().energy_type, seed.models.meters.NATURAL_GAS)
+        self.assertEqual(property_view.meters.first().energy_type, Meter.NATURAL_GAS)
 
         # Note: Right now the address coming from green button is a one-liner (not broken up by
         # address, city, state, zip). This can cause some issues in the future when we start

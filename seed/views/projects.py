@@ -67,8 +67,7 @@ STATUS_LOOKUP = {
 PLURALS = {'property': 'properties', 'taxlot': 'taxlots'}
 
 
-class ProjectViewSet(DecoratorMixin(drf_api_endpoint),
-                     viewsets.ModelViewSet):
+class ProjectViewSet(DecoratorMixin(drf_api_endpoint), viewsets.ModelViewSet):
     serializer_class = ProjectSerializer
     renderer_classes = (JSONRenderer,)
     parser_classes = (JSONParser,)
@@ -788,7 +787,7 @@ class ProjectViewSet(DecoratorMixin(drf_api_endpoint),
             qs = search.inventory_search_filter_sort(
                 view_type, params=params, user=request.user
             )
-            if request.data.get('selected', None)\
+            if request.data.get('selected', None) \
                     and isinstance(request.data.get('selected'), list):
                 inventory = qs.filter(pk__in=request.data.get('selected'))
             # TODO is this still relevant
@@ -1105,7 +1104,7 @@ class ProjectViewSet(DecoratorMixin(drf_api_endpoint),
             ProjectViewModel = self.ProjectViewModels[inventory_type]
             filter_dict = {
                 "{}_view_id__in".format(inventory_type):
-                params['selected'],
+                    params['selected'],
                 'project_id': project.id
             }
             old_project_views = ProjectViewModel.objects.filter(
