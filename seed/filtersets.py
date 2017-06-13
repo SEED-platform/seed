@@ -1,11 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 """
-<<<<<<< 76926c644aa673862bd42c074334c84812155c8e
 :copyright (c) 2014 - 2017, The Regents of the University of California,
-=======
-:copyright (c) 2014 - 2016, The Regents of the University of California,
->>>>>>> 	- isolated Cycle in independent feature branch
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
