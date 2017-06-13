@@ -30,6 +30,19 @@ describe('When I go to the matching page', function () {
     expect(rows.count()).not.toBeLessThan(1);
   });
 
+  it('should rematch stuffs', function () {
+    $$('[ui-sref="matching_detail({importfile_id: import_file.id, inventory_type: inventory_type, state_id: i.id})"]').first().click();
+    rows = element.all(by.repeater('state in available_matches'));
+    expect(rows.count()).not.toBeLessThan(1);
+    $$('[ng-change="checkbox_match(state)"]').first().click();
+    $('[ng-click="cancel()"]').click();
+    $$('[ng-change="checkbox_match(state)"]').first().click();
+    $('[ng-click="close()"]').click();
+    browser.wait(EC.presenceOf($('.message')), 10000);
+    $('[ui-sref="matching_list({importfile_id: import_file.id, inventory_type: inventory_type})"]').click();
+  });
+
+
   it('should unmatch stuffs', function () {
     $$('[ui-sref="matching_detail({importfile_id: import_file.id, inventory_type: inventory_type, state_id: i.id})"]').first().click();
     rows = element.all(by.repeater('state in available_matches'));

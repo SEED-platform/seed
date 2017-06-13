@@ -20,12 +20,20 @@ describe('When I go to admin page', function () {
     browser.get('/app/#/contact');
     browser.sleep(5000);
     expect(browser.getTitle()).toContain('SEED Platform');
-    browser.get('/app/#/profile/security');
-    browser.sleep(5000);
-    expect(browser.getTitle()).toContain('SEED Platform');
     browser.get('/app/#/profile/developer');
     browser.sleep(5000);
     expect(browser.getTitle()).toContain('SEED Platform');
+  });
+
+  it('should test pw change', function () {
+    browser.get('/app/#/profile/security');
+    browser.sleep(5000);
+    expect(browser.getTitle()).toContain('SEED Platform');
+    $('#editCurrentPassword').sendKeys(browser.params.login.password);
+    $('#editNewPassword').sendKeys('somethingFAKE!');
+    $('#editConfirmNewPassword').sendKeys('somethingFAKE!');
+    $('[ng-click="change_password()"]').click();
+    browser.wait(EC.presenceOf($('.fa-check')), 10000);
   });
 
 

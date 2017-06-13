@@ -200,14 +200,46 @@ describe('When I do miscellaneous things', function () {
 
   });
 
+
+  it('should test delete and export modals', function () {
+    //select rows and delete
+    $('#btnInventoryActions').click();
+    $('[ng-click="open_delete_modal()"]').click();
+    $('[ng-click="cancel()"]').click();
+    $('#btnInventoryActions').click();
+    $('[ng-click="open_delete_modal()"]').click();
+    $('[ng-click="delete_inventory()"]').click();
+    $('[ng-click="close()"]').click();
+
+    // reselect rows and export
+    $$('[ng-click="selectButtonClick(row, $event)"]').first().click();
+    $$('[ng-click="selectButtonClick(row, $event)"]').get(1).click();
+    $('#btnInventoryActions').click();
+    $('[ng-click="open_export_modal()"]').click();
+    $$('[ng-click="cancel()"]').first().click();
+    $('#btnInventoryActions').click();
+    $('[ng-click="open_export_modal()"]').click();
+    $('#fileName').sendKeys('someFileName');
+    $('[ng-click="export_selected()"]').click();
+  });
+
+
   //Delete
   it('should delete data stuffs', function () {
     browser.get('/app/#/data');
     $$('[ui-sref="dataset_detail({dataset_id: d.id})"]').first().click();
+    //click and cancel
+    $$('.delete_link').get(1).click();
+    $$('[ng-click="cancel()"]').first().click();
+    //click and delete
     $$('.delete_link').get(1).click();
     $$('[ng-click="delete_file()"]').click();
     var rows = element.all(by.repeater('f in dataset.importfiles'));
     expect(rows.count()).toBe(1);
+    //open upload modal
+    $$('[ng-click="open_data_upload_modal()"]').first().click();
+    $('[ng-click="cancel()"]').click();
+
     $$('[ui-sref="dataset_list"]').first().click();
 
     $('[ng-click="open_data_upload_modal(d)"]').click();

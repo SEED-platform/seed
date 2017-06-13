@@ -40,7 +40,6 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.data_quality_labels_modal',
   'BE.seed.controller.cycle_admin',
   'BE.seed.controller.concat_modal',
-  'BE.seed.controller.create_note_modal',
   'BE.seed.controller.create_sub_organization_modal',
   'BE.seed.controller.data_upload_modal',
   'BE.seed.controller.dataset',
@@ -84,7 +83,6 @@ angular.module('BE.seed.filters', [
   'typedNumber'
 ]);
 angular.module('BE.seed.directives', [
-  'sdBasicBuildingInfoChart',
   'sdBasicPropertyInfoChart',
   'sdCheckCycleExists',
   'sdCheckLabelExists',
@@ -95,7 +93,6 @@ angular.module('BE.seed.directives', [
   'sdUploader'
 ]);
 angular.module('BE.seed.services', [
-  'BE.seed.service.audit',
   'BE.seed.service.auth',
   'BE.seed.service.data_quality',
   'BE.seed.service.column_mappings',
