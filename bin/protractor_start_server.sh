@@ -15,4 +15,11 @@ echo "starting server"
 ./manage.py runserver & &> main.log
 sleep 15
 echo "run e2e tests"
-grunt test
+./node_modules/grunt/bin/grunt test
+echo "install coverall merge stuffs"
+gem install coveralls-lcov 
+pip install coveralls-merge
+echo "run lcov to coveralls json"
+coveralls-lcov -v -n protractorReports/lcov.info > coverage.protractor.json
+# echo "merge and post coveralls"
+# coveralls-merge coverage.protractor.json

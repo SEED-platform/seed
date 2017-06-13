@@ -177,6 +177,41 @@ angular.module('BE.seed.controller.matching_detail', [])
        * end pagination code
        */
 
+       //custom filter
+      $scope.allSearch = function (value, index, array) {
+        for (var i = 0; i < $scope.reduced_columns.length; i++) {
+            if ($scope.reduced_columns[i].searchText && value[$scope.reduced_columns[i].name]) {
+              //dont return match because it stops the loop, set to variable so even whem matches are found, they continue searching(iterating through the loop) when inputs are processed from other columns
+              var searchTextLower = $scope.reduced_columns[i].searchText.toLowerCase();
+              var reducedColLower = value[$scope.reduced_columns[i].name].toLowerCase();
+              var isMatch = reducedColLower.indexOf(searchTextLower) > -1;
+              //if an item does not match, break the loop
+              if (!isMatch) {
+                  return false;
+              }  
+            } else if ($scope.reduced_columns[i].searchText && !value[$scope.reduced_columns[i].name]) {
+              return false;
+            }
+        }        
+      return true;
+    };
+
+      //Sort by Columns Ascending and Descending
+      $scope.sortColumn = "name";
+      $scope.reverseSort = false;
+
+      $scope.sortData = function (column) {
+        $scope.reverseSort = ($scope.sortColumn === column) ? !$scope.reverseSort : false;
+        $scope.sortColumn = column;
+      } 
+
+      $scope.getSortClass = function (column) {
+        if ($scope.sortColumn === column) {
+            return $scope.reverseSort ? 'arrow-down' : 'arrow-up'
+        }
+        return 'arrow-down';
+      }
+
       var refresh = function () {
         spinner_utility.show();
         // update state (particularly if coparent)

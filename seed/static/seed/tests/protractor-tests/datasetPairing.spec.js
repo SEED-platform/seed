@@ -12,6 +12,13 @@ describe('When I go to the dataset options page', function () {
     browser.ignoreSynchronization = false;
   });
 
+  it('should delete a single file', function () {
+    browser.get('/app/#/data');
+    $$('[ui-sref="dataset_detail({dataset_id: d.id})"]').first().click();
+    var rows = element.all(by.repeater('f in dataset.importfiles'));
+    expect(rows.count()).toBe(2);
+  });
+
   //Pairing
   it('should edit pairing', function () {
     $$('#data-pairing-0').first().click();
@@ -22,6 +29,18 @@ describe('When I go to the dataset options page', function () {
     // Gotta figure this out, remote has 1 unpaired.
     expect($('.pairing-text-left').getText()).toContain('Showing 19 Properties');
     expect($('.pairing-text-right').getText()).toContain('Showing 11 Tax Lots');
+  });
+
+  it('should test filters and sort on left and right table', function () {
+    var leftRows = element.all(by.repeater('row in newLeftData'));
+    var rightRows = element.all(by.repeater('row in rightData'));
+    expect(leftRows.count()).toBe(19);
+    $$('[ng-model="col.searchText"]').first().click().sendKeys('elm');
+    expect(leftRows.count()).toBe(3);
+    $$('[ng-model="col.searchText"]').get(4).click().sendKeys('33');
+    expect(rightRows.count()).toBe(5);
+    $$('[ng-model="col.searchText"]').first().clear();
+    $$('[ng-model="col.searchText"]').get(4).clear();
   });
 
   it('should edit delete pairings', function () {

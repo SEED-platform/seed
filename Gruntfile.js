@@ -78,7 +78,7 @@ module.exports = function(grunt) {
             }
         },
         makeReport: {
-            src: 'protractorCoverage/*.json',
+            src: 'protractorCoverage/**/*.json',
             options: {
                 type: 'lcov',
                 dir: 'protractorReports',
