@@ -205,7 +205,7 @@ describe('When I do miscellaneous things', function () {
     //select rows and delete
     $('#btnInventoryActions').click();
     $('[ng-click="open_delete_modal()"]').click();
-    $('[ng-click="cancel()"]').click();
+    $$('[ng-click="cancel()"]').first().click();
     $('#btnInventoryActions').click();
     $('[ng-click="open_delete_modal()"]').click();
     $('[ng-click="delete_inventory()"]').click();
@@ -238,7 +238,7 @@ describe('When I do miscellaneous things', function () {
     expect(rows.count()).toBe(1);
     //open upload modal
     $$('[ng-click="open_data_upload_modal()"]').first().click();
-    $('[ng-click="cancel()"]').click();
+    $('[ng-click="cancel()"].btn-default').click();
 
     $$('[ui-sref="dataset_list"]').first().click();
 

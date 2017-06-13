@@ -35,7 +35,7 @@ describe('When I go to the matching page', function () {
     rows = element.all(by.repeater('state in available_matches'));
     expect(rows.count()).not.toBeLessThan(1);
     $$('[ng-change="checkbox_match(state)"]').first().click();
-    $('[ng-click="cancel()"]').click();
+    $$('[ng-click="cancel()"]').first().click();
     $$('[ng-change="checkbox_match(state)"]').first().click();
     $('[ng-click="close()"]').click();
     browser.wait(EC.presenceOf($('.message')), 10000);

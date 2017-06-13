@@ -28,7 +28,7 @@ exports.config = {
   params: {
     login: {
       user: 'demo@example.com',
-      password: 'somethingFake!'
+      password: 'demo123'
     },
     testOrg: {
       parent: 'Protractor test org',
