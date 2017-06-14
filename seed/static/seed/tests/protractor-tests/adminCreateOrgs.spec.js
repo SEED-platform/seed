@@ -9,19 +9,22 @@ describe('When I go to admin page', function () {
 
   // manually
   it('should reset sync', function () {
-    browser.ignoreSynchronization = true;
+    browser.ignoreSynchronization = false;
   });
 
 
   it('should test admin pages', function () {
     browser.get('/app/#/api/swagger');
-    browser.sleep(5000);
+    browser.wait(EC.presenceOf($('.logo')), 10000);
+    // browser.sleep(5000);
     expect(browser.getTitle()).toContain('SEED Platform');
     browser.get('/app/#/contact');
-    browser.sleep(5000);
+    browser.wait(EC.presenceOf($('.logo')), 10000);
+    // browser.sleep(5000);
     expect(browser.getTitle()).toContain('SEED Platform');
     browser.get('/app/#/profile/developer');
-    browser.sleep(5000);
+    browser.wait(EC.presenceOf($('.logo')), 10000);
+    // browser.sleep(5000);
     expect(browser.getTitle()).toContain('SEED Platform');
     $('[ng-click="generate_api_key()"]').click();
     browser.wait(EC.presenceOf($('.fa-check')), 10000);
@@ -29,7 +32,8 @@ describe('When I go to admin page', function () {
 
   it('should test pw change', function () {
     browser.get('/app/#/profile/security');
-    browser.sleep(5000);
+    browser.wait(EC.presenceOf($('.logo')), 10000);
+    // browser.sleep(5000);
     expect(browser.getTitle()).toContain('SEED Platform');
     $('#editCurrentPassword').sendKeys(browser.params.login.password);
     $('#editNewPassword').sendKeys('somethingFAKE!');
