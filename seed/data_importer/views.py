@@ -11,7 +11,6 @@ import hmac
 import json
 import logging
 import os
-from datetime import datetime
 
 from django.apps import apps
 from django.conf import settings
@@ -793,9 +792,11 @@ class ImportFileViewSet(viewsets.ViewSet):
         # check if we are returning as subset of the fields (as values)
         if fields:
             if state_id1 != state_id:
-                return state_model.objects.filter(id=audit_entry.parent_state1_id).values(*fields)[0]
+                return state_model.objects.filter(id=audit_entry.parent_state1_id).values(*fields)[
+                    0]
             else:
-                return state_model.objects.filter(id=audit_entry.parent_state2_id).values(*fields)[0]
+                return state_model.objects.filter(id=audit_entry.parent_state2_id).values(*fields)[
+                    0]
         else:
             return audit_entry.parent_state1 if state_id1 != state_id else audit_entry.parent_state2
 
