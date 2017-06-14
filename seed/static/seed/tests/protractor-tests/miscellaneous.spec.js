@@ -143,6 +143,7 @@ describe('When I do miscellaneous things', function () {
   // Check data quality on inventory page
   it('should select first item and test data quality modal and presence of rows', function () {
     $('#sidebar-inventory').click();
+    $('[ng-change="update_cycle(cycle.selected_cycle)"]').element(by.cssContainingText('option', browser.params.testOrg.cycle)).click();
 
     $$('[ng-click="toggleMenu($event)"]').first().click();
     $$('[ng-click="itemAction($event, title)"]').first().click();
@@ -225,24 +226,27 @@ describe('When I do miscellaneous things', function () {
 
 
   //Delete
-  it('should delete data stuffs', function () {
+  it('should check edit and delete stuff for files', function () {
     browser.get('/app/#/data');
     $$('[ui-sref="dataset_detail({dataset_id: d.id})"]').first().click();
+    var rows = element.all(by.repeater('f in dataset.importfiles'));
     //click and cancel
     $$('.delete_link').get(1).click();
     $$('[ng-click="cancel()"]').first().click();
+    expect(rows.count()).toBe(2);
     //click and delete
     $$('.delete_link').get(1).click();
-    $$('[ng-click="delete_file()"]').click();
-    var rows = element.all(by.repeater('f in dataset.importfiles'));
+    $$('[ng-click="delete_file()"]').first().click();
     expect(rows.count()).toBe(1);
     //open upload modal
-    $$('[ng-click="open_data_upload_modal()"]').first().click();
+    $$('[ng-click="open_data_upload_modal()"]').get(1).click();
     $('[ng-click="cancel()"].btn-default').click();
 
     $$('[ui-sref="dataset_list"]').first().click();
+  });
 
-    $('[ng-click="open_data_upload_modal(d)"]').click();
+  it('should check edit and delete stuff for datasets', function () {
+    $$('[ng-click="open_data_upload_modal()"]').get(1).click();
     $('[ng-click="cancel()"].btn-default').click();
     browser.sleep(1000);
     $('[ng-click="edit_dataset_name(d)"]').click();
