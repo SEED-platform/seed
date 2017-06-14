@@ -757,7 +757,6 @@ class DataQualitySample(TestCase):
         # Check multiple strings
         props = PropertyView.objects.filter(property__labels=sl_ok_1).select_related('state')
         addresses = [p.state.address_line_1 for p in props]
-        print addresses
         # addresses.sort()
         # expected = [u'84807 Buell Trail', u'1 International Road']
         # expected.sort()

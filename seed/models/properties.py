@@ -130,6 +130,9 @@ class PropertyState(models.Model):
 
     extra_data = JSONField(default=dict, blank=True)
 
+    class Meta:
+        index_together = [['import_file', 'data_state']]
+
     def promote(self, cycle):
         """
         Promote the PropertyState to the view table for the given cycle
@@ -256,6 +259,7 @@ class PropertyView(models.Model):
 
     class Meta:
         unique_together = ('property', 'cycle',)
+        index_together = [['state', 'cycle']]
 
     def __init__(self, *args, **kwargs):
         self._import_filename = kwargs.pop('import_filename', None)
@@ -325,10 +329,8 @@ class PropertyAuditLog(models.Model):
     parent_state2 = models.ForeignKey(PropertyState, blank=True, null=True,
                                       related_name='propertyauditlog__parent_state2')
 
-    state = models.ForeignKey('PropertyState',
-                              related_name='propertyauditlog__state')
-    view = models.ForeignKey('PropertyView',
-                             related_name='propertyauditlog__view', null=True)
+    state = models.ForeignKey('PropertyState', related_name='propertyauditlog__state')
+    view = models.ForeignKey('PropertyView', related_name='propertyauditlog__view', null=True)
 
     name = models.CharField(max_length=255, null=True, blank=True)
     description = models.TextField(null=True, blank=True)

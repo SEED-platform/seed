@@ -72,6 +72,9 @@ class TaxLotState(models.Model):
 
     extra_data = JSONField(default=dict, blank=True)
 
+    class Meta:
+        index_together = [['import_file', 'data_state']]
+
     def __unicode__(self):
         return u'TaxLot State - %s' % self.pk
 
@@ -185,6 +188,7 @@ class TaxLotView(models.Model):
 
     class Meta:
         unique_together = ('taxlot', 'cycle',)
+        index_together = [['state', 'cycle']]
 
     def __init__(self, *args, **kwargs):
         self._import_filename = kwargs.pop('import_filename', None)
