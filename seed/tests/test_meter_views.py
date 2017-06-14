@@ -6,7 +6,10 @@
 """
 import json
 
+from django.core.urlresolvers import reverse
 from django.test import TestCase
+from rest_framework import status
+from rest_framework.test import APIClient
 
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization
@@ -16,36 +19,44 @@ from seed.models import (
     TimeSeries,
 )
 from seed.tests.util import FakeRequest
+from seed.utils.organizations import create_organization
 from seed.views import meters
 
 
-class TestMeterViews(TestCase):
+class TestMeterViewSet(TestCase):
     def setUp(self):
-        super(TestMeterViews, self).setUp()
         self.org = Organization.objects.create()
-        self.fake_user = User.objects.create(email='a@f.com')
-        self.fake_user.active = True
-        self.fake_user.save()
-        self.org.add_member(self.fake_user)
+        self.user = User.objects.create_superuser(
+            email='test_user@demo.com',
+            username='test_user@demo.com',
+            password='secret',
+        )
+        self.org, _, _ = create_organization(self.user, "test-organization-a")
+        self.org.add_member(self.user)
         self.cycle = self.org.cycles.first()
 
         self.maxDiff = None
 
     def test_get_meters_no_building(self):
         """We throw an error when there's no building id passed in."""
-        expected = {"status": "error", "message": "No building id specified"}
-        fake_request = FakeRequest(
-            {'building_id': None},
-            user=self.fake_user,
-            method='GET',
-            body=json.dumps({'organization_id': self.org.pk})
-        )
-        resp = meters.get_meters(fake_request)
+        client = APIClient()
+        client.login(username=self.user.username, password='secret')
 
+        url = reverse('apiv2:meters-list')
+
+        expected = {
+            "status": "error",
+            "message": "No property_view_id specified",
+            "meters": []
+        }
+
+        resp = client.get(url, {'organization_id': self.org.pk})
+
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertDictEqual(json.loads(resp.content), expected)
 
     def test_get_meters(self):
-        """We get a meter that we saved back."""
+        """We get a meter that we saved back that was assigned to a property view"""
         ps = PropertyState.objects.create(organization=self.org)
         property_view = ps.promote(self.cycle)
 
@@ -56,32 +67,26 @@ class TestMeterViews(TestCase):
             property_view=property_view,
         )
 
+        client = APIClient()
+        client.login(username=self.user.username, password='secret')
+
+        url = reverse('apiv2:meters-detail', args=(meter.pk,))
+        resp = client.get(url)
+
         expected = {
             "status": "success",
-            "building_id": property_view.pk,
-            "meters": [
-                {
-                    "property_view": property_view.pk,
-                    "name": meter.name,
-                    "energy_units": Meter.KILOWATT_HOURS,
-                    "energy_type": Meter.ELECTRICITY,
-                    "pk": meter.pk,
-                    "model": "seed.meter",
-                    "id": meter.pk,
-                }
-            ]
+            "meter": {
+                "property_view": property_view.pk,
+                "name": "tester",
+                "timeseries_count": 0,
+                "energy_units": 1,
+                "energy_type": 2,
+                "pk": meter.pk,
+                "model": "seed.meter",
+                "id": meter.pk,
+            }
         }
 
-        fake_request = FakeRequest(
-            {
-                'building_id': property_view.pk
-            },
-            user=self.fake_user,
-            method='GET',
-            body=json.dumps({'organization_id': self.org.pk})
-        )
-
-        resp = meters.get_meters(fake_request)
         self.assertDictEqual(json.loads(resp.content), expected)
 
     def test_add_meter_to_property(self):
@@ -89,117 +94,112 @@ class TestMeterViews(TestCase):
         ps = PropertyState.objects.create(organization=self.org)
         pv = ps.promote(self.cycle)
 
-        fake_request = FakeRequest(
-            {},
-            user=self.fake_user,
-            body=json.dumps({
-                'organization_id': self.org.pk,
-                'building_id': pv.pk,
-                'name': 'Fun',
-                'energy_type': Meter.ELECTRICITY,
-                'energy_units': Meter.KILOWATT_HOURS,
-            })
-        )
+        data = {
+            "property_view_id": pv.pk,
+            "name": "test meter",
+            "energy_type": Meter.NATURAL_GAS,
+            "energy_units": Meter.KILOWATT_HOURS
+        }
 
-        expected = {'status': 'success'}
-        resp = meters.add_meter_to_building(fake_request)
+        client = APIClient()
+        client.login(username=self.user.username, password='secret')
+        url = reverse('apiv2:meters-list') + '?organization_id={}'.format(self.org.pk)
+        resp = client.post(url, data)
 
-        self.assertDictEqual(json.loads(resp.content), expected)
+        expected = {
+            "status": "success",
+            "meter": {
+                "property_view": pv.pk,
+                "name": "test meter",
+                "energy_units": Meter.KILOWATT_HOURS,
+                "energy_type": Meter.NATURAL_GAS,
+                "model": "seed.meter",
+            }
+        }
+        self.assertEqual(json.loads(resp.content)['status'], "success")
+        self.assertDictContainsSubset(expected['meter'], json.loads(resp.content)['meter'])
 
     def test_get_timeseries(self):
         """We get all the times series for a meter."""
         meter = Meter.objects.create(
-            name='test', energy_type=Meter.ELECTRICITY, energy_units=Meter.KILOWATT_HOURS
+            name='test',
+            energy_type=Meter.ELECTRICITY,
+            energy_units=Meter.KILOWATT_HOURS
         )
 
         for i in range(100):
             TimeSeries.objects.create(
                 begin_time="2015-01-01T08:00:00.000Z",
                 end_time="2015-01-01T08:00:00.000Z",
-                cost=23,
+                reading=23,
                 meter=meter
             )
 
-        fake_request = FakeRequest(
-            data={'meter_id': meter.pk},
-            method='GET',
-            user=self.fake_user,
-            body=json.dumps({
-                'organization_id': self.org.pk,
-            })
-        )
+        client = APIClient()
+        client.login(username=self.user.username, password='secret')
+        url = reverse('apiv2:meters-get-timeseries', args=(meter.pk,))
+        resp = client.get(url)
 
-        resp = json.loads(meters.get_timeseries(fake_request).content)
-
-        smallest_pk = TimeSeries.objects.all()[0].pk
-        self.assertEqual(resp['timeseries'][0]['pk'], smallest_pk)
-        self.assertEqual(len(resp['timeseries']), 12)
-
-    def test_get_timeseries_w_offset_and_num(self):
-        """"make sure we support offsets and number of results."""
-        meter = Meter.objects.create(
-            name='test', energy_type=Meter.ELECTRICITY, energy_units=Meter.KILOWATT_HOURS
-        )
-
-        for i in range(100):
-            TimeSeries.objects.create(
-                begin_time="2015-01-01T08:00:00.000Z",
-                end_time="2015-01-01T08:00:00.000Z",
-                cost=23,
-                meter=meter
-            )
-
-        fake_request = FakeRequest(
-            {'meter_id': meter.pk, 'offset': 20, 'num': '5'},
-            method='GET',
-            user=self.fake_user,
-            body=json.dumps({
-                'organization_id': self.org.pk,
-            })
-        )
-
-        resp = json.loads(meters.get_timeseries(fake_request).content)
-
-        first_timeseries_pk = TimeSeries.objects.all()[0].pk
-        # Make sure that our offset worked properly
-        self.assertEqual(
-            resp['timeseries'][0]['pk'], 20 + first_timeseries_pk
-        )
-        self.assertEqual(len(resp['timeseries']), 5)
-
-    def test_add_timeseries(self):
-        """Adding time series works."""
-        meter = Meter.objects.create(
-            name='test', energy_type=Meter.ELECTRICITY, energy_units=Meter.KILOWATT_HOURS
-        )
-
-        fake_request = FakeRequest(
-            method='POST',
-            user=self.fake_user,
-            body=json.dumps({
-                'meter_id': meter.pk,
-                'organization_id': self.org.pk,
-                'timeseries': [
+        expected = {
+            "status": "success",
+            "meter": {
+                "property_view": None,
+                "name": "test",
+                "energy_units": Meter.KILOWATT_HOURS,
+                "energy_type": Meter.ELECTRICITY,
+                "pk": meter.pk,
+                "model": "seed.meter",
+                "data": [
                     {
-                        'begin_time': '2014-07-10T18:14:54.726Z',
-                        'end_time': '2014-07-10T18:14:54.726Z',
-                        'cost': 345,
-                        'reading': 23.0,
-                    },
-                    {
-                        'begin_time': '2014-07-09T18:14:54.726Z',
-                        'end_time': '2014-07-09T18:14:54.726Z',
-                        'cost': 33,
-                        'reading': 11.0,
+                        "begin": "2015-01-01 08:00:00+00:00",
+                        "end": "2015-01-01 08:00:00+00:00",
+                        "value": 23.0,
                     }
-
                 ]
-            })
-        )
+            }
+        }
 
-        self.assertEqual(TimeSeries.objects.all().count(), 0)
+        jdata = json.loads(resp.content)
+        self.assertEqual(jdata['status'], "success")
+        self.assertEqual(len(jdata['meter']['data']), 100)
 
-        resp = json.loads(meters.add_timeseries(fake_request).content)
 
-        self.assertEqual(resp, {'status': 'success'})
-        self.assertEqual(TimeSeries.objects.all().count(), 2)
+    # Not yet implemented
+    # def test_add_timeseries(self):
+    #     """Adding time series works."""
+    #     meter = Meter.objects.create(
+    #         name='test',
+    #         energy_type=Meter.ELECTRICITY,
+    #         energy_units=Meter.KILOWATT_HOURS
+    #     )
+    #
+    #     client = APIClient()
+    #     client.login(username=self.user.username, password='secret')
+    #     url = reverse('apiv2:meters-add-timeseries', args=(meter.pk,))
+    #
+    #     resp = client.post(url)
+    #
+    #             'timeseries': [
+    #                 {
+    #                     'begin_time': '2014-07-10T18:14:54.726Z',
+    #                     'end_time': '2014-07-10T18:14:54.726Z',
+    #                     'cost': 345,
+    #                     'reading': 23.0,
+    #                 },
+    #                 {
+    #                     'begin_time': '2014-07-09T18:14:54.726Z',
+    #                     'end_time': '2014-07-09T18:14:54.726Z',
+    #                     'cost': 33,
+    #                     'reading': 11.0,
+    #                 }
+    #
+    #             ]
+    #         })
+    #     )
+    #
+    #     self.assertEqual(TimeSeries.objects.all().count(), 0)
+    #
+    #     resp = json.loads(meters.add_timeseries(fake_request).content)
+
+    #     self.assertEqual(resp, {'status': 'success'})
+    #     self.assertEqual(TimeSeries.objects.all().count(), 2)

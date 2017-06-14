@@ -73,8 +73,15 @@ class MeterViewSet(viewsets.ViewSet):
               required: true
               paramType: query
         """
-        pv_id = request.GET.get('property_view_id', '')
-        org_id = request.GET.get('organization_id', '')
+        pv_id = request.GET.get('property_view_id', None)
+        org_id = request.GET.get('organization_id')
+
+        if pv_id is None:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'No property_view_id specified',
+                'meters': []
+            })
 
         # verify that the user has access to view property
         pvs = PropertyView.objects.filter(id=pv_id, state__organization=org_id)
@@ -115,9 +122,19 @@ class MeterViewSet(viewsets.ViewSet):
               paramType: path
         """
         meter = Meter.objects.get(pk=pk)
-        res = obj_to_dict(meter)
-        res['timeseries_count'] = meter.timeseries_set.count()
-        return JsonResponse(res)
+        if meter:
+            res = {}
+            res['status'] = 'success'
+            res['meter'] = obj_to_dict(meter)
+            res['meter']['timeseries_count'] = meter.timeseries_set.count()
+            return JsonResponse(res)
+        else:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'No meter object found',
+            })
+
+
 
     @api_endpoint_class
     @require_organization_id_class
@@ -212,12 +229,14 @@ class MeterViewSet(viewsets.ViewSet):
               paramType: path
         """
         meter = Meter.objects.get(pk=pk)
-        res = obj_to_dict(meter)
-        res['data'] = []
+        res = {}
+        res['status'] = 'success'
+        res['meter'] = obj_to_dict(meter)
+        res['meter']['data'] = []
 
         ts = meter.timeseries_set.order_by('begin_time')
         for t in ts:
-            res['data'].append({
+            res['meter']['data'].append({
                 'begin': str(t.begin_time),
                 'end': str(t.begin_time),
                 'value': t.reading,
