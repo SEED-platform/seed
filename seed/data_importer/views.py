@@ -616,27 +616,23 @@ class ImportFileViewSet(viewsets.ViewSet):
             properties_to_remove = list()
             taxlots_to_remove = list()
 
-            start = datetime.now()
             for p in properties:
                 if PropertyAuditLog.objects.filter(state_id=p['id'], name='Manual Edit').exists():
                     properties_to_remove.append(p['id'])
             for t in tax_lots:
                 if TaxLotAuditLog.objects.filter(state_id=t['id'], name='Manual Edit').exists():
                     taxlots_to_remove.append(t['id'])
-            print("Ran PropertyAuditLot in {}".format(datetime.now() - start))
 
             properties = [p for p in properties if p['id'] not in properties_to_remove]
             tax_lots = [t for t in tax_lots if t['id'] not in taxlots_to_remove]
 
             if get_coparents:
-                start = datetime.now()
                 for state in properties:
                     state['matched'] = False
                     coparent = get_coparent(state['id'], 'properties')
                     if coparent:
                         state['matched'] = True
                         state['coparent'] = coparent
-                print("Ran coparents properties in {}".format(datetime.now() - start))
 
                 for state in tax_lots:
                     state['matched'] = False
@@ -773,8 +769,7 @@ class ImportFileViewSet(viewsets.ViewSet):
             name='Import Creation'
         ).id
         merged_record = audit_log.objects.only('parent_state1_id', 'parent_state2_id').filter(
-            Q(parent1_id=audit_creation_id) | Q(parent2_id=audit_creation_id)).select_related(
-            'parent_state1', 'parent_state2')
+            Q(parent1_id=audit_creation_id) | Q(parent2_id=audit_creation_id))
 
         if not merged_record.exists():
             return False
