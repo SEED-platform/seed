@@ -110,6 +110,17 @@ describe('When I visit the the parent org', function () {
     browser.sleep(1000);
     $('[data-ng-click="modalOptions.cancel()"]').click();
 
+    myNewLabel.$('[ng-click="rowform.$show()"]').click();
+    myNewLabel.$('[ng-click="rowform.$cancel()"]').click();
+    myNewLabel.$('[ng-click="rowform.$show()"]').click();
+    $('[ng-keypress="onEditLabelNameKeypress($event, rowform)"]').clear();
+    myNewLabel.$('.btn.btn-primary.btn-rowform').click();
+    $('[ng-keypress="onEditLabelNameKeypress($event, rowform)"]').sendKeys('Call');
+    myNewLabel.$('.btn.btn-primary.btn-rowform').click();
+    $('[ng-keypress="onEditLabelNameKeypress($event, rowform)"]').sendKeys('fake label');
+    element(by.cssContainingText('[name="color"]', 'blue')).click();
+    myNewLabel.$('.btn.btn-primary.btn-rowform').click();
+
     myNewLabel.$('[ng-click="deleteLabel(label, $index)"]').click();
     browser.sleep(1000);
     $('.btn.btn-primary.ng-binding').click();
