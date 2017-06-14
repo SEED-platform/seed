@@ -131,7 +131,10 @@ class PropertyState(models.Model):
     extra_data = JSONField(default=dict, blank=True)
 
     class Meta:
-        index_together = [['import_file', 'data_state']]
+        index_together = [
+            ['import_file', 'data_state'],
+            ['import_file', 'data_state', 'merge_state']
+        ]
 
     def promote(self, cycle):
         """
@@ -339,3 +342,6 @@ class PropertyAuditLog(models.Model):
     record_type = models.IntegerField(choices=DATA_UPDATE_TYPE, null=True,
                                       blank=True)
     created = models.DateTimeField(auto_now_add=True, null=True)
+
+    class Meta:
+        index_together = [['state', 'name'], ['parent_state1', 'parent_state2']]
