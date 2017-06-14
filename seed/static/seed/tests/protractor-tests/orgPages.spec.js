@@ -117,6 +117,7 @@ describe('When I visit the the parent org', function () {
     myNewLabel.$('.btn.btn-primary.btn-rowform').click();
     $('[ng-keypress="onEditLabelNameKeypress($event, rowform)"]').sendKeys('Call');
     myNewLabel.$('.btn.btn-primary.btn-rowform').click();
+    $('[ng-keypress="onEditLabelNameKeypress($event, rowform)"]').clear();
     $('[ng-keypress="onEditLabelNameKeypress($event, rowform)"]').sendKeys('fake label');
     element(by.cssContainingText('[name="color"]', 'blue')).click();
     myNewLabel.$('.btn.btn-primary.btn-rowform').click();

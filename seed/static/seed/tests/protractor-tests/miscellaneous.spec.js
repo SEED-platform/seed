@@ -84,11 +84,13 @@ describe('When I do miscellaneous things', function () {
     $$('[ng-click="create_label(rule, $index)"]').first().click();
     expect($('.modal-title').isPresent()).toBe(true);
     $('#labelName').sendKeys('ruleLabel');
-    element(by.cssContainingText('#btnSelectLabel', 'green')).click();
+    $('[name="newLabelForm"]').$('#btnSelectLabel').click();
+    $$('[ng-click="new_label.label = label.label; new_label.color = label.color"]').first().click();
     $$('.btn.btn-primary').first().click();
     $('#labelName').sendKeys('ruleLabel');
     $('#labelName').sendKeys('2');
-    element(by.cssContainingText('#btnSelectLabel', 'red')).click();
+    $('[name="newLabelForm"]').$('#btnSelectLabel').click();
+    $$('[ng-click="new_label.label = label.label; new_label.color = label.color"]').get(1).click();
     $$('.btn-default.action_link').get(2).click();
 
     //check label was attached after save and refresh
