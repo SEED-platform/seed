@@ -23,6 +23,8 @@ describe('When I go to admin page', function () {
     browser.get('/app/#/profile/developer');
     browser.sleep(5000);
     expect(browser.getTitle()).toContain('SEED Platform');
+    $('[ng-click="generate_api_key()"]').click();
+    browser.wait(EC.presenceOf($('.fa-check')), 10000);
   });
 
   it('should test pw change', function () {

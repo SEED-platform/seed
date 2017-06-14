@@ -80,6 +80,8 @@ describe('When I do miscellaneous things', function () {
 
     //create label but select not created one
     $$('[ng-click="create_label(rule, $index)"]').first().click();
+    $('[ng-click="cancel()"]').click();
+    $$('[ng-click="create_label(rule, $index)"]').first().click();
     expect($('.modal-title').isPresent()).toBe(true);
     $('#labelName').sendKeys('ruleLabel');
     $$('.btn.btn-primary').first().click();

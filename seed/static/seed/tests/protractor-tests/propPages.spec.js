@@ -94,6 +94,8 @@ describe('When I go to the inventory page', function () {
 
     // add label
     $('[ng-click="open_update_labels_modal(inventory.id, inventory_type)"]').click();
+    $('[ng-click="cancel()"]').click();
+    $('[ng-click="open_update_labels_modal(inventory.id, inventory_type)"]').click();
     $('.modal-title').getText().then(function (label) {
       expect(label).toContain('Labels');
     });
