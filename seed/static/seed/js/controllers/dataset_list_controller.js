@@ -97,33 +97,33 @@ angular.module('BE.seed.controller.dataset', [])
         });
       };
 
-      /**
-       * goto_mapping: changes browser location to the first assessed file
-       *   mapping page
-       */
-      $scope.goto_mapping = function (dataset) {
-        for (var i = 0; i < dataset.importfiles.length; i++) {
-          var importfile = dataset.importfiles[i];
-          if (importfile.source_type === 'Assessed Raw') {
-            $state.go('mapping', {importfile_id: importfile.id});
-            break;
-          }
-        }
-      };
+      // /**
+      //  * goto_mapping: changes browser location to the first assessed file
+      //  *   mapping page
+      //  */
+      // $scope.goto_mapping = function (dataset) {
+      //   for (var i = 0; i < dataset.importfiles.length; i++) {
+      //     var importfile = dataset.importfiles[i];
+      //     if (importfile.source_type === 'Assessed Raw') {
+      //       $state.go('mapping', {importfile_id: importfile.id});
+      //       break;
+      //     }
+      //   }
+      // };
 
-      /**
-       * goto_mapping: changes browser location to the first portfolio file
-       *   matching page
-       */
-      $scope.goto_matching = function (dataset) {
-        for (var i = 0; i < dataset.importfiles.length; i++) {
-          var importfile = dataset.importfiles[i];
-          if (importfile.source_type === 'Portfolio Raw') {
-            $state.go('matching_list', {importfile_id: importfile.id, inventory_type: 'properties'});
-            break;
-          }
-        }
-      };
+      // *
+      //  * goto_mapping: changes browser location to the first portfolio file
+      //  *   matching page
+       
+      // $scope.goto_matching = function (dataset) {
+      //   for (var i = 0; i < dataset.importfiles.length; i++) {
+      //     var importfile = dataset.importfiles[i];
+      //     if (importfile.source_type === 'Portfolio Raw') {
+      //       $state.go('matching_list', {importfile_id: importfile.id, inventory_type: 'properties'});
+      //       break;
+      //     }
+      //   }
+      // };
 
       /**
        * missing_assessor_files: true if the dataset has no assessed files

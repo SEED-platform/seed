@@ -181,6 +181,8 @@ describe('When I do miscellaneous things', function () {
     var rowCount3 = element.all(by.repeater('result in row.data_quality_results'));
 
     expect(rowCount3.count()).toBe(5);
+    $$('[ng-click="c.toggle_sort()"]').first().click().click();
+    $$('[ng-change="search.filter_search()"]').first().sendKeys('1234');
     $$('[ng-click="close()"]').click();
 
   });

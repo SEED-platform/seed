@@ -25,6 +25,7 @@ describe('When I go to the matching page', function () {
     expect($('.page_title').getText()).toContain('Data Matching');
     expect($('.table_footer').getText()).toContain('4 unmatched');
     element(by.cssContainingText('#selected-cycle', browser.params.testOrg.cycle)).click();
+    $$('[ng-click="order_by_field(col.extraData, col.name)"]').first().click().click();
     $('#showHideFilterSelect').element(by.cssContainingText('option', 'Show Matched')).click();
     var rows = element.all(by.repeater('i in inventory'));
     expect(rows.count()).not.toBeLessThan(1);
