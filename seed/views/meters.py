@@ -134,8 +134,6 @@ class MeterViewSet(viewsets.ViewSet):
                 'message': 'No meter object found',
             })
 
-
-
     @api_endpoint_class
     @require_organization_id_class
     @has_perm_class('requires_member')

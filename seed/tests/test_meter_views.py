@@ -163,7 +163,6 @@ class TestMeterViewSet(TestCase):
         self.assertEqual(jdata['status'], "success")
         self.assertEqual(len(jdata['meter']['data']), 100)
 
-
     # Not yet implemented
     # def test_add_timeseries(self):
     #     """Adding time series works."""
