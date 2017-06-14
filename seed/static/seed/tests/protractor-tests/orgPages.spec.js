@@ -105,8 +105,13 @@ describe('When I visit the the parent org', function () {
       .element(by.xpath('..')).element(by.xpath('..'));
 
     expect(myNewLabel.isPresent()).toBe(true);
+    
     myNewLabel.$('[ng-click="deleteLabel(label, $index)"]').click();
-    browser.sleep(2000);
+    browser.sleep(1000);
+    $('[data-ng-click="modalOptions.cancel()"]').click();
+
+    myNewLabel.$('[ng-click="deleteLabel(label, $index)"]').click();
+    browser.sleep(1000);
     $('.btn.btn-primary.ng-binding').click();
     expect(myNewLabel.isPresent()).toBe(false);
   }, 60000);
@@ -114,6 +119,29 @@ describe('When I visit the the parent org', function () {
   // manually
   it('should reset sync', function () {
     browser.ignoreSynchronization = false;
+  });
+
+  it('should create new members', function () {
+    var myOptions = element.all(by.css('a')).filter(function (elm) {
+      return elm.getText().then(function (label) {
+        return label == 'Members';
+      });
+    }).first();
+    myOptions.click();
+
+    $('[ng-click="new_member_modal()"]').click();
+    $('[ng-click="cancel()"]').click();
+    $('[ng-click="new_member_modal()"]').click();
+    $('[ng-model="user.first_name"]').sendKeys('fake');
+    $('[ng-model="user.last_name"]').sendKeys('stuff');
+    $('[ng-model="user.email"]').sendKeys('something@test.com');
+    element(by.cssContainingText('[ng-model="user.role"]', 'Owner')).click();
+    $('.btn.btn-primary').click();
+
+    $('[placeholder="member name"]').sendKeys('stuff');
+    $('[placeholder="member name"]').clear();
+    element(by.cssContainingText('[ng-model="u.role"]', 'viewer')).click();
+    $$('[ng-click="remove_member(u)"]').first().click();
   });
 
   it('should create other sub org', function () {

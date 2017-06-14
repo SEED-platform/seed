@@ -34,13 +34,13 @@ angular.module('BE.seed.controller.data_quality_labels_modal', [])
       $scope.available_colors = label_service.get_available_colors();
 
       /* Initialize the label props for a 'new' label */
-      // $scope.initialize_new_label = function () {
-      //   $scope.new_label = {
-      //     color: 'gray',
-      //     label: 'default',
-      //     name: ''
-      //   };
-      // };
+      $scope.initialize_new_label = function () {
+        $scope.new_label = {
+          color: 'gray',
+          label: 'default',
+          name: ''
+        };
+      };
 
       /* Create a new label based on user input */
       $scope.submitNewLabelForm = function (form) {
