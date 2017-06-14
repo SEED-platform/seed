@@ -9,22 +9,30 @@ describe('When I go to admin page', function () {
 
   // manually
   it('should reset sync', function () {
-    browser.ignoreSynchronization = false;
+    browser.ignoreSynchronization = true;
   });
 
 
   it('should test admin pages', function () {
     browser.get('/app/#/api/swagger');
     browser.wait(EC.presenceOf($('.logo')), 10000);
-    browser.wait(EC.presenceOf($('#resources_container')), 10000);
-    // browser.sleep(5000);
+    browser.sleep(5000);
     expect(browser.getTitle()).toContain('SEED Platform');
     browser.get('/app/#/contact');
     browser.wait(EC.presenceOf($('.logo')), 10000);
     // browser.sleep(5000);
     expect(browser.getTitle()).toContain('SEED Platform');
+  });
+
+
+  // manually
+  it('should reset sync', function () {
+    browser.ignoreSynchronization = false;
+  });
+
+  it('should test developer pages', function () {
     browser.get('/app/#/profile/developer');
-    browser.wait(EC.presenceOf($('.logo')), 10000);
+    browser.wait(EC.presenceOf($('.logo')), 20000);
     // browser.sleep(5000);
     expect(browser.getTitle()).toContain('SEED Platform');
     $('[ng-click="generate_api_key()"]').click();
@@ -41,12 +49,6 @@ describe('When I go to admin page', function () {
     $('#editConfirmNewPassword').sendKeys('somethingFAKE!');
     $('[ng-click="change_password()"]').click();
     browser.wait(EC.presenceOf($('.fa-check')), 10000);
-  });
-
-
-  // manually
-  it('should reset sync', function () {
-    browser.ignoreSynchronization = false;
   });
 
 
