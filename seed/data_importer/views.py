@@ -536,18 +536,6 @@ class ImportFileViewSet(viewsets.ViewSet):
               paramType: path
         response_serializer: MappingResultsResponseSerializer
         """
-
-        def get_coparent(state_id, inventory_type):
-            coparent = self.has_coparent(state_id, inventory_type)
-
-            if coparent:
-                if inventory_type == 'properties':
-                    return {k: getattr(coparent, k) for k in fields['PropertyState']}
-                else:
-                    return {k: getattr(coparent, k) for k in fields['TaxLotState']}
-            else:
-                return None
-
         import_file_id = pk
 
         get_coparents = request.data.get('get_coparents', False)
@@ -591,7 +579,12 @@ class ImportFileViewSet(viewsets.ViewSet):
 
             if get_coparents:
                 result['matched'] = False
-                coparent = get_coparent(state.id, inventory_type)
+                coparent = None
+                if inventory_type == 'properties':
+                    coparent = self.has_coparent(state.id, inventory_type, fields['PropertyState'])
+                else:
+                    coparent = self.has_coparent(state.id, inventory_type, fields['TaxLotState'])
+
                 if coparent:
                     result['matched'] = True
                     result['coparent'] = coparent
@@ -629,14 +622,14 @@ class ImportFileViewSet(viewsets.ViewSet):
             if get_coparents:
                 for state in properties:
                     state['matched'] = False
-                    coparent = get_coparent(state['id'], 'properties')
+                    coparent = self.has_coparent(state['id'], 'properties', fields['PropertyState'])
                     if coparent:
                         state['matched'] = True
                         state['coparent'] = coparent
 
                 for state in tax_lots:
                     state['matched'] = False
-                    coparent = get_coparent(state['id'], 'taxlots')
+                    coparent = self.has_coparent(state['id'], 'taxlots', fields['TaxLotState'])
                     if coparent:
                         state['matched'] = True
                         state['coparent'] = coparent
@@ -762,8 +755,19 @@ class ImportFileViewSet(viewsets.ViewSet):
         }
 
     @staticmethod
-    def has_coparent(state_id, inventory_type):
+    def has_coparent(state_id, inventory_type, fields=None):
+        """
+        Return the coparent of the current state id based on the inventory type. If fields
+        are given (as a list), then it will only return the fields specified of the state model
+        object as a dictionary.
+
+        :param state_id: int, ID of PropertyState or TaxLotState
+        :param inventory_type: string, either properties | taxlots
+        :param fields: list, either None or list of fields to return
+        :return: dict or state object, If fields is not None then will return state_object
+        """
         audit_log = PropertyAuditLog if inventory_type == 'properties' else TaxLotAuditLog
+        state_model = PropertyState if inventory_type == 'properties' else TaxLotState
         audit_creation_id = audit_log.objects.only('id').exclude(import_filename=None).get(
             state_id=state_id,
             name='Import Creation'
@@ -785,7 +789,15 @@ class ImportFileViewSet(viewsets.ViewSet):
 
         audit_entry = merged_record.first()
         state_id1 = audit_entry.parent_state1_id
-        return audit_entry.parent_state1 if state_id1 != state_id else audit_entry.parent_state2
+
+        # check if we are returning as subset of the fields (as values)
+        if fields:
+            if state_id1 != state_id:
+                return state_model.objects.filter(id=audit_entry.parent_state1_id).values(*fields)[0]
+            else:
+                return state_model.objects.filter(id=audit_entry.parent_state2_id).values(*fields)[0]
+        else:
+            return audit_entry.parent_state1 if state_id1 != state_id else audit_entry.parent_state2
 
     @api_endpoint_class
     @ajax_request_class
