@@ -55,6 +55,21 @@ describe('When I go to admin page', function () {
     expect(myNewSubOrg.isPresent()).toBe(false);
   }, 30000);
 
+  it('should remove column mappings', function () {
+    var myNewOrg = element.all(by.repeater('org in org_user.organizations')).filter(function (rows) {
+      expect(rows.length).not.toBeLessThan(1);
+      return rows.getText().then(function (label) {
+        return label.includes(browser.params.testOrg.parent);
+      });
+    }).first();
+    expect(myNewOrg.isPresent()).toBe(true);
+
+    browser.wait(EC.presenceOf(myNewOrg.$('[ng-click="confirm_inventory_delete(org)"]')), 120000);
+    myNewOrg.$('[ng-click="confirm_column_mappings_delete(org)"]').click();
+    browser.wait(EC.alertIsPresent(), 2000, 'Remove org Alert is not present');
+    browser.switchTo().alert().accept();
+  }, 30000);
+
   it('should delete new test org', function () {
     // browser.get("/app/#/profile/admin");
     var myNewOrg = element.all(by.repeater('org in org_user.organizations')).filter(function (rows) {
