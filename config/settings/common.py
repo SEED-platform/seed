@@ -94,6 +94,7 @@ INSTALLED_APPS = (
     'django_extensions',
     'raven.contrib.django.raven_compat',
     'tos',
+    'django_filters',
     'rest_framework',
     'rest_framework_swagger',
 )
@@ -270,16 +271,25 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
         'seed.authentication.SEEDAuthentication',
     ),
+    'DEFAULT_FILTER_BACKENDS':
+        ('django_filters.rest_framework.DjangoFilterBackend',),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'DEFAULT_PAGINATION_CLASS':
+        'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 25,
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
+    'DATETIME_INPUT_FORMATS': (
+        '%Y:%m:%d', 'iso-8601', '%Y-%m-%d'
+    ),
+    'VIEW_DESCRIPTION_FUNCTION':
+        'rest_framework_swagger.views.get_restructuredtext'
 }
 
 SWAGGER_SETTINGS = {
     "exclude_namespaces": ["app"],  # List URL namespaces to ignore
+    'APIS_SORTER': 'alpha'
 }
 
 # Certification
