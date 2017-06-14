@@ -163,5 +163,27 @@ describe('When I go to the inventory page', function () {
     browser.wait(EC.presenceOf($('.dimple-series-0')), 10000);
     expect($('.fa.fa-square').isPresent()).toBe(true);
     expect($('.fa.fa-circle').isPresent()).toBe(true);
+
+
+    $$('[aria-expanded="false"]').first().click();
+    $$('[ng-bind="item.name"]').first().click();
+    $('.btn.btn-primary').click();
+
+    $$('[aria-expanded="false"]').first().click();
+    $$('[ng-bind="item.name"]').get(1).click();
+    $('.btn.btn-primary').click();
+
+    $$('[aria-expanded="false"]').first().click();
+    $$('[ng-bind="item.name"]').get(2).click();
+    $('.btn.btn-primary').click();
+
+    $$('[aria-expanded="false"]').first().click();
+    $$('[ng-bind="item.name"]').get(3).click();
+    $('.btn.btn-primary').click();
+
+    $$('[aria-expanded="false"]').get(1).click();
+    $$('[ng-bind="item.name"]').get(1).click();
+    $('.btn.btn-primary').click();
+
   });
 });
