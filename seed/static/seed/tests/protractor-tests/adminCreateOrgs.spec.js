@@ -16,6 +16,7 @@ describe('When I go to admin page', function () {
   it('should test admin pages', function () {
     browser.get('/app/#/api/swagger');
     browser.wait(EC.presenceOf($('.logo')), 10000);
+    browser.wait(EC.presenceOf($('#resources_container')), 10000);
     // browser.sleep(5000);
     expect(browser.getTitle()).toContain('SEED Platform');
     browser.get('/app/#/contact');
