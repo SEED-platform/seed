@@ -165,24 +165,24 @@ describe('When I go to the inventory page', function () {
     expect($('.fa.fa-circle').isPresent()).toBe(true);
 
 
-    $$('[aria-expanded="false"]').first().click();
+    $('#xAxisSelector').$('.btn-group.dropdown').$('.btn.btn-default.dropdown-toggle').click();
     $$('[ng-bind="item.name"]').first().click();
     $('.btn.btn-primary').click();
 
-    $$('[aria-expanded="false"]').first().click();
+    $('#xAxisSelector').$('.btn-group.dropdown').$('.btn.btn-default.dropdown-toggle').click();
     $$('[ng-bind="item.name"]').get(1).click();
     $('.btn.btn-primary').click();
 
-    $$('[aria-expanded="false"]').first().click();
+    $('#xAxisSelector').$('.btn-group.dropdown').$('.btn.btn-default.dropdown-toggle').click();
     $$('[ng-bind="item.name"]').get(2).click();
     $('.btn.btn-primary').click();
 
-    $$('[aria-expanded="false"]').first().click();
+    $('#xAxisSelector').$('.btn-group.dropdown').$('.btn.btn-default.dropdown-toggle').click();
     $$('[ng-bind="item.name"]').get(3).click();
     $('.btn.btn-primary').click();
 
-    $$('[aria-expanded="false"]').get(1).click();
-    $$('[ng-bind="item.name"]').get(1).click();
+    $('#yAxisSelector').$('.btn-group.dropdown').$('.btn.btn-default.dropdown-toggle').click();
+    $('#yAxisSelector').$('.btn-group.dropdown').$('.dropdown-menu').all(by.css('[ng-bind="item.name"]')).get(1).click();
     $('.btn.btn-primary').click();
 
   });

@@ -34,13 +34,13 @@ angular.module('BE.seed.controller.data_quality_labels_modal', [])
       $scope.available_colors = label_service.get_available_colors();
 
       /* Initialize the label props for a 'new' label */
-      $scope.initialize_new_label = function () {
-        $scope.new_label = {
-          color: 'gray',
-          label: 'default',
-          name: ''
-        };
-      };
+      // $scope.initialize_new_label = function () {
+      //   $scope.new_label = {
+      //     color: 'gray',
+      //     label: 'default',
+      //     name: ''
+      //   };
+      // };
 
       /* Create a new label based on user input */
       $scope.submitNewLabelForm = function (form) {
@@ -76,23 +76,23 @@ angular.module('BE.seed.controller.data_quality_labels_modal', [])
       };
 
       /* Toggle the remove button for a label */
-      $scope.toggle_remove = function (label) {
-        if (label.is_checked_remove && label.is_checked_add) {
-          label.is_checked_add = false;
-        }
-      };
+      // $scope.toggle_remove = function (label) {
+      //   if (label.is_checked_remove && label.is_checked_add) {
+      //     label.is_checked_add = false;
+      //   }
+      // };
 
-      $scope.modified = function () {
-        return Boolean(_.filter($scope.labels, 'is_checked_add').length || _.filter($scope.labels, 'is_checked_remove').length);
-      };
+      // $scope.modified = function () {
+      //   return Boolean(_.filter($scope.labels, 'is_checked_add').length || _.filter($scope.labels, 'is_checked_remove').length);
+      // };
 
       /* User has indicated 'Done' so perform selected label operations */
-      $scope.done = function () {
+      // $scope.done = function () {
 
-        var addLabelIDs = _.chain($scope.labels).filter('is_checked_add').map('id').value().sort();
-        // var removeLabelIDs = _.chain($scope.labels).filter('is_checked_remove').map('id').value().sort();
-        $uibModalInstance.close(addLabelIDs);
-      };
+      //   var addLabelIDs = _.chain($scope.labels).filter('is_checked_add').map('id').value().sort();
+      //   // var removeLabelIDs = _.chain($scope.labels).filter('is_checked_remove').map('id').value().sort();
+      //   $uibModalInstance.close(addLabelIDs);
+      // };
 
       /* User has cancelled dialog */
       $scope.cancel = function () {
