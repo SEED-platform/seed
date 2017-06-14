@@ -18,6 +18,11 @@ from seed.data_importer.views import (
 from seed.views.api import get_api_schema
 from seed.views.columns import ColumnViewSet, ColumnMappingViewSet
 from seed.views.cycles import CycleView
+from seed.views.certification import (
+    GreenAssessmentViewSet,
+    GreenAssessmentPropertyViewSet,
+    GreenAssessmentURLViewSet
+)
 from seed.views.data_quality import DataQualityViews
 from seed.views.datasets import DatasetViewSet
 from seed.views.labels import LabelViewSet, UpdateInventoryLabelsAPIView
@@ -32,6 +37,9 @@ api_v2_router.register(r'columns', ColumnViewSet, base_name="columns")
 api_v2_router.register(r'column_mappings', ColumnMappingViewSet, base_name="column_mappings")
 api_v2_router.register(r'datasets', DatasetViewSet, base_name="datasets")
 api_v2_router.register(r'organizations', OrganizationViewSet, base_name="organizations")
+api_v2_router.register(r'green_assessments', GreenAssessmentViewSet, base_name="green_assessments")
+api_v2_router.register(r'green_assessment_urls', GreenAssessmentURLViewSet, base_name="green_assessment_urls")
+api_v2_router.register(r'green_assessment_properties', GreenAssessmentPropertyViewSet, base_name="green_assessment_properties")
 api_v2_router.register(r'projects', ProjectViewSet, base_name="projects")
 api_v2_router.register(r'users', UserViewSet, base_name="users")
 api_v2_router.register(r'reverse_and_test', TestReverseViewSet, base_name="reverse_and_test")
