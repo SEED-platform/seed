@@ -411,10 +411,6 @@ class TestPropertyViewAsStateSerializers(TestCase):
         mock_pview.objects.create.assert_called_with(
             state='mock_state', cycle_id=2, property_id=4, org_id=1
         )
-        mock_property_view.update_state.assert_called_with(
-            'mock_state', description='Created via API',
-            record_type=AUDIT_USER_CREATE
-        )
 
     @mock.patch('seed.serializers.properties.PropertyStateWritableSerializer')
     def test_update_put(self, mock_serializer):
@@ -438,10 +434,6 @@ class TestPropertyViewAsStateSerializers(TestCase):
             data={'test': 3}
         )
         self.assertTrue(mock_serializer.return_value.save.called)
-        mock_property_view.update_state.assert_called_with(
-            'mock_state', description='["state"]',
-            record_type=AUDIT_USER_CREATE
-        )
 
     @mock.patch('seed.serializers.properties.PropertyStateWritableSerializer')
     def test_update_patch(self, mock_serializer):
@@ -462,14 +454,10 @@ class TestPropertyViewAsStateSerializers(TestCase):
         serializer.context = {'request': mock_request}
         serializer.update(mock_property_view, data)
         mock_serializer.assert_called_with(
-            mock_property_view.state,
+            'pv_state',
             data={'test': 3}
         )
         self.assertTrue(mock_serializer.return_value.save.called)
-        mock_property_view.update_state.assert_called_with(
-            'mock_state', description='Updated via API PATCH call',
-            record_type=AUDIT_USER_EDIT
-        )
 
 
 class TestMisc(TestCase):

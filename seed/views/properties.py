@@ -24,6 +24,7 @@ from rest_framework.viewsets import GenericViewSet
 
 # Local Imports
 from seed.decorators import ajax_request_class
+from seed.filtersets import PropertyViewFilterSet, PropertyStateFilterSet
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import Property as PropertyModel
 from seed.models import (
@@ -64,31 +65,127 @@ DISPLAY_RAW_EXTRADATA = True
 DISPLAY_RAW_EXTRADATA_TIME = True
 
 
-class PropertyViewSet(SEEDOrgCreateUpdateModelViewSet):
-    """Properties API Endpoint"""
+class GBRPropertyViewSet(SEEDOrgCreateUpdateModelViewSet):
+    """Properties API Endpoint
+
+        Returns::
+            {
+                'status': 'success',
+                'properties': [
+                    {
+                        'id': Property primary key,
+                        'campus': property is a campus,
+                        'parent_property': dict of associated parent property
+                        'labels': list of associated label ids
+                    }
+                ]
+            }
+
+
+    retrieve:
+        Return a Property instance by pk if it is within specified org.
+
+    list:
+        Return all Properties available to user through specified org.
+
+    create:
+        Create a new Property within user`s specified org.
+
+    delete:
+        Remove an existing Property.
+
+    update:
+        Update a Property record.
+
+    partial_update:
+        Update one or more fields on an existing Property.
+    """
     serializer_class = PropertySerializer
     model = PropertyModel
     data_name = "properties"
 
 
 class PropertyStateViewSet(SEEDOrgCreateUpdateModelViewSet):
-    """Property State API Endpoint"""
+    """Property State API Endpoint
+
+        Returns::
+            {
+                'status': 'success',
+                'properties': [
+                    {
+                        all PropertyState fields/values
+                    }
+                ]
+            }
+
+
+    retrieve:
+        Return a PropertyState instance by pk if it is within specified org.
+
+    list:
+        Return all PropertyStates available to user through specified org.
+
+    create:
+        Create a new PropertyState within user`s specified org.
+
+    delete:
+        Remove an existing PropertyState.
+
+    update:
+        Update a PropertyState record.
+
+    partial_update:
+        Update one or more fields on an existing PropertyState."""
     serializer_class = PropertyStateSerializer
     model = PropertyState
-    filter_fields = ('property_name', 'city', 'energy_score')
+    filter_class = PropertyStateFilterSet
     data_name = "properties"
 
 
 class PropertyViewViewSet(SEEDOrgModelViewSet):
-    """Property View API Endpoint"""
+    """PropertyViews API Endpoint
+
+        Returns::
+            {
+                'status': 'success',
+                'properties': [
+                    {
+                        'id': PropertyView primary key,
+                        'property_id': id of associated Property,
+                        'state': dict of associated PropertyState values (writeable),
+                        'cycle': dict of associated Cycle values,
+                        'certifications': dict of associated GreenAssessmentProperties values
+                    }
+                ]
+            }
+
+
+    retrieve:
+        Return a PropertyView instance by pk if it is within specified org.
+
+    list:
+        Return all PropertyViews available to user through specified org.
+
+    create:
+        Create a new PropertyView within user`s specified org.
+
+    delete:
+        Remove an existing PropertyView.
+
+    update:
+        Update a PropertyView record.
+
+    partial_update:
+        Update one or more fields on an existing PropertyView.
+    """
     serializer_class = PropertyViewAsStateSerializer
     model = PropertyView
-    filter_fields = ('cycle_id', 'property_id')
+    filter_class = PropertyViewFilterSet
     orgfilter = 'property__organization_id'
     data_name = "property_views"
 
 
-class SEEDPropertyViewSet(GenericViewSet):
+class PropertyViewSet(GenericViewSet):
     renderer_classes = (JSONRenderer,)
     serializer_class = PropertySerializer
 

@@ -30,7 +30,7 @@ from seed.views.main import version, progress
 from seed.views.organizations import OrganizationViewSet
 from seed.views.projects import ProjectViewSet
 from seed.views.properties import (PropertyViewSet, PropertyStateViewSet,
-                                   PropertyViewViewSet, SEEDPropertyViewSet)
+                                   PropertyViewViewSet, GBRPropertyViewSet)
 from seed.views.taxlots import TaxLotViewSet
 from seed.views.users import UserViewSet
 
@@ -52,10 +52,10 @@ api_v2_router.register(r'taxlots', TaxLotViewSet, base_name="taxlots")
 api_v2_router.register(r'reverse_and_test', TestReverseViewSet, base_name="reverse_and_test")
 api_v2_router.register(r'upload', LocalUploaderViewSet, base_name='local_uploader')
 api_v2_router.register(r'data_quality_checks', DataQualityViews, base_name='data_quality_checks')
-api_v2_router.register(r'properties', PropertyViewSet, base_name="properties")
+api_v2_router.register(r'gbr_properties', GBRPropertyViewSet, base_name="properties")
 api_v2_router.register(r'property_states', PropertyStateViewSet, base_name="property_states")
 api_v2_router.register(r'property_views', PropertyViewViewSet, base_name="property_views")
-api_v2_router.register(r'seed_properties', SEEDPropertyViewSet, base_name="seed_properties")
+api_v2_router.register(r'properties', PropertyViewSet, base_name="seed_properties")
 
 urlpatterns = [
     # v2 api
