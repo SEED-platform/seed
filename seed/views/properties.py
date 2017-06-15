@@ -82,9 +82,12 @@ def pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, pair):
                 'message': 'taxlot {} and property {} are already {}ed'.format(taxlot_id,
                                                                                property_id, string)
             })
-        TaxLotProperty(primary=True, cycle_id=pv_cycle, property_view_id=property_id,
-                       taxlot_view_id=taxlot_id) \
-            .save()
+        TaxLotProperty(
+            primary=True,
+            cycle_id=pv_cycle,
+            property_view_id=property_id,
+            taxlot_view_id=taxlot_id
+        ).save()
 
         success = True
     else:
@@ -97,8 +100,9 @@ def pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, pair):
                 'message': 'taxlot {} and property {} are already {}ed'.format(taxlot_id,
                                                                                property_id, string)
             })
-        TaxLotProperty.objects.filter(property_view_id=property_id, taxlot_view_id=taxlot_id) \
-            .delete()
+        TaxLotProperty.objects.filter(
+            property_view_id=property_id,
+            taxlot_view_id=taxlot_id).delete()
 
         success = True
 
@@ -641,7 +645,8 @@ class PropertyViewSet(GenericViewSet):
                 ).order_by('-id').first()
 
                 if 'extra_data' in new_property_state_data.keys():
-                    property_state_data['extra_data'].update(new_property_state_data.pop('extra_data'))
+                    property_state_data['extra_data'].update(
+                        new_property_state_data.pop('extra_data'))
                 property_state_data.update(new_property_state_data)
 
                 if log.name == 'Import Creation':

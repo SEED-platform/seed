@@ -130,6 +130,12 @@ class PropertyState(models.Model):
 
     extra_data = JSONField(default=dict, blank=True)
 
+    class Meta:
+        index_together = [
+            ['import_file', 'data_state'],
+            ['import_file', 'data_state', 'merge_state']
+        ]
+
     def promote(self, cycle):
         """
         Promote the PropertyState to the view table for the given cycle
@@ -254,6 +260,7 @@ class PropertyView(models.Model):
 
     class Meta:
         unique_together = ('property', 'cycle',)
+        index_together = [['state', 'cycle']]
 
     def __init__(self, *args, **kwargs):
         self._import_filename = kwargs.pop('import_filename', None)
@@ -323,10 +330,8 @@ class PropertyAuditLog(models.Model):
     parent_state2 = models.ForeignKey(PropertyState, blank=True, null=True,
                                       related_name='propertyauditlog__parent_state2')
 
-    state = models.ForeignKey('PropertyState',
-                              related_name='propertyauditlog__state')
-    view = models.ForeignKey('PropertyView',
-                             related_name='propertyauditlog__view', null=True)
+    state = models.ForeignKey('PropertyState', related_name='propertyauditlog__state')
+    view = models.ForeignKey('PropertyView', related_name='propertyauditlog__view', null=True)
 
     name = models.CharField(max_length=255, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
@@ -336,13 +341,27 @@ class PropertyAuditLog(models.Model):
                                       blank=True)
     created = models.DateTimeField(auto_now_add=True, null=True)
 
+    class Meta:
+        index_together = [['state', 'name'], ['parent_state1', 'parent_state2']]
 
-class BuildingSyncFile(models.Model):
+
+class BuildingFile(models.Model):
+    UNKNOWN = 0
+    BUILDINGSYNC = 1
+    GEOJSON = 2
+
+    BUILDING_FILE_TYPES = (
+        (UNKNOWN, 'Unknown'),
+        (BUILDINGSYNC, 'BuildingSync'),
+        (GEOJSON, 'GeoJSON'),
+    )
     # def upload_path(self):
     #     if not self.pk:
     #         i = BuildingSyncFile.objects.create()
     #         self.id = self.pk = i.id
     #     return "properties/%s/buildingsync" % str(self.id)
-    simulation = models.ForeignKey(PropertyState, related_name='buildingsync_file')
+    simulation = models.ForeignKey(PropertyState, related_name='building_file')
+    file_type = models.IntegerField(choices=BUILDING_FILE_TYPES, default=UNKNOWN)
     file = models.FileField(upload_to="buildingsync_files", max_length=500, blank=True, null=True)
     file_size_in_bytes = models.IntegerField(blank=True, null=True)
+
