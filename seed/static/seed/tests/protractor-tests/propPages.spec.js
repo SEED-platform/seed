@@ -90,6 +90,14 @@ describe('When I go to the inventory page', function () {
     expect(rows.count()).toBe(1);
   });
 
+  it('should go to settings in info pages', function () {
+    $('#settings').click();
+    $$('[ng-click="toggleMenu($event)"]').first().click();
+    $$('[ng-click="itemAction($event, title)"]').first().click();
+    $('#item_title').click();
+    var rows = element.all(by.repeater('field in columns'));
+    expect(rows.count()).not.toBeLessThan(2);
+  });
 
   it('should go to labels', function () {
 

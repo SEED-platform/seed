@@ -74,6 +74,25 @@ describe('When I go to the taxlot page', function () {
     expect(labels.count()).toBeLessThan(1);
   });
 
+  it('should go to settings in info pages', function () {
+    $('#settings').click();
+    $('[ng-if="grid.options.enableSelectAll"]').click().click();
+    $$('[ng-class="{\'ui-grid-row-selected\': row.isSelected}"]').first().click();
+    $('#item_title').click();
+    var rows = element.all(by.repeater('field in columns'));
+    expect(rows.count()).toBe(1);
+  });
+
+  it('should go to settings in info pages', function () {
+    $('#settings').click();
+    $$('[ng-click="toggleMenu($event)"]').first().click();
+    $$('[ng-click="itemAction($event, title)"]').first().click();
+    $('#item_title').click();
+    var rows = element.all(by.repeater('field in columns'));
+    expect(rows.count()).not.toBeLessThan(2);
+  });
+
+
   it('should go to info pages and add remove label', function () {
     // add label
     $('[ng-click="open_update_labels_modal(inventory.id, inventory_type)"]').click();
