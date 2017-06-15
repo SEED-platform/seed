@@ -14,7 +14,6 @@ from django.core.files import File
 from django.test import TestCase
 from django.utils import timezone
 
-import seed.models
 from seed.data_importer.models import ImportRecord, ImportFile
 from seed.green_button import xml_importer
 from seed.landing.models import SEEDUser as User

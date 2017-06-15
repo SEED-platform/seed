@@ -364,4 +364,3 @@ class BuildingFile(models.Model):
     file_type = models.IntegerField(choices=BUILDING_FILE_TYPES, default=UNKNOWN)
     file = models.FileField(upload_to="buildingsync_files", max_length=500, blank=True, null=True)
     file_size_in_bytes = models.IntegerField(blank=True, null=True)
-

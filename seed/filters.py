@@ -12,17 +12,6 @@ from seed import search
 
 
 class LabelFilterBackend(filters.BaseFilterBackend):
-
-    def filter_queryset(self, request, queryset, view):
-        if 'organization_id' in request.query_params:
-            return queryset.filter(
-                super_organization_id=request.query_params['organization_id'],
-            )
-        return queryset
-
-
-class MeterFilterBackend(filters.BaseFilterBackend):
-
     def filter_queryset(self, request, queryset, view):
         if 'organization_id' in request.query_params:
             return queryset.filter(

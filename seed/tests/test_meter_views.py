@@ -18,9 +18,7 @@ from seed.models import (
     Meter,
     TimeSeries,
 )
-from seed.tests.util import FakeRequest
 from seed.utils.organizations import create_organization
-from seed.views import meters
 
 
 class TestMeterViewSet(TestCase):
@@ -141,64 +139,52 @@ class TestMeterViewSet(TestCase):
         resp = client.get(url)
 
         expected = {
-            "status": "success",
-            "meter": {
-                "property_view": None,
-                "name": "test",
-                "energy_units": Meter.KILOWATT_HOURS,
-                "energy_type": Meter.ELECTRICITY,
-                "pk": meter.pk,
-                "model": "seed.meter",
-                "data": [
-                    {
-                        "begin": "2015-01-01 08:00:00+00:00",
-                        "end": "2015-01-01 08:00:00+00:00",
-                        "value": 23.0,
-                    }
-                ]
-            }
+            "begin": "2015-01-01 08:00:00+00:00",
+            "end": "2015-01-01 08:00:00+00:00",
+            "value": 23.0,
         }
 
         jdata = json.loads(resp.content)
         self.assertEqual(jdata['status'], "success")
         self.assertEqual(len(jdata['meter']['data']), 100)
+        self.assertDictEqual(jdata['meter']['data'][0], expected)
 
-    # Not yet implemented
-    # def test_add_timeseries(self):
-    #     """Adding time series works."""
-    #     meter = Meter.objects.create(
-    #         name='test',
-    #         energy_type=Meter.ELECTRICITY,
-    #         energy_units=Meter.KILOWATT_HOURS
-    #     )
-    #
-    #     client = APIClient()
-    #     client.login(username=self.user.username, password='secret')
-    #     url = reverse('apiv2:meters-add-timeseries', args=(meter.pk,))
-    #
-    #     resp = client.post(url)
-    #
-    #             'timeseries': [
-    #                 {
-    #                     'begin_time': '2014-07-10T18:14:54.726Z',
-    #                     'end_time': '2014-07-10T18:14:54.726Z',
-    #                     'cost': 345,
-    #                     'reading': 23.0,
-    #                 },
-    #                 {
-    #                     'begin_time': '2014-07-09T18:14:54.726Z',
-    #                     'end_time': '2014-07-09T18:14:54.726Z',
-    #                     'cost': 33,
-    #                     'reading': 11.0,
-    #                 }
-    #
-    #             ]
-    #         })
-    #     )
-    #
-    #     self.assertEqual(TimeSeries.objects.all().count(), 0)
-    #
-    #     resp = json.loads(meters.add_timeseries(fake_request).content)
+        # Not yet implemented
+        # def test_add_timeseries(self):
+        #     """Adding time series works."""
+        #     meter = Meter.objects.create(
+        #         name='test',
+        #         energy_type=Meter.ELECTRICITY,
+        #         energy_units=Meter.KILOWATT_HOURS
+        #     )
+        #
+        #     client = APIClient()
+        #     client.login(username=self.user.username, password='secret')
+        #     url = reverse('apiv2:meters-add-timeseries', args=(meter.pk,))
+        #
+        #     resp = client.post(url)
+        #
+        #             'timeseries': [
+        #                 {
+        #                     'begin_time': '2014-07-10T18:14:54.726Z',
+        #                     'end_time': '2014-07-10T18:14:54.726Z',
+        #                     'cost': 345,
+        #                     'reading': 23.0,
+        #                 },
+        #                 {
+        #                     'begin_time': '2014-07-09T18:14:54.726Z',
+        #                     'end_time': '2014-07-09T18:14:54.726Z',
+        #                     'cost': 33,
+        #                     'reading': 11.0,
+        #                 }
+        #
+        #             ]
+        #         })
+        #     )
+        #
+        #     self.assertEqual(TimeSeries.objects.all().count(), 0)
+        #
+        #     resp = json.loads(meters.add_timeseries(fake_request).content)
 
-    #     self.assertEqual(resp, {'status': 'success'})
-    #     self.assertEqual(TimeSeries.objects.all().count(), 2)
+        #     self.assertEqual(resp, {'status': 'success'})
+        #     self.assertEqual(TimeSeries.objects.all().count(), 2)

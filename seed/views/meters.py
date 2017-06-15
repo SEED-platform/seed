@@ -7,7 +7,6 @@
 # import json
 
 from django.http import JsonResponse
-# from django.contrib.auth.decorators import login_required
 from rest_framework import viewsets
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import detail_route
@@ -15,7 +14,6 @@ from rest_framework.parsers import JSONParser, FormParser
 
 from seed.authentication import SEEDAuthentication
 from seed.decorators import require_organization_id_class
-# from seed.decorators import ajax_request
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (
     obj_to_dict,
@@ -23,19 +21,6 @@ from seed.models import (
     PropertyView,
 )
 from seed.utils.api import api_endpoint_class
-
-
-def _convert_energy_data(name, mapping):
-    """Converts human name to integer for DB.
-
-    ``mapping`` looks like ((3, 'Electricity'), (4, 'Natural Gas'))
-    See ``ENERGY_TYPES`` and ``ENERGY_UNITS`` in ``seed.models``.
-
-    :parm name: str, the unit or type name from JS.
-    :param mapping: tuple of tuples used for Django Meter choices.
-    :return: int, the intereger value of the string stored in the DB.
-    """
-    return filter(lambda x: x[1] == name, [t for t in mapping])[0][0]
 
 
 class MeterViewSet(viewsets.ViewSet):
@@ -244,6 +229,7 @@ class MeterViewSet(viewsets.ViewSet):
 
     @api_endpoint_class
     @has_perm_class('can_modify_data')
+    @detail_route(methods=['POST'])
     def add_timeseries(self, request, pk=None):
         """
         Returns timeseries for meter
