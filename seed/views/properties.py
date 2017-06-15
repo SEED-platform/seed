@@ -235,7 +235,7 @@ class PropertyViewSet(GenericViewSet):
                 'page': page,
                 'start': paginator.page(page).start_index(),
                 'end': paginator.page(page).end_index(),
-                 'num_pages': paginator.num_pages,
+                'num_pages': paginator.num_pages,
                 'has_next': paginator.page(page).has_next(),
                 'has_previous': paginator.page(page).has_previous(),
                 'total': paginator.count

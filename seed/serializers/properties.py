@@ -17,7 +17,6 @@ from rest_framework import serializers
 from rest_framework.fields import empty
 
 from seed.models import (
-    AUDIT_USER_CREATE,
     AUDIT_USER_EDIT,
     GreenAssessmentProperty,
     PropertyAuditLog,
@@ -308,7 +307,7 @@ class PropertyViewAsStateSerializer(serializers.ModelSerializer):
         # type validation
         for field in required_fields:
             if data.get(field) and not isinstance(data[field], (basestring, int)):
-                    wrong_type.append((field, type(field)))
+                wrong_type.append((field, type(field)))
         for fields in unique_together:
             field_vals = {}
             for field in fields:
@@ -377,13 +376,13 @@ class PropertyViewAsStateSerializer(serializers.ModelSerializer):
                 property_state_serializer = PropertyStateWritableSerializer(
                     instance.state, data=state
                 )
-                description = 'Updated via API PATCH call'
-                record_type = AUDIT_USER_EDIT
+                # description = 'Updated via API PATCH call'
+                # record_type = AUDIT_USER_EDIT
             # otherwise create a new state
             else:
                 property_state_serializer = PropertyStateWritableSerializer(data=state)
-                description = '["state"]'
-                record_type = AUDIT_USER_CREATE
+                # description = '["state"]'
+                # record_type = AUDIT_USER_CREATE
             if property_state_serializer.is_valid():
                 new_state = property_state_serializer.save()
                 instance.state = new_state
@@ -450,7 +449,7 @@ def conv_value(val):
     """Convert value to correct format"""
     # swagger makes everything lists
     if isinstance(val, (list, tuple)):
-            val = val[0]
+        val = val[0]
     # convert to int, may throw value error
     if val:
         val = int(val)

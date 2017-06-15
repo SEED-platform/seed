@@ -38,7 +38,7 @@ from seed.models import (
     TaxLotView
 )
 
-from seed.models.auditlog import AUDIT_USER_CREATE, AUDIT_USER_EDIT
+from seed.models.auditlog import AUDIT_USER_EDIT
 
 from seed.serializers.certification import (
     GreenAssessmentPropertyReadOnlySerializer
@@ -105,10 +105,10 @@ class TestPropertySerializers(TestCase):
         self.gap_data = {
             'source': 'test',
             'status': 'complete',
-            'status_date': datetime.date(2017, 01, 01),
+            'status_date': datetime.date(2017, 0o1, 0o1),
             'metric': 5,
             'version': '0.1',
-            'date': datetime.date(2016, 01, 01),
+            'date': datetime.date(2016, 0o1, 0o1),
             'eligibility': True,
             'assessment': self.assessment,
             'view': self.property_view,
@@ -297,10 +297,10 @@ class TestPropertyViewAsStateSerializers(TestCase):
         self.gap_data = {
             'source': 'test',
             'status': 'complete',
-            'status_date': datetime.date(2017, 01, 01),
+            'status_date': datetime.date(2017, 0o1, 0o1),
             'metric': 5,
             'version': '0.1',
-            'date': datetime.date(2016, 01, 01),
+            'date': datetime.date(2016, 0o1, 0o1),
             'eligibility': True,
             'assessment': self.assessment,
             'view': self.property_view,
