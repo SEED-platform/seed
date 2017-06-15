@@ -5,7 +5,7 @@
 // check inventory pages after import and delete test dataset
 var EC = protractor.ExpectedConditions;
 // Check inventory Page:
-describe('When I go to the inventory page', function () {
+describe('When I go to the prop page', function () {
 
   // manually
   it('should reset sync', function () {
@@ -90,9 +90,9 @@ describe('When I go to the inventory page', function () {
     expect(rows.count()).toBe(1);
   });
 
-  it('should go to settings in info pages', function () {
+  it('should go to settings reset', function () {
     $('#settings').click();
-    $$('[ng-click="toggleMenu($event)"]').first().click();
+    $$('.ui-grid-menu-button').first().click();
     $$('[ng-click="itemAction($event, title)"]').first().click();
     $('#item_title').click();
     var rows = element.all(by.repeater('field in columns'));

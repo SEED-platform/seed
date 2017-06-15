@@ -12,15 +12,10 @@ describe('When I go to the dataset options page', function () {
     browser.ignoreSynchronization = false;
   });
 
-  it('should delete a single file', function () {
-    browser.get('/app/#/data');
-    $$('[ui-sref="dataset_detail({dataset_id: d.id})"]').first().click();
-    var rows = element.all(by.repeater('f in dataset.importfiles'));
-    expect(rows.count()).toBe(2);
-  });
-
   //Pairing
   it('should edit pairing', function () {
+    browser.get('/app/#/data');
+    $$('[ui-sref="dataset_detail({dataset_id: d.id})"]').first().click();
     $$('#data-pairing-0').first().click();
     expect($('.page_title').getText()).toContain('Pair Properties to Tax Lots');
     element(by.cssContainingText('[ng-model="cycle.selected_cycle"] option', browser.params.testOrg.cycle)).click();

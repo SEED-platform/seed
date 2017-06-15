@@ -153,7 +153,7 @@ describe('When I do miscellaneous things', function () {
     $('#sidebar-inventory').click();
     $('[ng-change="update_cycle(cycle.selected_cycle)"]').element(by.cssContainingText('option', browser.params.testOrg.cycle)).click();
 
-    $$('[ng-click="toggleMenu($event)"]').first().click();
+    $$('.ui-grid-menu-button').first().click();
     var myOptions = element.all(by.repeater('item in menuItems')).filter(function (elm) {
       return elm.getText().then(function (label) {
         // expect(label).toBe('fake');
@@ -161,6 +161,9 @@ describe('When I do miscellaneous things', function () {
       });
     }).first();
     myOptions.click();
+
+    $$('[ng-click="toggleMenu($event)"]').first().click();
+    $$('[ng-click="itemAction($event, title)"]').first().click();
 
     $$('[ng-click="selectButtonClick(row, $event)"]').first().click();
     $('#btnInventoryActions').click();
