@@ -42,22 +42,24 @@ angular.module('BE.seed.service.inventory_reports',
       function get_report_data (xVar, yVar, start, end) {
 
       // Error checks (should be able to collapse this...)
-        if (_.isNil(xVar)) {
-          $log.error('#inventory_reports_service.get_report_data(): null \'xVar\' parameter');
+        // if (_.isNil(xVar)) {
+        if (_.isNil(xVar) || _.isNil(yVar) || _.isNil(start) || _.isNil(end)) {
+          $log.error('#inventory_reports_service.get_report_data(): null parameter');
           throw new Error('Invalid Parameter');
         }
-        if (_.isNil(yVar)) {
-          $log.error('#inventory_reports_service.get_report_data(): null \'yVar\' parameter');
-          throw new Error('Invalid Parameter');
-        }
-        if (_.isNil(start)) {
-          $log.error('#inventory_reports_service.get_report_data(): null \'start\' parameter');
-          throw new Error('Invalid Parameter');
-        }
-        if (_.isNil(end)) {
-          $log.error('#inventory_reports_service.get_report_data(): null \'end\' parameter');
-          throw new Error('Invalid Parameter');
-        }
+        // 6.15.17 dbressan collapsed to help with code cov since this is hard to test
+        // if (_.isNil(yVar)) {
+        //   $log.error('#inventory_reports_service.get_report_data(): null \'yVar\' parameter');
+        //   throw new Error('Invalid Parameter');
+        // }
+        // if (_.isNil(start)) {
+        //   $log.error('#inventory_reports_service.get_report_data(): null \'start\' parameter');
+        //   throw new Error('Invalid Parameter');
+        // }
+        // if (_.isNil(end)) {
+        //   $log.error('#inventory_reports_service.get_report_data(): null \'end\' parameter');
+        //   throw new Error('Invalid Parameter');
+        // }
 
         return $http.get(window.BE.urls.get_inventory_report_data, {
           params: {
@@ -107,22 +109,24 @@ angular.module('BE.seed.service.inventory_reports',
       function get_aggregated_report_data (xVar, yVar, start, end) {
 
       // Error checks (should be able to collapse this...)
-        if (_.isNil(xVar)) {
-          $log.error('#inventory_reports_service.get_aggregated_report_data(): null \'xVar\' parameter');
+        // if (_.isNil(xVar)) {
+        if (_.isNil(xVar) || _.isNil(yVar) || _.isNil(start) || _.isNil(end)) {
+          $log.error('#inventory_reports_service.get_aggregated_report_data(): null parameter');
           throw new Error('Invalid Parameter');
         }
-        if (_.isNil(yVar)) {
-          $log.error('#inventory_reports_service.get_aggregated_report_data(): null \'yVar\' parameter');
-          throw new Error('Invalid Parameter');
-        }
-        if (_.isNil(start)) {
-          $log.error('#inventory_reports_service.get_aggregated_report_data(): null \'start\' parameter');
-          throw new Error('Invalid Parameter');
-        }
-        if (_.isNil(end)) {
-          $log.error('#inventory_reports_service.get_aggregated_report_data(): null \'end\' parameter');
-          throw new Error('Invalid Parameter');
-        }
+        // 6.15.17 dbressan collapsed to help with code cov since this is hard to test
+        // if (_.isNil(yVar)) {
+        //   $log.error('#inventory_reports_service.get_aggregated_report_data(): null \'yVar\' parameter');
+        //   throw new Error('Invalid Parameter');
+        // }
+        // if (_.isNil(start)) {
+        //   $log.error('#inventory_reports_service.get_aggregated_report_data(): null \'start\' parameter');
+        //   throw new Error('Invalid Parameter');
+        // }
+        // if (_.isNil(end)) {
+        //   $log.error('#inventory_reports_service.get_aggregated_report_data(): null \'end\' parameter');
+        //   throw new Error('Invalid Parameter');
+        // }
 
         return $http.get(window.BE.urls.get_aggregated_inventory_report_data, {
           params: {

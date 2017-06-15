@@ -115,4 +115,31 @@ describe('When I go to admin page', function () {
     browser.sleep(100);
     expect(myNewUser.isPresent()).toBe(false);
   });
+
+  it('should add user again', function () {
+    $('#orgs').$$('option').first().click();
+    $('#user_emails').$$('option').first().click();
+    $('[ng-click="org_user.add()"]').click();
+    
+    //check no column mappings
+    $$('[ng-click="confirm_column_mappings_delete(org)"]').first().click();
+    browser.wait(EC.alertIsPresent(), 2000, 'an alert');
+    browser.switchTo().alert().accept();
+  });
+
+  it('should create new test org', function () {
+    // browser.sleep(5000);
+    $('#org_name').clear().sendKeys(browser.params.testOrg.parent);
+    $$('#user_emails').first().element(by.cssContainingText('option', browser.params.login.user)).click();
+    $('[ng-click="org_form.add(org)"]').click();
+  });
+
+  it('should create new user for test org', function () {
+    $('#first_name').clear().sendKeys('Test');
+    $('#last_name').clear().sendKeys('Testy');
+    $$('#user_email').first().sendKeys('testy@test.com');
+    $('[ng-model="user.organization"]').element(by.cssContainingText('option', browser.params.testOrg.parent)).click();
+    $('[ng-click="user_form.add(user)"]').click();
+  });
+
 });
