@@ -116,6 +116,15 @@ describe('When I go to the taxlot page', function () {
     $('#inventory-list').click();
     var cols = $('.ui-grid-render-container.ui-grid-render-container-body').all(by.repeater('col in colContainer.renderedColumns'));
     expect(cols.count()).toBe(1);
+    $('#list-settings').click();
+    $('[ng-click="toggleMenu()"]').click();
+    $$('[ng-click="itemAction($event, title)"]').get(1).click();
+    $('[ng-click="toggleMenu()"]').click();
+    $$('[ng-click="itemAction($event, title)"]').first().click();
+    $('[ng-change="saveShowSharedBuildings()"]').click();
+    $('#inventory-list').click();
+    var cols = $('.ui-grid-render-container.ui-grid-render-container-body').all(by.repeater('col in colContainer.renderedColumns'));
+    expect(cols.count()).not.toBeLessThan(2);
     browser.driver.navigate().refresh();
   }, 45000);
 });
