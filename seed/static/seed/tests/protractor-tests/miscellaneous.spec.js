@@ -242,10 +242,27 @@ describe('When I do miscellaneous things', function () {
     $('[ui-sref="inventory_list({inventory_type: \'properties\'})"]').click();
     $$('.ui-grid-icon-angle-down').get(4).click();
     $$('.ui-grid-icon-left-open').first().click();
+    $$('.ui-grid-icon-angle-down').get(4).click();
+    $$('.ui-grid-icon-left-open').first().click();
+
     $$('.ui-grid-icon-angle-down').first().click();
-    $$('.ui-grid-icon-cancel').get(1).click();
+    var myOptions = element.all(by.repeater('item in menuItems')).filter(function (elm) {
+      return elm.getText().then(function (label) {
+        // expect(label).toBe('fake');
+        return label == '  Unpin';
+      });
+    }).first();
+    myOptions.click();
+    
+
     $$('.ui-grid-icon-angle-down').first().click();
-    $$('.ui-grid-icon-cancel').first().click();
+    var myOptions = element.all(by.repeater('item in menuItems')).filter(function (elm) {
+      return elm.getText().then(function (label) {
+        // expect(label).toBe('fake');
+        return label == '  Hide Column';
+      });
+    }).first();
+    myOptions.click();
   });
 
   it('should test delete and export modals properties', function () {
