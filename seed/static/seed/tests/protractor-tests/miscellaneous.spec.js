@@ -2,7 +2,7 @@
  * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
-// test Data Quality, Sharing, Reports, delete function and other misc items after data is loaded
+// test Data Quality, labels, delete function and other misc items after data is loaded
 var EC = protractor.ExpectedConditions;
 
 
@@ -222,6 +222,10 @@ describe('When I do miscellaneous things', function () {
     $('[ng-click="delete_inventory()"]').click();
     $('[ng-click="close()"]').click();
 
+    $('#btnInventoryActions').click();
+    $('[ng-click="open_update_labels_modal()"]').click();
+    $$('[ng-click="cancel()"]').first().click();
+
     // reselect rows and export
     $$('[ng-click="selectButtonClick(row, $event)"]').first().click();
     $$('[ng-click="selectButtonClick(row, $event)"]').get(1).click();
@@ -234,6 +238,38 @@ describe('When I do miscellaneous things', function () {
     $('[ng-click="export_selected()"]').click();
   });
 
+  it('should test pin and move', function () {
+    $('[ui-sref="inventory_list({inventory_type: \'properties\'})"]').click();
+    $$('.ui-grid-icon-angle-down').get(4).click();
+    $$('.ui-grid-icon-left-open').first().click();
+    $$('.ui-grid-icon-angle-down').first().click();
+    $$('.ui-grid-icon-cancel').get(1).click();
+    $$('.ui-grid-icon-angle-down').first().click();
+    $$('.ui-grid-icon-cancel').first().click();
+  });
+
+  it('should test delete and export modals properties', function () {
+    // reselect rows and export
+    $$('[ng-click="selectButtonClick(row, $event)"]').first().click();
+    $$('[ng-click="selectButtonClick(row, $event)"]').get(1).click();
+    $('#btnInventoryActions').click();
+    $('[ng-click="open_export_modal()"]').click();
+    $$('[ng-click="cancel()"]').first().click();
+    $('#btnInventoryActions').click();
+    $('[ng-click="open_export_modal()"]').click();
+    $('#fileName').sendKeys('someFileName');
+    $('[ng-click="export_selected()"]').click();
+
+    //select rows and delete
+    $$('[ng-click="headerButtonClick($event)"]').first().click();
+    $('#btnInventoryActions').click();
+    $('[ng-click="open_delete_modal()"]').click();
+    $$('[ng-click="cancel()"]').first().click();
+    $('#btnInventoryActions').click();
+    $('[ng-click="open_delete_modal()"]').click();
+    $('[ng-click="delete_inventory()"]').click();
+    $('[ng-click="close()"]').click();
+  });
 
   //Delete
   it('should check edit and delete stuff for files', function () {

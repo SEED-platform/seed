@@ -116,6 +116,7 @@ describe('When I go to the taxlot page', function () {
     $('#inventory-list').click();
     var cols = $('.ui-grid-render-container.ui-grid-render-container-body').all(by.repeater('col in colContainer.renderedColumns'));
     expect(cols.count()).toBe(1);
-  });
+    browser.driver.navigate().refresh();
+  }, 45000);
 });
 

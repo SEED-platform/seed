@@ -71,6 +71,10 @@ describe('When I visit the the parent org', function () {
     $('[ng-model="new_cycle.start"]').sendKeys('01-01-2017');
     $('[ng-model="new_cycle.end"]').sendKeys('12-31-2017');
     $('#btnCreateCycle').click();
+    $('[ng-click="openStartDatePicker($event)"]').click();
+    $('[ng-click="openEndDatePicker($event)"]').click();
+    $('[ng-click="openStartDatePicker($event)"]').click();
+    $('[ng-click="openEndDatePicker($event)"]').click();
   });
 
   it('should edit created cycle', function () {
@@ -236,6 +240,7 @@ describe('When I visit the the parent org', function () {
     myOptions3.click();
     expect($('.table_list_container').isPresent()).toBe(true);
     $$('[ng-model="controls.public_select_all"]').first().click();
+    $$('[ng-change="select_all_clicked(\'internal\')"]').first().click();
     var rowCheck = element.all(by.repeater('field in fields'));
     expect(rowCheck.count()).not.toBeLessThan(1);
     $$('[ng-model="filter_params.title"]').first().click().sendKeys('this is some fake stuff to test filter');

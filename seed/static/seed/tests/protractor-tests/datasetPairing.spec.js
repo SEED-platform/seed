@@ -43,6 +43,23 @@ describe('When I go to the dataset options page', function () {
     $$('[ng-model="col.searchText"]').get(4).clear();
   });
 
+  it('should edit drag pairs', function () {
+    // var dragElement = $$('.pairing-data-row.grab-pairing-left').first();
+    var dragElement = element.all(by.repeater('row in newLeftData')).first();
+    var dropElement = $$('.pairing-data-row-indent').first();
+    var lastDropElement = $$('.pairing-data-row-indent').last();
+    // console.log('drag: ', dragElement);
+    // console.log('drop: ', dropElement);
+
+    // drag doesn't work on chrome....so use click functionality
+    dragElement.click();
+    browser.sleep(200);
+    dropElement.click();
+    browser.sleep(200);
+    lastDropElement.click();
+    browser.sleep(200);
+  });
+
   it('should edit delete pairings', function () {
     $$('.unpair-child').count().then( function (count) {
       for (var index = 0; index < count; index++) {
@@ -86,5 +103,18 @@ describe('When I go to the dataset options page', function () {
     expect($('.pairing-text-left').getText()).toContain('Showing 11 Tax Lots (10 unpaired)');
     browser.sleep(2000);
   });
+
+  it('should delete pairings the other way', function () {
+    $$('.unpair-child').count().then( function (count) {
+      for (var index = 0; index < count; index++) {
+        // console.log('index: ', index, count)
+        var option = $$('.unpair-child').first();
+        option.click();
+        browser.sleep(200);
+      }
+    });
+
+    expect($$('.unpair-child').count()).toBeLessThan(1);
+  }, 60000);
 
 });

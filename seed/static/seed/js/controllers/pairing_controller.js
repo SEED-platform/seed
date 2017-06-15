@@ -347,13 +347,13 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
     $scope.rightReverseSort = false;
 
     $scope.rightSortData = function (column) {
-        console.log('right: ' + column);
+        // console.log('right: ' + column);
         $scope.rightReverseSort = ($scope.rightSortColumn === column) ? !$scope.rightReverseSort : false;
         $scope.rightSortColumn = column;
     } 
 
     $scope.rightGetSortClass = function (column) {
-      console.log('right: ' + column)
+      // console.log('right: ' + column)
       if ($scope.rightSortColumn === column) {
           return $scope.rightReverseSort ? 'arrow-down' : 'arrow-up'
       }

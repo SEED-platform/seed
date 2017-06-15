@@ -46,6 +46,7 @@ describe('When I go to the inventory page', function () {
     expect(rows.count()).not.toBeLessThan(1);
 
     //clear by clicking the 'x' -> child of sibling of text input
+    $$('[ng-model="colFilter.term"]').first().sendKeys('1');
     $$('[ng-model="colFilter.term"]').first().element(by.xpath('..')).$('[ui-grid-one-bind-aria-label="aria.removeFilter"]').click();
     expect($$('[ng-model="colFilter.term"]').first().getAttribute('value')).toEqual('');
     $$('[ng-model="colFilter.term"]').first().sendKeys('this is something long and fake to get nothing to filter');
@@ -135,6 +136,15 @@ describe('When I go to the inventory page', function () {
     $('#inventory-list').click();
     var cols = $('.ui-grid-render-container.ui-grid-render-container-body').all(by.repeater('col in colContainer.renderedColumns'));
     expect(cols.count()).toBe(1);
+    $('#list-settings').click();
+    $('[ng-click="toggleMenu()"]').click();
+    $$('[ng-click="itemAction($event, title)"]').get(1).click();
+    $('[ng-click="toggleMenu()"]').click();
+    $$('[ng-click="itemAction($event, title)"]').first().click();
+    $('[ng-change="saveShowSharedBuildings()"]').click();
+    $('#inventory-list').click();
+    var cols = $('.ui-grid-render-container.ui-grid-render-container-body').all(by.repeater('col in colContainer.renderedColumns'));
+    expect(cols.count()).not.toBeLessThan(2);
   });
 
   it('should export', function () {
