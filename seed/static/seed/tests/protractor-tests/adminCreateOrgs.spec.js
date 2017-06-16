@@ -117,8 +117,8 @@ describe('When I go to admin page', function () {
   });
 
   it('should add user again', function () {
-    $('#orgs').$$('option').first().click();
-    $('#user_emails').$$('option').first().click();
+    $$('#orgs').first().$$('option').first().click();
+    $$('#user_emails').first().$$('option').first().click();
     $('[ng-click="org_user.add()"]').click();
     
     //check no column mappings
@@ -132,14 +132,6 @@ describe('When I go to admin page', function () {
     $('#org_name').clear().sendKeys(browser.params.testOrg.parent);
     $$('#user_emails').first().element(by.cssContainingText('option', browser.params.login.user)).click();
     $('[ng-click="org_form.add(org)"]').click();
-  });
-
-  it('should create new user for test org', function () {
-    $('#first_name').clear().sendKeys('Test');
-    $('#last_name').clear().sendKeys('Testy');
-    $$('#user_email').first().sendKeys('testy@test.com');
-    $('[ng-model="user.organization"]').element(by.cssContainingText('option', browser.params.testOrg.parent)).click();
-    $('[ng-click="user_form.add(user)"]').click();
   });
 
 });
