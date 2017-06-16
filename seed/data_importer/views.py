@@ -33,7 +33,6 @@ from rest_framework.decorators import parser_classes
 from rest_framework.parsers import MultiPartParser, FormParser
 
 from seed.authentication import SEEDAuthentication
-from seed.models.data_quality import DataQualityCheck
 from seed.data_importer.models import (
     ImportFile,
     ImportRecord
@@ -70,6 +69,7 @@ from seed.models import (
     Property,
     TaxLot,
     TaxLotProperty)
+from seed.models.data_quality import DataQualityCheck
 from seed.utils.api import api_endpoint, api_endpoint_class
 from seed.utils.cache import get_cache_raw, get_cache
 from seed.views.main import _mapping_suggestions
@@ -535,22 +535,6 @@ class ImportFileViewSet(viewsets.ViewSet):
               paramType: path
         response_serializer: MappingResultsResponseSerializer
         """
-
-        def get_coparent(state_id, inventory_type):
-            coparent = self.has_coparent(state_id, inventory_type)
-
-            if coparent:
-                result = {}
-                if inventory_type == 'properties':
-                    for k in fields['PropertyState']:
-                        result[k] = getattr(coparent, k)
-                else:
-                    for k in fields['TaxLotState']:
-                        result[k] = getattr(coparent, k)
-                return result
-            else:
-                return None
-
         import_file_id = pk
 
         get_coparents = request.data.get('get_coparents', False)
@@ -594,7 +578,12 @@ class ImportFileViewSet(viewsets.ViewSet):
 
             if get_coparents:
                 result['matched'] = False
-                coparent = get_coparent(state.id, inventory_type)
+                coparent = None
+                if inventory_type == 'properties':
+                    coparent = self.has_coparent(state.id, inventory_type, fields['PropertyState'])
+                else:
+                    coparent = self.has_coparent(state.id, inventory_type, fields['TaxLotState'])
+
                 if coparent:
                     result['matched'] = True
                     result['coparent'] = coparent
@@ -604,33 +593,26 @@ class ImportFileViewSet(viewsets.ViewSet):
                 'state': result
             }
         else:
-            properties = PropertyState.objects.order_by('id').filter(
+            properties = list(PropertyState.objects.filter(
                 import_file_id=import_file_id,
                 data_state__in=[DATA_STATE_MAPPING, DATA_STATE_MATCHING],
                 merge_state__in=[MERGE_STATE_UNKNOWN, MERGE_STATE_NEW]
-            ).values(*fields['PropertyState'])
-            tax_lots = TaxLotState.objects.order_by('id').filter(
+            ).order_by('id').values(*fields['PropertyState']))
+            tax_lots = list(TaxLotState.objects.filter(
                 import_file_id=import_file_id,
                 data_state__in=[DATA_STATE_MAPPING, DATA_STATE_MATCHING],
                 merge_state__in=[MERGE_STATE_UNKNOWN, MERGE_STATE_NEW]
-            ).values(*fields['TaxLotState'])
+            ).order_by('id').values(*fields['TaxLotState']))
 
             # If a record was manually edited then remove the edited version
-            properties = list(properties)
-            tax_lots = list(tax_lots)
             properties_to_remove = list()
             taxlots_to_remove = list()
+
             for p in properties:
-                if PropertyAuditLog.objects.filter(
-                        state_id=p['id'],
-                        name='Manual Edit'
-                ).exists():
+                if PropertyAuditLog.objects.filter(state_id=p['id'], name='Manual Edit').exists():
                     properties_to_remove.append(p['id'])
             for t in tax_lots:
-                if TaxLotAuditLog.objects.filter(
-                        state_id=t['id'],
-                        name='Manual Edit'
-                ).exists():
+                if TaxLotAuditLog.objects.filter(state_id=t['id'], name='Manual Edit').exists():
                     taxlots_to_remove.append(t['id'])
 
             properties = [p for p in properties if p['id'] not in properties_to_remove]
@@ -639,20 +621,17 @@ class ImportFileViewSet(viewsets.ViewSet):
             if get_coparents:
                 for state in properties:
                     state['matched'] = False
-                    coparent = get_coparent(state['id'], 'properties')
+                    coparent = self.has_coparent(state['id'], 'properties', fields['PropertyState'])
                     if coparent:
                         state['matched'] = True
                         state['coparent'] = coparent
 
                 for state in tax_lots:
                     state['matched'] = False
-                    coparent = get_coparent(state['id'], 'taxlots')
+                    coparent = self.has_coparent(state['id'], 'taxlots', fields['TaxLotState'])
                     if coparent:
                         state['matched'] = True
                         state['coparent'] = coparent
-
-            # properties = list(properties)
-            # tax_lots = list(tax_lots)
 
             _log.debug('Found {} properties'.format(len(properties)))
             _log.debug('Found {} tax lots'.format(len(tax_lots)))
@@ -775,18 +754,25 @@ class ImportFileViewSet(viewsets.ViewSet):
         }
 
     @staticmethod
-    def has_coparent(state_id, inventory_type):
-        if inventory_type == 'properties':
-            audit_log = PropertyAuditLog
-        else:
-            audit_log = TaxLotAuditLog
+    def has_coparent(state_id, inventory_type, fields=None):
+        """
+        Return the coparent of the current state id based on the inventory type. If fields
+        are given (as a list), then it will only return the fields specified of the state model
+        object as a dictionary.
+
+        :param state_id: int, ID of PropertyState or TaxLotState
+        :param inventory_type: string, either properties | taxlots
+        :param fields: list, either None or list of fields to return
+        :return: dict or state object, If fields is not None then will return state_object
+        """
+        audit_log = PropertyAuditLog if inventory_type == 'properties' else TaxLotAuditLog
+        state_model = PropertyState if inventory_type == 'properties' else TaxLotState
         audit_creation_id = audit_log.objects.only('id').exclude(import_filename=None).get(
             state_id=state_id,
             name='Import Creation'
-        )
-        merged_record = audit_log.objects.only('parent_state1_id', 'parent_state2_id') \
-            .select_related('parent_state1', 'parent_state2') \
-            .filter(Q(parent1_id=audit_creation_id.id) | Q(parent2_id=audit_creation_id.id))
+        ).id
+        merged_record = audit_log.objects.only('parent_state1_id', 'parent_state2_id').filter(
+            Q(parent1_id=audit_creation_id) | Q(parent2_id=audit_creation_id))
 
         if not merged_record.exists():
             return False
@@ -802,7 +788,17 @@ class ImportFileViewSet(viewsets.ViewSet):
 
         audit_entry = merged_record.first()
         state_id1 = audit_entry.parent_state1_id
-        return audit_entry.parent_state1 if state_id1 != state_id else audit_entry.parent_state2
+
+        # check if we are returning as subset of the fields (as values)
+        if fields:
+            if state_id1 != state_id:
+                return state_model.objects.filter(id=audit_entry.parent_state1_id).values(*fields)[
+                    0]
+            else:
+                return state_model.objects.filter(id=audit_entry.parent_state2_id).values(*fields)[
+                    0]
+        else:
+            return audit_entry.parent_state1 if state_id1 != state_id else audit_entry.parent_state2
 
     @api_endpoint_class
     @ajax_request_class
@@ -1362,8 +1358,9 @@ class ImportFileViewSet(viewsets.ViewSet):
             writer.writerow(['data quality results not found'])
             return response
 
-        writer.writerow(['Table', 'Address Line 1', 'PM Property ID', 'Tax Lot ID', 'Custom ID', 'Field',
-                         'Error Message', 'Severity'])
+        writer.writerow(
+            ['Table', 'Address Line 1', 'PM Property ID', 'Tax Lot ID', 'Custom ID', 'Field',
+             'Error Message', 'Severity'])
 
         for row in data_quality_results:
             for result in row['data_quality_results']:
@@ -1589,8 +1586,8 @@ class ImportFileViewSet(viewsets.ViewSet):
         properties_to_remove = list()
         for p in properties:
             if PropertyAuditLog.objects.filter(
-                    state_id=p.id,
-                    name='Manual Edit'
+                state_id=p.id,
+                name='Manual Edit'
             ).exists():
                 properties_to_remove.append(p.id)
         properties = [p for p in properties if p.id not in properties_to_remove]
@@ -1602,7 +1599,7 @@ class ImportFileViewSet(viewsets.ViewSet):
                 name='Import Creation'
             )
             if PropertyAuditLog.objects.exclude(record_type=AUDIT_USER_EDIT).filter(
-                    parent1_id=audit_creation_id
+                parent1_id=audit_creation_id
             ).exists():
                 properties_matched.append(state.id)
             else:
@@ -1625,8 +1622,8 @@ class ImportFileViewSet(viewsets.ViewSet):
         taxlots_to_remove = list()
         for t in taxlots:
             if TaxLotAuditLog.objects.filter(
-                    state_id=t.id,
-                    name='Manual Edit'
+                state_id=t.id,
+                name='Manual Edit'
             ).exists():
                 taxlots_to_remove.append(t.id)
         taxlots = [t for t in taxlots if t.id not in taxlots_to_remove]
@@ -1637,7 +1634,7 @@ class ImportFileViewSet(viewsets.ViewSet):
                 name='Import Creation'
             )
             if TaxLotAuditLog.objects.exclude(record_type=AUDIT_USER_EDIT).filter(
-                    parent1_id=audit_creation_id
+                parent1_id=audit_creation_id
             ).exists():
                 tax_lots_matched.append(state.id)
             else:
