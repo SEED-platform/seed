@@ -72,6 +72,12 @@ class TaxLotState(models.Model):
 
     extra_data = JSONField(default=dict, blank=True)
 
+    class Meta:
+        index_together = [
+            ['import_file', 'data_state'],
+            ['import_file', 'data_state', 'merge_state']
+        ]
+
     def __unicode__(self):
         return u'TaxLot State - %s' % self.pk
 
@@ -185,6 +191,7 @@ class TaxLotView(models.Model):
 
     class Meta:
         unique_together = ('taxlot', 'cycle',)
+        index_together = [['state', 'cycle']]
 
     def __init__(self, *args, **kwargs):
         self._import_filename = kwargs.pop('import_filename', None)
@@ -267,3 +274,6 @@ class TaxLotAuditLog(models.Model):
     record_type = models.IntegerField(choices=DATA_UPDATE_TYPE, null=True,
                                       blank=True)
     created = models.DateTimeField(auto_now_add=True, null=True)
+
+    class Meta:
+        index_together = [['state', 'name'], ['parent_state1', 'parent_state2']]

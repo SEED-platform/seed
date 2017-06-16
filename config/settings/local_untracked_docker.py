@@ -22,9 +22,7 @@ import os
 from kombu import Exchange, Queue
 
 # Gather all the settings from the docker environment variables
-ENV_VARS = ['DB_POSTGRES_PORT_5432_TCP_ADDR', 'DB_POSTGRES_PORT_5432_TCP_PORT',
-            'DB_POSTGRES_ENV_POSTGRES_DB', 'DB_POSTGRES_ENV_POSTGRES_USER', 'DB_POSTGRES_ENV_POSTGRES_PASSWORD',
-            'DB_REDIS_PORT_6379_TCP_ADDR', 'DB_REDIS_PORT_6379_TCP_PORT']
+ENV_VARS = ['POSTGRES_DB', 'POSTGRES_USER', 'POSTGRES_PASSWORD', ]
 
 for loc in ENV_VARS:
     locals()[loc] = os.environ.get(loc)
@@ -37,11 +35,11 @@ for loc in ENV_VARS:
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': DB_POSTGRES_ENV_POSTGRES_DB,
-        'USER': DB_POSTGRES_ENV_POSTGRES_USER,
-        'PASSWORD': DB_POSTGRES_ENV_POSTGRES_PASSWORD,
-        'HOST': DB_POSTGRES_PORT_5432_TCP_ADDR,
-        'PORT': DB_POSTGRES_PORT_5432_TCP_PORT
+        'NAME': POSTGRES_DB,
+        'USER': POSTGRES_USER,
+        'PASSWORD': POSTGRES_PASSWORD,
+        'HOST': "db-postgres",
+        'PORT': 5432,
     }
 }
 
@@ -67,7 +65,7 @@ STATICFILES_STORAGE = DEFAULT_FILE_STORAGE
 CACHES = {
     'default': {
         'BACKEND': 'redis_cache.cache.RedisCache',
-        'LOCATION': "%s:%s" % (DB_REDIS_PORT_6379_TCP_ADDR, DB_REDIS_PORT_6379_TCP_PORT),
+        'LOCATION': "db-redis:6379",
         'OPTIONS': {'DB': 1},
         'TIMEOUT': 300
     }
@@ -75,7 +73,7 @@ CACHES = {
 
 # redis celery/message broker config
 CELERY_BROKER_TRANSPORT = 'redis'
-CELERY_BROKER_URL = "redis://%s:%s/1" % (DB_REDIS_PORT_6379_TCP_ADDR, DB_REDIS_PORT_6379_TCP_PORT)
+CELERY_BROKER_URL = "redis://db-redis:6379/1"
 # CELERY_BROKER_URL with AWS ElastiCache redis looks something like:
 # 'redis://xx-yy-zzrr0aax9a.ntmprk.0001.usw2.cache.amazonaws.com:6379/1'
 

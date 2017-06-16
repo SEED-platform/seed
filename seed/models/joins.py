@@ -29,3 +29,8 @@ class TaxLotProperty(models.Model):
 
     class Meta:
         unique_together = ('property_view', 'taxlot_view',)
+        index_together = [
+            ['cycle', 'property_view'],
+            ['cycle', 'taxlot_view'],
+            ['property_view', 'taxlot_view']
+        ]
