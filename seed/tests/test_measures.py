@@ -30,3 +30,45 @@ class TestException(TestCase):
             "upgrade_operating_protocols_calibration_and_or_sequencing"
         )
         self.assertEqual(_snake_case("AdvancedMeteringSystems"), "advanced_metering_systems")
+
+    def test_validate_measures(self):
+        Measure.populate_measures()
+
+        measures = [
+            ("renewable_energy_systems", "install_photovoltaic_system"),
+            ("other_hvac", "add_or_repair_economizer"),
+            ("chiller_plant_improvements", "clean_and_or_repair")
+        ]
+
+        objs = []
+        for m in measures:
+            objs.append(Measure.objects.get(category=m[0], name=m[1]))
+
+        obj_ids = [m.id for m in objs]
+        obj_names = ["{}.{}".format(m.category, m.name) for m in objs]
+
+        results = Measure.validate_measures(obj_ids)
+        self.assertEqual(obj_ids, results)
+
+        results = Measure.validate_measures(obj_names)
+        self.assertEqual(obj_ids, results)
+
+        results = Measure.validate_measures(['.'])
+        self.assertEqual([], results)
+
+        extra_blank = list(obj_ids)
+        extra_blank.append("")
+        results = Measure.validate_measures(extra_blank)
+        self.assertEqual(obj_ids, results)
+
+        extra_malformed = list(obj_ids)
+        extra_malformed.append("abcdef")
+        results = Measure.validate_measures(extra_malformed)
+        self.assertEqual(obj_ids, results)
+
+        extra_missing = list(obj_ids)
+        extra_missing.append("a.b")
+        results = Measure.validate_measures(extra_missing)
+        self.assertEqual(obj_ids, results)
+
+

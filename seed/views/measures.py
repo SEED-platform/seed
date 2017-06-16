@@ -12,7 +12,7 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import list_route
 from rest_framework.parsers import JSONParser, FormParser
 from rest_framework.renderers import JSONRenderer
-
+from seed.serializers.measures import MeasureSerializer
 from seed.authentication import SEEDAuthentication
 from seed.models import (
     Measure,
@@ -27,7 +27,7 @@ class MeasureViewSet(viewsets.ReadOnlyModelViewSet):
     The reset POST method is for reseting the measures back to the default list provided
     by BuildingSync enumeration.json file.
     """
-    # serializer_class = MeasureSerializer
+    serializer_class = MeasureSerializer
     authentication_classes = [SessionAuthentication, SEEDAuthentication]
     parser_classes = (JSONParser, FormParser,)
     renderer_classes = (JSONRenderer,)

@@ -5,11 +5,13 @@
 """
 
 import json
+import logging
 import re
 import string
 
 from django.db import models
 
+_log = logging.getLogger(__name__)
 BUILDINGSYNC_MEASURES = [
     {
         "name": "RetrofitWithCFLs",
@@ -50,6 +52,7 @@ class Measure(models.Model):
     class Meta:
         ordering = ['-created']
         get_latest_by = 'created'
+        unique_together = ('category', 'name')
 
     @classmethod
     def populate_measures(cls):
@@ -80,3 +83,33 @@ class Measure(models.Model):
                             name=_snake_case(enum),
                             display_name=enum,
                         )
+
+    @classmethod
+    def validate_measures(cls, data):
+        """
+        Take a list of measure ids or measure names and return just a list of ids.
+
+        :param data: list, either category.name of measure or primary key
+        :return: list of integers, the list are primary key of measures
+        """
+        if len(data) > 0:
+            resp = []
+            for d in data:
+                try:
+                    if isinstance(d, int) or d.isdigit():
+                        # validate that the measure exists
+                        resp.append(Measure.objects.get(pk=d).pk)
+                    elif len(d) == 0:
+                        continue
+                    else:
+                        if "." not in d or len(d) == 1:
+                            _log.error("Invalid measure name: {}".format(d))
+                            continue
+
+                        measure = d.split(".")
+                        resp.append(Measure.objects.get(category=measure[0], name=measure[1]).pk)
+                except Measure.DoesNotExist:
+                    _log.error("Could not find measure for {}".format(d))
+            return resp
+        else:
+            return []

@@ -23,7 +23,7 @@ from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (
     Column, Cycle, AUDIT_USER_EDIT, PropertyAuditLog, PropertyState, PropertyView,
-    TaxLotAuditLog, TaxLotView, TaxLotState, TaxLotProperty
+    TaxLotAuditLog, TaxLotView, TaxLotState, TaxLotProperty, Measure, PropertyMeasure,
 )
 from seed.serializers.properties import (
     PropertyStateSerializer, PropertyViewSerializer, PropertySerializer
@@ -710,6 +710,253 @@ class PropertyViewSet(GenericViewSet):
         else:
             status_code = status.HTTP_404_NOT_FOUND
         return JsonResponse(result, status=status_code)
+
+    @ajax_request_class
+    @has_perm_class('can_modify_data')
+    @detail_route(methods=['PUT'], url_path='update_measures')
+    def add_measures(self, request, pk=None):
+        """
+        Update the measures applied to the building. There are two options, one for adding
+        measures and one for removing measures.
+
+        ---
+        type:
+            status:
+                required: true
+                type: string
+            message:
+                required: true
+                type: object
+            added_measure_ids:
+                required: true
+                type: array
+                description: list of measure ids that were added to the property
+            removed_measure_ids:
+                required: true
+                type: array
+                description: list of measure ids that were removed from the property
+            existing_measure_ids:
+                required: true
+                type: array
+                description: list of measure ids that already existed for the property
+        parameters:
+            - name: cycle_id
+              description: The cycle id for filtering the property view
+              required: true
+              paramType: query
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+            - name: add_measures
+              description: list of measure_ids or measure long names to add to property
+              type: array
+              required: false
+              paramType: form
+            - name: remove_measures
+              description: list of measure_ids or measure long names to remove from property
+              type: array
+              required: false
+              paramType: form
+            - name: implementation_status
+              description: Enum on type of measures. Recommended, Proposed, Implemented
+              required: true
+              paramType: form
+              type: string
+              enum: ["Recommended", "Proposed", "Implemented"]
+        """
+        cycle_pk = request.query_params.get('cycle_id', None)
+        if not cycle_pk:
+            return JsonResponse(
+                {'status': 'error', 'message': 'Must pass cycle_id as query parameter'})
+
+        implementation_status = PropertyMeasure.str_to_impl_status(
+            request.data.get('implementation_status', None))
+        if not implementation_status:
+            return JsonResponse(
+                {'status': 'error', 'message': 'None or invalid implementation_status type'}
+            )
+
+        result = self._get_property_view(pk, cycle_pk)
+        pv = None
+        if result.get('status', None) != 'error':
+            pv = result.pop('property_view')
+        else:
+            return JsonResponse(result)
+
+        # get the list of measures to add/remove and return the ids
+        add_measure_ids = Measure.validate_measures(request.data.get('add_measures', []).split(','))
+        remove_measure_ids = Measure.validate_measures(
+            request.data.get('remove_measures', []).split(','))
+
+        # add_measures = request.data
+        message_add = []
+        message_remove = []
+        message_existed = []
+
+        property_state_id = pv.state.pk
+
+        for m in add_measure_ids:
+            join, created = PropertyMeasure.objects.get_or_create(
+                property_state_id=property_state_id,
+                measure_id=m,
+                implementation_status=implementation_status
+            )
+            if created:
+                message_add.append(m)
+            else:
+                message_existed.append(m)
+
+        for m in remove_measure_ids:
+            qs = PropertyMeasure.objects.filter(property_state_id=property_state_id,
+                                                measure_id=m,
+                                                implementation_status=implementation_status)
+            if qs.exists():
+                qs.delete()
+                message_remove.append(m)
+
+        return JsonResponse(
+            {
+                "status": "success",
+                "message": "Updated measures for property state",
+                "added_measure_ids": message_add,
+                "removed_measure_ids": message_remove,
+                "existing_measure_ids": message_existed,
+            }
+        )
+
+    # TODO: fix the url_path to be nested. I want the url_path to be measures and have get,post,put
+    @ajax_request_class
+    @has_perm_class('can_modify_data')
+    @detail_route(methods=['DELETE'], url_path='delete_measures')
+    def delete_measures(self, request, pk=None):
+        """
+        Delete measures. Allow the user to define which implementation type to delete
+        ---
+        type:
+            status:
+                required: true
+                type: string
+            message:
+                required: true
+                type: string
+        parameters:
+            - name: cycle_id
+              description: The cycle id for filtering the property view
+              required: true
+              paramType: query
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+            - name: implementation_status
+              description: Enum on type of measures. Recommended, Proposed, Implemented
+              required: false
+              paramType: form
+              type: string
+              enum: ["Recommended", "Proposed", "Implemented"]
+        """
+        cycle_pk = request.query_params.get('cycle_id', None)
+        if not cycle_pk:
+            return JsonResponse(
+                {'status': 'error', 'message': 'Must pass cycle_id as query parameter'})
+
+        impl_status = request.data.get('implementation_status', None)
+        if not impl_status:
+            impl_status = [PropertyMeasure.RECOMMENDED,
+                           PropertyMeasure.IMPLEMENTED,
+                           PropertyMeasure.PROPOSED]
+        else:
+            impl_status = [PropertyMeasure.str_to_impl_status(impl_status)]
+
+        result = self._get_property_view(pk, cycle_pk)
+        pv = None
+        if result.get('status', None) != 'error':
+            pv = result.pop('property_view')
+        else:
+            return JsonResponse(result)
+
+        property_state_id = pv.state.pk
+        del_count, _ = PropertyMeasure.objects.filter(
+            property_state_id=property_state_id,
+            implementation_status__in=impl_status,
+        ).delete()
+
+        return JsonResponse({
+            "status": "status",
+            "message": "Deleted {} measures".format(del_count)
+        })
+
+    # TODO: fix the url_path to be nested. I want the url_path to be measures and have get,post,put
+    @ajax_request_class
+    @has_perm_class('can_modify_data')
+    @detail_route(methods=['GET'], url_path='measures')
+    def get_measures(self, request, pk=None):
+        """
+        Get the list of measures for a property and the given cycle
+        ---
+        type:
+            status:
+                required: true
+                type: string
+            message:
+                required: true
+                type: object
+            measures:
+                required: true
+                type: object
+                description: list of measure objects for the property
+        parameters:
+            - name: cycle_id
+              description: The cycle id for filtering the property view
+              required: true
+              paramType: query
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+        """
+        cycle_pk = request.query_params.get('cycle_id', None)
+        if not cycle_pk:
+            return JsonResponse(
+                {'status': 'error', 'message': 'Must pass cycle_id as query parameter'})
+
+        result = self._get_property_view(pk, cycle_pk)
+        pv = None
+        if result.get('status', None) != 'error':
+            pv = result.pop('property_view')
+        else:
+            return JsonResponse(result)
+
+        property_state_id = pv.state.pk
+        join = PropertyMeasure.objects.filter(property_state_id=property_state_id).select_related(
+            'measure')
+        result = []
+        for j in join:
+            result.append({
+                "implementation_type": j.get_implementation_status_display(),
+                "category": j.measure.category,
+                "category_display_name": j.measure.category_display_name,
+                "name": j.measure.name,
+                "display_name": j.measure.display_name,
+                "unique_name": "{}.{}".format(j.measure.category, j.measure.name),
+                "pk": j.measure.id,
+            })
+
+        return JsonResponse(
+            {
+                "status": "success",
+                "message": "Found {} measures".format(len(result)),
+                "measures": result,
+            }
+        )
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('can_modify_data')
+    @list_route(methods=['POST'])
+    def building_sync(self, request):
+        return JsonResponse({"status": "error", "message": "Not yet implemented"})
 
 
 class TaxLotViewSet(GenericViewSet):

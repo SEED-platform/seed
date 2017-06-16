@@ -38,21 +38,28 @@ class TaxLotProperty(models.Model):
         ]
 
 
-RECOMMENDED = 1
-PROPOSED = 2
-IMPLEMENTED = 3
-
-IMPLEMENTATION_TYPES = (
-    (RECOMMENDED, 'Recommended'),
-    (PROPOSED, 'Proposed'),
-    (IMPLEMENTED, 'Implemented'),
-)
-
-
 class PropertyMeasure(models.Model):
+    RECOMMENDED = 1
+    PROPOSED = 2
+    IMPLEMENTED = 3
+
+    IMPLEMENTATION_TYPES = (
+        (RECOMMENDED, 'Recommended'),
+        (PROPOSED, 'Proposed'),
+        (IMPLEMENTED, 'Implemented'),
+    )
+
     measure = models.ForeignKey('Measure', on_delete=models.DO_NOTHING)
     property_state = models.ForeignKey('PropertyState', on_delete=models.DO_NOTHING)
     implementation_status = models.IntegerField(choices=IMPLEMENTATION_TYPES, default=RECOMMENDED)
 
-    def __unicode__(self):
-        return u'Measure %s / PropertyState %s' % (self.name, self.pk)
+    @classmethod
+    def str_to_impl_status(cls, impl_status):
+        if not impl_status:
+            return None
+
+        value = [y[0] for x, y in enumerate(cls.IMPLEMENTATION_TYPES) if y[1] == impl_status]
+        if len(value) == 1:
+            return value[0]
+        else:
+            return None
