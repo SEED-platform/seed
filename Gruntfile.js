@@ -64,7 +64,7 @@ module.exports = function(grunt) {
         },
         protractor_coverage: {
             options: {
-                keepAlive: true, // If false, the grunt process stops when the test fails.
+                keepAlive: false, // If false, the grunt process stops when the test fails.
                 noColor: false,
                 coverageDir: 'protractorCoverage',
                 args: {
