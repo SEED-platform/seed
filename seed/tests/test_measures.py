@@ -70,5 +70,3 @@ class TestException(TestCase):
         extra_missing.append("a.b")
         results = Measure.validate_measures(extra_missing)
         self.assertEqual(obj_ids, results)
-
-
