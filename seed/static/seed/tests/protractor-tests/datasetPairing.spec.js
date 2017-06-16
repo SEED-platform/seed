@@ -24,9 +24,9 @@ describe('When I go to the dataset options page', function () {
     element(by.cssContainingText('[ng-model="cycle.selected_cycle"] option', browser.params.testOrg.cycle)).click();
     expect($('.page_title').getText()).toContain('Pair Properties to Tax Lots');
 
-    element(by.cssContainingText('[ng-model="showPaired""] option', "Show Paired")).click();
-    element(by.cssContainingText('[ng-model="showPaired""] option', "Show Unpaired")).click();
-    element(by.cssContainingText('[ng-model="showPaired""] option', "All")).click();
+    element(by.cssContainingText('[ng-model="showPaired""]', "Show Paired")).click();
+    element(by.cssContainingText('[ng-model="showPaired""]', "Show Unpaired")).click();
+    element(by.cssContainingText('[ng-model="showPaired""]', "All")).click();
 
     expect($('.pairing-text-left').getText()).toContain('Showing 19 Properties');
     expect($('.pairing-text-right').getText()).toContain('Showing 11 Tax Lots');
