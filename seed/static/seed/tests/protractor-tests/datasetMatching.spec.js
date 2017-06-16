@@ -16,7 +16,7 @@ describe('When I go to the matching page', function () {
   it('should go to matching and have rows', function () {
     browser.get('/app/#/data');
     $$('[ui-sref="dataset_detail({dataset_id: d.id})"]').first().click();
-    $$('#data-matching-0').first().click();
+    $$('#data-matching-1').first().click();
     
     expect($('.page_title').getText()).toContain('Data Matching');
     expect($('.table_footer').getText()).toContain('4 unmatched');
