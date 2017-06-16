@@ -13,18 +13,28 @@ describe('When I go to the dataset options page', function () {
   });
 
   //Pairing
-  it('should edit pairing', function () {
+  it('should change cycle and refresh', function () {
     browser.get('/app/#/data');
     $$('[ui-sref="dataset_detail({dataset_id: d.id})"]').first().click();
     $$('#data-pairing-0').first().click();
-    expect($('.page_title').getText()).toContain('Pair Properties to Tax Lots');
+    element(by.cssContainingText('[ng-model="cycle.selected_cycle"] option', "Default 2016 Calendar Year")).click();
+  });
+  
+  it('should edit pairing', function () {
     element(by.cssContainingText('[ng-model="cycle.selected_cycle"] option', browser.params.testOrg.cycle)).click();
-    browser.sleep(2000);
+    expect($('.page_title').getText()).toContain('Pair Properties to Tax Lots');
 
-    // Gotta figure this out, remote has 1 unpaired.
+    element(by.cssContainingText('[ng-model="showPaired""] option', "Show Paired")).click();
+    element(by.cssContainingText('[ng-model="showPaired""] option', "Show Unpaired")).click();
+    element(by.cssContainingText('[ng-model="showPaired""] option', "All")).click();
+
     expect($('.pairing-text-left').getText()).toContain('Showing 19 Properties');
     expect($('.pairing-text-right').getText()).toContain('Showing 11 Tax Lots');
+
+    $$('[ng-click="leftSortData(col.name)"]').first().click().click();
+    $$('[ng-click="rightSortData(col.name)"]').first().click().click();
   });
+
 
   it('should test filters and sort on left and right table', function () {
     var leftRows = element.all(by.repeater('row in newLeftData'));
