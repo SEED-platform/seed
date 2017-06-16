@@ -14,15 +14,13 @@ from rest_framework.parsers import JSONParser, FormParser
 from rest_framework.renderers import JSONRenderer
 
 from seed.authentication import SEEDAuthentication
-from seed.decorators import DecoratorMixin
 from seed.models import (
     Measure,
 )
 from seed.pagination import NoPagination
-from seed.utils.api import drf_api_endpoint
 
 
-class MeasureViewSet(DecoratorMixin(drf_api_endpoint), viewsets.ReadOnlyModelViewSet):
+class MeasureViewSet(viewsets.ReadOnlyModelViewSet):
     """
     API View for measures. This only includes retrieve and list since the measures are immutable.
 
@@ -36,7 +34,6 @@ class MeasureViewSet(DecoratorMixin(drf_api_endpoint), viewsets.ReadOnlyModelVie
     queryset = Measure.objects.all()
     pagination_class = NoPagination
 
-    # @api_endpoint_class
     @list_route(methods=['POST'])
     def reset(self, request):
         """
