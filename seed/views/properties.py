@@ -956,6 +956,8 @@ class PropertyViewSet(GenericViewSet):
     @has_perm_class('can_modify_data')
     @list_route(methods=['POST'])
     def building_sync(self, request):
+        # save off the buildingsync file
+
         return JsonResponse({"status": "error", "message": "Not yet implemented"})
 
 
