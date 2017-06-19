@@ -307,7 +307,7 @@ describe('When I do miscellaneous things', function () {
 
   it('should test delete TL and properties', function () {
     //select rows and delete
-    $$('[ng-click="headerButtonClick($event)"]').first().click();
+    $$('[ng-if="grid.options.enableSelectAll"]').first().click();
     $('#btnInventoryActions').click();
     $('[ng-click="open_delete_modal()"]').click();
     $$('[ng-click="cancel()"]').first().click();
@@ -318,7 +318,7 @@ describe('When I do miscellaneous things', function () {
     
     // taxlots
     $('[ui-sref="inventory_list({inventory_type: \'taxlots\'})"]').click();
-    $$('[ng-click="headerButtonClick($event)"]').first().click();
+    $$('[ng-if="grid.options.enableSelectAll"]').first().click();
     $('#btnInventoryActions').click();
     $('[ng-click="open_delete_modal()"]').click();
     $$('[ng-click="cancel()"]').first().click();
