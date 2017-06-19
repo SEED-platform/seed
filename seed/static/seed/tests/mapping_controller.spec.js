@@ -274,6 +274,8 @@ describe('controller: mapping_controller', function () {
 
     mapping_controller_scope.$digest();
     tcm = mapping_controller_scope.raw_columns[0];
+    tcm.invalids = [tcm.raw_data[0]];
+    tcm.validity = "invalid";
     var good_val = mapping_controller_scope.set_td_class(
       tcm,
       tcm.raw_data[0]
@@ -285,14 +287,37 @@ describe('controller: mapping_controller', function () {
     mapping_controller_scope.validate_data(mapping_controller_scope.raw_columns[0]);
 
     tcm = mapping_controller_scope.raw_columns[0];
+    tcm.invalids = [tcm.raw_data[4]];
+    tcm.validity = "semivalid";
     var blank_val = mapping_controller_scope.set_td_class(
       tcm,
       tcm.raw_data[4]
     );
 
     expect(blank_val).toBe('');
-
   });
+
+  it('should test labels', function () {
+    var tcm;
+
+    create_mapping_controller();
+
+    mapping_controller_scope.$digest();
+    tcm = mapping_controller_scope.raw_columns[0];
+    expect(tcm.label_status()).toBe('success');
+
+    tcm.mapped_row = false;
+    expect(tcm.label_status()).toBe('default');
+
+    tcm.mapped_row = true;
+    tcm.validity = "invalid";
+    expect(tcm.label_status()).toBe('danger');
+
+    tcm.mapped_row = true;
+    tcm.validity = "somethingElse";
+    expect(tcm.label_status()).toBe('warning');
+  });
+
 
   it('should detect duplicates of mapped rows', function () {
     create_mapping_controller();

@@ -25,15 +25,21 @@ describe('When I go to the dataset options page', function () {
     expect($('.page_title').getText()).toContain('Pair Properties to Tax Lots');
 
     element(by.cssContainingText('[ng-model="showPaired"]', "Show Paired")).click();
+    element(by.cssContainingText('[ng-change="inventoryTypeChanged()"] option', 'Tax Lot')).click();
+
     element(by.cssContainingText('[ng-model="showPaired"]', "Show Unpaired")).click();
+    element(by.cssContainingText('[ng-change="inventoryTypeChanged()"] option', 'Property')).click();
+
+
     element(by.cssContainingText('[ng-model="showPaired"]', "All")).click();
+
 
     expect($('.pairing-text-left').getText()).toContain('Showing 19 Properties');
     expect($('.pairing-text-right').getText()).toContain('Showing 11 Tax Lots');
 
     $$('[ng-click="leftSortData(col.name)"]').first().click().click();
     $$('[ng-click="rightSortData(col.name)"]').first().click().click();
-  });
+  }, 60000);
 
 
   it('should test filters and sort on left and right table', function () {

@@ -198,8 +198,10 @@ describe('When I do miscellaneous things', function () {
     var rowCount3 = element.all(by.repeater('result in row.data_quality_results'));
 
     expect(rowCount3.count()).toBe(5);
-    $$('[ng-click="c.toggle_sort()"]').first().click().click();
+    $$('[ng-click="c.toggle_sort()"]').first().click();
     $$('[ng-change="search.filter_search()"]').first().sendKeys('1234');
+    $$('[ng-change="search.filter_search()"]').first().clear();
+    $$('[ng-click="c.toggle_sort()"]').first().click();
     $$('[ng-click="close()"]').click();
 
   });
@@ -280,7 +282,7 @@ describe('When I do miscellaneous things', function () {
     myOptions.click();
   });
 
-  it('should test delete and export modals properties', function () {
+  it('should test export modals properties', function () {
     // reselect rows and export
     $$('[ng-click="selectButtonClick(row, $event)"]').first().click();
     $$('[ng-click="selectButtonClick(row, $event)"]').get(1).click();
@@ -293,6 +295,29 @@ describe('When I do miscellaneous things', function () {
     $('[ng-click="export_selected()"]').click();
 
     //select rows and delete
+    $$('[ng-click="headerButtonClick($event)"]').first().click();
+    $('#btnInventoryActions').click();
+    $('[ng-click="open_delete_modal()"]').click();
+    $$('[ng-click="cancel()"]').first().click();
+    $('#btnInventoryActions').click();
+    $('[ng-click="open_delete_modal()"]').click();
+    $('[ng-click="delete_inventory()"]').click();
+    $('[ng-click="close()"]').click();
+  });
+
+  it('should test delete TL and properties', function () {
+    //select rows and delete
+    $$('[ng-click="headerButtonClick($event)"]').first().click();
+    $('#btnInventoryActions').click();
+    $('[ng-click="open_delete_modal()"]').click();
+    $$('[ng-click="cancel()"]').first().click();
+    $('#btnInventoryActions').click();
+    $('[ng-click="open_delete_modal()"]').click();
+    $('[ng-click="delete_inventory()"]').click();
+    $('[ng-click="close()"]').click();
+    
+    // taxlots
+    $('[ui-sref="inventory_list({inventory_type: \'taxlots\'})"]').click();
     $$('[ng-click="headerButtonClick($event)"]').first().click();
     $('#btnInventoryActions').click();
     $('[ng-click="open_delete_modal()"]').click();
