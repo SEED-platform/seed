@@ -34,6 +34,10 @@
                                 <auc:FloorAreaType>Gross</auc:FloorAreaType>
                                 <auc:FloorAreaValue>25000</auc:FloorAreaValue>
                             </auc:FloorArea>
+                            <auc:FloorArea>
+                                <auc:FloorAreaType>Net</auc:FloorAreaType>
+                                <auc:FloorAreaValue>22500</auc:FloorAreaValue>
+                            </auc:FloorArea>
                         </auc:FloorAreas>
                         <auc:YearOfConstruction>1990</auc:YearOfConstruction>
                     </auc:Facility>

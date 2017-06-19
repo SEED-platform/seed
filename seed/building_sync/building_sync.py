@@ -107,6 +107,14 @@ class BuildingSync(object):
                 "required": True,
                 "type": "double",
             },
+            "net_floor_area": {
+                "path": "Facilities.Facility.FloorAreas.FloorArea",
+                "key_path_name": "FloorAreaType",
+                "key_path_value": "Net",
+                "value_path_name": "FloorAreaValue",
+                "required": False,
+                "type": "double",
+            },
         }
     }
 
@@ -197,17 +205,15 @@ class BuildingSync(object):
         """
 
         def _lookup_sub(node, key_path_name, key_path_value, value_path_name):
-            if isinstance(node, dict):
+            items = [node] if isinstance(node, dict) else node
+            for item in items:
                 found = False
-                for k, v in node.iteritems():
+                for k, v in item.iteritems():
                     if k == key_path_name and v == key_path_value:
                         found = True
 
                     if found and k == value_path_name:
                         return v
-            elif isinstance(node, list):
-                # TODO: iterate of the list
-                pass
 
         res = {}
         messages = []
@@ -217,12 +223,6 @@ class BuildingSync(object):
             value = self._get_node(path, data, [])
 
             if value is not None:
-                # catch some errors
-                if isinstance(value, list):
-                    messages.append("Could not find single entry for '{}'".format(path))
-                    errors = True
-                    break
-
                 if v.get('key_path_name', None) and \
                     v.get('value_path_name', None) and \
                         v.get('key_path_value', None):
@@ -232,6 +232,12 @@ class BuildingSync(object):
                         v.get('key_path_value'),
                         v.get('value_path_name'),
                     )
+
+                # catch some errors
+                if isinstance(value, list):
+                    messages.append("Could not find single entry for '{}'".format(path))
+                    errors = True
+                    break
 
                 # type cast the value
                 if v['type'] == 'double':

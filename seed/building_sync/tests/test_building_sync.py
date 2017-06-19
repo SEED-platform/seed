@@ -154,12 +154,14 @@ class TestBuildingSync(TestCase):
             'floors_above_grade': 1,
             'floors_below_grade': 0,
             'gross_floor_area': 25000,
+            'net_floor_area': 22500,
             'occupancy_type': 'PDR',
             'premise_identifier': 'XY8198732',
             'property_type': 'Commercial',
         }
 
         res, errors, mess = self.bs._process_struct(struct, self.bs.data)
+        print res
         self.assertEqual(res, expected)
         self.assertFalse(errors)
         self.assertEqual(mess, [])
