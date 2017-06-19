@@ -81,8 +81,8 @@ module.exports = function(grunt) {
             src: 'protractorCoverage/**/*.json',
             options: {
                 type: 'lcov',
-                dir: 'protractorReports',
-                print: 'detail'
+                dir: 'protractorReports'
+                // print: 'detail'
             }
         },
         coveralls: {
