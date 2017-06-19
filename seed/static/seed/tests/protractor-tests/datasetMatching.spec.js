@@ -35,7 +35,7 @@ describe('When I go to the matching page', function () {
     $$('[ng-click="cancel()"]').first().click();
     $$('[ng-change="checkbox_match(state)"]').first().click();
     $('[ng-click="close()"]').click();
-    browser.wait(EC.presenceOf($('.message')), 10000);
+    browser.wait(EC.presenceOf($('.message')), 15000);
     $('[ui-sref="matching_list({importfile_id: import_file.id, inventory_type: inventory_type})"]').click();
   });
 
