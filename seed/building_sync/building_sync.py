@@ -12,6 +12,104 @@ import xmltodict
 
 
 class BuildingSync(object):
+    ADDRESS_STRUCT = {
+        "root": "Audits.Audit.Sites.Site.Address",
+        "return": {
+            "address_line_1": {
+                "path": "StreetAddressDetail.Simplified.StreetAddress",
+                "required": True,
+                "type": "string",
+            },
+            "city": {
+                "path": "City",
+                "required": True,
+                "type": "string",
+            },
+            "state": {
+                "path": "State",
+                "required": True,
+                "type": "string",
+            }
+        }
+    }
+
+    BRICR_STRUCT = {
+        "root": "Audits.Audit.Sites.Site",
+        "return": {
+            "address_line_1": {
+                "path": "Address.StreetAddressDetail.Simplified.StreetAddress",
+                "required": True,
+                "type": "string",
+            },
+            "city": {
+                "path": "Address.City",
+                "required": True,
+                "type": "string",
+            },
+            "state": {
+                "path": "Address.State",
+                "required": True,
+                "type": "string",
+            },
+            "longitude": {
+                "path": "Longitude",
+                "required": True,
+                "type": "double"
+            },
+            "latitude": {
+                "path": "Latitude",
+                "required": True,
+                "type": "double",
+            },
+            "facility_id": {
+                "path": "Facilities.Facility.@ID",
+                "required": True,
+                "type": "string",
+            },
+            "year_of_construction": {
+                "path": "Facilities.Facility.YearOfConstruction",
+                "required": True,
+                "type": "integer",
+            },
+            "property_type": {
+                "path": "Facilities.Facility.FacilityClassification",
+                "required": True,
+                "type": "string",
+            },
+            "occupancy_type": {
+                "path": "Facilities.Facility.OccupancyClassification",
+                "required": True,
+                "type": "string",
+            },
+            "floors_above_grade": {
+                "path": "Facilities.Facility.FloorsAboveGrade",
+                "required": True,
+                "type": "integer",
+            },
+            "floors_below_grade": {
+                "path": "Facilities.Facility.FloorsBelowGrade",
+                "required": True,
+                "type": "integer",
+            },
+            "premise_identifier": {
+                "path": "Facilities.Facility.PremisesIdentifiers.PremisesIdentifier",
+                "key_path_name": "IdentifierLabel",
+                "key_path_value": "Assessor parcel number",
+                "value_path_name": "IdentifierValue",
+                "required": True,
+                "type": "string",
+            },
+            "gross_floor_area": {
+                "path": "Facilities.Facility.FloorAreas.FloorArea",
+                "key_path_name": "FloorAreaType",
+                "key_path_value": "Gross",
+                "value_path_name": "FloorAreaValue",
+                "required": True,
+                "type": "double",
+            },
+        }
+    }
+
     def __init__(self):
         self.filename = None
         self.data = None
@@ -26,8 +124,7 @@ class BuildingSync(object):
 
     def import_file(self, filename):
         self.filename = filename
-        self.address_line_1 = None
-        self.city = None
+        self.address = None
 
         if os.path.isfile(filename):
             with open(filename, 'rU') as xmlfile:
@@ -41,11 +138,9 @@ class BuildingSync(object):
         else:
             raise Exception("File not found: {}".format(filename))
 
-        # self.pretty_print
-        #
         return True
 
-    def _get_node(self, path, node, results=[]):
+    def _get_node(self, path, node, results=[], kwargs={}):
         """
         Return the values from a dictionary based on a path delimited by periods. If there
         are more than one results, then it will return all the results in a list.
@@ -78,21 +173,94 @@ class BuildingSync(object):
                     for nn in new_node:
                         self._get_node(new_path, nn, results)
                     break
-                else:
+                elif isinstance(new_node, dict):
                     self._get_node(new_path, new_node, results)
                     break
+                else:
+                    # can't recurse futher into new_node because it is not a dict
+                    break
 
-        if len(results) == 1:
+        if len(results) == 0:
+            return None
+        elif len(results) == 1:
             return results[0]
         else:
             return results
+
+    def _process_struct(self, struct, data):
+        """
+        Take a dictionary and return the `return` object with values filled in.
+
+        :param struct: dict, object to parse and fill from BuildingSync file
+        :param data: dict, data to parse and fill
+        :return: list, the `return` value, if all paths were found, and list of messages
+        """
+
+        def _lookup_sub(node, key_path_name, key_path_value, value_path_name):
+            if isinstance(node, dict):
+                found = False
+                for k, v in node.iteritems():
+                    if k == key_path_name and v == key_path_value:
+                        found = True
+
+                    if found and k == value_path_name:
+                        return v
+            elif isinstance(node, list):
+                # TODO: iterate of the list
+                pass
+
+        res = {}
+        messages = []
+        errors = False
+        for k, v in struct['return'].iteritems():
+            path = ".".join([struct['root'], v['path']])
+            value = self._get_node(path, data, [])
+
+            if value is not None:
+                # catch some errors
+                if isinstance(value, list):
+                    messages.append("Could not find single entry for '{}'".format(path))
+                    errors = True
+                    break
+
+                if v.get('key_path_name', None) and \
+                    v.get('value_path_name', None) and \
+                        v.get('key_path_value', None):
+                    value = _lookup_sub(
+                        value,
+                        v.get('key_path_name'),
+                        v.get('key_path_value'),
+                        v.get('value_path_name'),
+                    )
+
+                # type cast the value
+                if v['type'] == 'double':
+                    value = float(value)
+                elif v['type'] == 'integer':
+                    value = int(value)
+                elif v['type'] == 'dict':
+                    value = dict(value)
+                elif v['type'] == 'string':
+                    value = str(value)
+                else:
+                    messages.append("Unknown cast type of {} for '{}'".format(v['type'], path))
+
+                res[k] = value
+            else:
+                if v['required']:
+                    messages.append("Could not find '{}'".format(path))
+                    errors = True
+
+        return res, errors, messages
 
     def process(self):
         """Process a BuildingSync file
 
         This is just a stub, will be filled in over time to get the remainder of the objects
         """
-        p = 'Audits.Audit.Sites.Site.Address.StreetAddressDetail.Simplified.StreetAddress'
-        self.address_line_1 = self._get_node(p, self.data, [])
-        p = 'Audits.Audit.Sites.Site.Address.City'
-        self.city = self._get_node(p, self.data, [])
+
+        # API call to BuildingSync Validator on other server for appropriate use case
+        # usecase = new_use_case
+        # self.data, _, _ = self._process(usecase)
+
+        self.address, _, _ = self._process_struct(BuildingSync.ADDRESS_STRUCT, self.data)

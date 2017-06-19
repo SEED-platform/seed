@@ -5,6 +5,7 @@
 :author nicholas.long@nrel.gov
 """
 
+import copy
 from os import path
 
 from django.test import TestCase
@@ -26,8 +27,8 @@ class TestBuildingSync(TestCase):
 
         self.assertTrue(self.bs.import_file(self.xml_file))
 
-        self.assertEqual(self.bs.address_line_1, '123 Main Street')
-        self.assertEqual(self.bs.city, 'Denver')
+        expected_address = {'city': u'Denver', 'state': u'CO', 'address_line_1': u'123 Main Street'}
+        self.assertDictEqual(self.bs.address, expected_address)
 
     def test_get_node(self):
         data = {
@@ -105,3 +106,60 @@ class TestBuildingSync(TestCase):
 
         result = self.bs._get_node('g.list_1.list_2.value_2', data, [])
         self.assertEqual(result, "new")
+
+        result = self.bs._get_node('c.d.e.f.g.h.i', data, [])
+        self.assertEqual(result, None)
+
+    def test_get_address_missing_field(self):
+        self.assertTrue(self.bs.import_file(self.xml_file))
+
+        struct = copy.copy(BuildingSync.ADDRESS_STRUCT)
+        struct['return']['bungalow_name'] = {
+            "path": "BungalowName",
+            "required": True,
+            "type": "string",
+        }
+
+        expected = {'city': u'Denver', 'state': u'CO', 'address_line_1': u'123 Main Street'}
+
+        res, errors, mess = self.bs._process_struct(struct, self.bs.data)
+        self.assertTrue(errors)
+        self.assertEqual(mess, ["Could not find 'Audits.Audit.Sites.Site.Address.BungalowName'"])
+        self.assertEqual(res, expected)
+
+        # Missing path
+        struct['return']['bungalow_name'] = {
+            "path": "Long.List.A.B",
+            "required": True,
+            "type": "string",
+        }
+        res, errors, mess = self.bs._process_struct(struct, self.bs.data)
+        self.assertTrue(errors)
+        self.assertEqual(mess, ["Could not find 'Audits.Audit.Sites.Site.Address.Long.List.A.B'"])
+        self.assertEqual(res, expected)
+
+    def test_bricr_struct(self):
+        self.assertTrue(self.bs.import_file(self.xml_file))
+        self.maxDiff = None
+
+        struct = copy.copy(BuildingSync.BRICR_STRUCT)
+        expected = {
+            'address_line_1': '123 Main Street',
+            'city': 'Denver',
+            'state': 'CO',
+            'latitude': 40.762235027074865,
+            'longitude': -121.41677258249452,
+            'facility_id': 'Building991',
+            'year_of_construction': 1990,
+            'floors_above_grade': 1,
+            'floors_below_grade': 0,
+            'gross_floor_area': 25000,
+            'occupancy_type': 'PDR',
+            'premise_identifier': 'XY8198732',
+            'property_type': 'Commercial',
+        }
+
+        res, errors, mess = self.bs._process_struct(struct, self.bs.data)
+        self.assertEqual(res, expected)
+        self.assertFalse(errors)
+        self.assertEqual(mess, [])

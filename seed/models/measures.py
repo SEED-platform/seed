@@ -12,6 +12,7 @@ import string
 from django.db import models
 
 _log = logging.getLogger(__name__)
+
 BUILDINGSYNC_MEASURES = [
     {
         "name": "RetrofitWithCFLs",
