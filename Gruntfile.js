@@ -82,7 +82,7 @@ module.exports = function(grunt) {
             options: {
                 type: 'lcov',
                 dir: 'protractorReports',
-                print: 'detail'
+                print: ''
             }
         },
         coveralls: {

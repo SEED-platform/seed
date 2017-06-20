@@ -198,9 +198,21 @@ describe('When I do miscellaneous things', function () {
 
     expect(rowCount3.count()).toBe(5);
     $$('[ng-click="c.toggle_sort()"]').first().click();
+    browser.sleep(500);
     $$('[ng-change="search.filter_search()"]').first().sendKeys('1234');
+    browser.sleep(500);
     $$('[ng-change="search.filter_search()"]').first().clear();
+    browser.sleep(500);
     $$('[ng-click="c.toggle_sort()"]').first().click();
+    browser.sleep(500);
+    $$('[ng-click="c.toggle_sort()"]').get(2).click();
+    browser.sleep(500);
+    $$('[ng-change="search.filter_search()"]').get(2).sendKeys('1234');
+    browser.sleep(500);
+    $$('[ng-change="search.filter_search()"]').get(2).clear();
+    browser.sleep(500);
+    $$('[ng-click="c.toggle_sort()"]').get(2).click().click();
+    browser.sleep(500);
     $$('[ng-click="close()"]').click();
 
   }, 60000);

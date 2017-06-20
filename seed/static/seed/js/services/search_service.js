@@ -117,6 +117,7 @@ angular.module('BE.seed.service.search', [])
       //   }
       // };
 
+    // unused 6.15.17 commented out for code cov dbressan
       // search_service.clear_filters = function () {
       //   saas.filter_params = {};
       //   if (!_.isUndefined(Storage)) {
