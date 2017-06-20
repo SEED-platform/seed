@@ -7,18 +7,22 @@ required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
 :author Fable Turas <fable@raintechpdx.com>
 
+<<<<<<< HEAD
+provides filterset classes for advanced filtering of DRF viewsets
+=======
 FilterSet classes to provide advanced filtering API endpoints.
+>>>>>>> merge-05-Properties
 """
 
 # Imports from Standard Library
 from datetime import datetime
-from dateutil.relativedelta import relativedelta
 
 # Imports from Third Party Modules
-from django_filters.rest_framework import FilterSet
-from django_filters import BaseInFilter, NumberFilter, CharFilter, DateFilter
+from dateutil.relativedelta import relativedelta
 
 # Imports from Django
+from django_filters.rest_framework import FilterSet
+from django_filters import BaseInFilter, NumberFilter, CharFilter, DateFilter
 from django.db.models import Q
 
 # Local Imports
