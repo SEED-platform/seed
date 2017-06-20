@@ -56,15 +56,14 @@ describe('When I do miscellaneous things', function () {
     var rowCount = element.all(by.repeater('rule in ruleGroup'));
     expect(rowCount.count()).toBe(1);
 
-    $$('[ng-click="selectAll()"]').first().click().click();
-
+    $$('[ng-click="selectAll()"]').first().click();
+    browser.sleep(1000)
+    $$('[ng-click="selectAll()"]').first().click();
+    $$('[ng-model="rule.field"]').first().click();
+    $$('[label="Campus"]').first().click();
     $$('[ng-model="rule.data_type"]').first().click();
-    $('[label="Text"]').click();
+    $('[label="Year"]').click();
 
-    $$('[ng-model="rule.data_type"]').first().click();
-    $('[label="Number"]').click();
-
-    $$('[ng-click="change_required(rule)"]').first().click();
     $$('[ng-click="change_required(rule)"]').first().click();
 
     $$('[ng-model="rule.severity"]').first().click();
