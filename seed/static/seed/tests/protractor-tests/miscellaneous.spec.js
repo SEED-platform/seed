@@ -203,7 +203,7 @@ describe('When I do miscellaneous things', function () {
     $$('[ng-click="c.toggle_sort()"]').first().click();
     $$('[ng-click="close()"]').click();
 
-  });
+  }, 60000);
 
   it('should test labels were applied correctly', function () {
     var rows = $('.left.ui-grid-render-container-left.ui-grid-render-container')
@@ -279,7 +279,7 @@ describe('When I do miscellaneous things', function () {
       });
     }).first();
     myOptions.click();
-  });
+  }, 45000);
 
   it('should test export modals properties', function () {
     // reselect rows and export
@@ -325,7 +325,7 @@ describe('When I do miscellaneous things', function () {
     $('[ng-click="open_delete_modal()"]').click();
     $('[ng-click="delete_inventory()"]').click();
     $('[ng-click="close()"]').click();
-  });
+  }, 45000);
 
   //Delete
   it('should check edit and delete stuff for files', function () {
