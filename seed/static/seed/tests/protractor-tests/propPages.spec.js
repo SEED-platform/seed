@@ -182,7 +182,7 @@ describe('When I go to the prop page', function () {
     expect($('.fa.fa-square').isPresent()).toBe(true);
     expect($('.fa.fa-circle').isPresent()).toBe(true);
 
-
+    browser.manage().window().setSize(600, 600);
     $('#xAxisSelector').$('.btn-group.dropdown').$('.btn.btn-default.dropdown-toggle').click();
     $$('[ng-bind="item.name"]').first().click();
     $('.btn.btn-primary').click();
@@ -199,6 +199,7 @@ describe('When I go to the prop page', function () {
     $$('[ng-bind="item.name"]').get(3).click();
     $('.btn.btn-primary').click();
 
+    browser.driver.manage().window().maximize();
     $('#yAxisSelector').$('.btn-group.dropdown').$('.btn.btn-default.dropdown-toggle').click();
     $('#yAxisSelector').$('.btn-group.dropdown').$('.dropdown-menu').all(by.css('[ng-bind="item.name"]')).get(1).click();
     $('.btn.btn-primary').click();

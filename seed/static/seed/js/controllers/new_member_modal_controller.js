@@ -47,18 +47,3 @@ angular.module('BE.seed.controller.new_member_modal', [])
       angular.element('#newMemberFirstName').focus();
     }, 50);
   }]);
-
-angular.module('BE.seed.controller.existing_members_modal', [])
-.controller('existing_members_modal_controller', [
-  '$scope',
-  '$uibModalInstance',
-  function ($scope, $uibModalInstance) {
-
-    $scope.close = function () {
-      $uibModalInstance.close();
-    };
-
-    $scope.cancel = function () {
-      $uibModalInstance.dismiss('cancel');
-    };
-  }]);

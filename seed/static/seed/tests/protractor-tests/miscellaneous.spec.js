@@ -56,8 +56,13 @@ describe('When I do miscellaneous things', function () {
     var rowCount = element.all(by.repeater('rule in ruleGroup'));
     expect(rowCount.count()).toBe(1);
 
+    $$('[ng-click="selectAll()"]').first().click();
+    browser.sleep(1000)
+    $$('[ng-click="selectAll()"]').first().click();
+    $$('[ng-model="rule.field"]').first().click();
+    $$('[label="Campus"]').first().click();
     $$('[ng-model="rule.data_type"]').first().click();
-    $('[label="Number"]').click();
+    $('[label="Year"]').click();
 
     $$('[ng-click="change_required(rule)"]').first().click();
 
@@ -192,11 +197,25 @@ describe('When I do miscellaneous things', function () {
     var rowCount3 = element.all(by.repeater('result in row.data_quality_results'));
 
     expect(rowCount3.count()).toBe(5);
-    $$('[ng-click="c.toggle_sort()"]').first().click().click();
+    $$('[ng-click="c.toggle_sort()"]').first().click();
+    browser.sleep(500);
     $$('[ng-change="search.filter_search()"]').first().sendKeys('1234');
+    browser.sleep(500);
+    $$('[ng-change="search.filter_search()"]').first().clear();
+    browser.sleep(500);
+    $$('[ng-click="c.toggle_sort()"]').first().click();
+    browser.sleep(500);
+    $$('[ng-click="c.toggle_sort()"]').get(2).click();
+    browser.sleep(500);
+    $$('[ng-change="search.filter_search()"]').get(2).sendKeys('1234');
+    browser.sleep(500);
+    $$('[ng-change="search.filter_search()"]').get(2).clear();
+    browser.sleep(500);
+    $$('[ng-click="c.toggle_sort()"]').get(2).click().click();
+    browser.sleep(500);
     $$('[ng-click="close()"]').click();
 
-  });
+  }, 60000);
 
   it('should test labels were applied correctly', function () {
     var rows = $('.left.ui-grid-render-container-left.ui-grid-render-container')
@@ -272,9 +291,9 @@ describe('When I do miscellaneous things', function () {
       });
     }).first();
     myOptions.click();
-  });
+  }, 45000);
 
-  it('should test delete and export modals properties', function () {
+  it('should test export modals properties', function () {
     // reselect rows and export
     $$('[ng-click="selectButtonClick(row, $event)"]').first().click();
     $$('[ng-click="selectButtonClick(row, $event)"]').get(1).click();
@@ -296,6 +315,29 @@ describe('When I do miscellaneous things', function () {
     $('[ng-click="delete_inventory()"]').click();
     $('[ng-click="close()"]').click();
   });
+
+  it('should test delete TL and properties', function () {
+    //select rows and delete
+    $$('[ng-if="grid.options.enableSelectAll"]').first().click();
+    $('#btnInventoryActions').click();
+    $('[ng-click="open_delete_modal()"]').click();
+    $$('[ng-click="cancel()"]').first().click();
+    $('#btnInventoryActions').click();
+    $('[ng-click="open_delete_modal()"]').click();
+    $('[ng-click="delete_inventory()"]').click();
+    $('[ng-click="close()"]').click();
+    
+    // taxlots
+    $('[ui-sref="inventory_list({inventory_type: \'taxlots\'})"]').click();
+    $$('[ng-if="grid.options.enableSelectAll"]').first().click();
+    $('#btnInventoryActions').click();
+    $('[ng-click="open_delete_modal()"]').click();
+    $$('[ng-click="cancel()"]').first().click();
+    $('#btnInventoryActions').click();
+    $('[ng-click="open_delete_modal()"]').click();
+    $('[ng-click="delete_inventory()"]').click();
+    $('[ng-click="close()"]').click();
+  }, 45000);
 
   //Delete
   it('should check edit and delete stuff for files', function () {

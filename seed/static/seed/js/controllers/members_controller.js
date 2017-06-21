@@ -88,12 +88,6 @@ angular.module('BE.seed.controller.members', [])
           // Do nothing
         });
       };
-      $scope.existing_members_modal = function () {
-        $uibModal.open({
-          templateUrl: urls.static_url + 'seed/partials/existing_members_modal.html',
-          controller: 'existing_members_modal_controller'
-        });
-      };
 
       /**
        * called on controller load and when users are refreshed

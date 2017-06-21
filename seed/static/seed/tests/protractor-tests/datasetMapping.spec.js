@@ -76,6 +76,8 @@ describe('When I go to the dataset options page', function () {
 
   it('should go to mapping Validation for properties', function () {
     $$('[ng-click="get_mapped_buildings()"]').first().click();
+    $$('[ng-click="backToMapping()"]').first().click();
+    $$('[ng-click="get_mapped_buildings()"]').first().click();
     browser.wait(EC.presenceOf($('.inventory-list-tab-container.ng-scope')), 30000);
     expect($('[heading="View by Property"]').isPresent()).toBe(true);
     expect($('[heading="View by Tax Lot"]').isPresent()).toBe(true);
