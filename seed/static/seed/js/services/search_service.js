@@ -80,34 +80,34 @@ angular.module('BE.seed.service.search', [])
        * functions
        */
 
-    // unused 6.15.17 commented out for code cov dbressan
+      // unused 6.15.17 commented out for code cov dbressan
       // search_service.init_storage = function (prefix) {
       //   // Check session storage for order and sort values.
       //   if (!_.isUndefined(Storage)) {
       //     saas.prefix = prefix;
-
+      //
       //     // order_by & sort_column
       //     if (sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy') !== null) {
       //       saas.order_by = sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy');
       //       saas.sort_column = sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy');
       //     }
-
+      //
       //     // sort_reverse
       //     if (sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse') !== null) {
       //       saas.sort_reverse = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse'));
       //     }
-
+      //
       //     // filter_params
       //     if (sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams') !== null) {
       //       saas.filter_params = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams'));
       //     }
-
+      //
       //     // number_per_page
       //     if (sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage') !== null) {
       //       saas.number_per_page = saas.number_per_page_options_model = saas.showing.end =
       //         JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage'));
       //     }
-
+      //
       //     // current_page
       //     if (sessionStorage.getItem(prefix + ':' + 'seedBuildingPageNumber') !== null) {
       //       saas.current_page = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingPageNumber'));
@@ -255,7 +255,7 @@ angular.module('BE.seed.service.search', [])
         this.showing.start = ((this.current_page - 1) * this.number_per_page) + 1;
       };
 
-    // unused 6.15.17 commented out for code cov dbressan
+      // unused 6.15.17 commented out for code cov dbressan
       /**
        * first_page: triggered when the `first` paging button is clicked, it
        *   sets the page to the first in the results, and fetches that page
@@ -278,7 +278,7 @@ angular.module('BE.seed.service.search', [])
         );
       };
 
-    // unused 6.15.17 commented out for code cov dbressan
+      // unused 6.15.17 commented out for code cov dbressan
       /**
        * last_page: triggered when the `last` paging button is clicked, it
        *   sets the page to the last in the results, and fetches that page
@@ -393,7 +393,7 @@ angular.module('BE.seed.service.search', [])
        * end checkbox logic
        */
 
-    // unused 6.15.17 commented out for code cov dbressan
+      // unused 6.15.17 commented out for code cov dbressan
       /** deselect_all_buildings: Force a deselection of all buildings
        *
        */
@@ -416,7 +416,7 @@ angular.module('BE.seed.service.search', [])
        *   the sort and filter methods, and various classes
        */
       search_service.column_prototype = {
-    // unused 6.15.17 commented out for code cov dbressan
+        // unused 6.15.17 commented out for code cov dbressan
         // toggle_sort: function () {
         //   if (this.sortable) {
         //     if (saas.sort_column === this.sort_column) {
@@ -426,12 +426,12 @@ angular.module('BE.seed.service.search', [])
         //       saas.sort_column = this.sort_column;
         //     }
         //   }
-
+        //
         //   if (!_.isUndefined(Storage)) {
         //     sessionStorage.setItem(this.prefix + ':' + 'seedBuildingOrderBy', saas.sort_column);
         //     sessionStorage.setItem(this.prefix + ':' + 'seedBuildingSortReverse', saas.sort_reverse);
         //   }
-
+        //
         //   saas.order_by = this.sort_column;
         //   saas.current_page = 1;
         //   saas.search_buildings();
@@ -439,7 +439,7 @@ angular.module('BE.seed.service.search', [])
         is_sorted_on_this_column: function () {
           return this.sort_column === saas.sort_column;
         },
-    // unused 6.15.17 commented out for code cov dbressan
+        // unused 6.15.17 commented out for code cov dbressan
         // is_sorted_down: function () {
         //   return this.is_sorted_on_this_column() && saas.sort_reverse;
         // },
@@ -449,7 +449,7 @@ angular.module('BE.seed.service.search', [])
         is_unsorted: function () {
           return !this.is_sorted_on_this_column();
         }
-    // unused 6.15.17 commented out for code cov dbressan
+        // unused 6.15.17 commented out for code cov dbressan
         // sorted_class: function () {
         //   if (saas.sort_column === this.sort_column) {
         //     if (saas.sort_reverse) {

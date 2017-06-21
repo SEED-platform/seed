@@ -86,7 +86,7 @@ angular.module('BE.seed.controller.matching_detail', [])
       //   }).then(function (data) {
       //     // safe-guard against future init() calls
       //     state_payload = data;
-
+      //
       //     if ($scope.inventory_type === 'properties') {
       //       $scope.num_pages = Math.ceil(data.number_properties_matching_search / $scope.number_per_page);
       //     } else {
@@ -125,11 +125,11 @@ angular.module('BE.seed.controller.matching_detail', [])
       //   } else {
       //     $scope.showing.end = $scope.current_page * $scope.number_per_page;
       //   }
-
+      //
       //   $scope.showing.start = ($scope.current_page - 1) * $scope.number_per_page + 1;
       //   $scope.prev_page_disabled = $scope.current_page === 1;
       //   $scope.next_page_disabled = $scope.current_page === $scope.num_pages;
-
+      //
       // };
 
       /**
@@ -177,24 +177,24 @@ angular.module('BE.seed.controller.matching_detail', [])
        * end pagination code
        */
 
-       //custom filter
+      //custom filter
       $scope.allSearch = function (value, index, array) {
         for (var i = 0; i < $scope.reduced_columns.length; i++) {
-            if ($scope.reduced_columns[i].searchText && value[$scope.reduced_columns[i].name]) {
-              //dont return match because it stops the loop, set to variable so even whem matches are found, they continue searching(iterating through the loop) when inputs are processed from other columns
-              var searchTextLower = $scope.reduced_columns[i].searchText.toLowerCase();
-              var reducedColLower = value[$scope.reduced_columns[i].name].toLowerCase();
-              var isMatch = reducedColLower.indexOf(searchTextLower) > -1;
-              //if an item does not match, break the loop
-              if (!isMatch) {
-                  return false;
-              }  
-            } else if ($scope.reduced_columns[i].searchText && !value[$scope.reduced_columns[i].name]) {
+          if ($scope.reduced_columns[i].searchText && value[$scope.reduced_columns[i].name]) {
+            //dont return match because it stops the loop, set to variable so even whem matches are found, they continue searching(iterating through the loop) when inputs are processed from other columns
+            var searchTextLower = $scope.reduced_columns[i].searchText.toLowerCase();
+            var reducedColLower = value[$scope.reduced_columns[i].name].toLowerCase();
+            var isMatch = reducedColLower.indexOf(searchTextLower) > -1;
+            //if an item does not match, break the loop
+            if (!isMatch) {
               return false;
             }
-        }        
-      return true;
-    };
+          } else if ($scope.reduced_columns[i].searchText && !value[$scope.reduced_columns[i].name]) {
+            return false;
+          }
+        }
+        return true;
+      };
 
       //Sort by Columns Ascending and Descending
       $scope.sortColumn = "name";
@@ -203,14 +203,14 @@ angular.module('BE.seed.controller.matching_detail', [])
       $scope.sortData = function (column) {
         $scope.reverseSort = ($scope.sortColumn === column) ? !$scope.reverseSort : false;
         $scope.sortColumn = column;
-      } 
+      };
 
       $scope.getSortClass = function (column) {
         if ($scope.sortColumn === column) {
             return $scope.reverseSort ? 'arrow-down' : 'arrow-up'
         }
         return 'arrow-down';
-      }
+      };
 
       var refresh = function () {
         spinner_utility.show();

@@ -86,6 +86,7 @@ angular.module('BE.seed.directives', [
   'sdCheckCycleExists',
   'sdCheckLabelExists',
   'sdDropdown',
+  'sdEnter',
   'sdLabel',
   'sdResizable',
   'sdUploader'

@@ -105,7 +105,7 @@ angular.module('BE.seed.controller.matching_list', [])
       //     .then(function (data) {
       //       // safe-guard against future init() calls
       //       inventory_payload = data;
-
+      //
       //       if ($scope.inventory_type === 'properties') {
       //         $scope.inventory = data.properties;
       //         $scope.num_pages = Math.ceil(data.number_properties_matching_search / $scope.number_per_page);

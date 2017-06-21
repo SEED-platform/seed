@@ -182,22 +182,6 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       });
     };
 
-    // commneted 6.15.17 dbressan code cov unused
-    // inventory_service.delete_properties = function (search_payload) {
-    //   spinner_utility.show();
-    //   // TODO: FixthisURL
-    //   return $http.delete('/app/properties', {
-    //     data: {
-    //       organization_id: user_service.get_organization().id,
-    //       search_payload: search_payload
-    //     }
-    //   }).then(function (response) {
-    //     return response.data;
-    //   }).finally(function () {
-    //     spinner_utility.hide();
-    //   });
-    // };
-
 
     inventory_service.delete_property_states = function (ids) {
       return $http.delete('/api/v2/properties/batch_delete/', {
@@ -510,25 +494,6 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         }
       };
     };
-
-    // commneted 6.15.17 dbressan code cov unused
-
-    // inventory_service.get_total_properties_for_user = function () {
-    //   // django uses request.user for user information
-    //   return $http.get(window.BE.urls.get_total_number_of_properties_for_user_url).then(function (response) {
-    //     inventory_service.total_properties_for_user = response.data.properties_count;
-    //     return response.data;
-    //   });
-    // };
-
-
-    // inventory_service.get_total_taxlots_for_user = function () {
-    //   // django uses request.user for user information
-    //   return $http.get(window.BE.urls.get_total_number_of_taxlots_for_user_url).then(function (response) {
-    //     inventory_service.total_taxlots_for_user = response.data.taxlots_count;
-    //     return response.data;
-    //   });
-    // };
 
     inventory_service.saveSettings = function (key, columns) {
       key += '.' + user_service.get_organization().id;

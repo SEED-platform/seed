@@ -170,7 +170,7 @@ angular.module('BE.seed.controller.menu', [])
       //       create_project: _.constant(true)
       //     }
       //   });
-
+      //
       //   modalInstance.result.then(
       //     function (project) {
       //       $log.info(project);
