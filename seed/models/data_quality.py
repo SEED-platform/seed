@@ -504,17 +504,21 @@ class DataQualityCheck(models.Model):
         """
         Send in data as a queryset from the Property/Taxlot ids.
 
-        :param record_type: one of property/taxlot
+        :param record_type: one of PropertyState | TaxLotState
         :param rows: rows of data to be checked for data quality
         :return: None
         """
 
-        # grab the columns in order to grab the display names
+        # grab the columns so we can grab the display names
         columns = Column.retrieve_all(self.organization, record_type)
 
         # create lookup tuple for the display name
         for c in columns:
             self.column_lookup[(c['table'], c['name'])] = c['displayName']
+
+        # grab all the rules once, save query time
+        rules = list(
+            self.rules.filter(enabled=True, table_name=record_type).order_by('field', 'severity'))
 
         # Get the list of the field names that will show in every result
         fields = self.get_fieldnames(record_type)
@@ -528,7 +532,7 @@ class DataQualityCheck(models.Model):
                 self.results[row.id]['data_quality_results'] = []
 
             # Run the checks
-            self._check(row)
+            self._check(rules, row)
 
         # Prune the results will remove any entries that have zero data_quality_results
         for k, v in self.results.items():
@@ -544,17 +548,16 @@ class DataQualityCheck(models.Model):
     def reset_results(self):
         self.results = {}
 
-    def _check(self, row):
+    def _check(self, rules, row):
         """
         Check for errors in the min/max of the values.
 
-        :param row: Database record containing the BS version of the fields populated
+        :param rules: list, rules to run from database objects
+        :param row: dict, row of data to check
         :return: None
         """
         linked_id = None
-        for rule in self.rules.filter(enabled=True,
-                                      table_name=type(row).__name__).order_by('field', 'severity'):
-
+        for rule in rules:
             # check if the field exists
             if hasattr(row, rule.field) or rule.field in row.extra_data:
                 value = None
@@ -574,15 +577,13 @@ class DataQualityCheck(models.Model):
                 if rule.table_name == 'PropertyState':
                     label = apps.get_model('seed', 'Property_labels')
                     if rule.status_label_id is not None and linked_id is None:
-                        pv = PropertyView.objects.filter(state=row)
-                        if pv.count() > 0:
-                            linked_id = pv[0].property_id
+                        if PropertyView.objects.filter(state=row).exists():
+                            linked_id = PropertyView.objects.get(state=row).property_id
                 else:
                     label = apps.get_model('seed', 'TaxLot_labels')
                     if rule.status_label_id is not None and linked_id is None:
-                        tv = TaxLotView.objects.filter(state=row)
-                        if tv.count() > 0:
-                            linked_id = tv[0].taxlot_id
+                        if TaxLotView.objects.filter(state=row).exists():
+                            linked_id = TaxLotView.objects.get(state=row).taxlot_id
 
                 if (rule.table_name, rule.field) not in self.column_lookup:
                     # If the rule is not in the column lookup, then it may have been a required
@@ -853,7 +854,8 @@ class DataQualityCheck(models.Model):
         elif len(result) == 1:
             return result[0]
         else:
-            raise RuntimeError("More than 1 data quality results for tax lot id '{}'".format(tax_lot_id))
+            raise RuntimeError(
+                "More than 1 data quality results for tax lot id '{}'".format(tax_lot_id))
 
     def __unicode__(self):
         return u'DataQuality ({}:{}) - Rule Count: {}'.format(self.pk, self.name,

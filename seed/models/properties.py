@@ -130,6 +130,12 @@ class PropertyState(models.Model):
 
     extra_data = JSONField(default=dict, blank=True)
 
+    class Meta:
+        index_together = [
+            ['import_file', 'data_state'],
+            ['import_file', 'data_state', 'merge_state']
+        ]
+
     def promote(self, cycle):
         """
         Promote the PropertyState to the view table for the given cycle
@@ -245,9 +251,10 @@ class PropertyState(models.Model):
 class PropertyView(models.Model):
     """Similar to the old world of canonical building."""
     # different property views can be associated with each other (2012, 2013)
-    property = models.ForeignKey(Property, related_name='views')
-    cycle = models.ForeignKey(Cycle)
-    state = models.ForeignKey(PropertyState)
+    property = models.ForeignKey(Property, related_name='views',
+                                 on_delete=models.CASCADE)
+    cycle = models.ForeignKey(Cycle, on_delete=models.PROTECT)
+    state = models.ForeignKey(PropertyState, on_delete=models.CASCADE)
 
     # labels = models.ManyToManyField(StatusLabel)
 
@@ -256,6 +263,7 @@ class PropertyView(models.Model):
 
     class Meta:
         unique_together = ('property', 'cycle',)
+        index_together = [['state', 'cycle']]
 
     def __init__(self, *args, **kwargs):
         self._import_filename = kwargs.pop('import_filename', None)
@@ -325,10 +333,8 @@ class PropertyAuditLog(models.Model):
     parent_state2 = models.ForeignKey(PropertyState, blank=True, null=True,
                                       related_name='propertyauditlog__parent_state2')
 
-    state = models.ForeignKey('PropertyState',
-                              related_name='propertyauditlog__state')
-    view = models.ForeignKey('PropertyView',
-                             related_name='propertyauditlog__view', null=True)
+    state = models.ForeignKey('PropertyState', related_name='propertyauditlog__state')
+    view = models.ForeignKey('PropertyView', related_name='propertyauditlog__view', null=True)
 
     name = models.CharField(max_length=255, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
@@ -337,3 +343,6 @@ class PropertyAuditLog(models.Model):
     record_type = models.IntegerField(choices=DATA_UPDATE_TYPE, null=True,
                                       blank=True)
     created = models.DateTimeField(auto_now_add=True, null=True)
+
+    class Meta:
+        index_together = [['state', 'name'], ['parent_state1', 'parent_state2']]

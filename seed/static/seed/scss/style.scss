@@ -2700,6 +2700,7 @@ gs-input .tags .tag-item .remove-button {
 }
 
 // Child rows, indented
+//removed padding left 40px, added 20px padding under .pairing-cell for better alignment
 .pairing-data-row-indent {
   display: flex;
   display: -webkit-flex;
@@ -2710,6 +2711,7 @@ gs-input .tags .tag-item .remove-button {
   flex-wrap: wrap;
   -webkit-flex-wrap: wrap;
   width: 100%;
+  //changed from 40px to 15px update: has to stay 40px maybe more for when tables are switched
   padding-left: 40px;
   padding-right: 15px;
 
@@ -2744,13 +2746,14 @@ gs-input .tags .tag-item .remove-button {
   border: 1px solid #A0A0A0;
 }
 
-.pairing-data-row-col, .pairing-headers {
-  width: 30%;
+//edited width
+.pairing-headers {
+  width: 33.33%;
 }
 
 .pairing-rows {
-  height: 600px;
-  overflow-y: auto;
+  max-height: 600px;
+  overflow-y: scroll;
 }
 
 .pairing-list-controls-full {
@@ -2762,16 +2765,17 @@ gs-input .tags .tag-item .remove-button {
 }
 
 .pairing-data-row-col-indent {
-  flex-grow: 1;
+  flex-grow: 0;
 }
 
 // Text based cells: grow, truncate and show ellipsis when there is not enough space
+//added 20px padding to left to align data under columns
 .pairing-cell {
-  flex-grow: 1;
+  flex-grow: 0;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  padding-right: 20px;
+  // padding-right: 20px;
 }
 
 table.import_results a[disabled] {
@@ -2803,3 +2807,74 @@ table.import_results a[disabled] {
 .no-click {
   pointer-events: none;
 }
+
+.arrow-up {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 10px solid black;
+  display: inline-block;
+}
+
+.arrow-down {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 10px solid black;
+  display: inline-block;
+}
+
+
+.pairing {
+  .table_header_text {
+    text-transform: uppercase;
+    white-space: nowrap;
+    text-shadow: 0 1px 0 white;
+    // border-bottom: 1px solid darken($gray_lighter, 10%);
+    // border-right: 1px solid darken($gray_lighter, 10%);
+    font-weight: bold;
+    padding: 6px 2px 5px;
+  }
+
+
+  .pairing-headers-row {
+    //justify-content: space-between;
+    padding: 0;
+  }
+
+
+  div.pairing-headers {
+    padding: 3px;
+    border-left: 1px solid #b3b3b3;
+
+    &:first-child {
+      border-left: 0;
+    }
+  }
+
+  .data-slide {
+    padding-left: 6%;
+  }
+}
+
+  .pairing-data-row-col {
+    width: 33.33%;
+  }
+
+  .pairing-data-row-col {
+    // background: blue;
+    &:nth-child(3) {
+      width: 23.33%;
+      padding-left: 3%;
+    }
+  }
+
+  .pairing-data-row-col-indent {
+    width: 30%;
+  }
+
+
+
+
