@@ -7,25 +7,15 @@ required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
 :author Fable Turas <fable@raintechpdx.com>
 
-<<<<<<< HEAD
-provides filterset classes for advanced filtering of DRF viewsets
-=======
 FilterSet classes to provide advanced filtering API endpoints.
->>>>>>> merge-05-Properties
 """
 
-# Imports from Standard Library
 from datetime import datetime
-
-# Imports from Third Party Modules
 from dateutil.relativedelta import relativedelta
-
-# Imports from Django
 from django_filters.rest_framework import FilterSet
 from django_filters import BaseInFilter, NumberFilter, CharFilter, DateFilter
 from django.db.models import Q
 
-# Local Imports
 from seed.models import (
     Cycle,
     GreenAssessment,
@@ -34,11 +24,6 @@ from seed.models import (
     PropertyView,
     StatusLabel as Label
 )
-# Constants
-
-# Data Structure Definitions
-
-# Private Functions
 
 # Oops! we override a builtin in some of the models
 property_decorator = property
@@ -113,8 +98,8 @@ class CycleFilterSet(FilterSet):
             end = end - relativedelta(hours=max_time_diff)
             cycles = queryset.filter(start__lte=start, end__gte=end)
         return cycles
-
-
+      
+      
 class PropertyViewFilterSet(FilterSet):
     """Provide advanced filtering for PropertyView
 

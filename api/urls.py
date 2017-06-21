@@ -17,7 +17,6 @@ from seed.data_importer.views import (
 )
 from seed.views.api import get_api_schema
 from seed.views.columns import ColumnViewSet, ColumnMappingViewSet
-
 from seed.views.certification import (
     GreenAssessmentViewSet,
     GreenAssessmentPropertyViewSet,
