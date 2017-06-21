@@ -25,11 +25,8 @@ class Simulation(models.Model):
     """
 
     # currently only one simulation result object for each propertystate
-    property_state = models.OneToOneField(
-        "PropertyState",
-        on_delete=models.CASCADE,
-        primary_key=True,
-    )
+    property_state = models.OneToOneField("PropertyState", on_delete=models.CASCADE,
+                                          primary_key=True, )
     data = JSONField(default=dict, blank=True)
 
 

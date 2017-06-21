@@ -10,7 +10,7 @@ from django.test import TestCase
 from seed.models.measures import Measure, _snake_case
 
 
-class TestException(TestCase):
+class TestMeasures(TestCase):
     def setUp(self):
         pass
 

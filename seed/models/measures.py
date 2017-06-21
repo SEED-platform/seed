@@ -45,7 +45,7 @@ class Measure(models.Model):
     category_display_name = models.CharField(max_length=255)
 
     created = models.DateTimeField(auto_now_add=True)
-    updated = models.DateTimeField(auto_now=True)
+    modified = models.DateTimeField(auto_now=True)
 
     def __unicode__(self):
         return u'Measure - %s.%s' % (self.category, self.name)

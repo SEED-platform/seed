@@ -27,9 +27,6 @@ class TestBuildingSync(TestCase):
 
         self.assertTrue(self.bs.import_file(self.xml_file))
 
-        expected_address = {'city': u'Denver', 'state': u'CO', 'address_line_1': u'123 Main Street'}
-        self.assertDictEqual(self.bs.address, expected_address)
-
     def test_get_node(self):
         data = {
             "a": 1,
@@ -122,10 +119,10 @@ class TestBuildingSync(TestCase):
 
         expected = {'city': u'Denver', 'state': u'CO', 'address_line_1': u'123 Main Street'}
 
-        res, errors, mess = self.bs._process_struct(struct, self.bs.data)
+        res, errors, mess = self.bs.process(struct)
+        self.assertEqual(res, expected)
         self.assertTrue(errors)
         self.assertEqual(mess, ["Could not find 'Audits.Audit.Sites.Site.Address.BungalowName'"])
-        self.assertEqual(res, expected)
 
         # Missing path
         struct['return']['bungalow_name'] = {
@@ -133,7 +130,7 @@ class TestBuildingSync(TestCase):
             "required": True,
             "type": "string",
         }
-        res, errors, mess = self.bs._process_struct(struct, self.bs.data)
+        res, errors, mess = self.bs.process(struct)
         self.assertTrue(errors)
         self.assertEqual(mess, ["Could not find 'Audits.Audit.Sites.Site.Address.Long.List.A.B'"])
         self.assertEqual(res, expected)
@@ -149,8 +146,8 @@ class TestBuildingSync(TestCase):
             'state': 'CO',
             'latitude': 40.762235027074865,
             'longitude': -121.41677258249452,
-            'facility_id': 'Building991',
-            'year_of_construction': 1990,
+            'custom_id_1': 'Building991',
+            'year_built': 1990,
             'floors_above_grade': 1,
             'floors_below_grade': 0,
             'gross_floor_area': 25000,
@@ -160,8 +157,7 @@ class TestBuildingSync(TestCase):
             'property_type': 'Commercial',
         }
 
-        res, errors, mess = self.bs._process_struct(struct, self.bs.data)
-        print res
+        res, errors, mess = self.bs.process(struct)
         self.assertEqual(res, expected)
         self.assertFalse(errors)
         self.assertEqual(mess, [])

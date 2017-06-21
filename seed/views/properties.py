@@ -14,8 +14,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.forms.models import model_to_dict
 from django.http import JsonResponse
 from rest_framework import status
-from rest_framework.decorators import list_route, detail_route, parser_classes
-from rest_framework.parsers import FileUploadParser
+from rest_framework.decorators import list_route, detail_route
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
@@ -952,20 +951,15 @@ class PropertyViewSet(GenericViewSet):
             }
         )
 
-    @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('can_modify_data')
-    @list_route(methods=['POST'])
-    @parser_classes((FileUploadParser,))
-    def building_sync(self, request, filename, format=None):
-        #
+    @has_perm_class('requires_viewer')
+    @list_route(methods=['GET'])
+    def building_sync(self, request):
+        """
+        Return BuildingSync representation of the property
+        ---
 
-        file_obj = request.data['file']
-
-        # save off the buildingsync file
-        # with open('some/file/name.txt', 'wb+') as destination:
-        #     for chunk in f.chunks():
-        #         destination.write(chunk)
+        """
 
         return JsonResponse({"status": "error", "message": "Not yet implemented"})
 

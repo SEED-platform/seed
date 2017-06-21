@@ -343,24 +343,3 @@ class PropertyAuditLog(models.Model):
 
     class Meta:
         index_together = [['state', 'name'], ['parent_state1', 'parent_state2']]
-
-
-class BuildingFile(models.Model):
-    UNKNOWN = 0
-    BUILDINGSYNC = 1
-    GEOJSON = 2
-
-    BUILDING_FILE_TYPES = (
-        (UNKNOWN, 'Unknown'),
-        (BUILDINGSYNC, 'BuildingSync'),
-        (GEOJSON, 'GeoJSON'),
-    )
-    # def upload_path(self):
-    #     if not self.pk:
-    #         i = BuildingSyncFile.objects.create()
-    #         self.id = self.pk = i.id
-    #     return "properties/%s/buildingsync" % str(self.id)
-    simulation = models.ForeignKey(PropertyState, related_name='building_file')
-    file_type = models.IntegerField(choices=BUILDING_FILE_TYPES, default=UNKNOWN)
-    file = models.FileField(upload_to="buildingsync_files", max_length=500, blank=True, null=True)
-    file_size_in_bytes = models.IntegerField(blank=True, null=True)

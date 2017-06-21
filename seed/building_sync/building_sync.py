@@ -61,12 +61,12 @@ class BuildingSync(object):
                 "required": True,
                 "type": "double",
             },
-            "facility_id": {
+            "custom_id_1": {
                 "path": "Facilities.Facility.@ID",
                 "required": True,
                 "type": "string",
             },
-            "year_of_construction": {
+            "year_built": {
                 "path": "Facilities.Facility.YearOfConstruction",
                 "required": True,
                 "type": "integer",
@@ -121,6 +121,7 @@ class BuildingSync(object):
     def __init__(self):
         self.filename = None
         self.data = None
+        self.raw_data = None
 
     @property
     def pretty_print(self):
@@ -128,21 +129,18 @@ class BuildingSync(object):
         Print the JSON to the screen
         :return: None
         """
-        print(json.dumps(self.data, indent=2))
+        print(json.dumps(self.raw_data, indent=2))
 
     def import_file(self, filename):
         self.filename = filename
-        self.address = None
 
         if os.path.isfile(filename):
             with open(filename, 'rU') as xmlfile:
-                self.data = xmltodict.parse(
+                self.raw_data = xmltodict.parse(
                     xmlfile.read(),
                     process_namespaces=True,
                     namespaces={'http://nrel.gov/schemas/bedes-auc/2014': None}
                 )
-
-                self.process()
         else:
             raise Exception("File not found: {}".format(filename))
 
@@ -218,7 +216,7 @@ class BuildingSync(object):
         res = {}
         messages = []
         errors = False
-        for k, v in struct['return'].iteritems():
+        for k, v in struct['return'].items():
             path = ".".join([struct['root'], v['path']])
             value = self._get_node(path, data, [])
 
@@ -259,14 +257,12 @@ class BuildingSync(object):
 
         return res, errors, messages
 
-    def process(self):
-        """Process a BuildingSync file
+    def process(self, process_struct=ADDRESS_STRUCT):
+        """Process the BuildingSync file based ont he process structure.
 
-        This is just a stub, will be filled in over time to get the remainder of the objects
+        :param process_struct: dict, structure on how to extract data from file and save into dict
+        :return: list, [dict, list, list], [results, list of errors, list of messages]
         """
-
         # API call to BuildingSync Validator on other server for appropriate use case
         # usecase = new_use_case
-        # self.data, _, _ = self._process(usecase)
-
-        self.address, _, _ = self._process_struct(BuildingSync.ADDRESS_STRUCT, self.data)
+        return self._process_struct(process_struct, self.raw_data)
