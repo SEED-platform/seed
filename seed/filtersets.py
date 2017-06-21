@@ -23,6 +23,18 @@ from django_filters import BaseInFilter, NumberFilter, CharFilter, DateFilter
 # Local Imports
 from seed.models import GreenAssessment, GreenAssessmentProperty
 from seed.models import Cycle, StatusLabel as Label
+
+# Imports from Standard Library
+
+# Imports from Third Party Modules
+from django_filters.rest_framework import FilterSet
+from django_filters import BaseInFilter, NumberFilter, CharFilter
+
+# Imports from Django
+
+# Local Imports
+from seed.models import GreenAssessment, GreenAssessmentProperty
+
 # Constants
 
 # Data Structure Definitions
@@ -60,7 +72,6 @@ class GAPropertyFilterSet(FilterSet):
     class Meta:
         model = GreenAssessmentProperty
         fields = ('year', 'assessment', 'rating')
-
 
 class LabelFilterSet(FilterSet):
     """Provide filtering for Label by property id, taxlot id, name or color."""
