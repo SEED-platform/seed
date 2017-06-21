@@ -90,7 +90,7 @@ describe('controller: data_upload_modal_controller', function () {
               name: dataset_name
 
             });
-          } else {  
+          } else {
             return $q.reject({
               status: 'error',
               message: 'name already in use'
