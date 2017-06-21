@@ -46,7 +46,7 @@ api_v2_router.register(r'taxlots', TaxLotViewSet, base_name="taxlots")
 api_v2_router.register(r'reverse_and_test', TestReverseViewSet, base_name="reverse_and_test")
 api_v2_router.register(r'upload', LocalUploaderViewSet, base_name='local_uploader')
 api_v2_router.register(r'data_quality_checks', DataQualityViews, base_name='data_quality_checks')
-api_v2_router.register(r'building_file', BuildingFileViewSet, base_name='building_sync')
+api_v2_router.register(r'building_file', BuildingFileViewSet, base_name='building_file')
 api_v2_router.register(r'measures', MeasureViewSet, base_name='measures')
 api_v2_router.register(r'meters', MeterViewSet, base_name='meters')
 
