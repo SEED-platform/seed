@@ -25,12 +25,14 @@ pytz==2012h
 # API
 djangorestframework==3.3.3
 django-rest-swagger==0.3.8
+django-filter==1.0.0
 
 # Server monitoring
 raven==6.1.0
 
 # Various packages
 jellyfish==0.5.6
+Markdown==2.6.7
 python-dateutil==2.6.0
 street-address==0.3.0
 unicodecsv==0.14.1
