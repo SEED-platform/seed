@@ -10,6 +10,7 @@ import re
 import string
 
 from django.db import models
+from seed.models import Organization
 
 _log = logging.getLogger(__name__)
 
@@ -39,6 +40,7 @@ def _snake_case(display_name):
 
 
 class Measure(models.Model):
+    organization = models.ForeignKey(Organization)
     name = models.CharField(max_length=255)
     display_name = models.CharField(max_length=255)
     category = models.CharField(max_length=255)
@@ -53,12 +55,14 @@ class Measure(models.Model):
     class Meta:
         ordering = ['-created']
         get_latest_by = 'created'
-        unique_together = ('category', 'name')
+        unique_together = ('organization', 'category', 'name')
 
     @classmethod
-    def populate_measures(cls):
+    def populate_measures(cls, organization_id):
         """
         Populate the list of measures from the BuildingSync
+
+        :param organization_id: integer, ID of the organization to populate measures
         :return:
         """
         filename = "seed/lib/buildingsync/enumerations.json"
@@ -79,6 +83,7 @@ class Measure(models.Model):
                 if datum["name"] == "MeasureName":
                     for enum in datum["enumerations"]:
                         Measure.objects.get_or_create(
+                            organization_id=organization_id,
                             category=_snake_case(datum["sub_name"]),
                             category_display_name=datum["documentation"],
                             name=_snake_case(enum),

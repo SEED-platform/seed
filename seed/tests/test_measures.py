@@ -8,18 +8,19 @@
 from django.test import TestCase
 
 from seed.models.measures import Measure, _snake_case
+from seed.models import Organization
 
 
 class TestMeasures(TestCase):
     def setUp(self):
-        pass
+        self.org = Organization.objects.create()
+        Measure.populate_measures(self.org.id)
 
     def test_populate_measures(self):
-        Measure.populate_measures()
         self.assertEqual(Measure.objects.count(), 174)
 
         # if we run it again, it shouldn't add anything new
-        Measure.populate_measures()
+        Measure.populate_measures(self.org.id)
         self.assertEqual(Measure.objects.count(), 174)
 
     def test_snake_case(self):
@@ -32,8 +33,6 @@ class TestMeasures(TestCase):
         self.assertEqual(_snake_case("AdvancedMeteringSystems"), "advanced_metering_systems")
 
     def test_validate_measures(self):
-        Measure.populate_measures()
-
         measures = [
             ("renewable_energy_systems", "install_photovoltaic_system"),
             ("other_hvac", "add_or_repair_economizer"),

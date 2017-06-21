@@ -12,12 +12,13 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import list_route
 from rest_framework.parsers import JSONParser, FormParser
 from rest_framework.renderers import JSONRenderer
-from seed.serializers.measures import MeasureSerializer
+
 from seed.authentication import SEEDAuthentication
 from seed.models import (
     Measure,
 )
 from seed.pagination import NoPagination
+from seed.serializers.measures import MeasureSerializer
 
 
 class MeasureViewSet(viewsets.ReadOnlyModelViewSet):
@@ -41,6 +42,10 @@ class MeasureViewSet(viewsets.ReadOnlyModelViewSet):
         ---
         parameters: {}
         type:
+            organization_id:
+                required: true
+                type: integer
+                paramType: query
             status:
                 required: true
                 type: string
@@ -50,8 +55,17 @@ class MeasureViewSet(viewsets.ReadOnlyModelViewSet):
                 type: list
                 description: list of measures
         """
-        Measure.populate_measures()
-        data = dict(measures=list(Measure.objects.order_by('id').values()))
+        organization_id = request.query_params.get('organization_id', None)
+        if not organization_id:
+            return JsonResponse({
+                'status': 'error', 'message': 'organization_id not provided'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        Measure.populate_measures(organization_id)
+        data = dict(measures=list(
+            Measure.objects.filter(organization_id=organization_id).order_by('id').values())
+        )
 
         data['status'] = 'success'
         return JsonResponse(data)

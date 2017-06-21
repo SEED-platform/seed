@@ -140,6 +140,8 @@ class Organization(models.Model):
         # Create a default cycle for the organization if there isn't one already
         from seed.models import Cycle
         Cycle.get_or_create_default(self)
+        from seed.models import Measure
+        Measure.populate_measures(self.id)
 
     def is_member(self, user):
         """Return True if user object has a relation to this organization."""

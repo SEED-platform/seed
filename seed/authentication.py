@@ -7,6 +7,8 @@
 from rest_framework import authentication
 from rest_framework import exceptions
 
+from seed.landing.models import SEEDUser as User
+
 
 class SEEDAuthentication(authentication.BaseAuthentication):
     """
@@ -22,7 +24,6 @@ class SEEDAuthentication(authentication.BaseAuthentication):
             return None
 
         try:
-            from seed.landing.models import SEEDUser as User
             username, api_key = auth_header.split(':')
             user = User.objects.get(api_key=api_key, username=username)
             return user, api_key
