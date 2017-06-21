@@ -10,36 +10,15 @@ All rights reserved.  # NOQA
 provides filterset classes for advanced filtering of DRF viewsets
 """
 
-# Imports from Standard Library
 from datetime import datetime
 
-# Imports from Third Party Modules
 from dateutil.relativedelta import relativedelta
-
-# Imports from Django
-from django_filters.rest_framework import FilterSet
-from django_filters import BaseInFilter, NumberFilter, CharFilter, DateFilter
-
-# Local Imports
-from seed.models import GreenAssessment, GreenAssessmentProperty
-from seed.models import Cycle, StatusLabel as Label
-
-# Imports from Standard Library
-
-# Imports from Third Party Modules
-from django_filters.rest_framework import FilterSet
 from django_filters import BaseInFilter, NumberFilter, CharFilter
+from django_filters import DateFilter
+from django_filters.rest_framework import FilterSet
 
-# Imports from Django
-
-# Local Imports
+from seed.models import Cycle, StatusLabel as Label
 from seed.models import GreenAssessment, GreenAssessmentProperty
-
-# Constants
-
-# Data Structure Definitions
-
-# Private Functions
 
 # Oops! we override a builtin in some of the models
 property_decorator = property
@@ -72,6 +51,7 @@ class GAPropertyFilterSet(FilterSet):
     class Meta:
         model = GreenAssessmentProperty
         fields = ('year', 'assessment', 'rating')
+
 
 class LabelFilterSet(FilterSet):
     """Provide filtering for Label by property id, taxlot id, name or color."""
