@@ -4,15 +4,15 @@
  */
 angular.module('BE.seed.controller.edit_project_modal', [])
 .controller('edit_project_modal_controller', [
-  '$scope',
+  /*'$scope',
   '$log',
   '$uibModalInstance',
   'project',
   '$filter',
   '$location',
   'project_service',
-  'create_project',
-  function ($scope, $log, $uibModalInstance, project, $filter, $location, project_service, create_project) {
+  'create_project',*/
+  function (/*$scope, $log, $uibModalInstance, project, $filter, $location, project_service, create_project*/) {
     // $scope.project = angular.copy(project);
     // $scope.project.deadline_date = $filter('date')($scope.project.deadline_date, 'yyyy-MM-dd') || null;
     // $scope.project.end_date = $filter('date')($scope.project.end_date, 'yyyy-MM') || null;

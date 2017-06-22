@@ -178,14 +178,14 @@ angular.module('BE.seed.controller.matching_detail', [])
        */
 
       //custom filter
-      $scope.allSearch = function (value, index, array) {
+      $scope.allSearch = function (value) {
         for (var i = 0; i < $scope.reduced_columns.length; i++) {
           if ($scope.reduced_columns[i].searchText && value[$scope.reduced_columns[i].name]) {
-            //dont return match because it stops the loop, set to variable so even whem matches are found, they continue searching(iterating through the loop) when inputs are processed from other columns
+            // don't return match because it stops the loop, set to variable so even when matches are found, they continue searching(iterating through the loop) when inputs are processed from other columns
             var searchTextLower = $scope.reduced_columns[i].searchText.toLowerCase();
             var reducedColLower = value[$scope.reduced_columns[i].name].toLowerCase();
             var isMatch = reducedColLower.indexOf(searchTextLower) > -1;
-            //if an item does not match, break the loop
+            // if an item does not match, break the loop
             if (!isMatch) {
               return false;
             }
@@ -197,7 +197,7 @@ angular.module('BE.seed.controller.matching_detail', [])
       };
 
       //Sort by Columns Ascending and Descending
-      $scope.sortColumn = "name";
+      $scope.sortColumn = 'name';
       $scope.reverseSort = false;
 
       $scope.sortData = function (column) {
@@ -207,7 +207,7 @@ angular.module('BE.seed.controller.matching_detail', [])
 
       $scope.getSortClass = function (column) {
         if ($scope.sortColumn === column) {
-            return $scope.reverseSort ? 'arrow-down' : 'arrow-up'
+          return $scope.reverseSort ? 'arrow-down' : 'arrow-up';
         }
         return 'arrow-down';
       };

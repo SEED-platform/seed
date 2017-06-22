@@ -4,8 +4,8 @@
  */
 angular.module('BE.seed.service.column_mappings', []).factory('column_mappings_service', [
   '$http',
-  'user_service',
-  function ($http, user_service) {
+  // 'user_service',
+  function ($http/*, user_service*/) {
 
     var column_mappings_factory = {};
 

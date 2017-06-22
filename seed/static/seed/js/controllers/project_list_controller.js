@@ -4,14 +4,14 @@
  */
 angular.module('BE.seed.controller.project', [])
 .controller('project_list_controller', [
-  '$scope',
+  /*'$scope',
   '$http',
   'project_service',
   'urls',
   '$log',
   '$uibModal',
-  'projects_payload',
-  function ($scope, $http, project_service, urls, $log, $uibModal, projects_payload) {
+  'projects_payload',*/
+  function (/*$scope, $http, project_service, urls, $log, $uibModal, projects_payload*/) {
 
     // $scope.autoFilter = true;
     // $scope.user = {};

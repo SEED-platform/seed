@@ -9,8 +9,7 @@ angular.module('BE.seed.controller.dataset', [])
     '$uibModal',
     'urls',
     'dataset_service',
-    '$state',
-    function ($scope, datasets_payload, $uibModal, urls, dataset_service, $state) {
+    function ($scope, datasets_payload, $uibModal, urls, dataset_service) {
       $scope.datasets = datasets_payload.datasets;
       $scope.columns = [{
         title: 'Data Set Name'
