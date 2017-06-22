@@ -25,10 +25,12 @@ from seed.models import (
     DATA_STATE_IMPORT,
     ASSESSED_RAW,
     PropertyAuditLog,
+    StatusLabel,
     TaxLotAuditLog,
     TaxLotState,
     TaxLot,
     TaxLotView,
+    TaxLotProperty,
 )
 
 logger = logging.getLogger(__name__)
@@ -233,10 +235,12 @@ class DeleteModelsTestCase(TestCase):
         PropertyState.objects.all().delete()
         PropertyView.objects.all().delete()
         PropertyAuditLog.objects.all().delete()
+        StatusLabel.objects.all().delete()
         TaxLot.objects.all().delete()
         TaxLotState.objects.all().delete()
         TaxLotView.objects.all().delete()
         TaxLotAuditLog.objects.all().delete()
+        TaxLotProperty.objects.all().delete()
 
 
 class DataMappingBaseTestCase(DeleteModelsTestCase):

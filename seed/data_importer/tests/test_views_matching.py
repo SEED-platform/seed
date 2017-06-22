@@ -62,6 +62,8 @@ class TestViewsMatching(DataMappingBaseTestCase):
         _log.debug(TaxLotView.objects.all().count())
         _log.debug(TaxLotAuditLog.objects.all().count())
 
+        Cycle.objects.all().delete()
+        _log.debug(Cycle.objects.all().count())
         filename = getattr(self, 'filename', 'example-data-properties.xlsx')
         self.fake_mappings = FAKE_MAPPINGS['portfolio']
         selfvars = self.set_up(ASSESSED_RAW)
