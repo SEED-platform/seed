@@ -27,14 +27,14 @@ describe('When I go to the dataset options page', function () {
     browser.sleep(2000);
 
     // Gotta figure this out, remote has 1 unpaired.
-    expect($('.pairing-text-left').getText()).toContain('Showing 19 Properties');
+    expect($('.pairing-text-left').getText()).toContain('Showing 17 Properties');
     expect($('.pairing-text-right').getText()).toContain('Showing 11 Tax Lots');
   });
 
   it('should test filters and sort on left and right table', function () {
     var leftRows = element.all(by.repeater('row in newLeftData'));
     var rightRows = element.all(by.repeater('row in rightData'));
-    expect(leftRows.count()).toBe(19);
+    expect(leftRows.count()).toBe(17);
     $$('[ng-model="col.searchText"]').first().click().sendKeys('elm');
     expect(leftRows.count()).toBe(3);
     $$('[ng-model="col.searchText"]').get(4).click().sendKeys('33');
@@ -61,7 +61,7 @@ describe('When I go to the dataset options page', function () {
     element(by.cssContainingText('[ng-change="inventoryTypeChanged()"] option', 'Tax Lot')).click();
     // browser.wait(EC.presenceOf($('.inventory-list-tab-container.ng-scope')),30000);
     expect($('.page_title').getText()).toContain('Pair Tax Lots to Properties');
-    expect($('.pairing-text-right').getText()).toContain('Showing 19 Properties (19 unpaired)');
+    expect($('.pairing-text-right').getText()).toContain('Showing 17 Properties (17 unpaired)');
     expect($('.pairing-text-left').getText()).toContain('Showing 11 Tax Lots (11 unpaired)');
     browser.sleep(2000);
   });
@@ -82,7 +82,7 @@ describe('When I go to the dataset options page', function () {
     lastDropElement.click();
     browser.sleep(200);
 
-    expect($('.pairing-text-right').getText()).toContain('Showing 19 Properties (17 unpaired)');
+    expect($('.pairing-text-right').getText()).toContain('Showing 17 Properties (15 unpaired)');
     expect($('.pairing-text-left').getText()).toContain('Showing 11 Tax Lots (10 unpaired)');
     browser.sleep(2000);
   });
