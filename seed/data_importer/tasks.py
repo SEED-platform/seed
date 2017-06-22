@@ -9,11 +9,11 @@ from __future__ import absolute_import
 
 import collections
 import copy
+import datetime
 import hashlib
 import operator
 import time
 import traceback
-import datetime
 from _csv import Error
 from collections import namedtuple
 from functools import reduce
@@ -23,6 +23,7 @@ from random import randint
 from celery import chord
 from celery import shared_task
 from celery.utils.log import get_task_logger
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.db.models import Q
 from django.utils import timezone
@@ -311,14 +312,15 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
 
     # yes, there are three cascading for loops here. sorry :(
     md = MappingData()
-    for table, mappings in table_mappings.iteritems():
+
+    for table, mappings in table_mappings.items():
         if not table:
             continue
 
         # This may be historic, but we need to pull out the extra_data_fields here to pass into
         # mapper.map_row. apply_columns are extra_data columns (the raw column names)
         extra_data_fields = []
-        for k, v in mappings.iteritems():
+        for k, v in mappings.items():
             if not md.find_column(v[0], v[1]):
                 extra_data_fields.append(k)
         _log.debug("extra data fields: {}".format(extra_data_fields))
@@ -336,13 +338,13 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
             # expand the row into multiple rows if needed with the delimited_field replaced with a
             # single value. This minimizes the need to rewrite the downstream code.
             expand_row = False
-            for k, d in delimited_fields.iteritems():
+            for k, d in delimited_fields.items():
                 if d['to_table'] == table:
                     expand_row = True
             # _log.debug("Expand row is set to {}".format(expand_row))
 
             delimited_field_list = []
-            for _, v in delimited_fields.iteritems():
+            for _, v in delimited_fields.items():
                 delimited_field_list.append(v['from_field'])
 
             # _log.debug("delimited_field_list is set to {}".format(delimited_field_list))
@@ -367,8 +369,6 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
                 map_model_obj.organization = import_file.import_record.super_organization
                 if hasattr(map_model_obj, 'data_state'):
                     map_model_obj.data_state = DATA_STATE_MAPPING
-                if hasattr(map_model_obj, 'organization'):
-                    map_model_obj.organization = import_file.import_record.super_organization
                 if hasattr(map_model_obj, 'clean'):
                     map_model_obj.clean()
 
@@ -377,9 +377,12 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
                 # sure that the object hasn't already been created.
                 # For example, in the test data the tax lot id is the same for many rows. Make sure
                 # to only create/save the object if it hasn't been created before.
-                if hash_state_object(map_model_obj, include_extra_data=False) == hash_state_object(
-                        STR_TO_CLASS[table](organization=map_model_obj.organization),
-                        include_extra_data=False):
+                if hash_state_object(
+                    map_model_obj,
+                    include_extra_data=False) == hash_state_object(
+                    STR_TO_CLASS[table](organization=map_model_obj.organization),
+                    include_extra_data=False
+                ):
                     # Skip this object as it has no data...
                     continue
 
@@ -398,10 +401,11 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
                                                  import_filename=import_file,
                                                  record_type=AUDIT_IMPORT)
 
-                except Exception as e:
+                except ValidationError as e:
                     # Could not save the record for some reason, raise an exception
                     raise Exception(
-                        "Unable to save row the model with row {}:{}".format(type(e), e.message))
+                        "Unable to save row the model with row {}:{}".format(type(e),
+                                                                             e.message))
 
         # Make sure that we've saved all of the extra_data column names from the first item in list
         if map_model_obj:

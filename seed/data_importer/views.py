@@ -605,22 +605,24 @@ class ImportFileViewSet(viewsets.ViewSet):
             ).order_by('id').values(*fields['TaxLotState']))
 
             # If a record was manually edited then remove the edited version
-            properties_to_remove = list()
-            taxlots_to_remove = list()
-
-            for p in properties:
-                if PropertyAuditLog.objects.filter(state_id=p['id'], name='Manual Edit').exists():
-                    properties_to_remove.append(p['id'])
-            for t in tax_lots:
-                if TaxLotAuditLog.objects.filter(state_id=t['id'], name='Manual Edit').exists():
-                    taxlots_to_remove.append(t['id'])
-
+            properties_to_remove = list(
+                PropertyAuditLog.objects.filter(state_id__in=[p['id'] for p in properties],
+                                                name='Manual Edit').values_list('state_id',
+                                                                                flat=True)
+            )
+            taxlots_to_remove = list(
+                TaxLotAuditLog.objects.filter(state_id__in=[t['id'] for t in tax_lots],
+                                              name='Manual Edit').values_list('state_id',
+                                                                              flat=True)
+            )
             properties = [p for p in properties if p['id'] not in properties_to_remove]
             tax_lots = [t for t in tax_lots if t['id'] not in taxlots_to_remove]
 
             if get_coparents:
                 for state in properties:
                     state['matched'] = False
+                    if state['address_line_1'] == '213859 W Tanoak Court':
+                        pass
                     coparent = self.has_coparent(state['id'], 'properties', fields['PropertyState'])
                     if coparent:
                         state['matched'] = True
@@ -771,13 +773,13 @@ class ImportFileViewSet(viewsets.ViewSet):
             state_id=state_id,
             name='Import Creation'
         ).id
-        merged_record = audit_log.objects.only('parent_state1_id', 'parent_state2_id').filter(
-            Q(parent1_id=audit_creation_id) | Q(parent2_id=audit_creation_id))
+        merged_record = list(audit_log.objects.only('parent_state1_id', 'parent_state2_id').filter(
+            Q(parent1_id=audit_creation_id) | Q(parent2_id=audit_creation_id)).values())
 
-        if not merged_record.exists():
+        if len(merged_record) == 0:
             return False
 
-        if merged_record.count() > 1:
+        if len(merged_record) > 1:
             return JsonResponse(
                 {
                     'status': 'error',
@@ -786,19 +788,22 @@ class ImportFileViewSet(viewsets.ViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-        audit_entry = merged_record.first()
-        state_id1 = audit_entry.parent_state1_id
+        audit_entry = merged_record[0]
 
         # check if we are returning as subset of the fields (as values)
         if fields:
-            if state_id1 != state_id:
-                return state_model.objects.filter(id=audit_entry.parent_state1_id).values(*fields)[
-                    0]
+            # are we returning the coparent for parent_state1_id or parent_state2_id
+            if audit_entry['parent_state1_id'] != state_id:
+                coparent_id = audit_entry['parent_state1_id']
             else:
-                return state_model.objects.filter(id=audit_entry.parent_state2_id).values(*fields)[
-                    0]
-        else:
-            return audit_entry.parent_state1 if state_id1 != state_id else audit_entry.parent_state2
+                coparent_id = audit_entry['parent_state2_id']
+
+            if coparent_id:
+                qs = state_model.objects.filter(id=coparent_id).values(*fields)
+                if qs.count() == 1:
+                    return qs.first()
+                else:
+                    return False
 
     @api_endpoint_class
     @ajax_request_class
