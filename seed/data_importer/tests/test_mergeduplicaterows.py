@@ -5,6 +5,7 @@
 :author
 """
 import logging
+import os.path as osp
 
 from seed.data_importer import tasks
 from seed.data_importer.tests.util import (
@@ -28,7 +29,6 @@ logger = logging.getLogger(__name__)
 
 
 class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
-
     def setUp(self):
         filename = getattr(self, 'filename', 'example-data-properties-duplicates.xlsx')
         import_file_source_type = ASSESSED_RAW
@@ -37,14 +37,13 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
         self.fake_row = FAKE_ROW
         selfvars = self.set_up(import_file_source_type)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
-        self.import_file = self.load_import_file_file(filename, self.import_file)
+        self.import_file.load_import_file(osp.join(osp.dirname(__file__), 'data', filename))
 
         tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
         Column.create_mappings(self.fake_mappings, self.org, self.user)
         tasks.map_data(self.import_file.pk)
 
     def test_hash(self):
-
         # tasks.hash_state_object(TaxLotState())
         # tasks.hash_state_object(TaxLotState(organization=self.org))
 

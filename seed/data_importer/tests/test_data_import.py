@@ -8,7 +8,7 @@ import csv
 import datetime
 import json
 import logging
-import os.path
+import os.path as osp
 
 from dateutil import parser
 from django.core.files import File
@@ -52,7 +52,7 @@ class TestMappingPortfolioData(DataMappingBaseTestCase):
         self.fake_row = FAKE_ROW
         selfvars = self.set_up(import_file_source_type)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
-        self.import_file = self.load_import_file_file(filename, self.import_file)
+        self.import_file.load_import_file(osp.join(osp.dirname(__file__), 'data', filename))
 
     def test_cached_first_row_order(self):
         """Tests to make sure the first row is saved in the correct order.
@@ -155,7 +155,6 @@ class TestMappingPortfolioData(DataMappingBaseTestCase):
 
 
 class TestMappingExampleData(DataMappingBaseTestCase):
-
     def setUp(self):
         filename = getattr(self, 'filename', 'example-data-properties.xlsx')
         import_file_source_type = ASSESSED_RAW
@@ -164,7 +163,7 @@ class TestMappingExampleData(DataMappingBaseTestCase):
         self.fake_row = FAKE_ROW
         selfvars = self.set_up(import_file_source_type)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
-        self.import_file = self.load_import_file_file(filename, self.import_file)
+        self.import_file.load_import_file(osp.join(osp.dirname(__file__), 'data', filename))
 
     def test_mapping(self):
         tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
@@ -261,7 +260,6 @@ class TestMappingExampleData(DataMappingBaseTestCase):
 
 
 class TestPromotingProperties(DataMappingBaseTestCase):
-
     def setUp(self):
         filename = getattr(self, 'filename', 'example-data-properties.xlsx')
         import_file_source_type = ASSESSED_RAW
@@ -270,7 +268,7 @@ class TestPromotingProperties(DataMappingBaseTestCase):
         self.fake_row = FAKE_ROW
         selfvars = self.set_up(import_file_source_type)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
-        self.import_file = self.load_import_file_file(filename, self.import_file)
+        self.import_file.load_import_file(osp.join(osp.dirname(__file__), 'data', filename))
 
     def import_exported_data(self, filename):
         """
@@ -286,7 +284,7 @@ class TestPromotingProperties(DataMappingBaseTestCase):
         data = []
         new_keys = set()
 
-        f = os.path.join(os.path.dirname(__file__), 'data', filename)
+        f = osp.join(osp.dirname(__file__), 'data', filename)
         with open(f, 'rb') as csvfile:
             reader = csv.DictReader(csvfile)
             keys = reader.fieldnames
@@ -304,9 +302,9 @@ class TestPromotingProperties(DataMappingBaseTestCase):
 
         # save the new file
         new_file_name = 'tmp_{}_flat.csv'.format(
-            os.path.splitext(os.path.basename(filename))[0]
+            osp.splitext(osp.basename(filename))[0]
         )
-        f_new = os.path.join(os.path.dirname(__file__), 'data', new_file_name)
+        f_new = osp.join(osp.dirname(__file__), 'data', new_file_name)
         with open(f_new, 'w') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=keys)
             writer.writeheader()
@@ -315,17 +313,17 @@ class TestPromotingProperties(DataMappingBaseTestCase):
 
         # save the keys this does not appear to be used anywhere
         new_file_name = 'tmp_{}_keys.csv'.format(
-            os.path.splitext(os.path.basename(filename))[0]
+            osp.splitext(osp.basename(filename))[0]
         )
-        f_new = os.path.join(os.path.dirname(__file__), 'data', new_file_name)
+        f_new = osp.join(osp.dirname(__file__), 'data', new_file_name)
         with open(f_new, 'w') as outfile:
             outfile.writelines([str(key) + '\n' for key in keys])
 
         # Continue saving the raw data
         new_file_name = "tmp_{}_flat.csv".format(
-            os.path.splitext(os.path.basename(filename))[0]
+            osp.splitext(osp.basename(filename))[0]
         )
-        f_new = os.path.join(os.path.dirname(__file__), 'data', new_file_name)
+        f_new = osp.join(osp.dirname(__file__), 'data', new_file_name)
         self.import_file.file = File(open(f_new))
         self.import_file.save()
 

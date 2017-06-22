@@ -6,12 +6,10 @@
 """
 
 import datetime
-from django.utils import timezone
 import logging
-import os.path
 
-from django.core.files import File
 from django.test import TestCase
+from django.utils import timezone
 
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
@@ -23,6 +21,9 @@ from seed.models import (
 )
 from seed.models import (
     DATA_STATE_IMPORT,
+    ASSESSED_RAW,
+    PropertyAuditLog,
+    TaxLotAuditLog,
     # DATA_STATE_MAPPING,
 )
 
@@ -221,7 +222,7 @@ class DataMappingBaseTestCase(TestCase):
         import_file_is_espm = getattr(self, 'import_file_is_espm', True)
         import_file_data_state = getattr(self, 'import_file_data_state', DATA_STATE_IMPORT)
 
-        user = User.objects.create(username='test')
+        user = User.objects.create_user('test_user@demo.com', password='test_pass')
         org = Organization.objects.create()
 
         cycle, _ = Cycle.objects.get_or_create(
@@ -234,22 +235,25 @@ class DataMappingBaseTestCase(TestCase):
         # Create an org user
         OrganizationUser.objects.create(user=user, organization=org)
 
+        import_record, import_file = self.create_import_file(user, org, cycle,
+                                                             import_file_is_espm,
+                                                             import_file_source_type,
+                                                             import_file_data_state)
+
+        return user, org, import_file, import_record, cycle
+
+    def create_import_file(self, user, org, cycle, espm=True, source_type=ASSESSED_RAW,
+                           data_state=DATA_STATE_IMPORT):
         import_record = ImportRecord.objects.create(
             owner=user, last_modified_by=user, super_organization=org
         )
         import_file = ImportFile.objects.create(import_record=import_record, cycle=cycle)
-        import_file.is_espm = import_file_is_espm
-        import_file.source_type = import_file_source_type
-        import_file.data_state = import_file_data_state
+        import_file.is_espm = espm
+        import_file.source_type = source_type
+        import_file.data_state = data_state
         import_file.save()
 
-        return user, org, import_file, import_record, cycle
-
-    def load_import_file_file(self, filename, import_file):
-        f = os.path.join(os.path.dirname(__file__), 'data', filename)
-        import_file.file = File(open(f))
-        import_file.save()
-        return import_file
+        return import_record, import_file
 
     def tearDown(self):
         User.objects.all().delete()
@@ -261,3 +265,5 @@ class DataMappingBaseTestCase(TestCase):
         User.objects.all().delete()
         Cycle.objects.all().delete()
         PropertyState.objects.all().delete()
+        PropertyAuditLog.objects.all().delete()
+        TaxLotAuditLog.objects.all().delete()

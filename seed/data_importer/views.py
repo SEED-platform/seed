@@ -521,7 +521,7 @@ class ImportFileViewSet(viewsets.ViewSet):
 
     @api_endpoint_class
     @ajax_request_class
-    @detail_route(methods=['POST'])
+    @detail_route(methods=['POST'], url_path='filtered_mapping_results')
     def filtered_mapping_results(self, request, pk=None):
         """
         Retrieves a paginated list of Properties and Tax Lots for an import file after mapping.
@@ -621,8 +621,6 @@ class ImportFileViewSet(viewsets.ViewSet):
             if get_coparents:
                 for state in properties:
                     state['matched'] = False
-                    if state['address_line_1'] == '213859 W Tanoak Court':
-                        pass
                     coparent = self.has_coparent(state['id'], 'properties', fields['PropertyState'])
                     if coparent:
                         state['matched'] = True

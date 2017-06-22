@@ -339,8 +339,7 @@ class PropertyAuditLog(models.Model):
     description = models.TextField(null=True, blank=True)
 
     import_filename = models.CharField(max_length=255, null=True, blank=True)
-    record_type = models.IntegerField(choices=DATA_UPDATE_TYPE, null=True,
-                                      blank=True)
+    record_type = models.IntegerField(choices=DATA_UPDATE_TYPE, null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True, null=True)
 
     class Meta:

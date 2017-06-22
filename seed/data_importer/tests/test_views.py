@@ -24,8 +24,7 @@ class DataImporterViewTests(TestCase):
             'username': 'test_user@demo.com',
             'password': 'test_pass',
         }
-        self.user = User.objects.create_superuser(
-            email='test_user@demo.com', **user_details)
+        self.user = User.objects.create_superuser(email='test_user@demo.com', **user_details)
         self.client.login(**user_details)
 
     def test_get_raw_column_names(self):
