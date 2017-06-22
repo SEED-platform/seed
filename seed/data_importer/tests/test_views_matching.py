@@ -11,28 +11,57 @@ import os.path as osp
 from django.core.urlresolvers import reverse
 
 from seed.data_importer import tasks
+from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tests.util import (
     DataMappingBaseTestCase,
     FAKE_MAPPINGS,
 )
 from seed.data_importer.views import ImportFileViewSet
+from seed.landing.models import SEEDUser as User
+from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
     Column,
-    PropertyAuditLog,
+    ColumnMapping,
+    Cycle,
+    Property,
+    PropertyState,
     PropertyView,
     ASSESSED_RAW,
-    PropertyState,
+    PropertyAuditLog,
+    TaxLotAuditLog,
+    TaxLotState,
+    TaxLot,
+    TaxLotView,
     DATA_STATE_MAPPING,
     DATA_STATE_MATCHING,
     MERGE_STATE_UNKNOWN,
     MERGE_STATE_NEW,
 )
+from seed.models.data_quality import DataQualityCheck
 
-logger = logging.getLogger(__name__)
+_log = logging.getLogger(__name__)
 
 
 class TestViewsMatching(DataMappingBaseTestCase):
     def setUp(self):
+        _log.debug(User.objects.all().count())
+        _log.debug(Organization.objects.all().count())
+        _log.debug(OrganizationUser.objects.all().count())
+        _log.debug(Column.objects.all().count())
+        _log.debug(ColumnMapping.objects.all().count())
+        _log.debug(Cycle.objects.all().count())
+        _log.debug(DataQualityCheck.objects.all().count())
+        _log.debug(ImportFile.objects.all().count())
+        _log.debug(ImportRecord.objects.all().count())
+        _log.debug(Property.objects.all().count())
+        _log.debug(PropertyState.objects.all().count())
+        _log.debug(PropertyView.objects.all().count())
+        _log.debug(PropertyAuditLog.objects.all().count())
+        _log.debug(TaxLot.objects.all().count())
+        _log.debug(TaxLotState.objects.all().count())
+        _log.debug(TaxLotView.objects.all().count())
+        _log.debug(TaxLotAuditLog.objects.all().count())
+
         filename = getattr(self, 'filename', 'example-data-properties.xlsx')
         self.fake_mappings = FAKE_MAPPINGS['portfolio']
         selfvars = self.set_up(ASSESSED_RAW)
@@ -73,10 +102,10 @@ class TestViewsMatching(DataMappingBaseTestCase):
 
         property_states = PropertyState.objects.filter(id__in=state_ids)
         # Check that the use descriptions have been updated to the new ones
-        expected = [u'Bar', u'Building', u'Club', u'Coffee House',
-                    u'Daycare', u'Diversity Building', u'House', u'Multifamily Housing',
-                    u'Multistorys', u'Pizza House', u'Residence', u'Residence', u'Residence',
-                    u'Swimming Pool']
+        # expected = [u'Bar', u'Building', u'Club', u'Coffee House',
+        #             u'Daycare', u'Diversity Building', u'House', u'Multifamily Housing',
+        #             u'Multistorys', u'Pizza House', u'Residence', u'Residence', u'Residence',
+        #             u'Swimming Pool']
 
         # print sorted([p.use_description for p in property_states])
         results = sorted([p.use_description for p in property_states])
@@ -112,7 +141,10 @@ class TestViewsMatching(DataMappingBaseTestCase):
         }
 
         # find lot number 1552813 in body['properties']
-        found_prop = [k for k in body['properties'] if k['lot_number'] == '1552813'][0]
+        found_prop = [k for k in body['properties'] if k['lot_number'] == '1552813']
+        self.assertEqual(len(found_prop), 1)
+
+        found_prop = found_prop[0]
         del found_prop['id']
         del found_prop['coparent']['id']
         self.assertEqual(body['status'], 'success')

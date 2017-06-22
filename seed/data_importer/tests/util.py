@@ -14,7 +14,9 @@ from django.utils import timezone
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
+from seed.models.data_quality import DataQualityCheck
 from seed.models import (
+    Column,
     ColumnMapping,
     Cycle,
     Property,
@@ -27,7 +29,6 @@ from seed.models import (
     TaxLotState,
     TaxLot,
     TaxLotView,
-
 )
 
 logger = logging.getLogger(__name__)
@@ -222,10 +223,12 @@ class DeleteModelsTestCase(TestCase):
         User.objects.all().delete()
         Organization.objects.all().delete()
         OrganizationUser.objects.all().delete()
+        Column.objects.all().delete()
         ColumnMapping.objects.all().delete()
+        Cycle.objects.all().delete()
+        DataQualityCheck.objects.all().delete()
         ImportFile.objects.all().delete()
         ImportRecord.objects.all().delete()
-        Cycle.objects.all().delete()
         Property.objects.all().delete()
         PropertyState.objects.all().delete()
         PropertyView.objects.all().delete()
@@ -278,4 +281,4 @@ class DataMappingBaseTestCase(DeleteModelsTestCase):
         return import_record, import_file
 
     def tearDown(self):
-        super(DeleteModelsTestCase, self).tearDown()
+        super(DataMappingBaseTestCase, self).tearDown()
