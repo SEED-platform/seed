@@ -17,14 +17,17 @@ from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
     ColumnMapping,
     Cycle,
+    Property,
     PropertyState,
-)
-from seed.models import (
+    PropertyView,
     DATA_STATE_IMPORT,
     ASSESSED_RAW,
     PropertyAuditLog,
     TaxLotAuditLog,
-    # DATA_STATE_MAPPING,
+    TaxLotState,
+    TaxLot,
+    TaxLotView,
+
 )
 
 logger = logging.getLogger(__name__)
@@ -214,7 +217,26 @@ FAKE_MAPPINGS = {
 }
 
 
-class DataMappingBaseTestCase(TestCase):
+class DeleteModelsTestCase(TestCase):
+    def tearDown(self):
+        User.objects.all().delete()
+        Organization.objects.all().delete()
+        OrganizationUser.objects.all().delete()
+        ColumnMapping.objects.all().delete()
+        ImportFile.objects.all().delete()
+        ImportRecord.objects.all().delete()
+        Cycle.objects.all().delete()
+        Property.objects.all().delete()
+        PropertyState.objects.all().delete()
+        PropertyView.objects.all().delete()
+        PropertyAuditLog.objects.all().delete()
+        TaxLot.objects.all().delete()
+        TaxLotState.objects.all().delete()
+        TaxLotView.objects.all().delete()
+        TaxLotAuditLog.objects.all().delete()
+
+
+class DataMappingBaseTestCase(DeleteModelsTestCase):
     """Base Test Case Class to handle data import"""
 
     def set_up(self, import_file_source_type):
@@ -256,14 +278,4 @@ class DataMappingBaseTestCase(TestCase):
         return import_record, import_file
 
     def tearDown(self):
-        User.objects.all().delete()
-        ColumnMapping.objects.all().delete()
-        ImportFile.objects.all().delete()
-        ImportRecord.objects.all().delete()
-        OrganizationUser.objects.all().delete()
-        Organization.objects.all().delete()
-        User.objects.all().delete()
-        Cycle.objects.all().delete()
-        PropertyState.objects.all().delete()
-        PropertyAuditLog.objects.all().delete()
-        TaxLotAuditLog.objects.all().delete()
+        super(DeleteModelsTestCase, self).tearDown()

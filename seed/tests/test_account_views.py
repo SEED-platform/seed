@@ -9,9 +9,6 @@ import json
 from django.core.urlresolvers import reverse_lazy, NoReverseMatch
 from django.test import TestCase
 
-# from seed.models.data_quality import (
-#     DataQualityCheck
-# )
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.exceptions import InsufficientPermission
 from seed.lib.superperms.orgs.models import (
@@ -968,7 +965,6 @@ class AccountsViewTests(TestCase):
 
 
 class AuthViewTests(TestCase):
-
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
