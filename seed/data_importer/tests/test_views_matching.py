@@ -148,3 +148,37 @@ class TestViewsMatching(DataMappingBaseTestCase):
         }
         del coparents['id']
         self.assertEqual(expected, coparents)
+
+    def test_unmatch(self):
+        # unmatch a specific entry
+        property_state = PropertyState.objects.filter(
+            use_description='Club',
+            import_file_id=self.import_file_2,
+            data_state__in=[DATA_STATE_MAPPING, DATA_STATE_MATCHING],
+            merge_state__in=[MERGE_STATE_UNKNOWN, MERGE_STATE_NEW]
+        ).first()
+
+        vs = ImportFileViewSet()
+        fields = ['id', 'extra_data', 'lot_number', 'use_description']
+
+        # get the coparent of the 'Club' to get the ID
+        coparents = vs.has_coparent(property_state.id, 'properties', fields)
+
+        # verify that the coparent id is not part of the view
+        prop = PropertyView.objects.filter(cycle=self.cycle, state__id=coparents['id'])
+        self.assertFalse(prop.exists())
+
+        data = {
+            "inventory_type": "properties",
+            "state_id": property_state.id,
+            "coparent_id": coparents['id']
+        }
+        url = reverse("apiv2:import_files-unmatch", args=[self.import_file_2.pk])
+        resp = self.client.post(
+            url, data=json.dumps(data), content_type='application/json'
+        )
+        body = json.loads(resp.content)
+        self.assertEqual(body['status'], 'success')
+
+        # verify that the coparent id is now in the view
+        self.assertTrue(prop.exists())

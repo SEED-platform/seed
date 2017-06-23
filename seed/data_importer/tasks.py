@@ -697,7 +697,7 @@ def _save_raw_data(file_pk, *args, **kwargs):
     _log.debug("Current cache state")
     current_cache = get_cache(prog_key)
     _log.debug(current_cache)
-    time.sleep(2)  # NL: yuck
+    # time.sleep(2)  # NL: yuck
     result = current_cache
 
     try:

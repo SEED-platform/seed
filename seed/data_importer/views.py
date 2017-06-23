@@ -788,20 +788,24 @@ class ImportFileViewSet(viewsets.ViewSet):
 
         audit_entry = merged_record[0]
 
-        # check if we are returning as subset of the fields (as values)
-        if fields:
-            # are we returning the coparent for parent_state1_id or parent_state2_id
-            if audit_entry['parent_state1_id'] != state_id:
-                coparent_id = audit_entry['parent_state1_id']
-            else:
-                coparent_id = audit_entry['parent_state2_id']
+        # check if we are returning as subset of the fields (as values).
 
-            if coparent_id:
+        # are we returning the coparent for parent_state1_id or parent_state2_id
+        if audit_entry['parent_state1_id'] != state_id:
+            coparent_id = audit_entry['parent_state1_id']
+        else:
+            coparent_id = audit_entry['parent_state2_id']
+
+        if coparent_id:
+            if fields:
                 qs = state_model.objects.filter(id=coparent_id).values(*fields)
-                if qs.count() == 1:
-                    return qs.first()
-                else:
-                    return False
+            else:
+                qs = state_model.objects.filter(id=coparent_id).values()
+
+            if qs.count() == 1:
+                return qs.first()
+            else:
+                return False
 
     @api_endpoint_class
     @ajax_request_class
@@ -815,14 +819,14 @@ class ImportFileViewSet(viewsets.ViewSet):
         coparent_id = int(body.get('coparent_id', None))
 
         # Make sure the state isn't already unmatched
-        coparent = self.has_coparent(source_state_id, inventory_type)
+        coparent = self.has_coparent(source_state_id, inventory_type, ['id'])
         if not coparent:
             return JsonResponse({
                 'status': 'error',
                 'message': 'Source state is already unmatched'
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        if coparent.id != coparent_id:
+        if coparent['id'] != coparent_id:
             return JsonResponse({
                 'status': 'error',
                 'message': 'Coparent ID in audit history doesn\'t match coparent_id parameter',
@@ -841,7 +845,7 @@ class ImportFileViewSet(viewsets.ViewSet):
             state = TaxLotState
             view = TaxLotView
 
-        state1 = coparent
+        state1 = state.objects.get(id=coparent['id'])
         state2 = state.objects.get(id=source_state_id)
 
         merged_record = audit_log.objects.select_related('state', 'parent1', 'parent2').get(
