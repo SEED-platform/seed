@@ -37,7 +37,7 @@ describe('When I go to the matching page', function () {
     $('[ng-change="unmatch()"]').click();
     browser.wait(EC.presenceOf($('.message')), 10000);
     $('[ui-sref="matching_list({importfile_id: import_file.id, inventory_type: inventory_type})"]').click();
-    expect($('.table_footer').getText()).toContain('4 unmatched');
+    expect($('.table_footer').getText()).toContain('5 unmatched');
     $('#showHideFilterSelect').element(by.cssContainingText('option', 'Show Unmatched')).click();
   });
 
@@ -47,9 +47,9 @@ describe('When I go to the matching page', function () {
     browser.wait(EC.presenceOf($('.message')), 10000);
     $('[ui-sref="matching_list({importfile_id: import_file.id, inventory_type: inventory_type})"]').click();
     $('#showHideFilterSelect').element(by.cssContainingText('option', 'Show All')).click();
-    expect($('.table_footer').getText()).toContain('3 unmatched');
+    expect($('.table_footer').getText()).toContain('4 unmatched');
   });
-
+  
   it('should filter matches', function () {
     $$('[ui-sref="matching_detail({importfile_id: import_file.id, inventory_type: inventory_type, state_id: i.id})"]').first().click();
     $$('[ng-model="col.searchText"]').get(4).click().sendKeys('elm');
@@ -58,10 +58,10 @@ describe('When I go to the matching page', function () {
     expect(rows.count()).toBe(1);
     $$('[ng-model="col.searchText"]').get(4).click().clear();
     $$('[ng-model="col.searchText"]').get(9).click().clear();
-    expect(rows.count()).toBe(16);
+    expect(rows.count()).toBe(17);
     $$('[ng-click="sortData(col.name)"]').get(4).click();
     browser.wait(EC.presenceOf($('.arrow-up')), 10000);
-
+    
     var rowText = element.all(by.repeater('state in available_matches')).get(0);
     expect(rowText.getText()).toContain('11 Ninth Street Rust 24651456');
     $$('[ng-click="sortData(col.name)"]').get(4).click();
@@ -73,7 +73,7 @@ describe('When I go to the matching page', function () {
 
   it('should unmatch from front page', function () {
     $$('[ng-change="unmatch(i)"]').first().click();
-    expect($('.table_footer').getText()).toContain('3 unmatched');
+    expect($('.table_footer').getText()).toContain('5 unmatched');
     $$('[ui-sref="dataset_detail({dataset_id: import_file.dataset.id})"]').first().click();
   });
 
