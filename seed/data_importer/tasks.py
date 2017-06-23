@@ -12,7 +12,6 @@ import copy
 import datetime
 import hashlib
 import operator
-import time
 import traceback
 from _csv import Error
 from collections import namedtuple
