@@ -44,9 +44,6 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
         tasks.map_data(self.import_file.pk)
 
     def test_hash(self):
-        # tasks.hash_state_object(TaxLotState())
-        # tasks.hash_state_object(TaxLotState(organization=self.org))
-
         self.assertEqual(tasks.hash_state_object(PropertyState()),
                          tasks.hash_state_object(PropertyState(organization=self.org)))
 
@@ -60,8 +57,6 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
         ps5 = PropertyState(address_line_1='123 fake st')
 
         self.assertEqual(len(set(map(tasks.hash_state_object, [ps1, ps2, ps3, ps4, ps5]))), 5)
-
-        return
 
     def test_import_duplicates(self):
         # Check to make sure all the properties imported
@@ -97,5 +92,3 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
 
         self.assertEqual(self.import_file.find_unmatched_property_states().count(), 7)
         self.assertEqual(self.import_file.find_unmatched_tax_lot_states().count(), 0)
-
-        return
