@@ -12,7 +12,6 @@ from seed.models import (
 
 
 class PropertyLabelsField(serializers.RelatedField):
-
     def to_representation(self, value):
         return value.id
 
@@ -26,9 +25,9 @@ class PropertySerializer(serializers.ModelSerializer):
 
 
 class PropertyStateSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = PropertyState
+
     extra_data = serializers.JSONField()
 
 

@@ -255,8 +255,6 @@ class PropertyView(models.Model):
     cycle = models.ForeignKey(Cycle)
     state = models.ForeignKey(PropertyState)
 
-    # labels = models.ManyToManyField(StatusLabel)
-
     def __unicode__(self):
         return u'Property View - %s' % self.pk
 
