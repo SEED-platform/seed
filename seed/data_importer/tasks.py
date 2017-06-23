@@ -915,7 +915,7 @@ def filter_duplicated_states(unmatched_states):
 
     canonical_states = [unmatched_states[equality_list[0]] for equality_list in
                         equality_classes.values()]
-    canonical_state_ids = set([s.pk for s in unmatched_states])
+    canonical_state_ids = set([s.pk for s in canonical_states])
     noncanonical_states = [u for u in unmatched_states if u.pk not in canonical_state_ids]
 
     return canonical_states, noncanonical_states
@@ -1351,15 +1351,10 @@ def _match_properties_and_taxlots(file_pk):
             state.merge_state = MERGE_STATE_NEW
         state.save()
 
-    # I don't think we arrive at this code ... ever.
     for state in chain(duplicate_property_states, duplicate_tax_lot_states):
         state.data_state = DATA_STATE_DELETE
         # state.merge_state = MERGE_STATE_DUPLICATE
         state.save()
-
-    # This is a kind of vestigial code that I do not particularly understand.
-    import_file.mapping_completion = 0
-    import_file.save()
 
     return _finish_matching(import_file, prog_key)
 
