@@ -860,6 +860,12 @@ def _find_matches(un_m_address, canonical_buildings_addresses):
 # TODO: CLEANUP - What are we doing here?
 md = MappingData()
 ALL_COMPARISON_FIELDS = sorted(list(set([field['name'] for field in md.data])))
+# Make sure that the import_file isn't part of the hash, as the import_file filename always has random characters
+# appended to it in the uploads directory
+try:
+    ALL_COMPARISON_FIELDS.remove('import_file')
+except ValueError:
+    pass
 
 
 def hash_state_object(obj, include_extra_data=True):
@@ -1005,7 +1011,7 @@ class EquivalencePartitioner(object):
     def make_taxlotstate_equivalence(kls):
         """Return default EquivalencePartitioner for TaxLotStates
 
-        Two tax lot states are indentical if:
+        Two tax lot states are identical if:
 
         - Their jurisdiction_tax_lot_ids are the same, which can be
           found in jurisdiction_tax_lot_ids or custom_id_1
@@ -1212,52 +1218,62 @@ def merge_unmatched_into_views(unmatched_states, partitioner, org, import_file):
         state__organization=org,
         cycle_id=current_match_cycle).select_related('state')
     existing_view_states = collections.defaultdict(dict)
+    existing_view_state_hashes = set()
     for view in class_views:
         equivalence_can_key = partitioner.calculate_canonical_key(view.state)
         existing_view_states[equivalence_can_key][view.cycle] = view
+        existing_view_state_hashes.add(hash_state_object(view.state))
 
     matched_views = []
 
     for unmatched in unmatched_states:
-        # Look to see if there is a match among the property states of the object.
 
-        # equiv_key = False
-        # equiv_can_key = partitioner.calculate_canonical_key(unmatched)
-        equiv_cmp_key = partitioner.calculate_comparison_key(unmatched)
+        unmatched_state_hash = hash_state_object(unmatched)
+        if unmatched_state_hash in existing_view_state_hashes:
+            # If an exact duplicate exists, delete the unmatched state
+            unmatched.data_state = DATA_STATE_DELETE
+            unmatched.save()
 
-        for key in existing_view_states:
-            if partitioner.calculate_key_equivalence(key, equiv_cmp_key):
-                if current_match_cycle in existing_view_states[key]:
-                    # There is an existing View for the current cycle that matches us.
-                    # Merge the new state in with the existing one and update the view, audit log.
-                    current_view = existing_view_states[key][current_match_cycle]
-                    current_state = current_view.state
-
-                    merged_state, change_ = save_state_match(current_state, unmatched)
-
-                    current_view.state = merged_state
-                    current_view.save()
-                    matched_views.append(current_view)
-                else:
-                    # Grab another view that has the same parent as
-                    # the one we belong to.
-                    cousin_view = existing_view_states[key].values()[0]
-                    view_parent = getattr(cousin_view, ParentAttrName)
-                    new_view = type(cousin_view)()
-                    setattr(new_view, ParentAttrName, view_parent)
-                    new_view.cycle = current_match_cycle
-                    new_view.state = unmatched
-                    try:
-                        new_view.save()
-                        matched_views.append(new_view)
-                    except IntegrityError:
-                        _log.warn("Unable to save the new view as it already exists in the db")
-
-                break
         else:
-            # Create a new object/view for the current object.
-            created_view = unmatched.promote(current_match_cycle)
-            matched_views.append(created_view)
+            # Look to see if there is a match among the property states of the object.
+
+            # equiv_key = False
+            # equiv_can_key = partitioner.calculate_canonical_key(unmatched)
+            equiv_cmp_key = partitioner.calculate_comparison_key(unmatched)
+
+            for key in existing_view_states:
+                if partitioner.calculate_key_equivalence(key, equiv_cmp_key):
+                    if current_match_cycle in existing_view_states[key]:
+                        # There is an existing View for the current cycle that matches us.
+                        # Merge the new state in with the existing one and update the view, audit log.
+                        current_view = existing_view_states[key][current_match_cycle]
+                        current_state = current_view.state
+
+                        merged_state, change_ = save_state_match(current_state, unmatched)
+
+                        current_view.state = merged_state
+                        current_view.save()
+                        matched_views.append(current_view)
+                    else:
+                        # Grab another view that has the same parent as
+                        # the one we belong to.
+                        cousin_view = existing_view_states[key].values()[0]
+                        view_parent = getattr(cousin_view, ParentAttrName)
+                        new_view = type(cousin_view)()
+                        setattr(new_view, ParentAttrName, view_parent)
+                        new_view.cycle = current_match_cycle
+                        new_view.state = unmatched
+                        try:
+                            new_view.save()
+                            matched_views.append(new_view)
+                        except IntegrityError:
+                            _log.warn("Unable to save the new view as it already exists in the db")
+
+                    break
+            else:
+                # Create a new object/view for the current object.
+                created_view = unmatched.promote(current_match_cycle)
+                matched_views.append(created_view)
 
     return list(set(matched_views))
 
@@ -1282,15 +1298,14 @@ def _match_properties_and_taxlots(file_pk):
     unmatched_properties = []
     unmatched_tax_lots = []
     if all_unmatched_properties:
-        # Filter out the duplicates.  Do we actually want to delete them
-        # here?  Mark their abandonment in the Audit Logs?
+        # Filter out the duplicates within the import file.
         unmatched_properties, duplicate_property_states = filter_duplicated_states(
             all_unmatched_properties)
 
         property_partitioner = EquivalencePartitioner.make_default_state_equivalence(PropertyState)
 
         # Merge everything together based on the notion of equivalence
-        # provided by the partitioner.
+        # provided by the partitioner, while ignoring duplicates.
         unmatched_properties, property_equivalence_keys = match_and_merge_unmatched_objects(
             unmatched_properties,
             property_partitioner)
@@ -1340,8 +1355,10 @@ def _match_properties_and_taxlots(file_pk):
     # There should be some kind of bulk-update/save thing we can do to
     # improve upon this.
     for state in chain(unmatched_properties, unmatched_tax_lots):
-        state.data_state = DATA_STATE_MATCHING
-        state.save()
+        # Ignore states that have already been marked for deletion as exact duplicates
+        if state.data_state != DATA_STATE_DELETE:
+            state.data_state = DATA_STATE_MATCHING
+            state.save()
 
     for state in map(lambda x: x.state, chain(merged_property_views, merged_taxlot_views)):
         state.data_state = DATA_STATE_MATCHING
