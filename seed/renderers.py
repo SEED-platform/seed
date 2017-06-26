@@ -37,7 +37,7 @@ class SEEDJSONRenderer(JSONRenderer):
     will be included as an additional key/value pair.
 
     .. example:
-    
+
         {
             'status': 'success',
             'data': data,
