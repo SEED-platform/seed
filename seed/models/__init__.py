@@ -15,6 +15,10 @@ from .tax_lots import *  # noqa
 from .columns import *  # noqa
 from .auditlog import *  # noqa
 from .deprecate import *  # noqa
+from .measures import *  # noqa
+from .meters import *  # noqa
+from .simulations import *  # noqa
+from .building_file import *  # noqa
 
 from .projects import (     # noqa
     Project,

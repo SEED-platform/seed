@@ -23,7 +23,6 @@ from seed.models import (
 )
 from seed.models import (
     DATA_STATE_IMPORT,
-    # DATA_STATE_MAPPING,
 )
 
 logger = logging.getLogger(__name__)

@@ -18,9 +18,7 @@ def create_organization(user, org_name='', *args, **kwargs):
     :param (optional) kwargs: 'role', int; 'status', str.
 
     """
-    from seed.models import (
-        StatusLabel as Label,
-    )
+    from seed.models import StatusLabel as Label
     org = SuperOrganization.objects.create(
         name=org_name
     )

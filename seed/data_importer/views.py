@@ -28,8 +28,7 @@ from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import api_view
-from rest_framework.decorators import detail_route
-from rest_framework.decorators import parser_classes
+from rest_framework.decorators import detail_route, parser_classes
 from rest_framework.parsers import MultiPartParser, FormParser
 
 from seed.authentication import SEEDAuthentication

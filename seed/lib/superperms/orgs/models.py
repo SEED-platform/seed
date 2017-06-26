@@ -5,15 +5,14 @@
 :author
 """
 import logging
-from datetime import date, datetime
 
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.signals import pre_delete
-from django.utils import timezone
 
 from seed.lib.superperms.orgs.exceptions import TooManyNestedOrgs
+
 
 _log = logging.getLogger(__name__)
 
@@ -95,7 +94,8 @@ class OrganizationUser(models.Model):
                     other_user.role_level = ROLE_OWNER
                     other_user.save()
                 except IndexError:
-                    _log.error("Unable to promote secondary user, because there are no other users!")
+                    _log.error(
+                        "Unable to promote secondary user, because there are no other users!")
 
         super(OrganizationUser, self).delete(*args, **kwargs)
 
@@ -139,16 +139,9 @@ class Organization(models.Model):
 
         # Create a default cycle for the organization if there isn't one already
         from seed.models import Cycle
-        year = date.today().year - 1
-        cycle_name = 'Default ' + str(year) + ' Calendar Year'
-        if not Cycle.objects.filter(name=cycle_name, organization=self).exists():
-            _log.debug("Creating default cycle for new organization")
-            Cycle.objects.create(
-                name=cycle_name,
-                organization=self,
-                start=datetime(year, 1, 1, tzinfo=timezone.get_current_timezone()),
-                end=datetime(year + 1, 12, 31, tzinfo=timezone.get_current_timezone())
-            )
+        Cycle.get_or_create_default(self)
+        from seed.models import Measure
+        Measure.populate_measures(self.id)
 
     def is_member(self, user):
         """Return True if user object has a relation to this organization."""

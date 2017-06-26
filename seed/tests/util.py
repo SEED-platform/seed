@@ -58,9 +58,7 @@ class FakeRequest(object):
     body = None
     GET = POST = {}
 
-    def __init__(
-            self, data=None, headers=None, user=None, method='POST', **kwargs
-    ):
+    def __init__(self, data=None, headers=None, user=None, method='POST', **kwargs):
         if 'body' in kwargs:
             self.body = kwargs['body']
         if data is None:

@@ -16,13 +16,10 @@ method mutiple times will always return the same sequence of results
     .. codeauthor:: Paul Munday<paul@paulmunday.net>
 """
 import datetime
-import os
 import re
 import string
 from collections import namedtuple
 
-import mock
-from django.db.models.fields.files import FieldFile
 from django.utils import timezone
 from faker import Factory
 
@@ -277,48 +274,6 @@ class FakeTaxLotStateFactory(BaseFake):
         TaxLotAuditLog.objects.create(organization=org, state=tls, **auditlog_detail)
 
         return tls
-
-
-def mock_file_factory(name, size=None, url=None, path=None):
-    """
-    This creates a mock instance of a FieldFile from
-    django.db.models.fields.files.
-    This is used to represent a file stored in Django and is linked file storage
-    so it handles uploading and saving to disk.
-    The mock allow you to set the file name etc without having to save a file to disk.
-    """
-    mock_file = mock.MagicMock(spec=FieldFile)
-    mock_file._committed = True
-    mock_file.file_name = name
-    mock_file.name = name
-    mock_file.base_name = os.path.splitext(name)[0]
-    mock_file.__unicode__.return_value = name
-
-    def __eq__(other):
-        if hasattr(other, 'name'):
-            return name == other.name
-        else:
-            return name == other
-
-    mock_file.__eq__.side_effect = __eq__
-
-    def __ne__(other):
-        return not __eq__(other)
-
-    mock_file.__ne__.side_effect = __ne__
-    mock_file._get_size.return_value = size
-    mock_size = mock.PropertyMock(return_value=size)
-    type(mock_file).size = mock_size
-    mock_file._get_path.return_value = path
-    mock_path = mock.PropertyMock(return_value=path)
-    type(mock_file).path = mock_path
-    mock_file._get_url.return_value = url
-    mock_url = mock.PropertyMock(return_value=url)
-    type(mock_file).url = mock_url
-    mock_file._get_closed.return_value = True
-    mock_closed = mock.PropertyMock(return_value=True)
-    type(mock_file).closed = mock_closed
-    return mock_file
 
 
 def mock_queryset_factory(model, flatten=False, **kwargs):

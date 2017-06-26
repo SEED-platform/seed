@@ -23,8 +23,8 @@ redis==2.10.5
 pytz==2012h
 
 # API
-djangorestframework==3.3.3
-django-rest-swagger==0.3.8
+djangorestframework==3.4.7
+django-rest-swagger==0.3.10
 
 # Server monitoring
 raven==6.1.0
