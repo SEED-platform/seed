@@ -98,8 +98,8 @@ class CycleFilterSet(FilterSet):
             end = end - relativedelta(hours=max_time_diff)
             cycles = queryset.filter(start__lte=start, end__gte=end)
         return cycles
-      
-      
+
+
 class PropertyViewFilterSet(FilterSet):
     """Provide advanced filtering for PropertyView
 
