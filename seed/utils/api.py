@@ -7,18 +7,19 @@ required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
 :author
 """
-from collections import namedtuple
-from importlib import import_module
-from functools import wraps
+import base64
 import re
+from collections import namedtuple
+from functools import wraps
+from importlib import import_module
 
 from django.conf import settings
-
 from django.core.exceptions import (
     ObjectDoesNotExist,
     PermissionDenied,
     ValidationError
 )
+from rest_framework import exceptions
 
 from seed.lib.superperms.orgs.permissions import get_org_id, get_user_org
 
@@ -158,15 +159,28 @@ def get_api_request_user(request):
     if request.is_ajax():
         return False
 
-    auth_header = request.META.get('HTTP_AUTHORIZATION')
+    auth_header = request.META.get('Authorization')
+
     if not auth_header:
-        return False
+        auth_header = request.META.get('HTTP_AUTHORIZATION')
+
+    if not auth_header:
+        return None
+
     try:
-        # late import
+        if not auth_header.startswith('Basic'):
+            raise exceptions.AuthenticationFailed(
+                "Only Basic HTTP_AUTHORIZATION is supported"
+            )
+
         from seed.landing.models import SEEDUser as User
+        auth_header = auth_header.split()[1]
+        auth_header = base64.urlsafe_b64decode(auth_header)
         username, api_key = auth_header.split(':')
         return User.objects.get(api_key=api_key, username=username)
-    except (ValueError, User.DoesNotExist):
+    except ValueError:
+        return False
+    except User.DoesNotExist:
         return False
 
 
