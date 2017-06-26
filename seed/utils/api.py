@@ -210,11 +210,21 @@ def rgetattr(obj, lst):
 def get_org_id_from_validator(instance, field):
     """
     For querysets Django enables you to do things like:
-    obj = MyModel.get(org__id=1)   note double underscore.
-    However you can't do:
-    obj.org__id only obj.org.id
+
+    .. example:
+
+        obj = MyModel.get(org__id=1)
+
+    note double underscore. However you can't do:
+
+    .. example:
+
+        obj.org__id only obj.org.id
+
     This presents an issue as getattr only works 1 level deep:
-    getattr(obj, 'org.id') doesn't work either.
+
+        getattr(obj, 'org.id') does not work either.
+
     This can be worked around using rgetattr (above).
     This functions mimics getattr(obj, 'org__id') by
     splitting field on __ and calling rgetattr on the result.
@@ -298,13 +308,14 @@ class OrgValidateMixin(object):
     that represents the organization on the corresponding model.
 
     my_validator = OrgValidator(key='foreign_key, field='organization_id')
+
     ..example:
+
         class MySerializer(OrgValidateMixin, serializers.ModelSerializer):
             foreign_key= serializers.PrimaryKeyRelatedField(
                 query_set=MyModel.objects.all()
             )
             org_validators = [my_validator]
-
 
     This ensures request.user belongs to the org MyModel.organization
 
