@@ -5,20 +5,25 @@
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
-:author
+:author Fable Turas <fable@raintechpdx.com>
 
-provides filterset classes for advanced filtering of DRF viewsets
+FilterSet classes to provide advanced filtering API endpoints.
 """
 
 from datetime import datetime
-
 from dateutil.relativedelta import relativedelta
-from django_filters import BaseInFilter, NumberFilter, CharFilter
-from django_filters import DateFilter
 from django_filters.rest_framework import FilterSet
+from django_filters import BaseInFilter, NumberFilter, CharFilter, DateFilter
+from django.db.models import Q
 
-from seed.models import Cycle, StatusLabel as Label
-from seed.models import GreenAssessment, GreenAssessmentProperty
+from seed.models import (
+    Cycle,
+    GreenAssessment,
+    GreenAssessmentProperty,
+    PropertyState,
+    PropertyView,
+    StatusLabel as Label
+)
 
 # Oops! we override a builtin in some of the models
 property_decorator = property
@@ -93,3 +98,58 @@ class CycleFilterSet(FilterSet):
             end = end - relativedelta(hours=max_time_diff)
             cycles = queryset.filter(start__lte=start, end__gte=end)
         return cycles
+      
+      
+class PropertyViewFilterSet(FilterSet):
+    """Provide advanced filtering for PropertyView
+
+    Filter options for propertyviews by cycle (id), property (id),
+    cycle_start (lte), and cycle_end (gte)
+    """
+    cycle_start = DateFilter(name='cycle__start', lookup_expr='lte')
+    cycle_end = DateFilter(name='cycle__end', lookup_expr='gte')
+
+    class Meta:
+        model = PropertyView
+        fields = ['cycle', 'property', 'cycle_start', 'cycle_end']
+
+
+class PropertyStateFilterSet(FilterSet):
+    """Provide advanced filtering for PropertyState
+
+    Filter options for propertstate by energy_score (gte), city,
+    pm_parent_property_id, and property_identifier.
+
+    The property_identifier filter provides a single query parameter key for
+    filtering against any of the property ID type fields.
+    (jurisdiction_property_id, custom_id_1, pm_property_id or
+    home_energy_score_id)
+    """
+    energy_score = NumberFilter(name='energy_score', lookup_expr='gte')
+    property_identifier = CharFilter(method='identifier_filter')
+
+    class Meta:
+        model = PropertyState
+        fields = [
+            'energy_score', 'city',
+            'pm_parent_property_id',
+            'property_identifier'
+        ]
+
+    def identifier_filter(self, queryset, name, value):
+        """
+        Filter queryset for case-insensitive value matching
+        jurisdiction_property_id OR custom_id_1 OR pm_property_id
+        OR home_energy_score_id.
+        """
+        jurisdiction_property_id = Q(jurisdiction_property_id__iexact=value)
+        custom_id_1 = Q(custom_id_1__iexact=value)
+        pm_property_id = Q(pm_property_id=value)
+        home_energy_score_id = Q(home_energy_score_id=value)
+        query = (
+            jurisdiction_property_id
+            | custom_id_1
+            | pm_property_id
+            | home_energy_score_id
+        )
+        return queryset.filter(query)

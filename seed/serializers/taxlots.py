@@ -23,12 +23,14 @@ class TaxLotSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TaxLot
+        fields = '__all__'
 
 
 class TaxLotPropertySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TaxLotProperty
+        fields = '__all__'
 
 
 class TaxLotStateSerializer(serializers.ModelSerializer):
@@ -36,6 +38,7 @@ class TaxLotStateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TaxLotState
+        fields = '__all__'
 
 
 class TaxLotViewSerializer(serializers.ModelSerializer):
@@ -43,4 +46,5 @@ class TaxLotViewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TaxLotView
+        fields = '__all__'
         depth = 1
