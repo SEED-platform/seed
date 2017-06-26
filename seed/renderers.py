@@ -35,10 +35,13 @@ class SEEDJSONRenderer(JSONRenderer):
 
     if pagination class is set globally, and/or on the view, pagination results
     will be included as an additional key/value pair.
-    ie: {
-        'status': 'success',
-        'data': data,
-        'pagination': {'count': count, 'next': next, 'previous': previous}
+
+    .. example:
+    
+        {
+            'status': 'success',
+            'data': data,
+            'pagination': {'count': count, 'next': next, 'previous': previous}
         }
 
     """

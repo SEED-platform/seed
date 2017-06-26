@@ -160,7 +160,7 @@ def check_status(result_out, part_msg, log, piid_flag=None):
     passed = '\033[1;32m...passed\033[1;0m'
     failed = '\033[1;31m...failed\033[1;0m'
 
-    if result_out.status_code in [200, 403, 401]:
+    if result_out.status_code in [200, 201, 403, 401]:
         if piid_flag == 'data_quality':
             msg = pprint.pformat(result_out.json(), indent=2, width=70)
         else:
