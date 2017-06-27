@@ -779,7 +779,6 @@ class ImportFileViewSet(viewsets.ViewSet):
 
         return audit_entry[0]
 
-
     @api_endpoint_class
     @ajax_request_class
     @detail_route(methods=['POST'])

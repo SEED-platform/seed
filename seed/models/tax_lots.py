@@ -211,18 +211,18 @@ class TaxLotState(models.Model):
                         FROM creation_id cid, seed_taxlotauditlog audit_log
                         WHERE audit_log.parent1_id = cid.id OR audit_log.parent2_id = cid.id
                     )
-                    SELECT 
-                      ps.id, 
-                      ps.custom_id_1, 
-                      ps.block_number, 
-                      ps.district, 
-                      ps.address_line_1, 
-                      ps.address_line_2, 
-                      ps.city, 
-                      ps.state, 
-                      ps.postal_code, 
-                      ps.extra_data, 
-                      ps.number_properties, 
+                    SELECT
+                      ps.id,
+                      ps.custom_id_1,
+                      ps.block_number,
+                      ps.district,
+                      ps.address_line_1,
+                      ps.address_line_2,
+                      ps.city,
+                      ps.state,
+                      ps.postal_code,
+                      ps.extra_data,
+                      ps.number_properties,
                       ps.jurisdiction_tax_lot_id,
                       NULL
                     FROM seed_taxlotstate ps, audit_id aid
@@ -281,8 +281,8 @@ class TaxLotView(models.Model):
         # get the related property_view__state as well to save time, if needed.
         result = []
         for tlp in TaxLotProperty.objects.filter(
-            cycle=self.cycle,
-            taxlot_view=self).select_related('property_view', 'property_view__state'):
+                cycle=self.cycle,
+                taxlot_view=self).select_related('property_view', 'property_view__state'):
             if tlp.taxlot_view:
                 result.append(tlp.property_view)
 

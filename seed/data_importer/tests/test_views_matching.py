@@ -105,9 +105,19 @@ class TestViewsMatching(DataMappingBaseTestCase):
             },
             "coparent": {
                 "lot_number": "1552813",
-                "extra_data": {
-                    "data_007": "a"
-                },
+                "owner_email": "ULLC@gmail.com",
+                "year_ending": "2015-12-31",
+                "owner": "U LLC",
+                "site_eui": 125.0,
+                "custom_id_1": "1",
+                "city": "Rust",
+                "property_notes": "Case A-1: 1 Property, 1 Tax Lot",
+                "pm_property_id": "2264",
+                "use_description": "Hotel",
+                "gross_floor_area": 12555.0,
+                "owner_telephone": "213-852-1238",
+                "energy_score": 75,
+                "address_line_1": "50 Willow Ave SE"
             },
             "matched": True
         }
@@ -124,7 +134,9 @@ class TestViewsMatching(DataMappingBaseTestCase):
         self.assertEqual(body['number_tax_lots_matching_search'], 18)
         self.assertEqual(body['number_properties_matching_search'], 14)
         self.assertEqual(body['number_properties_returned'], 14)
-        self.assertDictEqual(expected, found_prop)
+        self.assertEqual(expected['lot_number'], found_prop['lot_number'])
+        self.assertEqual(expected['matched'], found_prop['matched'])
+        self.assertDictContainsSubset(expected['coparent'], found_prop['coparent'])
 
     def test_get_coparents(self):
         # get a specific test case with coparents
@@ -141,13 +153,12 @@ class TestViewsMatching(DataMappingBaseTestCase):
         coparents = vs.has_coparent(property_state.id, 'properties', fields)
         expected = {
             'lot_number': u'11160509',
-            'extra_data': {
-                u'data_007': u'd'
-            },
-            'use_description': u'Retail'
+            'gross_floor_area': 23543.0,
+            'owner_telephone': u'213-546-9755',
+            'energy_score': 63,
+            'use_description': 'Retail',
         }
-        del coparents['id']
-        self.assertEqual(expected, coparents)
+        self.assertDictContainsSubset(expected, coparents)
 
     def test_unmatch(self):
         # unmatch a specific entry

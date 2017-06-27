@@ -68,4 +68,4 @@ class TestProperties(DataMappingBaseTestCase):
             merge_state__in=[MERGE_STATE_UNKNOWN, MERGE_STATE_NEW]
         ).first()
 
-        self.assertEqual(expected, coparent[0])
+        self.assertEqual(expected.pk, coparent[0]['id'])
