@@ -6,6 +6,7 @@ angular.module('BE.seed.controller.mapping', [])
   .controller('mapping_controller', [
     '$scope',
     '$log',
+    '$q',
     'import_file_payload',
     'suggested_mappings_payload',
     'raw_columns_payload',
@@ -24,6 +25,7 @@ angular.module('BE.seed.controller.mapping', [])
     'inventory_service',
     function ($scope,
               $log,
+              $q,
               import_file_payload,
               suggested_mappings_payload,
               raw_columns_payload,
@@ -326,15 +328,15 @@ angular.module('BE.seed.controller.mapping', [])
 
         // Request the columns again because they may (most likely)
         // have changed from the initial import
-        inventory_service.get_property_columns().then(function (data) {
-          $scope.property_columns = data;
-        });
-        inventory_service.get_taxlot_columns().then(function (data) {
-          $scope.taxlot_columns = data;
-        });
-
-        inventory_service.search_matching_inventory($scope.import_file.id).then(function (data) {
-          $scope.mappedData = data;
+        $q.all([
+          inventory_service.get_property_columns(),
+          inventory_service.get_taxlot_columns(),
+          inventory_service.search_matching_inventory($scope.import_file.id)
+        ]).then(function (results) {
+          $scope.property_columns = results[0];
+          $scope.taxlot_columns = results[1];
+          $scope.mappedData = results[2];
+          var data = $scope.mappedData;
 
           var gridOptions = {
             enableFiltering: true,
