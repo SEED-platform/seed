@@ -578,11 +578,7 @@ class ImportFileViewSet(viewsets.ViewSet):
 
             if get_coparents:
                 result['matched'] = False
-                coparent = None
-                if inventory_type == 'properties':
-                    coparent = self.has_coparent(state.id, inventory_type, fields['PropertyState'])
-                else:
-                    coparent = self.has_coparent(state.id, inventory_type, fields['TaxLotState'])
+                coparent = self.has_coparent(state.id, inventory_type)
 
                 if coparent:
                     result['matched'] = True
@@ -765,19 +761,14 @@ class ImportFileViewSet(viewsets.ViewSet):
         :param fields: list, either None or list of fields to return
         :return: dict or state object, If fields is not None then will return state_object
         """
-        audit_log = PropertyAuditLog if inventory_type == 'properties' else TaxLotAuditLog
         state_model = PropertyState if inventory_type == 'properties' else TaxLotState
-        audit_creation_id = audit_log.objects.only('id').exclude(import_filename=None).get(
-            state_id=state_id,
-            name='Import Creation'
-        ).id
-        merged_record = list(audit_log.objects.only('parent_state1_id', 'parent_state2_id').filter(
-            Q(parent1_id=audit_creation_id) | Q(parent2_id=audit_creation_id)).values())
 
-        if len(merged_record) == 0:
+        audit_entry, audit_count = state_model.coparent(state_id)
+
+        if audit_count == 0:
             return False
 
-        if len(merged_record) > 1:
+        if audit_count > 1:
             return JsonResponse(
                 {
                     'status': 'error',
@@ -786,26 +777,8 @@ class ImportFileViewSet(viewsets.ViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-        audit_entry = merged_record[0]
+        return audit_entry[0]
 
-        # check if we are returning as subset of the fields (as values).
-
-        # are we returning the coparent for parent_state1_id or parent_state2_id
-        if audit_entry['parent_state1_id'] != state_id:
-            coparent_id = audit_entry['parent_state1_id']
-        else:
-            coparent_id = audit_entry['parent_state2_id']
-
-        if coparent_id:
-            if fields:
-                qs = state_model.objects.filter(id=coparent_id).values(*fields)
-            else:
-                qs = state_model.objects.filter(id=coparent_id).values()
-
-            if qs.count() == 1:
-                return qs.first()
-            else:
-                return False
 
     @api_endpoint_class
     @ajax_request_class

@@ -251,7 +251,11 @@ class DataMappingBaseTestCase(DeleteModelsTestCase):
         import_file_is_espm = getattr(self, 'import_file_is_espm', True)
         import_file_data_state = getattr(self, 'import_file_data_state', DATA_STATE_IMPORT)
 
-        user = User.objects.create_user('test_user@demo.com', password='test_pass')
+        if not User.objects.filter(username='test_user@demo.com').exists():
+            user = User.objects.create_user('test_user@demo.com', password='test_pass')
+        else:
+            user = User.objects.get(username='test_user@demo.com')
+
         org = Organization.objects.create()
 
         cycle, _ = Cycle.objects.get_or_create(
