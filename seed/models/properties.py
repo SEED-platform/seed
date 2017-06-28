@@ -247,6 +247,101 @@ class PropertyState(models.Model):
 
         return super(PropertyState, self).save(*args, **kwargs)
 
+    @classmethod
+    def coparent(cls, state_id):
+        """
+        Return the coparent of the PropertyState. This will query the PropertyAuditLog table to
+        determine if there is a coparent and return it if it is found. The state_id needs to be
+        the base ID of when the original record was imported
+
+        :param state_id: integer, state id to find coparent.
+        :return: dict
+        """
+
+        coparents = list(
+            PropertyState.objects.raw("""
+                WITH creation_id AS (
+                    SELECT
+                      pal.id,
+                      pal.state_id AS original_state_id
+                    FROM seed_propertyauditlog pal
+                    WHERE pal.state_id = %s AND
+                          pal.name = 'Import Creation' AND
+                          pal.import_filename IS NOT NULL
+                ), audit_id AS (
+                    SELECT
+                      audit_log.id,
+                      audit_log.state_id,
+                      audit_log.parent1_id,
+                      audit_log.parent2_id,
+                      audit_log.parent_state1_id,
+                      audit_log.parent_state2_id,
+                      cid.original_state_id
+                    FROM creation_id cid, seed_propertyauditlog audit_log
+                    WHERE audit_log.parent1_id = cid.id OR audit_log.parent2_id = cid.id
+                )
+                SELECT
+                    ps.id,
+                    ps.pm_property_id,
+                    ps.pm_parent_property_id,
+                    ps.custom_id_1,
+                    ps.address_line_1,
+                    ps.address_line_2,
+                    ps.city,
+                    ps.state,
+                    ps.postal_code,
+                    ps.lot_number,
+                    ps.gross_floor_area,
+                    ps.use_description,
+                    ps.energy_score,
+                    ps.site_eui,
+                    ps.property_notes,
+                    ps.property_type,
+                    ps.year_ending,
+                    ps.owner,
+                    ps.owner_email,
+                    ps.owner_telephone,
+                    ps.building_count,
+                    ps.year_built,
+                    ps.recent_sale_date,
+                    ps.conditioned_floor_area,
+                    ps.occupied_floor_area,
+                    ps.owner_address,
+                    ps.owner_postal_code,
+                    ps.home_energy_score_id,
+                    ps.generation_date,
+                    ps.release_date,
+                    ps.source_eui_weather_normalized,
+                    ps.site_eui_weather_normalized,
+                    ps.source_eui,
+                    ps.energy_alerts,
+                    ps.space_alerts,
+                    ps.building_certification,
+                    NULL
+                FROM seed_propertystate ps, audit_id aid
+                WHERE (ps.id = aid.parent_state1_id AND
+                       aid.parent_state1_id <> aid.original_state_id) OR
+                      (ps.id = aid.parent_state2_id AND
+                       aid.parent_state2_id <> aid.original_state_id);""", [int(state_id)])
+        )
+
+        # reduce this down to just the fields that were returns and convert to dict. This is
+        # important because the fields that were not queried will be deferred and require a new
+        # query to retrieve.
+        keep_fields = ['id', 'pm_property_id', 'pm_parent_property_id', 'custom_id_1',
+                       'address_line_1', 'address_line_2', 'city', 'state', 'postal_code',
+                       'lot_number', 'gross_floor_area', 'use_description', 'energy_score',
+                       'site_eui', 'property_notes', 'property_type', 'year_ending', 'owner',
+                       'owner_email', 'owner_telephone', 'building_count', 'year_built',
+                       'recent_sale_date', 'conditioned_floor_area', 'occupied_floor_area',
+                       'owner_address', 'owner_postal_code', 'home_energy_score_id',
+                       'generation_date', 'release_date', 'source_eui_weather_normalized',
+                       'site_eui_weather_normalized', 'source_eui',
+                       'energy_alerts', 'space_alerts', 'building_certification', ]
+        coparents = [{key: getattr(c, key) for key in keep_fields} for c in coparents]
+
+        return coparents, len(coparents)
+
 
 class PropertyView(models.Model):
     """Similar to the old world of canonical building."""
@@ -337,8 +432,7 @@ class PropertyAuditLog(models.Model):
     description = models.TextField(null=True, blank=True)
 
     import_filename = models.CharField(max_length=255, null=True, blank=True)
-    record_type = models.IntegerField(choices=DATA_UPDATE_TYPE, null=True,
-                                      blank=True)
+    record_type = models.IntegerField(choices=DATA_UPDATE_TYPE, null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True, null=True)
 
     class Meta:

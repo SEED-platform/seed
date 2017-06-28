@@ -6,6 +6,7 @@
 """
 import datetime
 import logging
+import os.path as osp
 
 from django.utils import timezone
 
@@ -37,7 +38,6 @@ logger = logging.getLogger(__name__)
 
 
 class TestDemoV2(DataMappingBaseTestCase):
-
     def set_up(self, import_file_source_type):
         """Override the base in DataMappingBaseTestCase."""
 
@@ -101,10 +101,10 @@ class TestDemoV2(DataMappingBaseTestCase):
          self.import_record_tax_lot,
          self.cycle) = selfvars
 
-        self.import_file_tax_lot = self.load_import_file_file(tax_lot_filename,
-                                                              self.import_file_tax_lot)
-        self.import_file_property = self.load_import_file_file(property_filename,
-                                                               self.import_file_property)
+        self.import_file_tax_lot.load_import_file(
+            osp.join(osp.dirname(__file__), 'data', tax_lot_filename))
+        self.import_file_property.load_import_file(
+            osp.join(osp.dirname(__file__), 'data', property_filename))
 
     def test_demo_v2(self):
         tasks._save_raw_data(self.import_file_tax_lot.pk, 'fake_cache_key', 1)
