@@ -85,25 +85,6 @@ angular.module('BE.seed.controller.mapping', [])
       $scope.isValidCycle = !!_.find(cycles.cycles, {id: $scope.import_file.cycle});
 
       /**
-       * Opens modal for making changes to concatenation changes.
-       * NL 2016-11-11: hasn't this been deprecated? Backend doesn't have this anymore.
-       */
-      $scope.open_concat_modal = function (building_column_types, raw_columns) {
-        $uibModal.open({
-          templateUrl: urls.static_url + 'seed/partials/concat_modal.html',
-          controller: 'concat_modal_controller',
-          resolve: {
-            building_column_types: function () {
-              return Object.keys(building_column_types);
-            },
-            raw_columns: function () {
-              return raw_columns;
-            }
-          }
-        });
-      };
-
-      /**
        * Gets the row-level validity for a Table Column Mapping.
        *
        * @param tcm: table column mapping object.
@@ -544,38 +525,6 @@ angular.module('BE.seed.controller.mapping', [])
           },
           $scope.import_file  // progress bar obj
         );
-      };
-
-      /**
-       * monitor_typeahead_list: decide if duplicate checking is required in
-       * order to enable or disable map data button
-       */
-      $scope.monitor_typeahead_list = function () {
-        var dropdown = angular.element('.uib-dropdown-menu.ng-scope');
-
-        //if dropdown menu is not shown - i.e., the user has typed
-        //a new field name and a duplicate field is encountered in the
-        //header fields list do a dups check. otherwise disable the button
-        if ($scope.duplicates.length > 0) {
-          for (var i = 0; i < $scope.duplicates.length; i++) {
-            if ($scope.duplicates[i].is_duplicate) {
-              return true;
-            }
-          }
-        } else {
-          if (dropdown.length === 0 || dropdown.css('display') === 'none') {
-            var input_focus = $(document.activeElement);
-
-            $('.header-field').each(function () {
-
-              if (!$(this).is(input_focus) && $(this).val() === input_focus.val()) {
-                return $scope.duplicates_present();
-              }
-            });
-          } else {
-            return true;
-          }
-        }
       };
 
       /**

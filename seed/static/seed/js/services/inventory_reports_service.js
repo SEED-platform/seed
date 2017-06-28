@@ -41,21 +41,9 @@ angular.module('BE.seed.service.inventory_reports',
      */
       function get_report_data (xVar, yVar, start, end) {
 
-      // Error checks (should be able to collapse this...)
-        if (_.isNil(xVar)) {
-          $log.error('#inventory_reports_service.get_report_data(): null \'xVar\' parameter');
-          throw new Error('Invalid Parameter');
-        }
-        if (_.isNil(yVar)) {
-          $log.error('#inventory_reports_service.get_report_data(): null \'yVar\' parameter');
-          throw new Error('Invalid Parameter');
-        }
-        if (_.isNil(start)) {
-          $log.error('#inventory_reports_service.get_report_data(): null \'start\' parameter');
-          throw new Error('Invalid Parameter');
-        }
-        if (_.isNil(end)) {
-          $log.error('#inventory_reports_service.get_report_data(): null \'end\' parameter');
+        // Error checks
+        if (_.isNil(xVar) || _.isNil(yVar) || _.isNil(start) || _.isNil(end)) {
+          $log.error('#inventory_reports_service.get_report_data(): null parameter');
           throw new Error('Invalid Parameter');
         }
 
@@ -106,21 +94,9 @@ angular.module('BE.seed.service.inventory_reports',
  */
       function get_aggregated_report_data (xVar, yVar, start, end) {
 
-      // Error checks (should be able to collapse this...)
-        if (_.isNil(xVar)) {
-          $log.error('#inventory_reports_service.get_aggregated_report_data(): null \'xVar\' parameter');
-          throw new Error('Invalid Parameter');
-        }
-        if (_.isNil(yVar)) {
-          $log.error('#inventory_reports_service.get_aggregated_report_data(): null \'yVar\' parameter');
-          throw new Error('Invalid Parameter');
-        }
-        if (_.isNil(start)) {
-          $log.error('#inventory_reports_service.get_aggregated_report_data(): null \'start\' parameter');
-          throw new Error('Invalid Parameter');
-        }
-        if (_.isNil(end)) {
-          $log.error('#inventory_reports_service.get_aggregated_report_data(): null \'end\' parameter');
+        // Error checks
+        if (_.isNil(xVar) || _.isNil(yVar) || _.isNil(start) || _.isNil(end)) {
+          $log.error('#inventory_reports_service.get_aggregated_report_data(): null parameter');
           throw new Error('Invalid Parameter');
         }
 

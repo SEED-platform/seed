@@ -2,7 +2,7 @@
  * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
-// test Data Quality, Sharing, Reports, delete function and other misc items after data is loaded
+// test Data Quality, labels, delete function and other misc items after data is loaded
 var EC = protractor.ExpectedConditions;
 
 
@@ -56,8 +56,13 @@ describe('When I do miscellaneous things', function () {
     var rowCount = element.all(by.repeater('rule in ruleGroup'));
     expect(rowCount.count()).toBe(1);
 
+    $$('[ng-click="selectAll()"]').first().click();
+    browser.sleep(1000)
+    $$('[ng-click="selectAll()"]').first().click();
+    $$('[ng-model="rule.field"]').first().click();
+    $$('[label="Campus"]').first().click();
     $$('[ng-model="rule.data_type"]').first().click();
-    $('[label="Number"]').click();
+    $('[label="Year"]').click();
 
     $$('[ng-click="change_required(rule)"]').first().click();
 
@@ -80,9 +85,17 @@ describe('When I do miscellaneous things', function () {
 
     //create label but select not created one
     $$('[ng-click="create_label(rule, $index)"]').first().click();
+    $('[ng-click="cancel()"]').click();
+    $$('[ng-click="create_label(rule, $index)"]').first().click();
     expect($('.modal-title').isPresent()).toBe(true);
     $('#labelName').sendKeys('ruleLabel');
+    $('[name="newLabelForm"]').$('#btnSelectLabel').click();
+    $$('[ng-click="new_label.label = label.label; new_label.color = label.color"]').first().click();
     $$('.btn.btn-primary').first().click();
+    $('#labelName').sendKeys('ruleLabel');
+    $('#labelName').sendKeys('2');
+    $('[name="newLabelForm"]').$('#btnSelectLabel').click();
+    $$('[ng-click="new_label.label = label.label; new_label.color = label.color"]').get(1).click();
     $$('.btn-default.action_link').get(2).click();
 
     //check label was attached after save and refresh
@@ -143,6 +156,16 @@ describe('When I do miscellaneous things', function () {
   // Check data quality on inventory page
   it('should select first item and test data quality modal and presence of rows', function () {
     $('#sidebar-inventory').click();
+    $('[ng-change="update_cycle(cycle.selected_cycle)"]').element(by.cssContainingText('option', browser.params.testOrg.cycle)).click();
+
+    $$('.ui-grid-menu-button').first().click();
+    var myOptions = element.all(by.repeater('item in menuItems')).filter(function (elm) {
+      return elm.getText().then(function (label) {
+        // expect(label).toBe('fake');
+        return label == '  Clear all filters';
+      });
+    }).first();
+    myOptions.click();
 
     $$('[ng-click="toggleMenu($event)"]').first().click();
     $$('[ng-click="itemAction($event, title)"]').first().click();
@@ -174,9 +197,25 @@ describe('When I do miscellaneous things', function () {
     var rowCount3 = element.all(by.repeater('result in row.data_quality_results'));
 
     expect(rowCount3.count()).toBe(5);
+    $$('[ng-click="c.toggle_sort()"]').first().click();
+    browser.sleep(500);
+    $$('[ng-change="search.filter_search()"]').first().sendKeys('1234');
+    browser.sleep(500);
+    $$('[ng-change="search.filter_search()"]').first().clear();
+    browser.sleep(500);
+    $$('[ng-click="c.toggle_sort()"]').first().click();
+    browser.sleep(500);
+    $$('[ng-click="c.toggle_sort()"]').get(2).click();
+    browser.sleep(500);
+    $$('[ng-change="search.filter_search()"]').get(2).sendKeys('1234');
+    browser.sleep(500);
+    $$('[ng-change="search.filter_search()"]').get(2).clear();
+    browser.sleep(500);
+    $$('[ng-click="c.toggle_sort()"]').get(2).click().click();
+    browser.sleep(500);
     $$('[ng-click="close()"]').click();
 
-  });
+  }, 60000);
 
   it('should test labels were applied correctly', function () {
     var rows = $('.left.ui-grid-render-container-left.ui-grid-render-container')
@@ -200,17 +239,128 @@ describe('When I do miscellaneous things', function () {
 
   });
 
+
+  it('should test delete and export modals', function () {
+    //select rows and delete
+    $('#btnInventoryActions').click();
+    $('[ng-click="open_delete_modal()"]').click();
+    $$('[ng-click="cancel()"]').first().click();
+    $('#btnInventoryActions').click();
+    $('[ng-click="open_delete_modal()"]').click();
+    $('[ng-click="delete_inventory()"]').click();
+    $('[ng-click="close()"]').click();
+
+    $('#btnInventoryActions').click();
+    $('[ng-click="open_update_labels_modal()"]').click();
+    $$('[ng-click="cancel()"]').first().click();
+
+    // reselect rows and export
+    $$('[ng-click="selectButtonClick(row, $event)"]').first().click();
+    $$('[ng-click="selectButtonClick(row, $event)"]').get(1).click();
+    $('#btnInventoryActions').click();
+    $('[ng-click="open_export_modal()"]').click();
+    $$('[ng-click="cancel()"]').first().click();
+    $('#btnInventoryActions').click();
+    $('[ng-click="open_export_modal()"]').click();
+    $('#fileName').sendKeys('someFileName');
+    $('[ng-click="export_selected()"]').click();
+  });
+
+  it('should test pin and move', function () {
+    $('[ui-sref="inventory_list({inventory_type: \'properties\'})"]').click();
+    $$('.ui-grid-icon-angle-down').get(4).click();
+    $$('.ui-grid-icon-left-open').first().click();
+    $$('.ui-grid-icon-angle-down').get(4).click();
+    $$('.ui-grid-icon-left-open').first().click();
+
+    $$('.ui-grid-icon-angle-down').first().click();
+    var myOptions = element.all(by.repeater('item in menuItems')).filter(function (elm) {
+      return elm.getText().then(function (label) {
+        // expect(label).toBe('fake');
+        return label == '  Unpin';
+      });
+    }).first();
+    myOptions.click();
+    
+
+    $$('.ui-grid-icon-angle-down').first().click();
+    var myOptions = element.all(by.repeater('item in menuItems')).filter(function (elm) {
+      return elm.getText().then(function (label) {
+        // expect(label).toBe('fake');
+        return label == '  Hide Column';
+      });
+    }).first();
+    myOptions.click();
+  }, 45000);
+
+  it('should test export modals properties', function () {
+    // reselect rows and export
+    $$('[ng-click="selectButtonClick(row, $event)"]').first().click();
+    $$('[ng-click="selectButtonClick(row, $event)"]').get(1).click();
+    $('#btnInventoryActions').click();
+    $('[ng-click="open_export_modal()"]').click();
+    $$('[ng-click="cancel()"]').first().click();
+    $('#btnInventoryActions').click();
+    $('[ng-click="open_export_modal()"]').click();
+    $('#fileName').sendKeys('someFileName');
+    $('[ng-click="export_selected()"]').click();
+
+    //select rows and delete
+    $$('[ng-click="headerButtonClick($event)"]').first().click();
+    $('#btnInventoryActions').click();
+    $('[ng-click="open_delete_modal()"]').click();
+    $$('[ng-click="cancel()"]').first().click();
+    $('#btnInventoryActions').click();
+    $('[ng-click="open_delete_modal()"]').click();
+    $('[ng-click="delete_inventory()"]').click();
+    $('[ng-click="close()"]').click();
+  });
+
+  it('should test delete TL and properties', function () {
+    //select rows and delete
+    $$('[ng-if="grid.options.enableSelectAll"]').first().click();
+    $('#btnInventoryActions').click();
+    $('[ng-click="open_delete_modal()"]').click();
+    $$('[ng-click="cancel()"]').first().click();
+    $('#btnInventoryActions').click();
+    $('[ng-click="open_delete_modal()"]').click();
+    $('[ng-click="delete_inventory()"]').click();
+    $('[ng-click="close()"]').click();
+    
+    // taxlots
+    $('[ui-sref="inventory_list({inventory_type: \'taxlots\'})"]').click();
+    $$('[ng-if="grid.options.enableSelectAll"]').first().click();
+    $('#btnInventoryActions').click();
+    $('[ng-click="open_delete_modal()"]').click();
+    $$('[ng-click="cancel()"]').first().click();
+    $('#btnInventoryActions').click();
+    $('[ng-click="open_delete_modal()"]').click();
+    $('[ng-click="delete_inventory()"]').click();
+    $('[ng-click="close()"]').click();
+  }, 45000);
+
   //Delete
-  it('should delete data stuffs', function () {
+  it('should check edit and delete stuff for files', function () {
     browser.get('/app/#/data');
     $$('[ui-sref="dataset_detail({dataset_id: d.id})"]').first().click();
-    $$('.delete_link').get(1).click();
-    $$('[ng-click="delete_file()"]').click();
     var rows = element.all(by.repeater('f in dataset.importfiles'));
+    //click and cancel
+    $$('.delete_link').get(1).click();
+    $$('[ng-click="cancel()"]').first().click();
+    expect(rows.count()).toBe(2);
+    //click and delete
+    $$('.delete_link').get(1).click();
+    $$('[ng-click="delete_file()"]').first().click();
     expect(rows.count()).toBe(1);
-    $$('[ui-sref="dataset_list"]').first().click();
+    //open upload modal
+    $$('[ng-click="open_data_upload_modal()"]').get(1).click();
+    $('[ng-click="cancel()"].btn-default').click();
 
-    $('[ng-click="open_data_upload_modal(d)"]').click();
+    $$('[ui-sref="dataset_list"]').first().click();
+  });
+
+  it('should check edit and delete stuff for datasets', function () {
+    $$('[ng-click="open_data_upload_modal()"]').get(1).click();
     $('[ng-click="cancel()"].btn-default').click();
     browser.sleep(1000);
     $('[ng-click="edit_dataset_name(d)"]').click();

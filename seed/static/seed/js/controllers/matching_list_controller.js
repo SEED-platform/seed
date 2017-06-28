@@ -87,43 +87,43 @@ angular.module('BE.seed.controller.matching_list', [])
         }
       });
 
-      /* Handle 'update filters' button click */
-      $scope.do_update_filters = function () {
-        $scope.current_page = 1;
-        $scope.filter_search();
-      };
+      // /* Handle 'update filters' button click */
+      // $scope.do_update_filters = function () {
+      //   $scope.current_page = 1;
+      //   $scope.filter_search();
+      // };
 
-      /* Handle 'Enter' key on filter fields */
-      $scope.on_filter_enter_key = function () {
-        $scope.current_page = 1;
-        $scope.filter_search();
-      };
+      // /* Handle 'Enter' key on filter fields */
+      // $scope.on_filter_enter_key = function () {
+      //   $scope.current_page = 1;
+      //   $scope.filter_search();
+      // };
 
-      $scope.filter_search = function () {
-        $scope.update_number_matched();
-        inventory_service.search_matching_inventory($scope.file_select.file.id)
-          .then(function (data) {
-            // safe-guard against future init() calls
-            inventory_payload = data;
-
-            if ($scope.inventory_type === 'properties') {
-              $scope.inventory = data.properties;
-              $scope.num_pages = Math.ceil(data.number_properties_matching_search / $scope.number_per_page);
-            } else {
-              $scope.inventory = data.tax_lots;
-              $scope.num_pages = Math.ceil(data.number_tax_lots_matching_search / $scope.number_per_page);
-            }
-            $scope.number_properties_matching_search = data.number_properties_matching_search;
-            $scope.number_tax_lots_matching_search = data.number_tax_lots_matching_search;
-            $scope.number_properties_returned = data.number_properties_returned;
-            $scope.number_tax_lots_returned = data.number_tax_lots_returned;
-            update_start_end_paging();
-          })
-          .catch(function (data, status) {
-            $log.log({data: data, status: status});
-            $scope.alerts.push({type: 'danger', msg: 'Error searching'});
-          });
-      };
+      // $scope.filter_search = function () {
+      //   $scope.update_number_matched();
+      //   inventory_service.search_matching_inventory($scope.file_select.file.id)
+      //     .then(function (data) {
+      //       // safe-guard against future init() calls
+      //       inventory_payload = data;
+      //
+      //       if ($scope.inventory_type === 'properties') {
+      //         $scope.inventory = data.properties;
+      //         $scope.num_pages = Math.ceil(data.number_properties_matching_search / $scope.number_per_page);
+      //       } else {
+      //         $scope.inventory = data.tax_lots;
+      //         $scope.num_pages = Math.ceil(data.number_tax_lots_matching_search / $scope.number_per_page);
+      //       }
+      //       $scope.number_properties_matching_search = data.number_properties_matching_search;
+      //       $scope.number_tax_lots_matching_search = data.number_tax_lots_matching_search;
+      //       $scope.number_properties_returned = data.number_properties_returned;
+      //       $scope.number_tax_lots_returned = data.number_tax_lots_returned;
+      //       update_start_end_paging();
+      //     })
+      //     .catch(function (data, status) {
+      //       $log.log({data: data, status: status});
+      //       $scope.alerts.push({type: 'danger', msg: 'Error searching'});
+      //     });
+      // };
 
 
       $scope.closeAlert = function (index) {
@@ -139,10 +139,10 @@ angular.module('BE.seed.controller.matching_list', [])
       /**
        * Pagination code
        */
-      $scope.pagination.update_number_per_page = function () {
-        $scope.number_per_page = $scope.pagination.number_per_page_options_model;
-        $scope.filter_search();
-      };
+      // $scope.pagination.update_number_per_page = function () {
+      //   $scope.number_per_page = $scope.pagination.number_per_page_options_model;
+      //   $scope.filter_search();
+      // };
       var update_start_end_paging = function () {
         if ($scope.current_page === $scope.num_pages) {
           if ($scope.inventory_type === 'properties') {
@@ -160,43 +160,43 @@ angular.module('BE.seed.controller.matching_list', [])
        * first_page: triggered when the `first` paging button is clicked, it
        *   sets the results to the first page and shows that page
        */
-      $scope.pagination.first_page = function () {
-        $scope.current_page = 1;
-        $scope.filter_search();
-      };
+      // $scope.pagination.first_page = function () {
+      //   $scope.current_page = 1;
+      //   $scope.filter_search();
+      // };
 
-      /**
-       * last_page: triggered when the `last` paging button is clicked, it
-       *   sets the results to the last page and shows that page
-       */
-      $scope.pagination.last_page = function () {
-        $scope.current_page = $scope.num_pages;
-        $scope.filter_search();
-      };
+      // /**
+      //  * last_page: triggered when the `last` paging button is clicked, it
+      //  *   sets the results to the last page and shows that page
+      //  */
+      // $scope.pagination.last_page = function () {
+      //   $scope.current_page = $scope.num_pages;
+      //   $scope.filter_search();
+      // };
 
-      /**
-       * next_page: triggered when the `next` paging button is clicked, it
-       *   increments the page of the results, and fetches that page
-       */
-      $scope.pagination.next_page = function () {
-        $scope.current_page += 1;
-        if ($scope.current_page > $scope.num_pages) {
-          $scope.current_page = $scope.num_pages;
-        }
-        $scope.filter_search();
-      };
+      // /**
+      //  * next_page: triggered when the `next` paging button is clicked, it
+      //  *   increments the page of the results, and fetches that page
+      //  */
+      // $scope.pagination.next_page = function () {
+      //   $scope.current_page += 1;
+      //   if ($scope.current_page > $scope.num_pages) {
+      //     $scope.current_page = $scope.num_pages;
+      //   }
+      //   $scope.filter_search();
+      // };
 
-      /**
-       * prev_page: triggered when the `previous` paging button is clicked, it
-       *   decrements the page of the results, and fetches that page
-       */
-      $scope.pagination.prev_page = function () {
-        $scope.current_page -= 1;
-        if ($scope.current_page < 1) {
-          $scope.current_page = 1;
-        }
-        $scope.filter_search();
-      };
+      // /**
+      //  * prev_page: triggered when the `previous` paging button is clicked, it
+      //  *   decrements the page of the results, and fetches that page
+      //  */
+      // $scope.pagination.prev_page = function () {
+      //   $scope.current_page -= 1;
+      //   if ($scope.current_page < 1) {
+      //     $scope.current_page = 1;
+      //   }
+      //   $scope.filter_search();
+      // };
       /**
        * end pagination code
        */

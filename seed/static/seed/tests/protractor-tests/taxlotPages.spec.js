@@ -13,6 +13,7 @@ describe('When I go to the taxlot page', function () {
 
   it('should change to our test cycle', function () {
     browser.get('/app/#/taxlots');
+    $('[ng-change="update_cycle(cycle.selected_cycle)"]').element(by.cssContainingText('option', "Default 2016 Calendar Year")).click();
     $('[ng-change="update_cycle(cycle.selected_cycle)"]').element(by.cssContainingText('option', browser.params.testOrg.cycle)).click();
 
     var rows = $('.left.ui-grid-render-container-left.ui-grid-render-container')
@@ -74,6 +75,25 @@ describe('When I go to the taxlot page', function () {
     expect(labels.count()).toBeLessThan(1);
   });
 
+  it('should go to settings in info pages', function () {
+    $('#settings').click();
+    $('[ng-if="grid.options.enableSelectAll"]').click().click();
+    $$('[ng-class="{\'ui-grid-row-selected\': row.isSelected}"]').first().click();
+    $('#item_title').click();
+    var rows = element.all(by.repeater('field in columns'));
+    expect(rows.count()).toBe(1);
+  });
+
+  it('should go to settings reset', function () {
+    $('#settings').click();
+    $$('.ui-grid-menu-button').first().click();
+    $$('[ng-click="itemAction($event, title)"]').first().click();
+    $('#item_title').click();
+    var rows = element.all(by.repeater('field in columns'));
+    expect(rows.count()).not.toBeLessThan(2);
+  });
+
+
   it('should go to info pages and add remove label', function () {
     // add label
     $('[ng-click="open_update_labels_modal(inventory.id, inventory_type)"]').click();
@@ -116,6 +136,16 @@ describe('When I go to the taxlot page', function () {
     $('#inventory-list').click();
     var cols = $('.ui-grid-render-container.ui-grid-render-container-body').all(by.repeater('col in colContainer.renderedColumns'));
     expect(cols.count()).toBe(1);
-  });
+    $('#list-settings').click();
+    $('[ng-click="toggleMenu()"]').click();
+    $$('[ng-click="itemAction($event, title)"]').get(1).click();
+    $('[ng-click="toggleMenu()"]').click();
+    $$('[ng-click="itemAction($event, title)"]').first().click();
+    $('[ng-change="saveShowSharedBuildings()"]').click();
+    $('#inventory-list').click();
+    var cols = $('.ui-grid-render-container.ui-grid-render-container-body').all(by.repeater('col in colContainer.renderedColumns'));
+    expect(cols.count()).not.toBeLessThan(2);
+    browser.driver.navigate().refresh();
+  }, 45000);
 });
 

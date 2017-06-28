@@ -5,7 +5,7 @@
 // check inventory pages after import and delete test dataset
 var EC = protractor.ExpectedConditions;
 // Check inventory Page:
-describe('When I go to the inventory page', function () {
+describe('When I go to the prop page', function () {
 
   // manually
   it('should reset sync', function () {
@@ -46,6 +46,7 @@ describe('When I go to the inventory page', function () {
     expect(rows.count()).not.toBeLessThan(1);
 
     //clear by clicking the 'x' -> child of sibling of text input
+    $$('[ng-model="colFilter.term"]').first().sendKeys('1');
     $$('[ng-model="colFilter.term"]').first().element(by.xpath('..')).$('[ui-grid-one-bind-aria-label="aria.removeFilter"]').click();
     expect($$('[ng-model="colFilter.term"]').first().getAttribute('value')).toEqual('');
     $$('[ng-model="colFilter.term"]').first().sendKeys('this is something long and fake to get nothing to filter');
@@ -89,10 +90,20 @@ describe('When I go to the inventory page', function () {
     expect(rows.count()).toBe(1);
   });
 
+  it('should go to settings reset', function () {
+    $('#settings').click();
+    $$('.ui-grid-menu-button').first().click();
+    $$('[ng-click="itemAction($event, title)"]').first().click();
+    $('#item_title').click();
+    var rows = element.all(by.repeater('field in columns'));
+    expect(rows.count()).not.toBeLessThan(2);
+  });
 
   it('should go to labels', function () {
 
     // add label
+    $('[ng-click="open_update_labels_modal(inventory.id, inventory_type)"]').click();
+    $('[ng-click="cancel()"]').click();
     $('[ng-click="open_update_labels_modal(inventory.id, inventory_type)"]').click();
     $('.modal-title').getText().then(function (label) {
       expect(label).toContain('Labels');
@@ -133,6 +144,15 @@ describe('When I go to the inventory page', function () {
     $('#inventory-list').click();
     var cols = $('.ui-grid-render-container.ui-grid-render-container-body').all(by.repeater('col in colContainer.renderedColumns'));
     expect(cols.count()).toBe(1);
+    $('#list-settings').click();
+    $('[ng-click="toggleMenu()"]').click();
+    $$('[ng-click="itemAction($event, title)"]').get(1).click();
+    $('[ng-click="toggleMenu()"]').click();
+    $$('[ng-click="itemAction($event, title)"]').first().click();
+    $('[ng-change="saveShowSharedBuildings()"]').click();
+    $('#inventory-list').click();
+    var cols = $('.ui-grid-render-container.ui-grid-render-container-body').all(by.repeater('col in colContainer.renderedColumns'));
+    expect(cols.count()).not.toBeLessThan(2);
   });
 
   it('should export', function () {
@@ -161,5 +181,28 @@ describe('When I go to the inventory page', function () {
     browser.wait(EC.presenceOf($('.dimple-series-0')), 10000);
     expect($('.fa.fa-square').isPresent()).toBe(true);
     expect($('.fa.fa-circle').isPresent()).toBe(true);
+
+    browser.manage().window().setSize(600, 600);
+    $('#xAxisSelector').$('.btn-group.dropdown').$('.btn.btn-default.dropdown-toggle').click();
+    $$('[ng-bind="item.name"]').first().click();
+    $('.btn.btn-primary').click();
+
+    $('#xAxisSelector').$('.btn-group.dropdown').$('.btn.btn-default.dropdown-toggle').click();
+    $$('[ng-bind="item.name"]').get(1).click();
+    $('.btn.btn-primary').click();
+
+    $('#xAxisSelector').$('.btn-group.dropdown').$('.btn.btn-default.dropdown-toggle').click();
+    $$('[ng-bind="item.name"]').get(2).click();
+    $('.btn.btn-primary').click();
+
+    $('#xAxisSelector').$('.btn-group.dropdown').$('.btn.btn-default.dropdown-toggle').click();
+    $$('[ng-bind="item.name"]').get(3).click();
+    $('.btn.btn-primary').click();
+
+    browser.driver.manage().window().maximize();
+    $('#yAxisSelector').$('.btn-group.dropdown').$('.btn.btn-default.dropdown-toggle').click();
+    $('#yAxisSelector').$('.btn-group.dropdown').$('.dropdown-menu').all(by.css('[ng-bind="item.name"]')).get(1).click();
+    $('.btn.btn-primary').click();
+
   });
 });

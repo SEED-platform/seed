@@ -27,6 +27,8 @@ describe('When I visit the login page', function () {
   });
 
   it('should see title', function () {
+    $$('.fa.fa-cloud-upload').first().click();
+    $('[ng-click="cancel()"]').click();
     browser.get('/app/#/about');
     expect(browser.getTitle()).toContain('SEED Platform');
   });

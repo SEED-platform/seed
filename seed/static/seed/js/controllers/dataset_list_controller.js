@@ -9,8 +9,7 @@ angular.module('BE.seed.controller.dataset', [])
     '$uibModal',
     'urls',
     'dataset_service',
-    '$state',
-    function ($scope, datasets_payload, $uibModal, urls, dataset_service, $state) {
+    function ($scope, datasets_payload, $uibModal, urls, dataset_service) {
       $scope.datasets = datasets_payload.datasets;
       $scope.columns = [{
         title: 'Data Set Name'
@@ -95,34 +94,6 @@ angular.module('BE.seed.controller.dataset', [])
         dataset_service.update_dataset(dataset).then(function () {
           init();
         });
-      };
-
-      /**
-       * goto_mapping: changes browser location to the first assessed file
-       *   mapping page
-       */
-      $scope.goto_mapping = function (dataset) {
-        for (var i = 0; i < dataset.importfiles.length; i++) {
-          var importfile = dataset.importfiles[i];
-          if (importfile.source_type === 'Assessed Raw') {
-            $state.go('mapping', {importfile_id: importfile.id});
-            break;
-          }
-        }
-      };
-
-      /**
-       * goto_mapping: changes browser location to the first portfolio file
-       *   matching page
-       */
-      $scope.goto_matching = function (dataset) {
-        for (var i = 0; i < dataset.importfiles.length; i++) {
-          var importfile = dataset.importfiles[i];
-          if (importfile.source_type === 'Portfolio Raw') {
-            $state.go('matching_list', {importfile_id: importfile.id, inventory_type: 'properties'});
-            break;
-          }
-        }
       };
 
       /**

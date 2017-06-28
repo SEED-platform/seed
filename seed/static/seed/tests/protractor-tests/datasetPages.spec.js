@@ -144,14 +144,19 @@ describe('When I visit the data set page', function () {
   });
 
   it('should have more than one mapped value and change all to taxlot', function () {
-    // $('[ng-change="setAllInventoryTypes()"]').element(by.cssContainingText('option', 'Tax Lot')).click();
+    $('[ng-change="setAllInventoryTypes()"]').element(by.cssContainingText('option', 'Property')).click();
     var cusRow = element.all(by.repeater('tcm in valids')).filter(function (rows) {
       expect(rows.length).not.toBeLessThan(1);
       return rows.$('[ng-model="tcm.suggestion_table_name"]').getText().then(function (label) {
-        // expect(label).toEqual('Tax Lot');
+        expect(label).toEqual('Property');
         return;
       });
     });
+    $$('[ng-change="updateInventoryTypeDropdown(); change(tcm)"]').first().element(by.cssContainingText('option', 'Tax Lot')).click();
+    $('#mapped-row-input-box-0').clear();
+    $('#mapped-row-input-box-0').sendKeys('Address Line 1');
+    $('#mapped-row-input-box-0').clear();
+    $('#mapped-row-input-box-0').sendKeys('Jurisdiction Tax Lot Id');
     $$('[ng-click="remap_buildings()"]').first().click();
   });
 

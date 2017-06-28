@@ -49,10 +49,6 @@ angular.module('BE.seed.controller.data_quality_labels_modal', [])
         label_service.create_label($scope.new_label).then(function (data) {
           var createdLabel = data;
 
-          //Assume that user wants to apply a label they just created
-          //in this modal...
-          createdLabel.is_checked_add = true;
-
           $scope.newLabelForm.$setPristine();
           $scope.labels.unshift(createdLabel);
           $scope.initialize_new_label();
@@ -68,30 +64,8 @@ angular.module('BE.seed.controller.data_quality_labels_modal', [])
 
       /* Toggle the add button for a label */
       $scope.toggle_add = function (label) {
-        // if (label.is_checked_remove && label.is_checked_add) {
-        //   label.is_checked_remove = false;
-        // }
         // console.log(label)
         $uibModalInstance.close(label);
-      };
-
-      /* Toggle the remove button for a label */
-      $scope.toggle_remove = function (label) {
-        if (label.is_checked_remove && label.is_checked_add) {
-          label.is_checked_add = false;
-        }
-      };
-
-      $scope.modified = function () {
-        return Boolean(_.filter($scope.labels, 'is_checked_add').length || _.filter($scope.labels, 'is_checked_remove').length);
-      };
-
-      /* User has indicated 'Done' so perform selected label operations */
-      $scope.done = function () {
-
-        var addLabelIDs = _.chain($scope.labels).filter('is_checked_add').map('id').value().sort();
-        // var removeLabelIDs = _.chain($scope.labels).filter('is_checked_remove').map('id').value().sort();
-        $uibModalInstance.close(addLabelIDs);
       };
 
       /* User has cancelled dialog */

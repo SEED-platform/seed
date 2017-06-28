@@ -36,19 +36,6 @@ angular.module('BE.seed.controller.organization_sharing', []).controller('organi
     });
 
     /**
-     * infinite paging
-     */
-    $scope.add_more_fields = function () {
-      var last_index = $scope.infinite_fields.length;
-      var fields = $filter('filter')($scope.fields, $scope.filter_params);
-      for (var i = 0; i < 20 && (last_index + i) < fields.length; i++) {
-        var field = angular.copy(fields[i + last_index]);
-        field.checked = $scope.controls.select_all;
-        $scope.infinite_fields.push(field);
-      }
-    };
-
-    /**
      * updates all the fields checkboxes to match the ``select_all`` checkbox
      */
     $scope.select_all_clicked = function (type) {

@@ -229,4 +229,19 @@ describe('Controller: matching_detail_controller', function () {
     }]);
   });
 
+  it('should exercise the inventory_service', function () {
+    // arrange
+    create_dataset_detail_controller();
+    expect( function(){ mock_inventory_services.get_property(null, null); } ).toThrow(new Error("Invalid Parameter"));
+    expect( function(){ mock_inventory_services.get_property(0, null); } ).toThrow(new Error("Invalid Parameter"));
+    expect( function(){ mock_inventory_services.update_property(null, null, null); } ).toThrow(new Error("Invalid Parameter"));
+    expect( function(){ mock_inventory_services.update_property(0, null, null); } ).toThrow(new Error("Invalid Parameter"));
+    expect( function(){ mock_inventory_services.update_property(0, 0, null); } ).toThrow(new Error("Invalid Parameter"));
+    expect( function(){ mock_inventory_services.get_taxlot(null, null); } ).toThrow(new Error("Invalid Parameter"));
+    expect( function(){ mock_inventory_services.get_taxlot(0, null); } ).toThrow(new Error("Invalid Parameter"));
+    expect( function(){ mock_inventory_services.update_taxlot(null, null, null); } ).toThrow(new Error("Invalid Parameter"));
+    expect( function(){ mock_inventory_services.update_taxlot(0, null, null); } ).toThrow(new Error("Invalid Parameter"));
+    expect( function(){ mock_inventory_services.update_taxlot(0, 0, null); } ).toThrow(new Error("Invalid Parameter"));
+  });
+
 });
