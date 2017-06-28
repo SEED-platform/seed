@@ -1,6 +1,6 @@
 <div id="update-property-labels-modal">
     <div class="modal-header">
-        <h4 class="modal-title" id="manageLabelsModalLabel">Add/Remove Labels</h4>
+        <h4 class="modal-title" id="manageLabelsModalLabel">Add Label</h4>
     </div>
     <div class="modal-body">
         <div class="newLabelInput" style="margin-top:0px;">
@@ -10,7 +10,7 @@
                     <div class="input-group" style="padding-right:20px;">
                         <input id="labelName" type="text" name="name" class="form-control" ng-model="new_label.name" placeholder="Label Name" sd-check-label-exists="labels" required>
                         <div uib-dropdown class="input-group-btn">
-                            <button id="btnSelectLabel" type="button" class="btn btn-{$ new_label.label $}" uib-dropdown-toggle data-toggle="dropdown">
+                            <button id="btnSelectLabel" type="button" class="btn btn-{$ new_label.label $}" data-toggle="dropdown">
                                 {$ new_label.color $} <span class="caret"></span>
                             </button>
                             <ul uib-dropdown-menu class="dropdown-menu pull-right" aria-labelledby="btnSelectLabel" role="menu">
@@ -32,8 +32,6 @@
             </form>
         </div>
 
-<!--         <div class="edit_text">Add or remove labels from {$ number_matching_search $} selected {$ inventory_ids.length == 1 ? (inventory_type == 'properties' ? 'property' : 'tax lot') : (inventory_type == 'properties' ? inventory_type : 'tax lots') $}</div> -->
-
         <div class="table-list-container">
 
             <div class="labels-status-msg" ng-show="loading || !labels.length">
@@ -51,23 +49,13 @@
                         <span class="label label-{$ label.label $}">{$ label.name $}</span>
                     </td>
                     <td align="right">
-                            <button type="button" class="btn btn-sm btn-default action_link" ng-class="{'btn-primary':label.is_checked_add}" ng-click="toggle_add(label)">Add</button>
-<!--                         <button type="button" uib-btn-checkbox ng-model="label.is_checked_remove" ng-show="label.is_applied.length" btn-checkbox-true="true" btn-checkbox-false="false"
-                                class="btn btn-sm btn-default action_link" ng-class="{'btn-danger':label.is_checked_remove}"
-                                ng-click="toggle_remove(label)">Remove</button> -->
-<!--                         <button type="button" uib-btn-checkbox ng-model="label.is_checked_add" btn-checkbox-true="true" btn-checkbox-false="false"
-                                class="btn btn-sm btn-default action_link" ng-class="{'btn-primary':label.is_checked_add}"
-                                ng-disabled="inventory_ids.length == 1 && label.is_applied.length" ng-click="toggle_add(label)">Add</button> -->
+                        <button type="button" class="btn btn-sm btn-default action_link" ng-click="toggle_add(label)">Add</button>
                     </td>
                 </tr>
             </table>
         </div>
-<!--         <div ng-show="labels.length">
-            <p class="tip-subtle">A 'Remove' button is shown for tags that are already applied to one or more properties in the current selection</p>
-        </div> -->
     </div>
     <div class="modal-footer">
-        <!-- <button type="button" class="btn btn-primary" style="min-width:90px;" ng-disabled="!modified()" ng-click="done()">Done</button> -->
         <button type="button" class="btn btn-default" style="min-width:90px;" ng-click="cancel()">Cancel</button>
     </div>
 </div>

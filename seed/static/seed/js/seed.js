@@ -40,7 +40,6 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.data_quality_labels_modal',
   'BE.seed.controller.cycle_admin',
   'BE.seed.controller.concat_modal',
-  'BE.seed.controller.create_note_modal',
   'BE.seed.controller.create_sub_organization_modal',
   'BE.seed.controller.data_upload_modal',
   'BE.seed.controller.dataset',
@@ -50,9 +49,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.delete_modal',
   'BE.seed.controller.developer',
   'BE.seed.controller.edit_project_modal',
-  'BE.seed.controller.existing_members_modal',
   'BE.seed.controller.export_inventory_modal',
-  'BE.seed.controller.export_modal',
   'BE.seed.controller.inventory_detail',
   'BE.seed.controller.inventory_detail_settings',
   'BE.seed.controller.inventory_list',
@@ -84,7 +81,6 @@ angular.module('BE.seed.filters', [
   'typedNumber'
 ]);
 angular.module('BE.seed.directives', [
-  'sdBasicBuildingInfoChart',
   'sdBasicPropertyInfoChart',
   'sdCheckCycleExists',
   'sdCheckLabelExists',
@@ -95,13 +91,11 @@ angular.module('BE.seed.directives', [
   'sdUploader'
 ]);
 angular.module('BE.seed.services', [
-  'BE.seed.service.audit',
   'BE.seed.service.auth',
   'BE.seed.service.data_quality',
   'BE.seed.service.column_mappings',
   'BE.seed.service.cycle',
   'BE.seed.service.dataset',
-  'BE.seed.service.export',
   'BE.seed.service.httpParamSerializerSeed',
   'BE.seed.service.inventory',
   'BE.seed.service.inventory_reports',

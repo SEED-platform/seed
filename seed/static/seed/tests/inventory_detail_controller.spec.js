@@ -8,7 +8,8 @@ describe('controller: inventory_detail_controller', function () {
   // globals set up and used in each test scenario
   var mockService, scope, controller, ngFilter, delete_called;
   var inventory_detail_controller, inventory_detail_controller_scope, modalInstance;
-  var mock_building_services, mock_project_service, mock_building, mock_default_columns;
+  var mock_building_services, mock_building, mock_default_columns;
+  var mock_project_service;
 
   beforeEach(function () {
     module('BE.seed');
@@ -45,19 +46,19 @@ describe('controller: inventory_detail_controller', function () {
       // mock the inventory_service factory methods used in the controller
       // and return their promises
       mock_building_services = inventory_service;
-      mock_project_service = project_service;
+      // mock_project_service = project_service;
 
-      spyOn(mock_project_service, 'get_project')
-        .andCallFake(function (project_slug) {
-          return $q.when({
-            status: 'success',
-            project: {
-              id: 33,
-              name: 'test project',
-              slug: project_slug
-            }
-          });
-        });
+      // spyOn(mock_project_service, 'get_project')
+      //   .andCallFake(function (project_slug) {
+      //     return $q.when({
+      //       status: 'success',
+      //       project: {
+      //         id: 33,
+      //         name: 'test project',
+      //         slug: project_slug
+      //       }
+      //     });
+      //   });
       spyOn(mock_building_services, 'update_property')
         .andCallFake(function (property_id, cycle_id, state) {
           mock_building = state;

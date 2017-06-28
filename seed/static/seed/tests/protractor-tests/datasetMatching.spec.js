@@ -12,23 +12,33 @@ describe('When I go to the matching page', function () {
     browser.ignoreSynchronization = false;
   });
 
-  it('should delete a single file', function () {
-    browser.get('/app/#/data');
-    $$('[ui-sref="dataset_detail({dataset_id: d.id})"]').first().click();
-    var rows = element.all(by.repeater('f in dataset.importfiles'));
-    expect(rows.count()).toBe(2);
-  });
-
   //Matching
   it('should go to matching and have rows', function () {
+    browser.get('/app/#/data');
+    $$('[ui-sref="dataset_detail({dataset_id: d.id})"]').first().click();
     $$('#data-matching-0').first().click();
+    
     expect($('.page_title').getText()).toContain('Data Matching');
     expect($('.table_footer').getText()).toContain('4 unmatched');
     element(by.cssContainingText('#selected-cycle', browser.params.testOrg.cycle)).click();
+    $$('[ng-click="order_by_field(col.extraData, col.name)"]').first().click().click();
     $('#showHideFilterSelect').element(by.cssContainingText('option', 'Show Matched')).click();
     var rows = element.all(by.repeater('i in inventory'));
     expect(rows.count()).not.toBeLessThan(1);
   });
+
+  it('should rematch stuffs', function () {
+    $$('[ui-sref="matching_detail({importfile_id: import_file.id, inventory_type: inventory_type, state_id: i.id})"]').first().click();
+    rows = element.all(by.repeater('state in available_matches'));
+    expect(rows.count()).not.toBeLessThan(1);
+    $$('[ng-change="checkbox_match(state)"]').first().click();
+    $$('[ng-click="cancel()"]').first().click();
+    $$('[ng-change="checkbox_match(state)"]').first().click();
+    $('[ng-click="close()"]').click();
+    browser.wait(EC.presenceOf($('.message')), 15000);
+    $('[ui-sref="matching_list({importfile_id: import_file.id, inventory_type: inventory_type})"]').click();
+  });
+
 
   it('should unmatch stuffs', function () {
     $$('[ui-sref="matching_detail({importfile_id: import_file.id, inventory_type: inventory_type, state_id: i.id})"]').first().click();

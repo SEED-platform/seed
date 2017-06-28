@@ -82,9 +82,10 @@ angular.module('BE.seed.controller.menu', [])
         $scope.menu.route_load_error = true;
         $scope.menu.error_message = data.message;
       });
-      $scope.$on('project_created', function () {
-        init();
-      });
+      //commented out 6.15.17 dbressan code cov
+      // $scope.$on('project_created', function () {
+      //   init();
+      // });
       $scope.$on('show_saving', function () {
         $scope.saving_indicator = true;
         start_saving_indicator('. . .   ', '');
@@ -157,28 +158,29 @@ angular.module('BE.seed.controller.menu', [])
         }
       };
 
-      $scope.open_create_project_modal = function () {
-        var modalInstance = $uibModal.open({
-          templateUrl: urls.static_url + 'seed/partials/edit_project_modal.html',
-          controller: 'edit_project_modal_controller',
-          resolve: {
-            project: function () {
-              return $scope.menu.project;
-            },
-            create_project: _.constant(true)
-          }
-        });
-
-        modalInstance.result.then(
-          function (project) {
-            $log.info(project);
-            init();
-            $scope.$broadcast('projects_updated');
-          }, function (message) {
-          $log.info(message);
-          $log.info('Modal dismissed at: ' + new Date());
-        });
-      };
+      //commented out 6.15.17 dbressan code cov
+      // $scope.open_create_project_modal = function () {
+      //   var modalInstance = $uibModal.open({
+      //     templateUrl: urls.static_url + 'seed/partials/edit_project_modal.html',
+      //     controller: 'edit_project_modal_controller',
+      //     resolve: {
+      //       project: function () {
+      //         return $scope.menu.project;
+      //       },
+      //       create_project: _.constant(true)
+      //     }
+      //   });
+      //
+      //   modalInstance.result.then(
+      //     function (project) {
+      //       $log.info(project);
+      //       init();
+      //       $scope.$broadcast('projects_updated');
+      //     }, function (message) {
+      //     $log.info(message);
+      //     $log.info('Modal dismissed at: ' + new Date());
+      //   });
+      // };
 
       /**
        * open_data_upload_modal: opens the data upload modal, passes in the

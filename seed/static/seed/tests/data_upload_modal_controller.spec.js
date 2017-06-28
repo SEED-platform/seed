@@ -71,6 +71,15 @@ describe('controller: data_upload_modal_controller', function () {
             progress: '25.0'
           });
         });
+      spyOn(mock_uploader_service, 'check_progress_loop')
+        .andCallFake(function (progress, num, num2, cb) {
+          // return $q.reject for error scenario
+          cb();
+          return $q.when({
+            status: 'success',
+            progress: '100.0'
+          });
+        });
       spyOn(mock_uploader_service, 'create_dataset')
         .andCallFake(function (dataset_name) {
           // return $q.reject for error scenario
@@ -94,7 +103,8 @@ describe('controller: data_upload_modal_controller', function () {
           if (dataset_name !== 'fail') {
             return $q.when({
               status: 'success',
-              file_id: 3
+              file_id: 3,
+              progress_key: ':1:SEED:save_raw_data:PROG:51'
             });
           } else {
             return $q.reject({
@@ -120,7 +130,7 @@ describe('controller: data_upload_modal_controller', function () {
         .andCallFake(function (file_id) {
           // return $q.reject for error scenario
           return $q.when({
-            status: 'success',
+            status: 'warning',
             file_id: 3
           });
         });
@@ -349,16 +359,37 @@ describe('controller: data_upload_modal_controller', function () {
     create_data_upload_modal_controller();
     var message, filename;
     message = 'upload_complete';
-    filename = 'file1.csv';
+    file = {
+      filename: 'file1.csv',
+      file_id: 1234,
+      cycle_id: "myCycle",
+    }
     data_upload_controller_scope.step.number = 4;
 
     // act
-    data_upload_controller_scope.uploaderfunc(message, filename);
+    data_upload_controller_scope.uploaderfunc(message, file);
     data_upload_controller_scope.$digest();
 
     // assertions
+    expect(mock_uploader_service.save_raw_data).toHaveBeenCalledWith(1234, "myCycle")
+    expect(mock_uploader_service.check_progress_loop).toHaveBeenCalled();
+    expect(mock_mapping_service.start_mapping).toHaveBeenCalledWith(1234);
+    expect(mock_matching_service.start_system_matching).toHaveBeenCalledWith(1234);
     expect(data_upload_controller_scope.uploader.status_message)
-      .toBe('saving energy data');
+      .toBe('auto-matching energy data');
+  });
+
+  it('should test find matches', function () {
+    // arrange
+    create_data_upload_modal_controller();
+    data_upload_controller_scope.dataset.import_file_id = 1234;
+
+    // act
+    data_upload_controller_scope.find_matches();
+    data_upload_controller_scope.$digest();
+
+    // assertions
+    expect(mock_matching_service.start_system_matching).toHaveBeenCalledWith(1234);
   });
 
   it('should take an dataset payload', function () {

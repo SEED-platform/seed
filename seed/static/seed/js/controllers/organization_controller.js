@@ -30,12 +30,6 @@ angular.module('BE.seed.controller.organization', [])
         controller: 'new_member_modal_controller'
       });
     };
-    $scope.existing_members_modal = function () {
-      $uibModal.open({
-        templateUrl: urls.static_url + 'seed/partials/existing_members_modal.html',
-        controller: 'existing_members_modal_controller'
-      });
-    };
 
     /**
      * open the create a sub org modal

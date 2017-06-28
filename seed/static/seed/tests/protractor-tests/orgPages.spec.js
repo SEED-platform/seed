@@ -71,6 +71,10 @@ describe('When I visit the the parent org', function () {
     $('[ng-model="new_cycle.start"]').sendKeys('01-01-2017');
     $('[ng-model="new_cycle.end"]').sendKeys('12-31-2017');
     $('#btnCreateCycle').click();
+    $('[ng-click="openStartDatePicker($event)"]').click();
+    $('[ng-click="openEndDatePicker($event)"]').click();
+    $('[ng-click="openStartDatePicker($event)"]').click();
+    $('[ng-click="openEndDatePicker($event)"]').click();
   });
 
   it('should edit created cycle', function () {
@@ -105,8 +109,25 @@ describe('When I visit the the parent org', function () {
       .element(by.xpath('..')).element(by.xpath('..'));
 
     expect(myNewLabel.isPresent()).toBe(true);
+    
     myNewLabel.$('[ng-click="deleteLabel(label, $index)"]').click();
-    browser.sleep(2000);
+    browser.sleep(1000);
+    $('[data-ng-click="modalOptions.cancel()"]').click();
+
+    myNewLabel.$('[ng-click="rowform.$show()"]').click();
+    myNewLabel.$('[ng-click="rowform.$cancel()"]').click();
+    myNewLabel.$('[ng-click="rowform.$show()"]').click();
+    $('[ng-keypress="onEditLabelNameKeypress($event, rowform)"]').clear();
+    myNewLabel.$('.btn.btn-primary.btn-rowform').click();
+    $('[ng-keypress="onEditLabelNameKeypress($event, rowform)"]').sendKeys('Call');
+    myNewLabel.$('.btn.btn-primary.btn-rowform').click();
+    $('[ng-keypress="onEditLabelNameKeypress($event, rowform)"]').clear();
+    $('[ng-keypress="onEditLabelNameKeypress($event, rowform)"]').sendKeys('fake label');
+    element(by.cssContainingText('[name="color"]', 'blue')).click();
+    myNewLabel.$('.btn.btn-primary.btn-rowform').click();
+
+    myNewLabel.$('[ng-click="deleteLabel(label, $index)"]').click();
+    browser.sleep(1000);
     $('.btn.btn-primary.ng-binding').click();
     expect(myNewLabel.isPresent()).toBe(false);
   }, 60000);
@@ -114,6 +135,29 @@ describe('When I visit the the parent org', function () {
   // manually
   it('should reset sync', function () {
     browser.ignoreSynchronization = false;
+  });
+
+  it('should create new members', function () {
+    var myOptions = element.all(by.css('a')).filter(function (elm) {
+      return elm.getText().then(function (label) {
+        return label == 'Members';
+      });
+    }).first();
+    myOptions.click();
+
+    $('[ng-click="new_member_modal()"]').click();
+    $('[ng-click="cancel()"]').click();
+    $('[ng-click="new_member_modal()"]').click();
+    $('[ng-model="user.first_name"]').sendKeys('fake');
+    $('[ng-model="user.last_name"]').sendKeys('stuff');
+    $('[ng-model="user.email"]').sendKeys('something@test.com');
+    element(by.cssContainingText('[ng-model="user.role"]', 'Owner')).click();
+    $('.btn.btn-primary').click();
+
+    $('[placeholder="member name"]').sendKeys('stuff');
+    $('[placeholder="member name"]').clear();
+    element(by.cssContainingText('[ng-model="u.role"]', 'viewer')).click();
+    $$('[ng-click="remove_member(u)"]').first().click();
   });
 
   it('should create other sub org', function () {
@@ -196,6 +240,7 @@ describe('When I visit the the parent org', function () {
     myOptions3.click();
     expect($('.table_list_container').isPresent()).toBe(true);
     $$('[ng-model="controls.public_select_all"]').first().click();
+    $$('[ng-change="select_all_clicked(\'internal\')"]').first().click();
     var rowCheck = element.all(by.repeater('field in fields'));
     expect(rowCheck.count()).not.toBeLessThan(1);
     $$('[ng-model="filter_params.title"]').first().click().sendKeys('this is some fake stuff to test filter');

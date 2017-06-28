@@ -12,24 +12,35 @@ describe('When I go to the dataset options page', function () {
     browser.ignoreSynchronization = false;
   });
 
-  it('should delete a single file', function () {
+  //Pairing
+  it('should change cycle and refresh', function () {
     browser.get('/app/#/data');
     $$('[ui-sref="dataset_detail({dataset_id: d.id})"]').first().click();
-    var rows = element.all(by.repeater('f in dataset.importfiles'));
-    expect(rows.count()).toBe(2);
-  });
-
-  //Pairing
-  it('should edit pairing', function () {
     $$('#data-pairing-0').first().click();
-    expect($('.page_title').getText()).toContain('Pair Properties to Tax Lots');
+    element(by.cssContainingText('[ng-model="cycle.selected_cycle"] option', "Default 2016 Calendar Year")).click();
+  });
+  
+  it('should edit pairing', function () {
     element(by.cssContainingText('[ng-model="cycle.selected_cycle"] option', browser.params.testOrg.cycle)).click();
-    browser.sleep(2000);
+    expect($('.page_title').getText()).toContain('Pair Properties to Tax Lots');
 
-    // Gotta figure this out, remote has 1 unpaired.
+    $('[ng-model="showPaired"]').element(by.cssContainingText('option', "Show Paired")).click();
+    element(by.cssContainingText('[ng-change="inventoryTypeChanged()"] option', 'Tax Lot')).click();
+
+    $('[ng-model="showPaired"]').element(by.cssContainingText('option', "Show Unpaired")).click();
+    element(by.cssContainingText('[ng-change="inventoryTypeChanged()"] option', 'Property')).click();
+
+
+    $('[ng-model="showPaired"]').element(by.cssContainingText('option', "All")).click();
+
+
     expect($('.pairing-text-left').getText()).toContain('Showing 19 Properties');
     expect($('.pairing-text-right').getText()).toContain('Showing 11 Tax Lots');
-  });
+
+    $$('[ng-click="leftSortData(col.name)"]').first().click().click();
+    $$('[ng-click="rightSortData(col.name)"]').first().click().click();
+  }, 60000);
+
 
   it('should test filters and sort on left and right table', function () {
     var leftRows = element.all(by.repeater('row in newLeftData'));
@@ -41,6 +52,23 @@ describe('When I go to the dataset options page', function () {
     expect(rightRows.count()).toBe(5);
     $$('[ng-model="col.searchText"]').first().clear();
     $$('[ng-model="col.searchText"]').get(4).clear();
+  });
+
+  it('should edit drag pairs', function () {
+    // var dragElement = $$('.pairing-data-row.grab-pairing-left').first();
+    var dragElement = element.all(by.repeater('row in newLeftData')).first();
+    var dropElement = $$('.pairing-data-row-indent').first();
+    var lastDropElement = $$('.pairing-data-row-indent').last();
+    // console.log('drag: ', dragElement);
+    // console.log('drop: ', dropElement);
+
+    // drag doesn't work on chrome....so use click functionality
+    dragElement.click();
+    browser.sleep(200);
+    dropElement.click();
+    browser.sleep(200);
+    lastDropElement.click();
+    browser.sleep(200);
   });
 
   it('should edit delete pairings', function () {
@@ -85,6 +113,32 @@ describe('When I go to the dataset options page', function () {
     expect($('.pairing-text-right').getText()).toContain('Showing 19 Properties (17 unpaired)');
     expect($('.pairing-text-left').getText()).toContain('Showing 11 Tax Lots (10 unpaired)');
     browser.sleep(2000);
+  });
+
+  it('should delete pairings the other way', function () {
+    $$('.unpair-child').count().then( function (count) {
+      for (var index = 0; index < count; index++) {
+        // console.log('index: ', index, count)
+        var option = $$('.unpair-child').first();
+        option.click();
+        browser.sleep(200);
+      }
+    });
+
+    expect($$('.unpair-child').count()).toBeLessThan(1);
+  }, 60000);
+
+  it('should pair so we can delete pairs later in inventory page', function () {
+    var dragElement = element.all(by.repeater('row in newLeftData')).get(2);
+    var dropElement = $$('.pairing-data-row-indent').get(2);
+    var lastDropElement = $$('.pairing-data-row-indent').last();
+
+    dragElement.click();
+    browser.sleep(200);
+    dropElement.click();
+    browser.sleep(200);
+    lastDropElement.click();
+    browser.sleep(200);
   });
 
 });

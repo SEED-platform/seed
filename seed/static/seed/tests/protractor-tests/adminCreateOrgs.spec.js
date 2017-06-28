@@ -15,16 +15,12 @@ describe('When I go to admin page', function () {
 
   it('should test admin pages', function () {
     browser.get('/app/#/api/swagger');
+    browser.wait(EC.presenceOf($('.logo')), 10000);
     browser.sleep(5000);
     expect(browser.getTitle()).toContain('SEED Platform');
     browser.get('/app/#/contact');
-    browser.sleep(5000);
-    expect(browser.getTitle()).toContain('SEED Platform');
-    browser.get('/app/#/profile/security');
-    browser.sleep(5000);
-    expect(browser.getTitle()).toContain('SEED Platform');
-    browser.get('/app/#/profile/developer');
-    browser.sleep(5000);
+    browser.wait(EC.presenceOf($('.logo')), 10000);
+    // browser.sleep(5000);
     expect(browser.getTitle()).toContain('SEED Platform');
   });
 
@@ -32,6 +28,27 @@ describe('When I go to admin page', function () {
   // manually
   it('should reset sync', function () {
     browser.ignoreSynchronization = false;
+  });
+
+  it('should test developer pages', function () {
+    browser.get('/app/#/profile/developer');
+    browser.wait(EC.presenceOf($('.logo')), 20000);
+    // browser.sleep(5000);
+    expect(browser.getTitle()).toContain('SEED Platform');
+    $('[ng-click="generate_api_key()"]').click();
+    browser.wait(EC.presenceOf($('.fa-check')), 10000);
+  });
+
+  it('should test pw change', function () {
+    browser.get('/app/#/profile/security');
+    browser.wait(EC.presenceOf($('.logo')), 10000);
+    // browser.sleep(5000);
+    expect(browser.getTitle()).toContain('SEED Platform');
+    $('#editCurrentPassword').sendKeys(browser.params.login.password);
+    $('#editNewPassword').sendKeys('somethingFAKE!');
+    $('#editConfirmNewPassword').sendKeys('somethingFAKE!');
+    $('[ng-click="change_password()"]').click();
+    browser.wait(EC.presenceOf($('.fa-check')), 10000);
   });
 
 
@@ -98,4 +115,23 @@ describe('When I go to admin page', function () {
     browser.sleep(100);
     expect(myNewUser.isPresent()).toBe(false);
   });
+
+  it('should add user again', function () {
+    $$('#orgs').first().$$('option').first().click();
+    $$('#user_emails').first().$$('option').first().click();
+    $('[ng-click="org_user.add()"]').click();
+    
+    //check no column mappings
+    $$('[ng-click="confirm_column_mappings_delete(org)"]').first().click();
+    browser.wait(EC.alertIsPresent(), 2000, 'an alert');
+    browser.switchTo().alert().accept();
+  });
+
+  it('should create new test org', function () {
+    // browser.sleep(5000);
+    $('#org_name').clear().sendKeys(browser.params.testOrg.parent);
+    $$('#user_emails').first().element(by.cssContainingText('option', browser.params.login.user)).click();
+    $('[ng-click="org_form.add(org)"]').click();
+  });
+
 });

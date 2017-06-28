@@ -141,16 +141,16 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
       promise.then(function (data) {
         //if success remove from maps
         // console.log('data: ', data);
-        if(data.status === 'success') {
+        if (data.status === 'success') {
           // console.log('tl: ', taxlotId);
           // console.log('prop: ', propertyId);
           _.pull($scope.taxlotToProp[taxlotId], propertyId);
           _.pull($scope.propToTaxlot[propertyId], taxlotId);
-          if($scope.taxlotToProp[taxlotId].length == 0) {
+          if ($scope.taxlotToProp[taxlotId].length == 0) {
             // console.log('pulling: ', taxlotId)
             delete $scope.taxlotToProp[taxlotId];
           }
-          if($scope.propToTaxlot[propertyId].length == 0) {
+          if ($scope.propToTaxlot[propertyId].length == 0) {
             // console.log('pulling: ', propertyId)
             delete $scope.propToTaxlot[propertyId];
           }
@@ -292,73 +292,73 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
     };
 
     $scope.leftSearch = function (value) {
-    //left and right filters, works with table flip
+      //left and right filters, works with table flip
       for (var i = 0; i < $scope.leftColumns.length; i++) {
-        if ($scope.leftColumns[i].searchText && value[$scope.leftColumns[i].name]) { 
+        if ($scope.leftColumns[i].searchText && value[$scope.leftColumns[i].name]) {
           var searchTextLower = $scope.leftColumns[i].searchText.toLowerCase();
-          var leftColLower = value[$scope.leftColumns[i].name].toLowerCase();           
+          var leftColLower = value[$scope.leftColumns[i].name].toLowerCase();
           var isMatch = leftColLower.indexOf(searchTextLower) > -1;
-            if (!isMatch) {
-              return false;
-            }
-          } else if ($scope.leftColumns[i].searchText && !value[$scope.leftColumns[i].name]) {
-              return false;
+          if (!isMatch) {
+            return false;
           }
-      }  
+        } else if ($scope.leftColumns[i].searchText && !value[$scope.leftColumns[i].name]) {
+          return false;
+        }
+      }
       return true;
     };
 
     $scope.rightSearch = function (value) {
       for (var i = 0; i < $scope.rightColumns.length; i++) {
         // console.log("RC V: " + value[$scope.rightColumns[i].name]);
-        if ($scope.rightColumns[i].searchText && value[$scope.rightColumns[i].name]) { 
+        if ($scope.rightColumns[i].searchText && value[$scope.rightColumns[i].name]) {
           var searchTextLower = $scope.rightColumns[i].searchText.toLowerCase();
-          var rightColLower = value[$scope.rightColumns[i].name].toLowerCase();           
+          var rightColLower = value[$scope.rightColumns[i].name].toLowerCase();
           var isMatch = rightColLower.indexOf(searchTextLower) > -1;
-            if (!isMatch) {
-                return false;
-            }
-          } else if ($scope.rightColumns[i].searchText && !value[$scope.rightColumns[i].name]) {
-              return false;
+          if (!isMatch) {
+            return false;
           }
-      }        
+        } else if ($scope.rightColumns[i].searchText && !value[$scope.rightColumns[i].name]) {
+          return false;
+        }
+      }
       return true;
     };
 
 
-    $scope.leftSortColumn = "name";
+    $scope.leftSortColumn = 'name';
     $scope.leftReverseSort = false;
 
     $scope.leftSortData = function (column) {
-        // console.log("left: " + column);
-        $scope.leftReverseSort = ($scope.leftSortColumn === column) ? !$scope.leftReverseSort : false;
-        $scope.leftSortColumn = column;
-    } 
+      // console.log("left: " + column);
+      $scope.leftReverseSort = ($scope.leftSortColumn === column) ? !$scope.leftReverseSort : false;
+      $scope.leftSortColumn = column;
+    };
 
     $scope.leftGetSortClass = function (column) {
       // console.log("left: " + column)
       if ($scope.leftSortColumn === column) {
-          return $scope.leftReverseSort ? 'arrow-down' : 'arrow-up'
+        return $scope.leftReverseSort ? 'arrow-down' : 'arrow-up';
       }
       return 'arrow-down';
-    }
+    };
 
-    $scope.rightSortColumn = "name";
+    $scope.rightSortColumn = 'name';
     $scope.rightReverseSort = false;
 
     $scope.rightSortData = function (column) {
-        console.log('right: ' + column);
-        $scope.rightReverseSort = ($scope.rightSortColumn === column) ? !$scope.rightReverseSort : false;
-        $scope.rightSortColumn = column;
-    } 
+      // console.log('right: ' + column);
+      $scope.rightReverseSort = ($scope.rightSortColumn === column) ? !$scope.rightReverseSort : false;
+      $scope.rightSortColumn = column;
+    };
 
     $scope.rightGetSortClass = function (column) {
-      console.log('right: ' + column)
+      // console.log('right: ' + column)
       if ($scope.rightSortColumn === column) {
-          return $scope.rightReverseSort ? 'arrow-down' : 'arrow-up'
+        return $scope.rightReverseSort ? 'arrow-down' : 'arrow-up';
       }
       return 'arrow-down';
-    }
+    };
 
 
     $scope.updateLeftRight = function () {
@@ -386,7 +386,10 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
         $scope.newElement = angular.element(event.currentTarget);
         $scope.$emit('drag-pairing-row.drag', angular.element(event.currentTarget));
       } else if (side === 'right') {
-        $scope.$emit('drag-pairing-row.drop', $scope.newElement, {container: angular.element(event.currentTarget), fromClick: true});
+        $scope.$emit('drag-pairing-row.drop', $scope.newElement, {
+          container: angular.element(event.currentTarget),
+          fromClick: true
+        });
       }
 
     };
@@ -453,7 +456,7 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
       }
 
       promise.then(function (data) {
-        if(data.status === 'success') {
+        if (data.status === 'success') {
           addTtoP(taxlotId, propertyId);
           addPtoT(taxlotId, propertyId);
           $scope.getLeftData();

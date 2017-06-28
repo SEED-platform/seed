@@ -84,15 +84,16 @@ angular.module('BE.seed.controller.cycle_admin', [])
         });
       };
 
-      $scope.deleteCycle = function (cycle) {
-        cycle_service.delete_cycle_for_org(cycle, $scope.org.id).then(function () {
-          var msg = 'Cycle deleted.';
-          Notification.primary(msg);
-          cycle_service.get_cycles_for_org($scope.org.id).then(processCycles);
-        }, function (message) {
-          $log.error('Error deleting cycle.', message);
-        });
-      };
+      //commented out 6.15.17 ability to delete cycle is commented out dbressan code cov work
+      // $scope.deleteCycle = function (cycle) {
+      //   cycle_service.delete_cycle_for_org(cycle, $scope.org.id).then(function () {
+      //     var msg = 'Cycle deleted.';
+      //     Notification.primary(msg);
+      //     cycle_service.get_cycles_for_org($scope.org.id).then(processCycles);
+      //   }, function (message) {
+      //     $log.error('Error deleting cycle.', message);
+      //   });
+      // };
 
       $scope.opened = {};
       $scope.open = function ($event, elementOpened) {

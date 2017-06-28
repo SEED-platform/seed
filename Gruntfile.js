@@ -82,7 +82,7 @@ module.exports = function(grunt) {
             options: {
                 type: 'lcov',
                 dir: 'protractorReports',
-                print: 'detail'
+                print: ''
             }
         },
         coveralls: {
@@ -116,6 +116,7 @@ module.exports = function(grunt) {
 
     //without coveralls
     grunt.registerTask('coverage', ['clean', 'copy:save', 'instrument', 'copy:instrument', 'protractor_coverage:local', 'copy:copyBack', 'makeReport']);
+    grunt.registerTask('report', ['makeReport']);
 
     //with coveralls
     // grunt.registerTask('coverage', ['clean', 'copy:save', 'instrument', 'copy:instrument', 'protractor_coverage:local', 'copy:copyBack', 'makeReport', 'coveralls']);
