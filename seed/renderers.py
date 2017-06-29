@@ -30,7 +30,7 @@ class SEEDJSONRenderer(JSONRenderer):
     returns results in the format {'status': 'success', 'data': data} or
         {'status': 'error', 'message': error message}
 
-    if self.data_name is set on the view its will be used in place of data
+    if self.data_name is set on the view then it will be used in place of data
     as a key.
 
     if pagination class is set globally, and/or on the view, pagination results
