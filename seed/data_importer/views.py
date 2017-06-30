@@ -792,11 +792,11 @@ class ImportFileViewSet(viewsets.ViewSet):
         # check if we are returning as subset of the fields (as values)
         if fields:
             if state_id1 != state_id:
-                return state_model.objects.filter(id=audit_entry.parent_state1_id).values(*fields)[
-                    0]
+                parent = state_model.objects.filter(id=audit_entry.parent_state1_id).values(*fields)
+                return parent[0] if len(parent) else None
             else:
-                return state_model.objects.filter(id=audit_entry.parent_state2_id).values(*fields)[
-                    0]
+                parent = state_model.objects.filter(id=audit_entry.parent_state2_id).values(*fields)
+                return parent[0] if len(parent) else None
         else:
             return audit_entry.parent_state1 if state_id1 != state_id else audit_entry.parent_state2
 
@@ -1547,7 +1547,7 @@ class ImportFileViewSet(viewsets.ViewSet):
     def matching_results(self, request, pk=None):
         """
         Retrieves the number of matched and unmatched properties & tax lots for
-        a given ImportFile record.
+        a given ImportFile record.  Specifically for new imports
 
         :GET: Expects import_file_id corresponding to the ImportFile in question.
 
@@ -1582,19 +1582,112 @@ class ImportFileViewSet(viewsets.ViewSet):
             data_state=DATA_STATE_MATCHING,
             merge_state=MERGE_STATE_NEW,
         ))
-        # If a record was manually edited then remove the edited version
-        properties_to_remove = list()
-        for p in properties:
-            if PropertyAuditLog.objects.filter(
-                state_id=p.id,
-                name='Manual Edit'
+
+        for state in properties:
+            audit_creation_id = PropertyAuditLog.objects.only('id').exclude(import_filename=None).get(
+                state_id=state.id,
+                name='Import Creation'
+            )
+            if PropertyAuditLog.objects.exclude(record_type=AUDIT_USER_EDIT).filter(
+                parent1_id=audit_creation_id
             ).exists():
-                properties_to_remove.append(p.id)
+                properties_matched.append(state.id)
+            else:
+                properties_new.append(state.id)
+
+        tax_lots_new = []
+        tax_lots_matched = list(TaxLotState.objects.only('id').filter(
+            import_file__pk=import_file_id,
+            data_state=DATA_STATE_MATCHING,
+            merge_state=MERGE_STATE_MERGED,
+        ).values_list('id', flat=True))
+
+        # Check audit log in case TaxLotStates are listed as "new" but were merged into a different tax lot
+        taxlots = list(TaxLotState.objects.filter(
+            import_file__pk=import_file_id,
+            data_state=DATA_STATE_MATCHING,
+            merge_state=MERGE_STATE_NEW,
+        ))
+
+        for state in taxlots:
+            audit_creation_id = TaxLotAuditLog.objects.only('id').exclude(import_filename=None).get(
+                state_id=state.id,
+                name='Import Creation'
+            )
+            if TaxLotAuditLog.objects.exclude(record_type=AUDIT_USER_EDIT).filter(
+                parent1_id=audit_creation_id
+            ).exists():
+                tax_lots_matched.append(state.id)
+            else:
+                tax_lots_new.append(state.id)
+
+        return {
+            'status': 'success',
+            'properties': {
+                'matched': len(properties_matched),
+                'unmatched': len(properties_new)
+            },
+            'tax_lots': {
+                'matched': len(tax_lots_matched),
+                'unmatched': len(tax_lots_new)
+            }
+        }
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_member')
+    @detail_route(methods=['GET'])
+    def matching_status(self, request, pk=None):
+        """
+        Retrieves the number and ids of matched and unmatched properties & tax lots for
+        a given ImportFile record.  Specifically for hand-matching
+
+        :GET: Expects import_file_id corresponding to the ImportFile in question.
+
+        Returns::
+
+            {
+                'status': 'success',
+                'properties': {
+                    'matched': Number of PropertyStates that have been matched,
+                    'matched_ids': Array of matched PropertyState ids,
+                    'unmatched': Number of PropertyStates that are unmatched records,
+                    'unmatched_ids': Array of unmatched PropertyState ids
+                },
+                'tax_lots': {
+                    'matched': Number of TaxLotStates that have been matched,
+                    'matched_ids': Array of matched TaxLotState ids,
+                    'unmatched': Number of TaxLotStates that are unmatched records,
+                    'unmatched_ids': Array of unmatched TaxLotState ids
+                }
+            }
+
+        """
+        import_file_id = pk
+
+        # property views associated with this imported file (including merges)
+        properties_new = []
+        properties_matched = list(PropertyState.objects.filter(
+            import_file__pk=import_file_id,
+            data_state=DATA_STATE_MATCHING,
+            merge_state=MERGE_STATE_MERGED,
+        ).values_list('id', flat=True))
+
+        # Check audit log in case PropertyStates are listed as "new" but were merged into a different property
+        properties = list(PropertyState.objects.filter(
+            import_file__pk=import_file_id,
+            data_state=DATA_STATE_MATCHING,
+            merge_state=MERGE_STATE_NEW,
+        ))
+        # If a record was manually edited then remove the edited version
+        properties_to_remove = list(PropertyAuditLog.objects.filter(
+            state__in=properties,
+            name='Manual Edit'
+        ).values_list('state_id', flat=True))
         properties = [p for p in properties if p.id not in properties_to_remove]
 
         for state in properties:
-            audit_creation_id = PropertyAuditLog.objects.only('id').exclude(
-                import_filename=None).get(
+            audit_creation_id = PropertyAuditLog.objects.only('id').exclude(import_filename=None).get(
                 state_id=state.id,
                 name='Import Creation'
             )
@@ -1619,13 +1712,10 @@ class ImportFileViewSet(viewsets.ViewSet):
             merge_state=MERGE_STATE_NEW,
         ))
         # If a record was manually edited then remove the edited version
-        taxlots_to_remove = list()
-        for t in taxlots:
-            if TaxLotAuditLog.objects.filter(
-                state_id=t.id,
-                name='Manual Edit'
-            ).exists():
-                taxlots_to_remove.append(t.id)
+        taxlots_to_remove = list(TaxLotAuditLog.objects.filter(
+            state__in=taxlots,
+            name='Manual Edit'
+        ).values_list('state_id', flat=True))
         taxlots = [t for t in taxlots if t.id not in taxlots_to_remove]
 
         for state in taxlots:

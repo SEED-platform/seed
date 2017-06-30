@@ -249,7 +249,7 @@ angular.module('BE.seed.controller.matching_list', [])
        *   buildings
        */
       $scope.update_number_matched = function () {
-        return inventory_service.get_matching_results($scope.file_select.file.id).then(function (data) {
+        return inventory_service.get_matching_status($scope.file_select.file.id).then(function (data) {
           var unmatched_ids;
           if ($scope.inventory_type === 'properties') {
             $scope.matched_buildings = data.properties.matched;

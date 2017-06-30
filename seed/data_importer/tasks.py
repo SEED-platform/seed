@@ -184,10 +184,10 @@ def finish_mapping(import_file_id, mark_as_done):
     set_cache(prog_key, result['status'], result)
 
     property_state_ids = list(PropertyState.objects.filter(import_file=import_file)
-                              .exclude(data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT])
+                              .exclude(data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT, DATA_STATE_DELETE])
                               .values_list('id', flat=True))
     taxlot_state_ids = list(TaxLotState.objects.filter(import_file=import_file)
-                            .exclude(data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT])
+                            .exclude(data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT, DATA_STATE_DELETE])
                             .values_list('id', flat=True))
 
     # now call data_quality
@@ -824,21 +824,24 @@ def match_buildings(file_pk):
     }
 
 
-def _finish_matching(import_file, progress_key):
+def _finish_matching(import_file, progress_key, data):
     import_file.matching_done = True
     import_file.mapping_completion = 100
     import_file.save()
 
+    data['import_file_records'] = import_file.num_rows
+
     result = {
         'status': 'success',
         'progress': 100,
-        'progress_key': progress_key
+        'progress_key': progress_key,
+        'data': data
     }
     property_state_ids = list(PropertyState.objects.filter(import_file=import_file)
-                              .exclude(data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT])
+                              .exclude(data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT, DATA_STATE_DELETE])
                               .only('id').values_list('id', flat=True))
     taxlot_state_ids = list(TaxLotState.objects.filter(import_file=import_file)
-                            .exclude(data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT])
+                            .exclude(data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT, DATA_STATE_DELETE])
                             .only('id').values_list('id', flat=True))
     _data_quality_check(property_state_ids, taxlot_state_ids, import_file.id)
     set_cache(progress_key, result['status'], result)
@@ -1297,6 +1300,8 @@ def _match_properties_and_taxlots(file_pk):
     all_unmatched_properties = import_file.find_unmatched_property_states()
     unmatched_properties = []
     unmatched_tax_lots = []
+    duplicates_of_existing_property_states = []
+    duplicates_of_existing_taxlot_states = []
     if all_unmatched_properties:
         # Filter out the duplicates within the import file.
         unmatched_properties, duplicate_property_states = filter_duplicated_states(
@@ -1317,6 +1322,12 @@ def _match_properties_and_taxlots(file_pk):
             property_partitioner,
             org,
             import_file)
+
+        # Filter out the exact duplicates found in the previous step
+        duplicates_of_existing_property_states = [state for state in unmatched_properties
+                                                  if state.data_state == DATA_STATE_DELETE]
+        unmatched_properties = [state for state in unmatched_properties
+                                if state not in duplicates_of_existing_property_states]
     else:
         duplicate_property_states = []
         merged_property_views = []
@@ -1345,6 +1356,12 @@ def _match_properties_and_taxlots(file_pk):
             taxlot_partitioner,
             org,
             import_file)
+
+        # Filter out the exact duplicates found in the previous step
+        duplicates_of_existing_taxlot_states = [state for state in unmatched_tax_lots
+                                                if state.data_state == DATA_STATE_DELETE]
+        unmatched_tax_lots = [state for state in unmatched_tax_lots
+                              if state not in duplicates_of_existing_taxlot_states]
     else:
         duplicate_tax_lot_states = []
         merged_taxlot_views = []
@@ -1355,10 +1372,8 @@ def _match_properties_and_taxlots(file_pk):
     # There should be some kind of bulk-update/save thing we can do to
     # improve upon this.
     for state in chain(unmatched_properties, unmatched_tax_lots):
-        # Ignore states that have already been marked for deletion as exact duplicates
-        if state.data_state != DATA_STATE_DELETE:
-            state.data_state = DATA_STATE_MATCHING
-            state.save()
+        state.data_state = DATA_STATE_MATCHING
+        state.save()
 
     for state in map(lambda x: x.state, chain(merged_property_views, merged_taxlot_views)):
         state.data_state = DATA_STATE_MATCHING
@@ -1373,7 +1388,18 @@ def _match_properties_and_taxlots(file_pk):
         # state.merge_state = MERGE_STATE_DUPLICATE
         state.save()
 
-    return _finish_matching(import_file, prog_key)
+    data = {
+        'all_unmatched_properties': len(all_unmatched_properties),
+        'all_unmatched_tax_lots': len(all_unmatched_tax_lots),
+        'unmatched_properties': len(unmatched_properties),
+        'unmatched_tax_lots': len(unmatched_tax_lots),
+        'duplicate_property_states': len(duplicate_property_states),
+        'duplicate_tax_lot_states': len(duplicate_tax_lot_states),
+        'duplicates_of_existing_property_states': len(duplicates_of_existing_property_states),
+        'duplicates_of_existing_taxlot_states': len(duplicates_of_existing_taxlot_states)
+    }
+
+    return _finish_matching(import_file, prog_key, data)
 
 
 def list_canonical_property_states(org_id):
