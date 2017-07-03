@@ -9,6 +9,7 @@ angular.module('BE.seed.controller.matching_detail', [])
     '$window',
     '$state',
     '$stateParams',
+    'naturalSort',
     'import_file_payload',
     'state_payload',
     'available_matches',
@@ -24,6 +25,7 @@ angular.module('BE.seed.controller.matching_detail', [])
               $window,
               $state,
               $stateParams,
+              naturalSort,
               import_file_payload,
               state_payload,
               available_matches,
@@ -210,6 +212,10 @@ angular.module('BE.seed.controller.matching_detail', [])
           return $scope.reverseSort ? 'arrow-down' : 'arrow-up';
         }
         return 'arrow-down';
+      };
+
+      $scope.naturalSortComparator = function (a, b) {
+        return naturalSort(a.value, b.value);
       };
 
       var refresh = function () {
