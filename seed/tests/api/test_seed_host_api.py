@@ -36,6 +36,7 @@ some apps.
 
 """
 
+import base64
 import datetime as dt
 import json
 import os
@@ -85,11 +86,17 @@ else:
         username = raw_input('Username: \t')
         api_key = raw_input('APIKEY: \t')
 
+
+# API is now used basic auth with base64 encoding.
+# NOTE: The header only accepts lower case usernames.
+auth_string = base64.urlsafe_b64encode(
+    '{}:{}'.format(username.lower(), api_key)
+)
+auth_string = 'Basic {}'.format(auth_string)
 header = {
-    'authorization': ':'.join([username.lower(), api_key]),
+    'Authorization': auth_string,
     # "Content-Type": "application/json"
 }
-# NOTE: The header only accepts lower case usernames.
 
 time1 = dt.datetime.now()
 

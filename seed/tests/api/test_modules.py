@@ -360,8 +360,8 @@ def cycles(header, main_url, organization_id, log):
         print ('API Function: create_cycle\n')
         partmsg = 'create_cycle'
         payload = {
-            'start': "2015-01-01T08:00:00.000Z",
-            'end': "2016-01-01T08:00:00.000Z",
+            'start': "2015-01-01T08:00",
+            'end': "2016-01-01T08:00",
             'name': "TestCycle"
         }
         result = requests.post(main_url + '/api/v2/cycles/',
@@ -370,14 +370,14 @@ def cycles(header, main_url, organization_id, log):
                                json=payload)
         check_status(result, partmsg, log)
 
-        cycle_id = result.json()['id']
+        cycle_id = result.json()['cycles']['id']
 
     # Update cycle
     print ('\nAPI Function: update_cycle')
     partmsg = 'update_cycle'
     payload = {
-        'start': "2015-01-01T08:00:00.000Z",
-        'end': "2016-01-01T08:00:00.000Z",
+        'start': "2015-01-01T08:00",
+        'end': "2016-01-01T08:00",
         'name': "TestCycle",
         'id': cycle_id
     }

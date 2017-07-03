@@ -1,5 +1,8 @@
 """
-:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2017, The Regents of the University of California,
+through Lawrence Berkeley National Laboratory (subject to receipt of any
+required approvals from the U.S. Department of Energy) and contributors.
+All rights reserved.  # NOQA
 :author
 """
 from __future__ import absolute_import
@@ -91,6 +94,7 @@ INSTALLED_APPS = (
     'django_extensions',
     'raven.contrib.django.raven_compat',
     'tos',
+    'django_filters',
     'rest_framework',
     'rest_framework_swagger',
 )
@@ -112,7 +116,6 @@ INSTALLED_APPS = HIGH_DEPENDENCY_APPS + INSTALLED_APPS + SEED_CORE_APPS
 
 # apps to auto load name spaced URLs for JS use (see seed.main.views.home)
 SEED_URL_APPS = (
-    # 'accounts',
     'seed',
     'audit_logs',
 )
@@ -138,7 +141,8 @@ AWS_QUERYSTRING_AUTH = False
 # django-longer-username-and-email
 REQUIRE_UNIQUE_EMAIL = False
 
-# Create a log directory if it does not exist. This is not used in production, but is used in dev and test
+# Create a log directory if it doesn't exist.
+# This is not used in production, but is used in dev and test
 if not os.path.exists('log'):
     os.makedirs('log')
 
@@ -267,14 +271,30 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
         'seed.authentication.SEEDAuthentication',
     ),
+    'DEFAULT_FILTER_BACKENDS':
+        ('django_filters.rest_framework.DjangoFilterBackend',),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'DEFAULT_PAGINATION_CLASS':
+        'seed.utils.pagination.ResultsListPagination',
     'PAGE_SIZE': 25,
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
+    'DATETIME_INPUT_FORMATS': (
+        '%Y:%m:%d', 'iso-8601', '%Y-%m-%d'
+    ),
+    'VIEW_DESCRIPTION_FUNCTION':
+        'rest_framework_swagger.views.get_restructuredtext',
+    'EXCEPTION_HANDLER': 'seed.exception_handler.custom_exception_handler'
 }
 
 SWAGGER_SETTINGS = {
     "exclude_namespaces": ["app"],  # List URL namespaces to ignore
+    'APIS_SORTER': 'alpha'
 }
+
+# Certification
+# set this for a default validity_duration
+# should be a integer representing a number of days
+# GREEN_ASSESSMENT_DEFAULT_VALIDITY_DURATION=5 * 365
+GREEN_ASSESSMENT_DEFAULT_VALIDITY_DURATION = None

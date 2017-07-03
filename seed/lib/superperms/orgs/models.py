@@ -6,6 +6,7 @@
 """
 import logging
 from datetime import date, datetime
+from dateutil.relativedelta import relativedelta
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -80,23 +81,21 @@ class OrganizationUser(models.Model):
         # If we're removing an owner
         if self.role_level == ROLE_OWNER:
             # If there are users, but no other owners in this organization.
-            if (OrganizationUser.objects.all().exclude(pk=self.pk).exists() and
-                        OrganizationUser.objects.filter(
-                            organization=self.organization,
-                            role_level=ROLE_OWNER
-                        ).exclude(pk=self.pk).count() == 0):
-
-                try:
-                    # Make next most high ranking person the owner.
-                    other_user = OrganizationUser.objects.filter(
-                        organization=self.organization
-                    ).exclude(pk=self.pk)[0]
-
+            all_org_users = OrganizationUser.objects.filter(
+                organization=self.organization,
+            ).exclude(pk=self.pk)
+            if (
+                    all_org_users.exists()
+                    and
+                    all_org_users.filter(role_level=ROLE_OWNER).count() == 0
+            ):
+                # Make next most high ranking person the owner.
+                other_user = all_org_users.order_by('-role_level', '-pk')[0]
+                if other_user.role_level > ROLE_VIEWER:
                     other_user.role_level = ROLE_OWNER
                     other_user.save()
-                except IndexError:
-                    _log.error("Unable to promote secondary user, because there are no other users!")
-
+                else:
+                    raise UserWarning('Did not find suitable user to promote')
         super(OrganizationUser, self).delete(*args, **kwargs)
 
     def __unicode__(self):
@@ -140,14 +139,16 @@ class Organization(models.Model):
         # Create a default cycle for the organization if there isn't one already
         from seed.models import Cycle
         year = date.today().year - 1
-        cycle_name = 'Default ' + str(year) + ' Calendar Year'
+        cycle_name = '{} Calendar Year'.format(year)
         if not Cycle.objects.filter(name=cycle_name, organization=self).exists():
             _log.debug("Creating default cycle for new organization")
+            start = datetime(year, 1, 1, tzinfo=timezone.get_current_timezone())
+            end = start + relativedelta(years=1) - relativedelta(seconds=1)
             Cycle.objects.create(
                 name=cycle_name,
                 organization=self,
-                start=datetime(year, 1, 1, tzinfo=timezone.get_current_timezone()),
-                end=datetime(year + 1, 12, 31, tzinfo=timezone.get_current_timezone())
+                start=start,
+                end=end
             )
 
     def is_member(self, user):

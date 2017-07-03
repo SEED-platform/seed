@@ -780,12 +780,8 @@ class InventoryViewTests(TestCase):
         self.client.login(**user_details)
 
     def tearDown(self):
-        self.user.delete()
-        self.org.delete()
-        self.org_user.delete()
         self.status_label.delete()
         Column.objects.all().delete()
-        Cycle.objects.all().delete()
         Property.objects.all().delete()
         ProjectBuilding.objects.all().delete()
         PropertyState.objects.all().delete()
@@ -794,6 +790,10 @@ class InventoryViewTests(TestCase):
         TaxLotProperty.objects.all().delete()
         TaxLotState.objects.all().delete()
         TaxLotView.objects.all().delete()
+        Cycle.objects.all().delete()
+        self.user.delete()
+        self.org.delete()
+        self.org_user.delete()
 
     def test_get_properties(self):
         state = self.property_state_factory.get_property_state(self.org)
