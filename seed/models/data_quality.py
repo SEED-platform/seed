@@ -639,7 +639,7 @@ class DataQualityCheck(models.Model):
 
         # change the format of the data in the cache. Make this a list of
         # objects instead of object of objects.
-        existing_results = get_cache_raw(DataQualityCheck.cache_key(identifier))
+        existing_results = get_cache_raw(DataQualityCheck.cache_key(identifier)) or []
 
         l = []
         for key, value in self.results.iteritems():
