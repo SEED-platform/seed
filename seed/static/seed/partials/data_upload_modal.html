@@ -15,8 +15,7 @@
 <div class="modal-body no_bottom_padding" ng-switch on="step.number">
     <!-- Step 1 -->
     <div class="data_upload_steps form-horizontal" ng-switch-when="1">
-        <div class="alert alert-danger alert-dismissable" ng-show="dataset.alert">
-            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        <div class="alert alert-danger" ng-show="dataset.alert">
             The data set <strong>name "{$ dataset.name $}" already exists</strong>. Please select a new one.
         </div>
         <div class="form-group" ng-class="{'has-error': dataset.alert, 'has-feedback': dataset.alert}">
@@ -28,8 +27,7 @@
     </div>
     <!-- Step 2: Choose upload type -->
     <div class="data_upload_steps container-fluid" ng-switch-when="2">
-        <div class="alert alert-danger alert-dismissable" ng-show="uploader.invalid_extension_alert">
-            <button type="button" class="close" ng-click="uploader.invalid_extension_alert = false" aria-hidden="true">&times;</button>
+        <div class="alert alert-danger" ng-show="uploader.invalid_extension_alert">
             <strong>Sorry!</strong> SEED doesn't currently support that file format. Only <strong>.csv</strong>,
             <strong>.xls</strong>, <strong>.xlsx</strong>, and <strong>.xml</strong> files are supported.
         </div>
@@ -83,8 +81,7 @@
     <!-- Step 3 -->
     <div class="data_upload_steps" ng-switch-when="3">
         <div class="row">
-            <div class="alert alert-success alert-dismissable">
-                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+            <div class="alert alert-success">
                 <strong>{$ dataset.filename $}</strong> has been uploaded to <strong>{$ dataset.name $}</strong>.
             </div>
         </div>
@@ -92,8 +89,7 @@
     <!-- Step 4: load Portfolio Manager report data -->
     <div class="data_upload_steps" ng-switch-when="4">
         <div class="row">
-            <div class="alert alert-danger alert-dismissable" ng-show="uploader.invalid_extension_alert">
-                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+            <div class="alert alert-danger" ng-show="uploader.invalid_extension_alert">
                 <strong>Sorry!</strong> SEED doesn't currently support that file format. Only <strong>.csv</strong>,
                 <strong>.xls</strong>, <strong>.xlsx</strong>, and <strong>.xml</strong> files are supported.
             </div>
@@ -111,8 +107,7 @@
     <!-- Step 5 -->
     <div class="data_upload_steps" ng-switch-when="5">
         <div class="row">
-            <div class="alert alert-success alert-dismissable" ng-show="uploader.complete">
-                <button type="button" class="close" aria-hidden="true" ng-click="uploader.complete = false">&times;</button>
+            <div class="alert alert-success" ng-show="uploader.complete">
                 <strong>{$ dataset.filename $}</strong> has been uploaded to <strong>{$ dataset.name $}</strong>.
             </div>
         </div>
@@ -142,12 +137,17 @@
     <!-- Step 8: Review matches -->
     <div class="data_upload_steps" ng-switch-when="8">
         <div class="row">
-            <div class="alert alert-success alert-dismissable">
-                <button type="button" class="close" aria-hidden="true" ng-click="uploader.complete = false">&times;</button>
+            <div class="alert alert-success">
                 <ul>
-                    <li>Total records in the file: {$ (matched_properties + unmatched_properties + matched_taxlots + unmatched_taxlots)|number:0 $}</li>
-                    <li>Records that were matched to existing properties &amp; tax lots: {$ (matched_properties + matched_taxlots)|number:0 $}</li>
-                    <li>Records that were made into new properties &amp; tax lots (not matches): {$ (unmatched_properties + unmatched_taxlots)|number:0 $}</li>
+                    <li>Total rows in the import file: {$ import_file_records|number:0 $}</li>
+                    <li ng-if="unmatched_properties">New properties: {$ unmatched_properties|number:0 $}</li>
+                    <li ng-if="unmatched_taxlots">New tax lots: {$ unmatched_taxlots|number:0 $}</li>
+                    <li ng-if="matched_properties">Merged properties: {$ matched_properties|number:0 $}</li>
+                    <li ng-if="matched_taxlots">Merged tax lots: {$ matched_taxlots|number:0 $}</li>
+                    <li ng-if="duplicate_property_states">Ignored property duplicates within the import file: {$ duplicate_property_states|number:0 $}</li>
+                    <li ng-if="duplicate_tax_lot_states">Ignored tax lot duplicates within the import file: {$ duplicate_tax_lot_states|number:0 $}</li>
+                    <li ng-if="duplicates_of_existing_property_states">Ignored duplicates of existing properties: {$ duplicates_of_existing_property_states|number:0 $}</li>
+                    <li ng-if="duplicates_of_existing_taxlot_states">Ignored duplicates of existing tax lots: {$ duplicates_of_existing_taxlot_states|number:0 $}</li>
                 </ul>
             </div>
         </div>
@@ -163,10 +163,22 @@
     <!-- Step 10: No matches -->
     <div class="data_upload_steps" ng-switch-when="10">
         <div class="row">
-            <div class="alert alert-{$ step_10_style $} alert-dismissable">
-                <button type="button" class="close" aria-hidden="true" ng-click="uploader.complete = false">&times;</button>
+            <div class="alert alert-success">
+                <ul>
+                    <li>Total rows in the import file: {$ import_file_records|number:0 $}</li>
+                    <li ng-if="unmatched_properties">New properties: {$ unmatched_properties|number:0 $}</li>
+                    <li ng-if="unmatched_taxlots">New tax lots: {$ unmatched_taxlots|number:0 $}</li>
+                    <li ng-if="matched_properties">Merged properties: {$ matched_properties|number:0 $}</li>
+                    <li ng-if="matched_taxlots">Merged tax lots: {$ matched_taxlots|number:0 $}</li>
+                    <li ng-if="duplicate_property_states">Ignored property duplicates within the import file: {$ duplicate_property_states|number:0 $}</li>
+                    <li ng-if="duplicate_tax_lot_states">Ignored tax lot duplicates within the import file: {$ duplicate_tax_lot_states|number:0 $}</li>
+                    <li ng-if="duplicates_of_existing_property_states">Ignored duplicates of existing properties: {$ duplicates_of_existing_property_states|number:0 $}</li>
+                    <li ng-if="duplicates_of_existing_taxlot_states">Ignored duplicates of existing tax lots: {$ duplicates_of_existing_taxlot_states|number:0 $}</li>
+                </ul>
+            </div>
+            <div class="alert alert-{$ step_10_style $}">
                 <span ng-show="step_10_error_message">{$ step_10_error_message $}</span>
-                <span ng-hide="step_10_error_message">SEED could not locate any existing matches</strong>. Would you like to add another file?</span>
+                <span ng-hide="step_10_error_message"><strong>SEED could not locate any existing matches</strong>. Would you like to add another file?</span>
             </div>
             <div class="form-group col-sm-12"></div>
         </div>
@@ -174,8 +186,7 @@
     <!-- Step 11: Save Mappings Permanently  -->
     <div class="data_upload_steps" ng-switch-when="11">
         <div class="row">
-            <div class="alert alert-warning alert-dismissable">
-                <button type="button" class="close" aria-hidden="true" ng-click="uploader.complete = false">&times;</button>
+            <div class="alert alert-warning">
                 Did you review your mappings? It's a good idea to double check your mappings. Once SEED matches your properties &amp; tax lots you cannot undo or edit these mappings.
             </div>
         </div>
@@ -219,7 +230,10 @@
     <div ng-switch-when="7"></div>
     <div ng-switch-when="8">
         <div class="row text-center">
-            <button type="button" class="btn btn-default col-sm-6 center-block" ng-click="view_my_properties()">View my properties</button>
+            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="goto_step(2)">Add another file</button>
+        </div>
+        <div class="row text-center">
+            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="view_my_properties()">View my properties</button>
         </div>
         <div class="row text-center">
             <button id="review-mapping" type="button" class="btn btn-primary col-sm-6 center-block" ng-click="goto_data_matching()">Review matches</button>

@@ -81,7 +81,7 @@
                                     <th ng-repeat="col in reduced_columns" ng-click="sortData(col.name)">{$ col.displayName $}
                                         <div ng-class="getSortClass(col.name)"></div>
                                     </th>
-                                </div>    
+                                </div>
 
                         </tr>
                         <tr>
@@ -120,7 +120,7 @@
                             </td>
                         </tr>
                         <!-- search results -->
-                        <tr ng-repeat="state in available_matches | filter: allSearch | orderBy: sortColumn: reverseSort">
+                        <tr ng-repeat="state in available_matches | filter: allSearch | orderBy : sortColumn : reverseSort : naturalSortComparator">
                             <td class="is_aligned_center">
                                 <input type="checkbox" ng-model="state.checked" ng-change="checkbox_match(state)">
                             </td>

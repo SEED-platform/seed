@@ -640,6 +640,16 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       });
     };
 
+    inventory_service.get_matching_status = function (import_file_id) {
+      return $http.get('/api/v2/import_files/' + import_file_id + '/matching_status/', {
+        params: {
+          organization_id: user_service.get_organization().id
+        }
+      }).then(function (response) {
+        return response.data;
+      });
+    };
+
     return inventory_service;
 
   }]);

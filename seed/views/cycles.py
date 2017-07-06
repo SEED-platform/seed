@@ -92,6 +92,20 @@ class CycleView(GenericViewSet):
               description: The organization_id
               required: true
               paramType: query
+        type:
+            status:
+                required: true
+                type: string
+                description: either success or error
+            message:
+                type: string
+                description: error message, if any
+            name:
+                type: string
+                description: Name of the cycle that was created
+            cycle:
+                type: dict
+                description: cycle that was created as JSON
         """
 
         body = request.data
@@ -109,7 +123,15 @@ class CycleView(GenericViewSet):
             end=body['end'],
             created=timezone.now()
         )
-        return JsonResponse({'status': 'success', 'id': record.pk, 'name': record.name})
+        return JsonResponse(
+            {
+                'status': 'success',
+                'id': record.pk,
+                'name': record.name,
+                'cycle': model_to_dict(record),
+            }
+            # TODO: this should return 201
+        )
 
     @api_endpoint_class
     @ajax_request_class

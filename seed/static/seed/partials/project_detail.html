@@ -17,7 +17,6 @@
 <div class="section">
     <div class="alert_container" ng-show="show_alert">
         <div class="alert alert-success">
-            <button type="button" class="close" ng-click="show_alert = false">&times;</button>
             You successfully created the project <a href="#"><strong>{$ project.name $}</strong></a>.
         </div>
     </div>
@@ -76,7 +75,6 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                 <h4 class="modal-title" id="myModalLabel" ng-show="create_project_state == 'create'">Remove From Project</h4>
                 <h4 class="modal-title" id="newProjectModalLabel" ng-show="create_project_state == 'removing'"><i class="fa fa-spinner fa-spin"></i> Removing buildings from project '{$ project.name $}'</h4>
                 <h4 class="modal-title" id="newProjectModalLabel" ng-show="create_project_state == 'success'">Success</h4>
@@ -97,7 +95,6 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                 <h4 class="modal-title" id="existingProjectModalLabel" ng-show="create_project_state == 'create'">Where would you like to move these buildings?</h4>
                 <h4 class="modal-title" id="newProjectModalLabel" ng-show="create_project_state == 'adding'"><i class="fa fa-spinner fa-spin"></i> Adding buildings to project '{$ project.name $}'</h4>
             </div>
