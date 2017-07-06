@@ -104,7 +104,7 @@ class CycleView(GenericViewSet):
                 type: string
                 description: Name of the cycle that was created
             cycle:
-                type dict
+                type: dict
                 description: cycle that was created as JSON
         """
 

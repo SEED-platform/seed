@@ -96,7 +96,7 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
 
         self.assertEqual(TaxLot.objects.count(), 0)
 
-        self.assertEqual(self.import_file.find_unmatched_property_states().count(), 7)
+        self.assertEqual(self.import_file.find_unmatched_property_states().count(), 2)
         self.assertEqual(self.import_file.find_unmatched_tax_lot_states().count(), 0)
 
         return
