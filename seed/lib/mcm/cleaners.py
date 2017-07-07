@@ -145,16 +145,17 @@ class Cleaner(object):
     def clean_value(self, value, column_name):
         """Clean the value, based on characteristics of its column_name."""
         value = default_cleaner(value)
-        if column_name in self.float_columns:
-            return float_cleaner(value)
+        if value is not None:
+            if column_name in self.float_columns:
+                return float_cleaner(value)
 
-        if column_name in self.date_columns:
-            return date_cleaner(value)
+            if column_name in self.date_columns:
+                return date_cleaner(value)
 
-        if column_name in self.string_columns:
-            return str(value)
+            if column_name in self.string_columns:
+                return str(value)
 
-        if column_name in self.int_columns:
-            return int_cleaner(value)
+            if column_name in self.int_columns:
+                return int_cleaner(value)
 
         return value

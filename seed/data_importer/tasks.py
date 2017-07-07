@@ -318,7 +318,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
         # This may be historic, but we need to pull out the extra_data_fields here to pass into
         # mapper.map_row. apply_columns are extra_data columns (the raw column names)
         extra_data_fields = []
-        for k, v in mappings.iteritems():
+        for k, v in mappings.items():
             if not md.find_column(v[0], v[1]):
                 extra_data_fields.append(k)
         _log.debug("extra data fields: {}".format(extra_data_fields))

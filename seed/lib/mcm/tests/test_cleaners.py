@@ -93,6 +93,11 @@ class TestCleaners(TestCase):
 
     def test_clean_value(self):
         """Test that the ``Cleaner`` object properly routes cleaning."""
+        expected = None
+        self.assertEqual(
+            self.cleaner.clean_value(u'Not Available', u'str_1'),
+            expected
+        )
         expected = u'Whatever'
         self.assertEqual(
             self.cleaner.clean_value(u'Whatever', u'heading1'),
@@ -103,6 +108,8 @@ class TestCleaners(TestCase):
             self.cleaner.clean_value(u'0.7', u'heading_data1'),
             float_expected
         )
+
+
 
         self.assertListEqual(sorted(self.cleaner.date_columns), ['heading2', 'heading3'])
         self.assertEqual(self.cleaner.float_columns, ['heading_data1'])
