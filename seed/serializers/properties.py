@@ -30,7 +30,7 @@ class PropertyMeasureSerializer(serializers.HyperlinkedModelSerializer):
     name = serializers.ReadOnlyField(source='measure.name')
     display_name = serializers.ReadOnlyField(source='measure.display_name')
     category = serializers.ReadOnlyField(source='measure.category')
-    category_diplay_name = serializers.ReadOnlyField(source='measure.category_display_name')
+    category_display_name = serializers.ReadOnlyField(source='measure.category_display_name')
 
     class Meta:
         model = PropertyMeasure
@@ -40,7 +40,7 @@ class PropertyMeasureSerializer(serializers.HyperlinkedModelSerializer):
             'measure_id',
             'category',
             'name',
-            'category_diplay_name',
+            'category_display_name',
             'display_name',
             'implementation_status',
         )
