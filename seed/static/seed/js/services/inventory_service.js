@@ -36,8 +36,6 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           params.cycle = lastCycleId;
         }
 
-        spinner_utility.show();
-
         return $http.post('/api/v2/properties/filter/', {
           // Ensure that the required meta fields are included
           columns: _.uniq(columns.concat(['property_state_id', 'taxlot_state_id', 'property_view_id', 'taxlot_view_id']))
@@ -45,8 +43,6 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           params: params
         }).then(function (response) {
           return response.data;
-        }).finally(function () {
-          spinner_utility.hide();
         });
       }).catch(_.constant('Error fetching cycles'));
     };
@@ -227,7 +223,6 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           params.cycle = lastCycleId;
         }
 
-        spinner_utility.show();
         return $http.post('/api/v2/taxlots/filter/', {
           // Ensure that the required meta fields are included
           columns: _.uniq(columns.concat(['property_state_id', 'taxlot_state_id', 'property_view_id', 'taxlot_view_id']))
@@ -235,8 +230,6 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           params: params
         }).then(function (response) {
           return response.data;
-        }).finally(function () {
-          spinner_utility.hide();
         });
       }).catch(_.constant('Error fetching cycles'));
     };
