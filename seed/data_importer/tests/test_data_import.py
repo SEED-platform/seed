@@ -8,7 +8,8 @@ import csv
 import datetime
 import json
 import logging
-import os.path
+import os.path as osp
+import copy
 
 from dateutil import parser
 from django.core.files import File
@@ -30,10 +31,10 @@ from seed.models import (
     DATA_STATE_IMPORT,
     PORTFOLIO_RAW,
     Column,
-    Cycle,
     PropertyState,
     PropertyView,
     TaxLotState,
+    Cycle,
 )
 
 _log = logging.getLogger(__name__)
@@ -52,17 +53,14 @@ class TestMappingPortfolioData(DataMappingBaseTestCase):
         self.fake_row = FAKE_ROW
         selfvars = self.set_up(import_file_source_type)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
-        self.import_file = self.load_import_file_file(filename, self.import_file)
+        self.import_file.load_import_file(osp.join(osp.dirname(__file__), 'data', filename))
 
     def test_cached_first_row_order(self):
         """Tests to make sure the first row is saved in the correct order.
         It should be the order of the headers in the original file."""
         with patch.object(ImportFile, 'cache_first_rows', return_value=None):
-            tasks._save_raw_data(
-                self.import_file.pk,
-                'fake_cache_key',
-                1
-            )
+            tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
+
         expected_first_row = u"Property Id|#*#|Property Name|#*#|Year Ending|#*#|Property Floor Area (Buildings and Parking) (ft2)|#*#|Address 1|#*#|Address 2|#*#|City|#*#|State/Province|#*#|Postal Code|#*#|Year Built|#*#|ENERGY STAR Score|#*#|Site EUI (kBtu/ft2)|#*#|Total GHG Emissions (MtCO2e)|#*#|Weather Normalized Site EUI (kBtu/ft2)|#*#|National Median Site EUI (kBtu/ft2)|#*#|Source EUI (kBtu/ft2)|#*#|Weather Normalized Source EUI (kBtu/ft2)|#*#|National Median Source EUI (kBtu/ft2)|#*#|Parking - Gross Floor Area (ft2)|#*#|Organization|#*#|Generation Date|#*#|Release Date"  # NOQA
 
         import_file = ImportFile.objects.get(pk=self.import_file.pk)
@@ -102,9 +100,7 @@ class TestMappingPortfolioData(DataMappingBaseTestCase):
             data_state=DATA_STATE_IMPORT,
         )
 
-        # tasks._save_raw_data(import_file.pk, 'fake_cache_key', 1)
-
-        self.fake_mappings = FAKE_MAPPINGS['fake_row']
+        self.fake_mappings = copy.deepcopy(FAKE_MAPPINGS['fake_row'])
         Column.create_mappings(self.fake_mappings, self.org, self.user)
         tasks.map_data(import_file.pk)
 
@@ -138,24 +134,8 @@ class TestMappingPortfolioData(DataMappingBaseTestCase):
             sorted([d.column_name for d in data_columns]), ['Double Tester']
         )
 
-    def test_mapping_w_concat(self):
-        """When we have a json encoded list as a column mapping, we concat."""
-        fake_import_file = ImportFile.objects.create(
-            import_record=self.import_record,
-            raw_save_done=True
-        )
-        self.fake_row['City'] = 'Someplace Nice'
-        PropertyState.objects.create(
-            organization=self.org,
-            import_file=fake_import_file,
-            source_type=ASSESSED_RAW,
-            extra_data=self.fake_row,
-            data_state=DATA_STATE_IMPORT,
-        )
-
 
 class TestMappingExampleData(DataMappingBaseTestCase):
-
     def setUp(self):
         filename = getattr(self, 'filename', 'example-data-properties.xlsx')
         import_file_source_type = ASSESSED_RAW
@@ -164,7 +144,7 @@ class TestMappingExampleData(DataMappingBaseTestCase):
         self.fake_row = FAKE_ROW
         selfvars = self.set_up(import_file_source_type)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
-        self.import_file = self.load_import_file_file(filename, self.import_file)
+        self.import_file.load_import_file(osp.join(osp.dirname(__file__), 'data', filename))
 
     def test_mapping(self):
         tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
@@ -187,52 +167,9 @@ class TestMappingExampleData(DataMappingBaseTestCase):
         # The lot_number should also have the normalized code run, then re-delimited
         self.assertEqual(ps.lot_number, '33366555;33366125;33366148')
 
-    def test_mapping_no_taxlot(self):
-        # update the mappings to not include any taxlot tables in the data
-        # note that save_data reads in from the propertystate table, so that will always
-        # have entries in the db (for now).
-        for m in self.fake_mappings:
-            if m["to_table_name"] == 'TaxLotState':
-                m["to_table_name"] = 'PropertyState'
-
-        tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
-        Column.create_mappings(self.fake_mappings, self.org, self.user)
-        tasks.map_data(self.import_file.pk)
-
-        # make sure that no taxlot objects were created
-        ts = TaxLotState.objects.all()
-        self.assertEqual(len(ts), 0)
-
-        # make sure that the new data was loaded correctly
-        ps = PropertyState.objects.filter(address_line_1='2700 Welstone Ave NE')[0]
-        self.assertEqual(ps.site_eui, 1202)
-        self.assertEqual(ps.extra_data['jurisdiction_tax_lot_id'], '11160509')
-
-    def test_mapping_no_properties(self):
-        # update the mappings to not include any taxlot tables in the data
-        for m in self.fake_mappings:
-            if m["to_table_name"] == 'PropertyState':
-                m["to_table_name"] = 'TaxLotState'
-
-        tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
-        Column.create_mappings(self.fake_mappings, self.org, self.user)
-        tasks.map_data(self.import_file.pk)
-
-        # make sure that no taxlot objects were created. the 12 here are the import extra_data.
-        ps = PropertyState.objects.all()
-        self.assertEqual(len(ps), 14)
-
-        # make sure that the new data was loaded correctly
-        ts = TaxLotState.objects.filter(address_line_1='50 Willow Ave SE').first()
-        self.assertEqual(ts.extra_data['site_eui'], 125)
-
-        # note that this used to be 2700 Welstone Ave NE but needed to change the check because
-        # this has the same jurisdiction_tax_lot_id as others so it was never imported. So assigning
-        # the address was never happening because the tax_lot_id was already in use.
-
     def test_promote_properties(self):
         """Test if the promoting of a property works as expected"""
-        tasks.save_raw_data(self.import_file.id)
+        tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
         Column.create_mappings(self.fake_mappings, self.org, self.user)
         tasks.map_data(self.import_file.pk)
 
@@ -260,8 +197,82 @@ class TestMappingExampleData(DataMappingBaseTestCase):
         self.assertEqual(len(props), 2)
 
 
-class TestPromotingProperties(DataMappingBaseTestCase):
+# For some reason if you comment out the next two test cases (TestMappingPropertiesOnly and
+# TestMappingTaxLotsOnly), the test_views_matching.py file will fail. I cannot figure out
+# what is causing this and it is really annoying. Inherenting from DataMappingBaseTestCase
+# will delete all the model data upon completion, Maybe because FAKE_MAPPINGS
+# is not a copy, rather a pointer?
 
+class TestMappingPropertiesOnly(DataMappingBaseTestCase):
+    def setUp(self):
+        filename = getattr(self, 'filename', 'example-data-properties.xlsx')
+        import_file_source_type = ASSESSED_RAW
+        self.fake_mappings = FAKE_MAPPINGS['portfolio']
+        self.fake_extra_data = FAKE_EXTRA_DATA
+        self.fake_row = FAKE_ROW
+        selfvars = self.set_up(import_file_source_type)
+        self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
+        self.import_file.load_import_file(osp.join(osp.dirname(__file__), 'data', filename))
+
+    def test_mapping_properties_only(self):
+        # update the mappings to not include any taxlot tables in the data
+        # note that save_data reads in from the propertystate table, so that will always
+        # have entries in the db (for now).
+        new_mappings = copy.deepcopy(self.fake_mappings)
+        for m in new_mappings:
+            if m["to_table_name"] == 'TaxLotState':
+                m["to_table_name"] = 'PropertyState'
+
+        tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
+        Column.create_mappings(new_mappings, self.org, self.user)
+        tasks.map_data(self.import_file.pk)
+
+        # make sure that no taxlot objects were created
+        ts = TaxLotState.objects.all()
+        self.assertEqual(len(ts), 0)
+
+        # make sure that the new data was loaded correctly
+        ps = PropertyState.objects.filter(address_line_1='2700 Welstone Ave NE')[0]
+        self.assertEqual(ps.site_eui, 1202)
+        self.assertEqual(ps.extra_data['jurisdiction_tax_lot_id'], '11160509')
+
+
+class TestMappingTaxLotsOnly(DataMappingBaseTestCase):
+    def setUp(self):
+        filename = getattr(self, 'filename', 'example-data-properties.xlsx')
+        import_file_source_type = ASSESSED_RAW
+        self.fake_mappings = FAKE_MAPPINGS['portfolio']
+        self.fake_extra_data = FAKE_EXTRA_DATA
+        self.fake_row = FAKE_ROW
+        selfvars = self.set_up(import_file_source_type)
+        self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
+        self.import_file.load_import_file(osp.join(osp.dirname(__file__), 'data', filename))
+
+    def test_mapping_tax_lots_only(self):
+        # update the mappings to not include any taxlot tables in the data
+        new_mappings = copy.deepcopy(self.fake_mappings)
+        for m in new_mappings:
+            if m["to_table_name"] == 'PropertyState':
+                m["to_table_name"] = 'TaxLotState'
+
+        tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
+        Column.create_mappings(new_mappings, self.org, self.user)
+        tasks.map_data(self.import_file.pk)
+
+        # make sure that no taxlot objects were created. the 12 here are the import extra_data.
+        ps = PropertyState.objects.all()
+        self.assertEqual(len(ps), 14)
+
+        # make sure that the new data was loaded correctly
+        ts = TaxLotState.objects.filter(address_line_1='50 Willow Ave SE').first()
+        self.assertEqual(ts.extra_data['site_eui'], 125)
+
+        # note that this used to be 2700 Welstone Ave NE but needed to change the check because
+        # this has the same jurisdiction_tax_lot_id as others so it was never imported. So assigning
+        # the address was never happening because the tax_lot_id was already in use.
+
+
+class TestPromotingProperties(DataMappingBaseTestCase):
     def setUp(self):
         filename = getattr(self, 'filename', 'example-data-properties.xlsx')
         import_file_source_type = ASSESSED_RAW
@@ -270,7 +281,7 @@ class TestPromotingProperties(DataMappingBaseTestCase):
         self.fake_row = FAKE_ROW
         selfvars = self.set_up(import_file_source_type)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
-        self.import_file = self.load_import_file_file(filename, self.import_file)
+        self.import_file.load_import_file(osp.join(osp.dirname(__file__), 'data', filename))
 
     def import_exported_data(self, filename):
         """
@@ -286,7 +297,7 @@ class TestPromotingProperties(DataMappingBaseTestCase):
         data = []
         new_keys = set()
 
-        f = os.path.join(os.path.dirname(__file__), 'data', filename)
+        f = osp.join(osp.dirname(__file__), 'data', filename)
         with open(f, 'rb') as csvfile:
             reader = csv.DictReader(csvfile)
             keys = reader.fieldnames
@@ -304,9 +315,9 @@ class TestPromotingProperties(DataMappingBaseTestCase):
 
         # save the new file
         new_file_name = 'tmp_{}_flat.csv'.format(
-            os.path.splitext(os.path.basename(filename))[0]
+            osp.splitext(osp.basename(filename))[0]
         )
-        f_new = os.path.join(os.path.dirname(__file__), 'data', new_file_name)
+        f_new = osp.join(osp.dirname(__file__), 'data', new_file_name)
         with open(f_new, 'w') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=keys)
             writer.writeheader()
@@ -315,17 +326,17 @@ class TestPromotingProperties(DataMappingBaseTestCase):
 
         # save the keys this does not appear to be used anywhere
         new_file_name = 'tmp_{}_keys.csv'.format(
-            os.path.splitext(os.path.basename(filename))[0]
+            osp.splitext(osp.basename(filename))[0]
         )
-        f_new = os.path.join(os.path.dirname(__file__), 'data', new_file_name)
+        f_new = osp.join(osp.dirname(__file__), 'data', new_file_name)
         with open(f_new, 'w') as outfile:
             outfile.writelines([str(key) + '\n' for key in keys])
 
         # Continue saving the raw data
         new_file_name = "tmp_{}_flat.csv".format(
-            os.path.splitext(os.path.basename(filename))[0]
+            osp.splitext(osp.basename(filename))[0]
         )
-        f_new = os.path.join(os.path.dirname(__file__), 'data', new_file_name)
+        f_new = osp.join(osp.dirname(__file__), 'data', new_file_name)
         self.import_file.file = File(open(f_new))
         self.import_file.save()
 

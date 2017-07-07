@@ -517,8 +517,8 @@ class DataQualityCheck(models.Model):
             self.column_lookup[(c['table'], c['name'])] = c['displayName']
 
         # grab all the rules once, save query time
-        rules = list(
-            self.rules.filter(enabled=True, table_name=record_type).order_by('field', 'severity'))
+        rules = self.rules.filter(enabled=True, table_name=record_type).order_by('field',
+                                                                                 'severity')
 
         # Get the list of the field names that will show in every result
         fields = self.get_fieldnames(record_type)
@@ -553,10 +553,33 @@ class DataQualityCheck(models.Model):
         Check for errors in the min/max of the values.
 
         :param rules: list, rules to run from database objects
-        :param row: dict, row of data to check
+        :param row: PropertyState or TaxLotState, row of data to check
         :return: None
         """
-        linked_id = None
+        # check if the row has any rules applied to it
+        model_labels = {'linked_id': None, 'label_ids': []}
+        if row.__class__.__name__ == 'PropertyState':
+            label = apps.get_model('seed', 'Property_labels')
+            if PropertyView.objects.filter(state=row).exists():
+                model_labels['linked_id'] = PropertyView.objects.get(state=row).property_id
+                model_labels['label_ids'] = list(
+                    label.objects.filter(property_id=model_labels['linked_id']).values_list(
+                        'statuslabel_id', flat=True)
+                )
+                # _log.debug("Property {} has {} labels".format(model_labels['linked_id'],
+                #                                               len(model_labels['label_ids'])))
+        elif row.__class__.__name__ == 'TaxLotState':
+            label = apps.get_model('seed', 'TaxLot_labels')
+            if TaxLotView.objects.filter(state=row).exists():
+                model_labels['linked_id'] = TaxLotView.objects.get(state=row).taxlot_id
+                model_labels['label_ids'] = list(
+                    label.objects.filter(taxlot_id=model_labels['linked_id']).values_list(
+                        'statuslabel_id', flat=True)
+                )
+                # _log.debug("TaxLot {} has {} labels".format(model_labels['linked_id'],
+                #                                             len(model_labels['label_ids'])))
+
+        # rename the propertystate_id and taxlot_id to be model_id
         for rule in rules:
             # check if the field exists
             if hasattr(row, rule.field) or rule.field in row.extra_data:
@@ -574,16 +597,7 @@ class DataQualityCheck(models.Model):
                     display_name = self.column_lookup[(rule.table_name, rule.field)]
 
                 # get the status_labels for the linked properties and tax lots
-                if rule.table_name == 'PropertyState':
-                    label = apps.get_model('seed', 'Property_labels')
-                    if rule.status_label_id is not None and linked_id is None:
-                        if PropertyView.objects.filter(state=row).exists():
-                            linked_id = PropertyView.objects.get(state=row).property_id
-                else:
-                    label = apps.get_model('seed', 'TaxLot_labels')
-                    if rule.status_label_id is not None and linked_id is None:
-                        if TaxLotView.objects.filter(state=row).exists():
-                            linked_id = TaxLotView.objects.get(state=row).taxlot_id
+                linked_id = model_labels['linked_id']
 
                 if (rule.table_name, rule.field) not in self.column_lookup:
                     # If the rule is not in the column lookup, then it may have been a required
@@ -623,7 +637,7 @@ class DataQualityCheck(models.Model):
                         self.add_result_comparison_error(row.id, rule, display_name, s_value, s_max)
                         continue
 
-                if not label_applied:
+                if not label_applied and rule.status_label_id in model_labels['label_ids']:
                     self.remove_status_label(label, rule, linked_id)
 
     def save_to_cache(self, identifier):
@@ -642,7 +656,7 @@ class DataQualityCheck(models.Model):
         existing_results = get_cache_raw(DataQualityCheck.cache_key(identifier)) or []
 
         l = []
-        for key, value in self.results.iteritems():
+        for key, value in self.results.items():
             l.append(value)
 
         existing_results += l

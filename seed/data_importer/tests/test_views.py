@@ -7,14 +7,14 @@
 import json
 
 from django.core.urlresolvers import reverse_lazy
-from django.test import TestCase
 
 from seed.data_importer.models import ImportFile, ImportRecord
+from seed.data_importer.tests.util import DataMappingBaseTestCase
 from seed.landing.models import SEEDUser as User
 from seed.lib.mcm.reader import ROW_DELIMITER
 
 
-class DataImporterViewTests(TestCase):
+class DataImporterViewTests(DataMappingBaseTestCase):
     """
     Tests of the data_importer views (and the objects they create).
     """
@@ -24,8 +24,7 @@ class DataImporterViewTests(TestCase):
             'username': 'test_user@demo.com',
             'password': 'test_pass',
         }
-        self.user = User.objects.create_superuser(
-            email='test_user@demo.com', **user_details)
+        self.user = User.objects.create_superuser(email='test_user@demo.com', **user_details)
         self.client.login(**user_details)
 
     def test_get_raw_column_names(self):

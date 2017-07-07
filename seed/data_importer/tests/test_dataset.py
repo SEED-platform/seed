@@ -7,14 +7,14 @@
 import json
 
 from django.core.urlresolvers import reverse_lazy
-from django.test import TestCase
 
 from seed.data_importer.models import ImportFile, ImportRecord
+from seed.data_importer.tests.util import DataMappingBaseTestCase
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 
 
-class DeleteFileViewTests(TestCase):
+class DeleteFileViewTests(DataMappingBaseTestCase):
     """
     Tests of the SEED Building Detail page
     """

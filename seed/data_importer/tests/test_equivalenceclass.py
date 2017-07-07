@@ -6,9 +6,8 @@
 """
 import logging
 
-from django.test import TestCase
-
 from seed.data_importer.tasks import EquivalencePartitioner
+from seed.data_importer.tests.util import DataMappingBaseTestCase
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +34,7 @@ class TaxLotState(EZState):
         super(TaxLotState, self).__init__("jurisdiction_tax_lot_id", "custom_id_1", "normalized_address", **kwds)
 
 
-class TestEquivalenceClassGenerator(TestCase):
+class TestEquivalenceClassGenerator(DataMappingBaseTestCase):
 
     def test_equivalence(self):
         partitioner = EquivalencePartitioner.make_propertystate_equivalence()

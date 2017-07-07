@@ -6,24 +6,31 @@
 """
 
 import datetime
-from django.utils import timezone
 import logging
-import os.path
 
-from django.core.files import File
 from django.test import TestCase
+from django.utils import timezone
 
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
+from seed.models.data_quality import DataQualityCheck
 from seed.models import (
+    Column,
     ColumnMapping,
     Cycle,
+    Property,
     PropertyState,
-)
-from seed.models import (
+    PropertyView,
     DATA_STATE_IMPORT,
-    # DATA_STATE_MAPPING,
+    ASSESSED_RAW,
+    PropertyAuditLog,
+    StatusLabel,
+    TaxLotAuditLog,
+    TaxLotState,
+    TaxLot,
+    TaxLotView,
+    TaxLotProperty,
 )
 
 logger = logging.getLogger(__name__)
@@ -213,7 +220,30 @@ FAKE_MAPPINGS = {
 }
 
 
-class DataMappingBaseTestCase(TestCase):
+class DeleteModelsTestCase(TestCase):
+    def tearDown(self):
+        User.objects.all().delete()
+        Organization.objects.all().delete()
+        OrganizationUser.objects.all().delete()
+        Column.objects.all().delete()
+        ColumnMapping.objects.all().delete()
+        Cycle.objects.all().delete()
+        DataQualityCheck.objects.all().delete()
+        ImportFile.objects.all().delete()
+        ImportRecord.objects.all().delete()
+        Property.objects.all().delete()
+        PropertyState.objects.all().delete()
+        PropertyView.objects.all().delete()
+        PropertyAuditLog.objects.all().delete()
+        StatusLabel.objects.all().delete()
+        TaxLot.objects.all().delete()
+        TaxLotState.objects.all().delete()
+        TaxLotView.objects.all().delete()
+        TaxLotAuditLog.objects.all().delete()
+        TaxLotProperty.objects.all().delete()
+
+
+class DataMappingBaseTestCase(DeleteModelsTestCase):
     """Base Test Case Class to handle data import"""
 
     def set_up(self, import_file_source_type):
@@ -221,7 +251,11 @@ class DataMappingBaseTestCase(TestCase):
         import_file_is_espm = getattr(self, 'import_file_is_espm', True)
         import_file_data_state = getattr(self, 'import_file_data_state', DATA_STATE_IMPORT)
 
-        user = User.objects.create(username='test')
+        if not User.objects.filter(username='test_user@demo.com').exists():
+            user = User.objects.create_user('test_user@demo.com', password='test_pass')
+        else:
+            user = User.objects.get(username='test_user@demo.com')
+
         org = Organization.objects.create()
 
         cycle, _ = Cycle.objects.get_or_create(
@@ -234,30 +268,25 @@ class DataMappingBaseTestCase(TestCase):
         # Create an org user
         OrganizationUser.objects.create(user=user, organization=org)
 
+        import_record, import_file = self.create_import_file(user, org, cycle,
+                                                             import_file_is_espm,
+                                                             import_file_source_type,
+                                                             import_file_data_state)
+
+        return user, org, import_file, import_record, cycle
+
+    def create_import_file(self, user, org, cycle, espm=True, source_type=ASSESSED_RAW,
+                           data_state=DATA_STATE_IMPORT):
         import_record = ImportRecord.objects.create(
             owner=user, last_modified_by=user, super_organization=org
         )
         import_file = ImportFile.objects.create(import_record=import_record, cycle=cycle)
-        import_file.is_espm = import_file_is_espm
-        import_file.source_type = import_file_source_type
-        import_file.data_state = import_file_data_state
+        import_file.is_espm = espm
+        import_file.source_type = source_type
+        import_file.data_state = data_state
         import_file.save()
 
-        return user, org, import_file, import_record, cycle
-
-    def load_import_file_file(self, filename, import_file):
-        f = os.path.join(os.path.dirname(__file__), 'data', filename)
-        import_file.file = File(open(f))
-        import_file.save()
-        return import_file
+        return import_record, import_file
 
     def tearDown(self):
-        User.objects.all().delete()
-        ColumnMapping.objects.all().delete()
-        ImportFile.objects.all().delete()
-        ImportRecord.objects.all().delete()
-        OrganizationUser.objects.all().delete()
-        Organization.objects.all().delete()
-        User.objects.all().delete()
-        Cycle.objects.all().delete()
-        PropertyState.objects.all().delete()
+        super(DataMappingBaseTestCase, self).tearDown()

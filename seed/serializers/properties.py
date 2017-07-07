@@ -7,12 +7,11 @@ required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
 :author Paul Munday <paul@paulmunday.net>
 """
-from collections import OrderedDict
 import json
+from collections import OrderedDict
 
 from django.apps import apps
 from django.db import models
-
 from rest_framework import serializers
 from rest_framework.fields import empty
 
@@ -26,7 +25,6 @@ from seed.models import (
     TaxLotProperty,
     TaxLotView
 )
-
 from seed.serializers.certification import (
     GreenAssessmentPropertyReadOnlySerializer
 )
@@ -47,7 +45,6 @@ for field in REMOVE_FIELDS:
     PROPERTY_STATE_FIELDS.remove(field)
 PROPERTY_STATE_FIELDS.extend(['organization_id', 'import_file_id'])
 
-
 PVFIELDS = ['state__{}'.format(f) for f in PROPERTY_STATE_FIELDS]
 
 PVFIELDS.extend(['cycle__{}'.format(f) for f in CYCLE_FIELDS])
@@ -55,7 +52,6 @@ PVFIELDS.extend(['id', 'property_id'])
 
 
 class PropertyLabelsField(serializers.RelatedField):
-
     def to_representation(self, value):
         return value.id
 
@@ -86,7 +82,6 @@ class PropertyAuditLogReadOnlySerializer(serializers.BaseSerializer):
 
 
 class PropertyListSerializer(serializers.ListSerializer):
-
     def to_representation(self, data):
         """Overwritten to optimize fetching of Labels"""
         if isinstance(data, models.Manager):
@@ -126,6 +121,7 @@ class PropertySerializer(serializers.ModelSerializer):
 
 class PropertyMinimalSerializer(serializers.ModelSerializer):
     """Define fields to avoid label lookup"""
+
     class Meta:
         model = Property
         fields = ['id', 'campus', 'parent_property']
@@ -135,7 +131,6 @@ class PropertyMinimalSerializer(serializers.ModelSerializer):
 
 
 class PropertyStateSerializer(serializers.ModelSerializer):
-
     extra_data = serializers.JSONField(required=False)
 
     class Meta:

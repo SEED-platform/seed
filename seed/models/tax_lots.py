@@ -178,6 +178,70 @@ class TaxLotState(models.Model):
 
         return super(TaxLotState, self).save(*args, **kwargs)
 
+    @classmethod
+    def coparent(cls, state_id):
+        """
+        Return the coparent of the TaxLotState. This will query the TaxLotAuditLog table to
+        determine if there is a coparent and return it if it is found. The state_id needs to be
+        the base ID of when the original record was imported
+
+        :param state_id: integer, state id to find coparent.
+        :return: dict
+        """
+
+        coparents = list(
+            TaxLotState.objects.raw("""
+                    WITH creation_id AS (
+                        SELECT
+                          pal.id,
+                          pal.state_id AS original_state_id
+                        FROM seed_taxlotauditlog pal
+                        WHERE pal.state_id = %s AND
+                              pal.name = 'Import Creation' AND
+                              pal.import_filename IS NOT NULL
+                    ), audit_id AS (
+                        SELECT
+                          audit_log.id,
+                          audit_log.state_id,
+                          audit_log.parent1_id,
+                          audit_log.parent2_id,
+                          audit_log.parent_state1_id,
+                          audit_log.parent_state2_id,
+                          cid.original_state_id
+                        FROM creation_id cid, seed_taxlotauditlog audit_log
+                        WHERE audit_log.parent1_id = cid.id OR audit_log.parent2_id = cid.id
+                    )
+                    SELECT
+                      ps.id,
+                      ps.custom_id_1,
+                      ps.block_number,
+                      ps.district,
+                      ps.address_line_1,
+                      ps.address_line_2,
+                      ps.city,
+                      ps.state,
+                      ps.postal_code,
+                      ps.extra_data,
+                      ps.number_properties,
+                      ps.jurisdiction_tax_lot_id,
+                      NULL
+                    FROM seed_taxlotstate ps, audit_id aid
+                    WHERE (ps.id = aid.parent_state1_id AND
+                           aid.parent_state1_id <> aid.original_state_id) OR
+                          (ps.id = aid.parent_state2_id AND
+                           aid.parent_state2_id <> aid.original_state_id);""", [int(state_id)])
+        )
+
+        # reduce this down to just the fields that were returns and convert to dict. This is
+        # important because the fields that were not queried will be deferred and require a new
+        # query to retrieve.
+        keep_fields = ['id', 'custom_id_1', 'jurisdiction_tax_lot_id', 'block_number', 'district',
+                       'address_line_1', 'address_line_2', 'city', 'state', 'postal_code',
+                       'number_properties', 'extra_data']
+        coparents = [{key: getattr(c, key) for key in keep_fields} for c in coparents]
+
+        return coparents, len(coparents)
+
 
 class TaxLotView(models.Model):
     taxlot = models.ForeignKey(TaxLot, related_name='views', null=True,
