@@ -196,7 +196,7 @@ class BuildingSync(object):
                     break
 
         if len(results) == 0:
-            return None
+            return []
         elif len(results) == 1:
             return results[0]
         else:
@@ -230,9 +230,9 @@ class BuildingSync(object):
             value = self._get_node(path, data, [])
 
             try:
-                if value is not None:
+                if value:
                     if v.get('key_path_name', None) and v.get('value_path_name', None) and v.get(
-                        'key_path_value', None):
+                            'key_path_value', None):
                         value = _lookup_sub(
                             value,
                             v.get('key_path_name'),
@@ -273,7 +273,7 @@ class BuildingSync(object):
                     if v['required']:
                         messages.append("Could not find required value for '{}'".format(path))
                         errors = True
-            except Exception, err:
+            except Exception as err:
                 message = "Error processing {}:{} with error: {}".format(k, v, err)
                 messages.append(message)
                 errors = True
@@ -297,7 +297,6 @@ class BuildingSync(object):
             res['measures'].append(data)
 
         # reports = self._get_node('Audits.Audit.Reports.Report', data, [])
-
 
         return res, errors, messages
 

@@ -105,7 +105,7 @@ class TestBuildingSync(TestCase):
         self.assertEqual(result, "new")
 
         result = self.bs._get_node('c.d.e.f.g.h.i', data, [])
-        self.assertEqual(result, None)
+        self.assertEqual(result, [])
 
     def test_get_address_missing_field(self):
         self.assertTrue(self.bs.import_file(self.xml_file))
@@ -117,12 +117,19 @@ class TestBuildingSync(TestCase):
             "type": "string",
         }
 
-        expected = {'city': u'Denver', 'state': u'CO', 'address_line_1': u'123 Main Street'}
+        expected = {
+            'city': u'Denver',
+            'state': u'CO',
+            'address_line_1': u'123 Main Street',
+            'measures': [],
+            'reports': [],
+        }
 
         res, errors, mess = self.bs.process(struct)
         self.assertEqual(res, expected)
         self.assertTrue(errors)
-        self.assertEqual(mess, ["Could not find 'Audits.Audit.Sites.Site.Address.BungalowName'"])
+        self.assertEqual(mess, [
+            "Could not find required value for 'Audits.Audit.Sites.Site.Address.BungalowName'"])
 
         # Missing path
         struct['return']['bungalow_name'] = {
@@ -132,7 +139,8 @@ class TestBuildingSync(TestCase):
         }
         res, errors, mess = self.bs.process(struct)
         self.assertTrue(errors)
-        self.assertEqual(mess, ["Could not find 'Audits.Audit.Sites.Site.Address.Long.List.A.B'"])
+        self.assertEqual(mess, [
+            "Could not find required value for 'Audits.Audit.Sites.Site.Address.Long.List.A.B'"])
         self.assertEqual(res, expected)
 
     def test_bricr_struct(self):
@@ -155,6 +163,8 @@ class TestBuildingSync(TestCase):
             'occupancy_type': 'PDR',
             'premise_identifier': 'XY8198732',
             'property_type': 'Commercial',
+            'measures': [],
+            'reports': [],
         }
 
         res, errors, mess = self.bs.process(struct)

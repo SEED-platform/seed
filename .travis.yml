@@ -1,5 +1,6 @@
 sudo: true
 dist: trusty
+group: deprecated-2017Q2
 cache:
   directories:
     - node_modules
