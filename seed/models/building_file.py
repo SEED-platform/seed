@@ -12,7 +12,14 @@ from django.db import models
 
 from seed.building_sync.building_sync import BuildingSync
 from seed.lib.mappings.mapping_data import MappingData
-from seed.models import PropertyState, Column
+from seed.models import (
+    PropertyState,
+    Column,
+    PropertyMeasure,
+    Measure,
+    PropertyAuditLog,
+    AUDIT_IMPORT,
+)
 
 _log = logging.getLogger(__name__)
 
@@ -90,10 +97,16 @@ class BuildingFile(models.Model):
                 create_data = {"organization_id": organization_id}
                 extra_data = {}
                 for k, v in data.items():
+                    # Skip the keys that are for measures and reports and process later
+                    if k in ['measures', 'reports']:
+                        continue
+
                     if md.find_column('PropertyState', k):
                         create_data[k] = v
                     else:
-                        # TODO: break out columns in the extra data that should be part of the PropertyState and which ones should be added to some other class that doesn't exist yet.
+                        # TODO: break out columns in the extra data that should be part of the
+                        # PropertyState and which ones should be added to some other class that
+                        # doesn't exist yet.
                         extra_data[k] = v
                         # create columns, if needed, for the extra_data fields
 
@@ -109,13 +122,37 @@ class BuildingFile(models.Model):
                 property_state.extra_data = extra_data
                 property_state.save()
 
-                # TODO: Need an entry in the audit log
-
                 # TODO: needs to be a merge instead of simply promoting
                 property_state.promote(cycle)
 
                 self.property_state_id = property_state.id
                 self.save()
+
+                # add in the measures
+                for m in data['measures']:
+                    # Find the measure in the database
+                    impl_status = PropertyMeasure.str_to_impl_status(m['implementation_status'])
+                    measure = Measure.objects.get(
+                        category=m['category'], name=m['name'], organization_id=organization_id,
+                    )
+
+                    # Add the measure to the join table.
+                    join, _ = PropertyMeasure.objects.get_or_create(
+                        property_state_id=self.property_state_id,
+                        measure_id=measure.pk,
+                        implementation_status=impl_status,
+                        # add in the other fields
+
+                    )
+
+                    PropertyAuditLog.objects.create(
+                        organization_id=organization_id,
+                        state_id=self.property_state_id,
+                        name='Import Creation',
+                        description='Creation from Import file.',
+                        import_filename=self.file.path,
+                        record_type=AUDIT_IMPORT
+                    )
 
             return True, property_state
         else:

@@ -129,6 +129,7 @@ class PropertyState(models.Model):
     building_certification = models.CharField(max_length=255, null=True, blank=True)
 
     extra_data = JSONField(default=dict, blank=True)
+    measures = models.ManyToManyField('Measure', through='PropertyMeasure')
 
     class Meta:
         index_together = [

@@ -40,11 +40,14 @@ def _snake_case(display_name):
 
 
 class Measure(models.Model):
-    organization = models.ForeignKey(Organization)
     name = models.CharField(max_length=255)
     display_name = models.CharField(max_length=255)
     category = models.CharField(max_length=255)
     category_display_name = models.CharField(max_length=255)
+
+    # relationships
+    properties = models.ManyToManyField('PropertyState', through='PropertyMeasure')
+    organization = models.ForeignKey(Organization)
 
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)

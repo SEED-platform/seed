@@ -7,7 +7,7 @@
 from rest_framework import serializers
 
 from seed.models import (
-    Property, PropertyState, PropertyView,
+    Property, PropertyState, PropertyView, PropertyMeasure
 )
 
 
@@ -24,11 +24,37 @@ class PropertySerializer(serializers.ModelSerializer):
         model = Property
 
 
+class PropertyMeasureSerializer(serializers.HyperlinkedModelSerializer):
+    id = serializers.ReadOnlyField(source='measure.id')
+    measure_id = serializers.SerializerMethodField('measure_id_name')
+    name = serializers.ReadOnlyField(source='measure.name')
+    display_name = serializers.ReadOnlyField(source='measure.display_name')
+    category = serializers.ReadOnlyField(source='measure.category')
+    category_diplay_name = serializers.ReadOnlyField(source='measure.category_display_name')
+
+    class Meta:
+        model = PropertyMeasure
+
+        fields = (
+            'id',
+            'measure_id',
+            'category',
+            'name',
+            'category_diplay_name',
+            'display_name',
+            'implementation_status',
+        )
+
+    def measure_id_name(self, obj):
+        return "{}.{}".format(obj.measure.category, obj.measure.name)
+
+
 class PropertyStateSerializer(serializers.ModelSerializer):
     class Meta:
         model = PropertyState
 
     extra_data = serializers.JSONField()
+    measures = PropertyMeasureSerializer(source='propertymeasure_set', many=True)
 
 
 class PropertyViewSerializer(serializers.ModelSerializer):

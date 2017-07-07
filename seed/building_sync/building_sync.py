@@ -9,6 +9,7 @@ import json
 import os
 
 import xmltodict
+from seed.models.measures import _snake_case
 
 
 class BuildingSync(object):
@@ -34,65 +35,65 @@ class BuildingSync(object):
     }
 
     BRICR_STRUCT = {
-        "root": "Audits.Audit.Sites.Site",
+        "root": "Audits.Audit",
         "return": {
             "address_line_1": {
-                "path": "Address.StreetAddressDetail.Simplified.StreetAddress",
+                "path": "Sites.Site.Address.StreetAddressDetail.Simplified.StreetAddress",
                 "required": True,
                 "type": "string",
             },
             "city": {
-                "path": "Address.City",
+                "path": "Sites.Site.Address.City",
                 "required": True,
                 "type": "string",
             },
             "state": {
-                "path": "Address.State",
+                "path": "Sites.Site.Address.State",
                 "required": True,
                 "type": "string",
             },
             "longitude": {
-                "path": "Longitude",
+                "path": "Sites.Site.Longitude",
                 "required": True,
                 "type": "double"
             },
             "latitude": {
-                "path": "Latitude",
+                "path": "Sites.Site.Latitude",
                 "required": True,
                 "type": "double",
             },
             "custom_id_1": {
-                "path": "Facilities.Facility.@ID",
+                "path": "Sites.Site.Facilities.Facility.@ID",
                 "required": True,
                 "type": "string",
             },
             "year_built": {
-                "path": "Facilities.Facility.YearOfConstruction",
+                "path": "Sites.Site.Facilities.Facility.YearOfConstruction",
                 "required": True,
                 "type": "integer",
             },
             "property_type": {
-                "path": "Facilities.Facility.FacilityClassification",
+                "path": "Sites.Site.Facilities.Facility.FacilityClassification",
                 "required": True,
                 "type": "string",
             },
             "occupancy_type": {
-                "path": "Facilities.Facility.OccupancyClassification",
+                "path": "Sites.Site.Facilities.Facility.OccupancyClassification",
                 "required": True,
                 "type": "string",
             },
             "floors_above_grade": {
-                "path": "Facilities.Facility.FloorsAboveGrade",
+                "path": "Sites.Site.Facilities.Facility.FloorsAboveGrade",
                 "required": True,
                 "type": "integer",
             },
             "floors_below_grade": {
-                "path": "Facilities.Facility.FloorsBelowGrade",
+                "path": "Sites.Site.Facilities.Facility.FloorsBelowGrade",
                 "required": True,
                 "type": "integer",
             },
             "premise_identifier": {
-                "path": "Facilities.Facility.PremisesIdentifiers.PremisesIdentifier",
+                "path": "Sites.Site.Facilities.Facility.PremisesIdentifiers.PremisesIdentifier",
                 "key_path_name": "IdentifierLabel",
                 "key_path_value": "Assessor parcel number",
                 "value_path_name": "IdentifierValue",
@@ -100,7 +101,7 @@ class BuildingSync(object):
                 "type": "string",
             },
             "gross_floor_area": {
-                "path": "Facilities.Facility.FloorAreas.FloorArea",
+                "path": "Sites.Site.Facilities.Facility.FloorAreas.FloorArea",
                 "key_path_name": "FloorAreaType",
                 "key_path_value": "Gross",
                 "value_path_name": "FloorAreaValue",
@@ -108,9 +109,17 @@ class BuildingSync(object):
                 "type": "double",
             },
             "net_floor_area": {
-                "path": "Facilities.Facility.FloorAreas.FloorArea",
+                "path": "Sites.Site.Facilities.Facility.FloorAreas.FloorArea",
                 "key_path_name": "FloorAreaType",
                 "key_path_value": "Net",
+                "value_path_name": "FloorAreaValue",
+                "required": False,
+                "type": "double",
+            },
+            "footprint_floor_area": {
+                "path": "Sites.Site.Facilities.Facility.FloorAreas.FloorArea",
+                "key_path_name": "FloorAreaType",
+                "key_path_value": "Footprint",
                 "value_path_name": "FloorAreaValue",
                 "required": False,
                 "type": "double",
@@ -206,54 +215,89 @@ class BuildingSync(object):
             items = [node] if isinstance(node, dict) else node
             for item in items:
                 found = False
-                for k, v in item.iteritems():
+                for k, v in item.items():
                     if k == key_path_name and v == key_path_value:
                         found = True
 
                     if found and k == value_path_name:
                         return v
 
-        res = {}
+        res = {'measures': [], 'reports': []}
         messages = []
         errors = False
         for k, v in struct['return'].items():
             path = ".".join([struct['root'], v['path']])
             value = self._get_node(path, data, [])
 
-            if value is not None:
-                if v.get('key_path_name', None) and \
-                    v.get('value_path_name', None) and \
-                        v.get('key_path_value', None):
-                    value = _lookup_sub(
-                        value,
-                        v.get('key_path_name'),
-                        v.get('key_path_value'),
-                        v.get('value_path_name'),
-                    )
+            try:
+                if value is not None:
+                    if v.get('key_path_name', None) and v.get('value_path_name', None) and v.get(
+                        'key_path_value', None):
+                        value = _lookup_sub(
+                            value,
+                            v.get('key_path_name'),
+                            v.get('key_path_value'),
+                            v.get('value_path_name'),
+                        )
 
-                # catch some errors
-                if isinstance(value, list):
-                    messages.append("Could not find single entry for '{}'".format(path))
-                    errors = True
-                    break
+                        # check if the value is not defined and if it is required
+                        if not value:
+                            if v.get('required'):
+                                messages.append(
+                                    "Could not find required value for sub-lookup of {}:".format(
+                                        v.get('key_path_name'), v.get('key_path_value')))
+                                errors = True
+                            else:
+                                continue
 
-                # type cast the value
-                if v['type'] == 'double':
-                    value = float(value)
-                elif v['type'] == 'integer':
-                    value = int(value)
-                elif v['type'] == 'dict':
-                    value = dict(value)
-                elif v['type'] == 'string':
-                    value = str(value)
+                    # catch some errors
+                    if isinstance(value, list):
+                        messages.append("Could not find single entry for '{}'".format(path))
+                        errors = True
+                        continue
+
+                    # type cast the value
+                    if v['type'] == 'double':
+                        value = float(value)
+                    elif v['type'] == 'integer':
+                        value = int(value)
+                    elif v['type'] == 'dict':
+                        value = dict(value)
+                    elif v['type'] == 'string':
+                        value = str(value)
+                    else:
+                        messages.append("Unknown cast type of {} for '{}'".format(v['type'], path))
+
+                    res[k] = value
                 else:
-                    messages.append("Unknown cast type of {} for '{}'".format(v['type'], path))
+                    if v['required']:
+                        messages.append("Could not find required value for '{}'".format(path))
+                        errors = True
+            except Exception, err:
+                message = "Error processing {}:{} with error: {}".format(k, v, err)
+                messages.append(message)
+                errors = True
 
-                res[k] = value
-            else:
-                if v['required']:
-                    messages.append("Could not find '{}'".format(path))
-                    errors = True
+        # manually add in parsing of measures and reports because they are a bit different than
+        # a straight mapping
+        measures = self._get_node('Audits.Audit.Measures.Measure', data, [])
+        for m in measures:
+            data = {
+                'id': m.get('@ID'),
+                'system_category_affected': m.get('SystemCategoryAffected'),
+                'implementation_status': m.get('ImplementationStatus'),
+                'category': m['TechnologyCategories']['TechnologyCategory'].keys()[0],
+            }
+            data['name'] = m['TechnologyCategories']['TechnologyCategory'][data['category']][
+                'MeasureName']
+            # fix the names of the measures for "easier" look up... doing in separate step to
+            # fit in single line. Cleanup when?
+            data['category'] = _snake_case(data['category'])
+            data['name'] = _snake_case(data['name'])
+            res['measures'].append(data)
+
+        # reports = self._get_node('Audits.Audit.Reports.Report', data, [])
+
 
         return res, errors, messages
 

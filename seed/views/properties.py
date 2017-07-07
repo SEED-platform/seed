@@ -500,6 +500,7 @@ class PropertyViewSet(GenericViewSet):
     def get_history(self, property_view):
         """Return history in reverse order."""
         history = []
+        master = {'state': {}, 'date_edited': None, }
 
         def record_dict(log):
             filename = None if not log.import_filename else path.basename(log.import_filename)
@@ -521,49 +522,51 @@ class PropertyViewSet(GenericViewSet):
         log = PropertyAuditLog.objects.select_related('state', 'parent1', 'parent2').filter(
             state_id=property_view.state_id
         ).order_by('-id').first()
-        master = {
-            'state': PropertyStateSerializer(log.state).data,
-            'date_edited': convert_to_js_timestamp(log.created),
-        }
 
-        # Traverse parents and add to history
-        if log.name in ['Manual Match', 'System Match', 'Merge current state in migration']:
-            done_searching = False
-            while not done_searching:
-                if (log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
-                    done_searching = True
-                elif log.name == 'Merge current state in migration':
-                    record = record_dict(log.parent1)
-                    history.append(record)
-                    if log.parent1.name == 'Import Creation':
+        if log:
+            master = {
+                'state': PropertyStateSerializer(log.state).data,
+                'date_edited': convert_to_js_timestamp(log.created),
+            }
+
+            # Traverse parents and add to history
+            if log.name in ['Manual Match', 'System Match', 'Merge current state in migration']:
+                done_searching = False
+                while not done_searching:
+                    if (log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
                         done_searching = True
-                    else:
-                        tree = log.parent1
-                        log = tree
-                else:
-                    tree = None
-                    if log.parent2:
-                        if log.parent2.name in ['Import Creation', 'Manual Edit']:
-                            record = record_dict(log.parent2)
-                            history.append(record)
-                        else:
-                            tree = log.parent2
-                    if log.parent1.name in ['Import Creation', 'Manual Edit']:
+                    elif log.name == 'Merge current state in migration':
                         record = record_dict(log.parent1)
                         history.append(record)
+                        if log.parent1.name == 'Import Creation':
+                            done_searching = True
+                        else:
+                            tree = log.parent1
+                            log = tree
                     else:
-                        tree = log.parent1
+                        tree = None
+                        if log.parent2:
+                            if log.parent2.name in ['Import Creation', 'Manual Edit']:
+                                record = record_dict(log.parent2)
+                                history.append(record)
+                            else:
+                                tree = log.parent2
+                        if log.parent1.name in ['Import Creation', 'Manual Edit']:
+                            record = record_dict(log.parent1)
+                            history.append(record)
+                        else:
+                            tree = log.parent1
 
-                    if not tree:
-                        done_searching = True
-                    else:
-                        log = tree
-        elif log.name == 'Manual Edit':
-            record = record_dict(log.parent1)
-            history.append(record)
-        elif log.name == 'Import Creation':
-            record = record_dict(log)
-            history.append(record)
+                        if not tree:
+                            done_searching = True
+                        else:
+                            log = tree
+            elif log.name == 'Manual Edit':
+                record = record_dict(log.parent1)
+                history.append(record)
+            elif log.name == 'Import Creation':
+                record = record_dict(log)
+                history.append(record)
 
         return history, master
 
@@ -1343,6 +1346,7 @@ class TaxLotViewSet(GenericViewSet):
     def get_history(self, taxlot_view):
         """Return history in reverse order."""
         history = []
+        master = {'state': {}, 'date_edited': None, }
 
         def record_dict(log):
             filename = None if not log.import_filename else path.basename(log.import_filename)
@@ -1364,49 +1368,50 @@ class TaxLotViewSet(GenericViewSet):
         log = TaxLotAuditLog.objects.select_related('state', 'parent1', 'parent2').filter(
             state_id=taxlot_view.state_id
         ).order_by('-id').first()
-        master = {
-            'state': TaxLotStateSerializer(log.state).data,
-            'date_edited': convert_to_js_timestamp(log.created),
-        }
+        if log:
+            master = {
+                'state': TaxLotStateSerializer(log.state).data,
+                'date_edited': convert_to_js_timestamp(log.created),
+            }
 
-        # Traverse parents and add to history
-        if log.name in ['Manual Match', 'System Match', 'Merge current state in migration']:
-            done_searching = False
-            while not done_searching:
-                if (log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
-                    done_searching = True
-                elif log.name == 'Merge current state in migration':
-                    record = record_dict(log.parent1)
-                    history.append(record)
-                    if log.parent1.name == 'Import Creation':
+            # Traverse parents and add to history
+            if log.name in ['Manual Match', 'System Match', 'Merge current state in migration']:
+                done_searching = False
+                while not done_searching:
+                    if (log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
                         done_searching = True
-                    else:
-                        tree = log.parent1
-                        log = tree
-                else:
-                    tree = None
-                    if log.parent2:
-                        if log.parent2.name in ['Import Creation', 'Manual Edit']:
-                            record = record_dict(log.parent2)
-                            history.append(record)
-                        else:
-                            tree = log.parent2
-                    if log.parent1.name in ['Import Creation', 'Manual Edit']:
+                    elif log.name == 'Merge current state in migration':
                         record = record_dict(log.parent1)
                         history.append(record)
+                        if log.parent1.name == 'Import Creation':
+                            done_searching = True
+                        else:
+                            tree = log.parent1
+                            log = tree
                     else:
-                        tree = log.parent1
+                        tree = None
+                        if log.parent2:
+                            if log.parent2.name in ['Import Creation', 'Manual Edit']:
+                                record = record_dict(log.parent2)
+                                history.append(record)
+                            else:
+                                tree = log.parent2
+                        if log.parent1.name in ['Import Creation', 'Manual Edit']:
+                            record = record_dict(log.parent1)
+                            history.append(record)
+                        else:
+                            tree = log.parent1
 
-                    if not tree:
-                        done_searching = True
-                    else:
-                        log = tree
-        elif log.name == 'Manual Edit':
-            record = record_dict(log.parent1)
-            history.append(record)
-        elif log.name == 'Import Creation':
-            record = record_dict(log)
-            history.append(record)
+                        if not tree:
+                            done_searching = True
+                        else:
+                            log = tree
+            elif log.name == 'Manual Edit':
+                record = record_dict(log.parent1)
+                history.append(record)
+            elif log.name == 'Import Creation':
+                record = record_dict(log)
+                history.append(record)
 
         return history, master
 
