@@ -13,3 +13,9 @@ class CycleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Cycle
+        fields = ('name', 'start', 'end',
+                  'organization', 'user', 'id', )
+        extra_kwargs = {
+            'user': {'read_only': True},
+            'organization': {'read_only': True}
+        }

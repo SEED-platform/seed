@@ -1562,7 +1562,8 @@ class ImportFileViewSet(viewsets.ViewSet):
         ))
 
         for state in properties:
-            audit_creation_id = PropertyAuditLog.objects.only('id').exclude(import_filename=None).get(
+            audit_creation_id = PropertyAuditLog.objects.only('id').exclude(
+                import_filename=None).get(
                 state_id=state.id,
                 name='Import Creation'
             )
@@ -1665,7 +1666,8 @@ class ImportFileViewSet(viewsets.ViewSet):
         properties = [p for p in properties if p.id not in properties_to_remove]
 
         for state in properties:
-            audit_creation_id = PropertyAuditLog.objects.only('id').exclude(import_filename=None).get(
+            audit_creation_id = PropertyAuditLog.objects.only('id').exclude(
+                import_filename=None).get(
                 state_id=state.id,
                 name='Import Creation'
             )

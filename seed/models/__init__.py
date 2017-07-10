@@ -20,6 +20,12 @@ from .meters import *  # noqa
 from .simulations import *  # noqa
 from .building_file import *  # noqa
 
+from .certification import (    # noqa
+    GreenAssessment,
+    GreenAssessmentProperty,
+    GreenAssessmentURL
+)
+
 from .projects import (     # noqa
     Project,
     ProjectBuilding,

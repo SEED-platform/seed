@@ -347,9 +347,10 @@ class PropertyState(models.Model):
 class PropertyView(models.Model):
     """Similar to the old world of canonical building."""
     # different property views can be associated with each other (2012, 2013)
-    property = models.ForeignKey(Property, related_name='views')
-    cycle = models.ForeignKey(Cycle)
-    state = models.ForeignKey(PropertyState)
+    property = models.ForeignKey(Property, related_name='views',
+                                 on_delete=models.CASCADE)
+    cycle = models.ForeignKey(Cycle, on_delete=models.PROTECT)
+    state = models.ForeignKey(PropertyState, on_delete=models.CASCADE)
 
     def __unicode__(self):
         return u'Property View - %s' % self.pk

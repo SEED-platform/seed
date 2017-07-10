@@ -1,123 +1,193 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2017, The Regents of the University of California,
+through Lawrence Berkeley National Laboratory (subject to receipt of any
+required approvals from the U.S. Department of Energy) and contributors.
+All rights reserved.  # NOQA
 :author
 """
-import itertools
-import json
+
+# Imports from Standard Library
 import re
-from collections import defaultdict
 from os import path
 
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+# Imports from Django
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.forms.models import model_to_dict
 from django.http import JsonResponse
 from rest_framework import status
-from rest_framework.decorators import list_route, detail_route
+from rest_framework.decorators import detail_route, list_route
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
+# Local Imports
 from seed.decorators import ajax_request_class
+from seed.filtersets import PropertyViewFilterSet, PropertyStateFilterSet
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (
-    Column, Cycle, AUDIT_USER_EDIT, PropertyAuditLog, PropertyState, PropertyView,
-    TaxLotAuditLog, TaxLotView, TaxLotState, TaxLotProperty, Measure, PropertyMeasure,
+    TaxLotAuditLog,
+    TaxLotState,
+    Measure,
+    PropertyMeasure,
+    AUDIT_USER_EDIT,
+    Column,
+    Cycle,
+    Property as PropertyModel,
+    PropertyAuditLog,
+    PropertyState,
+    PropertyView,
+    TaxLotProperty,
+    TaxLotView,
 )
 from seed.serializers.properties import (
-    PropertyStateSerializer, PropertyViewSerializer, PropertySerializer
+    PropertySerializer,
+    PropertyStateSerializer,
+    PropertyViewAsStateSerializer,
+    PropertyViewSerializer,
 )
 from seed.serializers.taxlots import (
-    TaxLotViewSerializer, TaxLotStateSerializer, TaxLotSerializer
+    TaxLotViewSerializer,
+    TaxLotSerializer,
 )
 from seed.utils.api import api_endpoint_class
+from seed.utils.properties import (
+    get_changed_fields,
+    pair_unpair_property_taxlot,
+    update_result_with_master,
+)
 from seed.utils.time import convert_to_js_timestamp
+from seed.utils.viewsets import (
+    SEEDOrgCreateUpdateModelViewSet,
+    SEEDOrgModelViewSet,
+)
 
+# Constants
 # Global toggle that controls whether or not to display the raw extra
 # data fields in the columns returned for the view.
 DISPLAY_RAW_EXTRADATA = True
 DISPLAY_RAW_EXTRADATA_TIME = True
 
 
-def unique(lol):
-    """Calculate unique elements in a list of lists."""
-    return sorted(set(itertools.chain.from_iterable(lol)))
+class GBRPropertyViewSet(SEEDOrgCreateUpdateModelViewSet):
+    """Properties API Endpoint
 
-
-def pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, pair):
-    # TODO: validate against organization_id, make sure cycle_ids are the same
-
-    try:
-        property_view = PropertyView.objects.get(pk=property_id)
-    except PropertyView.DoesNotExist:
-        return JsonResponse({
-            'status': 'error',
-            'message': 'property view with id {} does not exist'.format(property_id)
-        }, status=status.HTTP_404_NOT_FOUND)
-    try:
-        taxlot_view = TaxLotView.objects.get(pk=taxlot_id)
-    except TaxLotView.DoesNotExist:
-        return JsonResponse({
-            'status': 'error',
-            'message': 'tax lot view with id {} does not exist'.format(taxlot_id)
-        }, status=status.HTTP_404_NOT_FOUND)
-
-    pv_cycle = property_view.cycle_id
-    tv_cycle = taxlot_view.cycle_id
-
-    if pv_cycle != tv_cycle:
-        return JsonResponse({
-            'status': 'error',
-            'message': 'Cycle mismatch between PropertyView and TaxLotView'
-        }, status=status.HTTP_400_BAD_REQUEST)
-
-    if pair:
-        string = 'pair'
-
-        if TaxLotProperty.objects.filter(property_view_id=property_id,
-                                         taxlot_view_id=taxlot_id).exists():
-            return JsonResponse({
+        Returns::
+            {
                 'status': 'success',
-                'message': 'taxlot {} and property {} are already {}ed'.format(taxlot_id,
-                                                                               property_id, string)
-            })
-        TaxLotProperty(
-            primary=True,
-            cycle_id=pv_cycle,
-            property_view_id=property_id,
-            taxlot_view_id=taxlot_id
-        ).save()
+                'properties': [
+                    {
+                        'id': Property primary key,
+                        'campus': property is a campus,
+                        'parent_property': dict of associated parent property
+                        'labels': list of associated label ids
+                    }
+                ]
+            }
 
-        success = True
-    else:
-        string = 'unpair'
 
-        if not TaxLotProperty.objects.filter(property_view_id=property_id,
-                                             taxlot_view_id=taxlot_id).exists():
-            return JsonResponse({
+    retrieve:
+        Return a Property instance by pk if it is within specified org.
+
+    list:
+        Return all Properties available to user through specified org.
+
+    create:
+        Create a new Property within user`s specified org.
+
+    delete:
+        Remove an existing Property.
+
+    update:
+        Update a Property record.
+
+    partial_update:
+        Update one or more fields on an existing Property.
+    """
+    serializer_class = PropertySerializer
+    model = PropertyModel
+    data_name = "properties"
+
+
+class PropertyStateViewSet(SEEDOrgCreateUpdateModelViewSet):
+    """Property State API Endpoint
+
+        Returns::
+            {
                 'status': 'success',
-                'message': 'taxlot {} and property {} are already {}ed'.format(taxlot_id,
-                                                                               property_id, string)
-            })
-        TaxLotProperty.objects.filter(
-            property_view_id=property_id,
-            taxlot_view_id=taxlot_id).delete()
+                'properties': [
+                    {
+                        all PropertyState fields/values
+                    }
+                ]
+            }
 
-        success = True
 
-    if success:
-        return JsonResponse({
-            'status': 'success',
-            'message': 'taxlot {} and property {} are now {}ed'.format(taxlot_id, property_id,
-                                                                       string)
-        })
-    else:
-        return JsonResponse({
-            'status': 'error',
-            'message': 'Could not {} because reasons, maybe bad organization id={}'.format(string,
-                                                                                           organization_id)
-        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    retrieve:
+        Return a PropertyState instance by pk if it is within specified org.
+
+    list:
+        Return all PropertyStates available to user through specified org.
+
+    create:
+        Create a new PropertyState within user`s specified org.
+
+    delete:
+        Remove an existing PropertyState.
+
+    update:
+        Update a PropertyState record.
+
+    partial_update:
+        Update one or more fields on an existing PropertyState."""
+    serializer_class = PropertyStateSerializer
+    model = PropertyState
+    filter_class = PropertyStateFilterSet
+    data_name = "properties"
+
+
+class PropertyViewViewSet(SEEDOrgModelViewSet):
+    """PropertyViews API Endpoint
+
+        Returns::
+            {
+                'status': 'success',
+                'properties': [
+                    {
+                        'id': PropertyView primary key,
+                        'property_id': id of associated Property,
+                        'state': dict of associated PropertyState values (writeable),
+                        'cycle': dict of associated Cycle values,
+                        'certifications': dict of associated GreenAssessmentProperties values
+                    }
+                ]
+            }
+
+
+    retrieve:
+        Return a PropertyView instance by pk if it is within specified org.
+
+    list:
+        Return all PropertyViews available to user through specified org.
+
+    create:
+        Create a new PropertyView within user`s specified org.
+
+    delete:
+        Remove an existing PropertyView.
+
+    update:
+        Update a PropertyView record.
+
+    partial_update:
+        Update one or more fields on an existing PropertyView.
+    """
+    serializer_class = PropertyViewAsStateSerializer
+    model = PropertyView
+    filter_class = PropertyViewFilterSet
+    orgfilter = 'property__organization_id'
+    data_name = "property_views"
 
 
 class PropertyViewSet(GenericViewSet):
@@ -400,7 +470,6 @@ class PropertyViewSet(GenericViewSet):
     def columns(self, request):
         """
         List all property columns
-
         parameters:
             - name: organization_id
               description: The organization_id for this user's organization
@@ -533,7 +602,8 @@ class PropertyViewSet(GenericViewSet):
             if log.name in ['Manual Match', 'System Match', 'Merge current state in migration']:
                 done_searching = False
                 while not done_searching:
-                    if (log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
+                    if (
+                                log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
                         done_searching = True
                     elif log.name == 'Merge current state in migration':
                         record = record_dict(log.parent1)
@@ -1378,7 +1448,8 @@ class TaxLotViewSet(GenericViewSet):
             if log.name in ['Manual Match', 'System Match', 'Merge current state in migration']:
                 done_searching = False
                 while not done_searching:
-                    if (log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
+                    if (
+                                log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
                         done_searching = True
                     elif log.name == 'Merge current state in migration':
                         record = record_dict(log.parent1)

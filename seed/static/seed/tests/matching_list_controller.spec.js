@@ -24,7 +24,7 @@ describe('Controller: matching_list_controller', function () {
 
     mock_matching_services = matching_service;
     mock_inventory_services = inventory_service;
-    spyOn(mock_inventory_services, 'get_matching_results')
+    spyOn(mock_inventory_services, 'get_matching_status')
         .andCallFake(function (import_file) {
           // return $q.reject for error scenario
           return $q.when({
@@ -148,7 +148,7 @@ describe('Controller: matching_list_controller', function () {
     // assertions
     expect(matching_list_controller_scope.matched_buildings).toEqual(10);
     expect(matching_list_controller_scope.unmatched_buildings).toEqual(5);
-    expect(mock_inventory_services.get_matching_results).toHaveBeenCalled();
+    expect(mock_inventory_services.get_matching_status).toHaveBeenCalled();
   });
 
   it('should jump back to the matching list when the \'Back to list\' button is clicked', function () {
@@ -176,6 +176,6 @@ describe('Controller: matching_list_controller', function () {
       expect(matching_list_controller_scope.number_properties_matching_search).toEqual(1);
       expect(matching_list_controller_scope.number_properties_returned).toEqual(1);
       expect(matching_list_controller_scope.num_pages).toEqual(1);
-      expect(mock_inventory_services.get_matching_results).toHaveBeenCalled();
+      expect(mock_inventory_services.get_matching_status).toHaveBeenCalled();
     });
 });

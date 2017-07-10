@@ -32,7 +32,7 @@ class Cycle(models.Model):
     @classmethod
     def get_or_create_default(cls, organization):
         year = date.today().year - 1
-        cycle_name = 'Default ' + str(year) + ' Calendar Year'
+        cycle_name = '{} Calendar Year'.format(year)
         cycle = Cycle.objects.filter(name=cycle_name, organization=organization).first()
         if not cycle:
             return Cycle.objects.create(

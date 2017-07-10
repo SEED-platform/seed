@@ -4,6 +4,8 @@
 :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+import base64
+
 from rest_framework import authentication
 from rest_framework import exceptions
 
@@ -18,16 +20,28 @@ class SEEDAuthentication(authentication.BaseAuthentication):
     """
 
     def authenticate(self, request):
-        auth_header = request.META.get('HTTP_AUTHORIZATION')
+        auth_header = request.META.get('Authorization')
+
+        if not auth_header:
+            auth_header = request.META.get('HTTP_AUTHORIZATION')
 
         if not auth_header:
             return None
 
         try:
+            if not auth_header.startswith('Basic'):
+                raise exceptions.AuthenticationFailed(
+                    "Only Basic HTTP_AUTHORIZATION is supported"
+                )
+
+            auth_header = auth_header.split()[1]
+            auth_header = base64.urlsafe_b64decode(auth_header)
             username, api_key = auth_header.split(':')
             user = User.objects.get(api_key=api_key, username=username)
             return user, api_key
         except ValueError:
-            raise exceptions.AuthenticationFailed("Invalid HTTP_AUTHORIZATION Header")
+            raise exceptions.AuthenticationFailed(
+                "Invalid HTTP_AUTHORIZATION Header"
+            )
         except User.DoesNotExist:
             raise exceptions.AuthenticationFailed("Invalid API key")

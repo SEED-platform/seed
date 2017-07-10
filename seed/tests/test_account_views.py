@@ -5,6 +5,7 @@
 :author
 """
 import json
+from datetime import date
 
 from django.core.urlresolvers import reverse_lazy, NoReverseMatch
 from django.test import TestCase
@@ -49,6 +50,9 @@ class AccountsViewTests(TestCase):
         self.fake_request = FakeRequest(user=self.user)
         self.maxDiff = None
 
+        year = date.today().year - 1
+        self.cal_year_name = "{} Calendar Year".format(year)
+
     def test_dict_org(self):
         """_dict_org turns our org structure into a json payload."""
 
@@ -70,7 +74,7 @@ class AccountsViewTests(TestCase):
             'cycles': [{
                 'num_taxlots': 0,
                 'num_properties': 0,
-                'name': u'Default 2016 Calendar Year',
+                'name': self.cal_year_name,
                 'cycle_id': self.cycle.pk
             }],
             'created': self.org.created.strftime('%Y-%m-%d'),
@@ -94,7 +98,7 @@ class AccountsViewTests(TestCase):
         expected_single_org_payload['cycles'] = [{
             'num_taxlots': 5,
             'num_properties': 10,
-            'name': u'Default 2016 Calendar Year',
+            'name': self.cal_year_name,
             'cycle_id': self.cycle.pk
         }]
         self.assertDictEqual(
@@ -130,7 +134,7 @@ class AccountsViewTests(TestCase):
                 'cycles': [{
                     'num_taxlots': 0,
                     'num_properties': 0,
-                    'name': u'Default 2016 Calendar Year',
+                    'name': self.cal_year_name,
                     'cycle_id': new_cycle.pk
                 }],
                 'created': self.org.created.strftime('%Y-%m-%d'),
@@ -151,7 +155,7 @@ class AccountsViewTests(TestCase):
             'cycles': [{
                 'num_taxlots': 0,
                 'num_properties': 0,
-                'name': u'Default 2016 Calendar Year',
+                'name': self.cal_year_name,
                 'cycle_id': self.cycle.pk
             }],
             'created': self.org.created.strftime('%Y-%m-%d'),
@@ -160,7 +164,7 @@ class AccountsViewTests(TestCase):
         org_payload = _dict_org(self.fake_request, Organization.objects.all())
 
         self.assertEqual(len(org_payload), 2)
-        self.assertEqual(org_payload[0], expected_multiple_org_payload)
+        self.assertDictEqual(org_payload[0], expected_multiple_org_payload)
 
     def test_get_organizations(self):
         """ tests accounts.get_organizations """
