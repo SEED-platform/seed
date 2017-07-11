@@ -9,6 +9,7 @@ import json
 import os
 
 import xmltodict
+
 from seed.models.measures import _snake_case
 
 
@@ -232,7 +233,7 @@ class BuildingSync(object):
             try:
                 if value:
                     if v.get('key_path_name', None) and v.get('value_path_name', None) and v.get(
-                            'key_path_value', None):
+                        'key_path_value', None):
                         value = _lookup_sub(
                             value,
                             v.get('key_path_name'),
@@ -282,17 +283,19 @@ class BuildingSync(object):
         # a straight mapping
         measures = self._get_node('Audits.Audit.Measures.Measure', data, [])
         for m in measures:
+            category = m['TechnologyCategories']['TechnologyCategory'].keys()[0]
             data = {
                 'id': m.get('@ID'),
-                'system_category_affected': m.get('SystemCategoryAffected'),
-                'implementation_status': m.get('ImplementationStatus'),
-                'category': m['TechnologyCategories']['TechnologyCategory'].keys()[0],
+                'category': _snake_case(category),
+                'name': m['TechnologyCategories']['TechnologyCategory'][category]['MeasureName']
             }
-            data['name'] = m['TechnologyCategories']['TechnologyCategory'][data['category']][
-                'MeasureName']
+            for k, v in m.items():
+                if k in ['@ID', 'PremisesAffected', 'TechnologyCategories']:
+                    continue
+                data[_snake_case(k)] = v
+
             # fix the names of the measures for "easier" look up... doing in separate step to
-            # fit in single line. Cleanup when?
-            data['category'] = _snake_case(data['category'])
+            # fit in single line. Cleanup -- when?
             data['name'] = _snake_case(data['name'])
             res['measures'].append(data)
 

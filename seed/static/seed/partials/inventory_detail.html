@@ -34,7 +34,6 @@
     </div>
     <div class="section_content_container">
         <div class="section_content">
-
             <div style="float:right; width:250px; text-align:right; margin: 10px 10px 0 0;" class="ellipsis">
                  <span style="color:#777" popover-placement="top-left" popover-animation="false" popover-trigger="outsideClick" uib-popover="{$ cycle.name $}">
                      Cycle: {$ cycle.name $}
@@ -67,7 +66,6 @@
                         </tr>
                     </thead>
                     <tbody>
-
                         <tr ng-repeat="field in columns" ng-if="field.visible">
 
                             <!-- Field name -->
@@ -113,90 +111,101 @@
             </div>
         </div>
     </div>
-</div>
 
-<!-- Related Items Section -->
-<div class="section">
-    <div class="section_header_container" style="margin-top: 20px; border-bottom: 0;">
-        <div class="section_header fixed_height_short has_no_padding">
-            <div class="section_action_container left">
-                <span>
-                    <h2 ng-if="inventory_type==='taxlots'">
-                        <i class="fa fa-building-o"></i> Related Properties
-                    </h2>
-                    <h2 ng-if="inventory_type==='properties'">
-                        <i class="fa fa-map-o"></i> Related Tax Lots
-                    </h2>
-                </span>
+    <!-- Related Items Section -->
+    <div class="section">
+        <div class="section_header_container" style="margin-top: 20px; border-bottom: 0;">
+            <div class="section_header fixed_height_short has_no_padding">
+                <div class="section_action_container left">
+                    <span>
+                        <h2 ng-if="inventory_type==='taxlots'">
+                            <i class="fa fa-building-o"></i> Related Properties
+                        </h2>
+                        <h2 ng-if="inventory_type==='properties'">
+                            <i class="fa fa-map-o"></i> Related Tax Lots
+                        </h2>
+                    </span>
+                </div>
             </div>
         </div>
     </div>
-</div>
-
-<div class="section_content_container" style="margin-bottom:40px;">
-    <!-- List of related items -->
-    <div class="section_content">
-        <div class="table_list_container table_item_detail" style="max-width:700px;">
-            <table class="table table-striped table_highlight_first fixed-layout" style="margin-bottom:-1px;">
-                <thead>
-                    <tr>
-                        <th sd-resizable width="120" ng-if="inventory_type==='properties'">Tax Lot ID</th>
-                        <th sd-resizable width="120" ng-if="inventory_type==='taxlots'">PM Property ID</th>
-                        <th sd-resizable class="ellipsis-resizable">Address Line 1</th>
-                    </tr>
-                </thead>
-                <tbody ng-if="inventory_type==='properties'">
-                    <tr ng-repeat="taxlot in inventory.related">
-                        <td> {$ taxlot.state.jurisdiction_tax_lot_id $}</td>
-                        <td>
-                            <a ui-sref="inventory_detail({inventory_type: 'taxlots', inventory_id: taxlot.taxlot.id, cycle_id: cycle.id})">{$ taxlot.state.address_line_1 ? taxlot.state.address_line_1 : '(no address 1)' $}</a>
-                        </td>
-                    </tr>
-                </tbody>
-                <tbody ng-if="inventory_type==='taxlots'">
-                    <tr ng-repeat="property in inventory.related">
-                        <td> {$ property.state.pm_property_id $}</td>
-                        <td>
-                            <a ui-sref="inventory_detail({inventory_type: 'properties', inventory_id: property.property.id, cycle_id: cycle.id})">{$ property.state.address_line_1 ? property.state.address_line_1 : '(no address 1)' $}</a>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
-<!-- Measures Section -->
-<div class="section">
-    <div class="section_header_container" style="margin-top: 20px; border-bottom: 0;">
-        <div class="section_header fixed_height_short has_no_padding">
-            <div class="section_action_container left">
-                <span>
-                    <h2><i class="fa fa-cogs"></i> Measures</h2>
-                </span>
+    <div class="section_content_container" style="margin-bottom:40px;">
+        <!-- List of related items -->
+        <div class="section_content">
+            <div class="table_list_container table_item_detail">
+                <table class="table table-striped table_highlight_first fixed-layout" style="margin-bottom:-1px;">
+                    <thead>
+                        <tr>
+                            <th sd-resizable width="120" ng-if="inventory_type==='properties'">Tax Lot ID</th>
+                            <th sd-resizable width="120" ng-if="inventory_type==='taxlots'">PM Property ID</th>
+                            <th sd-resizable class="ellipsis-resizable">Address Line 1</th>
+                        </tr>
+                    </thead>
+                    <tbody ng-if="inventory_type==='properties'">
+                        <tr ng-repeat="taxlot in inventory.related">
+                            <td> {$ taxlot.state.jurisdiction_tax_lot_id $}</td>
+                            <td>
+                                <a ui-sref="inventory_detail({inventory_type: 'taxlots', inventory_id: taxlot.taxlot.id, cycle_id: cycle.id})">{$ taxlot.state.address_line_1 ? taxlot.state.address_line_1 : '(no address 1)' $}</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tbody ng-if="inventory_type==='taxlots'">
+                        <tr ng-repeat="property in inventory.related">
+                            <td> {$ property.state.pm_property_id $}</td>
+                            <td>
+                                <a ui-sref="inventory_detail({inventory_type: 'properties', inventory_id: property.property.id, cycle_id: cycle.id})">{$ property.state.address_line_1 ? property.state.address_line_1 : '(no address 1)' $}</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
-</div>
 
-<div class="section_content_container" style="margin-bottom:200px;">
-    <!-- List of measures -->
-    <div class="section_content">
-        <div class="table_list_container table_item_detail" style="max-width:700px;">
-            <table class="table table-striped table_highlight_first fixed-layout" style="margin-bottom:-1px;">
-                <thead>
-                    <tr>
-                        <th sd-resizable>Category</th>
-                        <th sd-resizable class="ellipsis-resizable">Measure Name</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr ng-repeat="measure in item_state.measures">
-                        <td> {$ measure.category_display_name $}</td>
-                        <td> {$ measure.display_name $}</td>
-                    </tr>
-                </tbody>
-            </table>
+    <!-- Measures Section -->
+    <div class="section">
+        <div class="section_header_container" style="margin-top: 20px; border-bottom: 0;">
+            <div class="section_header fixed_height_short has_no_padding">
+                <div class="section_action_container left" style="width: 50%;">
+                    <span>
+                        <h2><i class="fa fa-cogs"></i> Measures</h2>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="section_content_container">
+        <!-- List of measures -->
+        <div class="section_content">
+            <div class="table_list_container table_item_detail">
+                <table class="table table-striped table_highlight_first fixed-layout" style="margin-bottom:-1px;">
+                    <thead>
+                        <tr>
+                            <th sd-resizable>Category</th>
+                            <th sd-resizable class="ellipsis-resizable">Measure Name</th>
+                            <th sd-resizable class="ellipsis-resizable">Measure Information</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="measure in item_state.measures">
+                            <td> {$ measure.category_display_name $}</td>
+                            <td> {$ measure.display_name $}</td>
+                            <td> Status: {$ measure.implementation_status $} <br>
+                                 Recommended: {$ measure.recommended $} <br>
+                                 Scale: {$ measure.application_scale $} <br>
+                                 Category Affected: {$ measure.category_affected $} <br>
+                                 Installation Cost: {$ measure.cost_installation $} <br>
+                                 Material Cost: {$ measure.cost_material $} <br>
+                                 M&V Cost: {$ measure.cost_mv $} <br>
+                                 Residual Cost: {$ measure.cost_residual_value $} <br>
+                                 Total First Cost: {$ measure.cost_total_first $} <br>
+                                 Capital Replacement Cost: {$ measure.cost_capital_replacement $} <br>
+                                 Description: {$ measure.description $} <br>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>

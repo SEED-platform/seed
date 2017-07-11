@@ -131,29 +131,46 @@ class BuildingFile(models.Model):
                 # add in the measures
                 for m in data['measures']:
                     # Find the measure in the database
-                    impl_status = PropertyMeasure.str_to_impl_status(m['implementation_status'])
                     measure = Measure.objects.get(
                         category=m['category'], name=m['name'], organization_id=organization_id,
                     )
 
                     # Add the measure to the join table.
+                    # Need to determine what constitutes the unique measure for a property
                     join, _ = PropertyMeasure.objects.get_or_create(
                         property_state_id=self.property_state_id,
                         measure_id=measure.pk,
-                        implementation_status=impl_status,
-                        # add in the other fields
-
+                        implementation_status=PropertyMeasure.str_to_impl_status(
+                            m['implementation_status']
+                        ),
+                        application_scale=PropertyMeasure.str_to_application_scale(
+                            m.get('application_scale_of_application',
+                                  PropertyMeasure.SCALE_ENTIRE_FACILITY)
+                        ),
+                        category_affected=PropertyMeasure.str_to_category_affected(
+                            m.get('system_category_affected', PropertyMeasure.CATEGORY_OTHER)
+                        ),
+                        recommended=m.get('recommended', 'false') == 'true',
                     )
+                    join.description = m.get('description')
+                    join.cost_mv = m.get('mv_cost')
+                    join.cost_total_first = m.get('measure_total_first_cost')
+                    join.cost_installation = m.get('measure_installation_cost')
+                    join.cost_material = m.get('measure_material_cost')
+                    join.cost_capital_replacement = m.get('measure_capital_replacement_cost')
+                    join.cost_residual_value = m.get('measure_residual_value')
+                    join.save()
 
-                    PropertyAuditLog.objects.create(
-                        organization_id=organization_id,
-                        state_id=self.property_state_id,
-                        name='Import Creation',
-                        description='Creation from Import file.',
-                        import_filename=self.file.path,
-                        record_type=AUDIT_IMPORT
-                    )
+                PropertyAuditLog.objects.create(
+                    organization_id=organization_id,
+                    state_id=self.property_state_id,
+                    name='Import Creation',
+                    description='Creation from Import file.',
+                    import_filename=self.file.path,
+                    record_type=AUDIT_IMPORT
+                )
 
             return True, property_state
+
         else:
             return False, None

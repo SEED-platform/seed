@@ -131,6 +131,18 @@ class PropertyMinimalSerializer(serializers.ModelSerializer):
         }
 
 
+class ChoiceField(serializers.Field):
+    def __init__(self, choices, **kwargs):
+        self._choices = choices
+        super(ChoiceField, self).__init__(**kwargs)
+
+    def to_representation(self, obj):
+        return self._choices[obj][1]
+
+    def to_internal_value(self, data):
+        return getattr(self._choices, data)
+
+
 class PropertyMeasureSerializer(serializers.HyperlinkedModelSerializer):
     id = serializers.ReadOnlyField(source='measure.id')
     measure_id = serializers.SerializerMethodField('measure_id_name')
@@ -138,6 +150,9 @@ class PropertyMeasureSerializer(serializers.HyperlinkedModelSerializer):
     display_name = serializers.ReadOnlyField(source='measure.display_name')
     category = serializers.ReadOnlyField(source='measure.category')
     category_display_name = serializers.ReadOnlyField(source='measure.category_display_name')
+    implementation_status = ChoiceField(choices=PropertyMeasure.IMPLEMENTATION_TYPES)
+    application_scale = ChoiceField(choices=PropertyMeasure.APPLICATION_SCALE_TYPES)
+    category_affected = ChoiceField(choices=PropertyMeasure.CATEGORY_AFFECTED_TYPE)
 
     class Meta:
         model = PropertyMeasure
@@ -149,7 +164,17 @@ class PropertyMeasureSerializer(serializers.HyperlinkedModelSerializer):
             'name',
             'category_display_name',
             'display_name',
+            'category_affected',
+            'application_scale',
+            'recommended',
             'implementation_status',
+            'cost_mv',
+            'description',
+            'cost_total_first',
+            'cost_installation',
+            'cost_material',
+            'cost_capital_replacement',
+            'cost_residual_value',
         )
 
     def measure_id_name(self, obj):
