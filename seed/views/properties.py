@@ -603,7 +603,7 @@ class PropertyViewSet(GenericViewSet):
                 done_searching = False
                 while not done_searching:
                     if (
-                                log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
+                            log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
                         done_searching = True
                     elif log.name == 'Merge current state in migration':
                         record = record_dict(log.parent1)
@@ -1449,7 +1449,7 @@ class TaxLotViewSet(GenericViewSet):
                 done_searching = False
                 while not done_searching:
                     if (
-                                log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
+                            log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
                         done_searching = True
                     elif log.name == 'Merge current state in migration':
                         record = record_dict(log.parent1)
