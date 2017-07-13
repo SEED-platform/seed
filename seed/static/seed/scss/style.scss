@@ -1507,8 +1507,9 @@ a:not([href]) {
 
       }
       .pager_container {
-        float: left;
+        float: right;
         margin-top: 10px;
+        text-align: right;
 
         ul.pager, ul.pagination {
           float: right;
@@ -2875,6 +2876,12 @@ table.import_results a[disabled] {
     width: 30%;
   }
 
-
-
-
+.disableable[disabled] {
+  pointer-events: none;
+  color: gray;
+}
+.paginate {
+  float: right;
+  position: relative;
+  z-index: 100;
+}

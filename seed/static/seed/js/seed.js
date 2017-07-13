@@ -76,6 +76,7 @@ angular.module('BE.seed.filters', [
   'district',
   'fromNow',
   'ignoremap',
+  'startFrom',
   'stripImportPrefix',
   'titleCase',
   'typedNumber'
