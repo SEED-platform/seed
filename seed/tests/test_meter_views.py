@@ -75,6 +75,7 @@ class TestMeterViewSet(TestCase):
             "status": "success",
             "meter": {
                 "property_view": property_view.pk,
+                "scenario": None,
                 "name": "tester",
                 "timeseries_count": 0,
                 "energy_units": 1,

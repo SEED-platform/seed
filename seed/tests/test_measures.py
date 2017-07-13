@@ -8,6 +8,7 @@
 from django.test import TestCase
 
 from seed.models.measures import Measure, _snake_case
+from seed.models.joins import PropertyMeasure
 from seed.models import Organization
 
 
@@ -69,3 +70,42 @@ class TestMeasures(TestCase):
         extra_missing.append("a.b")
         results = Measure.validate_measures(extra_missing)
         self.assertEqual(obj_ids, results)
+
+        results = Measure.validate_measures([])
+        self.assertEqual(results, [])
+
+
+class TestPropertyMeasures(TestCase):
+    def setUp(self):
+        self.org = Organization.objects.create()
+        Measure.populate_measures(self.org.id)
+
+        # get some property instances
+
+    def test_lookups(self):
+        self.assertEqual(PropertyMeasure.str_to_impl_status(PropertyMeasure.MEASURE_DISCARDED), 5)
+        self.assertEqual(PropertyMeasure.str_to_impl_status('measure discarded'), None)
+        self.assertEqual(PropertyMeasure.str_to_impl_status('Discarded'), 5)
+        self.assertEqual(PropertyMeasure.str_to_impl_status(None), None)
+
+        self.assertEqual(
+            PropertyMeasure.str_to_category_affected(PropertyMeasure.CATEGORY_DOMESTIC_HOT_WATER), 5
+        )
+        self.assertEqual(PropertyMeasure.str_to_category_affected('domestic nothing'), None)
+        self.assertEqual(PropertyMeasure.str_to_category_affected('Domestic Hot Water'), 5)
+        self.assertEqual(PropertyMeasure.str_to_category_affected(None), None)
+
+        self.assertEqual(
+            PropertyMeasure.str_to_application_scale(PropertyMeasure.SCALE_ENTIRE_FACILITY), 5
+        )
+        self.assertEqual(PropertyMeasure.str_to_application_scale('Nothing entirely'), None)
+        self.assertEqual(PropertyMeasure.str_to_application_scale('Entire facility'), 5)
+        self.assertEqual(PropertyMeasure.str_to_application_scale(None), None)
+
+    def test_populate_measures(self):
+        self.assertEqual(Measure.objects.count(), 174)
+
+        # if we run it again, it shouldn't add anything new
+        Measure.populate_measures(self.org.id)
+        self.assertEqual(Measure.objects.count(), 174)
+

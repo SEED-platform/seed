@@ -5,7 +5,7 @@
 
 from django.db import models
 
-from seed.models import PropertyView
+from seed.models import PropertyView, Scenario
 
 
 class Meter(models.Model):
@@ -67,6 +67,8 @@ class Meter(models.Model):
     name = models.CharField(max_length=100)
     property_view = models.ForeignKey(PropertyView, related_name='meters',
                                       on_delete=models.CASCADE, null=True, blank=True)
+    scenario = models.ForeignKey(Scenario, related_name='meters',
+                                      on_delete=models.CASCADE, null=True)
     energy_type = models.IntegerField(choices=ENERGY_TYPES)
     energy_units = models.IntegerField(choices=ENERGY_UNITS)
 

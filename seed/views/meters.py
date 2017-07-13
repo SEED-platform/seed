@@ -212,9 +212,10 @@ class MeterViewSet(viewsets.ViewSet):
               paramType: path
         """
         meter = Meter.objects.get(pk=pk)
-        res = {}
-        res['status'] = 'success'
-        res['meter'] = obj_to_dict(meter)
+        res = {
+            'status': 'success',
+            'meter': obj_to_dict(meter),
+        }
         res['meter']['data'] = []
 
         ts = meter.timeseries_set.order_by('begin_time')

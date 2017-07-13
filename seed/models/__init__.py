@@ -16,6 +16,7 @@ from .columns import *  # noqa
 from .auditlog import *  # noqa
 from .deprecate import *  # noqa
 from .measures import *  # noqa
+from .scenarios import *  # noqa
 from .meters import *  # noqa
 from .simulations import *  # noqa
 from .building_file import *  # noqa

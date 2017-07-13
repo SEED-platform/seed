@@ -22,7 +22,7 @@ from django.utils import timezone
 from faker import Factory
 
 from seed.models import (
-    BuildingSnapshot, Cycle, Column, GreenAssessment, GreenAssessmentURL,
+    Cycle, Column, GreenAssessment, GreenAssessmentURL, Measure,
     GreenAssessmentProperty, Property, PropertyAuditLog, PropertyView,
     PropertyState, StatusLabel, TaxLot, TaxLotAuditLog, TaxLotProperty,
     TaxLotState, TaxLotView
@@ -89,50 +89,6 @@ class BaseFake(object):
                             state if state else self.fake.state_abbr()),
             self.fake.postalcode()
         )
-
-
-class FakeBuildingSnapshotFactory(BaseFake):
-    """
-    Factory Class for producing Building Snaphots.
-    """
-
-    def __init__(self, super_organization=None, num_owners=5):
-        # pylint:disable=unused-variable
-        super(FakeBuildingSnapshotFactory, self).__init__()
-        self.super_organization = super_organization
-        # pre-generate a list of owners so they occur more than once.
-        self.owners = [self.owner() for i in range(num_owners)]
-
-    def building_details(self):
-        """Return a dict of pseudo random data for use with Building Snapshot"""
-        owner = self.fake.random_element(elements=self.owners)
-        return {
-            'tax_lot_id': self.fake.numerify(text='#####'),
-            'address_line_1': self.address_line_1(),
-            'city': 'Boring',
-            'state_province': 'Oregon',
-            'postal_code': "970{}".format(self.fake.numerify(text='##')),
-            'year_built': self.fake.random_int(min=1880, max=2015),
-            'site_eui': self.fake.random_int(min=50, max=600),
-            'owner': owner.name,
-            'owner_email': owner.email,
-            'owner_telephone': owner.telephone,
-            'owner_address': owner.address,
-            'owner_city_state': owner.city_state,
-            'owner_postal_code': owner.postal_code,
-        }
-
-    def building_snapshot(self, import_file, canonical_building,
-                          super_organization=None, **kw):
-        """Return a building snapshot populated with pseudo random data"""
-        building_details = {
-            'super_organization': self._get_attr('super_organization', super_organization),
-            'import_file': import_file,
-            'canonical_building': canonical_building,
-        }
-        building_details.update(self.building_details())
-        building_details.update(kw)
-        return BuildingSnapshot.objects.create(**building_details)
 
 
 class FakeColumnFactory(BaseFake):
@@ -331,6 +287,34 @@ class FakePropertyViewFactory(BaseFake):
         }
         return PropertyView.objects.create(**property_view_details)
 
+
+class FakePropertyMeasureFactory(BaseFake):
+    def __init__(self, organization):
+        self.organization = organization
+        super(FakePropertyMeasureFactory, self).__init__()
+
+    def get_details(self, number_of_measures, **kw):
+        # assign a random number of measures to the PropertyState
+        for n in xrange(number_of_measures):
+            measure = Measure.objects.all().order_by('?')[0]
+
+
+
+
+    def get_measure(self, **kw):
+        """Return a measure"""
+        green_assessment = self.get_details()
+        validity_duration = kw.pop('validity_duration', None)
+        if validity_duration:
+            if isinstance(validity_duration, int):
+                validity_duration = datetime.timedelta(validity_duration)
+            if not (isinstance(validity_duration, datetime.timedelta)):
+                raise TypeError(
+                    'validity_duration must be an integer or timedelta'
+                )
+            green_assessment['validity_duration'] = validity_duration
+        green_assessment.update(kw)
+        return GreenAssessment.objects.create(**green_assessment)
 
 class FakeGreenAssessmentFactory(BaseFake):
     """
