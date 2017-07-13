@@ -20,13 +20,16 @@
                 <div class="row">
                     <div class="col-sm-6 tab_content wide">
                         <p><strong>HOW THE SYSTEM AUTO-MATCHES YOUR PROPERTIES &amp; TAX LOTS:</strong></p>
-                        <p>Your source data file(s) are presented in the table on the left. All properties/tax lots where a possible data match exists are presented in a table on the right. The system attempts to auto-match records using shared unique IDs like: PM Property ID, Jurisdiction Tax Lot ID, and Custom IDs as well as Address information. Where the system believes a match exists between a record in your source file and an existing record it will auto-check the 'match'
+                        <p>Your source data file(s) are presented in the table on the left. All properties/tax lots where a possible data match exists are presented in a table on the right. The system
+                            attempts to auto-match records using shared unique IDs like: PM Property ID, Jurisdiction Tax Lot ID, and Custom IDs as well as Address information. Where the system
+                            believes a match exists between a record in your source file and an existing record it will auto-check the 'match'
                             <i class="fa fa-check-square-o"></i> checkbox &mdash; effectively making a match between these records.
                         </p>
                     </div>
                     <div class="col-sm-6 key tab_content wide">
                         <p class="important-tip"><strong>FIELDS NEEDED TO MAKE MATCHES:</strong></p>
-                        <p>The following is a list of the fields we use to match up properties/tax lots between different imported files. The more data you have in these four fields the better our system will auto-match your records.</p>
+                        <p>The following is a list of the fields we use to match up properties/tax lots between different imported files. The more data you have in these four fields the better our
+                            system will auto-match your records.</p>
                         <p><span class="label label-warning">Jurisdiction Tax Lot ID</span>
                             <span class="label label-warning">PM Property ID</span></p>
                         <p><span class="label label-warning">Custom ID 1</span>
@@ -38,7 +41,9 @@
                 <div class="row">
                     <div class="col-sm-6 tab_content wide">
                         <p><strong>HOW TO MANUALLY MATCH YOUR PROPERTIES &amp; TAX LOTS:</strong></p>
-                        <p>You can review and edit each individual match by clicking one of the linked IDs in the table. This will open a new table that shows the source data for the individual record you are attempting to match. Underneath this record is a searchable list of all potential existing matches. Use this table to explore all your records and to select single or multiple records to match your source data to.</p>
+                        <p>You can review and edit each individual match by clicking one of the linked IDs in the table. This will open a new table that shows the source data for the individual record
+                            you are attempting to match. Underneath this record is a searchable list of all potential existing matches. Use this table to explore all your records and to select single
+                            or multiple records to match your source data to.</p>
                     </div>
                     <!--<div class="col-sm-6 tab_content wide">
                         <p><strong>VIEW/HIDE COLUMNS</strong></p>
@@ -51,6 +56,16 @@
     </div>
 
     <div class="matching-tab-container">
+        <span class="paginate">
+            <select style="height:24px;" ng-model="number_per_page" ng-change="update_start_end_paging()" ng-options="option for option in number_per_page_options"></select>
+            <button class="disableable" ng-disabled="current_page == 0 || number_of_pages() === 1" ng-click="current_page = current_page - 1; update_start_end_paging()">
+                Previous
+            </button>
+            {$ current_page + 1 $}/{$ number_of_pages() $}
+            <button class="disableable" ng-disabled="current_page >= inventory.length / number_per_page - 1 || number_of_pages() === 1" ng-click="current_page = current_page + 1; update_start_end_paging()">
+                Next
+            </button>
+        </span>
         <ul class="nav nav-tabs" style="margin-bottom:1px;">
             <li ng-class="{active: inventory_type=='properties'}" heading="Match Properties">
                 <a ui-sref="matching_list({importfile_id: importfile_id, inventory_type: 'properties'})">Match Properties</a>
@@ -79,7 +94,7 @@
                                     </div>
                                     <div class="form-group" style="padding-left: 15px">
                                         <label class="control-label">{$ inventory_type == 'properties' ? 'Property' : 'Tax Lot' $} Visibility: </label>
-                                        <select id="showHideFilterSelect" class="form-control input-sm" ng-init="selectedFilter = filter_options[0]" ng-model="selectedFilter" ng-options="o for o in filter_options"></select>
+                                        <select id="showHideFilterSelect" class="form-control input-sm" ng-model="selectedFilter" ng-change="update_start_end_paging()" ng-options="o for o in filter_options"></select>
                                     </div>
                                 </form>
                             </th>
@@ -87,26 +102,19 @@
                             <th class="source_data" colspan="{$ reduced_columns.length $}" ng-hide="selectedFilter == SHOW_UNMATCHED">Matched {$ inventory_type == 'taxlots' ? 'Tax Lots' : 'Properties' $} {$ filter_selected $}</th>
                         </tr>
                         <tr>
-                            <th ng-repeat="col in columns" class="pointer noselect" ng-click="order_by_field(col.extraData, col.name)">
+                            <th ng-repeat="col in ::columns" class="pointer noselect" ng-click="order_by_field(col.extraData, col.name)">
                                 {$ col.displayName $} <span class="subtitle">{$ col.subtitle $}</span>
                                 <span ng-hide="col.name != order_by" class="fa" ng-class="sort_reverse ? 'fa-caret-down' : 'fa-caret-up'"></span>
                             </th>
                             <th class="sub_head is_aligned_center" ng-hide="selectedFilter == SHOW_UNMATCHED">Match</th>
-                            <th ng-repeat="col in reduced_columns" class="noselect" ng-hide="selectedFilter == SHOW_UNMATCHED">
+                            <th ng-repeat="col in ::reduced_columns" class="noselect" ng-hide="selectedFilter == SHOW_UNMATCHED">
                                 {$ col.displayName $} <span class="subtitle">{$ col.subtitle $}</span>
                             </th>
                         </tr>
-                        <!--<tr>
-                            <th class="sub_head" ng-repeat="col in columns">
-                                <input type="text" class="form-control input-sm show" ng-model="filter_params[col.name]" sd-enter="on_filter_enter_key()" ng-class="{active: filter_params[col.name].length}">
-                            </th>
-                            <th class="sub_head" ng-hide="selectedFilter == SHOW_UNMATCHED"></th>
-                            <th class="sub_head" ng-repeat="col in columns" ng-hide="selectedFilter == SHOW_UNMATCHED"></th>
-                        </tr>-->
                     </thead>
                     <tbody>
-                        <tr ng-repeat="i in inventory | filter:(selectedFilter == SHOW_ALL) ? undefined : {matched: selectedFilter == SHOW_MATCHED}">
-                            <td ng-repeat="col in columns">
+                        <tr ng-repeat="i in inventory | filter:(selectedFilter == SHOW_ALL) ? undefined : {matched: selectedFilter == SHOW_MATCHED} | startFrom : current_page * number_per_page | limitTo : number_per_page">
+                            <td ng-repeat="col in ::columns">
                                 <a ui-sref="matching_detail({importfile_id: import_file.id, inventory_type: inventory_type, state_id: i.id})">{$ col.extraData ? i.extra_data[col.name] : i[col.name] $}</a>
                             </td>
                             <td class="is_aligned_center has_no_padding" ng-hide="selectedFilter == SHOW_UNMATCHED">
@@ -114,7 +122,7 @@
                                     <input type="checkbox" ng-model="i.matched" ng-change="unmatch(i)" ng-disabled="!i.matched">
                                 </label>
                             </td>
-                            <td ng-repeat="col in reduced_columns" ng-hide="selectedFilter == SHOW_UNMATCHED">
+                            <td ng-repeat="col in ::reduced_columns" ng-hide="selectedFilter == SHOW_UNMATCHED">
                                 <span>{$ col.extraData ? i.coparent.extra_data[col.name] : i.coparent[col.name] $}</span>
                             </td>
                         </tr>
@@ -122,37 +130,21 @@
                 </table>
             </div>
             <div class="table_footer">
-                <!--<div class="display_number_entries col-sm-3">
-                    <div class="display_number_entries_text">Display:</div>
-                    <div class="display_number_entries_select">
-                        <select class="form-control input-sm col-xs-2" name="number_per_page_select" id="number_per_page_select" ng-options="number_per_page_option for number_per_page_option in pagination.number_per_page_options" ng-model="pagination.number_per_page_options_model" ng-change="pagination.update_number_per_page()"> </select>
-                    </div>
-                    <div class="display_number_entries_text">{$ inventory_type == 'taxlots' ? 'tax lots' : 'properties' $}</div>
-                </div>-->
                 <div class="counts col-sm-4 col-sm-offset-4" style="text-align: center;">
-                    <span ng-if="selectedFilter == SHOW_ALL">Showing {$ matched_buildings + unmatched_buildings == 0 ? 0 : showing.start $} to {$ matched_buildings + unmatched_buildings $} of {$ matched_buildings + unmatched_buildings $} {$ inventory_type == 'properties' ? 'properties' : 'tax lots' $} <span class="number_unmatched">({$ unmatched_buildings $} unmatched)</span></span>
-                    <span ng-if="selectedFilter == SHOW_MATCHED">Showing {$ matched_buildings == 0 ? 0 : showing.start $} to {$ matched_buildings $} of {$ matched_buildings + unmatched_buildings $} {$ inventory_type == 'properties' ? 'properties' : 'tax lots' $}</span>
-                    <span ng-if="selectedFilter == SHOW_UNMATCHED">Showing {$ unmatched_buildings == 0 ? 0 : showing.start $} to {$ unmatched_buildings $} of {$ matched_buildings + unmatched_buildings $} {$ inventory_type == 'properties' ? 'properties' : 'tax lots' $}</span>
-                </div>
-                <!--<div class="counts col-sm-4">
-                    <span>Showing {$ showing.start | number:0 $} to {$ showing.end | number:0 $} of {$ inventory_type == 'taxlots' ? number_tax_lots_matching_search + ' tax lots' : number_properties_matching_search + ' properties' $} <span class="number_unmatched">({$ unmatched_buildings $} unmatched)</span></span>
+                    <span>Showing {$ showing.start $} to {$ showing.end $} of {$ showing.total $} {$ inventory_type == 'properties' ? 'properties' : 'tax lots' $}
+                        <span ng-if="selectedFilter == SHOW_ALL" class="number_unmatched">({$ unmatched_buildings $} unmatched)</span>
+                    </span>
                 </div>
                 <div class="pager_container col-sm-5">
-                    <ul class="pager">
-                        <li ng-class="{disabled: current_page == 1}">
-                            <a ng-click="pagination.first_page()"><i class="fa fa-angle-double-left"></i> First Record</a>
-                        </li>
-                        <li ng-class="{disabled: current_page == 1}">
-                            <a ng-click="pagination.prev_page()"><i class="fa fa-angle-left"></i> Previous</a>
-                        </li>
-                        <li ng-class="{disabled: current_page == num_pages}"><a ng-click="pagination.next_page()">Next
-                            <i class="fa fa-angle-right"></i></a>
-                        </li>
-                        <li ng-class="{disabled: current_page == num_pages}"><a ng-click="pagination.last_page()">Last Record
-                            <i class="fa fa-angle-double-right"></i></a>
-                        </li>
-                    </ul>
-                </div>-->
+                    <select style="height:24px;" ng-model="number_per_page" ng-change="update_start_end_paging()" ng-options="option for option in number_per_page_options"></select>
+                    <button class="disableable" ng-disabled="current_page == 0 || number_of_pages() === 1" ng-click="current_page = current_page - 1; update_start_end_paging()">
+                        Previous
+                    </button>
+                    {$ current_page + 1 $}/{$ number_of_pages() $}
+                    <button class="disableable" ng-disabled="current_page >= inventory.length / number_per_page - 1 || number_of_pages() === 1" ng-click="current_page = current_page + 1; update_start_end_paging()">
+                        Next
+                    </button>
+                </div>
             </div>
         </div>
     </div>

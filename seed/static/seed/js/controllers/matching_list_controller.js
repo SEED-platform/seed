@@ -53,8 +53,14 @@ angular.module('BE.seed.controller.matching_list', [])
       } else {
         $scope.inventory = inventory_payload.tax_lots;
       }
-      $scope.number_per_page = 10;
-      $scope.current_page = 1;
+      $scope.number_per_page = 25;
+      $scope.number_per_page_options = [5, 10, 25, 50, 100];
+      $scope.current_page = 0;
+      $scope.number_of_pages = function () {
+        if ($scope.selectedFilter === $scope.SHOW_MATCHED) return Math.max(Math.ceil($scope.matched_buildings / $scope.number_per_page), 1);
+        else if ($scope.selectedFilter === $scope.SHOW_UNMATCHED) return Math.max(Math.ceil($scope.unmatched_buildings / $scope.number_per_page), 1);
+        return Math.max(Math.ceil($scope.inventory.length / $scope.number_per_page), 1);
+      };
       $scope.order_by = '';
       $scope.sort_reverse = false;
       $scope.number_properties_matching_search = 0;
@@ -135,71 +141,36 @@ angular.module('BE.seed.controller.matching_list', [])
       $scope.SHOW_UNMATCHED = 'Show Unmatched';
 
       $scope.filter_options = [$scope.SHOW_ALL, $scope.SHOW_MATCHED, $scope.SHOW_UNMATCHED];
+      $scope.selectedFilter = $scope.SHOW_ALL;
 
       /**
        * Pagination code
        */
-      // $scope.pagination.update_number_per_page = function () {
-      //   $scope.number_per_page = $scope.pagination.number_per_page_options_model;
-      //   $scope.filter_search();
-      // };
-      var update_start_end_paging = function () {
-        if ($scope.current_page === $scope.num_pages) {
+      $scope.update_start_end_paging = function () {
+        if (($scope.selectedFilter === $scope.SHOW_ALL && ($scope.matched_buildings + $scope.unmatched_buildings === 0)) ||
+          ($scope.selectedFilter === $scope.SHOW_MATCHED && $scope.matched_buildings === 0) ||
+          ($scope.selectedFilter === $scope.SHOW_UNMATCHED && $scope.unmatched_buildings === 0)) {
+          $scope.showing.start = 0;
+          $scope.showing.end = 0;
+          $scope.showing.total = 0;
+          return;
+        }
+
+        if ($scope.selectedFilter === $scope.SHOW_ALL) $scope.showing.total = $scope.matched_buildings + $scope.unmatched_buildings;
+        else if ($scope.selectedFilter === $scope.SHOW_MATCHED) $scope.showing.total = $scope.matched_buildings + ' (filtered)';
+        else if ($scope.selectedFilter === $scope.SHOW_UNMATCHED) $scope.showing.total = $scope.unmatched_buildings + ' (filtered)';
+
+        $scope.showing.start = $scope.current_page * $scope.number_per_page + 1;
+        if ($scope.current_page === $scope.number_of_pages() - 1) {
           if ($scope.inventory_type === 'properties') {
             $scope.showing.end = $scope.number_properties_matching_search;
           } else {
             $scope.showing.end = $scope.number_tax_lots_matching_search;
           }
         } else {
-          $scope.showing.end = $scope.current_page * $scope.number_per_page;
+          $scope.showing.end = Math.min($scope.showing.start + $scope.number_per_page - 1, $scope.showing.total);
         }
-        $scope.showing.start = ($scope.current_page - 1) * $scope.number_per_page + 1;
       };
-
-      /**
-       * first_page: triggered when the `first` paging button is clicked, it
-       *   sets the results to the first page and shows that page
-       */
-      // $scope.pagination.first_page = function () {
-      //   $scope.current_page = 1;
-      //   $scope.filter_search();
-      // };
-
-      // /**
-      //  * last_page: triggered when the `last` paging button is clicked, it
-      //  *   sets the results to the last page and shows that page
-      //  */
-      // $scope.pagination.last_page = function () {
-      //   $scope.current_page = $scope.num_pages;
-      //   $scope.filter_search();
-      // };
-
-      // /**
-      //  * next_page: triggered when the `next` paging button is clicked, it
-      //  *   increments the page of the results, and fetches that page
-      //  */
-      // $scope.pagination.next_page = function () {
-      //   $scope.current_page += 1;
-      //   if ($scope.current_page > $scope.num_pages) {
-      //     $scope.current_page = $scope.num_pages;
-      //   }
-      //   $scope.filter_search();
-      // };
-
-      // /**
-      //  * prev_page: triggered when the `previous` paging button is clicked, it
-      //  *   decrements the page of the results, and fetches that page
-      //  */
-      // $scope.pagination.prev_page = function () {
-      //   $scope.current_page -= 1;
-      //   if ($scope.current_page < 1) {
-      //     $scope.current_page = 1;
-      //   }
-      //   $scope.filter_search();
-      // };
-      /**
-       * end pagination code
-       */
 
       var refresh = function () {
         spinner_utility.show();
@@ -267,6 +238,8 @@ angular.module('BE.seed.controller.matching_list', [])
               delete i.coparent;
             }
           });
+
+          $scope.update_start_end_paging();
         });
       };
 
@@ -333,12 +306,9 @@ angular.module('BE.seed.controller.matching_list', [])
 
         if ($scope.inventory_type === 'properties') {
           $scope.inventory = inventory_payload.properties;
-          $scope.num_pages = Math.ceil(inventory_payload.number_properties_matching_search / $scope.number_per_page);
         } else {
           $scope.inventory = inventory_payload.tax_lots;
-          $scope.num_pages = Math.ceil(inventory_payload.number_tax_lots_matching_search / $scope.number_per_page);
         }
-        update_start_end_paging();
 
         $scope.update_number_matched();
 
