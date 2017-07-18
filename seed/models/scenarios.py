@@ -9,6 +9,7 @@ from __future__ import unicode_literals
 import logging
 
 from django.db import models
+from seed.models.joins import PropertyMeasure
 
 _log = logging.getLogger(__name__)
 
@@ -44,6 +45,8 @@ class Scenario(models.Model):
                                           default=TEMPORAL_STATUS_CURRENT)
     description = models.TextField(null=True)
 
+    property_state = models.ForeignKey('PropertyState', related_name='property_state')
+
     # package of measures fields
     annual_site_energy_savings = models.FloatField(null=True)
     annual_source_energy_savings = models.FloatField(null=True)
@@ -54,5 +57,6 @@ class Scenario(models.Model):
     hdd_base_temperature = models.FloatField(null=True)
     cdd = models.FloatField(null=True)
     cdd_base_temperature = models.FloatField(null=True)
-    measures = models.ManyToManyField('PropertyMeasure')
+
+    measures = models.ManyToManyField(PropertyMeasure)
     # meters are linked from Class Meter

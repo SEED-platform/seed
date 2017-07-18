@@ -25,7 +25,7 @@ from seed.models import (
     Cycle, Column, GreenAssessment, GreenAssessmentURL, Measure,
     GreenAssessmentProperty, Property, PropertyAuditLog, PropertyView,
     PropertyState, StatusLabel, TaxLot, TaxLotAuditLog, TaxLotProperty,
-    TaxLotState, TaxLotView
+    TaxLotState, TaxLotView, PropertyMeasure
 )
 from seed.models.auditlog import AUDIT_USER_CREATE
 
@@ -289,32 +289,45 @@ class FakePropertyViewFactory(BaseFake):
 
 
 class FakePropertyMeasureFactory(BaseFake):
-    def __init__(self, organization):
+    def __init__(self, organization, property_state=None):
         self.organization = organization
+
+        if not property_state:
+            self.property_state = FakePropertyStateFactory().get_property_state(self.organization)
+        else:
+            self.property_state = property_state
         super(FakePropertyMeasureFactory, self).__init__()
 
-    def get_details(self, number_of_measures, **kw):
+    def assign_random_measures(self, number_of_measures=5, **kw):
+        # remove any existing measures assigned to the property
+        self.property_state.measures.all().delete()
+
         # assign a random number of measures to the PropertyState
         for n in xrange(number_of_measures):
             measure = Measure.objects.all().order_by('?')[0]
+            property_measure_details = {
+                'measure_id': measure.id,
+                'property_state': self.property_state,
+                'description': self.fake.text(),
+                'implementation_status': PropertyMeasure.MEASURE_IN_PROGRESS,
+                'application_scale': PropertyMeasure.SCALE_ENTIRE_SITE,
+                'category_affected': PropertyMeasure.CATEGORY_AIR_DISTRIBUTION,
+                'recommended': True,
+                'cost_mv': self.fake.numerify(text='#####'),
+                'cost_total_first': self.fake.numerify(text='#####'),
+                'cost_installation': self.fake.numerify(text='#####'),
+                'cost_material': self.fake.numerify(text='#####'),
+                'cost_capital_replacement': self.fake.numerify(text='#####'),
+                'cost_residual_value': self.fake.numerify(text='#####'),
+                'cost_installation': self.fake.numerify(text='#####'),
+            }
+            pm = PropertyMeasure.objects.create(**property_measure_details)
 
-
-
-
-    def get_measure(self, **kw):
+    def get_property_state(self, number_of_measures=5, **kw):
         """Return a measure"""
-        green_assessment = self.get_details()
-        validity_duration = kw.pop('validity_duration', None)
-        if validity_duration:
-            if isinstance(validity_duration, int):
-                validity_duration = datetime.timedelta(validity_duration)
-            if not (isinstance(validity_duration, datetime.timedelta)):
-                raise TypeError(
-                    'validity_duration must be an integer or timedelta'
-                )
-            green_assessment['validity_duration'] = validity_duration
-        green_assessment.update(kw)
-        return GreenAssessment.objects.create(**green_assessment)
+        self.assign_random_measures(number_of_measures)
+        return self.property_state
+
 
 class FakeGreenAssessmentFactory(BaseFake):
     """

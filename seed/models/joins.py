@@ -39,6 +39,11 @@ class TaxLotProperty(models.Model):
 
 
 class PropertyMeasure(models.Model):
+    """
+    A PropertyMeasure is the join between a measure and a PropertyState with the added information
+    to fully define a unique measure instance. Scenarios reference these PropertyMeasures to define
+    list of measures for the PropertyState.
+    """
     MEASURE_PROPOSED = 1
     MEASURE_EVALUATED = 2
     MEASURE_SELECTED = 3

@@ -9,6 +9,7 @@ from django.test import TestCase
 
 from seed.models.scenarios import Scenario
 from seed.models import Organization
+from seed.test_helpers.fake import FakePropertyMeasureFactory
 
 
 class TestMeasures(TestCase):
@@ -19,10 +20,21 @@ class TestMeasures(TestCase):
         Scenario.objects.all().delete()
 
     def test_scenario_meters(self):
+        ps = FakePropertyMeasureFactory(self.org).get_property_state()
 
-        s = Scenario.objects.create(
-            name='Test'
-        )
+        self.assertEqual(ps.measures.count(), 5)
+        self.assertEqual(ps.propertymeasure_set.count(), 5)
+
+        for m in ps.propertymeasure_set.all():
+            print m.measure
+            print m.cost_mv
+
+
+        # s = Scenario.objects.create(
+        #     name='Test'
+        # )
+        # s.property_state = ps
+        # s.save()
 
         # create a new meter
         # s.meters.add()
