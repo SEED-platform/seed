@@ -1,4 +1,3 @@
-<!-- edited with XMLSpy v2016 rel. 2 sp1 (x64) (http://www.altova.com) by Dan Macumber (NREL) -->
 <auc:Audits xmlns:auc="http://nrel.gov/schemas/bedes-auc/2014" xsi:schemaLocation="http://nrel.gov/schemas/bedes-auc/2014 file:///E:/buildingsync/BuildingSync.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <auc:Audit>
     <auc:Sites>
