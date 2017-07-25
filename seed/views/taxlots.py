@@ -192,15 +192,15 @@ class TaxLotViewSet(GenericViewSet):
             # /data_importer/views.py and /seed/views/properties.py
             if join_dict.get('recent_sale_date'):
                 join_dict['recent_sale_date'] = make_naive(join_dict['recent_sale_date']).strftime(
-                    '%Y-%m-%d %H:%M:%S')
+                    '%Y-%m-%dT%H:%M:%S')
 
             if join_dict.get('release_date'):
                 join_dict['release_date'] = make_naive(join_dict['release_date']).strftime(
-                    '%Y-%m-%d %H:%M:%S')
+                    '%Y-%m-%dT%H:%M:%S')
 
             if join_dict.get('generation_date'):
                 join_dict['generation_date'] = make_naive(join_dict['generation_date']).strftime(
-                    '%Y-%m-%d %H:%M:%S')
+                    '%Y-%m-%dT%H:%M:%S')
 
             try:
                 join_map[join.taxlot_view_id].append(join_dict)
