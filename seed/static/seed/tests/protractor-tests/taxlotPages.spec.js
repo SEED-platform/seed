@@ -13,7 +13,7 @@ describe('When I go to the taxlot page', function () {
 
   it('should change to our test cycle', function () {
     browser.get('/app/#/taxlots');
-    $('[ng-change="update_cycle(cycle.selected_cycle)"]').element(by.cssContainingText('option', "Default 2016 Calendar Year")).click();
+    $('[ng-change="update_cycle(cycle.selected_cycle)"]').element(by.cssContainingText('option', "2016 Calendar Year")).click();
     $('[ng-change="update_cycle(cycle.selected_cycle)"]').element(by.cssContainingText('option', browser.params.testOrg.cycle)).click();
 
     var rows = $('.left.ui-grid-render-container-left.ui-grid-render-container')

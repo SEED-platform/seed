@@ -17,9 +17,9 @@ describe('When I go to the dataset options page', function () {
     browser.get('/app/#/data');
     $$('[ui-sref="dataset_detail({dataset_id: d.id})"]').first().click();
     $$('#data-pairing-0').first().click();
-    element(by.cssContainingText('[ng-model="cycle.selected_cycle"] option', "Default 2016 Calendar Year")).click();
+    element(by.cssContainingText('[ng-model="cycle.selected_cycle"] option', "2016 Calendar Year")).click();
   });
-  
+
   it('should edit pairing', function () {
     element(by.cssContainingText('[ng-model="cycle.selected_cycle"] option', browser.params.testOrg.cycle)).click();
     expect($('.page_title').getText()).toContain('Pair Properties to Tax Lots');
