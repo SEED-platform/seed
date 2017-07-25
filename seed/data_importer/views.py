@@ -23,6 +23,7 @@ from django.core.urlresolvers import reverse
 from django.db.models import Q
 from django.http import HttpResponse
 from django.http import JsonResponse
+from django.utils.timezone import make_naive
 from rest_framework import serializers
 from rest_framework import status
 from rest_framework import viewsets
@@ -631,6 +632,22 @@ class ImportFileViewSet(viewsets.ViewSet):
 
             _log.debug('Found {} properties'.format(len(properties)))
             _log.debug('Found {} tax lots'.format(len(tax_lots)))
+
+            # if the data contain date/times, then cast them to local time per Djangos' TIME_ZONE
+            # configuration option. This should really be a serializer and be consistent with
+            # the property/taxlot serializer. Total hack right now.
+            for p in properties:
+                if p.get('recent_sale_date'):
+                    p['recent_sale_date'] = make_naive(p['recent_sale_date']).strftime(
+                        '%Y-%m-%d %H:%M:%S')
+
+                if p.get('release_date'):
+                    p['release_date'] = make_naive(p['release_date']).strftime(
+                        '%Y-%m-%d %H:%M:%S')
+
+                if p.get('generation_date'):
+                    p['generation_date'] = make_naive(p['generation_date']).strftime(
+                        '%Y-%m-%d %H:%M:%S')
 
             return {
                 'status': 'success',

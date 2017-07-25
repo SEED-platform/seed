@@ -715,7 +715,7 @@ VIEW_COLUMNS_PROPERTY = [
         'displayName': 'Recent Sale Date',
         'dataType': 'datetime',
         'type': 'date',
-        'cellFilter': 'date:\'yyyy-MM-dd\'',
+        'cellFilter': 'date:\'yyyy-MM-dd HH:mm\'',
         'dbField': True,
     }, {
         'name': 'conditioned_floor_area',
@@ -764,7 +764,7 @@ VIEW_COLUMNS_PROPERTY = [
         'displayName': 'PM Generation Date',
         'dataType': 'datetime',
         'type': 'date',
-        'cellFilter': 'date:\'yyyy-MM-dd\'',
+        'cellFilter': 'date:\'yyyy-MM-dd HH:mm\'',
         'dbField': True,
     }, {
         'name': 'release_date',
@@ -772,7 +772,7 @@ VIEW_COLUMNS_PROPERTY = [
         'displayName': 'PM Release Date',
         'dataType': 'datetime',
         'type': 'date',
-        'cellFilter': 'date:\'yyyy-MM-dd\'',
+        'cellFilter': 'date:\'yyyy-MM-dd HH:mm\'',
         'dbField': True,
     }, {
         'name': 'source_eui_weather_normalized',

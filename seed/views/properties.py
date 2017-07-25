@@ -16,6 +16,7 @@ from os import path
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.forms.models import model_to_dict
 from django.http import JsonResponse
+from django.utils.timezone import make_naive
 from rest_framework import status
 from rest_framework.decorators import detail_route, list_route
 from rest_framework.renderers import JSONRenderer
@@ -26,7 +27,6 @@ from rest_framework.viewsets import GenericViewSet
 from seed.decorators import ajax_request_class
 from seed.filtersets import PropertyViewFilterSet, PropertyStateFilterSet
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.models import Property as PropertyModel
 from seed.models import (
     AUDIT_USER_EDIT,
     Column,
@@ -37,6 +37,7 @@ from seed.models import (
     TaxLotProperty,
     TaxLotView
 )
+from seed.models import Property as PropertyModel
 from seed.serializers.properties import (
     PropertySerializer,
     PropertyStateSerializer,
@@ -47,15 +48,15 @@ from seed.serializers.taxlots import (
     TaxLotViewSerializer
 )
 from seed.utils.api import api_endpoint_class
-from seed.utils.time import convert_to_js_timestamp
-from seed.utils.viewsets import (
-    SEEDOrgCreateUpdateModelViewSet,
-    SEEDOrgModelViewSet
-)
 from seed.utils.properties import (
     get_changed_fields,
     pair_unpair_property_taxlot,
     update_result_with_master
+)
+from seed.utils.time import convert_to_js_timestamp
+from seed.utils.viewsets import (
+    SEEDOrgCreateUpdateModelViewSet,
+    SEEDOrgModelViewSet
 )
 
 # Constants
@@ -326,6 +327,19 @@ class PropertyViewSet(GenericViewSet):
 
             # All the related tax lot states.
             p['related'] = join_map.get(prop.pk, [])
+
+            # fix specific time stamps - total hack right now. Need to reconcile with
+            # /data_importer/views.py
+            if p.get('recent_sale_date'):
+                p['recent_sale_date'] = make_naive(p['recent_sale_date']).strftime(
+                    '%Y-%m-%d %H:%M:%S')
+
+            if p.get('release_date'):
+                p['release_date'] = make_naive(p['release_date']).strftime('%Y-%m-%d %H:%M:%S')
+
+            if p.get('generation_date'):
+                p['generation_date'] = make_naive(p['generation_date']).strftime(
+                    '%Y-%m-%d %H:%M:%S')
 
             response['results'].append(p)
 
