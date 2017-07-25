@@ -17,6 +17,7 @@ from os import path
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.forms.models import model_to_dict
 from django.http import JsonResponse
+from django.utils.timezone import make_naive
 from rest_framework import status
 from rest_framework.decorators import detail_route, list_route
 from rest_framework.renderers import JSONRenderer
@@ -44,12 +45,13 @@ from seed.serializers.taxlots import (
     TaxLotViewSerializer
 )
 from seed.utils.api import api_endpoint_class
-from seed.utils.time import convert_to_js_timestamp
 from seed.utils.properties import (
     get_changed_fields,
     pair_unpair_property_taxlot,
     update_result_with_master
 )
+from seed.utils.time import convert_to_js_timestamp
+
 # Constants
 # Global toggle that controls whether or not to display the raw extra
 # data fields in the columns returned for the view.
@@ -185,6 +187,21 @@ class TaxLotViewSet(GenericViewSet):
                 'primary': 'P' if join.primary else 'S',
                 'calculated_taxlot_ids': '; '.join(jurisdiction_tax_lot_ids)
             })
+
+            # fix specific time stamps - total hack right now. Need to reconcile with
+            # /data_importer/views.py and /seed/views/properties.py
+            if join_dict.get('recent_sale_date'):
+                join_dict['recent_sale_date'] = make_naive(join_dict['recent_sale_date']).strftime(
+                    '%Y-%m-%dT%H:%M:%S')
+
+            if join_dict.get('release_date'):
+                join_dict['release_date'] = make_naive(join_dict['release_date']).strftime(
+                    '%Y-%m-%dT%H:%M:%S')
+
+            if join_dict.get('generation_date'):
+                join_dict['generation_date'] = make_naive(join_dict['generation_date']).strftime(
+                    '%Y-%m-%dT%H:%M:%S')
+
             try:
                 join_map[join.taxlot_view_id].append(join_dict)
             except KeyError:

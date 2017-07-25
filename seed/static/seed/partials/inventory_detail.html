@@ -68,7 +68,7 @@
                     </thead>
                     <tbody>
 
-                        <tr ng-repeat="field in columns" ng-if="field.visible">
+                        <tr ng-repeat="field in ::columns" ng-if="field.visible">
 
                             <!-- Field name -->
                             <td ng-attr-title="{$ field.name $}">{$ field.displayName $}</td>
@@ -76,14 +76,16 @@
                             <!-- Show read-only current 'regular' field value -->
                             <td ng-if="edit_form_showing===false && !field.extraData" ng-class="changed_fields.regular_fields.indexOf(field.name)>=0 ? 'highlight' : ''" class="ellipsis">
                                 <span class="sd-data-content" popover-placement="top-left" popover-animation="false" popover-trigger="outsideClick" uib-popover="{$ item_state[field.name] $}">
-                                    {$ item_state[field.name] $}
+                                    <span ng-if="field.type !== 'date'">{$ item_state[field.name] $}</span>
+                                    <span ng-if="field.type === 'date'">{$ item_state[field.name] | date: 'yyyy-MM-dd h:mm a' $}</span>
                                 </span>
                             </td>
 
                             <!-- Show read-only current 'extra_data' field value -->
                             <td ng-if="edit_form_showing===false && field.extraData" ng-class="changed_fields.extra_data_fields.indexOf(field.name)>=0 ? 'highlight' : ''" class="ellipsis">
                                 <span class="sd-data-content" popover-placement="top-left" popover-animation="false" popover-trigger="outsideClick" uib-popover="{$ item_state.extra_data[field.name.replace('_extra', '')] $}">
-                                    {$ item_state.extra_data[field.name.replace('_extra', '')] $}
+                                    <span ng-if="field.type !== 'date'">{$ item_state.extra_data[field.name.replace('_extra', '')] $}</span>
+                                    <span ng-if="field.type === 'date'">{$ item_state.extra_data[field.name.replace('_extra', '')] | date: 'yyyy-MM-dd h:mm a' $}</span>
                                 </span>
                             </td>
 
@@ -100,10 +102,12 @@
                             <!-- Show read-only historical field value -->
                             <td ng-repeat="historical_item in historical_items" ng-class="(!field.extraData && historical_item.changed_fields.extra_data_fields.indexOf(field.name)>=0) || historical_item.changed_fields.regular_fields.indexOf(field.name)>=0 ? 'highlight' : ''" class="ellipsis">
                                 <span ng-if="!field.extraData" class="sd-data-content" popover-placement="top-left" popover-trigger="outsideClick" popover-animation="false" uib-popover="{$ historical_item.state[field.name] $}">
-                                    {$ historical_item.state[field.name] $}
+                                    <span ng-if="field.type !== 'date'">{$ historical_item.state[field.name] $}</span>
+                                    <span ng-if="field.type === 'date'">{$ historical_item.state[field.name] | date: 'yyyy-MM-dd h:mm a' $}</span>
                                 </span>
                                 <span ng-if="field.extraData" class="sd-data-content" popover-placement="top-left" popover-trigger="outsideClick" popover-animation="false" uib-popover="{$ historical_item.state.extra_data[field.name]  $}">
-                                    {$ historical_item.state.extra_data[field.name.replace('_extra', '')] $}
+                                    <span ng-if="field.type !== 'date'">{$ historical_item.state.extra_data[field.name.replace('_extra', '')] $}</span>
+                                    <span ng-if="field.type === 'date'">{$ historical_item.state.extra_data[field.name.replace('_extra', '')] | date: 'yyyy-MM-dd h:mm a' $}</span>
                                 </span>
                             </td>
 
