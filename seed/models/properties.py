@@ -131,7 +131,6 @@ class PropertyState(models.Model):
     extra_data = JSONField(default=dict, blank=True)
     measures = models.ManyToManyField('Measure', through='PropertyMeasure')
 
-
     class Meta:
         index_together = [
             ['import_file', 'data_state'],

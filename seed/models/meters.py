@@ -68,7 +68,7 @@ class Meter(models.Model):
     property_view = models.ForeignKey(PropertyView, related_name='meters',
                                       on_delete=models.CASCADE, null=True, blank=True)
     scenario = models.ForeignKey(Scenario, related_name='meters',
-                                      on_delete=models.CASCADE, null=True)
+                                 on_delete=models.CASCADE, null=True)
     energy_type = models.IntegerField(choices=ENERGY_TYPES)
     energy_units = models.IntegerField(choices=ENERGY_UNITS)
 

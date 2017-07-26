@@ -108,4 +108,3 @@ class TestPropertyMeasures(TestCase):
         # if we run it again, it shouldn't add anything new
         Measure.populate_measures(self.org.id)
         self.assertEqual(Measure.objects.count(), 174)
-

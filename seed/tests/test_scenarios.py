@@ -29,7 +29,6 @@ class TestMeasures(TestCase):
             print m.measure
             print m.cost_mv
 
-
         # s = Scenario.objects.create(
         #     name='Test'
         # )
@@ -38,5 +37,3 @@ class TestMeasures(TestCase):
 
         # create a new meter
         # s.meters.add()
-
-
