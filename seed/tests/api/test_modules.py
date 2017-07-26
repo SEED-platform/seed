@@ -101,7 +101,7 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, f
         json=payload
     )
     result = check_progress(main_url, header, result.json()['progress_key'])
-    check_status(result, partmsg, c)
+    check_status(result, partmsg, log)
 
     # Check number of matched and unmatched BuildingSnapshots
     print ('API Function: matching_results\n'),
