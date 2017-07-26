@@ -16,6 +16,7 @@ from os import path
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.forms.models import model_to_dict
 from django.http import JsonResponse
+from django.utils.timezone import make_naive
 from rest_framework import status
 from rest_framework.decorators import detail_route, list_route
 from rest_framework.renderers import JSONRenderer
@@ -41,6 +42,7 @@ from seed.models import (
     TaxLotProperty,
     TaxLotView,
 )
+from seed.models import Property as PropertyModel
 from seed.serializers.properties import (
     PropertySerializer,
     PropertyStateSerializer,
@@ -61,6 +63,11 @@ from seed.utils.time import convert_to_js_timestamp
 from seed.utils.viewsets import (
     SEEDOrgCreateUpdateModelViewSet,
     SEEDOrgModelViewSet,
+)
+from seed.utils.time import convert_to_js_timestamp
+from seed.utils.viewsets import (
+    SEEDOrgCreateUpdateModelViewSet,
+    SEEDOrgModelViewSet
 )
 
 # Constants
@@ -331,6 +338,19 @@ class PropertyViewSet(GenericViewSet):
 
             # All the related tax lot states.
             p['related'] = join_map.get(prop.pk, [])
+
+            # fix specific time stamps - total hack right now. Need to reconcile with
+            # /data_importer/views.py
+            if p.get('recent_sale_date'):
+                p['recent_sale_date'] = make_naive(p['recent_sale_date']).strftime(
+                    '%Y-%m-%dT%H:%M:%S')
+
+            if p.get('release_date'):
+                p['release_date'] = make_naive(p['release_date']).strftime('%Y-%m-%dT%H:%M:%S')
+
+            if p.get('generation_date'):
+                p['generation_date'] = make_naive(p['generation_date']).strftime(
+                    '%Y-%m-%dT%H:%M:%S')
 
             response['results'].append(p)
 

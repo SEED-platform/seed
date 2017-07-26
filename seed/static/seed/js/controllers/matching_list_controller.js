@@ -53,12 +53,22 @@ angular.module('BE.seed.controller.matching_list', [])
       } else {
         $scope.inventory = inventory_payload.tax_lots;
       }
-      $scope.number_per_page = 25;
       $scope.number_per_page_options = [5, 10, 25, 50, 100];
+      $scope.number_per_page = inventory_service.loadMatchesPerPage();
+      if (!_.includes($scope.number_per_page_options, $scope.number_per_page)) $scope.number_per_page = 25;
       $scope.current_page = 0;
       $scope.number_of_pages = function () {
-        if ($scope.selectedFilter === $scope.SHOW_MATCHED) return Math.max(Math.ceil($scope.matched_buildings / $scope.number_per_page), 1);
-        else if ($scope.selectedFilter === $scope.SHOW_UNMATCHED) return Math.max(Math.ceil($scope.unmatched_buildings / $scope.number_per_page), 1);
+        var unmatched, matched;
+        unmatched = $scope.unmatched_buildings;
+        if ($scope.inventory_type === 'properties') matched = $scope.number_properties_matching_search - unmatched;
+        else matched = $scope.number_tax_lots_matching_search - unmatched;
+
+        if ($scope.selectedFilter === $scope.SHOW_MATCHED) {
+          return Math.max(Math.ceil(matched / $scope.number_per_page), 1);
+        }
+        else if ($scope.selectedFilter === $scope.SHOW_UNMATCHED) {
+          return Math.max(Math.ceil(unmatched / $scope.number_per_page), 1);
+        }
         return Math.max(Math.ceil($scope.inventory.length / $scope.number_per_page), 1);
       };
       $scope.order_by = '';
@@ -147,6 +157,9 @@ angular.module('BE.seed.controller.matching_list', [])
        * Pagination code
        */
       $scope.update_start_end_paging = function () {
+        var numPages = $scope.number_of_pages();
+        $scope.current_page = _.min([$scope.current_page, numPages - 1]);
+
         if (($scope.selectedFilter === $scope.SHOW_ALL && ($scope.matched_buildings + $scope.unmatched_buildings === 0)) ||
           ($scope.selectedFilter === $scope.SHOW_MATCHED && $scope.matched_buildings === 0) ||
           ($scope.selectedFilter === $scope.SHOW_UNMATCHED && $scope.unmatched_buildings === 0)) {
@@ -156,20 +169,26 @@ angular.module('BE.seed.controller.matching_list', [])
           return;
         }
 
-        if ($scope.selectedFilter === $scope.SHOW_ALL) $scope.showing.total = $scope.matched_buildings + $scope.unmatched_buildings;
-        else if ($scope.selectedFilter === $scope.SHOW_MATCHED) $scope.showing.total = $scope.matched_buildings + ' (filtered)';
-        else if ($scope.selectedFilter === $scope.SHOW_UNMATCHED) $scope.showing.total = $scope.unmatched_buildings + ' (filtered)';
-
         $scope.showing.start = $scope.current_page * $scope.number_per_page + 1;
-        if ($scope.current_page === $scope.number_of_pages() - 1) {
-          if ($scope.inventory_type === 'properties') {
-            $scope.showing.end = $scope.number_properties_matching_search;
-          } else {
-            $scope.showing.end = $scope.number_tax_lots_matching_search;
-          }
+        if ($scope.inventory_type === 'properties') {
+          if ($scope.selectedFilter === $scope.SHOW_ALL) $scope.showing.total = $scope.number_properties_matching_search;
+          else if ($scope.selectedFilter === $scope.SHOW_MATCHED) $scope.showing.total = $scope.number_properties_matching_search - $scope.unmatched_buildings;
+          else if ($scope.selectedFilter === $scope.SHOW_UNMATCHED) $scope.showing.total = $scope.unmatched_buildings;
+        } else {
+          if ($scope.selectedFilter === $scope.SHOW_ALL) $scope.showing.total = $scope.number_tax_lots_matching_search;
+          else if ($scope.selectedFilter === $scope.SHOW_MATCHED) $scope.showing.total = $scope.number_tax_lots_matching_search - $scope.unmatched_buildings;
+          else if ($scope.selectedFilter === $scope.SHOW_UNMATCHED) $scope.showing.total = $scope.unmatched_buildings;
+        }
+
+        if ($scope.current_page === numPages - 1) {
+          $scope.showing.end = $scope.showing.total;
         } else {
           $scope.showing.end = Math.min($scope.showing.start + $scope.number_per_page - 1, $scope.showing.total);
         }
+      };
+
+      $scope.save_number_per_page = function () {
+        inventory_service.saveMatchesPerPage($scope.number_per_page);
       };
 
       var refresh = function () {

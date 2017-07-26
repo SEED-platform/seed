@@ -29,7 +29,6 @@ _log = logging.getLogger(__name__)
 
 
 class RuleTests(TestCase):
-
     def setUp(self):
         self.org = Organization.objects.create()
 
@@ -191,7 +190,7 @@ class RuleTests(TestCase):
         }
         r = Rule.objects.create(**new_rule)
         # the strings are tz naive, but must be passed in as tz aware.
-        dt = make_aware(datetime(2016, 0o7, 15, 12, 30), pytz.UTC)
+        dt = make_aware(datetime(2016, 7, 15, 12, 30), pytz.UTC)
         self.assertEqual(r.format_strings(dt),
                          ['2017-01-01 00:00:00', None, str(make_naive(dt, pytz.UTC))])
 
@@ -210,9 +209,8 @@ class RuleTests(TestCase):
         }
         r = Rule.objects.create(**new_rule)
         # the strings are tz naive, but must be passed in as tz aware.
-        dt = make_aware(datetime(2016, 0o7, 15, 12, 30), pytz.UTC).date()
-        self.assertEqual(r.format_strings(dt),
-                         ['2017-01-01', None, str(dt)])
+        dt = make_aware(datetime(2016, 7, 15, 12, 30), pytz.UTC).date()
+        self.assertEqual(r.format_strings(dt), ['2017-01-01', None, str(dt)])
 
         new_rule = {
             'data_type': TYPE_YEAR,
@@ -224,7 +222,6 @@ class RuleTests(TestCase):
 
 
 class DataQualityCheckCase(TestCase):
-
     def setUp(self):
         self.org = Organization.objects.create()
 
@@ -242,7 +239,6 @@ class DataQualityCheckCase(TestCase):
 
 
 class DataQualityCheckRules(TestCase):
-
     def setUp(self):
         self.org = Organization.objects.create()
 
@@ -275,8 +271,8 @@ class DataQualityCheckRules(TestCase):
             'wrong': 'data'
         }
         with self.assertRaisesRegexp(
-                TypeError,
-                "Rule data is not defined correctly: 'wrong' is an invalid keyword argument for this function"
+            TypeError,
+            "Rule data is not defined correctly: 'wrong' is an invalid keyword argument for this function"
         ):
             dq.add_rule(new_rule)
 

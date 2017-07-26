@@ -299,6 +299,12 @@ angular.module('BE.seed.controller.inventory_list', [])
         refresh_objects();
       };
 
+      $scope.filters_exist = function () {
+        return !!_.find($scope.gridApi.grid.columns, function (col) {
+          return !_.isEmpty(col.filter.term);
+        });
+      };
+
       processData();
 
       var get_labels = function () {
