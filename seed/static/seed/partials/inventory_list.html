@@ -67,6 +67,7 @@
         <div class="form-group btn-group">
             <label class="btn btn-default btn-sm" style="width:50px;" ng-model="labelLogic" uib-btn-radio="'and'" ng-change="labelLogicUpdated()" ng-disabled="!labels.length">AND</label>
             <label class="btn btn-default btn-sm" style="width:50px;" ng-model="labelLogic" uib-btn-radio="'or'" ng-change="labelLogicUpdated()" ng-disabled="!labels.length">OR</label>
+            <label class="btn btn-default btn-sm" style="width:75px;" ng-model="labelLogic" uib-btn-radio="'exclude'" ng-change="labelLogicUpdated()" ng-disabled="!labels.length">EXCLUDE</label>
         </div>
         <div class="form-group btn-group building-list-filter-buttons">
             <button type="button" ng-click="clear_labels()" class="btn btn-default btn-sm" ng-disabled="!labels.length">Clear Labels</button>
