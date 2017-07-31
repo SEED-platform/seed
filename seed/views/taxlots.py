@@ -499,6 +499,14 @@ class TaxLotViewSet(GenericViewSet):
                         if log.parent2.name in ['Import Creation', 'Manual Edit']:
                             record = record_dict(log.parent2)
                             history.append(record)
+                        elif log.parent2.name == 'System Match' and log.parent2.parent1.name == 'Import Creation' and \
+                                log.parent2.parent2.name == 'Import Creation':
+                            # Handle case where an import file matches within itself, and proceeds to match with
+                            # existing records
+                            record = record_dict(log.parent2.parent2)
+                            history.append(record)
+                            record = record_dict(log.parent2.parent1)
+                            history.append(record)
                         else:
                             tree = log.parent2
                     if log.parent1.name in ['Import Creation', 'Manual Edit']:
