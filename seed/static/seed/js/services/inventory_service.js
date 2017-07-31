@@ -536,18 +536,73 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
                 }
 
                 operator = filterData[3];
-                value = Date.parse(filterData[4] + 'T00:00:00');
                 switch (operator) {
                   case '<':
+                    value = Date.parse(filterData[4] + 'T00:00:00');
                     match = cellDate < value;
                     return match;
                   case '<=':
+                    value = filterData[4];
+                    var v = value.match(/^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/);
+                    var ymd = {
+                      y: _.parseInt(v[1]),
+                      m: _.parseInt(v[2]),
+                      d: _.parseInt(v[3])
+                    };
+
+                    // Add a day, subtract a millisecond
+                    if (filterData[4].length === 10) {
+                      value = Date.parse(filterData[4] + 'T00:00:00') + 86399999;
+                    }
+                    // Add a month, subtract a millisecond
+                    else if (filterData[4].length === 7) {
+                      var d;
+                      if (ymd.m === 12) {
+                        d = (ymd.y + 1) + '-01';
+                      } else {
+                        d = ymd.y + '-' + _.padStart(ymd.m + 1, 2, '0');
+                      }
+                      value = Date.parse(d + 'T00:00:00') - 1;
+                    }
+                    // Add a year, subtract a millisecond
+                    else if (filterData[4].length === 4) {
+                      value = Date.parse((ymd.y + 1) + 'T00:00:00') - 1;
+                    }
+
                     match = cellDate <= value;
                     return match;
                   case '>':
+                    value = filterData[4];
+                    var v = value.match(/^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/);
+                    var ymd = {
+                      y: _.parseInt(v[1]),
+                      m: _.parseInt(v[2]),
+                      d: _.parseInt(v[3])
+                    };
+
+                    // Add a day, subtract a millisecond
+                    if (filterData[4].length === 10) {
+                      value = Date.parse(filterData[4] + 'T00:00:00') + 86399999;
+                    }
+                    // Add a month, subtract a millisecond
+                    else if (filterData[4].length === 7) {
+                      var d;
+                      if (ymd.m === 12) {
+                        d = (ymd.y + 1) + '-01';
+                      } else {
+                        d = ymd.y + '-' + _.padStart(ymd.m + 1, 2, '0');
+                      }
+                      value = Date.parse(d + 'T00:00:00') - 1;
+                    }
+                    // Add a year, subtract a millisecond
+                    else if (filterData[4].length === 4) {
+                      value = Date.parse((ymd.y + 1) + 'T00:00:00') - 1;
+                    }
+
                     match = cellDate > value;
                     return match;
                   case '>=':
+                    value = Date.parse(filterData[4] + 'T00:00:00');
                     match = cellDate >= value;
                     return match;
                 }
