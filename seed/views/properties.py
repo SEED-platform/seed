@@ -9,6 +9,7 @@ All rights reserved.  # NOQA
 """
 
 # Imports from Standard Library
+import collections
 import re
 from os import path
 
@@ -27,6 +28,7 @@ from rest_framework.viewsets import GenericViewSet
 from seed.decorators import ajax_request_class
 from seed.filtersets import PropertyViewFilterSet, PropertyStateFilterSet
 from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.models import Property as PropertyModel
 from seed.models import (
     TaxLotAuditLog,
     TaxLotState,
@@ -35,14 +37,12 @@ from seed.models import (
     AUDIT_USER_EDIT,
     Column,
     Cycle,
-    Property as PropertyModel,
     PropertyAuditLog,
     PropertyState,
     PropertyView,
     TaxLotProperty,
     TaxLotView,
 )
-from seed.models import Property as PropertyModel
 from seed.serializers.properties import (
     PropertySerializer,
     PropertyStateSerializer,
@@ -52,17 +52,13 @@ from seed.serializers.properties import (
 from seed.serializers.taxlots import (
     TaxLotViewSerializer,
     TaxLotSerializer,
+    TaxLotStateSerializer,
 )
 from seed.utils.api import api_endpoint_class
 from seed.utils.properties import (
     get_changed_fields,
     pair_unpair_property_taxlot,
     update_result_with_master,
-)
-from seed.utils.time import convert_to_js_timestamp
-from seed.utils.viewsets import (
-    SEEDOrgCreateUpdateModelViewSet,
-    SEEDOrgModelViewSet,
 )
 from seed.utils.time import convert_to_js_timestamp
 from seed.utils.viewsets import (
@@ -622,8 +618,8 @@ class PropertyViewSet(GenericViewSet):
             if log.name in ['Manual Match', 'System Match', 'Merge current state in migration']:
                 done_searching = False
                 while not done_searching:
-                    if (
-                            log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
+                    if (log.parent1_id is None and log.parent2_id is None) or \
+                            log.name == 'Manual Edit':
                         done_searching = True
                     else:
                         tree = log.parent1
@@ -1181,7 +1177,7 @@ class TaxLotViewSet(GenericViewSet):
                                                'taxlot_view__state__jurisdiction_tax_lot_id'))
 
         # create a mapping that defaults to an empty list
-        propToJurisdictionTL = defaultdict(list)
+        propToJurisdictionTL = collections.defaultdict(list)
 
         # populate the mapping
         for name, pth in tuplePropToJurisdictionTL:
@@ -1487,8 +1483,8 @@ class TaxLotViewSet(GenericViewSet):
             if log.name in ['Manual Match', 'System Match', 'Merge current state in migration']:
                 done_searching = False
                 while not done_searching:
-                    if (
-                            log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
+                    if (log.parent1_id is None and log.parent2_id is None) or \
+                            log.name == 'Manual Edit':
                         done_searching = True
                     elif log.name == 'Merge current state in migration':
                         record = record_dict(log.parent1)
@@ -1690,22 +1686,6 @@ class TaxLotViewSet(GenericViewSet):
         return JsonResponse(result, status=status_code)
 
 
-def get_changed_fields(old, new):
-    """Return changed fields as json string"""
-    changed_fields, changed_extra_data = diffupdate(old, new)
-    if 'id' in changed_fields:
-        changed_fields.remove('id')
-    if 'pk' in changed_fields:
-        changed_fields.remove('pk')
-    if not (changed_fields or changed_extra_data):
-        return None
-    else:
-        return json.dumps({
-            'regular_fields': changed_fields,
-            'extra_data_fields': changed_extra_data
-        })
-
-
 def diffupdate(old, new):
     """Returns lists of fields changed"""
     changed_fields = []
@@ -1717,11 +1697,3 @@ def diffupdate(old, new):
         changed_fields.remove('extra_data')
         changed_extra_data, _ = diffupdate(old['extra_data'], new['extra_data'])
     return changed_fields, changed_extra_data
-
-
-def update_result_with_master(result, master):
-    result['changed_fields'] = master.get('changed_fields', None) if master else None
-    result['date_edited'] = master.get('date_edited', None) if master else None
-    result['source'] = master.get('source', None) if master else None
-    result['filename'] = master.get('filename', None) if master else None
-    return result

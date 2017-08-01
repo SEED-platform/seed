@@ -14,10 +14,13 @@ method mutiple times will always return the same sequence of results
     .. codeauthor:: Paul Munday<paul@paulmunday.net>
 """
 import datetime
+import os
 import re
 import string
 from collections import namedtuple
 
+import mock
+from django.db.models.fields.files import FieldFile
 from django.utils import timezone
 from faker import Factory
 
@@ -319,9 +322,8 @@ class FakePropertyMeasureFactory(BaseFake):
                 'cost_material': self.fake.numerify(text='#####'),
                 'cost_capital_replacement': self.fake.numerify(text='#####'),
                 'cost_residual_value': self.fake.numerify(text='#####'),
-                'cost_installation': self.fake.numerify(text='#####'),
             }
-            pm = PropertyMeasure.objects.create(**property_measure_details)
+            PropertyMeasure.objects.create(**property_measure_details)
 
     def get_property_state(self, number_of_measures=5, **kw):
         """Return a measure"""
