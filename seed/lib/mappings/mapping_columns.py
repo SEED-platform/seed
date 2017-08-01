@@ -75,7 +75,6 @@ class MappingColumns(object):
                 if raw_test.lower() == 'ubi':
                     raw_test = 'jurisdiction_tax_lot_id'
 
-
                 matches = matchers.best_match(raw_test, dest_columns, top_n=5)
 
                 # go get the top 5 matches. format will be [('PropertyState', 'building_count', 62), ...]
