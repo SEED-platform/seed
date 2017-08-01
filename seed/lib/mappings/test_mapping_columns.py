@@ -57,7 +57,7 @@ class TestMappingColumns(TestCase):
             'extra_data_1': ['PropertyState', 'generation_date', 69],
             'extra_data_2': ['PropertyState', 'release_date', 67],
             'Property Type': ['PropertyState', 'property_type', 100],
-            'UBI': ['PropertyState', 'building_certification', 60],
+            'UBI': ['TaxLotState', 'jurisdiction_tax_lot_id', 100],
             'UBI_BBL': ['PropertyState', 'occupied_floor_area', 59],
         }
 
@@ -81,7 +81,7 @@ class TestMappingColumns(TestCase):
             'Owner': ['PropertyState', 'owner', 100],
             'Property Type': ['PropertyState', 'property_type', 100],
             'State': ['PropertyState', 'state', 100],
-            'UBI': ['PropertyState', 'building_certification', 60],
+            'UBI': ['TaxLotState', 'jurisdiction_tax_lot_id', 100],
             'Zip': ['PropertyState', 'postal_code', 100],
             'extra_data_1': ['PropertyState', 'generation_date', 69],
             'extra_data_2': ['PropertyState', 'release_date', 67]
@@ -151,7 +151,7 @@ class TestMappingColumns(TestCase):
             'extra_data_1': ['PropertyState', 'generation_date', 69],
             'extra_data_2': ['PropertyState', 'extra_data_2', 100],
             'Property Type': ['PropertyState', 'property_type', 100],
-            'UBI': ['PropertyState', 'UBI', 100],
+            'UBI': ['TaxLotState', 'jurisdiction_tax_lot_id', 100],
             'UBI_BBL': ['PropertyState', 'UBI_BBL', 100],
         }
 
@@ -172,7 +172,7 @@ class TestMappingColumns(TestCase):
             'extra_data_1': ['PropertyState', 'extra_data_1', 100],
             'extra_data_2': ['PropertyState', 'extra_data_2', 100],
             'Property Type': ['PropertyState', 'property_type', 100],
-            'UBI': ['PropertyState', 'UBI', 100],
+            'UBI': ['TaxLotState', 'jurisdiction_tax_lot_id', 100],
             'UBI_BBL': ['PropertyState', 'UBI_BBL', 100],
         }
         mc = mapping_columns.MappingColumns(self.raw_columns,
@@ -192,7 +192,7 @@ class TestMappingColumns(TestCase):
             'extra_data_1': ['PropertyState', 'extra_data_1', 100],
             'extra_data_2': ['PropertyState', 'extra_data_2', 100],
             'Property Type': ['PropertyState', 'property_type', 100],
-            'UBI': ['PropertyState', 'UBI', 100],
+            'UBI': ['TaxLotState', 'jurisdiction_tax_lot_id', 100],
             'UBI_BBL': ['PropertyState', 'UBI_BBL', 100],
         }
         mc = mapping_columns.MappingColumns(self.raw_columns,

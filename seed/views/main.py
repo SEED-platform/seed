@@ -32,7 +32,6 @@ from seed.lib.mcm import mapper
 from seed.lib.superperms.orgs.decorators import has_perm
 from seed.lib.superperms.orgs.models import OrganizationUser
 from seed.models import (
-    CanonicalBuilding,
     Column,
     ProjectBuilding,
     get_column_mapping,
@@ -728,37 +727,6 @@ def progress(request):
 @ajax_request
 @login_required
 @permission_required('seed.can_access_admin')
-def delete_organization_buildings(request):
-    """
-    Starts a background task to delete all BuildingSnapshots
-    in an org.
-
-    :GET: Expects 'org_id' for the organization.
-
-    Returns::
-
-        {
-            'status': 'success' or 'error',
-            'progress_key': ID of background job, for retrieving job progress
-        }
-    """
-    org_id = request.GET.get('org_id', '')
-    deleting_cache_key = get_prog_key(
-        'delete_organization_buildings',
-        org_id
-    )
-    tasks.delete_organization_buildings.delay(org_id, deleting_cache_key)
-    return {
-        'status': 'success',
-        'progress': 0,
-        'progress_key': deleting_cache_key
-    }
-
-
-@api_endpoint
-@ajax_request
-@login_required
-@permission_required('seed.can_access_admin')
 def delete_organization_inventory(request):
     """
     Starts a background task to delete all properties & taxlots
@@ -784,77 +752,6 @@ def delete_organization_inventory(request):
         'progress': 0,
         'progress_key': deleting_cache_key
     }
-
-
-@api_endpoint
-@ajax_request
-@login_required
-@has_perm('requires_member')
-def delete_buildings(request):
-    """
-    Deletes all BuildingSnapshots the user has selected.
-
-    Does not delete selected_buildings where the user is not a member or owner of the organization the selected
-    building belongs. Since search shows buildings across all the orgs a user belongs, it's possible for a building
-    to belong to an org outside of `org_id`.
-
-    :DELETE: Expects 'org_id' for the organization, and the search payload  similar to add_buildings/create_project
-
-    Payload::
-
-        {
-            'organization_id': 2,
-            'search_payload': {
-                'selected_buildings': [2, 3, 4],
-                'select_all_checkbox': False,
-                'filter_params': ... // see search_buildings
-            }
-        }
-
-    Returns::
-
-        {
-            'status': 'success' or 'error'
-        }
-    """
-    # get all orgs the user is in where the user is a member or owner
-    body = json.loads(request.body)
-    search_payload = body['search_payload']
-
-    params = search.process_search_params(
-        body['search_payload'],
-        request.user,
-        is_api_request=False,
-    )
-
-    buildings_queryset = search.orchestrate_search_filter_sort(
-        params=params,
-        user=request.user,
-        skip_sort=True,
-    )
-
-    if search_payload.get('select_all_checkbox', False):
-        # only get the manually selected buildings
-        selected_buildings = buildings_queryset
-    else:
-        selected_building_ids = search_payload.get('selected_buildings', [])
-        # get all buildings matching the search params minus the de-selected
-        selected_buildings = buildings_queryset.filter(
-            pk__in=selected_building_ids,
-        )
-
-    tasks.log_deleted_buildings.delay(
-        tuple(selected_buildings.values_list('id', flat=True)), request.user.pk
-    )
-    # this step might have to move into a task
-    CanonicalBuilding.objects.filter(
-        # This is a stop-gap solution for a bug in django-pgjson
-        # https://github.com/djangonauts/django-pgjson/issues/35
-        # - once a release has been made with this fixed the 'tuple'
-        # casting can be removed.
-        buildingsnapshot__in=tuple(selected_buildings)
-    ).update(active=False)
-    return {'status': 'success'}
 
 # DMcQ: Test for building reporting
 # @require_organization_id
