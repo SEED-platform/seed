@@ -22,7 +22,6 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
 from seed import search
-from seed.audit_logs.models import AuditLog
 from seed.decorators import lock_and_track
 from seed.landing.models import SEEDUser as User
 from seed.lib.exporter import Exporter
@@ -30,7 +29,6 @@ from seed.lib.mcm.utils import batch
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
     BuildingSnapshot,
-    CanonicalBuilding,
     Compliance,
     Project,
     ProjectBuilding,
