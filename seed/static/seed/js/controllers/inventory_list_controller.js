@@ -76,7 +76,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         var ids;
         if ($scope.labelLogic === 'and') {
           ids = _.intersection.apply(null, _.map($scope.selected_labels, 'is_applied'));
-        } else if ($scope.labelLogic === 'or') {
+        } else if (_.includes(['or', 'exclude'], $scope.labelLogic)) {
           ids = _.uniq(_.flatten(_.map($scope.selected_labels, 'is_applied')));
         }
 
@@ -84,8 +84,13 @@ angular.module('BE.seed.controller.inventory_list', [])
 
         if ($scope.selected_labels.length) {
           _.forEach($scope.gridApi.grid.rows, function (row) {
-            if ((!_.includes(ids, row.entity.id) && row.treeLevel === 0) || !_.has(row, 'treeLevel')) $scope.gridApi.core.setRowInvisible(row);
-            else $scope.gridApi.core.clearRowInvisible(row);
+            if ($scope.labelLogic === 'exclude') {
+              if ((_.includes(ids, row.entity.id) && row.treeLevel === 0) || !_.has(row, 'treeLevel')) $scope.gridApi.core.setRowInvisible(row);
+              else $scope.gridApi.core.clearRowInvisible(row);
+            } else {
+              if ((!_.includes(ids, row.entity.id) && row.treeLevel === 0) || !_.has(row, 'treeLevel')) $scope.gridApi.core.setRowInvisible(row);
+              else $scope.gridApi.core.clearRowInvisible(row);
+            }
           });
         } else {
           _.forEach($scope.gridApi.grid.rows, $scope.gridApi.core.clearRowInvisible);
@@ -94,7 +99,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       };
 
       $scope.labelLogic = localStorage.getItem('labelLogic');
-      $scope.labelLogic = _.includes(['and', 'or'], $scope.labelLogic) ? $scope.labelLogic : 'and';
+      $scope.labelLogic = _.includes(['and', 'or', 'exclude'], $scope.labelLogic) ? $scope.labelLogic : 'and';
       $scope.labelLogicUpdated = function () {
         localStorage.setItem('labelLogic', $scope.labelLogic);
         filterUsingLabels();
