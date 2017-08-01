@@ -742,6 +742,8 @@ def delete_organization_buildings(request):
             'progress_key': ID of background job, for retrieving job progress
         }
     """
+    # TODO: 7/31/2017 - Delete this method
+
     org_id = request.GET.get('org_id', '')
     deleting_cache_key = get_prog_key(
         'delete_organization_buildings',

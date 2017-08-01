@@ -72,6 +72,9 @@ class MappingColumns(object):
                     raw_test = 'gross_floor_area'
                 if raw_test.lower() == 'building_address':
                     raw_test = 'address_line_1'
+                if raw_test.lower() == 'ubi':
+                    raw_test = 'jurisdiction_tax_lot_id'
+
 
                 matches = matchers.best_match(raw_test, dest_columns, top_n=5)
 
