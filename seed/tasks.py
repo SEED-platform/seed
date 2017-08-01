@@ -348,47 +348,6 @@ def _delete_organization_related_data(org_pk, prog_key):
 
 
 @shared_task
-@lock_and_track
-def delete_organization_buildings(org_pk, deleting_cache_key, chunk_size=100,
-                                  *args, **kwargs):
-    """Deletes all BuildingSnapshot instances within an organization."""
-    # TODO: 7/31/2017 - Delete this method
-    result = {
-        'status': 'success',
-        'progress_key': deleting_cache_key
-    }
-
-    if not BuildingSnapshot.objects.filter(super_organization=org_pk).exists():
-        result['progress'] = 100
-    else:
-        result['progress'] = 0
-
-    set_cache(deleting_cache_key, result['status'], result)
-
-    if result['progress'] == 100:
-        return
-
-    _delete_canonical_buildings.delay(org_pk)
-
-    ids = list(
-        BuildingSnapshot.objects.filter(super_organization=org_pk).values_list(
-            'id', flat=True)
-    )
-
-    step = float(chunk_size) / len(ids)
-    tasks = []
-    for del_ids in batch(ids, chunk_size):
-        # we could also use .s instead of .subtask and not wrap the *args
-        tasks.append(
-            _delete_organization_buildings_chunk.subtask(
-                (del_ids, deleting_cache_key, step, org_pk)
-            )
-        )
-    chord(tasks, interval=15)(
-        _finish_delete.subtask([org_pk, deleting_cache_key]))
-
-
-@shared_task
 def _finish_delete(results, org_pk, prog_key):
     result = {
         'status': 'success',
@@ -399,50 +358,6 @@ def _finish_delete(results, org_pk, prog_key):
     # set recursion limits back to 1000
     sys.setrecursionlimit(1000)
     set_cache(prog_key, result['status'], result)
-
-
-@shared_task
-def _delete_organization_buildings_chunk(del_ids, prog_key, increment,
-                                         org_pk, *args, **kwargs):
-    """deletes a list of ``del_ids`` and increments the cache"""
-    # TODO: 7/31/2017 - Delete this method
-    qs = BuildingSnapshot.objects.filter(super_organization=org_pk)
-    qs.filter(pk__in=del_ids).delete()
-    increment_cache(prog_key, increment * 100)
-
-
-@shared_task
-def _delete_canonical_buildings(org_pk, chunk_size=300):
-    """deletes CanonicalBuildings
-
-    :param org_id: organization id
-    :param chunk_size: number of CanonicalBuilding instances to delete per
-    iteration
-    """
-    # TODO: 7/31/2017 - Delete this method
-    ids = list(CanonicalBuilding.objects.filter(
-        canonical_snapshot__super_organization=org_pk
-    ).values_list('id', flat=True))
-    for del_ids in batch(ids, chunk_size):
-        CanonicalBuilding.objects.filter(pk__in=del_ids).delete()
-
-
-@shared_task
-def log_deleted_buildings(ids, user_pk, chunk_size=300):
-    """
-    AuditLog logs a delete entry for the canonical building or each
-    BuildingSnapshot in ``ids``
-    """
-    # TODO: 7/31/2017 - Delete this method
-    for del_ids in batch(ids, chunk_size):
-        for b in BuildingSnapshot.objects.filter(pk__in=del_ids):
-            AuditLog.objects.create(
-                user_id=user_pk,
-                content_object=b.canonical_building,
-                organization=b.super_organization,
-                action='delete_building',
-                action_note='Deleted building.'
-            )
 
 
 @shared_task
