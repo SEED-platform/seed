@@ -204,10 +204,7 @@ angular.module('BE.seed.controller.menu', [])
           }
         });
 
-        dataModalInstance.result.then(function () {
-          $scope.$broadcast('datasets_updated');
-          init();
-        }, function () {
+        dataModalInstance.result.finally(function () {
           $scope.$broadcast('datasets_updated');
           init();
         });
