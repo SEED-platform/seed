@@ -12,8 +12,6 @@
 
 <div class="section" ng-cloak>
 
-    <uib-alert ng-repeat="alert in alerts" type="alert.type" close="closeAlert($index)">{$ alert.msg $}</uib-alert>
-
     <div class="section_tab_container">
         <uib-tabset>
             <uib-tab heading="Auto Matching" ng-click="updateHeight()">
@@ -58,11 +56,11 @@
     <div class="matching-tab-container">
         <span class="paginate">
             <select style="height:24px;" ng-model="number_per_page" ng-change="save_number_per_page(); update_start_end_paging()" ng-options="option for option in number_per_page_options"></select>
-            <button class="disableable" ng-disabled="current_page == 0 || number_of_pages() === 1" ng-click="current_page = current_page - 1; update_start_end_paging()">
+            <button class="disableable" ng-disabled="current_page == 0 || number_of_pages === 1" ng-click="current_page = current_page - 1">
                 Previous
             </button>
-            {$ current_page + 1 $}/{$ number_of_pages() $}
-            <button class="disableable" ng-disabled="current_page >= (showing.total / number_per_page) - 1 || number_of_pages() === 1" ng-click="current_page = current_page + 1; update_start_end_paging()">
+            {$ current_page + 1 $}/{$ number_of_pages $}
+            <button class="disableable" ng-disabled="current_page >= (showing.total / number_per_page) - 1 || number_of_pages === 1" ng-click="current_page = current_page + 1">
                 Next
             </button>
         </span>
@@ -90,30 +88,41 @@
                                     </div>
                                     <div class="form-group" style="padding-left: 15px">
                                         <label class="control-label">File Source: </label>
-                                        <select ng-model="file_select.file" ng-options="f.uploaded_filename for f in import_files" class="form-control input-sm" ng-change="fileChanged()"></select>
+                                        <select ng-model="selectedFile" ng-options="f.uploaded_filename for f in import_files" class="form-control input-sm" ng-change="fileChanged()"></select>
                                     </div>
                                     <div class="form-group" style="padding-left: 15px">
                                         <label class="control-label">{$ inventory_type == 'properties' ? 'Property' : 'Tax Lot' $} Visibility: </label>
-                                        <select id="showHideFilterSelect" class="form-control input-sm" ng-model="selectedFilter" ng-change="current_page = 0; update_start_end_paging()" ng-options="o for o in filter_options"></select>
+                                        <select id="showHideFilterSelect" class="form-control input-sm" ng-model="selectedFilter" ng-change="current_page = 0" ng-options="o for o in filter_options"></select>
                                     </div>
                                 </form>
                             </th>
                             <th class="source_data blank" ng-hide="selectedFilter == SHOW_UNMATCHED"></th>
-                            <th class="source_data" colspan="{$ reduced_columns.length $}" ng-hide="selectedFilter == SHOW_UNMATCHED">Matched {$ inventory_type == 'taxlots' ? 'Tax Lots' : 'Properties' $} {$ filter_selected $}</th>
+                            <th class="source_data" colspan="{$ reduced_columns.length $}" ng-if="selectedFilter != SHOW_UNMATCHED">Matched {$ inventory_type == 'taxlots' ? 'Tax Lots' : 'Properties' $} {$ filter_selected $}</th>
                         </tr>
-                        <tr>
-                            <th ng-repeat="col in ::columns" class="pointer noselect" ng-click="order_by_field(col.extraData, col.name)">
+                        <tr class="noselect">
+                            <th ng-repeat="col in ::columns" class="pointer noselect" ng-click="sortData(col.name, col.extraData)">
                                 {$ col.displayName $} <span class="subtitle">{$ col.subtitle $}</span>
-                                <span ng-hide="col.name != order_by" class="fa" ng-class="sort_reverse ? 'fa-caret-down' : 'fa-caret-up'"></span>
+                                 <span ng-class="getSortClass(col.name, col.extraData)"></span>
                             </th>
-                            <th class="sub_head is_aligned_center" ng-hide="selectedFilter == SHOW_UNMATCHED">Match</th>
-                            <th ng-repeat="col in ::reduced_columns" class="noselect" ng-hide="selectedFilter == SHOW_UNMATCHED">
+                            <th ng-if="!columns.length"></th>
+                            <th class="sub_head is_aligned_center" ng-if="selectedFilter != SHOW_UNMATCHED">Match</th>
+                            <th ng-repeat="col in ::reduced_columns" class="noselect" ng-if="selectedFilter != SHOW_UNMATCHED">
                                 {$ col.displayName $} <span class="subtitle">{$ col.subtitle $}</span>
+                            </th>
+                        </tr>
+                        <tr class="filter-row">
+                            <th class="sub_head" ng-repeat="col in ::columns">
+                                <input type="text" ng-model="col.searchText" ng-model-options="{debounce:150}">
+                            </th>
+                            <th ng-if="!columns.length"></th>
+                            <th class="sub_head is_aligned_center" ng-if="selectedFilter != SHOW_UNMATCHED"></th>
+                            <th ng-repeat="col in ::reduced_columns" class="noselect" ng-if="selectedFilter != SHOW_UNMATCHED">
+                                <input type="text" ng-model="col.searchText" ng-model-options="{debounce:150}">
                             </th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr ng-repeat="i in inventory | filter:(selectedFilter == SHOW_ALL) ? undefined : {matched: selectedFilter == SHOW_MATCHED} | startFrom : current_page * number_per_page | limitTo : number_per_page">
+                        <tr ng-repeat="i in (filtered = (inventory | filter:(selectedFilter == SHOW_ALL) ? undefined : {matched: selectedFilter == SHOW_MATCHED} | filter: allSearch)) | orderBy : sortColumn : reverseSort : naturalSortComparator | startFrom : current_page * number_per_page | limitTo : number_per_page">
                             <td ng-repeat="col in ::columns">
                                 <a ui-sref="matching_detail({importfile_id: import_file.id, inventory_type: inventory_type, state_id: i.id})">{$ col.extraData ? i.extra_data[col.name] : i[col.name] $}</a>
                             </td>
@@ -132,16 +141,16 @@
             <div class="table_footer">
                 <div class="counts col-sm-4 col-sm-offset-4" style="text-align: center;">
                     <span>Showing {$ showing.start $} to {$ showing.end $} of {$ showing.total $} {$ selectedFilter !== SHOW_ALL ? ' (filtered)' : '' $} {$ inventory_type == 'properties' ? 'properties' : 'tax lots' $}
-                        <span ng-if="selectedFilter == SHOW_ALL" class="number_unmatched">({$ unmatched_buildings $} unmatched)</span>
+                        <!--<span ng-if="selectedFilter == SHOW_ALL" class="number_unmatched">({$ unmatched_buildings $} unmatched)</span>-->
                     </span>
                 </div>
                 <div class="pager_container col-sm-5">
                     <select style="height:24px;" ng-model="number_per_page" ng-change="save_number_per_page(); update_start_end_paging()" ng-options="option for option in number_per_page_options"></select>
-                    <button class="disableable" ng-disabled="current_page == 0 || number_of_pages() === 1" ng-click="current_page = current_page - 1; update_start_end_paging()">
+                    <button class="disableable" ng-disabled="current_page == 0 || number_of_pages === 1" ng-click="current_page = current_page - 1">
                         Previous
                     </button>
-                    {$ current_page + 1 $}/{$ number_of_pages() $}
-                    <button class="disableable" ng-disabled="current_page >= (showing.total / number_per_page) - 1 || number_of_pages() === 1" ng-click="current_page = current_page + 1; update_start_end_paging()">
+                    {$ current_page + 1 $}/{$ number_of_pages $}
+                    <button class="disableable" ng-disabled="current_page >= (showing.total / number_per_page) - 1 || number_of_pages === 1" ng-click="current_page = current_page + 1">
                         Next
                     </button>
                 </div>

@@ -590,74 +590,83 @@ class ImportFileViewSet(viewsets.ViewSet):
                 'state': result
             }
         else:
-            properties = list(PropertyState.objects.filter(
-                import_file_id=import_file_id,
-                data_state__in=[DATA_STATE_MAPPING, DATA_STATE_MATCHING],
-                merge_state__in=[MERGE_STATE_UNKNOWN, MERGE_STATE_NEW]
-            ).order_by('id').values(*fields['PropertyState']))
-            tax_lots = list(TaxLotState.objects.filter(
-                import_file_id=import_file_id,
-                data_state__in=[DATA_STATE_MAPPING, DATA_STATE_MATCHING],
-                merge_state__in=[MERGE_STATE_UNKNOWN, MERGE_STATE_NEW]
-            ).order_by('id').values(*fields['TaxLotState']))
+            inventory_type = request.data.get('inventory_type', 'all')
 
-            # If a record was manually edited then remove the edited version
-            properties_to_remove = list(
-                PropertyAuditLog.objects.filter(state_id__in=[p['id'] for p in properties],
-                                                name='Manual Edit').values_list('state_id',
-                                                                                flat=True)
-            )
-            taxlots_to_remove = list(
-                TaxLotAuditLog.objects.filter(state_id__in=[t['id'] for t in tax_lots],
-                                              name='Manual Edit').values_list('state_id',
-                                                                              flat=True)
-            )
-            properties = [p for p in properties if p['id'] not in properties_to_remove]
-            tax_lots = [t for t in tax_lots if t['id'] not in taxlots_to_remove]
-
-            if get_coparents:
-                for state in properties:
-                    state['matched'] = False
-                    coparent = self.has_coparent(state['id'], 'properties', fields['PropertyState'])
-                    if coparent:
-                        state['matched'] = True
-                        state['coparent'] = coparent
-
-                for state in tax_lots:
-                    state['matched'] = False
-                    coparent = self.has_coparent(state['id'], 'taxlots', fields['TaxLotState'])
-                    if coparent:
-                        state['matched'] = True
-                        state['coparent'] = coparent
-
-            _log.debug('Found {} properties'.format(len(properties)))
-            _log.debug('Found {} tax lots'.format(len(tax_lots)))
-
-            # if the data contain date/times, then cast them to local time per Djangos' TIME_ZONE
-            # configuration option. This should really be a serializer and be consistent with
-            # the property/taxlot serializer. Total hack right now.
-            for p in properties:
-                if p.get('recent_sale_date'):
-                    p['recent_sale_date'] = make_naive(p['recent_sale_date']).strftime(
-                        '%Y-%m-%dT%H:%M:%S')
-
-                if p.get('release_date'):
-                    p['release_date'] = make_naive(p['release_date']).strftime(
-                        '%Y-%m-%dT%H:%M:%S')
-
-                if p.get('generation_date'):
-                    p['generation_date'] = make_naive(p['generation_date']).strftime(
-                        '%Y-%m-%dT%H:%M:%S')
-
-            return {
-                'status': 'success',
-                'properties': properties,
-                'tax_lots': tax_lots,
-                'number_properties_returned': len(properties),
-                'number_properties_matching_search': len(properties),
-                'number_tax_lots_returned': len(tax_lots),
-                'number_tax_lots_matching_search': len(tax_lots),
+            result = {
+                'status': 'success'
             }
+
+            if inventory_type == 'properties' or inventory_type == 'all':
+                properties = list(PropertyState.objects.filter(
+                    import_file_id=import_file_id,
+                    data_state__in=[DATA_STATE_MAPPING, DATA_STATE_MATCHING],
+                    merge_state__in=[MERGE_STATE_UNKNOWN, MERGE_STATE_NEW]
+                ).order_by('id').values(*fields['PropertyState']))
+
+                # If a record was manually edited then remove the edited version
+                properties_to_remove = list(
+                    PropertyAuditLog.objects.filter(state_id__in=[p['id'] for p in properties],
+                                                    name='Manual Edit').values_list('state_id',
+                                                                                    flat=True)
+                )
+                properties = [p for p in properties if p['id'] not in properties_to_remove]
+
+                if get_coparents:
+                    for state in properties:
+                        state['matched'] = False
+                        coparent = self.has_coparent(state['id'], 'properties', fields['PropertyState'])
+                        if coparent:
+                            state['matched'] = True
+                            state['coparent'] = coparent
+
+                _log.debug('Found {} properties'.format(len(properties)))
+
+                # if the data contain date/times, then cast them to local time per Djangos' TIME_ZONE
+                # configuration option. This should really be a serializer and be consistent with
+                # the property/taxlot serializer. Total hack right now.
+                for p in properties:
+                    if p.get('recent_sale_date'):
+                        p['recent_sale_date'] = make_naive(p['recent_sale_date']).strftime(
+                            '%Y-%m-%dT%H:%M:%S')
+
+                    if p.get('release_date'):
+                        p['release_date'] = make_naive(p['release_date']).strftime(
+                            '%Y-%m-%dT%H:%M:%S')
+
+                    if p.get('generation_date'):
+                        p['generation_date'] = make_naive(p['generation_date']).strftime(
+                            '%Y-%m-%dT%H:%M:%S')
+
+                result['properties'] = properties
+
+            if inventory_type == 'taxlots' or inventory_type == 'all':
+                tax_lots = list(TaxLotState.objects.filter(
+                    import_file_id=import_file_id,
+                    data_state__in=[DATA_STATE_MAPPING, DATA_STATE_MATCHING],
+                    merge_state__in=[MERGE_STATE_UNKNOWN, MERGE_STATE_NEW]
+                ).order_by('id').values(*fields['TaxLotState']))
+
+                # If a record was manually edited then remove the edited version
+                taxlots_to_remove = list(
+                    TaxLotAuditLog.objects.filter(state_id__in=[t['id'] for t in tax_lots],
+                                                  name='Manual Edit').values_list('state_id',
+                                                                                  flat=True)
+                )
+                tax_lots = [t for t in tax_lots if t['id'] not in taxlots_to_remove]
+
+                if get_coparents:
+                    for state in tax_lots:
+                        state['matched'] = False
+                        coparent = self.has_coparent(state['id'], 'taxlots', fields['TaxLotState'])
+                        if coparent:
+                            state['matched'] = True
+                            state['coparent'] = coparent
+
+                _log.debug('Found {} tax lots'.format(len(tax_lots)))
+
+                result['tax_lots'] = tax_lots
+
+            return result
 
     @api_endpoint_class
     @ajax_request_class
@@ -1662,87 +1671,95 @@ class ImportFileViewSet(viewsets.ViewSet):
         """
         import_file_id = pk
 
-        # property views associated with this imported file (including merges)
-        properties_new = []
-        properties_matched = list(PropertyState.objects.filter(
-            import_file__pk=import_file_id,
-            data_state=DATA_STATE_MATCHING,
-            merge_state=MERGE_STATE_MERGED,
-        ).values_list('id', flat=True))
+        inventory_type = request.query_params.get('inventory_type', 'all')
 
-        # Check audit log in case PropertyStates are listed as "new" but were merged into a different property
-        properties = list(PropertyState.objects.filter(
-            import_file__pk=import_file_id,
-            data_state=DATA_STATE_MATCHING,
-            merge_state=MERGE_STATE_NEW,
-        ))
-        # If a record was manually edited then remove the edited version
-        properties_to_remove = list(PropertyAuditLog.objects.filter(
-            state__in=properties,
-            name='Manual Edit'
-        ).values_list('state_id', flat=True))
-        properties = [p for p in properties if p.id not in properties_to_remove]
-
-        for state in properties:
-            audit_creation_id = PropertyAuditLog.objects.only('id').exclude(
-                import_filename=None).get(
-                state_id=state.id,
-                name='Import Creation'
-            )
-            if PropertyAuditLog.objects.exclude(record_type=AUDIT_USER_EDIT).filter(
-                parent1_id=audit_creation_id
-            ).exists():
-                properties_matched.append(state.id)
-            else:
-                properties_new.append(state.id)
-
-        tax_lots_new = []
-        tax_lots_matched = list(TaxLotState.objects.only('id').filter(
-            import_file__pk=import_file_id,
-            data_state=DATA_STATE_MATCHING,
-            merge_state=MERGE_STATE_MERGED,
-        ).values_list('id', flat=True))
-
-        # Check audit log in case TaxLotStates are listed as "new" but were merged into a different tax lot
-        taxlots = list(TaxLotState.objects.filter(
-            import_file__pk=import_file_id,
-            data_state=DATA_STATE_MATCHING,
-            merge_state=MERGE_STATE_NEW,
-        ))
-        # If a record was manually edited then remove the edited version
-        taxlots_to_remove = list(TaxLotAuditLog.objects.filter(
-            state__in=taxlots,
-            name='Manual Edit'
-        ).values_list('state_id', flat=True))
-        taxlots = [t for t in taxlots if t.id not in taxlots_to_remove]
-
-        for state in taxlots:
-            audit_creation_id = TaxLotAuditLog.objects.only('id').exclude(import_filename=None).get(
-                state_id=state.id,
-                name='Import Creation'
-            )
-            if TaxLotAuditLog.objects.exclude(record_type=AUDIT_USER_EDIT).filter(
-                parent1_id=audit_creation_id
-            ).exists():
-                tax_lots_matched.append(state.id)
-            else:
-                tax_lots_new.append(state.id)
-
-        return {
+        result = {
             'status': 'success',
-            'properties': {
+        }
+
+        if inventory_type == 'properties' or inventory_type == 'all':
+            # property views associated with this imported file (including merges)
+            properties_new = []
+            properties_matched = list(PropertyState.objects.filter(
+                import_file__pk=import_file_id,
+                data_state=DATA_STATE_MATCHING,
+                merge_state=MERGE_STATE_MERGED,
+            ).values_list('id', flat=True))
+
+            # Check audit log in case PropertyStates are listed as "new" but were merged into a different property
+            properties = list(PropertyState.objects.filter(
+                import_file__pk=import_file_id,
+                data_state=DATA_STATE_MATCHING,
+                merge_state=MERGE_STATE_NEW,
+            ))
+            # If a record was manually edited then remove the edited version
+            properties_to_remove = list(PropertyAuditLog.objects.filter(
+                state__in=properties,
+                name='Manual Edit'
+            ).values_list('state_id', flat=True))
+            properties = [p for p in properties if p.id not in properties_to_remove]
+
+            for state in properties:
+                audit_creation_id = PropertyAuditLog.objects.only('id').exclude(
+                    import_filename=None).get(
+                    state_id=state.id,
+                    name='Import Creation'
+                )
+                if PropertyAuditLog.objects.exclude(record_type=AUDIT_USER_EDIT).filter(
+                    parent1_id=audit_creation_id
+                ).exists():
+                    properties_matched.append(state.id)
+                else:
+                    properties_new.append(state.id)
+
+            result['properties'] = {
                 'matched': len(properties_matched),
                 'matched_ids': properties_matched,
                 'unmatched': len(properties_new),
                 'unmatched_ids': properties_new
-            },
-            'tax_lots': {
+            }
+
+        if inventory_type == 'taxlots' or inventory_type == 'all':
+            tax_lots_new = []
+            tax_lots_matched = list(TaxLotState.objects.only('id').filter(
+                import_file__pk=import_file_id,
+                data_state=DATA_STATE_MATCHING,
+                merge_state=MERGE_STATE_MERGED,
+            ).values_list('id', flat=True))
+
+            # Check audit log in case TaxLotStates are listed as "new" but were merged into a different tax lot
+            taxlots = list(TaxLotState.objects.filter(
+                import_file__pk=import_file_id,
+                data_state=DATA_STATE_MATCHING,
+                merge_state=MERGE_STATE_NEW,
+            ))
+            # If a record was manually edited then remove the edited version
+            taxlots_to_remove = list(TaxLotAuditLog.objects.filter(
+                state__in=taxlots,
+                name='Manual Edit'
+            ).values_list('state_id', flat=True))
+            taxlots = [t for t in taxlots if t.id not in taxlots_to_remove]
+
+            for state in taxlots:
+                audit_creation_id = TaxLotAuditLog.objects.only('id').exclude(import_filename=None).get(
+                    state_id=state.id,
+                    name='Import Creation'
+                )
+                if TaxLotAuditLog.objects.exclude(record_type=AUDIT_USER_EDIT).filter(
+                    parent1_id=audit_creation_id
+                ).exists():
+                    tax_lots_matched.append(state.id)
+                else:
+                    tax_lots_new.append(state.id)
+
+            result['tax_lots'] = {
                 'matched': len(tax_lots_matched),
                 'matched_ids': tax_lots_matched,
                 'unmatched': len(tax_lots_new),
                 'unmatched_ids': tax_lots_new
             }
-        }
+
+        return result
 
     @api_endpoint_class
     @ajax_request_class
