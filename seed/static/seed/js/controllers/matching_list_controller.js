@@ -160,14 +160,21 @@ angular.module('BE.seed.controller.matching_list', [])
       $scope.reverseSort = false;
 
       $scope.sortData = function (column, extraData) {
-        if (extraData) column = 'extra_data[\'' + column + '\']';
-        if ($scope.sortColumn === column && $scope.reverseSort) {
-          $scope.sortColumn = 'name';
-          $scope.reverseSort = false;
-        } else {
-          $scope.reverseSort = $scope.sortColumn === column ? !$scope.reverseSort : false;
-          $scope.sortColumn = column;
-        }
+        _.defer(spinner_utility.show);
+        _.delay(function () {
+          $scope.$apply(function () {
+            if (extraData) column = 'extra_data[\'' + column + '\']';
+            if ($scope.sortColumn === column && $scope.reverseSort) {
+              $scope.reverseSort = false;
+              $scope.sortColumn = 'name';
+            } else {
+              $scope.reverseSort = $scope.sortColumn === column ? !$scope.reverseSort : false;
+              $scope.sortColumn = column;
+            }
+
+            spinner_utility.hide();
+          });
+        }, 50);
       };
 
       $scope.getSortClass = function (column, extraData) {
