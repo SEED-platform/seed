@@ -12,10 +12,9 @@ from collections import OrderedDict
 
 from django.apps import apps
 from django.db import models
-from rest_framework import serializers
 from django.utils.timezone import make_naive
+from rest_framework import serializers
 from rest_framework.fields import empty
-from django.forms.models import model_to_dict
 
 from seed.models import (
     AUDIT_USER_EDIT,
@@ -144,16 +143,17 @@ class PropertyStateSerializer(serializers.ModelSerializer):
 
     def to_representation(self, data):
         """Overwritten to handle time conversion"""
-        result = model_to_dict(data)
-        if result.get('recent_sale_date'):
-            result['recent_sale_date'] = make_naive(result['recent_sale_date']).strftime(
+        result = super(PropertyStateSerializer, self).to_representation(data)
+        if data.generation_date:
+            result['generation_date'] = make_naive(data.generation_date).strftime(
                 '%Y-%m-%dT%H:%M:%S')
 
-        if result.get('release_date'):
-            result['release_date'] = make_naive(result['release_date']).strftime('%Y-%m-%dT%H:%M:%S')
+        if data.recent_sale_date:
+            result['recent_sale_date'] = make_naive(data.recent_sale_date).strftime(
+                '%Y-%m-%dT%H:%M:%S')
 
-        if result.get('generation_date'):
-            result['generation_date'] = make_naive(result['generation_date']).strftime(
+        if data.release_date:
+            result['release_date'] = make_naive(data.release_date).strftime(
                 '%Y-%m-%dT%H:%M:%S')
 
         return result
