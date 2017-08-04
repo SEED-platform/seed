@@ -208,7 +208,6 @@ class PropertyStateSerializer(serializers.ModelSerializer):
             result['release_date'] = make_naive(data.release_date).strftime(
                 '%Y-%m-%dT%H:%M:%S')
 
-        # TODO: Verify that the measures are being returned in this representation
         return result
 
 
