@@ -32,14 +32,14 @@
                                 <a href="" class="delete_link" ng-click="confirm_delete(d)" ng-show="!d.edit_form_showing"><i class='fa fa-trash-o'></i></a>
                                 <a href="" class="replace_file_button edit_file_name" ng-click="edit_dataset_name(d)" ng-show="!d.edit_form_showing" style="margin-right: 8px;"><i class="fa fa-pencil"></i></a>
                             </span>
-                            <form class="row action edit_file_name form form-inline edit_import_meta_form" role="form" action="" method="PUT" ng-submit="" sd-enter="save_dataset_name(d)" ng-show="d.edit_form_showing">
+                            <form class="row action edit_file_name form form-inline edit_import_meta_form" role="form" sd-enter="save_dataset_name(d)" ng-show="d.edit_form_showing">
                                 <div class="form-group col-sm-8">
                                     <label class="sr-only" for="editDatasetName">Edit Name</label>
                                     <input class="form-control input-sm" id="editDatasetName" type="text" name="name" ng-model="d.name" style="width: 100%;">
                                 </div>
                                 <div class="form-group col-sm-4" style="text-align: right;">
-                                    <button type="submit" class="cancel_button btn btn-sm" ng-click="cancel_edit_name(d)" value="Cancel">Cancel</button>
-                                    <button type="submit" class="submit_button btn btn-sm btn-primary" ng-click="save_dataset_name(d)" value="Save">Save</button>
+                                    <button type="button" class="cancel_button btn btn-sm" ng-click="cancel_edit_name(d)" value="Cancel">Cancel</button>
+                                    <button type="button" class="submit_button btn btn-sm btn-primary" ng-click="save_dataset_name(d)" ng-disabled="d.name === d.old_name" value="Save">Save</button>
                                 </div>
                             </form>
                         </td>
