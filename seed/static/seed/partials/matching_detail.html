@@ -12,8 +12,6 @@
 
 <div class="section" ng-cloak>
 
-    <uib-alert ng-repeat="alert in alerts" type="alert.type" close="closeAlert($index)">{$ alert.msg $}</uib-alert>
-
     <div class="section_tab_container">
         <uib-tabset active="1">
             <uib-tab heading="Auto Matching" ng-click="updateHeight()">
@@ -75,18 +73,15 @@
             <div class="table_list_container matching_detail" id="table-container" ng-cloak>
                 <table class="table table-striped">
                     <thead>
-                        <tr>
+                        <tr class="noselect">
                             <th class="is_aligned_center">Match</th>
-                                <div>
-                                    <th ng-repeat="col in reduced_columns" ng-click="sortData(col.name)">{$ col.displayName $}
-                                        <div ng-class="getSortClass(col.name)"></div>
-                                    </th>
-                                </div>
-
+                            <div>
+                                <th class="pointer" ng-repeat="col in ::reduced_columns" ng-click="sortData(col.name, col.extraData)">{$ col.displayName $} <span ng-class="getSortClass(col.name, col.extraData)"></span></th>
+                            </div>
                         </tr>
-                        <tr>
+                        <tr class="filter-row">
                             <th class="is_aligned_center"></th>
-                            <th class="sub_head" ng-repeat="col in reduced_columns">
+                            <th class="sub_head" ng-repeat="col in ::reduced_columns">
                                 <input type="text" ng-model="col.searchText" ng-model-options="{debounce:150}">
                             </th>
                         </tr>
@@ -101,7 +96,7 @@
                         <tr ng-class="{'info': !state.matched, 'success': state.matched}">
                             <td class="is_aligned_center">
                                 <i class="fa fa-check green" ng-show="state.matched"></i></td>
-                            <td ng-repeat="col in reduced_columns">
+                            <td ng-repeat="col in ::reduced_columns">
                                 <span>{$ col.extraData ? state.extra_data[col.name] : state[col.name] $}</span>
                             </td>
                         </tr>
@@ -115,7 +110,7 @@
                             <td class="is_aligned_center">
                                 <input type="checkbox" ng-model="state.matched" ng-change="unmatch()">
                             </td>
-                            <td ng-repeat="col in reduced_columns">
+                            <td ng-repeat="col in ::reduced_columns">
                                 <span>{$ col.extraData ? state.coparent.extra_data[col.name] : state.coparent[col.name] $}</span>
                             </td>
                         </tr>
@@ -124,7 +119,7 @@
                             <td class="is_aligned_center">
                                 <input type="checkbox" ng-model="state.checked" ng-change="checkbox_match(state)">
                             </td>
-                            <td ng-model="state.checked" ng-repeat="col in reduced_columns">
+                            <td ng-model="state.checked" ng-repeat="col in ::reduced_columns">
                                 <span>
                                     {$ col.extraData ? state.extra_data[col.name] : state[col.name] $}
                                 </span>

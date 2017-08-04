@@ -16,7 +16,7 @@ describe('Controller: matching_list_controller', function () {
   });
 
   // inject AngularJS dependencies for the controller
-  beforeEach(inject(function ($controller, $rootScope, $uibModal, urls, $q, matching_service, inventory_service, spinner_utility) {
+  beforeEach(inject(function ($controller, $rootScope, $q, matching_service, inventory_service, spinner_utility) {
     controller = $controller;
     scope = $rootScope;
     matching_list_controller_scope = $rootScope.$new();
@@ -25,27 +25,27 @@ describe('Controller: matching_list_controller', function () {
     mock_matching_services = matching_service;
     mock_inventory_services = inventory_service;
     spyOn(mock_inventory_services, 'get_matching_status')
-        .andCallFake(function (import_file) {
-          // return $q.reject for error scenario
-          return $q.when({
-            properties: {
-              status: 'success',
-              matched: 10,
-              unmatched: 5,
-              duplicates: 0
-            }
-          });
+      .andCallFake(function (import_file) {
+        // return $q.reject for error scenario
+        return $q.when({
+          properties: {
+            status: 'success',
+            matched: 10,
+            unmatched: 5,
+            duplicates: 0
+          }
         });
+      });
 
     mock_spinner_utility = spinner_utility;
     spyOn(mock_spinner_utility, 'show')
-        .andCallFake(function () {
-          // Do nothing
-        });
+      .andCallFake(function () {
+        // Do nothing
+      });
     spyOn(mock_spinner_utility, 'hide')
-        .andCallFake(function () {
-          // Do nothing
-        });
+      .andCallFake(function () {
+        // Do nothing
+      });
   }));
 
   // this is outside the beforeEach so it can be configured by each unit test
@@ -160,22 +160,28 @@ describe('Controller: matching_list_controller', function () {
     matching_list_controller_scope.fileChanged();
 
     // assertions
-    expect($state.href('matching_list', { importfile_id: 3, inventory_type: 'taxlots' })).toBe('#/data/matching/3/taxlots');
+    expect($state.href('matching_list', {
+      importfile_id: 3,
+      inventory_type: 'taxlots'
+    })).toBe('#/data/matching/3/taxlots');
   });
 
-  it('should present an initial state with the matching buildings table',
-    function () {
-      // arrange
-      create_dataset_detail_controller();
+  it('should present an initial state with the matching buildings table', function () {
+    // arrange
+    create_dataset_detail_controller();
 
-      // act
-      matching_list_controller_scope.$digest();
+    // act
+    matching_list_controller_scope.$digest();
 
-      // assertions
-      expect(matching_list_controller_scope.columns).toEqual([{name: 'pm_property_id', displayName: 'PM Property ID', type: 'number'}]);
-      expect(matching_list_controller_scope.number_properties_matching_search).toEqual(1);
-      expect(matching_list_controller_scope.number_properties_returned).toEqual(1);
-      expect(matching_list_controller_scope.num_pages).toEqual(1);
-      expect(mock_inventory_services.get_matching_status).toHaveBeenCalled();
-    });
+    // assertions
+    expect(matching_list_controller_scope.columns).toEqual([{
+      name: 'pm_property_id',
+      displayName: 'PM Property ID',
+      type: 'number'
+    }]);
+    expect(matching_list_controller_scope.number_properties_matching_search).toEqual(1);
+    expect(matching_list_controller_scope.number_properties_returned).toEqual(1);
+    expect(matching_list_controller_scope.num_pages).toEqual(1);
+    expect(mock_inventory_services.get_matching_status).toHaveBeenCalled();
+  });
 });
