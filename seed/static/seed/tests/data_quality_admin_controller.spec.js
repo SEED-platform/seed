@@ -17,7 +17,7 @@ describe('controller: data_quality_admin_controller', function () {
 
   // inject AngularJS dependencies for the controller
   beforeEach(inject(
-    function ($controller, $rootScope, $uibModal, urls, $q, 
+    function ($controller, $rootScope, $uibModal, urls, $q,
             // columns,
             // organization_payload,
             // data_quality_rules_payload,
@@ -67,15 +67,12 @@ describe('controller: data_quality_admin_controller', function () {
 
   // this is outside the beforeEach so it can be configured by each unit test
   function create_data_quality_admin_controller () {
-    var col_payload = [
-      { 
+    var col_payload = [{
       dataType:"string",
       displayName:"Address Line 1 (Property)",
       name:"address_line_1",
-      table:"PropertyState",
-      type:"numberStr",
-      }
-    ]
+      table:"PropertyState"
+    }];
     data_quality_admin_controller = controller('data_quality_admin_controller', {
       $scope: data_quality_admin_controller_scope,
       columns: col_payload,

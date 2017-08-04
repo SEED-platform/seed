@@ -1569,7 +1569,6 @@ class InventoryViewTests(TestCase):
             'displayName': 'PM Property ID',
             'dataType': 'string',
             'pinnedLeft': True,
-            'type': 'number',
             'related': False,
         }
         self.assertIn(pm_property_id_col, results)
@@ -1617,7 +1616,6 @@ class InventoryViewTests(TestCase):
             'displayName': 'Jurisdiction Tax Lot ID',
             'dataType': 'string',
             'pinnedLeft': True,
-            'type': 'numberStr',
             'related': False,
         }
         self.assertIn(jurisdiction_tax_lot_id_col, results)
