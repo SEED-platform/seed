@@ -13,8 +13,6 @@ angular.module('BE.seed.controller.matching_list', [])
     'inventory_payload',
     'columns',
     'cycles',
-    'urls',
-    '$uibModal',
     'matching_service',
     'inventory_service',
     'naturalSort',
@@ -29,8 +27,6 @@ angular.module('BE.seed.controller.matching_list', [])
               inventory_payload,
               columns,
               cycles,
-              urls,
-              $uibModal,
               matching_service,
               inventory_service,
               naturalSort,
@@ -43,58 +39,31 @@ angular.module('BE.seed.controller.matching_list', [])
       });
 
       $scope.import_file = import_file_payload.import_file;
+      $scope.importfile_id = $stateParams.importfile_id;
+      $scope.inventory_type = $stateParams.inventory_type;
+
       var validCycles = _.uniq(_.map(import_file_payload.import_file.dataset.importfiles, 'cycle'));
       $scope.cycles = _.filter(cycles.cycles, function (cycle) {
         return _.includes(validCycles, cycle.id);
       });
       $scope.selectedCycle = _.find($scope.cycles, {id: $scope.import_file.cycle});
-      if ($scope.inventory_type === 'properties') {
-        $scope.inventory = inventory_payload.properties;
-      } else {
-        $scope.inventory = inventory_payload.tax_lots;
-      }
+      $scope.inventory = $scope.inventory_type === 'properties' ? inventory_payload.properties : inventory_payload.tax_lots;
+      $scope.filtered = [];
       $scope.number_per_page_options = [5, 10, 25, 50, 100];
       $scope.number_per_page = inventory_service.loadMatchesPerPage();
       if (!_.includes($scope.number_per_page_options, $scope.number_per_page)) $scope.number_per_page = 25;
       $scope.current_page = 0;
-      $scope.number_of_pages = function () {
-        var unmatched, matched;
-        unmatched = $scope.unmatched_buildings;
-        if ($scope.inventory_type === 'properties') matched = $scope.number_properties_matching_search - unmatched;
-        else matched = $scope.number_tax_lots_matching_search - unmatched;
-
-        if ($scope.selectedFilter === $scope.SHOW_MATCHED) {
-          return Math.max(Math.ceil(matched / $scope.number_per_page), 1);
-        }
-        else if ($scope.selectedFilter === $scope.SHOW_UNMATCHED) {
-          return Math.max(Math.ceil(unmatched / $scope.number_per_page), 1);
-        }
-        return Math.max(Math.ceil($scope.inventory.length / $scope.number_per_page), 1);
-      };
+      $scope.number_of_pages = 1;
       $scope.order_by = '';
       $scope.sort_reverse = false;
-      $scope.number_properties_matching_search = 0;
-      $scope.number_tax_lots_matching_search = 0;
-      $scope.number_properties_returned = 0;
-      $scope.number_tax_lots_returned = 0;
-      $scope.pagination = {};
       $scope.showing = {};
-      $scope.pagination.number_per_page_options = [10, 25, 50, 100];
-      $scope.pagination.number_per_page_options_model = 10;
-      $scope.alerts = [];
-      $scope.file_select = {
-        file: $scope.import_file.dataset.importfiles[0]
-      };
-      $scope.importfile_id = $stateParams.importfile_id;
-      $scope.inventory_type = $stateParams.inventory_type;
+      $scope.selectedFile = $scope.import_file.dataset.importfiles[0];
 
       // Reduce columns to only the ones that are populated
-      $scope.all_columns = columns;
       $scope.reduced_columns = _.reject(columns, {extraData: true});
       $scope.columns = [];
-      var inventory = $scope.inventory_type === 'properties' ? inventory_payload.properties : inventory_payload.tax_lots;
-      var existing_keys = _.pull(_.keys(_.first(inventory)), 'id', 'matched', 'extra_data', 'coparent');
-      var existing_extra_keys = _.keys(_.get(inventory, '[0].extra_data', null));
+      var existing_keys = _.pull(_.keys(_.first($scope.inventory)), 'id', 'matched', 'extra_data', 'coparent');
+      var existing_extra_keys = _.keys(_.get($scope.inventory, '[0].extra_data', null));
       _.forEach(columns, function (col) {
         if (!col.extraData) {
           if (_.includes(existing_keys, col.name)) $scope.columns.push(col);
@@ -102,49 +71,6 @@ angular.module('BE.seed.controller.matching_list', [])
           if (_.includes(existing_extra_keys, col.name)) $scope.columns.push(col);
         }
       });
-
-      // /* Handle 'update filters' button click */
-      // $scope.do_update_filters = function () {
-      //   $scope.current_page = 1;
-      //   $scope.filter_search();
-      // };
-
-      // /* Handle 'Enter' key on filter fields */
-      // $scope.on_filter_enter_key = function () {
-      //   $scope.current_page = 1;
-      //   $scope.filter_search();
-      // };
-
-      // $scope.filter_search = function () {
-      //   $scope.update_number_matched();
-      //   inventory_service.search_matching_inventory($scope.file_select.file.id)
-      //     .then(function (data) {
-      //       // safe-guard against future init() calls
-      //       inventory_payload = data;
-      //
-      //       if ($scope.inventory_type === 'properties') {
-      //         $scope.inventory = data.properties;
-      //         $scope.num_pages = Math.ceil(data.number_properties_matching_search / $scope.number_per_page);
-      //       } else {
-      //         $scope.inventory = data.tax_lots;
-      //         $scope.num_pages = Math.ceil(data.number_tax_lots_matching_search / $scope.number_per_page);
-      //       }
-      //       $scope.number_properties_matching_search = data.number_properties_matching_search;
-      //       $scope.number_tax_lots_matching_search = data.number_tax_lots_matching_search;
-      //       $scope.number_properties_returned = data.number_properties_returned;
-      //       $scope.number_tax_lots_returned = data.number_tax_lots_returned;
-      //       update_start_end_paging();
-      //     })
-      //     .catch(function (data, status) {
-      //       $log.log({data: data, status: status});
-      //       $scope.alerts.push({type: 'danger', msg: 'Error searching'});
-      //     });
-      // };
-
-
-      $scope.closeAlert = function (index) {
-        $scope.alerts.splice(index, 1);
-      };
 
       $scope.SHOW_ALL = 'Show All';
       $scope.SHOW_MATCHED = 'Show Matched';
@@ -157,34 +83,21 @@ angular.module('BE.seed.controller.matching_list', [])
        * Pagination code
        */
       $scope.update_start_end_paging = function () {
-        var numPages = $scope.number_of_pages();
-        $scope.current_page = _.min([$scope.current_page, numPages - 1]);
+        $scope.number_of_pages = Math.max(Math.ceil($scope.filtered.length / $scope.number_per_page), 1);
+        $scope.current_page = _.min([$scope.current_page, $scope.number_of_pages - 1]);
 
-        if (($scope.selectedFilter === $scope.SHOW_ALL && ($scope.matched_buildings + $scope.unmatched_buildings === 0)) ||
-          ($scope.selectedFilter === $scope.SHOW_MATCHED && $scope.matched_buildings === 0) ||
-          ($scope.selectedFilter === $scope.SHOW_UNMATCHED && $scope.unmatched_buildings === 0)) {
-          $scope.showing.start = 0;
-          $scope.showing.end = 0;
-          $scope.showing.total = 0;
-          return;
-        }
-
-        $scope.showing.start = $scope.current_page * $scope.number_per_page + 1;
-        if ($scope.inventory_type === 'properties') {
-          if ($scope.selectedFilter === $scope.SHOW_ALL) $scope.showing.total = $scope.number_properties_matching_search;
-          else if ($scope.selectedFilter === $scope.SHOW_MATCHED) $scope.showing.total = $scope.number_properties_matching_search - $scope.unmatched_buildings;
-          else if ($scope.selectedFilter === $scope.SHOW_UNMATCHED) $scope.showing.total = $scope.unmatched_buildings;
-        } else {
-          if ($scope.selectedFilter === $scope.SHOW_ALL) $scope.showing.total = $scope.number_tax_lots_matching_search;
-          else if ($scope.selectedFilter === $scope.SHOW_MATCHED) $scope.showing.total = $scope.number_tax_lots_matching_search - $scope.unmatched_buildings;
-          else if ($scope.selectedFilter === $scope.SHOW_UNMATCHED) $scope.showing.total = $scope.unmatched_buildings;
-        }
-
-        if ($scope.current_page === numPages - 1) {
-          $scope.showing.end = $scope.showing.total;
-        } else {
-          $scope.showing.end = Math.min($scope.showing.start + $scope.number_per_page - 1, $scope.showing.total);
-        }
+        _.defer(function () {
+          $scope.$apply(function () {
+            $scope.showing.total = $scope.filtered.length;
+            if ($scope.showing.total === 0) {
+              $scope.showing.start = 0;
+              $scope.showing.end = 0;
+            } else {
+              $scope.showing.start = $scope.current_page * $scope.number_per_page + 1;
+              $scope.showing.end = Math.min($scope.showing.start + $scope.number_per_page - 1, $scope.showing.total);
+            }
+          });
+        });
       };
 
       $scope.save_number_per_page = function () {
@@ -212,88 +125,127 @@ angular.module('BE.seed.controller.matching_list', [])
       };
 
       /**
-       * open_edit_columns_modal: opens the edit columns modal to select and set
-       *   the columns used in the matching list table and matching detail table
-       */
-      // $scope.open_edit_columns_modal = function () {
-      //   var modalInstance = $uibModal.open({
-      //     templateUrl: urls.static_url + 'seed/partials/custom_view_modal.html',
-      //     controller: 'buildings_settings_controller',
-      //     resolve: {
-      //       shared_fields_payload: function () {
-      //         return {show_shared_buildings: false};
-      //       },
-      //       project_payload: function () {
-      //         return {project: {}};
-      //       },
-      //       building_payload: function () {
-      //         return {building: {}};
-      //       }
-      //     }
-      //   });
-      // };
-
-
-      /**
        * update_number_matched: updates the number of matched and unmatched
        *   buildings
        */
       $scope.update_number_matched = function () {
-        return inventory_service.get_matching_status($scope.file_select.file.id).then(function (data) {
-          var unmatched_ids;
-          if ($scope.inventory_type === 'properties') {
-            $scope.matched_buildings = data.properties.matched;
-            $scope.unmatched_buildings = data.properties.unmatched;
-            unmatched_ids = data.properties.unmatched_ids;
-          } else {
-            $scope.matched_buildings = data.tax_lots.matched;
-            $scope.unmatched_buildings = data.tax_lots.unmatched;
-            unmatched_ids = data.tax_lots.unmatched_ids;
-          }
-          // Check that no other rows became unmatched
-          _.forEach(inventory, function (i) {
-            if (_.includes(unmatched_ids, i.id)) {
-              i.matched = false;
-              delete i.coparent;
+        if (!_.has($scope, 'unmatched_buildings')) {
+          $scope.matched_buildings = _.filter($scope.inventory, 'matched').length;
+          $scope.unmatched_buildings = $scope.inventory.length - $scope.matched_buildings;
+        } else {
+          return inventory_service.get_matching_status($scope.selectedFile.id, $scope.inventory_type).then(function (data) {
+            var unmatched_ids;
+            if ($scope.inventory_type === 'properties') {
+              $scope.matched_buildings = data.properties.matched;
+              $scope.unmatched_buildings = data.properties.unmatched;
+              unmatched_ids = data.properties.unmatched_ids;
+            } else {
+              $scope.matched_buildings = data.tax_lots.matched;
+              $scope.unmatched_buildings = data.tax_lots.unmatched;
+              unmatched_ids = data.tax_lots.unmatched_ids;
             }
+            // Check that no other rows became unmatched
+            _.forEach($scope.inventory, function (i) {
+              if (_.includes(unmatched_ids, i.id)) {
+                i.matched = false;
+                delete i.coparent;
+              }
+            });
           });
-
-          $scope.update_start_end_paging();
-        });
+        }
       };
 
-      /**
-       * order_by_field: toggle between ordering table rows in ascending or descending order of field value
-       */
+      // Sort by Columns Ascending and Descending
+      $scope.sortColumn = 'name';
+      $scope.reverseSort = false;
 
-      $scope.order_by_field = function (is_extra_data, field) {
-        if ($scope.order_by != field) {
-          $scope.sort_reverse = false;
-        } else {
-          $scope.sort_reverse = !$scope.sort_reverse;
+      $scope.sortData = function (column, extraData) {
+        _.defer(spinner_utility.show);
+        _.delay(function () {
+          $scope.$apply(function () {
+            if (extraData) column = 'extra_data[\'' + column + '\']';
+            if ($scope.sortColumn === column && $scope.reverseSort) {
+              $scope.reverseSort = false;
+              $scope.sortColumn = 'name';
+            } else {
+              $scope.reverseSort = $scope.sortColumn === column ? !$scope.reverseSort : false;
+              $scope.sortColumn = column;
+            }
+
+            spinner_utility.hide();
+          });
+        }, 50);
+      };
+
+      $scope.getSortClass = function (column, extraData) {
+        if (extraData) column = 'extra_data[\'' + column + '\']';
+        if ($scope.sortColumn === column) {
+          return $scope.reverseSort ? 'fa fa-caret-down' : 'fa fa-caret-up';
         }
-        $scope.order_by = field;
-        $scope.inventory = $scope.inventory.sort(function (a, b) {
-          if (!$scope.sort_reverse) return is_extra_data ? naturalSort(a.extra_data[field], b.extra_data[field]) : naturalSort(a[field], b[field]);
-          else return is_extra_data ? naturalSort(b.extra_data[field], a.extra_data[field]) : naturalSort(b[field], a[field]);
-        });
+      };
+
+      $scope.naturalSortComparator = function (a, b) {
+        return naturalSort(a.value, b.value);
+      };
+
+      // Custom filter
+      $scope.allSearch = function (row) {
+        var i, searchText, searchTextLower, rowValue, reducedColLower, isMatch;
+        for (i = 0; i < $scope.columns.length; i++) {
+          searchText = $scope.columns[i].searchText;
+          rowValue = $scope.columns[i].extraData ? row.extra_data[$scope.columns[i].name] : row[$scope.columns[i].name];
+          if (searchText && !_.isNil(rowValue)) {
+            // don't return match because it stops the loop, set to variable so even when matches are found, they continue searching(iterating through the loop) when inputs are processed from other columns
+            searchTextLower = searchText.toLowerCase();
+            reducedColLower = (rowValue + '').toLowerCase();
+            isMatch = reducedColLower.indexOf(searchTextLower) > -1;
+            // if an item does not match, break the loop
+            if (!isMatch) {
+              return false;
+            }
+          } else if (searchText) {
+            return false;
+          }
+        }
+        for (i = 0; i < $scope.reduced_columns.length; i++) {
+          searchText = $scope.reduced_columns[i].searchText;
+          rowValue = row[$scope.reduced_columns[i].name];
+          if (searchText && !_.isNil(rowValue)) {
+            // don't return match because it stops the loop, set to variable so even when matches are found, they continue searching(iterating through the loop) when inputs are processed from other columns
+            searchTextLower = searchText.toLowerCase();
+            reducedColLower = (rowValue + '').toLowerCase();
+            isMatch = reducedColLower.indexOf(searchTextLower) > -1;
+            // if an item does not match, break the loop
+            if (!isMatch) {
+              return false;
+            }
+          } else if (searchText) {
+            return false;
+          }
+        }
+        return true;
       };
 
       $scope.cycleChanged = function () {
         var initial = _.isUndefined($scope.import_files);
         $scope.import_files = _.filter($scope.import_file.dataset.importfiles, function (file) {
-          return file.cycle == _.get($scope.selectedCycle, 'id');
+          return file.cycle === _.get($scope.selectedCycle, 'id');
         });
         if (!initial) {
           // If not first load, default to the first available file in the newly selected cycle
-          $scope.file_select.file = _.head($scope.import_files);
+          $scope.selectedFile = _.head($scope.import_files);
           $scope.fileChanged();
         }
       };
 
       $scope.fileChanged = function () {
-        $state.go('matching_list', {importfile_id: $scope.file_select.file.id, inventory_type: $scope.inventory_type});
+        $state.go('matching_list', {importfile_id: $scope.selectedFile.id, inventory_type: $scope.inventory_type});
       };
+
+      $scope.$watch('filtered', _.debounce(function(newValue, oldValue) {
+        if (newValue === [] && oldValue === []) return;
+        $scope.update_start_end_paging();
+      }), 10);
 
       $scope.updateHeight = function () {
         var height = 0;
@@ -318,22 +270,8 @@ angular.module('BE.seed.controller.matching_list', [])
         });
 
         $scope.cycleChanged();
-        $scope.number_properties_matching_search = inventory_payload.number_properties_matching_search;
-        $scope.number_tax_lots_matching_search = inventory_payload.number_tax_lots_matching_search;
-        $scope.number_properties_returned = inventory_payload.number_properties_returned;
-        $scope.number_tax_lots_returned = inventory_payload.number_tax_lots_returned;
-
-        if ($scope.inventory_type === 'properties') {
-          $scope.inventory = inventory_payload.properties;
-        } else {
-          $scope.inventory = inventory_payload.tax_lots;
-        }
-
         $scope.update_number_matched();
 
-        _.delay(function () {
-          spinner_utility.hide();
-        }, 150);
-      };
-      $scope.init();
+        _.delay(spinner_utility.hide, 150);
+      }();
     }]);

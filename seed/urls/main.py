@@ -20,9 +20,7 @@ from seed.views.main import (
     export_buildings_progress,
     export_buildings_download,
     angular_js_tests,
-    delete_organization_buildings,
     delete_organization_inventory,
-    delete_buildings
 )
 
 # prefix, to revert back to original endpoints, leave this blank
@@ -90,16 +88,8 @@ urlpatterns = [
 
     # org
     url(
-        r'^' + apiv1 + r'delete_organization_buildings/$',
-        delete_organization_buildings,
-        name='delete_organization_buildings'
-    ),
-    url(
         r'^' + apiv1 + r'delete_organization_inventory/$',
         delete_organization_inventory,
         name='delete_organization_inventory'
     ),
-
-    # delete
-    url(r'^' + apiv1 + r'delete_buildings/$', delete_buildings, name='delete_buildings'),
 ]

@@ -35,7 +35,9 @@ angular.module('BE.seed.controller.dataset', [])
       };
       $scope.save_dataset_name = function (dataset) {
         if (dataset.name !== dataset.old_name) {
-          $scope.update_dataset(dataset);
+          dataset_service.update_dataset(dataset).then(function () {
+            refresh_datasets();
+          });
           dataset.edit_form_showing = false;
         }
       };
@@ -70,10 +72,8 @@ angular.module('BE.seed.controller.dataset', [])
           }
         });
 
-        dataModalInstance.result.then(function () {
-          init();
-        }, function () {
-          init();
+        dataModalInstance.result.finally(function () {
+          refresh_datasets();
         });
       };
 
@@ -87,12 +87,7 @@ angular.module('BE.seed.controller.dataset', [])
         });
 
         modalInstance.result.finally(function () {
-          init();
-        });
-      };
-      $scope.update_dataset = function (dataset) {
-        dataset_service.update_dataset(dataset).then(function () {
-          init();
+          refresh_datasets();
         });
       };
 
@@ -123,21 +118,18 @@ angular.module('BE.seed.controller.dataset', [])
       };
 
       /**
-       * event broadcasted from menu controller when a new dataset is added
+       * refresh_datasets: refreshes dataset list
        */
-      $scope.$on('datasets_updated', function () {
-        init();
-      });
-
-      /**
-       * init: refreshes dataset list
-       */
-      var init = function () {
+      var refresh_datasets = function () {
         dataset_service.get_datasets().then(function (data) {
-          // resolve promise
           $scope.datasets = data.datasets;
         });
       };
+
+      /**
+       * event broadcast from menu controller when a new dataset is added
+       */
+      $scope.$on('datasets_updated', refresh_datasets);
 
     }
   ]);

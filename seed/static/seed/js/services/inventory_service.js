@@ -431,7 +431,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
 
-    var numRegex = /^(==?|!=?|<>)?\s*(null|-?\d+)|(<=?|>=?)\s*(-?\d+)$/;
+    var numRegex = /^(==?|!=?|<>)?\s*(null|-?\d+)$|^(<=?|>=?)\s*(-?\d+)$/;
     inventory_service.numFilter = function () {
       return {
         condition: function (searchTerm, cellValue) {
@@ -475,6 +475,135 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
                     return match;
                   case '>=':
                     match = cellValue >= value;
+                    return match;
+                }
+              }
+            } else {
+              match = false;
+              return match;
+            }
+          });
+          return match;
+        }
+      };
+    };
+
+    var dateRegex = /^(==?|!=?|<>)?\s*(null|\d{4}(?:-\d{2}(?:-\d{2})?)?)$|^(<=?|>=?)\s*(\d{4}(?:-\d{2}(?:-\d{2})?)?)$/;
+    inventory_service.dateFilter = function () {
+      return {
+        condition: function (searchTerm, cellValue) {
+          var match = true;
+          var cellDate = Date.parse(cellValue);
+          var d = new Date(cellValue);
+          var cellYMD = {
+            y: d.getFullYear(),
+            m: d.getMonth() + 1,
+            d: d.getDate()
+          };
+          var searchTerms = _.map(_.split(_.replace(searchTerm, /\\-/g, '-'), ','), _.trim);
+          _.forEach(searchTerms, function (search) {
+            var filterData = search.match(dateRegex);
+            if (filterData) {
+              var operator, value;
+              if (!_.isUndefined(filterData[2])) {
+                // Equality condition
+                operator = filterData[1];
+                value = filterData[2];
+                var v = value.match(/^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/);
+                var ymd = {
+                  y: _.parseInt(v[1]),
+                  m: _.parseInt(v[2]),
+                  d: _.parseInt(v[3])
+                };
+                if (_.isUndefined(operator) || _.startsWith(operator, '=')) {
+                  // Equal
+                  match = (value === 'null') ? (_.isNil(cellValue)) : (
+                    cellYMD.y === ymd.y && (_.isNaN(ymd.m) || cellYMD.m === ymd.m) && (_.isNaN(ymd.d) || cellYMD.d === ymd.d)
+                  );
+                  return match;
+                } else {
+                  // Not equal
+                  match = (value === 'null') ? (!_.isNil(cellValue)) : (
+                    cellYMD.y !== ymd.y || (!_.isNaN(ymd.m) && cellYMD.y === ymd.y && cellYMD.m !== ymd.m) || (!_.isNaN(ymd.m) && !_.isNaN(ymd.d) && cellYMD.y === ymd.y && cellYMD.m === ymd.m && cellYMD.d !== ymd.d)
+                  );
+                  return match;
+                }
+              } else {
+                // Range condition
+                if (_.isNil(cellValue)) {
+                  match = false;
+                  return match;
+                }
+
+                operator = filterData[3];
+                switch (operator) {
+                  case '<':
+                    value = Date.parse(filterData[4] + 'T00:00:00');
+                    match = cellDate < value;
+                    return match;
+                  case '<=':
+                    value = filterData[4];
+                    var v = value.match(/^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/);
+                    var ymd = {
+                      y: _.parseInt(v[1]),
+                      m: _.parseInt(v[2]),
+                      d: _.parseInt(v[3])
+                    };
+
+                    // Add a day, subtract a millisecond
+                    if (filterData[4].length === 10) {
+                      value = Date.parse(filterData[4] + 'T00:00:00') + 86399999;
+                    }
+                    // Add a month, subtract a millisecond
+                    else if (filterData[4].length === 7) {
+                      var d;
+                      if (ymd.m === 12) {
+                        d = (ymd.y + 1) + '-01';
+                      } else {
+                        d = ymd.y + '-' + _.padStart(ymd.m + 1, 2, '0');
+                      }
+                      value = Date.parse(d + 'T00:00:00') - 1;
+                    }
+                    // Add a year, subtract a millisecond
+                    else if (filterData[4].length === 4) {
+                      value = Date.parse((ymd.y + 1) + 'T00:00:00') - 1;
+                    }
+
+                    match = cellDate <= value;
+                    return match;
+                  case '>':
+                    value = filterData[4];
+                    var v = value.match(/^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/);
+                    var ymd = {
+                      y: _.parseInt(v[1]),
+                      m: _.parseInt(v[2]),
+                      d: _.parseInt(v[3])
+                    };
+
+                    // Add a day, subtract a millisecond
+                    if (filterData[4].length === 10) {
+                      value = Date.parse(filterData[4] + 'T00:00:00') + 86399999;
+                    }
+                    // Add a month, subtract a millisecond
+                    else if (filterData[4].length === 7) {
+                      var d;
+                      if (ymd.m === 12) {
+                        d = (ymd.y + 1) + '-01';
+                      } else {
+                        d = ymd.y + '-' + _.padStart(ymd.m + 1, 2, '0');
+                      }
+                      value = Date.parse(d + 'T00:00:00') - 1;
+                    }
+                    // Add a year, subtract a millisecond
+                    else if (filterData[4].length === 4) {
+                      value = Date.parse((ymd.y + 1) + 'T00:00:00') - 1;
+                    }
+
+                    match = cellDate > value;
+                    return match;
+                  case '>=':
+                    value = Date.parse(filterData[4] + 'T00:00:00');
+                    match = cellDate >= value;
                     return match;
                 }
               }
@@ -609,15 +738,12 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
     inventory_service.search_matching_inventory = function (import_file_id, options) {
-      spinner_utility.show();
       return $http.post('/api/v2/import_files/' + import_file_id + '/filtered_mapping_results/', options, {
         params: {
           organization_id: user_service.get_organization().id
         }
       }).then(function (response) {
         return response.data;
-      }).finally(function () {
-        spinner_utility.hide();
       });
     };
 
@@ -643,10 +769,11 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       });
     };
 
-    inventory_service.get_matching_status = function (import_file_id) {
+    inventory_service.get_matching_status = function (import_file_id, inventory_type) {
       return $http.get('/api/v2/import_files/' + import_file_id + '/matching_status/', {
         params: {
-          organization_id: user_service.get_organization().id
+          organization_id: user_service.get_organization().id,
+          inventory_type: inventory_type
         }
       }).then(function (response) {
         return response.data;

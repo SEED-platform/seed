@@ -312,7 +312,6 @@ class TestColumnsByInventory(TestCase):
             "table": "PropertyState",
             "displayName": "PM Property ID",
             "dataType": "string",
-            "type": "number",
             "pinnedLeft": True,
         }
         self.assertIn(c, columns)

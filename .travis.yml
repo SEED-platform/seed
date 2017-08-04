@@ -13,7 +13,7 @@ python:
   - 2.7
 addons:
   postgresql: '9.6'
-  sauce_connect: true
+  # sauce_connect: true
   apt:
     packages:
       - enchant
