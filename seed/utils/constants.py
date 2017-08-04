@@ -457,7 +457,6 @@ VIEW_COLUMNS_PROPERTY = [
         'table': 'PropertyState',
         'displayName': 'PM Property ID',
         'dataType': 'string',
-        'type': 'number',
         'pinIfNative': True,
         'dbField': True,
     }, {
@@ -465,14 +464,12 @@ VIEW_COLUMNS_PROPERTY = [
         'table': 'PropertyState',
         'displayName': 'PM Parent Property ID',
         'dataType': 'string',
-        'type': 'numberStr',
         'dbField': True,
     }, {
         'name': 'jurisdiction_tax_lot_id',
         'table': 'TaxLotState',
         'displayName': 'Jurisdiction Tax Lot ID',
         'dataType': 'string',
-        'type': 'numberStr',
         'pinIfNative': True,
         'dbField': True,
     }, {
@@ -480,7 +477,6 @@ VIEW_COLUMNS_PROPERTY = [
         'table': 'PropertyState',
         'displayName': 'Jurisdiction Property ID',
         'dataType': 'string',
-        'type': 'numberStr',
         'dbField': True,
     }, {
         'name': 'custom_id_1',
@@ -501,7 +497,6 @@ VIEW_COLUMNS_PROPERTY = [
         'table': 'PropertyState',
         'displayName': 'Address Line 1 (Property)',
         'dataType': 'string',
-        'type': 'numberStr',
         'duplicateNameInOtherTable': True,
         'dbField': True,
     }, {
@@ -509,7 +504,6 @@ VIEW_COLUMNS_PROPERTY = [
         'table': 'TaxLotState',
         'displayName': 'Address Line 1 (Tax Lot)',
         'dataType': 'string',
-        'type': 'numberStr',
         'duplicateNameInOtherTable': True,
         'dbField': True,
     }, {
@@ -517,7 +511,6 @@ VIEW_COLUMNS_PROPERTY = [
         'table': 'PropertyState',
         'displayName': 'Address Line 2 (Property)',
         'dataType': 'string',
-        'type': 'numberStr',
         'duplicateNameInOtherTable': True,
         'dbField': True,
     }, {
@@ -525,7 +518,6 @@ VIEW_COLUMNS_PROPERTY = [
         'table': 'TaxLotState',
         'displayName': 'Address Line 2 (Tax Lot)',
         'dataType': 'string',
-        'type': 'numberStr',
         'duplicateNameInOtherTable': True,
         'dbField': True,
     }, {
@@ -560,7 +552,6 @@ VIEW_COLUMNS_PROPERTY = [
         'table': 'PropertyState',
         'displayName': 'Postal Code (Property)',
         'dataType': 'string',
-        'type': 'numberStr',
         'duplicateNameInOtherTable': True,
         'dbField': True,
     }, {
@@ -568,7 +559,6 @@ VIEW_COLUMNS_PROPERTY = [
         'table': 'TaxLotState',
         'displayName': 'Postal Code (Tax Lot)',
         'dataType': 'string',
-        'type': 'numberStr',
         'duplicateNameInOtherTable': True,
         'dbField': True,
     }, {
@@ -585,7 +575,6 @@ VIEW_COLUMNS_PROPERTY = [
         'table': None,
         'displayName': 'Associated TaxLot IDs',
         'dataType': 'string',
-        'type': 'numberStr',
         'dbField': False,
     }, {
         # INCOMPLETE, FIELD DOESN'T EXIST
@@ -593,7 +582,6 @@ VIEW_COLUMNS_PROPERTY = [
         'table': None,
         'displayName': 'Associated Building Tax Lot ID',
         'dataType': 'string',
-        'type': 'numberStr',
         'dbField': False,
     }, {
         # INCOMPLETE, FIELD DOESN'T EXIST
@@ -609,7 +597,6 @@ VIEW_COLUMNS_PROPERTY = [
         'table': 'PropertyState',
         'displayName': 'Associated Tax Lot ID',
         'dataType': 'string',
-        'type': 'numberStr',
         'dbField': True,
     }, {
         # INCOMPLETE, FIELD DOESN'T EXIST
@@ -736,7 +723,6 @@ VIEW_COLUMNS_PROPERTY = [
         'table': 'PropertyState',
         'displayName': 'Owner Address',
         'dataType': 'string',
-        'type': 'numberStr',
         'dbField': True,
     }, {
         'name': 'owner_city_state',
@@ -749,14 +735,12 @@ VIEW_COLUMNS_PROPERTY = [
         'table': 'PropertyState',
         'displayName': 'Owner Postal Code',
         'dataType': 'string',
-        'type': 'numberStr',
         'dbField': True,
     }, {
         'name': 'home_energy_score_id',
         'table': 'PropertyState',
         'displayName': 'Home Energy Score ID',
         'dataType': 'string',
-        'type': 'numberStr',
         'dbField': True,
     }, {
         'name': 'generation_date',
@@ -825,7 +809,6 @@ VIEW_COLUMNS_PROPERTY = [
         'table': 'TaxLotState',
         'displayName': 'Block Number',
         'dataType': 'string',
-        'type': 'numberStr',
         'dbField': True,
     }, {
         'name': 'district',

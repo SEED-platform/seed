@@ -476,7 +476,8 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           inventory_payload: ['inventory_service', '$stateParams', function (inventory_service, $stateParams) {
             var importfile_id = $stateParams.importfile_id;
             return inventory_service.search_matching_inventory(importfile_id, {
-              get_coparents: true
+              get_coparents: true,
+              inventory_type: $stateParams.inventory_type
             });
           }],
           columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
@@ -585,7 +586,6 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             var myColumns = [{
               displayName: 'Address Line 1 (Property)',
               name: 'address_line_1',
-              type: 'numberStr',
               related: false
             }, {
               displayName: 'PM Property ID',
@@ -595,12 +595,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             }, {
               displayName: 'Jurisdiction Tax Lot ID',
               name: 'jurisdiction_tax_lot_id',
-              type: 'numberStr',
               related: false
             }, {
               displayName: 'Custom ID',
               name: 'custom_id_1',
-              type: 'numberStr',
               related: false
             }];
             var visibleColumns = _.map(myColumns, 'name');
@@ -614,7 +612,6 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             var myColumns = [{
               displayName: 'Address Line 1 (Tax Lot)',
               name: 'address_line_1',
-              type: 'numberStr',
               related: false
             }, /*{
              'displayName': 'Primary Tax Lot ID',
@@ -624,7 +621,6 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             },*/ {
               displayName: 'Jurisdiction Tax Lot ID',
               name: 'jurisdiction_tax_lot_id',
-              type: 'numberStr',
               related: false
             }];
             var visibleColumns = _.map(myColumns, 'name');

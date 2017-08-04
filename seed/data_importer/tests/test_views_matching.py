@@ -130,10 +130,8 @@ class TestViewsMatching(DataMappingBaseTestCase):
         del found_prop['id']
         del found_prop['coparent']['id']
         self.assertEqual(body['status'], 'success')
-        self.assertEqual(body['number_tax_lots_returned'], 12)
-        self.assertEqual(body['number_tax_lots_matching_search'], 12)
-        self.assertEqual(body['number_properties_matching_search'], 13)
-        self.assertEqual(body['number_properties_returned'], 13)
+        self.assertEqual(len(body['tax_lots']), 12)
+        self.assertEqual(len(body['properties']), 13)
         self.assertEqual(expected['lot_number'], found_prop['lot_number'])
         self.assertEqual(expected['matched'], found_prop['matched'])
         self.assertDictContainsSubset(expected['coparent'], found_prop['coparent'])
