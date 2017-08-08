@@ -1,12 +1,11 @@
-
 # !/usr/bin/env python
 # encoding: utf-8
 """
 :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-from django.conf.urls import include, url
 from django.conf import settings
+from django.conf.urls import include, url
 from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.static import serve
@@ -16,15 +15,14 @@ from config.views import robots_txt
 
 admin.autodiscover()
 
-
 urlpatterns = [
     # landing page
     url(r'^', include('seed.landing.urls', namespace="landing", app_name="landing")),
 
     # audit_logs AJAX
-    url(r'^audit_logs/', include('seed.audit_logs.urls', namespace="audit_logs", app_name="audit_logs")),
+    url(r'^audit_logs/',
+        include('seed.audit_logs.urls', namespace="audit_logs", app_name="audit_logs")),
 
-    # app section, not to be confused with the other app section namespace="app"
     url(r'^app/', include('seed.urls.main', namespace="seed", app_name="seed")),
 
     url(
@@ -40,9 +38,9 @@ urlpatterns = [
     url(r'^robots\.txt', robots_txt, name='robots_txt'),
 
     url(r'^api/v2/', include('api.urls', namespace="apiv2")),
-    url(r'^app/', include('seed.urls.properties', namespace="app", app_name='properties')),
 ]
 
+# TODO: 8/8/17 fix media root for docker deployments
 if settings.DEBUG:
     urlpatterns += staticfiles_urlpatterns()
     urlpatterns += [

@@ -22,6 +22,7 @@ from seed.views.main import (
     angular_js_tests,
     delete_organization_inventory,
 )
+from seed.views.reports import Report
 
 # prefix, to revert back to original endpoints, leave this blank
 apiv1 = r''  # r'api/v1/'
@@ -44,6 +45,14 @@ urlpatterns = [
     ),
     url(r'^' + apiv1 + r'get_columns/$', get_columns, name='get_columns'),
     url(r'^' + apiv1 + r'delete_file/$', delete_file, name='delete_file'),
+    url(
+        r'^app/get_property_report_data/$',
+        Report.as_view({'get': 'get_property_report_data'}),
+        name='property_report_data'),
+    url(
+        r'^get_aggregated_property_report_data/$',
+        Report.as_view({'get': 'get_aggregated_property_report_data'}),
+        name='aggregated_property_report_data'),
 
     # Building reports
     # url(
