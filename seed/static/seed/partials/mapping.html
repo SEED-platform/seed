@@ -221,30 +221,30 @@
             </div>
         </div>
     </div>
-    <div class="inventory-list-tab-container" ng-if="show_mapped_buildings && mappedData.number_properties_returned">
+    <div class="inventory-list-tab-container" ng-if="show_mapped_buildings && mappedData.properties.length">
         <div class="item-count">
-            <i class="fa fa-building-o"></i> {$ mappedData.number_properties_returned $} <span><ng-pluralize count="mappedData.number_properties_returned" when="{'one': 'Property', 'other': 'Properties'}">Properties</ng-pluralize></span>
+            <i class="fa fa-building-o"></i> {$ mappedData.properties.length $} <span><ng-pluralize count="mappedData.properties.length" when="{'one': 'Property', 'other': 'Properties'}">Properties</ng-pluralize></span>
         </div>
         <ul class="nav nav-tabs" style="margin-bottom:1px;">
             <li heading="View by Property" class="active"><a>View by Property</a></li>
         </ul>
     </div>
-    <div class="section_content_container" ng-if="show_mapped_buildings && mappedData.number_properties_returned">
+    <div class="section_content_container" ng-if="show_mapped_buildings && mappedData.properties.length">
         <div class="section_content">
             <div>
                 <div ui-grid="propertiesGridOptions" ui-grid-resize-columns></div>
             </div>
         </div>
     </div>
-    <div class="inventory-list-tab-container" ng-if="show_mapped_buildings && mappedData.number_tax_lots_returned" style="margin-top: 20px;">
+    <div class="inventory-list-tab-container" ng-if="show_mapped_buildings && mappedData.tax_lots.length" style="margin-top: 20px;">
         <div class="item-count">
-            <i class="fa fa-map-o"></i> {$ mappedData.number_tax_lots_returned $} <span><ng-pluralize count="mappedData.number_tax_lots_returned" when="{'one': 'Tax Lot', 'other': 'Tax Lots'}">Tax Lots</ng-pluralize></span>
+            <i class="fa fa-map-o"></i> {$ mappedData.tax_lots.length $} <span><ng-pluralize count="mappedData.tax_lots.length" when="{'one': 'Tax Lot', 'other': 'Tax Lots'}">Tax Lots</ng-pluralize></span>
         </div>
         <ul class="nav nav-tabs" style="margin-bottom:1px;">
             <li heading="View by Tax Lot" class="active"><a>View by Tax Lot</a></li>
         </ul>
     </div>
-    <div class="section_content_container" ng-if="show_mapped_buildings && mappedData.number_tax_lots_returned">
+    <div class="section_content_container" ng-if="show_mapped_buildings && mappedData.tax_lots.length">
         <div class="section_content">
             <div>
                 <div ui-grid="taxlotsGridOptions" ui-grid-resize-columns></div>
