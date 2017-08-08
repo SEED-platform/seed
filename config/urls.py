@@ -24,12 +24,14 @@ urlpatterns = [
     # audit_logs AJAX
     url(r'^audit_logs/', include('seed.audit_logs.urls', namespace="audit_logs", app_name="audit_logs")),
 
-    # app section
+    # app section, not to be confused with the other app section namespace="app"
     url(r'^app/', include('seed.urls.main', namespace="seed", app_name="seed")),
 
-    # api section
-    url(r'^app/api/', include('seed.urls.api', namespace="api", app_name="api")),
-
+    url(
+        r'^app/api/swagger/',
+        include('rest_framework_swagger.urls'),
+        name='swagger'
+    ),
     url(r'^eula/', include('tos.urls', namespace='tos', app_name='tos')),
 
     # i18n setlang
