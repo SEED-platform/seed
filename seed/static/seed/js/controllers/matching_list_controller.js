@@ -247,28 +247,11 @@ angular.module('BE.seed.controller.matching_list', [])
         $scope.update_start_end_paging();
       }), 10);
 
-      $scope.updateHeight = function () {
-        var height = 0;
-        _.forEach(['.header', '.page_header_container', '.section .section_tab_container', '.matching-tab-container', '.table_footer'], function (selector) {
-          var element = angular.element(selector)[0];
-          if (element) height += element.offsetHeight;
-        });
-        angular.element('#table-container').css('height', 'calc(100vh - ' + (height + 2) + 'px)');
-      };
-
       /**
        * init: sets the default pagination, gets the columns that should be displayed
        *   in the matching list table, sets the table inventory from the inventory_payload
        */
       $scope.init = function () {
-        _.delay($scope.updateHeight, 150);
-
-        var debouncedHeightUpdate = _.debounce($scope.updateHeight, 150);
-        angular.element($window).on('resize', debouncedHeightUpdate);
-        $scope.$on('$destroy', function () {
-          angular.element($window).off('resize', debouncedHeightUpdate);
-        });
-
         $scope.cycleChanged();
         $scope.update_number_matched();
 

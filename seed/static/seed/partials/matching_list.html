@@ -14,7 +14,7 @@
 
     <div class="section_tab_container">
         <uib-tabset>
-            <uib-tab heading="Auto Matching" ng-click="updateHeight()">
+            <uib-tab heading="Auto Matching">
                 <div class="row">
                     <div class="col-sm-6 tab_content wide">
                         <p><strong>HOW THE SYSTEM AUTO-MATCHES YOUR PROPERTIES &amp; TAX LOTS:</strong></p>
@@ -35,7 +35,7 @@
                     </div>
                 </div>
             </uib-tab>
-            <uib-tab heading="Manual Matching" ng-click="updateHeight()">
+            <uib-tab heading="Manual Matching">
                 <div class="row">
                     <div class="col-sm-6 tab_content wide">
                         <p><strong>HOW TO MANUALLY MATCH YOUR PROPERTIES &amp; TAX LOTS:</strong></p>
@@ -49,18 +49,18 @@
                     </div>-->
                 </div>
             </uib-tab>
-            <uib-tab class="pull-right" heading="Collapse Tabs" ng-click="updateHeight()"></uib-tab>
+            <uib-tab class="pull-right" heading="Collapse Tabs"></uib-tab>
         </uib-tabset>
     </div>
 
     <div class="matching-tab-container">
         <span class="paginate">
             <select style="height:24px;" ng-model="number_per_page" ng-change="save_number_per_page(); update_start_end_paging()" ng-options="option for option in number_per_page_options"></select>
-            <button class="disableable" ng-disabled="current_page == 0 || number_of_pages === 1" ng-click="current_page = current_page - 1">
+            <button class="disableable" ng-disabled="current_page == 0 || number_of_pages === 1" ng-click="current_page = current_page - 1; update_start_end_paging()">
                 Previous
             </button>
             {$ current_page + 1 $}/{$ number_of_pages $}
-            <button class="disableable" ng-disabled="current_page >= (showing.total / number_per_page) - 1 || number_of_pages === 1" ng-click="current_page = current_page + 1">
+            <button class="disableable" ng-disabled="current_page >= (showing.total / number_per_page) - 1 || number_of_pages === 1" ng-click="current_page = current_page + 1; update_start_end_paging()">
                 Next
             </button>
         </span>
@@ -80,7 +80,7 @@
                 <table class="table table-striped">
                     <thead>
                         <tr>
-                            <th class="source_data" colspan="{$ columns.length $}">
+                            <th class="source_data" colspan="{$ !columns.length ? 2 : columns.length + 1 $}">
                                 <form class="form-inline" role="form">
                                     <div class="form-group">
                                         <label class="control-label">Cycle: </label>
@@ -100,21 +100,22 @@
                             <th class="source_data" colspan="{$ reduced_columns.length $}" ng-if="selectedFilter != SHOW_UNMATCHED">Matched {$ inventory_type == 'taxlots' ? 'Tax Lots' : 'Properties' $} {$ filter_selected $}</th>
                         </tr>
                         <tr class="noselect">
+                            <th class="column-row matching-link"></th>
                             <th ng-repeat="col in ::columns" class="pointer noselect" ng-click="sortData(col.name, col.extraData)">
-                                {$ col.displayName $} <span class="subtitle">{$ col.subtitle $}</span>
-                                 <span ng-class="getSortClass(col.name, col.extraData)"></span>
+                                {$ col.displayName $} <span ng-class="getSortClass(col.name, col.extraData)"></span>
                             </th>
                             <th ng-if="!columns.length"></th>
                             <th class="sub_head is_aligned_center" ng-if="selectedFilter != SHOW_UNMATCHED">Match</th>
                             <th ng-repeat="col in ::reduced_columns" class="noselect" ng-if="selectedFilter != SHOW_UNMATCHED">
-                                {$ col.displayName $} <span class="subtitle">{$ col.subtitle $}</span>
+                                {$ col.displayName $}
                             </th>
                         </tr>
                         <tr class="filter-row">
+                            <th class="sub_head matching-link"></th>
                             <th class="sub_head" ng-repeat="col in ::columns">
                                 <input type="text" ng-model="col.searchText" ng-model-options="{debounce:150}">
                             </th>
-                            <th ng-if="!columns.length"></th>
+                            <th class="sub_head" ng-if="!columns.length"></th>
                             <th class="sub_head is_aligned_center" ng-if="selectedFilter != SHOW_UNMATCHED"></th>
                             <th ng-repeat="col in ::reduced_columns" class="noselect" ng-if="selectedFilter != SHOW_UNMATCHED">
                                 <input type="text" ng-model="col.searchText" ng-model-options="{debounce:150}">
@@ -123,8 +124,9 @@
                     </thead>
                     <tbody>
                         <tr ng-repeat="i in (filtered = (inventory | filter:(selectedFilter == SHOW_ALL) ? undefined : {matched: selectedFilter == SHOW_MATCHED} | filter: allSearch)) | orderBy : sortColumn : reverseSort : naturalSortComparator | startFrom : current_page * number_per_page | limitTo : number_per_page">
+                            <td class="matching-link"><a ui-sref="matching_detail({importfile_id: import_file.id, inventory_type: inventory_type, state_id: i.id})"><i class="ui-grid-icon-info-circled"></i></a></td>
                             <td ng-repeat="col in ::columns">
-                                <a ui-sref="matching_detail({importfile_id: import_file.id, inventory_type: inventory_type, state_id: i.id})">{$ col.extraData ? i.extra_data[col.name] : i[col.name] $}</a>
+                                <span>{$ col.extraData ? i.extra_data[col.name] : i[col.name] $}</span>
                             </td>
                             <td class="is_aligned_center has_no_padding" ng-hide="selectedFilter == SHOW_UNMATCHED">
                                 <label class="checkbox_fill_area">
@@ -140,17 +142,15 @@
             </div>
             <div class="table_footer">
                 <div class="counts col-sm-4 col-sm-offset-4" style="text-align: center;">
-                    <span>Showing {$ showing.start $} to {$ showing.end $} of {$ showing.total $} {$ selectedFilter !== SHOW_ALL ? ' (filtered)' : '' $} {$ inventory_type == 'properties' ? 'properties' : 'tax lots' $}
-                        <!--<span ng-if="selectedFilter == SHOW_ALL" class="number_unmatched">({$ unmatched_buildings $} unmatched)</span>-->
-                    </span>
+                    <span>Showing {$ showing.start $} to {$ showing.end $} of {$ showing.total $} {$ selectedFilter !== SHOW_ALL ? ' (filtered)' : '' $} {$ inventory_type == 'properties' ? 'properties' : 'tax lots' $}</span>
                 </div>
                 <div class="pager_container col-sm-5">
                     <select style="height:24px;" ng-model="number_per_page" ng-change="save_number_per_page(); update_start_end_paging()" ng-options="option for option in number_per_page_options"></select>
-                    <button class="disableable" ng-disabled="current_page == 0 || number_of_pages === 1" ng-click="current_page = current_page - 1">
+                    <button class="disableable" ng-disabled="current_page == 0 || number_of_pages === 1" ng-click="current_page = current_page - 1; update_start_end_paging()">
                         Previous
                     </button>
                     {$ current_page + 1 $}/{$ number_of_pages $}
-                    <button class="disableable" ng-disabled="current_page >= (showing.total / number_per_page) - 1 || number_of_pages === 1" ng-click="current_page = current_page + 1">
+                    <button class="disableable" ng-disabled="current_page >= (showing.total / number_per_page) - 1 || number_of_pages === 1" ng-click="current_page = current_page + 1; update_start_end_paging()">
                         Next
                     </button>
                 </div>
