@@ -66,10 +66,10 @@
         </span>
         <ul class="nav nav-tabs" style="margin-bottom:1px;">
             <li ng-class="{active: inventory_type=='properties'}" heading="Match Properties">
-                <a ui-sref="matching_list({importfile_id: importfile_id, inventory_type: 'properties'})">Match Properties</a>
+                <a ui-sref="matching_list({importfile_id: import_file.id, inventory_type: 'properties'})">Match Properties</a>
             </li>
             <li ng-class="{active: inventory_type=='taxlots'}" heading="Match Tax Lots">
-                <a ui-sref="matching_list({importfile_id: importfile_id, inventory_type: 'taxlots'})">Match Tax Lots</a>
+                <a ui-sref="matching_list({importfile_id: import_file.id, inventory_type: 'taxlots'})">Match Tax Lots</a>
             </li>
         </ul>
     </div>

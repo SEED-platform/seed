@@ -2487,6 +2487,14 @@ gs-input .tags .tag-item .remove-button {
   }
 }
 
+.matching-detail-container {
+  padding: 0 0 15px 15px;
+
+  .paginate {
+    padding: 5px 15px 0;
+  }
+}
+
 .data-quality-tab-container {
   margin-bottom: 0;
   .nav-tabs {

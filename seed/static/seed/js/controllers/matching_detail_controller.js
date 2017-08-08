@@ -6,7 +6,6 @@ angular.module('BE.seed.controller.matching_detail', [])
   .controller('matching_detail_controller', [
     '$scope',
     '$log',
-    '$window',
     '$state',
     '$stateParams',
     'naturalSort',
@@ -22,7 +21,6 @@ angular.module('BE.seed.controller.matching_detail', [])
     'Notification',
     function ($scope,
               $log,
-              $window,
               $state,
               $stateParams,
               naturalSort,
@@ -39,24 +37,48 @@ angular.module('BE.seed.controller.matching_detail', [])
       spinner_utility.show();
 
       $scope.import_file = import_file_payload.import_file;
-      $scope.available_matches = available_matches.states;
-
-      $scope.number_per_page = 10;
-      $scope.current_page = 1;
-      $scope.pagination = {};
-      $scope.prev_page_disabled = false;
-      $scope.next_page_disabled = false;
-      $scope.showing = {};
-      $scope.pagination.number_per_page_options = [10, 25, 50, 100];
-      $scope.pagination.number_per_page_options_model = 10;
-
-      $scope.importfile_id = $stateParams.importfile_id;
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.state_id = $stateParams.state_id;
+      $scope.available_matches = available_matches.states;
+
+      $scope.state = state_payload.state;
+      $scope.filtered = [];
+      $scope.number_per_page_options = [5, 10, 25, 50, 100];
+      $scope.number_per_page = inventory_service.loadDetailMatchesPerPage();
+      if (!_.includes($scope.number_per_page_options, $scope.number_per_page)) $scope.number_per_page = 25;
+      $scope.current_page = 0;
+      $scope.number_of_pages = 1;
+      $scope.order_by = '';
+      $scope.sort_reverse = false;
+      $scope.showing = {};
 
       $scope.columns = columns;
       $scope.reduced_columns = _.reject(columns, {extraData: true});
-      $scope.state = state_payload.state;
+
+      /**
+       * Pagination code
+       */
+      $scope.update_start_end_paging = function () {
+        $scope.number_of_pages = Math.max(Math.ceil($scope.filtered.length / $scope.number_per_page), 1);
+        $scope.current_page = _.min([$scope.current_page, $scope.number_of_pages - 1]);
+
+        _.defer(function () {
+          $scope.$apply(function () {
+            $scope.showing.total = $scope.filtered.length;
+            if ($scope.showing.total === 0) {
+              $scope.showing.start = 0;
+              $scope.showing.end = 0;
+            } else {
+              $scope.showing.start = $scope.current_page * $scope.number_per_page + 1;
+              $scope.showing.end = Math.min($scope.showing.start + $scope.number_per_page - 1, $scope.showing.total);
+            }
+          });
+        });
+      };
+
+      $scope.save_number_per_page = function () {
+        inventory_service.saveDetailMatchesPerPage($scope.number_per_page);
+      };
 
       // Custom filter
       $scope.allSearch = function (row) {
@@ -109,14 +131,14 @@ angular.module('BE.seed.controller.matching_detail', [])
       var refresh = function () {
         spinner_utility.show();
         // update state (particularly if coparent)
-        return inventory_service.search_matching_inventory($stateParams.importfile_id, {
+        return inventory_service.search_matching_inventory($scope.import_file.id, {
           get_coparents: true,
-          inventory_type: $stateParams.inventory_type,
+          inventory_type: $scope.inventory_type,
           state_id: $stateParams.state_id
         }).then(function (data) {
           $scope.state = data.state;
         }).then(function () {
-          return matching_service.available_matches($scope.importfile_id, $scope.inventory_type, $scope.state_id).then(function (data) {
+          return matching_service.available_matches($scope.import_file.id, $scope.inventory_type, $scope.state_id).then(function (data) {
             $scope.available_matches = data.states;
             spinner_utility.hide();
           });
@@ -124,7 +146,7 @@ angular.module('BE.seed.controller.matching_detail', [])
       };
 
       $scope.unmatch = function () {
-        return matching_service.unmatch($scope.importfile_id, $scope.inventory_type, $scope.state_id, $scope.state.coparent.id).then(function () {
+        return matching_service.unmatch($scope.import_file.id, $scope.inventory_type, $scope.state_id, $scope.state.coparent.id).then(function () {
           delete $scope.state.coparent;
           Notification.success('Successfully unmerged ' + ($scope.inventory_type === 'properties' ? 'properties' : 'tax lots'));
           return refresh();
@@ -137,7 +159,7 @@ angular.module('BE.seed.controller.matching_detail', [])
       };
 
       $scope.match = function (state) {
-        return matching_service.match($scope.importfile_id, $scope.inventory_type, $scope.state_id, state.id).then(function () {
+        return matching_service.match($scope.import_file.id, $scope.inventory_type, $scope.state_id, state.id).then(function () {
           Notification.success('Successfully merged ' + ($scope.inventory_type === 'properties' ? 'properties' : 'tax lots'));
           return refresh();
         }, function (err) {
@@ -172,45 +194,10 @@ angular.module('BE.seed.controller.matching_detail', [])
         }
       };
 
-      /**
-       * open_edit_columns_modal: opens the edit columns modal to select and set
-       *   the columns used in the matching list table and matching detail table
-       */
-      // $scope.open_edit_columns_modal = function () {
-      //   var modalInstance = $uibModal.open({
-      //     templateUrl: urls.static_url + 'seed/partials/custom_view_modal.html',
-      //     controller: 'buildings_settings_controller',
-      //     resolve: {
-      //       shared_fields_payload: function () {
-      //         return {show_shared_buildings: false};
-      //       },
-      //       project_payload: function () {
-      //         return {project: {}};
-      //       },
-      //       building_payload: function () {
-      //         return {building: {}};
-      //       }
-      //     }
-      //   });
-      // };
+      $scope.$watch('filtered', _.debounce(function(newValue, oldValue) {
+        if (newValue === [] && oldValue === []) return;
+        $scope.update_start_end_paging();
+      }), 10);
 
-      $scope.updateHeight = function () {
-        var height = 0;
-        _.forEach(['.header', '.page_header_container', '.section .section_tab_container', '.section .section_header_container', '.matching-tab-container', '.table_footer'], function (selector) {
-          var element = angular.element(selector)[0];
-          if (element) height += element.offsetHeight;
-        });
-        angular.element('#table-container').css('height', 'calc(100vh - ' + (height + 2) + 'px)');
-      };
-
-      var debouncedHeightUpdate = _.debounce($scope.updateHeight, 150);
-      angular.element($window).on('resize', debouncedHeightUpdate);
-      $scope.$on('$destroy', function () {
-        angular.element($window).off('resize', debouncedHeightUpdate);
-      });
-
-      _.delay(function () {
-        spinner_utility.hide();
-        $scope.updateHeight();
-      }, 150);
+      _.delay(spinner_utility.hide, 150);
     }]);

@@ -705,6 +705,16 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       return _.parseInt(localStorage.getItem(key)) || 25;
     };
 
+    inventory_service.saveDetailMatchesPerPage = function (matchesPerPage) {
+      var key = 'detailMatchesPerPage.' + user_service.get_organization().id;
+      localStorage.setItem(key, matchesPerPage);
+    };
+
+    inventory_service.loadDetailMatchesPerPage = function () {
+      var key = 'detailMatchesPerPage.' + user_service.get_organization().id;
+      return _.parseInt(localStorage.getItem(key)) || 25;
+    };
+
     // A list of which fields have date values. This will be used by controller
     // to format date value correctly. Ideally at some point this should be gathered
     // from the server rather than hardcoded here.

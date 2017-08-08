@@ -39,7 +39,6 @@ angular.module('BE.seed.controller.matching_list', [])
       });
 
       $scope.import_file = import_file_payload.import_file;
-      $scope.importfile_id = $stateParams.importfile_id;
       $scope.inventory_type = $stateParams.inventory_type;
 
       var validCycles = _.uniq(_.map(import_file_payload.import_file.dataset.importfiles, 'cycle'));
@@ -112,7 +111,7 @@ angular.module('BE.seed.controller.matching_list', [])
       };
 
       $scope.unmatch = function (inventory) {
-        return matching_service.unmatch($scope.importfile_id, $scope.inventory_type, inventory.id, inventory.coparent.id).then(function () {
+        return matching_service.unmatch($scope.import_file.id, $scope.inventory_type, inventory.id, inventory.coparent.id).then(function () {
           delete inventory.coparent;
           Notification.success('Successfully unmerged ' + ($scope.inventory_type === 'properties' ? 'properties' : 'tax lots'));
           return refresh();

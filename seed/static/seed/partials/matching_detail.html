@@ -14,7 +14,7 @@
 
     <div class="section_tab_container">
         <uib-tabset active="1">
-            <uib-tab heading="Auto Matching" ng-click="updateHeight()">
+            <uib-tab heading="Auto Matching">
                 <div class="row">
                     <div class="col-sm-6 tab_content wide">
                         <p><strong>HOW THE SYSTEM AUTO-MATCHES YOUR PROPERTIES &amp; TAX LOTS:</strong></p>
@@ -32,7 +32,7 @@
                     </div>
                 </div>
             </uib-tab>
-            <uib-tab heading="Manual Matching" ng-click="updateHeight()">
+            <uib-tab heading="Manual Matching">
                 <div class="row">
                     <div class="col-sm-6 tab_content wide">
                         <p><strong>HOW TO MANUALLY MATCH YOUR PROPERTIES &amp; TAX LOTS:</strong></p>
@@ -45,27 +45,24 @@
                 </div>
 
             </uib-tab>
-            <uib-tab class="pull-right" heading="Collapse Tabs" ng-click="updateHeight()"></uib-tab>
+            <uib-tab class="pull-right" heading="Collapse Tabs"></uib-tab>
         </uib-tabset>
     </div>
-    <div class="section_header_container has_no_border">
-        <div class="section_header fixed_height">
-            <div class="left section_action_container row matching_toggle" style="margin-left:0px;">
 
-                <a ui-sref="matching_list({importfile_id: import_file.id, inventory_type: inventory_type})" class="btn btn-primary btn-sm" style="margin-right:10px;">
-                    <i class="fa fa-chevron-left"></i> Back to List
-                </a>
-                <!--<button type="button" class="btn btn-primary btn-sm" ng-click="do_update_filters()">
-                    Update Filters
-                </button>-->
-
-            </div>
-            <!--<div class="right section_action_container section_action_btn">
-                <button type="button" class="btn btn-default btn-sm" ng-click="open_edit_columns_modal()">
-                    <i class="fa fa-columns"></i>View/Hide Columns
-                </button>
-            </div>-->
-        </div>
+    <div class="matching-detail-container">
+        <span class="paginate">
+            <select style="height:24px;" ng-model="number_per_page" ng-change="save_number_per_page(); update_start_end_paging()" ng-options="option for option in number_per_page_options"></select>
+            <button class="disableable" ng-disabled="current_page == 0 || number_of_pages === 1" ng-click="current_page = current_page - 1; update_start_end_paging()">
+                Previous
+            </button>
+            {$ current_page + 1 $}/{$ number_of_pages $}
+            <button class="disableable" ng-disabled="current_page >= (showing.total / number_per_page) - 1 || number_of_pages === 1" ng-click="current_page = current_page + 1; update_start_end_paging()">
+                Next
+            </button>
+        </span>
+        <a ui-sref="matching_list({importfile_id: import_file.id, inventory_type: inventory_type})" class="btn btn-primary btn-sm" style="margin-right:10px;">
+            <i class="fa fa-chevron-left"></i> Back to List
+        </a>
     </div>
 
     <div class="section_content_container">
@@ -75,12 +72,12 @@
                     <thead>
                         <tr class="noselect">
                             <th class="is_aligned_center">Match</th>
-                            <div>
-                                <th class="pointer" ng-repeat="col in ::reduced_columns" ng-click="sortData(col.name, col.extraData)">{$ col.displayName $} <span ng-class="getSortClass(col.name, col.extraData)"></span></th>
-                            </div>
+                            <th class="pointer" ng-repeat="col in ::reduced_columns" ng-click="sortData(col.name, col.extraData)">
+                                {$ col.displayName $} <span ng-class="getSortClass(col.name, col.extraData)"></span>
+                            </th>
                         </tr>
                         <tr class="filter-row">
-                            <th class="is_aligned_center"></th>
+                            <th class="sub_head is_aligned_center"></th>
                             <th class="sub_head" ng-repeat="col in ::reduced_columns">
                                 <input type="text" ng-model="col.searchText" ng-model-options="{debounce:150}">
                             </th>
@@ -90,12 +87,13 @@
                         <tr>
                             <td class="potential_matches" colspan="{$ reduced_columns.length + 1 $}">
                                 <span>Record from Source: <strong>{$ import_file.uploaded_filename $}</strong></span>
-                                <span class="label label-success matched" ng-show="state.matched">Matched!</span>
+                                <span class="label label-success matched" ng-if="state.matched">Matched!</span>
                             </td>
                         </tr>
                         <tr ng-class="{'info': !state.matched, 'success': state.matched}">
                             <td class="is_aligned_center">
-                                <i class="fa fa-check green" ng-show="state.matched"></i></td>
+                                <i class="fa fa-check green" ng-if="state.matched"></i>
+                            </td>
                             <td ng-repeat="col in ::reduced_columns">
                                 <span>{$ col.extraData ? state.extra_data[col.name] : state[col.name] $}</span>
                             </td>
@@ -115,18 +113,31 @@
                             </td>
                         </tr>
                         <!-- search results -->
-                        <tr ng-repeat="state in available_matches | filter: allSearch | orderBy : sortColumn : reverseSort : naturalSortComparator">
+                        <tr ng-repeat="state in (filtered = (available_matches | filter: allSearch)) | orderBy : sortColumn : reverseSort : naturalSortComparator | startFrom : current_page * number_per_page | limitTo : number_per_page">
                             <td class="is_aligned_center">
                                 <input type="checkbox" ng-model="state.checked" ng-change="checkbox_match(state)">
                             </td>
                             <td ng-model="state.checked" ng-repeat="col in ::reduced_columns">
-                                <span>
-                                    {$ col.extraData ? state.extra_data[col.name] : state[col.name] $}
-                                </span>
+                                <span>{$ col.extraData ? state.extra_data[col.name] : state[col.name] $}</span>
                             </td>
                         </tr>
                     </tbody>
                 </table>
+            </div>
+            <div class="table_footer">
+                <div class="counts col-sm-4 col-sm-offset-4" style="text-align: center;">
+                    <span>Showing {$ showing.start $} to {$ showing.end $} of {$ showing.total $} available matches</span>
+                </div>
+                <div class="pager_container col-sm-5">
+                    <select style="height:24px;" ng-model="number_per_page" ng-change="save_number_per_page(); update_start_end_paging()" ng-options="option for option in number_per_page_options"></select>
+                    <button class="disableable" ng-disabled="current_page == 0 || number_of_pages === 1" ng-click="current_page = current_page - 1; update_start_end_paging()">
+                        Previous
+                    </button>
+                    {$ current_page + 1 $}/{$ number_of_pages $}
+                    <button class="disableable" ng-disabled="current_page >= (showing.total / number_per_page) - 1 || number_of_pages === 1" ng-click="current_page = current_page + 1; update_start_end_paging()">
+                        Next
+                    </button>
+                </div>
             </div>
         </div>
     </div>
