@@ -349,10 +349,6 @@ class MappingResultsResponseSerializer(serializers.Serializer):
     status = serializers.CharField(max_length=100)
     properties = MappingResultsPropertySerializer(many=True)
     tax_lots = MappingResultsTaxLotSerializer(many=True)
-    number_properties_matching_search = serializers.IntegerField()
-    number_properties_returned = serializers.IntegerField()
-    number_tax_lots_matching_search = serializers.IntegerField()
-    number_tax_lots_returned = serializers.IntegerField()
 
 
 class ImportFileViewSet(viewsets.ViewSet):
