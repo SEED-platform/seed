@@ -19,7 +19,7 @@ from seed.views.main import (
     public_search, export_buildings,
     export_buildings_progress,
     export_buildings_download,
-    angular_js_tests,
+
     delete_organization_inventory,
 )
 from seed.views.reports import Report
@@ -91,10 +91,6 @@ urlpatterns = [
         export_buildings_download,
         name='export_buildings_download'
     ),
-
-    # test URLs
-    url(r'^angular_js_tests/$', angular_js_tests, name='angular_js_tests'),
-
     # org
     url(
         r'^' + apiv1 + r'delete_organization_inventory/$',

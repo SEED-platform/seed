@@ -11,6 +11,7 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.static import serve
 
 from config.views import robots_txt
+from seed.views.main import angular_js_tests
 
 
 admin.autodiscover()
@@ -44,6 +45,9 @@ urlpatterns = [
 if settings.DEBUG:
     urlpatterns += staticfiles_urlpatterns()
     urlpatterns += [
+        # test URLs
+        url(r'^angular_js_tests/$', angular_js_tests, name='angular_js_tests'),
+
         # admin
         url(r'^admin/', include(admin.site.urls)),
         url(
