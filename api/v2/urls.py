@@ -7,7 +7,7 @@
 from django.conf.urls import url, include
 from rest_framework import routers
 
-from api.views import test_view_with_arg, TestReverseViewSet
+from api.base.views import test_view_with_arg, TestReverseViewSet
 from seed.data_importer.views import ImportFileViewSet
 from seed.data_importer.views import (
     handle_s3_upload_complete,
@@ -16,14 +16,14 @@ from seed.data_importer.views import (
     LocalUploaderViewSet
 )
 from seed.views.api import get_api_schema
-from seed.views.columns import ColumnViewSet, ColumnMappingViewSet
 from seed.views.certification import (
     GreenAssessmentViewSet,
     GreenAssessmentPropertyViewSet,
     GreenAssessmentURLViewSet
 )
-from seed.views.data_quality import DataQualityViews
+from seed.views.columns import ColumnViewSet, ColumnMappingViewSet
 from seed.views.cycles import CycleViewSet
+from seed.views.data_quality import DataQualityViews
 from seed.views.datasets import DatasetViewSet
 from seed.views.labels import LabelViewSet, UpdateInventoryLabelsAPIView
 from seed.views.main import version, progress

@@ -24,7 +24,7 @@ urlpatterns = [
     url(r'^app/', include('seed.urls.main', namespace="seed", app_name="seed")),
 
     url(
-        r'^app/api/swagger/',
+        r'^api/swagger/',
         include('rest_framework_swagger.urls'),
         name='swagger'
     ),
