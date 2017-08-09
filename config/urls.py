@@ -6,15 +6,12 @@
 """
 from django.conf import settings
 from django.conf.urls import include, url
-from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.static import serve
 
+from api.v2.urls import urlpatterns as apiv2
 from config.views import robots_txt
 from seed.views.main import angular_js_tests
-
-
-admin.autodiscover()
 
 urlpatterns = [
     # landing page
@@ -38,11 +35,14 @@ urlpatterns = [
 
     url(r'^robots\.txt', robots_txt, name='robots_txt'),
 
-    url(r'^api/v2/', include('api.urls', namespace="apiv2")),
+    url(r'^api/v2/', include(apiv2, namespace="apiv2")),
 ]
 
 # TODO: 8/8/17 fix media root for docker deployments
 if settings.DEBUG:
+    from django.contrib import admin
+
+    admin.autodiscover()
     urlpatterns += staticfiles_urlpatterns()
     urlpatterns += [
         # test URLs
