@@ -381,7 +381,6 @@ def export_buildings_download(request):
         })
 
 
-
 # @api_view(['POST'])  # do not add api_view on this because this is public and adding it will
 # require authentication for some reason.
 @ajax_request
