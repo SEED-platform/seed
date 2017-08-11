@@ -86,6 +86,7 @@ class TaxLotViewSet(GenericViewSet):
                     'pagination': {
                         'total': 0
                     },
+                    'cycle_id': None,
                     'results': []
                 })
 
@@ -114,6 +115,7 @@ class TaxLotViewSet(GenericViewSet):
                 'has_previous': paginator.page(page).has_previous(),
                 'total': paginator.count
             },
+            'cycle_id': cycle.id,
             'results': []
         }
 
