@@ -169,7 +169,7 @@ def export_buildings(request):
             "total_buildings": count of buildings,
         }
     """
-    body = json.loads(request.body)
+    body = request.data
 
     export_name = body.get('export_name')
     export_type = body.get('export_type')
@@ -278,7 +278,7 @@ def export_buildings_progress(request):
             'buildings_processed': number of buildings exported
         }
     """
-    body = json.loads(request.body)
+    body = request.data
     export_id = body.get('export_id')
     progress_key = "export_buildings__%s" % export_id
     progress_data = get_cache(progress_key)
@@ -317,7 +317,7 @@ def export_buildings_download(request):
             'url': The url to the exported file.
         }
     """
-    body = json.loads(request.body)
+    body = request.data
     export_id = body.get('export_id')
 
     # This is non-ideal, it is returning the directory/s3 key and assumes that
@@ -549,7 +549,7 @@ def _set_default_columns_by_request(body, user, field):
 @login_required
 @api_view(['POST'])
 def set_default_columns(request):
-    body = json.loads(request.body)
+    body = request.data
     return JsonResponse(
         _set_default_columns_by_request(body, request.user, 'default_custom_columns')
     )
@@ -559,7 +559,7 @@ def set_default_columns(request):
 @login_required
 @api_view(['POST'])
 def set_default_building_detail_columns(request):
-    body = json.loads(request.body)
+    body = request.data
     return JsonResponse(
         _set_default_columns_by_request(body, request.user,
                                         'default_building_detail_custom_columns')
@@ -577,9 +577,9 @@ def get_columns(request):
 
     Requires the organization_id as a query parameter
     """
-    all_fields = request.GET.get('all_fields', '')
+    all_fields = request.query_params.get('all_fields', '')
     all_fields = True if all_fields.lower() == 'true' else False
-    return JsonResponse(utils_get_columns(request.GET['organization_id'], all_fields))
+    return JsonResponse(utils_get_columns(request.query_params['organization_id'], all_fields))
 
 
 def _mapping_suggestions(import_file_id, org_id, user):
@@ -679,7 +679,7 @@ def delete_file(request):
             'status': 'error',
             'message': 'only HTTP DELETE allowed',
         })
-    body = json.loads(request.body)
+    body = request.data
     file_id = body.get('file_id', '')
     import_file = ImportFile.objects.get(pk=file_id)
     d = ImportRecord.objects.filter(
@@ -750,7 +750,7 @@ def delete_organization_inventory(request):
             'progress_key': ID of background job, for retrieving job progress
         }
     """
-    org_id = request.GET.get('organization_id', None)
+    org_id = request.query_params.get('organization_id', None)
     deleting_cache_key = get_prog_key(
         'delete_organization_inventory',
         org_id
