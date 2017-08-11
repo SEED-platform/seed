@@ -10,6 +10,7 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.static import serve
 
 from config.views import robots_txt
+from seed.api.v1.urls import urlpatterns as apiv1
 from seed.api.v2.urls import urlpatterns as apiv2
 from seed.views.main import angular_js_tests
 
@@ -21,7 +22,7 @@ urlpatterns = [
     url(r'^audit_logs/',
         include('seed.audit_logs.urls', namespace="audit_logs", app_name="audit_logs")),
 
-    url(r'^app/', include('seed.urls.main', namespace="seed", app_name="seed")),
+    url(r'^app/', include('seed.urls', namespace="seed", app_name="seed")),
 
     url(
         r'^api/swagger/',
@@ -35,6 +36,7 @@ urlpatterns = [
 
     url(r'^robots\.txt', robots_txt, name='robots_txt'),
 
+    url(r'^api/v1/', include(apiv1, namespace="apiv1")),
     url(r'^api/v2/', include(apiv2, namespace="apiv2")),
 ]
 

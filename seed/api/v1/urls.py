@@ -8,7 +8,6 @@
 from django.conf.urls import url
 
 from seed.views.main import (
-    home,
     search_buildings,
     get_default_columns,
     set_default_columns,
@@ -19,50 +18,39 @@ from seed.views.main import (
     public_search, export_buildings,
     export_buildings_progress,
     export_buildings_download,
-
     delete_organization_inventory,
 )
 
 # prefix, to revert back to original endpoints, leave this blank
-apiv1 = r''  # r'api/v1/'
 
 urlpatterns = [
     # template routes
-    url(r'^$', home, name='home'),
-    url(r'^' + apiv1 + r'search_buildings/$', search_buildings, name='search_buildings'),
-    url(r'^' + apiv1 + r'get_default_columns/$', get_default_columns, name='get_default_columns'),
-    url(r'^' + apiv1 + r'set_default_columns/$', set_default_columns, name='set_default_columns'),
+    url(r'^search_buildings/$', search_buildings, name='search_buildings'),
+    url(r'^get_default_columns/$', get_default_columns, name='get_default_columns'),
+    url(r'^set_default_columns/$', set_default_columns, name='set_default_columns'),
     url(
-        r'^' + apiv1 + r'get_default_building_detail_columns/$',
+        r'^get_default_building_detail_columns/$',
         get_default_building_detail_columns,
         name='get_default_building_detail_columns'
     ),
     url(
-        r'^' + apiv1 + r'set_default_building_detail_columns/$',
+        r'^set_default_building_detail_columns/$',
         set_default_building_detail_columns,
         name='set_default_building_detail_columns'
     ),
-    url(r'^' + apiv1 + r'get_columns/$', get_columns, name='get_columns'),
-    url(r'^' + apiv1 + r'delete_file/$', delete_file, name='delete_file'),
+    url(r'^get_columns/$', get_columns, name='get_columns'),
+    url(r'^delete_file/$', delete_file, name='delete_file'),
+    url(r'^public_search/$', public_search, name='public_search'),
+    url(r'^export_buildings/$', export_buildings, name='export_buildings'),
+    url(r'^export_buildings/progress/$', export_buildings_progress,
+        name='export_buildings_progress'),
     url(
-        r'^' + apiv1 + r'public_search/$',
-        public_search,
-        name='public_search'
-    ),
-    url(r'^' + apiv1 + r'export_buildings/$', export_buildings,
-        name='export_buildings'),
-    url(
-        r'^' + apiv1 + r'export_buildings/progress/$',
-        export_buildings_progress,
-        name='export_buildings_progress'
-    ),
-    url(
-        r'^' + apiv1 + r'export_buildings/download/$',
+        r'^export_buildings/download/$',
         export_buildings_download,
         name='export_buildings_download'
     ),
     url(
-        r'^' + apiv1 + r'delete_organization_inventory/$',
+        r'^delete_organization_inventory/$',
         delete_organization_inventory,
         name='delete_organization_inventory'
     ),

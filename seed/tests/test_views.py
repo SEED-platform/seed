@@ -80,7 +80,7 @@ class MainViewTests(TestCase):
     #         'export_type': 'csv',
     #         'selected_buildings': [b.pk]
     #     }
-    #     response = self.client.post(reverse('seed:export_buildings'),
+    #     response = self.client.post(reverse('apiv1:export_buildings'),
     #                                 json.dumps(payload),
     #                                 content_type='application/json')
     #     self.assertTrue(json.loads(response.content)['success'])
@@ -91,7 +91,7 @@ class MainViewTests(TestCase):
             'export_type': 'csv',
             'selected_buildings': []
         }
-        response = self.client.post(reverse('seed:export_buildings'),
+        response = self.client.post(reverse('apiv1:export_buildings'),
                                     json.dumps(payload),
                                     content_type='application/json')
         self.assertTrue(json.loads(response.content)['success'])
@@ -102,7 +102,7 @@ class MainViewTests(TestCase):
         }
         cache.set('export_buildings__1234',
                   {'progress': 85, 'total_buildings': 1, 'status': 'success'})
-        response = self.client.post(reverse('seed:export_buildings_progress'),
+        response = self.client.post(reverse('apiv1:export_buildings_progress'),
                                     json.dumps(payload),
                                     content_type='application/json')
         self.assertTrue(json.loads(response.content)['success'])
@@ -134,7 +134,7 @@ class DefaultColumnsViewTests(TestCase):
         self.user.default_custom_columns = columns
         self.user.save()
         columns = ['source_facility_id', 'test_column_0']
-        url = reverse_lazy('seed:get_default_columns')
+        url = reverse_lazy('apiv1:get_default_columns')
         response = self.client.get(url)
         json_string = response.content
         data = json.loads(json_string)
@@ -143,7 +143,7 @@ class DefaultColumnsViewTests(TestCase):
         self.assertEqual(data['columns'], columns)
 
     def test_get_default_columns_initial_state(self):
-        url = reverse_lazy('seed:get_default_columns')
+        url = reverse_lazy('apiv1:get_default_columns')
         response = self.client.get(url)
         json_string = response.content
         data = json.loads(json_string)
@@ -152,7 +152,7 @@ class DefaultColumnsViewTests(TestCase):
         self.assertEqual(data['columns'], DEFAULT_CUSTOM_COLUMNS)
 
     def test_set_default_columns(self):
-        url = reverse_lazy('seed:set_default_columns')
+        url = reverse_lazy('apiv1:set_default_columns')
         columns = ['s', 'c1', 'c2']
         post_data = {
             'columns': columns,
@@ -169,7 +169,7 @@ class DefaultColumnsViewTests(TestCase):
         self.assertEqual(200, response.status_code)
 
         # get the columns
-        url = reverse_lazy('seed:get_default_columns')
+        url = reverse_lazy('apiv1:get_default_columns')
         response = self.client.get(url)
         json_string = response.content
         data = json.loads(json_string)
@@ -184,7 +184,7 @@ class DefaultColumnsViewTests(TestCase):
 
         # set show_shared_buildings to False
         post_data['show_shared_buildings'] = False
-        url = reverse_lazy('seed:set_default_columns')
+        url = reverse_lazy('apiv1:set_default_columns')
         response = self.client.post(
             url,
             content_type='application/json',
@@ -202,7 +202,7 @@ class DefaultColumnsViewTests(TestCase):
         self.assertEqual(data['show_shared_buildings'], False)
 
     def test_get_columns(self):
-        url = reverse_lazy('seed:get_columns')
+        url = reverse_lazy('apiv1:get_columns')
 
         # test building list columns
         response = self.client.get(
@@ -363,7 +363,7 @@ class ImportFileViewsTests(TestCase):
         }
 
         response = self.client.delete(
-            reverse_lazy('seed:delete_file'),
+            reverse_lazy('apiv1:delete_file'),
             content_type='application/json',
             data=json.dumps(post_data)
         )
