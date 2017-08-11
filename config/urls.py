@@ -9,8 +9,8 @@ from django.conf.urls import include, url
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.static import serve
 
-from api.v2.urls import urlpatterns as apiv2
 from config.views import robots_txt
+from seed.api.v2.urls import urlpatterns as apiv2
 from seed.views.main import angular_js_tests
 
 urlpatterns = [

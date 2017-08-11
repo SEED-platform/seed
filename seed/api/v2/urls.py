@@ -7,7 +7,7 @@
 from django.conf.urls import url, include
 from rest_framework import routers
 
-from api.base.views import test_view_with_arg, TestReverseViewSet
+from seed.api.base.views import test_view_with_arg, TestReverseViewSet
 from seed.data_importer.views import ImportFileViewSet
 from seed.data_importer.views import (
     handle_s3_upload_complete,
