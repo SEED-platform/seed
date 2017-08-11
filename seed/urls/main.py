@@ -22,7 +22,6 @@ from seed.views.main import (
 
     delete_organization_inventory,
 )
-from seed.views.reports import Report
 
 # prefix, to revert back to original endpoints, leave this blank
 apiv1 = r''  # r'api/v1/'
@@ -46,14 +45,27 @@ urlpatterns = [
     url(r'^' + apiv1 + r'get_columns/$', get_columns, name='get_columns'),
     url(r'^' + apiv1 + r'delete_file/$', delete_file, name='delete_file'),
     url(
-        r'^app/get_property_report_data/$',
-        Report.as_view({'get': 'get_property_report_data'}),
-        name='property_report_data'),
+        r'^' + apiv1 + r'public_search/$',
+        public_search,
+        name='public_search'
+    ),
+    url(r'^' + apiv1 + r'export_buildings/$', export_buildings,
+        name='export_buildings'),
     url(
-        r'^get_aggregated_property_report_data/$',
-        Report.as_view({'get': 'get_aggregated_property_report_data'}),
-        name='aggregated_property_report_data'),
-
+        r'^' + apiv1 + r'export_buildings/progress/$',
+        export_buildings_progress,
+        name='export_buildings_progress'
+    ),
+    url(
+        r'^' + apiv1 + r'export_buildings/download/$',
+        export_buildings_download,
+        name='export_buildings_download'
+    ),
+    url(
+        r'^' + apiv1 + r'delete_organization_inventory/$',
+        delete_organization_inventory,
+        name='delete_organization_inventory'
+    ),
     # Building reports
     # url(
     #     r'^' + apiv1 + r'get_building_summary_report_data/$',
@@ -70,31 +82,4 @@ urlpatterns = [
     #     get_aggregated_building_report_data,
     #     name='get_aggregated_building_report_data',
     # ),
-
-    # New MCM endpoints
-    url(
-        r'^' + apiv1 + r'public_search/$',
-        public_search,
-        name='public_search'
-    ),
-
-    # exporter routes
-    url(r'^' + apiv1 + r'export_buildings/$', export_buildings,
-        name='export_buildings'),
-    url(
-        r'^' + apiv1 + r'export_buildings/progress/$',
-        export_buildings_progress,
-        name='export_buildings_progress'
-    ),
-    url(
-        r'^' + apiv1 + r'export_buildings/download/$',
-        export_buildings_download,
-        name='export_buildings_download'
-    ),
-    # org
-    url(
-        r'^' + apiv1 + r'delete_organization_inventory/$',
-        delete_organization_inventory,
-        name='delete_organization_inventory'
-    ),
 ]

@@ -31,6 +31,7 @@ from seed.views.organizations import OrganizationViewSet
 from seed.views.projects import ProjectViewSet
 from seed.views.properties import (PropertyViewSet, PropertyStateViewSet,
                                    PropertyViewViewSet, GBRPropertyViewSet)
+from seed.views.reports import Report
 from seed.views.taxlots import TaxLotViewSet
 from seed.views.users import UserViewSet
 
@@ -40,8 +41,10 @@ api_v2_router.register(r'column_mappings', ColumnMappingViewSet, base_name="colu
 api_v2_router.register(r'datasets', DatasetViewSet, base_name="datasets")
 api_v2_router.register(r'organizations', OrganizationViewSet, base_name="organizations")
 api_v2_router.register(r'green_assessments', GreenAssessmentViewSet, base_name="green_assessments")
-api_v2_router.register(r'green_assessment_urls', GreenAssessmentURLViewSet, base_name="green_assessment_urls")
-api_v2_router.register(r'green_assessment_properties', GreenAssessmentPropertyViewSet, base_name="green_assessment_properties")
+api_v2_router.register(r'green_assessment_urls', GreenAssessmentURLViewSet,
+                       base_name="green_assessment_urls")
+api_v2_router.register(r'green_assessment_properties', GreenAssessmentPropertyViewSet,
+                       base_name="green_assessment_properties")
 api_v2_router.register(r'projects', ProjectViewSet, base_name="projects")
 api_v2_router.register(r'users', UserViewSet, base_name="users")
 api_v2_router.register(r'reverse_and_test', TestReverseViewSet, base_name="reverse_and_test")
@@ -67,7 +70,6 @@ urlpatterns = [
     url(r's3_upload_complete/$', handle_s3_upload_complete, name='s3_upload_complete'),
     url(r'get_upload_details/$', get_upload_details, name='get_upload_details'),
     url(r'sign_policy_document/$', sign_policy_document, name='sign_policy_document'),
-    # api schema
     url(r'^schema/$', get_api_schema, name='schema'),
     url(r'^progress/$', progress, name='progress'),
     url(
@@ -113,6 +115,16 @@ urlpatterns = [
         r'^test_view_with_arg/([0-9]{1})/$',
         test_view_with_arg,
         name='testviewarg'
+    ),
+    url(
+        r'^get_property_report_data/$',
+        Report.as_view({'get': 'get_property_report_data'}),
+        name='property_report_data'
+    ),
+    url(
+        r'^get_aggregated_property_report_data/$',
+        Report.as_view({'get': 'get_aggregated_property_report_data'}),
+        name='aggregated_property_report_data'
     ),
     # url(
     #     r'^property/',
