@@ -43,16 +43,16 @@ class TestReverseViewSet(viewsets.ViewSet):
         # i['seed:get_column_mapping_suggestions'] = reverse('seed:get_column_mapping_suggestions')
 
         # now try the same column mapping thing from API v2
-        i['apiv2:data_files-mapping-suggestions'] = reverse('apiv2:data_files-mapping-suggestions', args=[1])
+        i['apiv2:data_files-mapping-suggestions'] = reverse('api:v2:data_files-mapping-suggestions', args=[1])
 
         # try one from the original /api url path, which is pretty much just get_api_schema
         i['api:get_api_schema'] = reverse('api:get_api_schema')
 
         # try the test one that includes a path argument
-        i['apiv2:testviewarg'] = reverse('apiv2:testviewarg', args=[1])
+        i['apiv2:testviewarg'] = reverse('api:v2:testviewarg', args=[1])
 
         # try a class-based, router-generated view
-        i['apiv2:datasets-list'] = reverse('apiv2:datasets-list')
+        i['apiv2:datasets-list'] = reverse('api:v2:datasets-list')
 
         # report it out prettified
         return HttpResponse(json.dumps(i, indent=4, sort_keys=True))

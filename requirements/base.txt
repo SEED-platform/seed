@@ -23,7 +23,7 @@ redis==2.10.5
 pytz==2012h
 
 # API
-djangorestframework==3.3.3
+djangorestframework==3.4.7
 django-rest-swagger==0.3.8
 django-filter==1.0.0
 

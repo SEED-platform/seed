@@ -7,11 +7,10 @@
 
 from django.conf.urls import url
 
-from seed.views.reports import Report
+from seed.views.main import (
+    home,
+)
 
 urlpatterns = [
-    url(r'^get_property_report_data/$', Report.as_view({'get': 'get_property_report_data'}),
-        name='property_report_data'),
-    url(r'^get_aggregated_property_report_data/$', Report.as_view({'get': 'get_aggregated_property_report_data'}),
-        name='aggregated_property_report_data'),
+    url(r'^$', home, name='home'),
 ]

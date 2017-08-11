@@ -13,10 +13,10 @@ from rest_framework import (
     status,
     viewsets
 )
+from rest_framework.decorators import list_route
 from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 from rest_framework.views import APIView
-from rest_framework.decorators import list_route
 
 from seed.decorators import DecoratorMixin
 from seed.filters import (
@@ -40,9 +40,7 @@ status.HTTP_422_UNPROCESSABLE_ENTITY = 422
 ErrorState = namedtuple('ErrorState', ['status_code', 'message'])
 
 
-# TODO update for new data model
-class LabelViewSet(DecoratorMixin(drf_api_endpoint),
-                   viewsets.ModelViewSet):
+class LabelViewSet(DecoratorMixin(drf_api_endpoint), viewsets.ModelViewSet):
     serializer_class = LabelSerializer
     renderer_classes = (JSONRenderer,)
     parser_classes = (JSONParser,)
@@ -75,7 +73,6 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint),
         ).order_by("name").distinct()
         return labels
 
-    # TODO update for new data model
     def get_serializer(self, *args, **kwargs):
         kwargs['super_organization'] = self.get_organization()
         inventory = InventoryFilterBackend().filter_queryset(

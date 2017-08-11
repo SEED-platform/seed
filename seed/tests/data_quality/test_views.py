@@ -29,13 +29,13 @@ class DataQualityViewTests(TestCase):
     def test_get_data_quality_results(self):
         data = {'test': 'test'}
         cache.set('data_quality_results__1', data)
-        response = self.client.get(reverse('apiv2:import_files-data-quality-results', args=[1]))
+        response = self.client.get(reverse('api:v2:import_files-data-quality-results', args=[1]))
         self.assertEqual(json.loads(response.content)['data'], data)
 
     def test_get_progress(self):
         data = {'status': 'success', 'progress': 85}
         cache.set(':1:SEED:get_progress:PROG:1', data)
-        response = self.client.get(reverse('apiv2:import_files-data-quality-progress', args=[1]))
+        response = self.client.get(reverse('api:v2:import_files-data-quality-progress', args=[1]))
         self.assertEqual(json.loads(response.content), 85)
 
     def test_get_csv(self):
@@ -52,5 +52,5 @@ class DataQualityViewTests(TestCase):
             }]
         }]
         cache.set('data_quality_results__1', data)
-        response = self.client.get(reverse('apiv2:import_files-data-quality-results-csv', args=[1]))
+        response = self.client.get(reverse('api:v2:import_files-data-quality-results-csv', args=[1]))
         self.assertEqual(200, response.status_code)

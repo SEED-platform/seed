@@ -35,8 +35,8 @@ class AdminViewsTest(TestCase):
                         'password': 'user_passS1'}
         self.user = User.objects.create_user(**user_details)
 
-        self.add_org_url = reverse_lazy('apiv2:organizations-list')
-        self.add_user_url = reverse_lazy('apiv2:users-list')
+        self.add_org_url = reverse_lazy('api:v2:organizations-list')
+        self.add_user_url = reverse_lazy('api:v2:users-list')
 
     def _post_json(self, url, data):
         """
