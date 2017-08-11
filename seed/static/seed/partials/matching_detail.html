@@ -1,10 +1,10 @@
 <div class="page_header_container">
     <div class="page_header">
         <div class="left page_action_container">
-            <a class="page_action" ui-sref="dataset_detail({dataset_id: import_file.dataset.id})"><i class="fa fa-chevron-left"></i> {$ import_file.dataset.name $}</a>
+            <a class="page_action" ui-sref="dataset_detail(::{dataset_id: import_file.dataset.id})"><i class="fa fa-chevron-left"></i> {$:: import_file.dataset.name $}</a>
         </div>
         <div class="page_title">
-            <h1>Data Matching ({$ import_file.uploaded_filename $})</h1>
+            <h1>Data Matching ({$:: import_file.uploaded_filename $})</h1>
         </div>
         <div class="right page_action_container"></div>
     </div>
@@ -51,16 +51,16 @@
 
     <div class="matching-detail-container">
         <span class="paginate">
-            <select style="height:24px;" ng-model="number_per_page" ng-change="save_number_per_page(); update_start_end_paging()" ng-options="option for option in number_per_page_options"></select>
-            <button class="disableable" ng-disabled="current_page == 0 || number_of_pages === 1" ng-click="current_page = current_page - 1; update_start_end_paging()">
+            <select style="height:24px;" ng-model="number_per_page" ng-change="save_number_per_page(); update_start_end_paging()" ng-options="option for option in ::number_per_page_options"></select>
+            <button class="disableable" ng-disabled="current_page == 0 || number_of_pages === 1" ng-click="previousPage()">
                 Previous
             </button>
             {$ current_page + 1 $}/{$ number_of_pages $}
-            <button class="disableable" ng-disabled="current_page >= (showing.total / number_per_page) - 1 || number_of_pages === 1" ng-click="current_page = current_page + 1; update_start_end_paging()">
+            <button class="disableable" ng-disabled="current_page >= (showing.total / number_per_page) - 1 || number_of_pages === 1" ng-click="nextPage()">
                 Next
             </button>
         </span>
-        <a ui-sref="matching_list({importfile_id: import_file.id, inventory_type: inventory_type})" class="btn btn-primary btn-sm" style="margin-right:10px;">
+        <a ui-sref="matching_list(::{importfile_id: import_file.id, inventory_type: inventory_type})" class="btn btn-primary btn-sm" style="margin-right:10px;">
             <i class="fa fa-chevron-left"></i> Back to List
         </a>
     </div>
@@ -73,7 +73,7 @@
                         <tr class="noselect">
                             <th class="is_aligned_center">Match</th>
                             <th class="pointer" ng-repeat="col in ::reduced_columns" ng-click="sortData(col.name, col.extraData)">
-                                {$ col.displayName $} <span ng-class="getSortClass(col.name, col.extraData)"></span>
+                                {$:: col.displayName $} <span ng-class="getSortClass(col.name, col.extraData)"></span>
                             </th>
                         </tr>
                         <tr class="filter-row">
@@ -85,8 +85,8 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td class="potential_matches" colspan="{$ reduced_columns.length + 1 $}">
-                                <span>Record from Source: <strong>{$ import_file.uploaded_filename $}</strong></span>
+                            <td class="potential_matches" colspan="{$:: reduced_columns.length + 1 $}">
+                                <span>Record from Source: <strong>{$:: import_file.uploaded_filename $}</strong></span>
                                 <span class="label label-success matched" ng-if="state.matched">Matched!</span>
                             </td>
                         </tr>
@@ -95,12 +95,12 @@
                                 <i class="fa fa-check green" ng-if="state.matched"></i>
                             </td>
                             <td ng-repeat="col in ::reduced_columns">
-                                <span>{$ col.extraData ? state.extra_data[col.name] : state[col.name] $}</span>
+                                <span>{$:: col.extraData ? state.extra_data[col.name] : state[col.name] $}</span>
                             </td>
                         </tr>
                         <tr>
-                            <td class="potential_matches" colspan="{$ reduced_columns.length + 1 $}">
-                                <span>Potential Matches from Source: <strong>Existing {$ inventory_type == 'properties' ? 'Properties' : 'Tax Lots' $}</strong></span>
+                            <td class="potential_matches" colspan="{$:: reduced_columns.length + 1 $}">
+                                <span>Potential Matches from Source: <strong>Existing {$:: inventory_type == 'properties' ? 'Properties' : 'Tax Lots' $}</strong></span>
                             </td>
                         </tr>
                         <!-- matched record -->
@@ -109,7 +109,7 @@
                                 <input type="checkbox" ng-model="state.matched" ng-change="unmatch()">
                             </td>
                             <td ng-repeat="col in ::reduced_columns">
-                                <span>{$ col.extraData ? state.coparent.extra_data[col.name] : state.coparent[col.name] $}</span>
+                                <span>{$:: col.extraData ? state.coparent.extra_data[col.name] : state.coparent[col.name] $}</span>
                             </td>
                         </tr>
                         <!-- search results -->
@@ -117,8 +117,8 @@
                             <td class="is_aligned_center">
                                 <input type="checkbox" ng-model="state.checked" ng-change="checkbox_match(state)">
                             </td>
-                            <td ng-model="state.checked" ng-repeat="col in ::reduced_columns">
-                                <span>{$ col.extraData ? state.extra_data[col.name] : state[col.name] $}</span>
+                            <td ng-repeat="col in ::reduced_columns">
+                                <span>{$:: col.extraData ? state.extra_data[col.name] : state[col.name] $}</span>
                             </td>
                         </tr>
                     </tbody>
@@ -129,12 +129,12 @@
                     <span>Showing {$ showing.start $} to {$ showing.end $} of {$ showing.total $} available matches</span>
                 </div>
                 <div class="pager_container col-sm-5">
-                    <select style="height:24px;" ng-model="number_per_page" ng-change="save_number_per_page(); update_start_end_paging()" ng-options="option for option in number_per_page_options"></select>
-                    <button class="disableable" ng-disabled="current_page == 0 || number_of_pages === 1" ng-click="current_page = current_page - 1; update_start_end_paging()">
+                    <select style="height:24px;" ng-model="number_per_page" ng-change="save_number_per_page(); update_start_end_paging()" ng-options="option for option in ::number_per_page_options"></select>
+                    <button class="disableable" ng-disabled="current_page == 0 || number_of_pages === 1" ng-click="previousPage()">
                         Previous
                     </button>
                     {$ current_page + 1 $}/{$ number_of_pages $}
-                    <button class="disableable" ng-disabled="current_page >= (showing.total / number_per_page) - 1 || number_of_pages === 1" ng-click="current_page = current_page + 1; update_start_end_paging()">
+                    <button class="disableable" ng-disabled="current_page >= (showing.total / number_per_page) - 1 || number_of_pages === 1" ng-click="nextPage()">
                         Next
                     </button>
                 </div>

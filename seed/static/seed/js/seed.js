@@ -237,8 +237,16 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
                 return $q.reject(data.message);
               });
           }],
+          organizations_payload: ['auth_payload', 'organization_service', function (auth_payload, organization_service) {
+            // Require auth_payload to successfully complete before attempting
+            return organization_service.get_organizations();
+          }],
           user_profile_payload: ['user_service', function (user_service) {
             return user_service.get_user_profile();
+          }],
+          users_payload: ['auth_payload', 'user_service', function (auth_payload, user_service) {
+            // Require auth_payload to successfully complete before attempting
+            return user_service.get_users();
           }]
         }
       })
@@ -1105,7 +1113,7 @@ SEED_app.config(['$httpProvider', function ($httpProvider) {
  * Disable Angular debugging based on Django DEBUG flag.
  */
 SEED_app.config(['$compileProvider', function ($compileProvider) {
-  $compileProvider.debugInfoEnabled(window.BE.debug);
+  $compileProvider.debugInfoEnabled(true);
   $compileProvider.commentDirectivesEnabled(false);
   // $compileProvider.cssClassDirectivesEnabled(false); // This cannot be enabled due to the draggable ui-grid rows
 }]);

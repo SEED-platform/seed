@@ -4,7 +4,7 @@
             <a class="page_action" ui-sref="dataset_list"><i class="fa fa-chevron-left"></i> Data Sets</a>
         </div>
         <div class="page_title">
-            <h1>{$ dataset.name $}</h1>
+            <h1>{$:: dataset.name $}</h1>
         </div>
         <div class="right page_action_container">
             <a data-toggle="modal" data-target="#dataUploadModal" ng-click="open_data_upload_modal()">Add more data files</a>
@@ -30,17 +30,17 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr ng-repeat="f in dataset.importfiles | orderBy: '-created'" class="file_to_import " ng-class="f.status_classes">
-                                <td class="data_file_name">{$ f.name $}</td>
+                            <tr ng-repeat="f in dataset.importfiles | orderBy: '-created'" class="file_to_import">
+                                <td class="data_file_name">{$:: f.name $}</td>
                                 <td>
                                     <a class="delete_link" ng-click="confirm_delete(f)"><i class="fa fa-trash-o"></i></a>
                                 </td>
-                                <td>{$ f.created | date: 'MM/dd/yyyy hh:mm:ss a' $}</td>
-                                <td class="is_aligned_right">{$ f.num_rows || 0 $}</td>
-                                <td>{$ getCycleName(f.cycle) $}</td>
-                                <td><a id="data-mapping-{$ $index $}" role="button" class="btn btn-sm btn-primary" ui-sref="mapping({importfile_id: f.id})" ng-disabled="!f.num_rows">{$ f.number_of_mappings $} Data Mapping</a></td>
-                                <td><a id="data-matching-{$ $index $}" role="button" class="btn btn-sm btn-primary" ui-sref="matching_list({importfile_id: f.id, inventory_type: 'properties'})" ng-disabled="!f.num_rows || !f.mapping_done || getCycleName(f.cycle) === undefined">{$ f.number_of_matchings $} Data Matching</a></td>
-                                <td><a id="data-pairing-{$ $index $}" role="button" class="btn btn-sm btn-primary" ui-sref="pairing({importfile_id: f.id, inventory_type: 'properties'})" ng-disabled="!f.num_rows || !f.mapping_done || !f.matching_done || getCycleName(f.cycle) === undefined">{$ f.number_of_pairings $} Data Pairing</a></td>
+                                <td>{$:: f.created | date: 'MM/dd/yyyy hh:mm:ss a' $}</td>
+                                <td class="is_aligned_right">{$:: f.num_rows || 0 $}</td>
+                                <td>{$:: getCycleName(f.cycle) $}</td>
+                                <td><a id="data-mapping-{$:: $index $}" role="button" class="btn btn-sm btn-primary" ui-sref="mapping(::{importfile_id: f.id})" ng-disabled="::!f.num_rows">{$:: f.number_of_mappings $} Data Mapping</a></td>
+                                <td><a id="data-matching-{$:: $index $}" role="button" class="btn btn-sm btn-primary" ui-sref="matching_list(::{importfile_id: f.id, inventory_type: 'properties'})" ng-disabled="::!f.num_rows || !f.mapping_done || getCycleName(f.cycle) === undefined">{$:: f.number_of_matchings $} Data Matching</a></td>
+                                <td><a id="data-pairing-{$:: $index $}" role="button" class="btn btn-sm btn-primary" ui-sref="pairing(::{importfile_id: f.id, inventory_type: 'properties'})" ng-disabled="::!f.num_rows || !f.mapping_done || !f.matching_done || getCycleName(f.cycle) === undefined">{$:: f.number_of_pairings $} Data Pairing</a></td>
                             </tr>
                         </tbody>
                     </table>

@@ -80,6 +80,16 @@ angular.module('BE.seed.controller.matching_detail', [])
         inventory_service.saveDetailMatchesPerPage($scope.number_per_page);
       };
 
+      $scope.nextPage = function () {
+        $scope.current_page = $scope.current_page + 1;
+        $scope.update_start_end_paging();
+      };
+
+      $scope.previousPage = function () {
+        $scope.current_page = $scope.current_page - 1;
+        $scope.update_start_end_paging();
+      };
+
       // Custom filter
       $scope.allSearch = function (row) {
         var i, searchText, searchTextLower, rowValue, reducedColLower, isMatch;
