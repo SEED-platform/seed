@@ -231,7 +231,7 @@ class DeleteViewTests(TestCase):
 
         # act
         resp = self.client.delete(
-            reverse_lazy("apiv2:datasets-detail", args=[dataset.pk]) + '?organization_id=' + str(
+            reverse_lazy("api:v2:datasets-detail", args=[dataset.pk]) + '?organization_id=' + str(
                 self.org.id),
             content_type='application/json',
         )
@@ -252,7 +252,7 @@ class DeleteViewTests(TestCase):
 
         # act
         resp = self.client.delete(
-            reverse_lazy("apiv2:datasets-detail", args=[dataset.pk]) + '?organization_id=' + str(
+            reverse_lazy("api:v2:datasets-detail", args=[dataset.pk]) + '?organization_id=' + str(
                 self.org.id),
             content_type='application/json',
         )

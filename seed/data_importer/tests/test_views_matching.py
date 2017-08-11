@@ -90,7 +90,7 @@ class TestViewsMatching(DataMappingBaseTestCase):
         self.assertEqual(logs.count(), 14)
 
     def test_get_filtered_mapping_results(self):
-        url = reverse("apiv2:import_files-filtered-mapping-results", args=[self.import_file_2.pk])
+        url = reverse("api:v2:import_files-filtered-mapping-results", args=[self.import_file_2.pk])
         resp = self.client.post(
             url, data=json.dumps({"get_coparents": True}), content_type='application/json'
         )
@@ -182,7 +182,7 @@ class TestViewsMatching(DataMappingBaseTestCase):
             "state_id": property_state.id,
             "coparent_id": coparents['id']
         }
-        url = reverse("apiv2:import_files-unmatch", args=[self.import_file_2.pk])
+        url = reverse("api:v2:import_files-unmatch", args=[self.import_file_2.pk])
         resp = self.client.post(
             url, data=json.dumps(data), content_type='application/json'
         )

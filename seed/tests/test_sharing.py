@@ -69,9 +69,9 @@ class SharingViewTests(TestCase):
         Make a request of the search_buildings view and return the
         json-decoded body.
         """
-        url = reverse_lazy("apiv1:search_buildings")
+        url = reverse_lazy("api:v1:search_buildings")
         if is_public:
-            url = reverse_lazy("apiv1:public_search")
+            url = reverse_lazy("api:v1:public_search")
         post_data = {
             'filter_params': {},
             'number_per_page': BuildingSnapshot.objects.count(),

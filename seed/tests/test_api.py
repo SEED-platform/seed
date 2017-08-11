@@ -54,7 +54,7 @@ class ApiAuthenticationTests(TestCase):
         b.save()
         self.building = b
 
-        self.api_url = reverse_lazy('apiv1:get_building')
+        self.api_url = reverse_lazy('api:v1:get_building')
         self.params = {
             'building_id': cb.pk,
             'organization_id': self.org.pk,
@@ -96,7 +96,7 @@ class SchemaGenerationTests(TestCase):
         """
         Test of 'schema' generator.
         """
-        url = reverse('apiv2:schema')
+        url = reverse('api:v2:schema')
         res = self.client.get(url)
         self.assertEqual(res.status_code, 200)
         endpoints = json.loads(res.content)

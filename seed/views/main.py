@@ -145,6 +145,7 @@ def version(request):
 @api_endpoint
 @ajax_request
 @login_required
+@api_view(['POST'])
 def export_buildings(request):
     """
     Begins a building export process.
@@ -244,19 +245,20 @@ def export_buildings(request):
         selected_fields,
     )
 
-    return {
+    return JsonResponse({
         "success": True,
         "status": "success",
         'progress': 100,
         'progress_key': progress_key,
         "export_id": export_id,
         "total_buildings": len(building_ids),
-    }
+    })
 
 
 @api_endpoint
 @ajax_request
 @login_required
+@api_view(['POST'])
 def export_buildings_progress(request):
     """
     Returns current progress on building export process.
@@ -284,17 +286,18 @@ def export_buildings_progress(request):
     percent_done = progress_data['progress']
     total_buildings = progress_data['total_buildings']
 
-    return {
+    return JsonResponse({
         "success": True,
         "status": "success",
         'total_buildings': progress_data['total_buildings'],
         "buildings_processed": (percent_done / 100) * total_buildings
-    }
+    })
 
 
 @api_endpoint
 @ajax_request
 @login_required
+@api_view(['POST'])
 def export_buildings_download(request):
     """
     Provides the url to a building export file.
@@ -330,16 +333,10 @@ def export_buildings_download(request):
             files = file_storage.listdir(export_subdir)
         except OSError:
             # Likely scenario is that the file hasn't been written to disk yet.
-            return {
-                'success': False,
-                'status': 'working'
-            }
+            return JsonResponse({'success': False, 'status': 'working'})
 
         if not files:
-            return {
-                'success': False,
-                'status': 'error'
-            }
+            return JsonResponse({'success': False, 'status': 'error'})
         else:
             # get the first file in the directory -- which is the first entry
             # of the second part of the tuple
@@ -347,43 +344,46 @@ def export_buildings_download(request):
 
             if file_storage.exists(file_name):
                 url = file_storage.url(file_name)
-                return {
+                return JsonResponse({
                     'success': True,
                     "status": "success",
                     "url": url
-                }
+                })
             else:
-                return {
+                return JsonResponse({
                     'success': False,
                     'message': 'Could not find file on server',
                     'status': 'error'
-                }
+                })
 
     else:
         keys = list(DefaultStorage().bucket.list(export_subdir))
 
         if not keys:
-            return {
+            return JsonResponse({
                 'success': False,
                 'status': 'working'
-            }
+            })
 
         if len(keys) > 1:
-            return {
+            return JsonResponse({
                 "success": False,
                 "status": "error",
-            }
+            })
 
         download_key = keys[0]
         download_url = download_key.generate_url(900)
 
-        return {
+        return JsonResponse({
             'success': True,
             "status": "success",
             "url": download_url
-        }
+        })
 
 
+
+# @api_view(['POST'])  # do not add api_view on this because this is public and adding it will
+# require authentication for some reason.
 @ajax_request
 def public_search(request):
     """the public API unauthenticated endpoint
@@ -397,17 +397,18 @@ def public_search(request):
     search_results = search.remove_results_below_q_threshold(search_results)
     search_results = search.paginate_results(request, search_results)
     search_results = search.mask_results(search_results)
-    return {
+    return JsonResponse({
         'status': 'success',
         'buildings': search_results,
         'number_matching_search': building_count,
         'number_returned': len(search_results)
-    }
+    })
 
 
 @api_endpoint
 @ajax_request
 @login_required
+@api_view(['POST'])
 def search_buildings(request):
     """
     Retrieves a paginated list of CanonicalBuildings matching search params.
@@ -471,16 +472,17 @@ def search_buildings(request):
         matching=False
     )
 
-    return {
+    return JsonResponse({
         'status': 'success',
         'buildings': buildings,
         'number_matching_search': building_count,
         'number_returned': len(buildings)
-    }
+    })
 
 
 @ajax_request
 @login_required
+@api_view(['GET'])
 def get_default_columns(request):
     """Get default columns for building list view.
 
@@ -500,13 +502,14 @@ def get_default_columns(request):
         # PostgreSQL 9.1 stores JSONField as unicode
         columns = json.loads(columns)
 
-    return {
+    return JsonResponse({
         'columns': columns,
-    }
+    })
 
 
 @ajax_request
 @login_required
+@api_view(['GET'])
 def get_default_building_detail_columns(request):
     """Get default columns for building detail view.
 
@@ -527,9 +530,9 @@ def get_default_building_detail_columns(request):
         # PostgreSQL 9.1 stores JSONField as unicode
         columns = json.loads(columns)
 
-    return {
+    return JsonResponse({
         'columns': columns,
-    }
+    })
 
 
 def _set_default_columns_by_request(body, user, field):
@@ -545,32 +548,39 @@ def _set_default_columns_by_request(body, user, field):
 
 @ajax_request
 @login_required
+@api_view(['POST'])
 def set_default_columns(request):
     body = json.loads(request.body)
-    return _set_default_columns_by_request(body, request.user,
-                                           'default_custom_columns')
+    return JsonResponse(
+        _set_default_columns_by_request(body, request.user, 'default_custom_columns')
+    )
 
 
 @ajax_request
 @login_required
+@api_view(['POST'])
 def set_default_building_detail_columns(request):
     body = json.loads(request.body)
-    return _set_default_columns_by_request(body, request.user,
-                                           'default_building_detail_custom_columns')
+    return JsonResponse(
+        _set_default_columns_by_request(body, request.user,
+                                        'default_building_detail_custom_columns')
+    )
 
 
 @require_organization_id
 @ajax_request
 @login_required
 @has_perm('requires_viewer')
+@api_view(['GET'])
 def get_columns(request):
-    """returns a JSON list of columns a user can select as his/her default
+    """
+    Returns a JSON list of columns a user can select as his/her default
 
-    :GET: Expects organization_id in the query string.
+    Requires the organization_id as a query parameter
     """
     all_fields = request.GET.get('all_fields', '')
     all_fields = True if all_fields.lower() == 'true' else False
-    return utils_get_columns(request.GET['organization_id'], all_fields)
+    return JsonResponse(utils_get_columns(request.GET['organization_id'], all_fields))
 
 
 def _mapping_suggestions(import_file_id, org_id, user):
@@ -646,6 +656,7 @@ def _mapping_suggestions(import_file_id, org_id, user):
 @ajax_request
 @login_required
 @has_perm('requires_member')
+@api_view(['DELETE'])
 def delete_file(request):
     """
     Deletes an ImportFile from a dataset.
@@ -665,10 +676,10 @@ def delete_file(request):
         }
     """
     if request.method != 'DELETE':
-        return {
+        return JsonResponse({
             'status': 'error',
             'message': 'only HTTP DELETE allowed',
-        }
+        })
     body = json.loads(request.body)
     file_id = body.get('file_id', '')
     import_file = ImportFile.objects.get(pk=file_id)
@@ -678,15 +689,13 @@ def delete_file(request):
     )
     # check if user has access to the dataset
     if not d.exists():
-        return {
+        return JsonResponse({
             'status': 'error',
             'message': 'user does not have permission to delete file',
-        }
+        })
 
     import_file.delete()
-    return {
-        'status': 'success',
-    }
+    return JsonResponse({'status': 'success'})
 
 
 @api_endpoint
@@ -727,6 +736,7 @@ def progress(request):
 @ajax_request
 @login_required
 @permission_required('seed.can_access_admin')
+@api_view(['GET'])
 def delete_organization_inventory(request):
     """
     Starts a background task to delete all properties & taxlots
@@ -747,11 +757,11 @@ def delete_organization_inventory(request):
         org_id
     )
     tasks.delete_organization_inventory.delay(org_id, deleting_cache_key)
-    return {
+    return JsonResponse({
         'status': 'success',
         'progress': 0,
         'progress_key': deleting_cache_key
-    }
+    })
 
 # DMcQ: Test for building reporting
 # @require_organization_id

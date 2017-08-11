@@ -56,17 +56,17 @@ urlpatterns = [
     ),
     # Building reports
     # url(
-    #     r'^' + apiv1 + r'get_building_summary_report_data/$',
+    #     r'^get_building_summary_report_data/$',
     #     get_building_summary_report_data,
     #     name='get_building_summary_report_data',
     # ),
     # url(
-    #     r'^' + apiv1 + r'get_building_report_data/$',
+    #     r'^get_building_report_data/$',
     #     get_building_report_data,
     #     name='get_building_report_data',
     # ),
     # url(
-    #     r'^' + apiv1 + r'get_aggregated_building_report_data/$',
+    #     r'^get_aggregated_building_report_data/$',
     #     get_aggregated_building_report_data,
     #     name='get_aggregated_building_report_data',
     # ),

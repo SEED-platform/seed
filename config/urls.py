@@ -10,37 +10,27 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.static import serve
 
 from config.views import robots_txt
-from seed.api.v1.urls import urlpatterns as apiv1
-from seed.api.v2.urls import urlpatterns as apiv2
+from seed.api.base.urls import urlpatterns as api
 from seed.views.main import angular_js_tests
 
 urlpatterns = [
-    # landing page
+    # Application
     url(r'^', include('seed.landing.urls', namespace="landing", app_name="landing")),
-
-    # audit_logs AJAX
     url(r'^audit_logs/',
         include('seed.audit_logs.urls', namespace="audit_logs", app_name="audit_logs")),
-
     url(r'^app/', include('seed.urls', namespace="seed", app_name="seed")),
 
-    url(
-        r'^api/swagger/',
-        include('rest_framework_swagger.urls'),
-        name='swagger'
-    ),
+    # root configuration items
     url(r'^eula/', include('tos.urls', namespace='tos', app_name='tos')),
-
-    # i18n setlang
     url(r'^i18n/', include('django.conf.urls.i18n')),
-
     url(r'^robots\.txt', robots_txt, name='robots_txt'),
 
-    url(r'^api/v1/', include(apiv1, namespace="apiv1")),
-    url(r'^api/v2/', include(apiv2, namespace="apiv2")),
+    # API
+    url(r'^api/swagger/', include('rest_framework_swagger.urls'), name='swagger'),
+    url(r'^api/', include(api, namespace='api')),
 ]
 
-# TODO: 8/8/17 fix media root for docker deployments
+# TODO: 8/8/17 fix media root for docker deployments. Need to have uploads live somewhere other than the compiled assets
 if settings.DEBUG:
     from django.contrib import admin
 

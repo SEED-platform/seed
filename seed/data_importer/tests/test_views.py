@@ -40,7 +40,7 @@ class DataImporterViewTests(DataMappingBaseTestCase):
         # Just make sure we were saved correctly
         self.assertEqual(import_file.cached_first_row, expected_saved_format)
 
-        url = reverse_lazy("apiv2:import_files-raw-column-names", args=[import_file.pk])
+        url = reverse_lazy("api:v2:import_files-raw-column-names", args=[import_file.pk])
         resp = self.client.get(
             url, content_type='application/json'
         )
@@ -77,7 +77,7 @@ class DataImporterViewTests(DataMappingBaseTestCase):
             import_file.cached_second_to_fifth_row, expected_saved_format
         )
 
-        url = reverse_lazy("apiv2:import_files-first-five-rows", args=[import_file.pk])
+        url = reverse_lazy("api:v2:import_files-first-five-rows", args=[import_file.pk])
         resp = self.client.get(
             url, content_type='application/json'
         )
@@ -111,7 +111,7 @@ class DataImporterViewTests(DataMappingBaseTestCase):
             import_file.cached_second_to_fifth_row, expected_saved_format
         )
 
-        url = reverse_lazy("apiv2:import_files-first-five-rows", args=[import_file.pk])
+        url = reverse_lazy("api:v2:import_files-first-five-rows", args=[import_file.pk])
         resp = self.client.get(
             url, content_type='application/json'
         )
