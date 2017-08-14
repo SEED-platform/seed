@@ -2944,3 +2944,7 @@ div.table_list_container.matching, div.table_list_container.matching_detail {
 .filter-row input {
   width: 100%;
 }
+
+.filter-unmatched .filter-unmatched-hide {
+  display: none !important;
+}

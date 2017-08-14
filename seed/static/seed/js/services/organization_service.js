@@ -140,7 +140,7 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
     };
 
     organization_factory.delete_organization_inventory = function (org_id) {
-      return $http.delete('/app/delete_organization_inventory/', {
+      return $http.delete('/api/v1/delete_organization_inventory/', {
         params: {
           organization_id: org_id
         }

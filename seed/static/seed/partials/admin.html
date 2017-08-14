@@ -171,10 +171,10 @@
                             </thead>
                             <tbody>
                                 <tr ng-repeat="org in org_user.organizations">
-                                    <td>{$ org.parent_id != org.org_id ? org.parent_id : '' $}</td>
-                                    <td>{$ org.org_id $}</td>
-                                    <td>{$ org.name $}</td>
-                                    <td>{$ org.created $}</td>
+                                    <td>{$:: org.parent_id != org.org_id ? org.parent_id : '' $}</td>
+                                    <td>{$:: org.org_id $}</td>
+                                    <td>{$:: org.name $}</td>
+                                    <td>{$:: org.created $}</td>
                                     <td>{$ org.number_of_users | number:0 $}</td>
                                     <td>
                                         <div ng-repeat="cycle in org.cycles" ng-if="cycle.num_properties">

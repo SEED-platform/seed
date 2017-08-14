@@ -103,6 +103,16 @@ angular.module('BE.seed.controller.matching_list', [])
         inventory_service.saveMatchesPerPage($scope.number_per_page);
       };
 
+      $scope.nextPage = function () {
+        $scope.current_page++;
+        $scope.update_start_end_paging();
+      };
+
+      $scope.previousPage = function () {
+        $scope.current_page--;
+        $scope.update_start_end_paging();
+      };
+
       var refresh = function () {
         spinner_utility.show();
         return $scope.update_number_matched().then(function () {
