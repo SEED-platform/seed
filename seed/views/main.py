@@ -735,13 +735,13 @@ def progress(request):
 @ajax_request
 @login_required
 @permission_required('seed.can_access_admin')
-@api_view(['GET'])
+@api_view(['DELETE'])
 def delete_organization_inventory(request):
     """
     Starts a background task to delete all properties & taxlots
     in an org.
 
-    :GET: Expects 'org_id' for the organization.
+    :DELETE: Expects 'org_id' for the organization.
 
     Returns::
 

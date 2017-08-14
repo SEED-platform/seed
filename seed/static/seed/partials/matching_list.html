@@ -56,11 +56,11 @@
     <div class="matching-tab-container">
         <span class="paginate">
             <select style="height:24px;" ng-model="number_per_page" ng-change="save_number_per_page(); update_start_end_paging()" ng-options="option for option in ::number_per_page_options"></select>
-            <button class="disableable" ng-disabled="current_page == 0 || number_of_pages === 1" ng-click="current_page = current_page - 1; update_start_end_paging()">
+            <button class="disableable" ng-disabled="current_page == 0 || number_of_pages === 1" ng-click="previousPage()">
                 Previous
             </button>
             {$ current_page + 1 $}/{$ number_of_pages $}
-            <button class="disableable" ng-disabled="current_page >= (showing.total / number_per_page) - 1 || number_of_pages === 1" ng-click="current_page = current_page + 1; update_start_end_paging()">
+            <button class="disableable" ng-disabled="current_page >= (showing.total / number_per_page) - 1 || number_of_pages === 1" ng-click="nextPage()">
                 Next
             </button>
         </span>
@@ -144,11 +144,11 @@
                 </div>
                 <div class="pager_container col-sm-5">
                     <select style="height:24px;" ng-model="number_per_page" ng-change="save_number_per_page(); update_start_end_paging()" ng-options="option for option in ::number_per_page_options"></select>
-                    <button class="disableable" ng-disabled="current_page == 0 || number_of_pages === 1" ng-click="current_page = current_page - 1; update_start_end_paging()">
+                    <button class="disableable" ng-disabled="current_page == 0 || number_of_pages === 1" ng-click="previousPage()">
                         Previous
                     </button>
                     {$ current_page + 1 $}/{$ number_of_pages $}
-                    <button class="disableable" ng-disabled="current_page >= (showing.total / number_per_page) - 1 || number_of_pages === 1" ng-click="current_page = current_page + 1; update_start_end_paging()">
+                    <button class="disableable" ng-disabled="current_page >= (showing.total / number_per_page) - 1 || number_of_pages === 1" ng-click="nextPage()">
                         Next
                     </button>
                 </div>

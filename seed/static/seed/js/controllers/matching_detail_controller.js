@@ -81,12 +81,12 @@ angular.module('BE.seed.controller.matching_detail', [])
       };
 
       $scope.nextPage = function () {
-        $scope.current_page = $scope.current_page + 1;
+        $scope.current_page++;
         $scope.update_start_end_paging();
       };
 
       $scope.previousPage = function () {
-        $scope.current_page = $scope.current_page - 1;
+        $scope.current_page--;
         $scope.update_start_end_paging();
       };
 
