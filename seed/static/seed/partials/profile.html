@@ -44,6 +44,14 @@
                                 <p ng-show="profile_form.email.$invalid && !profile_form.email.$pristine" class="help-block">Enter a valid email address.</p>
                             </div>
                         </div>
+                        <div class="form-group" ng-class="">
+                            <label for="measurement_system">Preferred System of Measurement</label>
+                            <div>
+                                <select class="form-control" name="measurement_system" id="measurement_system">
+                                    <option value="us">United States customary units</option>
+                                </select>
+                            </div>
+                        </div>
                         <button id="update_profile" type="submit" class="btn btn-primary" ng-disabled="profile_form.$invalid">Save Changes <i class="fa fa-check" ng-show="user_updated"></i></button>
                         <button type="button" class="btn btn-default" ng-click="reset_form()">Cancel</button>
                     </form>
