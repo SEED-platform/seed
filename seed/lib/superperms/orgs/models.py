@@ -42,6 +42,14 @@ STATUS_CHOICES = (
     (STATUS_REJECTED, 'Rejected'),
 )
 
+# Measurement systems for user's display preference and initial choice at import time
+MEASUREMENT_US = 1
+MEASUREMENT_SI = 2
+
+MEASUREMENT_SYSTEMS = (
+    (MEASUREMENT_US, 'United States customary units'),
+    (MEASUREMENT_SI, 'Metric (SI) units')
+)
 
 class ExportableField(models.Model):
     """Tracks which model fields are exportable."""

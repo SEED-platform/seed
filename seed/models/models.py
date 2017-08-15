@@ -371,11 +371,3 @@ class TimeSeries(models.Model):
         Meter, related_name='timeseries_data', null=True, blank=True
     )
 
-# measurement systems for user's display preference and initial choice at import time
-MEASUREMENT_US = 1
-MEASUREMENT_SI = 2
-
-MEASUREMENT_SYSTEMS = (
-    (MEASUREMENT_US, 'United States customary units'),
-    (MEASUREMENT_SI, 'Metric (SI) units')
-)
