@@ -119,6 +119,10 @@ class Organization(models.Model):
         ordering = ['name']
 
     name = models.CharField(max_length=100)
+    measurement_system = models.IntegerField(
+            choices=MEASUREMENT_SYSTEMS,
+            default=MEASUREMENT_US)
+
     users = models.ManyToManyField(
         USER_MODEL,
         through=OrganizationUser,
