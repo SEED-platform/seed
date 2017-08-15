@@ -87,6 +87,7 @@ def _dict_org(request, organizations):
             'parent_id': o.parent_id,
             'cycles': cycles,
             'created': o.created.strftime('%Y-%m-%d') if o.created else '',
+            'measurement_system': o.measurement_system,
         }
         orgs.append(org)
 
