@@ -33,6 +33,14 @@
                     <input type="text" class="form-control" id="editOrganizationName" ng-model="org.name" ng-disabled="!auth.requires_owner">
                     </div>
                 </div>
+                <div class="form-group">
+                    <label for="measurement_system">Preferred System of Measurement</label>
+                    <select class="form-control" name="measurement_system" id="measurement_system">
+                        <option value="us">United States customary units</option>
+                        <!-- <option value="us">Metric (SI) units</option> -->
+                    </select>
+                </div>
+
             </form>
         </div>
     </div>
