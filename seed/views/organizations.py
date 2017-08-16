@@ -599,6 +599,11 @@ class OrganizationViewSet(viewsets.ViewSet):
         desired_name = posted_org.get('name', None)
         if desired_name is not None:
             org.name = desired_name
+
+        desired_measurement_system = posted_org.get('measurement_system', None)
+        if desired_measurement_system is not None:
+            org.measurement_system = desired_measurement_system
+
         org.save()
 
         # Update the selected exportable fields.
