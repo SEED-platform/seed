@@ -88,7 +88,6 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint), viewsets.ModelViewSet):
         ).order_by("name").distinct()
         return labels
 
-    # TODO update for new data model
     def get_serializer(self, *args, **kwargs):
         kwargs['super_organization'] = self.get_organization()
         inventory = InventoryFilterBackend().filter_queryset(

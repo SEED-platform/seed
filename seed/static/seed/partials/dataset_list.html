@@ -20,17 +20,15 @@
             <div class="table_list_container dataset_list" ng-cloak>
                 <table class="table table-striped sorted">
                     <tr>
-                        <th ng-repeat="c in columns" class="{$c.class$}" ng-click="c.toggle_sort()" ng-class="c.sorted_class()">
-                            {$c.title$}
-                        </th>
+                        <th ng-repeat="c in ::columns">{$:: c.title $}</th>
                     </tr>
 
                     <tr ng-repeat="d in datasets" class="import_row">
                         <td ng-class="d.column_class('name')" class="name container-fluid">
-                            <span class="view" id="data-link-{$ $index $}">
-                                <a ui-sref="dataset_detail({dataset_id: d.id})" class="import_name" ng-show="!d.edit_form_showing">{$d.name$}</a>
-                                <a href="" class="delete_link" ng-click="confirm_delete(d)" ng-show="!d.edit_form_showing"><i class='fa fa-trash-o'></i></a>
-                                <a href="" class="replace_file_button edit_file_name" ng-click="edit_dataset_name(d)" ng-show="!d.edit_form_showing" style="margin-right: 8px;"><i class="fa fa-pencil"></i></a>
+                            <span class="view" id="data-link-{$:: $index $}">
+                                <a ui-sref="dataset_detail({dataset_id: d.id})" class="import_name" ng-show="!d.edit_form_showing">{$:: d.name $}</a>
+                                <a class="delete_link" ng-click="confirm_delete(d)" ng-show="!d.edit_form_showing"><i class='fa fa-trash-o'></i></a>
+                                <a class="replace_file_button edit_file_name" ng-click="edit_dataset_name(d)" ng-show="!d.edit_form_showing" style="margin-right: 8px;"><i class="fa fa-pencil"></i></a>
                             </span>
                             <form class="row action edit_file_name form form-inline edit_import_meta_form" role="form" sd-enter="save_dataset_name(d)" ng-show="d.edit_form_showing">
                                 <div class="form-group col-sm-8">
@@ -43,13 +41,13 @@
                                 </div>
                             </form>
                         </td>
-                        <td ng-class="d.column_class('status')" class="status_change status is_aligned_right">{$ d.importfiles.length | number:0 $}</td>
-                        <td ng-class="d.column_class('last_modified_seconds_ago')" class="last_change last_changed">{$ d.updated_at | fromNow $}</td>
+                        <td ng-class="d.column_class('status')" class="status_change status is_aligned_right">{$:: d.importfiles.length | number:0 $}</td>
+                        <td ng-class="d.column_class('last_modified_seconds_ago')" class="last_change last_changed">{$:: d.updated_at | fromNow $}</td>
                         <td ng-class="d.column_class('last_modified_by')" class="last_change_user changed_by">
-                            <span class="modified_by">{$d.last_modified_by$}</span>
+                            <span class="modified_by">{$:: d.last_modified_by $}</span>
                         </td>
 
-                        <td ng-class="d.column_class('')" class="status_details percent_done">
+                        <td class="status_details percent_done">
                             <button type="button" class="btn btn-sm btn-primary" ng-click="open_data_upload_modal(d)">Add Data Files</button>
                         </td>
                     </tr>

@@ -147,6 +147,11 @@ class CycleViewSet(SEEDOrgModelViewSet):
     data_name = 'cycles'
     filter_class = CycleFilterSet
 
+    def get_queryset(self):
+        org_id = self.get_organization(self.request)
+        # Order cycles by name because if the user hasn't specified then the front end WILL default to the first
+        return Cycle.objects.filter(organization_id=org_id).order_by('name')
+
     def perform_create(self, serializer):
         org_id = self.get_organization(self.request)
         user = self.request.user

@@ -80,7 +80,7 @@ _log = logging.getLogger(__name__)
 @api_endpoint
 @ajax_request
 @login_required
-@api_view(['POST'])  # NL -- this is a POST because, well, no idea. Can we just remove S3, plz?
+@api_view(['POST'])
 def handle_s3_upload_complete(request):
     """
     Notify the system that an upload to S3 has been completed. This is
@@ -266,8 +266,8 @@ def get_upload_details(request):
     if 'S3' in settings.DEFAULT_FILE_STORAGE:
         # S3 mode
         ret['upload_mode'] = 'S3'
-        ret['upload_complete'] = reverse('apiv2:s3_upload_complete')
-        ret['signature'] = reverse('apiv2:sign_policy_document')
+        ret['upload_complete'] = reverse('api:v2:s3_upload_complete')
+        ret['signature'] = reverse('api:v2:sign_policy_document')
         ret['aws_bucket_name'] = settings.AWS_BUCKET_NAME
         ret['aws_client_key'] = settings.AWS_UPLOAD_CLIENT_KEY
     else:
@@ -348,10 +348,6 @@ class MappingResultsResponseSerializer(serializers.Serializer):
     status = serializers.CharField(max_length=100)
     properties = MappingResultsPropertySerializer(many=True)
     tax_lots = MappingResultsTaxLotSerializer(many=True)
-    number_properties_matching_search = serializers.IntegerField()
-    number_properties_returned = serializers.IntegerField()
-    number_tax_lots_matching_search = serializers.IntegerField()
-    number_tax_lots_returned = serializers.IntegerField()
 
 
 class ImportFileViewSet(viewsets.ViewSet):

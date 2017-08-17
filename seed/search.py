@@ -13,6 +13,7 @@ import re
 import logging
 
 from django.db.models import Q
+from django.http.request import RawPostDataException
 from seed.lib.superperms.orgs.models import Organization
 from .models import (
     BuildingSnapshot,
@@ -366,9 +367,11 @@ def parse_body(request):
             'project_id': str, project id if exists in body
         }
     """
-    try:
+    try:  # keep this in here to allow non-DRF to call this function
         body = json.loads(request.body)
-    except ValueError:
+    except RawPostDataException:  # if this exception is thrown, we are in DRF land and just access the request.data
+        body = request.data
+    except ValueError:  # but if this is thrown then we do like we always did and just move forward with empty body
         body = {}
 
     return process_search_params(

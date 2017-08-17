@@ -35,8 +35,7 @@ PERMISSIONS_CLASSES = (SEEDOrgPermissions,)
 
 # Public Classes and Functions
 
-class SEEDOrgModelViewSet(DecoratorMixin(drf_api_endpoint), OrgQuerySetMixin,
-                          ModelViewSet):
+class SEEDOrgModelViewSet(DecoratorMixin(drf_api_endpoint), OrgQuerySetMixin, ModelViewSet):
     """Viewset class customized with SEED standard attributes.
 
     Attributes:
@@ -51,8 +50,7 @@ class SEEDOrgModelViewSet(DecoratorMixin(drf_api_endpoint), OrgQuerySetMixin,
     permission_classes = PERMISSIONS_CLASSES
 
 
-class SEEDOrgCreateUpdateModelViewSet(OrgCreateUpdateMixin,
-                                      SEEDOrgModelViewSet):
+class SEEDOrgCreateUpdateModelViewSet(OrgCreateUpdateMixin, SEEDOrgModelViewSet):
     """Extends SEEDModelViewset to add perform_create method to attach org.
 
     Provides the perform_create and update_create methods to save the

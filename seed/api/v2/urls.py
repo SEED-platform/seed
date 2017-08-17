@@ -7,7 +7,7 @@
 from django.conf.urls import url, include
 from rest_framework import routers
 
-from api.views import test_view_with_arg, TestReverseViewSet
+from seed.api.base.views import test_view_with_arg, TestReverseViewSet
 from seed.data_importer.views import ImportFileViewSet
 from seed.data_importer.views import (
     handle_s3_upload_complete,
@@ -16,14 +16,14 @@ from seed.data_importer.views import (
     LocalUploaderViewSet
 )
 from seed.views.api import get_api_schema
-from seed.views.columns import ColumnViewSet, ColumnMappingViewSet
 from seed.views.certification import (
     GreenAssessmentViewSet,
     GreenAssessmentPropertyViewSet,
     GreenAssessmentURLViewSet
 )
-from seed.views.data_quality import DataQualityViews
+from seed.views.columns import ColumnViewSet, ColumnMappingViewSet
 from seed.views.cycles import CycleViewSet
+from seed.views.data_quality import DataQualityViews
 from seed.views.datasets import DatasetViewSet
 from seed.views.labels import LabelViewSet, UpdateInventoryLabelsAPIView
 from seed.views.main import version, progress
@@ -31,6 +31,7 @@ from seed.views.organizations import OrganizationViewSet
 from seed.views.projects import ProjectViewSet
 from seed.views.properties import (PropertyViewSet, PropertyStateViewSet,
                                    PropertyViewViewSet, GBRPropertyViewSet)
+from seed.views.reports import Report
 from seed.views.taxlots import TaxLotViewSet
 from seed.views.users import UserViewSet
 from seed.views.building_file import BuildingFileViewSet
@@ -46,9 +47,11 @@ api_v2_router.register(r'data_quality_checks', DataQualityViews, base_name='data
 api_v2_router.register(r'datasets', DatasetViewSet, base_name="datasets")
 api_v2_router.register(r'organizations', OrganizationViewSet, base_name="organizations")
 api_v2_router.register(r'gbr_properties', GBRPropertyViewSet, base_name="properties")
+api_v2_router.register(r'green_assessment_urls', GreenAssessmentURLViewSet,
+                       base_name="green_assessment_urls")
+api_v2_router.register(r'green_assessment_properties', GreenAssessmentPropertyViewSet,
+                       base_name="green_assessment_properties")
 api_v2_router.register(r'green_assessments', GreenAssessmentViewSet, base_name="green_assessments")
-api_v2_router.register(r'green_assessment_urls', GreenAssessmentURLViewSet, base_name="green_assessment_urls")
-api_v2_router.register(r'green_assessment_properties', GreenAssessmentPropertyViewSet, base_name="green_assessment_properties")
 api_v2_router.register(r'import_files', ImportFileViewSet, base_name="import_files")
 api_v2_router.register(r'labels', LabelViewSet, base_name="labels")
 api_v2_router.register(r'measures', MeasureViewSet, base_name='measures')
@@ -72,7 +75,6 @@ urlpatterns = [
     url(r's3_upload_complete/$', handle_s3_upload_complete, name='s3_upload_complete'),
     url(r'get_upload_details/$', get_upload_details, name='get_upload_details'),
     url(r'sign_policy_document/$', sign_policy_document, name='sign_policy_document'),
-    # api schema
     url(r'^schema/$', get_api_schema, name='schema'),
     url(r'meters/(?P<pk>\w+)/timeseries/$',
         MeterViewSet.as_view({'get': 'timeseries'}),
@@ -124,6 +126,16 @@ urlpatterns = [
         r'^test_view_with_arg/([0-9]{1})/$',
         test_view_with_arg,
         name='testviewarg'
+    ),
+    url(
+        r'^get_property_report_data/$',
+        Report.as_view({'get': 'get_property_report_data'}),
+        name='property_report_data'
+    ),
+    url(
+        r'^get_aggregated_property_report_data/$',
+        Report.as_view({'get': 'get_aggregated_property_report_data'}),
+        name='aggregated_property_report_data'
     ),
     # url(
     #     r'^property/',

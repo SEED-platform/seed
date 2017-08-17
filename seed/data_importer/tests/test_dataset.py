@@ -52,7 +52,7 @@ class DeleteFileViewTests(DataMappingBaseTestCase):
 
     def test_delete_file(self):
         """ tests the delete_file request"""
-        url = reverse_lazy("seed:delete_file")
+        url = reverse_lazy("api:v1:delete_file")
         delete_data = {
             'file_id': self.import_file_1.pk,
             'organization_id': self.org.pk,
@@ -73,7 +73,7 @@ class DeleteFileViewTests(DataMappingBaseTestCase):
 
     def test_delete_file_no_perms(self):
         """ tests the delete_file request invalid request"""
-        url = reverse_lazy("seed:delete_file")
+        url = reverse_lazy("api:v1:delete_file")
         delete_data = {
             'file_id': self.import_file_2.pk,
             'organization_id': self.org.pk,
@@ -97,7 +97,7 @@ class DeleteFileViewTests(DataMappingBaseTestCase):
 
     def test_delete_file_wrong_org(self):
         """ tests the delete_file request with wrong org"""
-        url = reverse_lazy("seed:delete_file")
+        url = reverse_lazy("api:v1:delete_file")
         delete_data = {
             'file_id': self.import_file_2.pk,
             'organization_id': self.org_2.pk,
@@ -121,26 +121,19 @@ class DeleteFileViewTests(DataMappingBaseTestCase):
 
     def test_delete_file_wrong_method(self):
         """ tests the delete_file request with wrong http method"""
-        url = reverse_lazy("seed:delete_file")
+        url = reverse_lazy("api:v1:delete_file")
         delete_data = {
             'file_id': self.import_file_1.pk,
             'organization_id': self.org.pk,
         }
 
         # act
-        response = self.client.get(
-            url,
-            delete_data,
-            content_type='application/json',
-        )
+        response = self.client.get(url, delete_data, content_type='application/json')
         json_string = response.content
         data = json.loads(json_string)
 
         # assert
-        self.assertEqual(data, {
-            'status': 'error',
-            'message': 'only HTTP DELETE allowed'
-        })
+        self.assertEqual(data, {u'detail': u'Method "GET" not allowed.'})
         self.assertEqual(ImportFile.objects.all().count(), 2)
 
         # act with put
@@ -153,10 +146,7 @@ class DeleteFileViewTests(DataMappingBaseTestCase):
         data = json.loads(json_string)
 
         # assert
-        self.assertEqual(data, {
-            'status': 'error',
-            'message': 'only HTTP DELETE allowed'
-        })
+        self.assertEqual(data, {u'detail': u'Method "PUT" not allowed.'})
         self.assertEqual(ImportFile.objects.all().count(), 2)
 
         # act with post
@@ -169,8 +159,5 @@ class DeleteFileViewTests(DataMappingBaseTestCase):
         data = json.loads(json_string)
 
         # assert
-        self.assertEqual(data, {
-            'status': 'error',
-            'message': 'only HTTP DELETE allowed'
-        })
+        self.assertEqual(data, {u'detail': u'Method "POST" not allowed.'})
         self.assertEqual(ImportFile.objects.all().count(), 2)

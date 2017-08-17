@@ -123,7 +123,7 @@
                                 <label class="label label-{$ tcm.label_status() $}" ng-if="!tcm.is_duplicate">{$ tcm.validity $}</label>
                             </td>
                             <td>
-                                <strong id="duplicate-header-{$ $index $}">{$tcm.name$}</strong>
+                                <strong id="duplicate-header-{$ $index $}">{$ tcm.name $}</strong>
                             </td>
                             <td ng-repeat="cell_value in tcm.raw_data track by $index" ng-class="{'danger': set_td_class(tcm, cell_value) == 'danger', 'warning': set_td_class(tcm, cell_value) == 'warning'}">
                                 {$ cell_value $}
@@ -136,7 +136,7 @@
                             <td style="border-right: 0 none;"><h3>Mapped Fields</h3></td>
                             <td style="border-right: 0 none; text-align: right;"><span ng-hide="import_file.matching_done">Set all fields to:</span></td>
                             <td style="border-right: 0 none;">
-                                <select ng-model="setAllFields" ng-change="setAllInventoryTypes()" ng-options="item as item.name for item in setAllFieldsOptions track by item.value" ng-hide="import_file.matching_done"></select>
+                                <select ng-model="setAllFields" ng-change="setAllInventoryTypes()" ng-options="item as item.name for item in ::setAllFieldsOptions track by item.value" ng-hide="import_file.matching_done"></select>
                             </td>
                             <td colspan="5"></td>
                         </tr>
@@ -144,7 +144,7 @@
                     <thead>
                         <tr>
                             <th class="sub_head is_aligned_center hide">Map
-                                <a uib-popover="{$MAP_copy$}" popover-placement="right"><i class="fa fa-info-circle" style="cursor: pointer;"></i></a>
+                                <a uib-popover="{$ MAP_copy $}" popover-placement="right"><i class="fa fa-info-circle" style="cursor: pointer;"></i></a>
                             </th>
                             <th class="mapping_field">SEED Header</th>
                             <!--th class="sub_head is_aligned_center">Duplicate <a uib-popover="{$VALIDATE_copy$}" popover-placement="right"><i class="fa fa-info-circle" style="cursor: pointer;"></i></a></th-->
@@ -158,28 +158,28 @@
                         </tr>
                     </thead>
                     <tbody id="mapped-table">
-                        <tr ng-repeat="tcm in valids" ng-class="{'ignored_row': !tcm.mapped_row}">
+                        <tr ng-repeat="tcm in ::valids" ng-class="{'ignored_row': !tcm.mapped_row}">
                             <td class="check is_aligned_center hide">
                                 <input type="checkbox" ng-model="tcm.mapped_row" ng-disabled="import_file.matching_done">
                             </td>
                             <td ng-class="{'danger': tcm.is_duplicate == true}" id="mapped-row-input-{$ $index $}">
-                                <input type="text" uib-typeahead="column for column in typeahead_columns | filter:$viewValue | limitTo:20" ng-model="tcm.suggestion" class="form-control input-sm tcm_field" ng-disabled="!tcm.mapped_row || import_file.matching_done" ng-change="change(tcm)" typeahead-on-select='change(tcm)' id="mapped-row-input-box-{$ $index $}">
+                                <input type="text" uib-typeahead="column for column in ::typeahead_columns | filter:$viewValue | limitTo:20" ng-model="tcm.suggestion" class="form-control input-sm tcm_field" ng-disabled="!tcm.mapped_row || import_file.matching_done" ng-change="change(tcm)" typeahead-on-select='change(tcm)' id="mapped-row-input-box-{$ $index $}">
                             </td>
                             <!--td class="check is_aligned_center">
                                 <label class="label label-{$ tcm.label_status() $}" ng-if="tcm.is_duplicate">duplicate</label>
                                 <label class="label label-{$ tcm.label_status() $}" ng-if="!tcm.is_duplicate">{$ tcm.validity $}</label>
                             </td-->
                             <td>
-                                <strong id="mapped-header-{$ $index $}">{$ tcm.name $}</strong>
+                                <strong id="mapped-header-{$:: $index $}">{$:: tcm.name $}</strong>
                             </td>
-                            <td ng-class="{'danger': tcm.is_duplicate == true}" id="mapped-row-type-{$ $index $}">
+                            <td ng-class="{'danger': tcm.is_duplicate == true}" id="mapped-row-type-{$:: $index $}">
                                 <select ng-model="tcm.suggestion_table_name" ng-change="updateInventoryTypeDropdown(); change(tcm)" ng-disabled="!tcm.mapped_row || import_file.matching_done">
                                     <option value="PropertyState">Property</option>
                                     <option value="TaxLotState">Tax Lot</option>
                                 </select>
                             </td>
-                            <td ng-repeat="cell_value in tcm.raw_data track by $index" ng-class="{'danger': set_td_class(tcm, cell_value) == 'danger', 'warning': set_td_class(tcm, cell_value) == 'warning'}">
-                                {$ cell_value $}
+                            <td ng-repeat="cell_value in ::tcm.raw_data track by $index" ng-class="{'danger': set_td_class(tcm, cell_value) == 'danger', 'warning': set_td_class(tcm, cell_value) == 'warning'}">
+                                {$:: cell_value $}
                             </td>
                         </tr>
                     </tbody>
@@ -221,30 +221,30 @@
             </div>
         </div>
     </div>
-    <div class="inventory-list-tab-container" ng-if="show_mapped_buildings && mappedData.number_properties_returned">
+    <div class="inventory-list-tab-container" ng-if="show_mapped_buildings && mappedData.properties.length">
         <div class="item-count">
-            <i class="fa fa-building-o"></i> {$ mappedData.number_properties_returned $} <span><ng-pluralize count="mappedData.number_properties_returned" when="{'one': 'Property', 'other': 'Properties'}">Properties</ng-pluralize></span>
+            <i class="fa fa-building-o"></i> {$ mappedData.properties.length $} <span><ng-pluralize count="mappedData.properties.length" when="{'one': 'Property', 'other': 'Properties'}">Properties</ng-pluralize></span>
         </div>
         <ul class="nav nav-tabs" style="margin-bottom:1px;">
             <li heading="View by Property" class="active"><a>View by Property</a></li>
         </ul>
     </div>
-    <div class="section_content_container" ng-if="show_mapped_buildings && mappedData.number_properties_returned">
+    <div class="section_content_container" ng-if="show_mapped_buildings && mappedData.properties.length">
         <div class="section_content">
             <div>
                 <div ui-grid="propertiesGridOptions" ui-grid-resize-columns></div>
             </div>
         </div>
     </div>
-    <div class="inventory-list-tab-container" ng-if="show_mapped_buildings && mappedData.number_tax_lots_returned" style="margin-top: 20px;">
+    <div class="inventory-list-tab-container" ng-if="show_mapped_buildings && mappedData.tax_lots.length" style="margin-top: 20px;">
         <div class="item-count">
-            <i class="fa fa-map-o"></i> {$ mappedData.number_tax_lots_returned $} <span><ng-pluralize count="mappedData.number_tax_lots_returned" when="{'one': 'Tax Lot', 'other': 'Tax Lots'}">Tax Lots</ng-pluralize></span>
+            <i class="fa fa-map-o"></i> {$ mappedData.tax_lots.length $} <span><ng-pluralize count="mappedData.tax_lots.length" when="{'one': 'Tax Lot', 'other': 'Tax Lots'}">Tax Lots</ng-pluralize></span>
         </div>
         <ul class="nav nav-tabs" style="margin-bottom:1px;">
             <li heading="View by Tax Lot" class="active"><a>View by Tax Lot</a></li>
         </ul>
     </div>
-    <div class="section_content_container" ng-if="show_mapped_buildings && mappedData.number_tax_lots_returned">
+    <div class="section_content_container" ng-if="show_mapped_buildings && mappedData.tax_lots.length">
         <div class="section_content">
             <div>
                 <div ui-grid="taxlotsGridOptions" ui-grid-resize-columns></div>

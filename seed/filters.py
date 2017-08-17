@@ -23,7 +23,9 @@ class LabelFilterBackend(filters.BaseFilterBackend):
 class InventoryFilterBackend(filters.BaseFilterBackend):
     """
     Implements the filtering and searching of buildings as a Django Rest
-    Framework filter backend.
+    Framework filter backend. This is used to constrain the inventory by
+    the labels/filter endpoint. The inventory filter is implemented in the
+    PropertyViewSet
     """
 
     def filter_queryset(self, request):

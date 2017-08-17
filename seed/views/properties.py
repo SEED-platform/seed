@@ -220,6 +220,7 @@ class PropertyViewSet(GenericViewSet):
                     'pagination': {
                         'total': 0
                     },
+                    'cycle_id': None,
                     'results': []
                 })
 
@@ -248,6 +249,7 @@ class PropertyViewSet(GenericViewSet):
                 'has_previous': paginator.page(page).has_previous(),
                 'total': paginator.count
             },
+            'cycle_id': cycle.id,
             'results': []
         }
 
@@ -535,7 +537,7 @@ class PropertyViewSet(GenericViewSet):
         except PropertyView.DoesNotExist:
             result = {
                 'status': 'error',
-                'message': 'property view with id {} does not exist'.format(pk)
+                'message': 'property view with property id {} does not exist'.format(pk)
             }
         except PropertyView.MultipleObjectsReturned:
             result = {

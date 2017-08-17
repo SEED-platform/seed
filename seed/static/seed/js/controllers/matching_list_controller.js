@@ -39,7 +39,6 @@ angular.module('BE.seed.controller.matching_list', [])
       });
 
       $scope.import_file = import_file_payload.import_file;
-      $scope.importfile_id = $stateParams.importfile_id;
       $scope.inventory_type = $stateParams.inventory_type;
 
       var validCycles = _.uniq(_.map(import_file_payload.import_file.dataset.importfiles, 'cycle'));
@@ -104,6 +103,16 @@ angular.module('BE.seed.controller.matching_list', [])
         inventory_service.saveMatchesPerPage($scope.number_per_page);
       };
 
+      $scope.nextPage = function () {
+        $scope.current_page++;
+        $scope.update_start_end_paging();
+      };
+
+      $scope.previousPage = function () {
+        $scope.current_page--;
+        $scope.update_start_end_paging();
+      };
+
       var refresh = function () {
         spinner_utility.show();
         return $scope.update_number_matched().then(function () {
@@ -112,7 +121,7 @@ angular.module('BE.seed.controller.matching_list', [])
       };
 
       $scope.unmatch = function (inventory) {
-        return matching_service.unmatch($scope.importfile_id, $scope.inventory_type, inventory.id, inventory.coparent.id).then(function () {
+        return matching_service.unmatch($scope.import_file.id, $scope.inventory_type, inventory.id, inventory.coparent.id).then(function () {
           delete inventory.coparent;
           Notification.success('Successfully unmerged ' + ($scope.inventory_type === 'properties' ? 'properties' : 'tax lots'));
           return refresh();
@@ -247,28 +256,11 @@ angular.module('BE.seed.controller.matching_list', [])
         $scope.update_start_end_paging();
       }), 10);
 
-      $scope.updateHeight = function () {
-        var height = 0;
-        _.forEach(['.header', '.page_header_container', '.section .section_tab_container', '.matching-tab-container', '.table_footer'], function (selector) {
-          var element = angular.element(selector)[0];
-          if (element) height += element.offsetHeight;
-        });
-        angular.element('#table-container').css('height', 'calc(100vh - ' + (height + 2) + 'px)');
-      };
-
       /**
        * init: sets the default pagination, gets the columns that should be displayed
        *   in the matching list table, sets the table inventory from the inventory_payload
        */
       $scope.init = function () {
-        _.delay($scope.updateHeight, 150);
-
-        var debouncedHeightUpdate = _.debounce($scope.updateHeight, 150);
-        angular.element($window).on('resize', debouncedHeightUpdate);
-        $scope.$on('$destroy', function () {
-          angular.element($window).off('resize', debouncedHeightUpdate);
-        });
-
         $scope.cycleChanged();
         $scope.update_number_matched();
 

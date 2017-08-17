@@ -120,7 +120,7 @@ def search_and_project(header, main_url, organization_id, log):
     partmsg = 'search_buildings'
     search_payload = {'filter_params': {u'address_line_1': u'94734 SE Honeylocust Street'}}
 
-    result = requests.get(main_url + '/app/search_buildings/',
+    result = requests.get(main_url + '/api/v1/search_buildings/',
                           headers=header,
                           data=json.dumps(search_payload))
     check_status(result, partmsg, log)

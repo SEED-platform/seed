@@ -4,14 +4,14 @@
 
         </div>
         <div class="page_title">
-            <h1>{$ inventory_type == 'taxlots' ? 'Tax Lots' : 'Properties' $}</h1>
+            <h1>{$:: inventory_type == 'taxlots' ? 'Tax Lots' : 'Properties' $}</h1>
         </div>
         <div class="right page_action_container page_action_btn"></div>
     </div>
 </div>
 
 <div class="section_nav_container">
-    <div class="section_nav" ng-include="urls.static_url + 'seed/partials/inventory_nav.html'"></div>
+    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_nav.html'"></div>
 </div>
 
 <div class="inventory-list-controls">
@@ -30,7 +30,7 @@
                     Actions <span class="caret"></span>
                 </button>
                 <ul id="inventory-actions-dropdown" uib-dropdown-menu class="dropdown-menu" role="menu" aria-labelledby="btnInventoryActions">
-                    <li ng-hide="menu.user.organization.user_role === 'viewer'">
+                    <li ng-hide="::menu.user.organization.user_role === 'viewer'">
                         <a ng-click="open_delete_modal()">Delete Selected</a>
                     </li>
                     <li>
@@ -82,7 +82,7 @@
         <label>Cycle:</label>
         <div style="display: inline-block;">
             <select class="form-control input-sm" ng-model="cycle.selected_cycle" ng-change="update_cycle(cycle.selected_cycle)"
-                    ng-options="option.name for option in cycle.cycles track by option.id">
+                    ng-options="option.name for option in ::cycle.cycles track by option.id">
             </select>
         </div>
     </div>
@@ -90,17 +90,17 @@
 
 <div class="inventory-list-tab-container">
     <div class="item-count">
-        <i ng-show="inventory_type == 'properties'" class="fa fa-building-o"></i>
-        <i ng-show="inventory_type == 'taxlots'" class="fa fa-map-o"></i>
+        <i ng-if="::inventory_type == 'properties'" class="fa fa-building-o"></i>
+        <i ng-if="::inventory_type == 'taxlots'" class="fa fa-map-o"></i>
         {$ total | number:0 $}
-        <span ng-show="inventory_type == 'properties'"><ng-pluralize count="total" when="{'one': 'Property','other': 'Properties'}"></ng-pluralize></span>
-        <span ng-show="inventory_type == 'taxlots'"><ng-pluralize count="total" when="{'one': 'Tax Lot','other': 'Tax Lots'}"></ng-pluralize></span>
+        <span ng-if="::inventory_type == 'properties'"><ng-pluralize count="total" when="{'one': 'Property','other': 'Properties'}"></ng-pluralize></span>
+        <span ng-if="::inventory_type == 'taxlots'"><ng-pluralize count="total" when="{'one': 'Tax Lot','other': 'Tax Lots'}"></ng-pluralize></span>
     </div>
     <ul class="nav nav-tabs" style="margin-bottom:1px;">
-        <li ng-class="{active: inventory_type=='properties'}" heading="View by Property">
+        <li ng-class="::{active: inventory_type=='properties'}" heading="View by Property">
             <a ui-sref="inventory_list({inventory_type: 'properties'})">View by Property</a>
         </li>
-        <li ng-class="{active: inventory_type=='taxlots'}" heading="View by Tax Lot">
+        <li ng-class="::{active: inventory_type=='taxlots'}" heading="View by Tax Lot">
             <a ui-sref="inventory_list({inventory_type: 'taxlots'})">View by Tax Lot</a>
         </li>
     </ul>

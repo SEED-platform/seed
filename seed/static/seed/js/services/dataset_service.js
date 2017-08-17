@@ -33,6 +33,9 @@ angular.module('BE.seed.service.dataset', []).factory('dataset_service', [
 
     dataset_factory.delete_file = function (file_id) {
       return $http.delete(window.BE.urls.delete_file, {
+        headers: {
+          'Content-Type': 'application/json;charset=utf-8'
+        },
         data: {
           file_id: file_id,
           organization_id: user_service.get_organization().id

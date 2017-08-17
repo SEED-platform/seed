@@ -67,7 +67,7 @@
                                     <input type="checkbox" ng-model="field.public_checked">
                                 </td>
                                 <td>
-                                    <span>{$ field.title $}</span>
+                                    <span>{$:: field.title $}</span>
                                 </td>
                             </tr>
                         </tbody>
@@ -76,7 +76,7 @@
             </div>
         </div>
         <div class="section_content with_padding">
-            <div ng-if="org.is_parent && auth.requires_owner">
+            <div ng-if="::org.is_parent && auth.requires_owner">
                 <h3>Set a Query Threshold</h3>
                 <p>Enter the minimum threshold count of buildings that can be returned in a shared query. The building count threshold is important for allowing other organizations to perform statistical analysis on your data without revealing information about individual buildings.</p>
                 <form class="form-horizontal" role="form">
