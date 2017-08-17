@@ -10,20 +10,49 @@ All rights reserved.  # NOQA
 
 # Imports from Standard Library
 
-# Imports from Django
+from django.db.models import Q
+from django_filters import CharFilter, DateFilter
+from django_filters.rest_framework import FilterSet
 
-# Local Imports
-from seed.models import Property as PropertyModel
-from seed.serializers.properties import (
-    PropertySerializer
+from seed.models import (
+    PropertyView,
 )
+from seed.serializers.properties import PropertyViewAsStateSerializer
 from seed.utils.viewsets import (
-    SEEDOrgCreateUpdateModelViewSet
+    SEEDOrgReadOnlyModelViewSet
 )
 
 
-class PropertyViewSetV21(SEEDOrgCreateUpdateModelViewSet):
-    """Properties API Endpoint
+class PropertyViewFilterSet(FilterSet):
+    """
+    Advanced filtering for PropertyView sets version 2.1.
+    """
+    address_line_1 = CharFilter(name="state__address_line_1", lookup_expr='contains')
+    identifier = CharFilter(method='identifier_filter')
+    cycle_start = DateFilter(name='cycle__start', lookup_expr='lte')
+    cycle_end = DateFilter(name='cycle__end', lookup_expr='gte')
+
+    class Meta:
+        model = PropertyView
+        fields = ['identifier', 'address_line_1', 'cycle', 'property', 'cycle_start', 'cycle_end']
+
+    def identifier_filter(self, queryset, name, value):
+        address_line_1 = Q(state__address_line_1__contains=value)
+        jurisdiction_property_id = Q(state__jurisdiction_property_id__iexact=value)
+        custom_id_1 = Q(state__custom_id_1__iexact=value)
+        pm_property_id = Q(state__pm_property_id=value)
+        query = (
+            address_line_1 |
+            jurisdiction_property_id |
+            custom_id_1 |
+            pm_property_id
+        )
+        return queryset.filter(query)
+
+
+class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
+    """
+    Properties API Endpoint
 
         Returns::
             {
@@ -44,20 +73,9 @@ class PropertyViewSetV21(SEEDOrgCreateUpdateModelViewSet):
 
     list:
         Return all Properties available to user through specified org.
-
-    create:
-        Create a new Property within user`s specified org.
-
-    delete:
-        Remove an existing Property.
-
-    update:
-        Update a Property record.
-
-    partial_update:
-        Update one or more fields on an existing Property.
     """
-    serializer_class = PropertySerializer
-    model = PropertyModel
+    serializer_class = PropertyViewAsStateSerializer
+    model = PropertyView
     data_name = "properties"
-    # filter_class = PropertyFilter
+    filter_class = PropertyViewFilterSet
+    orgfilter = 'property__organization_id'
