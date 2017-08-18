@@ -37,7 +37,14 @@ property_decorator = property
 
 
 class Property(models.Model):
-    """The canonical property"""
+    """
+    The Property is the parent property that ties together all the views of the property.
+    For example, if a building has multiple changes overtime, then this Property will always
+    remain the same. The PropertyView will point to the unchanged property as the PropertyState
+    and Property view are updated.
+
+    If the property can be a campus. The property can also reference a parent property.
+    """
     organization = models.ForeignKey(Organization)
 
     # Handle properties that may have multiple properties (e.g. buildings)
@@ -345,7 +352,13 @@ class PropertyState(models.Model):
 
 
 class PropertyView(models.Model):
-    """Similar to the old world of canonical building."""
+    """
+    Similar to the old world of canonical building.
+
+    A PropertyView contains a reference to a property (which should not change) and to a
+    cycle (time period), and a state (characteristics).
+
+    """
     # different property views can be associated with each other (2012, 2013)
     property = models.ForeignKey(Property, related_name='views',
                                  on_delete=models.CASCADE)
