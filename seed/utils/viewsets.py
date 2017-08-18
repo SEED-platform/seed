@@ -16,15 +16,18 @@ parser_classes, authentication_classes, and pagination_classes attributes.
 # Imports from Django
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
 # Local Imports
 from seed.authentication import SEEDAuthentication
 from seed.decorators import DecoratorMixin
 from seed.lib.superperms.orgs.permissions import SEEDOrgPermissions
 from seed.renderers import SEEDJSONRenderer as JSONRenderer
-from seed.utils.api import (OrgCreateUpdateMixin, OrgQuerySetMixin,
-                            drf_api_endpoint)
+from seed.utils.api import (
+    OrgCreateUpdateMixin,
+    OrgQuerySetMixin,
+    drf_api_endpoint
+)
 
 # Constants
 AUTHENTICATION_CLASSES = (SessionAuthentication, SEEDAuthentication)
@@ -33,9 +36,23 @@ RENDERER_CLASSES = (JSONRenderer,)
 PERMISSIONS_CLASSES = (SEEDOrgPermissions,)
 
 
-# Public Classes and Functions
-
 class SEEDOrgModelViewSet(DecoratorMixin(drf_api_endpoint), OrgQuerySetMixin, ModelViewSet):
+    """Viewset class customized with SEED standard attributes.
+
+    Attributes:
+        renderer_classes: Tuple of classes, default set to SEEDJSONRenderer.
+        parser_classes: Tuple of classes, default set to drf's JSONParser.
+        authentication_classes: Tuple of classes, default set to drf's
+            SessionAuthentication and SEEDAuthentication.
+    """
+    renderer_classes = RENDERER_CLASSES
+    parser_classes = PARSER_CLASSES
+    authentication_classes = AUTHENTICATION_CLASSES
+    permission_classes = PERMISSIONS_CLASSES
+
+
+class SEEDOrgReadOnlyModelViewSet(DecoratorMixin(drf_api_endpoint), OrgQuerySetMixin,
+                                  ReadOnlyModelViewSet):
     """Viewset class customized with SEED standard attributes.
 
     Attributes:
