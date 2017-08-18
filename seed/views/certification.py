@@ -21,8 +21,7 @@ from seed.serializers.certification import (
     GreenAssessmentURLSerializer
 )
 
-from seed.utils.viewsets import (SEEDOrgModelViewSet,
-                                 SEEDOrgCreateUpdateModelViewSet)
+from seed.utils.viewsets import (SEEDOrgModelViewSet, SEEDOrgCreateUpdateModelViewSet)
 
 
 class GreenAssessmentViewSet(SEEDOrgCreateUpdateModelViewSet):
@@ -173,7 +172,6 @@ class GreenAssessmentViewSet(SEEDOrgCreateUpdateModelViewSet):
 
 
 class GreenAssessmentURLViewSet(SEEDOrgModelViewSet):
-
     """API endpoint for viewing and creating green assessment urls.
 
         Returns::
