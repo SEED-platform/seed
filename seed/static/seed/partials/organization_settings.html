@@ -42,11 +42,23 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="measurement_system">Preferred System of Measurement:</label>
+                            <label for="measurement_system">Preferred System of Measurement for Imports:</label>
                             <div>
-                                <select id="measurement_system" class="form-control" name="measurement_system" ng-model="org.measurement_system" ng-disabled="!auth.requires_owner">
+                                <select id="measurement_system_import" class="form-control" name="measurement_system_import" ng-model="org.measurement_system_import" ng-disabled="!auth.requires_owner">
                                     <option ng-value="1">United States customary units</option>
-                                    <!-- <option ng-value="2">Metric (SI) units</option> -->
+                                    <option ng-value="2">Metric (SI) units - GJ/m2</option>
+                                    <option ng-value="3">Metric (SI) units - kWh/m2</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="measurement_system">User Interface System of Measurement:</label>
+                            <div>
+                                <select id="measurement_system_display" class="form-control" name="measurement_system_display" ng-model="org.measurement_system_display" ng-disabled="!auth.requires_owner">
+                                    <option ng-value="1">United States customary units</option>
+                                    <option ng-value="2">Metric (SI) units - GJ/m2</option>
+                                    <option ng-value="3">Metric (SI) units - kWh/m2</option>
                                 </select>
                             </div>
                         </div>

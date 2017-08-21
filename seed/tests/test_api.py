@@ -257,7 +257,8 @@ class TestApi(TestCase):
         self.assertEqual(r['organization']['number_of_users'], 1)
         self.assertEqual(len(r['organization']['owners']), 1)
         self.assertEqual(r['organization']['user_is_owner'], True)
-        self.assertEqual(r['organization']['measurement_system'], MEASUREMENT_US)
+        self.assertEqual(r['organization']['measurement_system_import'], MEASUREMENT_US)
+        self.assertEqual(r['organization']['measurement_system_display'], MEASUREMENT_US)
 
     def test_update_user(self):
         user_payload = {
