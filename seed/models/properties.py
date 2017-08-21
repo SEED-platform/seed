@@ -360,8 +360,7 @@ class PropertyView(models.Model):
 
     """
     # different property views can be associated with each other (2012, 2013)
-    property = models.ForeignKey(Property, related_name='views',
-                                 on_delete=models.CASCADE)
+    property = models.ForeignKey(Property, related_name='views', on_delete=models.CASCADE)
     cycle = models.ForeignKey(Cycle, on_delete=models.PROTECT)
     state = models.ForeignKey(PropertyState, on_delete=models.CASCADE)
 
@@ -395,8 +394,8 @@ class PropertyView(models.Model):
         # get the related taxlot_view.state as well to save time if needed.
         result = []
         for tlp in TaxLotProperty.objects.filter(
-                cycle=self.cycle,
-                property_view=self).select_related('taxlot_view', 'taxlot_view__state'):
+            cycle=self.cycle,
+            property_view=self).select_related('taxlot_view', 'taxlot_view__state'):
             result.append(tlp.taxlot_view)
 
         return result

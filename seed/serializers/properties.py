@@ -37,18 +37,21 @@ PropertyLabel = apps.get_model('seed', 'Property_labels')
 
 CYCLE_FIELDS = ['id', 'name', 'start', 'end', 'created']
 
+# Need to reevaluate this list of fields that are being removed.
+# I would really like to keep this logic in the serializers and not here.
 PROPERTY_STATE_FIELDS = [
     field.name for field in PropertyState._meta.get_fields()
 ]
 REMOVE_FIELDS = [field for field in PROPERTY_STATE_FIELDS
                  if field.startswith('propertyauditlog__')]
-REMOVE_FIELDS.extend(['organization', 'import_file'])
+# eventually we can remove the measures, building_file, and property_state as soon as we remove
+# the use of PVFIELDS... someday
+REMOVE_FIELDS.extend(['organization', 'import_file', 'measures', 'building_file', 'property_state'])
 for field in REMOVE_FIELDS:
     PROPERTY_STATE_FIELDS.remove(field)
 PROPERTY_STATE_FIELDS.extend(['organization_id', 'import_file_id'])
 
 PVFIELDS = ['state__{}'.format(f) for f in PROPERTY_STATE_FIELDS]
-
 PVFIELDS.extend(['cycle__{}'.format(f) for f in CYCLE_FIELDS])
 PVFIELDS.extend(['id', 'property_id'])
 
@@ -186,6 +189,10 @@ class PropertyStateSerializer(serializers.ModelSerializer):
     extra_data = serializers.JSONField(required=False)
     measures = PropertyMeasureSerializer(source='propertymeasure_set', many=True)
 
+    # to support the old state serializer method with the PROPERTY_STATE_FIELDS variables
+    import_file_id = serializers.IntegerField()
+    organization_id = serializers.IntegerField()
+
     class Meta:
         model = PropertyState
         fields = '__all__'
@@ -213,8 +220,8 @@ class PropertyStateSerializer(serializers.ModelSerializer):
 
 class PropertyStateWritableSerializer(serializers.ModelSerializer):
     """Used by PropertyViewAsState as a nested serializer"""
-
     extra_data = serializers.JSONField(required=False)
+    measures = PropertyMeasureSerializer(source='propertymeasure_set', many=True)
 
     class Meta:
         fields = '__all__'
@@ -233,7 +240,10 @@ class PropertyViewListSerializer(serializers.ListSerializer):
 
     def to_representation(self, data):
         """Overridden to optimize db calls."""
-        # print(PVFIELDS)
+
+        # Not sure when the data is a models.Manager or a QuerySet. It seems
+        # like this method, in general, is going to cause a bunch of issues as we
+        # extend the data model.
         if isinstance(data, (models.Manager, models.QuerySet)):
             iterable = data.all().values(*PVFIELDS)
             view_ids = []
@@ -247,15 +257,10 @@ class PropertyViewListSerializer(serializers.ListSerializer):
             results = []
             for item in iterable:
                 cycle = [
-                    (field, getattr(item.cycle, field, None))
-                    for field in CYCLE_FIELDS
+                    (field, getattr(item.cycle, field, None)) for field in CYCLE_FIELDS
                 ]
                 cycle = OrderedDict(cycle)
-                state = [
-                    (field, getattr(item.state, field, None))
-                    for field in PROPERTY_STATE_FIELDS
-                ]
-                state = OrderedDict(state)
+                state = PropertyStateSerializer(item.state).data
                 representation = OrderedDict((
                     ('id', item.id),
                     ('property_id', item.property_id),
@@ -304,12 +309,9 @@ class PropertyViewAsStateSerializer(serializers.ModelSerializer):
     def __init__(self, instance=None, data=empty, **kwargs):
         """Override __init__ to get audit logs if instance is passed"""
         if instance and isinstance(instance, PropertyView):
-            self._audit_logs = PropertyAuditLog.objects.select_related(
-                'state'
-            ).filter(view=instance).order_by('-created', '-state_id')
-            current = self._audit_logs.filter(
-                state=instance.state
-            ).first()
+            self._audit_logs = PropertyAuditLog.objects.select_related('state').filter(
+                view=instance).order_by('-created', '-state_id')
+            current = self._audit_logs.filter(state=instance.state).first()
             self.current = PropertyAuditLogReadOnlySerializer(
                 current
             ).data if current else {}
