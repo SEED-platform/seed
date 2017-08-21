@@ -609,7 +609,6 @@ class OrganizationViewSet(viewsets.ViewSet):
         if desired_measurement_system_display is not None:
             org.measurement_system_display = desired_measurement_system_display
 
-
         org.save()
 
         # Update the selected exportable fields.

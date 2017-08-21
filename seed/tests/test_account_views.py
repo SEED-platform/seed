@@ -17,7 +17,8 @@ from seed.lib.superperms.orgs.models import (
     ROLE_MEMBER,
     ROLE_VIEWER,
     OrganizationUser,
-    Organization
+    Organization,
+    MEASUREMENT_US,
 )
 from seed.models.cycles import Cycle
 from seed.models.properties import PropertyState
