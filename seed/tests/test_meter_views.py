@@ -40,7 +40,7 @@ class TestMeterViewSet(TestCase):
         client = APIClient()
         client.login(username=self.user.username, password='secret')
 
-        url = reverse('apiv2:meters-list')
+        url = reverse('api:v2:meters-list')
 
         expected = {
             "status": "error",
@@ -68,7 +68,7 @@ class TestMeterViewSet(TestCase):
         client = APIClient()
         client.login(username=self.user.username, password='secret')
 
-        url = reverse('apiv2:meters-detail', args=(meter.pk,))
+        url = reverse('api:v2:meters-detail', args=(meter.pk,))
         resp = client.get(url)
 
         expected = {
@@ -102,7 +102,7 @@ class TestMeterViewSet(TestCase):
 
         client = APIClient()
         client.login(username=self.user.username, password='secret')
-        url = reverse('apiv2:meters-list') + '?organization_id={}'.format(self.org.pk)
+        url = reverse('api:v2:meters-list') + '?organization_id={}'.format(self.org.pk)
         resp = client.post(url, data)
 
         expected = {
@@ -136,7 +136,7 @@ class TestMeterViewSet(TestCase):
 
         client = APIClient()
         client.login(username=self.user.username, password='secret')
-        url = reverse('apiv2:meters-get-timeseries', args=(meter.pk,))
+        url = reverse('api:v2:meters-get-timeseries', args=(meter.pk,))
         resp = client.get(url)
 
         expected = {
