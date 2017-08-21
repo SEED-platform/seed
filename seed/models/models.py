@@ -370,4 +370,3 @@ class TimeSeries(models.Model):
     meter = models.ForeignKey(
         Meter, related_name='timeseries_data', null=True, blank=True
     )
-
