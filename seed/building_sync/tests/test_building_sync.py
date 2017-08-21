@@ -154,20 +154,23 @@ class TestBuildingSync(TestCase):
             'state': 'CO',
             'latitude': 40.762235027074865,
             'longitude': -121.41677258249452,
-            'custom_id_1': 'Building991',
             'year_built': 1990,
             'floors_above_grade': 1,
             'floors_below_grade': 0,
-            'gross_floor_area': 25000,
-            'net_floor_area': 22500,
+            'gross_floor_area': 25000.0,
+            'net_floor_area': 22500.0,
             'occupancy_type': 'PDR',
             'premise_identifier': 'XY8198732',
             'property_type': 'Commercial',
+            'property_name': 'Building991',
             'measures': [],
             'reports': [],
         }
 
         res, errors, mess = self.bs.process(struct)
-        self.assertEqual(res, expected)
-        self.assertFalse(errors)
-        self.assertEqual(mess, [])
+        self.assertDictEqual(res, expected)
+        self.assertTrue(errors)
+        expected = [
+            'Could not find required value for sub-lookup of IdentifierLabel:Custom ID'
+        ]
+        self.assertEqual(mess, expected)

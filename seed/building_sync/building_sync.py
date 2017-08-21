@@ -239,26 +239,27 @@ class BuildingSync(object):
             value = self._get_node(path, data, [])
 
             try:
+                if v.get('key_path_name', None) and v.get('value_path_name', None) and v.get(
+                    'key_path_value', None):
+                    value = _lookup_sub(
+                        value,
+                        v.get('key_path_name'),
+                        v.get('key_path_value'),
+                        v.get('value_path_name'),
+                    )
+
+                    # check if the value is not defined and if it is required
+                    if not value:
+                        if v.get('required'):
+                            messages.append(
+                                "Could not find required value for sub-lookup of {}:{}".format(
+                                    v.get('key_path_name'), v.get('key_path_value')))
+                            errors = True
+                            continue
+                        else:
+                            continue
+
                 if value:
-                    if v.get('key_path_name', None) and v.get('value_path_name', None) and v.get(
-                            'key_path_value', None):
-                        value = _lookup_sub(
-                            value,
-                            v.get('key_path_name'),
-                            v.get('key_path_value'),
-                            v.get('value_path_name'),
-                        )
-
-                        # check if the value is not defined and if it is required
-                        if not value:
-                            if v.get('required'):
-                                messages.append(
-                                    "Could not find required value for sub-lookup of {}:".format(
-                                        v.get('key_path_name'), v.get('key_path_value')))
-                                errors = True
-                            else:
-                                continue
-
                     # catch some errors
                     if isinstance(value, list):
                         messages.append("Could not find single entry for '{}'".format(path))
