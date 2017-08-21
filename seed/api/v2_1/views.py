@@ -79,3 +79,6 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
     data_name = "properties"
     filter_class = PropertyViewFilterSet
     orgfilter = 'property__organization_id'
+    # filter_backends = (DjangoFilterBackend, OrderingFilter,)
+    # queryset = PropertyView.objects.all()
+    # ordering = ('-id', '-state__id',)

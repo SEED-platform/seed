@@ -221,7 +221,6 @@ class PropertyStateSerializer(serializers.ModelSerializer):
 class PropertyStateWritableSerializer(serializers.ModelSerializer):
     """Used by PropertyViewAsState as a nested serializer"""
     extra_data = serializers.JSONField(required=False)
-    measures = PropertyMeasureSerializer(source='propertymeasure_set', many=True)
 
     class Meta:
         fields = '__all__'
@@ -312,14 +311,10 @@ class PropertyViewAsStateSerializer(serializers.ModelSerializer):
             self._audit_logs = PropertyAuditLog.objects.select_related('state').filter(
                 view=instance).order_by('-created', '-state_id')
             current = self._audit_logs.filter(state=instance.state).first()
-            self.current = PropertyAuditLogReadOnlySerializer(
-                current
-            ).data if current else {}
+            self.current = PropertyAuditLogReadOnlySerializer(current).data if current else {}
         else:
             self.current = {}
-        super(PropertyViewAsStateSerializer, self).__init__(
-            instance=instance, data=data, **kwargs
-        )
+        super(PropertyViewAsStateSerializer, self).__init__(instance=instance, data=data, **kwargs)
 
     def to_internal_value(self, data):
         """Serialize state"""
@@ -424,9 +419,7 @@ class PropertyViewAsStateSerializer(serializers.ModelSerializer):
         validated_data['property_id'] = property_id
         cycle_id = conv_value(validated_data.pop('cycle'))
         validated_data['cycle_id'] = cycle_id
-        new_property_state_serializer = PropertyStateWritableSerializer(
-            data=state
-        )
+        new_property_state_serializer = PropertyStateWritableSerializer(data=state)
         if new_property_state_serializer.is_valid():
             new_state = new_property_state_serializer.save()
         instance = PropertyView.objects.create(

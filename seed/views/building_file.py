@@ -15,7 +15,7 @@ from rest_framework.viewsets import GenericViewSet
 from seed.authentication import SEEDAuthentication
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import BuildingFile, Cycle
-from seed.utils.generic import obj_to_dict
+from seed.serializers.properties import PropertyStateSerializer
 
 
 class BuildingFileViewSet(GenericViewSet):
@@ -79,7 +79,7 @@ class BuildingFileViewSet(GenericViewSet):
                 "status": "success",
                 "message": "successfully imported file",
                 "data": {
-                    "property_state": obj_to_dict(property_state),
+                    "property_state": PropertyStateSerializer(property_state).data,
                 },
             })
         else:
