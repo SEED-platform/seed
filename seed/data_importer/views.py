@@ -622,13 +622,13 @@ class ImportFileViewSet(viewsets.ViewSet):
                 # the property/taxlot serializer. Total hack right now.
                 for p in properties:
                     if p.get('recent_sale_date'):
-                        p['recent_sale_date'] = make_naive(p['recent_sale_date']).isoformat(" ")
+                        p['recent_sale_date'] = make_naive(p['recent_sale_date']).isoformat()
 
                     if p.get('release_date'):
-                        p['release_date'] = make_naive(p['release_date']).isoformat(" ")
+                        p['release_date'] = make_naive(p['release_date']).isoformat()
 
                     if p.get('generation_date'):
-                        p['generation_date'] = make_naive(p['generation_date']).isoformat(" ")
+                        p['generation_date'] = make_naive(p['generation_date']).isoformat()
 
                 result['properties'] = properties
 

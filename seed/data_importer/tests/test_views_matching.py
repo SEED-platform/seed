@@ -97,8 +97,8 @@ class TestViewsMatching(DataMappingBaseTestCase):
         )
 
         body = json.loads(resp.content)
-        self.assertEqual(body['properties'][0]['recent_sale_date'], '1888-01-05 08:00:00')
-        self.assertEqual(body['properties'][1]['recent_sale_date'], '2017-01-05 08:00:00')
+        self.assertEqual(body['properties'][0]['recent_sale_date'], '1888-01-05T08:00:00')
+        self.assertEqual(body['properties'][1]['recent_sale_date'], '2017-01-05T08:00:00')
         self.assertEqual(body['properties'][2]['recent_sale_date'], None)
 
     def test_get_filtered_mapping_results(self):
