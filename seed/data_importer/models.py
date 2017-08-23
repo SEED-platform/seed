@@ -640,7 +640,6 @@ class ImportRecord(NotDeletableModel):
                     'premerge_progress_url': f.premerge_progress_url,
                     'merge_progress_url': f.merge_progress_url,
                     'force_restart_cleaning_url': f.force_restart_cleaning_url,
-                    'is_espm': f.is_espm,
                 })
         except BaseException:
             from traceback import print_exc

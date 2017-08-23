@@ -137,7 +137,7 @@ class Column(models.Model):
         return u'{} - {}'.format(self.pk, self.column_name)
 
     @staticmethod
-    def create_mappings_from_file(filename, organization, user):
+    def create_mappings_from_file(filename, organization, user, import_file_id=None):
         """
         Load the mappings in from a file in a very specific file format. The columns in the file
         must be:
@@ -152,6 +152,8 @@ class Column(models.Model):
         :param filename: string, absolute path and name of file to load
         :param organization: id, organization id
         :param user: id, user id
+        :param import_file_id: Integer, If passed, will cache the column mappings data into
+                               the import_file_id object.
 
         :return: ColumnMapping, True
         """
@@ -175,13 +177,21 @@ class Column(models.Model):
         if len(mappings) == 0:
             raise Exception("No mappings in file: {}".format(filename))
         else:
-            return Column.create_mappings(mappings, organization, user)
+            return Column.create_mappings(mappings, organization, user, import_file_id)
 
     @staticmethod
-    def create_mappings(mappings, organization, user):
+    def create_mappings(mappings, organization, user, import_file_id=None):
         """
         Create the mappings for an organization and a user based on a simple
         array of array object.
+
+        :param mappings: dict, dictionary containing mapping information
+        :param organization: inst, organization object
+        :param user: inst, User object
+        :param import_file_id: integer, If passed, will cache the column mappings data into the
+                               import_file_id object.
+
+        :return Boolean, True is data are saved in the ColumnMapping table in the database
 
         .. note:
 
@@ -189,8 +199,7 @@ class Column(models.Model):
             will no longer magically appear in the extra_data field if the user did not specify how
             to map it.
 
-        Args:
-            mappings: dictionary containing mapping information
+        .. example:
 
                 mappings: [
                     {
@@ -204,14 +213,10 @@ class Column(models.Model):
                         'to_table_name': 'property',
                     }
                 ]
-
-            organization: Organization object
-            user: User object
-
-        Returns:
-            True (data are saved in the ColumnMapping table in the database)
-
         """
+
+        # initialize a cache to store the mappings
+        cache_column_mapping = []
 
         # Take the existing object and return the same object with the db column objects added to
         # the dictionary (to_column_object and from_column_object)
@@ -250,8 +255,23 @@ class Column(models.Model):
 
                 column_mapping.user = user
                 column_mapping.save()
+
+                cache_column_mapping.append(
+                    {
+                        'from_field': mapping['from_field'],
+                        'to_field': mapping['to_field'],
+                        'to_table_name': mapping['to_table_name'],
+                    }
+                )
             else:
                 raise TypeError("Mapping object needs to be of type dict")
+
+        # save off the cached mappings into the file id that was passed
+        if import_file_id:
+            from seed.models import ImportFile
+            import_file = ImportFile.objects.get(id=import_file_id)
+            import_file.save_cached_mapped_columns(cache_column_mapping)
+            import_file.save()
 
         return True
 

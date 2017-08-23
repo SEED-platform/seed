@@ -333,15 +333,13 @@ class PropertyViewSet(GenericViewSet):
             # fix specific time stamps - total hack right now. Need to reconcile with
             # /data_importer/views.py
             if p.get('recent_sale_date'):
-                p['recent_sale_date'] = make_naive(p['recent_sale_date']).strftime(
-                    '%Y-%m-%dT%H:%M:%S')
+                p['recent_sale_date'] = make_naive(p['recent_sale_date']).isoformat()
 
             if p.get('release_date'):
-                p['release_date'] = make_naive(p['release_date']).strftime('%Y-%m-%dT%H:%M:%S')
+                p['release_date'] = make_naive(p['release_date']).isoformat()
 
             if p.get('generation_date'):
-                p['generation_date'] = make_naive(p['generation_date']).strftime(
-                    '%Y-%m-%dT%H:%M:%S')
+                p['generation_date'] = make_naive(p['generation_date']).isoformat()
 
             response['results'].append(p)
 

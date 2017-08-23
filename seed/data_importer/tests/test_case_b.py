@@ -37,13 +37,13 @@ class TestCaseB(DataMappingBaseTestCase):
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
         self.import_file.load_import_file(osp.join(osp.dirname(__file__), 'data', filename))
         tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
-        Column.create_mappings(self.fake_mappings, self.org, self.user)
+        Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.pk)
         tasks.map_data(self.import_file.pk)
 
     def test_match_buildings(self):
         """ case B (many property <-> one tax lot) """
         tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
-        Column.create_mappings(self.fake_mappings, self.org, self.user)
+        Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.pk)
         # Set remap to True because for some reason this file id has been imported before.
         tasks.map_data(self.import_file.pk, True)
 
