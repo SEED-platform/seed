@@ -178,7 +178,7 @@ class Column(models.Model):
             return Column.create_mappings(mappings, organization, user)
 
     @staticmethod
-    def create_mappings(mappings, organization, user):
+    def create_mappings(mappings, organization, user, import_file_id=None):
         """
         Create the mappings for an organization and a user based on a simple
         array of array object.
@@ -207,11 +207,16 @@ class Column(models.Model):
 
             organization: Organization object
             user: User object
+            import_file_id: Integer, If passed, will cache the column mappings data into
+            the import_file_id object.
 
         Returns:
             True (data are saved in the ColumnMapping table in the database)
 
         """
+
+        # initialize a cache to store the mappings
+        cache_column_mapping = []
 
         # Take the existing object and return the same object with the db column objects added to
         # the dictionary (to_column_object and from_column_object)
@@ -250,8 +255,23 @@ class Column(models.Model):
 
                 column_mapping.user = user
                 column_mapping.save()
+
+                cache_column_mapping.append(
+                    {
+                        'from_field': mapping['from_field'],
+                        'to_field': mapping['to_field'],
+                        'to_table_name': mapping['to_table_name'],
+                    }
+                )
             else:
                 raise TypeError("Mapping object needs to be of type dict")
+
+        # save off the cached mappings into the file id that was passed
+        if import_file_id:
+            from seed.models import ImportFile
+            import_file = ImportFile.objects.get(id=import_file_id)
+            import_file.save_cached_mapped_columns(cache_column_mapping)
+            import_file.save()
 
         return True
 

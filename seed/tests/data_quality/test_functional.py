@@ -16,8 +16,8 @@ from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
+    ASSESSED_RAW,
     ASSESSED_BS,
-    PORTFOLIO_BS,
     PropertyState,
     PropertyView,
     TaxLotState,
@@ -180,8 +180,9 @@ class DataQualityTestPM(TestCase):
         self.import_file = ImportFile.objects.create(
             import_record=self.import_record
         )
-
-        self.import_file.source_type = 'Portfolio Raw'
+        # eventhough this is a portfolio manager file, we are mapping this as a RAW file
+        # for testing purposes.
+        self.import_file.source_type = ASSESSED_RAW
         self.import_file.file = File(
             open(path.join(
                 path.dirname(__file__), '../data/portfolio-manager-sample-with-errors.csv')
@@ -250,7 +251,7 @@ class DataQualityTestPM(TestCase):
 
         qs = PropertyState.objects.filter(
             import_file=self.import_file,
-            source_type=PORTFOLIO_BS,
+            source_type=ASSESSED_BS,
         ).iterator()
 
         d = DataQualityCheck.retrieve(self.org)

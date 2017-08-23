@@ -40,7 +40,7 @@ class TestViewsMatching(DataMappingBaseTestCase):
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
         self.import_file.load_import_file(osp.join(osp.dirname(__file__), 'data', filename))
         tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
-        Column.create_mappings(self.fake_mappings, self.org, self.user)
+        Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.id)
         tasks.map_data(self.import_file.pk)
         tasks.match_buildings(self.import_file.id)
 
@@ -49,6 +49,7 @@ class TestViewsMatching(DataMappingBaseTestCase):
         _, self.import_file_2 = self.create_import_file(self.user, self.org, self.cycle)
         self.import_file_2.load_import_file(osp.join(osp.dirname(__file__), 'data', filename_2))
         tasks._save_raw_data(self.import_file_2.pk, 'fake_cache_key_2', 1)
+        Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file_2.id)
         tasks.map_data(self.import_file_2.pk)
         tasks.match_buildings(self.import_file_2.id)
 
@@ -96,7 +97,9 @@ class TestViewsMatching(DataMappingBaseTestCase):
         )
 
         body = json.loads(resp.content)
-        print json.dumps(body, indent=2)
+        self.assertEqual(body['properties'][0]['recent_sale_date'], '1888-01-05 08:00:00')
+        self.assertEqual(body['properties'][1]['recent_sale_date'], '2017-01-05 08:00:00')
+        self.assertEqual(body['properties'][2]['recent_sale_date'], None)
 
     def test_get_filtered_mapping_results(self):
         url = reverse("api:v2:import_files-filtered-mapping-results", args=[self.import_file_2.pk])
@@ -140,7 +143,7 @@ class TestViewsMatching(DataMappingBaseTestCase):
         del found_prop['coparent']['id']
         self.assertEqual(body['status'], 'success')
         self.assertEqual(len(body['tax_lots']), 12)
-        self.assertEqual(len(body['properties']), 13)
+        self.assertEqual(len(body['properties']), 14)
         self.assertEqual(expected['lot_number'], found_prop['lot_number'])
         self.assertEqual(expected['matched'], found_prop['matched'])
         self.assertDictContainsSubset(expected['coparent'], found_prop['coparent'])
