@@ -60,7 +60,6 @@ class DataQualityTestCoveredBuilding(TestCase):
             import_record=self.import_record
         )
 
-        self.import_file.is_espm = False
         self.import_file.source_type = 'ASSESSED_RAW'
         self.import_file.file = File(
             open(path.join(
@@ -182,7 +181,6 @@ class DataQualityTestPM(TestCase):
             import_record=self.import_record
         )
 
-        self.import_file.is_espm = True
         self.import_file.source_type = 'Portfolio Raw'
         self.import_file.file = File(
             open(path.join(
@@ -331,7 +329,6 @@ class DataQualitySample(TestCase):
             cycle=cycle,
         )
 
-        self.import_file.is_espm = False
         self.import_file.source_type = 'ASSESSED_RAW'
         self.import_file.file = File(
             open(path.join(path.dirname(__file__), '../data/data-quality-check-sample.csv')))

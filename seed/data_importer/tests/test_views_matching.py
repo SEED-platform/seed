@@ -89,6 +89,15 @@ class TestViewsMatching(DataMappingBaseTestCase):
         logs = PropertyAuditLog.objects.filter(state_id__in=state_ids)
         self.assertEqual(logs.count(), 14)
 
+    def test_get_filtered_mapping_results_date(self):
+        url = reverse("api:v2:import_files-filtered-mapping-results", args=[self.import_file.pk])
+        resp = self.client.post(
+            url, data=json.dumps({"organization_id": self.org.id}), content_type='application/json'
+        )
+
+        body = json.loads(resp.content)
+        print json.dumps(body, indent=2)
+
     def test_get_filtered_mapping_results(self):
         url = reverse("api:v2:import_files-filtered-mapping-results", args=[self.import_file_2.pk])
         resp = self.client.post(
