@@ -34,7 +34,7 @@ class TestProperties(DataMappingBaseTestCase):
         self.import_file.load_import_file(
             osp.join(osp.dirname(__file__), '../data_importer/tests/data', filename))
         tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
-        Column.create_mappings(self.fake_mappings, self.org, self.user)
+        Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.id)
         tasks.map_data(self.import_file.pk)
         tasks.match_buildings(self.import_file.id)
 

@@ -40,7 +40,7 @@ class TestCaseA(DataMappingBaseTestCase):
 
     def test_import_file(self):
         tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
-        Column.create_mappings(self.fake_mappings, self.org, self.user)
+        Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.pk)
         tasks.map_data(self.import_file.pk)
 
         ps = PropertyState.objects.filter(pm_property_id='2264').first()
@@ -53,7 +53,7 @@ class TestCaseA(DataMappingBaseTestCase):
     def test_match_buildings(self):
         """ case A (one property <-> one tax lot) """
         tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
-        Column.create_mappings(self.fake_mappings, self.org, self.user)
+        Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.pk)
         tasks.map_data(self.import_file.pk)
 
         # Check to make sure all the properties imported

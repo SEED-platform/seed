@@ -137,7 +137,7 @@ class Column(models.Model):
         return u'{} - {}'.format(self.pk, self.column_name)
 
     @staticmethod
-    def create_mappings_from_file(filename, organization, user):
+    def create_mappings_from_file(filename, organization, user, import_file_id=None):
         """
         Load the mappings in from a file in a very specific file format. The columns in the file
         must be:
@@ -152,6 +152,8 @@ class Column(models.Model):
         :param filename: string, absolute path and name of file to load
         :param organization: id, organization id
         :param user: id, user id
+        :param import_file_id: Integer, If passed, will cache the column mappings data into
+                               the import_file_id object.
 
         :return: ColumnMapping, True
         """
@@ -175,7 +177,7 @@ class Column(models.Model):
         if len(mappings) == 0:
             raise Exception("No mappings in file: {}".format(filename))
         else:
-            return Column.create_mappings(mappings, organization, user)
+            return Column.create_mappings(mappings, organization, user, import_file_id)
 
     @staticmethod
     def create_mappings(mappings, organization, user, import_file_id=None):
@@ -183,14 +185,21 @@ class Column(models.Model):
         Create the mappings for an organization and a user based on a simple
         array of array object.
 
+        :param mappings: dict, dictionary containing mapping information
+        :param organization: inst, organization object
+        :param user: inst, User object
+        :param import_file_id: integer, If passed, will cache the column mappings data into the
+                               import_file_id object.
+
+        :return Boolean, True is data are saved in the ColumnMapping table in the database
+
         .. note:
 
             Note that as of 09/15/2016 - extra data still needs to be defined in the mappings, it
             will no longer magically appear in the extra_data field if the user did not specify how
             to map it.
 
-        Args:
-            mappings: dictionary containing mapping information
+        .. example:
 
                 mappings: [
                     {
@@ -204,15 +213,6 @@ class Column(models.Model):
                         'to_table_name': 'property',
                     }
                 ]
-
-            organization: Organization object
-            user: User object
-            import_file_id: Integer, If passed, will cache the column mappings data into
-            the import_file_id object.
-
-        Returns:
-            True (data are saved in the ColumnMapping table in the database)
-
         """
 
         # initialize a cache to store the mappings
@@ -454,10 +454,10 @@ class Column(models.Model):
 
                         # Check if there are more than one column still
                         if Column.objects.filter(
-                                column_name=key[:511],
-                                is_extra_data=is_extra_data,
-                                organization=model_obj.organization,
-                                table_name=model_obj.__class__.__name__).count() > 1:
+                            column_name=key[:511],
+                            is_extra_data=is_extra_data,
+                            organization=model_obj.organization,
+                            table_name=model_obj.__class__.__name__).count() > 1:
                             raise Exception(
                                 "Could not fix duplicate columns for {}. Contact dev team").format(
                                 key)

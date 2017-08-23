@@ -74,7 +74,9 @@ class DataQualityTestCoveredBuilding(TestCase):
         )
 
         tasks.save_raw_data(self.import_file.id)
-        Column.create_mappings_from_file(self.import_file_mapping, self.org, self.user)
+        Column.create_mappings_from_file(
+            self.import_file_mapping, self.org, self.user, self.import_file.id
+        )
         tasks.map_data(self.import_file.id)
 
     def test_simple_login(self):
@@ -246,7 +248,7 @@ class DataQualityTestPM(TestCase):
         ]
 
         tasks.save_raw_data(self.import_file.id)
-        Column.create_mappings(fake_mappings, self.org, self.user)
+        Column.create_mappings(fake_mappings, self.org, self.user, self.import_file.id)
         tasks.map_data(self.import_file.id)
 
         qs = PropertyState.objects.filter(
@@ -637,7 +639,7 @@ class DataQualitySample(TestCase):
 
         # import data
         tasks.save_raw_data(self.import_file.id)
-        Column.create_mappings(self.fake_mappings, self.org, self.user)
+        Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.pk)
         tasks.map_data(self.import_file.id)
         tasks.match_buildings(self.import_file.id)
 
@@ -803,7 +805,7 @@ class DataQualitySample(TestCase):
 
         # import data
         tasks.save_raw_data(self.import_file.id)
-        Column.create_mappings(self.fake_mappings, self.org, self.user)
+        Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.pk)
         tasks.map_data(self.import_file.id)
         tasks.match_buildings(self.import_file.id)
 

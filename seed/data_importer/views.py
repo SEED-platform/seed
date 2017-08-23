@@ -1525,15 +1525,9 @@ class ImportFileViewSet(viewsets.ViewSet):
         import_file = ImportFile.objects.get(pk=pk)
         organization = import_file.import_record.super_organization
         mappings = body.get('mappings', [])
-        status1 = Column.create_mappings(mappings, organization, request.user, import_file.id)
+        status = Column.create_mappings(mappings, organization, request.user, import_file.id)
 
-        # extract the to_table_name and to_field
-        column_mappings = [
-            {'from_field': m['from_field'],
-             'to_field': m['to_field'],
-             'to_table_name': m['to_table_name']} for m in mappings]
-        if status1:
-            import_file.save_cached_mapped_columns(column_mappings)
+        if status:
             return JsonResponse({'status': 'success'})
         else:
             return JsonResponse({'status': 'error'})

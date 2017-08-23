@@ -103,7 +103,7 @@ class TestMappingPortfolioData(DataMappingBaseTestCase):
         )
 
         self.fake_mappings = copy.deepcopy(FAKE_MAPPINGS['fake_row'])
-        Column.create_mappings(self.fake_mappings, self.org, self.user)
+        Column.create_mappings(self.fake_mappings, self.org, self.user, import_file.pk)
         tasks.map_data(import_file.pk)
 
         mapped_bs = list(PropertyState.objects.filter(
@@ -150,7 +150,7 @@ class TestMappingExampleData(DataMappingBaseTestCase):
 
     def test_mapping(self):
         tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
-        Column.create_mappings(self.fake_mappings, self.org, self.user)
+        Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.pk)
         tasks.map_data(self.import_file.pk)
 
         # There are a total of 18 tax lot ids in the import file
@@ -172,7 +172,7 @@ class TestMappingExampleData(DataMappingBaseTestCase):
     def test_promote_properties(self):
         """Test if the promoting of a property works as expected"""
         tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
-        Column.create_mappings(self.fake_mappings, self.org, self.user)
+        Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.pk)
         tasks.map_data(self.import_file.pk)
 
         cycle2, _ = Cycle.objects.get_or_create(
@@ -226,7 +226,7 @@ class TestMappingPropertiesOnly(DataMappingBaseTestCase):
                 m["to_table_name"] = 'PropertyState'
 
         tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
-        Column.create_mappings(new_mappings, self.org, self.user)
+        Column.create_mappings(new_mappings, self.org, self.user, self.import_file.pk)
         tasks.map_data(self.import_file.pk)
 
         # make sure that no taxlot objects were created
@@ -258,7 +258,7 @@ class TestMappingTaxLotsOnly(DataMappingBaseTestCase):
                 m["to_table_name"] = 'TaxLotState'
 
         tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
-        Column.create_mappings(new_mappings, self.org, self.user)
+        Column.create_mappings(new_mappings, self.org, self.user, self.import_file.pk)
         tasks.map_data(self.import_file.pk)
 
         # make sure that no taxlot objects were created. the 12 here are the import extra_data.
@@ -358,7 +358,7 @@ class TestPromotingProperties(DataMappingBaseTestCase):
                 }
             )
 
-        Column.create_mappings(mapping, self.org, self.user)
+        Column.create_mappings(mapping, self.org, self.user, self.import_file.pk)
 
         # call the mapping function from the tasks file
         map_data(self.import_file.id)
