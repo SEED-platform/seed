@@ -41,7 +41,7 @@ class TestMatching(DataMappingBaseTestCase):
 
     def test_single_id_matches(self):
         tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
-        Column.create_mappings(self.fake_mappings, self.org, self.user)
+        Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.pk)
         tasks.map_data(self.import_file.pk)
 
         # verify that there are no properties listed as canonical
@@ -63,7 +63,7 @@ class TestMatching(DataMappingBaseTestCase):
 
     def test_multiple_id_matches(self):
         tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
-        Column.create_mappings(self.fake_mappings, self.org, self.user)
+        Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.pk)
         tasks.map_data(self.import_file.pk)
 
         # verify that there are no properties listed as canonical

@@ -42,7 +42,6 @@ class TestDemoV2(DataMappingBaseTestCase):
         """Override the base in DataMappingBaseTestCase."""
 
         # default_values
-        import_file_is_espm = getattr(self, 'import_file_is_espm', True)
         import_file_data_state = getattr(self, 'import_file_data_state', DATA_STATE_IMPORT)
 
         user = User.objects.create(username='test')
@@ -70,12 +69,10 @@ class TestDemoV2(DataMappingBaseTestCase):
         import_file_2 = ImportFile.objects.create(import_record=import_record_2,
                                                   cycle=cycle)
 
-        import_file_1.is_espm = import_file_is_espm
         import_file_1.source_type = import_file_source_type
         import_file_1.data_state = import_file_data_state
         import_file_1.save()
 
-        import_file_2.is_espm = import_file_is_espm
         import_file_2.source_type = import_file_source_type
         import_file_2.data_state = import_file_data_state
         import_file_2.save()

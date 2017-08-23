@@ -14,7 +14,6 @@ from django.utils import timezone
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
-from seed.models.data_quality import DataQualityCheck
 from seed.models import (
     Column,
     ColumnMapping,
@@ -32,6 +31,7 @@ from seed.models import (
     TaxLotView,
     TaxLotProperty,
 )
+from seed.models.data_quality import DataQualityCheck
 
 logger = logging.getLogger(__name__)
 
@@ -135,6 +135,10 @@ PROPERTIES_MAPPING = [
         "from_field": u'extra data 2',
         "to_table_name": u'TaxLotState',
         "to_field": u'data_008'
+    }, {
+        "from_field": u'recent sale date',
+        "to_table_name": u'PropertyState',
+        "to_field": u'recent_sale_date'
     }
 ]
 
@@ -248,7 +252,6 @@ class DataMappingBaseTestCase(DeleteModelsTestCase):
 
     def set_up(self, import_file_source_type):
         # default_values
-        import_file_is_espm = getattr(self, 'import_file_is_espm', True)
         import_file_data_state = getattr(self, 'import_file_data_state', DATA_STATE_IMPORT)
 
         if not User.objects.filter(username='test_user@demo.com').exists():
@@ -269,19 +272,17 @@ class DataMappingBaseTestCase(DeleteModelsTestCase):
         OrganizationUser.objects.create(user=user, organization=org)
 
         import_record, import_file = self.create_import_file(user, org, cycle,
-                                                             import_file_is_espm,
                                                              import_file_source_type,
                                                              import_file_data_state)
 
         return user, org, import_file, import_record, cycle
 
-    def create_import_file(self, user, org, cycle, espm=True, source_type=ASSESSED_RAW,
+    def create_import_file(self, user, org, cycle, source_type=ASSESSED_RAW,
                            data_state=DATA_STATE_IMPORT):
         import_record = ImportRecord.objects.create(
             owner=user, last_modified_by=user, super_organization=org
         )
         import_file = ImportFile.objects.create(import_record=import_record, cycle=cycle)
-        import_file.is_espm = espm
         import_file.source_type = source_type
         import_file.data_state = data_state
         import_file.save()
