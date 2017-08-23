@@ -53,7 +53,9 @@ class TestMappingPortfolioData(DataMappingBaseTestCase):
         self.fake_row = FAKE_ROW
         selfvars = self.set_up(import_file_source_type)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
-        self.import_file.load_import_file(osp.join(osp.dirname(__file__), 'data', filename))
+        self.import_file.load_import_file(
+            osp.join(osp.dirname(__file__), '..', '..', 'tests', 'data', filename)
+        )
 
     def test_cached_first_row_order(self):
         """Tests to make sure the first row is saved in the correct order.

@@ -41,7 +41,6 @@ _log = logging.getLogger(__name__)
 
 
 class DataQualityTestCoveredBuilding(TestCase):
-
     def setUp(self):
         self.user_details = {
             'username': 'testuser@example.com',
@@ -164,7 +163,6 @@ class DataQualityTestCoveredBuilding(TestCase):
 
 
 class DataQualityTestPM(TestCase):
-
     def setUp(self):
         self.user_details = {
             'username': 'testuser@example.com',
@@ -187,8 +185,9 @@ class DataQualityTestPM(TestCase):
         self.import_file.is_espm = True
         self.import_file.source_type = 'Portfolio Raw'
         self.import_file.file = File(
-            open(path.join(path.dirname(__file__),
-                           '../data/portfolio-manager-sample-with-errors.csv'))
+            open(path.join(
+                path.dirname(__file__), '../data/portfolio-manager-sample-with-errors.csv')
+            )
         )
         self.import_file.save()
 
@@ -310,7 +309,6 @@ class DataQualityTestPM(TestCase):
 
 
 class DataQualitySample(TestCase):
-
     def setUp(self):
         self.user_details = {
             'username': 'testuser@example.com',
