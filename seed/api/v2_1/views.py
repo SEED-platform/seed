@@ -47,7 +47,7 @@ class PropertyViewFilterSet(FilterSet):
             custom_id_1 |
             pm_property_id
         )
-        return queryset.filter(query)
+        return queryset.filter(query).order_by('-state__id')
 
 
 class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
@@ -79,6 +79,12 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
     data_name = "properties"
     filter_class = PropertyViewFilterSet
     orgfilter = 'property__organization_id'
+
+    # Can't figure out how to do the ordering filter, so brute forcing it now with get_queryset
     # filter_backends = (DjangoFilterBackend, OrderingFilter,)
     # queryset = PropertyView.objects.all()
     # ordering = ('-id', '-state__id',)
+
+    def get_queryset(self):
+        org_id = self.get_organization(self.request)
+        return PropertyView.objects.filter(property__organization_id=org_id).order_by('-state__id')
