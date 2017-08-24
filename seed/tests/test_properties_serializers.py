@@ -188,7 +188,7 @@ class TestPropertySerializers(TestCase):
         )
         queryset = PropertyView.objects.filter(
             id__in=[property_view_1.id, property_view_2.id]
-        )
+        ).order_by('id')
         result = serializer.to_representation(queryset)
         self.assertEqual(result[0]['cycle']['id'], property_view_1.cycle_id)
         self.assertEqual(result[1]['cycle']['id'], property_view_2.cycle_id)
