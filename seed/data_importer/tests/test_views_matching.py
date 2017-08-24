@@ -97,9 +97,13 @@ class TestViewsMatching(DataMappingBaseTestCase):
         )
 
         body = json.loads(resp.content)
-        self.assertEqual(body['properties'][0]['recent_sale_date'], '1888-01-05T08:00:00')
-        self.assertEqual(body['properties'][1]['recent_sale_date'], '2017-01-05T08:00:00')
-        self.assertEqual(body['properties'][2]['recent_sale_date'], None)
+        for prop in body['properties']:
+            if prop['custom_id_1'] == '1':
+                self.assertEqual(body['properties'][0]['recent_sale_date'], '1888-01-05T08:00:00')
+            if prop['custom_id_1'] == '4':
+                self.assertEqual(body['properties'][1]['recent_sale_date'], '2017-01-05T08:00:00')
+            if prop['custom_id_1'] == '6':
+                self.assertEqual(body['properties'][2]['recent_sale_date'], None)
 
     def test_get_filtered_mapping_results(self):
         url = reverse("api:v2:import_files-filtered-mapping-results", args=[self.import_file_2.pk])
