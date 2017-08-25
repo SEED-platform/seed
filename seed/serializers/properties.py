@@ -31,6 +31,7 @@ from seed.serializers.certification import (
     GreenAssessmentPropertyReadOnlySerializer
 )
 from seed.serializers.taxlots import TaxLotViewSerializer
+from seed.serializers.building_file import BuildingFileSerializer
 
 # expose internal model
 PropertyLabel = apps.get_model('seed', 'Property_labels')
@@ -46,7 +47,7 @@ REMOVE_FIELDS = [field for field in PROPERTY_STATE_FIELDS
                  if field.startswith('propertyauditlog__')]
 # eventually we can remove the measures, building_file, and property_state as soon as we remove
 # the use of PVFIELDS... someday
-REMOVE_FIELDS.extend(['organization', 'import_file', 'measures', 'building_file', 'property_state'])
+REMOVE_FIELDS.extend(['organization', 'import_file', 'measures', 'building_files', 'property_state'])
 for field in REMOVE_FIELDS:
     PROPERTY_STATE_FIELDS.remove(field)
 PROPERTY_STATE_FIELDS.extend(['organization_id', 'import_file_id'])
@@ -188,6 +189,7 @@ class PropertyMeasureSerializer(serializers.HyperlinkedModelSerializer):
 class PropertyStateSerializer(serializers.ModelSerializer):
     extra_data = serializers.JSONField(required=False)
     measures = PropertyMeasureSerializer(source='propertymeasure_set', many=True)
+    files = BuildingFileSerializer(source='building_files', many=True)
 
     # to support the old state serializer method with the PROPERTY_STATE_FIELDS variables
     import_file_id = serializers.IntegerField()
@@ -203,6 +205,7 @@ class PropertyStateSerializer(serializers.ModelSerializer):
     def to_representation(self, data):
         """Overwritten to handle time conversion"""
         result = super(PropertyStateSerializer, self).to_representation(data)
+        # for datetime to be isoformat and remove timezone data
         if data.generation_date:
             result['generation_date'] = make_naive(data.generation_date).isoformat()
 

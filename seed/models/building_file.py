@@ -46,7 +46,7 @@ class BuildingFile(models.Model):
     #     return "properties/%s/buildingsync" % str(self.id)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
-    property_state = models.ForeignKey('PropertyState', related_name='building_file', null=True)
+    property_state = models.ForeignKey('PropertyState', related_name='building_files', null=True)
     file = models.FileField(upload_to="buildingsync_files", max_length=500, blank=True, null=True)
     file_type = models.IntegerField(choices=BUILDING_FILE_TYPES, default=UNKNOWN)
     filename = models.CharField(blank=True, max_length=255)
@@ -122,9 +122,10 @@ class BuildingFile(models.Model):
                 property_state.extra_data = extra_data
                 property_state.save()
 
-                # TODO: needs to be a merge instead of simply promoting
+                # TODO: needs to be a merge instead of simply promoting!
                 property_state.promote(cycle)
 
+                # set the property_state_id so that we can list the building files by properties
                 self.property_state_id = property_state.id
                 self.save()
 

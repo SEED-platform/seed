@@ -165,6 +165,40 @@
         </div>
     </div>
 
+    <!-- Files Section -->
+    <div class="section">
+        <div class="section_header_container" style="margin-top: 20px; border-bottom: 0;">
+            <div class="section_header fixed_height_short has_no_padding">
+                <div class="section_action_container left" style="width: 50%;">
+                    <span>
+                        <h2><i class="fa fa-file"></i> Files (Master State Only)</h2>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="section_content_container">
+        <!-- List of files -->
+        <div class="section_content">
+            <div class="table_list_container table_item_detail">
+                <table class="table table-striped table_highlight_first fixed-layout" style="margin-bottom:-1px;">
+                    <thead>
+                        <tr>
+                            <th sd-resizable>File Type</th>
+                            <th sd-resizable class="ellipsis-resizable">File Name</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="file in item_state.files">
+                            <td> {$ file.file_type_name $}</td>
+                            <td> <a href='{$ file.file $}'>{$ file.filename $}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <!-- Measures Section -->
     <div class="section">
         <div class="section_header_container" style="margin-top: 20px; border-bottom: 0;">

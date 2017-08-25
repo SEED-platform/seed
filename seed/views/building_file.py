@@ -21,6 +21,7 @@ from seed.serializers.properties import PropertyStateSerializer
 class BuildingFileViewSet(GenericViewSet):
     raise_exception = True
     authentication_classes = (SessionAuthentication, SEEDAuthentication)
+    # TODO: add the building_file serializer to this and override the methods (perform_create)
 
     @has_perm_class('can_modify_data')
     @parser_classes((MultiPartParser, FormParser,))
