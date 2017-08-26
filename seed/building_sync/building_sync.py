@@ -231,7 +231,7 @@ class BuildingSync(object):
                     if found and k == value_path_name:
                         return v
 
-        res = {'measures': [], 'reports': []}
+        res = {'measures': [], 'scenarios': []}
         messages = []
         errors = False
         for k, v in struct['return'].items():
@@ -293,7 +293,7 @@ class BuildingSync(object):
         measures = self._get_node('Audits.Audit.Measures.Measure', data, [])
         for m in measures:
             category = m['TechnologyCategories']['TechnologyCategory'].keys()[0]
-            data = {
+            new_data = {
                 'id': m.get('@ID'),
                 'category': _snake_case(category),
                 'name': m['TechnologyCategories']['TechnologyCategory'][category]['MeasureName']
@@ -301,14 +301,53 @@ class BuildingSync(object):
             for k, v in m.items():
                 if k in ['@ID', 'PremisesAffected', 'TechnologyCategories']:
                     continue
-                data[_snake_case(k)] = v
+                new_data[_snake_case(k)] = v
 
             # fix the names of the measures for "easier" look up... doing in separate step to
             # fit in single line. Cleanup -- when?
-            data['name'] = _snake_case(data['name'])
-            res['measures'].append(data)
+            new_data['name'] = _snake_case(new_data['name'])
+            res['measures'].append(new_data)
 
-        # reports = self._get_node('Audits.Audit.Reports.Report', data, [])
+        # <auc:Scenario>
+        #   <auc:ScenarioName>Lighting Only</auc:ScenarioName>
+        #   <auc:ScenarioType>
+        #     <auc:PackageOfMeasures>
+        #       <auc:ReferenceCase IDref="Baseline"/>
+        #       <auc:MeasureIDs>
+        #         <auc:MeasureID IDref="Measure1"/>
+        #       </auc:MeasureIDs>
+        #       <auc:AnnualSavingsSiteEnergy>162654.89601696888</auc:AnnualSavingsSiteEnergy>
+        #     </auc:PackageOfMeasures>
+        #   </auc:ScenarioType>
+        # </auc:Scenario>
+        scenarios = self._get_node('Audits.Audit.Report.Scenarios.Scenario', data, [])
+        for s in scenarios:
+            new_data = {
+                'id': s.get('@ID'),
+                'name': s.get('ScenarioName'),
+            }
+
+            if s.get('ScenarioType'):
+                node = s['ScenarioType'].get('PackageOfMeasures')
+                if node:
+                    new_data['reference_case'] = node.get('ReferenceCase')
+                    new_data['annual_savings_site_energy'] = node.get('AnnualSavingsSiteEnergy')
+
+                    new_data['measures'] = []
+                    measures = self._get_node('MeasureIDs.MeasureID', node, [])
+                    if isinstance(measures, list):
+                        for measure in measures:
+                            if measure.get('@IDref', None):
+                                new_data['measures'].append(measure.get('@IDref'))
+                    else:
+                        if isinstance(measures, (str, unicode)):
+                            # the measure is there, but it does not have an idref
+                            continue
+                        else:
+                            if measures.get('@IDref', None):
+                                new_data['measures'].append(measures.get('@IDref'))
+
+            res['scenarios'].append(new_data)
 
         return res, errors, messages
 

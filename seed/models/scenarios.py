@@ -9,6 +9,7 @@ from __future__ import unicode_literals
 import logging
 
 from django.db import models
+
 from seed.models.joins import PropertyMeasure
 
 _log = logging.getLogger(__name__)

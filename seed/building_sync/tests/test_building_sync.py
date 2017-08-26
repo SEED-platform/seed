@@ -118,11 +118,11 @@ class TestBuildingSync(TestCase):
         }
 
         expected = {
-            'city': u'Denver',
-            'state': u'CO',
-            'address_line_1': u'123 Main Street',
+            'city': 'Denver',
+            'state': 'CO',
+            'address_line_1': '123 Main Street',
             'measures': [],
-            'reports': [],
+            'scenarios': [],
         }
 
         res, errors, mess = self.bs.process(struct)
@@ -164,7 +164,7 @@ class TestBuildingSync(TestCase):
             'property_type': 'Commercial',
             'property_name': 'Building991',
             'measures': [],
-            'reports': [],
+            'scenarios': [],
         }
 
         res, errors, mess = self.bs.process(struct)

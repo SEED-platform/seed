@@ -162,6 +162,10 @@ class BuildingFile(models.Model):
                     join.cost_residual_value = m.get('measure_residual_value')
                     join.save()
 
+                # add in scenarios
+                for m in data['scenarios']:
+                    print 'stub out this next'
+
                 PropertyAuditLog.objects.create(
                     organization_id=organization_id,
                     state_id=self.property_state_id,
