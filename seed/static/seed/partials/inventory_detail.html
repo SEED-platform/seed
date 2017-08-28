@@ -190,7 +190,7 @@
                     </thead>
                     <tbody>
                         <tr ng-repeat="file in item_state.files">
-                            <td> {$ file.file_type_name $}</td>
+                            <td> {$ file.file_type $}</td>
                             <td> <a href='{$ file.file $}'>{$ file.filename $}</td>
                         </tr>
                     </tbody>
@@ -225,7 +225,7 @@
                     </thead>
                     <tbody>
                         <tr ng-repeat="measure in item_state.measures">
-                            <td> {$ measure.category_display_name $}</td>
+                            <td> <div id="measureAnchor{$ measure.id $}">{$ measure.category_display_name $}</div></td>
                             <td> {$ measure.display_name $}</td>
                             <td> Status: {$ measure.implementation_status $} <br>
                                  Recommended: {$ measure.recommended $} <br>
@@ -245,4 +245,46 @@
             </div>
         </div>
     </div>
+
+    <!-- Scenarios Section -->
+    <div class="section">
+        <div class="section_header_container" style="margin-top: 20px; border-bottom: 0;">
+            <div class="section_header fixed_height_short has_no_padding">
+                <div class="section_action_container left" style="width: 50%;">
+                    <span>
+                        <h2><i class="fa fa-rebel"></i> Scenarios</h2>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="section_content_container">
+        <!-- List of measures -->
+        <div class="section_content">
+            <div class="table_list_container table_item_detail">
+                <table class="table table-striped table_highlight_first fixed-layout" style="margin-bottom:-1px;">
+                    <thead>
+                        <tr>
+                            <th sd-resizable>Scenario</th>
+                            <th sd-resizable class="ellipsis-resizable">Type</th>
+                            <th sd-resizable class="ellipsis-resizable">Measures</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="scenario in item_state.scenarios | orderBy:'$index':true">
+                            <td> {$ scenario.name $}</td>
+                            <td> {$ scenario.temporal_status $}</td>
+                            <td>
+                                <div ng-repeat="measure in scenario.measures">
+                                    <a href="" ng-click="gotoMeasureAnchor(measure.id)">{$ measure.category_display_name $} : {$ measure.display_name $}</a>
+                                </div>
+                            </td>
+                        </p>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    </br>
+    </br>
 </div>

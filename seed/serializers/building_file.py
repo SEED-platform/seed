@@ -14,13 +14,11 @@ from seed.models import (
     BuildingFile,
 )
 
+from seed.serializers.base import ChoiceField
 
 class BuildingFileSerializer(serializers.ModelSerializer):
-    file_type_name = serializers.SerializerMethodField()
+    file_type = ChoiceField(choices=BuildingFile.BUILDING_FILE_TYPES)
 
     class Meta:
         model = BuildingFile
         fields = '__all__'
-
-    def get_file_type_name(self, obj):
-        return obj.get_file_type_display()

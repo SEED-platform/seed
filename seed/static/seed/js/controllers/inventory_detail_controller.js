@@ -10,14 +10,16 @@ angular.module('BE.seed.controller.inventory_detail', [])
     '$log',
     '$filter',
     '$stateParams',
+    '$anchorScroll',
+    '$location',
     'urls',
     'label_service',
     'inventory_service',
     'inventory_payload',
     'columns',
     'labels_payload',
-    function ($state, $scope, $uibModal, $log, $filter, $stateParams, urls, label_service,
-              inventory_service, inventory_payload, columns, labels_payload) {
+    function ($state, $scope, $uibModal, $log, $filter, $stateParams, $anchorScroll, $location,
+              urls, label_service, inventory_service, inventory_payload, columns, labels_payload) {
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.inventory = {
         id: $stateParams.inventory_id,
@@ -45,7 +47,6 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.user = {};
       $scope.user_role = inventory_payload.user_role;
 
-
       $scope.edit_form_showing = false;
 
       /** Holds a copy of original state of item_state.
@@ -60,6 +61,12 @@ angular.module('BE.seed.controller.inventory_detail', [])
 
       $scope.status = {
         isopen: false
+      };
+
+      $scope.gotoMeasureAnchor = function(x) {
+        var newHash = 'measureAnchor' + x;
+        $location.hash(newHash);
+        $anchorScroll();
       };
 
       $scope.init_labels = function (item) {
