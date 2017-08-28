@@ -10,12 +10,10 @@ from seed.models import Scenario
 from seed.serializers.measures import PropertyMeasureSerializer
 from seed.serializers.base import ChoiceField
 
+
 class ScenarioSerializer(serializers.ModelSerializer):
     measures = PropertyMeasureSerializer(many=True)
     temporal_status = ChoiceField(choices=Scenario.TEMPORAL_STATUS_TYPES)
 
     class Meta:
         model = Scenario
-
-
-

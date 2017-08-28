@@ -64,8 +64,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       };
 
       $scope.gotoMeasureAnchor = function(x) {
-        var newHash = 'measureAnchor' + x;
-        $location.hash(newHash);
+        $location.hash('measureAnchor' + x);
         $anchorScroll();
       };
 

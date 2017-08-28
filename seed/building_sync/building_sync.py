@@ -240,7 +240,7 @@ class BuildingSync(object):
 
             try:
                 if v.get('key_path_name', None) and v.get('value_path_name', None) and v.get(
-                    'key_path_value', None):
+                        'key_path_value', None):
                     value = _lookup_sub(
                         value,
                         v.get('key_path_name'),
