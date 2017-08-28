@@ -275,7 +275,7 @@
                             <td> {$ scenario.name $}</td>
                             <td> {$ scenario.temporal_status $}</td>
                             <td>
-                                <div ng-repeat="measure in scenario.measures">
+                                <div ng-repeat="measure in scenario.measures | orderBy:'$index':true">
                                     <a href="" ng-click="gotoMeasureAnchor(measure.id)">{$ measure.category_display_name $} : {$ measure.display_name $}</a>
                                 </div>
                             </td>
