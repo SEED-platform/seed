@@ -240,7 +240,7 @@ class BuildingSync(object):
 
             try:
                 if v.get('key_path_name', None) and v.get('value_path_name', None) and v.get(
-                        'key_path_value', None):
+                    'key_path_value', None):
                     value = _lookup_sub(
                         value,
                         v.get('key_path_name'),
@@ -294,7 +294,7 @@ class BuildingSync(object):
         for m in measures:
             category = m['TechnologyCategories']['TechnologyCategory'].keys()[0]
             new_data = {
-                'id': m.get('@ID'),
+                'property_measure_name': m.get('@ID'),  # This will be the IDref from the scenarios
                 'category': _snake_case(category),
                 'name': m['TechnologyCategories']['TechnologyCategory'][category]['MeasureName']
             }
@@ -330,7 +330,9 @@ class BuildingSync(object):
             if s.get('ScenarioType'):
                 node = s['ScenarioType'].get('PackageOfMeasures')
                 if node:
-                    new_data['reference_case'] = node.get('ReferenceCase')
+                    ref_case = self._get_node('ReferenceCase', node, [])
+                    if ref_case and ref_case.get('@IDref'):
+                        new_data['reference_case'] = ref_case.get('@IDref')
                     new_data['annual_savings_site_energy'] = node.get('AnnualSavingsSiteEnergy')
 
                     new_data['measures'] = []

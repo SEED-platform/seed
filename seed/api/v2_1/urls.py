@@ -8,9 +8,11 @@ from django.conf.urls import url, include
 from rest_framework import routers
 
 from seed.api.v2_1.views import PropertyViewSetV21
+from seed.views.scenarios import ScenarioViewSet
 
 router = routers.DefaultRouter()
 router.register(r'properties', PropertyViewSetV21, base_name="properties")
+router.register(r'scenarios', ScenarioViewSet, base_name="scenarios")
 
 urlpatterns = [
     url(r'^', include(router.urls)),

@@ -17,7 +17,6 @@ from rest_framework import serializers
 from rest_framework.fields import empty
 
 from seed.models import (
-    PropertyMeasure,
     AUDIT_USER_EDIT,
     GreenAssessmentProperty,
     PropertyAuditLog,
@@ -27,11 +26,13 @@ from seed.models import (
     TaxLotProperty,
     TaxLotView,
 )
+from seed.serializers.building_file import BuildingFileSerializer
 from seed.serializers.certification import (
     GreenAssessmentPropertyReadOnlySerializer
 )
+from seed.serializers.scenarios import ScenarioSerializer
 from seed.serializers.taxlots import TaxLotViewSerializer
-from seed.serializers.building_file import BuildingFileSerializer
+from seed.serializers.measures import PropertyMeasureSerializer
 
 # expose internal model
 PropertyLabel = apps.get_model('seed', 'Property_labels')
@@ -47,7 +48,7 @@ REMOVE_FIELDS = [field for field in PROPERTY_STATE_FIELDS
                  if field.startswith('propertyauditlog__')]
 # eventually we can remove the measures, building_file, and property_state as soon as we remove
 # the use of PVFIELDS... someday
-REMOVE_FIELDS.extend(['organization', 'import_file', 'measures', 'building_files', 'property_state'])
+REMOVE_FIELDS.extend(['organization', 'import_file', 'measures', 'building_files', 'scenarios'])
 for field in REMOVE_FIELDS:
     PROPERTY_STATE_FIELDS.remove(field)
 PROPERTY_STATE_FIELDS.extend(['organization_id', 'import_file_id'])
@@ -136,59 +137,10 @@ class PropertyMinimalSerializer(serializers.ModelSerializer):
         }
 
 
-class ChoiceField(serializers.Field):
-    def __init__(self, choices, **kwargs):
-        self._choices = choices
-        super(ChoiceField, self).__init__(**kwargs)
-
-    def to_representation(self, obj):
-        return self._choices[obj][1]
-
-    def to_internal_value(self, data):
-        return getattr(self._choices, data)
-
-
-class PropertyMeasureSerializer(serializers.HyperlinkedModelSerializer):
-    id = serializers.ReadOnlyField(source='measure.id')
-    measure_id = serializers.SerializerMethodField('measure_id_name')
-    name = serializers.ReadOnlyField(source='measure.name')
-    display_name = serializers.ReadOnlyField(source='measure.display_name')
-    category = serializers.ReadOnlyField(source='measure.category')
-    category_display_name = serializers.ReadOnlyField(source='measure.category_display_name')
-    implementation_status = ChoiceField(choices=PropertyMeasure.IMPLEMENTATION_TYPES)
-    application_scale = ChoiceField(choices=PropertyMeasure.APPLICATION_SCALE_TYPES)
-    category_affected = ChoiceField(choices=PropertyMeasure.CATEGORY_AFFECTED_TYPE)
-
-    class Meta:
-        model = PropertyMeasure
-
-        fields = (
-            'id',
-            'measure_id',
-            'category',
-            'name',
-            'category_display_name',
-            'display_name',
-            'category_affected',
-            'application_scale',
-            'recommended',
-            'implementation_status',
-            'cost_mv',
-            'description',
-            'cost_total_first',
-            'cost_installation',
-            'cost_material',
-            'cost_capital_replacement',
-            'cost_residual_value',
-        )
-
-    def measure_id_name(self, obj):
-        return "{}.{}".format(obj.measure.category, obj.measure.name)
-
-
 class PropertyStateSerializer(serializers.ModelSerializer):
     extra_data = serializers.JSONField(required=False)
     measures = PropertyMeasureSerializer(source='propertymeasure_set', many=True)
+    scenarios = ScenarioSerializer(many=True)
     files = BuildingFileSerializer(source='building_files', many=True)
 
     # to support the old state serializer method with the PROPERTY_STATE_FIELDS variables

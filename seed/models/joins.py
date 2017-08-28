@@ -144,7 +144,12 @@ class PropertyMeasure(models.Model):
         (CATEGORY_OTHER, 'Other'),
     )
 
+    # pointer to the actual measure as defined by the list of BuildingSync measures
     measure = models.ForeignKey('Measure', on_delete=models.DO_NOTHING)
+
+    # User defined name of the measure that is in the BuildingSync file, used for tracking measures
+    # within properties. This is typically the IDref.
+    property_measure_name = models.CharField(max_length=255, null=False)
     property_state = models.ForeignKey('PropertyState', on_delete=models.DO_NOTHING)
     description = models.TextField(null=True)
     implementation_status = models.IntegerField(choices=IMPLEMENTATION_TYPES,
@@ -159,6 +164,12 @@ class PropertyMeasure(models.Model):
     cost_capital_replacement = models.FloatField(null=True)
     cost_residual_value = models.FloatField(null=True)
     category_affected = models.IntegerField(choices=CATEGORY_AFFECTED_TYPE, default=CATEGORY_OTHER)
+
+    class Meta:
+        unique_together = ('property_state', 'measure', 'application_scale',)
+        index_together = [
+            ['property_measure_name', 'property_state'],
+        ]
 
     @classmethod
     def str_to_impl_status(cls, impl_status):

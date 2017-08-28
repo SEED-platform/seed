@@ -310,6 +310,7 @@ class FakePropertyMeasureFactory(BaseFake):
             measure = Measure.objects.all().order_by('?')[0]
             property_measure_details = {
                 'measure_id': measure.id,
+                'property_measure_name': self.fake.text(),
                 'property_state': self.property_state,
                 'description': self.fake.text(),
                 'implementation_status': PropertyMeasure.MEASURE_IN_PROGRESS,
@@ -368,9 +369,7 @@ class FakeGreenAssessmentFactory(BaseFake):
             if isinstance(validity_duration, int):
                 validity_duration = datetime.timedelta(validity_duration)
             if not (isinstance(validity_duration, datetime.timedelta)):
-                raise TypeError(
-                    'validity_duration must be an integer or timedelta'
-                )
+                raise TypeError('validity_duration must be an integer or timedelta')
             green_assessment['validity_duration'] = validity_duration
         green_assessment.update(kw)
         return GreenAssessment.objects.create(**green_assessment)

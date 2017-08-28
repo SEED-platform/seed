@@ -19,6 +19,7 @@ from seed.models import (
     Measure,
     PropertyAuditLog,
     AUDIT_IMPORT,
+    Scenario,
 )
 
 _log = logging.getLogger(__name__)
@@ -154,6 +155,7 @@ class BuildingFile(models.Model):
                         recommended=m.get('recommended', 'false') == 'true',
                     )
                     join.description = m.get('description')
+                    join.property_measure_name = m.get('property_measure_name')
                     join.cost_mv = m.get('mv_cost')
                     join.cost_total_first = m.get('measure_total_first_cost')
                     join.cost_installation = m.get('measure_installation_cost')
@@ -163,8 +165,54 @@ class BuildingFile(models.Model):
                     join.save()
 
                 # add in scenarios
-                for m in data['scenarios']:
-                    print 'stub out this next'
+                for s in data['scenarios']:
+                    # measures = models.ManyToManyField(PropertyMeasure)
+
+                    # {'reference_case': u'Baseline', 'annual_savings_site_energy': None,
+                    #  'measures': [], 'id': u'Baseline', 'name': u'Baseline'}
+
+                    scenario, _ = Scenario.objects.get_or_create(
+                        name=s.get('name'),
+                        property_state_id=self.property_state_id,
+                    )
+                    scenario.description = s.get('description')
+                    scenario.annual_site_energy_savings = s.get('annual_site_energy_savings')
+                    scenario.annual_source_energy_savings = s.get('annual_source_energy_savings')
+                    scenario.annual_cost_savings = s.get('annual_cost_savings')
+                    scenario.summer_peak_load_reduction = s.get('summer_peak_load_reduction')
+                    scenario.winter_peak_load_reduction = s.get('winter_peak_load_reduction')
+                    scenario.hdd = s.get('hdd')
+                    scenario.hdd_base_temperature = s.get('hdd_base_temperature')
+                    scenario.cdd = s.get('cdd')
+                    scenario.cdd_base_temperature = s.get('cdd_base_temperature')
+
+                    # temporal_status = models.IntegerField(choices=TEMPORAL_STATUS_TYPES,
+                    #                                       default=TEMPORAL_STATUS_CURRENT)
+
+                    if s.get('reference_case'):
+                        ref_case = Scenario.objects.filter(
+                            name=s.get('reference_case'),
+                            property_state_id=self.property_state_id,
+                        )
+                        if len(ref_case) == 1:
+                            scenario.reference_case = ref_case.first()
+
+                    # set the list of measures
+                    for measure_name in s['measures']:
+                        # find the join measure in the database
+                        measure = None
+                        try:
+                            measure = PropertyMeasure.objects.get(
+                                property_state_id=self.property_state_id,
+                                property_measure_name=measure_name,
+                            )
+                        except PropertyMeasure.DoesNotExist:
+                            # PropertyMeasure is not in database, skipping silently
+                            continue
+
+                        scenario.measures.add(measure)
+
+                    scenario.save()
 
                 PropertyAuditLog.objects.create(
                     organization_id=organization_id,

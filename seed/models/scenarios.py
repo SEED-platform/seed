@@ -46,7 +46,10 @@ class Scenario(models.Model):
                                           default=TEMPORAL_STATUS_CURRENT)
     description = models.TextField(null=True)
 
-    property_state = models.ForeignKey('PropertyState', related_name='property_state')
+    property_state = models.ForeignKey('PropertyState', related_name='scenarios')
+
+    # a scenario can point to a reference case scenario
+    reference_case = models.ForeignKey('Scenario', null=True)
 
     # package of measures fields
     annual_site_energy_savings = models.FloatField(null=True)
@@ -60,4 +63,5 @@ class Scenario(models.Model):
     cdd_base_temperature = models.FloatField(null=True)
 
     measures = models.ManyToManyField(PropertyMeasure)
-    # meters are linked from Class Meter
+
+    # TODO: add in meters -- meters are linked from Class Meter
