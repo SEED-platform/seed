@@ -44,7 +44,9 @@ angular.module('BE.seed.controller.inventory_list', [])
       $scope.number_per_page = 999999999;
       $scope.restoring = false;
 
-      $scope.labels = labels;
+      // Reduce labels to only records found in the current cycle
+      $scope.selected_labels = [];
+      updateApplicableLabels();
 
       var localStorageKey = 'grid.' + $scope.inventory_type;
       var localStorageLabelKey = 'grid.' + $scope.inventory_type + '.labels';
@@ -71,13 +73,29 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
+      function updateApplicableLabels () {
+        var inventoryIds = _.map($scope.data, 'id').sort();
+        $scope.labels = _.filter(labels, function (label) {
+          return _.some(label.is_applied, function (id) {
+            return _.includes(inventoryIds, id);
+          });
+        });
+        // Ensure that no previously-applied labels remain
+        var new_labels = _.filter($scope.selected_labels, function (label) {
+          return _.includes($scope.labels, label.id);
+        });
+        if ($scope.selected_labels.length !== new_labels.length) {
+          $scope.selected_labels = new_labels;
+        }
+      }
+
       var filterUsingLabels = function () {
         // Only submit the `id` of the label to the API.
         var ids;
         if ($scope.labelLogic === 'and') {
           ids = _.intersection.apply(null, _.map($scope.selected_labels, 'is_applied'));
         } else if (_.includes(['or', 'exclude'], $scope.labelLogic)) {
-          ids = _.uniq(_.flatten(_.map($scope.selected_labels, 'is_applied')));
+          ids = _.union.apply(null, _.map($scope.selected_labels, 'is_applied'));
         }
 
         inventory_service.saveSelectedLabels(localStorageLabelKey, _.map($scope.selected_labels, 'id'));
@@ -278,6 +296,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           _.merge(data[relatedIndex], aggregations);
         }
         $scope.data = data;
+        updateApplicableLabels();
         $scope.updateQueued = true;
       };
 
