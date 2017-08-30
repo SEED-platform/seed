@@ -63,16 +63,15 @@ angular.module('BE.seed.controller.matching_detail', [])
         $scope.current_page = _.min([$scope.current_page, $scope.number_of_pages - 1]);
 
         _.defer(function () {
-          $scope.$apply(function () {
-            $scope.showing.total = $scope.filtered.length;
-            if ($scope.showing.total === 0) {
-              $scope.showing.start = 0;
-              $scope.showing.end = 0;
-            } else {
-              $scope.showing.start = $scope.current_page * $scope.number_per_page + 1;
-              $scope.showing.end = Math.min($scope.showing.start + $scope.number_per_page - 1, $scope.showing.total);
-            }
-          });
+          $scope.showing.total = $scope.filtered.length;
+          if ($scope.showing.total === 0) {
+            $scope.showing.start = 0;
+            $scope.showing.end = 0;
+          } else {
+            $scope.showing.start = $scope.current_page * $scope.number_per_page + 1;
+            $scope.showing.end = Math.min($scope.showing.start + $scope.number_per_page - 1, $scope.showing.total);
+          }
+          $scope.$digest();
         });
       };
 

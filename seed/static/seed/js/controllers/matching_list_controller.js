@@ -76,7 +76,8 @@ angular.module('BE.seed.controller.matching_list', [])
       $scope.SHOW_UNMATCHED = 'Show Unmatched';
 
       $scope.filter_options = [$scope.SHOW_ALL, $scope.SHOW_MATCHED, $scope.SHOW_UNMATCHED];
-      $scope.selectedFilter = $scope.SHOW_ALL;
+      var visibility = matching_service.loadVisibility();
+      $scope.selectedFilter = _.includes($scope.filter_options, visibility) ? visibility : $scope.SHOW_ALL;
 
       /**
        * Pagination code
@@ -86,16 +87,15 @@ angular.module('BE.seed.controller.matching_list', [])
         $scope.current_page = _.min([$scope.current_page, $scope.number_of_pages - 1]);
 
         _.defer(function () {
-          $scope.$apply(function () {
-            $scope.showing.total = $scope.filtered.length;
-            if ($scope.showing.total === 0) {
-              $scope.showing.start = 0;
-              $scope.showing.end = 0;
-            } else {
-              $scope.showing.start = $scope.current_page * $scope.number_per_page + 1;
-              $scope.showing.end = Math.min($scope.showing.start + $scope.number_per_page - 1, $scope.showing.total);
-            }
-          });
+          $scope.showing.total = $scope.filtered.length;
+          if ($scope.showing.total === 0) {
+            $scope.showing.start = 0;
+            $scope.showing.end = 0;
+          } else {
+            $scope.showing.start = $scope.current_page * $scope.number_per_page + 1;
+            $scope.showing.end = Math.min($scope.showing.start + $scope.number_per_page - 1, $scope.showing.total);
+          }
+          $scope.$digest();
         });
       };
 
@@ -171,18 +171,17 @@ angular.module('BE.seed.controller.matching_list', [])
       $scope.sortData = function (column, extraData) {
         _.defer(spinner_utility.show);
         _.delay(function () {
-          $scope.$apply(function () {
-            if (extraData) column = 'extra_data[\'' + column + '\']';
-            if ($scope.sortColumn === column && $scope.reverseSort) {
-              $scope.reverseSort = false;
-              $scope.sortColumn = 'name';
-            } else {
-              $scope.reverseSort = $scope.sortColumn === column ? !$scope.reverseSort : false;
-              $scope.sortColumn = column;
-            }
+          if (extraData) column = 'extra_data[\'' + column + '\']';
+          if ($scope.sortColumn === column && $scope.reverseSort) {
+            $scope.reverseSort = false;
+            $scope.sortColumn = 'name';
+          } else {
+            $scope.reverseSort = $scope.sortColumn === column ? !$scope.reverseSort : false;
+            $scope.sortColumn = column;
+          }
 
-            spinner_utility.hide();
-          });
+          spinner_utility.hide();
+          $scope.$digest();
         }, 50);
       };
 
@@ -249,6 +248,11 @@ angular.module('BE.seed.controller.matching_list', [])
 
       $scope.fileChanged = function () {
         $state.go('matching_list', {importfile_id: $scope.selectedFile.id, inventory_type: $scope.inventory_type});
+      };
+
+      $scope.selectedFilterChanged = function () {
+        $scope.current_page = 0;
+        matching_service.saveVisibility($scope.selectedFilter);
       };
 
       $scope.$watch('filtered', _.debounce(function(newValue, oldValue) {
