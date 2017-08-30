@@ -27,6 +27,7 @@ class Simulation(models.Model):
     # currently only one simulation result object for each propertystate
     property_state = models.OneToOneField("PropertyState", on_delete=models.CASCADE,
                                           primary_key=True, )
+    scenario = models.ForeignKey('Scenario', related_name='simulations', null=True)
     data = JSONField(default=dict, blank=True)
 
 
