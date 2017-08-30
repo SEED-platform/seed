@@ -8,16 +8,19 @@ All rights reserved.  # NOQA
 :author
 """
 
-# Imports from Standard Library
-
 from django.db.models import Q
+from django.http import JsonResponse
 from django_filters import CharFilter, DateFilter
 from django_filters.rest_framework import FilterSet
+from rest_framework.decorators import detail_route
 
+from seed.filtersets import PropertyViewFilterSet
 from seed.models import (
     PropertyView,
 )
-from seed.serializers.properties import PropertyViewAsStateSerializer
+from seed.serializers.properties import (
+    PropertyViewAsStateSerializer,
+)
 from seed.utils.viewsets import (
     SEEDOrgReadOnlyModelViewSet
 )
@@ -88,3 +91,13 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
     def get_queryset(self):
         org_id = self.get_organization(self.request)
         return PropertyView.objects.filter(property__organization_id=org_id).order_by('-state__id')
+
+    @detail_route(methods=['GET'])
+    def building_sync(self, request, pk):
+        """
+        Return BuildingSync representation of the property
+        ---
+
+        """
+        return JsonResponse(
+            {"status": "error", "message": "Not yet implemented. PK was {}".format(pk)})

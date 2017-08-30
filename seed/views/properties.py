@@ -1059,17 +1059,7 @@ class PropertyViewSet(GenericViewSet):
             }
         )
 
-    @ajax_request_class
-    @has_perm_class('requires_viewer')
-    @list_route(methods=['GET'])
-    def building_sync(self, request):
-        """
-        Return BuildingSync representation of the property
-        ---
 
-        """
-
-        return JsonResponse({"status": "error", "message": "Not yet implemented"})
 
 
 class TaxLotViewSet(GenericViewSet):
