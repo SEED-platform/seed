@@ -43,14 +43,14 @@ STATUS_CHOICES = (
 )
 
 # Measurement systems for user's display preference and initial choice at import time
-MEASUREMENT_US = 1
+MEASUREMENT_IP = 1
 MEASUREMENT_SI_GJ = 2  # cdn federal government reporting, portfolio manager
 MEASUREMENT_SI_KWH = 3 # cdn municipalities, industry working units
 
 MEASUREMENT_SYSTEMS = (
-    (MEASUREMENT_US, 'United States customary units - kBtu/sq ft'),
-    (MEASUREMENT_SI_GJ, 'Metric (SI) units - GJ/m2'),
-    (MEASUREMENT_SI_KWH, 'Metric (SI) units - kWh/m2'),
+    (MEASUREMENT_IP, 'IP units - kBtu/ft²/year'),
+    (MEASUREMENT_SI_GJ, 'SI units - GJ/m²/year'),
+    (MEASUREMENT_SI_KWH, 'SI units - kWh/m²/year'),
 )
 
 class ExportableField(models.Model):
@@ -123,10 +123,10 @@ class Organization(models.Model):
     name = models.CharField(max_length=100)
     measurement_system_import = models.IntegerField(
             choices=MEASUREMENT_SYSTEMS,
-            default=MEASUREMENT_US)
+            default=MEASUREMENT_IP)
     measurement_system_display = models.IntegerField(
             choices=MEASUREMENT_SYSTEMS,
-            default=MEASUREMENT_US)
+            default=MEASUREMENT_IP)
 
     users = models.ManyToManyField(
         USER_MODEL,

@@ -17,7 +17,7 @@ from django.utils import timezone
 
 from seed.factory import SEEDFactory
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.models import Organization, OrganizationUser, MEASUREMENT_US
+from seed.lib.superperms.orgs.models import Organization, OrganizationUser, MEASUREMENT_IP
 from seed.models import (
     CanonicalBuilding,
     Cycle,
@@ -257,8 +257,8 @@ class TestApi(TestCase):
         self.assertEqual(r['organization']['number_of_users'], 1)
         self.assertEqual(len(r['organization']['owners']), 1)
         self.assertEqual(r['organization']['user_is_owner'], True)
-        self.assertEqual(r['organization']['measurement_system_import'], MEASUREMENT_US)
-        self.assertEqual(r['organization']['measurement_system_display'], MEASUREMENT_US)
+        self.assertEqual(r['organization']['measurement_system_import'], MEASUREMENT_IP)
+        self.assertEqual(r['organization']['measurement_system_display'], MEASUREMENT_IP)
 
     def test_update_user(self):
         user_payload = {
