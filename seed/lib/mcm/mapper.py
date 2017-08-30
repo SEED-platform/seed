@@ -115,7 +115,7 @@ def apply_column_value(raw_field, value, model, mapping, is_extra_data, cleaner)
                 if model.__class__.__name__ == table_name:
                     if isinstance(cleaned_value, (datetime, date)):
                         # TODO: create an encoder for datetime once we are in Django 1.11
-                        model.extra_data[field_name] = cleaned_value.strftime("%Y-%m-%d %H:%M:%S")
+                        model.extra_data[field_name] = cleaned_value.isoformat()
                     else:
                         model.extra_data[field_name] = cleaned_value
         else:

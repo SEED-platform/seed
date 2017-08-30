@@ -74,5 +74,15 @@ angular.module('BE.seed.service.matching', []).factory('matching_service', [
       });
     };
 
+    matching_factory.saveVisibility = function (matchingVisibility) {
+      var key = 'matchingVisibility.' + user_service.get_organization().id;
+      localStorage.setItem(key, matchingVisibility);
+    };
+
+    matching_factory.loadVisibility = function () {
+      var key = 'matchingVisibility.' + user_service.get_organization().id;
+      return localStorage.getItem(key) || 'Show All';
+    };
+
     return matching_factory;
   }]);
