@@ -23,8 +23,8 @@ import os
 from os.path import abspath, dirname
 from sys import path
 
-SITE_ROOT = dirname(dirname(abspath(__file__)))
-path.append(SITE_ROOT)
+BASE_DIR = dirname(dirname(abspath(__file__)))
+path.append(BASE_DIR)
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.main")
 

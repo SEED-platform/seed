@@ -53,12 +53,6 @@ AWS_UPLOAD_CLIENT_KEY = AWS_ACCESS_KEY_ID
 AWS_UPLOAD_CLIENT_SECRET_KEY = AWS_SECRET_ACCESS_KEY
 AWS_STORAGE_BUCKET_NAME = AWS_BUCKET_NAME
 
-# choice of DEFAULT_FILE_STORAGE (s3 or file system)
-# DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
-DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
-
-STATICFILES_STORAGE = DEFAULT_FILE_STORAGE
-
 # redis cache config
 # with AWS ElastiCache redis, the LOCATION setting looks something like:
 # 'xx-yy-zzrr0aax9a.ntmprk.0001.usw2.cache.amazonaws.com:6379'

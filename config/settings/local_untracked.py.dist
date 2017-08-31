@@ -42,7 +42,10 @@ CACHES = {
 }
 CELERY_BROKER_URL = 'redis://your-cache-url:your-cache-port/1'
 
-DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+# If using AWS S3 for filesystem storage, then uncomment this, otherwise, leave it commented
+# out to keep the media files in the correct location.
+# DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
+# STATICFILES_STORAGE = DEFAULT_FILE_STORAGE
 
 INTERNAL_IPS = ('127.0.0.1',)
 

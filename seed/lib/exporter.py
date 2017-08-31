@@ -170,14 +170,14 @@ class Exporter:
         # save the tempfile to the file storage location (s3 or local)
         if self.tempfile is not None:
             with open(self.tempfile) as f:
-                if 'FileSystemStorage' in settings.DEFAULT_FILE_STORAGE:
+                if 'S3' in settings.DEFAULT_FILE_STORAGE:
+                    s3_key = DefaultStorage().bucket.new_key(self.filename())
+                    s3_key.set_contents_from_file(f)
+                else:
                     # This is non-ideal. We should just save the file in the right location to start with
                     # or return the file from the "export". This was done to avoid changing the exporter code 'too much'.
                     file_storage = DefaultStorage()
                     file_storage.save(self.filename(), f)
-                else:
-                    s3_key = DefaultStorage().bucket.new_key(self.filename())
-                    s3_key.set_contents_from_file(f)
 
                 os.remove(self.tempfile)
 

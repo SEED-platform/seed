@@ -13,7 +13,6 @@ import uuid
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
-from django.core.exceptions import ImproperlyConfigured
 from django.core.files.storage import DefaultStorage
 from django.http import JsonResponse
 from django.shortcuts import render_to_response
@@ -101,15 +100,12 @@ def home(request):
         * **FILE_UPLOAD_DESTINATION**: 'S3' or 'filesystem'
     """
     username = request.user.first_name + " " + request.user.last_name
-    if 's3boto' in settings.DEFAULT_FILE_STORAGE.lower():
+    if 'S3' in settings.DEFAULT_FILE_STORAGE:
         FILE_UPLOAD_DESTINATION = 'S3'
         AWS_UPLOAD_BUCKET_NAME = settings.AWS_BUCKET_NAME
         AWS_CLIENT_ACCESS_KEY = settings.AWS_UPLOAD_CLIENT_KEY
-    elif 'FileSystemStorage' in settings.DEFAULT_FILE_STORAGE:
-        FILE_UPLOAD_DESTINATION = 'filesystem'
     else:
-        msg = "Only S3 and FileSystemStorage backends are supported"
-        raise ImproperlyConfigured(msg)
+        FILE_UPLOAD_DESTINATION = 'filesystem'
 
     initial_org_id, initial_org_name, initial_org_user_role = _get_default_org(
         request.user
@@ -326,7 +322,30 @@ def export_buildings_download(request):
     # moment.
     export_subdir = Exporter.subdirectory_from_export_id(export_id)
 
-    if 'FileSystemStorage' in settings.DEFAULT_FILE_STORAGE:
+    if 'S3' in settings.DEFAULT_FILE_STORAGE:
+        keys = list(DefaultStorage().bucket.list(export_subdir))
+
+        if not keys:
+            return JsonResponse({
+                'success': False,
+                'status': 'working'
+            })
+
+        if len(keys) > 1:
+            return JsonResponse({
+                "success": False,
+                "status": "error",
+            })
+
+        download_key = keys[0]
+        download_url = download_key.generate_url(900)
+
+        return JsonResponse({
+            'success': True,
+            "status": "success",
+            "url": download_url
+        })
+    else:
         file_storage = DefaultStorage()
 
         try:
@@ -355,30 +374,6 @@ def export_buildings_download(request):
                     'message': 'Could not find file on server',
                     'status': 'error'
                 })
-
-    else:
-        keys = list(DefaultStorage().bucket.list(export_subdir))
-
-        if not keys:
-            return JsonResponse({
-                'success': False,
-                'status': 'working'
-            })
-
-        if len(keys) > 1:
-            return JsonResponse({
-                "success": False,
-                "status": "error",
-            })
-
-        download_key = keys[0]
-        download_url = download_key.generate_url(900)
-
-        return JsonResponse({
-            'success': True,
-            "status": "success",
-            "url": download_url
-        })
 
 
 # @api_view(['POST'])  # do not add api_view on this because this is public and adding it will
