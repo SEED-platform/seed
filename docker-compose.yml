@@ -13,8 +13,8 @@ services:
   db-redis:
     image: redis
   web:
+    image: seedplatform/seed
     build: .
-    command: /seed/docker/start_uwsgi_docker.sh
     environment:
       - POSTGRES_DB=seed
       - POSTGRES_USER=seed
@@ -22,14 +22,16 @@ services:
       - SEED_ADMIN_USER=user@seed-platform.org
       - SEED_ADMIN_PASSWORD=super-secret-password
       - SEED_ADMIN_ORG=default
-      - DJANGO_SETTINGS_MODULE=config.settings.dev
+      - DJANGO_SETTINGS_MODULE=config.settings.docker
+      - SECRET_KEY=alsdkfj83urjlaskdfjlaskdjflkaseurlkejalsdkjf98w3uj4lkkhgl
     depends_on:
       - db-redis
       - db-postgres
     volumes:
       - seed_media:/seed/media
     ports:
-      - "80:8000"
+      - "80:80"
+      - "8000:8000"
   web-celery:
     build: .
     command: /seed/docker/start_celery_docker.sh
@@ -37,7 +39,8 @@ services:
       - POSTGRES_DB=seed
       - POSTGRES_USER=seed
       - POSTGRES_PASSWORD=super-secret-password
-      - DJANGO_SETTINGS_MODULE=config.settings.dev
+      - DJANGO_SETTINGS_MODULE=config.settings.docker
+      - SECRET_KEY=alsdkfj83urjlaskdfjlaskdjflkaseurlkejalsdkjf98w3uj4lkkhgl
     depends_on:
       - db-redis
       - db-postgres

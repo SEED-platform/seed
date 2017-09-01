@@ -129,8 +129,6 @@ STATICFILES_FINDERS = (
     'compressor.finders.CompressorFinder',
 )
 
-
-
 COMPRESS_ROOT = STATIC_ROOT
 COMPRESS_URL = STATIC_URL
 COMPRESS_PRECOMPILERS = (

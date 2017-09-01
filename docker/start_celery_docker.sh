@@ -13,4 +13,5 @@ echo "Waiting for web to start"
 
 export WORKERS=$(($(nproc) * 2))
 export WORKERS=$(($WORKERS>1?$WORKERS:1))
-celery -u 1000 -A seed worker -l info -c $WORKERS --maxtasksperchild 1000 --events
+echo "Number of workers will be set to: $WORKERS"
+celery -A seed worker -l info -c $WORKERS --maxtasksperchild 1000 --events
