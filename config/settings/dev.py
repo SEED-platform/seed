@@ -52,12 +52,18 @@ LOGGING = {
             'format': "%(pathname)s:%(lineno)d - %(message)s"
         }
     },
+    'filters': {
+        'mute_markdown_import': {
+            '()': 'seed.utils.generic.MarkdownPackageDebugFilter'
+        }
+    },
     # set up some log message handlers to choose from
     'handlers': {
         'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
             'formatter': 'file_line_number',
+            'filters': ['mute_markdown_import']
         }
     },
     'loggers': {
