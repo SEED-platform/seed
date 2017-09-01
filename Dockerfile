@@ -57,8 +57,9 @@ RUN npm update && /seed/bin/install_javascript_dependencies.sh
 COPY . /seed/
 COPY ./docker/wait-for-it.sh /usr/local/wait-for-it.sh
 
-# collect the static assets and compress them. This will be called again upon startup.
-RUN ./manage.py collectstatic --no-input && ./manage.py compress --force
+# collect the static assets and compress them. Commented out for now because it takes forever in
+# in docker
+#RUN ./manage.py collectstatic --no-input && ./manage.py compress --force
 
 # entrypoint sets some permissions on directories that may be shared volumes
 COPY /docker/seed-entrypoint.sh /usr/local/bin/seed-entrypoint
