@@ -1060,8 +1060,6 @@ class PropertyViewSet(GenericViewSet):
         )
 
 
-
-
 class TaxLotViewSet(GenericViewSet):
     renderer_classes = (JSONRenderer,)
     serializer_class = TaxLotSerializer

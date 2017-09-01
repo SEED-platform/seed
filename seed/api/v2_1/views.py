@@ -14,7 +14,6 @@ from django_filters import CharFilter, DateFilter
 from django_filters.rest_framework import FilterSet
 from rest_framework.decorators import detail_route
 
-from seed.filtersets import PropertyViewFilterSet
 from seed.models import (
     PropertyView,
 )
