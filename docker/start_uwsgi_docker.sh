@@ -14,6 +14,7 @@ echo "Waiting for redis to start"
 
 WORKERS=$(($(nproc) / 2))
 WORKERS=$(($WORKERS>1?$WORKERS:1))
-/usr/local/bin/uwsgi --http 0.0.0.0:8000 --module wsgi \
+/usr/local/bin/uwsgi --http 0.0.0.0:8000 --module wsgi --uid 1000 --gid 1000 \
     --max-requests 5000 --cheaper-initial 1 -p $WORKERS --single-interpreter --enable-threads \
     --wsgi-file /seed/config/wsgi.py
+

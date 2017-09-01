@@ -2,5 +2,7 @@
 .git
 .tox
 collected_static
+media
 node_modules
 seed/static/vendors
+config/settings/local_untracked.py

@@ -9,11 +9,9 @@ services:
       - POSTGRES_USER=seed
       - POSTGRES_PASSWORD=super-secret-password
     volumes:
-      - $HOME/seed_data:/seed/collected_static
+      - seed_pgdata:/var/lib/postgresql/data
   db-redis:
     image: redis
-    volumes:
-      - $HOME/seed_data:/seed/collected_static
   web:
     build: .
     command: /seed/docker/start_uwsgi_docker.sh
@@ -29,9 +27,9 @@ services:
       - db-redis
       - db-postgres
     volumes:
-      - $HOME/seed_data:/seed/collected_static
+      - seed_media:/seed/media
     ports:
-      - "8000:8000"
+      - "80:8000"
   web-celery:
     build: .
     command: /seed/docker/start_celery_docker.sh
@@ -45,4 +43,9 @@ services:
       - db-postgres
       - web
     volumes:
-      - $HOME/seed_data:/seed/collected_static
+      - seed_media:/seed/media
+volumes:
+  seed_pgdata:
+    external: true
+  seed_media:
+    external: true

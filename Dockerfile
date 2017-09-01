@@ -4,7 +4,7 @@
 # TO_BUILD_AND_RUN: docker-compose build && docker-compose up
 
 # Latest Ubuntu LTS
-FROM ubuntu:16.10
+FROM ubuntu:16.04
 
 ### Required dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends npm \
@@ -19,6 +19,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends npm \
         libpcre3-dev \
     && pip install --upgrade pip \
     && pip install setuptools \
+    && groupadd --gid 1000 uwsgi \
+    && useradd -g uwsgi -M -u 1000 -r uwsgi \
     && rm -rf /var/lib/apt/lists/*
 
 ### Development Dependencies
