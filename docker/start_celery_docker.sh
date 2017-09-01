@@ -9,7 +9,7 @@ echo "Waiting for redis to start"
 /usr/local/wait-for-it.sh --strict -t 0 db-redis:6379
 
 echo "Waiting for web to start"
-/usr/local/wait-for-it.sh --strict -t 0 web:8000
+/usr/local/wait-for-it.sh --strict -t 0 web:80
 
 export WORKERS=$(($(nproc) * 2))
 export WORKERS=$(($WORKERS>1?$WORKERS:1))
