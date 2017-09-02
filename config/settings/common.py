@@ -8,7 +8,6 @@ All rights reserved.  # NOQA
 from __future__ import absolute_import
 
 import os
-from os.path import join
 
 from kombu import Exchange, Queue
 from kombu.serialization import register
@@ -119,10 +118,10 @@ SEED_URL_APPS = (
 )
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = join(BASE_DIR, 'media')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 STATIC_URL = '/static/'
-STATIC_ROOT = join(BASE_DIR, 'collected_static')
+STATIC_ROOT = os.path.join(BASE_DIR, 'collected_static')
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
@@ -206,7 +205,7 @@ CELERY_RESULT_EXPIRES = 86400  # 24 hours
 CELERY_TASK_COMPRESSION = 'gzip'
 
 # hmm, we are logging outside the context of the app?
-LOG_FILE = join(BASE_DIR, '../logs/py.log/')
+LOG_FILE = os.path.join(BASE_DIR, '../logs/py.log/')
 
 # Set translation languages for i18n
 LANGUAGES = (
