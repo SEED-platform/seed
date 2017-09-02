@@ -31,7 +31,6 @@ services:
       - seed_media:/seed/media
     ports:
       - "80:80"
-      - "8000:8000"
   web-celery:
     build: .
     command: /seed/docker/start_celery_docker.sh
