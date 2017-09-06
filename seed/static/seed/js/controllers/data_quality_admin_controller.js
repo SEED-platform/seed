@@ -20,6 +20,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
   '$uibModal',
   'urls',
   'naturalSort',
+  'flippers',
   function ($scope,
             $q,
             $state,
@@ -35,7 +36,8 @@ angular.module('BE.seed.controller.data_quality_admin', [])
             spinner_utility,
             $uibModal,
             urls,
-            naturalSort) {
+            naturalSort,
+            flippers) {
     $scope.inventory_type = $stateParams.inventory_type;
     $scope.org = organization_payload.organization;
     $scope.auth = auth_payload.auth;
@@ -43,23 +45,47 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
     $scope.state = $state.current;
 
-    $scope.data_types = [{
-      id: null,
-      label: ''
-    }, {
-      id: 'number',
-      label: 'Number'
-    }, {
-      id: 'string',
-      label: 'Text'
-    }, {
-      id: 'date',
-      label: 'Date'
-    }, {
-      id: 'year',
-      label: 'Year'
-    }];
-    $scope.units = ['', 'square feet', 'kBtu/sq. ft./year'];
+    $scope.data_types = [
+      {id: null, label: ''},
+      {id: 'number', label: 'Number'},
+      {id: 'string', label: 'Text'},
+      {id: 'date', label: 'Date'},
+      {id: 'year', label: 'Year'}
+    ];
+
+    if (flippers.is_active('release:use_pint')) {
+
+      $scope.data_types = [
+        {id: null, label: ''},
+        {id: 'number', label: 'Number'},
+        {id: 'string', label: 'Text'},
+        {id: 'date', label: 'Date'},
+        {id: 'year', label: 'Year'},
+        {id: 'area', label: 'Area'},
+        {id: 'eui', label: 'EUI'}
+      ];
+
+    }
+
+    $scope.units = [
+      {id: null, label: ''},
+      {id: 'square feet', label: 'square feet'},
+      {id: 'kBtu/sq. ft./year', label: 'kBtu/sq. ft./year'}
+    ];
+
+    if (flippers.is_active('release:use_pint')) {
+
+      $scope.units = [
+        {id: null, label: ''},
+        {id: 'ft**2', label: 'square feet'},
+        {id: 'm**2', label: 'square metres'},
+        {id: 'kBtu/ft**2/year', label: 'kBtu/sq. ft./year'},
+        {id: 'GJ/m**2/year', label: 'GJ/m²/year'},
+        {id: 'MJ/m**2/year', label: 'MJ/m²/year'},
+        {id: 'kWh/m**2/year', label: 'kWh/m²/year'}
+      ];
+
+    }
 
     $scope.columns = columns;
     $scope.all_labels = labels_payload;

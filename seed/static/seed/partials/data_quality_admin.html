@@ -86,7 +86,7 @@
                                 <input class="form-control input-sm" type="text" maxlength="200" ng-model="rule.text_match" ng-change="rule.rule_type = 1" placeholder="(field must contain this text)">
                             </td>
                             <td ng-if="rule.data_type != 'string'">
-                                <input class="form-control input-sm" type="number" ng-model="rule.min" ng-change="rule.rule_type = 1" ng-if="_.includes([null, 'number', 'year'], rule.data_type)" placeholder="(no minimum)">
+                                <input class="form-control input-sm" type="number" ng-model="rule.min" ng-change="rule.rule_type = 1" ng-if="_.includes([null, 'number', 'year', 'area', 'eui'], rule.data_type)" placeholder="(no minimum)">
                                 <input class="form-control input-sm" type="date" ng-model="rule.min" ng-change="rule.rule_type = 1" ng-if="rule.data_type == 'date'">
                             </td>
                             <td ng-if="rule.data_type != 'string'">
@@ -100,7 +100,7 @@
                                 </select>
                             </td>
                             <td>
-                                <select class="form-control input-sm" ng-options="u for u in units" ng-model="rule.units" ng-change="rule.rule_type = 1"></select>
+                                <select class="form-control input-sm" ng-options="unit.id as unit.label for unit in units" ng-model="rule.units" ng-change="rule.rule_type = 1"></select>
                             </td>
                             <td class="text-right">
                                 <div class="input-group input-group-sm" ng-if="rule.label">
