@@ -34,7 +34,6 @@ handler404 = 'seed.views.main.error404'
 handler500 = 'seed.views.main.error500'
 
 if settings.DEBUG:
-    print('im debugging')
     from django.contrib import admin
 
     admin.autodiscover()
