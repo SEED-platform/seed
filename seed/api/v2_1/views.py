@@ -39,10 +39,10 @@ class PropertyViewFilterSet(FilterSet):
         fields = ['identifier', 'address_line_1', 'cycle', 'property', 'cycle_start', 'cycle_end']
 
     def identifier_filter(self, queryset, name, value):
-        address_line_1 = Q(state__address_line_1__contains=value)
-        jurisdiction_property_id = Q(state__jurisdiction_property_id__iexact=value)
-        custom_id_1 = Q(state__custom_id_1__iexact=value)
-        pm_property_id = Q(state__pm_property_id=value)
+        address_line_1 = Q(state__address_line_1__icontains=value)
+        jurisdiction_property_id = Q(state__jurisdiction_property_id__icontains=value)
+        custom_id_1 = Q(state__custom_id_1__icontains=value)
+        pm_property_id = Q(state__pm_property_id__icontains=value)
         query = (
             address_line_1 |
             jurisdiction_property_id |
