@@ -17,6 +17,7 @@ from django.core.files.storage import DefaultStorage
 from django.http import JsonResponse
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
+from rest_framework import status
 from rest_framework.decorators import api_view
 
 from seed import tasks
@@ -138,6 +139,38 @@ def version(request):
     })
 
 
+def error404(request):
+    # Okay, this is a bit of a hack. Needed to move on.
+    if '/api/' in request.path:
+        return JsonResponse({
+            "status": "error",
+            "message": "Endpoint could not be found",
+        }, status=status.HTTP_404_NOT_FOUND)
+    else:
+        response = render_to_response(
+            'seed/404.html', {},
+            context_instance=RequestContext(request)
+        )
+        response.status_code = 404
+        return response
+
+
+def error500(request):
+    # Okay, this is a bit of a hack. Needed to move on.
+    if '/api/' in request.path:
+        return JsonResponse({
+            "status": "error",
+            "message": "Internal server error",
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    else:
+        response = render_to_response(
+            'seed/404.html', {},
+            context_instance=RequestContext(request)
+        )
+        response.status_code = 500
+        return response
+
+
 @api_endpoint
 @ajax_request
 @login_required
@@ -213,7 +246,7 @@ def export_buildings(request):
         for field in selected_fields:
             components = field.split("__", 1)
             if (components[0] == 'project_building_snapshots'
-                    and len(components) > 1):
+                and len(components) > 1):
                 _selected_fields.append(components[1])
             else:
                 _selected_fields.append("building_snapshot__%s" % field)
@@ -609,7 +642,7 @@ def _mapping_suggestions(import_file_id, org_id, user):
     # the ones belonging to the organization
     columns = list(Column.objects.select_related('unit').filter(
         mapped_mappings__super_organization_id=org_id).exclude(column_name__in=md.keys)
-    )
+                   )
     md.add_extra_data(columns)
 
     # Portfolio manager files have their own mapping scheme - yuck, really?

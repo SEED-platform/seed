@@ -6,9 +6,8 @@
 """
 from django.conf import settings
 from django.conf.urls import include, url
-from django.contrib.staticfiles.urls import staticfiles_urlpatterns
-from django.views.static import serve
 from django.conf.urls.static import static
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 from config.views import robots_txt
 from seed.api.base.urls import urlpatterns as api
@@ -31,7 +30,11 @@ urlpatterns = [
     url(r'^api/', include(api, namespace='api')),
 ]
 
+handler404 = 'seed.views.main.error404'
+handler500 = 'seed.views.main.error500'
+
 if settings.DEBUG:
+    print('im debugging')
     from django.contrib import admin
 
     admin.autodiscover()

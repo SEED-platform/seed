@@ -14,13 +14,15 @@ from kombu import Exchange, Queue
 
 DEBUG = False
 COMPRESS_ENABLED = True
+# Need to test with cloudflare
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
 
 ALLOWED_HOSTS = ['*']
 
+
 # Enable this if not using Cloudflare
 #ONLY_HTTPS = os.environ.get('ONLY_HTTPS', 'True') == 'True'
-#SESSION_COOKIE_SECURE = ONLY_HTTPS
-#CSRF_COOKIE_SECURE = ONLY_HTTPS
 #if ONLY_HTTPS:
 #    MIDDLEWARE_CLASSES = ('sslify.middleware.SSLifyMiddleware',) + \
 #        MIDDLEWARE_CLASSES
