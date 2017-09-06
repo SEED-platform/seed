@@ -17,6 +17,17 @@ seed local_untracked.py
 """
 import os
 
+# Optional AWS Settings (if using RDS, SES, S3, etc)
+#AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID', '')
+#AWS_UPLOAD_CLIENT_KEY = AWS_ACCESS_KEY_ID
+#AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY', '')
+#AWS_UPLOAD_CLIENT_SECRET_KEY = AWS_SECRET_ACCESS_KEY
+#AWS_BUCKET_NAME = os.environ.get("AWS_BUCKET_NAME", "seed-dev-uploads")
+#AWS_STORAGE_BUCKET_NAME = AWS_BUCKET_NAME
+
+# email through SES (django-ses)
+#EMAIL_BACKEND = 'django_ses.SESBackend'
+
 # postgres DB config
 DATABASES = {
     'default': {
@@ -50,6 +61,7 @@ CELERY_BROKER_URL = 'redis://your-cache-url:your-cache-port/1'
 # out to keep the media files in the correct location.
 # DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
 # STATICFILES_STORAGE = DEFAULT_FILE_STORAGE
+# STATIC_URL = "https://%s.s3.amazonaws.com/" % AWS_STORAGE_BUCKET_NAME
 
 INTERNAL_IPS = ('127.0.0.1',)
 
@@ -69,5 +81,6 @@ LOGGING = {
         },
     },
 }
+
 
 

@@ -35,7 +35,7 @@ DATABASES = {
     }
 }
 
-# redis cache config
+# Redis / Celery config
 CACHES = {
     'default': {
         'BACKEND': 'redis_cache.cache.RedisCache',
@@ -44,8 +44,6 @@ CACHES = {
         'TIMEOUT': 300
     }
 }
-
-# redis celery/message broker config
 CELERY_BROKER_TRANSPORT = 'redis'
 CELERY_BROKER_URL = "redis://db-redis:6379/1"
 CELERY_RESULT_BACKEND = CELERY_BROKER_URL
