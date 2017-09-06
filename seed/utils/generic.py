@@ -5,11 +5,19 @@
 :author
 """
 import json
+import logging
 import math
 from datetime import datetime
 
 from django.core import serializers
 from django.contrib.postgres.fields import JSONField
+
+
+class MarkdownPackageDebugFilter(logging.Filter):
+    def filter(self, record):
+        if 'markdown.extensions.headerid' in record.msg:
+            return False
+        return True
 
 
 def split_model_fields(obj, fields):

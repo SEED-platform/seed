@@ -9,10 +9,10 @@ from optparse import make_option
 # Django
 from django.core.management.base import BaseCommand
 
-# app
-from seed.utils.organizations import create_organization
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization
+# app
+from seed.utils.organizations import create_organization
 
 
 class Command(BaseCommand):
@@ -48,9 +48,7 @@ class Command(BaseCommand):
             u = User.objects.get(username=options['username'])
         else:
             self.stdout.write(
-                'Creating user <%s>, password <%s> ...' % (
-                    options['username'], options['password']
-                ), ending=' '
+                'Creating user <%s>, password <hidden> ...' % (options['username']), ending=' '
             )
             u = User.objects.create_superuser(
                 options['username'],

@@ -34,7 +34,6 @@ web_root/CACHE
 collected_static
 celerybeat-schedule*
 web_root/images/sites/*
-media_root/*
 media/*
 bpd/data/untracked/*
 bpd/data/epa*

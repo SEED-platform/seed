@@ -59,7 +59,6 @@ CELERY_TASK_QUEUES = (
     ),
 )
 
-
 # email through SES (django-ses)
 EMAIL_BACKEND = 'django_ses.SESBackend'
 

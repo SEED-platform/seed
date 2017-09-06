@@ -1,28 +1,35 @@
-# Docker Compose creates multiple containers on a single machine.
-# run `docker-compose up` to create and run/link the containers
+# Docker Compose for deployment. This removes the hard coded usernames and
+# passwords and pulls Docker Hub seedplatform/seed for the latest version.
+# Must set the following environment variables
+#   POSTGRES_USER
+#   POSTGRES_PASSWORD
+#   SEED_ADMIN_USER
+#   SEED_ADMIN_PASSWORD
+#   SEED_ADMIN_ORG
+#   SECRET_KEY
+
 version: '3'
 services:
   db-postgres:
     image: postgres
     environment:
       - POSTGRES_DB=seed
-      - POSTGRES_USER=seed
-      - POSTGRES_PASSWORD=super-secret-password
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
     volumes:
       - seed_pgdata:/var/lib/postgresql/data
   db-redis:
     image: redis
   web:
     image: seedplatform/seed
-    build: .
     environment:
       - POSTGRES_DB=seed
-      - POSTGRES_USER=seed
-      - POSTGRES_PASSWORD=super-secret-password
-      - SEED_ADMIN_USER=user@seed-platform.org
-      - SEED_ADMIN_PASSWORD=super-secret-password
-      - SEED_ADMIN_ORG=default
-      - SECRET_KEY=ARQV8qGuJKH8sGnBf6ZeEdJQRKLTUhsvEcp8qG9X9sCPXvGLhdxqnNXpZcy6HEyf
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - SEED_ADMIN_USER
+      - SEED_ADMIN_PASSWORD
+      - SEED_ADMIN_ORG
+      - SECRET_KEY
       - DJANGO_SETTINGS_MODULE=config.settings.docker
     depends_on:
       - db-redis
@@ -32,14 +39,13 @@ services:
     ports:
       - "80:80"
   web-celery:
-    image: seedplatform/seed
-    build: .
     command: /seed/docker/start_celery_docker.sh
+    image: seedplatform/seed
     environment:
       - POSTGRES_DB=seed
-      - POSTGRES_USER=seed
-      - POSTGRES_PASSWORD=super-secret-password
-      - SECRET_KEY=ARQV8qGuJKH8sGnBf6ZeEdJQRKLTUhsvEcp8qG9X9sCPXvGLhdxqnNXpZcy6HEyf
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - SECRET_KEY
       - DJANGO_SETTINGS_MODULE=config.settings.docker
     depends_on:
       - db-redis

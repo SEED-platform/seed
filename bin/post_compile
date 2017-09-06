@@ -22,7 +22,7 @@ python manage.py collectstatic --noinput -i node_modules --verbosity 1 2>&1 | se
 echo "-----> Compressing..."
 rm -rf ~/collected_static/CACHE/
 # python manage.py compress --force --verbosity 1 --settings=BE.settings.compress 2>&1 | sed "s/^/        /"
-python manage.py compress --force --verbosity 1 --settings=config.settings.main
+python manage.py compress --force --verbosity 1 --settings=config.settings.aws
 
 echo "-----> Syncing static..."
 python manage.py sync_static --gzip --expires 2>&1 | sed "s/^/        /"
