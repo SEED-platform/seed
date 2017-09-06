@@ -1,4 +1,4 @@
-sudo: true
+sudo: required
 dist: trusty
 cache:
   directories:
@@ -12,26 +12,19 @@ python:
   - 2.7
 addons:
   postgresql: '9.6'
-  # sauce_connect: true
   apt:
     packages:
       - enchant
       - google-chrome-stable
 services:
+  - docker
   - redis-server
   - postgresql
-env:
-  global:
-    - DJANGO_SETTINGS_MODULE=config.settings.travis
-    - DISPLAY=:99.0
-    - secure: CpPzxEwVMmfQ7M1eMsrceOjFbjtQ4ZTKV/576UwskPdY1HXj+2tCvZxwWLS0TCmlEicNqpZ3ZOK8/2t654qUbkMNqyzqh5RNtXngBuD5QP4WIxdWJ9WkC801gIm27nmgBxooiVy/UAU+VDKMdw1honfSWou5FISFm+u5ep7DzCU=
-    - secure: JTArNnjh+Gir7ck4Kb+zUkfvZPHqi97FQg0YG06pqKoClmbPcFKaW/eiMeY8oJbbsM/R/diIpqskI1U8YpOG3SfILQfsG4bAs7m2x7a72Z2Z/jwWT8AWLc2qwlFNTByeoL3cOQt3sOyBRwC/XxGey4BqUDRkD0LJcRIoEiGGcKw=
-  matrix:
-    - TOX_ENV=python
-    - TOX_ENV=flake8
-    - TOX_ENV=docs
-#    - TOX_ENV=functional
-    - TOX_ENV=apitest
+before_install:
+  - sudo rm /usr/local/bin/docker-compose
+  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+  - chmod +x docker-compose
+  - sudo mv docker-compose /usr/local/bin
 install:
   - pip install --upgrade pip
   - pip install tox==2.7.0
@@ -43,5 +36,24 @@ before_script:
   - sleep 3
   - psql -c "create database seeddb;" -U postgres
   - mv config/settings/test_local_untracked.py config/settings/local_untracked.py
+env:
+  global:
+    - DOCKER_COMPOSE_VERSION=1.16.0
+    - DJANGO_SETTINGS_MODULE=config.settings.travis
+    - DISPLAY=:99.0
+    - secure: CpPzxEwVMmfQ7M1eMsrceOjFbjtQ4ZTKV/576UwskPdY1HXj+2tCvZxwWLS0TCmlEicNqpZ3ZOK8/2t654qUbkMNqyzqh5RNtXngBuD5QP4WIxdWJ9WkC801gIm27nmgBxooiVy/UAU+VDKMdw1honfSWou5FISFm+u5ep7DzCU=
+    - secure: JTArNnjh+Gir7ck4Kb+zUkfvZPHqi97FQg0YG06pqKoClmbPcFKaW/eiMeY8oJbbsM/R/diIpqskI1U8YpOG3SfILQfsG4bAs7m2x7a72Z2Z/jwWT8AWLc2qwlFNTByeoL3cOQt3sOyBRwC/XxGey4BqUDRkD0LJcRIoEiGGcKw=
+  matrix:
+    - TOX_ENV=python
+    - TOX_ENV=flake8
+    - TOX_ENV=docs
+#    - TOX_ENV=functional
+    - TOX_ENV=apitest
 script:
   - tox -e $TOX_ENV
+jobs:
+  include:
+    - stage: publish
+      script: if [ "$TRAVIS_BRANCH" == "develop" ] && [ "$TRAVIS_PULL_REQUEST" == false ]; then docker/travis_build_docker.sh; else echo 0; fi
+      env: DJANGO_SETTINGS_MODULE=config.settings.docker
+

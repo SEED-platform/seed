@@ -8,14 +8,13 @@ All rights reserved.  # NOQA
 from __future__ import absolute_import
 
 import os
-from os.path import abspath, join, dirname
 
 from kombu import Exchange, Queue
 from kombu.serialization import register
 
 from seed.serializers.celery import CeleryDatetimeSerializer
 
-SITE_ROOT = abspath(join(dirname(__file__), "..", ".."))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 SESSION_COOKIE_DOMAIN = None
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
@@ -37,7 +36,7 @@ USE_I18N = True
 
 SECRET_KEY = os.environ.get(
     'SECRET_KEY',
-    'ns=nb-w)#2ue-mtu!s&2krzfee1-t)^z7y8gyrp6mx^d*weifh'
+    'default-ns=nb-w)#2ue-mtu!s&2krzfee1-t)^z7y8gyrp6mx^d*weifh'
 )
 
 SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
@@ -45,9 +44,7 @@ SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [
-            join(SITE_ROOT, 'templates'),
-        ],
+        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -85,10 +82,10 @@ INSTALLED_APPS = (
     'django.contrib.flatpages',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
     'django.contrib.sites',
     'django.contrib.humanize',
     'django.contrib.admin',
+    'django.contrib.staticfiles',
 
     'compressor',
     'django_extensions',
@@ -114,25 +111,22 @@ HIGH_DEPENDENCY_APPS = ('seed.landing',)  # 'landing' contains SEEDUser
 
 INSTALLED_APPS = HIGH_DEPENDENCY_APPS + INSTALLED_APPS + SEED_CORE_APPS
 
-# apps to auto load name spaced URLs for JS use (see seed.main.views.home)
+# apps to auto load name spaced URLs for JS use (see seed.urls and seed.main.views.home)
 SEED_URL_APPS = (
     'seed',
     'audit_logs',
 )
 
-MEDIA_ROOT = join(SITE_ROOT, 'collected_static')
 MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-STATIC_ROOT = 'collected_static'
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'collected_static')
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'compressor.finders.CompressorFinder',
 )
-
-COMPRESS_ROOT = join(SITE_ROOT, 'collected_static')
-COMPRESS_URL = '/static/'
 COMPRESS_PRECOMPILERS = (
     ('text/less', 'lessc {infile} {outfile}'),
 )
@@ -184,8 +178,8 @@ LOGIN_REDIRECT_URL = "/app/"
 
 APPEND_SLASH = True
 
-PASSWORD_RESET_EMAIL = 'reset@seedplatform.org'
-SERVER_EMAIL = 'no-reply@seedplatform.org'
+PASSWORD_RESET_EMAIL = 'reset@seed-platform.org'
+SERVER_EMAIL = 'no-reply@seed-platform.org'
 
 CELERY_WORKER_MAX_TASKS_PER_CHILD = 1
 
@@ -210,14 +204,14 @@ CELERY_RESULT_SERIALIZER = 'seed_json'
 CELERY_RESULT_EXPIRES = 86400  # 24 hours
 CELERY_TASK_COMPRESSION = 'gzip'
 
-LOG_FILE = join(SITE_ROOT, '../logs/py.log/')
+# hmm, we are logging outside the context of the app?
+LOG_FILE = os.path.join(BASE_DIR, '../logs/py.log/')
 
 # Set translation languages for i18n
 LANGUAGES = (
     ('en', 'English'),
 )
-LOCALE_PATHS = (
-)
+LOCALE_PATHS = ()
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
@@ -230,10 +224,6 @@ NOSE_PLUGINS = [
 # Django 1.5+ way of doing user profiles
 AUTH_USER_MODEL = 'landing.SEEDUser'
 NOSE_ARGS = ['--exclude-dir=libs/dal']
-
-# Matching Settings
-MATCH_MIN_THRESHOLD = 0.3
-MATCH_MED_THRESHOLD = 0.4
 
 AUTH_PASSWORD_VALIDATORS = [
     {

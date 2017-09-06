@@ -14,7 +14,7 @@ from django.conf import settings
 from raven.contrib.celery import register_signal, register_logger_signal
 
 # set the default Django settings module for the 'celery' program.
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.main')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.prod')
 
 
 class Celery(celery.Celery):
