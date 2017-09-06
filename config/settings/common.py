@@ -36,7 +36,7 @@ USE_I18N = True
 
 SECRET_KEY = os.environ.get(
     'SECRET_KEY',
-    'ns=nb-w)#2ue-mtu!s&2krzfee1-t)^z7y8gyrp6mx^d*weifh'
+    'default-ns=nb-w)#2ue-mtu!s&2krzfee1-t)^z7y8gyrp6mx^d*weifh'
 )
 
 SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
@@ -224,10 +224,6 @@ NOSE_PLUGINS = [
 # Django 1.5+ way of doing user profiles
 AUTH_USER_MODEL = 'landing.SEEDUser'
 NOSE_ARGS = ['--exclude-dir=libs/dal']
-
-# Matching Settings
-MATCH_MIN_THRESHOLD = 0.3
-MATCH_MED_THRESHOLD = 0.4
 
 AUTH_PASSWORD_VALIDATORS = [
     {

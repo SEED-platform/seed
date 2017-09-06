@@ -29,6 +29,10 @@ DATABASES = {
     }
 }
 
+# Make sure to set a SECRET_KEY here or in your env variable
+# Go here to generate a secret key: https://www.miniwebtool.com/django-secret-key-generator/
+# SECRET_KEY = 'default-your-secret-key-here'
+
 # Redis cache config.
 #   If using AWS ElastiCache redis, the LOCATION setting looks something like:
 #   'xx-yy-zzrr0aax9a.ntmprk.0001.usw2.cache.amazonaws.com:6379'
@@ -65,3 +69,5 @@ LOGGING = {
         },
     },
 }
+
+

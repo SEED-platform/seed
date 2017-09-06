@@ -127,3 +127,6 @@ try:
     from config.settings.local_untracked import *  # noqa
 except ImportError:
     pass
+
+if 'default' in SECRET_KEY:
+    print("WARNING: SECRET_KEY is defaulted. Makes sure to override SECKET_KEY in local_untracked or env var")
