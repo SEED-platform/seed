@@ -87,6 +87,8 @@ def _dict_org(request, organizations):
             'parent_id': o.parent_id,
             'cycles': cycles,
             'created': o.created.strftime('%Y-%m-%d') if o.created else '',
+            'measurement_system_import': o.measurement_system_import,
+            'measurement_system_display': o.measurement_system_display,
         }
         orgs.append(org)
 
@@ -598,6 +600,15 @@ class OrganizationViewSet(viewsets.ViewSet):
         desired_name = posted_org.get('name', None)
         if desired_name is not None:
             org.name = desired_name
+
+        desired_measurement_system_import = posted_org.get('measurement_system_import', None)
+        if desired_measurement_system_import is not None:
+            org.measurement_system_import = desired_measurement_system_import
+
+        desired_measurement_system_display = posted_org.get('measurement_system_display', None)
+        if desired_measurement_system_display is not None:
+            org.measurement_system_display = desired_measurement_system_display
+
         org.save()
 
         # Update the selected exportable fields.
