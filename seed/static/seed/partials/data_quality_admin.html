@@ -59,8 +59,8 @@
                             <th style="min-width: 70px; width: 70px;">Not Null</th>
                             <th>Minimum</th>
                             <th>Maximum</th>
-                            <th style="min-width: 100px; width: 100px;">Severity</th>
                             <th>Units</th>
+                            <th style="min-width: 100px; width: 100px;">Severity</th>
                             <th>Label</th>
                             <th style="min-width: 54px; width: 54px;">Delete</th>
                         </tr>
@@ -94,13 +94,13 @@
                                 <input class="form-control input-sm" type="date" ng-model="rule.max" ng-change="rule.rule_type = 1" ng-if="rule.data_type == 'date'">
                             </td>
                             <td>
+                                <select class="form-control input-sm" ng-options="unit.id as unit.label for unit in units" ng-model="rule.units" ng-change="rule.rule_type = 1"></select>
+                            </td>
+                            <td>
                                 <select class="form-control input-sm" ng-model="rule.severity" ng-change="rule.rule_type = 1" ng-class="{'error-bg': rule.severity=='error', 'warning-bg': rule.severity=='warning'}">
                                     <option value="error">Error</option>
                                     <option value="warning">Warning</option>
                                 </select>
-                            </td>
-                            <td>
-                                <select class="form-control input-sm" ng-options="unit.id as unit.label for unit in units" ng-model="rule.units" ng-change="rule.rule_type = 1"></select>
                             </td>
                             <td class="text-right">
                                 <div class="input-group input-group-sm" ng-if="rule.label">
