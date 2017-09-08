@@ -180,7 +180,7 @@
                                 </select>
                             </td>
                             <td ng-if="flippers.is_active('release:use_pint')">
-                              <select ng-model="tcm.import_units">
+                              <select ng-model="tcm.import_units" ng-if="is_pint_column(tcm.suggestion)">
                                 <option value="">None</option>
                                 <optgroup label="Area">
                                   <option value="ft**2">square feet</option>
