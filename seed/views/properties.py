@@ -348,6 +348,12 @@ class PropertyViewSet(GenericViewSet):
             if p.get('generation_date'):
                 p['generation_date'] = make_naive(p['generation_date']).isoformat()
 
+            if p.get('analysis_start_time'):
+                p['analysis_start_time'] = make_naive(p['analysis_start_time']).isoformat()
+
+            if p.get('analysis_end_time'):
+                p['analysis_end_time'] = make_naive(p['analysis_end_time']).isoformat()
+
             response['results'].append(p)
 
         return JsonResponse(response)

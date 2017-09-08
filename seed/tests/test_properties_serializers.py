@@ -377,6 +377,10 @@ class TestPropertyViewAsStateSerializers(TestCase):
             self.serializer.get_history(obj), expected
         )
 
+    def test_get_state(self):
+        obj = mock.MagicMock()
+        obj.state = self.property_state
+
     def test_get_source(self):
         """Test get_source"""
         expected = self.audit_log.get_record_type_display()

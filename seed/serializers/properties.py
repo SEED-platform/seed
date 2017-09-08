@@ -15,6 +15,7 @@ from django.db import models
 from django.utils.timezone import make_naive
 from rest_framework import serializers
 from rest_framework.fields import empty
+from seed.serializers.base import ChoiceField
 
 from seed.models import (
     AUDIT_USER_EDIT,
@@ -142,6 +143,7 @@ class PropertyStateSerializer(serializers.ModelSerializer):
     measures = PropertyMeasureSerializer(source='propertymeasure_set', many=True)
     scenarios = ScenarioSerializer(many=True)
     files = BuildingFileSerializer(source='building_files', many=True)
+    analysis_state = ChoiceField(choices=PropertyState.ANALYSIS_STATE_TYPES)
 
     # to support the old state serializer method with the PROPERTY_STATE_FIELDS variables
     import_file_id = serializers.IntegerField()
@@ -166,6 +168,12 @@ class PropertyStateSerializer(serializers.ModelSerializer):
 
         if data.release_date:
             result['release_date'] = make_naive(data.release_date).isoformat()
+
+        if data.analysis_start_time:
+            result['analysis_start_time'] = make_naive(data.analysis_start_time).isoformat()
+
+        if data.analysis_end_time:
+            result['analysis_end_time'] = make_naive(data.analysis_end_time).isoformat()
 
         return result
 

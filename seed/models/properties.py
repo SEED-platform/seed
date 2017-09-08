@@ -61,10 +61,10 @@ class Property(models.Model):
 
 class PropertyState(models.Model):
     """Store a single property. This contains all the state information about the property"""
-    ANALYSIS_STATE_NOT_STARTED = 1
-    ANALYSIS_STATE_STARTED = 2
-    ANALYSIS_STATE_COMPLETED = 3
-    ANALYSIS_STATE_FAILED = 4
+    ANALYSIS_STATE_NOT_STARTED = 0
+    ANALYSIS_STATE_STARTED = 1
+    ANALYSIS_STATE_COMPLETED = 2
+    ANALYSIS_STATE_FAILED = 3
 
     ANALYSIS_STATE_TYPES = (
         (ANALYSIS_STATE_NOT_STARTED, 'Not Started'),
@@ -158,7 +158,8 @@ class PropertyState(models.Model):
     analysis_start_time = models.DateTimeField(null=True)
     analysis_end_time = models.DateTimeField(null=True)
     analysis_state = models.IntegerField(choices=ANALYSIS_STATE_TYPES,
-                                         default=ANALYSIS_STATE_NOT_STARTED)
+                                         default=ANALYSIS_STATE_NOT_STARTED,
+                                         null=True)
     analysis_state_message = models.TextField(null=True)
 
     extra_data = JSONField(default=dict, blank=True)
