@@ -12,6 +12,8 @@ import pdb
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 
+from quantityfield.fields import QuantityField
+
 from auditlog import AUDIT_IMPORT
 from auditlog import DATA_UPDATE_TYPE
 from seed.data_importer.models import ImportFile
@@ -134,6 +136,18 @@ class PropertyState(models.Model):
     energy_alerts = models.TextField(null=True, blank=True)
     space_alerts = models.TextField(null=True, blank=True)
     building_certification = models.CharField(max_length=255, null=True, blank=True)
+
+    # extra columns for pint interpretation base units in database will
+    # continue to be imperial these will become the canonical columns in
+    # future, with the old ones above to be culled once OGBS merges the metric
+    # units work (scheduled for late 2017)
+    gross_floor_area_pint = QuantityField('ft**2', null=True, blank=True)
+    conditioned_floor_area_pint = QuantityField('ft**2', null=True, blank=True)
+    occupied_floor_area_pint = QuantityField('ft**2', null=True, blank=True)
+    site_eui_pint = QuantityField('kBtu/ft**2/year', null=True, blank=True)
+    source_eui_weather_normalized_pint = QuantityField('kBtu/ft**2/year', null=True, blank=True)
+    site_eui_weather_normalized_pint = QuantityField('kBtu/ft**2/year', null=True, blank=True)
+    source_eui_pint = QuantityField('kBtu/ft**2/year', null=True, blank=True)
 
     extra_data = JSONField(default=dict, blank=True)
 
