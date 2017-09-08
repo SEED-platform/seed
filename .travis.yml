@@ -54,6 +54,6 @@ script:
 jobs:
   include:
     - stage: publish
-      script: if [ "$TRAVIS_BRANCH" == "develop" ] && [ "$TRAVIS_PULL_REQUEST" == false ]; then docker/travis_build_docker.sh; else echo 0; fi
+      script: if ([ "$TRAVIS_BRANCH" == "develop" ] || [ "$TRAVIS_BRANCH" == "bricr" ] ) && [ "$TRAVIS_PULL_REQUEST" == false ]; then docker/travis_build_docker.sh; else echo 0; fi
       env: DJANGO_SETTINGS_MODULE=config.settings.docker
 
