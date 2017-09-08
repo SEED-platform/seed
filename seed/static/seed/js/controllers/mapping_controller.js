@@ -427,6 +427,7 @@ angular.module('BE.seed.controller.mapping', [])
        *      [
        *          {
        *              "from_field": <raw>,
+       *              "from_units": <pint string>,
        *              "to_field": <dest>,
        *              "to_table_name": "PropertyState"
        *          },{
@@ -452,6 +453,7 @@ angular.module('BE.seed.controller.mapping', [])
           suggestion = tcm.mapped_row ? tcm.suggestion : '';
           mappings.push({
             from_field: header,
+            from_units: tcm.from_units || null,
             to_field: suggestion,
             to_table_name: tcm.suggestion_table_name
           });
