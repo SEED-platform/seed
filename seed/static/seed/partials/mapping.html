@@ -138,7 +138,7 @@
                             <td style="border-right: 0 none;">
                                 <select ng-model="setAllFields" ng-change="setAllInventoryTypes()" ng-options="item as item.name for item in ::setAllFieldsOptions track by item.value" ng-hide="import_file.matching_done"></select>
                             </td>
-                            <td colspan="5"></td>
+                            <td colspan="{$:: flippers.is_active('release:use_pint') ? 6 : 5 $}"></td>
                         </tr>
                     </tbody>
                     <thead>
@@ -150,6 +150,7 @@
                             <!--th class="sub_head is_aligned_center">Duplicate <a uib-popover="{$VALIDATE_copy$}" popover-placement="right"><i class="fa fa-info-circle" style="cursor: pointer;"></i></a></th-->
                             <th class="import_column_name">Data File Header</th>
                             <th>Inventory Type</th>
+                            <th ng-if="flippers.is_active('release:use_pint')">Measurement Units</th>
                             <th>Row 1</th>
                             <th>Row 2</th>
                             <th>Row 3</th>
@@ -177,6 +178,21 @@
                                     <option value="PropertyState">Property</option>
                                     <option value="TaxLotState">Tax Lot</option>
                                 </select>
+                            </td>
+                            <td ng-if="flippers.is_active('release:use_pint')">
+                              <select ng-model="tcm.import_units">
+                                <option value="">None</option>
+                                <optgroup label="Area">
+                                  <option value="ft**2">square feet</option>
+                                  <option value="m**2">square metres</option>
+                                </optgroup>
+                                <optgroup label="EUI">
+                                  <!-- values are pint-parseable  -->
+                                  <option value="kBtu/ft**2/year">kBtu/sq. ft./year</option>
+                                  <option value="kWh/m**2/year">kWh/m²/year</option>
+                                  <option value="GJ/m**2/year">GJ/m²/year</option>
+                                </optgroup>
+                              </select>
                             </td>
                             <td ng-repeat="cell_value in ::tcm.raw_data track by $index" ng-class="{'danger': set_td_class(tcm, cell_value) == 'danger', 'warning': set_td_class(tcm, cell_value) == 'warning'}">
                                 {$:: cell_value $}
