@@ -59,6 +59,15 @@ angular.module('BE.seed.controller.mapping', [])
       }
 
       $scope.typeahead_columns = _.uniq(db_field_columns.concat(_.map(extra_data_columns, 'name')));
+
+      if (!flippers.is_active('release:use_pint')) {
+        // db may return _pint columns; don't suggest them in the typeahead
+        var is_pint_column = function (s) {
+          return /\s+Pint$/.test(s);
+        };
+        _.remove($scope.typeahead_columns, is_pint_column);
+      }
+
       $scope.tabs = {
         one_active: true,
         two_active: false,
