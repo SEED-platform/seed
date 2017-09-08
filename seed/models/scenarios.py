@@ -11,6 +11,7 @@ import logging
 from django.db import models
 
 from seed.models.joins import PropertyMeasure
+from seed.models.properties import PropertyState
 
 _log = logging.getLogger(__name__)
 
@@ -61,6 +62,13 @@ class Scenario(models.Model):
     hdd_base_temperature = models.FloatField(null=True)
     cdd = models.FloatField(null=True)
     cdd_base_temperature = models.FloatField(null=True)
+
+    analysis_start_time = models.DateTimeField(null=True)
+    analysis_end_time = models.DateTimeField(null=True)
+    # use the analysis states that are defined in the PropertyState model
+    analysis_state = models.IntegerField(choices=PropertyState.ANALYSIS_STATE_TYPES,
+                                         default=PropertyState.ANALYSIS_STATE_NOT_STARTED)
+    analysis_state_message = models.TextField(null=True)
 
     measures = models.ManyToManyField(PropertyMeasure)
 

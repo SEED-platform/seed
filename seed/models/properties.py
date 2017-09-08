@@ -60,7 +60,19 @@ class Property(models.Model):
 
 
 class PropertyState(models.Model):
-    """Store a single property"""
+    """Store a single property. This contains all the state information about the property"""
+    ANALYSIS_STATE_NOT_STARTED = 1
+    ANALYSIS_STATE_STARTED = 2
+    ANALYSIS_STATE_COMPLETED = 3
+    ANALYSIS_STATE_FAILED = 4
+
+    ANALYSIS_STATE_TYPES = (
+        (ANALYSIS_STATE_NOT_STARTED, 'Not Started'),
+        (ANALYSIS_STATE_STARTED, 'Started'),
+        (ANALYSIS_STATE_COMPLETED, 'Completed'),
+        (ANALYSIS_STATE_FAILED, 'Failed'),
+    )
+
     # Support finding the property by the import_file and source_type
     import_file = models.ForeignKey(ImportFile, null=True, blank=True)
 
@@ -124,16 +136,30 @@ class PropertyState(models.Model):
     owner_city_state = models.CharField(max_length=255, null=True, blank=True)
     owner_postal_code = models.CharField(max_length=255, null=True, blank=True)
 
-    energy_score = models.IntegerField(null=True, blank=True)
-    site_eui = models.FloatField(null=True, blank=True)
     generation_date = models.DateTimeField(null=True, blank=True)
     release_date = models.DateTimeField(null=True, blank=True)
-    source_eui_weather_normalized = models.FloatField(null=True, blank=True)
+
+    energy_score = models.IntegerField(null=True, blank=True)
+    # Need to add another field eventually to define the source of the EUI's and other
+    # reported fields. Ideally would have the ability to provide the same field from
+    # multiple data sources. For example, site EUI (portfolio manager), site EUI (calculated),
+    # site EUI (modeled 8/4/2017).
+    site_eui = models.FloatField(null=True, blank=True)
     site_eui_weather_normalized = models.FloatField(null=True, blank=True)
+    site_eui_modeled = models.FloatField(null=True, blank=True)
     source_eui = models.FloatField(null=True, blank=True)
+    source_eui_weather_normalized = models.FloatField(null=True, blank=True)
+    source_eui_modeled = models.FloatField(null=True, blank=True)
+
     energy_alerts = models.TextField(null=True, blank=True)
     space_alerts = models.TextField(null=True, blank=True)
     building_certification = models.CharField(max_length=255, null=True, blank=True)
+
+    analysis_start_time = models.DateTimeField(null=True)
+    analysis_end_time = models.DateTimeField(null=True)
+    analysis_state = models.IntegerField(choices=ANALYSIS_STATE_TYPES,
+                                         default=ANALYSIS_STATE_NOT_STARTED)
+    analysis_state_message = models.TextField(null=True)
 
     extra_data = JSONField(default=dict, blank=True)
     measures = models.ManyToManyField('Measure', through='PropertyMeasure')
@@ -141,7 +167,8 @@ class PropertyState(models.Model):
     class Meta:
         index_together = [
             ['import_file', 'data_state'],
-            ['import_file', 'data_state', 'merge_state']
+            ['import_file', 'data_state', 'merge_state'],
+            ['analysis_state', 'organization'],
         ]
 
     def promote(self, cycle):
@@ -303,6 +330,7 @@ class PropertyState(models.Model):
                     ps.use_description,
                     ps.energy_score,
                     ps.site_eui,
+                    ps.site_eui_modeled,
                     ps.property_notes,
                     ps.property_type,
                     ps.year_ending,
@@ -322,9 +350,14 @@ class PropertyState(models.Model):
                     ps.source_eui_weather_normalized,
                     ps.site_eui_weather_normalized,
                     ps.source_eui,
+                    ps.source_eui_modeled,
                     ps.energy_alerts,
                     ps.space_alerts,
                     ps.building_certification,
+                    ps.analysis_start_time,
+                    ps.analysis_end_time,
+                    ps.analysis_state,
+                    ps.analysis_state_message,
                     NULL
                 FROM seed_propertystate ps, audit_id aid
                 WHERE (ps.id = aid.parent_state1_id AND
@@ -333,19 +366,21 @@ class PropertyState(models.Model):
                        aid.parent_state2_id <> aid.original_state_id);""", [int(state_id)])
         )
 
-        # reduce this down to just the fields that were returns and convert to dict. This is
+        # reduce this down to just the fields that were returned and convert to dict. This is
         # important because the fields that were not queried will be deferred and require a new
         # query to retrieve.
         keep_fields = ['id', 'pm_property_id', 'pm_parent_property_id', 'custom_id_1',
                        'address_line_1', 'address_line_2', 'city', 'state', 'postal_code',
                        'lot_number', 'gross_floor_area', 'use_description', 'energy_score',
-                       'site_eui', 'property_notes', 'property_type', 'year_ending', 'owner',
-                       'owner_email', 'owner_telephone', 'building_count', 'year_built',
-                       'recent_sale_date', 'conditioned_floor_area', 'occupied_floor_area',
-                       'owner_address', 'owner_postal_code', 'home_energy_score_id',
-                       'generation_date', 'release_date', 'source_eui_weather_normalized',
-                       'site_eui_weather_normalized', 'source_eui',
-                       'energy_alerts', 'space_alerts', 'building_certification', ]
+                       'site_eui', 'site_eui_modeled', 'property_notes', 'property_type',
+                       'year_ending', 'owner', 'owner_email', 'owner_telephone', 'building_count',
+                       'year_built', 'recent_sale_date', 'conditioned_floor_area',
+                       'occupied_floor_area', 'owner_address', 'owner_postal_code',
+                       'home_energy_score_id', 'generation_date', 'release_date',
+                       'source_eui_weather_normalized', 'site_eui_weather_normalized',
+                       'source_eui', 'source_eui_modeled', 'energy_alerts', 'space_alerts',
+                       'building_certification', 'analysis_start_time', 'analysis_end_time',
+                       'analysis_state', 'analysis_state_message', ]
         coparents = [{key: getattr(c, key) for key in keep_fields} for c in coparents]
 
         return coparents, len(coparents)

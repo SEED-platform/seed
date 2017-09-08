@@ -10,7 +10,7 @@ from os import path
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 
-from config.settings.common import SITE_ROOT
+from config.settings.common import BASE_DIR
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import User
 from seed.models.building_file import BuildingFile
@@ -38,7 +38,7 @@ class TestBuildingFiles(TestCase):
         self.assertEqual(BuildingFile.str_to_file_type('GeoJSON'), 2)
 
     def test_constructor(self):
-        filename = path.join(SITE_ROOT, 'seed', 'building_sync', 'tests', 'data', 'ex_1.xml')
+        filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'ex_1.xml')
         file = open(filename, 'rb')
         simple_uploaded_file = SimpleUploadedFile(file.name, file.read())
 
@@ -53,7 +53,7 @@ class TestBuildingFiles(TestCase):
         self.assertEqual(property_state.address_line_1, '123 Main Street')
 
     def test_geojson_error(self):
-        filename = path.join(SITE_ROOT, 'seed', 'building_sync', 'tests', 'data', 'ex_1.xml')
+        filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'ex_1.xml')
         file = open(filename, 'rb')
         simple_uploaded_file = SimpleUploadedFile(file.name, file.read())
 
