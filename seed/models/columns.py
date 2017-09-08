@@ -126,6 +126,7 @@ class Column(models.Model):
     enum = models.ForeignKey(Enum, blank=True, null=True)
     is_extra_data = models.BooleanField(default=False)
     import_file = models.ForeignKey('data_importer.ImportFile', blank=True, null=True)
+    units_pint = models.CharField(max_length=64, blank=True, null=True)
 
     # Do not enable this until running through the database and merging the columns down.
     # BUT first, make sure to add an import file ID into the column class.
