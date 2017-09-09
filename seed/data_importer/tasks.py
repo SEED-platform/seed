@@ -253,15 +253,15 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
     # Ideally the table_mapping method would be attached to the import_file_id, someday...
     list_of_raw_columns = import_file.first_row_columns
     if list_of_raw_columns:
-        for k, v in table_mappings.items():
-            for key2 in v.keys():
-                if key2 not in list_of_raw_columns:
-                    del table_mappings[k][key2]
+        for table, mappings in table_mappings.items():
+            for raw_column_name in mappings.keys():
+                if raw_column_name not in list_of_raw_columns:
+                    del table_mappings[table][raw_column_name]
 
         # check that the dictionaries are not empty, if empty, then delete.
-        for k in table_mappings.keys():
-            if not table_mappings[k]:
-                del table_mappings[k]
+        for table in table_mappings.keys():
+            if not table_mappings[table]:
+                del table_mappings[table]
 
     # TODO: **START TOTAL TERRIBLE HACK**
     # For some reason the mappings that got created previously don't
