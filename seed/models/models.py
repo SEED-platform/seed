@@ -264,7 +264,7 @@ class Enum(models.Model):
 class NonCanonicalProjectBuildings(models.Model):
     """Holds a reference to all project buildings that do not point at a
     canonical building snapshot."""
-    projectbuilding = models.ForeignKey(ProjectBuilding, primary_key=True)
+    projectbuilding = models.OneToOneField(ProjectBuilding, primary_key=True)
 
 
 class AttributeOption(models.Model):

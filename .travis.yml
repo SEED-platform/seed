@@ -1,6 +1,5 @@
 sudo: required
 dist: trusty
-group: deprecated-2017Q2
 cache:
   directories:
     - node_modules
@@ -29,6 +28,8 @@ before_install:
 install:
   - pip install --upgrade pip
   - pip install tox==2.7.0
+  - node --version
+  - npm --version
   - npm install npm@latest -g
   - nvm install stable
 before_script:
@@ -57,4 +58,3 @@ jobs:
     - stage: publish
       script: if ([ "$TRAVIS_BRANCH" == "develop" ] || [ "$TRAVIS_BRANCH" == "bricr" ] ) && [ "$TRAVIS_PULL_REQUEST" == false ]; then docker/travis_build_docker.sh; else echo 0; fi
       env: DJANGO_SETTINGS_MODULE=config.settings.docker
-
