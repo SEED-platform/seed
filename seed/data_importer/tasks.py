@@ -226,6 +226,39 @@ def _build_cleaner(org):
     return cleaners.Cleaner(units)
 
 
+def _build_cleaner_2(org):
+    """Return a cleaner instance that knows about a mapping's unit types
+
+    :param org: organization instance
+    :returns: cleaner instance
+
+    This tells us how to try to cast types during cleaning, based on the Column
+    definition in the database.
+
+    Here we're also dealing with Pint with a tuple 'type' acting as a sort of
+    parameterized type like `Pint(SquareMetres)` ... just using `pint` as the
+    type doesn't tell the whole story of the type ...  eg. the "type" is
+    ('quantity', 'm**2') and the cleaner can dispatch sensibly on this.
+
+    Note that this is generally going to be on the *raw* column. Let's assume
+    an example where incoming data has created raw columns 'Gross Building Area
+    (m2)' and 'Gross Building Area (ft2)' ...  we'll need to disambiguate a
+    mapping to mapped column 'gross_building_area' based on the raw column
+    name.
+    """
+
+    # start with the predefined types
+    ontology = {'types': Column.retrieve_db_types()['types']}
+
+    query_set = Column.objects \
+        .filter(organization=org, units_pint__isnull=False)
+    for column in query_set:
+        # add available pint types as a tuple type
+        ontology['types'][column.column_name] = ('quantity', column.units_pint)
+
+    return cleaners.Cleaner(ontology)
+
+
 @shared_task
 def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
     """Does the work of matching a mapping to a source type and saving
@@ -275,7 +308,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
         table_mappings['PropertyState'] = debug_inferred_prop_state_mapping
     # TODO: *END TOTAL TERRIBLE HACK**
 
-    map_cleaner = _build_cleaner(org)
+    map_cleaner = _build_cleaner_2(org)
 
     # *** BREAK OUT INTO SEPARATE METHOD ***
     # figure out which import field is defined as the unique field that may have a delimiter of
