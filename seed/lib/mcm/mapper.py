@@ -83,11 +83,11 @@ def _concat_values(concat_columns, column_values, delimiter):
     return delimiter.join(values) or None
 
 
-def apply_column_value(raw_field, value, model, mapping, is_extra_data, cleaner):
+def apply_column_value(raw_column_name, column_value, model, mapping, is_extra_data, cleaner):
     """Set the column value as the target attr on our model.
 
-    :param raw_field: str, the raw imported column name as the mapping understands it.
-    :param value: dict, the value of that column for a given row.
+    :param raw_column_name: str, the raw imported column name as the mapping understands it.
+    :param column_value: dict, the value of that column for a given row.
     :param model: inst, the object we're mapping data to.
     :param mapping: dict, the mapping of row data to attribute data.
     :param is_extra_data: bool, is the column supposed to be extra_data
@@ -98,16 +98,16 @@ def apply_column_value(raw_field, value, model, mapping, is_extra_data, cleaner)
 
     # If the item is the extra_data column, then make sure to save it to the
     # extra_data field of the database
-    if raw_field in mapping:
-        table_name, field_name = mapping.get(raw_field)
+    if raw_column_name in mapping:
+        table_name, mapped_column_name = mapping.get(raw_column_name)
         # NL: 9/29/16 turn off all the debug logging because it was too verbose.
         # _log.debug("item is in the mapping: %s -- %s" % (table_name, field_name))
 
         cleaned_value = None
         if cleaner:
-            cleaned_value = cleaner.clean_value(value, field_name)
+            cleaned_value = cleaner.clean_value(column_value, mapped_column_name)
         else:
-            cleaned_value = default_cleaner(value)
+            cleaned_value = default_cleaner(column_value)
 
         if is_extra_data:
             if hasattr(model, 'extra_data'):
@@ -115,13 +115,13 @@ def apply_column_value(raw_field, value, model, mapping, is_extra_data, cleaner)
                 if model.__class__.__name__ == table_name:
                     if isinstance(cleaned_value, (datetime, date)):
                         # TODO: create an encoder for datetime once we are in Django 1.11
-                        model.extra_data[field_name] = cleaned_value.isoformat()
+                        model.extra_data[mapped_column_name] = cleaned_value.isoformat()
                     else:
-                        model.extra_data[field_name] = cleaned_value
+                        model.extra_data[mapped_column_name] = cleaned_value
         else:
             # Simply set the field to the cleaned value if it is the correct model
             if model.__class__.__name__ == table_name:
-                setattr(model, field_name, cleaned_value)
+                setattr(model, mapped_column_name, cleaned_value)
 
     return model
 
