@@ -7,28 +7,15 @@
 import json
 from functools import wraps
 
-from django.core.serializers.json import DjangoJSONEncoder
+from seed.serializers.pint import PintJSONEncoder
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest
 
 from seed.lib.superperms.orgs.models import OrganizationUser
 from seed.utils.cache import make_key, lock_cache, unlock_cache, get_lock
 
-from quantityfield import ureg
-
 SEED_CACHE_PREFIX = 'SEED:{0}'
 LOCK_CACHE_PREFIX = SEED_CACHE_PREFIX + ':LOCK'
 PROGRESS_CACHE_PREFIX = SEED_CACHE_PREFIX + ':PROG'
-
-
-class PintJSONEncoder(DjangoJSONEncoder):
-    """
-    Converts pint Quantity objects for Angular's benefit.
-    """
-    def default(self, obj):
-        if isinstance(obj, ureg.Quantity):
-            # TODO handle unit conversion on the server per-org
-            return "{:.2f}".format(obj.magnitude)
-        return super(PintJSONEncoder, self).default(obj)
 
 
 FORMAT_TYPES = {
