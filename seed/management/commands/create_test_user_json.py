@@ -19,13 +19,18 @@ class Command(BaseCommand):
                     action='store',
                     type='string',
                     dest='username'),
+        make_option('--host',
+                    default='http://127.0.0.1:8000',
+                    help='Host',
+                    action='store',
+                    type='string',
+                    dest='host'),
         make_option('--file',
-                    default='./seed/tests/api/api_test_user.json',
+                    default='none',
                     help='File name to save JSON',
                     action='store',
                     type='string',
                     dest='file'),
-
     )
     help = 'Creates the JSON file needed for testing the API'
 
@@ -35,13 +40,17 @@ class Command(BaseCommand):
 
             data = {
                 'name': 'seed_api_test',
-                'host': 'http://127.0.0.1:8000',
+                'host': options['host'],
                 'username': options['username'],
                 'api_key': u.api_key,
             }
 
-            with open(options['file'], 'w') as outfile:
-                json.dump(data, outfile, indent=2)
+            if options['file'] == 'none':
+                print(json.dumps(data))
+            else:
+                with open(options['file'], 'w') as outfile:
+                    json.dump(data, outfile, indent=2)
+
         else:
             print('User does not exist')
             exit(1)
