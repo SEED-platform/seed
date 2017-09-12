@@ -167,7 +167,7 @@ class TestMappingExampleData(DataMappingBaseTestCase):
         ps = PropertyState.objects.filter(address_line_1='521 Elm Street')[0]
         self.assertEqual(ps.site_eui, 1358)
         # The lot_number should also have the normalized code run, then re-delimited
-        self.assertEqual(ps.lot_number, '33366555;33366125;33366148')
+        self.assertEqual(ps.lot_number, '333/66555;333/66125;333/66148')
 
     def test_promote_properties(self):
         """Test if the promoting of a property works as expected"""
