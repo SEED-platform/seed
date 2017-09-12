@@ -627,8 +627,9 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
     inventory_service.loadSettings = function (key, columns) {
       key += '.' + user_service.get_organization().id;
+      columns = angular.copy(columns);
 
-      var isDetailSetting = key.match(/^grid\.(properties|taxlots)\.detail\.\d+$/);
+      var isDetailSetting = key.match(/\.(properties|taxlots)\.detail\.\d+$/);
 
       // Hide extra data columns by default
       _.forEach(columns, function (col) {

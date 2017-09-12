@@ -58,7 +58,9 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.label_admin',
   'BE.seed.controller.mapping',
   'BE.seed.controller.matching_list',
+  'BE.seed.controller.matching_settings',
   'BE.seed.controller.matching_detail',
+  'BE.seed.controller.matching_detail_settings',
   'BE.seed.controller.members',
   'BE.seed.controller.menu',
   'BE.seed.controller.new_member_modal',
@@ -577,6 +579,80 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             }, function (data) {
               return $q.reject(data.message);
             });
+          }]
+        }
+      })
+      .state({
+        name: 'matching_list_settings',
+        url: '/data/matching/{importfile_id:int}/{inventory_type:properties|taxlots}/settings',
+        templateUrl: static_url + 'seed/partials/matching_settings.html',
+        controller: 'matching_settings_controller',
+        resolve: {
+          $uibModalInstance: function () {
+            return {
+              close: function () {
+              }
+            };
+          },
+          import_file_payload: ['dataset_service', '$stateParams', function (dataset_service, $stateParams) {
+            var importfile_id = $stateParams.importfile_id;
+            return dataset_service.get_import_file(importfile_id);
+          }],
+          columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+            if ($stateParams.inventory_type === 'properties') {
+              return inventory_service.get_property_columns().then(function (columns) {
+                _.remove(columns, function (col) {
+                  return col.related === true;
+                });
+                return _.map(columns, function (col) {
+                  return _.omit(col, ['pinnedLeft', 'related']);
+                });
+              });
+            } else if ($stateParams.inventory_type === 'taxlots') {
+              return inventory_service.get_taxlot_columns().then(function (columns) {
+                _.remove(columns, function (col) {
+                  return col.related === true;
+                });
+                return _.map(columns, function (col) {
+                  return _.omit(col, ['pinnedLeft', 'related']);
+                });
+              });
+            }
+          }]
+        }
+      })
+      .state({
+        name: 'matching_detail_settings',
+        url: '/data/matching/{importfile_id:int}/{inventory_type:properties|taxlots}/{state_id:int}/settings',
+        templateUrl: static_url + 'seed/partials/matching_detail_settings.html',
+        controller: 'matching_detail_settings_controller',
+        resolve: {
+          $uibModalInstance: function () {
+            return {
+              close: function () {
+              }
+            };
+          },
+          columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+            if ($stateParams.inventory_type === 'properties') {
+              return inventory_service.get_property_columns().then(function (columns) {
+                _.remove(columns, function (col) {
+                  return col.related === true;
+                });
+                return _.map(columns, function (col) {
+                  return _.omit(col, ['pinnedLeft', 'related']);
+                });
+              });
+            } else if ($stateParams.inventory_type === 'taxlots') {
+              return inventory_service.get_taxlot_columns().then(function (columns) {
+                _.remove(columns, function (col) {
+                  return col.related === true;
+                });
+                return _.map(columns, function (col) {
+                  return _.omit(col, ['pinnedLeft', 'related']);
+                });
+              });
+            }
           }]
         }
       })
@@ -1113,7 +1189,7 @@ SEED_app.config(['$httpProvider', function ($httpProvider) {
  * Disable Angular debugging based on Django DEBUG flag.
  */
 SEED_app.config(['$compileProvider', function ($compileProvider) {
-  $compileProvider.debugInfoEnabled(window.BE.debug);
+  $compileProvider.debugInfoEnabled(true);
   $compileProvider.commentDirectivesEnabled(false);
   // $compileProvider.cssClassDirectivesEnabled(false); // This cannot be enabled due to the draggable ui-grid rows
 }]);

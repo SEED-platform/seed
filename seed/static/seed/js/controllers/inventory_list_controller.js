@@ -32,6 +32,8 @@ angular.module('BE.seed.controller.inventory_list', [])
               urls,
               spinner_utility,
               naturalSort) {
+
+    console.log(all_columns);
       spinner_utility.show();
       $scope.selectedCount = 0;
       $scope.selectedParentCount = 0;
@@ -448,7 +450,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           result.pinnedLeft = col.pinnedLeft;
           return result;
         });
-        var oldSettings = inventory_service.loadSettings(localStorageKey, angular.copy(all_columns));
+        var oldSettings = inventory_service.loadSettings(localStorageKey, all_columns);
         oldSettings = _.map(oldSettings, function (col) {
           col.pinnedLeft = false;
           col.visible = false;
