@@ -143,14 +143,38 @@ def _set_default_concat_config(concat):
 def _normalize_expanded_field(value):
     """
     Fields that are expanded (typically tax lot id) are also in need of normalization to remove
-    characters that prevent easy matching.
+    characters that prevent easy matching. This method will remove unwanted characters from the
+    jurisdiction tax lot id.
 
-    This method will remove unwanted characters from the jurisdiction tax lot id.
+    Here are some examples of what actual city taxlots can look like
+        13153123902
+        069180102923*
+        14A6-12
+        123.4-123
+        PANL1593005
+        0.000099
+        00012312
+        12-123-12-12-12-1-34-567
+        12 0123 TT0612
+
+    Method does the following:
+        Removes leading/trailing spaces
+        Removes duplicate characters next to each other when it is a space, \, /, -, *, .
+        Does not remove compbinations of duplicates, so 1./*5 will still be valid
 
     :param value: string
     :return: string
     """
-    return re.sub(r'[-\s/\\]', '', value).upper()
+
+    value = value.strip()
+    value = re.sub(r'\s{2,}', ' ', value)
+    value = re.sub(r'/{2,}', '/', value)
+    value = re.sub(r'\\{2,}', '\\\\', value)
+    value = re.sub(r'-{2,}', '-', value)
+    value = re.sub(r'\*{2,}', '*', value)
+    value = re.sub(r'\.{2,}', '.', value)
+
+    return value
 
 
 def expand_and_normalize_field(field, return_list=False):

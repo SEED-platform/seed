@@ -279,6 +279,18 @@ class TestMapper(TestCase):
         # Even though we have no explicit mapping for it.
         self.assertTrue('property_name' not in test_mapping)
 
+    def test_normalize_expanded_field(self):
+        self.assertEqual(mapper._normalize_expanded_field(' 000123 '), '000123')
+        self.assertEqual(mapper._normalize_expanded_field(' 000123  *'), '000123 *')
+        self.assertEqual(mapper._normalize_expanded_field(' 000123  ****123'), '000123 *123')
+        self.assertEqual(mapper._normalize_expanded_field('000--12-123---00'), '000-12-123-00')
+        self.assertEqual(mapper._normalize_expanded_field('000\\\\12\\\\123\\\\\\00'), '000\\12\\123\\00')
+        self.assertEqual(mapper._normalize_expanded_field('000////12//123////00'), '000/12/123/00')
+        self.assertEqual(mapper._normalize_expanded_field(' ..000.123..123'), '.000.123.123')
+        self.assertEqual(mapper._normalize_expanded_field('L123-45'), 'L123-45')
+        self.assertEqual(mapper._normalize_expanded_field('0.000099'), '0.000099')
+        self.assertEqual(mapper._normalize_expanded_field('12-123-12-12-12-1-34-567'), '12-123-12-12-12-1-34-567')
+
     def test_expand_field(self):
         r = mapper.expand_and_normalize_field(None)
         self.assertEqual(r, None)
@@ -289,7 +301,7 @@ class TestMapper(TestCase):
         r = mapper.expand_and_normalize_field(u"4815162342")
         self.assertEqual(r, '4815162342')
         r = mapper.expand_and_normalize_field(u"4\\//\\//\\\\-815162342")
-        self.assertEqual(r, '4815162342')
+        self.assertEqual(r, '4\\/\\/\\-815162342')
 
         # Returning lists
         r = mapper.expand_and_normalize_field(10000, True)
@@ -306,20 +318,20 @@ class TestMapper(TestCase):
         self.assertEqual(r, ["33366555", "33366125", "33366148"])
         r = mapper.expand_and_normalize_field(
             "000064545; 0000--34-23492-0; 00///1234: //12  34\\1234", True)
-        self.assertEqual(r, ['000064545', '000034234920', '001234', '12341234'])
+        self.assertEqual(r, ['000064545', '0000-34-23492-0', '00/1234', '/12 34\\1234'])
 
     def test_clean_single_row(self):
         data = {
             u'city': u'Meereen',
             u'country': u'Westeros',
-            u'jurisdiction_tax_lot_id': '155\\/\///2813'
+            u'jurisdiction_tax_lot_id': '155/2813'
         }
 
         expected = [
             {
                 u'city': u'Meereen',
                 u'country': u'Westeros',
-                u'jurisdiction_tax_lot_id': '1552813'
+                u'jurisdiction_tax_lot_id': '155/2813'
             }
         ]
 
@@ -347,7 +359,7 @@ class TestMapper(TestCase):
             u'city': u'Meereen',
             u'country': u'Westeros',
             u'jurisdiction_tax_lot_id': '123,234',
-            u'another_field': 'abc,bcd'
+            u'another_field': 'ABC,BCD'
         }
 
         expected = [
