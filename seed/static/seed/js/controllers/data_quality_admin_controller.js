@@ -88,6 +88,15 @@ angular.module('BE.seed.controller.data_quality_admin', [])
     }
 
     $scope.columns = columns;
+
+    if (!flippers.is_active('release:use_pint')) {
+      // db may return _pint columns; don't suggest them in the select
+      var is_pint_column = function (o) {
+        return /_pint$/.test(o.name);
+      };
+      _.remove($scope.columns, is_pint_column);
+    }
+
     $scope.all_labels = labels_payload;
     // console.log(labels_payload)
 
