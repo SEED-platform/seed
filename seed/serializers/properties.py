@@ -134,6 +134,10 @@ class PropertyMinimalSerializer(serializers.ModelSerializer):
 class PropertyStateSerializer(serializers.ModelSerializer):
     extra_data = serializers.JSONField(required=False)
 
+    # to support the old state serializer method with the PROPERTY_STATE_FIELDS variables
+    import_file_id = serializers.IntegerField(allow_null=True, read_only=True)
+    organization_id = serializers.IntegerField()
+
     class Meta:
         model = PropertyState
         fields = '__all__'
