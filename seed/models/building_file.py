@@ -99,7 +99,7 @@ class BuildingFile(models.Model):
                 extra_data = {}
                 for k, v in data.items():
                     # Skip the keys that are for measures and reports and process later
-                    if k in ['measures', 'reports']:
+                    if k in ['measures', 'reports', 'scenarios']:
                         continue
 
                     if md.find_column('PropertyState', k):
