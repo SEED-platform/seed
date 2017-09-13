@@ -707,7 +707,7 @@ class PropertyViewSet(GenericViewSet):
             result.update(PropertyViewSerializer(property_view).data)
             # remove PropertyView id from result
             result.pop('id')
-            result['state'] = PropertyStateSerializer(property_view.state).data
+            # result['state'] = PropertyStateSerializer(property_view.state).data
             result['taxlots'] = self._get_taxlots(property_view.pk)
             result['history'], master = self.get_history(property_view)
             result = update_result_with_master(result, master)
@@ -790,12 +790,19 @@ class PropertyViewSet(GenericViewSet):
                         )
                         # Removing organization key AND import_file key because they're not JSON-serializable
                         # TODO find better solution
-                        result['state'].pop('organization')
-                        result['state'].pop('import_file')
+                        if 'organizaiton' in result['state']:
+                            result['state'].pop('organization')
+                        if 'import_file' in result['state']:
+                            result['state'].pop('import_file')
+
+                        # Not sure why we have 201 here. Should be 200 or 204 because there is
+                        # no new content created.
                         status_code = status.HTTP_201_CREATED
                     else:
-                        result.update(
-                            {'status': 'error', 'message': 'Invalid Data'}
+                        result.update({
+                            'status': 'error',
+                            'message': 'Invalid update data with errors: {}'.format(
+                                new_property_state_serializer.errors)}
                         )
                         status_code = 422  # status.HTTP_422_UNPROCESSABLE_ENTITY
                 elif log.name in ['Manual Edit', 'Manual Match', 'System Match',

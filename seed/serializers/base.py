@@ -8,16 +8,23 @@ All rights reserved.  # NOQA
 :author Paul Munday <paul@paulmunday.net>
 """
 
+from collections import OrderedDict
+
 from rest_framework import serializers
 
 
 class ChoiceField(serializers.Field):
     def __init__(self, choices, **kwargs):
-        self._choices = choices
+        """init."""
+        self._choices = OrderedDict(choices)
         super(ChoiceField, self).__init__(**kwargs)
 
     def to_representation(self, obj):
-        return self._choices[obj][1]
+        return self._choices[obj]
 
     def to_internal_value(self, data):
-        return getattr(self._choices, data)
+        for i in self._choices:
+            if self._choices[i] == data:
+                return i
+        raise serializers.ValidationError(
+            "Could not find value. Acceptable values are {0}.".format(list(self._choices.values())))

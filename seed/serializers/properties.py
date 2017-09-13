@@ -15,7 +15,6 @@ from django.db import models
 from django.utils.timezone import make_naive
 from rest_framework import serializers
 from rest_framework.fields import empty
-from seed.serializers.base import ChoiceField
 
 from seed.models import (
     AUDIT_USER_EDIT,
@@ -27,13 +26,14 @@ from seed.models import (
     TaxLotProperty,
     TaxLotView,
 )
+from seed.serializers.base import ChoiceField
 from seed.serializers.building_file import BuildingFileSerializer
 from seed.serializers.certification import (
     GreenAssessmentPropertyReadOnlySerializer
 )
+from seed.serializers.measures import PropertyMeasureSerializer
 from seed.serializers.scenarios import ScenarioSerializer
 from seed.serializers.taxlots import TaxLotViewSerializer
-from seed.serializers.measures import PropertyMeasureSerializer
 
 # expose internal model
 PropertyLabel = apps.get_model('seed', 'Property_labels')
@@ -140,13 +140,13 @@ class PropertyMinimalSerializer(serializers.ModelSerializer):
 
 class PropertyStateSerializer(serializers.ModelSerializer):
     extra_data = serializers.JSONField(required=False)
-    measures = PropertyMeasureSerializer(source='propertymeasure_set', many=True)
-    scenarios = ScenarioSerializer(many=True)
-    files = BuildingFileSerializer(source='building_files', many=True)
+    measures = PropertyMeasureSerializer(source='propertymeasure_set', many=True, read_only=True)
+    scenarios = ScenarioSerializer(many=True, read_only=True)
+    files = BuildingFileSerializer(source='building_files', many=True, read_only=True)
     analysis_state = ChoiceField(choices=PropertyState.ANALYSIS_STATE_TYPES)
 
     # to support the old state serializer method with the PROPERTY_STATE_FIELDS variables
-    import_file_id = serializers.IntegerField()
+    import_file_id = serializers.IntegerField(allow_null=True, read_only=True)
     organization_id = serializers.IntegerField()
 
     class Meta:
@@ -177,6 +177,10 @@ class PropertyStateSerializer(serializers.ModelSerializer):
 
         return result
 
+    # def create(self, validated_data):
+    #     """Need to update this method to add in the measures, scenarios, and files"""
+    #     return new_object
+
 
 class PropertyStateWritableSerializer(serializers.ModelSerializer):
     """Used by PropertyViewAsState as a nested serializer"""
@@ -188,6 +192,8 @@ class PropertyStateWritableSerializer(serializers.ModelSerializer):
 
 
 class PropertyViewSerializer(serializers.ModelSerializer):
+    state = PropertyStateSerializer()
+
     class Meta:
         model = PropertyView
         depth = 1

@@ -13,7 +13,6 @@ from rest_framework import serializers
 from seed.models import (
     BuildingFile,
 )
-
 from seed.serializers.base import ChoiceField
 
 
