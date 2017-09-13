@@ -184,6 +184,7 @@ def _normalize_expanded_field(value):
     value = re.sub(r'-{2,}', '-', value)
     value = re.sub(r'\*{2,}', '*', value)
     value = re.sub(r'\.{2,}', '.', value)
+    value = value.upper()
 
     return value
 

@@ -290,6 +290,7 @@ class TestMapper(TestCase):
         self.assertEqual(mapper._normalize_expanded_field('L123-45'), 'L123-45')
         self.assertEqual(mapper._normalize_expanded_field('0.000099'), '0.000099')
         self.assertEqual(mapper._normalize_expanded_field('12-123-12-12-12-1-34-567'), '12-123-12-12-12-1-34-567')
+        self.assertEqual(mapper._normalize_expanded_field('ab-123-cd-12-12-1-34-567'), 'AB-123-CD-12-12-1-34-567')
 
     def test_expand_field(self):
         r = mapper.expand_and_normalize_field(None)
