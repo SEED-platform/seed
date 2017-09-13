@@ -762,8 +762,10 @@ class PropertyViewSet(GenericViewSet):
                         )
                         # Removing organization key AND import_file key because they're not JSON-serializable
                         # TODO find better solution
-                        result['state'].pop('organization')
-                        result['state'].pop('import_file')
+                        if 'organization' in result['state']:
+                            result['state'].pop('organization')
+                        if 'import_file' in result['state']:
+                            result['state'].pop('import_file')
                         status_code = status.HTTP_201_CREATED
                     else:
                         result.update(
