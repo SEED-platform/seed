@@ -171,7 +171,7 @@ def _normalize_expanded_field(value):
     Method does the following:
         Removes leading/trailing spaces
         Removes duplicate characters next to each other when it is a space, \, /, -, *, .
-        Does not remove compbinations of duplicates, so 1./*5 will still be valid
+        Does not remove combinations of duplicates, so 1./*5 will still be valid
 
     :param value: string
     :return: string
