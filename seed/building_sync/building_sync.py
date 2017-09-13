@@ -103,7 +103,7 @@ class BuildingSync(object):
             },
             "custom_id_1": {
                 "path": "Sites.Site.Facilities.Facility.PremisesIdentifiers.PremisesIdentifier",
-                "key_path_name": "IdentifierLabel",
+                "key_path_name": "IdentifierCustomName",
                 "key_path_value": "Custom ID",
                 "value_path_name": "IdentifierValue",
                 "required": True,

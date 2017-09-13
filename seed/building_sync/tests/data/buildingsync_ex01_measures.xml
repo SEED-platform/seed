@@ -32,6 +32,11 @@
                 <auc:IdentifierLabel>Assessor parcel number</auc:IdentifierLabel>
                 <auc:IdentifierValue>PN 123</auc:IdentifierValue>
               </auc:PremisesIdentifier>
+              <auc:PremisesIdentifier>
+                <auc:IdentifierLabel>Custom</auc:IdentifierLabel>
+                <auc:IdentifierCustomName>Custom ID</auc:IdentifierCustomName>
+                <auc:IdentifierValue>e6a5de56-8234-4b4f-ba10-6af0ae612fd1</auc:IdentifierValue>
+              </auc:PremisesIdentifier>
             </auc:PremisesIdentifiers>
             <auc:FacilityClassification>Commercial</auc:FacilityClassification>
             <auc:OccupancyClassification>Retail</auc:OccupancyClassification>

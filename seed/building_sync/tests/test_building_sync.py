@@ -171,6 +171,6 @@ class TestBuildingSync(TestCase):
         self.assertDictEqual(res, expected)
         self.assertTrue(errors)
         expected = [
-            'Could not find required value for sub-lookup of IdentifierLabel:Custom ID'
+            'Could not find required value for sub-lookup of IdentifierCustomName:Custom ID'
         ]
         self.assertEqual(mess, expected)
