@@ -633,6 +633,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
               }
             };
           },
+          import_file_payload: ['dataset_service', '$stateParams', function (dataset_service, $stateParams) {
+            var importfile_id = $stateParams.importfile_id;
+            return dataset_service.get_import_file(importfile_id);
+          }],
           columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             if ($stateParams.inventory_type === 'properties') {
               return inventory_service.get_property_columns().then(function (columns) {

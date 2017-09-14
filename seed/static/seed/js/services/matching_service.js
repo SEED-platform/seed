@@ -196,6 +196,48 @@ angular.module('BE.seed.service.matching', []).factory('matching_service', [
       }
     };
 
+    matching_service.saveDetailColumns = function (key, columns) {
+      key += '.' + user_service.get_organization().id;
+      var toSave = matching_service.reorderSettings(_.map(columns, function (col) {
+        return _.pick(col, ['name', 'visible']);
+      }));
+      localStorage.setItem(key, JSON.stringify(toSave));
+    };
+
+    matching_service.loadDetailColumns = function (key, columns) {
+      key += '.' + user_service.get_organization().id;
+      columns = angular.copy(columns);
+
+      // Hide extra data columns by default
+      _.forEach(columns, function (col) {
+        col.visible = !col.extraData;
+      });
+
+      var localColumns = localStorage.getItem(key);
+      if (!_.isNull(localColumns)) {
+        var existingColumnNames = _.map(columns, 'name');
+        localColumns = JSON.parse(localColumns);
+
+        // Remove nonexistent columns
+        _.remove(localColumns, function (col) {
+          return !_.includes(existingColumnNames, col.name);
+        });
+        // Use saved column settings with original data as defaults
+        localColumns = _.map(localColumns, function (col) {
+          return _.defaults(col, _.remove(columns, {name: col.name})[0]);
+        });
+        // If no columns are visible, reset visibility only
+        if (!_.find(localColumns, 'visible')) {
+          _.forEach(localColumns, function (col) {
+            col.visible = !col.extraData;
+          });
+        }
+        return matching_service.reorderSettings(localColumns.concat(columns));
+      } else {
+        return matching_service.reorderSettings(columns);
+      }
+    };
+
     matching_service.saveSort = function (key, settings) {
       key += '.' + user_service.get_organization().id;
       localStorage.setItem(key, JSON.stringify(settings));

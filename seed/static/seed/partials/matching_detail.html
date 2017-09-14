@@ -42,10 +42,6 @@
                         <p><strong>HOW TO MANUALLY MATCH YOUR PROPERTIES &amp; TAX LOTS:</strong></p>
                         <p>You can review and edit each individual match by clicking one of the linked IDs in the table. This will open a new table that shows the source data for the individual record you are attempting to match. Underneath this record is a searchable list of all potential existing matches. Use this table to explore all your records and to select single or multiple records to match your source data to.</p>
                     </div>
-                    <!--<div class="col-sm-6 tab_content wide">
-                        <p><strong>VIEW/HIDE COLUMNS</strong></p>
-                        <p>You can customize the columns displayed in the table below by clicking the 'View/Hide Columns' button and then selecting the column headers you want to review from the modal window.</p>
-                    </div>-->
                 </div>
 
             </uib-tab>
@@ -76,20 +72,20 @@
                     <thead>
                         <tr class="noselect">
                             <th class="is_aligned_center">Match</th>
-                            <th class="pointer" ng-repeat="col in ::reduced_columns" ng-click="sortData(col.name, col.extraData)">
+                            <th class="pointer" ng-repeat="col in ::columns" ng-click="sortData(col.name, col.extraData)">
                                 {$:: col.displayName $} <span ng-class="getSortClass(col.name, col.extraData)"></span>
                             </th>
                         </tr>
                         <tr class="filter-row">
                             <th class="sub_head is_aligned_center"></th>
-                            <th class="sub_head" ng-repeat="col in ::reduced_columns">
+                            <th class="sub_head" ng-repeat="col in ::columns">
                                 <input type="text" ng-model="col.searchText" ng-model-options="{debounce:150}">
                             </th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td class="potential_matches" colspan="{$:: reduced_columns.length + 1 $}">
+                            <td class="potential_matches" colspan="{$:: columns.length + 1 $}">
                                 <span>Record from Source: <strong>{$:: import_file.uploaded_filename $}</strong></span>
                                 <span class="label label-success matched" ng-if="state.matched">Matched!</span>
                             </td>
@@ -98,12 +94,12 @@
                             <td class="is_aligned_center">
                                 <i class="fa fa-check green" ng-if="state.matched"></i>
                             </td>
-                            <td ng-repeat="col in ::reduced_columns">
+                            <td ng-repeat="col in ::columns">
                                 <span>{$:: col.extraData ? state.extra_data[col.name] : state[col.name] $}</span>
                             </td>
                         </tr>
                         <tr>
-                            <td class="potential_matches" colspan="{$:: reduced_columns.length + 1 $}">
+                            <td class="potential_matches" colspan="{$:: columns.length + 1 $}">
                                 <span>Potential Matches from Source: <strong>Existing {$:: inventory_type == 'properties' ? 'Properties' : 'Tax Lots' $}</strong></span>
                             </td>
                         </tr>
@@ -112,7 +108,7 @@
                             <td class="is_aligned_center">
                                 <input type="checkbox" ng-model="state.matched" ng-change="unmatch()">
                             </td>
-                            <td ng-repeat="col in ::reduced_columns">
+                            <td ng-repeat="col in ::columns">
                                 <span>{$:: col.extraData ? state.coparent.extra_data[col.name] : state.coparent[col.name] $}</span>
                             </td>
                         </tr>
@@ -121,7 +117,7 @@
                             <td class="is_aligned_center">
                                 <input type="checkbox" ng-model="state.checked" ng-change="checkbox_match(state)">
                             </td>
-                            <td ng-repeat="col in ::reduced_columns">
+                            <td ng-repeat="col in ::columns">
                                 <span>{$:: col.extraData ? state.extra_data[col.name] : state[col.name] $}</span>
                             </td>
                         </tr>

@@ -6,25 +6,21 @@ angular.module('BE.seed.controller.matching_detail_settings', [])
   .controller('matching_detail_settings_controller', [
     '$scope',
     '$window',
-    '$uibModalInstance',
     '$stateParams',
-    'inventory_service',
-    'user_service',
+    'matching_service',
+    'import_file_payload',
     'columns',
-    function ($scope, $window, $uibModalInstance, $stateParams, inventory_service, user_service, columns) {
+    function ($scope, $window, $stateParams, matching_service, import_file_payload, columns) {
+      $scope.import_file = import_file_payload.import_file;
       $scope.inventory_type = $stateParams.inventory_type;
-      $scope.inventory = {
-        id: $stateParams.inventory_id
-      };
-      $scope.cycle = {
-        id: $stateParams.cycle_id
-      };
+      $scope.state_id = $stateParams.state_id;
 
-      var localStorageKey = 'grid.' + $scope.inventory_type + '.detail';
+      var localStorageKey = 'grid.matching.' + $scope.inventory_type + '.detail';
+      $scope.columns = columns;
 
       var restoreDefaults = function () {
         inventory_service.removeSettings(localStorageKey);
-        $scope.data = inventory_service.loadSettings(localStorageKey, columns);
+        $scope.columns = matching_service.loadDetailColumns(localStorageKey, columns);
         _.defer(function () {
           // Set row selection
           $scope.gridApi.selection.clearSelectedRows();
@@ -36,8 +32,8 @@ angular.module('BE.seed.controller.matching_detail_settings', [])
       };
 
       var saveSettings = function () {
-        $scope.data = inventory_service.reorderSettings($scope.data);
-        inventory_service.saveSettings(localStorageKey, $scope.data);
+        $scope.columns = matching_service.reorderSettings($scope.columns);
+        matching_service.saveDetailColumns(localStorageKey, $scope.columns);
       };
 
       var rowSelectionChanged = function () {
@@ -58,10 +54,10 @@ angular.module('BE.seed.controller.matching_detail_settings', [])
         $scope.gridApi.core.handleWindowResize();
       };
 
-      $scope.data = inventory_service.loadSettings(localStorageKey, columns);
+      $scope.columns = matching_service.loadDetailColumns(localStorageKey, columns);
 
       $scope.gridOptions = {
-        data: 'data',
+        data: 'columns',
         enableColumnMenus: false,
         enableFiltering: true,
         enableGridMenu: true,

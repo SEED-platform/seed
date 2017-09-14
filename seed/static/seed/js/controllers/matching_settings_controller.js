@@ -5,16 +5,11 @@
 angular.module('BE.seed.controller.matching_settings', [])
   .controller('matching_settings_controller', [
     '$scope',
-    '$window',
-    '$uibModalInstance',
     '$stateParams',
-    'uiGridConstants',
-    'inventory_service',
     'matching_service',
-    'user_service',
     'import_file_payload',
     'columns',
-    function ($scope, $window, $uibModalInstance, $stateParams, uiGridConstants, inventory_service, matching_service, user_service, import_file_payload, columns) {
+    function ($scope, $stateParams, matching_service, import_file_payload, columns) {
       $scope.import_file = import_file_payload.import_file;
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.inventory = {
@@ -25,6 +20,7 @@ angular.module('BE.seed.controller.matching_settings', [])
       };
 
       var localStorageKey = 'grid.matching.' + $scope.inventory_type;
+      $scope.columns = columns;
       $scope.leftColumns = matching_service.loadLeftColumns(localStorageKey, columns);
       $scope.mappedColumnsOnly = $scope.leftColumns === 'showOnlyMappedFields';
 
