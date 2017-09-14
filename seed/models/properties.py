@@ -12,6 +12,8 @@ import pdb
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
 from auditlog import AUDIT_IMPORT
 from auditlog import DATA_UPDATE_TYPE
 from seed.data_importer.models import ImportFile
@@ -385,6 +387,13 @@ class PropertyState(models.Model):
         coparents = [{key: getattr(c, key) for key in keep_fields} for c in coparents]
 
         return coparents, len(coparents)
+
+
+@receiver(pre_delete, sender=PropertyState)
+def pre_delete_state(sender, **kwargs):
+    # remove all the property measures. Not sure why the cascading delete
+    # isn't working here.
+    kwargs['instance'].propertymeasure_set.all().delete()
 
 
 class PropertyView(models.Model):
