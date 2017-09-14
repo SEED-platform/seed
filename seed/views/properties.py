@@ -506,6 +506,29 @@ class PropertyViewSet(GenericViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
+    @detail_route(methods=['DELETE'])
+    def delete(self, request, pk=None):
+        """
+        Delete a single property
+        ---
+        parameters:
+            - name: pk
+              description: Primary key to delete
+              require: true
+        """
+        num_objs, del_items = PropertyState.objects.get(pk=int(pk)).delete()
+        if num_objs > 0:
+            return JsonResponse({'status': 'success', 'message': del_items})
+        else:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'No PropertyStates removed'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('can_modify_data')
     @list_route(methods=['DELETE'])
     def batch_delete(self, request):
         """
