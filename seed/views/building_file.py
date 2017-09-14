@@ -11,6 +11,7 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import parser_classes
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.viewsets import GenericViewSet
+from rest_framework import status
 
 from seed.authentication import SEEDAuthentication
 from seed.lib.superperms.orgs.decorators import has_perm_class
@@ -74,8 +75,8 @@ class BuildingFileViewSet(GenericViewSet):
             file_type=file_type,
         )
 
-        status, property_state = building_file.process(organization_id, cycle)
-        if status and property_state:
+        p_status, property_state, messages = building_file.process(organization_id, cycle)
+        if p_status and property_state:
             return JsonResponse({
                 "status": "success",
                 "message": "successfully imported file",
@@ -86,5 +87,5 @@ class BuildingFileViewSet(GenericViewSet):
         else:
             return JsonResponse({
                 "status": "error",
-                "message": "Could not process building file"
-            })
+                "message": "Could not process building file with messages {}".format(messages)
+            }, status=status.HTTP_400_BAD_REQUEST)

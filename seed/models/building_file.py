@@ -83,16 +83,15 @@ class BuildingFile(models.Model):
 
         :param organization_id: integer, ID of organization
         :param cycle: object, instance of cycle object
-        :return: list, [status, and (PropertyState|None)]
+        :return: list, [status, (PropertyState|None), messages]
         """
 
         if self.file_type == self.BUILDINGSYNC:
             bs = BuildingSync()
             bs.import_file(self.file.path)
-            data, _, _ = bs.process(BuildingSync.BRICR_STRUCT)
+            data, errors, messages = bs.process(BuildingSync.BRICR_STRUCT)
 
-            property_state = None
-            if data:
+            if data and not errors:
                 # subselect the data that are needed to create the PropertyState object
                 md = MappingData()
                 create_data = {"organization_id": organization_id}
@@ -223,7 +222,9 @@ class BuildingFile(models.Model):
                     record_type=AUDIT_IMPORT
                 )
 
-            return True, property_state
+                return True, property_state, messages
+            else:
+                return False, None, messages
 
         else:
-            return False, None
+            return False, None, "File format was not set to BuildingSync"
