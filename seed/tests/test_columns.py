@@ -392,6 +392,16 @@ class TestColumnsByInventory(TestCase):
                 "district": "string"
             }
         }
+
+        # remove or merge into above after we merge/rename 'release:use_pint'
+        schema["types"]["gross_floor_area_pint"] = ""
+        schema["types"]["conditioned_floor_area_pint"] = ""
+        schema["types"]["occupied_floor_area_pint"] = ""
+        schema["types"]["site_eui_pint"] = ""
+        schema["types"]["source_eui_weather_normalized_pint"] = ""
+        schema["types"]["site_eui_weather_normalized_pint"] = ""
+        schema["types"]["source_eui_pint"] = ""
+
         columns = Column.retrieve_db_types()
         self.assertEqual(schema, columns)
 
@@ -409,5 +419,14 @@ class TestColumnsByInventory(TestCase):
                 'property_notes', 'property_type', 'recent_sale_date', 'release_date', 'site_eui',
                 'site_eui_weather_normalized', 'source_eui', 'source_eui_weather_normalized',
                 'space_alerts', 'state', 'use_description', 'year_built', 'year_ending']
+
+        # remove or merge into above after we merge/rename 'release:use_pint'
+        data += ['gross_floor_area_pint',
+                'conditioned_floor_area_pint',
+                'occupied_floor_area_pint',
+                'site_eui_pint',
+                'source_eui_weather_normalized_pint',
+                'site_eui_weather_normalized_pint',
+                'source_eui_pint']
 
         self.assertItemsEqual(data, c)

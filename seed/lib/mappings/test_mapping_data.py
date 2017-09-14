@@ -103,6 +103,15 @@ class TestMappingData(TestCase):
             'year_ending'
         ]
 
+        # remove or merge into above after we merge/rename 'release:use_pint'
+        expected_data += ['gross_floor_area_pint',
+                'conditioned_floor_area_pint',
+                'occupied_floor_area_pint',
+                'site_eui_pint',
+                'source_eui_weather_normalized_pint',
+                'site_eui_weather_normalized_pint',
+                'source_eui_pint']
+
         # nope you can't compare a list to keys, as keys are unordered
         # self.assertListEqual(d, expected_data)
 
