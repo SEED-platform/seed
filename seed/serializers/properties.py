@@ -186,9 +186,32 @@ class PropertyStateWritableSerializer(serializers.ModelSerializer):
     """Used by PropertyViewAsState as a nested serializer"""
     extra_data = serializers.JSONField(required=False)
 
+    analysis_state = ChoiceField(choices=PropertyState.ANALYSIS_STATE_TYPES)
+
     class Meta:
         fields = '__all__'
         model = PropertyState
+
+    def to_representation(self, data):
+        """Overwritten to handle time conversion"""
+        result = super(PropertyStateSerializer, self).to_representation(data)
+        # for datetime to be isoformat and remove timezone data
+        if data.generation_date:
+            result['generation_date'] = make_naive(data.generation_date).isoformat()
+
+        if data.recent_sale_date:
+            result['recent_sale_date'] = make_naive(data.recent_sale_date).isoformat()
+
+        if data.release_date:
+            result['release_date'] = make_naive(data.release_date).isoformat()
+
+        if data.analysis_start_time:
+            result['analysis_start_time'] = make_naive(data.analysis_start_time).isoformat()
+
+        if data.analysis_end_time:
+            result['analysis_end_time'] = make_naive(data.analysis_end_time).isoformat()
+
+        return results
 
 
 class PropertyViewSerializer(serializers.ModelSerializer):
