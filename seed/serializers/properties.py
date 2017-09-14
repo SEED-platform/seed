@@ -211,7 +211,7 @@ class PropertyStateWritableSerializer(serializers.ModelSerializer):
         if data.analysis_end_time:
             result['analysis_end_time'] = make_naive(data.analysis_end_time).isoformat()
 
-        return results
+        return result
 
 
 class PropertyViewSerializer(serializers.ModelSerializer):

@@ -152,6 +152,7 @@ class TestBuildingSync(TestCase):
             'address_line_1': '123 Main Street',
             'city': 'Denver',
             'state': 'CO',
+            'custom_id_1': 'e6a5de56-8234-4b4f-ba10-6af0ae612fd1',
             'latitude': 40.762235027074865,
             'longitude': -121.41677258249452,
             'year_built': 1990,
@@ -169,8 +170,5 @@ class TestBuildingSync(TestCase):
 
         res, errors, mess = self.bs.process(struct)
         self.assertDictEqual(res, expected)
-        self.assertTrue(errors)
-        expected = [
-            'Could not find required value for sub-lookup of IdentifierCustomName:Custom ID'
-        ]
-        self.assertEqual(mess, expected)
+        self.assertFalse(errors)
+        # self.assertEqual(mess, expected)
