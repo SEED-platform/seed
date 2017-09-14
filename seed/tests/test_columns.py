@@ -422,11 +422,11 @@ class TestColumnsByInventory(TestCase):
 
         # remove or merge into above after we merge/rename 'release:use_pint'
         data += ['gross_floor_area_pint',
-                'conditioned_floor_area_pint',
-                'occupied_floor_area_pint',
-                'site_eui_pint',
-                'source_eui_weather_normalized_pint',
-                'site_eui_weather_normalized_pint',
-                'source_eui_pint']
+                 'conditioned_floor_area_pint',
+                 'occupied_floor_area_pint',
+                 'site_eui_pint',
+                 'source_eui_weather_normalized_pint',
+                 'site_eui_weather_normalized_pint',
+                 'source_eui_pint']
 
         self.assertItemsEqual(data, c)
