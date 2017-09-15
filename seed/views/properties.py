@@ -509,14 +509,16 @@ class PropertyViewSet(GenericViewSet):
     @detail_route(methods=['DELETE'])
     def delete(self, request, pk=None):
         """
-        Delete a single property
+        Delete a single property state from a property_viewID. Not sure why we
+        are deleting only the state, but it is matching the functionality that is in
+        the batch_delete request.
         ---
         parameters:
             - name: pk
               description: Primary key to delete
               require: true
         """
-        num_objs, del_items = PropertyState.objects.get(pk=int(pk)).delete()
+        num_objs, del_items = PropertyView.objects.filter(state__id=int(pk)).delete()
         if num_objs > 0:
             return JsonResponse({'status': 'success', 'message': del_items})
         else:
