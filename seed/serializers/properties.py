@@ -183,10 +183,20 @@ class PropertyStateSerializer(serializers.ModelSerializer):
 
 
 class PropertyStateWritableSerializer(serializers.ModelSerializer):
-    """Used by PropertyViewAsState as a nested serializer"""
-    extra_data = serializers.JSONField(required=False)
+    """
+    Used by PropertyViewAsState as a nested serializer
 
+    Not sure why this is different than PropertyStateSerializer
+    """
+    extra_data = serializers.JSONField(required=False)
+    measures = PropertyMeasureSerializer(source='propertymeasure_set', many=True, read_only=True)
+    scenarios = ScenarioSerializer(many=True, read_only=True)
+    files = BuildingFileSerializer(source='building_files', many=True, read_only=True)
     analysis_state = ChoiceField(choices=PropertyState.ANALYSIS_STATE_TYPES)
+
+    # to support the old state serializer method with the PROPERTY_STATE_FIELDS variables
+    import_file_id = serializers.IntegerField(allow_null=True, read_only=True)
+    organization_id = serializers.IntegerField()
 
     class Meta:
         fields = '__all__'
@@ -194,7 +204,7 @@ class PropertyStateWritableSerializer(serializers.ModelSerializer):
 
     def to_representation(self, data):
         """Overwritten to handle time conversion"""
-        result = super(PropertyStateSerializer, self).to_representation(data)
+        result = super(PropertyStateWritableSerializer, self).to_representation(data)
         # for datetime to be isoformat and remove timezone data
         if data.generation_date:
             result['generation_date'] = make_naive(data.generation_date).isoformat()

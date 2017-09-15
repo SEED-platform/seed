@@ -83,7 +83,7 @@ class BuildingFile(models.Model):
 
         :param organization_id: integer, ID of organization
         :param cycle: object, instance of cycle object
-        :return: list, [status, (PropertyState|None), messages]
+        :return: list, [status, (PropertyView|None), messages]
         """
 
         if self.file_type == self.BUILDINGSYNC:
@@ -122,8 +122,8 @@ class BuildingFile(models.Model):
                 property_state.extra_data = extra_data
                 property_state.save()
 
-                # TODO: needs to be a merge instead of simply promoting!
-                property_state.promote(cycle)
+                # automatically promote this buildingsync file to a new instance
+                property_view = property_state.promote(cycle)
 
                 # set the property_state_id so that we can list the building files by properties
                 self.property_state_id = property_state.id
@@ -222,7 +222,7 @@ class BuildingFile(models.Model):
                     record_type=AUDIT_IMPORT
                 )
 
-                return True, property_state, messages
+                return True, property_view, messages
             else:
                 return False, None, messages
 
