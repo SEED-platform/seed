@@ -122,19 +122,6 @@ angular.module('BE.seed.controller.matching_detail', [])
       }
 
       $scope.sortData = function (column, extraData) {
-        if (extraData) column = 'extra_data[\'' + column + '\']';
-        if ($scope.sortColumn === column && $scope.reverseSort) {
-          $scope.sortColumn = 'name';
-          $scope.reverseSort = false;
-          matching_service.removeSettings(localStorageKey + '.sort')
-        } else {
-          $scope.reverseSort = $scope.sortColumn === column ? !$scope.reverseSort : false;
-          $scope.sortColumn = column;
-          matching_service.saveSort(localStorageKey + '.sort', {sortColumn: $scope.sortColumn, reverseSort: $scope.reverseSort});
-        }
-      };
-
-      $scope.sortData = function (column, extraData) {
         _.defer(function () {
           spinner_utility.show();
           $scope.$digest();

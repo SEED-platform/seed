@@ -2,14 +2,17 @@
     <div class="page_header">
         <div class="left page_action_container">
             <a class="page_action" ui-sref="dataset_list"><i class="fa fa-chevron-left"></i> Data Sets</a>
-
         </div>
         <div class="page_title">
-            <h1>{$:: inventory_type == 'properties' ? 'Pair Properties to Tax Lots' : 'Pair Tax Lots to Properties' $}</h1>
+            <h1>{$:: inventory_type === 'properties' ? 'Pair Properties to Tax Lots' : 'Pair Tax Lots to Properties' $}</h1>
             <!-- <h1>Data Pairing ({$ import_file.uploaded_filename $})</h1> -->
         </div>
         <div class="right page_action_container"></div>
     </div>
+</div>
+
+<div class="section_nav_container">
+    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/pairing_nav.html'"></div>
 </div>
 
 <div class="pairing-list-controls-full container">
@@ -36,7 +39,7 @@
             </div>
         </div>
         <div class="pairing-other-title col-md-6">
-            <h4>{$:: inventory_type == 'properties' ? 'Tax Lot' : 'Property' $}</h4>
+            <h4>{$:: inventory_type === 'properties' ? 'Tax Lot' : 'Property' $}</h4>
         </div>
     </div>
 </div>
@@ -47,7 +50,7 @@
             <div class="pairing-container">
                 <div class="pairing-headers-row">
                     <div class="pairing-headers" ng-repeat="col in ::leftColumns track by $index">
-                        <div class="pairing-header table_header_text pointer" ng-click="leftSortData(col.name)">{$:: col.displayName $}
+                        <div class="pairing-header table_header_text pointer" ng-click="leftSortData(col.name, col.extraData)">{$:: col.displayName $}
                             <div ng-class="leftGetSortClass(col.name)"></div>
                         </div>
                         <input class="is_aligned_center column_border" ng-model="col.searchText" ng-model-options="{debounce:150}">
@@ -65,8 +68,8 @@
                 </div>
             </div>
             <div class="pairing-text-left">
-                <span ng-if="::inventory_type == 'properties'">Showing {$ leftData.length $} <ng-pluralize count="leftData.length" when="{'one': 'Property','other': 'Properties'}"></ng-pluralize> ({$ leftNumUnpaired() $} unpaired)</span>
-                <span ng-if="::inventory_type == 'taxlots'">Showing {$ leftData.length $} <ng-pluralize count="leftData.length" when="{'one': 'Tax Lot','other': 'Tax Lots'}"></ng-pluralize> ({$ leftNumUnpaired() $} unpaired)</span>
+                <span ng-if="::inventory_type === 'properties'">Showing {$ leftData.length $} <ng-pluralize count="leftData.length" when="{'one': 'Property','other': 'Properties'}"></ng-pluralize> ({$ leftNumUnpaired() $} unpaired)</span>
+                <span ng-if="::inventory_type === 'taxlots'">Showing {$ leftData.length $} <ng-pluralize count="leftData.length" when="{'one': 'Tax Lot','other': 'Tax Lots'}"></ng-pluralize> ({$ leftNumUnpaired() $} unpaired)</span>
             </div>
         </div>
         <div class="pairing-inventory-other col-md-6">
@@ -74,7 +77,7 @@
                 <div class="pairing-headers-row">
                     <!-- ng-class to slide text and input headers -->
                     <div class="pairing-headers" ng-repeat="col in ::rightColumns track by $index">
-                        <div class="pairing-header table_header_text is_aligned_center pointer" ng-click="rightSortData(col.name)">{$:: col.displayName $}
+                        <div class="pairing-header table_header_text is_aligned_center pointer" ng-click="rightSortData(col.name, col.extraData)">{$:: col.displayName $}
                             <div ng-class="rightGetSortClass(col.name)"></div>
                         </div>
                         <input class="is_aligned_center column_border" ng-model="col.searchText" ng-model-options="{debounce:150}">
@@ -91,7 +94,7 @@
                             <div class="pairing-data-row-indent" ng-if="!whichChildren(row)">
                                 <div class="pairing-data-row-col-indent unpaired">
                                     <div class="pairing-cell">
-                                        <span class="pairing-text">Drag {$:: inventory_type == 'properties' ? 'Property' : 'Tax Lot' $} here to pair with this {$:: inventory_type == 'properties' ? 'Tax Lot' : 'Property' $}</span>
+                                        <span class="pairing-text">Drag {$:: inventory_type === 'properties' ? 'Property' : 'Tax Lot' $} here to pair with this {$:: inventory_type === 'properties' ? 'Tax Lot' : 'Property' $}</span>
                                     </div>
                                 </div>
                             </div>
@@ -108,8 +111,8 @@
                 </div>
             </div>
             <div class="pairing-text-right">
-                <span ng-if="::inventory_type == 'properties'">Showing {$ rightData.length $} <ng-pluralize count="rightData.length" when="{'one': 'Tax Lot','other': 'Tax Lots'}"></ng-pluralize> ({$ rightNumUnpaired() $} unpaired)</span>
-                <span ng-if="::inventory_type == 'taxlots'">Showing {$ rightData.length $} <ng-pluralize count="rightData.length" when="{'one': 'Property','other': 'Properties'}"></ng-pluralize> ({$ rightNumUnpaired() $} unpaired)</span>
+                <span ng-if="::inventory_type === 'properties'">Showing {$ rightData.length $} <ng-pluralize count="rightData.length" when="{'one': 'Tax Lot','other': 'Tax Lots'}"></ng-pluralize> ({$ rightNumUnpaired() $} unpaired)</span>
+                <span ng-if="::inventory_type === 'taxlots'">Showing {$ rightData.length $} <ng-pluralize count="rightData.length" when="{'one': 'Property','other': 'Properties'}"></ng-pluralize> ({$ rightNumUnpaired() $} unpaired)</span>
             </div>
         </div>
     </div>
