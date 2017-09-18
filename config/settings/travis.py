@@ -40,6 +40,3 @@ CACHES = {
         'TIMEOUT': 300
     }
 }
-
-DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
-STATICFILES_STORAGE = DEFAULT_FILE_STORAGE

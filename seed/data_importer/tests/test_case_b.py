@@ -70,7 +70,7 @@ class TestCaseB(DataMappingBaseTestCase):
             data_state=DATA_STATE_MAPPING,
             import_file=self.import_file,
         ).first()
-        self.assertEqual(p_test.lot_number, "33366555;33366125;33366148")
+        self.assertEqual(p_test.lot_number, "333/66555;333/66125;333/66148")
 
         tasks.match_buildings(self.import_file.id)
 

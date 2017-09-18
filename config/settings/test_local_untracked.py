@@ -43,7 +43,6 @@ CACHES = {
     }
 }
 CELERY_BROKER_URL = 'redis://127.0.0.1:6379/1'
-DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
 INTERNAL_IPS = ('127.0.0.1',)
 

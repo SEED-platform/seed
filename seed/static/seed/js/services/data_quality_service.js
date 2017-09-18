@@ -17,7 +17,7 @@ angular.module('BE.seed.service.data_quality', []).factory('data_quality_service
      * @param import_file_id: int, represents file import id.
      */
     data_quality_factory.get_data_quality_results = function (import_file_id) {
-      return $http.get('/api/v2/import_files/' + import_file_id + '/data_quality_results').then(function (response) {
+      return $http.get('/api/v2/import_files/' + import_file_id + '/data_quality_results/').then(function (response) {
         return response.data.data;
       });
     };

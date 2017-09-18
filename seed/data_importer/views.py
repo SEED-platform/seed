@@ -191,7 +191,7 @@ class LocalUploaderViewSet(viewsets.GenericViewSet):
         else:
             the_file = request.data['file']
         filename = the_file.name
-        path = settings.MEDIA_ROOT + "/uploads/" + filename
+        path = os.path.join(settings.MEDIA_ROOT, "uploads", filename)
 
         # Get a unique filename using the get_available_name method in FileSystemStorage
         s = FileSystemStorage()
@@ -610,7 +610,8 @@ class ImportFileViewSet(viewsets.ViewSet):
                 if get_coparents:
                     for state in properties:
                         state['matched'] = False
-                        coparent = self.has_coparent(state['id'], 'properties', fields['PropertyState'])
+                        coparent = self.has_coparent(state['id'], 'properties',
+                                                     fields['PropertyState'])
                         if coparent:
                             state['matched'] = True
                             state['coparent'] = coparent
@@ -1728,7 +1729,8 @@ class ImportFileViewSet(viewsets.ViewSet):
             taxlots = [t for t in taxlots if t.id not in taxlots_to_remove]
 
             for state in taxlots:
-                audit_creation_id = TaxLotAuditLog.objects.only('id').exclude(import_filename=None).get(
+                audit_creation_id = TaxLotAuditLog.objects.only('id').exclude(
+                    import_filename=None).get(
                     state_id=state.id,
                     name='Import Creation'
                 )

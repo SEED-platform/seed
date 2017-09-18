@@ -6,8 +6,8 @@
 """
 from django.conf import settings
 from django.conf.urls import include, url
+from django.conf.urls.static import static
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
-from django.views.static import serve
 
 from config.views import robots_txt
 from seed.api.base.urls import urlpatterns as api
@@ -30,23 +30,20 @@ urlpatterns = [
     url(r'^api/', include(api, namespace='api')),
 ]
 
-# TODO: 8/8/17 fix media root for docker deployments. Need to have uploads live somewhere other than the compiled assets
+handler404 = 'seed.views.main.error404'
+handler500 = 'seed.views.main.error500'
+
 if settings.DEBUG:
     from django.contrib import admin
 
     admin.autodiscover()
     urlpatterns += staticfiles_urlpatterns()
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += [
         # test URLs
         url(r'^angular_js_tests/$', angular_js_tests, name='angular_js_tests'),
 
         # admin
         url(r'^admin/', include(admin.site.urls)),
-        url(
-            r'^media/(?P<path>.*)$',
-            serve,
-            {
-                'document_root': settings.MEDIA_ROOT,
-            }
-        ),
     ]

@@ -13,11 +13,11 @@ import uuid
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
-from django.core.exceptions import ImproperlyConfigured
 from django.core.files.storage import DefaultStorage
 from django.http import JsonResponse
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
+from rest_framework import status
 from rest_framework.decorators import api_view
 
 from seed import tasks
@@ -101,15 +101,12 @@ def home(request):
         * **FILE_UPLOAD_DESTINATION**: 'S3' or 'filesystem'
     """
     username = request.user.first_name + " " + request.user.last_name
-    if 's3boto' in settings.DEFAULT_FILE_STORAGE.lower():
+    if 'S3' in settings.DEFAULT_FILE_STORAGE:
         FILE_UPLOAD_DESTINATION = 'S3'
         AWS_UPLOAD_BUCKET_NAME = settings.AWS_BUCKET_NAME
         AWS_CLIENT_ACCESS_KEY = settings.AWS_UPLOAD_CLIENT_KEY
-    elif 'FileSystemStorage' in settings.DEFAULT_FILE_STORAGE:
-        FILE_UPLOAD_DESTINATION = 'filesystem'
     else:
-        msg = "Only S3 and FileSystemStorage backends are supported"
-        raise ImproperlyConfigured(msg)
+        FILE_UPLOAD_DESTINATION = 'filesystem'
 
     initial_org_id, initial_org_name, initial_org_user_role = _get_default_org(
         request.user
@@ -140,6 +137,38 @@ def version(request):
         'version': manifest['version'],
         'sha': sha
     })
+
+
+def error404(request):
+    # Okay, this is a bit of a hack. Needed to move on.
+    if '/api/' in request.path:
+        return JsonResponse({
+            "status": "error",
+            "message": "Endpoint could not be found",
+        }, status=status.HTTP_404_NOT_FOUND)
+    else:
+        response = render_to_response(
+            'seed/404.html', {},
+            context_instance=RequestContext(request)
+        )
+        response.status_code = 404
+        return response
+
+
+def error500(request):
+    # Okay, this is a bit of a hack. Needed to move on.
+    if '/api/' in request.path:
+        return JsonResponse({
+            "status": "error",
+            "message": "Internal server error",
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    else:
+        response = render_to_response(
+            'seed/404.html', {},
+            context_instance=RequestContext(request)
+        )
+        response.status_code = 500
+        return response
 
 
 @api_endpoint
@@ -216,8 +245,7 @@ def export_buildings(request):
         _selected_fields = []
         for field in selected_fields:
             components = field.split("__", 1)
-            if (components[0] == 'project_building_snapshots'
-                    and len(components) > 1):
+            if (components[0] == 'project_building_snapshots' and len(components) > 1):
                 _selected_fields.append(components[1])
             else:
                 _selected_fields.append("building_snapshot__%s" % field)
@@ -326,7 +354,30 @@ def export_buildings_download(request):
     # moment.
     export_subdir = Exporter.subdirectory_from_export_id(export_id)
 
-    if 'FileSystemStorage' in settings.DEFAULT_FILE_STORAGE:
+    if 'S3' in settings.DEFAULT_FILE_STORAGE:
+        keys = list(DefaultStorage().bucket.list(export_subdir))
+
+        if not keys:
+            return JsonResponse({
+                'success': False,
+                'status': 'working'
+            })
+
+        if len(keys) > 1:
+            return JsonResponse({
+                "success": False,
+                "status": "error",
+            })
+
+        download_key = keys[0]
+        download_url = download_key.generate_url(900)
+
+        return JsonResponse({
+            'success': True,
+            "status": "success",
+            "url": download_url
+        })
+    else:
         file_storage = DefaultStorage()
 
         try:
@@ -355,30 +406,6 @@ def export_buildings_download(request):
                     'message': 'Could not find file on server',
                     'status': 'error'
                 })
-
-    else:
-        keys = list(DefaultStorage().bucket.list(export_subdir))
-
-        if not keys:
-            return JsonResponse({
-                'success': False,
-                'status': 'working'
-            })
-
-        if len(keys) > 1:
-            return JsonResponse({
-                "success": False,
-                "status": "error",
-            })
-
-        download_key = keys[0]
-        download_url = download_key.generate_url(900)
-
-        return JsonResponse({
-            'success': True,
-            "status": "success",
-            "url": download_url
-        })
 
 
 # @api_view(['POST'])  # do not add api_view on this because this is public and adding it will
@@ -613,8 +640,7 @@ def _mapping_suggestions(import_file_id, org_id, user):
     # NL 12/2/2016: Removed 'organization__isnull' Query because we only want the
     # the ones belonging to the organization
     columns = list(Column.objects.select_related('unit').filter(
-        mapped_mappings__super_organization_id=org_id).exclude(column_name__in=md.keys)
-    )
+        mapped_mappings__super_organization_id=org_id).exclude(column_name__in=md.keys))
     md.add_extra_data(columns)
 
     # Portfolio manager files have their own mapping scheme - yuck, really?

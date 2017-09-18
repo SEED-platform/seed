@@ -167,7 +167,6 @@ class Command(BaseCommand):
             return  # We're in the root media folder
 
         # Later we assume the STATIC_ROOT ends with a trailing slash
-        # TODO: Check if we should check os.path.sep for Windows
         if not root_dir.endswith('/'):
             root_dir = root_dir + '/'
 
