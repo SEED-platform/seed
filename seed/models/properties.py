@@ -324,6 +324,7 @@ class PropertyState(models.Model):
                     ps.energy_alerts,
                     ps.space_alerts,
                     ps.building_certification,
+                    ps.extra_data,
                     NULL
                 FROM seed_propertystate ps, audit_id aid
                 WHERE (ps.id = aid.parent_state1_id AND
@@ -344,7 +345,7 @@ class PropertyState(models.Model):
                        'owner_address', 'owner_postal_code', 'home_energy_score_id',
                        'generation_date', 'release_date', 'source_eui_weather_normalized',
                        'site_eui_weather_normalized', 'source_eui',
-                       'energy_alerts', 'space_alerts', 'building_certification', ]
+                       'energy_alerts', 'space_alerts', 'building_certification', 'extra_data', ]
         coparents = [{key: getattr(c, key) for key in keep_fields} for c in coparents]
 
         return coparents, len(coparents)
