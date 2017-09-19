@@ -637,7 +637,6 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
       var localColumns = localStorage.getItem(key);
       if (!_.isNull(localColumns)) {
-        var existingColumnNames = _.map(columns, 'name');
         localColumns = JSON.parse(localColumns);
 
         // Remove deprecated columns missing 'related' field
@@ -650,7 +649,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
         // Remove nonexistent columns
         _.remove(localColumns, function (col) {
-          return !_.includes(existingColumnNames, col.name);
+          return !_.find(columns, {name: col.name, related: col.related});
         });
         // Use saved column settings with original data as defaults
         localColumns = _.map(localColumns, function (col) {
