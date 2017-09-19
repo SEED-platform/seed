@@ -287,9 +287,11 @@ class PropertyViewSet(GenericViewSet):
 
                 l[extra_data_field] = extra_data_value
 
-            # Only return the requested rows. speeds up the json string time
-            l = {key: value for key, value in l.items() if key in columns}
-
+            # Only return the requested rows. speeds up the json string time.
+            # The front end requests for related columns have 'tax_' prepended to them, so check
+            # for that too.
+            l = {key: value for key, value in l.items() if (key in columns) or
+                 ("tax_{}".format(key) in columns)}
             taxlot_map[taxlot_view.pk] = l
             # Replace taxlot_view id with taxlot id
             taxlot_map[taxlot_view.pk]['id'] = taxlot_view.taxlot.id
