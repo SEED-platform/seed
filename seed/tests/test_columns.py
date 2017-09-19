@@ -265,6 +265,12 @@ class TestColumnsByInventory(TestCase):
             is_extra_data=True
         )
         seed_models.Column.objects.create(
+            column_name=u"Apostrophe's Field",
+            table_name=u'PropertyState',
+            organization=self.fake_org,
+            is_extra_data=True
+        )
+        seed_models.Column.objects.create(
             column_name=u'id',
             table_name=u'PropertyState',
             organization=self.fake_org,
@@ -291,6 +297,16 @@ class TestColumnsByInventory(TestCase):
             'extraData': True,
             'displayName': u'Column A',
             'name': u'Column A',
+            'related': False,
+        }
+        self.assertIn(c, columns)
+
+        # Check that display_name doesn't capitalize after apostrophe
+        c = {
+            'table': u'PropertyState',
+            'extraData': True,
+            'displayName': u"Apostrophe's Field",
+            'name': u"Apostrophe's Field",
             'related': False,
         }
         self.assertIn(c, columns)

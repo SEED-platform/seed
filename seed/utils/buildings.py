@@ -13,6 +13,7 @@ from seed import search
 from seed.utils import time
 from seed.utils.mapping import get_mappable_types
 from seed.utils.constants import ASSESSOR_FIELDS_BY_COLUMN
+from seed.utils.string import titlecase
 
 
 def get_source_type(import_file, source_type=''):
@@ -123,7 +124,7 @@ def get_columns(org_id, all_fields=False):
     field_types = {}
     for k, v in get_mappable_types().items():
         d = {
-            "title": k.title().replace('_', ' '),
+            "title": titlecase(k),
             "sort_column": k,
             "type": translator[v],
             "class": "is_aligned_right",
