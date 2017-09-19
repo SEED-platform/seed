@@ -9,17 +9,17 @@ All rights reserved.  # NOQA
 """
 from collections import OrderedDict, Sequence
 from datetime import timedelta
-from django.core.exceptions import ValidationError
 
+from django.core.exceptions import ValidationError
 from rest_framework import serializers
 
 from seed.models import (
     GreenAssessment, GreenAssessmentProperty, GreenAssessmentURL,
     PropertyView
 )
-
 from seed.models.auditlog import AUDIT_USER_CREATE
 from seed.utils.api import OrgValidator, OrgValidateMixin
+from seed.utils.string import titlecase
 
 ASSESSMENT_VALIDATOR = OrgValidator('assessment', 'organization_id')
 ASSESSMENT_PROPERTY_VALIDATOR = OrgValidator(
@@ -67,8 +67,7 @@ class PropertyViewField(serializers.PrimaryKeyRelatedField):
             ('start', start),
             ('end', end)
         ))
-        address_line_1 = state.normalized_address.title()\
-            if state.normalized_address else None
+        address_line_1 = titlecase(state.normalized_address) if state.normalized_address else None
         return OrderedDict((
             ('id', value.pk),
             ('address_line_1', address_line_1),
@@ -112,7 +111,6 @@ class ValidityDurationField(serializers.Field):
 
 
 class GreenAssessmentSerializer(serializers.ModelSerializer):
-
     recognition_type = serializers.ChoiceField(
         GreenAssessment.RECOGNITION_TYPE_CHOICES
     )
@@ -134,7 +132,6 @@ class GreenAssessmentSerializer(serializers.ModelSerializer):
 
 class GreenAssessmentPropertySerializer(OrgValidateMixin,
                                         serializers.ModelSerializer):
-
     # use all for queryset as model ensures orgs match
     assessment = GreenAssessmentField(
         queryset=GreenAssessment.objects.all(), allow_null=True

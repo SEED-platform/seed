@@ -256,7 +256,7 @@ angular.module('BE.seed.controller.inventory_list', [])
             // Rename nested keys
             var map = {};
             // list of fields that can be on both the PropertyState and TaxLotState
-            if ($scope.inventory_type == 'properties') {
+            if ($scope.inventory_type === 'properties') {
               map = {
                 address_line_1: 'tax_address_line_1',
                 address_line_2: 'tax_address_line_2',
@@ -265,7 +265,7 @@ angular.module('BE.seed.controller.inventory_list', [])
                 postal_code: 'tax_postal_code',
                 custom_id_1: 'tax_custom_id_1'
               };
-            } else if ($scope.inventory_type == 'taxlots') {
+            } else if ($scope.inventory_type === 'taxlots') {
               map = {
                 address_line_1: 'property_address_line_1',
                 address_line_2: 'property_address_line_2',

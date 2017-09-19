@@ -21,6 +21,7 @@ from seed.lib.superperms.orgs.models import (
     Organization,
     OrganizationUser,
 )
+from seed.utils.string import titlecase
 
 from seed.models import (
     Cycle,
@@ -106,7 +107,7 @@ class TestFields(TestCase):
         ))
         expected = OrderedDict((
             ('id', property_view.pk),
-            ('address_line_1', state.normalized_address.title()),
+            ('address_line_1', titlecase(state.normalized_address)),
             ('address_line_2', state.address_line_2),
             ('city', state.city),
             ('state', state.state),
