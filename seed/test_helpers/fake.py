@@ -31,6 +31,7 @@ from seed.models import (
     TaxLotState, TaxLotView
 )
 from seed.models.auditlog import AUDIT_USER_CREATE
+from seed.utils.string import titlecase
 
 Owner = namedtuple(
     'Owner',
@@ -349,7 +350,7 @@ class FakeGreenAssessmentFactory(BaseFake):
         rtc = self.fake.random_element(
             elements=GreenAssessment.RECOGNITION_TYPE_CHOICES
         )
-        color = self.fake.safe_color_name().title()
+        color = titlecase(self.fake.safe_color_name())
         nelem = '' if rtc[1].startswith('Zero') else self.fake.random_element(
             elements=('Energy', 'Efficiency', 'Sustainability', 'Building')
         )
@@ -371,7 +372,7 @@ class FakeGreenAssessmentFactory(BaseFake):
         if validity_duration:
             if isinstance(validity_duration, int):
                 validity_duration = datetime.timedelta(validity_duration)
-            if not(isinstance(validity_duration, datetime.timedelta)):
+            if not (isinstance(validity_duration, datetime.timedelta)):
                 raise TypeError(
                     'validity_duration must be an integer or timedelta'
                 )

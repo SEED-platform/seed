@@ -16,6 +16,7 @@ from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
 
 from seed.landing.models import SEEDUser as User
+from seed.utils.string import titlecase
 from seed.lib.mappings.mapping_data import MappingData
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
 from seed.models.models import (
@@ -652,12 +653,11 @@ class Column(models.Model):
             # TODO: need to check if the column name is already in the list and if it is then
             # overwrite the data
 
-            display_name = edc.column_name.title().replace('_', ' ')
             columns.append(
                 {
                     'name': name,
                     'table': edc.table_name,
-                    'displayName': display_name,
+                    'displayName': titlecase(edc.column_name),
                     # 'dataType': 'string',  # TODO: how to check dataTypes on extra_data!
                     'related': edc.table_name != INVENTORY_MAP[inventory_type.lower()],
                     'extraData': True
