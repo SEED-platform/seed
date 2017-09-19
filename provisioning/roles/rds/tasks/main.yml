@@ -1,0 +1,50 @@
+---
+- name: Create Security Group for RDS
+  ec2_group:
+    name: "rds-{{ app_name }}-{{ app_environment }}-sg"
+    description: "Security Group RDS {{ app_environment }}"
+    vpc_id: "{{ vpc_id }}"
+    region: "{{ region }}"
+    rules:
+      - proto: tcp
+        from_port: 5432
+        to_port: 5432
+        cidr_ip: "{{ vpc_range }}"
+  register: security_group_rds
+
+- name: Tagging
+  ec2_tag:
+    region: "{{ region }}"
+    resource: "{{ security_group_rds.group_id }}"
+    tags:
+      Name: "{{ tags_rds.Name }}"
+      environment: "{{ app_environment }}"
+
+- name: Create RDS Subnet Group
+  rds_subnet_group:
+    state: present
+    name: "{{ db_subnet_group_name }}"
+    description: RDS Subnet Group
+    region: "{{ region }}"
+    subnets:
+      - subnet-2a274f5c
+      - subnet-92a3e6af
+      - subnet-b42baaec
+  register: rds_subnet
+
+- name: Create a RDS instance
+  rds:
+    command: create
+    instance_name: "{{ db_name }}"
+    db_name: "{{ app_name }}_{{ app_environment }}"
+    db_engine: postgres
+    size: "{{ db_size }}"
+    instance_type: "{{ db_instance_type }}"
+    region: "{{ region }}"
+    subnet: "{{ db_subnet_group_name }}"
+    vpc_security_groups: "{{ security_group_rds.group_id }}"
+    username: "{{ db_username }}"
+    password: "{{ db_password }}"
+    tags:
+      environment: "{{ app_environment }}"
+      owner: "{{ tags_rds.owner }}"

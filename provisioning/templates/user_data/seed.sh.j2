@@ -1,0 +1,25 @@
+#!/bin/bash
+
+echo "github.com,192.30.252.129 ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==" >> /home/ubuntu/.ssh/known_hosts
+
+
+HOSTNAME="{{ tags_seed.Name }}"
+echo $HOSTNAME > /etc/hostname
+hostname $HOSTNAME
+IP=$(curl -s -q http://169.254.169.254/latest/meta-data/local-ipv4)
+echo "$IP   $HOSTNAME" >> /etc/hosts
+
+su - ubuntu -c 'git clone https://github.com/SEED-platform/seed /home/ubuntu/'
+
+# Tagging
+MAC_ADDRESS_UP=$(ip addr show eth0 | grep 'link/ether' | awk '{print $2}')
+MAC_ADDRESS=$(echo "$MAC_ADDRESS_UP" |  tr '[:upper:]' '[:lower:]')
+INSTANCE_ID=$(curl -s -q http://169.254.169.254/latest/meta-data/instance-id)
+NIC_ID=$(curl -s -q "http://169.254.169.254/latest/meta-data/network/interfaces/macs/$MAC_ADDRESS/interface-id")
+ZONE=$(curl -s -q "http://169.254.169.254/latest/meta-data/placement/availability-zone/")
+REGION=${ZONE::-1}
+VOLUME_ID=$(aws ec2 describe-instances --region $REGION --instance-ids "$INSTANCE_ID" | grep -E -o "vol-([a-z]|[A-Z]|[0-9]).*([A-Z]|[a-z]|[0-9])")
+
+for resource in $NIC_ID $VOLUME_ID; do
+  aws ec2 create-tags --region $REGION --resources $resource --tags "Key=Name,Value={{ app_name  }}-{{ app_environment }}" "Key=owner,Value=seed" "Key=product,Value={{ app_name }}"
+done

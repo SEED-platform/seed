@@ -1,0 +1,11 @@
+upstream backend {
+    server localhost:8000 fail_timeout=30s;
+}
+
+server {
+    listen 80;
+    server_name _;
+    location / {
+        proxy_pass http://backend;
+    }
+}

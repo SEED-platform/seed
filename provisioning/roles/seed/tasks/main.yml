@@ -1,0 +1,102 @@
+---
+- name: Create Seed Security Group
+  ec2_group:
+    name: "seed-applicationserver-sg"
+    description: "Security Group Seed"
+    vpc_id: "{{ vpc_id }}"
+    region: "{{ region }}"
+    rules:
+      - proto: tcp
+        from_port: 80
+        to_port: 80
+        cidr_ip: 177.68.23.28/32
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: 177.68.23.28/32
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: "{{ vpc_range }}"
+  register: security_group_seed
+
+- name: Tagging Security Group
+  ec2_tag:
+    region: "{{ region }}"
+    resource: "{{ security_group_seed.group_id }}"
+    tags:
+      Name: "{{ tags_seed.Name }}"
+      environment: "{{ app_environment }}"
+
+- name: Create Load Balancer External
+  ec2_elb_lb:
+    name: "{{ elb_name_external }}"
+    state: present
+    region: "{{ region }}"
+    subnets:
+      - "{{ subnets_ids.subnet1 }}"
+      - "{{ subnets_ids.subnet2 }}"
+      - "{{ subnets_ids.subnet3 }}"
+    listeners:
+      - protocol: http
+        load_balancer_port: 80
+        instance_port: 80
+    health_check:
+      ping_protocol: tcp
+      ping_port: 80
+      response_timeout: 5
+      interval: 30
+      unhealthy_threshold: 2
+      healthy_threshold: 2
+    security_group_ids: "{{ security_group_seed.group_id }}"
+    scheme: internet-facing
+  register: elb_seed_internal
+#- debug: msg="{{ elb_seed_internal }}"
+
+- name: Create Launch Config
+  ec2_lc:
+    name: "{{ launch_config_name }}"
+    image_id: "{{ image_id }}"
+    instance_profile_name: 'seed-provisioning'
+    key_name: "{{ key_name }}"
+    region: "{{ region }}"
+    instance_type: "{{ launch_config_instance_type }}"
+    assign_public_ip: yes
+    security_groups: "{{ security_group_seed.group_id }}"
+    user_data: "{{ lookup('template', 'templates/user_data/seed.sh.j2') }}"
+
+- name: Create Auto Scalling Group
+  ec2_asg:
+    name: "{{ asg_name }}"
+    load_balancers: "{{ elb_seed_internal.elb.name }}"
+    availability_zones: [ 'us-east-1c', 'us-east-1d' ]
+    vpc_zone_identifier: [ "{{ subnets_ids.subnet1 }}", "{{ subnets_ids.subnet3 }}" ]
+    launch_config_name: "{{ launch_config_name }}"
+    min_size: "{{ asg_min_size | default('1') }}"
+    max_size: "{{ asg_max_size | default('1') }}"
+    desired_capacity: "{{ asg_desired | default('1') }}"
+    region: "{{ region }}"
+    tags: "{{ asg_tags }}"
+  register: asg_log
+#- debug: msg="{{ asg_log }}"
+
+- name: EC2 Remote Facts
+  ec2_remote_facts:
+    region: "{{ region }}"
+    filters:
+      instance-id: "{{ asg_log.instances}}"
+  register: facts_ec2
+
+- debug: msg="{{ item.public_dns_name }}"
+  with_items: facts_ec2.instances
+
+- name: Add instance created from asg to group
+  add_host: name="{{ item.public_dns_name}}" groups=launched
+  with_items: facts_ec2.instances
+
+- name: Wait for ssh to come up
+  local_action: wait_for host="{{ item.public_dns_name }}" port=22 timeout=320 state=started
+  with_items: facts_ec2.instances
+
+- pause: seconds=90
+  when: deploy | match("false")

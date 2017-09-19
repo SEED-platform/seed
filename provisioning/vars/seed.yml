@@ -1,0 +1,62 @@
+---
+app_name: 'seed'
+region: 'us-east-1'
+vpc_range: "#YOURVPCIDTOUSE#"
+app_environment: 'development'
+elb_name_external: 'elb-{{ app_name }}'
+
+# Network Settings
+subnet_id_ec2: '#subnet-xxxxxxxx#' # You should choose one subnet id to start the app instance
+vpc_id: '#vpc-xxxxxxxx#'
+
+# Provisiong Settings
+key_name: '#YOURKEYNAME#'
+image_id: 'ami-fce3c696' # It is a Ubuntu 14.04 AMI Image
+launch_config_instance_type: 't2.medium' # Set as SEED Documentation
+
+# ELB Settings
+elb_name: "elb-{{ app_environment }}-{{ app_name }}"
+
+# ASG and LC Settings
+launch_config_name: "lc-{{ app_environment }}-{{ app_name }}"
+asg_name: "asg-{{ app_environment }}-{{ app_name }}"
+
+# Elasticache Settings
+cache_subnet_group_name: "{{ app_name }}-cache-subnet-group"
+redis_name: "{{ app_name }}-{{ app_environment }}"
+redis_size: 'cache.m3.large'
+redis_num_nodes: '1'
+
+tags_rds: { 'Name': "sg-rds-{{ app_name }}-{{ app_environment }}", 'owner': '{{ app_name }}' }
+tags_application: { 'Name': "{{ app_name }}-{{ app_environment }}", 'owner': '{{ app_name }}' }
+tags_asg: { 'Name': "asg-{{ app_environment }}-{{ app_name }}", 'owner': '{{ app_name }}' }
+tags_redis: { 'Name': "sg-redis-{{ app_name }}-{{ app_environment }}", 'owner': '{{ app_name }}' }
+
+# You should put 3 subnets to create the RDS subnet and Elasticache groups.
+subnets_ids:
+  - subnet1: '#subnet-xxxxxxxx#'
+  - subnet2: '#subnet-yyyyyyyy#'
+  - subnet3: '#subnet-zzzzzzzz#'
+
+asg_tags:
+  - Name: "{{ tags_application.Name }}"
+    propagate_at_launch: true
+  - environment: "{{ app_environment }}"
+    propagate_at_launch: true
+  - ServiceName: "{{ launch_config_name }}"
+    propagate_at_launch: true
+
+# RDS Vars
+db_subnet_group_name: "{{ app_name }}_subnet_group"
+db_instance_type: 'db.m3.large' # Set as SEED documentation
+db_username: "{{ app_name }}"
+db_password: '#YourSup3rS3cr3tPassWor5'
+db_name: "{{ app_name }}-{{ app_environment }}"
+db_size: '50'
+db_port: '5432'
+
+# Should be the RDS Address
+db_host: '#RDSADDRESS#'
+
+# Should be the Elasticache Address
+application_cache_name: '#ELASTICCACHEADDRESS'
