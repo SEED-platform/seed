@@ -44,7 +44,7 @@ Configure PostgreSQL
     $ createdb "seed-deploy"
     $ createuser -P DBUsername
     $ psql
-    postgres=# GRANT ALL PRIVILEGES ON DATABASE "seed-deploy" TO DBUsername;
+    postgres=# GRANT ALL PRIVILEGES ON DATABASE "seed-deploy" TO "DBUsername";
     postgres=# \q
     $ exit
 
@@ -60,7 +60,7 @@ clone the **seed** repository from **github**
 
 .. code-block:: console
 
-    $ git clone git@github.com:SEED-platform/seed.git
+    $ git clone https://github.com/SEED-platform/seed.git
 
 enter the repo and install the python dependencies from `requirements`_
 
