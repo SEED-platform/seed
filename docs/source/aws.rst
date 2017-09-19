@@ -147,8 +147,6 @@ create a superuser to access the system
     Every user must be tied to an organization, visit ``/app/#/profile/admin``
     as the superuser to create parent organizations and add users to them.
 
-
-
 Cache and Message Broker
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -172,7 +170,6 @@ settings.
         }
     }
     CELERY_BROKER_URL = 'redis://seed-core-cache.ntmprk.0001.usw2.cache.amazonaws.com:6379/1'
-
 
 Running Celery the Background Task Worker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
