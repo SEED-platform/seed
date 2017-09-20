@@ -265,6 +265,12 @@ class TestColumnsByInventory(TestCase):
             is_extra_data=True
         )
         seed_models.Column.objects.create(
+            column_name=u"Apostrophe's Field",
+            table_name=u'PropertyState',
+            organization=self.fake_org,
+            is_extra_data=True
+        )
+        seed_models.Column.objects.create(
             column_name=u'id',
             table_name=u'PropertyState',
             organization=self.fake_org,
@@ -291,6 +297,16 @@ class TestColumnsByInventory(TestCase):
             'extraData': True,
             'displayName': u'Column A',
             'name': u'Column A',
+            'related': False,
+        }
+        self.assertIn(c, columns)
+
+        # Check that display_name doesn't capitalize after apostrophe
+        c = {
+            'table': u'PropertyState',
+            'extraData': True,
+            'displayName': u"Apostrophe's Field",
+            'name': u"Apostrophe's Field",
             'related': False,
         }
         self.assertIn(c, columns)
@@ -398,6 +414,16 @@ class TestColumnsByInventory(TestCase):
                 "analysis_state_message": "string",
             }
         }
+
+        # remove or merge into above after we merge/rename 'release:use_pint'
+        schema["types"]["gross_floor_area_pint"] = ""
+        schema["types"]["conditioned_floor_area_pint"] = ""
+        schema["types"]["occupied_floor_area_pint"] = ""
+        schema["types"]["site_eui_pint"] = ""
+        schema["types"]["source_eui_weather_normalized_pint"] = ""
+        schema["types"]["site_eui_weather_normalized_pint"] = ""
+        schema["types"]["source_eui_pint"] = ""
+
         columns = Column.retrieve_db_types()
         self.assertEqual(schema, columns)
 
@@ -417,5 +443,14 @@ class TestColumnsByInventory(TestCase):
                 'space_alerts', 'state', 'use_description', 'year_built', 'year_ending',
                 'analysis_end_time', 'source_eui_modeled', 'analysis_state_message',
                 'analysis_start_time', 'site_eui_modeled', 'analysis_state']
+
+        # remove or merge into above after we merge/rename 'release:use_pint'
+        data += ['gross_floor_area_pint',
+                 'conditioned_floor_area_pint',
+                 'occupied_floor_area_pint',
+                 'site_eui_pint',
+                 'source_eui_weather_normalized_pint',
+                 'site_eui_weather_normalized_pint',
+                 'source_eui_pint']
 
         self.assertItemsEqual(data, c)

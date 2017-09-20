@@ -26,6 +26,7 @@ from seed.models.auditlog import (
 )
 from seed.landing.models import SEEDUser
 from seed.models import PropertyView
+from seed.utils.string import titlecase
 
 DEFAULT_GREEN_ASSESSEMENT_VALIDITY_DURATION = getattr(
     settings, 'GREEN_ASSESSMENT_DEFAULT_VALIDITY_DURATION', None
@@ -333,7 +334,7 @@ class GreenAssessmentProperty(models.Model):
         if isinstance(sub_name, basestring):
             sub = sub_name
         elif sub_name:
-            sub = sub = "".join([word.title() for word in self.name.split()])
+            sub = sub = "".join([titlecase(word) for word in self.name.split()])
         else:
             sub = ''
         url_field = 'GreenVerification{}URL'.format(sub)

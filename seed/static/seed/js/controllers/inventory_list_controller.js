@@ -255,21 +255,24 @@ angular.module('BE.seed.controller.inventory_list', [])
           for (var j = 0; j < related.length; ++j) {
             // Rename nested keys
             var map = {};
-            if ($scope.inventory_type == 'properties') {
+            // list of fields that can be on both the PropertyState and TaxLotState
+            if ($scope.inventory_type === 'properties') {
               map = {
                 address_line_1: 'tax_address_line_1',
                 address_line_2: 'tax_address_line_2',
                 city: 'tax_city',
                 state: 'tax_state',
-                postal_code: 'tax_postal_code'
+                postal_code: 'tax_postal_code',
+                custom_id_1: 'tax_custom_id_1'
               };
-            } else if ($scope.inventory_type == 'taxlots') {
+            } else if ($scope.inventory_type === 'taxlots') {
               map = {
                 address_line_1: 'property_address_line_1',
                 address_line_2: 'property_address_line_2',
                 city: 'property_city',
                 state: 'property_state',
-                postal_code: 'property_postal_code'
+                postal_code: 'property_postal_code',
+                custom_id_1: 'property_custom_id_1'
               };
             }
             var updated = _.reduce(related[j], function (result, value, key) {

@@ -11,9 +11,10 @@ import pdb
 
 from django.contrib.postgres.fields import JSONField
 from django.db import models
-
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
+from quantityfield.fields import QuantityField
+
 from auditlog import AUDIT_IMPORT
 from auditlog import DATA_UPDATE_TYPE
 from seed.data_importer.models import ImportFile
@@ -163,6 +164,19 @@ class PropertyState(models.Model):
                                          default=ANALYSIS_STATE_NOT_STARTED,
                                          null=True)
     analysis_state_message = models.TextField(null=True)
+
+    # extra columns for pint interpretation base units in database will
+    # continue to be imperial these will become the canonical columns in
+    # future, with the old ones above to be culled once OGBS merges the metric
+    # units work (scheduled for late 2017)
+    # TODO: eventually need to add these fields to the coparent SQL query below.
+    gross_floor_area_pint = QuantityField('ft**2', null=True, blank=True)
+    conditioned_floor_area_pint = QuantityField('ft**2', null=True, blank=True)
+    occupied_floor_area_pint = QuantityField('ft**2', null=True, blank=True)
+    site_eui_pint = QuantityField('kBtu/ft**2/year', null=True, blank=True)
+    source_eui_weather_normalized_pint = QuantityField('kBtu/ft**2/year', null=True, blank=True)
+    site_eui_weather_normalized_pint = QuantityField('kBtu/ft**2/year', null=True, blank=True)
+    source_eui_pint = QuantityField('kBtu/ft**2/year', null=True, blank=True)
 
     extra_data = JSONField(default=dict, blank=True)
     measures = models.ManyToManyField('Measure', through='PropertyMeasure')
@@ -361,6 +375,7 @@ class PropertyState(models.Model):
                     ps.analysis_end_time,
                     ps.analysis_state,
                     ps.analysis_state_message,
+                    ps.extra_data,
                     NULL
                 FROM seed_propertystate ps, audit_id aid
                 WHERE (ps.id = aid.parent_state1_id AND
@@ -383,7 +398,7 @@ class PropertyState(models.Model):
                        'source_eui_weather_normalized', 'site_eui_weather_normalized',
                        'source_eui', 'source_eui_modeled', 'energy_alerts', 'space_alerts',
                        'building_certification', 'analysis_start_time', 'analysis_end_time',
-                       'analysis_state', 'analysis_state_message', ]
+                       'analysis_state', 'analysis_state_message', 'extra_data']
         coparents = [{key: getattr(c, key) for key in keep_fields} for c in coparents]
 
         return coparents, len(coparents)

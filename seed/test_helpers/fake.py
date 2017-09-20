@@ -31,6 +31,7 @@ from seed.models import (
     TaxLotState, TaxLotView, PropertyMeasure
 )
 from seed.models.auditlog import AUDIT_USER_CREATE
+from seed.utils.string import titlecase
 
 Owner = namedtuple(
     'Owner',
@@ -346,7 +347,7 @@ class FakeGreenAssessmentFactory(BaseFake):
         rtc = self.fake.random_element(
             elements=GreenAssessment.RECOGNITION_TYPE_CHOICES
         )
-        color = self.fake.safe_color_name().title()
+        color = titlecase(self.fake.safe_color_name())
         nelem = '' if rtc[1].startswith('Zero') else self.fake.random_element(
             elements=('Energy', 'Efficiency', 'Sustainability', 'Building')
         )

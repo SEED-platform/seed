@@ -37,7 +37,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         }
 
         return $http.post('/api/v2/properties/filter/', {
-          // Ensure that the required meta fields are included
+          // Ensure that the required meta fields are included.
           columns: _.uniq(columns.concat(['property_state_id', 'taxlot_state_id', 'property_view_id', 'taxlot_view_id']))
         }, {
           params: params
@@ -644,7 +644,6 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
       var localColumns = localStorage.getItem(key);
       if (!_.isNull(localColumns)) {
-        var existingColumnNames = _.map(columns, 'name');
         localColumns = JSON.parse(localColumns);
 
         // Remove deprecated columns missing 'related' field
@@ -657,7 +656,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
         // Remove nonexistent columns
         _.remove(localColumns, function (col) {
-          return !_.includes(existingColumnNames, col.name);
+          return !_.find(columns, {name: col.name, related: col.related});
         });
         // Use saved column settings with original data as defaults
         localColumns = _.map(localColumns, function (col) {

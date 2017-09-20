@@ -149,6 +149,10 @@ class PropertyStateSerializer(serializers.ModelSerializer):
     import_file_id = serializers.IntegerField(allow_null=True, read_only=True)
     organization_id = serializers.IntegerField()
 
+    # to support the old state serializer method with the PROPERTY_STATE_FIELDS variables
+    import_file_id = serializers.IntegerField(allow_null=True, read_only=True)
+    organization_id = serializers.IntegerField()
+
     class Meta:
         model = PropertyState
         fields = '__all__'
