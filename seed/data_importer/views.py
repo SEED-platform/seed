@@ -1507,11 +1507,13 @@ class ImportFileViewSet(viewsets.ViewSet):
                 "mappings": [
                     {
                         'from_field': 'eui',  # raw field in import file
+                        'from_units': 'kBtu/ft**2/year', # pint-parseable units, optional
                         'to_field': 'energy_use_intensity',
                         'to_table_name': 'PropertyState',
                     },
                     {
                         'from_field': 'gfa',
+                        'from_units': 'ft**2', # pint-parseable units, optional
                         'to_field': 'gross_floor_area',
                         'to_table_name': 'PropertyState',
                     }

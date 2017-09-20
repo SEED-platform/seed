@@ -127,6 +127,7 @@ class Column(models.Model):
     enum = models.ForeignKey(Enum, blank=True, null=True)
     is_extra_data = models.BooleanField(default=False)
     import_file = models.ForeignKey('data_importer.ImportFile', blank=True, null=True)
+    units_pint = models.CharField(max_length=64, blank=True, null=True)
 
     # Do not enable this until running through the database and merging the columns down.
     # BUT first, make sure to add an import file ID into the column class.
@@ -260,6 +261,7 @@ class Column(models.Model):
                 cache_column_mapping.append(
                     {
                         'from_field': mapping['from_field'],
+                        'from_units': mapping.get('from_units'),
                         'to_field': mapping['to_field'],
                         'to_table_name': mapping['to_table_name'],
                     }
@@ -288,6 +290,7 @@ class Column(models.Model):
             test_map = [
                     {
                         'from_field': 'eui',
+                        'from_units': 'kBtu/ft**2/year', # optional
                         'to_field': 'site_eui',
                         'to_table_name': 'PropertyState',
                     },
@@ -385,6 +388,7 @@ class Column(models.Model):
                     organization=organization,
                     table_name__in=[None, ''],
                     column_name=field['from_field'],
+                    units_pint=field.get('from_units'),  # might be None
                     is_extra_data=False  # data from header rows in the files are NEVER extra data
                 )
             except Column.MultipleObjectsReturned:
@@ -396,6 +400,7 @@ class Column(models.Model):
                 from_org_col = Column.objects.filter(organization=organization,
                                                      table_name__in=[None, ''],
                                                      column_name=field['from_field'],
+                                                     units_pint=field.get('from_units'),  # might be None
                                                      is_extra_data=is_extra_data).first()
                 _log.debug("Grabbing the first from_column")
 
