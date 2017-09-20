@@ -9,4 +9,3 @@ To perform a release make sure to do the following.
     ruby docs/scripts/change_log.rb --token GITHUB_API_TOKEN --start-date 2017-07-01 --end-date 2017-09-30 
 
 1. Paste the results (except the Accepted Pull Requests) into the CHANGELOG.md
-
