@@ -36,6 +36,7 @@ from seed.models import (
     TaxLotState,
     TaxLotView
 )
+from seed.serializers.pint import PintJSONEncoder
 from seed.serializers.properties import (
     PropertyViewSerializer
 )
@@ -238,7 +239,7 @@ class TaxLotViewSet(GenericViewSet):
 
             response['results'].append(l)
 
-        return JsonResponse(response)
+        return JsonResponse(response, encoder=PintJSONEncoder)
 
     # @require_organization_id
     # @require_organization_membership

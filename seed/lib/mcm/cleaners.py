@@ -14,6 +14,10 @@ from django.utils import timezone
 
 from seed.lib.mcm.matchers import fuzzy_in_set
 
+# django orm gets confused unless we specifically use `ureg` from quantityfield
+# ie. don't try `import pint; ureg = pint.UnitRegistry()`
+from quantityfield import ureg
+
 NONE_SYNONYMS = (
     (u'_', u'not available'),
     (u'_', u'not applicable'),
@@ -122,6 +126,24 @@ def int_cleaner(value, *args):
     return value
 
 
+def pint_cleaner(value, units, *args):
+    """Try to convert value to a meaningful (magnitude, units) object."""
+    value = float_cleaner(value)
+    # API breakage if None does not return None
+    if value is None:
+        return None
+
+    try:
+        value = value * ureg(units)
+    except ValueError:
+        value = None
+    except TypeError:
+        message = 'pint_cleaner cannot convert {} to a valid Quantity'.format(type(value))
+        raise TypeError(message)
+
+    return value
+
+
 class Cleaner(object):
     """Cleans values for a given ontology."""
 
@@ -141,6 +163,31 @@ class Cleaner(object):
         self.int_columns = filter(
             lambda x: self.schema[x] == u'integer', self.schema
         )
+        self.pint_column_map = self._build_pint_column_map()
+
+    def _build_pint_column_map(self):
+        """
+        The schema contains { raw_column_name: ('quantity', UNIT_STRING) }
+        tuples to define a pint mapping.
+        Returns a dict { raw_column_name: UNIT_STRING) } to make it simple to check
+        if it's a pint column (checking against `keys()`) and to get the units for
+        use with `pint_cleaner(value, UNIT_STRING)`
+
+        example input: {
+            u'pm_parent_property_id': 'string',
+            u'Weather Normalized Site EUI (GJ/m2)': ('quantity', u'GJ/m**2/year')
+        }
+
+        example output: {
+            u'Weather Normalized Site EUI (GJ/m2)': u'GJ/m**2/year'
+        }
+        """
+        pint_column_map = {raw_col: pint_spec[1]
+                           for (raw_col, pint_spec) in self.schema.iteritems()
+                           if isinstance(pint_spec, tuple)
+                           and pint_spec[0] == 'quantity'}
+
+        return pint_column_map
 
     def clean_value(self, value, column_name):
         """Clean the value, based on characteristics of its column_name."""
@@ -157,5 +204,9 @@ class Cleaner(object):
 
             if column_name in self.int_columns:
                 return int_cleaner(value)
+
+            if column_name in self.pint_column_map.keys():
+                units = self.pint_column_map[column_name]
+                return pint_cleaner(value, units)
 
         return value

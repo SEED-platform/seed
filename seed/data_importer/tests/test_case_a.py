@@ -76,7 +76,7 @@ class TestCaseA(DataMappingBaseTestCase):
         ts = TaxLotState.objects.filter(jurisdiction_tax_lot_id='1552813').first()
         self.assertEqual(ts.jurisdiction_tax_lot_id, '1552813')
         self.assertEqual(ts.address_line_1, None)
-        self.assertEqual(ts.extra_data["data_008"], '1')
+        self.assertEqual(ts.extra_data["data_008"], 1)
 
         # Check a single case of the propertystate
         ps = PropertyState.objects.filter(pm_property_id='2264')
