@@ -164,15 +164,15 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
         the_file = request.data['file']
         file_type = BuildingFile.str_to_file_type(request.data.get('file_type', 'Unknown'))
         organization_id = request.data['organization_id']
-        cycle = request.data.get('cycle_id', None)
+        cycle_id = request.data.get('cycle_id', None)
 
-        if not cycle:
+        if not cycle_id:
             return JsonResponse({
                 'success': False,
                 'message': "Cycle ID is not defined"
             })
         else:
-            cycle = Cycle.objects.get(pk=cycle)
+            cycle = Cycle.objects.get(pk=cycle_id)
 
         building_file = BuildingFile.objects.create(
             file=the_file,
@@ -181,21 +181,15 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
         )
 
         try:
-            # do I need to pass cycle ID to get a specific cycle time?
-            # and do I need to pass org ID to ensure orgs match?
-            property_view = PropertyView.objects.get(pk=pk)
+            property_view = PropertyView.objects.get(pk=pk, cycle=cycle)
         except PropertyView.DoesNotExist:
             return JsonResponse({
                 'success': False,
-                'message': 'Cannot match a PropertyView with pk=%s; cycle_id=%s' % (pk, cycle)
+                'message': 'Cannot match a PropertyView with pk=%s; cycle_id=%s' % (pk, cycle_id)
             })
 
-        # here, instead of relying on BuildingFile.process to create a PropertyView,
-        # I'd like to either:
-        #   pass in the existing property_view and have it to the assignment inside process, or
-        #   just have the process() function only do the processing, and not also the PV creation, then I can do
-        #   the assignment here
-        p_status, property_view, messages = building_file.process(organization_id, cycle)
+        # passing in the property view pk should allow it to process the buildingsync file but not create a new PV
+        p_status, property_view, messages = building_file.process(organization_id, cycle, property_view=property_view)
 
         if p_status:
             return JsonResponse({
