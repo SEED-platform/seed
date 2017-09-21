@@ -20,7 +20,6 @@ from seed.models import (
     PropertyAuditLog,
     AUDIT_IMPORT,
     Scenario,
-    PropertyView,
 )
 
 _log = logging.getLogger(__name__)
