@@ -96,17 +96,6 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
       });
     };
 
-    $scope.whichColumns = function (side) {
-      var propertyColumnNames = _.map($scope.propertyColumns, 'name');
-      var taxlotColumnNames = _.map($scope.taxlotColumns, 'name');
-
-      if (side === 'left') {
-        return $scope.inventory_type === 'properties' ? propertyColumnNames : taxlotColumnNames;
-      } else {
-        return $scope.inventory_type !== 'properties' ? propertyColumnNames : taxlotColumnNames;
-      }
-    };
-
     $scope.whichChildren = function (row) {
       if ($scope.inventory_type === 'properties') {
         return $scope.taxlotToProp[row.taxlot_view_id];
@@ -373,9 +362,8 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
     }
 
 
-    $scope.leftSortData = function (column, extraData) {
+    $scope.leftSortData = function (column) {
       var inventory_type = $scope.inventory_type;
-      if (extraData) column = 'extra_data[\'' + column + '\']';
       if ($scope.leftSortColumn === column && $scope.leftReverseSort) {
         $scope.leftReverseSort = false;
         $scope.leftSortColumn = 'name';
@@ -390,15 +378,18 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
       }
     };
 
+    $scope.getLeftSortColumn = function () {
+      return '\'' + $scope.leftSortColumn + '\'';
+    };
+
     $scope.leftGetSortClass = function (column) {
       if ($scope.leftSortColumn === column) {
         return $scope.leftReverseSort ? 'fa fa-caret-down' : 'fa fa-caret-up';
       }
     };
 
-    $scope.rightSortData = function (column, extraData) {
+    $scope.rightSortData = function (column) {
       var inventory_type = $scope.inventory_type === 'properties' ? 'taxlots' : 'properties';
-      if (extraData) column = 'extra_data[\'' + column + '\']';
       if ($scope.rightSortColumn === column && $scope.rightReverseSort) {
         $scope.rightReverseSort = false;
         $scope.rightSortColumn = 'name';
@@ -411,6 +402,10 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
           reverseSort: $scope.rightReverseSort
         });
       }
+    };
+
+    $scope.getRightSortColumn = function () {
+      return '\'' + $scope.rightSortColumn + '\'';
     };
 
     $scope.rightGetSortClass = function (column) {
