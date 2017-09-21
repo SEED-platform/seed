@@ -15,7 +15,7 @@
     <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/pairing_nav.html'"></div>
 </div>
 
-<div class="pairing-list-controls-full container">
+<div class="pairing-list-controls-full container-fluid">
     <div class="row">
         <div class="col-md-6">
             <div class="row">
@@ -44,76 +44,76 @@
     </div>
 </div>
 
-<div class="pairing container">
+<div class="pairing container-fluid">
     <div class="row">
-        <div class="pairing-inventory col-md-6">
-            <div class="pairing-container">
-                <div class="pairing-headers-row">
+
+        <div class="col-md-6">
+            <div class="pairing-container-2" sd-scroll-sync="left-scroll">
+                <div class="pairing-header left-scroll">
                     <div class="pairing-headers" ng-repeat="col in ::leftColumns track by $index">
-                        <div class="pairing-header table_header_text pointer" ng-click="leftSortData(col.name, col.extraData)">{$:: col.displayName $}
-                            <div ng-class="leftGetSortClass(col.name)"></div>
-                        </div>
+                        <div class="title pointer" ng-click="leftSortData(col.name, col.extraData)">{$:: col.displayName || '&nbsp;' $} <span ng-class="leftGetSortClass(col.name)"></span></div>
                         <input class="is_aligned_center column_border" ng-model="col.searchText" ng-model-options="{debounce:150}">
                     </div>
+                    <div class="pairing-headers paired-column">
+                        <div class="title">Paired</div>
+                    </div>
                 </div>
-                <div class="pairing-rows" dragula='"drag-pairing-row"'>
-                    <div class="pairing-data-row grab-pairing-left" ng-repeat="row in newLeftData | orderBy : leftSortColumn : leftReverseSort : naturalSortComparator | filter:leftSearch" title="Drag from here" ng-click="doubleClick('left',$event)">
-                        <div class="pairing-data-row-col" leftParentId="{$ getLeftParentId(row) $}" ng-repeat="col in ::whichColumns('left') track by $index">
-                            <div class="pairing-cell">
-                                <span class="pairing-text data-slide">{$:: row[col] $}</span>
-                            </div>
-                        </div>
-                        <div class="is-paired-child" ng-if="leftPaired(row)">paired: {$ leftPaired(row) $}</div>
+                <div class="pairing-body left-scroll" dragula='"drag-pairing-row"'>
+                    <div class="pairing-row grab-pairing-left" ng-repeat="row in newLeftData | orderBy : leftSortColumn : leftReverseSort : naturalSortComparator | filter:leftSearch" title="Drag from here" ng-click="doubleClick('left',$event)">
+                        <div leftParentId="{$ getLeftParentId(row) $}" ng-repeat="col in ::whichColumns('left') track by $index">{$:: row[col] $}</div>
+                        <div class="paired-column">{$ leftPaired(row) $}</div>
                     </div>
                 </div>
             </div>
-            <div class="pairing-text-left">
+            <div>
                 <span ng-if="::inventory_type === 'properties'">Showing {$ leftData.length $} <ng-pluralize count="leftData.length" when="{'one': 'Property','other': 'Properties'}"></ng-pluralize> ({$ leftNumUnpaired() $} unpaired)</span>
                 <span ng-if="::inventory_type === 'taxlots'">Showing {$ leftData.length $} <ng-pluralize count="leftData.length" when="{'one': 'Tax Lot','other': 'Tax Lots'}"></ng-pluralize> ({$ leftNumUnpaired() $} unpaired)</span>
             </div>
         </div>
-        <div class="pairing-inventory-other col-md-6">
-            <div class="pairing-container">
-                <div class="pairing-headers-row">
-                    <!-- ng-class to slide text and input headers -->
+
+        <div class="col-md-6">
+            <div class="pairing-container-2" sd-scroll-sync="right-scroll">
+                <div class="pairing-header right-scroll">
                     <div class="pairing-headers" ng-repeat="col in ::rightColumns track by $index">
-                        <div class="pairing-header table_header_text is_aligned_center pointer" ng-click="rightSortData(col.name, col.extraData)">{$:: col.displayName $}
-                            <div ng-class="rightGetSortClass(col.name)"></div>
-                        </div>
+                        <div class="title pointer" ng-click="rightSortData(col.name, col.extraData)">{$:: col.displayName || '&nbsp;' $} <span ng-class="rightGetSortClass(col.name)"></span></div>
                         <input class="is_aligned_center column_border" ng-model="col.searchText" ng-model-options="{debounce:150}">
                     </div>
-                </div>
-                <div class="pairing-rows">
-                    <div class="pairing-data-row" ng-repeat="row in rightData | orderBy : rightSortColumn : rightReverseSort : naturalSortComparator | filter:rightSearch" title="Drag to here">
-                        <div class="pairing-data-row-col" ng-repeat="col in ::whichColumns('right') track by $index">
-                            <div class="pairing-cell data-slide">
-                                <span class="pairing-text">{$:: row[col] $}</span>
-                            </div>
-                        </div>
-                        <div class="pairing-child cant-move" rightParentId="{$ getRightParentId(row) $}" dragula='"drag-pairing-row"' ng-click="doubleClick('right',$event)">
-                            <div class="pairing-data-row-indent" ng-if="!whichChildren(row)">
-                                <div class="pairing-data-row-col-indent unpaired">
-                                    <div class="pairing-cell">
-                                        <span class="pairing-text">Drag {$:: inventory_type === 'properties' ? 'Property' : 'Tax Lot' $} here to pair with this {$:: inventory_type === 'properties' ? 'Tax Lot' : 'Property' $}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="pairing-data-row-indent" ng-repeat="id in whichChildren(row) track by $index">
-                                <div class="pairing-data-row-col-indent" viewId="{$ id $}" ng-repeat="col in ::whichColumns('left') track by $index">
-                                    <div class="pairing-cell">
-                                        <span class="pairing-text">{$ whichChildData(id,col) $}</span>
-                                    </div>
-                                </div>
-                                <div class="unpair-child" viewId="{$ id $}" rightParentId="{$ getRightParentId(row) $}" ng-click="unpairChild($event)">remove</div>
-                            </div>
-                        </div>
+                    <div class="pairing-headers paired-column">
+                        <div class="title">&nbsp;</div>
                     </div>
                 </div>
+
+                <div class="pairing-body right-scroll" dragula='"drag-pairing-row"'>
+                    <div class="right-pairing-container" ng-repeat="row in rightData | orderBy : rightSortColumn : rightReverseSort : naturalSortComparator | filter:rightSearch" title="Drag to here">
+                        <div class="right-pairing-row">
+                            <div ng-repeat="col in ::whichColumns('right') track by $index">{$:: row[col] $}</div>
+                        </div>
+
+                        <div class="right-paired-row cant-move" rightParentId="{$ getRightParentId(row) $}" dragula='"drag-pairing-row"' ng-click="doubleClick('right',$event)">
+                            <div ng-if="!whichChildren(row)">
+                                <div class="unpaired">
+                                    <div class="pairing-cell">Drag {$:: inventory_type === 'properties' ? 'Property' : 'Tax Lot' $} here to pair with this {$:: inventory_type === 'properties' ? 'Tax Lot' : 'Property' $}</div>
+                                </div>
+                            </div>
+                            <div ng-repeat="id in whichChildren(row) track by $index">
+                                <div viewId="{$ id $}" ng-repeat="col in ::whichColumns('right') track by $index">
+                                    <div class="pairing-cell">{$ whichChildData(id,col) $}</div>
+                                </div>
+                                <div class="unpair-child">
+                                    <span viewId="{$ id $}" rightParentId="{$ getRightParentId(row) $}" ng-click="unpairChild($event)">&#10006;</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
             </div>
-            <div class="pairing-text-right">
+            <div>
                 <span ng-if="::inventory_type === 'properties'">Showing {$ rightData.length $} <ng-pluralize count="rightData.length" when="{'one': 'Tax Lot','other': 'Tax Lots'}"></ng-pluralize> ({$ rightNumUnpaired() $} unpaired)</span>
                 <span ng-if="::inventory_type === 'taxlots'">Showing {$ rightData.length $} <ng-pluralize count="rightData.length" when="{'one': 'Property','other': 'Properties'}"></ng-pluralize> ({$ rightNumUnpaired() $} unpaired)</span>
             </div>
         </div>
+
     </div>
 </div>

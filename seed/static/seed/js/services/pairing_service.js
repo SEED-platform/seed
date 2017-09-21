@@ -82,12 +82,11 @@ angular.module('BE.seed.service.pairing', []).factory('pairing_service', [
 
       var localColumns = localStorage.getItem(key);
       if (!_.isNull(localColumns)) {
-        var existingColumnNames = _.map(columns, 'name');
         localColumns = JSON.parse(localColumns);
 
         // Remove nonexistent columns
         _.remove(localColumns, function (col) {
-          return !_.includes(existingColumnNames, col.name);
+          return !_.find(columns, {name: col.name});
         });
         // Use saved column settings with original data as defaults
         localColumns = _.map(localColumns, function (col) {
@@ -131,12 +130,11 @@ angular.module('BE.seed.service.pairing', []).factory('pairing_service', [
 
       var localColumns = localStorage.getItem(key);
       if (!_.isNull(localColumns)) {
-        var existingColumnNames = _.map(columns, 'name');
         localColumns = JSON.parse(localColumns);
 
         // Remove nonexistent columns
         _.remove(localColumns, function (col) {
-          return !_.includes(existingColumnNames, col.name);
+          return !_.find(columns, {name: col.name});
         });
         // Use saved column settings with original data as defaults
         localColumns = _.map(localColumns, function (col) {
@@ -153,10 +151,6 @@ angular.module('BE.seed.service.pairing', []).factory('pairing_service', [
         var filteredColumns = [];
         filteredColumns = filteredColumns.concat(_.remove(columns, {name: 'address_line_1'}));
         filteredColumns = filteredColumns.concat(_.remove(columns, {name: 'jurisdiction_tax_lot_id'}));
-        filteredColumns.push({
-          name: 'not_a_real_key_placeholder_pairing',
-          visible: true
-        });
         _.forEach(columns, function (col) {
           col.visible = false;
         });

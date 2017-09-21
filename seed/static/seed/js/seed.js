@@ -92,6 +92,7 @@ angular.module('BE.seed.directives', [
   'sdEnter',
   'sdLabel',
   'sdResizable',
+  'sdScrollSync',
   'sdUploader'
 ]);
 angular.module('BE.seed.services', [
@@ -1199,7 +1200,7 @@ SEED_app.config(['$httpProvider', function ($httpProvider) {
  * Disable Angular debugging based on Django DEBUG flag.
  */
 SEED_app.config(['$compileProvider', function ($compileProvider) {
-  $compileProvider.debugInfoEnabled(true);
+  $compileProvider.debugInfoEnabled(window.BE.debug);
   $compileProvider.commentDirectivesEnabled(false);
   // $compileProvider.cssClassDirectivesEnabled(false); // This cannot be enabled due to the draggable ui-grid rows
 }]);

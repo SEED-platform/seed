@@ -231,11 +231,11 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
       var count = 0;
       if ($scope.inventory_type === 'properties') {
         _.forEach($scope.leftData, function (datum) {
-          if (!_.get($scope.propToTaxlot[datum.property_view_id], 'length', 0)) count++;
+          if (!_.get($scope.propToTaxlot[datum.property_view_id], 'length')) count++;
         });
       } else {
         _.forEach($scope.leftData, function (datum) {
-          if (!_.get($scope.taxlotToProp[datum.taxlot_view_id], 'length', 0)) count++;
+          if (!_.get($scope.taxlotToProp[datum.taxlot_view_id], 'length')) count++;
         });
       }
       return count;
@@ -466,7 +466,7 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
       },
       accepts: function (el, target) {
         //don't allow dropping in left column
-        return (target.className.indexOf('pairing-data-left') === -1);
+        return !_.includes(target.className, 'pairing-data-left') && !_.includes(target.className, 'pairing-body');
       }
     });
 
@@ -493,16 +493,15 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
       }
       if (!fromClick) {
         el.removeClass('grab-pairing-left');
-        el.removeClass('pairing-data-row');
+        el.removeClass('pairing-row');
         // el.children.removeClass('pairing-data-row-col');
         // el.children.addClass('pairing-data-row-col-indent');
-        el.addClass('pairing-data-row-indent');
         el.attr('ng-repeat', 'id in whichChildren(row) track by $index');
         el.parent().attr('style', '');
       }
-      // console.log('el: ', el)
-      // console.log('container: ', container)
-      // console.log('ids: ', container[0].getAttribute('rightParentId'))
+      // console.log('el: ', el);
+      // console.log('container: ', container);
+      // console.log('ids: ', container[0].getAttribute('rightParentId'));
       // call with PUT /api/v2/taxlots/1/pair/?property_id=1&organization_id=1
       var promise;
       var taxlotId;
