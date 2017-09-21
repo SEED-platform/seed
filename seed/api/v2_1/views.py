@@ -13,10 +13,13 @@ from django.http import JsonResponse
 from django_filters import CharFilter, DateFilter
 from django_filters.rest_framework import FilterSet
 from rest_framework.decorators import detail_route
+from rest_framework import status
 
 from seed.models import (
     PropertyView,
     PropertyState,
+    BuildingFile,
+    Cycle
 )
 from seed.serializers.properties import (
     PropertyViewAsStateSerializer,
@@ -122,3 +125,89 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
         """
         return JsonResponse(
             {"status": "error", "message": "Not yet implemented. PK was {}".format(pk)})
+
+    @detail_route(methods=['PUT'])
+    def update_with_building_sync(self, request, pk):
+        """
+        Does not work in Swagger!
+
+        Update an existing PropertyView with a building file. Currently only supports BuildingSync.
+        ---
+        consumes:
+            - multipart/form-data
+        parameters:
+            - name: pk
+              description: The PropertyView to update with this buildingsync file
+              type: path
+              required: true
+            - name: organization_id
+              type: integer
+              required: true
+            - name: cycle_id
+              type: integer
+              required: true
+            - name: file_type
+              type: string
+              enum: ["Unknown", "BuildingSync", "GeoJSON"]
+              required: true
+            - name: file
+              description: In-memory file object
+              required: true
+              type: file
+        """
+        if len(request.FILES) == 0:
+            return JsonResponse({
+                'success': False,
+                'message': "Must pass file in as a Multipart/Form post"
+            })
+
+        the_file = request.data['file']
+        file_type = BuildingFile.str_to_file_type(request.data.get('file_type', 'Unknown'))
+        organization_id = request.data['organization_id']
+        cycle = request.data.get('cycle_id', None)
+
+        if not cycle:
+            return JsonResponse({
+                'success': False,
+                'message': "Cycle ID is not defined"
+            })
+        else:
+            cycle = Cycle.objects.get(pk=cycle)
+
+        building_file = BuildingFile.objects.create(
+            file=the_file,
+            filename=the_file.name,
+            file_type=file_type,
+        )
+
+        try:
+            # do I need to pass cycle ID to get a specific cycle time?
+            # and do I need to pass org ID to ensure orgs match?
+            property_view = PropertyView.objects.get(pk=pk)
+        except PropertyView.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'Cannot match a PropertyView with pk=%s; cycle_id=%s' % (pk, cycle)
+            })
+
+        # here, instead of relying on BuildingFile.process to create a PropertyView,
+        # I'd like to either:
+        #   pass in the existing property_view and have it to the assignment inside process, or
+        #   just have the process() function only do the processing, and not also the PV creation, then I can do
+        #   the assignment here
+        p_status, property_view, messages = building_file.process(organization_id, cycle)
+
+        if p_status:
+            return JsonResponse({
+                "status": "success",
+                "message": "successfully imported file",
+                "data": {
+                    "property_view": PropertyViewAsStateSerializer(property_view).data,
+                },
+            })
+        else:
+            return JsonResponse({
+                "status": "error",
+                "message": "Could not process building file with messages {}".format(messages)
+            }, status=status.HTTP_400_BAD_REQUEST)
+
