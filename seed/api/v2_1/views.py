@@ -210,4 +210,3 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
                 "status": "error",
                 "message": "Could not process building file with messages {}".format(messages)
             }, status=status.HTTP_400_BAD_REQUEST)
-
