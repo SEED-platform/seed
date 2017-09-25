@@ -131,7 +131,7 @@ angular.module('BE.seed.controller.matching_detail', [])
             if ($scope.sortColumn === column && $scope.reverseSort) {
               $scope.sortColumn = 'name';
               $scope.reverseSort = false;
-              matching_service.removeSettings(localStorageKey + '.sort')
+              matching_service.removeSettings(localStorageKey + '.sort');
             } else {
               $scope.reverseSort = $scope.sortColumn === column ? !$scope.reverseSort : false;
               $scope.sortColumn = column;
@@ -221,7 +221,7 @@ angular.module('BE.seed.controller.matching_detail', [])
         }
       };
 
-      $scope.$watch('filtered', _.debounce(function(newValue, oldValue) {
+      $scope.$watch('filtered', _.debounce(function (newValue, oldValue) {
         if (newValue === [] && oldValue === []) return;
         $scope.update_start_end_paging();
       }), 10);

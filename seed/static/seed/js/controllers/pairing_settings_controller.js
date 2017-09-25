@@ -61,7 +61,7 @@ angular.module('BE.seed.controller.pairing_settings', [])
         savePropertySettings();
       };
 
-      var taxlotRowSelectionChanged = function (row) {
+      var taxlotRowSelectionChanged = function () {
         _.forEach($scope.taxlotGridApi.grid.rows, function (row) {
           row.entity.visible = row.isSelected;
         });

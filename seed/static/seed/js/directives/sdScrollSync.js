@@ -8,7 +8,7 @@
 angular.module('sdScrollSync', []).directive('sdScrollSync', function () {
   var scrollLeft = 0;
 
-  function combine(elements) {
+  function combine (elements) {
     elements.on('scroll', function (e) {
       if (e.isTrigger) {
         e.target.scrollLeft = scrollLeft;

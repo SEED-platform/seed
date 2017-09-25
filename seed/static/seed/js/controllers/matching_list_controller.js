@@ -79,7 +79,7 @@ angular.module('BE.seed.controller.matching_list', [])
       }
 
       var rightColumns = matching_service.loadRightColumns(localStorageKey, _.reject(columns, {extraData: true}));
-      $scope.rightColumns = _.filter(rightColumns , 'visible');
+      $scope.rightColumns = _.filter(rightColumns, 'visible');
 
       $scope.SHOW_ALL = 'Show All';
       $scope.SHOW_MATCHED = 'Show Matched';
@@ -195,7 +195,7 @@ angular.module('BE.seed.controller.matching_list', [])
             if ($scope.sortColumn === column && $scope.reverseSort) {
               $scope.reverseSort = false;
               $scope.sortColumn = 'name';
-              matching_service.removeSettings(localStorageKey + '.sort')
+              matching_service.removeSettings(localStorageKey + '.sort');
             } else {
               $scope.reverseSort = $scope.sortColumn === column ? !$scope.reverseSort : false;
               $scope.sortColumn = column;
@@ -282,7 +282,7 @@ angular.module('BE.seed.controller.matching_list', [])
         matching_service.saveVisibility($scope.selectedFilter);
       };
 
-      $scope.$watch('filtered', _.debounce(function(newValue, oldValue) {
+      $scope.$watch('filtered', _.debounce(function (newValue, oldValue) {
         if (newValue === [] && oldValue === []) return;
         $scope.update_start_end_paging();
       }), 10);

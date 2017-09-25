@@ -69,7 +69,7 @@ angular.module('BE.seed.controller.matching_settings', [])
         saveLeftSettings();
       };
 
-      var rightRowSelectionChanged = function (row) {
+      var rightRowSelectionChanged = function () {
         _.forEach($scope.rightGridApi.grid.rows, function (row) {
           row.entity.visible = row.isSelected;
         });

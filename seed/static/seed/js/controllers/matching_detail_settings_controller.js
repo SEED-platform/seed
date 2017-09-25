@@ -19,7 +19,7 @@ angular.module('BE.seed.controller.matching_detail_settings', [])
       $scope.columns = columns;
 
       var restoreDefaults = function () {
-        inventory_service.removeSettings(localStorageKey);
+        matching_service.removeSettings(localStorageKey);
         $scope.columns = matching_service.loadDetailColumns(localStorageKey, columns);
         _.defer(function () {
           // Set row selection
