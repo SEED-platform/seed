@@ -28,7 +28,8 @@ angular.module('BE.seed.vendor_dependencies', [
   'ui.tree',
   'focus-if',
   'xeditable',
-  angularDragula(angular)
+  angularDragula(angular),
+  'pascalprecht.translate'
 ]);
 angular.module('BE.seed.controllers', [
   'BE.seed.controller.about',

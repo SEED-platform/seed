@@ -34,7 +34,8 @@
     "spin.js": "~2.3.2",
     "ui-grid-draggable-rows": "~0.3.2",
     "angular-dragula": "^1.2.8",
-    "ng-focus-if": "^1.0.7"
+    "ng-focus-if": "^1.0.7",
+    "angular-translate": "^2.15.2"
   },
   "resolutions": {
     "angular": "~1.6.1",

@@ -90,6 +90,16 @@ module.exports = function (grunt) {
           force: true
         }
       }
+    },
+    i18nextract: {
+      default_options: {
+        src: [
+          'seed/static/seed/**/*.js',
+          'seed/static/seed/**/*.html'
+        ],
+        lang: ['fr_CA'],
+        dest: 'seed/static/seed/locales'
+      }
     }
   });
 
@@ -102,6 +112,7 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-istanbul');
   grunt.loadNpmTasks('grunt-coveralls');
+  grunt.loadNpmTasks('grunt-angular-translate');
 
   // Whenever the "test" task is run, first clean the "tmp" dir, then run this
   // plugin's task(s), then test the result.
