@@ -452,5 +452,5 @@ class TestColumnsByInventory(TestCase):
                  'source_eui_weather_normalized_pint',
                  'site_eui_weather_normalized_pint',
                  'source_eui_pint']
-      
+
         self.assertItemsEqual(data, c)
