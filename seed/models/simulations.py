@@ -18,13 +18,13 @@ logger = logging.getLogger(__name__)
 
 class Simulation(models.Model):
     """
-    Simulation contains results from a simulation. Presenty there is only one type of simulation
+    Simulation contains results from a simulation. Presently there is only one type of simulation
     with a maximum of one object per PropertyState.
 
-    Data are stored in a JSONField and there can be mulitple result files.
+    Data are stored in a JSONField and there can be multiple result files.
     """
 
-    # currently only one simulation result object for each propertystate
+    # currently only one simulation result object for each PropertyState
     property_state = models.OneToOneField("PropertyState", on_delete=models.CASCADE, primary_key=True, )
     scenario = models.ForeignKey('Scenario', related_name='simulations', null=True)
     data = JSONField(default=dict, blank=True)
