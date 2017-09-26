@@ -164,6 +164,17 @@ class BuildingSync(object):
 
         return True
 
+    def export(self, property_state, process_struct=ADDRESS_STRUCT):
+        """Export BuildingSync file from an existing BuildingSync file (from import), property_state and
+        a process struct.
+
+        :param property_state:
+        :param process_struct:
+        :return:
+        """
+
+        return "TODO: Populate this object!"
+
     def _get_node(self, path, node, results=[], kwargs={}):
         """
         Return the values from a dictionary based on a path delimited by periods. If there

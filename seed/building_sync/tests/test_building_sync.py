@@ -11,10 +11,28 @@ from os import path
 from django.test import TestCase
 
 from seed.building_sync.building_sync import BuildingSync
+from seed.landing.models import SEEDUser as User
+from seed.lib.superperms.orgs.models import (
+    Organization,
+    OrganizationUser,
+)
+from seed.test_helpers.fake import (
+    FakePropertyStateFactory,
+)
+from seed.utils.generic import obj_to_dict
 
 
 class TestBuildingSync(TestCase):
     def setUp(self):
+        user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+        }
+        self.user = User.objects.create_superuser(
+            email='test_user@demo.com', **user_details)
+        self.org = Organization.objects.create()
+        OrganizationUser.objects.create(user=self.user, organization=self.org)
+
         self.xml_file = path.join(path.dirname(__file__), 'data', 'ex_1.xml')
         self.bs = BuildingSync()
 
@@ -26,6 +44,20 @@ class TestBuildingSync(TestCase):
             self.bs.import_file('no/path/to/file.xml')
 
         self.assertTrue(self.bs.import_file(self.xml_file))
+
+    def test_export(self):
+        bs = self.bs.import_file(self.xml_file)
+
+        # create a propertystate
+        self.property_state_factory = FakePropertyStateFactory(
+            organization=self.org
+        )
+
+        ps = self.property_state_factory.get_property_state(organization=self.org)
+        print(obj_to_dict(ps))
+
+        xml = self.bs.export(ps, BuildingSync.BRICR_STRUCT)
+        print(xml)
 
     def test_get_node(self):
         data = {
