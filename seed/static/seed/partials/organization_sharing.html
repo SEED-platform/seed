@@ -4,14 +4,14 @@
             <a ui-sref="organizations" class="page_action"><i class="fa fa-chevron-left"></i> Organizations</a>
         </div>
         <div class="page_title">
-            <h1>{$ org.name $}</h1>
+            <h1>{$:: org.name $}</h1>
         </div>
         <div class="right page_action_container">
         </div>
     </div>
 </div>
 <div class="section_nav_container">
-    <div class="section_nav" ng-include="urls.static_url + 'seed/partials/accounts_nav.html'"></div>
+    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/accounts_nav.html'"></div>
 </div>
 <div class="section">
     <div class="section_header_container">
@@ -25,7 +25,7 @@
         </div>
     </div>
     <div class="section_content_container">
-        <div class="section_content with_padding" ng-if="org.is_parent && auth.requires_owner">
+        <div class="section_content with_padding" ng-if="::org.is_parent && auth.requires_owner">
             <h3>Selecting Fields to Share</h3>
             <p>As the admin of your SEED instance you can control what data is shared throughout your organization and between your sub-organizations as well as what data is shared externally with the public-at-large. The subset of data you choose to share with the public can be different than the subset shared between your sub-organizations.</p>
             <p>From the list below, select the fields that you want to: 1) share internally within your organization, and 2) share publicly with users outside your organization.</p>
@@ -34,12 +34,10 @@
                     <thead>
                         <tr>
                             <th colspan="2" class="condensed_head">SHARE DATA WITH</th>
-
                             <th></th>
                         </tr>
                         <tr>
                             <th class="condensed_head">INTERNAL</th>
-
                             <th class="condensed_head">PUBLIC</th>
                             <th>Field Name</th>
                         </tr>

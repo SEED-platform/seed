@@ -4,20 +4,19 @@
             <a ui-sref="organizations" class="page_action"><i class="fa fa-chevron-left"></i> Organizations</a>
         </div>
         <div class="page_title">
-            <h1>{$ org.name $}</h1>
+            <h1>{$:: org.name $}</h1>
         </div>
         <div class="right page_action_container"></div>
     </div>
 </div>
 <div class="section_nav_container">
-    <div class="section_nav" ng-include="urls.static_url + 'seed/partials/accounts_nav.html'"></div>
+    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/accounts_nav.html'"></div>
 </div>
 <div id="cycle_admin" class="container-fluid">
 
     <div class="newCycleInput">
         <form name="newCycleForm" class="form-inline" role="form" ng-submit="submitNewCycleForm(newCycleForm)" novalidate>
-            <div class="form-group" ng-class="{'has-error': newCycleForm.name.$invalid &&
-                                            newCycleForm.name.$dirty }">
+            <div class="form-group" ng-class="{'has-error': newCycleForm.name.$invalid && newCycleForm.name.$dirty }">
                 <label class="control-label sectionLabel" style="padding-right:20px;"> Create new cycle</label>
                 <div class="input-group" style="padding-right:20px;">
                     <input type="text" name="name" class="form-control" ng-minlength="1" ng-maxlength="100" style="min-width:300px;" ng-model="new_cycle.name" placeholder="Cycle Name" sd-check-cycle-exists="cycles" required>
@@ -47,7 +46,7 @@
                 </button>
                 <div class="help-block">
                     <span class="has-error" ng-show="newCycleForm.name.$error.sdCheckCycleExists">
-                            This cycle name is already taken.
+                        This cycle name is already taken.
                     </span>
                 </div>
             </div>
@@ -56,7 +55,7 @@
 
 
     <div style="padding-left:10px;" class="sectionLabel">
-        <p><b>Existing Cycles</b></p>
+        <p><strong>Existing Cycles</strong></p>
     </div>
 
     <div class="table_list_container">
@@ -72,26 +71,26 @@
             <tr ng-repeat="cycle in cycles">
 
                 <td style="border:0; padding-left:10px; vertical-align:middle;">
-                    <span editable-text="cycle.name" e-name="name" e-form="rowform" ng-show="rowform.$visible" onbeforesave="checkEditCycleBeforeSave($data, cycle.name)" e-ng-keypress="onEditCycleNameKeypress($event, rowform)" e-maxlength="255" e-required>
-                        {$ cycle.name $}
+                    <span editable-text="::cycle.name" e-name="name" e-form="rowform" ng-show="rowform.$visible" onbeforesave="checkEditCycleBeforeSave($data, cycle.name)" e-ng-keypress="onEditCycleNameKeypress($event, rowform)" e-maxlength="255" e-required>
+                        {$:: cycle.name $}
                     </span> <span ng-show="!rowform.$visible">
-                        {$ cycle.name $}
+                        {$:: cycle.name $}
                     </span>
                 </td>
 
                 <td style="border:0; padding-left:10px; vertical-align:middle;">
-                    <span editable-bsdate="cycle.start" e-name="start" e-form="rowform" ng-show="rowform.$visible" e-is-open="opened.start" e-ng-click="open($event,'start')" e-datepicker-popup="MM-dd-yyyy" e-required>
-                        {$ cycle.start | date : 'MM-dd-yyyy' $}
+                    <span editable-bsdate="::cycle.start" e-name="start" e-form="rowform" ng-show="rowform.$visible" e-is-open="opened.start" e-ng-click="open($event,'start')" e-datepicker-popup="MM-dd-yyyy" e-required>
+                        {$:: cycle.start | date : 'MM-dd-yyyy' $}
                     </span> <span ng-show="!rowform.$visible">
-                        {$ cycle.start | date : 'MM-dd-yyyy' $}
+                        {$:: cycle.start | date : 'MM-dd-yyyy' $}
                     </span>
                 </td>
 
                 <td style="border:0; padding-left:10px; vertical-align:middle;">
-                    <span editable-bsdate="cycle.end" e-name="end" e-form="rowform" ng-show="rowform.$visible" e-is-open="opened.end" e-ng-click="open($event,'end')" e-datepicker-popup="MM-dd-yyyy" e-required>
-                        {$ cycle.end | date : 'MM-dd-yyyy' $}
+                    <span editable-bsdate="::cycle.end" e-name="end" e-form="rowform" ng-show="rowform.$visible" e-is-open="opened.end" e-ng-click="open($event,'end')" e-datepicker-popup="MM-dd-yyyy" e-required>
+                        {$:: cycle.end | date : 'MM-dd-yyyy' $}
                     </span> <span ng-show="!rowform.$visible">
-                        {$ cycle.end | date : 'MM-dd-yyyy' $}
+                        {$:: cycle.end | date : 'MM-dd-yyyy' $}
                     </span>
                 </td>
 

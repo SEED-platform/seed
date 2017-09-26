@@ -71,7 +71,7 @@
             <label class="btn btn-default btn-sm" style="width:75px;" ng-model="labelLogic" uib-btn-radio="'exclude'" ng-change="labelLogicUpdated()" ng-disabled="!labels.length">EXCLUDE</label>
         </div>
         <div class="form-group btn-group building-list-filter-buttons">
-            <button type="button" ng-click="clear_labels()" class="btn btn-default btn-sm" ng-disabled="!labels.length">Clear Labels</button>
+            <button type="button" ng-click="clear_labels()" class="btn btn-default btn-sm" ng-disabled="!selected_labels.length">Clear Labels</button>
         </div>
         <div class="btn-group">
             <button type="button" ng-click="gridApi.grid.clearAllFilters();" ng-disabled="!filters_exist()" class="btn btn-default btn-sm">Clear Filters</button>
@@ -99,10 +99,10 @@
     </div>
     <ul class="nav nav-tabs" style="margin-bottom:1px;">
         <li ng-class="::{active: inventory_type=='properties'}" heading="View by Property">
-            <a ui-sref="inventory_list({inventory_type: 'properties'})">View by Property</a>
+            <a ui-sref="inventory_list(::{inventory_type: 'properties'})">View by Property</a>
         </li>
         <li ng-class="::{active: inventory_type=='taxlots'}" heading="View by Tax Lot">
-            <a ui-sref="inventory_list({inventory_type: 'taxlots'})">View by Tax Lot</a>
+            <a ui-sref="inventory_list(::{inventory_type: 'taxlots'})">View by Tax Lot</a>
         </li>
     </ul>
 </div>
