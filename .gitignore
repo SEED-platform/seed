@@ -65,3 +65,5 @@ protractorReports/
 protractorInstrumented/
 protractorSaved/
 protractorCoverage/
+
+docs/scripts/Gemfile.lock

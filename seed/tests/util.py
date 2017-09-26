@@ -8,46 +8,7 @@
 # Utilities for testing SEED modules.
 ###
 
-import datetime
 import json
-
-from seed.models import (
-    PropertyState,
-    Cycle,
-)
-
-
-def make_fake_property(import_file, init_data, bs_type, is_canon=False, org=None):
-    """For making fake mapped PropertyState to test matching against."""
-
-    if not org:
-        raise "no org"
-
-    ps = PropertyState.objects.create(**init_data)
-    ps.import_file = import_file
-    ps.organization = org
-    if import_file is None:
-        ps.import_record = None
-    else:
-        ps.import_record = import_file.import_record
-        ps.source_type = bs_type
-
-    ps.save()
-
-    # The idea of canon is no longer applicable. The linked property state
-    # in the PropertyView is now canon
-    if is_canon:
-        # need to create a cycle and add it to the PropertyView table
-        cycle, _ = Cycle.objects.get_or_create(
-            name=u'Test Cycle',
-            organization=org,
-            start=datetime.datetime(2015, 1, 1),
-            end=datetime.datetime(2015, 12, 31),
-        )
-
-        ps.promote(cycle)
-
-    return ps
 
 
 class FakeRequest(object):

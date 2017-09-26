@@ -11,7 +11,6 @@ class PintJSONEncoder(DjangoJSONEncoder):
     Converts pint Quantity objects for Angular's benefit.
     # TODO handle unit conversion on the server per-org
     """
-
     def default(self, obj):
         if isinstance(obj, ureg.Quantity):
             return to_raw_magnitude(obj)

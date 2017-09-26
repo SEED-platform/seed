@@ -6,7 +6,6 @@ angular.module('BE.seed.controller.matching_detail', [])
   .controller('matching_detail_controller', [
     '$scope',
     '$log',
-    '$state',
     '$stateParams',
     'naturalSort',
     'import_file_payload',
@@ -21,7 +20,6 @@ angular.module('BE.seed.controller.matching_detail', [])
     'Notification',
     function ($scope,
               $log,
-              $state,
               $stateParams,
               naturalSort,
               import_file_payload,
@@ -52,8 +50,9 @@ angular.module('BE.seed.controller.matching_detail', [])
       $scope.sort_reverse = false;
       $scope.showing = {};
 
-      $scope.columns = columns;
-      $scope.reduced_columns = _.reject(columns, {extraData: true});
+      var localStorageKey = 'grid.matching.' + $scope.inventory_type + '.detail';
+      columns = matching_service.loadDetailColumns(localStorageKey, columns);
+      $scope.columns = _.filter(columns, 'visible');
 
       /**
        * Pagination code
@@ -92,11 +91,11 @@ angular.module('BE.seed.controller.matching_detail', [])
       // Custom filter
       $scope.allSearch = function (row) {
         var i, searchText, searchTextLower, rowValue, reducedColLower, isMatch;
-        for (i = 0; i < $scope.reduced_columns.length; i++) {
-          searchText = $scope.reduced_columns[i].searchText;
-          rowValue = row[$scope.reduced_columns[i].name];
+        for (i = 0; i < $scope.columns.length; i++) {
+          searchText = $scope.columns[i].searchText;
+          rowValue = $scope.columns[i].extraData ? row.extra_data[$scope.columns[i].name] : row[$scope.columns[i].name];
           if (searchText && !_.isNil(rowValue)) {
-            // don't return match because it stops the loop, set to variable so even when matches are found, they continue searching(iterating through the loop) when inputs are processed from other columns
+            // don't return match because it stops the loop, set to variable so even when matches are found, they continue searching (iterating through the loop) when inputs are processed from other columns
             searchTextLower = searchText.toLowerCase();
             reducedColLower = (rowValue + '').toLowerCase();
             isMatch = reducedColLower.indexOf(searchTextLower) > -1;
@@ -112,18 +111,37 @@ angular.module('BE.seed.controller.matching_detail', [])
       };
 
       // Sort by Columns Ascending and Descending
-      $scope.sortColumn = 'name';
-      $scope.reverseSort = false;
+      var savedSort = matching_service.loadSort(localStorageKey + '.sort');
+      if (savedSort) {
+        savedSort = JSON.parse(savedSort);
+        $scope.sortColumn = savedSort.sortColumn;
+        $scope.reverseSort = savedSort.reverseSort;
+      } else {
+        $scope.sortColumn = 'name';
+        $scope.reverseSort = false;
+      }
 
       $scope.sortData = function (column, extraData) {
-        if (extraData) column = 'extra_data[\'' + column + '\']';
-        if ($scope.sortColumn === column && $scope.reverseSort) {
-          $scope.sortColumn = 'name';
-          $scope.reverseSort = false;
-        } else {
-          $scope.reverseSort = $scope.sortColumn === column ? !$scope.reverseSort : false;
-          $scope.sortColumn = column;
-        }
+        _.defer(function () {
+          spinner_utility.show();
+          $scope.$digest();
+
+          _.delay(function () {
+            if (extraData) column = 'extra_data[\'' + column + '\']';
+            if ($scope.sortColumn === column && $scope.reverseSort) {
+              $scope.sortColumn = 'name';
+              $scope.reverseSort = false;
+              matching_service.removeSettings(localStorageKey + '.sort');
+            } else {
+              $scope.reverseSort = $scope.sortColumn === column ? !$scope.reverseSort : false;
+              $scope.sortColumn = column;
+              matching_service.saveSort(localStorageKey + '.sort', {sortColumn: $scope.sortColumn, reverseSort: $scope.reverseSort});
+            }
+
+            spinner_utility.hide();
+            $scope.$digest();
+          }, 150);
+        });
       };
 
       $scope.getSortClass = function (column, extraData) {
@@ -203,7 +221,7 @@ angular.module('BE.seed.controller.matching_detail', [])
         }
       };
 
-      $scope.$watch('filtered', _.debounce(function(newValue, oldValue) {
+      $scope.$watch('filtered', _.debounce(function (newValue, oldValue) {
         if (newValue === [] && oldValue === []) return;
         $scope.update_start_end_paging();
       }), 10);

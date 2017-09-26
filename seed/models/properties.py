@@ -169,6 +169,7 @@ class PropertyState(models.Model):
     # continue to be imperial these will become the canonical columns in
     # future, with the old ones above to be culled once OGBS merges the metric
     # units work (scheduled for late 2017)
+
     # TODO: eventually need to add these fields to the coparent SQL query below.
     gross_floor_area_pint = QuantityField('ft**2', null=True, blank=True)
     conditioned_floor_area_pint = QuantityField('ft**2', null=True, blank=True)
@@ -398,7 +399,7 @@ class PropertyState(models.Model):
                        'source_eui_weather_normalized', 'site_eui_weather_normalized',
                        'source_eui', 'source_eui_modeled', 'energy_alerts', 'space_alerts',
                        'building_certification', 'analysis_start_time', 'analysis_end_time',
-                       'analysis_state', 'analysis_state_message', 'extra_data']
+                       'analysis_state', 'analysis_state_message', 'extra_data', ]
         coparents = [{key: getattr(c, key) for key in keep_fields} for c in coparents]
 
         return coparents, len(coparents)
@@ -454,8 +455,8 @@ class PropertyView(models.Model):
         # get the related taxlot_view.state as well to save time if needed.
         result = []
         for tlp in TaxLotProperty.objects.filter(
-                cycle=self.cycle,
-                property_view=self).select_related('taxlot_view', 'taxlot_view__state'):
+            cycle=self.cycle,
+            property_view=self).select_related('taxlot_view', 'taxlot_view__state'):
             result.append(tlp.taxlot_view)
 
         return result

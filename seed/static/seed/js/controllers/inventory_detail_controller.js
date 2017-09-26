@@ -32,7 +32,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
 
       var localStorageKey = 'grid.' + $scope.inventory_type + '.detail';
 
-      $scope.columns = inventory_service.loadSettings(localStorageKey, angular.copy(columns));
+      $scope.columns = inventory_service.loadSettings(localStorageKey, columns);
 
       /** See service for structure of returned payload */
       $scope.historical_items = inventory_payload.history;
