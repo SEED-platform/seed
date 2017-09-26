@@ -141,6 +141,7 @@ Munday
 MyBrowser
 MyModel
 namespace
+natively
 NGINX
 nginx
 nlong
@@ -157,6 +158,7 @@ org
 orgfilter
 orgs
 os
+OSX
 param
 params
 paramType

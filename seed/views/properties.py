@@ -818,7 +818,7 @@ class PropertyViewSet(GenericViewSet):
                         )
                         # Removing organization key AND import_file key because they're not JSON-serializable
                         # TODO find better solution
-                        if 'organizaiton' in result['state']:
+                        if 'organization' in result['state']:
                             result['state'].pop('organization')
                         if 'import_file' in result['state']:
                             result['state'].pop('import_file')

@@ -79,7 +79,7 @@ describe('When I go to the taxlot page', function () {
     $('#settings').click();
     $('[ng-if="grid.options.enableSelectAll"]').click().click();
     $$('[ng-class="{\'ui-grid-row-selected\': row.isSelected}"]').first().click();
-    $('#item_title').click();
+    $('#inventory-detail').click();
     var rows = element.all(by.repeater('field in columns'));
     expect(rows.count()).toBe(1);
   });
@@ -88,7 +88,7 @@ describe('When I go to the taxlot page', function () {
     $('#settings').click();
     $$('.ui-grid-menu-button').first().click();
     $$('[ng-click="itemAction($event, title)"]').first().click();
-    $('#item_title').click();
+    $('#inventory-detail').click();
     var rows = element.all(by.repeater('field in columns'));
     expect(rows.count()).not.toBeLessThan(2);
   });

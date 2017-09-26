@@ -308,6 +308,6 @@ Login with the user/password you created before, e.g., `admin@my.org` and
 .. note::
 
     these steps have been combined into a script called `start-seed.sh`.
-    The script will also try to not start Celery or Redis if they already seem
+    The script will also not start Celery or Redis if they already seem
     to be running.
-    
+
