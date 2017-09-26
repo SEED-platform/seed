@@ -200,7 +200,22 @@ class BuildingSync(object):
 
             # set the value in the new_dict (if none, then remove the field)
             # TODO: remove the field if the value is None
+            # TODO: handle the setting of the complex fields (with key_path_names, identifiers)
             if value:
+                if v.get('key_path_name', None) and v.get('value_path_name', None) and v.get(
+                    'key_path_value', None):
+                    # iterate over the paths and find the correct node to set
+                    _log.debug("Can't set key_path_name fields at the moment")
+                    # "footprint_floor_area": {
+                    #                             "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:FloorAreas.auc:FloorArea",
+                    #                             "key_path_name": "auc:FloorAreaType",
+                    #                             "key_path_value": "Footprint",
+                    #                             "value_path_name": "auc:FloorAreaValue",
+                    #                             "required": False,
+                    #                             "type": "double",
+                    #                         },
+                    continue
+                    
                 full_path = "{}.{}".format(process_struct['root'], v['path'])
                 if not self._set_node(full_path, new_dict, value):
                     _log.debug("Unable to set path")
