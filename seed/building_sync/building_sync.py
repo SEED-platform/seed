@@ -5,30 +5,35 @@
 :author nicholas.long@nrel.gov
 """
 
+import copy
 import json
+import logging
 import os
 
 import xmltodict
+from django.db.models import FieldDoesNotExist
 
 from seed.models.measures import _snake_case
+
+_log = logging.getLogger(__name__)
 
 
 class BuildingSync(object):
     ADDRESS_STRUCT = {
-        "root": "Audits.Audit.Sites.Site.Address",
+        "root": "auc:Audits.auc:Audit.auc:Sites.auc:Site.auc:Address",
         "return": {
             "address_line_1": {
-                "path": "StreetAddressDetail.Simplified.StreetAddress",
+                "path": "auc:StreetAddressDetail.auc:Simplified.auc:StreetAddress",
                 "required": True,
                 "type": "string",
             },
             "city": {
-                "path": "City",
+                "path": "auc:City",
                 "required": True,
                 "type": "string",
             },
             "state": {
-                "path": "State",
+                "path": "auc:State",
                 "required": True,
                 "type": "string",
             }
@@ -36,100 +41,100 @@ class BuildingSync(object):
     }
 
     BRICR_STRUCT = {
-        "root": "Audits.Audit",
+        "root": "auc:Audits.auc:Audit",
         "return": {
             "address_line_1": {
-                "path": "Sites.Site.Address.StreetAddressDetail.Simplified.StreetAddress",
+                "path": "auc:Sites.auc:Site.auc:Address.auc:StreetAddressDetail.auc:Simplified.auc:StreetAddress",
                 "required": True,
                 "type": "string",
             },
             "city": {
-                "path": "Sites.Site.Address.City",
+                "path": "auc:Sites.auc:Site.auc:Address.auc:City",
                 "required": True,
                 "type": "string",
             },
             "state": {
-                "path": "Sites.Site.Address.State",
+                "path": "auc:Sites.auc:Site.auc:Address.auc:State",
                 "required": True,
                 "type": "string",
             },
             "longitude": {
-                "path": "Sites.Site.Longitude",
+                "path": "auc:Sites.auc:Site.auc:Longitude",
                 "required": True,
                 "type": "double"
             },
             "latitude": {
-                "path": "Sites.Site.Latitude",
+                "path": "auc:Sites.auc:Site.auc:Latitude",
                 "required": True,
                 "type": "double",
             },
             "property_name": {
-                "path": "Sites.Site.Facilities.Facility.@ID",
+                "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.@ID",
                 "required": True,
                 "type": "string",
             },
             "year_built": {
-                "path": "Sites.Site.Facilities.Facility.YearOfConstruction",
+                "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:YearOfConstruction",
                 "required": True,
                 "type": "integer",
             },
             "property_type": {
-                "path": "Sites.Site.Facilities.Facility.FacilityClassification",
+                "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:FacilityClassification",
                 "required": True,
                 "type": "string",
             },
             "occupancy_type": {
-                "path": "Sites.Site.Facilities.Facility.OccupancyClassification",
+                "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:OccupancyClassification",
                 "required": True,
                 "type": "string",
             },
             "floors_above_grade": {
-                "path": "Sites.Site.Facilities.Facility.FloorsAboveGrade",
+                "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:FloorsAboveGrade",
                 "required": True,
                 "type": "integer",
             },
             "floors_below_grade": {
-                "path": "Sites.Site.Facilities.Facility.FloorsBelowGrade",
+                "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:FloorsBelowGrade",
                 "required": True,
                 "type": "integer",
             },
             "premise_identifier": {
-                "path": "Sites.Site.Facilities.Facility.PremisesIdentifiers.PremisesIdentifier",
-                "key_path_name": "IdentifierLabel",
+                "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:PremisesIdentifiers.auc:PremisesIdentifier",
+                "key_path_name": "auc:IdentifierLabel",
                 "key_path_value": "Assessor parcel number",
-                "value_path_name": "IdentifierValue",
+                "value_path_name": "auc:IdentifierValue",
                 "required": True,
                 "type": "string",
             },
             "custom_id_1": {
-                "path": "Sites.Site.Facilities.Facility.PremisesIdentifiers.PremisesIdentifier",
-                "key_path_name": "IdentifierCustomName",
+                "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:PremisesIdentifiers.auc:PremisesIdentifier",
+                "key_path_name": "auc:IdentifierCustomName",
                 "key_path_value": "Custom ID",
-                "value_path_name": "IdentifierValue",
+                "value_path_name": "auc:IdentifierValue",
                 "required": True,
                 "type": "string",
             },
             "gross_floor_area": {
-                "path": "Sites.Site.Facilities.Facility.FloorAreas.FloorArea",
-                "key_path_name": "FloorAreaType",
+                "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:FloorAreas.auc:FloorArea",
+                "key_path_name": "auc:FloorAreaType",
                 "key_path_value": "Gross",
-                "value_path_name": "FloorAreaValue",
+                "value_path_name": "auc:FloorAreaValue",
                 "required": True,
                 "type": "double",
             },
             "net_floor_area": {
-                "path": "Sites.Site.Facilities.Facility.FloorAreas.FloorArea",
-                "key_path_name": "FloorAreaType",
+                "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:FloorAreas.auc:FloorArea",
+                "key_path_name": "auc:FloorAreaType",
                 "key_path_value": "Net",
-                "value_path_name": "FloorAreaValue",
+                "value_path_name": "auc:FloorAreaValue",
                 "required": False,
                 "type": "double",
             },
             "footprint_floor_area": {
-                "path": "Sites.Site.Facilities.Facility.FloorAreas.FloorArea",
-                "key_path_name": "FloorAreaType",
+                "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:FloorAreas.auc:FloorArea",
+                "key_path_name": "auc:FloorAreaType",
                 "key_path_value": "Footprint",
-                "value_path_name": "FloorAreaValue",
+                "value_path_name": "auc:FloorAreaValue",
                 "required": False,
                 "type": "double",
             },
@@ -157,7 +162,10 @@ class BuildingSync(object):
                 self.raw_data = xmltodict.parse(
                     xmlfile.read(),
                     process_namespaces=True,
-                    namespaces={'http://nrel.gov/schemas/bedes-auc/2014': None}
+                    namespaces={
+                        'http://nrel.gov/schemas/bedes-auc/2014': 'auc',
+                        'http://www.w3.org/2001/XMLSchema-instance': 'xsi',
+                    }
                 )
         else:
             raise Exception("File not found: {}".format(filename))
@@ -168,12 +176,67 @@ class BuildingSync(object):
         """Export BuildingSync file from an existing BuildingSync file (from import), property_state and
         a process struct.
 
-        :param property_state:
-        :param process_struct:
-        :return:
+        :param property_state: object, PropertyState to merge into BuildingSync
+        :param process_struct: dict, mapping from PropertyState to BuildingSync
+        :return: string, as XML
         """
 
-        return "TODO: Populate this object!"
+        # if not property state is defined, then just return the BuildingSync unparsed
+        if not property_state:
+            return xmltodict.unparse(self.raw_data, pretty=True).replace('\t', '  ')
+
+        # parse the property_state and merge it with the raw data
+        new_dict = copy.deepcopy(self.raw_data)
+
+        for field, v in process_struct['return'].items():
+            value = None
+            try:
+                property_state._meta.get_field(field)
+                value = getattr(property_state, field)
+            except FieldDoesNotExist:
+                _log.debug(
+                    "Field {} is not a database field, reading from extra data".format(field))
+                value = property_state.extra_data.get(field, None)
+
+            # set the value in the new_dict (if none, then remove the field)
+            # TODO: remove the field if the value is None
+            if value:
+                full_path = "{}.{}".format(process_struct['root'], v['path'])
+                if not self._set_node(full_path, new_dict, value):
+                    _log.debug("Unable to set path")
+
+        return xmltodict.unparse(new_dict, pretty=True).replace('\t', '  ')
+
+    def _set_node(self, path, data, value):
+        """
+        Set the value in the dictionary based on the path. If there are more than one paths, then
+        it will only set the first path for now. The future could allow a variable to pass in the
+        index (or other constraint) before setting the value.
+
+        :param path: string, path which to navigate to set the value
+        :param data: dict, dictionary to process
+        :param value: value to set, could be any type at the moment.
+        :return: boolean, true if successful
+        """
+
+        path = path.split(".")
+        for idx, p in enumerate(path):
+            if p == '':
+                return False
+            elif idx == len(path) - 1:
+                data[p] = value
+                return True
+            else:
+                new_node = data.get(path.pop(0))
+                new_path = '.'.join(path)
+                if isinstance(new_node, list):
+                    _log.debug("unable to iterate over lists at the moment")
+                    return False
+                elif isinstance(new_node, dict):
+                    return self._set_node(new_path, new_node, value)
+                else:
+                    # can't recurse futher into new_node because it is not a dict
+                    break
 
     def _get_node(self, path, node, results=[], kwargs={}):
         """
@@ -251,7 +314,7 @@ class BuildingSync(object):
 
             try:
                 if v.get('key_path_name', None) and v.get('value_path_name', None) and v.get(
-                        'key_path_value', None):
+                    'key_path_value', None):
                     value = _lookup_sub(
                         value,
                         v.get('key_path_name'),
@@ -301,18 +364,20 @@ class BuildingSync(object):
 
         # manually add in parsing of measures and reports because they are a bit different than
         # a straight mapping
-        measures = self._get_node('Audits.Audit.Measures.Measure', data, [])
+        measures = self._get_node('auc:Audits.auc:Audit.auc:Measures.auc:Measure', data, [])
         for m in measures:
-            category = m['TechnologyCategories']['TechnologyCategory'].keys()[0]
+            cat_w_namespace = m['auc:TechnologyCategories']['auc:TechnologyCategory'].keys()[0]
+            category = cat_w_namespace.replace('auc:', '')
             new_data = {
                 'property_measure_name': m.get('@ID'),  # This will be the IDref from the scenarios
                 'category': _snake_case(category),
-                'name': m['TechnologyCategories']['TechnologyCategory'][category]['MeasureName']
+                'name': m['auc:TechnologyCategories']['auc:TechnologyCategory'][cat_w_namespace][
+                    'auc:MeasureName']
             }
             for k, v in m.items():
-                if k in ['@ID', 'PremisesAffected', 'TechnologyCategories']:
+                if k in ['@ID', 'auc:PremisesAffected', 'auc:TechnologyCategories']:
                     continue
-                new_data[_snake_case(k)] = v
+                new_data[_snake_case(k.replace('auc:', ''))] = v
 
             # fix the names of the measures for "easier" look up... doing in separate step to
             # fit in single line. Cleanup -- when?
@@ -331,23 +396,24 @@ class BuildingSync(object):
         #     </auc:PackageOfMeasures>
         #   </auc:ScenarioType>
         # </auc:Scenario>
-        scenarios = self._get_node('Audits.Audit.Report.Scenarios.Scenario', data, [])
+        scenarios = self._get_node('auc:Audits.auc:Audit.auc:Report.auc:Scenarios.auc:Scenario',
+                                   data, [])
         for s in scenarios:
             new_data = {
                 'id': s.get('@ID'),
-                'name': s.get('ScenarioName'),
+                'name': s.get('auc:ScenarioName'),
             }
 
-            if s.get('ScenarioType'):
-                node = s['ScenarioType'].get('PackageOfMeasures')
+            if s.get('auc:ScenarioType'):
+                node = s['auc:ScenarioType'].get('auc:PackageOfMeasures')
                 if node:
-                    ref_case = self._get_node('ReferenceCase', node, [])
+                    ref_case = self._get_node('auc:ReferenceCase', node, [])
                     if ref_case and ref_case.get('@IDref'):
                         new_data['reference_case'] = ref_case.get('@IDref')
-                    new_data['annual_savings_site_energy'] = node.get('AnnualSavingsSiteEnergy')
+                    new_data['annual_savings_site_energy'] = node.get('auc:AnnualSavingsSiteEnergy')
 
                     new_data['measures'] = []
-                    measures = self._get_node('MeasureIDs.MeasureID', node, [])
+                    measures = self._get_node('auc:MeasureIDs.auc:MeasureID', node, [])
                     if isinstance(measures, list):
                         for measure in measures:
                             if measure.get('@IDref', None):

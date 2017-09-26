@@ -6,7 +6,7 @@
 """
 
 import copy
-from os import path
+from os import path, remove
 
 from django.test import TestCase
 
@@ -45,6 +45,23 @@ class TestBuildingSync(TestCase):
 
         self.assertTrue(self.bs.import_file(self.xml_file))
 
+    def test_export_no_property(self):
+        self.bs.import_file(self.xml_file)
+        xml = self.bs.export(None, BuildingSync.BRICR_STRUCT)
+
+        # save the file to disk, then reload and check if the two are the same
+        new_file = path.join(path.dirname(__file__), 'data', 'test_file.xml')
+        if path.exists(new_file):
+            remove(new_file)
+
+        with open(new_file, "w") as f:
+            f.write(xml)
+
+        new_bs = BuildingSync()
+        new_bs.import_file(new_file)
+
+        self.assertEqual(self.bs.raw_data, new_bs.raw_data)
+
     def test_export(self):
         bs = self.bs.import_file(self.xml_file)
 
@@ -54,10 +71,48 @@ class TestBuildingSync(TestCase):
         )
 
         ps = self.property_state_factory.get_property_state(organization=self.org)
-        print(obj_to_dict(ps))
+        ps.extra_data['floors_below_grade'] = 11235
+        ps.save()
+        # print(obj_to_dict(ps))
 
         xml = self.bs.export(ps, BuildingSync.BRICR_STRUCT)
-        print(xml)
+
+        self.assertTrue("<auc:FloorsBelowGrade>11235</auc:FloorsBelowGrade>" in xml)
+        self.assertTrue("<auc:State>Oregon</auc:State>" in xml)
+
+        # check for complicated fields and measures.
+
+    def test_set_node(self):
+        data = {
+            "a": 1,
+            "c": {
+                "d": 2
+            },
+            "d": {
+                "e": {
+                    "f": {
+                        "g": {
+                            "h": "deep"
+                        }
+                    }
+                }
+            }
+        }
+
+        result = self.bs._set_node('', data, 1999)
+        self.assertFalse(result)
+
+        result = self.bs._set_node('a', data, 1999)
+        self.assertTrue(result)
+        self.assertEqual(data["a"], 1999)
+
+        result = self.bs._set_node('c.d', data, "string_me")
+        self.assertTrue(result)
+        self.assertEqual(data["c"]["d"], "string_me")
+
+        # result = self.bs._set_node('d.e.f.g.h', data, 1.234)
+        # self.assertTrue(result)
+        # self.assertEqual(data["d"]["e"][""], )
 
     def test_get_node(self):
         data = {
@@ -161,7 +216,7 @@ class TestBuildingSync(TestCase):
         self.assertEqual(res, expected)
         self.assertTrue(errors)
         self.assertEqual(mess, [
-            "Could not find required value for 'Audits.Audit.Sites.Site.Address.BungalowName'"])
+            "Could not find required value for 'auc:Audits.auc:Audit.auc:Sites.auc:Site.auc:Address.BungalowName'"])
 
         # Missing path
         struct['return']['bungalow_name'] = {
@@ -172,7 +227,7 @@ class TestBuildingSync(TestCase):
         res, errors, mess = self.bs.process(struct)
         self.assertTrue(errors)
         self.assertEqual(mess, [
-            "Could not find required value for 'Audits.Audit.Sites.Site.Address.Long.List.A.B'"])
+            "Could not find required value for 'auc:Audits.auc:Audit.auc:Sites.auc:Site.auc:Address.Long.List.A.B'"])
         self.assertEqual(res, expected)
 
     def test_bricr_struct(self):

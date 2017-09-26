@@ -8,13 +8,16 @@ All rights reserved.  # NOQA
 :author
 """
 
+import os
+
 from django.db.models import Q
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django_filters import CharFilter, DateFilter
 from django_filters.rest_framework import FilterSet
-from rest_framework.decorators import detail_route
 from rest_framework import status
+from rest_framework.decorators import detail_route
 
+from seed.building_sync.building_sync import BuildingSync
 from seed.models import (
     PropertyView,
     PropertyState,
@@ -120,11 +123,54 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
     def building_sync(self, request, pk):
         """
         Return BuildingSync representation of the property
-        ---
 
+        ---
+        parameters:
+            - name: pk
+              description: The PropertyView to return the BuildingSync file
+              type: path
+              required: true
+            - name: organization_id
+              type: integer
+              required: true
+              paramType: query
+            - name: cycle_id
+              type: integer
+              required: true
+              paramType: query
         """
-        return JsonResponse(
-            {"status": "error", "message": "Not yet implemented. PK was {}".format(pk)})
+        # organization_id = request.data['organization_id']
+        cycle_id = request.query_params.get('cycle_id', None)
+
+        if not cycle_id:
+            return JsonResponse({
+                'success': False,
+                'message': "Cycle ID is not defined"
+            })
+        else:
+            cycle = Cycle.objects.get(pk=cycle_id)
+
+        try:
+            # TODO: not checking organization? Is that right?
+            property_view = PropertyView.objects.select_related('state').get(pk=pk, cycle=cycle)
+        except PropertyView.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'Cannot match a PropertyView with pk=%s; cycle_id=%s' % (pk, cycle_id)
+            })
+
+        bs = BuildingSync()
+        # get the latest BSXML file from the PropertyState
+        bs_file = property_view.state.building_files.last().file.path
+        if os.path.exists(bs_file):
+            bs.import_file(bs_file)
+            xml = bs.export(property_view.state, BuildingSync.BRICR_STRUCT)
+            return HttpResponse(xml, content_type='application/xml')
+        else:
+            return JsonResponse({
+                'success': False,
+                'message': "Could not find valid BuildingSync file attached to PropertyState"
+            })
 
     @detail_route(methods=['PUT'])
     def update_with_building_sync(self, request, pk):
@@ -189,7 +235,8 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
             })
 
         # passing in the property view pk should allow it to process the buildingsync file but not create a new PV
-        p_status, property_view, messages = building_file.process(organization_id, cycle, property_view=property_view)
+        p_status, property_view, messages = building_file.process(organization_id, cycle,
+                                                                  property_view=property_view)
 
         if p_status:
             return JsonResponse({
