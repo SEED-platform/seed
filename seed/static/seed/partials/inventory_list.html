@@ -26,7 +26,7 @@
                         type="button"
                         uib-dropdown-toggle
                         class="btn btn-default btn-sm"
-                        ng-disabled="selectedCount === 0">
+                        ng-disabled="selectedCount === 0" translate>
                     Actions <span class="caret"></span>
                 </button>
                 <ul id="inventory-actions-dropdown" uib-dropdown-menu class="dropdown-menu" role="menu" aria-labelledby="btnInventoryActions">
@@ -46,12 +46,12 @@
             </div>
         </div>
         <div class="form-group">
-            <label for="tagsInput">Filter by label:</label>
+            <label for="tagsInput" translate>Filter by label:</label>
             <div class="btn-group">
                 <tags-input id="tagsInput"
                             ng-model="selected_labels"
                             min-length="1"
-                            placeholder="Add a label"
+                            placeholder="{$ "Add a label" | translate $}"
                             replace-spaces-with-dashes="false"
                             add-from-autocomplete-only="true"
                             ng-disabled="!labels.length">
@@ -66,21 +66,21 @@
             </div>
         </div>
         <div class="form-group btn-group">
-            <label class="btn btn-default btn-sm" style="width:50px;" ng-model="labelLogic" uib-btn-radio="'and'" ng-change="labelLogicUpdated()" ng-disabled="!labels.length">AND</label>
-            <label class="btn btn-default btn-sm" style="width:50px;" ng-model="labelLogic" uib-btn-radio="'or'" ng-change="labelLogicUpdated()" ng-disabled="!labels.length">OR</label>
-            <label class="btn btn-default btn-sm" style="width:75px;" ng-model="labelLogic" uib-btn-radio="'exclude'" ng-change="labelLogicUpdated()" ng-disabled="!labels.length">EXCLUDE</label>
+            <label class="btn btn-default btn-sm" style="width:50px;" ng-model="labelLogic" uib-btn-radio="'and'" ng-change="labelLogicUpdated()" ng-disabled="!labels.length" translate>AND</label>
+            <label class="btn btn-default btn-sm" style="width:50px;" ng-model="labelLogic" uib-btn-radio="'or'" ng-change="labelLogicUpdated()" ng-disabled="!labels.length" translate>OR</label>
+            <label class="btn btn-default btn-sm" style="width:75px;" ng-model="labelLogic" uib-btn-radio="'exclude'" ng-change="labelLogicUpdated()" ng-disabled="!labels.length" translate>EXCLUDE</label>
         </div>
         <div class="form-group btn-group building-list-filter-buttons">
-            <button type="button" ng-click="clear_labels()" class="btn btn-default btn-sm" ng-disabled="!selected_labels.length">Clear Labels</button>
+            <button type="button" ng-click="clear_labels()" class="btn btn-default btn-sm" ng-disabled="!selected_labels.length" translate>Clear Labels</button>
         </div>
         <div class="btn-group">
-            <button type="button" ng-click="gridApi.grid.clearAllFilters();" ng-disabled="!filters_exist()" class="btn btn-default btn-sm">Clear Filters</button>
+            <button type="button" ng-click="gridApi.grid.clearAllFilters();" ng-disabled="!filters_exist()" class="btn btn-default btn-sm" translate>Clear Filters</button>
         </div>
 
     </form>
 
     <div class="form-group" style="padding-top: 20px;">
-        <label>Cycle:</label>
+        <label translate>Cycle:</label>
         <div style="display: inline-block;">
             <select class="form-control input-sm" ng-model="cycle.selected_cycle" ng-change="update_cycle(cycle.selected_cycle)"
                     ng-options="option.name for option in ::cycle.cycles track by option.id">
@@ -98,11 +98,11 @@
         <span ng-if="::inventory_type === 'taxlots'"><ng-pluralize count="total" when="{'one': 'Tax Lot','other': 'Tax Lots'}"></ng-pluralize></span>
     </div>
     <ul class="nav nav-tabs" style="margin-bottom:1px;">
-        <li ng-class="::{active: inventory_type === 'properties'}" heading="View by Property">
-            <a ui-sref="inventory_list(::{inventory_type: 'properties'})">View by Property</a>
+        <li ng-class="::{active: inventory_type==='properties'}" heading="View by Property">
+            <a ui-sref="inventory_list(::{inventory_type: 'properties'})" translate>View by Property</a>
         </li>
-        <li ng-class="::{active: inventory_type === 'taxlots'}" heading="View by Tax Lot">
-            <a ui-sref="inventory_list(::{inventory_type: 'taxlots'})">View by Tax Lot</a>
+        <li ng-class="::{active: inventory_type==='taxlots'}" heading="View by Tax Lot">
+            <a ui-sref="inventory_list(::{inventory_type: 'taxlots'})" translate>View by Tax Lot</a>
         </li>
     </ul>
 </div>
