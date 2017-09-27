@@ -19,7 +19,6 @@ from seed.lib.superperms.orgs.models import (
 from seed.test_helpers.fake import (
     FakePropertyStateFactory,
 )
-from seed.utils.generic import obj_to_dict
 
 
 class TestBuildingSync(TestCase):
@@ -73,7 +72,6 @@ class TestBuildingSync(TestCase):
         ps = self.property_state_factory.get_property_state(organization=self.org)
         ps.extra_data['floors_below_grade'] = 11235
         ps.save()
-        # print(obj_to_dict(ps))
 
         xml = self.bs.export(ps, BuildingSync.BRICR_STRUCT)
 
@@ -110,9 +108,75 @@ class TestBuildingSync(TestCase):
         self.assertTrue(result)
         self.assertEqual(data["c"]["d"], "string_me")
 
-        # result = self.bs._set_node('d.e.f.g.h', data, 1.234)
-        # self.assertTrue(result)
-        # self.assertEqual(data["d"]["e"][""], )
+        result = self.bs._set_node('new', data, "new_field")
+        self.assertTrue(result)
+        self.assertEqual(data["new"], "new_field")
+
+        # If setting the node before the end of the existing hash, then it will remove the rest
+        result = self.bs._set_node('d.e.f.g', data, 1.234)
+        self.assertTrue(result)
+        self.assertEqual(data["d"]["e"]["f"]["g"], 1.234)
+
+        # recursive create
+        result = self.bs._set_node('x.y.z', data, "newest_field")
+        self.assertTrue(result)
+        self.assertEqual(data["x"]["y"]["z"], "newest_field")
+
+    def test_set_node_delete(self):
+        data = {
+            "a": 1,
+            "c": {"d": 2}
+        }
+        result = self.bs._set_node('c', data, None)
+        self.assertTrue(result)
+        self.assertTrue("c" not in data)
+
+    def test_compound_set(self):
+        data = {
+            "root": {
+                "a": {
+                    "key": "floor_area",
+                    "value": 1
+                },
+                "energy": [
+                    {
+                        "key": "eui",
+                        "value": 2
+                    },
+                    {
+                        "key": "kw",
+                        "value": 3
+                    }
+                ]
+            }
+        }
+        result = self.bs._set_compound_node("root.a", data, "key", "floor_area", "value", 1000)
+        self.assertTrue(result)
+        self.assertTrue(data["root"]["a"]["value"], 1000)
+
+        result = self.bs._set_compound_node("root.energy", data, "key", "eui", "value", 2000)
+        self.assertTrue(result)
+        self.assertTrue(data["root"]["energy"][0]["value"], 2000)
+
+        result = self.bs._set_compound_node("root.energy", data, "key", "kw", "value", 3000)
+        self.assertTrue(result)
+        self.assertTrue(data["root"]["energy"][1]["value"], 3000)
+
+        result = self.bs._set_compound_node("root.energy", data, "key", "source", "value", 4000)
+        self.assertTrue(result)
+        self.assertEqual(len(data["root"]["energy"]), 3)
+        for d in data["root"]["energy"]:
+            if d["key"] == "source":
+                self.assertEqual(d["value"], 4000)
+
+        result = self.bs._set_compound_node("root.a", data, "key", "roof_area", "value", 5000)
+        self.assertTrue(result)
+        self.assertEqual(len(data["root"]["a"]), 2)
+        for d in data["root"]["a"]:
+            if d["key"] == "roof_area":
+                self.assertEqual(d["value"], 5000)
+            if d["key"] == "floor_area":
+                self.assertEqual(d["value"], 1000)
 
     def test_get_node(self):
         data = {

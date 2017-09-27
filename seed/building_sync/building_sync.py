@@ -9,6 +9,7 @@ import copy
 import json
 import logging
 import os
+from collections import OrderedDict
 
 import xmltodict
 from django.db.models import FieldDoesNotExist
@@ -144,7 +145,7 @@ class BuildingSync(object):
     def __init__(self):
         self.filename = None
         self.data = None
-        self.raw_data = None
+        self.raw_data = {}
 
     @property
     def pretty_print(self):
@@ -181,12 +182,33 @@ class BuildingSync(object):
         :return: string, as XML
         """
 
-        # if not property state is defined, then just return the BuildingSync unparsed
+        # if property state is not defined, then just return the BuildingSync unparsed
         if not property_state:
             return xmltodict.unparse(self.raw_data, pretty=True).replace('\t', '  ')
 
         # parse the property_state and merge it with the raw data
         new_dict = copy.deepcopy(self.raw_data)
+        if new_dict == {}:
+            _log.debug("BuildingSync raw data is empty, adding in header information")
+            # new_dict[]
+            new_dict = OrderedDict(
+                [
+                    (
+                        u'auc:Audits', OrderedDict(
+                            [
+                                (u'@xsi:schemaLocation',
+                                 u'http://nrel.gov/schemas/bedes-auc/2014 file:///E:/buildingsync/BuildingSync.xsd'),
+                                ('@xmlns', OrderedDict(
+                                    [
+                                        (u'auc', u'http://nrel.gov/schemas/bedes-auc/2014'),
+                                        (u'xsi', u'http://www.w3.org/2001/XMLSchema-instance')
+                                    ]
+                                ))
+                            ]
+                        )
+                    )
+                ]
+            )
 
         for field, v in process_struct['return'].items():
             value = None
@@ -194,31 +216,30 @@ class BuildingSync(object):
                 property_state._meta.get_field(field)
                 value = getattr(property_state, field)
             except FieldDoesNotExist:
-                _log.debug(
-                    "Field {} is not a database field, reading from extra data".format(field))
+                _log.debug("Field {} is not a db field, trying read from extra data".format(field))
                 value = property_state.extra_data.get(field, None)
 
             # set the value in the new_dict (if none, then remove the field)
             # TODO: remove the field if the value is None
             # TODO: handle the setting of the complex fields (with key_path_names, identifiers)
             if value:
-                if v.get('key_path_name', None) and v.get('value_path_name', None) and v.get(
-                    'key_path_value', None):
-                    # iterate over the paths and find the correct node to set
-                    _log.debug("Can't set key_path_name fields at the moment")
-                    # "footprint_floor_area": {
-                    #                             "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:FloorAreas.auc:FloorArea",
-                    #                             "key_path_name": "auc:FloorAreaType",
-                    #                             "key_path_value": "Footprint",
-                    #                             "value_path_name": "auc:FloorAreaValue",
-                    #                             "required": False,
-                    #                             "type": "double",
-                    #                         },
-                    continue
-                    
                 full_path = "{}.{}".format(process_struct['root'], v['path'])
-                if not self._set_node(full_path, new_dict, value):
-                    _log.debug("Unable to set path")
+
+                if v.get('key_path_name', None) and \
+                    v.get('value_path_name', None) and \
+                    v.get('key_path_value', None):
+                    # iterate over the paths and find the correct node to set
+                    self._set_compound_node(
+                        full_path,
+                        new_dict,
+                        v['key_path_name'],
+                        v['key_path_value'],
+                        v['value_path_name'],
+                        value
+                    )
+                else:
+                    if not self._set_node(full_path, new_dict, value):
+                        _log.debug("Unable to set path")
 
         return xmltodict.unparse(new_dict, pretty=True).replace('\t', '  ')
 
@@ -239,16 +260,104 @@ class BuildingSync(object):
             if p == '':
                 return False
             elif idx == len(path) - 1:
-                data[p] = value
+                if value is None:
+                    del data[p]
+                else:
+                    data[p] = value
                 return True
             else:
-                new_node = data.get(path.pop(0))
+                prev_node = path.pop(0)
+                new_node = data.get(prev_node)
                 new_path = '.'.join(path)
+                if new_node is None:
+                    # create the new node because it doesn't exist
+                    data[prev_node] = {}
+                    new_node = data[prev_node]
+
                 if isinstance(new_node, list):
-                    _log.debug("unable to iterate over lists at the moment")
+                    _log.debug("Unable to iterate over lists at the moment")
                     return False
                 elif isinstance(new_node, dict):
                     return self._set_node(new_path, new_node, value)
+                else:
+                    # can't recurse futher into new_node because it is not a dict
+                    break
+
+    def _set_compound_node(self, list_path, data, key_path_name, key_path_value, value_path_name,
+                           value):
+        """
+        If the XML is a list of options with a key field at the same level as the value, then use
+        this method. The example belows show how the XML will be structured. To set the
+        Gross floor area, then pass in the following
+
+            _set_compound_node("...FloorAreas", "FloorAreaType", "Gross", "FloorAreaValue", 1000)
+
+        .. code:
+
+            <auc:FloorAreas>
+                <auc:FloorArea>
+                    <auc:FloorAreaType>Gross</auc:FloorAreaType>
+                    <auc:FloorAreaValue>25000</auc:FloorAreaValue>
+                </auc:FloorArea>
+                <auc:FloorArea>
+                    <auc:FloorAreaType>Net</auc:FloorAreaType>
+                    <auc:FloorAreaValue>22500</auc:FloorAreaValue>
+                </auc:FloorArea>
+            </auc:FloorAreas>
+
+        :param list_path: String, path to where the list of items start in the dictionary
+        :param data: Dict, data to act on
+        :param key_path_name: String, name of the element to contrain check on
+        :param key_path_value: String, name of the value of the element to check on
+        :param value_path_name: String, name of the element that will be set
+        :param value: undefined, Value to set
+        :return: Boolean
+        """
+
+        path = list_path.split(".")
+        for idx, p in enumerate(path):
+            if p == '':
+                return False
+            elif idx == len(path) - 1:
+                # We have arrived at the location where the compound data needs to be set
+                # Make sure that the key_path_name and key_path_value are not already there
+                if data.get(p):
+                    if isinstance(data[p], dict):
+                        if data[p].get(key_path_name) == key_path_value:
+                            data[p][value_path_name] = value
+                        else:
+                            # need to convert the dict to a list and then add the new one.
+                            data[p] = [data[p]]
+                            new_sub_item = {key_path_name: key_path_value, value_path_name: value}
+                            data[p].append(new_sub_item)
+                    elif isinstance(data[p], list):
+                        for sub in data[p]:
+                            if sub.get(key_path_name, None) == key_path_value:
+                                sub[value_path_name] = value
+                                break
+                        else:
+                            # Not found, create a new one
+                            new_sub_item = {key_path_name: key_path_value, value_path_name: value}
+                            data[p].append(new_sub_item)
+                else:
+                    data[p] = {key_path_name: key_path_value, value_path_name: value}
+
+                return True
+            else:
+                prev_node = path.pop(0)
+                new_node = data.get(prev_node)
+                new_path = '.'.join(path)
+                if new_node is None:
+                    # create the new node because it doesn't exist
+                    data[prev_node] = {}
+                    new_node = data[prev_node]
+
+                if isinstance(new_node, list):
+                    _log.debug("Unable to iterate over lists at the moment")
+                    return False
+                elif isinstance(new_node, dict):
+                    return self._set_compound_node(new_path, new_node, key_path_name,
+                                                   key_path_value, value_path_name, value)
                 else:
                     # can't recurse futher into new_node because it is not a dict
                     break
@@ -451,6 +560,6 @@ class BuildingSync(object):
         :param process_struct: dict, structure on how to extract data from file and save into dict
         :return: list, [dict, list, list], [results, list of errors, list of messages]
         """
-        # API call to BuildingSync Validator on other server for appropriate use case
-        # usecase = new_use_case
+        # API call to BuildingSync Selection Tool on other server for appropriate use case
+        # prcess_struct = new_use_case (from Building Selection Tool)
         return self._process_struct(process_struct, self.raw_data)

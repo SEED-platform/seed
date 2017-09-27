@@ -160,17 +160,16 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
             })
 
         bs = BuildingSync()
-        # get the latest BSXML file from the PropertyState
-        bs_file = property_view.state.building_files.last().file.path
-        if os.path.exists(bs_file):
-            bs.import_file(bs_file)
+        # Check if there is an existing BuildingSync XML file to merge
+        bs_file = property_view.state.building_files.last()
+        if bs_file is not None and os.path.exists(bs_file.file.path):
+            bs.import_file(bs_file.file.path)
             xml = bs.export(property_view.state, BuildingSync.BRICR_STRUCT)
             return HttpResponse(xml, content_type='application/xml')
         else:
-            return JsonResponse({
-                'success': False,
-                'message': "Could not find valid BuildingSync file attached to PropertyState"
-            })
+            # create a new XML from the record, do not import existing XML
+            xml = bs.export(property_view.state, BuildingSync.BRICR_STRUCT)
+            return HttpResponse(xml, content_type='application/xml')
 
     @detail_route(methods=['PUT'])
     def update_with_building_sync(self, request, pk):
