@@ -62,7 +62,7 @@ class TestBuildingSync(TestCase):
         self.assertEqual(self.bs.raw_data, new_bs.raw_data)
 
     def test_export(self):
-        bs = self.bs.import_file(self.xml_file)
+        self.bs.import_file(self.xml_file)
 
         # create a propertystate
         self.property_state_factory = FakePropertyStateFactory(
