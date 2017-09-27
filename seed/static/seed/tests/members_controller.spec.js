@@ -4,52 +4,43 @@
  */
 describe('controller: members_controller', function () {
   // globals set up and used in each test scenario
-  var mockService, scope, controller;
-  var ctrl, ctrl_scope, modalInstance;
+  var controller;
+  var ctrl_scope;
   var mock_organization_service;
 
   beforeEach(function () {
     module('BE.seed');
-  });
-
-  // inject AngularJS dependencies for the controller
-  beforeEach(inject(
-    function ($controller,
-              $rootScope,
-              $uibModal,
-              $q,
-              organization_service) {
-      ctrl = $controller;
-      scope = $rootScope;
+    inject(function ($controller, $rootScope, $uibModal, $q, organization_service) {
+      controller = $controller;
       ctrl_scope = $rootScope.$new();
 
       mock_organization_service = organization_service;
 
       spyOn(mock_organization_service, 'remove_user')
-        .andCallFake(function (user_id, org_id) {
-          return $q.when({
+        .andCallFake(function () {
+          return $q.resolve({
             status: 'success'
           });
         });
       spyOn(mock_organization_service, 'get_organization_users')
-        .andCallFake(function (org) {
-          return $q.when({
+        .andCallFake(function () {
+          return $q.resolve({
             status: 'success',
             users: [{id: 1, first_name: 'Bob', last_name: 'D'}]
           });
         });
       spyOn(mock_organization_service, 'update_role')
-        .andCallFake(function (org_id, user_id, role) {
-          return $q.when({
+        .andCallFake(function () {
+          return $q.resolve({
             status: 'success'
           });
         });
-    }
-  ));
+    });
+  });
 
   // this is outside the beforeEach so it can be configured by each unit test
   function create_members_controller () {
-    ctrl = ctrl('members_controller', {
+    controller = controller('members_controller', {
       $scope: ctrl_scope,
       users_payload: {
         users: [
@@ -88,6 +79,7 @@ describe('controller: members_controller', function () {
     expect(ctrl_scope.users[0].name).toEqual('J S');
     expect(ctrl_scope.users[1].name).toEqual(' ');
   });
+
   it('clicking remove should remove a user', function () {
     // arrange
     create_members_controller();
@@ -104,6 +96,7 @@ describe('controller: members_controller', function () {
     expect(mock_organization_service.get_organization_users)
       .toHaveBeenCalledWith({org_id: 4});
   });
+
   it('clicking a new role should update the user\'s role', function () {
     // arrange
     create_members_controller();

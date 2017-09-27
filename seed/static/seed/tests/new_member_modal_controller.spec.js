@@ -4,32 +4,27 @@
  */
 describe('controller: new_member_modal_controller', function () {
   // globals set up and used in each test scenario
-  var mock_user_service, scope, controller, modal_state;
-  var ctrl, ctrl_scope, modalInstance, timeout;
+  var mock_user_service, controller, modal_state;
+  var ctrl_scope;
   beforeEach(function () {
     module('BE.seed');
+    inject(function ($controller, $rootScope, $uibModal, $q, user_service) {
+      controller = $controller;
+      ctrl_scope = $rootScope.$new();
+      modal_state = '';
+
+      mock_user_service = user_service;
+      spyOn(mock_user_service, 'add')
+        .andCallFake(function () {
+          // return $q.reject for error scenario
+          return $q.resolve({status: 'success'});
+        });
+    });
   });
-
-  // inject AngularJS dependencies for the controller
-  beforeEach(inject(function ($controller, $rootScope, $uibModal, $q, user_service, $timeout) {
-    ctrl = $controller;
-    scope = $rootScope;
-    ctrl_scope = $rootScope.$new();
-    modal_state = '';
-    timeout = $timeout;
-
-    mock_user_service = user_service;
-    spyOn(mock_user_service, 'add')
-      .andCallFake(function (user) {
-        // return $q.reject for error scenario
-        return $q.when({status: 'success'});
-      }
-      );
-  }));
 
   // this is outside the beforeEach so it can be configured by each unit test
   function create_new_member_controller () {
-    ctrl = ctrl('new_member_modal_controller', {
+    controller = controller('new_member_modal_controller', {
       $scope: ctrl_scope,
       $uibModalInstance: {
         close: function () {
@@ -47,7 +42,7 @@ describe('controller: new_member_modal_controller', function () {
    * Test scenarios
    */
 
-  it('should set the default role to \'member\'', function () {
+  it('should set the default role to "member"', function () {
     // arrange
     create_new_member_controller();
 
@@ -57,6 +52,7 @@ describe('controller: new_member_modal_controller', function () {
     // assertions
     expect(ctrl_scope.user.role.value).toEqual('member');
   });
+
   it('should call the user service to add a new user to the org',
     function () {
       // arrange

@@ -4,8 +4,9 @@
  */
 describe('controller: data_quality_modal_controller', function () {
   // globals set up and used in each test scenario
-  var mock_uploader_service, scope, controller, modal_state;
-  var data_quality_modal_controller, data_quality_controller_scope, modalInstance, labels;
+  // var mock_uploader_service;
+  var controller, modal_state;
+  var data_quality_controller_scope;
 
   var cycles = {
     cycles: [{
@@ -26,35 +27,30 @@ describe('controller: data_quality_modal_controller', function () {
   // 'config.seed' is created in TestFilters.html
   beforeEach(function () {
     module('BE.seed');
-  });
-
-  // inject AngularJS dependencies for the controller
-  beforeEach(inject(
-    function ($controller, $rootScope, $uibModal, urls, $q, search_service, dataQualityResults, name, uploaded,importFileId) {
+    inject(function ($controller, $rootScope/*, $q, search_service*/) {
       controller = $controller;
-      scope = $rootScope;
       data_quality_controller_scope = $rootScope.$new();
       modal_state = '';
 
       // mock the uploader_service factory methods used in the controller
       // and return their promises
-      mock_uploader_service = search_service;
+      // mock_uploader_service = search_service;
       // spyOn(mock_uploader_service, 'get_AWS_creds')
       //   .andCallFake(function () {
       //     // return $q.reject for error scenario
-      //     return $q.when({
+      //     return $q.resolve({
       //       status: 'success',
       //       AWS_CLIENT_ACCESS_KEY: '123',
       //       AWS_UPLOAD_BUCKET_NAME: 'test-bucket'
       //     });
       //   });
 
-    }
-  ));
+    });
+  });
 
   // this is outside the beforeEach so it can be configured by each unit test
   function create_data_quality_modal_controller () {
-    data_quality_modal_controller = controller('data_quality_modal_controller', {
+    controller('data_quality_modal_controller', {
       $scope: data_quality_controller_scope,
       $uibModalInstance: {
         close: function () {

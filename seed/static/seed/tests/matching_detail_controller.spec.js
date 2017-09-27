@@ -4,100 +4,94 @@
  */
 describe('Controller: matching_detail_controller', function () {
   // globals set up and used in each test scenario
-  var mock_matching_services, mock_inventory_services, scope, controller, delete_called;
-  var matching_detail_controller, matching_detail_controller_scope, modalInstance, labels;
-  var mock_spinner_utility, mock_state_payload;
-  var first = true;
+  var mock_matching_service, mock_inventory_service, controller;
+  var matching_detail_controller_scope;
+  var mock_spinner_utility;
 
 
   // make the seed app available for each test
   // 'config.seed' is created in TestFilters.html
   beforeEach(function () {
     module('BE.seed');
+    inject(function ($controller, $rootScope, $uibModal, urls, $q, matching_service, inventory_service, spinner_utility) {
+      controller = $controller;
+      matching_detail_controller_scope = $rootScope.$new();
+      matching_detail_controller_scope.inventory_type = 'properties';
+
+      mock_matching_service = matching_service;
+      mock_inventory_service = inventory_service;
+      spyOn(mock_matching_service, 'match')
+        .andCallFake(function () {
+          return $q.resolve({
+            status: 'success',
+            child_id: 3
+          });
+        });
+      spyOn(mock_matching_service, 'unmatch')
+        .andCallFake(function () {
+          return $q.resolve({
+            status: 'success',
+            child_id: 3
+          });
+        });
+      spyOn(mock_matching_service, 'available_matches')
+        .andCallFake(function () {
+          return $q.resolve({
+            status: 'success',
+            states: [{
+              extra_data: {},
+              id: 3489754,
+              lot_number: '239847190487'
+            }]
+          });
+        });
+      spyOn(mock_inventory_service, 'search_matching_inventory')
+        .andCallFake(function () {
+          if (!matching_detail_controller_scope.state.matched) {
+            return $q.resolve({
+              status: 'success',
+              // number_properties_returned: bldgs.length,
+              // number_properties_matching_search: bldgs.length,
+              // properties: bldgs,
+              state: {
+                coparent: {
+                  extra_data: {},
+                  lot_number: '11160509',
+                  id: 76386
+                },
+                id: 76385,
+                lot_number: '1552813',
+                matched: true
+              }
+            });
+          } else {
+            return $q.resolve({
+              status: 'success',
+              // number_properties_returned: bldgs.length,
+              // number_properties_matching_search: bldgs.length,
+              // properties: bldgs,
+              state: {
+                id: 76385,
+                lot_number: '1552813',
+                matched: false
+              }
+            });
+          }
+
+        });
+
+      mock_spinner_utility = spinner_utility;
+
+      spyOn(mock_spinner_utility, 'show')
+        .andCallFake(function () {
+          //do nothing
+        });
+      spyOn(mock_spinner_utility, 'hide')
+        .andCallFake(function () {
+          //do nothing
+        });
+    });
   });
-
-  // inject AngularJS dependencies for the controller
-  beforeEach(inject(function ($controller, $rootScope, $uibModal, urls, $q, matching_service, inventory_service, spinner_utility) {
-    controller = $controller;
-    scope = $rootScope;
-    matching_detail_controller_scope = $rootScope.$new();
-    matching_detail_controller_scope.inventory_type = 'properties';
-
-    mock_matching_services = matching_service;
-    mock_inventory_services = inventory_service;
-    spyOn(mock_matching_services, 'match')
-      .andCallFake(function () {
-        return $q.when({
-          status: 'success',
-          child_id: 3
-        });
-      });
-    spyOn(mock_matching_services, 'unmatch')
-      .andCallFake(function () {
-        return $q.when({
-          status: 'success',
-          child_id: 3
-        });
-      });
-    spyOn(mock_matching_services, 'available_matches')
-      .andCallFake(function (importfile_id, inventory_type, state_id) {
-        return $q.when({
-          status: 'success',
-          states: [{
-            extra_data: {},
-            id: 3489754,
-            lot_number: '239847190487'
-          }]
-        });
-      });
-    spyOn(mock_inventory_services, 'search_matching_inventory')
-      .andCallFake(function (file_id, options) {
-        var bldgs;
-        if (!matching_detail_controller_scope.state.matched) {
-          return $q.when({
-            status: 'success',
-            // number_properties_returned: bldgs.length,
-            // number_properties_matching_search: bldgs.length,
-            // properties: bldgs,
-            state: {
-              coparent: {
-                extra_data: {},
-                lot_number: '11160509',
-                id: 76386
-              },
-              id: 76385,
-              lot_number: '1552813',
-              matched: true
-            }
-          });
-          first = false;
-        } else {
-          return $q.when({
-            status: 'success',
-            // number_properties_returned: bldgs.length,
-            // number_properties_matching_search: bldgs.length,
-            // properties: bldgs,
-            state: {
-              id: 76385,
-              lot_number: '1552813',
-              matched: false
-            }
-          });
-        }
-
-      });
-
-    mock_spinner_utility = spinner_utility;
-
-    spyOn(mock_spinner_utility, 'show')
-      .andCallFake(function () {
-        //do nothing
-      });
-    spyOn(mock_spinner_utility, 'hide')
-      .andCallFake(function () {
-        //do nothing
-      });
-  }));
 
   // this is outside the beforeEach so it can be configured by each unit test
   function create_dataset_detail_controller () {
@@ -134,7 +128,7 @@ describe('Controller: matching_detail_controller', function () {
         id: 'fake'
       }]
     };
-    matching_detail_controller = controller('matching_detail_controller', {
+    controller('matching_detail_controller', {
       $scope: matching_detail_controller_scope,
       inventory_payload: inventory_payload,
       $stateParams: {
@@ -199,8 +193,8 @@ describe('Controller: matching_detail_controller', function () {
     matching_detail_controller_scope.$digest();
 
     // assertions
-    expect(mock_matching_services.match).toHaveBeenCalled();
-    expect(mock_inventory_services.search_matching_inventory).toHaveBeenCalledWith(matching_detail_controller_scope.importfile_id,
+    expect(mock_matching_service.match).toHaveBeenCalled();
+    expect(mock_inventory_service.search_matching_inventory).toHaveBeenCalledWith(matching_detail_controller_scope.importfile_id,
       {get_coparents: true, inventory_type: 'properties', state_id: 345});
     expect(matching_detail_controller_scope.state).toEqual({
       coparent: {extra_data: {}, lot_number: '11160509', id: 76386},
@@ -218,8 +212,8 @@ describe('Controller: matching_detail_controller', function () {
     matching_detail_controller_scope.$digest();
 
     // assertions
-    expect(mock_matching_services.unmatch).toHaveBeenCalled();
-    expect(mock_inventory_services.search_matching_inventory).toHaveBeenCalledWith(matching_detail_controller_scope.importfile_id,
+    expect(mock_matching_service.unmatch).toHaveBeenCalled();
+    expect(mock_inventory_service.search_matching_inventory).toHaveBeenCalledWith(matching_detail_controller_scope.importfile_id,
       {get_coparents: true, inventory_type: 'properties', state_id: 345});
     expect(matching_detail_controller_scope.state).toEqual({id: 76385, lot_number: '1552813', matched: false});
     expect(matching_detail_controller_scope.available_matches).toEqual([{
@@ -232,16 +226,36 @@ describe('Controller: matching_detail_controller', function () {
   it('should exercise the inventory_service', function () {
     // arrange
     create_dataset_detail_controller();
-    expect( function(){ mock_inventory_services.get_property(null, null); } ).toThrow(new Error("Invalid Parameter"));
-    expect( function(){ mock_inventory_services.get_property(0, null); } ).toThrow(new Error("Invalid Parameter"));
-    expect( function(){ mock_inventory_services.update_property(null, null, null); } ).toThrow(new Error("Invalid Parameter"));
-    expect( function(){ mock_inventory_services.update_property(0, null, null); } ).toThrow(new Error("Invalid Parameter"));
-    expect( function(){ mock_inventory_services.update_property(0, 0, null); } ).toThrow(new Error("Invalid Parameter"));
-    expect( function(){ mock_inventory_services.get_taxlot(null, null); } ).toThrow(new Error("Invalid Parameter"));
-    expect( function(){ mock_inventory_services.get_taxlot(0, null); } ).toThrow(new Error("Invalid Parameter"));
-    expect( function(){ mock_inventory_services.update_taxlot(null, null, null); } ).toThrow(new Error("Invalid Parameter"));
-    expect( function(){ mock_inventory_services.update_taxlot(0, null, null); } ).toThrow(new Error("Invalid Parameter"));
-    expect( function(){ mock_inventory_services.update_taxlot(0, 0, null); } ).toThrow(new Error("Invalid Parameter"));
+    expect(function () {
+      mock_inventory_service.get_property(null, null);
+    }).toThrow(new Error('Invalid Parameter'));
+    expect(function () {
+      mock_inventory_service.get_property(0, null);
+    }).toThrow(new Error('Invalid Parameter'));
+    expect(function () {
+      mock_inventory_service.update_property(null, null, null);
+    }).toThrow(new Error('Invalid Parameter'));
+    expect(function () {
+      mock_inventory_service.update_property(0, null, null);
+    }).toThrow(new Error('Invalid Parameter'));
+    expect(function () {
+      mock_inventory_service.update_property(0, 0, null);
+    }).toThrow(new Error('Invalid Parameter'));
+    expect(function () {
+      mock_inventory_service.get_taxlot(null, null);
+    }).toThrow(new Error('Invalid Parameter'));
+    expect(function () {
+      mock_inventory_service.get_taxlot(0, null);
+    }).toThrow(new Error('Invalid Parameter'));
+    expect(function () {
+      mock_inventory_service.update_taxlot(null, null, null);
+    }).toThrow(new Error('Invalid Parameter'));
+    expect(function () {
+      mock_inventory_service.update_taxlot(0, null, null);
+    }).toThrow(new Error('Invalid Parameter'));
+    expect(function () {
+      mock_inventory_service.update_taxlot(0, 0, null);
+    }).toThrow(new Error('Invalid Parameter'));
   });
 
 });
