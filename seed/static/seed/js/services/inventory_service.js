@@ -37,7 +37,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         }
 
         return $http.post('/api/v2/properties/filter/', {
-          // Ensure that the required meta fields are included
+          // Ensure that the required meta fields are included.
           columns: _.uniq(columns.concat(['property_state_id', 'taxlot_state_id', 'property_view_id', 'taxlot_view_id']))
         }, {
           params: params
@@ -504,13 +504,13 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           _.forEach(searchTerms, function (search) {
             var filterData = search.match(dateRegex);
             if (filterData) {
-              var operator, value;
+              var operator, value, v, ymd;
               if (!_.isUndefined(filterData[2])) {
                 // Equality condition
                 operator = filterData[1];
                 value = filterData[2];
-                var v = value.match(/^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/);
-                var ymd = {
+                v = value.match(/^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/);
+                ymd = {
                   y: _.parseInt(v[1]),
                   m: _.parseInt(v[2]),
                   d: _.parseInt(v[3])
@@ -543,29 +543,27 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
                     return match;
                   case '<=':
                     value = filterData[4];
-                    var v = value.match(/^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/);
-                    var ymd = {
+                    v = value.match(/^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/);
+                    ymd = {
                       y: _.parseInt(v[1]),
                       m: _.parseInt(v[2]),
                       d: _.parseInt(v[3])
                     };
 
-                    // Add a day, subtract a millisecond
+
                     if (filterData[4].length === 10) {
+                      // Add a day, subtract a millisecond
                       value = Date.parse(filterData[4] + 'T00:00:00') + 86399999;
-                    }
-                    // Add a month, subtract a millisecond
-                    else if (filterData[4].length === 7) {
-                      var d;
+                    } else if (filterData[4].length === 7) {
+                      // Add a month, subtract a millisecond
                       if (ymd.m === 12) {
                         d = (ymd.y + 1) + '-01';
                       } else {
                         d = ymd.y + '-' + _.padStart(ymd.m + 1, 2, '0');
                       }
                       value = Date.parse(d + 'T00:00:00') - 1;
-                    }
-                    // Add a year, subtract a millisecond
-                    else if (filterData[4].length === 4) {
+                    } else if (filterData[4].length === 4) {
+                      // Add a year, subtract a millisecond
                       value = Date.parse((ymd.y + 1) + 'T00:00:00') - 1;
                     }
 
@@ -573,29 +571,26 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
                     return match;
                   case '>':
                     value = filterData[4];
-                    var v = value.match(/^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/);
-                    var ymd = {
+                    v = value.match(/^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/);
+                    ymd = {
                       y: _.parseInt(v[1]),
                       m: _.parseInt(v[2]),
                       d: _.parseInt(v[3])
                     };
 
-                    // Add a day, subtract a millisecond
                     if (filterData[4].length === 10) {
+                      // Add a day, subtract a millisecond
                       value = Date.parse(filterData[4] + 'T00:00:00') + 86399999;
-                    }
-                    // Add a month, subtract a millisecond
-                    else if (filterData[4].length === 7) {
-                      var d;
+                    } else if (filterData[4].length === 7) {
+                      // Add a month, subtract a millisecond
                       if (ymd.m === 12) {
                         d = (ymd.y + 1) + '-01';
                       } else {
                         d = ymd.y + '-' + _.padStart(ymd.m + 1, 2, '0');
                       }
                       value = Date.parse(d + 'T00:00:00') - 1;
-                    }
-                    // Add a year, subtract a millisecond
-                    else if (filterData[4].length === 4) {
+                    } else if (filterData[4].length === 4) {
+                      // Add a year, subtract a millisecond
                       value = Date.parse((ymd.y + 1) + 'T00:00:00') - 1;
                     }
 
@@ -627,8 +622,9 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
     inventory_service.loadSettings = function (key, columns) {
       key += '.' + user_service.get_organization().id;
+      columns = angular.copy(columns);
 
-      var isDetailSetting = key.match(/^grid\.(properties|taxlots)\.detail\.\d+$/);
+      var isDetailSetting = key.match(/\.(properties|taxlots)\.detail\.\d+$/);
 
       // Hide extra data columns by default
       _.forEach(columns, function (col) {
@@ -637,7 +633,6 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
       var localColumns = localStorage.getItem(key);
       if (!_.isNull(localColumns)) {
-        var existingColumnNames = _.map(columns, 'name');
         localColumns = JSON.parse(localColumns);
 
         // Remove deprecated columns missing 'related' field
@@ -650,7 +645,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
         // Remove nonexistent columns
         _.remove(localColumns, function (col) {
-          return !_.includes(existingColumnNames, col.name);
+          return !_.find(columns, {name: col.name, related: col.related});
         });
         // Use saved column settings with original data as defaults
         localColumns = _.map(localColumns, function (col) {
@@ -759,7 +754,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
     inventory_service.get_columns = function (all_fields) {
       all_fields = all_fields || '';
-      return $http.get('/app/get_columns/', {
+      return $http.get('/api/v1/get_columns/', {
         params: {
           all_fields: all_fields,
           organization_id: user_service.get_organization().id

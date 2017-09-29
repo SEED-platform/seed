@@ -134,6 +134,10 @@ class PropertyMinimalSerializer(serializers.ModelSerializer):
 class PropertyStateSerializer(serializers.ModelSerializer):
     extra_data = serializers.JSONField(required=False)
 
+    # to support the old state serializer method with the PROPERTY_STATE_FIELDS variables
+    import_file_id = serializers.IntegerField(allow_null=True, read_only=True)
+    organization_id = serializers.IntegerField()
+
     class Meta:
         model = PropertyState
         fields = '__all__'
@@ -145,16 +149,13 @@ class PropertyStateSerializer(serializers.ModelSerializer):
         """Overwritten to handle time conversion"""
         result = super(PropertyStateSerializer, self).to_representation(data)
         if data.generation_date:
-            result['generation_date'] = make_naive(data.generation_date).strftime(
-                '%Y-%m-%dT%H:%M:%S')
+            result['generation_date'] = make_naive(data.generation_date).isoformat()
 
         if data.recent_sale_date:
-            result['recent_sale_date'] = make_naive(data.recent_sale_date).strftime(
-                '%Y-%m-%dT%H:%M:%S')
+            result['recent_sale_date'] = make_naive(data.recent_sale_date).isoformat()
 
         if data.release_date:
-            result['release_date'] = make_naive(data.release_date).strftime(
-                '%Y-%m-%dT%H:%M:%S')
+            result['release_date'] = make_naive(data.release_date).isoformat()
 
         return result
 

@@ -16,6 +16,7 @@ from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
 
 from seed.landing.models import SEEDUser as User
+from seed.utils.string import titlecase
 from seed.lib.mappings.mapping_data import MappingData
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
 from seed.models.models import (
@@ -126,6 +127,7 @@ class Column(models.Model):
     enum = models.ForeignKey(Enum, blank=True, null=True)
     is_extra_data = models.BooleanField(default=False)
     import_file = models.ForeignKey('data_importer.ImportFile', blank=True, null=True)
+    units_pint = models.CharField(max_length=64, blank=True, null=True)
 
     # Do not enable this until running through the database and merging the columns down.
     # BUT first, make sure to add an import file ID into the column class.
@@ -137,7 +139,7 @@ class Column(models.Model):
         return u'{} - {}'.format(self.pk, self.column_name)
 
     @staticmethod
-    def create_mappings_from_file(filename, organization, user):
+    def create_mappings_from_file(filename, organization, user, import_file_id=None):
         """
         Load the mappings in from a file in a very specific file format. The columns in the file
         must be:
@@ -152,6 +154,8 @@ class Column(models.Model):
         :param filename: string, absolute path and name of file to load
         :param organization: id, organization id
         :param user: id, user id
+        :param import_file_id: Integer, If passed, will cache the column mappings data into
+                               the import_file_id object.
 
         :return: ColumnMapping, True
         """
@@ -175,13 +179,21 @@ class Column(models.Model):
         if len(mappings) == 0:
             raise Exception("No mappings in file: {}".format(filename))
         else:
-            return Column.create_mappings(mappings, organization, user)
+            return Column.create_mappings(mappings, organization, user, import_file_id)
 
     @staticmethod
-    def create_mappings(mappings, organization, user):
+    def create_mappings(mappings, organization, user, import_file_id=None):
         """
         Create the mappings for an organization and a user based on a simple
         array of array object.
+
+        :param mappings: dict, dictionary containing mapping information
+        :param organization: inst, organization object
+        :param user: inst, User object
+        :param import_file_id: integer, If passed, will cache the column mappings data into the
+                               import_file_id object.
+
+        :return Boolean, True is data are saved in the ColumnMapping table in the database
 
         .. note:
 
@@ -189,8 +201,7 @@ class Column(models.Model):
             will no longer magically appear in the extra_data field if the user did not specify how
             to map it.
 
-        Args:
-            mappings: dictionary containing mapping information
+        .. example:
 
                 mappings: [
                     {
@@ -204,14 +215,10 @@ class Column(models.Model):
                         'to_table_name': 'property',
                     }
                 ]
-
-            organization: Organization object
-            user: User object
-
-        Returns:
-            True (data are saved in the ColumnMapping table in the database)
-
         """
+
+        # initialize a cache to store the mappings
+        cache_column_mapping = []
 
         # Take the existing object and return the same object with the db column objects added to
         # the dictionary (to_column_object and from_column_object)
@@ -250,8 +257,24 @@ class Column(models.Model):
 
                 column_mapping.user = user
                 column_mapping.save()
+
+                cache_column_mapping.append(
+                    {
+                        'from_field': mapping['from_field'],
+                        'from_units': mapping.get('from_units'),
+                        'to_field': mapping['to_field'],
+                        'to_table_name': mapping['to_table_name'],
+                    }
+                )
             else:
                 raise TypeError("Mapping object needs to be of type dict")
+
+        # save off the cached mappings into the file id that was passed
+        if import_file_id:
+            from seed.models import ImportFile
+            import_file = ImportFile.objects.get(id=import_file_id)
+            import_file.save_cached_mapped_columns(cache_column_mapping)
+            import_file.save()
 
         return True
 
@@ -267,6 +290,7 @@ class Column(models.Model):
             test_map = [
                     {
                         'from_field': 'eui',
+                        'from_units': 'kBtu/ft**2/year', # optional
                         'to_field': 'site_eui',
                         'to_table_name': 'PropertyState',
                     },
@@ -364,6 +388,7 @@ class Column(models.Model):
                     organization=organization,
                     table_name__in=[None, ''],
                     column_name=field['from_field'],
+                    units_pint=field.get('from_units'),  # might be None
                     is_extra_data=False  # data from header rows in the files are NEVER extra data
                 )
             except Column.MultipleObjectsReturned:
@@ -375,6 +400,7 @@ class Column(models.Model):
                 from_org_col = Column.objects.filter(organization=organization,
                                                      table_name__in=[None, ''],
                                                      column_name=field['from_field'],
+                                                     units_pint=field.get('from_units'),  # might be None
                                                      is_extra_data=is_extra_data).first()
                 _log.debug("Grabbing the first from_column")
 
@@ -627,12 +653,11 @@ class Column(models.Model):
             # TODO: need to check if the column name is already in the list and if it is then
             # overwrite the data
 
-            display_name = edc.column_name.title().replace('_', ' ')
             columns.append(
                 {
                     'name': name,
                     'table': edc.table_name,
-                    'displayName': display_name,
+                    'displayName': titlecase(edc.column_name),
                     # 'dataType': 'string',  # TODO: how to check dataTypes on extra_data!
                     'related': edc.table_name != INVENTORY_MAP[inventory_type.lower()],
                     'extraData': True

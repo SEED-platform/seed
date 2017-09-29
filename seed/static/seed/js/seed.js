@@ -58,7 +58,9 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.label_admin',
   'BE.seed.controller.mapping',
   'BE.seed.controller.matching_list',
+  'BE.seed.controller.matching_settings',
   'BE.seed.controller.matching_detail',
+  'BE.seed.controller.matching_detail_settings',
   'BE.seed.controller.members',
   'BE.seed.controller.menu',
   'BE.seed.controller.new_member_modal',
@@ -66,6 +68,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.organization_settings',
   'BE.seed.controller.organization_sharing',
   'BE.seed.controller.pairing',
+  'BE.seed.controller.pairing_settings',
   'BE.seed.controller.profile',
   'BE.seed.controller.project',
   'BE.seed.controller.security',
@@ -89,6 +92,7 @@ angular.module('BE.seed.directives', [
   'sdEnter',
   'sdLabel',
   'sdResizable',
+  'sdScrollSync',
   'sdUploader'
 ]);
 angular.module('BE.seed.services', [
@@ -97,6 +101,7 @@ angular.module('BE.seed.services', [
   'BE.seed.service.column_mappings',
   'BE.seed.service.cycle',
   'BE.seed.service.dataset',
+  'BE.seed.service.flippers',
   'BE.seed.service.httpParamSerializerSeed',
   'BE.seed.service.inventory',
   'BE.seed.service.inventory_reports',
@@ -153,6 +158,17 @@ SEED_app.run([
 
     // Use lodash in views
     $rootScope._ = window._;
+  }
+]);
+
+// /**
+//  * Initialize release flippers
+//  */
+SEED_app.run([
+  'flippers',
+  function (flippers) {
+    var make = _.partial(flippers.make_flipper, 'ryan@ryanmccuaig.net', '2018-01-01T00:00:00Z');
+    make('release:use_pint', 'boolean', false);
   }
 ]);
 
@@ -237,8 +253,16 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
                 return $q.reject(data.message);
               });
           }],
+          organizations_payload: ['auth_payload', 'organization_service', function (auth_payload, organization_service) {
+            // Require auth_payload to successfully complete before attempting
+            return organization_service.get_organizations();
+          }],
           user_profile_payload: ['user_service', function (user_service) {
             return user_service.get_user_profile();
+          }],
+          users_payload: ['auth_payload', 'user_service', function (auth_payload, user_service) {
+            // Require auth_payload to successfully complete before attempting
+            return user_service.get_users();
           }]
         }
       })
@@ -573,6 +597,78 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         }
       })
       .state({
+        name: 'matching_list_settings',
+        url: '/data/matching/{importfile_id:int}/{inventory_type:properties|taxlots}/settings',
+        templateUrl: static_url + 'seed/partials/matching_settings.html',
+        controller: 'matching_settings_controller',
+        resolve: {
+          import_file_payload: ['dataset_service', '$stateParams', function (dataset_service, $stateParams) {
+            var importfile_id = $stateParams.importfile_id;
+            return dataset_service.get_import_file(importfile_id);
+          }],
+          columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+            if ($stateParams.inventory_type === 'properties') {
+              return inventory_service.get_property_columns().then(function (columns) {
+                _.remove(columns, function (col) {
+                  return col.related === true;
+                });
+                return _.map(columns, function (col) {
+                  return _.omit(col, ['pinnedLeft', 'related']);
+                });
+              });
+            } else if ($stateParams.inventory_type === 'taxlots') {
+              return inventory_service.get_taxlot_columns().then(function (columns) {
+                _.remove(columns, function (col) {
+                  return col.related === true;
+                });
+                return _.map(columns, function (col) {
+                  return _.omit(col, ['pinnedLeft', 'related']);
+                });
+              });
+            }
+          }]
+        }
+      })
+      .state({
+        name: 'matching_detail_settings',
+        url: '/data/matching/{importfile_id:int}/{inventory_type:properties|taxlots}/{state_id:int}/settings',
+        templateUrl: static_url + 'seed/partials/matching_detail_settings.html',
+        controller: 'matching_detail_settings_controller',
+        resolve: {
+          $uibModalInstance: function () {
+            return {
+              close: function () {
+              }
+            };
+          },
+          import_file_payload: ['dataset_service', '$stateParams', function (dataset_service, $stateParams) {
+            var importfile_id = $stateParams.importfile_id;
+            return dataset_service.get_import_file(importfile_id);
+          }],
+          columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+            if ($stateParams.inventory_type === 'properties') {
+              return inventory_service.get_property_columns().then(function (columns) {
+                _.remove(columns, function (col) {
+                  return col.related === true;
+                });
+                return _.map(columns, function (col) {
+                  return _.omit(col, ['pinnedLeft', 'related']);
+                });
+              });
+            } else if ($stateParams.inventory_type === 'taxlots') {
+              return inventory_service.get_taxlot_columns().then(function (columns) {
+                _.remove(columns, function (col) {
+                  return col.related === true;
+                });
+                return _.map(columns, function (col) {
+                  return _.omit(col, ['pinnedLeft', 'related']);
+                });
+              });
+            }
+          }]
+        }
+      })
+      .state({
         name: 'pairing',
         url: '/data/pairing/{importfile_id:int}/{inventory_type:properties|taxlots}',
         templateUrl: static_url + 'seed/partials/pairing.html',
@@ -582,55 +678,62 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             var importfile_id = $stateParams.importfile_id;
             return dataset_service.get_import_file(importfile_id);
           }],
-          propertyInventory: ['inventory_service', function (inventory_service) {
-            var myColumns = [{
-              displayName: 'Address Line 1 (Property)',
-              name: 'address_line_1',
-              related: false
-            }, {
-              displayName: 'PM Property ID',
-              name: 'pm_property_id',
-              type: 'number',
-              related: false
-            }, {
-              displayName: 'Jurisdiction Tax Lot ID',
-              name: 'jurisdiction_tax_lot_id',
-              related: false
-            }, {
-              displayName: 'Custom ID',
-              name: 'custom_id_1',
-              related: false
-            }];
-            var visibleColumns = _.map(myColumns, 'name');
-            // console.log('before: ', myColumns);
-            return inventory_service.get_properties(1, undefined, undefined, visibleColumns).then(function (inv) {
-              // return inventory_service.get_properties(1).then(function (inv) {
-              return _.extend({columns: myColumns}, inv);
+          allPropertyColumns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+            return inventory_service.get_property_columns().then(function (columns) {
+              columns = _.reject(columns, 'related');
+              return _.map(columns, function (col) {
+                return _.omit(col, ['pinnedLeft', 'related']);
+              });
             });
           }],
-          taxlotInventory: ['inventory_service', function (inventory_service) {
-            var myColumns = [{
-              displayName: 'Address Line 1 (Tax Lot)',
-              name: 'address_line_1',
-              related: false
-            }, /*{
-             'displayName': 'Primary Tax Lot ID',
-             'name': 'primary_tax_lot_id',
-             'type': 'number',
-             'related': false
-            },*/ {
-              displayName: 'Jurisdiction Tax Lot ID',
-              name: 'jurisdiction_tax_lot_id',
-              related: false
-            }];
-            var visibleColumns = _.map(myColumns, 'name');
-            // console.log('before: ', myColumns);
-            return inventory_service.get_taxlots(1, undefined, undefined, visibleColumns).then(function (inv) {
-              return _.extend({columns: myColumns}, inv);
+          allTaxlotColumns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+            return inventory_service.get_taxlot_columns().then(function (columns) {
+              columns = _.reject(columns, 'related');
+              return _.map(columns, function (col) {
+                return _.omit(col, ['pinnedLeft', 'related']);
+              });
             });
+          }],
+          propertyInventory: ['inventory_service', 'pairing_service', 'allPropertyColumns', function (inventory_service, pairing_service, allPropertyColumns) {
+            var propertyColumns = pairing_service.loadPropertyColumns('grid.pairing', allPropertyColumns);
+            propertyColumns = _.filter(propertyColumns, 'visible');
+            return inventory_service.get_properties(1, undefined, undefined, _.map(propertyColumns, 'name'));
+          }],
+          taxlotInventory: ['inventory_service', 'pairing_service', 'allTaxlotColumns', function (inventory_service, pairing_service, allTaxlotColumns) {
+            var taxlotColumns = pairing_service.loadTaxlotColumns('grid.pairing', allTaxlotColumns);
+            taxlotColumns = _.filter(taxlotColumns, 'visible');
+            return inventory_service.get_taxlots(1, undefined, undefined, _.map(taxlotColumns, 'name'));
           }],
           cycles: ['cycle_service', function (cycle_service) {
             return cycle_service.get_cycles();
+          }]
+        }
+      })
+      .state({
+        name: 'pairing_settings',
+        url: '/data/pairing/{importfile_id:int}/{inventory_type:properties|taxlots}/settings',
+        templateUrl: static_url + 'seed/partials/pairing_settings.html',
+        controller: 'pairing_settings_controller',
+        resolve: {
+          import_file_payload: ['dataset_service', '$stateParams', function (dataset_service, $stateParams) {
+            var importfile_id = $stateParams.importfile_id;
+            return dataset_service.get_import_file(importfile_id);
+          }],
+          propertyColumns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+            return inventory_service.get_property_columns().then(function (columns) {
+              columns = _.reject(columns, 'related');
+              return _.map(columns, function (col) {
+                return _.omit(col, ['pinnedLeft', 'related']);
+              });
+            });
+          }],
+          taxlotColumns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+            return inventory_service.get_taxlot_columns().then(function (columns) {
+              columns = _.reject(columns, 'related');
+              return _.map(columns, function (col) {
+                return _.omit(col, ['pinnedLeft', 'related']);
+              });
+            });
           }]
         }
       })
@@ -803,9 +906,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           columns: ['$stateParams', 'inventory_service', 'naturalSort', function ($stateParams, inventory_service, naturalSort) {
             if ($stateParams.inventory_type === 'properties') {
               return inventory_service.get_property_columns().then(function (columns) {
-                _.remove(columns, function (col) {
-                  return col.related === true;
-                });
+                columns = _.reject(columns, 'related');
                 columns = _.map(columns, function (col) {
                   return _.omit(col, ['pinnedLeft', 'related']);
                 });
@@ -816,9 +917,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
               });
             } else if ($stateParams.inventory_type === 'taxlots') {
               return inventory_service.get_taxlot_columns().then(function (columns) {
-                _.remove(columns, function (col) {
-                  return col.related === true;
-                });
+                columns = _.reject(columns, 'related');
                 columns = _.map(columns, function (col) {
                   return _.omit(col, ['pinnedLeft', 'related']);
                 });
@@ -1042,8 +1141,8 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             var inventory_id = $stateParams.inventory_id;
             var cycle_id = $stateParams.cycle_id;
             var promise;
-            if ($stateParams.inventory_type == 'properties') promise = inventory_service.get_property(inventory_id, cycle_id);
-            else if ($stateParams.inventory_type == 'taxlots') promise = inventory_service.get_taxlot(inventory_id, cycle_id);
+            if ($stateParams.inventory_type === 'properties') promise = inventory_service.get_property(inventory_id, cycle_id);
+            else if ($stateParams.inventory_type === 'taxlots') promise = inventory_service.get_taxlot(inventory_id, cycle_id);
             promise.catch(function (err) {
               if (err.message.match(/^(?:property|taxlot) view with id \d+ does not exist$/)) {
                 // Inventory item not found for current organization, redirecting
@@ -1053,20 +1152,16 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             return promise;
           }],
           columns: ['inventory_service', '$stateParams', function (inventory_service, $stateParams) {
-            if ($stateParams.inventory_type == 'properties') {
+            if ($stateParams.inventory_type === 'properties') {
               return inventory_service.get_property_columns().then(function (columns) {
-                _.remove(columns, function (col) {
-                  return col.related === true;
-                });
+                columns = _.reject(columns, 'related');
                 return _.map(columns, function (col) {
                   return _.omit(col, ['pinnedLeft', 'related']);
                 });
               });
-            } else if ($stateParams.inventory_type == 'taxlots') {
+            } else if ($stateParams.inventory_type === 'taxlots') {
               return inventory_service.get_taxlot_columns().then(function (columns) {
-                _.remove(columns, function (col) {
-                  return col.related === true;
-                });
+                columns = _.reject(columns, 'related');
                 return _.map(columns, function (col) {
                   return _.omit(col, ['pinnedLeft', 'related']);
                 });

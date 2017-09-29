@@ -44,7 +44,9 @@ angular.module('BE.seed.controller.inventory_list', [])
       $scope.number_per_page = 999999999;
       $scope.restoring = false;
 
-      $scope.labels = labels;
+      // Reduce labels to only records found in the current cycle
+      $scope.selected_labels = [];
+      updateApplicableLabels();
 
       var localStorageKey = 'grid.' + $scope.inventory_type;
       var localStorageLabelKey = 'grid.' + $scope.inventory_type + '.labels';
@@ -71,13 +73,29 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
+      function updateApplicableLabels () {
+        var inventoryIds = _.map($scope.data, 'id').sort();
+        $scope.labels = _.filter(labels, function (label) {
+          return _.some(label.is_applied, function (id) {
+            return _.includes(inventoryIds, id);
+          });
+        });
+        // Ensure that no previously-applied labels remain
+        var new_labels = _.filter($scope.selected_labels, function (label) {
+          return _.includes($scope.labels, label.id);
+        });
+        if ($scope.selected_labels.length !== new_labels.length) {
+          $scope.selected_labels = new_labels;
+        }
+      }
+
       var filterUsingLabels = function () {
         // Only submit the `id` of the label to the API.
         var ids;
         if ($scope.labelLogic === 'and') {
           ids = _.intersection.apply(null, _.map($scope.selected_labels, 'is_applied'));
         } else if (_.includes(['or', 'exclude'], $scope.labelLogic)) {
-          ids = _.uniq(_.flatten(_.map($scope.selected_labels, 'is_applied')));
+          ids = _.union.apply(null, _.map($scope.selected_labels, 'is_applied'));
         }
 
         inventory_service.saveSelectedLabels(localStorageLabelKey, _.map($scope.selected_labels, 'id'));
@@ -237,21 +255,24 @@ angular.module('BE.seed.controller.inventory_list', [])
           for (var j = 0; j < related.length; ++j) {
             // Rename nested keys
             var map = {};
-            if ($scope.inventory_type == 'properties') {
+            // list of fields that can be on both the PropertyState and TaxLotState
+            if ($scope.inventory_type === 'properties') {
               map = {
                 address_line_1: 'tax_address_line_1',
                 address_line_2: 'tax_address_line_2',
                 city: 'tax_city',
                 state: 'tax_state',
-                postal_code: 'tax_postal_code'
+                postal_code: 'tax_postal_code',
+                custom_id_1: 'tax_custom_id_1'
               };
-            } else if ($scope.inventory_type == 'taxlots') {
+            } else if ($scope.inventory_type === 'taxlots') {
               map = {
                 address_line_1: 'property_address_line_1',
                 address_line_2: 'property_address_line_2',
                 city: 'property_city',
                 state: 'property_state',
-                postal_code: 'property_postal_code'
+                postal_code: 'property_postal_code',
+                custom_id_1: 'property_custom_id_1'
               };
             }
             var updated = _.reduce(related[j], function (result, value, key) {
@@ -278,6 +299,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           _.merge(data[relatedIndex], aggregations);
         }
         $scope.data = data;
+        updateApplicableLabels();
         $scope.updateQueued = true;
       };
 
@@ -429,7 +451,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           result.pinnedLeft = col.pinnedLeft;
           return result;
         });
-        var oldSettings = inventory_service.loadSettings(localStorageKey, angular.copy(all_columns));
+        var oldSettings = inventory_service.loadSettings(localStorageKey, all_columns);
         oldSettings = _.map(oldSettings, function (col) {
           col.pinnedLeft = false;
           col.visible = false;

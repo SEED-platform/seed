@@ -10,7 +10,7 @@
     </div>
 </div>
 <div class="section_nav_container">
-    <div class="section_nav" ng-include="urls.static_url + 'seed/partials/profile_nav.html'"></div>
+    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/profile_nav.html'"></div>
 </div>
 <div class="section">
     <div class="section_header_container">
@@ -25,21 +25,21 @@
                     <form name="profile_form" role="form" ng-submit="submit_form(profile_form.$valid)" novalidate>
                         <div class="form-group" ng-class="{ 'has-error' : profile_form.first_name.$invalid && !profile_form.first_name.$pristine }">
                             <label class="control-label" for="first-name-text">First Name:</label>
-                            <div class="">
+                            <div>
                                 <input id="first-name-text" type="text" class="form-control" name="first_name" placeholder="Enter first name" ng-model="user.first_name" required>
                                  <p ng-show="profile_form.first_name.$invalid && !profile_form.first_name.$pristine" class="help-block">First name is required.</p>
                             </div>
                         </div>
                         <div class="form-group"  ng-class="{ 'has-error' : profile_form.last_name.$invalid && !profile_form.last_name.$pristine }">
                             <label class="control-label" for="last-name-text">Last Name:</label>
-                            <div class="">
+                            <div>
                                 <input id="last-name-text" type="text" class="form-control" name="last_name" placeholder="Enter last name" ng-model="user.last_name" required>
                                  <p ng-show="profile_form.last_name.$invalid && !profile_form.last_name.$pristine" class="help-block">Last name is required.</p>
                             </div>
                         </div>
                         <div class="form-group"  ng-class="{ 'has-error' : profile_form.email.$invalid && !profile_form.email.$pristine }">
                             <label class="control-label" for="email-text">Email Address:</label>
-                            <div class="">
+                            <div>
                                 <input id="email-text" type="email" class="form-control" name="email" placeholder="Enter Email Address" ng-model="user.email" required>
                                 <p ng-show="profile_form.email.$invalid && !profile_form.email.$pristine" class="help-block">Enter a valid email address.</p>
                             </div>

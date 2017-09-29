@@ -81,7 +81,7 @@ _log = logging.getLogger(__name__)
 @api_endpoint
 @ajax_request
 @login_required
-@api_view(['POST'])  # NL -- this is a POST because, well, no idea. Can we just remove S3, plz?
+@api_view(['POST'])
 def handle_s3_upload_complete(request):
     """
     Notify the system that an upload to S3 has been completed. This is
@@ -191,7 +191,7 @@ class LocalUploaderViewSet(viewsets.GenericViewSet):
         else:
             the_file = request.data['file']
         filename = the_file.name
-        path = settings.MEDIA_ROOT + "/uploads/" + filename
+        path = os.path.join(settings.MEDIA_ROOT, "uploads", filename)
 
         # Get a unique filename using the get_available_name method in FileSystemStorage
         s = FileSystemStorage()
@@ -267,8 +267,8 @@ def get_upload_details(request):
     if 'S3' in settings.DEFAULT_FILE_STORAGE:
         # S3 mode
         ret['upload_mode'] = 'S3'
-        ret['upload_complete'] = reverse('apiv2:s3_upload_complete')
-        ret['signature'] = reverse('apiv2:sign_policy_document')
+        ret['upload_complete'] = reverse('api:v2:s3_upload_complete')
+        ret['signature'] = reverse('api:v2:sign_policy_document')
         ret['aws_bucket_name'] = settings.AWS_BUCKET_NAME
         ret['aws_client_key'] = settings.AWS_UPLOAD_CLIENT_KEY
     else:
@@ -610,7 +610,8 @@ class ImportFileViewSet(viewsets.ViewSet):
                 if get_coparents:
                     for state in properties:
                         state['matched'] = False
-                        coparent = self.has_coparent(state['id'], 'properties', fields['PropertyState'])
+                        coparent = self.has_coparent(state['id'], 'properties',
+                                                     fields['PropertyState'])
                         if coparent:
                             state['matched'] = True
                             state['coparent'] = coparent
@@ -622,16 +623,13 @@ class ImportFileViewSet(viewsets.ViewSet):
                 # the property/taxlot serializer. Total hack right now.
                 for p in properties:
                     if p.get('recent_sale_date'):
-                        p['recent_sale_date'] = make_naive(p['recent_sale_date']).strftime(
-                            '%Y-%m-%dT%H:%M:%S')
+                        p['recent_sale_date'] = make_naive(p['recent_sale_date']).isoformat()
 
                     if p.get('release_date'):
-                        p['release_date'] = make_naive(p['release_date']).strftime(
-                            '%Y-%m-%dT%H:%M:%S')
+                        p['release_date'] = make_naive(p['release_date']).isoformat()
 
                     if p.get('generation_date'):
-                        p['generation_date'] = make_naive(p['generation_date']).strftime(
-                            '%Y-%m-%dT%H:%M:%S')
+                        p['generation_date'] = make_naive(p['generation_date']).isoformat()
 
                 result['properties'] = properties
 
@@ -1509,11 +1507,13 @@ class ImportFileViewSet(viewsets.ViewSet):
                 "mappings": [
                     {
                         'from_field': 'eui',  # raw field in import file
+                        'from_units': 'kBtu/ft**2/year', # pint-parseable units, optional
                         'to_field': 'energy_use_intensity',
                         'to_table_name': 'PropertyState',
                     },
                     {
                         'from_field': 'gfa',
+                        'from_units': 'ft**2', # pint-parseable units, optional
                         'to_field': 'gross_floor_area',
                         'to_table_name': 'PropertyState',
                     }
@@ -1528,15 +1528,9 @@ class ImportFileViewSet(viewsets.ViewSet):
         import_file = ImportFile.objects.get(pk=pk)
         organization = import_file.import_record.super_organization
         mappings = body.get('mappings', [])
-        status1 = Column.create_mappings(mappings, organization, request.user)
+        status = Column.create_mappings(mappings, organization, request.user, import_file.id)
 
-        # extract the to_table_name and to_field
-        column_mappings = [
-            {'from_field': m['from_field'],
-             'to_field': m['to_field'],
-             'to_table_name': m['to_table_name']} for m in mappings]
-        if status1:
-            import_file.save_cached_mapped_columns(column_mappings)
+        if status:
             return JsonResponse({'status': 'success'})
         else:
             return JsonResponse({'status': 'error'})
@@ -1737,7 +1731,8 @@ class ImportFileViewSet(viewsets.ViewSet):
             taxlots = [t for t in taxlots if t.id not in taxlots_to_remove]
 
             for state in taxlots:
-                audit_creation_id = TaxLotAuditLog.objects.only('id').exclude(import_filename=None).get(
+                audit_creation_id = TaxLotAuditLog.objects.only('id').exclude(
+                    import_filename=None).get(
                     state_id=state.id,
                     name='Import Creation'
                 )

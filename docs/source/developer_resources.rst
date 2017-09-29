@@ -66,7 +66,7 @@ renamed `{$` and `$}`.
 
 .. code-block:: JavaScript
 
-    window.BE.apps.seed = angular.module('BE.seed', ['ngRoute', "ngCookies"], function ($interpolateProvider) {
+    window.BE.apps.seed = angular.module('BE.seed', ['$interpolateProvider'], function ($interpolateProvider) {
             $interpolateProvider.startSymbol("{$");
             $interpolateProvider.endSymbol("$}");
         }

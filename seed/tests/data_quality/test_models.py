@@ -129,7 +129,7 @@ class RuleTests(TestCase):
 
         self.assertEqual(r.str_to_data_type(None), None)
         self.assertEqual(r.str_to_data_type(''), None)
-        dt = make_aware(datetime(2016, 0o7, 15, 12, 30), pytz.UTC)
+        dt = make_aware(datetime(2016, 7, 15, 12, 30), pytz.UTC)
         self.assertEqual(r.str_to_data_type(dt.strftime("%Y-%m-%d %H:%M")), dt)
         self.assertEqual(r.str_to_data_type('abcd'), None)
 
@@ -141,7 +141,7 @@ class RuleTests(TestCase):
 
         self.assertEqual(r.str_to_data_type(None), None)
         self.assertEqual(r.str_to_data_type(''), None)
-        dt = make_aware(datetime(2016, 0o7, 15, 12, 30), pytz.UTC)
+        dt = make_aware(datetime(2016, 7, 15, 12, 30), pytz.UTC)
         self.assertEqual(r.str_to_data_type(dt.strftime("%Y-%m-%d %H:%M")), dt.date())
         self.assertEqual(r.str_to_data_type('abcd'), None)
 

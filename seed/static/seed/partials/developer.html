@@ -3,14 +3,14 @@
         <div class="left page_action_container">
         </div>
         <div class="page_title">
-            <h1>{$ username $}</h1>
+            <h1>{$:: username $}</h1>
         </div>
         <div class="right page_action_container">
         </div>
     </div>
 </div>
 <div class="section_nav_container">
-    <div class="section_nav" ng-include="urls.static_url + 'seed/partials/profile_nav.html'"></div>
+    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/profile_nav.html'"></div>
 </div>
 <div class="section">
     <div class="section_header_container">
@@ -34,7 +34,7 @@
                             <tbody>
                                 <tr>
                                     <td><pre>{$ user.api_key $}</pre></td>
-                                    <td>{$ user.email $}</td>
+                                    <td>{$:: user.email $}</td>
                                 </tr>
                             </tbody>
                         </table>

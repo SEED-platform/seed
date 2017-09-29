@@ -78,7 +78,7 @@ class ProjectViewTests(TestCase):
             data.update(kwargs)
             data = json.dumps(data)
             url = "{}?organization_id={}".format(
-                reverse_lazy("apiv2:projects-list"), str(org_id)
+                reverse_lazy("api:v2:projects-list"), str(org_id)
             )
             x = self.client.post(
                 url,
@@ -208,7 +208,7 @@ class ProjectViewTests(TestCase):
         # standard case, should only see proj1, not other_proj
         self._set_role_level(ROLE_VIEWER)
         resp = self.client.get(
-            reverse_lazy('apiv2:projects-list'),
+            reverse_lazy('api:v2:projects-list'),
             {'organization_id': self.org.id},
             content_type='application/json',
         )
@@ -228,7 +228,7 @@ class ProjectViewTests(TestCase):
         # test for member
         self._set_role_level(ROLE_MEMBER)
         resp = self.client.get(
-            reverse_lazy("apiv2:projects-list"),
+            reverse_lazy("api:v2:projects-list"),
             {'organization_id': self.org.id},
             content_type='application/json',
         )
@@ -239,7 +239,7 @@ class ProjectViewTests(TestCase):
         # test for owner
         self._set_role_level(ROLE_OWNER)
         resp = self.client.get(
-            reverse_lazy("apiv2:projects-list"),
+            reverse_lazy("api:v2:projects-list"),
             {'organization_id': self.org.id},
             content_type='application/json',
         )
@@ -249,7 +249,7 @@ class ProjectViewTests(TestCase):
         )
         # test for an org the user does not belong
         resp = self.client.get(
-            reverse_lazy("apiv2:projects-list"),
+            reverse_lazy("api:v2:projects-list"),
             {'organization_id': other_org.id},
             content_type='application/json',
         )
@@ -274,7 +274,7 @@ class ProjectViewTests(TestCase):
         # standard case, should only see proj1, not other_proj
         self._set_role_level(ROLE_VIEWER)
         resp = self.client.get(
-            reverse_lazy('apiv2:projects-detail', args=[project.slug]),
+            reverse_lazy('api:v2:projects-detail', args=[project.slug]),
             {'organization_id': self.org.id},
             content_type='application/json',
         )
@@ -291,7 +291,7 @@ class ProjectViewTests(TestCase):
         # test when user sends org id that the user is in, but a project in
         # a different org
         resp = self.client.get(
-            reverse_lazy('apiv2:projects-detail', args=['otherproj']),
+            reverse_lazy('api:v2:projects-detail', args=['otherproj']),
             {'organization_id': self.org.id},
             content_type='application/json',
         )
@@ -304,7 +304,7 @@ class ProjectViewTests(TestCase):
         )
         # test for the case that a user does not belong to the org
         resp = self.client.get(
-            reverse_lazy('apiv2:projects-detail', args=['otherproj']),
+            reverse_lazy('api:v2:projects-detail', args=['otherproj']),
             {'organization_id': other_org.pk, 'project_slug': 'otherproj'},
             content_type='application/json',
         )
@@ -325,7 +325,7 @@ class ProjectViewTests(TestCase):
         # standard case
         self.assertEqual(Project.objects.all().count(), 1)
         url = "{}?organization_id={}".format(
-            reverse_lazy('apiv2:projects-detail', args=[project['slug']]),
+            reverse_lazy('api:v2:projects-detail', args=[project['slug']]),
             str(self.org.id)
         )
         resp = self.client.delete(url)
@@ -353,7 +353,7 @@ class ProjectViewTests(TestCase):
         project = self._create_project('proj2', other_org.pk, other_user)
         self._set_role_level(ROLE_MEMBER)
         url = "{}?organization_id={}".format(
-            reverse_lazy('apiv2:projects-detail', args=[project.slug]),
+            reverse_lazy('api:v2:projects-detail', args=[project.slug]),
             str(self.org.id)
         )
         resp = self.client.delete(url)
@@ -372,7 +372,7 @@ class ProjectViewTests(TestCase):
         )['project']
         self._set_role_level(ROLE_MEMBER)
         resp = self.client.get(
-            reverse_lazy('apiv2:projects-detail', args=[project['slug']]),
+            reverse_lazy('api:v2:projects-detail', args=[project['slug']]),
             {'organization_id': self.org.id},
             content_type='application/json',
         )
@@ -380,7 +380,7 @@ class ProjectViewTests(TestCase):
         # semantics, so use values returned by create
         project['name'] = 'proj22'
         url = "{}?organization_id={}".format(
-            reverse_lazy('apiv2:projects-detail', args=[project['slug']]),
+            reverse_lazy('api:v2:projects-detail', args=[project['slug']]),
             str(self.org.id)
         )
         resp = self.client.put(
@@ -409,7 +409,7 @@ class ProjectViewTests(TestCase):
         # test partial update
         project['name'] = 'proj33'
         url = "{}?organization_id={}".format(
-            reverse_lazy('apiv2:projects-detail', args=[project['slug']]),
+            reverse_lazy('api:v2:projects-detail', args=[project['slug']]),
             str(self.org.id)
         )
         resp = self.client.patch(
@@ -438,7 +438,7 @@ class ProjectViewTests(TestCase):
         # test that a view cannot update
         self._set_role_level(ROLE_VIEWER)
         url = "{}?organization_id={}".format(
-            reverse_lazy('apiv2:projects-detail', args=[project['slug']]),
+            reverse_lazy('api:v2:projects-detail', args=[project['slug']]),
             str(self.org.id)
         )
         resp = self.client.put(
@@ -476,7 +476,7 @@ class ProjectViewTests(TestCase):
         self._set_role_level(ROLE_MEMBER)
         url = "{}?organization_id={}&inventory_type=property".format(
             reverse_lazy(
-                'apiv2:projects-add-inventory', args=[project['slug']]
+                'api:v2:projects-add-inventory', args=[project['slug']]
             ),
             str(self.org.id)
         )
@@ -521,7 +521,7 @@ class ProjectViewTests(TestCase):
         self._set_role_level(ROLE_MEMBER)
         url = "{}?organization_id={}&inventory_type=property".format(
             reverse_lazy(
-                'apiv2:projects-add-inventory', args=[project['slug']]
+                'api:v2:projects-add-inventory', args=[project['slug']]
             ),
             str(self.org.id)
         )
@@ -538,7 +538,7 @@ class ProjectViewTests(TestCase):
         # test standard case
         url = "{}?organization_id={}&inventory_type=property".format(
             reverse_lazy(
-                'apiv2:projects-remove-inventory', args=[project['slug']]
+                'api:v2:projects-remove-inventory', args=[project['slug']]
             ),
             str(self.org.id)
         )
@@ -570,7 +570,7 @@ class ProjectViewTests(TestCase):
         self._set_role_level(ROLE_MEMBER)
         url = "{}?organization_id={}&inventory_type=property".format(
             reverse_lazy(
-                'apiv2:projects-add-inventory', args=[project['slug']]
+                'api:v2:projects-add-inventory', args=[project['slug']]
             ),
             str(self.org.id)
         )
@@ -587,7 +587,7 @@ class ProjectViewTests(TestCase):
         # test standard case
         url = "{}?organization_id={}&inventory_type=property".format(
             reverse_lazy(
-                'apiv2:projects-remove-inventory', args=[project['slug']]
+                'api:v2:projects-remove-inventory', args=[project['slug']]
             ),
             str(self.org.id)
         )
@@ -618,7 +618,7 @@ class ProjectViewTests(TestCase):
         self._set_role_level(ROLE_MEMBER)
         url = "{}?organization_id={}&inventory_type=property".format(
             reverse_lazy(
-                'apiv2:projects-add-inventory', args=[project['slug']]
+                'api:v2:projects-add-inventory', args=[project['slug']]
             ),
             str(self.org.id)
         )
@@ -633,7 +633,7 @@ class ProjectViewTests(TestCase):
         self._set_role_level(ROLE_VIEWER)
         url = "{}?organization_id={}&inventory_type=property".format(
             reverse_lazy(
-                'apiv2:projects-remove-inventory', args=[project['slug']]
+                'api:v2:projects-remove-inventory', args=[project['slug']]
             ),
             str(self.org.id)
         )
@@ -659,7 +659,7 @@ class ProjectViewTests(TestCase):
 
         # test standard case
         resp = self.client.get(
-            reverse_lazy("apiv2:projects-count") + '?organization_id=' + str(self.org.id),
+            reverse_lazy("api:v2:projects-count") + '?organization_id=' + str(self.org.id),
             content_type='application/json',
         )
         self.assertDictEqual(
@@ -672,7 +672,7 @@ class ProjectViewTests(TestCase):
         # test case where user is not in org
         other_org = Organization.objects.create(name='not my org')
         resp = self.client.get(
-            reverse_lazy("apiv2:projects-count") + '?organization_id=' + str(other_org.id),
+            reverse_lazy("api:v2:projects-count") + '?organization_id=' + str(other_org.id),
             content_type='application/json',
         )
         self.assertDictEqual(
@@ -705,7 +705,7 @@ class ProjectViewTests(TestCase):
 
         # test standard case
         resp = self.client.get(
-            reverse_lazy("apiv2:datasets-count") + '?organization_id=' + str(self.org.id),
+            reverse_lazy("api:v2:datasets-count") + '?organization_id=' + str(self.org.id),
             content_type='application/json',
         )
         self.assertDictEqual(
@@ -717,7 +717,7 @@ class ProjectViewTests(TestCase):
         )
         # test case where user is not in org
         resp = self.client.get(
-            reverse_lazy("apiv2:datasets-count") + '?organization_id=' + str(other_org.id),
+            reverse_lazy("api:v2:datasets-count") + '?organization_id=' + str(other_org.id),
             content_type='application/json',
         )
         self.assertDictEqual(
@@ -729,7 +729,7 @@ class ProjectViewTests(TestCase):
         )
         # test case where org does not exist
         resp = self.client.get(
-            reverse_lazy("apiv2:datasets-count") + '?organization_id=999',
+            reverse_lazy("api:v2:datasets-count") + '?organization_id=999',
             content_type='application/json',
         )
         self.assertDictEqual(
@@ -749,7 +749,7 @@ class ProjectViewTests(TestCase):
         self._set_role_level(ROLE_MEMBER)
         url = "{}?organization_id={}&inventory_type=property".format(
             reverse_lazy(
-                'apiv2:projects-add-inventory', args=[project['slug']]
+                'api:v2:projects-add-inventory', args=[project['slug']]
             ),
             str(self.org.id)
         )
@@ -767,7 +767,7 @@ class ProjectViewTests(TestCase):
 
         url = "{}?organization_id={}&inventory_type=property".format(
             reverse_lazy(
-                'apiv2:projects-copy', args=[project['slug']]
+                'api:v2:projects-copy', args=[project['slug']]
             ),
             str(self.org.id)
         )
@@ -806,7 +806,7 @@ class ProjectViewTests(TestCase):
         self._set_role_level(ROLE_MEMBER)
         url = "{}?organization_id={}&inventory_type=property".format(
             reverse_lazy(
-                'apiv2:projects-add-inventory', args=[project['slug']]
+                'api:v2:projects-add-inventory', args=[project['slug']]
             ),
             str(self.org.id)
         )
@@ -822,7 +822,7 @@ class ProjectViewTests(TestCase):
         )['project']
         url = "{}?organization_id={}&inventory_type=property".format(
             reverse_lazy(
-                'apiv2:projects-move', args=[project['slug']]
+                'api:v2:projects-move', args=[project['slug']]
             ),
             str(self.org.id)
         )

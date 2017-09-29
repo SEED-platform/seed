@@ -41,6 +41,8 @@ angular.module('BE.seed.controller.matching_list', [])
       $scope.import_file = import_file_payload.import_file;
       $scope.inventory_type = $stateParams.inventory_type;
 
+      var localStorageKey = 'grid.matching.' + $scope.inventory_type;
+
       var validCycles = _.uniq(_.map(import_file_payload.import_file.dataset.importfiles, 'cycle'));
       $scope.cycles = _.filter(cycles.cycles, function (cycle) {
         return _.includes(validCycles, cycle.id);
@@ -59,24 +61,33 @@ angular.module('BE.seed.controller.matching_list', [])
       $scope.selectedFile = $scope.import_file.dataset.importfiles[0];
 
       // Reduce columns to only the ones that are populated
-      $scope.reduced_columns = _.reject(columns, {extraData: true});
-      $scope.columns = [];
-      var existing_keys = _.pull(_.keys(_.first($scope.inventory)), 'id', 'matched', 'extra_data', 'coparent');
-      var existing_extra_keys = _.keys(_.get($scope.inventory, '[0].extra_data', null));
-      _.forEach(columns, function (col) {
-        if (!col.extraData) {
-          if (_.includes(existing_keys, col.name)) $scope.columns.push(col);
-        } else {
-          if (_.includes(existing_extra_keys, col.name)) $scope.columns.push(col);
-        }
-      });
+      var leftColumns = matching_service.loadLeftColumns(localStorageKey, columns);
+      if (leftColumns !== 'showOnlyMappedFields') {
+        $scope.leftColumns = _.filter(leftColumns, 'visible');
+      } else {
+        // Default columns
+        $scope.leftColumns = [];
+        var existing_keys = _.pull(_.keys(_.first($scope.inventory)), 'id', 'matched', 'extra_data', 'coparent');
+        var existing_extra_keys = _.keys(_.get($scope.inventory, '[0].extra_data', null));
+        _.forEach(columns, function (col) {
+          if (!col.extraData) {
+            if (_.includes(existing_keys, col.name)) $scope.leftColumns.push(col);
+          } else {
+            if (_.includes(existing_extra_keys, col.name)) $scope.leftColumns.push(col);
+          }
+        });
+      }
+
+      var rightColumns = matching_service.loadRightColumns(localStorageKey, _.reject(columns, {extraData: true}));
+      $scope.rightColumns = _.filter(rightColumns, 'visible');
 
       $scope.SHOW_ALL = 'Show All';
       $scope.SHOW_MATCHED = 'Show Matched';
       $scope.SHOW_UNMATCHED = 'Show Unmatched';
 
       $scope.filter_options = [$scope.SHOW_ALL, $scope.SHOW_MATCHED, $scope.SHOW_UNMATCHED];
-      $scope.selectedFilter = $scope.SHOW_ALL;
+      var visibility = matching_service.loadVisibility();
+      $scope.selectedFilter = _.includes($scope.filter_options, visibility) ? visibility : $scope.SHOW_ALL;
 
       /**
        * Pagination code
@@ -86,21 +97,30 @@ angular.module('BE.seed.controller.matching_list', [])
         $scope.current_page = _.min([$scope.current_page, $scope.number_of_pages - 1]);
 
         _.defer(function () {
-          $scope.$apply(function () {
-            $scope.showing.total = $scope.filtered.length;
-            if ($scope.showing.total === 0) {
-              $scope.showing.start = 0;
-              $scope.showing.end = 0;
-            } else {
-              $scope.showing.start = $scope.current_page * $scope.number_per_page + 1;
-              $scope.showing.end = Math.min($scope.showing.start + $scope.number_per_page - 1, $scope.showing.total);
-            }
-          });
+          $scope.showing.total = $scope.filtered.length;
+          if ($scope.showing.total === 0) {
+            $scope.showing.start = 0;
+            $scope.showing.end = 0;
+          } else {
+            $scope.showing.start = $scope.current_page * $scope.number_per_page + 1;
+            $scope.showing.end = Math.min($scope.showing.start + $scope.number_per_page - 1, $scope.showing.total);
+          }
+          $scope.$digest();
         });
       };
 
       $scope.save_number_per_page = function () {
         inventory_service.saveMatchesPerPage($scope.number_per_page);
+      };
+
+      $scope.nextPage = function () {
+        $scope.current_page++;
+        $scope.update_start_end_paging();
+      };
+
+      $scope.previousPage = function () {
+        $scope.current_page--;
+        $scope.update_start_end_paging();
       };
 
       var refresh = function () {
@@ -155,25 +175,37 @@ angular.module('BE.seed.controller.matching_list', [])
       };
 
       // Sort by Columns Ascending and Descending
-      $scope.sortColumn = 'name';
-      $scope.reverseSort = false;
+      var savedSort = matching_service.loadSort(localStorageKey + '.sort');
+      if (savedSort) {
+        savedSort = JSON.parse(savedSort);
+        $scope.sortColumn = savedSort.sortColumn;
+        $scope.reverseSort = savedSort.reverseSort;
+      } else {
+        $scope.sortColumn = 'name';
+        $scope.reverseSort = false;
+      }
 
       $scope.sortData = function (column, extraData) {
-        _.defer(spinner_utility.show);
-        _.delay(function () {
-          $scope.$apply(function () {
+        _.defer(function () {
+          spinner_utility.show();
+          $scope.$digest();
+
+          _.delay(function () {
             if (extraData) column = 'extra_data[\'' + column + '\']';
             if ($scope.sortColumn === column && $scope.reverseSort) {
               $scope.reverseSort = false;
               $scope.sortColumn = 'name';
+              matching_service.removeSettings(localStorageKey + '.sort');
             } else {
               $scope.reverseSort = $scope.sortColumn === column ? !$scope.reverseSort : false;
               $scope.sortColumn = column;
+              matching_service.saveSort(localStorageKey + '.sort', {sortColumn: $scope.sortColumn, reverseSort: $scope.reverseSort});
             }
 
             spinner_utility.hide();
-          });
-        }, 50);
+            $scope.$digest();
+          }, 150);
+        });
       };
 
       $scope.getSortClass = function (column, extraData) {
@@ -190,11 +222,11 @@ angular.module('BE.seed.controller.matching_list', [])
       // Custom filter
       $scope.allSearch = function (row) {
         var i, searchText, searchTextLower, rowValue, reducedColLower, isMatch;
-        for (i = 0; i < $scope.columns.length; i++) {
-          searchText = $scope.columns[i].searchText;
-          rowValue = $scope.columns[i].extraData ? row.extra_data[$scope.columns[i].name] : row[$scope.columns[i].name];
+        for (i = 0; i < $scope.leftColumns.length; i++) {
+          searchText = $scope.leftColumns[i].searchText;
+          rowValue = $scope.leftColumns[i].extraData ? row.extra_data[$scope.leftColumns[i].name] : row[$scope.leftColumns[i].name];
           if (searchText && !_.isNil(rowValue)) {
-            // don't return match because it stops the loop, set to variable so even when matches are found, they continue searching(iterating through the loop) when inputs are processed from other columns
+            // don't return match because it stops the loop, set to variable so even when matches are found, they continue searching (iterating through the loop) when inputs are processed from other columns
             searchTextLower = searchText.toLowerCase();
             reducedColLower = (rowValue + '').toLowerCase();
             isMatch = reducedColLower.indexOf(searchTextLower) > -1;
@@ -206,16 +238,20 @@ angular.module('BE.seed.controller.matching_list', [])
             return false;
           }
         }
-        for (i = 0; i < $scope.reduced_columns.length; i++) {
-          searchText = $scope.reduced_columns[i].searchText;
-          rowValue = row[$scope.reduced_columns[i].name];
-          if (searchText && !_.isNil(rowValue)) {
-            // don't return match because it stops the loop, set to variable so even when matches are found, they continue searching(iterating through the loop) when inputs are processed from other columns
-            searchTextLower = searchText.toLowerCase();
-            reducedColLower = (rowValue + '').toLowerCase();
-            isMatch = reducedColLower.indexOf(searchTextLower) > -1;
-            // if an item does not match, break the loop
-            if (!isMatch) {
+        for (i = 0; i < $scope.rightColumns.length; i++) {
+          searchText = $scope.rightColumns[i].searchText;
+          if (row.matched && searchText) {
+            rowValue = row.coparent[$scope.rightColumns[i].name];
+            if (!_.isNil(rowValue)) {
+              // don't return match because it stops the loop, set to variable so even when matches are found, they continue searching (iterating through the loop) when inputs are processed from other columns
+              searchTextLower = searchText.toLowerCase();
+              reducedColLower = (rowValue + '').toLowerCase();
+              isMatch = reducedColLower.indexOf(searchTextLower) > -1;
+              // if an item does not match, break the loop
+              if (!isMatch) {
+                return false;
+              }
+            } else if (searchText) {
               return false;
             }
           } else if (searchText) {
@@ -241,7 +277,12 @@ angular.module('BE.seed.controller.matching_list', [])
         $state.go('matching_list', {importfile_id: $scope.selectedFile.id, inventory_type: $scope.inventory_type});
       };
 
-      $scope.$watch('filtered', _.debounce(function(newValue, oldValue) {
+      $scope.selectedFilterChanged = function () {
+        $scope.current_page = 0;
+        matching_service.saveVisibility($scope.selectedFilter);
+      };
+
+      $scope.$watch('filtered', _.debounce(function (newValue, oldValue) {
         if (newValue === [] && oldValue === []) return;
         $scope.update_start_end_paging();
       }), 10);

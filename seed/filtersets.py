@@ -11,10 +11,13 @@ FilterSet classes to provide advanced filtering API endpoints.
 """
 
 from datetime import datetime
+
+import pytz
 from dateutil.relativedelta import relativedelta
-from django_filters.rest_framework import FilterSet
-from django_filters import BaseInFilter, NumberFilter, CharFilter, DateFilter
 from django.db.models import Q
+from django.utils.timezone import make_aware
+from django_filters import BaseInFilter, NumberFilter, CharFilter, DateFilter
+from django_filters.rest_framework import FilterSet
 
 from seed.models import (
     Cycle,
@@ -88,7 +91,7 @@ class CycleFilterSet(FilterSet):
         name = "{} Calendar Year".format(value)
         cycles = queryset.filter(name__contains=name)
         if not cycles:
-            start = datetime(int(value), 1, 1)
+            start = make_aware(datetime(int(value), 1, 1), pytz.UTC)
             end = start + relativedelta(years=1) - relativedelta(seconds=1)
 
             # to eliminate the question of timezone saved in vs timezone

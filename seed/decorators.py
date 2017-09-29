@@ -7,7 +7,7 @@
 import json
 from functools import wraps
 
-from django.core.serializers.json import DjangoJSONEncoder
+from seed.serializers.pint import PintJSONEncoder
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest
 
 from seed.lib.superperms.orgs.models import OrganizationUser
@@ -17,9 +17,10 @@ SEED_CACHE_PREFIX = 'SEED:{0}'
 LOCK_CACHE_PREFIX = SEED_CACHE_PREFIX + ':LOCK'
 PROGRESS_CACHE_PREFIX = SEED_CACHE_PREFIX + ':PROG'
 
+
 FORMAT_TYPES = {
-    'application/json': lambda response: json.dumps(response, cls=DjangoJSONEncoder),
-    'text/json': lambda response: json.dumps(response, cls=DjangoJSONEncoder),
+    'application/json': lambda response: json.dumps(response, cls=PintJSONEncoder),
+    'text/json': lambda response: json.dumps(response, cls=PintJSONEncoder),
 }
 
 

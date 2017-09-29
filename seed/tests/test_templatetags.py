@@ -22,7 +22,4 @@ class AppUrlsTest(TestCase):
         ).render(Context())
         rendered = json.loads(rendered)
         self.assertTrue('seed' in rendered.keys())
-        self.assertEqual(
-            rendered['seed']['get_columns'],
-            '/app/get_columns/'
-        )
+        self.assertEqual(rendered['seed']['home'], '/app/')

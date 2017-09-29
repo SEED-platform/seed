@@ -29,7 +29,6 @@ class TestTasks(TestCase):
         self.import_file = ImportFile.objects.create(
             import_record=self.import_record
         )
-        self.import_file.is_espm = True
         self.import_file.source_type = 'PORTFOLIO_RAW'
         self.import_file.file = File(
             open(

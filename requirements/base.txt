@@ -22,8 +22,11 @@ redis==2.10.5
 # If we upgrade, then we must update the code to work in UTC, not local datetime.
 pytz==2012h
 
+# Metric/imperial units support
+django-pint==0.4
+
 # API
-djangorestframework==3.3.3
+djangorestframework==3.4.7
 django-rest-swagger==0.3.8
 django-filter==1.0.0
 docutils==0.14

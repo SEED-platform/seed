@@ -12,6 +12,8 @@ import pdb
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 
+from quantityfield.fields import QuantityField
+
 from auditlog import AUDIT_IMPORT
 from auditlog import DATA_UPDATE_TYPE
 from seed.data_importer.models import ImportFile
@@ -37,7 +39,14 @@ property_decorator = property
 
 
 class Property(models.Model):
-    """The canonical property"""
+    """
+    The Property is the parent property that ties together all the views of the property.
+    For example, if a building has multiple changes overtime, then this Property will always
+    remain the same. The PropertyView will point to the unchanged property as the PropertyState
+    and Property view are updated.
+
+    If the property can be a campus. The property can also reference a parent property.
+    """
     organization = models.ForeignKey(Organization)
 
     # Handle properties that may have multiple properties (e.g. buildings)
@@ -127,6 +136,18 @@ class PropertyState(models.Model):
     energy_alerts = models.TextField(null=True, blank=True)
     space_alerts = models.TextField(null=True, blank=True)
     building_certification = models.CharField(max_length=255, null=True, blank=True)
+
+    # extra columns for pint interpretation base units in database will
+    # continue to be imperial these will become the canonical columns in
+    # future, with the old ones above to be culled once OGBS merges the metric
+    # units work (scheduled for late 2017)
+    gross_floor_area_pint = QuantityField('ft**2', null=True, blank=True)
+    conditioned_floor_area_pint = QuantityField('ft**2', null=True, blank=True)
+    occupied_floor_area_pint = QuantityField('ft**2', null=True, blank=True)
+    site_eui_pint = QuantityField('kBtu/ft**2/year', null=True, blank=True)
+    source_eui_weather_normalized_pint = QuantityField('kBtu/ft**2/year', null=True, blank=True)
+    site_eui_weather_normalized_pint = QuantityField('kBtu/ft**2/year', null=True, blank=True)
+    source_eui_pint = QuantityField('kBtu/ft**2/year', null=True, blank=True)
 
     extra_data = JSONField(default=dict, blank=True)
 
@@ -317,6 +338,7 @@ class PropertyState(models.Model):
                     ps.energy_alerts,
                     ps.space_alerts,
                     ps.building_certification,
+                    ps.extra_data,
                     NULL
                 FROM seed_propertystate ps, audit_id aid
                 WHERE (ps.id = aid.parent_state1_id AND
@@ -337,14 +359,20 @@ class PropertyState(models.Model):
                        'owner_address', 'owner_postal_code', 'home_energy_score_id',
                        'generation_date', 'release_date', 'source_eui_weather_normalized',
                        'site_eui_weather_normalized', 'source_eui',
-                       'energy_alerts', 'space_alerts', 'building_certification', ]
+                       'energy_alerts', 'space_alerts', 'building_certification', 'extra_data', ]
         coparents = [{key: getattr(c, key) for key in keep_fields} for c in coparents]
 
         return coparents, len(coparents)
 
 
 class PropertyView(models.Model):
-    """Similar to the old world of canonical building."""
+    """
+    Similar to the old world of canonical building.
+
+    A PropertyView contains a reference to a property (which should not change) and to a
+    cycle (time period), and a state (characteristics).
+
+    """
     # different property views can be associated with each other (2012, 2013)
     property = models.ForeignKey(Property, related_name='views',
                                  on_delete=models.CASCADE)

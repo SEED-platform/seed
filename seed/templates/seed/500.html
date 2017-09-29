@@ -1,0 +1,21 @@
+{% extends "seed/base.html" %}{% load compress %}
+
+{% block js %}{{block.super}}
+{% endblock %}
+
+{% block content %}
+<div ng-controller="menu_controller">
+
+	{% include "seed/_sidebar.html" %}
+
+    <div class="display">
+        <div ng-class="{narrow: narrow_controller, wide: wide_controller, content: true, hide_transition:is_initial_state}">
+
+            {% include "seed/_header.html" %}
+
+            There was a problem loading your page.
+        </div>
+    </div>
+</div>
+
+{% endblock %}

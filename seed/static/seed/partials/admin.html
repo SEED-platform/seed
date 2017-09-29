@@ -2,13 +2,13 @@
     <div class="page_header">
         <div class="left page_action_container"></div>
         <div class="page_title">
-            <h1>{$ username $}</h1>
+            <h1>{$:: username $}</h1>
         </div>
         <div class="right page_action_container"></div>
     </div>
 </div>
 <div class="section_nav_container">
-    <div class="section_nav" ng-include="urls.static_url + 'seed/partials/profile_nav.html'"></div>
+    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/profile_nav.html'"></div>
 </div>
 <div class="display">
     <div class="section">
@@ -137,7 +137,7 @@
                             </thead>
                             <tbody>
                                 <tr ng-repeat="user in org_user.users">
-                                    <td>{$ user.email $}</td>
+                                    <td>{$:: user.email $}</td>
                                     <td>
                                         <button class="btn btn-default" type="submit" ng-click="org_user.remove_user(user.user_id, org_user.organization.org_id)">Remove User</button>
                                     </td>
@@ -171,19 +171,19 @@
                             </thead>
                             <tbody>
                                 <tr ng-repeat="org in org_user.organizations">
-                                    <td>{$ org.parent_id != org.org_id ? org.parent_id : '' $}</td>
-                                    <td>{$ org.org_id $}</td>
-                                    <td>{$ org.name $}</td>
-                                    <td>{$ org.created $}</td>
+                                    <td>{$:: org.parent_id != org.org_id ? org.parent_id : '' $}</td>
+                                    <td>{$:: org.org_id $}</td>
+                                    <td>{$:: org.name $}</td>
+                                    <td>{$:: org.created $}</td>
                                     <td>{$ org.number_of_users | number:0 $}</td>
                                     <td>
-                                        <div ng-repeat="cycle in org.cycles" ng-if="cycle.num_properties">
-                                            {$ cycle.name $}: {$ cycle.num_properties $}
+                                        <div ng-repeat="cycle in ::org.cycles" ng-if="::cycle.num_properties">
+                                            {$:: cycle.name $}: {$:: cycle.num_properties $}
                                         </div>
                                     </td>
                                     <td>
-                                        <div ng-repeat="cycle in org.cycles" ng-if="cycle.num_taxlots">
-                                            {$ cycle.name $}: {$ cycle.num_taxlots $}
+                                        <div ng-repeat="cycle in ::org.cycles" ng-if="::cycle.num_taxlots">
+                                            {$:: cycle.name $}: {$:: cycle.num_taxlots $}
                                         </div>
                                     </td>
                                     <td style="width: 470px;">

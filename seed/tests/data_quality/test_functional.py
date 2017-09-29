@@ -16,8 +16,8 @@ from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
+    ASSESSED_RAW,
     ASSESSED_BS,
-    PORTFOLIO_BS,
     PropertyState,
     PropertyView,
     TaxLotState,
@@ -41,7 +41,6 @@ _log = logging.getLogger(__name__)
 
 
 class DataQualityTestCoveredBuilding(TestCase):
-
     def setUp(self):
         self.user_details = {
             'username': 'testuser@example.com',
@@ -61,7 +60,6 @@ class DataQualityTestCoveredBuilding(TestCase):
             import_record=self.import_record
         )
 
-        self.import_file.is_espm = False
         self.import_file.source_type = 'ASSESSED_RAW'
         self.import_file.file = File(
             open(path.join(
@@ -76,7 +74,9 @@ class DataQualityTestCoveredBuilding(TestCase):
         )
 
         tasks.save_raw_data(self.import_file.id)
-        Column.create_mappings_from_file(self.import_file_mapping, self.org, self.user)
+        Column.create_mappings_from_file(
+            self.import_file_mapping, self.org, self.user, self.import_file.id
+        )
         tasks.map_data(self.import_file.id)
 
     def test_simple_login(self):
@@ -164,7 +164,6 @@ class DataQualityTestCoveredBuilding(TestCase):
 
 
 class DataQualityTestPM(TestCase):
-
     def setUp(self):
         self.user_details = {
             'username': 'testuser@example.com',
@@ -183,12 +182,13 @@ class DataQualityTestPM(TestCase):
         self.import_file = ImportFile.objects.create(
             import_record=self.import_record
         )
-
-        self.import_file.is_espm = True
-        self.import_file.source_type = 'Portfolio Raw'
+        # eventhough this is a portfolio manager file, we are mapping this as a RAW file
+        # for testing purposes.
+        self.import_file.source_type = ASSESSED_RAW
         self.import_file.file = File(
-            open(path.join(path.dirname(__file__),
-                           '../data/portfolio-manager-sample-with-errors.csv'))
+            open(path.join(
+                path.dirname(__file__), '../data/portfolio-manager-sample-with-errors.csv')
+            )
         )
         self.import_file.save()
 
@@ -248,12 +248,12 @@ class DataQualityTestPM(TestCase):
         ]
 
         tasks.save_raw_data(self.import_file.id)
-        Column.create_mappings(fake_mappings, self.org, self.user)
+        Column.create_mappings(fake_mappings, self.org, self.user, self.import_file.id)
         tasks.map_data(self.import_file.id)
 
         qs = PropertyState.objects.filter(
             import_file=self.import_file,
-            source_type=PORTFOLIO_BS,
+            source_type=ASSESSED_BS,
         ).iterator()
 
         d = DataQualityCheck.retrieve(self.org)
@@ -310,7 +310,6 @@ class DataQualityTestPM(TestCase):
 
 
 class DataQualitySample(TestCase):
-
     def setUp(self):
         self.user_details = {
             'username': 'testuser@example.com',
@@ -333,7 +332,6 @@ class DataQualitySample(TestCase):
             cycle=cycle,
         )
 
-        self.import_file.is_espm = False
         self.import_file.source_type = 'ASSESSED_RAW'
         self.import_file.file = File(
             open(path.join(path.dirname(__file__), '../data/data-quality-check-sample.csv')))
@@ -641,7 +639,7 @@ class DataQualitySample(TestCase):
 
         # import data
         tasks.save_raw_data(self.import_file.id)
-        Column.create_mappings(self.fake_mappings, self.org, self.user)
+        Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.pk)
         tasks.map_data(self.import_file.id)
         tasks.match_buildings(self.import_file.id)
 
@@ -807,7 +805,7 @@ class DataQualitySample(TestCase):
 
         # import data
         tasks.save_raw_data(self.import_file.id)
-        Column.create_mappings(self.fake_mappings, self.org, self.user)
+        Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.pk)
         tasks.map_data(self.import_file.id)
         tasks.match_buildings(self.import_file.id)
 

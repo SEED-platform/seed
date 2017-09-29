@@ -27,7 +27,7 @@ angular.module('BE.seed.controller.inventory_settings', [])
 
       var restoreDefaults = function () {
         inventory_service.removeSettings(localStorageKey);
-        $scope.data = inventory_service.loadSettings(localStorageKey, angular.copy(all_columns));
+        $scope.data = inventory_service.loadSettings(localStorageKey, all_columns);
         _.defer(function () {
           // Set row selection
           $scope.gridApi.selection.clearSelectedRows();
@@ -75,7 +75,7 @@ angular.module('BE.seed.controller.inventory_settings', [])
         saveSettings();
       };
 
-      $scope.data = inventory_service.loadSettings(localStorageKey, angular.copy(all_columns));
+      $scope.data = inventory_service.loadSettings(localStorageKey, all_columns);
 
       $scope.gridOptions = {
         data: 'data',

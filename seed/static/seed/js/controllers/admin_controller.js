@@ -6,18 +6,21 @@ angular.module('BE.seed.controller.admin', [])
   .controller('admin_controller', [
     '$scope',
     '$log',
-    '$state',
     'user_service',
     'organization_service',
     'column_mappings_service',
     'uploader_service',
+    'organizations_payload',
     'user_profile_payload',
+    'users_payload',
     'Notification',
     '$window',
-    function ($scope, $log, $state, user_service, organization_service, column_mappings_service, uploader_service, user_profile_payload, Notification, $window) {
+    function ($scope, $log, user_service, organization_service, column_mappings_service, uploader_service, organizations_payload, user_profile_payload, users_payload, Notification, $window) {
       $scope.user = {};
       $scope.temp_users = [];
-      $scope.org = {};
+      $scope.org = {
+        users: users_payload.users
+      };
       $scope.org_user = {};
       $scope.org_form = {};
       $scope.user_form = {};
@@ -88,23 +91,25 @@ angular.module('BE.seed.controller.admin', [])
 
       var get_users = function () {
         user_service.get_users().then(function (data) {
-          // resolve promise
           $scope.org.users = data.users;
         });
       };
 
-      var get_organizations = function () {
-        organization_service.get_organizations().then(function (data) {
-          $scope.org_user.organizations = data.organizations;
-          _.forEach($scope.org_user.organizations, function (org) {
-            org.total_inventory = _.reduce(org.cycles, function (sum, cycle) {
-              return sum + cycle.num_properties + cycle.num_taxlots;
-            }, 0);
-          });
-        }, function (data, status) {
-          $log.log({message: 'error from data call', status: status, data: data});
-          update_alert(false, 'error getting organizations. check console log ');
+      var process_organizations = function (data) {
+        $scope.org_user.organizations = data.organizations;
+        _.forEach($scope.org_user.organizations, function (org) {
+          org.total_inventory = _.reduce(org.cycles, function (sum, cycle) {
+            return sum + cycle.num_properties + cycle.num_taxlots;
+          }, 0);
         });
+      };
+
+      var get_organizations = function () {
+        organization_service.get_organizations().then(process_organizations)
+          .catch(function (data, status) {
+            $log.log({message: 'error from data call', status: status, data: data});
+            update_alert(false, 'error getting organizations. check console log ');
+          });
       };
 
       $scope.get_organizations_users = function (org) {
@@ -214,9 +219,5 @@ angular.module('BE.seed.controller.admin', [])
           });
       };
 
-      var init = function () {
-        get_users();
-        get_organizations();
-      };
-      init();
+      process_organizations(organizations_payload);
     }]);

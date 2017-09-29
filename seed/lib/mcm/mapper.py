@@ -83,11 +83,11 @@ def _concat_values(concat_columns, column_values, delimiter):
     return delimiter.join(values) or None
 
 
-def apply_column_value(raw_field, value, model, mapping, is_extra_data, cleaner):
+def apply_column_value(raw_column_name, column_value, model, mapping, is_extra_data, cleaner):
     """Set the column value as the target attr on our model.
 
-    :param raw_field: str, the raw imported column name as the mapping understands it.
-    :param value: dict, the value of that column for a given row.
+    :param raw_column_name: str, the raw imported column name as the mapping understands it.
+    :param column_value: dict, the value of that column for a given row.
     :param model: inst, the object we're mapping data to.
     :param mapping: dict, the mapping of row data to attribute data.
     :param is_extra_data: bool, is the column supposed to be extra_data
@@ -96,18 +96,29 @@ def apply_column_value(raw_field, value, model, mapping, is_extra_data, cleaner)
     :rtype: model inst
     """
 
+    def is_pint_column(column_name):
+        """Test if the column_name is a QuantityField"""
+        # TODO rgm change this to a test against a set (the 7 db column names) after feature release
+        # TODO rgm re-locate to someplace else, eg. Column
+        return re.search(r'_pint$', column_name)
+
     # If the item is the extra_data column, then make sure to save it to the
     # extra_data field of the database
-    if raw_field in mapping:
-        table_name, field_name = mapping.get(raw_field)
+    if raw_column_name in mapping:
+        table_name, mapped_column_name = mapping.get(raw_column_name)
         # NL: 9/29/16 turn off all the debug logging because it was too verbose.
         # _log.debug("item is in the mapping: %s -- %s" % (table_name, field_name))
 
         cleaned_value = None
         if cleaner:
-            cleaned_value = cleaner.clean_value(value, field_name)
+            if is_pint_column(mapped_column_name):
+                # clean against the raw name with pint because that's the column
+                # that holds the units needed to interpret the value correctly
+                cleaned_value = cleaner.clean_value(column_value, raw_column_name)
+            else:
+                cleaned_value = cleaner.clean_value(column_value, mapped_column_name)
         else:
-            cleaned_value = default_cleaner(value)
+            cleaned_value = default_cleaner(column_value)
 
         if is_extra_data:
             if hasattr(model, 'extra_data'):
@@ -115,13 +126,13 @@ def apply_column_value(raw_field, value, model, mapping, is_extra_data, cleaner)
                 if model.__class__.__name__ == table_name:
                     if isinstance(cleaned_value, (datetime, date)):
                         # TODO: create an encoder for datetime once we are in Django 1.11
-                        model.extra_data[field_name] = cleaned_value.strftime("%Y-%m-%d %H:%M:%S")
+                        model.extra_data[mapped_column_name] = cleaned_value.isoformat()
                     else:
-                        model.extra_data[field_name] = cleaned_value
+                        model.extra_data[mapped_column_name] = cleaned_value
         else:
             # Simply set the field to the cleaned value if it is the correct model
             if model.__class__.__name__ == table_name:
-                setattr(model, field_name, cleaned_value)
+                setattr(model, mapped_column_name, cleaned_value)
 
     return model
 
@@ -143,14 +154,39 @@ def _set_default_concat_config(concat):
 def _normalize_expanded_field(value):
     """
     Fields that are expanded (typically tax lot id) are also in need of normalization to remove
-    characters that prevent easy matching.
+    characters that prevent easy matching. This method will remove unwanted characters from the
+    jurisdiction tax lot id.
 
-    This method will remove unwanted characters from the jurisdiction tax lot id.
+    Here are some examples of what actual city taxlots can look like
+        13153123902
+        069180102923*
+        14A6-12
+        123.4-123
+        PANL1593005
+        0.000099
+        00012312
+        12-123-12-12-12-1-34-567
+        12 0123 TT0612
+
+    Method does the following:
+        Removes leading/trailing spaces
+        Removes duplicate characters next to each other when it is a space, \, /, -, *, .
+        Does not remove combinations of duplicates, so 1./*5 will still be valid
 
     :param value: string
     :return: string
     """
-    return re.sub(r'[-\s/\\]', '', value).upper()
+
+    value = value.strip()
+    value = re.sub(r'\s{2,}', ' ', value)
+    value = re.sub(r'/{2,}', '/', value)
+    value = re.sub(r'\\{2,}', '\\\\', value)
+    value = re.sub(r'-{2,}', '-', value)
+    value = re.sub(r'\*{2,}', '*', value)
+    value = re.sub(r'\.{2,}', '.', value)
+    value = value.upper()
+
+    return value
 
 
 def expand_and_normalize_field(field, return_list=False):
