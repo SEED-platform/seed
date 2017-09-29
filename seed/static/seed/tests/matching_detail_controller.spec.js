@@ -50,9 +50,6 @@ describe('Controller: matching_detail_controller', function () {
           if (!matching_detail_controller_scope.state.matched) {
             return $q.resolve({
               status: 'success',
-              // number_properties_returned: bldgs.length,
-              // number_properties_matching_search: bldgs.length,
-              // properties: bldgs,
               state: {
                 coparent: {
                   extra_data: {},
@@ -67,9 +64,6 @@ describe('Controller: matching_detail_controller', function () {
           } else {
             return $q.resolve({
               status: 'success',
-              // number_properties_returned: bldgs.length,
-              // number_properties_matching_search: bldgs.length,
-              // properties: bldgs,
               state: {
                 id: 76385,
                 lot_number: '1552813',
@@ -94,7 +88,7 @@ describe('Controller: matching_detail_controller', function () {
   });
 
   // this is outside the beforeEach so it can be configured by each unit test
-  function create_dataset_detail_controller () {
+  function create_dataset_detail_controller() {
     var inventory_payload = {
       properties: [
         {
@@ -193,9 +187,16 @@ describe('Controller: matching_detail_controller', function () {
     matching_detail_controller_scope.$digest();
 
     // assertions
+    console.dir(matching_detail_controller_scope);
+    console.dir(mock_inventory_service);
     expect(mock_matching_service.match).toHaveBeenCalled();
-    expect(mock_inventory_service.search_matching_inventory).toHaveBeenCalledWith(matching_detail_controller_scope.importfile_id,
-      {get_coparents: true, inventory_type: 'properties', state_id: 345});
+    expect(mock_inventory_service.search_matching_inventory).toHaveBeenCalledWith(
+      matching_detail_controller_scope.import_file.id, {
+        get_coparents: true,
+        inventory_type: 'properties',
+        state_id: 345
+      }
+    );
     expect(matching_detail_controller_scope.state).toEqual({
       coparent: {extra_data: {}, lot_number: '11160509', id: 76386},
       id: 76385, lot_number: '1552813', matched: true
@@ -213,9 +214,17 @@ describe('Controller: matching_detail_controller', function () {
 
     // assertions
     expect(mock_matching_service.unmatch).toHaveBeenCalled();
-    expect(mock_inventory_service.search_matching_inventory).toHaveBeenCalledWith(matching_detail_controller_scope.importfile_id,
-      {get_coparents: true, inventory_type: 'properties', state_id: 345});
-    expect(matching_detail_controller_scope.state).toEqual({id: 76385, lot_number: '1552813', matched: false});
+    expect(mock_inventory_service.search_matching_inventory).toHaveBeenCalledWith(
+      matching_detail_controller_scope.import_file.id, {
+        get_coparents: true,
+        inventory_type: 'properties',
+        state_id: 345
+      });
+    expect(matching_detail_controller_scope.state).toEqual({
+      id: 76385,
+      lot_number: '1552813',
+      matched: false
+    });
     expect(matching_detail_controller_scope.available_matches).toEqual([{
       extra_data: {},
       id: 3489754,

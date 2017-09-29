@@ -143,8 +143,8 @@ describe('Controller: matching_list_controller', function () {
     matching_list_controller_scope.update_number_matched();
 
     // assertions
-    expect(matching_list_controller_scope.matched_buildings).toEqual(10);
-    expect(matching_list_controller_scope.unmatched_buildings).toEqual(5);
+    expect(matching_list_controller_scope.matched_buildings).toEqual(1);
+    expect(matching_list_controller_scope.unmatched_buildings).toEqual(0);
     expect(mock_inventory_service.get_matching_status).toHaveBeenCalled();
   });
 
@@ -171,14 +171,12 @@ describe('Controller: matching_list_controller', function () {
     matching_list_controller_scope.$digest();
 
     // assertions
-    expect(matching_list_controller_scope.columns).toEqual([{
+    expect(matching_list_controller_scope.leftColumns).toEqual([{
       name: 'pm_property_id',
       displayName: 'PM Property ID',
       type: 'number'
     }]);
-    expect(matching_list_controller_scope.number_properties_matching_search).toEqual(1);
-    expect(matching_list_controller_scope.number_properties_returned).toEqual(1);
-    expect(matching_list_controller_scope.num_pages).toEqual(1);
-    expect(mock_inventory_service.get_matching_status).toHaveBeenCalled();
+    expect(matching_list_controller_scope.matched_buildings).toEqual(1);
+    expect(matching_list_controller_scope.number_of_pages).toEqual(1);
   });
 });
