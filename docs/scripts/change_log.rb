@@ -15,7 +15,7 @@ require 'pp'
 options = {}
 OptionParser.new do |opts|
   opts.banner = 'Usage: change_log.rb [options]'
-  
+
   # defaults, go back 90 days
   options[:start_date] = Date.today - 90
   options[:end_date] = Date.today
@@ -75,7 +75,7 @@ end
 def print_issue(issue)
   is_feature = false
   issue.labels.each { |label| is_feature = true if label.name == 'Feature Request' }
-  
+
   if is_feature
     "- ![Improved:][improved] [#{get_issue_num(issue)}]( #{get_html_url(issue)} ), #{get_title(issue)}"
   else

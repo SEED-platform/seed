@@ -4,6 +4,9 @@ if [ "$TRAVIS_BRANCH" == "develop" ]; then
     IMAGETAG=develop
 elif [ "$TRAVIS_BRANCH" == "bricr" ]; then
     IMAGETAG=bricr
+elif [ "$TRAVIS_BRANCH" == "master" ]; then
+    # Retrieve the version number from package.json
+    IMAGETAG=$( sed -n 's/.*"version": "\(.*\)",/\1/p' package.json )
 fi
 
 docker-compose build --pull
