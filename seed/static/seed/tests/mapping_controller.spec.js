@@ -4,34 +4,27 @@
  */
 describe('controller: mapping_controller', function () {
   // globals set up and used in each test scenario
-  var mock_inventory_service, scope, controller, modal_state;
-  var mapping_controller, mapping_controller_scope, modalInstance, labels;
+  var mock_inventory_service, controller;
+  var mapping_controller_scope;
   var timeout, mock_user_service;
-
 
 
   // make the seed app available for each test
   // 'config.seed' is created in TestFilters.html
   beforeEach(function () {
     module('BE.seed');
-  });
-
-  // inject AngularJS dependencies for the controller
-  beforeEach(inject(
-    function ($controller, $rootScope, $uibModal, urls, $q, inventory_service, $timeout, user_service) {
+    inject(function ($controller, $rootScope, $uibModal, urls, $q, inventory_service, $timeout, user_service) {
       controller = $controller;
-      scope = $rootScope;
       mapping_controller_scope = $rootScope.$new();
-      modal_state = '';
       timeout = $timeout;
       mock_user_service = user_service;
 
       spyOn(mock_user_service, 'set_default_columns')
-        .andCallFake(function (mapped_columns) {
+        .andCallFake(function () {
           return undefined;
         });
-    }
-  ));
+    });
+  });
 
   // this is outside the beforeEach so it can be configured by each unit test
   function create_mapping_controller () {
@@ -113,13 +106,6 @@ describe('controller: mapping_controller', function () {
       checked: false
     }];
 
-    var mock_be_building_types = {
-      gross_floor_area: {
-        unit_type: 'float',
-        schema: 'BEDES'
-      }
-    };
-
     var mock_mapping_suggestions_payload = {
       status: 'success',
       suggested_column_mappings: {
@@ -175,7 +161,7 @@ describe('controller: mapping_controller', function () {
       status: 'success',
       first_five_rows: mock_first_five_rows
     };
-    mapping_controller = controller('mapping_controller', {
+    controller('mapping_controller', {
       $scope: mapping_controller_scope,
       import_file_payload: fake_import_file_payload,
       suggested_mappings_payload: mock_mapping_suggestions_payload,
@@ -220,7 +206,7 @@ describe('controller: mapping_controller', function () {
     expect(first_column.suggestion).toBe('Pm Property Id');
   });
 
-  it('should show \'low\', \'med\', \'high\', or \'\' confidence text', function () {
+  it('should show "low", "med", "high", or "" confidence text', function () {
     // arrange
     create_mapping_controller();
 
@@ -235,7 +221,7 @@ describe('controller: mapping_controller', function () {
     expect(first_column.confidence_text()).toBe('med');
     first_column.confidence = 35;
     expect(first_column.confidence_text()).toBe('low');
-    delete(first_column.confidence);
+    delete first_column.confidence;
     expect(first_column.confidence_text()).toBe('');
   });
 
@@ -275,8 +261,8 @@ describe('controller: mapping_controller', function () {
     mapping_controller_scope.$digest();
     tcm = mapping_controller_scope.raw_columns[0];
     tcm.invalids = [tcm.raw_data[0]];
-    tcm.validity = "invalid";
-    var good_val = mapping_controller_scope.set_td_class(
+    tcm.validity = 'invalid';
+    mapping_controller_scope.set_td_class(
       tcm,
       tcm.raw_data[0]
     );
@@ -288,7 +274,7 @@ describe('controller: mapping_controller', function () {
 
     tcm = mapping_controller_scope.raw_columns[0];
     tcm.invalids = [tcm.raw_data[4]];
-    tcm.validity = "semivalid";
+    tcm.validity = 'semivalid';
     var blank_val = mapping_controller_scope.set_td_class(
       tcm,
       tcm.raw_data[4]
@@ -310,11 +296,11 @@ describe('controller: mapping_controller', function () {
     expect(tcm.label_status()).toBe('default');
 
     tcm.mapped_row = true;
-    tcm.validity = "invalid";
+    tcm.validity = 'invalid';
     expect(tcm.label_status()).toBe('danger');
 
     tcm.mapped_row = true;
-    tcm.validity = "somethingElse";
+    tcm.validity = 'somethingElse';
     expect(tcm.label_status()).toBe('warning');
   });
 
@@ -380,7 +366,7 @@ describe('controller: mapping_controller', function () {
   //     expect(mock_user_service.set_default_columns).toHaveBeenCalled();
   // });
 
-  it('should enable the \'show & review buildings\' button if duplicates are not present', function () {
+  it('should enable the "show & review buildings" button if duplicates are not present', function () {
     // arrange
     create_mapping_controller();
 
@@ -395,7 +381,7 @@ describe('controller: mapping_controller', function () {
     expect(duplicates_found).toBe(false);
   });
 
-  it('should disable the \'show & review buildings\' button if duplicates are present', function () {
+  it('should disable the "show & review buildings" button if duplicates are present', function () {
     // arrange
     create_mapping_controller();
 
@@ -416,14 +402,24 @@ describe('controller: mapping_controller', function () {
     mapping_controller_scope.$digest();
     var mappings = mapping_controller_scope.get_mappings();
     expect(mappings.length).toBe(5);
-    expect(mappings[0]).toEqual({ from_field: 'property id', to_field: 'Pm Property Id', to_table_name: '' });
+    expect(mappings[0]).toEqual({
+      from_field: 'property id',
+      from_units: null,
+      to_field: 'Pm Property Id',
+      to_table_name: ''
+    });
     // everything in between is empty since we we're using only
     // suggested mappings.
-    expect(mappings[3]).toEqual({ from_field: 'lot number', to_field: 'Tax Lot Id', to_table_name: '' });
+    expect(mappings[3]).toEqual({
+      from_field: 'lot number',
+      from_units: null,
+      to_field: 'Tax Lot Id',
+      to_table_name: ''
+    });
   });
 
   // Needs to be e2e test now.
-  // it('should show the \'STEP 2\' tab when reviewing mappings', function() {
+  // it('should show the "STEP 2" tab when reviewing mappings', function() {
   //     // arrange
   //     create_mapping_controller();
   //     mapping_controller_scope.$digest();

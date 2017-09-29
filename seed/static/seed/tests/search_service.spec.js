@@ -188,54 +188,51 @@ describe('The search_service service', function () {
       }]);
     }, 1000);
   });
-  it('should clear the error and alert after a successful search',
-    function () {
-      // arrange
-      test_url = 'https://mytest.com';
-      saas.url = test_url;
-      saas.error_message = 'help';
-      saas.alert = true;
+  it('should clear the error and alert after a successful search', function () {
+    // arrange
+    test_url = 'https://mytest.com';
+    saas.url = test_url;
+    saas.error_message = 'help';
+    saas.alert = true;
 
-      // act
-      saas.search_buildings();
-      httpBackend.expectPOST(test_url).respond(201, {
-        buildings: [{
-          name: 'one',
-          id: 1
-        }, {
-          name: 'two',
-          id: 2
-        }],
-        number_matching_search: 101
-      });
-      httpBackend.flush();
-
-      // assert
-      expect(saas.alert).toEqual(false);
-      expect(saas.error_message).toEqual('');
+    // act
+    saas.search_buildings();
+    httpBackend.expectPOST(test_url).respond(201, {
+      buildings: [{
+        name: 'one',
+        id: 1
+      }, {
+        name: 'two',
+        id: 2
+      }],
+      number_matching_search: 101
     });
+    httpBackend.flush();
+
+    // assert
+    expect(saas.alert).toEqual(false);
+    expect(saas.error_message).toEqual('');
+  });
 
   /**
    * pagination tests
    */
-  it('increments the page when the `next` button is clicked',
-    function () {
-      // arrange
-      saas.number_matching_search = 10000;
-      saas.number_per_page = 10;
-      saas.current_page = 100;
-      spyOn(saas, 'search_buildings');
-      // act
-      saas.next_page();
+  it('increments the page when the `next` button is clicked', function () {
+    // arrange
+    saas.number_matching_search = 10000;
+    saas.number_per_page = 10;
+    saas.current_page = 100;
+    spyOn(saas, 'search_buildings');
+    // act
+    saas.next_page();
 
-      // assert
-      expect(saas.current_page).toEqual(101);
-      expect(saas.search_buildings).toHaveBeenCalled();
-      expect(saas.search_buildings.callCount).toEqual(1);
+    // assert
+    expect(saas.current_page).toEqual(101);
+    expect(saas.search_buildings).toHaveBeenCalled();
+    expect(saas.search_buildings.callCount).toEqual(1);
 
-    });
-  it('doesn\'t increment past the last page when the `next` button is' +
-    ' clicked', function () {
+  });
+  it('doesn"t increment past the last page when the `next` button is clicked', function () {
     // arrange
     saas.number_matching_search = 20;
     saas.number_per_page = 10;
@@ -250,22 +247,20 @@ describe('The search_service service', function () {
     expect(saas.search_buildings.callCount).toEqual(1);
 
   });
-  it('decrements the page when the `previous` button is clicked',
-    function () {
-      // arrange
-      saas.number_matching_search = 10000;
-      saas.number_per_page = 10;
-      saas.current_page = 100;
-      spyOn(saas, 'search_buildings');
-      // act
-      saas.prev_page();
+  it('decrements the page when the `previous` button is clicked', function () {
+    // arrange
+    saas.number_matching_search = 10000;
+    saas.number_per_page = 10;
+    saas.current_page = 100;
+    spyOn(saas, 'search_buildings');
+    // act
+    saas.prev_page();
 
-      // assert
-      expect(saas.current_page).toEqual(99);
-      expect(saas.search_buildings).toHaveBeenCalled();
-    });
-  it('does not decrement below the first page when the `previous` button' +
-    ' is clicked', function () {
+    // assert
+    expect(saas.current_page).toEqual(99);
+    expect(saas.search_buildings).toHaveBeenCalled();
+  });
+  it('does not decrement below the first page when the `previous` button is clicked', function () {
     // arrange
     saas.num_pages = 1;
     saas.number_per_page = 10;
@@ -278,21 +273,18 @@ describe('The search_service service', function () {
     expect(saas.current_page).toEqual(1);
     expect(saas.search_buildings).toHaveBeenCalled();
   });
-  it('fetches more or less results per page when a user selects an option' +
-    ' from the number per page select',
-    function () {
-      // arrange
-      saas.number_per_page_options_model = 50;
-      spyOn(saas, 'search_buildings');
-      // act
-      saas.update_number_per_page();
+  it('fetches more or less results per page when a user selects an option from the number per page select', function () {
+    // arrange
+    saas.number_per_page_options_model = 50;
+    spyOn(saas, 'search_buildings');
+    // act
+    saas.update_number_per_page();
 
-      // assert
-      expect(saas.number_per_page).toEqual(50);
-      expect(saas.search_buildings).toHaveBeenCalled();
-    });
-  it('updates the number of results displayed text after a successful ' +
-    'search', function () {
+    // assert
+    expect(saas.number_per_page).toEqual(50);
+    expect(saas.search_buildings).toHaveBeenCalled();
+  });
+  it('updates the number of results displayed text after a successful search', function () {
     // standard case
     // page 2 of 3 with 10/page, so should display 11 of 20
     // arrange
@@ -308,126 +300,119 @@ describe('The search_service service', function () {
     expect(saas.showing.end).toEqual(20);
     expect(saas.search_buildings).not.toHaveBeenCalled();
   });
-  it('displays the number matching the query if on the last page of results',
-    function () {
-      // standard case
-      // page 4 of 4 with 10/page and 34 results, so should display 31 of 34
-      // arrange
-      saas.current_page = 4;
-      saas.number_per_page = 10;
-      saas.number_matching_search = 34;
-      spyOn(saas, 'search_buildings');
-      // act
-      saas.update_start_end_paging();
+  it('displays the number matching the query if on the last page of results', function () {
+    // standard case
+    // page 4 of 4 with 10/page and 34 results, so should display 31 of 34
+    // arrange
+    saas.current_page = 4;
+    saas.number_per_page = 10;
+    saas.number_matching_search = 34;
+    spyOn(saas, 'search_buildings');
+    // act
+    saas.update_start_end_paging();
 
-      // assert
-      expect(saas.showing.start).toEqual(31);
-      expect(saas.showing.end).toEqual(34);
+    // assert
+    expect(saas.showing.start).toEqual(31);
+    expect(saas.showing.end).toEqual(34);
+  });
+  it('should call update_start_end_paging after a successful search', function () {
+    // arrange
+    spyOn(saas, 'update_start_end_paging');
+    test_url = 'https://mytest.com';
+    saas.url = test_url;
+
+    // act
+    saas.search_buildings();
+    httpBackend.expectPOST(test_url).respond(201, {
+      buildings: [{
+        name: 'one',
+        id: 1
+      }, {
+        name: 'two',
+        id: 2
+      }]
     });
-  it('should call update_start_end_paging after a successful search',
-    function () {
-      // arrange
-      spyOn(saas, 'update_start_end_paging');
-      test_url = 'https://mytest.com';
-      saas.url = test_url;
+    httpBackend.flush();
 
-      // act
-      saas.search_buildings();
-      httpBackend.expectPOST(test_url).respond(201, {
-        buildings: [{
-          name: 'one',
-          id: 1
-        }, {
-          name: 'two',
-          id: 2
-        }]
-      });
-      httpBackend.flush();
+    // assert
+    expect(saas.update_start_end_paging).toHaveBeenCalled();
+  });
+  it('should call update_buttons after a successful search', function () {
+    // arrange
+    spyOn(saas, 'update_buttons');
+    test_url = 'https://mytest.com';
+    saas.url = test_url;
 
-      // assert
-      expect(saas.update_start_end_paging).toHaveBeenCalled();
+    // act
+    saas.search_buildings();
+    httpBackend.expectPOST(test_url).respond(201, {
+      buildings: [{
+        name: 'one',
+        id: 1
+      }, {
+        name: 'two',
+        id: 2
+      }]
     });
-  it('should call update_buttons after a successful search',
-    function () {
-      // arrange
-      spyOn(saas, 'update_buttons');
-      test_url = 'https://mytest.com';
-      saas.url = test_url;
+    httpBackend.flush();
 
-      // act
-      saas.search_buildings();
-      httpBackend.expectPOST(test_url).respond(201, {
-        buildings: [{
-          name: 'one',
-          id: 1
-        }, {
-          name: 'two',
-          id: 2
-        }]
-      });
-      httpBackend.flush();
+    // assert
+    expect(saas.update_buttons).toHaveBeenCalled();
+  });
+  it('should disable prev paging buttons at the first page', function () {
+    // arrange
+    saas.current_page = 1;
+    saas.number_matching_search = 50;
+    saas.number_per_page = 10;
 
-      // assert
-      expect(saas.update_buttons).toHaveBeenCalled();
+    // act
+    saas.update_buttons();
+
+    // assert
+    expect(saas.prev_page_disabled).toEqual(true);
+    expect(saas.next_page_disabled).toEqual(false);
+  });
+  it('should disable next paging buttons at the last page', function () {
+    // arrange
+    saas.current_page = 5;
+    saas.number_per_page = 10;
+    saas.number_matching_search = 50;
+
+    // act
+    saas.update_buttons();
+
+    // assert
+    expect(saas.prev_page_disabled).toEqual(false);
+    expect(saas.next_page_disabled).toEqual(true);
+  });
+  it('should calculate the number of pages after a successful search', function () {
+    // arrange
+    test_url = 'https://mytest.com';
+    saas.url = test_url;
+
+    // act
+    saas.search_buildings();
+    httpBackend.expectPOST(test_url).respond(201, {
+      buildings: [{
+        name: 'one',
+        id: 1
+      }, {
+        name: 'two',
+        id: 2
+      }],
+      number_matching_search: 101
     });
-  it('should disable prev paging buttons at the first page',
-    function () {
-      // arrange
-      saas.current_page = 1;
-      saas.number_matching_search = 50;
-      saas.number_per_page = 10;
+    httpBackend.flush();
 
-      // act
-      saas.update_buttons();
-
-      // assert
-      expect(saas.prev_page_disabled).toEqual(true);
-      expect(saas.next_page_disabled).toEqual(false);
-    });
-  it('should disable next paging buttons at the last page',
-    function () {
-      // arrange
-      saas.current_page = 5;
-      saas.number_per_page = 10;
-      saas.number_matching_search = 50;
-
-      // act
-      saas.update_buttons();
-
-      // assert
-      expect(saas.prev_page_disabled).toEqual(false);
-      expect(saas.next_page_disabled).toEqual(true);
-    });
-  it('should calculate the number of pages after a successful search',
-    function () {
-      // arrange
-      test_url = 'https://mytest.com';
-      saas.url = test_url;
-
-      // act
-      saas.search_buildings();
-      httpBackend.expectPOST(test_url).respond(201, {
-        buildings: [{
-          name: 'one',
-          id: 1
-        }, {
-          name: 'two',
-          id: 2
-        }],
-        number_matching_search: 101
-      });
-      httpBackend.flush();
-
-      // assert
-      expect(saas.number_matching_search).toEqual(101);
-      expect(saas.num_pages()).toEqual(11);
-    });
+    // assert
+    expect(saas.number_matching_search).toEqual(101);
+    expect(saas.num_pages()).toEqual(11);
+  });
 
   /**
    * checkbox logic tests
    */
-  it('should select or unselect all the viewed results when the select all' +
-    ' checkbox is checked or unchecked', function () {
+  it('should select or unselect all the viewed results when the select all checkbox is checked or unchecked', function () {
     // arrange
     saas.selected_buildings = [1, 2, 3];
     saas.select_all_checkbox = true;
@@ -450,45 +435,42 @@ describe('The search_service service', function () {
     }]);
     expect(saas.select_or_deselect_all_buildings).toHaveBeenCalled();
   });
-  it('should call select_or_deselect_all_buildings after a search',
-    function () {
-      // arrange
-      spyOn(saas, 'select_or_deselect_all_buildings');
-      test_url = 'https://mytest.com';
-      saas.url = test_url;
+  it('should call select_or_deselect_all_buildings after a search', function () {
+    // arrange
+    spyOn(saas, 'select_or_deselect_all_buildings');
+    test_url = 'https://mytest.com';
+    saas.url = test_url;
 
-      // act
-      saas.search_buildings();
-      httpBackend.expectPOST(test_url).respond(201, {
-        buildings: [{
-          name: 'one',
-          id: 1
-        }, {
-          name: 'two',
-          id: 2
-        }]
-      });
-      httpBackend.flush();
-
-      // assert
-      expect(saas.select_or_deselect_all_buildings).toHaveBeenCalled();
+    // act
+    saas.search_buildings();
+    httpBackend.expectPOST(test_url).respond(201, {
+      buildings: [{
+        name: 'one',
+        id: 1
+      }, {
+        name: 'two',
+        id: 2
+      }]
     });
-  it('should add a building to the selected list when checked',
-    function () {
-      // arrange
-      var building = {
-        id: 5,
-        checked: true
-      };
+    httpBackend.flush();
 
-      // act
-      saas.add_remove_to_list(building);
+    // assert
+    expect(saas.select_or_deselect_all_buildings).toHaveBeenCalled();
+  });
+  it('should add a building to the selected list when checked', function () {
+    // arrange
+    var building = {
+      id: 5,
+      checked: true
+    };
 
-      // assert
-      expect(saas.selected_buildings).toEqual([5]);
-    });
-  it('should add a building to the selected list when unchecked and the ' +
-    'select all checkbox is checked', function () {
+    // act
+    saas.add_remove_to_list(building);
+
+    // assert
+    expect(saas.selected_buildings).toEqual([5]);
+  });
+  it('should add a building to the selected list when unchecked and the select all checkbox is checked', function () {
     // arrange
     var building = {
       id: 5,
@@ -502,24 +484,22 @@ describe('The search_service service', function () {
     // assert
     expect(saas.selected_buildings).toEqual([5]);
   });
-  it('should remove a building to the selected list when unchecked',
-    function () {
-      // arrange
-      var building = {
-        id: 5,
-        checked: false
-      };
-      saas.selected_buildings = [5, 6, 7];
-      saas.select_all_checkbox = false;
+  it('should remove a building to the selected list when unchecked', function () {
+    // arrange
+    var building = {
+      id: 5,
+      checked: false
+    };
+    saas.selected_buildings = [5, 6, 7];
+    saas.select_all_checkbox = false;
 
-      // act
-      saas.add_remove_to_list(building);
+    // act
+    saas.add_remove_to_list(building);
 
-      // assert
-      expect(saas.selected_buildings).toEqual([6, 7]);
-    });
-  it('should remove a building to the selected list when checked if the ' +
-    'select all checkbox is checked', function () {
+    // assert
+    expect(saas.selected_buildings).toEqual([6, 7]);
+  });
+  it('should remove a building to the selected list when checked if the select all checkbox is checked', function () {
     // arrange
     var building = {
       id: 5,
@@ -534,8 +514,7 @@ describe('The search_service service', function () {
     // assert
     expect(saas.selected_buildings).toEqual([6, 7]);
   });
-  it('should call load_state_from_selected_buildings after a successful ' +
-    'search', function () {
+  it('should call load_state_from_selected_buildings after a successful search', function () {
     // arrange
     spyOn(saas, 'load_state_from_selected_buildings').andCallThrough();
     test_url = 'https://mytest.com';
@@ -559,8 +538,7 @@ describe('The search_service service', function () {
     // assert
     expect(saas.load_state_from_selected_buildings).toHaveBeenCalled();
   });
-  it('should call update_results after a successful ' +
-    'search', function () {
+  it('should call update_results after a successful search', function () {
     // arrange
     var select_or_deselect_all_buildings_time,
       load_state_from_selected_buildings_time;
@@ -572,12 +550,12 @@ describe('The search_service service', function () {
     spyOn(saas, 'load_state_from_selected_buildings')
       .andCallFake(function () {
           // wait for a sec, otherwise both have the same timestamp
-          for (var y = 0; y < 100000; y++) {
-            var x = new Date();
-            x = x + y;
-          }
-          load_state_from_selected_buildings_time = new Date();
+        for (var y = 0; y < 100000; y++) {
+          var x = new Date();
+          x = x + y;
         }
+        load_state_from_selected_buildings_time = new Date();
+      }
       );
     test_url = 'https://mytest.com';
     saas.url = test_url;
@@ -599,8 +577,7 @@ describe('The search_service service', function () {
 
     // assert
     expect(saas.update_results).toHaveBeenCalled();
-    expect(select_or_deselect_all_buildings_time <
-      load_state_from_selected_buildings_time).toBe(true);
+    expect(select_or_deselect_all_buildings_time < load_state_from_selected_buildings_time).toBe(true);
   });
   it('check selected buildings successful', function () {
     // arrange

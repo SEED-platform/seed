@@ -6,51 +6,26 @@
 // Replaces building detail controller, will test later with both property and taxlot data too
 describe('controller: inventory_detail_controller', function () {
   // globals set up and used in each test scenario
-  var mockService, scope, controller, ngFilter, delete_called;
-  var inventory_detail_controller, inventory_detail_controller_scope, modalInstance;
-  var mock_building_services, mock_building, mock_default_columns;
-  var mock_project_service;
+  var controller;
+  var inventory_detail_controller_scope;
+  var mock_building_service, mock_building;
 
   beforeEach(function () {
     module('BE.seed');
-  });
 
-  beforeEach(function () {
-    module(function ($provide) {
-      $provide.service('default_columns', function () {
-        return {columns: []};
-      });
-    });
-  });
-
-  // inject AngularJS dependencies for the controller
-  beforeEach(inject(
-    function ($controller,
-              $rootScope,
-              $uibModal,
-              urls,
-              $q,
-              inventory_service,
-              project_service,
-              default_columns,
-              $filter) {
+    inject(function ($controller, $rootScope, $uibModal, urls, $q, inventory_service) {
       controller = $controller;
-      scope = $rootScope;
-      ngFilter = $filter;
       inventory_detail_controller_scope = $rootScope.$new();
-      modal_item_state = '';
-      delete_called = false;
-      mock_default_columns = default_columns;
 
 
       // mock the inventory_service factory methods used in the controller
       // and return their promises
-      mock_building_services = inventory_service;
+      mock_building_service = inventory_service;
       // mock_project_service = project_service;
 
       // spyOn(mock_project_service, 'get_project')
       //   .andCallFake(function (project_slug) {
-      //     return $q.when({
+      //     return $q.resolve({
       //       status: 'success',
       //       project: {
       //         id: 33,
@@ -59,15 +34,16 @@ describe('controller: inventory_detail_controller', function () {
       //       }
       //     });
       //   });
-      spyOn(mock_building_services, 'update_property')
+      spyOn(mock_building_service, 'update_property')
         .andCallFake(function (property_id, cycle_id, state) {
           mock_building = state;
-          return $q.when({
+          return $q.resolve({
             status: 'success'
           });
         });
     }
-  ));
+    );
+  });
 
   // this is outside the beforeEach so it can be configured by each unit test
   function create_inventory_detail_controller () {
@@ -192,7 +168,7 @@ describe('controller: inventory_detail_controller', function () {
       sortable: true,
       checked: false
     }];
-    inventory_detail_controller = controller('inventory_detail_controller', {
+    controller('inventory_detail_controller', {
       $scope: inventory_detail_controller_scope,
       $stateParams: {
         cycle_id: 2017,
@@ -226,7 +202,6 @@ describe('controller: inventory_detail_controller', function () {
     // expect(inventory_detail_controller_scope.imported_buildings[0].id).toBe(2);
   });
 
-
   it('should make a copy of building while making edits', function () {
     // arrange
     create_inventory_detail_controller();
@@ -237,25 +212,24 @@ describe('controller: inventory_detail_controller', function () {
     inventory_detail_controller_scope.item_state.gross_floor_area = 43214;
 
     // assertions
-    expect(inventory_detail_controller_scope.item_copy.gross_floor_area)
-      .toBe(123456);
+    expect(inventory_detail_controller_scope.item_copy.gross_floor_area).toBe(123456);
   });
-  it('should restore the copy of building if a user clicks cancel',
-    function () {
+
+  it('should restore the copy of building if a user clicks cancel', function () {
       // arrange
-      create_inventory_detail_controller();
+    create_inventory_detail_controller();
 
       // act
-      inventory_detail_controller_scope.$digest();
-      inventory_detail_controller_scope.on_edit();
-      inventory_detail_controller_scope.item_state.gross_floor_area = 43214;
-      inventory_detail_controller_scope.on_cancel();
+    inventory_detail_controller_scope.$digest();
+    inventory_detail_controller_scope.on_edit();
+    inventory_detail_controller_scope.item_state.gross_floor_area = 43214;
+    inventory_detail_controller_scope.on_cancel();
 
       // assertions
-      expect(inventory_detail_controller_scope.item_state.gross_floor_area)
-        .toBe(123456);
-      expect(inventory_detail_controller_scope.edit_form_showing).toBe(false);
-    });
+    expect(inventory_detail_controller_scope.item_state.gross_floor_area).toBe(123456);
+    expect(inventory_detail_controller_scope.edit_form_showing).toBe(false);
+  });
+
   it('should save a building when a user clicks the save button', function () {
     // arrange
     create_inventory_detail_controller();
@@ -268,8 +242,7 @@ describe('controller: inventory_detail_controller', function () {
     inventory_detail_controller_scope.$digest();
 
     // assertions
-    expect(mock_building_services.update_property)
-      .toHaveBeenCalledWith(1, 2017, {gross_floor_area: 43214});
+    expect(mock_building_service.update_property).toHaveBeenCalledWith(1, 2017, {gross_floor_area: 43214});
     expect(mock_building.gross_floor_area).toEqual(43214);
   });
 
@@ -285,8 +258,7 @@ describe('controller: inventory_detail_controller', function () {
     expect(inventory_detail_controller_scope.is_valid_data_column_key('pk')).toEqual(false);
     expect(inventory_detail_controller_scope.is_valid_data_column_key('pk_source')).toEqual(false);
     expect(inventory_detail_controller_scope.is_valid_data_column_key(' extra_data ')).toEqual(false);
-    expect(inventory_detail_controller_scope.is_valid_data_column_key('gross_floor_area'))
-      .toEqual(true);
+    expect(inventory_detail_controller_scope.is_valid_data_column_key('gross_floor_area')).toEqual(true);
   });
 
   it('should display Floor Areas with number', function () {
@@ -302,8 +274,6 @@ describe('controller: inventory_detail_controller', function () {
     expect(inventory_detail_controller_scope.get_number('123,123,123.123')).toEqual(123123123.123);
     expect(inventory_detail_controller_scope.get_number('-123,123,123')).toEqual(-123123123);
     expect(inventory_detail_controller_scope.get_number(-123123123)).toEqual(-123123123);
-
-
   });
 
   // Test doesn't make sense anymore:

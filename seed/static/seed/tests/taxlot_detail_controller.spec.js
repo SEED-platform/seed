@@ -5,19 +5,14 @@
 describe('controller: inventory_detail_controller', function () {
 
   // globals set up and used in each test scenario
-  var scope, ngFilter, delete_called, ngLog, ngUrls;
-  var inventory_detail_controller, inventory_detail_controller_scope;
-  var mock_inventory_service, columns, state;
+  var controller, ngFilter, ngLog, ngUrls;
+  var inventory_detail_controller_scope;
+  var mock_inventory_service, state;
   var mock_uib_modal, mock_label_service, mock_label_payload;
 
   beforeEach(function () {
     module('BE.seed');
-  });
-
-  // inject AngularJS dependencies for the controller
-  beforeEach(inject(
-    function ($controller, $rootScope, $state, $uibModal, $log, $filter, $stateParams, $q, urls, label_service, label_service,
-              inventory_service) {
+    inject(function ($controller, $rootScope, $state, $uibModal, $log, $filter, $stateParams, $q, urls, label_service, inventory_service) {
       controller = $controller;
       state = $state;
       ngFilter = $filter;
@@ -28,8 +23,6 @@ describe('controller: inventory_detail_controller', function () {
       mock_label_service = label_service;
 
       inventory_detail_controller_scope = $rootScope.$new();
-      modal_state = '';
-      delete_called = false;
 
       // mock the inventory_service factory methods used in the controller
       // and return their promises
@@ -38,12 +31,12 @@ describe('controller: inventory_detail_controller', function () {
       spyOn(mock_inventory_service, 'update_taxlot')
         .andCallFake(function (taxlot_id, cycle_id, taxlot_state) {
           inventory_detail_controller_scope.item_state = taxlot_state;
-          return $q.when({
+          return $q.resolve({
             status: 'success'
           });
         });
-    }
-  ));
+    });
+  });
 
   // this is outside the beforeEach so it can be configured by each unit test
   function create_inventory_detail_controller () {
@@ -95,64 +88,59 @@ describe('controller: inventory_detail_controller', function () {
         regular_fields: ['address_line_2'],
         extra_data_fields: []
       },
-      history: [
-        {
-          state: {
-            address_line_1: '123 Main St.',
-            address_line_2: 'newer value',
-            state: 'Illinois',
-            extra_data: {
-              some_extra_data_field_1: '1',
-              some_extra_data_field_2: '2',
-              some_extra_data_field_3: '3',
-              some_extra_data_field_4: '4'
-            }
-          },
-          changed_fields: {
-            regular_fields: ['address_line_2'],
-            extra_data_fields: []
-          },
-          date_edited: '2016-07-26T15:55:10.180Z',
-          source: 'UserEdit'
+      history: [{
+        state: {
+          address_line_1: '123 Main St.',
+          address_line_2: 'newer value',
+          state: 'Illinois',
+          extra_data: {
+            some_extra_data_field_1: '1',
+            some_extra_data_field_2: '2',
+            some_extra_data_field_3: '3',
+            some_extra_data_field_4: '4'
+          }
         },
-        {
-          state: {
-            address_line_1: '123 Main St.',
-            address_line_2: 'old value',
-            state: 'Illinois',
-            extra_data: {
-              some_extra_data_field_1: '1',
-              some_extra_data_field_2: '2',
-              some_extra_data_field_3: '3',
-              some_extra_data_field_4: '4'
-            }
-          },
-          changed_fields: {
-            regular_fields: [],
-            extra_data_fields: []
-          },
-          date_edited: '2016-07-25T15:55:10.180Z',
-          source: 'ImportFile',
-          filename: 'myfile.csv'
-        }
-      ],
+        changed_fields: {
+          regular_fields: ['address_line_2'],
+          extra_data_fields: []
+        },
+        date_edited: '2016-07-26T15:55:10.180Z',
+        source: 'UserEdit'
+      }, {
+        state: {
+          address_line_1: '123 Main St.',
+          address_line_2: 'old value',
+          state: 'Illinois',
+          extra_data: {
+            some_extra_data_field_1: '1',
+            some_extra_data_field_2: '2',
+            some_extra_data_field_3: '3',
+            some_extra_data_field_4: '4'
+          }
+        },
+        changed_fields: {
+          regular_fields: [],
+          extra_data_fields: []
+        },
+        date_edited: '2016-07-25T15:55:10.180Z',
+        source: 'ImportFile',
+        filename: 'myfile.csv'
+      }],
       status: 'success'
     };
 
-    var fake_all_columns = [
-      //TODO need more example taxlot columns
-      {
-        title: 'Address Line 1',
-        sort_column: 'property_name',
-        'class': '',
-        title_class: '',
-        type: 'string',
-        field_type: 'building_information',
-        sortable: true,
-        checked: false
-      }
-    ];
-    inventory_detail_controller = controller('inventory_detail_controller', {
+    //TODO need more example taxlot columns
+    var fake_all_columns = [{
+      title: 'Address Line 1',
+      sort_column: 'property_name',
+      'class': '',
+      title_class: '',
+      type: 'string',
+      field_type: 'building_information',
+      sortable: true,
+      checked: false
+    }];
+    controller('inventory_detail_controller', {
       $state: state,
       $scope: inventory_detail_controller_scope,
       $uibModal: mock_uib_modal,
@@ -165,7 +153,6 @@ describe('controller: inventory_detail_controller', function () {
       $log: ngLog,
       $filter: ngFilter,
       urls: ngUrls,
-      label_service: mock_label_service,
       label_service: mock_label_service,
       inventory_service: mock_inventory_service,
       inventory_payload: fake_taxlot_payload,
