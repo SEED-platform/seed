@@ -14,3 +14,4 @@ To perform a release make sure to do the following.
 1. Draft new Release from Github (https://github.com/SEED-platform/seed/releases).
 1. Include list of changes since previous release. (From the console output with the ![Fixed:] text.
 1. Verify that the Docker versions are built and pushed to Docker hub (https://hub.docker.com/r/seedplatform/seed/tags/).
+1. Go to Read the Docs and enable the latest version to be active (https://readthedocs.org/dashboard/seed-platform/versions/)
