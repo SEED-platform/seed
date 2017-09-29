@@ -4,31 +4,23 @@
  */
 describe('controller: dataset_detail_controller', function () {
   // globals set up and used in each test scenario
-  var mockService, scope, controller, ngFilter, delete_called;
-  var dataset_detail_controller, dataset_detail_controller_scope, modalInstance, labels;
-
+  var controller, delete_called;
+  var mock_dataset_service, dataset_detail_controller_scope;
 
   // make the seed app available for each test
   // 'config.seed' is created in TestFilters.html
   beforeEach(function () {
     module('BE.seed');
-  });
-
-  // inject AngularJS dependencies for the controller
-  beforeEach(inject(
-    function ($controller, $rootScope, $uibModal, urls, $q, dataset_service, $filter) {
+    inject(function ($controller, $rootScope, $uibModal, urls, $q, dataset_service) {
       controller = $controller;
-      scope = $rootScope;
-      ngFilter = $filter;
       dataset_detail_controller_scope = $rootScope.$new();
-      modal_state = '';
       delete_called = false;
 
       // mock the dataset_service factory methods used in the controller
       // and return their promises
       mock_dataset_service = dataset_service;
       spyOn(mock_dataset_service, 'get_dataset')
-        .andCallFake(function (dataset_id) {
+        .andCallFake(function () {
           // return $q.reject for error scenario
           var fake_importfiles = [{
             name: 'DC_CoveredBuildings_50k.csv',
@@ -58,20 +50,20 @@ describe('controller: dataset_detail_controller', function () {
           if (delete_called) {
             fake_payload.dataset.importfiles.pop();
           }
-          console.log({delete_called: delete_called, ds: fake_payload});
-          return $q.when(fake_payload);
+          // console.log({delete_called: delete_called, ds: fake_payload});
+          return $q.resolve(fake_payload);
         });
 
       spyOn(mock_dataset_service, 'delete_file')
-        .andCallFake(function (import_file) {
+        .andCallFake(function () {
           delete_called = true;
-          console.log({d: 'delete_called'});
-          return $q.when({
+          // console.log({d: 'delete_called'});
+          return $q.resolve({
             status: 'success'
           });
         });
-    }
-  ));
+    });
+  });
 
   // this is outside the beforeEach so it can be configured by each unit test
   function create_dataset_detail_controller () {
@@ -100,8 +92,20 @@ describe('controller: dataset_detail_controller', function () {
       status: 'success',
       dataset: fake_dataset
     };
-    dataset_detail_controller = controller('dataset_detail_controller', {
+    var fake_cycles = {
+      cycles: [{
+        end: '2015-01-01T07:59:59Z',
+        id: 2017,
+        name: '2014 Calendar Year',
+        num_properties: 1496,
+        num_taxlots: 1519,
+        start: '2014-01-01T08:00:00Z'
+      }],
+      status: 'success'
+    };
+    controller('dataset_detail_controller', {
       $scope: dataset_detail_controller_scope,
+      cycles: fake_cycles,
       dataset_payload: fake_payload
     });
   }
@@ -109,31 +113,15 @@ describe('controller: dataset_detail_controller', function () {
   /**
    * Test scenarios
    */
-   // Tested in e2e
+  it('should have an data set payload with import files', function () {
+    // arrange
+    create_dataset_detail_controller();
 
-  // it('should have an data set payload with import files', function () {
-  //   // arrange
-  //   create_dataset_detail_controller();
+    // act
+    dataset_detail_controller_scope.$digest();
 
-  //   // act
-  //   dataset_detail_controller_scope.$digest();
-
-  //   // assertions
-  //   expect(dataset_detail_controller_scope.dataset.importfiles.length).toBe(2);
-  // });
-
-  // it('should show an alert when the delete icon is clicked', function () {
-  //   // arrange
-  //   create_dataset_detail_controller();
-
-  //   // act
-  //   dataset_detail_controller_scope.$digest();
-  //   var importfiles = dataset_detail_controller_scope.dataset.importfiles;
-  //   dataset_detail_controller_scope.confirm_delete(importfiles[0]);
-  //   dataset_detail_controller_scope.$digest();
-
-  //   // assertions
-  //   expect(dataset_detail_controller_scope.dataset.importfiles.length).toBe(1);
-  // });
+    // assertions
+    expect(dataset_detail_controller_scope.dataset.importfiles.length).toBe(2);
+  });
 
 });

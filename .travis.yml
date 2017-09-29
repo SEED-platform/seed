@@ -49,12 +49,12 @@ env:
     - TOX_ENV=python
     - TOX_ENV=flake8
     - TOX_ENV=docs
-#    - TOX_ENV=functional
+    - TOX_ENV=functional
     - TOX_ENV=apitest
 script:
   - tox -e $TOX_ENV
 jobs:
   include:
     - stage: publish
-      script: if ([ "$TRAVIS_BRANCH" == "develop" ] || [ "$TRAVIS_BRANCH" == "bricr" ] ) && [ "$TRAVIS_PULL_REQUEST" == false ]; then docker/travis_build_docker.sh; else echo 0; fi
+      script: if ([ "$TRAVIS_BRANCH" == "develop" ] || [ "$TRAVIS_BRANCH" == "bricr" ] || [ "$TRAVIS_BRANCH" == "master" ]) && [ "$TRAVIS_PULL_REQUEST" == false ]; then docker/travis_build_docker.sh; else echo 0; fi
       env: DJANGO_SETTINGS_MODULE=config.settings.docker

@@ -11,103 +11,96 @@
 var myfromNowFilterApp = angular.module('myfromNowFilterApp', ['fromNow']);
 
 describe('The fromNow filter', function () {
-  beforeEach(module('myfromNowFilterApp'));
+  var fromNowFilter;
 
-  it('shows the present time as "a few seconds ago"',
-    inject(function (fromNowFilter) {
-      // arrange
-      var date_epoch_mills = (new Date()).getTime();
+  beforeEach(function () {
+    module('myfromNowFilterApp');
+    inject(function (_fromNowFilter_) {
+      fromNowFilter = _fromNowFilter_;
+    });
+  });
 
-      // act
-      var from_now_value = fromNowFilter(date_epoch_mills);
+  it('shows the present time as "a few seconds ago"', function () {
+    // arrange
+    var date_epoch_mills = (new Date()).getTime();
 
-      // assert
-      expect(from_now_value).toBe('a few seconds ago');
-    })
-  );
+    // act
+    var from_now_value = fromNowFilter(date_epoch_mills);
 
-  it('shows 5 minutes ago as "5 minutes ago"',
-    inject(function (fromNowFilter) {
-      // arrange
-      var date_epoch_mills = (new Date()).getTime();
-      date_epoch_mills = date_epoch_mills - 5 * 60 * 1000;
+    // assert
+    expect(from_now_value).toBe('a few seconds ago');
+  });
 
-      // act
-      var from_now_value = fromNowFilter(date_epoch_mills);
+  it('shows 5 minutes ago as "5 minutes ago"', function () {
+    // arrange
+    var date_epoch_mills = (new Date()).getTime();
+    date_epoch_mills = date_epoch_mills - 5 * 60 * 1000;
 
-      // assert
-      expect(from_now_value).toBe('5 minutes ago');
-    })
-  );
+    // act
+    var from_now_value = fromNowFilter(date_epoch_mills);
 
-  it('shows 4 hours ago as "4 hours ago"',
-    inject(function (fromNowFilter) {
-      // arrange
-      var date_epoch_mills = (new Date()).getTime();
-      date_epoch_mills = date_epoch_mills - 4 * 60 * 60 * 1000;
+    // assert
+    expect(from_now_value).toBe('5 minutes ago');
+  });
 
-      // act
-      var from_now_value = fromNowFilter(date_epoch_mills);
+  it('shows 4 hours ago as "4 hours ago"', function () {
+    // arrange
+    var date_epoch_mills = (new Date()).getTime();
+    date_epoch_mills = date_epoch_mills - 4 * 60 * 60 * 1000;
 
-      // assert
-      expect(from_now_value).toBe('4 hours ago');
-    })
-  );
+    // act
+    var from_now_value = fromNowFilter(date_epoch_mills);
 
-  it('shows 24 hours ago as "a day ago"',
-    inject(function (fromNowFilter) {
-      // arrange
-      var date_epoch_mills = (new Date()).getTime();
-      date_epoch_mills = date_epoch_mills - 24 * 60 * 60 * 1000;
+    // assert
+    expect(from_now_value).toBe('4 hours ago');
+  });
 
-      // act
-      var from_now_value = fromNowFilter(date_epoch_mills);
+  it('shows 24 hours ago as "a day ago"', function () {
+    // arrange
+    var date_epoch_mills = (new Date()).getTime();
+    date_epoch_mills = date_epoch_mills - 24 * 60 * 60 * 1000;
 
-      // assert
-      expect(from_now_value).toBe('a day ago');
-    })
-  );
+    // act
+    var from_now_value = fromNowFilter(date_epoch_mills);
 
-  it('shows 36 hours ago as "2 days ago"',
-    inject(function (fromNowFilter) {
-      // arrange
-      var date_epoch_mills = (new Date()).getTime();
-      date_epoch_mills = date_epoch_mills - 36 * 60 * 60 * 1000;
+    // assert
+    expect(from_now_value).toBe('a day ago');
+  });
 
-      // act
-      var from_now_value = fromNowFilter(date_epoch_mills);
+  it('shows 36 hours ago as "2 days ago"', function () {
+    // arrange
+    var date_epoch_mills = (new Date()).getTime();
+    date_epoch_mills = date_epoch_mills - 36 * 60 * 60 * 1000;
 
-      // assert
-      expect(from_now_value).toBe('2 days ago');
-    })
-  );
+    // act
+    var from_now_value = fromNowFilter(date_epoch_mills);
 
-  it('shows 1550 hours ago as "2 months ago"',
-    inject(function (fromNowFilter) {
-      // arrange
-      var date_epoch_mills = (new Date()).getTime();
-      date_epoch_mills = date_epoch_mills - 1550 * 60 * 60 * 1000;
+    // assert
+    expect(from_now_value).toBe('2 days ago');
+  });
 
-      // act
-      var from_now_value = fromNowFilter(date_epoch_mills);
+  it('shows 1550 hours ago as "2 months ago"', function () {
+    // arrange
+    var date_epoch_mills = (new Date()).getTime();
+    date_epoch_mills = date_epoch_mills - 1550 * 60 * 60 * 1000;
 
-      // assert
-      expect(from_now_value).toBe('2 months ago');
-    })
-  );
+    // act
+    var from_now_value = fromNowFilter(date_epoch_mills);
 
-  it('defaults to "a few seconds ago" for undefined values',
-    inject(function (fromNowFilter) {
-      // arrange
+    // assert
+    expect(from_now_value).toBe('2 months ago');
+  });
 
-      // act
+  it('defaults to "a few seconds ago" for undefined values', function () {
+    // arrange
 
-      // assert
-      expect(fromNowFilter(undefined)).toBe('a few seconds ago');
-      expect(fromNowFilter(null)).toBe('a few seconds ago');
-      expect(fromNowFilter('some text')).toBe('a few seconds ago');
-      expect(fromNowFilter({})).toBe('a few seconds ago');
-      expect(fromNowFilter({time: 'not time'})).toBe('a few seconds ago');
-    })
-  );
+    // act
+
+    // assert
+    expect(fromNowFilter(undefined)).toBe('a few seconds ago');
+    expect(fromNowFilter(null)).toBe('a few seconds ago');
+    expect(fromNowFilter('some text')).toBe('a few seconds ago');
+    expect(fromNowFilter({})).toBe('a few seconds ago');
+    expect(fromNowFilter({time: 'not time'})).toBe('a few seconds ago');
+  });
 });

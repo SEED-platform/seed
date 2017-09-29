@@ -4,73 +4,61 @@
  */
 describe('controller: concat_modal_controller', function () {
   // globals set up and used in each test scenario
-  var scope, controller, modal_state;
-  var concat_modal_controller, concat_modal_controller_scope, modalInstance, labels;
-  var deleted_label, updated_label, mock_mapping_service, mock_matching_service;
-  var global_step = 1;
-  var global_dataset = {};
+  var controller, modal_state;
+  var concat_modal_controller_scope;
 
   // make the seed app available for each test
   // 'config.seed' is created in TestFilters.html
   beforeEach(function () {
     module('BE.seed');
-  });
-
-  // inject AngularJS dependencies for the controller
-  beforeEach(inject(
-    function ($controller, $rootScope, $uibModal, urls, $q) {
+    inject(function ($controller, $rootScope) {
       controller = $controller;
-      scope = $rootScope;
       concat_modal_controller_scope = $rootScope.$new();
       concat_modal_controller_scope.concat_columns = [];
       modal_state = '';
-    }
-  ));
+    });
+  });
 
   var mock_building_column_types = [
     'address1', 'city', 'state', 'postal_code'
   ];
 
-  var mock_raw_columns = [
-    {
-      name: 'Address',
-      suggestion: 'address1',
-      confidence: 1,
-      raw_data: [
-        '234 Database way',
-        '23444 Huh hwy',
-        '23444 Huh hwy',
-        '23444 Huh hwy',
-        '1223 face pl.'
-      ],
-      is_concatenated: false,
-      is_a_concat_parameter: false
-    },
-    {
-      name: 'City',
-      suggestion: 'city',
-      confidence: 1,
-      raw_data: [
-        'Mega City', 'Mega City', 'Mega City', 'Mega City', 'Mega City'
-      ],
-      is_concatenated: false,
-      is_a_concat_parameter: false
-    },
-    {
-      name: 'Zip',
-      suggestion: '',
-      confidence: 0,
-      raw_data: [
-        '234233', '234233', '234233', '234233', '234233'
-      ],
-      is_concatenated: false,
-      is_a_concat_parameter: false
-    }
-  ];
+  var mock_raw_columns = [{
+    name: 'Address',
+    suggestion: 'address1',
+    confidence: 1,
+    raw_data: [
+      '234 Database way',
+      '23444 Huh hwy',
+      '23444 Huh hwy',
+      '23444 Huh hwy',
+      '1223 face pl.'
+    ],
+    is_concatenated: false,
+    is_a_concat_parameter: false
+  }, {
+    name: 'City',
+    suggestion: 'city',
+    confidence: 1,
+    raw_data: [
+      'Mega City', 'Mega City', 'Mega City', 'Mega City', 'Mega City'
+    ],
+    is_concatenated: false,
+    is_a_concat_parameter: false
+  }, {
+    name: 'Zip',
+    suggestion: '',
+    confidence: 0,
+    raw_data: [
+      '234233', '234233', '234233', '234233', '234233'
+    ],
+    is_concatenated: false,
+    is_a_concat_parameter: false
+  }];
 
   // this is outside the beforeEach so it can be configured by each unit test
   function create_concat_modal_controller () {
-    concat_modal_controller = controller('concat_modal_controller', {
+    controller('concat_modal_controller', {
       $scope: concat_modal_controller_scope,
       $uibModalInstance: {
         close: function () {

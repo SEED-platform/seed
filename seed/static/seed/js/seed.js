@@ -291,7 +291,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
       //       var numberPerPage = 10;
       //       var project_slug = params.project_id;
       //       var pageNumber = 1;
-      //       delete(params.project_id);
+      //       delete params.project_id;
       //       params.project__slug = project_slug;
       //
       //       // Check session storage for order, sort, and filter values.
