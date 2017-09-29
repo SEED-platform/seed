@@ -1,8 +1,6 @@
 # SEED Version 2.2
 
-**NOTE: This is a draft list of the completed items. More items will be completed before the official release**
-
-Closed Issues: 19
+Closed Issues: 25
 - Fixed [#558]( https://github.com/SEED-platform/seed/issues/558 ), Label pulldown gets too small to read label text when browser window shrinks
 - Fixed [#598]( https://github.com/SEED-platform/seed/issues/598 ), Adding a label to 16,000+ records is a bit slow
 - Fixed [#781]( https://github.com/SEED-platform/seed/issues/781 ), Mapping hangs if there is a duplicate field name in the data
@@ -12,9 +10,11 @@ Closed Issues: 19
 - Fixed [#1219]( https://github.com/SEED-platform/seed/issues/1219 ), One property record added when only tax lot data is mapped
 - Fixed [#1239]( https://github.com/SEED-platform/seed/issues/1239 ), Mapping Review screen doesn't always show data
 - Fixed [#1257]( https://github.com/SEED-platform/seed/issues/1257 ), Field name with apostrophe capitalized the next character
+- Fixed [#1269]( https://github.com/SEED-platform/seed/issues/1269 ), Check Matching results screen to make sure information is correct
 - Fixed [#1275]( https://github.com/SEED-platform/seed/issues/1275 ), Save Mapping for PM file with lots of fields -- Browser unresponsive message
 - Fixed [#1280]( https://github.com/SEED-platform/seed/issues/1280 ), Not all fields show data in Mapping Review but are in Inventory list
 - Fixed [#1283]( https://github.com/SEED-platform/seed/issues/1283 ), View by Property: Address Line 1 (tax lot) doesn't display unless Address Line 1 (property) is also selected
+- Fixed [#1311]( https://github.com/SEED-platform/seed/issues/1311 ), Matching Results dialog box -- make the information there more informative for the user
 - Fixed [#1312]( https://github.com/SEED-platform/seed/issues/1312 ), Hand Matching screen -- keep "state" going from detail back to list
 - Fixed [#1320]( https://github.com/SEED-platform/seed/issues/1320 ), Display Names in List Settings not always displayed
 - Fixed [#1323]( https://github.com/SEED-platform/seed/issues/1323 ), Spinner needs to spin longer (!) before matching screen is displayed
@@ -22,13 +22,16 @@ Closed Issues: 19
 - Fixed [#1347]( https://github.com/SEED-platform/seed/issues/1347 ),  502 Bad Gateway area when matching Portfolio Manager file
 - Fixed [#1372]( https://github.com/SEED-platform/seed/issues/1372 ), Import sample data issue
 - Fixed [#1387]( https://github.com/SEED-platform/seed/issues/1387 ), DQ Check -- Optimize checking for large datasets
+- Fixed [#1394]( https://github.com/SEED-platform/seed/issues/1394 ), Matching List and Detail View -- Add List Settings
+- Fixed [#1407]( https://github.com/SEED-platform/seed/issues/1407 ), Matching -- sorting takes a while, need a spinner
+- Fixed [#1432]( https://github.com/SEED-platform/seed/issues/1432 ), Add fields (list settings) to Pairing screen - can't see enough info to do the pairing
+- Fixed [#1470]( https://github.com/SEED-platform/seed/issues/1470 ), Can't create new user from admin page
 
-Accepted External Pull Requests: 8
+Accepted External Pull Requests: 7
 - Fixed [#978]( https://github.com/SEED-platform/seed/pull/978 ), Adding ansible provisioning within AWS
 - Fixed [#1304]( https://github.com/SEED-platform/seed/pull/1304 ), WIP: 1124 linux installation docs
 - Fixed [#1440]( https://github.com/SEED-platform/seed/pull/1440 ), Org-level units preference
 - Fixed [#1443]( https://github.com/SEED-platform/seed/pull/1443 ), Makes start-seed run a bit easier under Vagrant
-- Fixed [#1451]( https://github.com/SEED-platform/seed/pull/1451 ), Filter out bazillions of markdown package import debug log statements
 - Fixed [#1453]( https://github.com/SEED-platform/seed/pull/1453 ), Fix typo, remove spurious 301 redirect.
 - Fixed [#1454]( https://github.com/SEED-platform/seed/pull/1454 ), Fixes startup warning on `seed.NonCanonicalProjectBuildings.projectbuilding`
 - Fixed [#1457]( https://github.com/SEED-platform/seed/pull/1457 ), Lay foundations for `pint` Quantity objects for EUI, Areas on PropertyStates
