@@ -51,7 +51,7 @@ STATUS_UNKNOWN = 10
 STATUS_MATCHING = 11
 
 # TODO: use these instead of the others defined in models.py
-IMPORT_STATII = [
+IMPORT_STATUSES = [
     (STATUS_UPLOADING, "Uploading"),
     (STATUS_MACHINE_MAPPING, "Machine Mapping"),
     (STATUS_MAPPING, "Needs Mapping"),
@@ -113,7 +113,7 @@ class ImportRecord(NotDeletableModel):
     matching_done = models.BooleanField(default=False)
     is_imported_live = models.BooleanField(default=False)
     keep_missing_buildings = models.BooleanField(default=True)
-    status = models.IntegerField(default=0, choices=IMPORT_STATII)
+    status = models.IntegerField(default=0, choices=IMPORT_STATUSES)
     import_completed_at = models.DateTimeField(blank=True, null=True)
     merge_completed_at = models.DateTimeField(blank=True, null=True)
     mcm_version = models.IntegerField(blank=True, null=True)
@@ -594,7 +594,7 @@ class ImportRecord(NotDeletableModel):
                 'save_import_meta_url': self.save_import_meta_url,
                 'percent_files_ready_to_merge': self.percent_files_ready_to_merge,
                 'status': self.status,
-                'status_text': IMPORT_STATII[self.status][1],
+                'status_text': IMPORT_STATUSES[self.status][1],
                 'status_percent': round(self.status_percent, 0),
                 'status_numerator': self.status_numerator,
                 'status_denominator': self.status_denominator,
