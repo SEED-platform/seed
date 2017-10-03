@@ -31,7 +31,7 @@ from seed.models import (
     TaxLotState, TaxLotView
 )
 from seed.models.auditlog import AUDIT_USER_CREATE
-from seed.utils.string import titlecase
+from seed.utils.strings import titlecase
 
 Owner = namedtuple(
     'Owner',
