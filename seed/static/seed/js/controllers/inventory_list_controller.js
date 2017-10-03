@@ -304,18 +304,21 @@ angular.module('BE.seed.controller.inventory_list', [])
       };
 
       var refresh_objects = function () {
+        spinner_utility.show();
         var visibleColumns = _.map(_.filter($scope.columns, 'visible'), 'name');
         if ($scope.inventory_type === 'properties') {
           inventory_service.get_properties($scope.pagination.page, $scope.number_per_page, $scope.cycle.selected_cycle, visibleColumns).then(function (properties) {
             $scope.data = properties.results;
             $scope.pagination = properties.pagination;
             processData();
+            spinner_utility.hide();
           });
         } else if ($scope.inventory_type === 'taxlots') {
           inventory_service.get_taxlots($scope.pagination.page, $scope.number_per_page, $scope.cycle.selected_cycle, visibleColumns).then(function (taxlots) {
             $scope.data = taxlots.results;
             $scope.pagination = taxlots.pagination;
             processData();
+            spinner_utility.hide();
           });
         }
       };
