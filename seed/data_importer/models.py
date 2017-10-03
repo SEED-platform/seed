@@ -50,22 +50,6 @@ STATUS_LIVE = 9
 STATUS_UNKNOWN = 10
 STATUS_MATCHING = 11
 
-# TODO: use these instead of the others defined in models.py
-IMPORT_STATUSES = [
-    (STATUS_UPLOADING, "Uploading"),
-    (STATUS_MACHINE_MAPPING, "Machine Mapping"),
-    (STATUS_MAPPING, "Needs Mapping"),
-    (STATUS_MACHINE_CLEANING, "Machine Cleaning"),
-    (STATUS_CLEANING, "Needs Cleaning"),
-    (STATUS_READY_TO_PRE_MERGE, "Ready to Merge"),
-    (STATUS_PRE_MERGING, "Merging"),
-    (STATUS_READY_TO_MERGE, "Merge Complete"),
-    (STATUS_MERGING, "Importing"),
-    (STATUS_LIVE, "Live"),
-    (STATUS_UNKNOWN, "Unknown"),
-    (STATUS_MATCHING, "Matching")
-]
-
 
 class DuplicateDataError(RuntimeError):
     def __init__(self, dup_id):
@@ -89,6 +73,22 @@ class NotDeletableModel(models.Model):
 
 
 class ImportRecord(NotDeletableModel):
+    # TODO: use these instead of the others defined in models.py
+    IMPORT_STATUSES = [
+        (STATUS_UPLOADING, "Uploading"),
+        (STATUS_MACHINE_MAPPING, "Machine Mapping"),
+        (STATUS_MAPPING, "Needs Mapping"),
+        (STATUS_MACHINE_CLEANING, "Machine Cleaning"),
+        (STATUS_CLEANING, "Needs Cleaning"),
+        (STATUS_READY_TO_PRE_MERGE, "Ready to Merge"),
+        (STATUS_PRE_MERGING, "Merging"),
+        (STATUS_READY_TO_MERGE, "Merge Complete"),
+        (STATUS_MERGING, "Importing"),
+        (STATUS_LIVE, "Live"),
+        (STATUS_UNKNOWN, "Unknown"),
+        (STATUS_MATCHING, "Matching")
+    ]
+
     name = models.CharField(max_length=255, blank=True, null=True, verbose_name="Name Your Dataset",
                             default="Unnamed Dataset")
     app = models.CharField(max_length=64, blank=False, null=False, verbose_name='Destination App',
@@ -594,7 +594,7 @@ class ImportRecord(NotDeletableModel):
                 'save_import_meta_url': self.save_import_meta_url,
                 'percent_files_ready_to_merge': self.percent_files_ready_to_merge,
                 'status': self.status,
-                'status_text': IMPORT_STATUSES[self.status][1],
+                'status_text': self.IMPORT_STATUSES[self.status][1],
                 'status_percent': round(self.status_percent, 0),
                 'status_numerator': self.status_numerator,
                 'status_denominator': self.status_denominator,
