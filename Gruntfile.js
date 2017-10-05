@@ -97,7 +97,8 @@ module.exports = function (grunt) {
           'seed/static/seed/**/*.js',
           'seed/static/seed/**/*.html'
         ],
-        lang: ['fr_CA'],
+        interpolation: { startDelimiter: '{$', endDelimiter: '$}' },
+        lang: ['en_US', 'fr_CA'],
         dest: 'seed/static/seed/locales'
       }
     }
