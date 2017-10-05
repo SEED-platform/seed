@@ -1,7 +1,7 @@
 <div class="page_header_container">
     <div class="page_header">
         <div class="left page_action_container">
-            <a ui-sref="organizations" class="page_action"><i class="fa fa-chevron-left"></i> Organizations</a>
+            <a ui-sref="organizations" class="page_action"><i class="fa fa-chevron-left"></i> {$ 'Organizations' | translate $}</a>
         </div>
         <div class="page_title">
             <h1>{$:: org.name $}</h1>
@@ -19,13 +19,13 @@
                 <h2><i class="fa fa-flag"></i> Data Quality</h2>
             </div>
             <div class="section_action_container right_40 section_action_btn pull-right">
-                <button type="button" class="btn btn-danger" ng-click="restore_defaults()">Restore Default Rules
+                <button type="button" class="btn btn-danger" ng-click="restore_defaults()">{$ 'Restore Default Rules' | translate $}
                     <i class="fa fa-check" ng-show="defaults_restored"></i>
                 </button>
-                <button type="button" class="btn btn-danger" ng-click="reset_all_rules()">Reset All Rules
+                <button type="button" class="btn btn-danger" ng-click="reset_all_rules()">{$ 'Reset All Rules' | translate $}
                     <i class="fa fa-check" ng-show="rules_reset"></i>
                 </button>
-                <button type="button" class="btn btn-primary" ng-click="save_settings()">Save Changes
+                <button type="button" class="btn btn-primary" ng-click="save_settings()">{$ 'Save Changes' | translate $}
                     <i class="fa fa-check" ng-show="rules_updated"></i>
                 </button>
             </div>
@@ -33,16 +33,16 @@
     </div>
     <div class="section_content_container">
         <div class="section_content with_padding" style="margin-bottom:15px;">
-            <h3>Modifying Data Quality Rules</h3>
-            <p>From the table below, select the rules that you want to: 1) enable/disable within your organization, 2) modify the minimum/maximum values to validate against on file upload, and 3) optionally assign or remove a label if the condition is not met.</p>
-            <button class="btn btn-info btn-sm" style="margin-bottom: 15px;" ng-click="create_new_rule()">Create a new rule</button>
+            <h3 translate>Modifying Data Quality Rules</h3>
+            <p translate>From the table below, select the rules that you want to: 1) enable/disable within your organization, 2) modify the minimum/maximum values to validate against on file upload, and 3) optionally assign or remove a label if the condition is not met.</p>
+            <button class="btn btn-info btn-sm" style="margin-bottom: 15px;" ng-click="create_new_rule()" translate>Create a new rule</button>
             <div class="data-quality-tab-container">
                 <ul class="nav nav-tabs" style="margin-bottom:1px;">
-                    <li ui-sref-active="active" heading="View by Property">
-                        <a ui-sref="organization_data_quality(::{organization_id: org.id, inventory_type: 'properties'})">View by Property</a>
+                    <li ui-sref-active="active" heading="{$ 'View by Property' | translate $}">
+                        <a ui-sref="organization_data_quality(::{organization_id: org.id, inventory_type: 'properties'})" translate>View by Property</a>
                     </li>
-                    <li ui-sref-active="active" heading="View by Tax Lot">
-                        <a ui-sref="organization_data_quality(::{organization_id: org.id, inventory_type: 'taxlots'})">View by Tax Lot</a>
+                    <li ui-sref-active="active" heading="{$ 'View by Tax Lot' | translate $}">
+                        <a ui-sref="organization_data_quality(::{organization_id: org.id, inventory_type: 'taxlots'})" translate>View by Tax Lot</a>
                     </li>
                 </ul>
             </div>
@@ -53,16 +53,16 @@
                             <th class="condensed_head" style="min-width: 33px; width: 33px; padding-left: 0; padding-right: 0;" ng-click="selectAll()">
                                 <input type="checkbox" ng-checked="allEnabled()" class="no-click">
                             </th>
-                            <th>Field</th>
-                            <th style="min-width: 100px; width: 100px;">Data Type</th>
-                            <th style="min-width: 70px; width: 70px;">Required</th>
-                            <th style="min-width: 70px; width: 70px;">Not Null</th>
-                            <th>Minimum</th>
-                            <th>Maximum</th>
-                            <th>Units</th>
-                            <th style="min-width: 100px; width: 100px;">Severity</th>
-                            <th>Label</th>
-                            <th style="min-width: 54px; width: 54px;">Delete</th>
+                            <th translate>Field</th>
+                            <th style="min-width: 100px; width: 100px;" translate>Data Type</th>
+                            <th style="min-width: 70px; width: 70px;" translate>Required</th>
+                            <th style="min-width: 70px; width: 70px;" translate>Not Null</th>
+                            <th translate>Minimum</th>
+                            <th translate>Maximum</th>
+                            <th translate>Units</th>
+                            <th style="min-width: 100px; width: 100px;" translate>Severity</th>
+                            <th translate>Label</th>
+                            <th style="min-width: 54px; width: 54px;" translate>Delete</th>
                         </tr>
                     </thead>
                     <tbody ng-repeat="field in sortedRuleGroups()">
@@ -83,28 +83,34 @@
                                 <input type="checkbox" ng-model="rule.not_null" class="no-click" ng-change="rule.rule_type = 1">
                             </td>
                             <td ng-if="rule.data_type === 'string'" colspan="2">
-                                <input class="form-control input-sm" type="text" maxlength="200" ng-model="rule.text_match" ng-change="rule.rule_type = 1" placeholder="(field must contain this text)">
+                                <input class="form-control input-sm" type="text" maxlength="200" ng-model="rule.text_match" ng-change="rule.rule_type = 1" placeholder="{$ '(field must contain this text)' | translate $}">
                             </td>
                             <td ng-if="rule.data_type !== 'string'">
-                                <input class="form-control input-sm" type="number" ng-model="rule.min" ng-change="rule.rule_type = 1" ng-if="_.includes([null, 'number', 'year', 'area', 'eui'], rule.data_type)" placeholder="(no minimum)">
-                                <input class="form-control input-sm" type="date" ng-model="rule.min" ng-change="rule.rule_type = 1" ng-if="rule.data_type === 'date'">
+                                <input class="form-control input-sm" type="number" ng-model="rule.min" ng-change="rule.rule_type = 1" ng-if="_.includes([null, 'number', 'year', 'area', 'eui'], rule.data_type)" placeholder="{$ '(no minimum)' | translate $}">
+                                <input class="form-control input-sm" type="date" ng-model="rule.min" ng-change="rule.rule_type = 1" ng-if="rule.data_type == 'date'">
                             </td>
                             <td ng-if="rule.data_type !== 'string'">
-                                <input class="form-control input-sm" type="number" ng-model="rule.max" ng-change="rule.rule_type = 1" ng-if="rule.data_type !== 'date'" placeholder="(no maximum)">
-                                <input class="form-control input-sm" type="date" ng-model="rule.max" ng-change="rule.rule_type = 1" ng-if="rule.data_type === 'date'">
+                                <input class="form-control input-sm" type="number" ng-model="rule.max" ng-change="rule.rule_type = 1" ng-if="rule.data_type != 'date'" placeholder="{$ '(no maximum)' | translate $}">
+                                <input class="form-control input-sm" type="date" ng-model="rule.max" ng-change="rule.rule_type = 1" ng-if="rule.data_type == 'date'">
                             </td>
                             <td>
                                 <select class="form-control input-sm" ng-options="unit.id as unit.label for unit in units" ng-model="rule.units" ng-change="rule.rule_type = 1"></select>
                             </td>
                             <td>
+<<<<<<< HEAD
                                 <select class="form-control input-sm" ng-model="rule.severity" ng-change="rule.rule_type = 1" ng-class="{'error-bg': rule.severity === 'error', 'warning-bg': rule.severity === 'warning'}">
                                     <option value="error">Error</option>
                                     <option value="warning">Warning</option>
+=======
+                                <select class="form-control input-sm" ng-model="rule.severity" ng-change="rule.rule_type = 1" ng-class="{'error-bg': rule.severity=='error', 'warning-bg': rule.severity=='warning'}">
+                                    <option value="error" translate>Error</option>
+                                    <option value="warning" translate>Warning</option>
+>>>>>>> Introduces `translate` tags into Angular partials
                                 </select>
                             </td>
                             <td class="text-right">
                                 <div class="input-group input-group-sm" ng-if="rule.label">
-                                    <span class="form-control label label-{$ rule.label.label $}" style="border: 0 none;">{$ rule.label.name $}</span>
+                                    <span class="form-control label label-{$ rule.label.label $}" style="border: 0 none;">{$ rule.label.name | translate $}</span>
                                     <span class="input-group-btn">
                                         <button class="btn btn-danger" type="button" ng-click="removeLabelFromRule(rule)">
                                             <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
@@ -132,13 +138,13 @@
         </div>
         <div class="section_content_container">
             <div class="section_content with_padding pull-right" style="padding-bottom: 15px;">
-                <button type="button" class="btn btn-danger" ng-click="restore_defaults()">Restore Default Rules
+                <button type="button" class="btn btn-danger" ng-click="restore_defaults()">{$ 'Restore Default Rules' | translate $}
                     <i class="fa fa-check" ng-show="defaults_restored"></i>
                 </button>
-                <button type="button" class="btn btn-danger" ng-click="reset_all_rules()">Reset All Rules
+                <button type="button" class="btn btn-danger" ng-click="reset_all_rules()">{$ 'Reset All Rules' | translate $}
                     <i class="fa fa-check" ng-show="rules_reset"></i>
                 </button>
-                <button type="button" class="btn btn-primary" ng-click="save_settings()">Save Changes
+                <button type="button" class="btn btn-primary" ng-click="save_settings()">{$ 'Save Changes' | translate $}
                     <i class="fa fa-check" ng-show="rules_updated"></i>
                 </button>
             </div>

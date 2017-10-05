@@ -4,7 +4,7 @@
 
         </div>
         <div class="page_title">
-            <h1>Pairing Settings</h1>
+            <h1 translate>Pairing Settings</h1>
         </div>
         <div class="right page_action_container page_action_btn"></div>
     </div>
@@ -17,20 +17,20 @@
 <div class="section_header_container">
     <div id="building-settings" class="section_header has_no_padding fixed_height_short">
         <div class="section_action_container left_wide">
-            <h2><i class="fa fa-cogs"></i><span>Column Order/Visibility</span></h2>
+            <h2><i class="fa fa-cogs"></i><span translate>Column Order/Visibility</span></h2>
         </div>
     </div>
 </div>
 
 <div class="section_content_container" ng-cloak style="clear:both; overflow:hidden; margin-top: 16px;">
     <div class="section_content with_padding" style="overflow:hidden;">
-        <h3 style="margin-top: 0">There are {$:: propertyColumns.length | number $} property columns and {$:: taxlotColumns.length | number $} tax lot columns of data available to you.</h3>
+        <h3 style="margin-top: 0">TRANSLATION_FIXME There are {$:: propertyColumns.length | number $} property columns and {$:: taxlotColumns.length | number $} tax lot columns of data available to you.</h3>
         <p>Select columns from the lists below to make them appear on the properties and tax lots of your Matching List table. Drag the rows to change the order in which they appear.</p>
     </div>
 </div>
 
 <div class="section_content_container" ng-cloak style="clear:both; overflow:hidden; margin-top: 16px">
-    <h3 style="font-weight: bold; padding-left: 16px; margin-top: 0">Properties</h3>
+    <h3 style="font-weight: bold; padding-left: 16px; margin-top: 0" translate>Properties</h3>
     <div class="section_content">
         <div id="grid-container">
             <div ui-grid="propertyGridOptions" ui-grid-selection ui-grid-draggable-rows></div>
@@ -39,7 +39,7 @@
 </div>
 
 <div class="section_content_container" ng-cloak style="clear:both; overflow:hidden; margin-top: 16px;">
-    <h3 style="font-weight: bold; padding-left: 16px; margin-top: 0">Tax Lots</h3>
+    <h3 style="font-weight: bold; padding-left: 16px; margin-top: 0" translate>Tax Lots</h3>
     <div class="section_content">
         <div id="grid-container">
             <div ui-grid="taxlotGridOptions" ui-grid-selection ui-grid-draggable-rows></div>

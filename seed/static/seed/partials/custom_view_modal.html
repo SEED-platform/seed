@@ -1,27 +1,27 @@
 <div class="modal-header">
     <div class="modal-links">
-        <span ng-show="!is_show_reorder">Show/Hide Columns</span>
-        <a href ng-click="is_show_reorder=false" ng-show="is_show_reorder">Show/Hide Columns</a>
+        <span ng-show="!is_show_reorder" translate>Show/Hide Columns</span>
+        <a href ng-click="is_show_reorder=false" ng-show="is_show_reorder" translate>Show/Hide Columns</a>
         |
-        <span ng-show="is_show_reorder">Reorder Columns</span>
-        <a href ng-click="on_show_reorder_fields()" ng-show="!is_show_reorder">Reorder Columns</a>
+        <span ng-show="is_show_reorder" translate>Reorder Columns</span>
+        <a href ng-click="on_show_reorder_fields()" ng-show="!is_show_reorder" translate>Reorder Columns</a>
     </div>
 </div>
 
 <div class="modal-body form-horizontal">
     <div class="form-group">
         <div class="col-sm-12" ng-show="!is_show_reorder">
-            <p> Select which columns to include in the list:</p>
+            <p translate>Select which columns to include in the list:</p>
             <table class="table">
                 <thead>
                     <tr>
                         <th class="check is_aligned_center ">
                             <input type="checkbox" ng-model="controls.select_all" ng-change="select_all_clicked()" name="select-all">
-                            <label for="select-all">Select All Columns</label>
+                            <label for="select-all" translate>Select All Columns</label>
                         </th>
                         <th class="sub_head">
                             <span class="glyphicon glyphicon-search search-icon"></span>
-                            <input type="text" class="form-control input-sm" ng-model="filter_columns.title" placeholder="Search column name" ng-class="{active: filter_columns.title.length > 0}">
+                            <input type="text" class="form-control input-sm" ng-model="filter_columns.title" placeholder="{$ 'Search column name' | translate $}" ng-class="{active: filter_columns.title.length > 0}">
                         </th>
                     </tr>
                 </thead>
@@ -33,7 +33,7 @@
                             <div class="checkbox">
                                 <label>
                                     <input type="checkbox" ng-model="f.checked" ng-disabled="f.static">
-                                    {$ f.title $}
+                                    {$ f.title | translate $}
                                 </label>
                             </div>
                         </li>
@@ -44,14 +44,14 @@
 
         <div class="col-sm-12" ng-show="is_show_reorder">
             <div class="section_content with_padding">
-                <p>Drag the columns below to change the order that they appear in the table.</p>
+                <p translate>Drag the columns below to change the order that they appear in the table.</p>
             </div>
             <div class="section_content with_padding">
                 <div class="table_list_container has_borders">
                     <table class="table table-striped has_no_btm_margin table_highlight_first">
                         <thead>
                         <tr>
-                            <th>Column Name</th>
+                            <th translate>Column Name</th>
                         </tr>
                         </thead>
                     </table>
@@ -60,7 +60,7 @@
                             <tbody ui-sortable="sortable_options" ng-model="fields">
                             <tr ng-repeat="field in fields | filter:{ checked: true }  | filter:filter_params:strict">
                                 <td>
-                                    <span>{$ field.title $}</span>
+                                    <span>{$ field.title | translate $}</span>
                                 </td>
                             </tr>
                             </tbody>
@@ -73,6 +73,6 @@
 </div>
 
 <div class="modal-footer">
-  <button type="button" class="btn btn-primary" ng-click="save_settings()">Save Settings</button>
-  <button type="button" class="btn btn-default"  ng-click="cancel_settings()">Cancel</button>
+  <button type="button" class="btn btn-primary" ng-click="save_settings()" translate>Save Settings</button>
+  <button type="button" class="btn btn-default"  ng-click="cancel_settings()" translate>Cancel</button>
 </div>

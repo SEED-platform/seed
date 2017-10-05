@@ -1,11 +1,11 @@
 <div class="modal-header">
-    <h4 class="modal-title" id="exportModalLabel">Export your Properties and Tax Lots</h4>
+    <h4 class="modal-title" id="exportModalLabel" translate>Export your Properties and Tax Lots</h4>
 </div>
 <div class="modal-body form-horizontal" style="padding-bottom: 0;">
     <div class="form-group">
-        <label class="control-label col-sm-3" for="fileName">Export Name</label>
+        <label class="control-label col-sm-3" for="fileName" translate>Export Name</label>
         <div class="col-sm-8">
-          <input type="text" class="form-control" id="fileName" ng-model="export_name" placeholder="File Name" required>
+          <input type="text" class="form-control" id="fileName" ng-model="export_name" placeholder="{$ 'File Name' | translate $}" required>
         </div>
     </div>
     <div class="form-group" style="margin-bottom: 0;">
@@ -20,6 +20,6 @@
     </div>
 </div>
 <div class="modal-footer">
-    <button type="button" class="btn btn-default" ng-click="cancel()">Cancel</button>
-    <button type="button" class="btn btn-primary" ng-click="export_selected()" ng-disabled="!export_name.length">Export</button>
+    <button type="button" class="btn btn-default" ng-click="cancel()" translate>Cancel</button>
+    <button type="button" class="btn btn-primary" ng-click="export_selected()" ng-disabled="!export_name.length" translate>Export</button>
 </div>

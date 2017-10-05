@@ -1,0 +1,57 @@
+<div class="page_header_container">
+    <div class="page_header">
+        <div class="left page_action_container">
+
+        </div>
+        <div class="page_title">
+            <h1><i class="fa fa-folder-o"></i>
+              TRANSLATION_FIXME
+                {$ projects_count | number:0 $}
+                <ng-pluralize count="projects_count"
+                              when="{'one': 'Project','other': 'Projects'}">
+                </ng-pluralize>
+            </h1>
+        </div>
+        <div class="right page_action_container">
+
+        </div>
+    </div>
+</div>
+<div class="section">
+    <div class="section_content_container">
+        <div class="section_content">
+            <div id="project-table" class="table_list_container">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th translate>Project Name</th>
+                            <th translate># of Buildings</th>
+                            <th ng-show="future_feature" translate>Snapshot Timestamp</th>
+                            <th translate>Type of Submittal</th>
+                            <th translate>Year Ending</th>
+                            <th translate>Deadline</th>
+                            <th translate>Last Changed</th>
+                            <th translate>Changed By</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="p in user.projects">
+                            <td class="project_name">
+                                <a class="table_name_link" ui-sref="project_detail({project_id: p.slug})" ng-show="!p.edit_form_showing">{$ p.name $}</a>
+                                <a class="table_action_link" ng-click="delete_project(p)" ng-show="!p.edit_form_showing && menu.user.organization.user_role !== 'viewer'"><i class="fa fa-trash-o"></i></a>
+                                <a class="table_action_link" ng-click="open_edit_modal(p)" ng-show="!p.edit_form_showing && menu.user.organization.user_role !== 'viewer'"><i class="fa fa-pencil"></i></a>
+                            </td>
+                            <td class="is_aligned_right">{$ p.number_of_buildings $}</td>
+                            <td ng-show="future_feature">12/31/2014 1:32pm</td>
+                            <td>{$ p.compliance_type || "None" $}</td>
+                            <td>{$ p.end_date | date:'MM/dd/yyyy' $}</td>
+                            <td>{$ p.deadline_date | date:'MM/dd/yyyy' $}</td>
+                            <td>{$ p.last_modified | fromNow $}</td>
+                            <td>{$ p.last_modified_by.email $}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

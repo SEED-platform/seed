@@ -4,7 +4,7 @@
 
         </div>
         <div class="page_title">
-            <h1>Matching List Settings</h1>
+            <h1 translate>Matching List Settings</h1>
         </div>
         <div class="right page_action_container page_action_btn"></div>
     </div>
@@ -17,24 +17,27 @@
 <div class="section_header_container">
     <div id="building-settings" class="section_header has_no_padding fixed_height_short">
         <div class="section_action_container left_wide">
-            <h2><i class="fa fa-cogs"></i><span>Column Order/Visibility</span></h2>
+            <h2><i class="fa fa-cogs"></i><span translate>Column Order/Visibility</span></h2>
         </div>
     </div>
 </div>
 
 <div class="section_content_container" ng-cloak style="clear:both; overflow:hidden; margin-top: 16px;">
     <div class="section_content with_padding" style="overflow:hidden;">
-        <h3 style="margin-top: 0">There are {$:: columns.length | number $} columns of data available to you.</h3>
-        <p>Select columns from the lists below to make them appear on the left or right halves of your Matching List table. Drag the rows to change the order in which they appear.</p>
+        <h3 style="margin-top: 0">There are {$:: columns.length | number $} columns of data available to you. TRANSLATION_FIXME</h3>
+        <p translate>Select columns from the lists below to make them appear on the left or right halves of your Matching List table. Drag the rows to change the order in which they appear.</p>
     </div>
 </div>
 
 <div class="section_content_container" ng-cloak style="clear:both; overflow:hidden; margin-top: 16px">
-    <h3 style="font-weight: bold; padding-left: 16px; margin-top: 0">Left Half</h3>
+    <h3 style="font-weight: bold; padding-left: 16px; margin-top: 0" translate>Left Half</h3>
     <div class="section_content with_padding" style="padding-bottom: 20px; overflow:hidden;">
-        <button type="button" class="btn" ng-class="{'btn-default': !mappedColumnsOnly, 'btn-primary': mappedColumnsOnly}" ng-click="toggleMappedColumnsOnly()" aria-pressed="{$ mappedColumnsOnly $}">
-            Show only mapped fields
-        </button>
+      <button type="button"
+              class="btn"
+              ng-class="{'btn-default': !mappedColumnsOnly, 'btn-primary': mappedColumnsOnly}"
+              ng-click="toggleMappedColumnsOnly()"
+              aria-pressed="{$ mappedColumnsOnly $}"
+              translate>Show only mapped fields</button>
     </div>
     <div class="section_content" ng-if="!mappedColumnsOnly">
         <div id="grid-container">
@@ -44,7 +47,7 @@
 </div>
 
 <div class="section_content_container" ng-cloak style="clear:both; overflow:hidden; margin-top: 16px;">
-    <h3 style="font-weight: bold; padding-left: 16px; margin-top: 0">Right Half</h3>
+    <h3 style="font-weight: bold; padding-left: 16px; margin-top: 0" translate>Right Half</h3>
     <div class="section_content">
         <div id="grid-container">
             <div ui-grid="rightGridOptions" ui-grid-selection ui-grid-draggable-rows></div>

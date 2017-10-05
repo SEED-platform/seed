@@ -1,18 +1,18 @@
 <div class="modal-header">
-    <h4 class="modal-title">Data Quality Results</h4>
+    <h4 class="modal-title" translate>Data Quality Results</h4>
 </div>
 <div class="modal-body" style="padding-bottom: 0;">
     <div ng-switch on="::dataQualityResults.length">
         <div ng-switch-when="0" style="text-align: center;">
-            <h5 style="padding-bottom: 14px;">No warnings/errors</h5>
+            <h5 style="padding-bottom: 14px;" translate>No warnings/errors</h5>
         </div>
         <div ng-switch-default>
             <div class="row" ng-if="name">
-                <h4 class="col-sm-4">File Name:</h4>
+                <h4 class="col-sm-4">{$ 'File Name' | translate $}:</h4>
                 <h5 class="col-sm-8" style="margin-top: 12px;">{$:: name $}</h5>
             </div>
             <div class="row" ng-if="uploaded !== 'Invalid date'">
-                <h4 class="col-sm-4">Date Uploaded:</h4>
+                <h4 class="col-sm-4">{$ 'Date Uploaded' | translate $}:</h4>
                 <h5 class="col-sm-8" style="margin-top: 12px;">{$:: uploaded $}</h5>
             </div>
             <div class="section_content_container">
@@ -21,19 +21,19 @@
                         <table class="table sortable tbody-striped" style="margin-bottom: 0;">
                             <thead>
                                 <tr>
-                                    <th ng-repeat="c in ::columns" ng-click="c.toggle_sort()" ng-class="c.sorted_class()">{$:: c.title $}</th>
+                                    <th ng-repeat="c in ::columns" ng-click="c.toggle_sort()" ng-class="c.sorted_class()">{$:: c.title | translated $}</th>
                                 </tr>
                                 <tr class="sub_head">
                                     <th class="sub_head" ng-repeat="c in ::columns" style="min-width: 140px;">
                                         <!-- for string & numeric filters -->
-                                        <input ng-if=":: _.includes(['string', 'link', 'number', 'floor_area'], c.type)" type="text" class="form-control input-sm show" ng-class="{active: search.filter_params[c.sort_column].length}" placeholder="{$:: c.title $}" ng-change="search.filter_search()" ng-model="search.filter_params[c.sort_column]">
+                                        <input ng-if=":: _.includes(['string', 'link', 'number', 'floor_area'], c.type)" type="text" class="form-control input-sm show" ng-class="{active: search.filter_params[c.sort_column].length}" placeholder="{$:: c.title | translate $}" ng-change="search.filter_search()" ng-model="search.filter_params[c.sort_column]">
 
                                         <!-- for range filters -->
                                         <div ng-if="c.type === 'date'" class="col-xs-6">
-                                            <input ng-if="::c.type === 'date'" type="date" class="form-control input-sm" placeholder="Min" ng-change="search.filter_search()" ng-model="search.filter_params[c.min]" ng-class="{active: search.filter_params[c.min].length}">
+                                          <input ng-if="::c.type === 'date'" type="date" class="form-control input-sm" placeholder="{$ 'Min' | translate $}" ng-change="search.filter_search()" ng-model="search.filter_params[c.min]" ng-class="{active: search.filter_params[c.min].length}">
                                         </div>
                                         <div ng-if="c.type === 'date'" class="col-xs-6">
-                                            <input ng-if="::c.type === 'date'" type="date" class="form-control input-sm" placeholder="Max" ng-change="search.filter_search()" ng-model="search.filter_params[c.max]" ng-class="{active: search.filter_params[c.max].length}">
+                                            <input ng-if="::c.type === 'date'" type="date" class="form-control input-sm" placeholder="{$ 'Max'| translate $}" ng-change="search.filter_search()" ng-model="search.filter_params[c.max]" ng-class="{active: search.filter_params[c.max].length}">
                                         </div>
                                     </th>
                                 </tr>
@@ -53,5 +53,8 @@
     </div>
 </div>
 <div class="modal-footer">
-    <a ng-href="/api/v2/data_quality_checks/{$ ::importFileId $}/csv/" download><button type="button" class="btn btn-default" ng-show="::importFileId">Export</button></a> <button type="button" class="btn btn-default" ng-click="close()">Close</button>
+  <a ng-href="/api/v2/data_quality_checks/{$ ::importFileId $}/csv/" download>
+    <button type="button" class="btn btn-default" ng-show="::importFileId" translate>Export</button>
+  </a>
+  <button type="button" class="btn btn-default" ng-click="close()" translate>Close</button>
 </div>
