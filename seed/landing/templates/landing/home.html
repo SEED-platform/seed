@@ -13,16 +13,20 @@
 			{% include "landing/_browser_supported.html" %}
 			<div class="clearfix"></div>
 			<div class="form_title">
-				<h2>Log in to SEED Platform</h2>
-				{% if 'setup_complete' in request.GET %}<p>Thank you for creating your account! Please sign in below.{% endif %}
-                                    {% if 'logout' in request.GET %}<p>You have successfully logged out. You may log in again below.{% endif %}
+				<h2>{% trans "Log in to SEED Platform" %}</h2>
+        {% if 'setup_complete' in request.GET %}
+          <p>{% trans "Thank you for creating your account! Please sign in below." %}
+        {% endif %}
+        {% if 'logout' in request.GET %}
+          <p>{% trans "You have successfully logged out. You may log in again below." %}</p>
+        {% endif %}
 				<form action="{% url "landing:login" %}?next={% url "seed:home" %}" method="POST" class="signup_form">{% csrf_token %}
 				    <table class="signup_table">
 				        {{login_form.as_table}}
 				    </table>
-				    <input type="submit" class="btn btn-primary" value="Log In">
-				    <input type="reset" class="btn btn-default" value="Cancel">
-				    <a class="forgot_password" href="{% url "landing:password_reset" %}">Forgot password?</a>
+            <input type="submit" class="btn btn-primary" value="{% trans "Log In" %}">
+				    <input type="reset" class="btn btn-default" value="{% trans "Cancel" %}">
+				    <a class="forgot_password" href="{% url "landing:password_reset" %}">{% trans "Forgot password?" %}</a>
 				</form>
                 {% include "landing/_password_note.html" %}
 			</div>

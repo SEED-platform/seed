@@ -1,21 +1,28 @@
+{% load i18n %}
 <div class="section_marketing">
-    <h1>Welcome to SEED Platform&#0153;</h1>
+    <h1>{% trans "Welcome to SEED Platform&#0153;" %}</h1>
     <div class="marketing_text">
         <div class="bullet"><div></div></div>
         <div class="bullet_text">
+          {% blocktrans trimmed %}
             Get started using SEED Platform by uploading your buildings list (city tax assessor data) and then your EPA Portfolio Manager data.
+          {% endblocktrans %}
         </div>
     </div>
     <div class="marketing_text">
         <div class="bullet"><div></div></div>
         <div class="bullet_text">
+          {% blocktrans trimmed %}
             Match-up your buildings list with the Portfolio Manager dataset to tie building records together.
+          {% endblocktrans %}
         </div>
     </div>
     <div class="marketing_text">
         <div class="bullet"><div></div></div>
         <div class="bullet_text">
+          {% blocktrans trimmed %}
             Use SEED Platform's flexible, easy-to-use labeling system and project groupings to track the status of data submission, review, and compliance.
+          {% endblocktrans %}
         </div>
     </div>
     <!--<div id="powered_by_seed" class="powered_by_seed">
