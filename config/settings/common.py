@@ -14,6 +14,8 @@ from kombu.serialization import register
 
 from seed.serializers.celery import CeleryDatetimeSerializer
 
+from django.utils.translation import ugettext_lazy as _
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 SESSION_COOKIE_DOMAIN = None
@@ -208,9 +210,10 @@ LOG_FILE = os.path.join(BASE_DIR, '../logs/py.log/')
 
 # Set translation languages for i18n
 LANGUAGES = (
-    ('en', 'English'),
+    ('en', _('English')),
+    ('fr_CA', _('French (Canadian)')),
 )
-LOCALE_PATHS = ()
+LOCALE_PATHS = ('locale',)
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
