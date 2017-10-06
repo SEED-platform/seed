@@ -8,6 +8,7 @@ All rights reserved.  # NOQA
 :author
 """
 
+import copy
 import os
 
 from django.db.models import Q
@@ -234,9 +235,14 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
                 'message': 'Cannot match a PropertyView with pk=%s; cycle_id=%s' % (pk, cycle_id)
             })
 
+        pv_copy = copy.deepcopy(property_view)
+
         # passing in the property view pk should allow it to process the buildingsync file but not create a new PV
         p_status, property_view, messages = building_file.process(organization_id, cycle,
-                                                                  property_view=property_view)
+                                                                  property_state=pv_copy.state)
+
+        # need to update property state on BuildingFile, Scenario, Simulation, and Measures
+        building_file.property_state = pv_copy.state
 
         if p_status:
             return JsonResponse({

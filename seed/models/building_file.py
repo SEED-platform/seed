@@ -77,13 +77,13 @@ class BuildingFile(models.Model):
         else:
             return None
 
-    def process(self, organization_id, cycle, property_view=None):
+    def process(self, organization_id, cycle, property_state=None):
         """
         Process the building file that was uploaded and create the correct models for the object
 
         :param organization_id: integer, ID of organization
         :param cycle: object, instance of cycle object
-        :param property_view: PropertyView, if a property view already exists, this is it; if not, one will be created
+        :param property_state: PropertyState, if a property state already exists, this is it; if not, one will be created
         :return: list, [status, (PropertyView|None), messages]
         """
 
@@ -122,20 +122,12 @@ class BuildingFile(models.Model):
                     is_extra_data=True,
                 )
 
-        if property_view:
-
-            # and get the property state from this view
-            property_state = property_view.state
-
-        else:
+        if not property_state:
 
             # create a new propertystate for the objects
             property_state = PropertyState.objects.create(**create_data)
             property_state.extra_data = extra_data
             property_state.save()
-
-            # automatically promote this buildingsync file to a new instance
-            property_view = property_state.promote(cycle)
 
         # set the property_state_id so that we can list the building files by properties
         self.property_state_id = property_state.id
@@ -234,4 +226,4 @@ class BuildingFile(models.Model):
             record_type=AUDIT_IMPORT
         )
 
-        return True, property_view, messages
+        return True, property_state, messages
