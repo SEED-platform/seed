@@ -4,40 +4,31 @@
  */
 describe('controller: organization_settings_controller', function () {
   // globals set up and used in each test scenario
-  var mockService, scope, controller;
-  var ctrl, ctrl_scope, modalInstance;
+  var controller;
+  var ctrl_scope;
   var mock_organization_service;
 
   beforeEach(function () {
     module('BE.seed');
-  });
-
-  // inject AngularJS dependencies for the controller
-  beforeEach(inject(
-    function ($controller,
-              $rootScope,
-              $uibModal,
-              $q,
-              organization_service) {
-      ctrl = $controller;
-      scope = $rootScope;
+    inject(function ($controller, $rootScope, $uibModal, $q, organization_service) {
+      controller = $controller;
       ctrl_scope = $rootScope.$new();
 
       mock_organization_service = organization_service;
 
       spyOn(mock_organization_service, 'save_org_settings')
-        .andCallFake(function (org) {
+        .andCallFake(function () {
           // return $q.reject for error scenario
-          return $q.when({
+          return $q.resolve({
             status: 'success'
           });
         });
-    }
-  ));
+    });
+  });
 
   // this is outside the beforeEach so it can be configured by each unit test
   function create_settings_controller () {
-    ctrl = ctrl('organization_settings_controller', {
+    controller('organization_settings_controller', {
       $scope: ctrl_scope,
       all_columns: {
         fields: [

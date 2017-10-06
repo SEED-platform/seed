@@ -61,7 +61,7 @@
                 <div class="pairing-body left-scroll" dragula='"drag-pairing-row"'>
                     <div class="pairing-row grab-pairing-left" ng-repeat="row in newLeftData | orderBy : getLeftSortColumn() : leftReverseSort : naturalSortComparator | filter:leftSearch" title="Drag from here" ng-click="doubleClick('left',$event)">
                         <div leftParentId="{$ getLeftParentId(row) $}" ng-repeat="col in ::leftColumns track by $index">{$:: row[col.name] $}</div>
-                        <div class="paired-column">{$ leftPaired(row) $}</div>
+                        <div class="paired-column">{$ leftPaired(row) || '' $}</div>
                     </div>
                 </div>
             </div>
@@ -96,7 +96,7 @@
                                 </div>
                             </div>
                             <div ng-repeat="id in whichChildren(row) track by $index">
-                                <div viewId="{$ id $}" ng-repeat="col in ::rightColumns track by $index">
+                                <div viewId="{$ id $}" ng-repeat="col in ::leftColumns track by $index">
                                     <div class="pairing-cell">{$ whichChildData(id, col.name) $}</div>
                                 </div>
                                 <div class="unpair-child">

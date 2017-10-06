@@ -4,73 +4,106 @@
  */
 describe('controller: admin_controller', function () {
   var mock_organization_service;
-  var admin_controller_scope;
+  var mock_uploader_service;
+  var controller, admin_controller_scope;
 
   beforeEach(function () {
     module('BE.seed');
+    inject(function ($controller, $rootScope, user_service, organization_service, uploader_service, $q) {
+      admin_controller_scope = $rootScope.$new();
+      controller = $controller;
+      mock_organization_service = organization_service;
+      mock_uploader_service = uploader_service;
+
+      spyOn(mock_organization_service, 'get_organization_users')
+        .andCallFake(function () {
+          // return $q.reject for error scenario
+          return $q.reject({
+            status: 'fail'
+          });
+        });
+      spyOn(mock_organization_service, 'add_user_to_org')
+        .andCallFake(function () {
+          // return $q.reject for error scenario
+          return $q.reject({
+            status: 'fail'
+          });
+        });
+      spyOn(mock_organization_service, 'remove_user')
+        .andCallFake(function () {
+          // return $q.reject for error scenario
+          return $q.reject({
+            status: 'fail'
+          });
+        });
+      spyOn(mock_organization_service, 'get_organizations')
+        .andCallFake(function () {
+          // return $q.reject for error scenario
+          return $q.reject({
+            status: 'fail'
+          });
+        });
+      spyOn(mock_organization_service, 'delete_organization_inventory')
+        .andCallFake(function () {
+          // return $q.reject for error scenario
+          return $q.resolve({
+            status: 'success'
+          });
+        });
+      spyOn(mock_uploader_service, 'check_progress_loop')
+        .andCallFake(function (progress, num, num2, cb) {
+          // return $q.reject for error scenario
+          cb();
+          return $q.resolve({
+            status: 'success',
+            progress: '100.0'
+          });
+        });
+    });
   });
-  beforeEach(inject(function ($controller, $rootScope, user_service, organization_service, uploader_service, $q) {
-    admin_controller_scope = $rootScope.$new();
-    controller = $controller;
-    user_service = user_service;
-    mock_organization_service = organization_service;
-    mock_uploader_service = uploader_service;
-
-    spyOn(mock_organization_service, 'get_organization_users')
-      .andCallFake(function () {
-        // return $q.reject for error scenario
-        return $q.reject({
-          status: 'fail',
-        });
-      });
-    spyOn(mock_organization_service, 'add_user_to_org')
-      .andCallFake(function () {
-        // return $q.reject for error scenario
-        return $q.reject({
-          status: 'fail',
-        });
-      });
-    spyOn(mock_organization_service, 'remove_user')
-      .andCallFake(function () {
-        // return $q.reject for error scenario
-        return $q.reject({
-          status: 'fail',
-        });
-      });
-    spyOn(mock_organization_service, 'get_organizations')
-      .andCallFake(function () {
-        // return $q.reject for error scenario
-        return $q.reject({
-          status: 'fail',
-        });
-      });
-    spyOn(mock_organization_service, 'delete_organization_inventory')
-      .andCallFake(function () {
-        // return $q.reject for error scenario
-        return $q.when({
-          status: 'success',
-
-        });
-      });
-    spyOn(mock_uploader_service, 'check_progress_loop')
-      .andCallFake(function (progress, num, num2, cb) {
-        // return $q.reject for error scenario
-        cb();
-        return $q.when({
-          status: 'success',
-          progress: '100.0'
-        });
-      });
-  }));
 
   function create_admin_controller () {
-    admin_controller = controller('admin_controller', {
+    controller('admin_controller', {
       $scope: admin_controller_scope,
+      organizations_payload: {
+        organizations: [{
+          is_parent: true,
+          user_role: 'owner',
+          sub_orgs: [],
+          number_of_users: 1,
+          id: 1,
+          owners: [{first_name: 'Seed', last_name: 'User', email: 'demo@example.com', id: 1}],
+          name: 'SEED',
+          created: '2017-01-01',
+          org_id: 1,
+          user_is_owner: true,
+          parent_id: 1,
+          cycles: [{
+            num_taxlots: 0,
+            cycle_id: 1,
+            num_properties: 0,
+            name: '2017 Calendar Year'
+          }]
+        }]
+      },
       user_profile_payload: {
-        user: {first_name: 'b', last_name: 'd'}
+        user: {
+          status: 'success',
+          api_key: '',
+          first_name: 'Seed',
+          last_name: 'User',
+          email: 'demo@example.com'
+        }
+      },
+      users_payload: {
+        users: [{
+          user_id: 1,
+          email: 'demo@example.com'
+        }]
       }
     });
-  };
+  }
+
   describe('update_alert', function () {
     it('should set the show state to true', function () {
       // arrange
@@ -84,7 +117,7 @@ describe('controller: admin_controller', function () {
       expect(admin_controller_scope.alert.message).toBe('test message');
     });
 
-    it('should raise an confirm window when the delete buildings button is clicked', function () {
+    it('should raise a confirm window when the delete buildings button is clicked', function () {
       // arrange
       create_admin_controller();
       var oldConfirm = confirm;
@@ -94,9 +127,8 @@ describe('controller: admin_controller', function () {
       admin_controller_scope.confirm_inventory_delete({org_id: 44, name: 'my new org'});
 
       // assertions
-      expect(confirm).toHaveBeenCalledWith(
-        'Are you sure you want to PERMANENTLY delete \'' +
-        'my new org' + '\'s properties and tax lots?');
+      // spyOn(window, 'confirm').andReturn(false);
+      expect(confirm).toHaveBeenCalledWith('Are you sure you want to PERMANENTLY delete \'my new org\'s properties and tax lots?');
 
       confirm = oldConfirm;
 
@@ -123,7 +155,7 @@ describe('controller: admin_controller', function () {
       create_admin_controller();
 
       // act
-      admin_controller_scope.delete_org_inventory({org: "something"});
+      admin_controller_scope.delete_org_inventory({org: 'something'});
       admin_controller_scope.$digest();
 
       // assertions

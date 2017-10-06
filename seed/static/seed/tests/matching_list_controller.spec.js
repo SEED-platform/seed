@@ -4,8 +4,8 @@
  */
 describe('Controller: matching_list_controller', function () {
   // globals set up and used in each test scenario
-  var mock_matching_services, mock_inventory_services, scope, controller, delete_called;
-  var matching_list_controller, matching_list_controller_scope, modalInstance, labels;
+  var mock_inventory_service, controller, $state;
+  var matching_list_controller_scope;
   var mock_spinner_utility;
 
 
@@ -13,40 +13,37 @@ describe('Controller: matching_list_controller', function () {
   // 'config.seed' is created in TestFilters.html
   beforeEach(function () {
     module('BE.seed');
-  });
+    inject(function ($controller, $rootScope, $q, _$state_, inventory_service, spinner_utility) {
+      controller = $controller;
+      $state = _$state_;
+      matching_list_controller_scope = $rootScope.$new();
+      matching_list_controller_scope.inventory_type = 'properties';
 
-  // inject AngularJS dependencies for the controller
-  beforeEach(inject(function ($controller, $rootScope, $q, matching_service, inventory_service, spinner_utility) {
-    controller = $controller;
-    scope = $rootScope;
-    matching_list_controller_scope = $rootScope.$new();
-    matching_list_controller_scope.inventory_type = 'properties';
-
-    mock_matching_services = matching_service;
-    mock_inventory_services = inventory_service;
-    spyOn(mock_inventory_services, 'get_matching_status')
-      .andCallFake(function (import_file) {
-        // return $q.reject for error scenario
-        return $q.when({
-          properties: {
-            status: 'success',
-            matched: 10,
-            unmatched: 5,
-            duplicates: 0
-          }
+      mock_inventory_service = inventory_service;
+      spyOn(mock_inventory_service, 'get_matching_status')
+        .andCallFake(function () {
+          // return $q.reject for error scenario
+          return $q.resolve({
+            properties: {
+              status: 'success',
+              matched: 10,
+              unmatched: 5,
+              duplicates: 0
+            }
+          });
         });
-      });
 
-    mock_spinner_utility = spinner_utility;
-    spyOn(mock_spinner_utility, 'show')
-      .andCallFake(function () {
-        // Do nothing
-      });
-    spyOn(mock_spinner_utility, 'hide')
-      .andCallFake(function () {
-        // Do nothing
-      });
-  }));
+      mock_spinner_utility = spinner_utility;
+      spyOn(mock_spinner_utility, 'show')
+        .andCallFake(function () {
+          // Do nothing
+        });
+      spyOn(mock_spinner_utility, 'hide')
+        .andCallFake(function () {
+          // Do nothing
+        });
+    });
+  });
 
   // this is outside the beforeEach so it can be configured by each unit test
   function create_dataset_detail_controller () {
@@ -73,7 +70,7 @@ describe('Controller: matching_list_controller', function () {
       number_properties_matching_search: 1,
       number_properties_returned: 1
     };
-    matching_list_controller = controller('matching_list_controller', {
+    controller('matching_list_controller', {
       $scope: matching_list_controller_scope,
       inventory_payload: inventory_payload,
       $stateParams: {
@@ -146,12 +143,12 @@ describe('Controller: matching_list_controller', function () {
     matching_list_controller_scope.update_number_matched();
 
     // assertions
-    expect(matching_list_controller_scope.matched_buildings).toEqual(10);
-    expect(matching_list_controller_scope.unmatched_buildings).toEqual(5);
-    expect(mock_inventory_services.get_matching_status).toHaveBeenCalled();
+    expect(matching_list_controller_scope.matched_buildings).toEqual(1);
+    expect(matching_list_controller_scope.unmatched_buildings).toEqual(0);
+    expect(mock_inventory_service.get_matching_status).toHaveBeenCalled();
   });
 
-  it('should jump back to the matching list when the \'Back to list\' button is clicked', function () {
+  it('should jump back to the matching list when the "Back to list" button is clicked', function () {
     // arrange
     create_dataset_detail_controller();
 
@@ -174,14 +171,12 @@ describe('Controller: matching_list_controller', function () {
     matching_list_controller_scope.$digest();
 
     // assertions
-    expect(matching_list_controller_scope.columns).toEqual([{
+    expect(matching_list_controller_scope.leftColumns).toEqual([{
       name: 'pm_property_id',
       displayName: 'PM Property ID',
       type: 'number'
     }]);
-    expect(matching_list_controller_scope.number_properties_matching_search).toEqual(1);
-    expect(matching_list_controller_scope.number_properties_returned).toEqual(1);
-    expect(matching_list_controller_scope.num_pages).toEqual(1);
-    expect(mock_inventory_services.get_matching_status).toHaveBeenCalled();
+    expect(matching_list_controller_scope.matched_buildings).toEqual(1);
+    expect(matching_list_controller_scope.number_of_pages).toEqual(1);
   });
 });
