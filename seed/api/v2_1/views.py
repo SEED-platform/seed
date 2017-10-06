@@ -20,6 +20,8 @@ from rest_framework.decorators import detail_route
 
 from seed.building_sync.building_sync import BuildingSync
 from seed.models import (
+    Measure,
+    Simulation,
     PropertyView,
     PropertyState,
     BuildingFile,
@@ -234,21 +236,37 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
                 'message': 'Cannot match a PropertyView with pk=%s; cycle_id=%s' % (pk, cycle_id)
             })
 
+        # get some items off of this property view
+        scenario_ids_for_this_pv = [x.id for x in property_view.state.scenarios]
+        buildingfile_ids_for_this_pv = [x.id for x in property_view.state.building_files]
+        simulation_ids_for_this_pv = [x.id for x in Simulation.objects.filter(property_state=property_view.state)]
+        measure_ids_for_this_pv = [x.id for x in Measure.objects.filter(property_state=property_view.state)]
+
+        # make a new property view copied from the old one so that most things are persisted automatically
         pv_copy = copy.deepcopy(property_view)
 
         # passing in the property view pk should allow it to process the buildingsync file but not create a new PV
         p_status, property_view, messages = building_file.process(organization_id, cycle,
                                                                   property_state=pv_copy.state)
 
-        # need to update property state on BuildingFile, Scenario, Simulation, and Measures
-        building_file.property_state = pv_copy.state
+        # persist the ids that were saved earlier
+        new_pv_state = pv_copy.state
+        [new_pv_state.scenarios.add(x) for x in scenario_ids_for_this_pv]
+        [new_pv_state.building_files.add(x) for x in buildingfile_ids_for_this_pv]
+        for x in simulation_ids_for_this_pv:
+            Simulation.objects.get(id=x).property_state = new_pv_state
+        for x in measure_ids_for_this_pv:
+            Measure.objects.get(id=x).property_state = new_pv_state
+
+        # now save and return
+        pv_copy.save()
 
         if p_status:
             return JsonResponse({
                 "status": "success",
                 "message": "successfully imported file",
                 "data": {
-                    "property_view": PropertyViewAsStateSerializer(property_view).data,
+                    "property_view": PropertyViewAsStateSerializer(pv_copy).data,
                 },
             })
         else:
