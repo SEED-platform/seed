@@ -1,0 +1,515 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-10-04 14:26-0700\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: config/settings/common.py:214
+msgid "English"
+msgstr ""
+
+#: config/settings/common.py:215
+msgid "French (Canadian)"
+msgstr ""
+
+#: seed/exception_handler.py:45
+msgid "Cannot delete protected objects while related objects still exist"
+msgstr ""
+
+#: seed/landing/forms.py:13
+msgid "Email"
+msgstr ""
+
+#: seed/landing/forms.py:14
+msgid "ex: joe@company.com"
+msgstr ""
+
+#: seed/landing/forms.py:20
+#: seed/landing/templates/landing/password_reset_confirm.html:10
+#: seed/landing/templates/landing/signup.html:10
+msgid "Password"
+msgstr ""
+
+#: seed/landing/models.py:41
+msgid "username (email)"
+msgstr ""
+
+#: seed/landing/models.py:42
+msgid "User's email address.  Used for auth as well."
+msgstr ""
+
+#: seed/landing/models.py:43
+msgid "first name"
+msgstr ""
+
+#: seed/landing/models.py:44
+msgid "last name"
+msgstr ""
+
+#: seed/landing/models.py:45
+msgid "email address"
+msgstr ""
+
+#: seed/landing/models.py:47
+msgid "staff status"
+msgstr ""
+
+#: seed/landing/models.py:48
+msgid "Designates whether the user can log into this admin site."
+msgstr ""
+
+#: seed/landing/models.py:51 seed/landing/models.py:59
+#: src/django-tos-master/tos/models.py:32
+msgid "active"
+msgstr ""
+
+#: seed/landing/models.py:52
+msgid ""
+"Designates whether this user should be treated as active. Unselect this "
+"instead of deleting accounts."
+msgstr ""
+
+#: seed/landing/models.py:54
+msgid "date joined"
+msgstr ""
+
+#: seed/landing/models.py:60
+msgid "shows shared buildings within search results"
+msgstr ""
+
+#: seed/landing/models.py:69
+msgid "api key"
+msgstr ""
+
+#: seed/landing/models.py:82
+msgid "user"
+msgstr ""
+
+#: seed/landing/models.py:83
+msgid "users"
+msgstr ""
+
+#: seed/landing/templates/landing/_browser_supported.html:4
+msgid "We've detected an outdated browser."
+msgstr ""
+
+#: seed/landing/templates/landing/_browser_supported.html:5
+msgid ""
+"Using your current browser will prevent you from accessing features on our "
+"website. Use the links below to download a new browser or upgrade your "
+"existing browser."
+msgstr ""
+
+#: seed/landing/templates/landing/_marketing_bullets.html:3
+msgid "Welcome to SEED Platform&#0153;"
+msgstr ""
+
+#: seed/landing/templates/landing/_marketing_bullets.html:7
+msgid ""
+"Get started using SEED Platform by uploading your buildings list (city tax "
+"assessor data) and then your EPA Portfolio Manager data."
+msgstr ""
+
+#: seed/landing/templates/landing/_marketing_bullets.html:15
+msgid ""
+"Match-up your buildings list with the Portfolio Manager dataset to tie "
+"building records together."
+msgstr ""
+
+#: seed/landing/templates/landing/_marketing_bullets.html:23
+msgid ""
+"Use SEED Platform's flexible, easy-to-use labeling system and project "
+"groupings to track the status of data submission, review, and compliance."
+msgstr ""
+
+#: seed/landing/templates/landing/_password_note.html:1
+msgid ""
+"Note: Passwords must be 8 or more characters, and must contain at least 1 "
+"uppercase character, 1 lowercase character, and 1 digit."
+msgstr ""
+
+#: seed/landing/templates/landing/base.html:9
+msgid "SEED Platform"
+msgstr ""
+
+#: seed/landing/templates/landing/home.html:16
+msgid "Log in to SEED Platform"
+msgstr ""
+
+#: seed/landing/templates/landing/home.html:18
+msgid "Thank you for creating your account! Please sign in below."
+msgstr ""
+
+#: seed/landing/templates/landing/home.html:21
+msgid "You have successfully logged out. You may log in again below."
+msgstr ""
+
+#: seed/landing/templates/landing/home.html:27
+#: seed/landing/templates/landing/login.html:29
+msgid "Log In"
+msgstr ""
+
+#: seed/landing/templates/landing/home.html:28
+#: seed/landing/templates/landing/password_reset_confirm.html:80
+#: seed/landing/templates/landing/signup.html:79
+msgid "Cancel"
+msgstr ""
+
+#: seed/landing/templates/landing/home.html:29
+#: seed/landing/templates/landing/login.html:31
+msgid "Forgot password?"
+msgstr ""
+
+#: seed/landing/templates/landing/login.html:23
+msgid "Log in"
+msgstr ""
+
+#: seed/landing/templates/landing/password_reset_confirm.html:11
+#: seed/landing/templates/landing/signup.html:11
+msgid "Password again"
+msgstr ""
+
+#: seed/landing/templates/landing/password_reset_confirm.html:29
+msgid "Change Your Password"
+msgstr ""
+
+#: seed/landing/templates/landing/password_reset_confirm.html:37
+msgid "To change your password, enter your requested password twice."
+msgstr ""
+
+#: seed/landing/templates/landing/password_reset_confirm.html:41
+msgid ""
+"The password link was invalid, possibly because it has already been used.  "
+"Please request a new password reset."
+msgstr ""
+
+#: seed/landing/templates/landing/password_reset_confirm.html:42
+msgid "Password reset"
+msgstr ""
+
+#: seed/landing/templates/landing/password_reset_confirm.html:50
+#: seed/landing/templates/landing/signup.html:49
+msgid "New password"
+msgstr ""
+
+#: seed/landing/templates/landing/password_reset_confirm.html:64
+#: seed/landing/templates/landing/signup.html:63
+msgid "Confirm"
+msgstr ""
+
+#: seed/landing/templates/landing/password_reset_confirm.html:79
+msgid "Change my password"
+msgstr ""
+
+#: seed/landing/templates/landing/password_reset_done.html:12
+msgid "Thank you"
+msgstr ""
+
+#: seed/landing/templates/landing/password_reset_done.html:15
+msgid "We've e-mailed instructions for resetting your password."
+msgstr ""
+
+#: seed/landing/templates/landing/password_reset_done.html:15
+msgid "You should be receiving it shortly."
+msgstr ""
+
+#: seed/landing/templates/landing/password_reset_done.html:17
+msgid "Back to Home"
+msgstr ""
+
+#: seed/landing/templates/landing/password_reset_email.html:2
+msgid "You're receiving this e-mail because you requested a password reset"
+msgstr ""
+
+#: seed/landing/templates/landing/password_reset_email.html:3
+msgid "for your SEED Platform user account"
+msgstr ""
+
+#: seed/landing/templates/landing/password_reset_email.html:5
+msgid "Please go to the following page and choose a new password:"
+msgstr ""
+
+#: seed/landing/templates/landing/password_reset_email.html:9
+msgid "Your username, in case you've forgotten:"
+msgstr ""
+
+#: seed/landing/templates/landing/password_reset_email.html:11
+msgid "The SEED team"
+msgstr ""
+
+#: seed/landing/templates/landing/password_reset_subject.txt:1
+msgid "Password reset on SEED"
+msgstr ""
+
+#: seed/landing/templates/landing/password_set.html:6
+msgid "Password set"
+msgstr ""
+
+#: seed/landing/templates/landing/password_set.html:10
+msgid "Set your password"
+msgstr ""
+
+#: seed/landing/templates/landing/password_set.html:12
+msgid "Password set unsuccessful"
+msgstr ""
+
+#: seed/landing/templates/landing/password_set.html:16
+msgid "Welcome to SEED!"
+msgstr ""
+
+#: seed/landing/templates/landing/password_set.html:16
+msgid ""
+"Please enter your new password twice so we can verify you typed it in "
+"correctly."
+msgstr ""
+
+#: seed/landing/templates/landing/password_set.html:18
+msgid "Set password"
+msgstr ""
+
+#: seed/landing/templates/landing/signup.html:29
+msgid "Create Your Account"
+msgstr ""
+
+#: seed/landing/templates/landing/signup.html:37
+msgid "To set up your account, enter your password twice in the form below."
+msgstr ""
+
+#: seed/landing/templates/landing/signup.html:41
+msgid ""
+"The invite link was invalid, possibly because it has already been used.  "
+"Please request a new invitation."
+msgstr ""
+
+#: seed/landing/templates/landing/signup.html:78
+msgid "Create my account"
+msgstr ""
+
+#: seed/landing/templates/landing/thank_you.html:13
+msgid "Thank you!"
+msgstr ""
+
+#: seed/landing/templates/landing/thank_you.html:16
+msgid ""
+"Thank you for your interest in joining the Buildings Performance Database. "
+"Our site is in beta and your request is being reviewed for access."
+msgstr ""
+
+#: seed/landing/templates/landing/thank_you.html:17
+msgid "Back"
+msgstr ""
+
+#: seed/models/columns.py:688 seed/models/models.py:195
+#: seed/models/models.py:256 seed/models/projects.py:42
+msgid "SeedOrg"
+msgstr ""
+
+#: seed/models/models.py:135
+msgid "Benchmarking"
+msgstr ""
+
+#: seed/models/models.py:136
+msgid "Auditing"
+msgstr ""
+
+#: seed/models/models.py:137
+msgid "Retro Commissioning"
+msgstr ""
+
+#: seed/models/models.py:177
+msgid "red"
+msgstr ""
+
+#: seed/models/models.py:178
+msgid "blue"
+msgstr ""
+
+#: seed/models/models.py:179
+msgid "light blue"
+msgstr ""
+
+#: seed/models/models.py:180
+msgid "green"
+msgstr ""
+
+#: seed/models/models.py:181
+msgid "white"
+msgstr ""
+
+#: seed/models/models.py:182
+msgid "orange"
+msgstr ""
+
+#: seed/models/models.py:183
+msgid "gray"
+msgstr ""
+
+#: seed/models/models.py:186 seed/models/projects.py:30
+msgid "name"
+msgstr ""
+
+#: seed/models/models.py:188 seed/models/models.py:231
+msgid "compliance_type"
+msgstr ""
+
+#: seed/models/models.py:236
+msgid "start_date"
+msgstr ""
+
+#: seed/models/models.py:237
+msgid "end_date"
+msgstr ""
+
+#: seed/models/models.py:238
+msgid "deadline_date"
+msgstr ""
+
+#: seed/models/models.py:239
+msgid "Project"
+msgstr ""
+
+#: seed/models/projects.py:23
+msgid "Inactive"
+msgstr ""
+
+#: seed/models/projects.py:24
+msgid "Active"
+msgstr ""
+
+#: seed/models/projects.py:32
+msgid "slug"
+msgstr ""
+
+#: seed/models/projects.py:35 seed/models/projects.py:109
+#: seed/models/projects.py:137 seed/models/projects.py:162
+msgid "User"
+msgstr ""
+
+#: seed/models/projects.py:47
+msgid "description"
+msgstr ""
+
+#: seed/models/projects.py:49
+msgid "status"
+msgstr ""
+
+#: seed/models/projects.py:107 seed/models/projects.py:134
+#: seed/models/projects.py:159
+msgid "approved_date"
+msgstr ""
+
+#: seed/models/projects.py:115
+msgid "project building"
+msgstr ""
+
+#: seed/models/projects.py:116
+msgid "project buildings"
+msgstr ""
+
+#: seed/models/projects.py:143
+msgid "project property view"
+msgstr ""
+
+#: seed/models/projects.py:144
+msgid "project property views"
+msgstr ""
+
+#: seed/models/projects.py:168
+msgid "project taxlot view"
+msgstr ""
+
+#: seed/models/projects.py:169
+msgid "project taxlot views"
+msgstr ""
+
+#: seed/templates/seed/account_create_email.html:2
+#, python-format
+msgid "Hello %(first_name)s, "
+msgstr ""
+
+#: seed/templates/seed/account_create_email.html:4
+msgid ""
+"You're receiving this e-mail because you've been registered for a SEED "
+"account."
+msgstr ""
+
+#: seed/templates/seed/account_create_email.html:6
+msgid ""
+"SEED is easy, flexible, and cost effective software designed to help "
+"organizations clean, manage and share information about large portfolios of "
+"buildings. SEED is a free, open source web application that you can use "
+"privately.  While SEED was originally designed to help cities and States "
+"implement benchmarking programs for public or private buildings, it has the "
+"potential to be useful for many other activities by public entities, "
+"efficiency programs and private companies."
+msgstr ""
+
+#: seed/templates/seed/account_create_email.html:8
+msgid "Please go to the following page and setup your account:"
+msgstr ""
+
+#: seed/templates/seed/account_create_email.html:13
+msgid "The SEED Team"
+msgstr ""
+
+#: seed/templates/seed/base.html:7
+msgid "SEED Platform&#0153;"
+msgstr ""
+
+#: seed/validators.py:17
+#, python-format
+msgid "This password must contain at least %(quantity)d %(type)s characters."
+msgstr ""
+
+#: seed/validators.py:24
+#, python-format
+msgid "Your password must contain at least %(quantity)d %(type)s characters."
+msgstr ""
+
+#: src/django-tos-master/tos/models.py:34
+msgid "Only one terms of service is allowed to be active"
+msgstr ""
+
+#: src/django-tos-master/tos/models.py:37
+msgid "content"
+msgstr ""
+
+#: src/django-tos-master/tos/models.py:43
+#: src/django-tos-master/tos/models.py:44
+msgid "Terms of Service"
+msgstr ""
+
+#: src/django-tos-master/tos/templates/tos/tos.html:3
+#: src/django-tos-master/tos/templates/tos/tos_check.html:6
+#, python-format
+msgid "Terms of Service as of %(tos.created|date:\"SHORT_DATE_FORMAT\")s"
+msgstr ""
+
+#: src/django-tos-master/tos/templates/tos/tos_check.html:11
+msgid "Accept Terms of Service?"
+msgstr ""
+
+#: src/django-tos-master/tos/templates/tos/tos_check.html:18
+msgid "Reject"
+msgstr ""
+
+#: src/django-tos-master/tos/templates/tos/tos_check.html:19
+msgid "Accept"
+msgstr ""
+
+#: src/django-tos-master/tos/views.py:72
+msgid "You cannot login without agreeing to the terms of this site."
+msgstr ""
