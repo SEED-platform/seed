@@ -124,7 +124,7 @@ class BuildingFile(models.Model):
 
         if not property_state:
 
-            # create a new propertystate for the objects
+            # create a new property_state for the objects
             property_state = PropertyState.objects.create(**create_data)
             property_state.extra_data = extra_data
             property_state.save()
