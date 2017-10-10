@@ -7,6 +7,7 @@ angular.module('BE.seed.controller.data_quality_modal', [])
   '$scope',
   '$uibModalInstance',
   'search_service',
+  'naturalSort',
   'dataQualityResults',
   'name',
   'uploaded',
@@ -15,6 +16,7 @@ angular.module('BE.seed.controller.data_quality_modal', [])
     $scope,
     $uibModalInstance,
     search_service,
+    naturalSort,
     dataQualityResults,
     name,
     uploaded,
@@ -22,7 +24,8 @@ angular.module('BE.seed.controller.data_quality_modal', [])
   ) {
     $scope.name = name;
     $scope.uploaded = moment.utc(uploaded).local().format('MMMM Do YYYY, h:mm:ss A Z');
-    $scope.dataQualityResults = dataQualityResults || [];
+    var originalDataQualityResults = dataQualityResults || [];
+    $scope.dataQualityResults = originalDataQualityResults;
     $scope.importFileId = importFileId;
 
     $scope.close = function () {
@@ -69,7 +72,11 @@ angular.module('BE.seed.controller.data_quality_modal', [])
     });
 
     $scope.sortData = function () {
-      $scope.dataQualityResults = _.orderBy($scope.dataQualityResults, [$scope.search.sort_column], [$scope.search.sort_reverse ? 'desc' : 'asc']);
+      var result = originalDataQualityResults.slice().sort(function (a, b) {
+        return naturalSort(a[$scope.search.sort_column], b[$scope.search.sort_column]);
+      });
+      if ($scope.search.sort_reverse) result.reverse();
+      $scope.dataQualityResults = result;
     };
 
     $scope.search = angular.copy(search_service);

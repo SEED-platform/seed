@@ -159,7 +159,7 @@ describe('When I go to the prop page', function () {
     $('.ui-grid-icon-menu').click();
     var myOptions = element.all(by.repeater('item in menuItems')).filter(function (elm) {
       return elm.getText().then(function (label) {
-        return label == '  Export all data as csv';
+        return label === '  Export all data as csv';
       });
     }).first();
     myOptions.click();

@@ -227,7 +227,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       var original = rule.data_type;
       var newDataType = _.find(columns, {name: rule.field}).data_type;
 
-      if (newDataType == undefined) newDataType = null;
+      if (_.isNil(newDataType)) newDataType = null;
 
       // clear columns that are type specific.
       if (newDataType !== original) {

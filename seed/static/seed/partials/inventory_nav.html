@@ -1,3 +1,3 @@
-        <a id="inventory-list" ui-sref="inventory_list(::{inventory_type: inventory_type})" ui-sref-active="active">{$ ::inventory_type == 'taxlots' ? 'Tax Lots' : 'Properties'$} List</a><!--
+        <a id="inventory-list" ui-sref="inventory_list(::{inventory_type: inventory_type})" ui-sref-active="active">{$ ::inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties'$} List</a><!--
      --><a id="list-settings" ui-sref="list_settings(::{inventory_type: inventory_type})" ui-sref-active="active">List Settings</a><!--
      --><a id="reports" ui-sref="reports(::{inventory_type: inventory_type})" ui-sref-active="active">Reports</a>

@@ -52,7 +52,7 @@
     <div class="matching-detail-container">
         <span class="paginate">
             <select style="height:24px;" ng-model="number_per_page" ng-change="save_number_per_page(); update_start_end_paging()" ng-options="option for option in ::number_per_page_options"></select>
-            <button class="disableable" ng-disabled="current_page == 0 || number_of_pages === 1" ng-click="previousPage()">
+            <button class="disableable" ng-disabled="current_page === 0 || number_of_pages === 1" ng-click="previousPage()">
                 Previous
             </button>
             {$ current_page + 1 $}/{$ number_of_pages $}
@@ -100,7 +100,7 @@
                         </tr>
                         <tr>
                             <td class="potential_matches" colspan="{$:: columns.length + 1 $}">
-                                <span>Potential Matches from Source: <strong>Existing {$:: inventory_type == 'properties' ? 'Properties' : 'Tax Lots' $}</strong></span>
+                                <span>Potential Matches from Source: <strong>Existing {$:: inventory_type === 'properties' ? 'Properties' : 'Tax Lots' $}</strong></span>
                             </td>
                         </tr>
                         <!-- matched record -->
@@ -130,7 +130,7 @@
                 </div>
                 <div class="pager_container col-sm-5">
                     <select style="height:24px;" ng-model="number_per_page" ng-change="save_number_per_page(); update_start_end_paging()" ng-options="option for option in ::number_per_page_options"></select>
-                    <button class="disableable" ng-disabled="current_page == 0 || number_of_pages === 1" ng-click="previousPage()">
+                    <button class="disableable" ng-disabled="current_page === 0 || number_of_pages === 1" ng-click="previousPage()">
                         Previous
                     </button>
                     {$ current_page + 1 $}/{$ number_of_pages $}

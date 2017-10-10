@@ -372,7 +372,7 @@ angular.module('BE.seed.controller.mapping', [])
             var options = {};
             if (!_.includes(existing_property_keys, col.name) && !_.includes(existing_extra_property_keys, col.name)) col.visible = false;
             else {
-              if (col.type == 'number') options.filter = inventory_service.numFilter();
+              if (col.type === 'number') options.filter = inventory_service.numFilter();
               else options.filter = inventory_service.textFilter();
             }
             return _.defaults(col, options, defaults);
@@ -382,7 +382,7 @@ angular.module('BE.seed.controller.mapping', [])
             if (!_.includes(existing_taxlot_keys, col.name) && !_.includes(existing_extra_taxlot_keys, col.name)) {
               col.visible = false;
             } else {
-              if (col.type == 'number') options.filter = inventory_service.numFilter();
+              if (col.type === 'number') options.filter = inventory_service.numFilter();
               else options.filter = inventory_service.textFilter();
             }
             return _.defaults(col, options, defaults);
@@ -628,7 +628,7 @@ angular.module('BE.seed.controller.mapping', [])
         });
 
         var chosenTypes = _.uniq(_.map($scope.valids, 'suggestion_table_name'));
-        if (chosenTypes.length == 1) $scope.setAllFields = _.find($scope.setAllFieldsOptions, {value: chosenTypes[0]});
+        if (chosenTypes.length === 1) $scope.setAllFields = _.find($scope.setAllFieldsOptions, {value: chosenTypes[0]});
       };
       init();
 

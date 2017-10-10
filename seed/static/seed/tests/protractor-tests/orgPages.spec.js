@@ -60,7 +60,7 @@ describe('When I visit the the parent org', function () {
     myNewOrg.$$('a').first().click();
     var myOptions = element.all(by.css('a')).filter(function (elm) {
       return elm.getText().then(function (label) {
-        return label == 'Cycles';
+        return label === 'Cycles';
       });
     }).first();
     myOptions.click();
@@ -96,7 +96,7 @@ describe('When I visit the the parent org', function () {
   it('should create new label', function () {
     var myOptions = element.all(by.css('a')).filter(function (elm) {
       return elm.getText().then(function (label) {
-        return label == 'Labels';
+        return label === 'Labels';
       });
     }).first();
     myOptions.click();
@@ -109,7 +109,7 @@ describe('When I visit the the parent org', function () {
       .element(by.xpath('..')).element(by.xpath('..'));
 
     expect(myNewLabel.isPresent()).toBe(true);
-    
+
     myNewLabel.$('[ng-click="deleteLabel(label, $index)"]').click();
     browser.sleep(1000);
     $('[data-ng-click="modalOptions.cancel()"]').click();
@@ -140,7 +140,7 @@ describe('When I visit the the parent org', function () {
   it('should create new members', function () {
     var myOptions = element.all(by.css('a')).filter(function (elm) {
       return elm.getText().then(function (label) {
-        return label == 'Members';
+        return label === 'Members';
       });
     }).first();
     myOptions.click();
@@ -175,7 +175,7 @@ describe('When I visit the the parent org', function () {
   it('should select Data Quality tab and delete all default rules for properties', function () {
     var myOptions = element.all(by.css('a')).filter(function (elm) {
       return elm.getText().then(function (label) {
-        return label == 'Data Quality';
+        return label === 'Data Quality';
       });
     }).first();
     myOptions.click();
@@ -234,7 +234,7 @@ describe('When I visit the the parent org', function () {
   it('should go to parent organization and select Sharing', function () {
     var myOptions3 = element.all(by.css('a')).filter(function (elm) {
       return elm.getText().then(function (label) {
-        return label == 'Sharing';
+        return label === 'Sharing';
       });
     }).first();
     myOptions3.click();
