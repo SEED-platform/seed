@@ -82,22 +82,22 @@
                             <td ng-click="change_not_null(rule)" class="text-center">
                                 <input type="checkbox" ng-model="rule.not_null" class="no-click" ng-change="rule.rule_type = 1">
                             </td>
-                            <td ng-if="rule.data_type == 'string'" colspan="2">
+                            <td ng-if="rule.data_type === 'string'" colspan="2">
                                 <input class="form-control input-sm" type="text" maxlength="200" ng-model="rule.text_match" ng-change="rule.rule_type = 1" placeholder="(field must contain this text)">
                             </td>
-                            <td ng-if="rule.data_type != 'string'">
+                            <td ng-if="rule.data_type !== 'string'">
                                 <input class="form-control input-sm" type="number" ng-model="rule.min" ng-change="rule.rule_type = 1" ng-if="_.includes([null, 'number', 'year', 'area', 'eui'], rule.data_type)" placeholder="(no minimum)">
-                                <input class="form-control input-sm" type="date" ng-model="rule.min" ng-change="rule.rule_type = 1" ng-if="rule.data_type == 'date'">
+                                <input class="form-control input-sm" type="date" ng-model="rule.min" ng-change="rule.rule_type = 1" ng-if="rule.data_type === 'date'">
                             </td>
-                            <td ng-if="rule.data_type != 'string'">
-                                <input class="form-control input-sm" type="number" ng-model="rule.max" ng-change="rule.rule_type = 1" ng-if="rule.data_type != 'date'" placeholder="(no maximum)">
-                                <input class="form-control input-sm" type="date" ng-model="rule.max" ng-change="rule.rule_type = 1" ng-if="rule.data_type == 'date'">
+                            <td ng-if="rule.data_type !== 'string'">
+                                <input class="form-control input-sm" type="number" ng-model="rule.max" ng-change="rule.rule_type = 1" ng-if="rule.data_type !== 'date'" placeholder="(no maximum)">
+                                <input class="form-control input-sm" type="date" ng-model="rule.max" ng-change="rule.rule_type = 1" ng-if="rule.data_type === 'date'">
                             </td>
                             <td>
                                 <select class="form-control input-sm" ng-options="unit.id as unit.label for unit in units" ng-model="rule.units" ng-change="rule.rule_type = 1"></select>
                             </td>
                             <td>
-                                <select class="form-control input-sm" ng-model="rule.severity" ng-change="rule.rule_type = 1" ng-class="{'error-bg': rule.severity=='error', 'warning-bg': rule.severity=='warning'}">
+                                <select class="form-control input-sm" ng-model="rule.severity" ng-change="rule.rule_type = 1" ng-class="{'error-bg': rule.severity === 'error', 'warning-bg': rule.severity === 'warning'}">
                                     <option value="error">Error</option>
                                     <option value="warning">Warning</option>
                                 </select>

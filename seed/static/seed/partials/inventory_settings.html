@@ -4,7 +4,7 @@
 
         </div>
         <div class="page_title">
-            <h1>{$:: inventory_type == 'taxlots' ? 'Tax Lot' : 'Property' $} List Settings</h1>
+            <h1>{$:: inventory_type === 'taxlots' ? 'Tax Lot' : 'Property' $} List Settings</h1>
         </div>
         <div class="right page_action_container page_action_btn"></div>
     </div>
@@ -24,15 +24,15 @@
 
 <div class="section_content_container" ng-cloak style="clear:both; overflow:hidden;">
     <div class="section_content with_padding" style="overflow:hidden;">
-        <h3>Add Shared {$:: inventory_type == 'taxlots' ? 'Tax Lots' : 'Properties' $}.</h3>
+        <h3>Add Shared {$:: inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties' $}.</h3>
         <div class="checkbox">
             <label>
                 <input type="checkbox" ng-model="showSharedBuildings" ng-change="saveShowSharedBuildings()">
-                Include in your {$:: inventory_type == 'taxlots' ? 'tax lots' : 'properties' $} list all {$:: inventory_type == 'taxlots' ? 'tax lots' : 'properties' $} shared with you.
+                Include in your {$:: inventory_type === 'taxlots' ? 'tax lots' : 'properties' $} list all {$:: inventory_type === 'taxlots' ? 'tax lots' : 'properties' $} shared with you.
             </label>
         </div>
         <h3>There are {$:: data.length | number $} columns of data available to you.</h3>
-        <p>Select columns from the list below to make them appear in your {$:: inventory_type == 'taxlots' ? 'Tax Lots' : 'Properties' $} List table. Drag the rows to change the order in which they appear. Pin the rows for them to be left-pinned in the list view.</p>
+        <p>Select columns from the list below to make them appear in your {$:: inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties' $} List table. Drag the rows to change the order in which they appear. Pin the rows for them to be left-pinned in the list view.</p>
     </div>
     <div class="section_content">
         <div id="grid-container">

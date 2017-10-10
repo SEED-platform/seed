@@ -7,11 +7,10 @@
 
 # methods to help with string parsing etc.
 
-import re
+from string import capwords
 
 
 def titlecase(s):
     # Titlelize the display names correctly per python's documentation. Don't use .title()
     # https://docs.python.org/2/library/stdtypes.html#str.title
-    return re.sub(r"[A-Za-z]+('[A-Za-z]+)?",
-                  lambda mo: mo.group(0)[0].upper() + mo.group(0)[1:].lower(), s).replace("_", " ")
+    return capwords(s.replace('_', ' '))
