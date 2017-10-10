@@ -26,7 +26,7 @@ from seed.models.auditlog import (
 )
 from seed.landing.models import SEEDUser
 from seed.models import PropertyView
-from seed.utils.string import titlecase
+from seed.utils.strings import titlecase
 
 DEFAULT_GREEN_ASSESSEMENT_VALIDITY_DURATION = getattr(
     settings, 'GREEN_ASSESSMENT_DEFAULT_VALIDITY_DURATION', None

@@ -30,7 +30,7 @@ describe('When I do miscellaneous things', function () {
   it('should select Data Quality tab', function () {
     var myOptions = element.all(by.css('a')).filter(function (elm) {
       return elm.getText().then(function (label) {
-        return label == 'Data Quality';
+        return label === 'Data Quality';
       });
     }).first();
     myOptions.click();
@@ -143,7 +143,7 @@ describe('When I do miscellaneous things', function () {
   it('should go to labels page and check that new label was created with new rule', function () {
     var myOptions2 = element.all(by.css('a')).filter(function (elm) {
       return elm.getText().then(function (label) {
-        return label == 'Labels';
+        return label === 'Labels';
       });
     }).first();
     myOptions2.click();
@@ -162,7 +162,7 @@ describe('When I do miscellaneous things', function () {
     var myOptions = element.all(by.repeater('item in menuItems')).filter(function (elm) {
       return elm.getText().then(function (label) {
         // expect(label).toBe('fake');
-        return label == '  Clear all filters';
+        return label === '  Clear all filters';
       });
     }).first();
     myOptions.click();
@@ -277,17 +277,17 @@ describe('When I do miscellaneous things', function () {
     var myOptions = element.all(by.repeater('item in menuItems')).filter(function (elm) {
       return elm.getText().then(function (label) {
         // expect(label).toBe('fake');
-        return label == '  Unpin';
+        return label === '  Unpin';
       });
     }).first();
     myOptions.click();
-    
+
 
     $$('.ui-grid-icon-angle-down').first().click();
     var myOptions = element.all(by.repeater('item in menuItems')).filter(function (elm) {
       return elm.getText().then(function (label) {
         // expect(label).toBe('fake');
-        return label == '  Hide Column';
+        return label === '  Hide Column';
       });
     }).first();
     myOptions.click();
@@ -326,7 +326,7 @@ describe('When I do miscellaneous things', function () {
     $('[ng-click="open_delete_modal()"]').click();
     $('[ng-click="delete_inventory()"]').click();
     $('[ng-click="close()"]').click();
-    
+
     // taxlots
     $('[ui-sref="inventory_list({inventory_type: \'taxlots\'})"]').click();
     $$('[ng-if="grid.options.enableSelectAll"]').first().click();

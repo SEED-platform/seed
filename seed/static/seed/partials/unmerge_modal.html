@@ -1,8 +1,8 @@
 <div class="modal-header">
-    <h4 class="modal-title">Change Merged {$:: inventory_type == 'properties' ? 'Property' : 'Tax Lot' $}</h4>
+    <h4 class="modal-title">Change Merged {$:: inventory_type === 'properties' ? 'Property' : 'Tax Lot' $}</h4>
 </div>
 <div class="modal-body row">
-    <div class="col-sm-12">Are you sure you want to unmerge these {$:: inventory_type == 'properties' ? 'properties' : 'tax lots' $} and then merge with the selected {$ inventory_type == 'properties' ? 'property' : 'tax lot' $}?</div>
+    <div class="col-sm-12">Are you sure you want to unmerge these {$:: inventory_type === 'properties' ? 'properties' : 'tax lots' $} and then merge with the selected {$ inventory_type === 'properties' ? 'property' : 'tax lot' $}?</div>
 </div>
 <div class="modal-footer">
     <button type="button" class="btn btn-default" ng-click="cancel()">Cancel</button>

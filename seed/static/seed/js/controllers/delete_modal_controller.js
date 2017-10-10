@@ -27,18 +27,18 @@ angular.module('BE.seed.controller.delete_modal', [])
           $scope.deletedTaxlots = 0;
           _.forEach(results, function (result, index) {
             if (result.data.status === 'success') {
-              if (index == 0 && $scope.property_states.length) $scope.deletedProperties = result.data.properties;
+              if (index === 0 && $scope.property_states.length) $scope.deletedProperties = result.data.properties;
               else $scope.deletedTaxlots = result.data.taxlots;
             }
           });
-          if ($scope.property_states.length != $scope.deletedProperties || $scope.taxlot_states.length != $scope.deletedTaxlots) {
+          if ($scope.property_states.length !== $scope.deletedProperties || $scope.taxlot_states.length !== $scope.deletedTaxlots) {
             $scope.delete_state = 'incomplete';
             return;
           }
           $scope.delete_state = 'success';
         }).catch(function (resp) {
           $scope.delete_state = 'fail';
-          if (resp.status == 422) {
+          if (resp.status === 422) {
             $scope.error = resp.data.message;
           } else {
             $scope.error = resp.data.message;

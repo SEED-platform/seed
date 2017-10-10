@@ -13,7 +13,7 @@ from seed import search
 from seed.utils import time
 from seed.utils.mapping import get_mappable_types
 from seed.utils.constants import ASSESSOR_FIELDS_BY_COLUMN
-from seed.utils.string import titlecase
+from seed.utils.strings import titlecase
 
 
 def get_source_type(import_file, source_type=''):
