@@ -154,12 +154,12 @@ angular.module('BE.seed.controller.inventory_list', [])
         spinner_utility.show();
 
         var property_states = _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
-          if ($scope.inventory_type === 'properties') return row.$$treeLevel == 0;
+          if ($scope.inventory_type === 'properties') return row.$$treeLevel === 0;
           return !_.has(row, '$$treeLevel');
         }), 'property_state_id');
 
         var taxlot_states = _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
-          if ($scope.inventory_type === 'taxlots') return row.$$treeLevel == 0;
+          if ($scope.inventory_type === 'taxlots') return row.$$treeLevel === 0;
           return !_.has(row, '$$treeLevel');
         }), 'taxlot_state_id');
 
@@ -213,10 +213,10 @@ angular.module('BE.seed.controller.inventory_list', [])
         name: 'id',
         displayName: '',
         cellTemplate: '<div class="ui-grid-row-header-link">' +
-        '  <a class="ui-grid-cell-contents" ng-if="row.entity.$$treeLevel === 0" ng-href="#/{$grid.appScope.inventory_type == \'properties\' ? \'properties\' : \'taxlots\'$}/{$COL_FIELD$}/cycles/{$grid.appScope.cycle.selected_cycle.id$}">' +
+        '  <a class="ui-grid-cell-contents" ng-if="row.entity.$$treeLevel === 0" ng-href="#/{$grid.appScope.inventory_type === \'properties\' ? \'properties\' : \'taxlots\'$}/{$COL_FIELD$}/cycles/{$grid.appScope.cycle.selected_cycle.id$}">' +
         '    <i class="ui-grid-icon-info-circled"></i>' +
         '  </a>' +
-        '  <a class="ui-grid-cell-contents" ng-if="!row.entity.hasOwnProperty($$treeLevel)" ng-href="#/{$grid.appScope.inventory_type == \'properties\' ? \'taxlots\' : \'properties\'$}/{$COL_FIELD$}/cycles/{$grid.appScope.cycle.selected_cycle.id$}">' +
+        '  <a class="ui-grid-cell-contents" ng-if="!row.entity.hasOwnProperty($$treeLevel)" ng-href="#/{$grid.appScope.inventory_type === \'properties\' ? \'taxlots\' : \'properties\'$}/{$COL_FIELD$}/cycles/{$grid.appScope.cycle.selected_cycle.id$}">' +
         '    <i class="ui-grid-icon-info-circled"></i>' +
         '  </a>' +
         '</div>',
@@ -287,7 +287,7 @@ angular.module('BE.seed.controller.inventory_list', [])
 
           aggregations = _.pickBy(_.mapValues(aggregations, function (values, key) {
             var cleanedValues = _.uniq(_.without(values, undefined, null, ''));
-            if (key == 'number_properties') return _.sum(cleanedValues) || null;
+            if (key === 'number_properties') return _.sum(cleanedValues) || null;
             else return _.join(_.uniq(cleanedValues).sort(naturalSort), '; ');
           }), function (result) {
             return _.isNumber(result) || !_.isEmpty(result);
@@ -304,18 +304,21 @@ angular.module('BE.seed.controller.inventory_list', [])
       };
 
       var refresh_objects = function () {
+        spinner_utility.show();
         var visibleColumns = _.map(_.filter($scope.columns, 'visible'), 'name');
-        if ($scope.inventory_type == 'properties') {
+        if ($scope.inventory_type === 'properties') {
           inventory_service.get_properties($scope.pagination.page, $scope.number_per_page, $scope.cycle.selected_cycle, visibleColumns).then(function (properties) {
             $scope.data = properties.results;
             $scope.pagination = properties.pagination;
             processData();
+            spinner_utility.hide();
           });
-        } else if ($scope.inventory_type == 'taxlots') {
+        } else if ($scope.inventory_type === 'taxlots') {
           inventory_service.get_taxlots($scope.pagination.page, $scope.number_per_page, $scope.cycle.selected_cycle, visibleColumns).then(function (taxlots) {
             $scope.data = taxlots.results;
             $scope.pagination = taxlots.pagination;
             processData();
+            spinner_utility.hide();
           });
         }
       };
@@ -351,13 +354,13 @@ angular.module('BE.seed.controller.inventory_list', [])
           resolve: {
             property_states: function () {
               return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
-                if ($scope.inventory_type == 'properties') return row.$$treeLevel == 0;
+                if ($scope.inventory_type === 'properties') return row.$$treeLevel === 0;
                 return !_.has(row, '$$treeLevel');
               }), 'property_state_id');
             },
             taxlot_states: function () {
               return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
-                if ($scope.inventory_type == 'taxlots') return row.$$treeLevel == 0;
+                if ($scope.inventory_type === 'taxlots') return row.$$treeLevel === 0;
                 return !_.has(row, '$$treeLevel');
               }), 'taxlot_state_id');
             }
@@ -366,7 +369,7 @@ angular.module('BE.seed.controller.inventory_list', [])
 
         modalInstance.result.then(function (result) {
           if (_.includes(['fail', 'incomplete'], result.delete_state)) refresh_objects();
-          else if (result.delete_state == 'success') {
+          else if (result.delete_state === 'success') {
             var selectedRows = $scope.gridApi.selection.getSelectedRows();
             var selectedChildRows = _.remove(selectedRows, function (row) {
               return !_.has(row, '$$treeLevel');
@@ -375,7 +378,7 @@ angular.module('BE.seed.controller.inventory_list', [])
             _.forEach(selectedChildRows, function (row) {
               var index = $scope.data.lastIndexOf(row);
               var count = 1;
-              if (row.$$treeLevel == 0) {
+              if (row.$$treeLevel === 0) {
                 // Count children to delete
                 var i = index + 1;
                 while (i < ($scope.data.length - 1) && !_.has($scope.data[i], '$$treeLevel')) {
@@ -390,7 +393,7 @@ angular.module('BE.seed.controller.inventory_list', [])
             _.forEach(selectedRows, function (row) {
               var index = $scope.data.lastIndexOf(row);
               var count = 1;
-              if (row.$$treeLevel == 0) {
+              if (row.$$treeLevel === 0) {
                 // Count children to delete
                 var i = index + 1;
                 while (i < ($scope.data.length - 1) && !_.has($scope.data[i], '$$treeLevel')) {
@@ -402,11 +405,11 @@ angular.module('BE.seed.controller.inventory_list', [])
               $scope.data.splice(index, count);
             });
             // Delete any child rows that may have been duplicated due to a M2M relationship
-            if ($scope.inventory_type == 'properties') {
+            if ($scope.inventory_type === 'properties') {
               _.remove($scope.data, function (row) {
                 return !_.has(row, '$$treeLevel') && _.includes(result.taxlot_states, row.taxlot_state_id);
               });
-            } else if ($scope.inventory_type == 'taxlots') {
+            } else if ($scope.inventory_type === 'taxlots') {
               _.remove($scope.data, function (row) {
                 return !_.has(row, '$$treeLevel') && _.includes(result.property_states, row.property_state_id);
               });

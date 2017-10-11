@@ -11,7 +11,7 @@ from seed.utils.time import convert_datestr
 import pytz
 from datetime import datetime
 from django.utils.timezone import make_aware
-from seed.utils.string import titlecase
+from seed.utils.strings import titlecase
 
 
 class DummyClass(object):
@@ -66,3 +66,4 @@ class StringTest(TestCase):
         self.assertEqual(titlecase("return_nicely"), "Return Nicely")
         self.assertEqual(titlecase("return_nicely's_home"), "Return Nicely's Home")
         self.assertEqual(titlecase("return nicely's home"), "Return Nicely's Home")
+        self.assertEqual(titlecase("3rd_role"), "3rd Role")

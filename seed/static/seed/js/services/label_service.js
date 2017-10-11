@@ -62,7 +62,7 @@ angular.module('BE.seed.service.label', [])
         }, search_params);
 
       // If no inventory_type specified use 'property' just to get the list of all labels
-        searchArgs.inventory_type = (searchArgs.inventory_type == 'taxlots') ? 'taxlot' : 'property';
+        searchArgs.inventory_type = (searchArgs.inventory_type === 'taxlots') ? 'taxlot' : 'property';
 
         return $http.post('/api/v2/labels/filter/', {
           selected: selected

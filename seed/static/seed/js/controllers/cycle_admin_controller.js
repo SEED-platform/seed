@@ -100,8 +100,8 @@ angular.module('BE.seed.controller.cycle_admin', [])
         $event.preventDefault();
         $event.stopPropagation();
 
-        if (elementOpened == 'end') $scope.opened.start = false;
-        if (elementOpened == 'start') $scope.opened.end = false;
+        if (elementOpened === 'end') $scope.opened.start = false;
+        if (elementOpened === 'start') $scope.opened.end = false;
         $scope.opened[elementOpened] = !$scope.opened[elementOpened];
       };
 

@@ -770,7 +770,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           dataset_payload: ['dataset_service', '$stateParams', '$state', '$q', 'spinner_utility', function (dataset_service, $stateParams, $state, $q, spinner_utility) {
             return dataset_service.get_dataset($stateParams.dataset_id)
               .catch(function (response) {
-                if (response.status == 400 && response.data.message == 'Organization ID mismatch between dataset and organization') {
+                if (response.status === 400 && response.data.message === 'Organization ID mismatch between dataset and organization') {
                   // Org id mismatch, likely due to switching organizations while viewing a dataset_detail page
                   _.delay(function () {
                     $state.go('dataset_list');

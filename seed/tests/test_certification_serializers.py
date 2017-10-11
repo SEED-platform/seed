@@ -21,7 +21,7 @@ from seed.lib.superperms.orgs.models import (
     Organization,
     OrganizationUser,
 )
-from seed.utils.string import titlecase
+from seed.utils.strings import titlecase
 
 from seed.models import (
     Cycle,

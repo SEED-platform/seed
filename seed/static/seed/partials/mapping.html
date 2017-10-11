@@ -114,7 +114,7 @@
                             <td class="check is_aligned_center">
                                 <input type="checkbox" ng-model="tcm.mapped_row" ng-disabled="import_file.matching_done">
                             </td>
-                            <td ng-class="{'danger': tcm.is_duplicate == true}" id="duplicate-row-input-{$:: $index $}">
+                            <td ng-class="{'danger': tcm.is_duplicate === true}" id="duplicate-row-input-{$:: $index $}">
                                 <input type="text" uib-typeahead="column for column in typeahead_columns | filter:$viewValue | limitTo:30" ng-model="tcm.suggestion" class="form-control input-sm tcm_field" ng-disabled="!tcm.mapped_row || import_file.matching_done" ng-change="change(tcm)" typeahead-on-select='change(tcm)' id="duplicate-row-input-box-{$ $index $}">
                             </td>
                             <td class="check is_aligned_center">
@@ -124,7 +124,7 @@
                             <td>
                                 <strong id="duplicate-header-{$:: $index $}">{$ tcm.name $}</strong>
                             </td>
-                            <td ng-repeat="cell_value in tcm.raw_data track by $index" ng-class="{'danger': set_td_class(tcm, cell_value) == 'danger', 'warning': set_td_class(tcm, cell_value) == 'warning'}">
+                            <td ng-repeat="cell_value in tcm.raw_data track by $index" ng-class="{'danger': set_td_class(tcm, cell_value) === 'danger', 'warning': set_td_class(tcm, cell_value) === 'warning'}">
                                 {$:: cell_value $}
                             </td>
                         </tr>
@@ -162,7 +162,7 @@
                             <td class="check is_aligned_center hide">
                                 <input type="checkbox" ng-model="tcm.mapped_row" ng-disabled="import_file.matching_done">
                             </td>
-                            <td ng-class="{'danger': tcm.is_duplicate == true}" id="mapped-row-input-{$ $index $}">
+                            <td ng-class="{'danger': tcm.is_duplicate === true}" id="mapped-row-input-{$:: $index $}">
                                 <input type="text" uib-typeahead="column for column in ::typeahead_columns | filter:$viewValue | limitTo:20" ng-model="tcm.suggestion" class="form-control input-sm tcm_field" ng-disabled="!tcm.mapped_row || import_file.matching_done" ng-change="change(tcm)" typeahead-on-select='change(tcm)' id="mapped-row-input-box-{$ $index $}">
                             </td>
                             <!--td class="check is_aligned_center">
@@ -172,7 +172,7 @@
                             <td>
                                 <strong id="mapped-header-{$:: $index $}">{$:: tcm.name $}</strong>
                             </td>
-                            <td ng-class="{'danger': tcm.is_duplicate == true}" id="mapped-row-type-{$:: $index $}">
+                            <td ng-class="{'danger': tcm.is_duplicate === true}" id="mapped-row-type-{$:: $index $}">
                                 <select ng-model="tcm.suggestion_table_name" ng-change="updateInventoryTypeDropdown(); change(tcm)" ng-disabled="!tcm.mapped_row || import_file.matching_done">
                                     <option value="PropertyState">Property</option>
                                     <option value="TaxLotState">Tax Lot</option>
@@ -193,7 +193,7 @@
                                 </optgroup>
                               </select>
                             </td>
-                            <td ng-repeat="cell_value in ::tcm.raw_data track by $index" ng-class="{'danger': set_td_class(tcm, cell_value) == 'danger', 'warning': set_td_class(tcm, cell_value) == 'warning'}">
+                            <td ng-repeat="cell_value in ::tcm.raw_data track by $index" ng-class="{'danger': set_td_class(tcm, cell_value) === 'danger', 'warning': set_td_class(tcm, cell_value) === 'warning'}">
                                 {$:: cell_value $}
                             </td>
                         </tr>

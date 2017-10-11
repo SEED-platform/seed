@@ -425,7 +425,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           var filterData = searchTerm.match(textRegex);
           var regex;
           if (filterData) {
-            var inverse = filterData[1] == '!';
+            var inverse = filterData[1] === '!';
             var value = filterData[2];
             regex = new RegExp('^' + value + '$');
             return inverse ? !regex.test(cellValue) : regex.test(cellValue);
@@ -454,11 +454,11 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
                 value = filterData[2];
                 if (_.isUndefined(operator) || _.startsWith(operator, '=')) {
                   // Equal
-                  match = (value == 'null') ? (_.isNil(cellValue)) : (cellValue == value);
+                  match = (value === 'null') ? (_.isNil(cellValue)) : (cellValue == value);
                   return match;
                 } else {
                   // Not equal
-                  match = (value == 'null') ? (!_.isNil(cellValue)) : (cellValue != value);
+                  match = (value === 'null') ? (!_.isNil(cellValue)) : (cellValue != value);
                   return match;
                 }
               } else {
