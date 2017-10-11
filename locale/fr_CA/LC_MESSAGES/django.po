@@ -1,14 +1,8 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-10-04 14:26-0700\n"
+"POT-Creation-Date: 2017-10-06 12:15-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,499 +11,966 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: config/settings/common.py:214
-msgid "English"
-msgstr ""
+#: 
+#, fuzzy
+msgid "(field must contain this text)"
+msgstr "(le champ doit contenir ce texte)"
 
-#: config/settings/common.py:215
-msgid "French (Canadian)"
-msgstr ""
+#: 
+msgid "(no labels applied)"
+msgstr "(aucune étiquette appliquée)"
 
-#: seed/exception_handler.py:45
-msgid "Cannot delete protected objects while related objects still exist"
-msgstr ""
+#: 
+msgid "(no maximum)"
+msgstr "(pas de maximum)"
 
-#: seed/landing/forms.py:13
-msgid "Email"
-msgstr ""
+#: 
+msgid "(no minimum)"
+msgstr "(pas de minimum)"
 
-#: seed/landing/forms.py:14
-msgid "ex: joe@company.com"
-msgstr ""
+#: 
+msgid "# of Buildings"
+msgstr "# de Bâtiments"
 
-#: seed/landing/forms.py:20
-#: seed/landing/templates/landing/password_reset_confirm.html:10
-#: seed/landing/templates/landing/signup.html:10
-msgid "Password"
-msgstr ""
+#: 
+msgid "# of Records"
+msgstr "# d'Enregistrements"
 
-#: seed/landing/models.py:41
-msgid "username (email)"
-msgstr ""
+#: 
+msgid "A 'Remove' button is shown for tags that are already applied to one or more properties in the current selection"
+msgstr "Un bouton «Supprimer» s'affiche pour les balises déjà appliquées à une ou plusieurs propriétés dans la sélection actuelle"
 
-#: seed/landing/models.py:42
-msgid "User's email address.  Used for auth as well."
-msgstr ""
+#: 
+msgid "A list of your imported headers."
+msgstr "Une liste de vos en-têtes importés."
 
-#: seed/landing/models.py:43
-msgid "first name"
-msgstr ""
+#: 
+msgid "A preview of your concatenated data will appear in the box below."
+msgstr "Un aperçu de vos données concaténées apparaîtra dans la case ci-dessous."
 
-#: seed/landing/models.py:44
-msgid "last name"
-msgstr ""
+#: 
+msgid "About SEED Platform&#8482;"
+msgstr "À propos de SEED Platform™"
 
-#: seed/landing/models.py:45
-msgid "email address"
-msgstr ""
+#: src/django-tos-master/tos/templates/tos/tos_check.html:19
+msgid "Accept"
+msgstr "Acceptez"
 
-#: seed/landing/models.py:47
-msgid "staff status"
-msgstr ""
+#: src/django-tos-master/tos/templates/tos/tos_check.html:11
+msgid "Accept Terms of Service?"
+msgstr "Accepter les conditions d'utilisation?"
 
-#: seed/landing/models.py:48
-msgid "Designates whether the user can log into this admin site."
-msgstr ""
+#: 
+msgid "Actions"
+msgstr "Actions"
 
 #: seed/landing/models.py:51 seed/landing/models.py:59
 #: src/django-tos-master/tos/models.py:32
 msgid "active"
-msgstr ""
+msgstr "actif"
 
-#: seed/landing/models.py:52
-msgid ""
-"Designates whether this user should be treated as active. Unselect this "
-"instead of deleting accounts."
-msgstr ""
+#: seed/models/projects.py:24
+msgid "Active"
+msgstr "actif"
 
-#: seed/landing/models.py:54
-msgid "date joined"
-msgstr ""
+#: 
+msgid "Add"
+msgstr "Ajouter"
 
-#: seed/landing/models.py:60
-msgid "shows shared buildings within search results"
-msgstr ""
+#: 
+msgid "Add a label"
+msgstr "Ajouter une étiquette"
+
+#: 
+msgid "Add another file"
+msgstr "Ajouter un autre fichier"
+
+#: 
+msgid "Add compliance information"
+msgstr "Ajouter des informations sur la conformité"
+
+#: 
+msgid "Add compliance information."
+msgstr "Ajouter des informations sur la conformité"
+
+#: 
+msgid "Add Data Files"
+msgstr "Ajouter des fichiers de données"
+
+#: 
+msgid "Add files to"
+msgstr "Ajouter des fichiers à"
+
+#: 
+msgid "Add Label"
+msgstr "Ajouter une étiquette"
+
+#: 
+msgid "Add more data files"
+msgstr "Ajouter plus de fichiers de données"
+
+#: 
+msgid "Add user"
+msgstr "Ajouter un utilisateur"
+
+#: 
+msgid "Add user to organization"
+msgstr "Ajoutez un utilisateur à l'organisation"
+
+#: 
+msgid "Add user to organization:"
+msgstr "Ajoutez un utilisateur à l'organisation"
+
+#: 
+msgid "Add/Remove a user to an organization"
+msgstr "Ajouter/Supprimer un utilisateur d'une organisation"
+
+#: 
+msgid "Add/Remove Labels"
+msgstr "Ajouter/Supprimer Des Étiquettes"
+
+#: 
+msgid "Adding buildings to project"
+msgstr "Ajout de bâtiments à projet"
+
+#: 
+msgid "Address Line 1"
+msgstr "Adresse (Ligne 1)"
+
+#: 
+msgid "Admin"
+msgstr "Admin"
+
+#: 
+msgid "An error occurred while processing the file. Please ensure that your file meets the required specifications."
+msgstr "Une erreur s'est produite lors du traitement du fichier. Assurez-vous que votre fichier respecte les spécifications requises."
+
+#: 
+msgid "AND"
+msgstr "ET"
 
 #: seed/landing/models.py:69
 msgid "api key"
-msgstr ""
+msgstr "clé API"
 
-#: seed/landing/models.py:82
-msgid "user"
-msgstr ""
+#: 
+msgid "API Key"
+msgstr "Clé API"
 
-#: seed/landing/models.py:83
-msgid "users"
-msgstr ""
+#: seed/models/projects.py:107 seed/models/projects.py:134
+#: seed/models/projects.py:159
+msgid "approved_date"
+msgstr "date approuvée"
 
-#: seed/landing/templates/landing/_browser_supported.html:4
-msgid "We've detected an outdated browser."
-msgstr ""
+#: 
+msgid "Are you sure you want to delete"
+msgstr "Etes-vous sûr de vouloir supprimer"
 
-#: seed/landing/templates/landing/_browser_supported.html:5
-msgid ""
-"Using your current browser will prevent you from accessing features on our "
-"website. Use the links below to download a new browser or upgrade your "
-"existing browser."
-msgstr ""
+#: 
+msgid "Are you sure you want to delete the data file"
+msgstr "Êtes-vous sûr de vouloir supprimer le fichier de données"
 
-#: seed/landing/templates/landing/_marketing_bullets.html:3
-msgid "Welcome to SEED Platform&#0153;"
-msgstr ""
+#: 
+msgid "Are you sure you want to delete the data set"
+msgstr "Êtes-vous sûr de vouloir supprimer le jeu de données"
 
-#: seed/landing/templates/landing/_marketing_bullets.html:7
-msgid ""
-"Get started using SEED Platform by uploading your buildings list (city tax "
-"assessor data) and then your EPA Portfolio Manager data."
-msgstr ""
+#: 
+msgid "Area"
+msgstr "Région"
 
-#: seed/landing/templates/landing/_marketing_bullets.html:15
-msgid ""
-"Match-up your buildings list with the Portfolio Manager dataset to tie "
-"building records together."
-msgstr ""
+#: 
+msgid "As the admin of your SEED instance you can control what data is shared throughout your organization and between your sub-organizations as well as what data is shared externally with the public-at-large. The subset of data you choose to share with the public can be different than the subset shared between your sub-organizations."
+msgstr "En tant qu'administrateur de votre instance SEED, vous pouvez contrôler les données partagées dans votre organisation et entre vos sous-organisations ainsi que les données partagées à l'externe avec le public. Le sous-ensemble de données que vous choisissez de partager avec le public peut être différent du sous-ensemble partagé entre vos sous-organisations."
 
-#: seed/landing/templates/landing/_marketing_bullets.html:23
-msgid ""
-"Use SEED Platform's flexible, easy-to-use labeling system and project "
-"groupings to track the status of data submission, review, and compliance."
-msgstr ""
+#: 
+msgid "At least one of the following is required: Address Line 1, Custom Id 1, Jurisdiction Tax Lot Id (with inventory type Tax Lot), or Pm Property Id (with inventory type Property)."
+msgstr "Il faut au moins l'un des éléments suivants: Adresse ligne 1, Id personnalisé 1, Numéro d'identification fiscale de la juridiction (avec le type d'inventaire Lot d'impôt) ou Id de la propriété Pm (avec le type d'inventaire Propriété)."
 
-#: seed/landing/templates/landing/_password_note.html:1
-msgid ""
-"Note: Passwords must be 8 or more characters, and must contain at least 1 "
-"uppercase character, 1 lowercase character, and 1 digit."
-msgstr ""
+#: seed/models/models.py:136
+msgid "Auditing"
+msgstr "Audit"
 
-#: seed/landing/templates/landing/base.html:9
-msgid "SEED Platform"
-msgstr ""
+#: 
+msgid "Auto Matching"
+msgstr "Correspondance automatique"
 
-#: seed/landing/templates/landing/home.html:16
-msgid "Log in to SEED Platform"
-msgstr ""
+#: seed/landing/templates/landing/thank_you.html:17
+msgid "Back"
+msgstr "De retour"
 
-#: seed/landing/templates/landing/home.html:18
-msgid "Thank you for creating your account! Please sign in below."
-msgstr ""
+#: seed/landing/templates/landing/password_reset_done.html:17
+msgid "Back to Home"
+msgstr "Retour à l'Accueil"
 
-#: seed/landing/templates/landing/home.html:21
-msgid "You have successfully logged out. You may log in again below."
-msgstr ""
+#: 
+msgid "Back to List"
+msgstr "Retour à la Liste"
 
-#: seed/landing/templates/landing/home.html:27
-#: seed/landing/templates/landing/login.html:29
-msgid "Log In"
-msgstr ""
+#: 
+msgid "Back to Mapping"
+msgstr "Retournez à les mappages"
+
+#: seed/models/models.py:135
+#, fuzzy
+msgid "Benchmarking"
+msgstr "Analyse comparative"
+
+#: seed/models/models.py:178
+msgid "blue"
+msgstr "bleu"
+
+#: 
+msgid "Both"
+msgstr "Les deux"
+
+#: 
+msgid "BUILDING ENERGY DATA EXCHANGE SPECIFICATION (BEDES)"
+msgstr "SPECIFICATION DE L'ÉCHANGE DE DONNÉES D'ÉNERGIE DES BÂTIMENTS (BEDES)"
+
+#: 
+msgid "Building Filters"
+msgstr "Filtres de bâtiments"
+
+#: 
+msgid "Buildings"
+msgstr "Bâtiments"
 
 #: seed/landing/templates/landing/home.html:28
 #: seed/landing/templates/landing/password_reset_confirm.html:80
 #: seed/landing/templates/landing/signup.html:79
 msgid "Cancel"
-msgstr ""
+msgstr "Annuler"
 
-#: seed/landing/templates/landing/home.html:29
-#: seed/landing/templates/landing/login.html:31
-msgid "Forgot password?"
-msgstr ""
+#: seed/exception_handler.py:45
+#, fuzzy
+msgid "Cannot delete protected objects while related objects still exist"
+msgstr "Impossible de supprimer des objets protégés alors que des objets apparentés existent toujours"
 
-#: seed/landing/templates/landing/login.html:23
-msgid "Log in"
-msgstr ""
+#: seed/landing/templates/landing/password_reset_confirm.html:79
+msgid "Change my password"
+msgstr "Changer mon mot de passe"
 
-#: seed/landing/templates/landing/password_reset_confirm.html:11
-#: seed/landing/templates/landing/signup.html:11
-msgid "Password again"
-msgstr ""
+#: 
+msgid "Change Password"
+msgstr "Changer le mot de passe"
 
 #: seed/landing/templates/landing/password_reset_confirm.html:29
 msgid "Change Your Password"
-msgstr ""
+msgstr "Changez votre mot de passe"
 
-#: seed/landing/templates/landing/password_reset_confirm.html:37
-msgid "To change your password, enter your requested password twice."
-msgstr ""
+#: 
+msgid "Changed By"
+msgstr "Changé par"
 
-#: seed/landing/templates/landing/password_reset_confirm.html:41
-msgid ""
-"The password link was invalid, possibly because it has already been used.  "
-"Please request a new password reset."
-msgstr ""
+#: 
+msgid "Choose Existing Organization:"
+msgstr "Choisissez Organisation Existante:"
 
-#: seed/landing/templates/landing/password_reset_confirm.html:42
-msgid "Password reset"
-msgstr ""
+#: 
+msgid "Choose the year ending month for report period."
+msgstr "Choisissez le mois de fin de l'année pour la période du rapport."
 
-#: seed/landing/templates/landing/password_reset_confirm.html:50
-#: seed/landing/templates/landing/signup.html:49
-msgid "New password"
-msgstr ""
+#: 
+msgid "Classification Type"
+msgstr "Type de classification"
+
+#: 
+msgid "Clear Filters"
+msgstr "Effacer les filtres"
+
+#: 
+msgid "Clear Labels"
+msgstr "Effacer les étiquettes"
+
+#: 
+msgid "Close"
+msgstr "Fermer"
+
+#: 
+msgid "Collapse Tabs"
+msgstr "Réduire les onglets"
+
+#: 
+msgid "Column Name"
+msgstr "Nom de colonne"
+
+#: 
+msgid "Column Order/Visibility"
+msgstr "L'Ordre Des Colonnes/Visibilité"
+
+#: 
+msgid "Commercial"
+msgstr "Commercial"
+
+#: 
+msgid "Complete"
+msgstr "Complète"
+
+#: 
+msgid "Compliance"
+msgstr "Conformité"
+
+#: 
+msgid "Compliance Information"
+msgstr "Informations de conformité"
+
+#: seed/models/models.py:188 seed/models/models.py:231
+msgid "compliance_type"
+msgstr "conformité_type"
+
+#: 
+msgid "Concatenate Headers (Columns of Data)"
+msgstr "Concaténer les en-Têtes (colonnes de données)"
 
 #: seed/landing/templates/landing/password_reset_confirm.html:64
 #: seed/landing/templates/landing/signup.html:63
 msgid "Confirm"
-msgstr ""
+msgstr "Confirmer"
 
-#: seed/landing/templates/landing/password_reset_confirm.html:79
-msgid "Change my password"
-msgstr ""
+#: 
+msgid "Confirm mappings &amp; start matching"
+msgstr "Confirmer les mappages et commencer l'appariement"
 
-#: seed/landing/templates/landing/password_reset_done.html:12
-msgid "Thank you"
-msgstr ""
+#: 
+msgid "Confirm new password"
+msgstr "Confirmer le nouveau mot de passe"
 
-#: seed/landing/templates/landing/password_reset_done.html:15
-msgid "We've e-mailed instructions for resetting your password."
-msgstr ""
+#: 
+msgid "Confirm Save Mappings?"
+msgstr "Confirmer Enregistrer les mappages?"
 
-#: seed/landing/templates/landing/password_reset_done.html:15
-msgid "You should be receiving it shortly."
-msgstr ""
+#: 
+msgid "Contact"
+msgstr "Contact"
 
-#: seed/landing/templates/landing/password_reset_done.html:17
-msgid "Back to Home"
-msgstr ""
+#: src/django-tos-master/tos/models.py:37
+msgid "content"
+msgstr "contenu"
 
-#: seed/landing/templates/landing/password_reset_email.html:2
-msgid "You're receiving this e-mail because you requested a password reset"
-msgstr ""
+#: 
+msgid "Continue to data mapping"
+msgstr "Continuer à la mappage de données"
 
-#: seed/landing/templates/landing/password_reset_email.html:3
-msgid "for your SEED Platform user account"
-msgstr ""
+#: 
+msgid "Continue to data matching"
+msgstr "Continuer à l'appariement des données"
 
-#: seed/landing/templates/landing/password_reset_email.html:5
-msgid "Please go to the following page and choose a new password:"
-msgstr ""
+#: 
+msgid "Copy Buildings"
+msgstr "Copier des bâtiments"
 
-#: seed/landing/templates/landing/password_reset_email.html:9
-msgid "Your username, in case you've forgotten:"
-msgstr ""
+#: 
+msgid "Count #"
+msgstr "Compte #"
 
-#: seed/landing/templates/landing/password_reset_email.html:11
-msgid "The SEED team"
-msgstr ""
+#: 
+msgid "Create"
+msgstr "Créer"
 
-#: seed/landing/templates/landing/password_reset_subject.txt:1
-msgid "Password reset on SEED"
-msgstr ""
+#: 
+msgid "Create a New Data Set."
+msgstr "Créer un nouveau jeu de données."
 
-#: seed/landing/templates/landing/password_set.html:6
-msgid "Password set"
-msgstr ""
+#: 
+msgid "Create a New Project"
+msgstr "Créer un nouveau projet"
 
-#: seed/landing/templates/landing/password_set.html:10
-msgid "Set your password"
-msgstr ""
+#: 
+msgid "Create a new rule"
+msgstr "Créer une nouvelle règle"
 
-#: seed/landing/templates/landing/password_set.html:12
-msgid "Password set unsuccessful"
-msgstr ""
+#: 
+msgid "Create a new sub-organization"
+msgstr "Créer une nouvelle sous-organisation"
 
-#: seed/landing/templates/landing/password_set.html:16
-msgid "Welcome to SEED!"
-msgstr ""
+#: 
+msgid "Create a user"
+msgstr "Créer un utilisateur"
 
-#: seed/landing/templates/landing/password_set.html:16
-msgid ""
-"Please enter your new password twice so we can verify you typed it in "
-"correctly."
-msgstr ""
+#: 
+msgid "Create an organization"
+msgstr "Créer une organisation"
 
-#: seed/landing/templates/landing/password_set.html:18
-msgid "Set password"
-msgstr ""
+#: 
+msgid "Create Cycle"
+msgstr "Créer un cycle"
 
-#: seed/landing/templates/landing/signup.html:29
-msgid "Create Your Account"
-msgstr ""
-
-#: seed/landing/templates/landing/signup.html:37
-msgid "To set up your account, enter your password twice in the form below."
-msgstr ""
-
-#: seed/landing/templates/landing/signup.html:41
-msgid ""
-"The invite link was invalid, possibly because it has already been used.  "
-"Please request a new invitation."
-msgstr ""
+#: 
+msgid "Create Data Set"
+msgstr "Créer un ensemble de données"
 
 #: seed/landing/templates/landing/signup.html:78
 msgid "Create my account"
-msgstr ""
+msgstr "Créer mon compte"
 
-#: seed/landing/templates/landing/thank_you.html:13
-msgid "Thank you!"
-msgstr ""
+#: 
+msgid "Create Project"
+msgstr "Créer un projet"
 
-#: seed/landing/templates/landing/thank_you.html:16
-msgid ""
-"Thank you for your interest in joining the Buildings Performance Database. "
-"Our site is in beta and your request is being reviewed for access."
-msgstr ""
+#: seed/landing/templates/landing/signup.html:29
+msgid "Create Your Account"
+msgstr "Créez votre compte"
 
-#: seed/landing/templates/landing/thank_you.html:17
-msgid "Back"
-msgstr ""
+#: 
+msgid "Current password"
+msgstr "Mot de passe actuel"
+
+#: 
+msgid "Custom ID 1"
+msgstr "ID personnalisée 1"
+
+#: 
+msgid "Cycle"
+msgstr "Cycle"
+
+#: 
+msgid "Cycle Name"
+msgstr "Nom du cycle"
+
+#: 
+msgid "Cycle:"
+msgstr "Cycle:"
+
+#: 
+msgid "Cycles"
+msgstr "Cycles"
+
+#: 
+msgid "Data"
+msgstr "Les données"
+
+#: 
+msgid "Data File Header"
+msgstr "En-tête du fichier de données"
+
+#: 
+msgid "Data Files"
+msgstr "Fichiers de données"
+
+#: 
+msgid "Data Mapping"
+msgstr "Mappage de données"
+
+#: 
+msgid "Data Mapping {VISUAL}amp; Validation"
+msgstr "Mapping de données &amp; Validation"
+
+#: 
+msgid "Data Matching"
+msgstr "Correspondance des données"
+
+#: 
+msgid "Data Pairing"
+msgstr "Appariement des données"
+
+#: 
+msgid "Data Quality"
+msgstr "Qualité des données"
+
+#: 
+msgid "Data Quality Check"
+msgstr "Vérification de la qualité des données"
+
+#: 
+msgid "Data Quality Results"
+msgstr "Résultats de la qualité des données"
+
+#: 
+msgid "Data Set Name"
+msgstr "Nom du jeu de données"
+
+#: 
+msgid "Data Sets"
+msgstr "Ensembles de données"
+
+#: 
+msgid "Data Type"
+msgstr "Type de données"
+
+#: 
+msgid "Date Imported"
+msgstr "Date d'importation"
+
+#: seed/landing/models.py:54
+msgid "date joined"
+msgstr "date jointe"
+
+#: 
+msgid "Date Uploaded"
+msgstr "Date de téléchargement"
+
+#: 
+msgid "Deadline"
+msgstr "Date limite"
+
+#: seed/models/models.py:238
+msgid "deadline_date"
+msgstr "date limite"
+
+#: 
+msgid "Deadline:"
+msgstr "Date limite:"
+
+#: 
+msgid "Delete"
+msgstr "Supprimer"
+
+#: 
+msgid "Delete Organization"
+msgstr "Supprimer l'organisation"
+
+#: 
+msgid "Delete Selected"
+msgstr "Supprimer la sélection"
+
+#: 
+msgid "Delete your Data File"
+msgstr "Supprimez votre fichier de données"
+
+#: 
+msgid "Delete your Data Set"
+msgstr "Supprimez votre ensemble de données"
+
+#: 
+msgid "Delete your Inventory"
+msgstr "Supprimez votre inventaire"
+
+#: seed/models/projects.py:47
+msgid "description"
+msgstr "la description"
+
+#: seed/landing/models.py:48
+msgid "Designates whether the user can log into this admin site."
+msgstr "Désigne si l'utilisateur peut se connecter à ce site d'administration."
+
+#: seed/landing/models.py:52
+msgid "Designates whether this user should be treated as active. Unselect this instead of deleting accounts."
+msgstr "Indique si cet utilisateur doit être traité comme actif. Désélectionnez ceci au lieu de supprimer des comptes."
+
+#: 
+msgid "Determine Time Period from Field:"
+msgstr "Déterminer la durée du champ:"
+
+#: 
+msgid "Developer"
+msgstr "Développeur"
+
+#: seed/landing/forms.py:13
+msgid "Email"
+msgstr "Email"
+
+#: seed/landing/models.py:45
+msgid "email address"
+msgstr "adresse e-mail"
+
+#: seed/landing/forms.py:16
+#, fuzzy
+msgid "Email Address"
+msgstr "adresse e-mail"
+
+#: seed/models/models.py:237
+msgid "end_date"
+msgstr "date de fin"
+
+#: config/settings/common.py:214
+msgid "English"
+msgstr "Anglais"
+
+#: seed/landing/forms.py:14
+msgid "ex: joe@company.com"
+msgstr "ex: joe@company.com"
+
+#: 
+msgid "Existing Labels"
+msgstr "Étiquettes existantes"
+
+#: 
+msgid "Export"
+msgstr "Exportation"
+
+#: 
+msgid "Export Buildings"
+msgstr "Exporter les bâtiments"
+
+#: 
+msgid "Export Name"
+msgstr "Nom d'exportation"
+
+#: 
+msgid "Export Selected"
+msgstr "Exporter la sélection"
+
+#: seed/landing/models.py:43
+msgid "first name"
+msgstr "Prénom"
+
+#: seed/landing/templates/landing/password_reset_email.html:3
+msgid "for your SEED Platform user account"
+msgstr "pour votre compte utilisateur SEED Platform"
+
+#: seed/landing/templates/landing/home.html:29
+#: seed/landing/templates/landing/login.html:31
+msgid "Forgot password?"
+msgstr "mot de passe oublié?"
+
+#: config/settings/common.py:215
+msgid "French (Canadian)"
+msgstr "Français (Canada)"
+
+#: seed/landing/templates/landing/_marketing_bullets.html:7
+msgid "Get started using SEED Platform by uploading your buildings list (city tax assessor data) and then your EPA Portfolio Manager data."
+msgstr "Commencez à utiliser SEED Platform en téléchargeant votre liste de bâtiments (données de l'évaluateur de la taxe municipale), puis vos données du EPA Portfolio Manager."
+
+#: 
+msgid "Get started using SEED Platform&#0153; by uploading your buildings list (city tax assessor data) and then your EPA Portfolio Manager data. Make sure these files are each in .csv, .xls, .xlsx, or .xml format. The SEED Platform will help you map and validate your data in the process of loading."
+msgstr "Commencez à utiliser SEED Platform ™ en téléchargeant votre liste de bâtiments (données de l'évaluateur de la taxe de séjour), puis vos données EPA Portfolio Manager. Assurez-vous que ces fichiers sont au format .csv, .xls, .xlsx ou .xml. La plate-forme SEED vous aidera à mapper et valider vos données dans le processus de chargement."
+
+#: 
+msgid "Getting Started"
+msgstr "Prise En Main"
+
+#: seed/models/models.py:183
+msgid "gray"
+msgstr "gris"
+
+#: seed/models/models.py:180
+msgid "green"
+msgstr "vert"
+
+#: seed/templates/seed/account_create_email.html:2
+msgid "Hello %(first_name)s, "
+msgstr "Bonjour% (first_name) s,"
+
+#: 
+msgid "Highlights of SEED Platform™"
+msgstr "Points forts de la Plate-Forme SEED™"
+
+#: seed/models/projects.py:23
+msgid "Inactive"
+msgstr "Inactif"
+
+#: 
+msgid "Inventory"
+msgstr "Inventaire"
+
+#: seed/landing/models.py:44
+msgid "last name"
+msgstr "nom de famille"
+
+#: seed/models/models.py:179
+msgid "light blue"
+msgstr "bleu clair"
+
+#: seed/landing/templates/landing/home.html:27
+#: seed/landing/templates/landing/login.html:29
+msgid "Log In"
+msgstr "S'identifier"
+
+#: seed/landing/templates/landing/login.html:23
+msgid "Log in"
+msgstr "S'identifier"
+
+#: seed/landing/templates/landing/home.html:16
+msgid "Log in to SEED Platform"
+msgstr "Connectez-vous à SEED Platform"
+
+#: 
+msgid "Manage compliance"
+msgstr "Gérer la conformité"
+
+#: 
+msgid "Match your data"
+msgstr "Faites correspondre vos données"
+
+#: seed/landing/templates/landing/_marketing_bullets.html:15
+msgid "Match-up your buildings list with the Portfolio Manager dataset to tie building records together."
+msgstr "Associez votre liste de bâtiments à l'ensemble de données Portfolio Manager pour lier ensemble les enregistrements de construction."
+
+#: 
+msgid "Match-up your buildings list with the Portfolio Manager dataset to tie building records together. SEED Platform will help you by auto-matching high confidence pairings and then provide you with tools to match the rest of your dataset."
+msgstr "Associez votre liste de bâtiments à l'ensemble de données Portfolio Manager pour lier ensemble les enregistrements de construction. SEED Platform vous aidera à apparier automatiquement les couplages de confiance et à vous fournir des outils qui correspondent au reste de votre jeu de données."
+
+#: seed/models/models.py:186 seed/models/projects.py:30
+msgid "name"
+msgstr "nom"
+
+#: seed/landing/templates/landing/password_reset_confirm.html:50
+#: seed/landing/templates/landing/signup.html:49
+msgid "New password"
+msgstr "Nouveau mot de passe"
+
+#: seed/landing/templates/landing/_password_note.html:1
+msgid "Note: Passwords must be 8 or more characters, and must contain at least 1 uppercase character, 1 lowercase character, and 1 digit."
+msgstr "Remarque: Les mots de passe doivent comporter 8 caractères ou plus et contenir au moins 1 caractère majuscule, 1 caractère minuscule et 1 chiffre."
+
+#: src/django-tos-master/tos/models.py:34
+msgid "Only one terms of service is allowed to be active"
+msgstr "Un seul des termes du service est autorisé à être actif"
+
+#: seed/models/models.py:182
+msgid "orange"
+msgstr "orange"
+
+#: seed/landing/forms.py:20
+msgid "Password"
+msgstr "Mot de passe"
+
+#: seed/landing/templates/landing/password_reset_confirm.html:11
+#: seed/landing/templates/landing/signup.html:11
+msgid "Password again"
+msgstr "Mot de passe encore"
+
+#: seed/landing/templates/landing/password_reset_confirm.html:42
+msgid "Password reset"
+msgstr "Réinitialiser le mot de passe"
+
+#: seed/landing/templates/landing/password_reset_subject.txt:1
+msgid "Password reset on SEED"
+msgstr "Réinitialisation du mot de passe sur SEED"
+
+#: seed/landing/templates/landing/password_set.html:6
+msgid "Password set"
+msgstr "Mot de passe défini"
+
+#: seed/landing/templates/landing/password_set.html:12
+msgid "Password set unsuccessful"
+msgstr "Mot de passe pas défini"
+
+#: seed/landing/templates/landing/password_set.html:16
+msgid "Please enter your new password twice so we can verify you typed it in correctly."
+msgstr "Entrez votre nouveau mot de passe deux fois afin que nous puissions vérifier que vous l'avez tapé correctement."
+
+#: seed/landing/templates/landing/password_reset_email.html:5
+msgid "Please go to the following page and choose a new password:"
+msgstr "Passez à la page suivante et choisissez un nouveau mot de passe:"
+
+#: seed/templates/seed/account_create_email.html:8
+msgid "Please go to the following page and setup your account:"
+msgstr "Passez à la page suivante et configurez votre compte:"
+
+#: seed/models/models.py:239
+msgid "Project"
+msgstr "Projet"
+
+#: seed/models/projects.py:115
+#, fuzzy
+msgid "project building"
+msgstr "construction de projets"
+
+#: seed/models/projects.py:116
+#, fuzzy
+msgid "project buildings"
+msgstr "projets de bâtiments"
+
+#: seed/models/projects.py:143
+msgid "project property view"
+msgstr "vue de propriété de projet"
+
+#: seed/models/projects.py:144
+msgid "project property views"
+msgstr "vues de propriété de projet"
+
+#: seed/models/projects.py:168
+msgid "project taxlot view"
+msgstr "vue taxlot du projet"
+
+#: seed/models/projects.py:169
+msgid "project taxlot views"
+msgstr "vues taxlot de projet"
+
+#: 
+msgid "Projects"
+msgstr "Projets"
+
+#: seed/models/models.py:177
+msgid "red"
+msgstr "rouge"
+
+#: src/django-tos-master/tos/templates/tos/tos_check.html:18
+msgid "Reject"
+msgstr "Rejeter"
+
+#: seed/models/models.py:137
+msgid "Retro Commissioning"
+msgstr "Rétrospection de mise en service"
+
+#: seed/templates/seed/account_create_email.html:6
+msgid "SEED is easy, flexible, and cost effective software designed to help organizations clean, manage and share information about large portfolios of buildings. SEED is a free, open source web application that you can use privately.  While SEED was originally designed to help cities and States implement benchmarking programs for public or private buildings, it has the potential to be useful for many other activities by public entities, efficiency programs and private companies."
+msgstr "SEED est un logiciel simple, flexible et rentable conçu pour aider les entreprises à nettoyer, gérer et partager des informations sur les grands portefeuilles de bâtiments. SEED est une application Web open source gratuite que vous pouvez utiliser en privé. Bien que SEED ait été conçue à l'origine pour aider les villes et les États à mettre en œuvre des programmes de benchmarking pour les bâtiments publics ou privés, il est susceptible d'être utile pour de nombreuses autres activités par des entités publiques, des programmes d'efficacité et des entreprises privées."
+
+#: seed/templates/seed/base.html:7
+msgid "SEED Platform&#0153;"
+msgstr "SEED Platform ™"
 
 #: seed/models/columns.py:688 seed/models/models.py:195
 #: seed/models/models.py:256 seed/models/projects.py:42
 msgid "SeedOrg"
-msgstr ""
+msgstr "SeedOrg"
 
-#: seed/models/models.py:135
-msgid "Benchmarking"
-msgstr ""
+#: seed/landing/templates/landing/password_set.html:18
+msgid "Set password"
+msgstr "Définir le mot de passe"
 
-#: seed/models/models.py:136
-msgid "Auditing"
-msgstr ""
+#: seed/landing/templates/landing/password_set.html:10
+msgid "Set your password"
+msgstr "Définir votre mot de passe"
 
-#: seed/models/models.py:137
-msgid "Retro Commissioning"
-msgstr ""
+#: seed/landing/models.py:60
+msgid "shows shared buildings within search results"
+msgstr "montre les bâtiments partagés dans les résultats de recherche"
 
-#: seed/models/models.py:177
-msgid "red"
-msgstr ""
+#: seed/models/projects.py:32
+#, fuzzy
+msgid "slug"
+msgstr "limace"
 
-#: seed/models/models.py:178
-msgid "blue"
-msgstr ""
-
-#: seed/models/models.py:179
-msgid "light blue"
-msgstr ""
-
-#: seed/models/models.py:180
-msgid "green"
-msgstr ""
-
-#: seed/models/models.py:181
-msgid "white"
-msgstr ""
-
-#: seed/models/models.py:182
-msgid "orange"
-msgstr ""
-
-#: seed/models/models.py:183
-msgid "gray"
-msgstr ""
-
-#: seed/models/models.py:186 seed/models/projects.py:30
-msgid "name"
-msgstr ""
-
-#: seed/models/models.py:188 seed/models/models.py:231
-msgid "compliance_type"
-msgstr ""
+#: seed/landing/models.py:47
+msgid "staff status"
+msgstr "statut du personnel"
 
 #: seed/models/models.py:236
 msgid "start_date"
-msgstr ""
-
-#: seed/models/models.py:237
-msgid "end_date"
-msgstr ""
-
-#: seed/models/models.py:238
-msgid "deadline_date"
-msgstr ""
-
-#: seed/models/models.py:239
-msgid "Project"
-msgstr ""
-
-#: seed/models/projects.py:23
-msgid "Inactive"
-msgstr ""
-
-#: seed/models/projects.py:24
-msgid "Active"
-msgstr ""
-
-#: seed/models/projects.py:32
-msgid "slug"
-msgstr ""
-
-#: seed/models/projects.py:35 seed/models/projects.py:109
-#: seed/models/projects.py:137 seed/models/projects.py:162
-msgid "User"
-msgstr ""
-
-#: seed/models/projects.py:47
-msgid "description"
-msgstr ""
+msgstr "date de début"
 
 #: seed/models/projects.py:49
 msgid "status"
-msgstr ""
-
-#: seed/models/projects.py:107 seed/models/projects.py:134
-#: seed/models/projects.py:159
-msgid "approved_date"
-msgstr ""
-
-#: seed/models/projects.py:115
-msgid "project building"
-msgstr ""
-
-#: seed/models/projects.py:116
-msgid "project buildings"
-msgstr ""
-
-#: seed/models/projects.py:143
-msgid "project property view"
-msgstr ""
-
-#: seed/models/projects.py:144
-msgid "project property views"
-msgstr ""
-
-#: seed/models/projects.py:168
-msgid "project taxlot view"
-msgstr ""
-
-#: seed/models/projects.py:169
-msgid "project taxlot views"
-msgstr ""
-
-#: seed/templates/seed/account_create_email.html:2
-#, python-format
-msgid "Hello %(first_name)s, "
-msgstr ""
-
-#: seed/templates/seed/account_create_email.html:4
-msgid ""
-"You're receiving this e-mail because you've been registered for a SEED "
-"account."
-msgstr ""
-
-#: seed/templates/seed/account_create_email.html:6
-msgid ""
-"SEED is easy, flexible, and cost effective software designed to help "
-"organizations clean, manage and share information about large portfolios of "
-"buildings. SEED is a free, open source web application that you can use "
-"privately.  While SEED was originally designed to help cities and States "
-"implement benchmarking programs for public or private buildings, it has the "
-"potential to be useful for many other activities by public entities, "
-"efficiency programs and private companies."
-msgstr ""
-
-#: seed/templates/seed/account_create_email.html:8
-msgid "Please go to the following page and setup your account:"
-msgstr ""
-
-#: seed/templates/seed/account_create_email.html:13
-msgid "The SEED Team"
-msgstr ""
-
-#: seed/templates/seed/base.html:7
-msgid "SEED Platform&#0153;"
-msgstr ""
-
-#: seed/validators.py:17
-#, python-format
-msgid "This password must contain at least %(quantity)d %(type)s characters."
-msgstr ""
-
-#: seed/validators.py:24
-#, python-format
-msgid "Your password must contain at least %(quantity)d %(type)s characters."
-msgstr ""
-
-#: src/django-tos-master/tos/models.py:34
-msgid "Only one terms of service is allowed to be active"
-msgstr ""
-
-#: src/django-tos-master/tos/models.py:37
-msgid "content"
-msgstr ""
+msgstr "statut"
 
 #: src/django-tos-master/tos/models.py:43
 #: src/django-tos-master/tos/models.py:44
 msgid "Terms of Service"
-msgstr ""
+msgstr "Conditions d'utilisation"
 
 #: src/django-tos-master/tos/templates/tos/tos.html:3
 #: src/django-tos-master/tos/templates/tos/tos_check.html:6
-#, python-format
 msgid "Terms of Service as of %(tos.created|date:\"SHORT_DATE_FORMAT\")s"
-msgstr ""
+msgstr "Conditions de service à partir de% (tos.created | date: \"SHORT_DATE_FORMAT\") s"
 
-#: src/django-tos-master/tos/templates/tos/tos_check.html:11
-msgid "Accept Terms of Service?"
-msgstr ""
+#: seed/landing/templates/landing/password_reset_done.html:12
+msgid "Thank you"
+msgstr "Merci"
 
-#: src/django-tos-master/tos/templates/tos/tos_check.html:18
-msgid "Reject"
-msgstr ""
+#: seed/landing/templates/landing/home.html:18
+msgid "Thank you for creating your account! Please sign in below."
+msgstr "Merci de créer votre compte! Veuillez vous connecter ci-dessous."
 
-#: src/django-tos-master/tos/templates/tos/tos_check.html:19
-msgid "Accept"
-msgstr ""
+#: seed/landing/templates/landing/thank_you.html:16
+msgid "Thank you for your interest in joining the Buildings Performance Database. Our site is in beta and your request is being reviewed for access."
+msgstr "Merci de votre intérêt pour vous joindre à la Base de données sur les performances des bâtiments. Notre site est en version bêta et votre demande est en cours d'examen pour l'accès."
+
+#: seed/landing/templates/landing/thank_you.html:13
+msgid "Thank you!"
+msgstr "Merci!"
+
+#: 
+msgid "The DOE developed the Standard Energy Efficiency Data (SEED) Platform™ as a free software tool that provides a standardized format for collecting, storing and analyzing building energy performance information about large portfolios. Upload your buildings list to get started."
+msgstr "Le DOE a développé la Plate-forme SEED™ (Standard Energy Efficiency Data) en tant qu'outil logiciel gratuit qui fournit un format standardisé pour la collecte, le stockage et l'analyse des informations sur la performance énergétique des bâtiments concernant les grands portefeuilles. Téléchargez votre liste de bâtiments pour commencer."
+
+#: seed/landing/templates/landing/signup.html:41
+msgid "The invite link was invalid, possibly because it has already been used.  Please request a new invitation."
+msgstr "Le lien d'invitation était invalide, peut-être parce qu'il a déjà été utilisé. Veuillez demander une nouvelle invitation."
+
+#: seed/landing/templates/landing/password_reset_confirm.html:41
+msgid "The password link was invalid, possibly because it has already been used.  Please request a new password reset."
+msgstr "Le lien de mot de passe était invalide, peut-être parce qu'il a déjà été utilisé. Veuillez demander une nouvelle réinitialisation du mot de passe."
+
+#: seed/landing/templates/landing/password_reset_email.html:11
+msgid "The SEED team"
+msgstr "L'équipe SEED"
+
+#: seed/templates/seed/account_create_email.html:13
+msgid "The SEED Team"
+msgstr "L'équipe SEED"
+
+#: seed/validators.py:17
+msgid "This password must contain at least %(quantity)d %(type)s characters."
+msgstr "Ce mot de passe doit contenir au moins% (quantité) d% (type) s caractères."
+
+#: seed/landing/templates/landing/password_reset_confirm.html:37
+msgid "To change your password, enter your requested password twice."
+msgstr "Pour changer votre mot de passe, entrez votre mot de passe demandé deux fois."
+
+#: seed/landing/templates/landing/signup.html:37
+msgid "To set up your account, enter your password twice in the form below."
+msgstr "Pour configurer votre compte, saisissez votre mot de passe deux fois dans le formulaire ci-dessous."
+
+#: 
+msgid "Upload your data"
+msgstr "Télécharger vos données"
+
+#: seed/landing/templates/landing/_marketing_bullets.html:23
+msgid "Use SEED Platform's flexible, easy-to-use labeling system and project groupings to track the status of data submission, review, and compliance."
+msgstr "Utilisez le système d'étiquetage et les groupes de projets flexibles et faciles à utiliser de SEED Platform pour suivre l'état de la soumission, de l'examen et de la conformité des données."
+
+#: seed/landing/models.py:82
+msgid "user"
+msgstr "utilisateur"
+
+#: seed/models/projects.py:35 seed/models/projects.py:109
+#: seed/models/projects.py:137 seed/models/projects.py:162
+msgid "User"
+msgstr "Utilisateur"
+
+#: seed/landing/models.py:42
+msgid "User's email address.  Used for auth as well."
+msgstr "Adresse e-mail de l'utilisateur. Utilisé également pour auth."
+
+#: seed/landing/models.py:41
+msgid "username (email)"
+msgstr "nom d'utilisateur (email)"
+
+#: seed/landing/models.py:83
+msgid "users"
+msgstr "utilisateurs"
+
+#: seed/landing/templates/landing/_browser_supported.html:5
+msgid "Using your current browser will prevent you from accessing features on our website. Use the links below to download a new browser or upgrade your existing browser."
+msgstr "L'utilisation de votre navigateur actuel vous empêchera d'accéder aux fonctionnalités de notre site Web. Utilisez les liens ci-dessous pour télécharger un nouveau navigateur ou mettre à niveau votre navigateur existant."
+
+#: seed/landing/templates/landing/_browser_supported.html:4
+msgid "We've detected an outdated browser."
+msgstr "Nous avons détecté un navigateur obsolète."
+
+#: seed/landing/templates/landing/password_reset_done.html:15
+msgid "We've e-mailed instructions for resetting your password."
+msgstr "Nous avons envoyé des instructions par e-mail pour réinitialiser votre mot de passe."
+
+#: seed/landing/templates/landing/_marketing_bullets.html:3
+msgid "Welcome to SEED Platform&#0153;"
+msgstr "Bienvenue sur SEED Platform™"
+
+#: seed/landing/templates/landing/password_set.html:16
+msgid "Welcome to SEED!"
+msgstr "Bienvenue chez SEED!"
+
+#: seed/models/models.py:181
+msgid "white"
+msgstr "blanc"
 
 #: src/django-tos-master/tos/views.py:72
 msgid "You cannot login without agreeing to the terms of this site."
-msgstr ""
+msgstr "Vous ne pouvez pas vous connecter sans accepter les termes de ce site."
+
+#: seed/landing/templates/landing/home.html:21
+msgid "You have successfully logged out. You may log in again below."
+msgstr "Vous vous êtes déconnecté avec succès. Vous pouvez vous reconnecter ci-dessous."
+
+#: seed/landing/templates/landing/password_reset_done.html:15
+msgid "You should be receiving it shortly."
+msgstr "Vous devriez le recevoir sous peu."
+
+#: seed/landing/templates/landing/password_reset_email.html:2
+msgid "You're receiving this e-mail because you requested a password reset"
+msgstr "Vous recevez cet e-mail car vous avez demandé une réinitialisation du mot de passe"
+
+#: seed/templates/seed/account_create_email.html:4
+msgid "You're receiving this e-mail because you've been registered for a SEED account."
+msgstr "Vous recevez cet e-mail parce que vous avez été enregistré pour un compte SEED."
+
+#: seed/validators.py:24
+msgid "Your password must contain at least %(quantity)d %(type)s characters."
+msgstr "Votre mot de passe doit contenir au moins% (quantité) d% (type) s caractères."
+
+#: seed/landing/templates/landing/password_reset_email.html:9
+msgid "Your username, in case you've forgotten:"
+msgstr "Votre nom d'utilisateur, au cas où vous avez oublié:"
