@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+tmp=tmp/angular_locales
+dest=seed/static/seed/locales
+
+mkdir -p $tmp
+
+lokalise                \
+  --config lokalise.cfg \
+    export              \
+  --langs fr_CA         \
+  --type json           \
+  --include_comments 1  \
+  --export_sort a_z     \
+  --export_empty base   \
+  --dest $tmp
+
+unzip -o $tmp/SEED_Platform.zip -d $dest
+rm -rf $tmp
