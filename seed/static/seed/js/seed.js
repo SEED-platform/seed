@@ -1096,6 +1096,25 @@ SEED_app.config(['$compileProvider', function ($compileProvider) {
   // $compileProvider.cssClassDirectivesEnabled(false); // This cannot be enabled due to the draggable ui-grid rows
 }]);
 
+SEED_app.config(['$translateProvider', function ($translateProvider) {
+  $translateProvider
+    .useStaticFilesLoader({
+      prefix: '/static/seed/locales/',
+      suffix: '.json'
+    })
+    .registerAvailableLanguageKeys(['en_US', 'fr_CA'], {
+      en: 'en_US',
+      fr: 'fr_CA',
+      'en_*': 'en_US',
+      'fr_*': 'fr_CA'
+    })
+    // see https://angular-translate.github.io/docs/#/guide/19_security
+    .useSanitizeValueStrategy('escape');
+
+  $translateProvider.determinePreferredLanguage();
+}]);
+
+
 /**
  * creates the object 'urls' which can be injected into a service, controller, etc.
  */
