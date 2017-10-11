@@ -49,7 +49,7 @@ msgid "A preview of your concatenated data will appear in the box below."
 msgstr "Un aperçu de vos données concaténées apparaîtra dans la case ci-dessous."
 
 #: 
-msgid "About SEED Platform&#8482;"
+msgid "About SEED Platform™"
 msgstr "À propos de SEED Platform™"
 
 #: src/django-tos-master/tos/templates/tos/tos_check.html:19
@@ -622,7 +622,7 @@ msgid "Get started using SEED Platform by uploading your buildings list (city ta
 msgstr "Commencez à utiliser SEED Platform en téléchargeant votre liste de bâtiments (données de l'évaluateur de la taxe municipale), puis vos données du EPA Portfolio Manager."
 
 #: 
-msgid "Get started using SEED Platform&#0153; by uploading your buildings list (city tax assessor data) and then your EPA Portfolio Manager data. Make sure these files are each in .csv, .xls, .xlsx, or .xml format. The SEED Platform will help you map and validate your data in the process of loading."
+msgid "Get started using SEED Platform™ by uploading your buildings list (city tax assessor data) and then your EPA Portfolio Manager data. Make sure these files are each in .csv, .xls, .xlsx, or .xml format. The SEED Platform will help you map and validate your data in the process of loading."
 msgstr "Commencez à utiliser SEED Platform ™ en téléchargeant votre liste de bâtiments (données de l'évaluateur de la taxe de séjour), puis vos données EPA Portfolio Manager. Assurez-vous que ces fichiers sont au format .csv, .xls, .xlsx ou .xml. La plate-forme SEED vous aidera à mapper et valider vos données dans le processus de chargement."
 
 #: 
@@ -799,7 +799,7 @@ msgid "SEED is easy, flexible, and cost effective software designed to help orga
 msgstr "SEED est un logiciel simple, flexible et rentable conçu pour aider les entreprises à nettoyer, gérer et partager des informations sur les grands portefeuilles de bâtiments. SEED est une application Web open source gratuite que vous pouvez utiliser en privé. Bien que SEED ait été conçue à l'origine pour aider les villes et les États à mettre en œuvre des programmes de benchmarking pour les bâtiments publics ou privés, il est susceptible d'être utile pour de nombreuses autres activités par des entités publiques, des programmes d'efficacité et des entreprises privées."
 
 #: seed/templates/seed/base.html:7
-msgid "SEED Platform&#0153;"
+msgid "SEED Platform™"
 msgstr "SEED Platform ™"
 
 #: seed/models/columns.py:688 seed/models/models.py:195
@@ -936,7 +936,7 @@ msgid "We've e-mailed instructions for resetting your password."
 msgstr "Nous avons envoyé des instructions par e-mail pour réinitialiser votre mot de passe."
 
 #: seed/landing/templates/landing/_marketing_bullets.html:3
-msgid "Welcome to SEED Platform&#0153;"
+msgid "Welcome to SEED Platform™"
 msgstr "Bienvenue sur SEED Platform™"
 
 #: seed/landing/templates/landing/password_set.html:16

@@ -119,8 +119,8 @@ msgstr ""
 "existing browser."
 
 #: seed/landing/templates/landing/_marketing_bullets.html:3
-msgid "Welcome to SEED Platform&#0153;"
-msgstr "Welcome to SEED Platform&#0153;"
+msgid "Welcome to SEED Platform™"
+msgstr "Welcome to SEED Platform™"
 
 #: seed/landing/templates/landing/_marketing_bullets.html:7
 msgid ""
@@ -496,8 +496,8 @@ msgid "The SEED Team"
 msgstr "The SEED Team"
 
 #: seed/templates/seed/base.html:7
-msgid "SEED Platform&#0153;"
-msgstr "SEED Platform&#0153;"
+msgid "SEED Platform™"
+msgstr "SEED Platform™"
 
 #: seed/validators.py:17
 #, python-format
