@@ -26,6 +26,8 @@ DATABASES = {
     },
 }
 
+MIDDLEWARE_CLASSES = ('seed.utils.nocache.DisableClientSideCachingMiddleware',) + MIDDLEWARE_CLASSES
+
 CACHES = {
     'default': {
         'BACKEND': 'redis_cache.cache.RedisCache',
