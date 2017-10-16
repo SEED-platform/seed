@@ -32,9 +32,15 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 TIME_ZONE = 'America/Los_Angeles'
 USE_TZ = True
-LANGUAGE_CODE = 'en-us'
 SITE_ID = 1
+
 USE_I18N = True
+LANGUAGES = (
+    ('en', _('English')),
+    ('fr-ca', _('French (Canada)')),
+)
+LOCALE_PATHS = ('locale',)
+LANGUAGE_CODE = 'en-us'
 
 SECRET_KEY = os.environ.get(
     'SECRET_KEY',
@@ -207,13 +213,6 @@ CELERY_TASK_COMPRESSION = 'gzip'
 
 # hmm, we are logging outside the context of the app?
 LOG_FILE = os.path.join(BASE_DIR, '../logs/py.log/')
-
-# Set translation languages for i18n
-LANGUAGES = (
-    ('en', _('English')),
-    ('fr_CA', _('French (Canadian)')),
-)
-LOCALE_PATHS = ('locale',)
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
