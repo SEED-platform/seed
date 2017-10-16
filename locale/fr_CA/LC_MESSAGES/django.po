@@ -564,9 +564,8 @@ msgid "email address"
 msgstr "adresse e-mail"
 
 #: seed/landing/forms.py:16
-#, fuzzy
 msgid "Email Address"
-msgstr "adresse e-mail"
+msgstr "Adresse e-mail"
 
 #: seed/models/models.py:237
 msgid "end_date"
