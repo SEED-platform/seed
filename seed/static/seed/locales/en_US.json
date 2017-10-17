@@ -1,4 +1,17 @@
 {
+  "INCLUDE_SHARED_TAXLOTS": "Include in your Tax Lot List all tax lots shared with you.",
+  "INCLUDE_SHARED_PROPERTIES": "Include in your Properties List all properties shared with you.",
+
+  "NUMBER_COLUMNS_AVAILABLE": "There are {$ count $} columns of data available to you.",
+  "LIST_GUIDANCE_TAXLOTS": "Select columns from the list below to make them appear in your Tax Lot List table. Drag the rows to change the order in which they appear. Pin the rows for them to be left-pinned in the list view.",
+  "LIST_GUIDANCE_PROPERTIES": "Select columns from the list below to make them appear in your Property List table. Drag the rows to change the order in which they appear. Pin the rows for them to be left-pinned in the list view.",
+  "Add Shared Properties": "Add Shared Properties",
+  "Add Shared Tax Lots":   "Add Shared Tax Lots",
+  "Property List Settings":   "Property List Settings",
+  "Properties List": "Properties List",
+  "Tax Lots List Settings": "Tax Lots List Settings",
+  "Tax Lots List": "Tax Lots List",
+
     "Development Team": "Development Team",
     "Managed by": "Managed by",
     "Funding from": "Funding from",

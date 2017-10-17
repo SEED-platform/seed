@@ -12,7 +12,30 @@ angular.module('BE.seed.controller.inventory_settings', [])
     'user_service',
     'all_columns',
     'shared_fields_payload',
-    function ($scope, $window, $uibModalInstance, $stateParams, inventory_service, user_service, all_columns, shared_fields_payload) {
+    '$translate',
+    function ($scope, $window, $uibModalInstance, $stateParams, inventory_service, user_service, all_columns, shared_fields_payload, $translate) {
+
+      $scope.translations = {};
+
+      var needed_translations = [
+        'Add Shared Properties',
+        'Add Shared Tax Lots',
+        'Property List Settings',
+        'Properties List',
+        'Tax Lots List Settings',
+        'Tax Lots List',
+        'INCLUDE_SHARED_TAXLOTS',
+        'INCLUDE_SHARED_PROPERTIES',
+        'LIST_GUIDANCE_TAXLOTS',
+        'LIST_GUIDANCE_PROPERTIES',
+      ];
+
+      $translate(needed_translations).then(function succeeded (translations) {
+        $scope.translations = translations;
+      }, function failed (translationIds) {
+        $scope.translations = translationIds;
+      });
+
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.inventory = {
         id: $stateParams.inventory_id

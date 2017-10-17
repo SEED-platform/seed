@@ -4,7 +4,9 @@
 
         </div>
         <div class="page_title">
-            <h1>{$:: inventory_type === 'taxlots' ? 'Tax Lot' : 'Property' $} List Settings TRANSLATION_FIXME</h1>
+          <h1>{$:: inventory_type === 'taxlots' ?
+            translations['Tax Lots List Settings'] :
+            translations['Properties List Settings'] $}</h1>
         </div>
         <div class="right page_action_container page_action_btn"></div>
     </div>
@@ -24,16 +26,16 @@
 
 <div class="section_content_container" ng-cloak style="clear:both; overflow:hidden;">
     <div class="section_content with_padding" style="overflow:hidden;">
-        <h3>Add Shared {$:: inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties' $}. TRANSLATION_FIXME</h3>
+        <h3>{$:: inventory_type === 'taxlots' ? translations['Add Shared Tax Lots'] : translations['Add Shared Properties'] $}</h3>
         <div class="checkbox">
             <label>
                 <input type="checkbox" ng-model="showSharedBuildings" ng-change="saveShowSharedBuildings()">
-                TRANSLATION_FIXME
-                Include in your {$:: inventory_type === 'taxlots' ? 'tax lots' : 'properties' $} list all {$:: inventory_type === 'taxlots' ? 'tax lots' : 'properties' $} shared with you.
+                {$:: inventory_type === 'taxlots' ? translations['INCLUDE_SHARED_TAXLOTS'] : translations['INCLUDE_SHARED_PROPERTIES'] $}
             </label>
         </div>
-        <h3>TRANSLATION_FIXME There are {$:: data.length | number $} columns of data available to you.</h3>
-        <p> TRANSLATION_FIXME Select columns from the list below to make them appear in your {$:: inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties' $} List table. Drag the rows to change the order in which they appear. Pin the rows for them to be left-pinned in the list view.</p>
+        <h3 translate="NUMBER_COLUMNS_AVAILABLE"
+            translate-values="{ count: (data.length | number) }"></h3>
+        <p>{$:: inventory_type == 'taxlots' ? translations['LIST_GUIDANCE_TAXLOTS'] : translations['LIST_GUIDANCE_PROPERTIES'] $}</p>
     </div>
     <div class="section_content">
         <div id="grid-container">
