@@ -24,7 +24,6 @@ from .certification import (    # noqa
 
 from .projects import (     # noqa
     Project,
-    ProjectBuilding,
     ProjectPropertyView,
     ProjectTaxLotView,
     STATUS_CHOICES

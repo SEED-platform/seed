@@ -13,7 +13,7 @@ from django_extensions.db.models import TimeStampedModel
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
 from seed.managers.json import JsonManager
 from seed.models.projects import (
-    Project, ProjectBuilding, PROJECT_NAME_MAX_LENGTH
+    Project, PROJECT_NAME_MAX_LENGTH
 )
 from seed.utils.generic import obj_to_dict
 
@@ -313,12 +313,6 @@ class Enum(models.Model):
         return u'Enum: {0}: Values {1}'.format(
             self.enum_name, enums_string
         )
-
-
-class NonCanonicalProjectBuildings(models.Model):
-    """Holds a reference to all project buildings that do not point at a
-    canonical building snapshot."""
-    projectbuilding = models.OneToOneField(ProjectBuilding, primary_key=True)
 
 
 class AttributeOption(models.Model):
