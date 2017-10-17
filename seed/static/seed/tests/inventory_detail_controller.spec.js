@@ -21,19 +21,7 @@ describe('controller: inventory_detail_controller', function () {
       // mock the inventory_service factory methods used in the controller
       // and return their promises
       mock_building_service = inventory_service;
-      // mock_project_service = project_service;
 
-      // spyOn(mock_project_service, 'get_project')
-      //   .andCallFake(function (project_slug) {
-      //     return $q.resolve({
-      //       status: 'success',
-      //       project: {
-      //         id: 33,
-      //         name: 'test project',
-      //         slug: project_slug
-      //       }
-      //     });
-      //   });
       spyOn(mock_building_service, 'update_property')
         .andCallFake(function (property_id, cycle_id, state) {
           mock_building = state;
@@ -119,7 +107,6 @@ describe('controller: inventory_detail_controller', function () {
       // properties: fake_building,
       state: fake_building,
       // imported_buildings: fake_imported_buildings,
-      projects: [],
       cycle: {
         id: 2017
       },
@@ -173,8 +160,7 @@ describe('controller: inventory_detail_controller', function () {
       $stateParams: {
         cycle_id: 2017,
         inventory_id: 1,
-        inventory_type: 'properties',
-        project_id: 2
+        inventory_type: 'properties'
       },
       inventory_payload: fake_payload,
       columns: fake_all_columns,
@@ -294,53 +280,6 @@ describe('controller: inventory_detail_controller', function () {
   //         return d.key;
   //     });
   //     expect(keys.indexOf('make it four')).toEqual(4);
-  // });
-
-  // I don't think the idea of active project is still used....
-  // it('should highlight the active project', function() {
-  //     // arrange
-  //     create_inventory_detail_controller();
-
-  //     // act
-  //     inventory_detail_controller_scope.$digest();
-
-  //     // assertions
-  //     expect(inventory_detail_controller_scope.is_active_project({id:33}))
-  //     .toBe(true);
-  //     expect(inventory_detail_controller_scope.is_active_project({id:34}))
-  //     .toBe(false);
-  //     inventory_detail_controller_scope.project = undefined;
-  //     expect(inventory_detail_controller_scope.is_active_project({id:34}))
-  //     .toBe(false);
-  // });
-
-  // it('should show a project or buildings breadcrumb', function() {
-  //     // arrange
-  //     create_inventory_detail_controller();
-
-  //     // act
-  //     inventory_detail_controller_scope.$digest();
-  //     inventory_detail_controller_scope.user.project_slug = 'project_1';
-
-  //     // assertions
-  //     expect(inventory_detail_controller_scope.is_project()).toEqual(true);
-  //     inventory_detail_controller_scope.user.project_slug = undefined;
-  //     expect(inventory_detail_controller_scope.is_project()).toEqual(false);
-
-  // });
-  // it('should show the default projects table if a user has no compliance' +
-  //     ' projects', function() {
-  //     // arrange
-  //     create_inventory_detail_controller();
-
-  //     // act
-  //     inventory_detail_controller_scope.$digest();
-
-  //     // assertions
-  //     expect(inventory_detail_controller_scope.user.has_projects()).toEqual(false);
-  //     inventory_detail_controller_scope.projects = [{id: 1, name: 'a'}];
-  //     expect(inventory_detail_controller_scope.user.has_projects()).toEqual(true);
-
   // });
 
   //FIXIT - do these have an equiv?

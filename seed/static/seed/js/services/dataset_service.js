@@ -8,20 +8,31 @@ angular.module('BE.seed.service.dataset', []).factory('dataset_service', [
   'user_service',
   function ($http, user_service) {
 
-    var dataset_factory = {total_datasets_for_user: 0};
+    var dataset_service = {total_datasets_for_user: 0};
 
-    dataset_factory.get_datasets = function () {
+    dataset_service.get_datasets_count = function () {
+      return $http.get('/api/v2/datasets/count/', {
+        params: {
+          organization_id: user_service.get_organization().id
+        }
+      }).then(function (response) {
+        dataset_service.total_datasets_for_user = response.data.datasets_count;
+        return response.data;
+      });
+    };
+
+    dataset_service.get_datasets = function () {
       return $http.get('/api/v2/datasets/', {
         params: {
           organization_id: user_service.get_organization().id
         }
       }).then(function (response) {
-        dataset_factory.total_datasets_for_user = _.has(response.data.datasets, 'length') ? response.data.datasets.length : 0;
+        dataset_service.total_datasets_for_user = _.has(response.data.datasets, 'length') ? response.data.datasets.length : 0;
         return response.data;
       });
     };
 
-    dataset_factory.get_dataset = function (dataset_id) {
+    dataset_service.get_dataset = function (dataset_id) {
       return $http.get('/api/v2/datasets/' + dataset_id + '/', {
         params: {
           organization_id: user_service.get_organization().id
@@ -31,7 +42,7 @@ angular.module('BE.seed.service.dataset', []).factory('dataset_service', [
       });
     };
 
-    dataset_factory.delete_file = function (file_id) {
+    dataset_service.delete_file = function (file_id) {
       return $http.delete(window.BE.urls.delete_file, {
         headers: {
           'Content-Type': 'application/json;charset=utf-8'
@@ -45,7 +56,7 @@ angular.module('BE.seed.service.dataset', []).factory('dataset_service', [
       });
     };
 
-    dataset_factory.delete_dataset = function (dataset_id) {
+    dataset_service.delete_dataset = function (dataset_id) {
       return $http.delete('/api/v2/datasets/' + dataset_id + '/', {
         params: {
           organization_id: user_service.get_organization().id
@@ -55,7 +66,7 @@ angular.module('BE.seed.service.dataset', []).factory('dataset_service', [
       });
     };
 
-    dataset_factory.update_dataset = function (dataset) {
+    dataset_service.update_dataset = function (dataset) {
       return $http.put('/api/v2/datasets/' + dataset.id + '/', {
         dataset: dataset.name
       }, {
@@ -67,7 +78,7 @@ angular.module('BE.seed.service.dataset', []).factory('dataset_service', [
       });
     };
 
-    dataset_factory.get_import_file = function (import_file_id) {
+    dataset_service.get_import_file = function (import_file_id) {
       return $http.get('/api/v2/import_files/' + import_file_id + '/', {
         params: {
           organization_id: user_service.get_organization().id
@@ -77,5 +88,5 @@ angular.module('BE.seed.service.dataset', []).factory('dataset_service', [
       });
     };
 
-    return dataset_factory;
+    return dataset_service;
   }]);

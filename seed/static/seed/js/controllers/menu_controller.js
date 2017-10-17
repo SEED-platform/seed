@@ -11,7 +11,6 @@ angular.module('BE.seed.controller.menu', [])
     '$uibModal',
     '$log',
     'urls',
-    'project_service',
     'organization_service',
     'user_service',
     'dataset_service',
@@ -26,7 +25,6 @@ angular.module('BE.seed.controller.menu', [])
               $uibModal,
               $log,
               urls,
-              project_service,
               organization_service,
               user_service,
               dataset_service,
@@ -43,18 +41,14 @@ angular.module('BE.seed.controller.menu', [])
       $scope.username = window.BE.username;
       $scope.urls = urls;
       $scope.datasets_count = 0;
-      $scope.projects_count = 0;
       $scope.search_input = '';
       $scope.organizations_count = 0;
-      $scope.menu = {};
-      $scope.menu.project = {};
-      $scope.menu.create_project_state = 'create';
-      $scope.menu.create_project_error = false;
-      $scope.menu.create_project_error_message = '';
+      $scope.menu = {
+        loading: false,
+        route_load_error: false,
+        user: {}
+      };
       $scope.saving_indicator = false;
-      $scope.menu.loading = false;
-      $scope.menu.route_load_error = false;
-      $scope.menu.user = {};
       $scope.is_initial_state = $scope.expanded_controller === $scope.collapsed_controller;
 
       $rootScope.$on('$stateChangeError', function (event, toState, toParams, fromState, fromParams, error) {
@@ -82,10 +76,6 @@ angular.module('BE.seed.controller.menu', [])
         $scope.menu.route_load_error = true;
         $scope.menu.error_message = data.message;
       });
-      //commented out 6.15.17 dbressan code cov
-      // $scope.$on('project_created', function () {
-      //   init();
-      // });
       $scope.$on('show_saving', function () {
         $scope.saving_indicator = true;
         start_saving_indicator('. . .   ', '');
@@ -157,30 +147,6 @@ angular.module('BE.seed.controller.menu', [])
           $log.error('Couldn\'t write cookie for nav state. Error: ', err);
         }
       };
-
-      //commented out 6.15.17 dbressan code cov
-      // $scope.open_create_project_modal = function () {
-      //   var modalInstance = $uibModal.open({
-      //     templateUrl: urls.static_url + 'seed/partials/edit_project_modal.html',
-      //     controller: 'edit_project_modal_controller',
-      //     resolve: {
-      //       project: function () {
-      //         return $scope.menu.project;
-      //       },
-      //       create_project: _.constant(true)
-      //     }
-      //   });
-      //
-      //   modalInstance.result.then(
-      //     function (project) {
-      //       $log.info(project);
-      //       init();
-      //       $scope.$broadcast('projects_updated');
-      //     }, function (message) {
-      //     $log.info(message);
-      //     $log.info('Modal dismissed at: ' + new Date());
-      //   });
-      // };
 
       /**
        * open_data_upload_modal: opens the data upload modal, passes in the
@@ -265,13 +231,6 @@ angular.module('BE.seed.controller.menu', [])
       //      a proper strategy of binding views straight to model properties.
       //      See my comments here: https://github.com/SEED-platform/seed/issues/44
 
-      //watch projects
-      $scope.$watch(function () {
-        return project_service.total_number_projects_for_user;
-      }, function (data) {
-        $scope.projects_count = data;
-      }, true);
-
       //watch datasets
       $scope.$watch(function () {
         return dataset_service.total_datasets_for_user;
@@ -295,14 +254,9 @@ angular.module('BE.seed.controller.menu', [])
           $scope.menu.user.organization = _.find(data.organizations, {id: _.toInteger(user_service.get_organization().id)});
         });
 
-        project_service.get_datasets_count().then(function (data) {
+        dataset_service.get_datasets_count().then(function (data) {
           $scope.datasets_count = data.datasets_count;
         });
-
-        // project_service.get_projects_count().then(function (data) {
-        //   // resolve promise
-        //   $scope.projects_count = data.projects_count;
-        // });
       };
       init();
       init_menu();
