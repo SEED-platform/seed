@@ -165,125 +165,127 @@
     </br>
     </br>
 
-    <!-- Files Section -->
-    <div class="section">
-        <div class="section_header_container" style="margin-top: 20px; border-bottom: 0;">
-            <div class="section_header fixed_height_short has_no_padding">
-                <div class="section_action_container left" style="width: 50%;">
-                    <span>
-                        <h2><i class="fa fa-file"></i> Files (Master State Only)</h2>
-                    </span>
+    <ng-hide ng-hide="::hide_bricr">
+        <!-- Files Section -->
+        <div class="section">
+            <div class="section_header_container" style="margin-top: 20px; border-bottom: 0;">
+                <div class="section_header fixed_height_short has_no_padding">
+                    <div class="section_action_container left" style="width: 50%;">
+                        <span>
+                            <h2><i class="fa fa-file"></i> Files (Master State Only)</h2>
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="section_content_container">
-        <!-- List of files -->
-        <div class="section_content">
-            <div class="table_list_container table_item_detail">
-                <table class="table table-striped table_highlight_first fixed-layout" style="margin-bottom:-1px;">
-                    <thead>
-                        <tr>
-                            <th sd-resizable>File Type</th>
-                            <th sd-resizable class="ellipsis-resizable">File Name</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr ng-repeat="file in item_state.files">
-                            <td> {$ file.file_type $}</td>
-                            <td> <a href='{$ file.file $}'>{$ file.filename $}</td>
-                        </tr>
-                    </tbody>
-                </table>
+        <div class="section_content_container">
+            <!-- List of files -->
+            <div class="section_content">
+                <div class="table_list_container table_item_detail">
+                    <table class="table table-striped table_highlight_first fixed-layout" style="margin-bottom:-1px;">
+                        <thead>
+                            <tr>
+                                <th sd-resizable>File Type</th>
+                                <th sd-resizable class="ellipsis-resizable">File Name</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="file in item_state.files">
+                                <td> {$ file.file_type $}</td>
+                                <td> <a href='{$ file.file $}'>{$ file.filename $}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Measures Section -->
-    <div class="section">
-        <div class="section_header_container" style="margin-top: 20px; border-bottom: 0;">
-            <div class="section_header fixed_height_short has_no_padding">
-                <div class="section_action_container left" style="width: 50%;">
-                    <span>
-                        <h2><i class="fa fa-cogs"></i> Measures</h2>
-                    </span>
+        <!-- Measures Section -->
+        <div class="section">
+            <div class="section_header_container" style="margin-top: 20px; border-bottom: 0;">
+                <div class="section_header fixed_height_short has_no_padding">
+                    <div class="section_action_container left" style="width: 50%;">
+                        <span>
+                            <h2><i class="fa fa-cogs"></i> Measures</h2>
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="section_content_container">
-        <!-- List of measures -->
-        <div class="section_content">
-            <div class="table_list_container table_item_detail">
-                <table class="table table-striped table_highlight_first fixed-layout" style="margin-bottom:-1px;">
-                    <thead>
-                        <tr>
-                            <th sd-resizable>Category</th>
-                            <th sd-resizable class="ellipsis-resizable">Measure Name</th>
-                            <th sd-resizable class="ellipsis-resizable">Measure Information</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr ng-repeat="measure in item_state.measures">
-                            <td> <div id="measureAnchor{$ measure.id $}">{$ measure.category_display_name $}</div></td>
-                            <td> {$ measure.display_name $}</td>
-                            <td> Status: {$ measure.implementation_status $} <br>
-                                 Recommended: {$ measure.recommended $} <br>
-                                 Scale: {$ measure.application_scale $} <br>
-                                 Category Affected: {$ measure.category_affected $} <br>
-                                 Installation Cost: {$ measure.cost_installation $} <br>
-                                 Material Cost: {$ measure.cost_material $} <br>
-                                 M&V Cost: {$ measure.cost_mv $} <br>
-                                 Residual Cost: {$ measure.cost_residual_value $} <br>
-                                 Total First Cost: {$ measure.cost_total_first $} <br>
-                                 Capital Replacement Cost: {$ measure.cost_capital_replacement $} <br>
-                                 Description: {$ measure.description $} <br>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+        <div class="section_content_container">
+            <!-- List of measures -->
+            <div class="section_content">
+                <div class="table_list_container table_item_detail">
+                    <table class="table table-striped table_highlight_first fixed-layout" style="margin-bottom:-1px;">
+                        <thead>
+                            <tr>
+                                <th sd-resizable>Category</th>
+                                <th sd-resizable class="ellipsis-resizable">Measure Name</th>
+                                <th sd-resizable class="ellipsis-resizable">Measure Information</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="measure in item_state.measures">
+                                <td> <div id="measureAnchor{$ measure.id $}">{$ measure.category_display_name $}</div></td>
+                                <td> {$ measure.display_name $}</td>
+                                <td> Status: {$ measure.implementation_status $} <br>
+                                     Recommended: {$ measure.recommended $} <br>
+                                     Scale: {$ measure.application_scale $} <br>
+                                     Category Affected: {$ measure.category_affected $} <br>
+                                     Installation Cost: {$ measure.cost_installation $} <br>
+                                     Material Cost: {$ measure.cost_material $} <br>
+                                     M&V Cost: {$ measure.cost_mv $} <br>
+                                     Residual Cost: {$ measure.cost_residual_value $} <br>
+                                     Total First Cost: {$ measure.cost_total_first $} <br>
+                                     Capital Replacement Cost: {$ measure.cost_capital_replacement $} <br>
+                                     Description: {$ measure.description $} <br>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Scenarios Section -->
-    <div class="section">
-        <div class="section_header_container" style="margin-top: 20px; border-bottom: 0;">
-            <div class="section_header fixed_height_short has_no_padding">
-                <div class="section_action_container left" style="width: 50%;">
-                    <span>
-                        <h2><i class="fa fa-rebel"></i> Scenarios</h2>
-                    </span>
+        <!-- Scenarios Section -->
+        <div class="section">
+            <div class="section_header_container" style="margin-top: 20px; border-bottom: 0;">
+                <div class="section_header fixed_height_short has_no_padding">
+                    <div class="section_action_container left" style="width: 50%;">
+                        <span>
+                            <h2><i class="fa fa-rebel"></i> Scenarios</h2>
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="section_content_container">
-        <!-- List of measures -->
-        <div class="section_content">
-            <div class="table_list_container table_item_detail">
-                <table class="table table-striped table_highlight_first fixed-layout" style="margin-bottom:-1px;">
-                    <thead>
-                        <tr>
-                            <th sd-resizable>Scenario</th>
-                            <th sd-resizable class="ellipsis-resizable">Type</th>
-                            <th sd-resizable class="ellipsis-resizable">Measures</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr ng-repeat="scenario in item_state.scenarios | orderBy:'$index':true">
-                            <td> {$ scenario.name $}</td>
-                            <td> {$ scenario.temporal_status $}</td>
-                            <td>
-                                <div ng-repeat="measure in scenario.measures | orderBy:'$index':true">
-                                    <a href="" ng-click="gotoMeasureAnchor(measure.id)">{$ measure.category_display_name $} : {$ measure.display_name $}</a>
-                                </div>
-                            </td>
-                        </p>
-                    </tbody>
-                </table>
+        <div class="section_content_container">
+            <!-- List of measures -->
+            <div class="section_content">
+                <div class="table_list_container table_item_detail">
+                    <table class="table table-striped table_highlight_first fixed-layout" style="margin-bottom:-1px;">
+                        <thead>
+                            <tr>
+                                <th sd-resizable>Scenario</th>
+                                <th sd-resizable class="ellipsis-resizable">Type</th>
+                                <th sd-resizable class="ellipsis-resizable">Measures</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="scenario in item_state.scenarios | orderBy:'$index':true">
+                                <td> {$ scenario.name $}</td>
+                                <td> {$ scenario.temporal_status $}</td>
+                                <td>
+                                    <div ng-repeat="measure in scenario.measures | orderBy:'$index':true">
+                                        <a href="" ng-click="gotoMeasureAnchor(measure.id)">{$ measure.category_display_name $} : {$ measure.display_name $}</a>
+                                    </div>
+                                </td>
+                            </p>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-    </div>
+    </ng-hide>
 </div>
 

@@ -13,7 +13,8 @@ angular.module('BE.seed.controller.inventory_settings', [])
     'all_columns',
     'shared_fields_payload',
     'flippers',
-    function ($scope, $window, $uibModalInstance, $stateParams, inventory_service, user_service, all_columns, shared_fields_payload, flippers) {
+    function ($scope, $window, $uibModalInstance, $stateParams, inventory_service, user_service,
+              all_columns, shared_fields_payload, flippers) {
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.inventory = {
         id: $stateParams.inventory_id

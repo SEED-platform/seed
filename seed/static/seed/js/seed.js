@@ -169,6 +169,9 @@ SEED_app.run([
   function (flippers) {
     var make = _.partial(flippers.make_flipper, 'ryan@ryanmccuaig.net', '2018-01-01T00:00:00Z');
     make('release:use_pint', 'boolean', false);
+
+    var make2 = _.partial(flippers.make_flipper, 'nicholas.long@nrel.gov', '2018-01-01T00:00:00Z');
+    make2('release:bricr', 'boolean', false);
   }
 ]);
 
