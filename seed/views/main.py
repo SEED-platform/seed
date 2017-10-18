@@ -14,8 +14,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.files.storage import DefaultStorage
 from django.http import JsonResponse
-from django.shortcuts import render_to_response
-from django.template.context import RequestContext
+from django.shortcuts import render
 from rest_framework import status
 from rest_framework.decorators import api_view
 
@@ -55,10 +54,7 @@ _log = logging.getLogger(__name__)
 
 def angular_js_tests(request):
     """Jasmine JS unit test code covering AngularJS unit tests"""
-    return render_to_response(
-        'seed/jasmine_tests/AngularJSTests.html',
-        locals(), context_instance=RequestContext(request),
-    )
+    return render(request, 'seed/jasmine_tests/AngularJSTests.html', locals())
 
 
 def _get_default_org(user):
@@ -98,6 +94,7 @@ def home(request):
         * **AWS_CLIENT_ACCESS_KEY**: S3 direct upload client key
         * **FILE_UPLOAD_DESTINATION**: 'S3' or 'filesystem'
     """
+
     username = request.user.first_name + " " + request.user.last_name
     if 'S3' in settings.DEFAULT_FILE_STORAGE:
         FILE_UPLOAD_DESTINATION = 'S3'
@@ -110,10 +107,7 @@ def home(request):
         request.user
     )
 
-    return render_to_response(
-        'seed/index.html',
-        locals(), context_instance=RequestContext(request),
-    )
+    return render(request, 'seed/index.html', locals())
 
 
 @api_endpoint
@@ -145,10 +139,7 @@ def error404(request):
             "message": "Endpoint could not be found",
         }, status=status.HTTP_404_NOT_FOUND)
     else:
-        response = render_to_response(
-            'seed/404.html', {},
-            context_instance=RequestContext(request)
-        )
+        response = render(request, 'seed/404.html', {})
         response.status_code = 404
         return response
 
@@ -161,10 +152,7 @@ def error500(request):
             "message": "Internal server error",
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     else:
-        response = render_to_response(
-            'seed/404.html', {},
-            context_instance=RequestContext(request)
-        )
+        response = render(request, 'seed/500.html', {})
         response.status_code = 500
         return response
 

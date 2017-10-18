@@ -6,19 +6,20 @@
 """
 import logging
 
+from django.conf import settings
 from django.contrib import auth
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.forms import SetPasswordForm
-from django.conf import settings
 from django.core.urlresolvers import reverse
-from django.forms.utils import ErrorList
 from django.forms.forms import NON_FIELD_ERRORS
+from django.forms.utils import ErrorList
 from django.http import HttpResponseRedirect
+from django.shortcuts import render
 from django.template.context import RequestContext
-from django.shortcuts import render_to_response
 from tos.models import (
     has_user_agreed_latest_tos, TermsOfService, NoActiveTermsOfService
 )
+
 from forms import LoginForm
 
 logger = logging.getLogger(__name__)
@@ -28,11 +29,7 @@ def landing_page(request):
     if request.user.is_authenticated():
         return HttpResponseRedirect(reverse('seed:home'))
     login_form = LoginForm()
-    return render_to_response(
-        'landing/home.html',
-        locals(),
-        context_instance=RequestContext(request),
-    )
+    return render(request, 'landing/home.html', locals())
 
 
 def login_view(request):
@@ -72,21 +69,15 @@ def login_view(request):
                         'next': redirect_to,
                         'tos': TermsOfService.objects.get_current_tos()
                     })
-                    return render_to_response(
-                        'tos/tos_check.html',
-                        context_instance=context
-                    )
+                    return render(request, 'tos/tos_check.html', context)
             else:
                 errors = ErrorList()
                 errors = form._errors.setdefault(NON_FIELD_ERRORS, errors)
                 errors.append('Username and/or password were invalid.')
     else:
         form = LoginForm()
-    return render_to_response(
-        'landing/login.html',
-        locals(),
-        context_instance=RequestContext(request),
-    )
+
+    return render(request, 'landing/login.html', locals())
 
 
 def password_set(request, uidb64=None, token=None):
@@ -129,11 +120,7 @@ def password_reset_confirm(request, uidb64=None, token=None):
 
 
 def password_reset_complete(request):
-    return render_to_response(
-        "landing/password_reset_complete.html",
-        {},
-        context_instance=RequestContext(request),
-    )
+    return render(request, 'landing/password_reset_complete.html', {})
 
 
 def signup(request, uidb64=None, token=None):
