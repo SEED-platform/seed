@@ -21,7 +21,6 @@ urlpatterns = [
     url(r'^app/', include('seed.urls', namespace="seed", app_name="seed")),
 
     # root configuration items
-    url(r'^eula/', include('tos.urls', namespace='tos', app_name='tos')),
     url(r'^i18n/', include('django.conf.urls.i18n')),
     url(r'^robots\.txt', robots_txt, name='robots_txt'),
 

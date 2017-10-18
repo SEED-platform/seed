@@ -62,14 +62,14 @@ TEMPLATES = [
     },
 ]
 
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE = (
     'django.middleware.gzip.GZipMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.BrokenLinkEmailsMiddleware',
     'seed.utils.api.APIBypassCSRFMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
 )
@@ -90,7 +90,7 @@ INSTALLED_APPS = (
     'compressor',
     'django_extensions',
     'raven.contrib.django.raven_compat',
-    'tos',
+    # 'tos',
     'django_filters',
     'rest_framework',
     'rest_framework_swagger',

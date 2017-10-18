@@ -4,7 +4,6 @@ dj-database-url==0.4.2
 django-autoslug==1.9.3
 django-storages==1.5.2
 modeltranslation==0.25
--e git+https://github.com/revsys/django-tos.git#egg=django_tos-master
 
 # Persistence stores
 psycopg2==2.7.1
