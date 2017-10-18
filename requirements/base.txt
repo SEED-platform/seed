@@ -1,5 +1,5 @@
 # Django
-django==1.9.13
+django==1.11.6
 dj-database-url==0.4.2
 django-autoslug==1.9.3
 django-storages==1.5.2
@@ -28,7 +28,7 @@ django-pint==0.4
 # API
 djangorestframework==3.4.7
 django-rest-swagger==0.3.8
-django-filter==1.0.0
+django-filter==1.0.4
 docutils==0.14
 
 # Server monitoring
