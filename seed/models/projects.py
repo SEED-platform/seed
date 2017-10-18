@@ -14,17 +14,17 @@ from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization
 from seed.utils.generic import obj_to_dict
 
-PROJECT_NAME_MAX_LENGTH = 255
-
-INACTIVE_STATUS = 0
-ACTIVE_STATUS = 1
-STATUS_CHOICES = (
-    (INACTIVE_STATUS, _('Inactive')),
-    (ACTIVE_STATUS, _('Active')),
-)
-
 
 class Project(TimeStampedModel):
+    PROJECT_NAME_MAX_LENGTH = 255
+
+    INACTIVE_STATUS = 0
+    ACTIVE_STATUS = 1
+    STATUS_CHOICES = (
+        (INACTIVE_STATUS, _('Inactive')),
+        (ACTIVE_STATUS, _('Active')),
+    )
+
     name = models.CharField(_('name'), max_length=PROJECT_NAME_MAX_LENGTH)
     slug = AutoSlugField(
         _('slug'), populate_from='name', unique=True, editable=True

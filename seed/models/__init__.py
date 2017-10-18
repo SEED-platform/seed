@@ -26,5 +26,4 @@ from .projects import (     # noqa
     Project,
     ProjectPropertyView,
     ProjectTaxLotView,
-    STATUS_CHOICES
 )
