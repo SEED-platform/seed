@@ -7,11 +7,11 @@
 from rest_framework import serializers
 
 from seed.models import (
-    Project, ProjectPropertyView, ProjectTaxLotView, STATUS_CHOICES
+    Project, ProjectPropertyView, ProjectTaxLotView
 )
 
 STATUS_LOOKUP = {
-    choice[0]: unicode(choice[1]).lower() for choice in STATUS_CHOICES
+    choice[0]: unicode(choice[1]).lower() for choice in Project.STATUS_CHOICES
 }
 
 

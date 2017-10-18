@@ -9,7 +9,6 @@ import json
 import logging
 import os
 import subprocess
-import uuid
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
@@ -33,14 +32,13 @@ from seed.lib.superperms.orgs.decorators import has_perm
 from seed.lib.superperms.orgs.models import OrganizationUser
 from seed.models import (
     Column,
-    ProjectBuilding,
     get_column_mapping,
 )
 from seed.utils.api import api_endpoint
 from seed.utils.buildings import (
     get_columns as utils_get_columns,
 )
-from seed.utils.cache import get_cache, set_cache
+from seed.utils.cache import get_cache
 from seed.views.users import _get_js_role
 from .. import search
 
@@ -169,157 +167,6 @@ def error500(request):
         )
         response.status_code = 500
         return response
-
-
-@api_endpoint
-@ajax_request
-@login_required
-@api_view(['POST'])
-def export_buildings(request):
-    """
-    Begins a building export process.
-
-    Payload::
-
-        {
-            "export_name": "My Export",
-            "export_type": "csv",
-            "selected_buildings": [1234,], (optional list of building ids)
-            "selected_fields": optional list of fields to export
-            "select_all_checkbox": True // optional, defaults to False
-        }
-
-    Returns::
-
-        {
-            "success": True,
-            "status": "success",
-            "export_id": export_id; see export_buildings_download,
-            "total_buildings": count of buildings,
-        }
-    """
-    body = request.data
-
-    export_name = body.get('export_name')
-    export_type = body.get('export_type')
-
-    selected_fields = body.get('selected_fields', [])
-    selected_building_ids = body.get('selected_buildings', [])
-
-    params = search.parse_body(request)
-
-    project_id = params['project_id']
-
-    buildings_queryset = search.orchestrate_search_filter_sort(
-        params=params,
-        user=request.user,
-        skip_sort=True,
-    )
-
-    if body.get('select_all_checkbox', False):
-        selected_buildings = buildings_queryset
-    else:
-        selected_buildings = buildings_queryset.filter(
-            pk__in=selected_building_ids
-        )
-
-    export_id = str(uuid.uuid4())
-
-    # If we receive a project ID, we don't actually want to export buildings,
-    # we want to export ProjectBuildings -- but the frontend does not know that,
-    # so we change the fieldnames on the backend instead so the exporter can
-    # resolve them correctly
-    if project_id:
-        export_model = 'seed.ProjectBuilding'
-
-        # Grab the project buildings associated with the given project id and
-        # buildings list
-        selected_buildings = ProjectBuilding.objects.filter(
-            project_id=project_id,
-            building_snapshot__in=tuple(
-                selected_buildings.values_list('pk', flat=True)
-            ),  # NOQA
-        )
-
-        # Swap the requested fieldnames to reflect the new point of reference
-        _selected_fields = []
-        for field in selected_fields:
-            components = field.split("__", 1)
-            if (components[0] == 'project_building_snapshots' and len(components) > 1):
-                _selected_fields.append(components[1])
-            else:
-                _selected_fields.append("building_snapshot__%s" % field)
-        selected_fields = _selected_fields
-    else:
-        export_model = 'seed.BuildingSnapshot'
-
-    building_ids = tuple(selected_buildings.values_list('pk', flat=True))
-    progress_key = "export_buildings__%s" % export_id
-    result = {
-        'progress_key': progress_key,
-        'status': 'not-started',
-        'progress': 0,
-        'buildings_processed': 0,
-        'total_buildings': len(building_ids),
-    }
-    set_cache(progress_key, result['status'], result)
-
-    tasks.export_buildings.delay(
-        export_id,
-        export_name,
-        export_type,
-        building_ids,
-        export_model,
-        selected_fields,
-    )
-
-    return JsonResponse({
-        "success": True,
-        "status": "success",
-        'progress': 100,
-        'progress_key': progress_key,
-        "export_id": export_id,
-        "total_buildings": len(building_ids),
-    })
-
-
-@api_endpoint
-@ajax_request
-@login_required
-@api_view(['POST'])
-def export_buildings_progress(request):
-    """
-    Returns current progress on building export process.
-
-    Payload::
-
-        {
-            "export_id": export_id from export_buildings
-        }
-
-    Returns::
-
-        {
-            'success': True,
-            'status': 'success or error',
-            'message': 'error message, if any',
-            'buildings_processed': number of buildings exported
-        }
-    """
-    body = request.data
-    export_id = body.get('export_id')
-    progress_key = "export_buildings__%s" % export_id
-    progress_data = get_cache(progress_key)
-
-    percent_done = progress_data['progress']
-    total_buildings = progress_data['total_buildings']
-
-    return JsonResponse({
-        "success": True,
-        "status": "success",
-        'total_buildings': progress_data['total_buildings'],
-        "buildings_processed": (percent_done / 100) * total_buildings
-    })
 
 
 @api_endpoint

@@ -15,8 +15,7 @@ from seed.views.main import (
     set_default_building_detail_columns,
     get_columns,
     delete_file,
-    public_search, export_buildings,
-    export_buildings_progress,
+    public_search,
     export_buildings_download,
     delete_organization_inventory,
 )
@@ -41,9 +40,6 @@ urlpatterns = [
     url(r'^get_columns/$', get_columns, name='get_columns'),
     url(r'^delete_file/$', delete_file, name='delete_file'),
     url(r'^public_search/$', public_search, name='public_search'),
-    url(r'^export_buildings/$', export_buildings, name='export_buildings'),
-    url(r'^export_buildings/progress/$', export_buildings_progress,
-        name='export_buildings_progress'),
     url(
         r'^export_buildings/download/$',
         export_buildings_download,

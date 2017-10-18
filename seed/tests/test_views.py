@@ -7,7 +7,6 @@
 import json
 from datetime import datetime
 
-from django.core.cache import cache
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.test import TestCase
 from django.utils import timezone
@@ -23,7 +22,6 @@ from seed.models import (
     Cycle,
     FLOAT,
     Property,
-    ProjectBuilding,
     PropertyState,
     PropertyView,
     StatusLabel,
@@ -50,7 +48,6 @@ COLUMNS_TO_SEND = DEFAULT_CUSTOM_COLUMNS + ['postal_code', 'pm_parent_property_i
 
 
 class MainViewTests(TestCase):
-
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -65,47 +62,6 @@ class MainViewTests(TestCase):
     def test_home(self):
         response = self.client.get(reverse('seed:home'))
         self.assertEqual(200, response.status_code)
-
-    # def test_export_buildings(self):
-    #     cb = CanonicalBuilding(active=True)
-    #     cb.save()
-    #     b = SEEDFactory.building_snapshot(canonical_building=cb)
-    #     cb.canonical_snapshot = b
-    #     cb.save()
-    #     b.super_organization = self.org
-    #     b.save()
-    #
-    #     payload = {
-    #         'export_name': 'My Export',
-    #         'export_type': 'csv',
-    #         'selected_buildings': [b.pk]
-    #     }
-    #     response = self.client.post(reverse('api:v1:export_buildings'),
-    #                                 json.dumps(payload),
-    #                                 content_type='application/json')
-    #     self.assertTrue(json.loads(response.content)['success'])
-
-    def test_export_buildings_empty(self):
-        payload = {
-            'export_name': 'My Export',
-            'export_type': 'csv',
-            'selected_buildings': []
-        }
-        response = self.client.post(reverse('api:v1:export_buildings'),
-                                    json.dumps(payload),
-                                    content_type='application/json')
-        self.assertTrue(json.loads(response.content)['success'])
-
-    def test_export_buildings_progress(self):
-        payload = {
-            'export_id': '1234'
-        }
-        cache.set('export_buildings__1234',
-                  {'progress': 85, 'total_buildings': 1, 'status': 'success'})
-        response = self.client.post(reverse('api:v1:export_buildings_progress'),
-                                    json.dumps(payload),
-                                    content_type='application/json')
-        self.assertTrue(json.loads(response.content)['success'])
 
 
 class DefaultColumnsViewTests(TestCase):
@@ -239,7 +195,6 @@ class DefaultColumnsViewTests(TestCase):
 
 
 class GetDatasetsViewsTests(TestCase):
-
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -326,7 +281,6 @@ class GetDatasetsViewsTests(TestCase):
 
 
 class ImportFileViewsTests(TestCase):
-
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -352,7 +306,8 @@ class ImportFileViewsTests(TestCase):
         self.client.login(**user_details)
 
     def test_get_import_file(self):
-        response = self.client.get(reverse('api:v2:import_files-detail', args=[self.import_file.pk]))
+        response = self.client.get(
+            reverse('api:v2:import_files-detail', args=[self.import_file.pk]))
         self.assertEqual(self.import_file.pk,
                          json.loads(response.content)['import_file']['id'])
 
@@ -754,7 +709,6 @@ class TestMCMViews(TestCase):
 
 
 class InventoryViewTests(TestCase):
-
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -783,7 +737,6 @@ class InventoryViewTests(TestCase):
         self.status_label.delete()
         Column.objects.all().delete()
         Property.objects.all().delete()
-        ProjectBuilding.objects.all().delete()
         PropertyState.objects.all().delete()
         PropertyView.objects.all().delete()
         TaxLot.objects.all().delete()

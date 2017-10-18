@@ -128,8 +128,7 @@ describe('Controller: matching_detail_controller', function () {
       $stateParams: {
         cycle_id: 2017,
         inventory_id: 4,
-        inventory_type: 'properties',
-        project_id: 2,
+        inventory_type: 'properties'
         import_file_id: 1,
         state_id: 345,
         importfile_id: 999999
