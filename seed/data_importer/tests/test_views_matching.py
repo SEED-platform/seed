@@ -9,6 +9,7 @@ import json
 import logging
 import os.path as osp
 
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.urlresolvers import reverse
 
 from seed.data_importer import tasks
@@ -38,7 +39,12 @@ class TestViewsMatching(DataMappingBaseTestCase):
         self.fake_mappings = copy.copy(FAKE_MAPPINGS['portfolio'])
         selfvars = self.set_up(ASSESSED_RAW)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
-        self.import_file.load_import_file(osp.join(osp.dirname(__file__), 'data', filename))
+        filepath = osp.join(osp.dirname(__file__), 'data', filename)
+        self.import_file.file = SimpleUploadedFile(
+            name=filename,
+            content=open(filepath, 'rb').read()
+        )
+        self.import_file.save()
         tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
         Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.id)
         tasks.map_data(self.import_file.pk)
@@ -47,7 +53,13 @@ class TestViewsMatching(DataMappingBaseTestCase):
         # import second file that is currently the same, but should be slightly different
         filename_2 = getattr(self, 'filename', 'example-data-properties-small-changes.xlsx')
         _, self.import_file_2 = self.create_import_file(self.user, self.org, self.cycle)
-        self.import_file_2.load_import_file(osp.join(osp.dirname(__file__), 'data', filename_2))
+        filepath = osp.join(osp.dirname(__file__), 'data', filename_2)
+        self.import_file_2.file = SimpleUploadedFile(
+            name=filename_2,
+            content=open(filepath, 'rb').read()
+        )
+        self.import_file_2.save()
+
         tasks._save_raw_data(self.import_file_2.pk, 'fake_cache_key_2', 1)
         Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file_2.id)
         tasks.map_data(self.import_file_2.pk)

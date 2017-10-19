@@ -17,4 +17,3 @@ class DisableClientSideCachingMiddleware(object):
 
         add_never_cache_headers(response)
         return response
-

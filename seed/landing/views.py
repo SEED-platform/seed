@@ -56,21 +56,21 @@ def login_view(request):
                 #     user_accepted_tos = has_user_agreed_latest_tos(new_user)
                 # except NoActiveTermsOfService:
                 #     there's no active ToS, skip interstitial
-                    # user_accepted_tos = True
+                # user_accepted_tos = True
                 #
                 # if user_accepted_tos:
-                    login(request, new_user)
-                    return HttpResponseRedirect(redirect_to)
+                login(request, new_user)
+                return HttpResponseRedirect(redirect_to)
                 # else:
                 #     store login info for django-tos to handle
-                    # request.session['tos_user'] = new_user.pk
-                    # request.session['tos_backend'] = new_user.backend
-                    # context = RequestContext(request)
-                    # context.update({
-                    #     'next': redirect_to,
-                    #     'tos': TermsOfService.objects.get_current_tos()
-                    # })
-                    # return render(request, 'tos/tos_check.html', context)
+                # request.session['tos_user'] = new_user.pk
+                # request.session['tos_backend'] = new_user.backend
+                # context = RequestContext(request)
+                # context.update({
+                #     'next': redirect_to,
+                #     'tos': TermsOfService.objects.get_current_tos()
+                # })
+                # return render(request, 'tos/tos_check.html', context)
             else:
                 errors = ErrorList()
                 errors = form._errors.setdefault(NON_FIELD_ERRORS, errors)
