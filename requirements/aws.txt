@@ -1,6 +1,6 @@
 -r base.txt
-boto==2.47.0
-django-ses==0.4.1
-django-sslify==0.2
+boto==2.48.0
+django-ses==0.8.3.1
+django-sslify==0.2.7
 
 uWSGI==2.0.15
