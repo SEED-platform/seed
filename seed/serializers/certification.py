@@ -294,6 +294,7 @@ class GreenAssessmentURLSerializer(OrgValidateMixin, serializers.ModelSerializer
     org_validators = [ASSESSMENT_PROPERTY_VALIDATOR]
 
     class Meta:
+        fields = '__all__'
         model = GreenAssessmentURL
 
 

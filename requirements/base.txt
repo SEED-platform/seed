@@ -25,7 +25,8 @@ pytz==2012h
 django-pint==0.4
 
 # API
-djangorestframework==3.4.7
+# Do not upgrade to DRF 3.7.x. There are many changes and it seems to break a few things
+djangorestframework==3.6.4
 django-rest-swagger==0.3.8
 django-filter==1.1.0
 docutils==0.14
