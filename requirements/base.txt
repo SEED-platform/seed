@@ -1,5 +1,5 @@
 # Django
-django==1.10.7
+django==1.11.6
 dj-database-url==0.4.2
 django-autoslug==1.9.3
 django-storages==1.6.5
@@ -26,8 +26,8 @@ django-pint==0.4
 
 # API
 # Do not upgrade to DRF 3.7.x. There are many changes and it seems to break a few things
-djangorestframework==3.6.4
-django-rest-swagger==0.3.8
+djangorestframework==3.5.4
+django-rest-swagger==0.3.10
 django-filter==1.1.0
 docutils==0.14
 
