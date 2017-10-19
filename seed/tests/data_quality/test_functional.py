@@ -7,7 +7,6 @@
 import logging
 from os import path
 
-from django.core.files import File
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.urlresolvers import reverse
 from django.test import TestCase
