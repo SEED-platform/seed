@@ -272,8 +272,6 @@ REST_FRAMEWORK = {
     'DATETIME_INPUT_FORMATS': (
         '%Y:%m:%d', 'iso-8601', '%Y-%m-%d'
     ),
-    'VIEW_DESCRIPTION_FUNCTION':
-        'rest_framework_swagger.views.get_restructuredtext',
     'EXCEPTION_HANDLER': 'seed.exception_handler.custom_exception_handler'
 }
 

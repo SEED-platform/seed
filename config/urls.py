@@ -8,6 +8,7 @@ from django.conf import settings
 from django.conf.urls import include, url
 from django.conf.urls.static import static
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from rest_framework_swagger.views import get_swagger_view
 
 from config.views import robots_txt
 from seed.api.base.urls import urlpatterns as api
@@ -25,7 +26,7 @@ urlpatterns = [
     url(r'^robots\.txt', robots_txt, name='robots_txt'),
 
     # API
-    url(r'^api/swagger/', include('rest_framework_swagger.urls'), name='swagger'),
+    url(r'^api/swagger/', get_swagger_view(title='SEED API'), name='swagger'),
     url(r'^api/', include(api, namespace='api')),
 ]
 

@@ -15,5 +15,5 @@ urlpatterns = [
     # add flat urls namespace for non-conforming endpoints, ugh
     url(r'^v1/', include(apiv1, namespace="v1")),
     url(r'^v2/', include(apiv2, namespace="v2")),
-    url(r'^v2\.1/', include(apiv2_1, namespace="v2.1")),
+    url(r'^v2.1/', include(apiv2_1, namespace="v2.1")),
 ]

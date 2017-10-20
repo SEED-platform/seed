@@ -29,7 +29,7 @@ django-pint==0.4
 # the issues are:
 #  - can't set attributes in Mock
 djangorestframework==3.5.4
-django-rest-swagger==0.3.10
+django-rest-swagger==2.1.2
 django-filter==1.1.0
 docutils==0.14
 

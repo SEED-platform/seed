@@ -140,7 +140,7 @@ def handle_s3_upload_complete(request):
     return JsonResponse({'success': True, "import_file_id": f.pk})
 
 
-class LocalUploaderViewSet(viewsets.GenericViewSet):
+class LocalUploaderViewSet(viewsets.ViewSet):
     """
     Endpoint to upload data files to, if uploading to local file storage.
     Valid source_type values are found in ``seed.models.SEED_DATA_SOURCES``
