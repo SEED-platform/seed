@@ -158,16 +158,10 @@ class DefaultColumnsViewTests(TestCase):
         self.assertEqual(data['show_shared_buildings'], False)
 
     def test_get_columns(self):
-        url = reverse_lazy('api:v1:get_columns')
-
         # test building list columns
-        response = self.client.get(
-            url,
-            {
-                'organization_id': self.org.id
-            }
-        )
-
+        response = self.client.get(reverse('api:v1:columns-list'), {
+            'organization_id': self.org.id
+        })
         data = json.loads(response.content)
         self.assertEqual(data['fields'][0], {
             u'checked': False,
@@ -182,13 +176,22 @@ class DefaultColumnsViewTests(TestCase):
         })
 
         # test org settings columns
-        response = self.client.get(
-            url,
-            {
-                'organization_id': self.org.id,
-                'all_fields': 'true'
-            }
-        )
+        response = self.client.get(reverse('api:v1:columns-list'), {
+            'organization_id': self.org.id,
+            'all_fields': 'true'
+        })
+        data = json.loads(response.content)
+        self.assertEqual(data['fields'][0], {
+            "field_type": "building_information",
+            "sortable": True,
+            "title": "Address Line 1",
+            "sort_column": "address_line_1",
+            "link": True,
+            "checked": False,
+            "static": False,
+            "type": "string",
+            "class": "is_aligned_right"
+        })
 
     def tearDown(self):
         self.user.delete()
@@ -640,13 +643,8 @@ class TestMCMViews(TestCase):
             'progress_key': progress_key
         }
         set_cache(progress_key, 'parsing', test_progress)
-        resp = self.client.post(
-            reverse_lazy('api:v2:progress'),
-            data=json.dumps({
-                'progress_key': progress_key,
-            }),
-            content_type='application/json'
-        )
+        resp = self.client.get(reverse('api:v2:progress-detail', args=[progress_key]),
+                               content_type='application/json')
 
         self.assertEqual(resp.status_code, 200)
         body = json.loads(resp.content)

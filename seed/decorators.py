@@ -7,16 +7,15 @@
 import json
 from functools import wraps
 
-from seed.serializers.pint import PintJSONEncoder
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest
 
 from seed.lib.superperms.orgs.models import OrganizationUser
+from seed.serializers.pint import PintJSONEncoder
 from seed.utils.cache import make_key, lock_cache, unlock_cache, get_lock
 
 SEED_CACHE_PREFIX = 'SEED:{0}'
 LOCK_CACHE_PREFIX = SEED_CACHE_PREFIX + ':LOCK'
 PROGRESS_CACHE_PREFIX = SEED_CACHE_PREFIX + ':PROG'
-
 
 FORMAT_TYPES = {
     'application/json': lambda response: json.dumps(response, cls=PintJSONEncoder),
@@ -77,8 +76,8 @@ def lock_and_track(fn, *args, **kwargs):
 
 def ajax_request(func):
     """
-    * Copied from django-annoying, with a small modification. Now we also check for 'status' or 'success' keys and \
-    return correct status codes
+    Copied from django-annoying, with a small modification. Now we also check for 'status' or
+    'success' keys and \ return correct status codes
 
     If view returned serializable dict, returns response in a format requested
     by HTTP_ACCEPT header. Defaults to JSON if none requested or match.
@@ -108,15 +107,13 @@ def ajax_request(func):
         # determine the status code if the object is a dictionary
         status_code = 200
         if isinstance(response, dict):
-            if response.get('status') == 'error' or response.get(
-                    'success') is False:
+            if response.get('status') == 'error' or response.get('success') is False:
                 status_code = 400
 
         # convert the response into an HttpResponse if it is not already.
         if not isinstance(response, HttpResponse):
             data = FORMAT_TYPES[format_type](response)
-            response = HttpResponse(data, content_type=format_type,
-                                    status=status_code)
+            response = HttpResponse(data, content_type=format_type, status=status_code)
             response['content-length'] = len(data)
         return response
 
@@ -156,8 +153,7 @@ def ajax_request_class(func):
         # determine the status code if the object is a dictionary
         status_code = 200
         if isinstance(response, dict):
-            if response.get('status') == 'error' or response.get(
-                    'success') is False:
+            if response.get('status') == 'error' or response.get('success') is False:
                 status_code = 400
 
         # convert the response into an HttpResponse if it is not already.
@@ -194,8 +190,7 @@ def require_organization_id(func):
 
             # NL: I think the error code should be 401: unauthorized, not 400: bad request.
             # Leaving as 400 for now in case this breaks something else.
-            return HttpResponse(json.dumps(message), content_type=format_type,
-                                status=400)
+            return HttpResponse(json.dumps(message), content_type=format_type, status=400)
         else:
             return func(request, *args, **kwargs)
 

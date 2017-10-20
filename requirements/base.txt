@@ -25,7 +25,9 @@ pytz==2012h
 django-pint==0.4
 
 # API
-# Do not upgrade to DRF 3.7.x. There are many changes and it seems to break a few things
+# Do not upgrade to DRF 3.6.x+. There are some changes and it seems to break a few things. So far
+# the issues are:
+#  - can't set attributes in Mock
 djangorestframework==3.5.4
 django-rest-swagger==0.3.10
 django-filter==1.1.0

@@ -61,7 +61,6 @@ TEMPLATES = [
         },
     },
 ]
-
 MIDDLEWARE = (
     'django.middleware.gzip.GZipMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -73,6 +72,7 @@ MIDDLEWARE = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
 )
+
 
 ROOT_URLCONF = 'config.urls'
 
@@ -90,7 +90,6 @@ INSTALLED_APPS = (
     'compressor',
     'django_extensions',
     'raven.contrib.django.raven_compat',
-    # 'tos',
     'django_filters',
     'rest_framework',
     'rest_framework_swagger',

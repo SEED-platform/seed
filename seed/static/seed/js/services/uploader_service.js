@@ -64,9 +64,7 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
      * @param progress_key: progress_key to grab the progress
      */
     uploader_factory.check_progress = function (progress_key) {
-      return $http.post('/api/v2/progress/', {
-        progress_key: progress_key
-      }).then(function (response) {
+      return $http.get('/api/v2/progress/' + progress_key + '/').then(function (response) {
         if (response.data.status === 'error') return $q.reject(response);
         else return response.data;
       });
