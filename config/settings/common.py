@@ -222,8 +222,6 @@ NOSE_PLUGINS = [
 
 # Django 1.5+ way of doing user profiles
 AUTH_USER_MODEL = 'landing.SEEDUser'
-NOSE_ARGS = ['--exclude-dir=libs/dal']
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
