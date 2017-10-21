@@ -10,6 +10,23 @@ The flow:
 
 ## Philosophy
 
+### Don't go crazy with interpolation / indirection
+
+```
+<h2>{$:: inventory_type == 'taxlots' ? translations['INCLUDE_SHARED_TAXLOTS'] : translations['INCLUDE_SHARED_PROPERTIES'] $}</h2>
+```
+
+is way better than
+
+```
+<h3 translate="SOME_KEY"
+    translate-values="{ interpolated_value: some_transform_in_scope(a_variable) }"></h3>
+```
+
+```
+{ "SOME_KEY": "This is a phrase to {$ interpolated_value $}" }
+```
+
 ### English as keys
 
 A missing translation will simply show the "key."
@@ -38,6 +55,15 @@ dupes in the translation file.
 
 
 ## 1. Tag the UI
+
+- django
+  { trans 'SOME_KEY' } and { blocktrans } in templates
+  `_('SOME_KEY')` in python
+- angular
+  - `<h1 translate>SOME_KEY</h1>` (alt. `<h1>{$ 'SOME_KEY' | translate $}</h1>)
+  - `<h1 translate translate-values='{ interpolate: massage(value) }'>SOME_KEY</h1>` // SOME_KEY is "value is {$ interpolate $}"
+  - `<h1>{$:: if true ? translate['KEY1'] : translate['KEY2'] $}</h1>
+
 ## 2. Automatically extract tags
 ## 3. Upload to lokalise.co
 ## 4. Translate
