@@ -15,5 +15,6 @@ lokalise                \
   --export_empty base   \
   --dest $tmp
 
-unzip -o $tmp/SEED_Platform.zip -d $dest
+unzip $tmp/SEED_Platform-locale.zip -d $tmp
+mv $tmp/locale/fr_CA.json $dest
 rm -rf $tmp
