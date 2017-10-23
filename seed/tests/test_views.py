@@ -37,7 +37,7 @@ from seed.test_helpers.fake import (
     FakeTaxLotStateFactory
 )
 from seed.utils.cache import set_cache
-from seed.views.main import (
+from seed.api.v1.views import (
     DEFAULT_CUSTOM_COLUMNS,
 )
 
@@ -90,7 +90,7 @@ class DefaultColumnsViewTests(TestCase):
         self.user.default_custom_columns = columns
         self.user.save()
         columns = ['source_facility_id', 'test_column_0']
-        url = reverse_lazy('api:v1:get_default_columns')
+        url = reverse_lazy('api:v1:columns-get-default-columns')
         response = self.client.get(url)
         json_string = response.content
         data = json.loads(json_string)
@@ -99,7 +99,7 @@ class DefaultColumnsViewTests(TestCase):
         self.assertEqual(data['columns'], columns)
 
     def test_get_default_columns_initial_state(self):
-        url = reverse_lazy('api:v1:get_default_columns')
+        url = reverse_lazy('api:v1:columns-get-default-columns')
         response = self.client.get(url)
         json_string = response.content
         data = json.loads(json_string)
@@ -125,7 +125,7 @@ class DefaultColumnsViewTests(TestCase):
         self.assertEqual(200, response.status_code)
 
         # get the columns
-        url = reverse_lazy('api:v1:get_default_columns')
+        url = reverse_lazy('api:v1:columns-get-default-columns')
         response = self.client.get(url)
         json_string = response.content
         data = json.loads(json_string)

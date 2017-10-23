@@ -11,7 +11,6 @@ from rest_framework import routers
 from seed.api.v1.views import ColumnViewSetV1
 from seed.views.main import (
     search_buildings,
-    get_default_columns,
     set_default_columns,
     get_default_building_detail_columns,
     set_default_building_detail_columns,
@@ -28,7 +27,6 @@ urlpatterns = [
     url(r'^', include(router.urls)),
 
     url(r'^search_buildings/$', search_buildings, name='search_buildings'),
-    url(r'^get_default_columns/$', get_default_columns, name='get_default_columns'),
     url(r'^set_default_columns/$', set_default_columns, name='set_default_columns'),
     url(
         r'^get_default_building_detail_columns/$',
@@ -40,8 +38,6 @@ urlpatterns = [
         set_default_building_detail_columns,
         name='set_default_building_detail_columns'
     ),
-    # url(r'^get_columns/$', get_columns, name='get_columns'),
-    # url(r'^delete_file/$', delete_file, name='delete_file'),
     url(r'^public_search/$', public_search, name='public_search'),
     url(
         r'^export_buildings/download/$',

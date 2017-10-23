@@ -219,7 +219,8 @@ class PropertyViewSet(GenericViewSet):
                 })
 
         property_views_list = PropertyView.objects.select_related('property', 'state', 'cycle') \
-            .filter(property__organization_id=request.query_params['organization_id'], cycle=cycle)
+            .filter(property__organization_id=request.query_params['organization_id'],
+                    cycle=cycle).order_by('id')
 
         paginator = Paginator(property_views_list, per_page)
 
@@ -336,13 +337,16 @@ class PropertyViewSet(GenericViewSet):
             # fix specific time stamps - total hack right now. Need to reconcile with
             # /data_importer/views.py
             if property_dict.get('recent_sale_date'):
-                property_dict['recent_sale_date'] = make_naive(property_dict['recent_sale_date']).isoformat()
+                property_dict['recent_sale_date'] = make_naive(
+                    property_dict['recent_sale_date']).isoformat()
 
             if property_dict.get('release_date'):
-                property_dict['release_date'] = make_naive(property_dict['release_date']).isoformat()
+                property_dict['release_date'] = make_naive(
+                    property_dict['release_date']).isoformat()
 
             if property_dict.get('generation_date'):
-                property_dict['generation_date'] = make_naive(property_dict['generation_date']).isoformat()
+                property_dict['generation_date'] = make_naive(
+                    property_dict['generation_date']).isoformat()
 
             response['results'].append(property_dict)
 

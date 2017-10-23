@@ -37,14 +37,6 @@ from seed.utils.api import api_endpoint
 from seed.views.users import _get_js_role
 from .. import search
 
-DEFAULT_CUSTOM_COLUMNS = [
-    'project_id',
-    'project_building_snapshots__status_label__name',
-    'address_line_1',
-    'city',
-    'state_province',
-]
-
 _log = logging.getLogger(__name__)
 
 
@@ -334,33 +326,6 @@ def search_buildings(request):
         'buildings': buildings,
         'number_matching_search': building_count,
         'number_returned': len(buildings)
-    })
-
-
-@ajax_request
-@login_required
-@api_view(['GET'])
-def get_default_columns(request):
-    """Get default columns for building list view.
-
-    front end is expecting a JSON object with an array of field names
-
-    Returns::
-
-        {
-            "columns": ["project_id", "name", "gross_floor_area"]
-        }
-    """
-    columns = request.user.default_custom_columns
-
-    if columns == '{}' or isinstance(columns, dict):
-        columns = DEFAULT_CUSTOM_COLUMNS
-    if isinstance(columns, unicode):
-        # PostgreSQL 9.1 stores JSONField as unicode
-        columns = json.loads(columns)
-
-    return JsonResponse({
-        'columns': columns,
     })
 
 

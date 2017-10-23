@@ -4,15 +4,14 @@
 :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-import datetime
 
 from django.db.models import Q
+
 from seed import models
-from seed.models import ASSESSED_RAW, BuildingSnapshot
 from seed import search
-from seed.utils import time
-from seed.utils.mapping import get_mappable_types
+from seed.models import ASSESSED_RAW, BuildingSnapshot
 from seed.utils.constants import ASSESSOR_FIELDS_BY_COLUMN
+from seed.utils.mapping import get_mappable_types
 from seed.utils.strings import titlecase
 
 
@@ -25,23 +24,6 @@ def get_source_type(import_file, source_type=''):
     source_type_str = source_type_str.upper().replace(' ', '_')
 
     return getattr(models, source_type_str, ASSESSED_RAW)
-
-
-def serialize_building_snapshot(b, pm_cb, building):
-    """returns a dict that's safe to JSON serialize"""
-    b_as_dict = b.__dict__.copy()
-    for key, val in b_as_dict.items():
-        if isinstance(val, datetime.datetime) or isinstance(val, datetime.date):
-            b_as_dict[key] = time.convert_to_js_timestamp(val)
-    del(b_as_dict['_state'])
-    # check if they're matched
-    if b.canonical_building == pm_cb:
-        b_as_dict['matched'] = True
-    else:
-        b_as_dict['matched'] = False
-    if '_canonical_building_cache' in b_as_dict:
-        del(b_as_dict['_canonical_building_cache'])
-    return b_as_dict
 
 
 def get_buildings_for_user_count(user):
