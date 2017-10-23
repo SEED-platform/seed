@@ -705,11 +705,11 @@ class DataQualityCheck(models.Model):
         # objects instead of object of objects.
         existing_results = get_cache_raw(DataQualityCheck.cache_key(identifier)) or []
 
-        l = []
+        results = []
         for key, value in self.results.items():
-            l.append(value)
+            results.append(value)
 
-        existing_results += l
+        existing_results += results
 
         z = sorted(existing_results, key=lambda k: k['id'])
         set_cache_raw(DataQualityCheck.cache_key(identifier), z, 86400)  # 24 hours

@@ -121,7 +121,7 @@ class TaxLotViewSet(GenericViewSet):
         }
 
         # Ids of taxlotviews to look up in m2m
-        lot_ids = [l.pk for l in taxlot_views]
+        lot_ids = [taxlot_dict.pk for taxlot_dict in taxlot_views]
         joins = TaxLotProperty.objects.filter(taxlot_view_id__in=lot_ids).select_related(
             'property_view')
 
@@ -215,7 +215,7 @@ class TaxLotViewSet(GenericViewSet):
 
         for lot in taxlot_views:
             # Each object in the response is built from the state data, with related data added on.
-            l = model_to_dict(lot.state, exclude=['extra_data'])
+            taxlot_dict = model_to_dict(lot.state, exclude=['extra_data'])
 
             for extra_data_field, extra_data_value in lot.state.extra_data.items():
                 if extra_data_field == 'id':
@@ -226,18 +226,18 @@ class TaxLotViewSet(GenericViewSet):
                     extra_data_field += '_extra'
 
                 # save to dictionary
-                l[extra_data_field] = extra_data_value
+                taxlot_dict[extra_data_field] = extra_data_value
 
             # Use taxlot_id instead of default (state_id)
-            l['id'] = lot.taxlot_id
+            taxlot_dict['id'] = lot.taxlot_id
 
-            l['taxlot_state_id'] = lot.state.id
-            l['taxlot_view_id'] = lot.id
+            taxlot_dict['taxlot_state_id'] = lot.state.id
+            taxlot_dict['taxlot_view_id'] = lot.id
 
             # All the related property states.
-            l['related'] = join_map.get(lot.pk, [])
+            taxlot_dict['related'] = join_map.get(lot.pk, [])
 
-            response['results'].append(l)
+            response['results'].append(taxlot_dict)
 
         return JsonResponse(response, encoder=PintJSONEncoder)
 

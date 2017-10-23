@@ -248,7 +248,7 @@ class PropertyViewSet(GenericViewSet):
         }
 
         # Ids of propertyviews to look up in m2m
-        prop_ids = [p.pk for p in property_views]
+        prop_ids = [property_dict.pk for property_dict in property_views]
         joins = TaxLotProperty.objects.filter(property_view_id__in=prop_ids)
 
         # Get all ids of tax lots on these joins
@@ -262,7 +262,7 @@ class PropertyViewSet(GenericViewSet):
         db_columns = Column.retrieve_db_fields()
         for lot in taxlot_views:
             # Each object in the response is built from the state data, with related data added on.
-            l = model_to_dict(lot.state, exclude=['extra_data'])
+            model_to_dict(lot.state, exclude=['extra_data'])
 
             for extra_data_field, extra_data_value in lot.state.extra_data.items():
                 if extra_data_field == 'id':
@@ -274,8 +274,8 @@ class PropertyViewSet(GenericViewSet):
 
         taxlot_map = {}
         for taxlot_view in taxlot_views:
-            l = model_to_dict(taxlot_view.state, exclude=['extra_data'])
-            l['taxlot_state_id'] = taxlot_view.state.id
+            taxlot_dict = model_to_dict(taxlot_view.state, exclude=['extra_data'])
+            taxlot_dict['taxlot_state_id'] = taxlot_view.state.id
 
             # Add extra data fields right to this object.
             for extra_data_field, extra_data_value in taxlot_view.state.extra_data.items():
@@ -285,14 +285,14 @@ class PropertyViewSet(GenericViewSet):
                 while extra_data_field in db_columns:
                     extra_data_field += '_extra'
 
-                l[extra_data_field] = extra_data_value
+                taxlot_dict[extra_data_field] = extra_data_value
 
             # Only return the requested rows. speeds up the json string time.
             # The front end requests for related columns have 'tax_' prepended to them, so check
             # for that too.
-            l = {key: value for key, value in l.items() if (key in columns) or
-                 ("tax_{}".format(key) in columns)}
-            taxlot_map[taxlot_view.pk] = l
+            taxlot_dict = {key: value for key, value in taxlot_dict.items() if (key in columns) or
+                           ("tax_{}".format(key) in columns)}
+            taxlot_map[taxlot_view.pk] = taxlot_dict
             # Replace taxlot_view id with taxlot id
             taxlot_map[taxlot_view.pk]['id'] = taxlot_view.taxlot.id
 
@@ -311,7 +311,7 @@ class PropertyViewSet(GenericViewSet):
 
         for prop in property_views:
             # Each object in the response is built from the state data, with related data added on.
-            p = model_to_dict(prop.state, exclude=['extra_data'])
+            property_dict = model_to_dict(prop.state, exclude=['extra_data'])
 
             for extra_data_field, extra_data_value in prop.state.extra_data.items():
                 if extra_data_field == 'id':
@@ -320,31 +320,31 @@ class PropertyViewSet(GenericViewSet):
                 while extra_data_field in db_columns:
                     extra_data_field += '_extra'
 
-                p[extra_data_field] = extra_data_value
+                property_dict[extra_data_field] = extra_data_value
 
             # Use property_id instead of default (state_id)
-            p['id'] = prop.property_id
+            property_dict['id'] = prop.property_id
 
-            p['property_state_id'] = prop.state.id
-            p['property_view_id'] = prop.id
+            property_dict['property_state_id'] = prop.state.id
+            property_dict['property_view_id'] = prop.id
 
-            p['campus'] = prop.property.campus
+            property_dict['campus'] = prop.property.campus
 
             # All the related tax lot states.
-            p['related'] = join_map.get(prop.pk, [])
+            property_dict['related'] = join_map.get(prop.pk, [])
 
             # fix specific time stamps - total hack right now. Need to reconcile with
             # /data_importer/views.py
-            if p.get('recent_sale_date'):
-                p['recent_sale_date'] = make_naive(p['recent_sale_date']).isoformat()
+            if property_dict.get('recent_sale_date'):
+                property_dict['recent_sale_date'] = make_naive(property_dict['recent_sale_date']).isoformat()
 
-            if p.get('release_date'):
-                p['release_date'] = make_naive(p['release_date']).isoformat()
+            if property_dict.get('release_date'):
+                property_dict['release_date'] = make_naive(property_dict['release_date']).isoformat()
 
-            if p.get('generation_date'):
-                p['generation_date'] = make_naive(p['generation_date']).isoformat()
+            if property_dict.get('generation_date'):
+                property_dict['generation_date'] = make_naive(property_dict['generation_date']).isoformat()
 
-            response['results'].append(p)
+            response['results'].append(property_dict)
 
         return JsonResponse(response, encoder=PintJSONEncoder)
 
