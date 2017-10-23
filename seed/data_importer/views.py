@@ -1796,3 +1796,46 @@ class ImportFileViewSet(viewsets.ViewSet):
         result = _mapping_suggestions(pk, org_id, request.user)
 
         return JsonResponse(result)
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_member')
+    def destroy(self, request, pk):
+        """
+        Returns suggested mappings from an uploaded file's headers to known
+        data fields.
+        ---
+        type:
+            status:
+                required: true
+                type: string
+                description: Either success or error
+        parameter_strategy: replace
+        parameters:
+            - name: pk
+              description: import_file_id
+              required: true
+              paramType: path
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+
+        """
+        org_id = request.query_params.get('organization_id', None)
+        import_file = ImportFile.objects.get(pk=pk)
+
+        # check if the import record exists for the file and organization
+        d = ImportRecord.objects.filter(
+            super_organization_id=org_id,
+            pk=import_file.import_record.pk
+        )
+
+        if not d.exists():
+            return JsonResponse({
+                'status': 'error',
+                'message': 'user does not have permission to delete file',
+            }, status=status.HTTP_403_FORBIDDEN)
+
+        import_file.delete()
+        return JsonResponse({'status': 'success'})

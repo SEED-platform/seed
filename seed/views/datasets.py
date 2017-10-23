@@ -4,10 +4,10 @@
 :author
 """
 
-from django.utils import timezone
 import logging
 
 from django.http import JsonResponse
+from django.utils import timezone
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.authentication import SessionAuthentication
@@ -104,7 +104,8 @@ class DatasetViewSet(viewsets.ViewSet):
 
         organization_id = request.query_params.get('organization_id', None)
         if organization_id is None:
-            return JsonResponse({'status': 'error', 'message': 'Missing organization_id query parameter'})
+            return JsonResponse(
+                {'status': 'error', 'message': 'Missing organization_id query parameter'})
         try:
             organization_id = int(organization_id)
         except ValueError:
@@ -160,8 +161,9 @@ class DatasetViewSet(viewsets.ViewSet):
 
         organization_id = request.query_params.get('organization_id', None)
         if organization_id is None:
-            return JsonResponse({'status': 'error', 'message': 'Missing organization_id query parameter'},
-                                status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse(
+                {'status': 'error', 'message': 'Missing organization_id query parameter'},
+                status=status.HTTP_400_BAD_REQUEST)
         try:
             organization_id = int(organization_id)
         except ValueError:
@@ -240,8 +242,7 @@ class DatasetViewSet(viewsets.ViewSet):
         """
 
         # body = request.data
-        organization_id = int(
-            request.query_params.get('organization_id', None))
+        organization_id = int(request.query_params.get('organization_id', None))
         dataset_id = pk
         # check if user has access to the dataset
         d = ImportRecord.objects.filter(

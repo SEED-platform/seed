@@ -34,7 +34,6 @@ from seed.models import (
     get_column_mapping,
 )
 from seed.utils.api import api_endpoint
-from seed.utils.cache import get_cache
 from seed.views.users import _get_js_role
 from .. import search
 
@@ -537,27 +536,6 @@ def delete_file(request):
 
     import_file.delete()
     return JsonResponse({'status': 'success'})
-
-
-@api_endpoint
-@ajax_request
-@login_required
-@api_view(['POST'])
-def progress(request):
-    """
-
-    """
-
-    progress_key = request.data.get('progress_key')
-
-    if get_cache(progress_key):
-        return JsonResponse(get_cache(progress_key))
-    else:
-        return JsonResponse({
-            'progress_key': progress_key,
-            'progress': 0,
-            'status': 'waiting'
-        })
 
 
 @api_endpoint

@@ -315,15 +315,10 @@ class ImportFileViewsTests(TestCase):
                          json.loads(response.content)['import_file']['id'])
 
     def test_delete_file(self):
-        post_data = {
-            'file_id': self.import_file.pk,
-            'organization_id': self.org.pk
-        }
-
+        url = reverse("api:v2:import_files-detail", args=[self.import_file.pk])
         response = self.client.delete(
-            reverse_lazy('api:v1:delete_file'),
+            url + '?organization_id=' + str(self.org.pk),
             content_type='application/json',
-            data=json.dumps(post_data)
         )
         self.assertEqual('success', json.loads(response.content)['status'])
         self.assertFalse(
