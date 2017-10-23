@@ -240,8 +240,6 @@ class DatasetViewSet(viewsets.ViewSet):
                   required: true
                   paramType: path
         """
-
-        # body = request.data
         organization_id = int(request.query_params.get('organization_id', None))
         dataset_id = pk
         # check if user has access to the dataset

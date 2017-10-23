@@ -348,8 +348,6 @@ class PropertyViewSet(GenericViewSet):
 
         return JsonResponse(response, encoder=PintJSONEncoder)
 
-    # @require_organization_id
-    # @require_organization_membership
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
@@ -377,8 +375,6 @@ class PropertyViewSet(GenericViewSet):
         """
         return self._get_filtered_results(request, columns=[])
 
-    # @require_organization_id
-    # @require_organization_membership
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
@@ -473,8 +469,6 @@ class PropertyViewSet(GenericViewSet):
         taxlot_id = int(request.query_params.get('taxlot_id'))
         return pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, False)
 
-    # @require_organization_id
-    # @require_organization_membership
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
