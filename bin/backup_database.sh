@@ -26,5 +26,5 @@ echo "pg_dump -U ${DB_USERNAME} -Fc ${DB_NAME} > $(file_name)"
 pg_dump -U ${DB_USERNAME} -Fc ${DB_NAME} > $(file_name)
 unset PGPASSWORD
 
-# Delete files older than 30 days
-find ${BACKUP_DIR} -mtime +30 -type f -name '*.sql' -delete
+# Delete files older than 45 days
+find ${BACKUP_DIR} -mtime +45 -type f -name '*.dump' -delete
