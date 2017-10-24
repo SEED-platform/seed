@@ -33,13 +33,6 @@ class TestExporters(TestCase):
             b.save()
             self.snapshots.append(b)
 
-    def test_data_model_assumptions(self):
-        """
-        Some parts of export make certain assumptions about the data model,
-        this test ensures that those assumptions are true.
-        """
-        self.assertTrue(hasattr(BuildingSnapshot, 'project_building_snapshots'))
-
     def test_csv_export(self):
         """Ensures exported CSV data matches source data"""
         qs_filter = {"pk__in": [x.pk for x in self.snapshots]}
@@ -49,16 +42,16 @@ class TestExporters(TestCase):
         exporter = Exporter(export_id, 'test_export', 'csv')
 
         fields = list(Exporter.fields_from_queryset(qs))
-        raw = ['owner_address', 'owner_postal_code', 'owner_email', 'postal_code', 'occupied_floor_area',
-               'custom_id_1', 'extra_data', 'state_province', 'tax_lot_id', 'address_line_2',
-               'address_line_1', 'lot_number', 'year_ending', 'property_notes', 'generation_date',
-               'energy_alerts', 'space_alerts', 'site_eui_weather_normalized', 'created', 'energy_score',
-               'block_number', 'building_count', 'owner', 'source_eui', 'extra_data_sources', 'city',
-               'confidence', 'district', 'best_guess_confidence', 'site_eui', 'building_certification',
-               'modified', 'match_type', 'source_eui_weather_normalized', u'id', 'property_name',
-               'conditioned_floor_area', 'pm_property_id', 'use_description', 'source_type', 'year_built',
-               'release_date', 'gross_floor_area', 'owner_city_state', 'owner_telephone',
-               'recent_sale_date']
+        raw = ['owner_address', 'owner_postal_code', 'owner_email', 'postal_code',
+               'occupied_floor_area', 'custom_id_1', 'extra_data', 'state_province', 'tax_lot_id',
+               'address_line_2', 'address_line_1', 'lot_number', 'year_ending', 'property_notes',
+               'generation_date', 'energy_alerts', 'space_alerts', 'site_eui_weather_normalized',
+               'created', 'energy_score', 'block_number', 'building_count', 'owner', 'source_eui',
+               'extra_data_sources', 'city', 'confidence', 'district', 'best_guess_confidence',
+               'site_eui', 'building_certification', 'modified', 'match_type',
+               'source_eui_weather_normalized', u'id', 'property_name', 'conditioned_floor_area',
+               'pm_property_id', 'use_description', 'source_type', 'year_built', 'release_date',
+               'gross_floor_area', 'owner_city_state', 'owner_telephone', 'recent_sale_date']
         self.assertItemsEqual(fields, raw)
 
         fields.append("canonical_building__id")

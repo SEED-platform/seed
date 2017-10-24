@@ -14,7 +14,7 @@ describe('Controller: menu_controller', function () {
   // 'config.seed' is created in TestFilters.html
   beforeEach(function () {
     module('BE.seed');
-    inject(function ($controller, $rootScope, $uibModal, urls, $q, project_service, organization_service, user_service, dataset_service, spinner_utility) {
+    inject(function ($controller, $rootScope, $uibModal, urls, $q, organization_service, user_service, dataset_service, spinner_utility) {
       controller = $controller;
       menu_controller_scope = $rootScope.$new();
       menu_controller_scope.inventory_type = 'properties';
@@ -53,7 +53,6 @@ describe('Controller: menu_controller', function () {
         cycle_id: 2017,
         inventory_id: 4,
         inventory_type: 'properties',
-        project_id: 2,
         import_file_id: 1
       }
     });

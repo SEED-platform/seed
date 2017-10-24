@@ -1,20 +1,19 @@
 # Django
-django==1.9.13
+django==1.11.6
 dj-database-url==0.4.2
 django-autoslug==1.9.3
-django-storages==1.5.2
+django-storages==1.6.5
 modeltranslation==0.25
--e git+https://github.com/revsys/django-tos.git#egg=django_tos-master
 
 # Persistence stores
-psycopg2==2.7.1
+psycopg2==2.7.3.1
 
 # background process management
-celery==4.0.2
+celery==4.1.0
 django-redis-cache==1.7.1
-django_compressor==2.1.1
-django-extensions==1.7.9
-redis==2.10.5
+django_compressor==2.2
+django-extensions==1.9.6
+redis==2.10.6
 
 # Time zones support
 # Do NOT upgrade pytz. Newer versions will not create allow user to construct a datetime with
@@ -26,22 +25,25 @@ pytz==2012h
 django-pint==0.4
 
 # API
-djangorestframework==3.4.7
-django-rest-swagger==0.3.10
-django-filter==1.0.0
+# Do not upgrade to DRF 3.6.x+. There are some changes and it seems to break a few things. So far
+# the issues are:
+#  - can't set attributes in Mock
+djangorestframework==3.5.4
+django-rest-swagger==2.1.2
+django-filter==1.1.0
 docutils==0.14
 
 # Server monitoring
-raven==6.1.0
+raven==6.2.1
 
 # Various packages
 jellyfish==0.5.6
-Markdown==2.6.7
-python-dateutil==2.6.0
+Markdown==2.6.9
+python-dateutil==2.6.1
 street-address==0.3.0
 unicodecsv==0.14.1
-unidecode==0.4.20
+unidecode==0.4.21
 usaddress==0.5.10
-xlwt==1.2.0
-xlrd==1.0.0
+xlwt==1.3.0
+xlrd==1.1.0
 xmltodict==0.11.0

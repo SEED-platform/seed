@@ -141,11 +141,14 @@
                         <th sd-resizable width="120" ng-if="::inventory_type==='properties'">Tax Lot ID</th>
                         <th sd-resizable width="120" ng-if="::inventory_type==='taxlots'">PM Property ID</th>
                         <th sd-resizable class="ellipsis-resizable">Address Line 1</th>
+                        <th ng-if="::inventory_type==='taxlots'" sd-resizable class="ellipsis-resizable">Custom ID 1</th>
                     </tr>
                 </thead>
                 <tbody ng-if="::inventory_type==='properties'">
                     <tr ng-repeat="taxlot in ::inventory.related">
-                        <td> {$:: taxlot.state.jurisdiction_tax_lot_id $}</td>
+                        <td>
+                            <a ui-sref="inventory_detail(::{inventory_type: 'taxlots', inventory_id: taxlot.taxlot.id, cycle_id: cycle.id})">{$:: taxlot.state.jurisdiction_tax_lot_id $}</a>
+                        </td>
                         <td>
                             <a ui-sref="inventory_detail(::{inventory_type: 'taxlots', inventory_id: taxlot.taxlot.id, cycle_id: cycle.id})">{$:: taxlot.state.address_line_1 ? taxlot.state.address_line_1 : '(no address 1)' $}</a>
                         </td>
@@ -153,9 +156,14 @@
                 </tbody>
                 <tbody ng-if="::inventory_type==='taxlots'">
                     <tr ng-repeat="property in ::inventory.related">
-                        <td> {$:: property.state.pm_property_id $}</td>
+                        <td>
+                            <a ui-sref="inventory_detail(::{inventory_type: 'properties', inventory_id: property.property.id, cycle_id: cycle.id})">{$:: property.state.pm_property_id $}</a>
+                        </td>
                         <td>
                             <a ui-sref="inventory_detail(::{inventory_type: 'properties', inventory_id: property.property.id, cycle_id: cycle.id})">{$:: property.state.address_line_1 ? property.state.address_line_1 : '(no address 1)' $}</a>
+                        </td>
+                        <td>
+                            <a ui-sref="inventory_detail(::{inventory_type: 'properties', inventory_id: property.property.id, cycle_id: cycle.id})">{$:: property.state.custom_id_1 ? property.state.custom_id_1 : '(no custom id 1)' $}</a>
                         </td>
                     </tr>
                 </tbody>

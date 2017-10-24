@@ -48,7 +48,6 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.delete_file_modal',
   'BE.seed.controller.delete_modal',
   'BE.seed.controller.developer',
-  'BE.seed.controller.edit_project_modal',
   'BE.seed.controller.export_inventory_modal',
   'BE.seed.controller.inventory_detail',
   'BE.seed.controller.inventory_detail_settings',
@@ -70,7 +69,6 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.pairing',
   'BE.seed.controller.pairing_settings',
   'BE.seed.controller.profile',
-  'BE.seed.controller.project',
   'BE.seed.controller.security',
   'BE.seed.controller.unmerge_modal',
   'BE.seed.controller.update_item_labels_modal'
@@ -111,7 +109,6 @@ angular.module('BE.seed.services', [
   'BE.seed.service.matching',
   'BE.seed.service.organization',
   'BE.seed.service.pairing',
-  'BE.seed.service.project',
   'BE.seed.service.search',
   'BE.seed.service.simple_modal',
   'BE.seed.service.uploader',
@@ -269,105 +266,6 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }]
         }
       })
-      // .state({
-      //   name: 'projects',
-      //   url: '/projects',
-      //   templateUrl: static_url + 'seed/partials/projects.html',
-      //   controller: 'project_list_controller',
-      //   resolve: {
-      //     projects_payload: ['project_service', function (project_service) {
-      //       return project_service.get_projects();
-      //     }]
-      //   }
-      // })
-      // .state({
-      //   name: 'project_detail',
-      //   url: '/projects/{project_id:int}',
-      //   templateUrl: static_url + 'seed/partials/project_detail.html',
-      //   controller: 'building_list_controller',
-      //   resolve: {
-      //     search_payload: ['building_services', '$state', '$stateParams', function (building_services, $state, $stateParams) {
-      //       var orderBy = '';
-      //       var sortReverse = false;
-      //       var params = angular.copy($stateParams);
-      //       var q = params.q || '';
-      //       var numberPerPage = 10;
-      //       var project_slug = params.project_id;
-      //       var pageNumber = 1;
-      //       delete params.project_id;
-      //       params.project__slug = project_slug;
-      //
-      //       // Check session storage for order, sort, and filter values.
-      //       if (!_.isUndefined(Storage)) {
-      //
-      //         // set the prefix to the specific project. This fixes
-      //         // the issue where the filter was not persisting.
-      //         var prefix = _.replace($state.current.url, ':project_id', project_slug);
-      //         if (sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy') !== null) {
-      //           orderBy = sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy');
-      //         }
-      //         if (sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse') !== null) {
-      //           sortReverse = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse'));
-      //         }
-      //         if (sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams') !== null) {
-      //           params = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams'));
-      //         }
-      //         if (sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage') !== null) {
-      //           numberPerPage = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingNumberPerPage'));
-      //         }
-      //         if (sessionStorage.getItem(prefix + ':' + 'seedBuildingPageNumber') !== null) {
-      //           pageNumber = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingPageNumber'));
-      //         }
-      //       }
-      //       // params: (query_string, number_per_page, page_number, order_by, sort_reverse, filter_params, project_id, project_slug)
-      //       return building_services.search_buildings(q, numberPerPage, pageNumber, orderBy, sortReverse, params, null, project_slug);
-      //     }],
-      //     default_columns: ['user_service', function (user_service) {
-      //       return user_service.get_default_columns();
-      //     }],
-      //     all_columns: ['building_services', '$stateParams', function (building_services, $stateParams) {
-      //       var params = angular.copy($stateParams);
-      //       var project_slug = params.project_id;
-      //       return building_services.get_columns();
-      //     }],
-      //     project_payload: ['$stateParams', 'project_service', function ($stateParams, project_service) {
-      //       var params = angular.copy($stateParams);
-      //       var project_slug = params.project_id;
-      //       return project_service.get_project(project_slug);
-      //     }]
-      //   }
-      // })
-      // .state({
-      //   name: 'project_settings',
-      //   url: '/projects/{project_id:int}/settings',
-      //   templateUrl: static_url + 'seed/partials/project_settings.html',
-      //   controller: 'buildings_settings_controller',
-      //   resolve: {
-      //     all_columns: ['building_services', function (building_services) {
-      //       return building_services.get_columns();
-      //     }],
-      //     default_columns: ['user_service', function (user_service) {
-      //       return user_service.get_default_columns();
-      //     }],
-      //     shared_fields_payload: ['user_service', function (user_service) {
-      //       return user_service.get_shared_buildings();
-      //     }],
-      //     $uibModalInstance: function () {
-      //       return {
-      //         close: function () {
-      //         }
-      //       };
-      //     },
-      //     project_payload: ['$stateParams', 'project_service', function ($stateParams, project_service) {
-      //       var params = angular.copy($stateParams);
-      //       var project_slug = params.project_id;
-      //       return project_service.get_project(project_slug);
-      //     }],
-      //     building_payload: function () {
-      //       return {building: {}};
-      //     }
-      //   }
-      // })
       .state({
         name: 'reports',
         url: '/{inventory_type:properties|taxlots}/reports',

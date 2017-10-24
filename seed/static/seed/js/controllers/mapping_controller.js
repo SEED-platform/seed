@@ -461,6 +461,35 @@ angular.module('BE.seed.controller.mapping', [])
         return mappings;
       };
 
+      /**
+       * reset_mappings
+       * Ignore suggestions and set all seed data headers to the headers from the original import file
+       */
+      $scope.reset_mappings = function () {
+        _.forEach($scope.valids, function (tcm) {
+          var changed = false;
+          if (tcm.suggestion !== tcm.name) {
+            tcm.suggestion = tcm.name;
+            changed = true;
+          }
+          if (tcm.suggestion_table_name !== 'PropertyState') {
+            tcm.suggestion_table_name = 'PropertyState';
+            changed = true;
+          }
+          if (changed) $scope.change(tcm, true);
+        });
+      };
+
+      /**
+       * check_reset_mappings
+       * Return true if the mappings match the original import file
+       */
+      $scope.check_reset_mappings = function () {
+        return _.every($scope.valids, function (tcm) {
+          return tcm.suggestion === tcm.name && tcm.suggestion_table_name === 'PropertyState';
+        });
+      };
+
       // As far as I can tell, this is never used.
       // /**
       //  * show_mapping_progress: shows the progress bar and kicks off the mapping,

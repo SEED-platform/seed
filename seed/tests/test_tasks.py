@@ -7,7 +7,7 @@
 import logging
 from os import path
 
-from django.core.files import File
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 
 from seed import tasks
@@ -26,18 +26,15 @@ class TestTasks(TestCase):
         self.import_record = ImportRecord.objects.create(
             owner=self.fake_user, last_modified_by=self.fake_user
         )
+
+        filepath = path.join(path.dirname(__file__), 'data', 'portfolio-manager-sample.csv')
         self.import_file = ImportFile.objects.create(
-            import_record=self.import_record
+            import_record=self.import_record,
+            source_type='PORTFOLIO_RAW',
         )
-        self.import_file.source_type = 'PORTFOLIO_RAW'
-        self.import_file.file = File(
-            open(
-                path.join(
-                    path.dirname(__file__),
-                    'data',
-                    'portfolio-manager-sample.csv'
-                )
-            )
+        self.import_file.file = SimpleUploadedFile(
+            name='portfolio-manager-sample.csv',
+            content=open(filepath, 'rb').read()
         )
         self.import_file.save()
 
@@ -106,8 +103,7 @@ class TestTasks(TestCase):
         self.assertFalse(
             ImportFile.objects.filter(pk=self.import_file.pk).exists())
 
-    def test_delete_organization_doesnt_delete_user_if_multiple_memberships(
-            self):
+    def test_delete_organization_doesnt_delete_user_if_multiple_memberships(self):
         """
         Deleting an org should not delete the orgs users if the user belongs to many orgs.
         """

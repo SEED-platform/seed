@@ -147,8 +147,7 @@ describe('controller: inventory_detail_controller', function () {
       $stateParams: {
         cycle_id: 2017,
         inventory_id: 4,
-        inventory_type: 'taxlots',
-        project_id: 2
+        inventory_type: 'taxlots'
       },
       $log: ngLog,
       $filter: ngFilter,

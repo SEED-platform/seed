@@ -459,6 +459,9 @@ class FakeGreenAssessmentPropertyFactory(BaseFake):
             )
         details = self.get_details(assessment, property_view, organization)
         details.update(kw)
+        # remove the organization because it is not a valid field
+        details.pop('organization', None)
+
         gap = GreenAssessmentProperty.objects.create(**details)
         if urls:
             for url in urls:

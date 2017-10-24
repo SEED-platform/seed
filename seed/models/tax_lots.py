@@ -316,21 +316,21 @@ class TaxLotView(models.Model):
 class TaxLotAuditLog(models.Model):
     organization = models.ForeignKey(Organization)
     parent1 = models.ForeignKey('TaxLotAuditLog', blank=True, null=True,
-                                related_name='taxlotauditlog__parent1')
+                                related_name='taxlotauditlog_parent1')
     parent2 = models.ForeignKey('TaxLotAuditLog', blank=True, null=True,
-                                related_name='taxlotauditlog__parent2')
+                                related_name='taxlotauditlog_parent2')
 
     # store the parent states as well so that we can quickly return which state is associated
     # with the parents of the audit log without having to query the parent audit log to grab
     # the state
     parent_state1 = models.ForeignKey(TaxLotState, blank=True, null=True,
-                                      related_name='taxlotauditlog__parent_state1')
+                                      related_name='taxlotauditlog_parent_state1')
     parent_state2 = models.ForeignKey(TaxLotState, blank=True, null=True,
-                                      related_name='taxlotauditlog__parent_state2')
+                                      related_name='taxlotauditlog_parent_state2')
 
     state = models.ForeignKey('TaxLotState',
-                              related_name='taxlotauditlog__state')
-    view = models.ForeignKey('TaxLotView', related_name='taxlotauditlog__view',
+                              related_name='taxlotauditlog_state')
+    view = models.ForeignKey('TaxLotView', related_name='taxlotauditlog_view',
                              null=True)
     name = models.CharField(max_length=255, null=True, blank=True)
     description = models.TextField(null=True, blank=True)

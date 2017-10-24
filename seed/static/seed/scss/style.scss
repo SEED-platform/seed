@@ -992,9 +992,6 @@ a:not([href]) {
           .subtitle {
             color: lighten($gray, 20%);
           }
-          &.project_name {
-            width: 300px;
-          }
           &.compliance-check {
             .checkbox {
               margin-top: 0;
@@ -1530,19 +1527,6 @@ a:not([href]) {
       }
       &.has_no_padding {
         padding: 0;
-      }
-    }
-
-    .add_project_container {
-      margin: 12px;
-
-      .form-group {
-        margin-left: 0;
-        margin-right: 0;
-
-        &.submit {
-          margin-top: 30px;
-        }
       }
     }
   }
@@ -2603,13 +2587,6 @@ gs-input .tags .tag-item .remove-button {
   &:nth-child(even) .ui-grid-cell {
     background-color: #f8f6e7;
   }*/
-}
-
-#sidebar-projects, #nav-projects {
-  &[disabled] {
-    color: gray;
-    pointer-events: none;
-  }
 }
 
 #nav-inventory {

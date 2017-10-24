@@ -26,7 +26,7 @@ DATABASES = {
     },
 }
 
-MIDDLEWARE_CLASSES = ('seed.utils.nocache.DisableClientSideCachingMiddleware',) + MIDDLEWARE_CLASSES
+MIDDLEWARE = ('seed.utils.nocache.DisableClientSideCachingMiddleware',) + MIDDLEWARE
 
 CACHES = {
     'default': {

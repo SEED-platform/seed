@@ -7,7 +7,7 @@
 import logging
 from os import path
 
-from django.core.files import File
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 
@@ -57,17 +57,17 @@ class DataQualityTestCoveredBuilding(TestCase):
         self.import_record.super_organization = self.org
         self.import_record.save()
         self.import_file = ImportFile.objects.create(
-            import_record=self.import_record
+            import_record=self.import_record,
+            source_type=ASSESSED_RAW,
         )
-
-        self.import_file.source_type = 'ASSESSED_RAW'
-        self.import_file.file = File(
-            open(path.join(
-                path.dirname(__file__),
-                '../data/covered-buildings-sample-with-errors.csv')
-            )
+        filename = 'covered-buildings-sample-with-errors.csv'
+        filepath = path.join(path.dirname(__file__), '../data/', filename)
+        self.import_file.file = SimpleUploadedFile(
+            name=filename,
+            content=open(filepath, 'rb').read()
         )
         self.import_file.save()
+
         self.import_file_mapping = path.join(
             path.dirname(__file__),
             "../data/covered-buildings-sample-with-errors-mappings.csv"
@@ -180,15 +180,15 @@ class DataQualityTestPM(TestCase):
         self.import_record.super_organization = self.org
         self.import_record.save()
         self.import_file = ImportFile.objects.create(
-            import_record=self.import_record
+            import_record=self.import_record,
+            source_type=ASSESSED_RAW,  # eventhough this is a PM file, map as RAW file for testing
         )
-        # eventhough this is a portfolio manager file, we are mapping this as a RAW file
-        # for testing purposes.
-        self.import_file.source_type = ASSESSED_RAW
-        self.import_file.file = File(
-            open(path.join(
-                path.dirname(__file__), '../data/portfolio-manager-sample-with-errors.csv')
-            )
+
+        filename = 'portfolio-manager-sample-with-errors.csv'
+        filepath = path.join(path.dirname(__file__), '../data/', filename)
+        self.import_file.file = SimpleUploadedFile(
+            name=filename,
+            content=open(filepath, 'rb').read()
         )
         self.import_file.save()
 
@@ -329,13 +329,15 @@ class DataQualitySample(TestCase):
         self.import_record.save()
         self.import_file = ImportFile.objects.create(
             import_record=self.import_record,
+            source_type=ASSESSED_RAW,
             cycle=cycle,
         )
-
-        self.import_file.source_type = 'ASSESSED_RAW'
-        self.import_file.file = File(
-            open(path.join(path.dirname(__file__), '../data/data-quality-check-sample.csv')))
-
+        filename = 'data-quality-check-sample.csv'
+        filepath = path.join(path.dirname(__file__), '../data/', filename)
+        self.import_file.file = SimpleUploadedFile(
+            name=filename,
+            content=open(filepath, 'rb').read()
+        )
         self.import_file.save()
 
         self.fake_mappings = [
