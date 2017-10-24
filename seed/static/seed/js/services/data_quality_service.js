@@ -85,9 +85,7 @@ angular.module('BE.seed.service.data_quality', []).factory('data_quality_service
     };
 
     var checkStatusLoop = function (deferred, progress_key) {
-      $http.post('/api/v2/progress/', {
-        progress_key: progress_key
-      }).then(function (response) {
+      $http.get('/api/v2/progress/' + progress_key + '/').then(function (response) {
         $timeout(function () {
           if (response.data.progress < 100) {
             checkStatusLoop(deferred, progress_key);

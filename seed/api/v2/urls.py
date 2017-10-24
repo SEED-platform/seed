@@ -8,6 +8,7 @@ from django.conf.urls import url, include
 from rest_framework import routers
 
 from seed.api.base.views import test_view_with_arg, TestReverseViewSet
+from seed.api.v2.views import ProgressViewSetV2
 from seed.data_importer.views import ImportFileViewSet
 from seed.data_importer.views import (
     handle_s3_upload_complete,
@@ -26,7 +27,7 @@ from seed.views.cycles import CycleViewSet
 from seed.views.data_quality import DataQualityViews
 from seed.views.datasets import DatasetViewSet
 from seed.views.labels import LabelViewSet, UpdateInventoryLabelsAPIView
-from seed.views.main import version, progress
+from seed.views.main import version
 from seed.views.organizations import OrganizationViewSet
 from seed.views.projects import ProjectViewSet
 from seed.views.properties import (PropertyViewSet, PropertyStateViewSet,
@@ -39,6 +40,7 @@ api_v2_router = routers.DefaultRouter()
 api_v2_router.register(r'columns', ColumnViewSet, base_name="columns")
 api_v2_router.register(r'column_mappings', ColumnMappingViewSet, base_name="column_mappings")
 api_v2_router.register(r'datasets', DatasetViewSet, base_name="datasets")
+api_v2_router.register(r'import_files', ImportFileViewSet, base_name="import_files")
 api_v2_router.register(r'organizations', OrganizationViewSet, base_name="organizations")
 api_v2_router.register(r'green_assessments', GreenAssessmentViewSet, base_name="green_assessments")
 api_v2_router.register(r'green_assessment_urls', GreenAssessmentURLViewSet,
@@ -49,17 +51,17 @@ api_v2_router.register(r'projects', ProjectViewSet, base_name="projects")
 api_v2_router.register(r'users', UserViewSet, base_name="users")
 api_v2_router.register(r'reverse_and_test', TestReverseViewSet, base_name="reverse_and_test")
 api_v2_router.register(r'labels', LabelViewSet, base_name="labels")
-api_v2_router.register(r'import_files', ImportFileViewSet, base_name="import_files")
 api_v2_router.register(r'cycles', CycleViewSet, base_name="cycles")
 api_v2_router.register(r'properties', PropertyViewSet, base_name="properties")
 api_v2_router.register(r'taxlots', TaxLotViewSet, base_name="taxlots")
 api_v2_router.register(r'reverse_and_test', TestReverseViewSet, base_name="reverse_and_test")
-api_v2_router.register(r'upload', LocalUploaderViewSet, base_name='local_uploader')
 api_v2_router.register(r'data_quality_checks', DataQualityViews, base_name='data_quality_checks')
-api_v2_router.register(r'gbr_properties', GBRPropertyViewSet, base_name="properties")
+api_v2_router.register(r'gbr_properties', GBRPropertyViewSet, base_name="gbr_properties")
 api_v2_router.register(r'property_states', PropertyStateViewSet, base_name="property_states")
 api_v2_router.register(r'property_views', PropertyViewViewSet, base_name="property_views")
+api_v2_router.register(r'upload', LocalUploaderViewSet, base_name='local_uploader')
 api_v2_router.register(r'properties', PropertyViewSet, base_name="seed_properties")
+api_v2_router.register(r'progress', ProgressViewSetV2, base_name="progress")
 
 urlpatterns = [
     # v2 api
@@ -71,7 +73,6 @@ urlpatterns = [
     url(r'get_upload_details/$', get_upload_details, name='get_upload_details'),
     url(r'sign_policy_document/$', sign_policy_document, name='sign_policy_document'),
     url(r'^schema/$', get_api_schema, name='schema'),
-    url(r'^progress/$', progress, name='progress'),
     url(
         r'projects/(?P<pk>\w+)/add/$',
         ProjectViewSet.as_view({'put': 'add'}),

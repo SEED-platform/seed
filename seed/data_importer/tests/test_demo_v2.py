@@ -8,6 +8,7 @@ import datetime
 import logging
 import os.path as osp
 
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 
 from seed.data_importer import tasks
@@ -98,10 +99,19 @@ class TestDemoV2(DataMappingBaseTestCase):
          self.import_record_tax_lot,
          self.cycle) = selfvars
 
-        self.import_file_tax_lot.load_import_file(
-            osp.join(osp.dirname(__file__), 'data', tax_lot_filename))
-        self.import_file_property.load_import_file(
-            osp.join(osp.dirname(__file__), 'data', property_filename))
+        filepath = osp.join(osp.dirname(__file__), 'data', tax_lot_filename)
+        self.import_file_tax_lot.file = SimpleUploadedFile(
+            name=tax_lot_filename,
+            content=open(filepath, 'rb').read()
+        )
+        self.import_file_tax_lot.save()
+
+        filepath = osp.join(osp.dirname(__file__), 'data', property_filename)
+        self.import_file_property.file = SimpleUploadedFile(
+            name=property_filename,
+            content=open(filepath, 'rb').read()
+        )
+        self.import_file_property.save()
 
     def test_demo_v2(self):
         tasks._save_raw_data(self.import_file_tax_lot.pk, 'fake_cache_key', 1)

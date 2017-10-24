@@ -1,27 +1,31 @@
-{% load app_urls %}
-        <script type="text/javascript">
-            // config URLs
-            window.BE = window.BE || {};
-            // new URLs
-            window.BE.app_urls = {% namespaced_urls %};
-            window.BE.app_urls.STATIC_URL = "{{ STATIC_URL }}";
+<script type="text/javascript">
+  // config URLs
+  window.BE = window.BE || {};
+  // new URLs
+  window.BE.app_urls = {
+    "seed": {"home": "/app/"},
+    "audit_logs": {
+      "create_note": "/audit_logs/create_note/",
+      "update_note": "/audit_logs/update_note/",
+      "get_building_logs": "/audit_logs/get_building_logs/"
+    }
+  };
 
-            // old URLs
-            window.BE.urls = window.BE.urls || {};
-            // static URLs
-            window.BE.urls.STATIC_URL = "{{ STATIC_URL }}";
+  // old URLs
+  window.BE.urls = window.BE.urls || {};
+  // static URLs
+  window.BE.urls.STATIC_URL = "{{ STATIC_URL }}";
 
-            window.BE.urls.search_buildings_url = '{% url "api:v1:search_buildings" %}';
-            window.BE.urls.seed_home = '{% url "seed:home" %}';
-            window.BE.urls.delete_file      = '{% url "api:v1:delete_file" %}';
+  window.BE.urls.search_buildings_url = '{% url "api:v1:search_buildings" %}';
+  window.BE.urls.seed_home = '{% url "seed:home" %}';
 
-            // Reports URLS
-            window.BE.urls.get_inventory_report_data             = '{% url "api:v2:property_report_data" %}';
-            window.BE.urls.get_aggregated_inventory_report_data  = '{% url "api:v2:aggregated_property_report_data" %}';
+  // Reports URLS
+  window.BE.urls.get_inventory_report_data = '{% url "api:v2:property_report_data" %}';
+  window.BE.urls.get_aggregated_inventory_report_data = '{% url "api:v2:aggregated_property_report_data" %}';
 
-            // export URLs
-            window.BE.urls.export_buildings_download    = '{% url "api:v1:export_buildings_download" %}';
+  // export URLs
+  window.BE.urls.export_buildings_download = '{% url "api:v1:export_buildings_download" %}';
 
-            // org
-            window.BE.urls.delete_organization_inventory = '{% url "api:v1:delete_organization_inventory" %}';
-        </script>
+  // org
+  window.BE.urls.delete_organization_inventory = '{% url "api:v1:delete_organization_inventory" %}';
+</script>

@@ -10,6 +10,7 @@ from os import path
 
 import xmltodict
 from django.core.files import File
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 
 import seed.models
@@ -307,15 +308,6 @@ class GreenButtonXMLImportTests(TestCase):
         self.org = Organization.objects.create()
         OrganizationUser.objects.create(user=self.user, organization=self.org)
 
-        self.sample_xml_file = File(
-            open(
-                path.join(
-                    path.dirname(__file__), 'data', 'sample_gb_gas.xml')
-            )
-        )
-
-        self.sample_xml = self.sample_xml_file.read()
-
         self.import_record = ImportRecord.objects.create(
             name="Test Green Button Import",
             super_organization=self.org,
@@ -323,11 +315,13 @@ class GreenButtonXMLImportTests(TestCase):
         )
         self.import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            file=self.sample_xml_file
         )
-
-    def tearDown(self):
-        self.sample_xml_file.close()
+        filepath = path.join(path.dirname(__file__), 'data', 'sample_gb_gas.xml')
+        self.import_file.file = SimpleUploadedFile(
+            name='sample_gb_gas.xml',
+            content=open(filepath, 'rb').read()
+        )
+        self.import_file.save()
 
     def assert_models_created(self):
         """
@@ -351,7 +345,7 @@ class GreenButtonXMLImportTests(TestCase):
         """
         Test of xml_importer.create_models.
         """
-        xml_data = xmltodict.parse(self.sample_xml)
+        xml_data = xmltodict.parse(self.import_file.file.read())
         b_data = xml_importer.building_data(xml_data)
 
         # no audit logs should exist yet, testing this way because it

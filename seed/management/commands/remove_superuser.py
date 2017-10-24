@@ -2,11 +2,7 @@ from __future__ import unicode_literals
 
 from django.core.management.base import BaseCommand
 
-from seed.lib.superperms.orgs.models import Organization
 from seed.models import User
-
-
-# from seed.landing.models import DoesNotExist
 
 
 class Command(BaseCommand):
@@ -14,7 +10,6 @@ class Command(BaseCommand):
         parser.add_argument('--user', dest='user', default=False)
         parser.add_argument('--user-id', dest='user_id', default=False, type=int)
         parser.add_argument('--remove', dest='force', default=False)
-        return
 
     def handle(self, *args, **options):
         if options['user'] and options['user_id']:

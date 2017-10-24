@@ -37,7 +37,7 @@ from seed.test_helpers.fake import (
     FakeTaxLotStateFactory
 )
 from seed.utils.cache import set_cache
-from seed.views.main import (
+from seed.api.v1.views import (
     DEFAULT_CUSTOM_COLUMNS,
 )
 
@@ -90,7 +90,7 @@ class DefaultColumnsViewTests(TestCase):
         self.user.default_custom_columns = columns
         self.user.save()
         columns = ['source_facility_id', 'test_column_0']
-        url = reverse_lazy('api:v1:get_default_columns')
+        url = reverse_lazy('api:v1:columns-get-default-columns')
         response = self.client.get(url)
         json_string = response.content
         data = json.loads(json_string)
@@ -99,7 +99,7 @@ class DefaultColumnsViewTests(TestCase):
         self.assertEqual(data['columns'], columns)
 
     def test_get_default_columns_initial_state(self):
-        url = reverse_lazy('api:v1:get_default_columns')
+        url = reverse_lazy('api:v1:columns-get-default-columns')
         response = self.client.get(url)
         json_string = response.content
         data = json.loads(json_string)
@@ -125,7 +125,7 @@ class DefaultColumnsViewTests(TestCase):
         self.assertEqual(200, response.status_code)
 
         # get the columns
-        url = reverse_lazy('api:v1:get_default_columns')
+        url = reverse_lazy('api:v1:columns-get-default-columns')
         response = self.client.get(url)
         json_string = response.content
         data = json.loads(json_string)
@@ -158,16 +158,10 @@ class DefaultColumnsViewTests(TestCase):
         self.assertEqual(data['show_shared_buildings'], False)
 
     def test_get_columns(self):
-        url = reverse_lazy('api:v1:get_columns')
-
         # test building list columns
-        response = self.client.get(
-            url,
-            {
-                'organization_id': self.org.id
-            }
-        )
-
+        response = self.client.get(reverse('api:v1:columns-list'), {
+            'organization_id': self.org.id
+        })
         data = json.loads(response.content)
         self.assertEqual(data['fields'][0], {
             u'checked': False,
@@ -182,13 +176,22 @@ class DefaultColumnsViewTests(TestCase):
         })
 
         # test org settings columns
-        response = self.client.get(
-            url,
-            {
-                'organization_id': self.org.id,
-                'all_fields': 'true'
-            }
-        )
+        response = self.client.get(reverse('api:v1:columns-list'), {
+            'organization_id': self.org.id,
+            'all_fields': 'true'
+        })
+        data = json.loads(response.content)
+        self.assertEqual(data['fields'][0], {
+            "field_type": "building_information",
+            "sortable": True,
+            "title": "Address Line 1",
+            "sort_column": "address_line_1",
+            "link": True,
+            "checked": False,
+            "static": False,
+            "type": "string",
+            "class": "is_aligned_right"
+        })
 
     def tearDown(self):
         self.user.delete()
@@ -312,15 +315,10 @@ class ImportFileViewsTests(TestCase):
                          json.loads(response.content)['import_file']['id'])
 
     def test_delete_file(self):
-        post_data = {
-            'file_id': self.import_file.pk,
-            'organization_id': self.org.pk
-        }
-
+        url = reverse("api:v2:import_files-detail", args=[self.import_file.pk])
         response = self.client.delete(
-            reverse_lazy('api:v1:delete_file'),
+            url + '?organization_id=' + str(self.org.pk),
             content_type='application/json',
-            data=json.dumps(post_data)
         )
         self.assertEqual('success', json.loads(response.content)['status'])
         self.assertFalse(
@@ -640,13 +638,8 @@ class TestMCMViews(TestCase):
             'progress_key': progress_key
         }
         set_cache(progress_key, 'parsing', test_progress)
-        resp = self.client.post(
-            reverse_lazy('api:v2:progress'),
-            data=json.dumps({
-                'progress_key': progress_key,
-            }),
-            content_type='application/json'
-        )
+        resp = self.client.get(reverse('api:v2:progress-detail', args=[progress_key]),
+                               content_type='application/json')
 
         self.assertEqual(resp.status_code, 200)
         body = json.loads(resp.content)

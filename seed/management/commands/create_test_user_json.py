@@ -4,7 +4,6 @@
 :author
 """
 import json
-from optparse import make_option
 
 from django.core.management.base import BaseCommand
 
@@ -12,27 +11,26 @@ from seed.landing.models import SEEDUser as User
 
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
-        make_option('--username',
-                    default='demo@seed-platform.org',
-                    help='Sets the default username.',
-                    action='store',
-                    type='string',
-                    dest='username'),
-        make_option('--host',
-                    default='http://127.0.0.1:8000',
-                    help='Host',
-                    action='store',
-                    type='string',
-                    dest='host'),
-        make_option('--file',
-                    default='none',
-                    help='File name to save JSON',
-                    action='store',
-                    type='string',
-                    dest='file'),
-    )
     help = 'Creates the JSON file needed for testing the API'
+
+    def add_arguments(self, parser):
+        parser.add_argument('--username',
+                            default='demo@seed-platform.org',
+                            help='Sets the default username.',
+                            action='store',
+                            dest='username')
+
+        parser.add_argument('--host',
+                            default='http://127.0.0.1:8000',
+                            help='Host',
+                            action='store',
+                            dest='host')
+
+        parser.add_argument('--file',
+                            default='none',
+                            help='File name to save JSON',
+                            action='store',
+                            dest='file')
 
     def handle(self, *args, **options):
         if User.objects.filter(username=options['username']).exists():

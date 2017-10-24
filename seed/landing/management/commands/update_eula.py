@@ -10,6 +10,8 @@ Creates a new ToS entry from an html file.
 from django.core.management.base import BaseCommand
 
 
+# TODO: This method is no longer used as of Django 1.10 upgrade.
+
 class Command(BaseCommand):
 
     help = 'Update the Terms of Service with a new HTML file'
