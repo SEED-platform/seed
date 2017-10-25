@@ -175,7 +175,7 @@ angular.module('BE.seed.controller.inventory_list', [])
                 },
                 name: _.constant(null),
                 uploaded: _.constant(null),
-                importFileId: _.constant(null)
+                importFileId: _.constant(response.progress_key.split(':').pop())
               }
             });
             modalInstance.result.then(function () {
