@@ -17,7 +17,6 @@ from _csv import Error
 from collections import namedtuple
 from functools import reduce
 from itertools import chain
-from random import randint
 
 from celery import chord
 from celery import shared_task
@@ -124,8 +123,7 @@ def finish_checking(identifier):
 
 @shared_task
 def do_checks(propertystate_ids, taxlotstate_ids):
-    identifier = randint(100, 100000)
-    DataQualityCheck.initialize_cache(identifier)
+    identifier = DataQualityCheck.initialize_cache()
     prog_key = get_prog_key('check_data', identifier)
     trigger_data_quality_checks.delay(propertystate_ids, taxlotstate_ids, identifier)
     return {'status': 'success', 'progress_key': prog_key}
@@ -183,14 +181,19 @@ def finish_mapping(import_file_id, mark_as_done):
     }
     set_cache(prog_key, result['status'], result)
 
-    property_state_ids = list(PropertyState.objects.filter(import_file=import_file)
-                              .exclude(data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT, DATA_STATE_DELETE])
-                              .values_list('id', flat=True))
-    taxlot_state_ids = list(TaxLotState.objects.filter(import_file=import_file)
-                            .exclude(data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT, DATA_STATE_DELETE])
-                            .values_list('id', flat=True))
+    property_state_ids = list(
+        PropertyState.objects.filter(import_file=import_file).exclude(
+            data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT, DATA_STATE_DELETE]).values_list(
+            'id', flat=True)
+    )
+    taxlot_state_ids = list(
+        TaxLotState.objects.filter(import_file=import_file).exclude(
+            data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT, DATA_STATE_DELETE]).values_list(
+            'id', flat=True)
+    )
 
-    # now call data_quality
+    # now call data_quality - this uses the import_file_id which can cause issues if
+    # the result cache is not flushed out. Flushing happens on the initialize_cache call.
     _data_quality_check(property_state_ids, taxlot_state_ids, import_file_id)
 
 
@@ -424,8 +427,8 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
 
                     # Create an audit log record for the new map_model_obj that was created.
 
-                    AuditLogClass = PropertyAuditLog if isinstance(map_model_obj,
-                                                                   PropertyState) else TaxLotAuditLog
+                    AuditLogClass = PropertyAuditLog if isinstance(
+                        map_model_obj, PropertyState) else TaxLotAuditLog
                     AuditLogClass.objects.create(organization=org,
                                                  state=map_model_obj,
                                                  name='Import Creation',
@@ -547,7 +550,6 @@ def map_data(import_file_id, remap=False, mark_as_done=True):
     :return: JSON
     """
     DataQualityCheck.initialize_cache(import_file_id)
-    prog_key = get_prog_key('check_data', import_file_id)
     import_file = ImportFile.objects.get(pk=import_file_id)
     if remap:
         # Check to ensure that import files has not already been matched/merged.
@@ -874,11 +876,13 @@ def _finish_matching(import_file, progress_key, data):
         'data': data
     }
     property_state_ids = list(PropertyState.objects.filter(import_file=import_file)
-                              .exclude(data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT, DATA_STATE_DELETE])
-                              .only('id').values_list('id', flat=True))
+                              .exclude(
+        data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT, DATA_STATE_DELETE])
+        .only('id').values_list('id', flat=True))
     taxlot_state_ids = list(TaxLotState.objects.filter(import_file=import_file)
-                            .exclude(data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT, DATA_STATE_DELETE])
-                            .only('id').values_list('id', flat=True))
+                            .exclude(
+        data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT, DATA_STATE_DELETE])
+        .only('id').values_list('id', flat=True))
     _data_quality_check(property_state_ids, taxlot_state_ids, import_file.id)
     set_cache(progress_key, result['status'], result)
     return result
@@ -899,8 +903,8 @@ def _find_matches(un_m_address, canonical_buildings_addresses):
 # TODO: CLEANUP - What are we doing here?
 md = MappingData()
 ALL_COMPARISON_FIELDS = sorted(list(set([field['name'] for field in md.data])))
-# Make sure that the import_file isn't part of the hash, as the import_file filename always has random characters
-# appended to it in the uploads directory
+# Make sure that the import_file isn't part of the hash, as the import_file filename always has
+# random characters appended to it in the uploads directory
 try:
     ALL_COMPARISON_FIELDS.remove('import_file')
 except ValueError:
@@ -1284,7 +1288,8 @@ def merge_unmatched_into_views(unmatched_states, partitioner, org, import_file):
                 if partitioner.calculate_key_equivalence(key, equiv_cmp_key):
                     if current_match_cycle in existing_view_states[key]:
                         # There is an existing View for the current cycle that matches us.
-                        # Merge the new state in with the existing one and update the view, audit log.
+                        # Merge the new state in with the existing one and update the view,
+                        # audit log.
                         current_view = existing_view_states[key][current_match_cycle]
                         current_state = current_view.state
 
