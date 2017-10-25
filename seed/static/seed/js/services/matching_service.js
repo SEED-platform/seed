@@ -112,7 +112,7 @@ angular.module('BE.seed.service.matching', []).factory('matching_service', [
     matching_service.saveLeftColumns = function (key, columns) {
       key += '.left.' + user_service.get_organization().id;
       var toSave = matching_service.reorderSettings(_.map(columns, function (col) {
-        return _.pick(col, ['name', 'visible']);
+        return _.pick(col, ['name', 'table', 'visible']);
       }));
       localStorage.setItem(key, JSON.stringify(toSave));
     };
@@ -135,11 +135,11 @@ angular.module('BE.seed.service.matching', []).factory('matching_service', [
 
         // Remove nonexistent columns
         _.remove(localColumns, function (col) {
-          return !_.find(columns, {name: col.name});
+          return !_.find(columns, {name: col.name, table: col.table});
         });
         // Use saved column settings with original data as defaults
         localColumns = _.map(localColumns, function (col) {
-          return _.defaults(col, _.remove(columns, {name: col.name})[0]);
+          return _.defaults(col, _.remove(columns, {name: col.name, table: col.table})[0]);
         });
         // If no columns are visible, reset visibility only
         if (!_.find(localColumns, 'visible')) {
@@ -156,7 +156,7 @@ angular.module('BE.seed.service.matching', []).factory('matching_service', [
     matching_service.saveRightColumns = function (key, columns) {
       key += '.right.' + user_service.get_organization().id;
       var toSave = matching_service.reorderSettings(_.map(columns, function (col) {
-        return _.pick(col, ['name', 'visible']);
+        return _.pick(col, ['name', 'table', 'visible']);
       }));
       localStorage.setItem(key, JSON.stringify(toSave));
     };
@@ -176,11 +176,11 @@ angular.module('BE.seed.service.matching', []).factory('matching_service', [
 
         // Remove nonexistent columns
         _.remove(localColumns, function (col) {
-          return !_.find(columns, {name: col.name});
+          return !_.find(columns, {name: col.name, table: col.table});
         });
         // Use saved column settings with original data as defaults
         localColumns = _.map(localColumns, function (col) {
-          return _.defaults(col, _.remove(columns, {name: col.name})[0]);
+          return _.defaults(col, _.remove(columns, {name: col.name, table: col.table})[0]);
         });
         // If no columns are visible, reset visibility only
         if (!_.find(localColumns, 'visible')) {
@@ -197,7 +197,7 @@ angular.module('BE.seed.service.matching', []).factory('matching_service', [
     matching_service.saveDetailColumns = function (key, columns) {
       key += '.' + user_service.get_organization().id;
       var toSave = matching_service.reorderSettings(_.map(columns, function (col) {
-        return _.pick(col, ['name', 'visible']);
+        return _.pick(col, ['name', 'table', 'visible']);
       }));
       localStorage.setItem(key, JSON.stringify(toSave));
     };
@@ -217,11 +217,11 @@ angular.module('BE.seed.service.matching', []).factory('matching_service', [
 
         // Remove nonexistent columns
         _.remove(localColumns, function (col) {
-          return !_.find(columns, {name: col.name});
+          return !_.find(columns, {name: col.name, table: col.table});
         });
         // Use saved column settings with original data as defaults
         localColumns = _.map(localColumns, function (col) {
-          return _.defaults(col, _.remove(columns, {name: col.name})[0]);
+          return _.defaults(col, _.remove(columns, {name: col.name, table: col.table})[0]);
         });
         // If no columns are visible, reset visibility only
         if (!_.find(localColumns, 'visible')) {
