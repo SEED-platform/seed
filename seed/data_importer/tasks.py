@@ -109,16 +109,17 @@ def finish_checking(identifier):
     :param identifier: import file primary key
     :return:
     """
-
     prog_key = get_prog_key('check_data', identifier)
     data_quality_results = get_cache_raw(DataQualityCheck.cache_key(identifier))
     result = {
         'status': 'success',
         'progress': 100,
+        'progress_key': prog_key,
         'message': 'data quality check complete',
         'data': data_quality_results
     }
     set_cache(prog_key, result['status'], result)
+    return result
 
 
 @shared_task
@@ -126,7 +127,11 @@ def do_checks(propertystate_ids, taxlotstate_ids):
     identifier = DataQualityCheck.initialize_cache()
     prog_key = get_prog_key('check_data', identifier)
     trigger_data_quality_checks.delay(propertystate_ids, taxlotstate_ids, identifier)
-    return {'status': 'success', 'progress_key': prog_key}
+    return {
+        'status': 'success',
+        'progress': 100,
+        'progress_key': prog_key
+    }
 
 
 @shared_task
@@ -173,13 +178,6 @@ def finish_mapping(import_file_id, mark_as_done):
         import_file.save()
 
     finish_import_record(import_file.import_record.pk)
-    prog_key = get_prog_key('map_data', import_file_id)
-    result = {
-        'status': 'success',
-        'progress': 100,
-        'progress_key': prog_key
-    }
-    set_cache(prog_key, result['status'], result)
 
     property_state_ids = list(
         PropertyState.objects.filter(import_file=import_file).exclude(
@@ -194,7 +192,16 @@ def finish_mapping(import_file_id, mark_as_done):
 
     # now call data_quality - this uses the import_file_id which can cause issues if
     # the result cache is not flushed out. Flushing happens on the initialize_cache call.
-    _data_quality_check(property_state_ids, taxlot_state_ids, import_file_id)
+    _data_quality_check(property_state_ids, taxlot_state_ids, import_file.id)
+
+    # set the prog key for mapping now so that the dataquality key has time to start
+    prog_key = get_prog_key('map_data', import_file.id)
+    result = {
+        'status': 'success',
+        'progress': 100,
+        'progress_key': prog_key
+    }
+    set_cache(prog_key, result['status'], result)
 
 
 def _translate_unit_to_type(unit):
@@ -530,13 +537,14 @@ def _data_quality_check(property_state_ids, taxlot_state_ids, identifier):
         chord(tasks, interval=15)(finish_checking.si(identifier))
     else:
         finish_checking.s(identifier)
+
+    # always return something so that the code works with always eager
     prog_key = get_prog_key('check_data', identifier)
-    result = {
+    return {
         'status': 'success',
         'progress': 100,
         'progress_key': prog_key
     }
-    return result
 
 
 @shared_task
@@ -549,7 +557,9 @@ def map_data(import_file_id, remap=False, mark_as_done=True):
     end.
     :return: JSON
     """
+    # Clear out the previously mapped data
     DataQualityCheck.initialize_cache(import_file_id)
+
     import_file = ImportFile.objects.get(pk=import_file_id)
     if remap:
         # Check to ensure that import files has not already been matched/merged.
@@ -582,7 +592,7 @@ def map_data(import_file_id, remap=False, mark_as_done=True):
     prog_key = get_prog_key('map_data', import_file_id)
     delete_cache(prog_key)
     _map_data.delay(import_file_id, mark_as_done)
-    return {'status': 'success', 'progress_key': prog_key}
+    return {'status': 'success', 'progress': 100, 'progress_key': prog_key}
 
 
 @shared_task
@@ -875,14 +885,17 @@ def _finish_matching(import_file, progress_key, data):
         'progress_key': progress_key,
         'data': data
     }
-    property_state_ids = list(PropertyState.objects.filter(import_file=import_file)
-                              .exclude(
-        data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT, DATA_STATE_DELETE])
-        .only('id').values_list('id', flat=True))
-    taxlot_state_ids = list(TaxLotState.objects.filter(import_file=import_file)
-                            .exclude(
-        data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT, DATA_STATE_DELETE])
-        .only('id').values_list('id', flat=True))
+    property_state_ids = list(
+        PropertyState.objects.filter(import_file=import_file).exclude(
+            data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT, DATA_STATE_DELETE]).only(
+            'id').values_list('id', flat=True)
+    )
+    taxlot_state_ids = list(
+        TaxLotState.objects.filter(import_file=import_file).exclude(
+            data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT, DATA_STATE_DELETE]).only(
+            'id').values_list('id', flat=True)
+    )
+
     _data_quality_check(property_state_ids, taxlot_state_ids, import_file.id)
     set_cache(progress_key, result['status'], result)
     return result
