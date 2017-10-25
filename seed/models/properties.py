@@ -189,12 +189,14 @@ class PropertyState(models.Model):
             ['analysis_state', 'organization'],
         ]
 
-    def promote(self, cycle):
+    def promote(self, cycle, property_id=None):
         """
         Promote the PropertyState to the view table for the given cycle
 
         Args:
             cycle: Cycle to assign the view
+            property_id: Optional ID of a canonical property model object
+            to retain instead of creating a new property
 
         Returns:
             The resulting PropertyView (note that it is not returning the
@@ -218,7 +220,15 @@ class PropertyState(models.Model):
             if not self.organization:
                 pdb.set_trace()
 
-            prop = Property.objects.create(organization=self.organization)
+            if property_id:
+                try:
+                    # should I validate this further?
+                    prop = Property.objects.get(id=property_id)
+                except Property.DoesNotExist:
+                    _log.debug("Could not promote this property")
+                    return None
+            else:
+                prop = Property.objects.create(organization=self.organization)
 
             pv = PropertyView.objects.create(property=prop, cycle=cycle, state=self)
 

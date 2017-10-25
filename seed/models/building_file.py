@@ -77,13 +77,14 @@ class BuildingFile(models.Model):
         else:
             return None
 
-    def process(self, organization_id, cycle, property_state=None):
+    def process(self, organization_id, cycle, property_state=None, property_id=None):
         """
         Process the building file that was uploaded and create the correct models for the object
 
         :param organization_id: integer, ID of organization
         :param cycle: object, instance of cycle object
         :param property_state: PropertyState, if a property state already exists, this is it; if not, one will be created
+        :param property_id: integer, ID of property to from the property view
         :return: list, [status, (PropertyView|None), messages]
         """
 
@@ -122,12 +123,17 @@ class BuildingFile(models.Model):
                     is_extra_data=True,
                 )
 
-        if not property_state:
-
+        if property_state and property_id:
+            property_state.promote(cycle, property_id)
+        elif not property_state and not property_id:
             # create a new property_state for the objects
             property_state = PropertyState.objects.create(**create_data)
             property_state.extra_data = extra_data
+            property_state.promote(cycle)
             property_state.save()
+        else:
+            # invalid arguments, must pass both or neither
+            return False, None, "Invalid arguments passed to BuildingFile.process()"
 
         # set the property_state_id so that we can list the building files by properties
         self.property_state_id = property_state.id
@@ -136,9 +142,13 @@ class BuildingFile(models.Model):
         # add in the measures
         for m in data['measures']:
             # Find the measure in the database
-            measure = Measure.objects.get(
-                category=m['category'], name=m['name'], organization_id=organization_id,
-            )
+            try:
+                measure = Measure.objects.get(
+                    category=m['category'], name=m['name'], organization_id=organization_id,
+                )
+            except Measure.DoesNotExist:
+                # TODO: Deal with it
+                continue
 
             # Add the measure to the join table.
             # Need to determine what constitutes the unique measure for a property

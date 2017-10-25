@@ -237,6 +237,7 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
             })
 
         # get some items off of this property view
+        property_id_for_this_view = property_view.property.id
         scenario_ids_for_this_pv = [x.id for x in property_view.state.scenarios]
         buildingfile_ids_for_this_pv = [x.id for x in property_view.state.building_files]
         simulation_ids_for_this_pv = [x.id for x in Simulation.objects.filter(property_state=property_view.state)]
@@ -247,7 +248,8 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
 
         # passing in the existing property state allows it to process the buildingsync without creating a new state
         p_status, new_pv_state, messages = building_file.process(organization_id, cycle,
-                                                                 property_state=pv_copy.state)
+                                                                 property_state=pv_copy.state,
+                                                                 property_id=property_id_for_this_view)
 
         # persist the ids that were saved earlier
         [new_pv_state.scenarios.add(x) for x in scenario_ids_for_this_pv]

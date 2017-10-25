@@ -16,7 +16,7 @@ from rest_framework import status
 from seed.authentication import SEEDAuthentication
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import BuildingFile, Cycle
-from seed.serializers.properties import PropertyViewAsStateSerializer
+from seed.serializers.properties import PropertyStateWritableSerializer
 
 
 class BuildingFileViewSet(GenericViewSet):
@@ -75,13 +75,13 @@ class BuildingFileViewSet(GenericViewSet):
             file_type=file_type,
         )
 
-        p_status, property_view, messages = building_file.process(organization_id, cycle)
-        if p_status and property_view:
+        p_status, property_state, messages = building_file.process(organization_id, cycle)
+        if p_status and property_state:
             return JsonResponse({
                 "status": "success",
                 "message": "successfully imported file",
                 "data": {
-                    "property_view": PropertyViewAsStateSerializer(property_view).data,
+                    "property_state": PropertyStateWritableSerializer(property_state).data,
                 },
             })
         else:
