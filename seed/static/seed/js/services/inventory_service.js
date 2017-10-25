@@ -761,7 +761,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
     inventory_service.get_columns = function (all_fields) {
       all_fields = all_fields || '';
-      return $http.get('/api/v1/get_columns/', {
+      return $http.get('/api/v1/columns/', {
         params: {
           all_fields: all_fields,
           organization_id: user_service.get_organization().id

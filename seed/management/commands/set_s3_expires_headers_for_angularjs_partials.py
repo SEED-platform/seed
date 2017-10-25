@@ -7,28 +7,22 @@
 """
 This should be executed after S3 bucket and CORS are set as last step and called in post_compile script.
 """
-# stdlib
-from datetime import datetime
 import mimetypes
-from optparse import make_option
+from datetime import datetime
 
-# Django
+from boto.s3.connection import S3Connection
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
-# vendor
-from boto.s3.connection import S3Connection
-
-
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
-        make_option('--prefix',
-                    action='store_true',
-                    default='seed/partials',
-                    help='Sets the prefix directory to set the expires header.'),
-        )
     help = "Sets S3 Expires headers for AngularJS partials to prevent browser caching old html partials. ./manage.py set_s3_expires_headers_for_angularjs_partials.py --prefix='seed/partials'"
+
+    def add_arguments(self, parser):
+        parser.add_argument('--prefix',
+                            action='store_true',
+                            default='seed/partials',
+                            help='Sets the prefix directory to set the expires header.')
 
     def handle(self, *args, **options):
         verbosity = int(options.get('verbosity', 1))

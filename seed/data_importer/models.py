@@ -11,12 +11,10 @@ import logging
 import math
 import tempfile
 from urllib import unquote
-import os.path
 
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
-from django.core.files import File
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models import Q
@@ -1117,11 +1115,6 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
 
         from seed.models import TaxLotState
         return self.find_unmatched_states(TaxLotState)
-
-    def load_import_file(self, filename):
-        if os.path.isfile(filename):
-            self.file = File(open(filename))
-            self.save()
 
 
 class TableColumnMapping(models.Model):

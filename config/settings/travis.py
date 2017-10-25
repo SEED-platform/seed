@@ -6,10 +6,7 @@ settings for travis (travis-ci.org)
 """
 from __future__ import absolute_import
 
-import sys
-
 from config.settings.test import *  # noqa
-
 
 DATABASES = {
     'default': {
@@ -22,15 +19,19 @@ DATABASES = {
     }
 }
 
-if 'test' in sys.argv:
-    class DisableMigrations(object):
-        def __contains__(self, item):
-            return True
-
-        def __getitem__(self, item):
-            return "notmigrations"
-
-    MIGRATION_MODULES = DisableMigrations()
+# if 'test' in sys.argv:
+#     # Skip migrations to make testing faster
+#     MIGRATION_MODULES = {
+#         'auth': None,
+#         'contenttypes': None,
+#         'default': None,
+#         'sessions': None,
+#
+#         'core': None,
+#         'profiles': None,
+#         'snippets': None,
+#         'scaffold_templates': None,
+#     }
 
 CACHES = {
     'default': {

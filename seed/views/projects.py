@@ -26,7 +26,6 @@ from seed.decorators import (
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (
     COMPLIANCE_CHOICES,
-    STATUS_CHOICES
 )
 from seed.models import (
     Compliance,
@@ -61,7 +60,7 @@ COMPLIANCE_LOOKUP = {
 }
 
 STATUS_LOOKUP = {
-    unicode(choice[1]).lower(): choice[0] for choice in STATUS_CHOICES
+    unicode(choice[1]).lower(): choice[0] for choice in Project.STATUS_CHOICES
 }
 
 PLURALS = {'property': 'properties', 'taxlot': 'taxlots'}

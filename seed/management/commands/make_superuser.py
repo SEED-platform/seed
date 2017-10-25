@@ -6,24 +6,17 @@ from seed.lib.superperms.orgs.models import Organization
 from seed.models import User
 
 
-# from seed.landing.models import DoesNotExist
-
-
 class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--user', dest='user', default=False)
         parser.add_argument('--user-id', dest='user_id', default=False, type=int)
         parser.add_argument('--stats', dest='stats_only', default=False, action='store_true')
         parser.add_argument('--force', dest='force', default=False, action='store_true')
-        return
 
     def display_stats(self):
         print "Showing users:"
         for (ndx, user) in enumerate(User.objects.order_by('id').all()):
             print "   id={}, username={}".format(user.pk, user.username)
-
-        return
-
 
     def handle(self, *args, **options):
         if options['stats_only']:
@@ -45,14 +38,13 @@ class Command(BaseCommand):
                 return
             user = query.first()
 
-
         if options['user_id']:
             try:
                 user = User.objects.get(pk=options['user_id'])
             except AttributeError, xcpt:
-                print "No user with id={} was found.  Run with --stats to display all the users.".format(options['user_id'])
+                print "No user with id={} was found.  Run with --stats to display all the users.".format(
+                    options['user_id'])
                 return
-
 
         organizations = list(Organization.objects.all())
 
@@ -63,7 +55,6 @@ class Command(BaseCommand):
             if not raw_input("Continue? [y/N]").lower().startswith("y"):
                 print "Quitting."
                 return
-
 
         for org in organizations:
             print "Adding user to {}.".format(org)
@@ -77,8 +68,5 @@ class Command(BaseCommand):
             user.save()  # One for good measure
 
         print "Done!"
-
-
-
 
         return

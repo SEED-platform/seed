@@ -12,9 +12,7 @@ from django_extensions.db.models import TimeStampedModel
 
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
 from seed.managers.json import JsonManager
-from seed.models.projects import (
-    Project, ProjectBuilding, PROJECT_NAME_MAX_LENGTH
-)
+from seed.models.projects import Project
 from seed.utils.generic import obj_to_dict
 
 # Represents the data source of a given BuildingSnapshot
@@ -129,7 +127,7 @@ class StatusLabel(TimeStampedModel):
         (GRAY_CHOICE, _('gray')),
     )
 
-    name = models.CharField(_('name'), max_length=PROJECT_NAME_MAX_LENGTH)
+    name = models.CharField(_('name'), max_length=Project.PROJECT_NAME_MAX_LENGTH)
     color = models.CharField(
         _('compliance_type'),
         max_length=30,
@@ -259,12 +257,6 @@ class Enum(models.Model):
         return u'Enum: {0}: Values {1}'.format(
             self.enum_name, enums_string
         )
-
-
-class NonCanonicalProjectBuildings(models.Model):
-    """Holds a reference to all project buildings that do not point at a
-    canonical building snapshot."""
-    projectbuilding = models.OneToOneField(ProjectBuilding, primary_key=True)
 
 
 class AttributeOption(models.Model):

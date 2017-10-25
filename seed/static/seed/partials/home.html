@@ -3,7 +3,6 @@
     <div class="section_content">
       <div class="home_jump_nav_container">
         <div class="home_jump_nav">
-          <a id="nav-projects" ui-sref="projects" disabled><i class="fa fa-folder-o"></i>Projects</a>
           <a id="nav-inventory" ui-sref="inventory_list(::{inventory_type: 'properties'})"><span ng-include="'/static/seed/images/icon-city.svg'"></span>Inventory</a>
           <a id="nav-data" ui-sref="dataset_list" ng-show="::menu.user.organization.user_role !== 'viewer'"><i class="fa fa-sitemap"></i>Data</a>
           <a ui-sref="contact"><i class="fa fa-question-circle"></i>Contact</a>
@@ -79,8 +78,7 @@
                 </div>
               </div>
               <div class="copy">
-                <p>Use SEED Platform's flexible, easy-to-use labeling system and project groupings to track the status of data submission, review, and compliance.</p>
-
+                <p>Use SEED Platform's flexible, easy-to-use labeling system and inventory groupings to track the status of data submission, review, and compliance.</p>
               </div>
             </div>
           </div>

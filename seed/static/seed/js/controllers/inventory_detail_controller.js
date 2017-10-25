@@ -18,8 +18,10 @@ angular.module('BE.seed.controller.inventory_detail', [])
     'inventory_payload',
     'columns',
     'labels_payload',
+    'flippers',
     function ($state, $scope, $uibModal, $log, $filter, $stateParams, $anchorScroll, $location,
-              urls, label_service, inventory_service, inventory_payload, columns, labels_payload) {
+              urls, label_service, inventory_service, inventory_payload, columns, labels_payload,
+              flippers) {
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.inventory = {
         id: $stateParams.inventory_id,
@@ -33,6 +35,8 @@ angular.module('BE.seed.controller.inventory_detail', [])
       var localStorageKey = 'grid.' + $scope.inventory_type + '.detail';
 
       $scope.columns = inventory_service.loadSettings(localStorageKey, columns);
+
+      $scope.hide_bricr = !flippers.is_active('release:bricr');
 
       /** See service for structure of returned payload */
       $scope.historical_items = inventory_payload.history;

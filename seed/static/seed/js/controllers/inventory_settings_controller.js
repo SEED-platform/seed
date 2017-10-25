@@ -12,7 +12,9 @@ angular.module('BE.seed.controller.inventory_settings', [])
     'user_service',
     'all_columns',
     'shared_fields_payload',
-    function ($scope, $window, $uibModalInstance, $stateParams, inventory_service, user_service, all_columns, shared_fields_payload) {
+    'flippers',
+    function ($scope, $window, $uibModalInstance, $stateParams, inventory_service, user_service,
+              all_columns, shared_fields_payload, flippers) {
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.inventory = {
         id: $stateParams.inventory_id
@@ -76,6 +78,15 @@ angular.module('BE.seed.controller.inventory_settings', [])
       };
 
       $scope.data = inventory_service.loadSettings(localStorageKey, all_columns);
+
+      var is_pint_column = function (obj) {
+        return /_pint$/.test(obj.name);
+      };
+
+      if (!flippers.is_active('release:use_pint')) {
+        // db may return _pint columns; don't put them in the list settings
+        _.remove($scope.data, is_pint_column);
+      }
 
       $scope.gridOptions = {
         data: 'data',

@@ -75,6 +75,7 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, f
         params={"organization_id": organization_id},
         headers=header
     )
+    print result.json()
     check_progress(main_url, header, result.json()['progress_key'])
     check_status(result, partmsg, log)
 
