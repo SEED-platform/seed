@@ -8,11 +8,13 @@ import json
 import logging
 import re
 from datetime import date, datetime
+from random import randint
 
 import pytz
 from django.apps import apps
 from django.db import models
 from django.utils.timezone import get_current_timezone, make_aware, make_naive
+from quantityfield import ureg
 
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
@@ -24,8 +26,6 @@ from seed.utils.cache import (
     set_cache_raw, get_cache_raw
 )
 from seed.utils.time import convert_datestr
-
-from quantityfield import ureg
 
 _log = logging.getLogger(__name__)
 
@@ -527,18 +527,19 @@ class DataQualityCheck(models.Model):
         super(DataQualityCheck, self).__init__(*args, **kwargs)
 
     @staticmethod
-    def initialize_cache(identifier):
+    def initialize_cache(identifier=None):
         """
         Initialize the cache for storing the results. This is called before the
         celery tasks are chunked up.
 
-        :param identifier: Import file primary key
+        :param identifier: Identifier for cache, if None, then creates a random one
         :return: string, cache key
         """
-
-        k = DataQualityCheck.cache_key(identifier)
-        set_cache_raw(k, [])
-        return k
+        if identifier is None:
+            identifier = randint(100, 100000)
+        cache_key = DataQualityCheck.cache_key(identifier)
+        set_cache_raw(cache_key, [])
+        return cache_key
 
     @staticmethod
     def cache_key(identifier):
