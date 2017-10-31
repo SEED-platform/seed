@@ -6,15 +6,32 @@
 """
 
 import copy
-from os import path
+from os import path, remove
 
 from django.test import TestCase
 
 from seed.building_sync.building_sync import BuildingSync
+from seed.landing.models import SEEDUser as User
+from seed.lib.superperms.orgs.models import (
+    Organization,
+    OrganizationUser,
+)
+from seed.test_helpers.fake import (
+    FakePropertyStateFactory,
+)
 
 
 class TestBuildingSync(TestCase):
     def setUp(self):
+        user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+        }
+        self.user = User.objects.create_superuser(
+            email='test_user@demo.com', **user_details)
+        self.org = Organization.objects.create()
+        OrganizationUser.objects.create(user=self.user, organization=self.org)
+
         self.xml_file = path.join(path.dirname(__file__), 'data', 'ex_1.xml')
         self.bs = BuildingSync()
 
@@ -26,6 +43,140 @@ class TestBuildingSync(TestCase):
             self.bs.import_file('no/path/to/file.xml')
 
         self.assertTrue(self.bs.import_file(self.xml_file))
+
+    def test_export_no_property(self):
+        self.bs.import_file(self.xml_file)
+        xml = self.bs.export(None, BuildingSync.BRICR_STRUCT)
+
+        # save the file to disk, then reload and check if the two are the same
+        new_file = path.join(path.dirname(__file__), 'data', 'test_file.xml')
+        if path.exists(new_file):
+            remove(new_file)
+
+        with open(new_file, "w") as f:
+            f.write(xml)
+
+        new_bs = BuildingSync()
+        new_bs.import_file(new_file)
+
+        self.assertEqual(self.bs.raw_data, new_bs.raw_data)
+
+    def test_export(self):
+        self.bs.import_file(self.xml_file)
+
+        # create a propertystate
+        self.property_state_factory = FakePropertyStateFactory(
+            organization=self.org
+        )
+
+        ps = self.property_state_factory.get_property_state(organization=self.org)
+        ps.extra_data['floors_below_grade'] = 11235
+        ps.save()
+
+        xml = self.bs.export(ps, BuildingSync.BRICR_STRUCT)
+
+        self.assertTrue("<auc:FloorsBelowGrade>11235</auc:FloorsBelowGrade>" in xml)
+        self.assertTrue("<auc:State>Oregon</auc:State>" in xml)
+
+        # check for complicated fields and measures.
+
+    def test_set_node(self):
+        data = {
+            "a": 1,
+            "c": {
+                "d": 2
+            },
+            "d": {
+                "e": {
+                    "f": {
+                        "g": {
+                            "h": "deep"
+                        }
+                    }
+                }
+            }
+        }
+
+        result = self.bs._set_node('', data, 1999)
+        self.assertFalse(result)
+
+        result = self.bs._set_node('a', data, 1999)
+        self.assertTrue(result)
+        self.assertEqual(data["a"], 1999)
+
+        result = self.bs._set_node('c.d', data, "string_me")
+        self.assertTrue(result)
+        self.assertEqual(data["c"]["d"], "string_me")
+
+        result = self.bs._set_node('new', data, "new_field")
+        self.assertTrue(result)
+        self.assertEqual(data["new"], "new_field")
+
+        # If setting the node before the end of the existing hash, then it will remove the rest
+        result = self.bs._set_node('d.e.f.g', data, 1.234)
+        self.assertTrue(result)
+        self.assertEqual(data["d"]["e"]["f"]["g"], 1.234)
+
+        # recursive create
+        result = self.bs._set_node('x.y.z', data, "newest_field")
+        self.assertTrue(result)
+        self.assertEqual(data["x"]["y"]["z"], "newest_field")
+
+    def test_set_node_delete(self):
+        data = {
+            "a": 1,
+            "c": {"d": 2}
+        }
+        result = self.bs._set_node('c', data, None)
+        self.assertTrue(result)
+        self.assertTrue("c" not in data)
+
+    def test_compound_set(self):
+        data = {
+            "root": {
+                "a": {
+                    "key": "floor_area",
+                    "value": 1
+                },
+                "energy": [
+                    {
+                        "key": "eui",
+                        "value": 2
+                    },
+                    {
+                        "key": "kw",
+                        "value": 3
+                    }
+                ]
+            }
+        }
+        result = self.bs._set_compound_node("root.a", data, "key", "floor_area", "value", 1000)
+        self.assertTrue(result)
+        self.assertTrue(data["root"]["a"]["value"], 1000)
+
+        result = self.bs._set_compound_node("root.energy", data, "key", "eui", "value", 2000)
+        self.assertTrue(result)
+        self.assertTrue(data["root"]["energy"][0]["value"], 2000)
+
+        result = self.bs._set_compound_node("root.energy", data, "key", "kw", "value", 3000)
+        self.assertTrue(result)
+        self.assertTrue(data["root"]["energy"][1]["value"], 3000)
+
+        result = self.bs._set_compound_node("root.energy", data, "key", "source", "value", 4000)
+        self.assertTrue(result)
+        self.assertEqual(len(data["root"]["energy"]), 3)
+        for d in data["root"]["energy"]:
+            if d["key"] == "source":
+                self.assertEqual(d["value"], 4000)
+
+        result = self.bs._set_compound_node("root.a", data, "key", "roof_area", "value", 5000)
+        self.assertTrue(result)
+        self.assertEqual(len(data["root"]["a"]), 2)
+        for d in data["root"]["a"]:
+            if d["key"] == "roof_area":
+                self.assertEqual(d["value"], 5000)
+            if d["key"] == "floor_area":
+                self.assertEqual(d["value"], 1000)
 
     def test_get_node(self):
         data = {
@@ -129,7 +280,7 @@ class TestBuildingSync(TestCase):
         self.assertEqual(res, expected)
         self.assertTrue(errors)
         self.assertEqual(mess, [
-            "Could not find required value for 'Audits.Audit.Sites.Site.Address.BungalowName'"])
+            "Could not find required value for 'auc:Audits.auc:Audit.auc:Sites.auc:Site.auc:Address.BungalowName'"])
 
         # Missing path
         struct['return']['bungalow_name'] = {
@@ -140,7 +291,7 @@ class TestBuildingSync(TestCase):
         res, errors, mess = self.bs.process(struct)
         self.assertTrue(errors)
         self.assertEqual(mess, [
-            "Could not find required value for 'Audits.Audit.Sites.Site.Address.Long.List.A.B'"])
+            "Could not find required value for 'auc:Audits.auc:Audit.auc:Sites.auc:Site.auc:Address.Long.List.A.B'"])
         self.assertEqual(res, expected)
 
     def test_bricr_struct(self):

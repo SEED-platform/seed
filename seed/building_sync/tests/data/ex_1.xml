@@ -1,6 +1,4 @@
-<auc:Audits xmlns:auc='http://nrel.gov/schemas/bedes-auc/2014'
-            xsi:schemaLocation='http://nrel.gov/schemas/bedes-auc/2014 file:///E:/buildingsync/BuildingSync.xsd'
-            xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>
+<auc:Audits xmlns:auc='http://nrel.gov/schemas/bedes-auc/2014' xsi:schemaLocation='http://nrel.gov/schemas/bedes-auc/2014 file:///E:/buildingsync/BuildingSync.xsd' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>
     <auc:Audit>
         <auc:Sites>
             <auc:Site>
@@ -27,8 +25,7 @@
                             <auc:PremisesIdentifier>
                                 <auc:IdentifierLabel>Custom</auc:IdentifierLabel>
                                 <auc:IdentifierCustomName>Custom ID</auc:IdentifierCustomName>
-                                <auc:IdentifierValue>e6a5de56-8234-4b4f-ba10-6af0ae612fd1
-                                </auc:IdentifierValue>
+                                <auc:IdentifierValue>e6a5de56-8234-4b4f-ba10-6af0ae612fd1</auc:IdentifierValue>
                             </auc:PremisesIdentifier>
                         </auc:PremisesIdentifiers>
                         <auc:FacilityClassification>Commercial</auc:FacilityClassification>

@@ -5,30 +5,36 @@
 :author nicholas.long@nrel.gov
 """
 
+import copy
 import json
+import logging
 import os
+from collections import OrderedDict
 
 import xmltodict
+from django.db.models import FieldDoesNotExist
 
 from seed.models.measures import _snake_case
+
+_log = logging.getLogger(__name__)
 
 
 class BuildingSync(object):
     ADDRESS_STRUCT = {
-        "root": "Audits.Audit.Sites.Site.Address",
+        "root": "auc:Audits.auc:Audit.auc:Sites.auc:Site.auc:Address",
         "return": {
             "address_line_1": {
-                "path": "StreetAddressDetail.Simplified.StreetAddress",
+                "path": "auc:StreetAddressDetail.auc:Simplified.auc:StreetAddress",
                 "required": True,
                 "type": "string",
             },
             "city": {
-                "path": "City",
+                "path": "auc:City",
                 "required": True,
                 "type": "string",
             },
             "state": {
-                "path": "State",
+                "path": "auc:State",
                 "required": True,
                 "type": "string",
             }
@@ -36,100 +42,100 @@ class BuildingSync(object):
     }
 
     BRICR_STRUCT = {
-        "root": "Audits.Audit",
+        "root": "auc:Audits.auc:Audit",
         "return": {
             "address_line_1": {
-                "path": "Sites.Site.Address.StreetAddressDetail.Simplified.StreetAddress",
+                "path": "auc:Sites.auc:Site.auc:Address.auc:StreetAddressDetail.auc:Simplified.auc:StreetAddress",
                 "required": True,
                 "type": "string",
             },
             "city": {
-                "path": "Sites.Site.Address.City",
+                "path": "auc:Sites.auc:Site.auc:Address.auc:City",
                 "required": True,
                 "type": "string",
             },
             "state": {
-                "path": "Sites.Site.Address.State",
+                "path": "auc:Sites.auc:Site.auc:Address.auc:State",
                 "required": True,
                 "type": "string",
             },
             "longitude": {
-                "path": "Sites.Site.Longitude",
+                "path": "auc:Sites.auc:Site.auc:Longitude",
                 "required": True,
                 "type": "double"
             },
             "latitude": {
-                "path": "Sites.Site.Latitude",
+                "path": "auc:Sites.auc:Site.auc:Latitude",
                 "required": True,
                 "type": "double",
             },
             "property_name": {
-                "path": "Sites.Site.Facilities.Facility.@ID",
+                "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.@ID",
                 "required": True,
                 "type": "string",
             },
             "year_built": {
-                "path": "Sites.Site.Facilities.Facility.YearOfConstruction",
+                "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:YearOfConstruction",
                 "required": True,
                 "type": "integer",
             },
             "property_type": {
-                "path": "Sites.Site.Facilities.Facility.FacilityClassification",
+                "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:FacilityClassification",
                 "required": True,
                 "type": "string",
             },
             "occupancy_type": {
-                "path": "Sites.Site.Facilities.Facility.OccupancyClassification",
+                "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:OccupancyClassification",
                 "required": True,
                 "type": "string",
             },
             "floors_above_grade": {
-                "path": "Sites.Site.Facilities.Facility.FloorsAboveGrade",
+                "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:FloorsAboveGrade",
                 "required": True,
                 "type": "integer",
             },
             "floors_below_grade": {
-                "path": "Sites.Site.Facilities.Facility.FloorsBelowGrade",
+                "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:FloorsBelowGrade",
                 "required": True,
                 "type": "integer",
             },
             "premise_identifier": {
-                "path": "Sites.Site.Facilities.Facility.PremisesIdentifiers.PremisesIdentifier",
-                "key_path_name": "IdentifierLabel",
+                "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:PremisesIdentifiers.auc:PremisesIdentifier",
+                "key_path_name": "auc:IdentifierLabel",
                 "key_path_value": "Assessor parcel number",
-                "value_path_name": "IdentifierValue",
+                "value_path_name": "auc:IdentifierValue",
                 "required": True,
                 "type": "string",
             },
             "custom_id_1": {
-                "path": "Sites.Site.Facilities.Facility.PremisesIdentifiers.PremisesIdentifier",
-                "key_path_name": "IdentifierCustomName",
+                "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:PremisesIdentifiers.auc:PremisesIdentifier",
+                "key_path_name": "auc:IdentifierCustomName",
                 "key_path_value": "Custom ID",
-                "value_path_name": "IdentifierValue",
+                "value_path_name": "auc:IdentifierValue",
                 "required": True,
                 "type": "string",
             },
             "gross_floor_area": {
-                "path": "Sites.Site.Facilities.Facility.FloorAreas.FloorArea",
-                "key_path_name": "FloorAreaType",
+                "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:FloorAreas.auc:FloorArea",
+                "key_path_name": "auc:FloorAreaType",
                 "key_path_value": "Gross",
-                "value_path_name": "FloorAreaValue",
+                "value_path_name": "auc:FloorAreaValue",
                 "required": True,
                 "type": "double",
             },
             "net_floor_area": {
-                "path": "Sites.Site.Facilities.Facility.FloorAreas.FloorArea",
-                "key_path_name": "FloorAreaType",
+                "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:FloorAreas.auc:FloorArea",
+                "key_path_name": "auc:FloorAreaType",
                 "key_path_value": "Net",
-                "value_path_name": "FloorAreaValue",
+                "value_path_name": "auc:FloorAreaValue",
                 "required": False,
                 "type": "double",
             },
             "footprint_floor_area": {
-                "path": "Sites.Site.Facilities.Facility.FloorAreas.FloorArea",
-                "key_path_name": "FloorAreaType",
+                "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:FloorAreas.auc:FloorArea",
+                "key_path_name": "auc:FloorAreaType",
                 "key_path_value": "Footprint",
-                "value_path_name": "FloorAreaValue",
+                "value_path_name": "auc:FloorAreaValue",
                 "required": False,
                 "type": "double",
             },
@@ -139,7 +145,7 @@ class BuildingSync(object):
     def __init__(self):
         self.filename = None
         self.data = None
-        self.raw_data = None
+        self.raw_data = {}
 
     @property
     def pretty_print(self):
@@ -157,12 +163,203 @@ class BuildingSync(object):
                 self.raw_data = xmltodict.parse(
                     xmlfile.read(),
                     process_namespaces=True,
-                    namespaces={'http://nrel.gov/schemas/bedes-auc/2014': None}
+                    namespaces={
+                        'http://nrel.gov/schemas/bedes-auc/2014': 'auc',
+                        'http://www.w3.org/2001/XMLSchema-instance': 'xsi',
+                    }
                 )
         else:
             raise Exception("File not found: {}".format(filename))
 
         return True
+
+    def export(self, property_state, process_struct=ADDRESS_STRUCT):
+        """Export BuildingSync file from an existing BuildingSync file (from import), property_state and
+        a process struct.
+
+        :param property_state: object, PropertyState to merge into BuildingSync
+        :param process_struct: dict, mapping from PropertyState to BuildingSync
+        :return: string, as XML
+        """
+
+        # if property state is not defined, then just return the BuildingSync unparsed
+        if not property_state:
+            return xmltodict.unparse(self.raw_data, pretty=True).replace('\t', '  ')
+
+        # parse the property_state and merge it with the raw data
+        new_dict = copy.deepcopy(self.raw_data)
+        if new_dict == {}:
+            _log.debug("BuildingSync raw data is empty, adding in header information")
+            # new_dict[]
+            new_dict = OrderedDict(
+                [
+                    (
+                        u'auc:Audits', OrderedDict(
+                            [
+                                (u'@xsi:schemaLocation',
+                                 u'http://nrel.gov/schemas/bedes-auc/2014 file:///E:/buildingsync/BuildingSync.xsd'),
+                                ('@xmlns', OrderedDict(
+                                    [
+                                        (u'auc', u'http://nrel.gov/schemas/bedes-auc/2014'),
+                                        (u'xsi', u'http://www.w3.org/2001/XMLSchema-instance')
+                                    ]
+                                ))
+                            ]
+                        )
+                    )
+                ]
+            )
+
+        for field, v in process_struct['return'].items():
+            value = None
+            try:
+                property_state._meta.get_field(field)
+                value = getattr(property_state, field)
+            except FieldDoesNotExist:
+                _log.debug("Field {} is not a db field, trying read from extra data".format(field))
+                value = property_state.extra_data.get(field, None)
+
+            # set the value in the new_dict (if none, then remove the field)
+            # TODO: remove the field if the value is None
+            # TODO: handle the setting of the complex fields (with key_path_names, identifiers)
+            if value:
+                full_path = "{}.{}".format(process_struct['root'], v['path'])
+
+                if v.get('key_path_name', None) and v.get('value_path_name', None) and v.get(
+                        'key_path_value', None):
+                    # iterate over the paths and find the correct node to set
+                    self._set_compound_node(
+                        full_path,
+                        new_dict,
+                        v['key_path_name'],
+                        v['key_path_value'],
+                        v['value_path_name'],
+                        value
+                    )
+                else:
+                    if not self._set_node(full_path, new_dict, value):
+                        _log.debug("Unable to set path")
+
+        return xmltodict.unparse(new_dict, pretty=True).replace('\t', '  ')
+
+    def _set_node(self, path, data, value):
+        """
+        Set the value in the dictionary based on the path. If there are more than one paths, then
+        it will only set the first path for now. The future could allow a variable to pass in the
+        index (or other constraint) before setting the value.
+
+        :param path: string, path which to navigate to set the value
+        :param data: dict, dictionary to process
+        :param value: value to set, could be any type at the moment.
+        :return: boolean, true if successful
+        """
+
+        path = path.split(".")
+        for idx, p in enumerate(path):
+            if p == '':
+                return False
+            elif idx == len(path) - 1:
+                if value is None:
+                    del data[p]
+                else:
+                    data[p] = value
+                return True
+            else:
+                prev_node = path.pop(0)
+                new_node = data.get(prev_node)
+                new_path = '.'.join(path)
+                if new_node is None:
+                    # create the new node because it doesn't exist
+                    data[prev_node] = {}
+                    new_node = data[prev_node]
+
+                if isinstance(new_node, list):
+                    _log.debug("Unable to iterate over lists at the moment")
+                    return False
+                elif isinstance(new_node, dict):
+                    return self._set_node(new_path, new_node, value)
+                else:
+                    # can't recurse futher into new_node because it is not a dict
+                    break
+
+    def _set_compound_node(self, list_path, data, key_path_name, key_path_value, value_path_name,
+                           value):
+        """
+        If the XML is a list of options with a key field at the same level as the value, then use
+        this method. The example belows show how the XML will be structured. To set the
+        Gross floor area, then pass in the following
+
+            _set_compound_node("...FloorAreas", "FloorAreaType", "Gross", "FloorAreaValue", 1000)
+
+        .. code:
+
+            <auc:FloorAreas>
+                <auc:FloorArea>
+                    <auc:FloorAreaType>Gross</auc:FloorAreaType>
+                    <auc:FloorAreaValue>25000</auc:FloorAreaValue>
+                </auc:FloorArea>
+                <auc:FloorArea>
+                    <auc:FloorAreaType>Net</auc:FloorAreaType>
+                    <auc:FloorAreaValue>22500</auc:FloorAreaValue>
+                </auc:FloorArea>
+            </auc:FloorAreas>
+
+        :param list_path: String, path to where the list of items start in the dictionary
+        :param data: Dict, data to act on
+        :param key_path_name: String, name of the element to contrain check on
+        :param key_path_value: String, name of the value of the element to check on
+        :param value_path_name: String, name of the element that will be set
+        :param value: undefined, Value to set
+        :return: Boolean
+        """
+
+        path = list_path.split(".")
+        for idx, p in enumerate(path):
+            if p == '':
+                return False
+            elif idx == len(path) - 1:
+                # We have arrived at the location where the compound data needs to be set
+                # Make sure that the key_path_name and key_path_value are not already there
+                if data.get(p):
+                    if isinstance(data[p], dict):
+                        if data[p].get(key_path_name) == key_path_value:
+                            data[p][value_path_name] = value
+                        else:
+                            # need to convert the dict to a list and then add the new one.
+                            data[p] = [data[p]]
+                            new_sub_item = {key_path_name: key_path_value, value_path_name: value}
+                            data[p].append(new_sub_item)
+                    elif isinstance(data[p], list):
+                        for sub in data[p]:
+                            if sub.get(key_path_name, None) == key_path_value:
+                                sub[value_path_name] = value
+                                break
+                        else:
+                            # Not found, create a new one
+                            new_sub_item = {key_path_name: key_path_value, value_path_name: value}
+                            data[p].append(new_sub_item)
+                else:
+                    data[p] = {key_path_name: key_path_value, value_path_name: value}
+
+                return True
+            else:
+                prev_node = path.pop(0)
+                new_node = data.get(prev_node)
+                new_path = '.'.join(path)
+                if new_node is None:
+                    # create the new node because it doesn't exist
+                    data[prev_node] = {}
+                    new_node = data[prev_node]
+
+                if isinstance(new_node, list):
+                    _log.debug("Unable to iterate over lists at the moment")
+                    return False
+                elif isinstance(new_node, dict):
+                    return self._set_compound_node(new_path, new_node, key_path_name,
+                                                   key_path_value, value_path_name, value)
+                else:
+                    # can't recurse futher into new_node because it is not a dict
+                    break
 
     def _get_node(self, path, node, results=[], kwargs={}):
         """
@@ -290,18 +487,20 @@ class BuildingSync(object):
 
         # manually add in parsing of measures and reports because they are a bit different than
         # a straight mapping
-        measures = self._get_node('Audits.Audit.Measures.Measure', data, [])
+        measures = self._get_node('auc:Audits.auc:Audit.auc:Measures.auc:Measure', data, [])
         for m in measures:
-            category = m['TechnologyCategories']['TechnologyCategory'].keys()[0]
+            cat_w_namespace = m['auc:TechnologyCategories']['auc:TechnologyCategory'].keys()[0]
+            category = cat_w_namespace.replace('auc:', '')
             new_data = {
                 'property_measure_name': m.get('@ID'),  # This will be the IDref from the scenarios
                 'category': _snake_case(category),
-                'name': m['TechnologyCategories']['TechnologyCategory'][category]['MeasureName']
+                'name': m['auc:TechnologyCategories']['auc:TechnologyCategory'][cat_w_namespace][
+                    'auc:MeasureName']
             }
             for k, v in m.items():
-                if k in ['@ID', 'PremisesAffected', 'TechnologyCategories']:
+                if k in ['@ID', 'auc:PremisesAffected', 'auc:TechnologyCategories']:
                     continue
-                new_data[_snake_case(k)] = v
+                new_data[_snake_case(k.replace('auc:', ''))] = v
 
             # fix the names of the measures for "easier" look up... doing in separate step to
             # fit in single line. Cleanup -- when?
@@ -320,23 +519,24 @@ class BuildingSync(object):
         #     </auc:PackageOfMeasures>
         #   </auc:ScenarioType>
         # </auc:Scenario>
-        scenarios = self._get_node('Audits.Audit.Report.Scenarios.Scenario', data, [])
+        scenarios = self._get_node('auc:Audits.auc:Audit.auc:Report.auc:Scenarios.auc:Scenario',
+                                   data, [])
         for s in scenarios:
             new_data = {
                 'id': s.get('@ID'),
-                'name': s.get('ScenarioName'),
+                'name': s.get('auc:ScenarioName'),
             }
 
-            if s.get('ScenarioType'):
-                node = s['ScenarioType'].get('PackageOfMeasures')
+            if s.get('auc:ScenarioType'):
+                node = s['auc:ScenarioType'].get('auc:PackageOfMeasures')
                 if node:
-                    ref_case = self._get_node('ReferenceCase', node, [])
+                    ref_case = self._get_node('auc:ReferenceCase', node, [])
                     if ref_case and ref_case.get('@IDref'):
                         new_data['reference_case'] = ref_case.get('@IDref')
-                    new_data['annual_savings_site_energy'] = node.get('AnnualSavingsSiteEnergy')
+                    new_data['annual_savings_site_energy'] = node.get('auc:AnnualSavingsSiteEnergy')
 
                     new_data['measures'] = []
-                    measures = self._get_node('MeasureIDs.MeasureID', node, [])
+                    measures = self._get_node('auc:MeasureIDs.auc:MeasureID', node, [])
                     if isinstance(measures, list):
                         for measure in measures:
                             if measure.get('@IDref', None):
@@ -359,6 +559,6 @@ class BuildingSync(object):
         :param process_struct: dict, structure on how to extract data from file and save into dict
         :return: list, [dict, list, list], [results, list of errors, list of messages]
         """
-        # API call to BuildingSync Validator on other server for appropriate use case
-        # usecase = new_use_case
+        # API call to BuildingSync Selection Tool on other server for appropriate use case
+        # prcess_struct = new_use_case (from Building Selection Tool)
         return self._process_struct(process_struct, self.raw_data)

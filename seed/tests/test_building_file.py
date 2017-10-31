@@ -48,9 +48,9 @@ class TestBuildingFiles(TestCase):
             file_type=BuildingFile.BUILDINGSYNC,
         )
 
-        status, property_view, messages = bf.process(self.org.id, self.org.cycles.first())
+        status, property_state, messages = bf.process(self.org.id, self.org.cycles.first())
         self.assertTrue(status)
-        self.assertEqual(property_view.state.address_line_1, '123 Main Street')
+        self.assertEqual(property_state.address_line_1, '123 Main Street')
         self.assertEqual(messages, [])
 
     def test_geojson_error(self):

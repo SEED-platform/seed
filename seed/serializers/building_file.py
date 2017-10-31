@@ -18,6 +18,7 @@ from seed.serializers.base import ChoiceField
 
 class BuildingFileSerializer(serializers.ModelSerializer):
     file_type = ChoiceField(choices=BuildingFile.BUILDING_FILE_TYPES)
+    organization_id = serializers.IntegerField()
 
     class Meta:
         model = BuildingFile

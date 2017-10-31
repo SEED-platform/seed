@@ -17,6 +17,7 @@ from seed.serializers.base import ChoiceField
 class MeasureSerializer(serializers.ModelSerializer):
     class Meta:
         model = Measure
+        fields = '__all__'
 
 
 class PropertyMeasureSerializer(serializers.HyperlinkedModelSerializer):

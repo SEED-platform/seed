@@ -47,7 +47,7 @@ angular.module('BE.seed.controller.mapping', [])
       var db_field_columns = suggested_mappings_payload.column_names;
       var columns = suggested_mappings_payload.columns;
       var extra_data_columns = _.filter(columns, 'extra_data');
-      var original_columns = _.map(columns, function f (n) {
+      var original_columns = _.map(columns, function f(n) {
         return n.name;
       });
       // var original_columns = angular.copy(db_field_columns.concat(extra_data_columns));
@@ -529,6 +529,14 @@ angular.module('BE.seed.controller.mapping', [])
         return mappings;
       };
 
+      /** wait for the result of the data quality results before presenting the mapped data **/
+      $scope.data_quality_checks = function () {
+        data_quality_service.data_quality_checks_status(':1:SEED:check_data:PROG:' + $scope.import_file.id).then(function (result) {
+          $scope.get_mapped_buildings();
+        });
+      };
+
+
       /**
        * remap_buildings: shows the progress bar and kicks off the re-mapping,
        *   after saving column mappings, deletes unmatched buildings
@@ -541,19 +549,18 @@ angular.module('BE.seed.controller.mapping', [])
         mapping_service.save_mappings(
           $scope.import_file.id,
           get_untitle_cased_mappings()
-        )
-          .then(function () {
-            // start re-mapping
-            mapping_service.remap_buildings($scope.import_file.id).then(function (data) {
-              if (data.status === 'error' || data.status === 'warning') {
-                $scope.$emit('app_error', data);
-                $scope.get_mapped_buildings();
-              } else {
-                // save maps start mapping data
-                check_mapping(data.progress_key);
-              }
-            });
+        ).then(function () {
+          // start re-mapping
+          mapping_service.remap_buildings($scope.import_file.id).then(function (data) {
+            if (data.status === 'error' || data.status === 'warning') {
+              $scope.$emit('app_error', data);
+              $scope.data_quality_checks();
+            } else {
+              // save maps start mapping data
+              check_mapping(data.progress_key);
+            }
           });
+        });
       };
 
       /**
@@ -565,7 +572,7 @@ angular.module('BE.seed.controller.mapping', [])
           0, //starting prog bar percentage
           1.0,  // progress multiplier
           function () {
-            $scope.get_mapped_buildings();
+            $scope.data_quality_checks();
           }, function () {
             // Do nothing
           },
@@ -609,7 +616,7 @@ angular.module('BE.seed.controller.mapping', [])
           {header: 'Address Line 1', inventory_type: 'TaxLotState'}
         ];
 
-        function compare_fields (x, y) {
+        function compare_fields(x, y) {
           return x.header == y.suggestion && x.inventory_type == y.suggestion_table_name;
         }
 
