@@ -10,7 +10,8 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
   'user_service',
   'cycle_service',
   'spinner_utility',
-  function ($http, $log, urls, user_service, cycle_service, spinner_utility) {
+  'flippers',
+  function ($http, $log, urls, user_service, cycle_service, spinner_utility, flippers) {
 
     var inventory_service = {
       total_properties_for_user: 0,
@@ -397,9 +398,18 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         }
       }).then(function (response) {
         // Remove empty columns
-        return _.filter(response.data.columns, function (col) {
+        var columns = _.filter(response.data.columns, function (col) {
           return !_.isEmpty(col.name);
         });
+
+        // Remove _pint columns
+        if (!flippers.is_active('release:use_pint')) {
+          _.remove(columns, function (col) {
+            return /_pint$/.test(col.name);
+          });
+        }
+
+        return columns;
       });
     };
 
@@ -411,9 +421,18 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         }
       }).then(function (response) {
         // Remove empty columns
-        return _.filter(response.data.columns, function (col) {
+        var columns = _.filter(response.data.columns, function (col) {
           return !_.isEmpty(col.name);
         });
+
+        // Remove _pint columns
+        if (!flippers.is_active('release:use_pint')) {
+          _.remove(columns, function (col) {
+            return /_pint$/.test(col.name);
+          });
+        }
+
+        return columns;
       });
     };
 
@@ -622,7 +641,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     inventory_service.saveSettings = function (key, columns) {
       key += '.' + user_service.get_organization().id;
       var toSave = inventory_service.reorderSettings(_.map(columns, function (col) {
-        return _.pick(col, ['name', 'pinnedLeft', 'related', 'visible']);
+        return _.pick(col, ['name', 'table', 'visible', 'pinnedLeft']);
       }));
       localStorage.setItem(key, JSON.stringify(toSave));
     };
@@ -630,8 +649,6 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     inventory_service.loadSettings = function (key, columns) {
       key += '.' + user_service.get_organization().id;
       columns = angular.copy(columns);
-
-      var isDetailSetting = key.match(/\.(properties|taxlots)\.detail\.\d+$/);
 
       // Hide extra data columns by default
       _.forEach(columns, function (col) {
@@ -642,22 +659,13 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       if (!_.isNull(localColumns)) {
         localColumns = JSON.parse(localColumns);
 
-        // Remove deprecated columns missing 'related' field
-        // NOT FOR DETAIL SETTINGS
-        if (!isDetailSetting) {
-          _.remove(localColumns, function (col) {
-            return !_.has(col, 'related');
-          });
-        }
-
         // Remove nonexistent columns
         _.remove(localColumns, function (col) {
-          return !_.find(columns, {name: col.name, related: col.related});
+          return !_.find(columns, {name: col.name, table: col.table});
         });
         // Use saved column settings with original data as defaults
         localColumns = _.map(localColumns, function (col) {
-          if (isDetailSetting) return _.defaults(col, _.remove(columns, {name: col.name})[0]);
-          else return _.defaults(col, _.remove(columns, {name: col.name, related: col.related})[0]);
+          return _.defaults(col, _.remove(columns, {name: col.name, table: col.table})[0]);
         });
         // If no columns are visible, reset visibility only
         if (!_.find(localColumns, 'visible')) {

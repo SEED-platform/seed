@@ -5,7 +5,6 @@
 :author
 """
 import base64
-import csv
 import hashlib
 import hmac
 import json
@@ -1319,59 +1318,6 @@ class ImportFileViewSet(viewsets.ViewSet):
         prog_key = get_prog_key('get_progress', import_file_id)
         cache = get_cache(prog_key)
         return HttpResponse(cache['progress'])
-
-    @api_endpoint_class
-    @ajax_request_class
-    @detail_route(methods=['GET'], url_path='data_quality_results_csv')
-    def get_csv(self, request, pk=None):
-        """
-        Download a csv of the results.
-        ---
-        type:
-            status:
-                required: true
-                type: string
-                description: either success or error
-            progress_key:
-                type: integer
-                description: ID of background job, for retrieving job progress
-        parameter_strategy: replace
-        parameters:
-            - name: pk
-              description: Import file ID
-              required: true
-              paramType: path
-        """
-
-        import_file_id = pk
-        data_quality_results = get_cache_raw(DataQualityCheck.cache_key(import_file_id))
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="Data Quality Check Results.csv"'
-
-        writer = csv.writer(response)
-        if data_quality_results is None:
-            writer.writerow(['Error'])
-            writer.writerow(['data quality results not found'])
-            return response
-
-        writer.writerow(
-            ['Table', 'Address Line 1', 'PM Property ID', 'Tax Lot ID', 'Custom ID', 'Field',
-             'Error Message', 'Severity'])
-
-        for row in data_quality_results:
-            for result in row['data_quality_results']:
-                writer.writerow([
-                    row['data_quality_results'][0]['table_name'],
-                    row['address_line_1'],
-                    row['pm_property_id'] if 'pm_property_id' in row else None,
-                    row['jurisdiction_tax_lot_id'] if 'jurisdiction_tax_lot_id' in row else None,
-                    row['custom_id_1'],
-                    result['formatted_field'],
-                    result['detailed_message'],
-                    result['severity']
-                ])
-
-        return response
 
     @api_endpoint_class
     @ajax_request_class

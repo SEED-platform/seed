@@ -5,15 +5,15 @@
 :author
 """
 
-# TODO The API is returning on both a POST and GET. Make sure to authenticate.
-
+import csv
 from celery.utils.log import get_task_logger
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from rest_framework import viewsets, serializers, status
 from rest_framework.authentication import SessionAuthentication
-from rest_framework.decorators import list_route
+from rest_framework.decorators import list_route, detail_route
 
 from seed.authentication import SEEDAuthentication
+from seed.data_importer.tasks import do_checks
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import (
@@ -25,7 +25,7 @@ from seed.models.data_quality import (
     DataQualityCheck,
 )
 from seed.utils.api import api_endpoint_class
-from seed.data_importer.tasks import do_checks
+from seed.utils.cache import get_cache_raw
 
 logger = get_task_logger(__name__)
 
@@ -142,6 +142,50 @@ class DataQualityViews(viewsets.ViewSet):
 
     @api_endpoint_class
     @ajax_request_class
+    @has_perm_class('requires_member')
+    @detail_route(methods=['GET'])
+    def csv(self, request, pk):
+        """
+        Download a csv of the data quality checks by the pk which is the cache_key
+        ---
+        parameter_strategy: replace
+        parameters:
+            - name: pk
+              description: Import file ID or cache key
+              required: true
+              paramType: path
+        """
+        data_quality_results = get_cache_raw(DataQualityCheck.cache_key(pk))
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="Data Quality Check Results.csv"'
+
+        writer = csv.writer(response)
+        if data_quality_results is None:
+            writer.writerow(['Error'])
+            writer.writerow(['data quality results not found'])
+            return response
+
+        writer.writerow(
+            ['Table', 'Address Line 1', 'PM Property ID', 'Tax Lot ID', 'Custom ID', 'Field',
+             'Error Message', 'Severity'])
+
+        for row in data_quality_results:
+            for result in row['data_quality_results']:
+                writer.writerow([
+                    row['data_quality_results'][0]['table_name'],
+                    row['address_line_1'],
+                    row['pm_property_id'] if 'pm_property_id' in row else None,
+                    row['jurisdiction_tax_lot_id'] if 'jurisdiction_tax_lot_id' in row else None,
+                    row['custom_id_1'],
+                    result['formatted_field'],
+                    result['detailed_message'],
+                    result['severity']
+                ])
+
+        return response
+
+    @api_endpoint_class
+    @ajax_request_class
     @has_perm_class('requires_parent_org_owner')
     @list_route(methods=['GET'])
     def data_quality_rules(self, request):
@@ -177,20 +221,21 @@ class DataQualityViews(viewsets.ViewSet):
         dq = DataQualityCheck.retrieve(org)
         rules = dq.rules.order_by('field', 'severity')
         for rule in rules:
-            result['rules']['properties' if rule.table_name == 'PropertyState' else 'taxlots'].append({
-                'field': rule.field,
-                'enabled': rule.enabled,
-                'data_type': _get_js_rule_type(rule.data_type),
-                'rule_type': rule.rule_type,
-                'required': rule.required,
-                'not_null': rule.not_null,
-                'min': rule.min,
-                'max': rule.max,
-                'text_match': rule.text_match,
-                'severity': _get_js_rule_severity(rule.severity),
-                'units': rule.units,
-                'label': rule.status_label_id
-            })
+            result['rules'][
+                'properties' if rule.table_name == 'PropertyState' else 'taxlots'].append({
+                    'field': rule.field,
+                    'enabled': rule.enabled,
+                    'data_type': _get_js_rule_type(rule.data_type),
+                    'rule_type': rule.rule_type,
+                    'required': rule.required,
+                    'not_null': rule.not_null,
+                    'min': rule.min,
+                    'max': rule.max,
+                    'text_match': rule.text_match,
+                    'severity': _get_js_rule_severity(rule.severity),
+                    'units': rule.units,
+                    'label': rule.status_label_id
+                })
 
         return JsonResponse(result)
 

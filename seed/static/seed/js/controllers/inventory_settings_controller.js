@@ -79,15 +79,6 @@ angular.module('BE.seed.controller.inventory_settings', [])
 
       $scope.data = inventory_service.loadSettings(localStorageKey, all_columns);
 
-      var is_pint_column = function (obj) {
-        return /_pint$/.test(obj.name);
-      };
-
-      if (!flippers.is_active('release:use_pint')) {
-        // db may return _pint columns; don't put them in the list settings
-        _.remove($scope.data, is_pint_column);
-      }
-
       $scope.gridOptions = {
         data: 'data',
         enableColumnMenus: false,
