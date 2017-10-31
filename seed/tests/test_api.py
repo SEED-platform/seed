@@ -83,6 +83,7 @@ class SchemaGenerationTests(TestCase):
                  '/api/v2/labels',
                  '/api/v2/green_assessment',
                  '/api/v2/green_assessment_url',
+                 '/api/v2/building_file',
                  '/api/v2/cycles',
                  '/api/v2/green_assessment_property',
                  '/api/v2/gbr_properties',

@@ -4,28 +4,24 @@
 :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-# import json
-
 from django.http import JsonResponse
-from rest_framework.authentication import SessionAuthentication
-from rest_framework.decorators import parser_classes
-from rest_framework.parsers import FormParser, MultiPartParser
-from rest_framework.viewsets import GenericViewSet
 from rest_framework import status
 
-from seed.authentication import SEEDAuthentication
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import BuildingFile, Cycle
+from seed.serializers.building_file import BuildingFileSerializer
 from seed.serializers.properties import PropertyStateWritableSerializer
+from seed.utils.viewsets import SEEDOrgReadOnlyModelViewSet
 
 
-class BuildingFileViewSet(GenericViewSet):
-    raise_exception = True
-    authentication_classes = (SessionAuthentication, SEEDAuthentication)
+class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
+    model = BuildingFile
+    serializer_class = BuildingFileSerializer
+    orgfilter = 'property_state__organization'
+
     # TODO: add the building_file serializer to this and override the methods (perform_create)
 
     @has_perm_class('can_modify_data')
-    @parser_classes((MultiPartParser, FormParser,))
     def create(self, request):
         """
         Does not work in Swagger!
