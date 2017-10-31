@@ -96,7 +96,7 @@ class SchemaGenerationTests(TestCase):
 
     def test_get_api_schema(self):
         """
-        Test of 'schem`a' generator.
+        Test of 'schema' generator.
         """
         url = reverse('api:v2:schema')
         res = self.client.get(url)
