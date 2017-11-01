@@ -66,7 +66,7 @@
     <div class="section_header_container has_no_border" ng-hide="review_mappings">
         <div class="section_header fixed_height">
             <div class="left section_action_container">
-                <button type="button" class="btn btn-primary" ng-hide="import_file.matching_done && isValidCycle" ng-disabled="check_reset_mappings()" ng-click="reset_mappings()">Map SEED fields to imported file fields</button>
+                <button type="button" class="btn btn-primary" ng-hide="import_file.matching_done && isValidCycle" ng-disabled="check_reset_mappings()" ng-click="reset_mappings()" translate>Map SEED fields to imported file fields</button>
             </div>
             <div class="right section_action_container section_action_btn">
                 <button type="button" class="pull-right btn btn-primary mapping-button" ng-disabled="check_fields()" ng-click="remap_buildings()" ng-hide="import_file.matching_done" translate>Map Your Data</button>
@@ -134,7 +134,7 @@
                     <tbody>
                         <tr>
                             <td class="hide"></td>
-                            <td style="border-right: 0 none;"><h3>Mapped Fields</h3></td>
+                            <td style="border-right: 0 none;"><h3 translate>Mapped Fields</h3></td>
                             <td style="border-right: 0 none; text-align: right;"><span ng-hide="import_file.matching_done">{$ 'Set all fields to' | translate $}:</span></td>
                             <td style="border-right: 0 none;">
                                 <select ng-model="setAllFields" ng-change="setAllInventoryTypes()" ng-options="item as item.name for item in ::setAllFieldsOptions track by item.value" ng-hide="import_file.matching_done"></select>
