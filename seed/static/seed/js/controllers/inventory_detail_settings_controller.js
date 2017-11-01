@@ -11,7 +11,38 @@ angular.module('BE.seed.controller.inventory_detail_settings', [])
     'inventory_service',
     'user_service',
     'columns',
-    function ($scope, $window, $uibModalInstance, $stateParams, inventory_service, user_service, columns) {
+    '$translate',
+    'i18nService', // from ui-grid
+    function ($scope, $window, $uibModalInstance, $stateParams, inventory_service, user_service, columns, $translate, i18nService) {
+
+      $scope.translations = {};
+
+      var needed_translations = [
+        'LIST_GUIDANCE_PROPERTIES_PIN',
+        'LIST_GUIDANCE_TAXLOTS_NO_PIN',
+        'Properties',
+        'Property Detail Settings',
+        'Property Detail',
+        'Reset Defaults',
+        'Tax Lot Detail Settings',
+        'Tax Lot Detail',
+        'Tax Lots'
+      ];
+
+      $translate(needed_translations).then(function succeeded (translations) {
+        $scope.translations = translations;
+      }, function failed (translationIds) {
+        $scope.translations = translationIds;
+      });
+
+      // let angular-translate be in charge ... need
+      // to feed the language-only part of its $translate setting into
+      // ui-grid's i18nService
+      var stripRegion = function (languageTag) {
+        return _.first(languageTag.split('_'));
+      };
+      i18nService.setCurrentLang(stripRegion($translate.use()));
+
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.inventory = {
         id: $stateParams.inventory_id
@@ -67,7 +98,7 @@ angular.module('BE.seed.controller.inventory_detail_settings', [])
         enableGridMenu: true,
         enableSorting: false,
         gridMenuCustomItems: [{
-          title: 'Reset defaults',
+          title: $scope.translations['Reset defaults'],
           action: restoreDefaults
         }],
         gridMenuShowHideColumns: false,
@@ -76,6 +107,8 @@ angular.module('BE.seed.controller.inventory_detail_settings', [])
         columnDefs: [{
           name: 'displayName',
           displayName: 'Column Name',
+          headerCellFilter: 'translate',
+          cellFilter: 'translate',
           enableHiding: false
         }],
         onRegisterApi: function (gridApi) {
