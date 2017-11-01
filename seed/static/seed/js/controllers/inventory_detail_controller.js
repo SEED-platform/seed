@@ -16,9 +16,26 @@ angular.module('BE.seed.controller.inventory_detail', [])
     'inventory_payload',
     'columns',
     'labels_payload',
+    '$translate',
     function ($state, $scope, $uibModal, $log, $filter, $stateParams, urls, label_service,
-              inventory_service, inventory_payload, columns, labels_payload) {
+              inventory_service, inventory_payload, columns, labels_payload, $translate) {
       $scope.inventory_type = $stateParams.inventory_type;
+
+      $scope.translations = {};
+
+      var needed_translations = [
+        'Properties',
+        'Property Detail',
+        'Tax Lots',
+        'Tax Lot Detail'
+      ];
+
+      $translate(needed_translations).then(function succeeded (translations) {
+        $scope.translations = translations;
+      }, function failed (translationIds) {
+        $scope.translations = translationIds;
+      });
+
       $scope.inventory = {
         id: $stateParams.inventory_id,
         related: $scope.inventory_type === 'properties' ? inventory_payload.taxlots : inventory_payload.properties
