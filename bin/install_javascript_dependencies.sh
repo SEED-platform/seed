@@ -16,6 +16,7 @@ then
     sed -i -e 's/compress: true/compress: \{\}/g' Gruntfile.coffee
     npm install
     $grunt build
+    rm -rf node_modules
     cd ../../../../../
 else
     echo -e "\n\n\nFineuploader already built"
