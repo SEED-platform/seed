@@ -64,6 +64,25 @@ angular.module('BE.seed.controller.inventory_list', [])
       };
       i18nService.setCurrentLang(stripRegion($translate.use()));
 
+      $scope.translations = {};
+
+      var needed_translations = [
+        'Property',
+        'Properties',
+        'Properties List',
+        'Property Detail',
+        'Tax Lot',
+        'Tax Lots',
+        'Tax Lots List',
+        'Tax Lot Detail'
+      ];
+
+      $translate(needed_translations).then(function succeeded (translations) {
+        $scope.translations = translations;
+      }, function failed (translationIds) {
+        $scope.translations = translationIds;
+      });
+
       $scope.total = $scope.pagination.total;
       $scope.number_per_page = 999999999;
       $scope.restoring = false;

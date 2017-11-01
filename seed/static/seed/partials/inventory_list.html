@@ -4,7 +4,9 @@
 
         </div>
         <div class="page_title">
-            <h1>{$:: inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties' $} TRANSLATION_FIXME</h1>
+            <h1>{$:: inventory_type === 'taxlots' ?
+                translations['Tax Lots'] :
+                translations['Properties'] $}</h1>
         </div>
         <div class="right page_action_container page_action_btn"></div>
     </div>
@@ -26,7 +28,7 @@
                         type="button"
                         uib-dropdown-toggle
                         class="btn btn-default btn-sm"
-                        ng-disabled="selectedCount === 0" translate>
+                        ng-disabled="selectedCount === 0">
                     {$ 'Actions' | translate $} <span class="caret"></span>
                 </button>
                 <ul id="inventory-actions-dropdown" uib-dropdown-menu class="dropdown-menu" role="menu" aria-labelledby="btnInventoryActions">
@@ -46,7 +48,7 @@
             </div>
         </div>
         <div class="form-group">
-            <label for="tagsInput" translate>{$ 'Filter by label' | translate $}:</label>
+            <label for="tagsInput" translate>Filter by label:</label>
             <div class="btn-group">
                 <tags-input id="tagsInput"
                             ng-model="selected_labels"
@@ -94,8 +96,8 @@
         <i ng-if="::inventory_type === 'properties'" class="fa fa-building-o"></i>
         <i ng-if="::inventory_type === 'taxlots'" class="fa fa-map-o"></i>
         {$ total | number:0 $}
-        <span ng-if="::inventory_type === 'properties'"><ng-pluralize count="total" when="{'one': 'Property','other': 'Properties'}"></ng-pluralize> TRANSLATION_FIXME</span>
-        <span ng-if="::inventory_type === 'taxlots'"><ng-pluralize count="total" when="{'one': 'Tax Lot','other': 'Tax Lots'}"></ng-pluralize> TRANSLATION_FIXME</span>
+        <span ng-if="::inventory_type === 'properties'"><ng-pluralize count="total" when="{'one': translations['Property'],'other': translations['Properties']}"></ng-pluralize></span>
+        <span ng-if="::inventory_type === 'taxlots'"><ng-pluralize count="total" when="{'one': translations['Tax Lot'],'other': translations['Tax Lots']}"></ng-pluralize></span>
     </div>
     <ul class="nav nav-tabs" style="margin-bottom:1px;">
         <li ng-class="::{active: inventory_type==='properties'}" heading="View by Property">
