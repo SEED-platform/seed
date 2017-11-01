@@ -1112,6 +1112,8 @@ SEED_app.config(['$translateProvider', function ($translateProvider) {
     .useSanitizeValueStrategy('escape');
 
   $translateProvider.determinePreferredLanguage();
+  moment.locale($translateProvider.preferredLanguage());
+
 }]);
 
 
