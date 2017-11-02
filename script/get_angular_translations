@@ -8,7 +8,7 @@ mkdir -p $tmp
 lokalise                \
   --config lokalise.cfg \
     export              \
-  --langs fr_CA         \
+  --langs fr_CA,en_US   \
   --type json           \
   --include_comments 1  \
   --export_sort a_z     \
@@ -17,4 +17,5 @@ lokalise                \
 
 unzip $tmp/SEED_Platform-locale.zip -d $tmp
 mv $tmp/locale/fr_CA.json $dest
+mv $tmp/locale/en_US.json $dest
 rm -rf $tmp
