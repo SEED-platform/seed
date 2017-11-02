@@ -29,7 +29,8 @@ angular.module('BE.seed.vendor_dependencies', [
   'focus-if',
   'xeditable',
   angularDragula(angular),
-  'pascalprecht.translate'
+  'pascalprecht.translate',
+  'ngSanitize'
 ]);
 angular.module('BE.seed.controllers', [
   'BE.seed.controller.about',
@@ -1109,7 +1110,7 @@ SEED_app.config(['$translateProvider', function ($translateProvider) {
       'fr_*': 'fr_CA'
     })
     // see https://angular-translate.github.io/docs/#/guide/19_security
-    .useSanitizeValueStrategy('escape');
+    .useSanitizeValueStrategy('sanitize');
 
   $translateProvider.determinePreferredLanguage();
   moment.locale($translateProvider.preferredLanguage());
