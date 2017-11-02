@@ -1110,7 +1110,7 @@ SEED_app.config(['$translateProvider', function ($translateProvider) {
       'fr_*': 'fr_CA'
     })
     // see https://angular-translate.github.io/docs/#/guide/19_security
-    .useSanitizeValueStrategy('sanitize');
+    .useSanitizeValueStrategy('sce');
 
   $translateProvider.determinePreferredLanguage();
   moment.locale($translateProvider.preferredLanguage());
