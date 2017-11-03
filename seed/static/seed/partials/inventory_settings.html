@@ -4,9 +4,8 @@
 
         </div>
         <div class="page_title">
-          <h1>{$:: inventory_type === 'taxlots' ?
-            translations['Tax Lots List Settings'] :
-            translations['Properties List Settings'] $}</h1>
+            <h1 ng-if="inventory_type === 'taxlots'" translate>Tax Lots List Settings<h1>
+            <h1 ng-if="inventory_type === 'properties'" translate>Properties List Settings<h1>
         </div>
         <div class="right page_action_container page_action_btn"></div>
     </div>
@@ -26,16 +25,19 @@
 
 <div class="section_content_container" ng-cloak style="clear:both; overflow:hidden;">
     <div class="section_content with_padding" style="overflow:hidden;">
-        <h3>{$:: inventory_type === 'taxlots' ? translations['Add Shared Tax Lots'] : translations['Add Shared Properties'] $}</h3>
+        <h3 ng-if="inventory_type === 'taxlots'" translate>Add Shared Tax Lots</h3>
+        <h3 ng-if="inventory_type === 'properties'" translate>Add Shared Properties</h3>
         <div class="checkbox">
             <label>
                 <input type="checkbox" ng-model="showSharedBuildings" ng-change="saveShowSharedBuildings()">
-                {$:: inventory_type === 'taxlots' ? translations['INCLUDE_SHARED_TAXLOTS'] : translations['INCLUDE_SHARED_PROPERTIES'] $}
+                <span ng-if="inventory_type === 'taxlots'" translate>INCLUDE_SHARED_TAXLOTS</span>
+                <span ng-if="inventory_type === 'properties'" translate>INCLUDE_SHARED_PROPERTIES</span>
             </label>
         </div>
         <h3 translate="NUMBER_COLUMNS_AVAILABLE"
             translate-values="{ count: (data.length | number) }"></h3>
-        <p>{$:: inventory_type == 'taxlots' ? translations['LIST_GUIDANCE_TAXLOTS'] : translations['LIST_GUIDANCE_PROPERTIES'] $}</p>
+        <p ng-if="inventory_type === 'taxlots'" translate>LIST_GUIDANCE_TAXLOTS</p>
+        <p ng-if="inventory_type === 'properties'" translate>LIST_GUIDANCE_PROPERTIES</p>
     </div>
     <div class="section_content">
         <div id="grid-container">

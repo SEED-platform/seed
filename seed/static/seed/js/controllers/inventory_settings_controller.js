@@ -13,28 +13,8 @@ angular.module('BE.seed.controller.inventory_settings', [])
     'all_columns',
     'shared_fields_payload',
     '$translate',
-    function ($scope, $window, $uibModalInstance, $stateParams, inventory_service, user_service, all_columns, shared_fields_payload, $translate) {
-
-      $scope.translations = {};
-
-      var needed_translations = [
-        'Add Shared Properties',
-        'Add Shared Tax Lots',
-        'Property List Settings',
-        'Properties List',
-        'Tax Lots List Settings',
-        'Tax Lots List',
-        'INCLUDE_SHARED_TAXLOTS',
-        'INCLUDE_SHARED_PROPERTIES',
-        'LIST_GUIDANCE_TAXLOTS',
-        'LIST_GUIDANCE_PROPERTIES',
-      ];
-
-      $translate(needed_translations).then(function succeeded (translations) {
-        $scope.translations = translations;
-      }, function failed (translationIds) {
-        $scope.translations = translationIds;
-      });
+    'i18nService', // from ui-grid
+    function ($scope, $window, $uibModalInstance, $stateParams, inventory_service, user_service, all_columns, shared_fields_payload, $translate, i18nService) {
 
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.inventory = {
@@ -43,6 +23,16 @@ angular.module('BE.seed.controller.inventory_settings', [])
       $scope.cycle = {
         id: $stateParams.cycle_id
       };
+
+      // set up i18n
+      //
+      // let angular-translate be in charge ... need
+      // to feed the language-only part of its $translate setting into
+      // ui-grid's i18nService
+      var stripRegion = function (languageTag) {
+        return _.first(languageTag.split('_'));
+      };
+      i18nService.setCurrentLang(stripRegion($translate.use()));
 
       var localStorageKey = 'grid.' + $scope.inventory_type;
 
@@ -107,7 +97,7 @@ angular.module('BE.seed.controller.inventory_settings', [])
         enableGridMenu: true,
         enableSorting: false,
         gridMenuCustomItems: [{
-          title: 'Reset defaults',
+          title: $translate.instant('Reset Defaults'),
           action: restoreDefaults
         }],
         gridMenuShowHideColumns: false,
@@ -128,7 +118,9 @@ angular.module('BE.seed.controller.inventory_settings', [])
         }, {
           name: 'displayName',
           displayName: 'Column Name',
-          cellTemplate: '<div class="ui-grid-cell-contents inventory-settings-cell" title="TOOLTIP" data-after-content="{$ row.entity.name $}">{$ COL_FIELD CUSTOM_FILTERS $} <span ng-if="row.entity.related" class="badge" style="margin-left: 10px;">{$ grid.appScope.inventory_type === "properties" ? "tax lot" : "property" $}</span></div>',
+          headerCellFilter: 'translate',
+          cellFilter: 'translate',
+          cellTemplate: '<div class="ui-grid-cell-contents inventory-settings-cell" title="TOOLTIP" data-after-content="{$ row.entity.name $}">{$ COL_FIELD CUSTOM_FILTERS $} <span ng-if="row.entity.related" class="badge" style="margin-left: 10px;">{$ grid.appScope.inventory_type === "properties" ? ("tax lot" | translate) : ("property" | translate) $}</span></div>',
           enableHiding: false
         }],
         onRegisterApi: function (gridApi) {
