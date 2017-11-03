@@ -22,8 +22,10 @@
 
 <div class="section_content_container" ng-cloak style="clear:both; overflow:hidden;">
     <div class="section_content with_padding" style="overflow:hidden;">
-        <h3>There are {$:: columns.length | number $} columns of data available to you. TRANSLATION_FIXME</h3>
-        <p>TRANSLATION_FIXME Select columns from the list below to make them appear in your {$:: inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties' $} Detail table. Drag the rows to change the order in which they appear.</p>
+        <h3 translate="NUMBER_COLUMNS_AVAILABLE"
+            translate-values="{ count: (columns.length | number) }"></h3>
+        <p ng-if="inventory_type === 'taxlots'" translate>Select columns from the list below to make them appear in your Tax Lots Detail table. Drag the rows to change the order in which they appear.</p>
+        <p ng-if="inventory_type === 'properties'" translate>Select columns from the list below to make them appear in your Properties Detail table. Drag the rows to change the order in which they appear.</p>
     </div>
     <div class="section_content">
         <div id="grid-container">
