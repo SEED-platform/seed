@@ -499,6 +499,7 @@ def delete_file(request):
             'message': 'user does not have permission to delete file',
         })
 
+    # Note that the file itself is not delete, it remains on the disk/s3
     import_file.delete()
     return JsonResponse({'status': 'success'})
 
