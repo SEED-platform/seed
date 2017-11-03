@@ -32,8 +32,14 @@
             </form>
         </div>
 
-        <div class="edit_text">TRANSLATION_FIXME Add or remove labels from {$ number_matching_search $} selected {$ inventory_ids.length === 1 ? (inventory_type === 'properties' ? 'property' : 'tax lot') : (inventory_type === 'properties' ? inventory_type : 'tax lots') $}</div>
-
+        <div ng-if="inventory_type === 'properties'"
+            class="edit_text"
+            translate="ADD_REMOVE_LABELS_FROM_PROPERTIES"
+            translate-values="{ num: (inventory_ids.length | number: 0) }"></div>
+        <div ng-if="inventory_type === 'taxlots'"
+            class="edit_text"
+            translate="ADD_REMOVE_LABELS_FROM_TAXLOTS"
+            translate-values="{ num: (inventory_ids.length | number: 0) }"></div>
         <div class="table-list-container">
 
             <div class="labels-status-msg" ng-show="loading || !labels.length">

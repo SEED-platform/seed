@@ -93,11 +93,15 @@
 
 <div class="inventory-list-tab-container">
     <div class="item-count">
-        <i ng-if="::inventory_type === 'properties'" class="fa fa-building-o"></i>
-        <i ng-if="::inventory_type === 'taxlots'" class="fa fa-map-o"></i>
-        {$ total | number:0 $}
-        <span ng-if="::inventory_type === 'properties'"><ng-pluralize count="total" when="{'one': translations['Property'],'other': translations['Properties']}"></ng-pluralize></span>
-        <span ng-if="::inventory_type === 'taxlots'"><ng-pluralize count="total" when="{'one': translations['Tax Lot'],'other': translations['Tax Lots']}"></ng-pluralize></span>
+        <span ng-if="::inventory_type === 'properties'">
+            <i class="fa fa-building-o"></i>
+            <span translate="NUMBER_OF_PROPERTIES" translate-values="{ num: (total | number: 0) }"></span>
+        </span>
+
+        <span ng-if="::inventory_type === 'taxlots'">
+            <i class="fa fa-map-o"></i>
+            <span translate="NUMBER_OF_TAXLOTS" translate-values="{ num: (total | number: 0) }"></span>
+        </span>
     </div>
     <ul class="nav nav-tabs" style="margin-bottom:1px;">
         <li ng-class="::{active: inventory_type==='properties'}" heading="View by Property">

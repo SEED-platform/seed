@@ -37,7 +37,8 @@
     "ng-focus-if": "^1.0.7",
     "angular-translate": "^2.16.0",
     "angular-translate-loader-static-files": "^2.16.0",
-    "angular-sanitize": "^1.6.6"
+    "angular-sanitize": "^1.6.6",
+    "angular-translate-interpolation-messageformat": "^2.16.0"
   },
   "resolutions": {
     "angular": "~1.6.1",
