@@ -50,6 +50,9 @@ class PropertyViewFilterSet(FilterSet):
         return queryset.filter(query)
 
 
+[]
+
+
 class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
     """
     Properties API Endpoint

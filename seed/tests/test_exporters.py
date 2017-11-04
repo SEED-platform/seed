@@ -11,6 +11,7 @@ import unicodecsv as csv
 import xlrd
 from django.db.models import Manager
 from django.test import TestCase
+from unittest import skip
 
 from seed.landing.models import SEEDUser as User
 from seed.lib.exporter import Exporter
@@ -62,10 +63,7 @@ class TestExporters(TestCase):
         """Ensures exported CSV data matches source data"""
         for i in range(50):
             p = self.property_view_factory.get_property_view()
-            print p
             self.properties.append(p.id)
-
-        print
 
         qs_filter = {"pk__in": self.properties}
         qs = PropertyView.objects.filter(**qs_filter)
@@ -111,12 +109,11 @@ class TestExporters(TestCase):
 
         # spot check some of the body
         row_1 = reader.next()
-        print row_1
-
 
         export_file.close()
         os.remove(export_filename)
 
+    @skip('To be updated with new data model')
     def test_csv_export_extra_data(self):
         """Ensures exported CSV data matches source data"""
         qs_filter = {"pk__in": [x.pk for x in self.snapshots]}
@@ -160,6 +157,7 @@ class TestExporters(TestCase):
         export_file.close()
         os.remove(export_filename)
 
+    @skip('To be updated with new data model')
     def test_xls_export(self):
         """Ensures exported XLS data matches source data"""
         qs_filter = {"pk__in": [x.pk for x in self.snapshots]}
