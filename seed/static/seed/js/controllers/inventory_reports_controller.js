@@ -151,8 +151,8 @@ angular.module('BE.seed.controller.inventory_reports', [])
 
       //Setting the status messages will cause the small white status box to show above the chart
       //Setting these to empty string will remove that box
-      $scope.chartStatusMessage = 'No data';
-      $scope.aggChartStatusMessage = 'No data';
+      $scope.chartStatusMessage = 'No Data';
+      $scope.aggChartStatusMessage = 'No Data';
 
 
       /* UI HANDLERS */
@@ -246,7 +246,6 @@ angular.module('BE.seed.controller.inventory_reports', [])
         $scope.chart2Title = $scope.xAxisSelectedItem.label + ' vs. ' + $scope.yAxisSelectedItem.label + ' (Aggregated)';
       }
 
-
       /** Get the 'raw' (unaggregated) chart data from the server for the scatter plot chart.
        The user's selections are already stored as properties on the scope, so use
        those for the parameters that need to be sent to the server.
@@ -288,7 +287,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
             }
           },
             function (data, status) {
-              $scope.chartStatusMessage = 'Data load error.';
+              $scope.chartStatusMessage = 'Data Load Error';
               $log.error('#InventoryReportsController: Error loading chart data : ' + status);
             })
           .finally(function () {
@@ -338,7 +337,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
           }
         },
           function (data, status) {
-            $scope.aggChartStatusMessage = 'Data load error.';
+            $scope.aggChartStatusMessage = 'Data Load Error';
             $log.error('#InventoryReportsController: Error loading agg chart data : ' + status);
           })
           .finally(function () {
