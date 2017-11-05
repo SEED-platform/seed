@@ -3,7 +3,7 @@
  * :author
  */
 angular.module('sdBasicPropertyInfoChart', [])
-  .directive('sdBasicPropertyInfoChart', ['$window', function ($window) {
+  .directive('sdBasicPropertyInfoChart', ['$window', '$translate', function ($window, $translate) {
     return {
       restrict: 'E',
       replace: true,
@@ -132,7 +132,7 @@ angular.module('sdBasicPropertyInfoChart', [])
           }
           s.getTooltipText = function (e) {
             var arr = [];
-            arr.push('Year Ending : ' + e.aggField[1]);
+            arr.push($translate.instant('Year Ending') + ' : ' + e.aggField[1]);
             arr.push(yAxisTitle + ' : ' + e.cy.toString());
             arr.push(xAxisTitle + ' : ' + e.cx.toString());
             return arr;
