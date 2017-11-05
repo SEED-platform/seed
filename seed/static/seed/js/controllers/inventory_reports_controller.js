@@ -16,6 +16,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
     'inventory_reports_service',
     'simple_modal_service',
     'cycles',
+    '$sce',
     '$translate',
     function ($scope,
               $log,
@@ -23,6 +24,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
               inventory_reports_service,
               simple_modal_service,
               cycles,
+              $sce,
               $translate) {
 
       $scope.inventory_type = $stateParams.inventory_type;
@@ -256,8 +258,23 @@ angular.module('BE.seed.controller.inventory_reports', [])
 
       /* Update the titles above each chart*/
       function updateChartTitles () {
-        $scope.chart1Title = $scope.xAxisSelectedItem.label + ' vs. ' + $scope.yAxisSelectedItem.label;
-        $scope.chart2Title = $scope.xAxisSelectedItem.label + ' vs. ' + $scope.yAxisSelectedItem.label + ' (Aggregated)';
+        // need to unwrap these instant translations to use them in another $translate.instant?
+        // smells fishy re XSS, but OK presuming we don't allow any user-gen'd graph titles
+        var interpolationParams;
+        try {
+          interpolationParams = {
+            x_axis_label: $sce.getTrustedHtml($translate.instant($scope.xAxisSelectedItem.label)),
+            y_axis_label: $sce.getTrustedHtml($translate.instant($scope.yAxisSelectedItem.label))
+          };
+        } catch (e) {
+          console.error('$sce issue... missing translation');
+          interpolationParams = {
+            x_axis_label: $scope.xAxisSelectedItem.label,
+            y_axis_label: $scope.yAxisSelectedItem.label
+          };
+        }
+        $scope.chart1Title = $translate.instant('X_VERSUS_Y', interpolationParams);
+        $scope.chart2Title = $translate.instant('X_VERSUS_Y_AGGREGATED', interpolationParams);
       }
 
       /** Get the 'raw' (unaggregated) chart data from the server for the scatter plot chart.
