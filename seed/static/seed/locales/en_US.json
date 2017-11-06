@@ -369,6 +369,7 @@
     "No warnings\/errors": "No warnings\/errors",
     "None": "None",
     "Not all inventory items were successfully deleted": "Not all inventory items were successfully deleted",
+    "not authorized": "not authorized",
     "Not Null": "Not Null",
     "Note 1: Sub-organizations cannot be deleted.": "Note 1: Sub-organizations cannot be deleted.",
     "Note 2: Parent organization members are not automatically made members of sub-organizations.": "Note 2: Parent organization members are not automatically made members of sub-organizations.",
@@ -674,6 +675,7 @@
     "You're receiving this e-mail because you requested a password reset": "You're receiving this e-mail because you requested a password reset",
     "You're receiving this e-mail because you've been registered for a SEED account.": "You're receiving this e-mail because you've been registered for a SEED account.",
     "your data set name": "your data set name",
+    "Your page could not be located!": "Your page could not be located!",
     "Your password must contain at least %(quantity)d %(type)s characters.": "Your password must contain at least %(quantity)d %(type)s characters.",
     "Your Role": "Your Role",
     "Your username, in case you've forgotten:": "Your username, in case you've forgotten:"

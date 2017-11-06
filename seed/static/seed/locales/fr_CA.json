@@ -371,6 +371,7 @@
     "No warnings\/errors": "Aucun avertissement\/erreur",
     "None": "Aucun",
     "Not all inventory items were successfully deleted": "Tous les éléments de l'inventaire n'ont pas été supprimés",
+    "not authorized": "pas autorisé",
     "Not Null": "Pas nul",
     "Note 1: Sub-organizations cannot be deleted.": "Remarque 1: Les sous-organisations ne peuvent pas être supprimées.",
     "Note 2: Parent organization members are not automatically made members of sub-organizations.": "Remarque 2: Les membres de l'organisation mère ne sont pas automatiquement membres des sous-organisations.",
@@ -675,6 +676,7 @@
     "You're receiving this e-mail because you requested a password reset": "Vous recevez cet e-mail car vous avez demandé une réinitialisation du mot de passe",
     "You're receiving this e-mail because you've been registered for a SEED account.": "Vous recevez cet e-mail parce que vous avez été enregistré pour un compte SEED.",
     "your data set name": "votre nom du jeu de données",
+    "Your page could not be located!": "Votre page n'a pas pu être trouvé!",
     "Your password must contain at least %(quantity)d %(type)s characters.": "Votre mot de passe doit contenir au moins% (quantité) d% (type) s caractères.",
     "Your Role": "Votre Rôle",
     "Your username, in case you've forgotten:": "Votre nom d'utilisateur, au cas où vous avez oublié:"
