@@ -33,13 +33,13 @@
                         </tr>
                         <tr class="sub_head">
                             <th class="sub_head">
-                                <input type="text" placeholder="member name" class="form-control input-sm" ng-model="filter_params.name" ng-class="{active: filter_params.name.length}">
+                                <input type="text" placeholder="{$ 'member name' | translate $}" class="form-control input-sm" ng-model="filter_params.name" ng-class="{active: filter_params.name.length}">
                             </th>
                             <th class="sub_head">
-                                <input type="text" placeholder="member email" class="form-control input-sm" ng-model="filter_params.email" ng-class="{active: filter_params.email.length}">
+                                <input type="text" placeholder="{$ 'member email' | translate $}" class="form-control input-sm" ng-model="filter_params.email" ng-class="{active: filter_params.email.length}">
                             </th>
                             <th class="sub_head">
-                                <input type="text" placeholder="member role" class="form-control input-sm" ng-model="filter_params.role" ng-class="{active: filter_params.role.length}">
+                                <input type="text" placeholder="{$ 'member role' | translate $}" class="form-control input-sm" ng-model="filter_params.role" ng-class="{active: filter_params.role.length}">
                             </th>
                             <th class="sub_head" ng-if="::auth.can_remove_member"></th>
                         </tr>
