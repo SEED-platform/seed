@@ -209,9 +209,13 @@
     <div class="section_content_container" ng-if="save_mappings">
         <div class="section_content">
             <div class="progress_bar_container progressbar_fill_area">
-                <div class="progress_bar_copy_top">TRANSLATION_FIXME Mapping buildings for <strong>{$ import_file.uploaded_filename $}</strong></div>
+                <div class="progress_bar_copy_top"
+                    translate="MAPPING_BUILDINGS_FOR"
+                    translate-values="{ filename: import_file.uploaded_filename }"></div>
                 <uib-progressbar class="progress-striped active" value="import_file.progress" type="success"></uib-progressbar>
-                <div class="progress_bar_copy_bottom">{$ import_file.progress | number:0 $}% Complete TRANSLATION_FIXME</div>
+                <div class="progress_bar_copy_bottom"
+                    translate
+                    translate-values="{ progress: (import_file.progress | number: 0)">PERCENT_COMPLETE</div>
             </div>
         </div>
     </div>
@@ -241,7 +245,7 @@
     </div>
     <div class="inventory-list-tab-container" ng-if="show_mapped_buildings && mappedData.properties.length">
         <div class="item-count">
-            <i class="fa fa-building-o"></i> TRANSLATION_FIXME {$ mappedData.properties.length $} <span><ng-pluralize count="mappedData.properties.length" when="{'one': 'Property', 'other': 'Properties'}">Properties</ng-pluralize></span>
+            <i class="fa fa-building-o"></i><span translate="NUMBER_OF_PROPERTIES" translate-values="{ num: mappedData.properties.length }"></span>
         </div>
         <ul class="nav nav-tabs" style="margin-bottom:1px;">
             <li heading="View by Property" class="active"><a translate>View by Property</a></li>
@@ -256,7 +260,7 @@
     </div>
     <div class="inventory-list-tab-container" ng-if="show_mapped_buildings && mappedData.tax_lots.length" style="margin-top: 20px;">
         <div class="item-count">
-            <i class="fa fa-map-o"></i> TRANSLATION_FIXME {$ mappedData.tax_lots.length $} <span><ng-pluralize count="mappedData.tax_lots.length" when="{'one': 'Tax Lot', 'other': 'Tax Lots'}">Tax Lots</ng-pluralize></span>
+            <i class="fa fa-map-o"></i><span translate="NUMBER_OF_TAXLOTS" translate-values="{ num: mappedData.properties.length }"></span>
         </div>
         <ul class="nav nav-tabs" style="margin-bottom:1px;">
             <li heading="View by Tax Lot" class="active"><a translate>View by Tax Lot</a></li>

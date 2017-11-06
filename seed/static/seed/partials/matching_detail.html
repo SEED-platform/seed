@@ -122,7 +122,8 @@
             </div>
             <div class="table_footer">
                 <div class="counts col-sm-4 col-sm-offset-4" style="text-align: center;">
-                    <span>Showing {$ showing.start $} to {$ showing.end $} of {$ showing.total $} available matches TRANSLATION_FIXME</span>
+                    <span translate
+                          translate-values="{ start: showing.start, end: showing.end, total: showing.total }">SHOWING_AVAILABLE_MATCHES</span>
                 </div>
                 <div class="pager_container col-sm-5">
                     <select style="height:24px;" ng-model="number_per_page" ng-change="save_number_per_page(); update_start_end_paging()" ng-options="option for option in ::number_per_page_options"></select>
