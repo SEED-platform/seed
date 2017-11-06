@@ -23,6 +23,7 @@ angular.module('BE.seed.controller.mapping', [])
     '$filter',
     'data_quality_service',
     'inventory_service',
+    '$translate',
     'flippers',
     function ($scope,
               $log,
@@ -43,6 +44,7 @@ angular.module('BE.seed.controller.mapping', [])
               $filter,
               data_quality_service,
               inventory_service,
+              $translate,
               flippers) {
       var db_field_columns = suggested_mappings_payload.column_names;
       var columns = suggested_mappings_payload.columns;
@@ -52,6 +54,19 @@ angular.module('BE.seed.controller.mapping', [])
       });
       // var original_columns = angular.copy(db_field_columns.concat(extra_data_columns));
       $scope.flippers = flippers; // make available in partials/ng-if
+
+      $scope.translations = {};
+
+      var needed_translations = [
+        'Property',
+        'Tax Lot'
+      ];
+
+      $translate(needed_translations).then(function succeeded (translations) {
+        $scope.translations = translations;
+      }, function failed (translationIds) {
+        $scope.translations = translationIds;
+      });
 
       // Readability for db columns.
       for (var i = 0; i < db_field_columns.length; i++) {

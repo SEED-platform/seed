@@ -138,7 +138,7 @@
                             <td style="border-right: 0 none;"><h3 translate>Mapped Fields</h3></td>
                             <td style="border-right: 0 none; text-align: right;"><span ng-hide="import_file.matching_done">{$ 'Set all fields to' | translate $}:</span></td>
                             <td style="border-right: 0 none;">
-                                <select ng-model="setAllFields" ng-change="setAllInventoryTypes()" ng-options="item as item.name for item in ::setAllFieldsOptions track by item.value" ng-hide="import_file.matching_done"></select>
+                                <select ng-model="setAllFields" ng-change="setAllInventoryTypes()" ng-options="item as translations[item.name] for item in ::setAllFieldsOptions track by item.value" ng-hide="import_file.matching_done"></select>
                             </td>
                             <td colspan="{$:: flippers.is_active('release:use_pint') ? 6 : 5 $}"></td>
                         </tr>
