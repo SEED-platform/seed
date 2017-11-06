@@ -5,9 +5,8 @@
 
         </div>
         <div class="page_title">
-            <h1><i class="fa fa-sitemap"></i> {$ datasets.length | number:0 $}
-              TRANSLATION_FIXME
-                <ng-pluralize count="datasets.length" when="{'one': 'Data Set','other': 'Data Sets'}"></ng-pluralize>
+            <h1><i class="fa fa-sitemap"></i>
+                <span translate translate-values="{ num: (datasets.length | number: 0) }">NUMBER_OF_DATASETS<span>
             </h1>
         </div>
         <div class="right page_action_container">
