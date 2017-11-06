@@ -141,23 +141,23 @@ class TaxLotProperty(models.Model):
             # A mapping of taxlot view pk to a list of property state info for a property view
             join_map = {}
             # Get whole taxlotstate table:
-            tuplePropToJurisdictionTL = tuple(
+            tuple_prop_to_jurisdiction_tl = tuple(
                 TaxLotProperty.objects.values_list('property_view_id',
                                                    'taxlot_view__state__jurisdiction_tax_lot_id'))
 
             # create a mapping that defaults to an empty list
-            propToJurisdictionTL = defaultdict(list)
+            prop_to_jurisdiction_tl = defaultdict(list)
 
             # populate the mapping
-            for name, pth in tuplePropToJurisdictionTL:
-                propToJurisdictionTL[name].append(pth)
+            for name, pth in tuple_prop_to_jurisdiction_tl:
+                prop_to_jurisdiction_tl[name].append(pth)
 
         # A mapping of object's view pk to a list of related state info for a related view
         join_map = {}
         for join in joins:
             # Another taxlot specific view
             if lookups['obj_class'] == 'TaxLotView':
-                jurisdiction_tax_lot_ids = propToJurisdictionTL[join.property_view_id]
+                jurisdiction_tax_lot_ids = prop_to_jurisdiction_tl[join.property_view_id]
 
                 # Filter out associated tax lots that are present but which do not have preferred
                 none_in_jurisdiction_tax_lot_ids = None in jurisdiction_tax_lot_ids
@@ -239,6 +239,11 @@ class TaxLotProperty(models.Model):
                 obj_dict['generation_date'] = make_naive(
                     obj_dict['generation_date']).isoformat()
 
+            label_string = []
+            for label in obj.property.labels.all().order_by('name'):
+                label_string.append(label.name)
+
+            obj_dict['property_labels'] = ','.join(label_string)
             results.append(obj_dict)
 
         return results

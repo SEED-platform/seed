@@ -8,11 +8,12 @@ All rights reserved.  # NOQA
 :author
 """
 
+import csv
 import re
 from os import path
 
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from rest_framework import status
 from rest_framework.decorators import detail_route, list_route
 from rest_framework.renderers import JSONRenderer
@@ -692,46 +693,90 @@ class PropertyViewSet(GenericViewSet):
             status_code = status.HTTP_404_NOT_FOUND
         return JsonResponse(result, status=status_code)
 
-        # @api_endpoint_class
-        # @ajax_request_class
-        # @has_perm_class('requires_member')
-        # @detail_route(methods=['POST'])
-        # def csv(self, request, pk):
-        #     """
-        #     Download a csv of the data quality checks by the pk which is the cache_key
-        #     ---
-        #     parameter_strategy: replace
-        #     parameters:
-        #         - name: pk
-        #           description: Import file ID or cache key
-        #           required: true
-        #           paramType: path
-        #     """
-        #     data_quality_results = get_cache_raw(DataQualityCheck.cache_key(pk))
-        #     response = HttpResponse(content_type='text/csv')
-        #     response['Content-Disposition'] = 'attachment; filename="Data Quality Check Results.csv"'
-        #
-        #     writer = csv.writer(response)
-        #     if data_quality_results is None:
-        #         writer.writerow(['Error'])
-        #         writer.writerow(['data quality results not found'])
-        #         return response
-        #
-        #     writer.writerow(
-        #         ['Table', 'Address Line 1', 'PM Property ID', 'Tax Lot ID', 'Custom ID', 'Field',
-        #          'Error Message', 'Severity'])
-        #
-        #     for row in data_quality_results:
-        #         for result in row['data_quality_results']:
-        #             writer.writerow([
-        #                 row['data_quality_results'][0]['table_name'],
-        #                 row['address_line_1'],
-        #                 row['pm_property_id'] if 'pm_property_id' in row else None,
-        #                 row['jurisdiction_tax_lot_id'] if 'jurisdiction_tax_lot_id' in row else None,
-        #                 row['custom_id_1'],
-        #                 result['formatted_field'],
-        #                 result['detailed_message'],
-        #                 result['severity']
-        #             ])
-        #
-        #     return response
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_member')
+    @list_route(methods=['POST'])
+    def csv(self, request):
+        """
+        Download a csv of the data quality checks by the pk which is the cache_key
+        ---
+        parameter_strategy: replace
+        parameters:
+            - name: cycle
+              description: cycle
+              required: true
+              paramType: query
+            - name: ids
+              description: list of ids to export
+              required: true
+              paramType: body
+            - name: columns
+              description: list of columns to export
+              required: true
+              paramType: body
+
+        """
+        cycle_pk = request.query_params.get('cycle_id', None)
+        if not cycle_pk:
+            return JsonResponse(
+                {'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
+        columns = request.data.get('columns', None)
+        if columns is None:
+            # default the columns for now if no columns are passed
+            columns = [
+                "pm_property_id", "pm_parent_property_id", "tax_jurisdiction_tax_lot_id",
+                "custom_id_1", "tax_custom_id_1", "city", "state", "postal_code",
+                "tax_primary", "property_name", "campus", "gross_floor_area",
+                "use_description", "energy_score", "site_eui", "property_notes",
+                "property_type", "year_ending", "owner", "owner_email", "owner_telephone",
+                "building_count", "year_built", "recent_sale_date", "conditioned_floor_area",
+                "occupied_floor_area", "owner_address", "owner_city_state", "owner_postal_code",
+                "home_energy_score_id", "generation_date", "release_date",
+                "source_eui_weather_normalized", "site_eui_weather_normalized", "source_eui",
+                "energy_alerts", "space_alerts", "building_certification", "number_properties",
+                "block_number", "district", "BLDGS", "property_state_id", "taxlot_state_id",
+                "property_view_id", "taxlot_view_id", 'property_labels'
+            ]
+
+        ids = request.data.get('ids', None)
+        if ids:
+            property_views = PropertyView.objects.select_related('property', 'state', 'cycle') \
+                .filter(property__organization_id=request.query_params['organization_id'],
+                        cycle=cycle_pk,
+                        id__in=ids).order_by('id')
+        else:
+            # return all the ids for the property
+            property_views = PropertyView.objects.select_related('property', 'state', 'cycle') \
+                .filter(property__organization_id=request.query_params['organization_id'],
+                        cycle=cycle_pk).order_by('id')
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="ExportedData.csv"'
+        writer = csv.writer(response)
+
+        # get the data in a dict which includes the related data
+        data = TaxLotProperty.get_related(property_views, columns)
+
+        # note that the labels are in the property_labels column and are returned by the
+        # TaxLotProperty.get_related method
+
+        # header
+        writer.writerow(columns)
+
+        # iterate over the results and save to CSV
+        for datum in data:
+            row = []
+            for column in columns:
+                if column.startswith('tax_'):
+                    if datum.get('related') and len(datum['related']) > 0:
+                        # Looks like related returns a list. Is this as expected?
+                        row.append(datum['related'][0].get(re.sub(r'^tax_', '', column), None))
+                    else:
+                        row.append(None)
+                else:
+                    row.append(datum.get(column, None))
+
+            writer.writerow(row)
+
+        return response
