@@ -97,15 +97,9 @@
                                 <select class="form-control input-sm" ng-options="unit.id as unit.label for unit in units" ng-model="rule.units" ng-change="rule.rule_type = 1"></select>
                             </td>
                             <td>
-<<<<<<< HEAD
                                 <select class="form-control input-sm" ng-model="rule.severity" ng-change="rule.rule_type = 1" ng-class="{'error-bg': rule.severity === 'error', 'warning-bg': rule.severity === 'warning'}">
-                                    <option value="error">Error</option>
-                                    <option value="warning">Warning</option>
-=======
-                                <select class="form-control input-sm" ng-model="rule.severity" ng-change="rule.rule_type = 1" ng-class="{'error-bg': rule.severity=='error', 'warning-bg': rule.severity=='warning'}">
                                     <option value="error" translate>Error</option>
                                     <option value="warning" translate>Warning</option>
->>>>>>> Introduces `translate` tags into Angular partials
                                 </select>
                             </td>
                             <td class="text-right">
