@@ -436,8 +436,8 @@ angular.module('BE.seed.controller.inventory_list', [])
           templateUrl: urls.static_url + 'seed/partials/export_inventory_modal.html',
           controller: 'export_inventory_modal_controller',
           resolve: {
-            gridApi: function () {
-              return $scope.gridApi;
+            cycle_id: function () {
+              return $scope.cycle.selected_cycle.id;
             }
           }
         });

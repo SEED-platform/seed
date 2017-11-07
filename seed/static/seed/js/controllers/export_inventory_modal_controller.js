@@ -7,9 +7,7 @@ angular.module('BE.seed.controller.export_inventory_modal', []).controller('expo
   '$scope',
   '$uibModalInstance',
   'user_service',
-  'gridApi',
-  'uiGridExporterConstants', function ($http, $scope, $uibModalInstance, user_service, gridApi, uiGridExporterConstants) {
-    $scope.gridApi = gridApi;
+  'cycle_id', function ($http, $scope, $uibModalInstance, user_service, cycle_id) {
     $scope.export_name = '';
     $scope.export_type = 'csv';
 
@@ -25,16 +23,15 @@ angular.module('BE.seed.controller.export_inventory_modal', []).controller('expo
       }, {
         params: {
           organization_id: user_service.get_organization().id,
-          cycle_id: 2
+          cycle_id: cycle_id
         }
       }).then(function (response) {
-        console.log(response.data);
+        var blob = new Blob([response.data], {type: 'text/csv'});
+        saveAs(blob, filename);
+
+        $scope.close();
         return response.data;
       });
-
-      // $scope.gridApi.grid.options.exporterCsvFilename = filename;
-      // $scope.gridApi.exporter.csvExport(uiGridExporterConstants.SELECTED, uiGridExporterConstants.VISIBLE);
-      $uibModalInstance.close();
     };
 
     $scope.cancel = function () {
