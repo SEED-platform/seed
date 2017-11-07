@@ -240,10 +240,16 @@ class TaxLotProperty(models.Model):
                     obj_dict['generation_date']).isoformat()
 
             label_string = []
-            for label in obj.property.labels.all().order_by('name'):
-                label_string.append(label.name)
+            if hasattr(obj, 'property'):
+                for label in obj.property.labels.all().order_by('name'):
+                    label_string.append(label.name)
+                obj_dict['property_labels'] = ','.join(label_string)
 
-            obj_dict['property_labels'] = ','.join(label_string)
+            elif hasattr(obj, 'taxlot'):
+                for label in obj.taxlot.labels.all().order_by('name'):
+                    label_string.append(label.name)
+                obj_dict['taxlot_labels'] = ','.join(label_string)
+
             results.append(obj_dict)
 
         return results

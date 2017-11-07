@@ -700,6 +700,12 @@ class PropertyViewSet(GenericViewSet):
     def csv(self, request):
         """
         Download a csv of the data quality checks by the pk which is the cache_key
+
+        Example Body:
+            {
+        	    "ids": [1,2,3],
+	            "columns": ["tax_jurisdiction_tax_lot_id", "address_line_1", "property_view_id"]
+            }
         ---
         parameter_strategy: replace
         parameters:
@@ -715,6 +721,11 @@ class PropertyViewSet(GenericViewSet):
               description: list of columns to export
               required: true
               paramType: body
+            - name: filename
+              description: name of the file to create
+              required: false
+              paramType: body
+
 
         """
         cycle_pk = request.query_params.get('cycle_id', None)
@@ -751,8 +762,11 @@ class PropertyViewSet(GenericViewSet):
                 .filter(property__organization_id=request.query_params['organization_id'],
                         cycle=cycle_pk).order_by('id')
 
+        filename = request.data.get('filename', None)
+        if not filename:
+            filename = "ExportedData.csv"
         response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="ExportedData.csv"'
+        response['Content-Disposition'] = 'attachment; filename="{}"'.format(filename)
         writer = csv.writer(response)
 
         # get the data in a dict which includes the related data
@@ -764,7 +778,7 @@ class PropertyViewSet(GenericViewSet):
         # header
         writer.writerow(columns)
 
-        # iterate over the results and save to CSV
+        # iterate over the results to preserve column order and write row
         for datum in data:
             row = []
             for column in columns:
