@@ -39,7 +39,7 @@
                         <tr>
                             <th class="condensed_head" translate>INTERNAL</th>
                             <th class="condensed_head" translate>PUBLIC</th>
-                            <th>Field Name</th>
+                            <th translate>Field Name</th>
                         </tr>
                         <tr class="sub_head">
                             <th class="sub_head check is_aligned_center condensed_head">
@@ -69,7 +69,7 @@
                                     <input type="checkbox" ng-model="field.public_checked">
                                 </td>
                                 <td>
-                                    <span>{$:: field.title $}</span>
+                                    <span>{$:: field.title | translate $}</span>
                                 </td>
                             </tr>
                         </tbody>
