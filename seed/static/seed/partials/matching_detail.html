@@ -22,9 +22,7 @@
             <!--     <div class="row"> -->
                     <div class="col-sm-6 tab_content wide">
                         <p><strong translate>HOW THE SYSTEM AUTO-MATCHES YOUR PROPERTIES AND TAX LOTS:</strong></p>
-                        <p>{$ 'Your source data file(s) are presented in the table on the left. All properties/tax lots where a possible data match exists are presented in a table on the right. The system attempts to auto-match records using shared unique IDs like: PM Property ID, Jurisdiction Tax Lot ID, and Custom IDs as well as Address information. Where the system believes a match exists between a record in your source file and an existing record it will auto-check the 'match'' | translate $}
-                            <i class="fa fa-check-square-o"></i> {$ 'checkbox &mdash; effectively making a match between these records.' | translate $}
-                        </p>
+                        <p translate>HOW_SYSTEM_AUTO_MATCHES_EXPLANATION</p>
                     </div>
                     <div class="col-sm-6 key tab_content wide">
                         <p class="important-tip"><strong translate>FIELDS NEEDED TO MAKE MATCHES:</strong></p>
@@ -96,7 +94,10 @@
                         </tr>
                         <tr>
                             <td class="potential_matches" colspan="{$:: columns.length + 1 $}">
-                                <span>{$ 'Potential Matches from Source' | translate $}: TRANSLATION_FIXME<strong>Existing {$:: inventory_type === 'properties' ? 'Properties' : 'Tax Lots' $}</strong></span>
+                                <span>{$ 'Potential Matches from Source' | translate $}:
+                                    <strong ng-if="inventory_type === 'properties'" translate>Existing Properties</strong>
+                                    <strong ng-if="inventory_type === 'taxlots'" translate>Existing Tax Lots</strong>
+                                </span>
                             </td>
                         </tr>
                         <!-- matched record -->
