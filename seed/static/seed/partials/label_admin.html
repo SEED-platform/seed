@@ -73,8 +73,8 @@
 
                 <td style="border:0;">
                     <!-- editable status (select-local) -->
-                    <span editable-select="label.color" e-name="color" e-form="rowform" ng-show="rowform.$visible" class="label label-{$:: label.label $}" e-ng-keypress="onLabelNameKeypress($event, rowform)" e-ng-options="s.color as s.color for s in available_colors">
-                        {$:: label.color | translate $}
+                    <span editable-select="label.color" e-name="color" e-form="rowform" ng-show="rowform.$visible" class="label label-{$:: label.label $}" e-ng-keypress="onLabelNameKeypress($event, rowform)" e-ng-options="s.color as s.uiLabel for s in available_colors">
+                        {$:: (label.color | translate) $}
                     </span>
                 </td>
 
