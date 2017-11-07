@@ -21,7 +21,7 @@
         <div class="col-md-6">
             <div class="row">
                 <div class="pairing-show col-md-6">
-                    <select class="form-control input-sm" ng-model="showPaired" ng-options="option for option in ::showPairedOptions" ng-change="getLeftData()"></select>
+                    <select class="form-control input-sm" ng-model="showPaired" ng-options="option.value as option.label for option in ::showPairedOptions" ng-change="getLeftData()"></select>
                 </div>
                 <div class="pairing-cycle col-md-6 form-horizontal">
                     <div class="form-group">
@@ -53,7 +53,7 @@
             <div class="pairing-container-2" sd-scroll-sync="left-scroll">
                 <div class="pairing-header left-scroll">
                     <div class="pairing-headers" ng-repeat="col in ::leftColumns track by $index">
-                        <div class="title pointer" ng-click="leftSortData(col.name)">{$:: col.displayName || '&nbsp;' $} TRANSLATION_FIXME<span ng-class="leftGetSortClass(col.name)"></span></div>
+                        <div class="title pointer" ng-click="leftSortData(col.name)">{$:: (col.displayName | translate) || '&nbsp;' $}<span ng-class="leftGetSortClass(col.name)"></span></div>
                         <input class="is_aligned_center column_border" ng-model="col.searchText" ng-model-options="{debounce:150}">
                     </div>
                     <div class="pairing-headers paired-column">
@@ -84,7 +84,7 @@
             <div class="pairing-container-2" sd-scroll-sync="right-scroll">
                 <div class="pairing-header right-scroll">
                     <div class="pairing-headers" ng-repeat="col in ::rightColumns track by $index">
-                        <div class="title pointer" ng-click="rightSortData(col.name)">TRANSLATION_FIXME {$:: col.displayName || '&nbsp;' $} <span ng-class="rightGetSortClass(col.name)"></span></div>
+                        <div class="title pointer" ng-click="rightSortData(col.name)">{$:: (col.displayName | translate) || '&nbsp;' $} <span ng-class="rightGetSortClass(col.name)"></span></div>
                         <input class="is_aligned_center column_border" ng-model="col.searchText" ng-model-options="{debounce:150}">
                     </div>
                     <div class="pairing-headers paired-column">
