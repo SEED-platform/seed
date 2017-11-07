@@ -4,7 +4,8 @@
             <a class="page_action" ui-sref="dataset_list"><i class="fa fa-chevron-left"></i> {$ 'Data Sets' | translate $}</a>
         </div>
         <div class="page_title">
-            <h1>TRANSLATION_FIXME {$:: inventory_type === 'properties' ? 'Pair Properties to Tax Lots' : 'Pair Tax Lots to Properties' $}</h1>
+            <h1 ng-if="inventory_type === 'properties'" translate>Pair Properties to Tax Lots</h1>
+            <h1 ng-if="inventory_type === 'tax lots'" translate>Pair Tax Lots to Properties</h1>
             <!-- <h1>Data Pairing ({$ import_file.uploaded_filename $})</h1> -->
         </div>
         <div class="right page_action_container"></div>
@@ -39,7 +40,8 @@
             </div>
         </div>
         <div class="pairing-other-title col-md-6">
-            <h4>{$:: inventory_type === 'properties' ? 'Tax Lot' : 'Property' $} TRANSLATION_FIXME</h4>
+            <h4 ng-if="inventory_type === 'properties'" translate>Tax Lot</h4>
+            <h4 ng-if="inventory_type === 'tax lots'" translate>Property</h4>
         </div>
     </div>
 </div>
@@ -69,8 +71,12 @@
                 </div>
             </div>
             <div>
-                <span ng-if="::inventory_type === 'properties'">TRANSLATION_FIXME Showing {$ leftData.length $} <ng-pluralize count="leftData.length" when="{'one': 'Property','other': 'Properties'}"></ng-pluralize> ({$ leftNumUnpaired() $} unpaired)</span>
-                <span ng-if="::inventory_type === 'taxlots'">TRANSLATION_FIXME Showing {$ leftData.length $} <ng-pluralize count="leftData.length" when="{'one': 'Tax Lot','other': 'Tax Lots'}"></ng-pluralize> ({$ leftNumUnpaired() $} unpaired)</span>
+                <span ng-if="::inventory_type === 'properties'"
+                    translate="SHOWING_PAIRED_UNPAIRED_PROPERTIES"
+                    translate-values="{ paired_count: leftData.length, unpaired_count: leftNumUnpaired() }"></span>
+                <span ng-if="::inventory_type === 'taxlots'"
+                    translate="SHOWING_PAIRED_UNPAIRED_TAXLOTS"
+                    translate-values="{ paired_count: leftData.length, unpaired_count: leftNumUnpaired() }"></span>
             </div>
         </div>
 
@@ -95,7 +101,8 @@
                         <div class="right-paired-row cant-move" rightParentId="{$ getRightParentId(row) $}" dragula='"drag-pairing-row"' ng-click="doubleClick('right',$event)">
                             <div ng-if="!whichChildren(row)">
                                 <div class="unpaired">
-                                    <div class="pairing-cell">Drag {$:: inventory_type === 'properties' ? 'Property' : 'Tax Lot' $} here to pair with this {$:: inventory_type === 'properties' ? 'Tax Lot' : 'Property' $} TRANSLATION_FIXME</div>
+                                    <div class="pairing-cell" ng-if="inventory_type === 'properties'" translate>Drag Property here to pair with this Tax Lot</div>
+                                    <div class="pairing-cell" ng-if="inventory_type === 'taxlots'" translate>Drag Tax Lot here to pair with this Property</div>
                                 </div>
                             </div>
                             <div ng-repeat="id in whichChildren(row) track by $index">
@@ -113,8 +120,12 @@
 
             </div>
             <div>
-                <span ng-if="::inventory_type === 'properties'">TRANSLATION_FIXME Showing {$ rightData.length $} <ng-pluralize count="rightData.length" when="{'one': 'Tax Lot','other': 'Tax Lots'}"></ng-pluralize> ({$ rightNumUnpaired() $} unpaired)</span>
-                <span ng-if="::inventory_type === 'taxlots'">TRANSLATION_FIXME Showing {$ rightData.length $} <ng-pluralize count="rightData.length" when="{'one': 'Property','other': 'Properties'}"></ng-pluralize> ({$ rightNumUnpaired() $} unpaired)</span>
+                <span ng-if="::inventory_type === 'properties'"
+                    translate="SHOWING_PAIRED_UNPAIRED_TAXLOTS"
+                    translate-values="{ paired_count: rightData.length, unpaired_count: rightNumUnpaired() }"></span>
+                <span ng-if="::inventory_type === 'taxlots'"
+                    translate="SHOWING_PAIRED_UNPAIRED_PROPERTIES"
+                    translate-values="{ paired_count: rightData.length, unpaired_count: rightNumUnpaired() }"></span>
             </div>
         </div>
 
