@@ -20,20 +20,12 @@
                         <p><strong translate>MAPPING YOUR DATA TO SEED</strong></p>
                         <p translate>It is necessary to map your field names to SEED field names. You can select from the list that appears as you start to type, which is based on the Building Energy Data Exchange Specification (BEDES), or you can type in your own name, as well as typing in the field name from the original datafile.</p>
                         <p translate>In addition, you need to specify where the field should be associated with Tax Lot data or Property data. This will affect how the data is matched and merged, as well as how it is displayed in the Inventory view.</p>
-                        <p>
-                            <span class="label label-info">{$ 'Field names for matching' | translate $}:</span> {$ 'The following fields are used by SEED to match records' | translate $}:
-                            <strong translate>Jurisdiction Tax Lot ID</strong>, <strong translate>PM Property ID</strong>, <strong translate>Custom ID 1</strong>,
-                            <strong translate>Address Line 1</strong>. {$ 'If there are fields in a datafile mapped to these names, the program will attempt to match on those same names in existing records.' | translate $}
-                        </p>
+                        <p translate>FIELD_NAMES_FOR_MATCHING_ADVICE</p>
                         <p translate>For Portfolio Manager files, SEED has a default set of field names which can be used without extra user editing unless desired.</p>
-                        <p>TRANSLATION_FIXME When you click the
-                            <span class="label label-primary">Map Your Data</span> button, the program will show a grid with the new field names as the column headings and your data in the rows. In that view, you can still come back to the initial mapping screen and change the field mapping.
-                        </p>
+                        <p translate>WHEN_YOU_CLICK_MAP_YOUR_DATA</p>
                     </div>
                     <div class="col-sm-5 key tab_content wide">
-                        <p>
-                            <label class="label label-danger">Duplicate</label> -- TRANSLATION_FIXME if fields are marked as duplicates they need to be resolved to have different names
-                        </p>
+                        <p translate>IF_MARKED_AS_DUPLICATE_ADVICE</p>
                     </div>
                 </div>
             </uib-tab>
@@ -41,10 +33,7 @@
                 <div class="row">
                     <div class="col-sm-7 tab_content wide">
                         <p><strong translate>REVIEW YOUR DATA MAPPINGS</strong></p>
-                        <p>TRANSLATION_FIXME After you click the
-                            <span class="label label-primary">Map Your Data</span> button, you will see a view with the mapped fields and your data in a grid, so that you can verify the mapping is what you want. If you need to change the mapping, click the
-                            <span class="label label-primary">Back to Mapping</span> button and edit the field mapping. Make sure that the mappings are correct in this step. Once you have clicked on the
-                            <span class="label label-primary">Save Mappings</span> button, you will not be able to change the field mappings.
+                        <p translate>MAPPING_STEP_2_ADVICE</p>
                         </p>
                     </div>
                 </div>
@@ -90,7 +79,7 @@
                             <th colspan="99" class="source_data">{$:: import_file.uploaded_filename $}</th>
                         </tr>
                         <tr ng-show="duplicates.length">
-                            <th class="sub_head is_aligned_center hide">TRANSLATION_FIXME Map
+                            <th class="sub_head is_aligned_center hide">{$ 'Map' | translate $}
                                 <a uib-popover="{$MAP_copy$}" popover-placement="right"><i class="fa fa-info-circle" style="cursor: pointer;"></i></a>
                             </th>
                             <th class="mapping_field" translate>header</th>
@@ -125,7 +114,7 @@
                                 <label class="label label-{$ tcm.label_status() $}" ng-if="!tcm.is_duplicate">{$ tcm.validity | translate $}</label>
                             </td>
                             <td>
-                                <strong id="duplicate-header-{$:: $index $}">{$ tcm.name $} TRANSLATION_FIXME</strong>
+                                <strong id="duplicate-header-{$:: $index $}">{$ tcm.name | translate $}</strong>
                             </td>
                             <td ng-repeat="cell_value in tcm.raw_data track by $index" ng-class="{'danger': set_td_class(tcm, cell_value) === 'danger', 'warning': set_td_class(tcm, cell_value) === 'warning'}">
                                 {$:: cell_value $}
@@ -214,8 +203,8 @@
                     translate-values="{ filename: import_file.uploaded_filename }"></div>
                 <uib-progressbar class="progress-striped active" value="import_file.progress" type="success"></uib-progressbar>
                 <div class="progress_bar_copy_bottom"
-                    translate
-                    translate-values="{ progress: (import_file.progress | number: 0)">PERCENT_COMPLETE</div>
+                    translate="PERCENT_COMPLETE"
+                    translate-values="{ progress: (import_file.progress | number: 0) }"></div>
             </div>
         </div>
     </div>
@@ -245,7 +234,7 @@
     </div>
     <div class="inventory-list-tab-container" ng-if="show_mapped_buildings && mappedData.properties.length">
         <div class="item-count">
-            <i class="fa fa-building-o"></i><span translate="NUMBER_OF_PROPERTIES" translate-values="{ num: mappedData.properties.length }"></span>
+            <i class="fa fa-building-o"> </i><span translate="NUMBER_OF_PROPERTIES" translate-values="{ num: mappedData.properties.length }"></span>
         </div>
         <ul class="nav nav-tabs" style="margin-bottom:1px;">
             <li heading="View by Property" class="active"><a translate>View by Property</a></li>
@@ -260,7 +249,7 @@
     </div>
     <div class="inventory-list-tab-container" ng-if="show_mapped_buildings && mappedData.tax_lots.length" style="margin-top: 20px;">
         <div class="item-count">
-            <i class="fa fa-map-o"></i><span translate="NUMBER_OF_TAXLOTS" translate-values="{ num: mappedData.properties.length }"></span>
+            <i class="fa fa-map-o"></i> <span translate="NUMBER_OF_TAXLOTS" translate-values="{ num: mappedData.properties.length }"></span>
         </div>
         <ul class="nav nav-tabs" style="margin-bottom:1px;">
             <li heading="View by Tax Lot" class="active"><a translate>View by Tax Lot</a></li>
