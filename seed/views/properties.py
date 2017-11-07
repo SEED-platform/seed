@@ -363,6 +363,11 @@ class PropertyViewSet(GenericViewSet):
                 property_dict['analysis_end_time'] = make_naive(
                     property_dict['analysis_end_time']).isoformat()
 
+            # remove the measures from this view for now. Really need to get serializers working
+            # correctly for this class.
+            if property_dict.get('measures'):
+                del property_dict['measures']
+
             response['results'].append(property_dict)
 
         return JsonResponse(response, encoder=PintJSONEncoder)
