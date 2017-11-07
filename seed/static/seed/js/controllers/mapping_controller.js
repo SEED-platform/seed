@@ -24,6 +24,7 @@ angular.module('BE.seed.controller.mapping', [])
     'data_quality_service',
     'inventory_service',
     '$translate',
+    'i18nService', // from ui-grid
     'flippers',
     function ($scope,
               $log,
@@ -45,6 +46,7 @@ angular.module('BE.seed.controller.mapping', [])
               data_quality_service,
               inventory_service,
               $translate,
+              i18nService,
               flippers) {
       var db_field_columns = suggested_mappings_payload.column_names;
       var columns = suggested_mappings_payload.columns;
@@ -67,6 +69,15 @@ angular.module('BE.seed.controller.mapping', [])
       }, function failed (translationIds) {
         $scope.translations = translationIds;
       });
+
+      // let angular-translate be in charge ... need
+      // to feed the language-only part of its $translate setting into
+      // ui-grid's i18nService
+      var stripRegion = function (languageTag) {
+        return _.first(languageTag.split('_'));
+      };
+      i18nService.setCurrentLang(stripRegion($translate.use()));
+
 
       // Readability for db columns.
       for (var i = 0; i < db_field_columns.length; i++) {
