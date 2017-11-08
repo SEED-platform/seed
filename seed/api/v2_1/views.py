@@ -28,7 +28,7 @@ from seed.models import (
     Cycle
 )
 from seed.serializers.properties import (
-    PropertyViewSerializers,
+    PropertyViewSerializer,
     PropertyViewAsStateSerializer,
 )
 from seed.utils.viewsets import (
