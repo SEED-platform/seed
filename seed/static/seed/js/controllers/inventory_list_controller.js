@@ -443,8 +443,12 @@ angular.module('BE.seed.controller.inventory_list', [])
               return _.map($scope.gridApi.selection.getSelectedRows(), 'id');
             },
             columns: function () {
-              return _.map($scope.columns, 'name')
+              return _.map($scope.columns, 'name');
+            },
+            inventory_type: function () {
+              return $scope.inventory_type;
             }
+
           }
         });
       };

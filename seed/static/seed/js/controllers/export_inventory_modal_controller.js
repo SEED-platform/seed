@@ -9,7 +9,8 @@ angular.module('BE.seed.controller.export_inventory_modal', []).controller('expo
   'user_service',
   'cycle_id',
   'ids',
-  'columns', function ($http, $scope, $uibModalInstance, user_service, cycle_id, ids, columns) {
+  'columns',
+  'inventory_type', function ($http, $scope, $uibModalInstance, user_service, cycle_id, ids, columns, inventory_type) {
     $scope.export_name = '';
     $scope.export_type = 'csv';
 
@@ -19,14 +20,15 @@ angular.module('BE.seed.controller.export_inventory_modal', []).controller('expo
         ext = '.' + $scope.export_type;
       if (!_.endsWith(filename, ext)) filename += ext;
 
-      return $http.post('/api/v2/properties/csv/', {
+      return $http.post('/api/v2.1/tax_lot_properties/csv/', {
         columns: columns,
         ids: ids,
         filename: filename
       }, {
         params: {
           organization_id: user_service.get_organization().id,
-          cycle_id: cycle_id
+          cycle_id: cycle_id,
+          inventory_type: inventory_type
         }
       }).then(function (response) {
         var blob = new Blob([response.data], {type: 'text/csv'});
