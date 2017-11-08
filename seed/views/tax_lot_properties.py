@@ -111,7 +111,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
         view_klass_str = request.query_params.get('inventory_type', 'properties')
         view_klass = INVENTORY_MODELS[view_klass_str]
         select_related = ['state', 'cycle']
-        ids = request.data.get('ids', None)
+        ids = request.data.get('ids', [])
         filter_str = {'cycle': cycle_pk}
         if hasattr(view_klass, 'property'):
             select_related.append('property')
@@ -140,8 +140,9 @@ class TaxLotPropertyViewSet(GenericViewSet):
         data = TaxLotProperty.get_related(model_views, columns)
 
         # force the data into the same order as the IDs
-        order_dict = {obj_id: index for index, obj_id in enumerate(ids)}
-        data.sort(key=lambda x: order_dict[x['id']])  # x is the property/taxlot object
+        if ids:
+            order_dict = {obj_id: index for index, obj_id in enumerate(ids)}
+            data.sort(key=lambda x: order_dict[x['id']])  # x is the property/taxlot object
 
         # note that the labels are in the property_labels column and are returned by the
         # TaxLotProperty.get_related method.
