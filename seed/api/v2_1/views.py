@@ -267,7 +267,7 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
                 "status": "success",
                 "message": "successfully imported file",
                 "data": {
-                    "property_view": PropertyViewAsStateSerializer(pv_copy).data,
+                    "property_view": pv_copy,
                 },
             })
         else:
