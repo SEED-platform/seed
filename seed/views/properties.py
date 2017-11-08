@@ -747,8 +747,10 @@ class PropertyViewSet(GenericViewSet):
                 "source_eui_weather_normalized", "site_eui_weather_normalized", "source_eui",
                 "energy_alerts", "space_alerts", "building_certification", "number_properties",
                 "block_number", "district", "BLDGS", "property_state_id", "taxlot_state_id",
-                "property_view_id", "taxlot_view_id", 'property_labels'
+                "property_view_id", "taxlot_view_id"
             ]
+        # always export the labels
+        columns += ['property_labels', 'taxlot_labels']
 
         ids = request.data.get('ids', None)
         if ids:
