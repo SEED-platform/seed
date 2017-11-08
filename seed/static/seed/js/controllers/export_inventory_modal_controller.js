@@ -7,7 +7,9 @@ angular.module('BE.seed.controller.export_inventory_modal', []).controller('expo
   '$scope',
   '$uibModalInstance',
   'user_service',
-  'cycle_id', function ($http, $scope, $uibModalInstance, user_service, cycle_id) {
+  'cycle_id',
+  'ids',
+  'columns', function ($http, $scope, $uibModalInstance, user_service, cycle_id, ids, columns) {
     $scope.export_name = '';
     $scope.export_type = 'csv';
 
@@ -18,7 +20,8 @@ angular.module('BE.seed.controller.export_inventory_modal', []).controller('expo
       if (!_.endsWith(filename, ext)) filename += ext;
 
       return $http.post('/api/v2/properties/csv/', {
-        // columns: _.uniq(columns.concat(['property_state_id', 'taxlot_state_id', 'property_view_id', 'taxlot_view_id']))
+        columns: columns,
+        ids: ids,
         filename: filename
       }, {
         params: {

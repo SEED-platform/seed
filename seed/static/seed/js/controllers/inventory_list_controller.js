@@ -438,6 +438,12 @@ angular.module('BE.seed.controller.inventory_list', [])
           resolve: {
             cycle_id: function () {
               return $scope.cycle.selected_cycle.id;
+            },
+            ids: function () {
+              return _.map($scope.gridApi.selection.getSelectedRows(), 'id');
+            },
+            columns: function () {
+              return _.map($scope.columns, 'name')
             }
           }
         });

@@ -782,7 +782,7 @@ class PropertyViewSet(GenericViewSet):
         for datum in data:
             row = []
             for column in columns:
-                if column.startswith('tax_'):
+                if column.startswith('tax_') or column == 'jurisdiction_tax_lot_id':
                     if datum.get('related') and len(datum['related']) > 0:
                         # Looks like related returns a list. Is this as expected?
                         row.append(datum['related'][0].get(re.sub(r'^tax_', '', column), None))
