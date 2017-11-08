@@ -113,7 +113,7 @@ class TestTaxLotProperty(TestCase):
         data = response.content.split('\n')
 
         self.assertTrue('address_line_1' in data[0].split(','))
-        self.assertTrue('property_labels' in data[0].split(','))
+        self.assertTrue('property_labels\r' in data[0].split(','))
 
         self.assertEqual(len(data), 53)
         # last row should be blank

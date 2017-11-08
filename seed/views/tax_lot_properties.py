@@ -104,8 +104,6 @@ class TaxLotPropertyViewSet(GenericViewSet):
                 'block_number', 'district', 'BLDGS', 'property_state_id', 'taxlot_state_id',
                 'property_view_id', 'taxlot_view_id'
             ]
-        # always export the labels
-        columns += ['property_labels', 'taxlot_labels']
 
         # get the class to operate on and the relationships
         view_klass_str = request.query_params.get('inventory_type', 'properties')
@@ -120,6 +118,9 @@ class TaxLotPropertyViewSet(GenericViewSet):
             }
             if ids:
                 filter_str['property__id__in'] = ids
+            # always export the labels
+            columns += ['property_labels']
+
         elif hasattr(view_klass, 'taxlot'):
             select_related.append('taxlot')
             filter_str = {
@@ -127,6 +128,9 @@ class TaxLotPropertyViewSet(GenericViewSet):
             }
             if ids:
                 filter_str['taxlot__id__in'] = ids
+            # always export the labels
+            columns += ['taxlot_labels']
+
 
         model_views = view_klass.objects.select_related(*select_related).filter(
             **filter_str).order_by('id')
