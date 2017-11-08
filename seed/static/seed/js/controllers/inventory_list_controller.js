@@ -440,7 +440,13 @@ angular.module('BE.seed.controller.inventory_list', [])
               return $scope.cycle.selected_cycle.id;
             },
             ids: function () {
-              return _.map($scope.gridApi.selection.getSelectedRows(), 'id');
+              var visibleRowIds = _.map($scope.gridApi.core.getVisibleRows($scope.gridApi.grid), function (row) {
+                return row.entity.id;
+              });
+              var selectedRowIds = _.map($scope.gridApi.selection.getSelectedRows(), 'id');
+              return _.filter(visibleRowIds, function (id) {
+                return _.includes(selectedRowIds, id);
+              });
             },
             columns: function () {
               return _.map($scope.columns, 'name');
