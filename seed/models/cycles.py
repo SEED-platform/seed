@@ -24,4 +24,3 @@ class Cycle(models.Model):
     class Meta:
         ordering = ['-created']
         get_latest_by = 'created'
-

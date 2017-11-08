@@ -11,7 +11,6 @@ import sys
 from celery import chord, chain
 from celery import shared_task
 from celery.utils.log import get_task_logger
-from django.apps import apps
 from django.conf import settings
 from django.core.mail import send_mail
 from django.core.urlresolvers import reverse_lazy
@@ -21,46 +20,15 @@ from django.utils.http import urlsafe_base64_encode
 
 from seed.decorators import lock_and_track
 from seed.landing.models import SEEDUser as User
-from seed.lib.exporter import Exporter
 from seed.lib.mcm.utils import batch
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
     Property, PropertyState,
     TaxLot, TaxLotState
 )
-from seed.utils.cache import set_cache, increment_cache, get_cache
+from seed.utils.cache import set_cache, increment_cache
 
 logger = get_task_logger(__name__)
-
-
-@shared_task
-def export_buildings(export_id, export_name, export_type,
-                     building_ids, export_model='seed.BuildingSnapshot',
-                     selected_fields=None):
-    model = apps.get_model(*export_model.split("."))
-
-    selected_buildings = model.objects.filter(pk__in=building_ids)
-
-    def _row_cb(i):
-        data = get_cache("export_buildings__%s" % export_id)
-        data['buildings_processed'] = i
-
-        if data['total_buildings'] == 0 or not data['total_buildings']:
-            data['progress'] = 100
-        else:
-            data['progress'] = (i * 100) / data['total_buildings']
-
-        set_cache("export_buildings__%s" % export_id, data['status'], data)
-
-    exporter = Exporter(export_id, export_name, export_type)
-    if not exporter.valid_export_type():
-        _row_cb(-1)  # this means there was an error
-        return
-
-    exporter.export(selected_buildings, selected_fields, _row_cb)
-    # file return value is not used
-
-    _row_cb(selected_buildings.count())  # means we're done!
 
 
 @shared_task

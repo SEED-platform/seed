@@ -12,7 +12,6 @@ import subprocess
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
-from django.core.files.storage import DefaultStorage
 from django.http import JsonResponse
 from django.shortcuts import render
 from rest_framework import status
@@ -23,7 +22,6 @@ from seed.data_importer.models import ImportFile, ImportRecord
 from seed.decorators import (
     ajax_request, get_prog_key
 )
-from seed.lib.exporter import Exporter
 from seed.lib.mappings import mapper as simple_mapper
 from seed.lib.mappings import mapping_data
 from seed.lib.mcm import mapper
@@ -143,92 +141,6 @@ def error500(request):
         response = render(request, 'seed/500.html', {})
         response.status_code = 500
         return response
-
-
-@api_endpoint
-@ajax_request
-@login_required
-@api_view(['POST'])
-def export_buildings_download(request):
-    """
-    Provides the url to a building export file.
-
-    Payload::
-
-        {
-            "export_id": export_id from export_buildings
-        }
-
-    Returns::
-
-        {
-            'success': True or False,
-            'status': 'success or error',
-            'message': 'error message, if any',
-            'url': The url to the exported file.
-        }
-    """
-    body = request.data
-    export_id = body.get('export_id')
-
-    # This is non-ideal, it is returning the directory/s3 key and assumes that
-    # only one file lives in that directory. This should really just return the
-    # file to be downloaded. Not sure we are doing multiple downloads at the
-    # moment.
-    export_subdir = Exporter.subdirectory_from_export_id(export_id)
-
-    if 'S3' in settings.DEFAULT_FILE_STORAGE:
-        keys = list(DefaultStorage().bucket.list(export_subdir))
-
-        if not keys:
-            return JsonResponse({
-                'success': False,
-                'status': 'working'
-            })
-
-        if len(keys) > 1:
-            return JsonResponse({
-                "success": False,
-                "status": "error",
-            })
-
-        download_key = keys[0]
-        download_url = download_key.generate_url(900)
-
-        return JsonResponse({
-            'success': True,
-            "status": "success",
-            "url": download_url
-        })
-    else:
-        file_storage = DefaultStorage()
-
-        try:
-            files = file_storage.listdir(export_subdir)
-        except OSError:
-            # Likely scenario is that the file hasn't been written to disk yet.
-            return JsonResponse({'success': False, 'status': 'working'})
-
-        if not files:
-            return JsonResponse({'success': False, 'status': 'error'})
-        else:
-            # get the first file in the directory -- which is the first entry
-            # of the second part of the tuple
-            file_name = os.path.join(export_subdir, files[1][0])
-
-            if file_storage.exists(file_name):
-                url = file_storage.url(file_name)
-                return JsonResponse({
-                    'success': True,
-                    "status": "success",
-                    "url": url
-                })
-            else:
-                return JsonResponse({
-                    'success': False,
-                    'message': 'Could not find file on server',
-                    'status': 'error'
-                })
 
 
 # @api_view(['POST'])  # do not add api_view on this because this is public and adding it will

@@ -87,9 +87,6 @@ class TestTaxLotProperty(TestCase):
             p = self.property_view_factory.get_property_view()
             self.properties.append(p.id)
 
-        qs_filter = {"pk__in": self.properties}
-        qs = PropertyView.objects.filter(**qs_filter)
-
         columns = [
             'address_line_1', 'generation_date', 'energy_alerts', 'space_alerts',
             'building_count', 'owner', 'source_eui', 'jurisdiction_tax_lot_id',
