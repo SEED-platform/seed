@@ -131,15 +131,17 @@ class TaxLotPropertyViewSet(GenericViewSet):
         model_views = view_klass.objects.select_related(*select_related).filter(
             **filter_str).order_by('id')
 
-        filename = request.data.get('filename', None)
-        if not filename:
-            filename = "ExportedData.csv"
+        filename = request.data.get('filename', "ExportedData.csv")
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="{}"'.format(filename)
         writer = csv.writer(response)
 
         # get the data in a dict which includes the related data
         data = TaxLotProperty.get_related(model_views, columns)
+
+        # force the data into the same order as the IDs
+        order_dict = {obj_id: index for index, obj_id in enumerate(ids)}
+        data.sort(key=lambda x: order_dict[x['id']])  # x is the property/taxlot object
 
         # note that the labels are in the property_labels column and are returned by the
         # TaxLotProperty.get_related method.
