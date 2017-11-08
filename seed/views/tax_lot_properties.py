@@ -11,6 +11,7 @@ All rights reserved.  # NOQA
 import csv
 import re
 
+
 from django.http import JsonResponse, HttpResponse
 from rest_framework.decorators import list_route
 from rest_framework.renderers import JSONRenderer
@@ -63,8 +64,12 @@ class TaxLotPropertyViewSet(GenericViewSet):
               description: cycle
               required: true
               paramType: query
+            - name: inventory_type
+              description: properties or taxlots (as defined by the inventory list page)
+              required: true
+              paramType: query
             - name: ids
-              description: list of ids to export
+              description: list of property ids to export (not property views)
               required: true
               paramType: body
             - name: columns
@@ -137,7 +142,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
         data = TaxLotProperty.get_related(model_views, columns)
 
         # note that the labels are in the property_labels column and are returned by the
-        # TaxLotProperty.get_related method
+        # TaxLotProperty.get_related method.
 
         # header
         writer.writerow(columns)
