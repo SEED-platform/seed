@@ -28,6 +28,7 @@ from seed.models import (
     Cycle
 )
 from seed.serializers.properties import (
+    PropertyViewSerializers,
     PropertyViewAsStateSerializer,
 )
 from seed.utils.viewsets import (
@@ -267,7 +268,7 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
                 "status": "success",
                 "message": "successfully imported file",
                 "data": {
-                    "property_view": pv_copy,
+                    "property_view": PropertyViewSerializer(pv_copy).data,
                 },
             })
         else:
