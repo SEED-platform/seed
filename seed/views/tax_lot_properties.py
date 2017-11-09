@@ -161,7 +161,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
         for datum in data:
             row = []
             for column in columns:
-                if column in ['property_name', 'property_notes', 'property_type']:
+                if column in ['property_name', 'property_notes', 'property_type', 'property_labels']:
                     row.append(datum.get(column, None))
                 elif column.startswith('tax_') or column == 'jurisdiction_tax_lot_id':
                     if datum.get('related') and len(datum['related']) > 0:
