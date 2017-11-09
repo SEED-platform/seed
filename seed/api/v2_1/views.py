@@ -20,17 +20,21 @@ from rest_framework.decorators import detail_route
 
 from seed.building_sync.building_sync import BuildingSync
 from seed.models import (
+    PropertyAuditLog,
     PropertyMeasure,
     Simulation,
     PropertyView,
     PropertyState,
     BuildingFile,
-    Cycle
+    Cycle,
+    AUDIT_USER_EDIT
 )
 from seed.serializers.properties import (
+    PropertyStateSerializer,
     PropertyViewSerializer,
     PropertyViewAsStateSerializer,
 )
+from seed.utils.properties import get_changed_fields
 from seed.utils.viewsets import (
     SEEDOrgReadOnlyModelViewSet
 )
@@ -276,3 +280,156 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
                 "status": "error",
                 "message": "Could not process building file with messages {}".format(messages)
             }, status=status.HTTP_400_BAD_REQUEST)
+
+    def update(self, request, pk=None):
+        """
+        Update a property
+        - looks up the property view
+        - casts it as a PropertyState
+        - builds a hash with all the same keys as the original property state
+        - checks if any fields have changed
+        - if nothing has changed, return 422 - Really?  Not sure how I feel about that one, it *is* processable
+        - get the property audit log for this property state
+        - if the new property state has extra_data, the original extra_data is update'd
+        - and then whoa stuff about the audit log?
+        - I'm going to assume 'Import Creation' is the key I'm looking for
+        - create a serializer for the new property state
+        - if it's valid, save this new serialized data to the db
+        -  *** NEW: capture the original scenarios, etc
+        - assign it to the original property view and save the property view
+        -  *** NEW: assign the saved scenarios, etc., to the new state and save it
+        - create a new property audit log for this change
+        - return a 201
+        ---
+        parameters:
+            - name: cycle_id
+              description: The cycle id for filtering the property view
+              required: true
+              paramType: query
+        """
+        cycle_pk = request.query_params.get('cycle_id', None)
+        if not cycle_pk:
+            return JsonResponse(
+                {'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
+        data = request.data
+        result = self._get_property_view(pk, cycle_pk)
+        if result.get('status', None) != 'error':
+            property_view = result.pop('property_view')
+            property_state_data = PropertyStateSerializer(property_view.state).data
+            new_property_state_data = data['state']
+
+            changed = True
+            for key, val in new_property_state_data.iteritems():
+                if val == '':
+                    new_property_state_data[key] = None
+            changed_fields = get_changed_fields(
+                property_state_data, new_property_state_data
+            )
+            if not changed_fields:
+                changed = False
+            if not changed:
+                result.update(
+                    {'status': 'error', 'message': 'Nothing to update'}
+                )
+                status_code = 422  # status.HTTP_422_UNPROCESSABLE_ENTITY
+            else:
+                log = PropertyAuditLog.objects.select_related().filter(
+                    state=property_view.state
+                ).order_by('-id').first()
+
+                if 'extra_data' in new_property_state_data.keys():
+                    property_state_data['extra_data'].update(
+                        new_property_state_data.pop('extra_data'))
+                property_state_data.update(new_property_state_data)
+
+                if log.name == 'Import Creation':
+                    # Add new state
+                    property_state_data.pop('id')
+                    new_property_state_serializer = PropertyStateSerializer(
+                        data=property_state_data
+                    )
+                    if new_property_state_serializer.is_valid():
+
+                        # get some items off of this property view
+                        scenario_ids_for_this_pv = [x.id for x in property_state_data.scenarios]
+                        buildingfile_ids_for_this_pv = [x.id for x in property_state_data.building_files]
+                        simulation_ids_for_this_pv = [x.id for x in
+                                                      Simulation.objects.filter(property_state=property_state_data)]
+                        measure_ids_for_this_pv = [x.id for x in
+                                                   PropertyMeasure.objects.filter(property_state=property_state_data)]
+
+                        # create the new property state, and perform an initial save
+                        new_state = new_property_state_serializer.save()
+
+                        # persist the ids that were saved earlier
+                        [new_state.scenarios.add(x) for x in scenario_ids_for_this_pv]
+                        [new_state.building_files.add(x) for x in buildingfile_ids_for_this_pv]
+                        for x in simulation_ids_for_this_pv:
+                            Simulation.objects.get(id=x).property_state = new_state
+                        for x in measure_ids_for_this_pv:
+                            PropertyMeasure.objects.get(id=x).property_state = new_state
+
+                        # save it again for good measure?
+                        new_state.save()
+
+                        # then assign this state to the property view and save the whole view
+                        property_view.state = new_state
+                        property_view.save()
+
+                        PropertyAuditLog.objects.create(organization=log.organization,
+                                                        parent1=log,
+                                                        parent2=None,
+                                                        parent_state1=log.state,
+                                                        parent_state2=None,
+                                                        state=new_state,
+                                                        name='Manual Edit',
+                                                        description=None,
+                                                        import_filename=log.import_filename,
+                                                        record_type=AUDIT_USER_EDIT)
+
+                        result.update(
+                            {'state': new_property_state_serializer.validated_data}
+                        )
+                        # Removing organization key AND import_file key because they're not JSON-serializable
+                        # TODO find better solution
+                        if 'organization' in result['state']:
+                            result['state'].pop('organization')
+                        if 'import_file' in result['state']:
+                            result['state'].pop('import_file')
+
+                        # Not sure why we have 201 here. Should be 200 or 204 because there is
+                        # no new content created.
+                        status_code = status.HTTP_201_CREATED
+                    else:
+                        result.update({
+                            'status': 'error',
+                            'message': 'Invalid update data with errors: {}'.format(
+                                new_property_state_serializer.errors)}
+                        )
+                        status_code = 422  # status.HTTP_422_UNPROCESSABLE_ENTITY
+                elif log.name in ['Manual Edit', 'Manual Match', 'System Match',
+                                  'Merge current state in migration']:
+                    # Override previous edit state or merge state
+                    state = property_view.state
+                    for key, value in new_property_state_data.iteritems():
+                        setattr(state, key, value)
+                    state.save()
+
+                    result.update(
+                        {'state': PropertyStateSerializer(state).data}
+                    )
+                    # Removing organization key AND import_file key because they're not JSON-serializable
+                    # TODO find better solution
+                    result['state'].pop('organization')
+                    result['state'].pop('import_file')
+
+                    status_code = status.HTTP_201_CREATED
+                else:
+                    result = {'status': 'error',
+                              'message': 'Unrecognized audit log name: ' + log.name}
+                    status_code = 422
+                    return JsonResponse(result, status=status_code)
+
+        else:
+            status_code = status.HTTP_404_NOT_FOUND
+        return JsonResponse(result, status=status_code)
