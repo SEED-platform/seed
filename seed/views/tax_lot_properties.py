@@ -131,7 +131,6 @@ class TaxLotPropertyViewSet(GenericViewSet):
             # always export the labels
             columns += ['taxlot_labels']
 
-
         model_views = view_klass.objects.select_related(*select_related).filter(
             **filter_str).order_by('id')
 
