@@ -222,7 +222,7 @@ def _build_cleaner(org):
     """
     units = {'types': {}}
     for column in Column.objects.filter(mapped_mappings__super_organization=org).select_related(
-        'unit'):
+            'unit'):
         column_type = 'string'
         if column.unit:
             column_type = _translate_unit_to_type(
@@ -1172,7 +1172,7 @@ class EquivalencePartitioner(object):
             for class_key in equivalence_classes:
                 if self.calculate_key_equivalence(class_key,
                                                   cmp_key) and not self.identities_are_different(
-                    identities_for_equivalence[class_key], identity_key):
+                        identities_for_equivalence[class_key], identity_key):
 
                     equivalence_classes[class_key].append(ndx)
 
