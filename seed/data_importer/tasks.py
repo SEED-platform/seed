@@ -222,7 +222,7 @@ def _build_cleaner(org):
     """
     units = {'types': {}}
     for column in Column.objects.filter(mapped_mappings__super_organization=org).select_related(
-            'unit'):
+        'unit'):
         column_type = 'string'
         if column.unit:
             column_type = _translate_unit_to_type(
@@ -279,8 +279,6 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
     :param prog_key: string, key of the progress key
     :param increment: double, value by which to increment progress key
     """
-
-    _log.debug('Mapping row chunks')
     import_file = ImportFile.objects.get(pk=file_pk)
     save_type = PORTFOLIO_BS
     if source_type == ASSESSED_RAW:
@@ -339,7 +337,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
         # field does not exist in mapping list, so ignoring
 
     # _log.debug("my table mappings are {}".format(table_mappings))
-    _log.debug("delimited_field that will be expanded and normalized: {}".format(delimited_fields))
+    # _log.debug("delimited_field that will be expanded and normalized: {}".format(delimited_fields))
 
     # If a single file is being imported into both the tax lot and property table, then add
     # an extra custom mapping for the cross-related data. If the data are not being imported into
@@ -365,7 +363,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
         for k, v in mappings.items():
             if not md.find_column(v[0], v[1]):
                 extra_data_fields.append(k)
-        _log.debug("extra data fields: {}".format(extra_data_fields))
+        # _log.debug("extra data fields: {}".format(extra_data_fields))
 
         # All the data live in the PropertyState.extra_data field when the data are imported
         data = PropertyState.objects.filter(id__in=ids).only('extra_data').iterator()
@@ -1174,7 +1172,7 @@ class EquivalencePartitioner(object):
             for class_key in equivalence_classes:
                 if self.calculate_key_equivalence(class_key,
                                                   cmp_key) and not self.identities_are_different(
-                        identities_for_equivalence[class_key], identity_key):
+                    identities_for_equivalence[class_key], identity_key):
 
                     equivalence_classes[class_key].append(ndx)
 
