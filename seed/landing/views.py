@@ -98,7 +98,6 @@ def password_reset(request):
         email_template_name='landing/password_reset_email.html',
         post_reset_redirect=reverse('landing:password_reset_done'),
         from_email=settings.PASSWORD_RESET_EMAIL,
-        is_admin_site=True,
     )
 
 
