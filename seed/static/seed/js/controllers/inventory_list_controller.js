@@ -436,9 +436,25 @@ angular.module('BE.seed.controller.inventory_list', [])
           templateUrl: urls.static_url + 'seed/partials/export_inventory_modal.html',
           controller: 'export_inventory_modal_controller',
           resolve: {
-            gridApi: function () {
-              return $scope.gridApi;
+            cycle_id: function () {
+              return $scope.cycle.selected_cycle.id;
+            },
+            ids: function () {
+              var visibleRowIds = _.map($scope.gridApi.core.getVisibleRows($scope.gridApi.grid), function (row) {
+                return row.entity.id;
+              });
+              var selectedRowIds = _.map($scope.gridApi.selection.getSelectedRows(), 'id');
+              return _.filter(visibleRowIds, function (id) {
+                return _.includes(selectedRowIds, id);
+              });
+            },
+            columns: function () {
+              return _.map($scope.columns, 'name');
+            },
+            inventory_type: function () {
+              return $scope.inventory_type;
             }
+
           }
         });
       };

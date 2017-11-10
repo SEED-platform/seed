@@ -4,15 +4,6 @@ Library Packages
 Submodules
 ----------
 
-Exporter Module
----------------
-
-.. automodule:: seed.lib.exporter
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
 Module contents
 ---------------
 
