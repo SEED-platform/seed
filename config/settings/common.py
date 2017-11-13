@@ -73,7 +73,6 @@ MIDDLEWARE = (
     'django.contrib.messages.middleware.MessageMiddleware',
 )
 
-
 ROOT_URLCONF = 'config.urls'
 
 INSTALLED_APPS = (
@@ -169,6 +168,12 @@ LOGGING = {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
             'formatter': 'verbose',
+        }
+    },
+    'loggers': {
+        '': {
+            'level': 'INFO',
+            'handlers': ['console'],
         }
     }
 }

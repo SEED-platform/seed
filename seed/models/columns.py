@@ -810,7 +810,7 @@ class ColumnMapping(models.Model):
             # These should be lists of one element each.
             mapping[key[1]] = value
 
-        _log.debug("Mappings from get_column_mappings is: {}".format(mapping))
+        # _log.debug("Mappings from get_column_mappings is: {}".format(mapping))
         return mapping, []
 
     @staticmethod
