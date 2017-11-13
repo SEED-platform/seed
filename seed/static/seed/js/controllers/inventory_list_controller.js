@@ -11,6 +11,7 @@ angular.module('BE.seed.controller.inventory_list', [])
     'inventory_service',
     'label_service',
     'data_quality_service',
+    'user_service',
     'inventory',
     'cycles',
     'labels',
@@ -25,6 +26,7 @@ angular.module('BE.seed.controller.inventory_list', [])
               inventory_service,
               label_service,
               data_quality_service,
+              user_service,
               inventory,
               cycles,
               labels,
@@ -175,7 +177,8 @@ angular.module('BE.seed.controller.inventory_list', [])
                 },
                 name: _.constant(null),
                 uploaded: _.constant(null),
-                importFileId: _.constant(response.progress_key.split(':').pop())
+                importFileId: _.constant(response.progress_key.split(':').pop()),
+                orgId: _.constant(user_service.get_organization().id)
               }
             });
             modalInstance.result.then(function () {
