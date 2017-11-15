@@ -8,16 +8,6 @@
           <input type="text" class="form-control" id="fileName" ng-model="export_name" placeholder="{$ 'File Name' | translate $}" required>
         </div>
     </div>
-    <div class="form-group" style="margin-bottom: 0;">
-        <div class="col-sm-offset-3 col-sm-8 export_radio">
-            <label class="radio radio-inline">
-                <input type="radio" name="optionsRadio" id="optionsRadio1" value="csv" ng-model="export_type" selected>CSV
-            </label>
-            <label class="radio radio-inline">
-                <input type="radio" name="optionsRadio" id="optionsRadio2" value="xls" ng-model="export_type" disabled>XLS
-            </label>
-        </div>
-    </div>
 </div>
 <div class="modal-footer">
     <button type="button" class="btn btn-default" ng-click="cancel()" translate>Cancel</button>

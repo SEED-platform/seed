@@ -53,7 +53,8 @@
     </div>
 </div>
 <div class="modal-footer">
-  <a ng-href="/api/v2/data_quality_checks/{$ ::importFileId $}/csv/" download>
+  <!-- TODO: make the ng-href a method that resuts the data and not a hard coded URL -->
+  <a ng-href="/api/v2/data_quality_checks/{$ ::importFileId $}/csv/?organization_id={$ ::orgId $}" download>
     <button type="button" class="btn btn-default" ng-show="::importFileId" translate>Export</button>
   </a>
   <button type="button" class="btn btn-default" ng-click="close()" translate>Close</button>

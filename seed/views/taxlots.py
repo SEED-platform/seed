@@ -8,22 +8,16 @@ All rights reserved.  # NOQA
 :author
 """
 
-# Imports from Standard Library
 import re
-from collections import defaultdict
 from os import path
 
-# Imports from Django
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
-from django.forms.models import model_to_dict
 from django.http import JsonResponse
-from django.utils.timezone import make_naive
 from rest_framework import status
 from rest_framework.decorators import detail_route, list_route
 from rest_framework.renderers import JSONRenderer
 from rest_framework.viewsets import GenericViewSet
 
-# Local Imports
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (
@@ -53,7 +47,6 @@ from seed.utils.properties import (
 )
 from seed.utils.time import convert_to_js_timestamp
 
-# Constants
 # Global toggle that controls whether or not to display the raw extra
 # data fields in the columns returned for the view.
 DISPLAY_RAW_EXTRADATA = True
@@ -118,127 +111,8 @@ class TaxLotViewSet(GenericViewSet):
                 'total': paginator.count
             },
             'cycle_id': cycle.id,
-            'results': []
+            'results': TaxLotProperty.get_related(taxlot_views, columns)
         }
-
-        # Ids of taxlotviews to look up in m2m
-        lot_ids = [taxlot_dict.pk for taxlot_dict in taxlot_views]
-        joins = TaxLotProperty.objects.filter(taxlot_view_id__in=lot_ids).select_related(
-            'property_view')
-
-        # Get all ids of properties on these joins
-        property_view_ids = [j.property_view_id for j in joins]
-
-        # Get all property views that are related
-        property_views = PropertyView.objects.select_related('property', 'state', 'cycle').filter(
-            pk__in=property_view_ids)
-
-        db_columns = Column.retrieve_db_fields()
-
-        # Map property view id to property view's state data, so we can reference these easily and
-        # save some queries.
-        property_map = {}
-        for property_view in property_views:
-            p = model_to_dict(property_view.state, exclude=['extra_data'])
-            p['property_state_id'] = property_view.state.id
-            p['campus'] = property_view.property.campus
-
-            # Add extra data fields right to this object.
-            for extra_data_field, extra_data_value in property_view.state.extra_data.items():
-                if extra_data_field == 'id':
-                    extra_data_field += '_extra'
-
-                while extra_data_field in db_columns:
-                    extra_data_field += '_extra'
-
-                p[extra_data_field] = extra_data_value
-
-            # Only return the requested rows. speeds up the json string time.
-            # The front end requests for related columns have 'tax_' prepended to them, so check
-            # for that too.
-            p = {key: value for key, value in p.items() if (key in columns) or
-                 ("property_{}".format(key) in columns)}
-
-            property_map[property_view.pk] = p
-            # Replace property_view id with property id
-            property_map[property_view.pk]['id'] = property_view.property.id
-
-        # A mapping of taxlot view pk to a list of property state info for a property view
-        join_map = {}
-        # Get whole taxlotstate table:
-        tuplePropToJurisdictionTL = tuple(
-            TaxLotProperty.objects.values_list('property_view_id',
-                                               'taxlot_view__state__jurisdiction_tax_lot_id'))
-
-        # create a mapping that defaults to an empty list
-        propToJurisdictionTL = defaultdict(list)
-
-        # populate the mapping
-        for name, pth in tuplePropToJurisdictionTL:
-            propToJurisdictionTL[name].append(pth)
-
-        for join in joins:
-            jurisdiction_tax_lot_ids = propToJurisdictionTL[join.property_view_id]
-
-            # Filter out associated tax lots that are present but which do not have preferred
-            none_in_jurisdiction_tax_lot_ids = None in jurisdiction_tax_lot_ids
-            jurisdiction_tax_lot_ids = filter(lambda x: x is not None, jurisdiction_tax_lot_ids)
-
-            if none_in_jurisdiction_tax_lot_ids:
-                jurisdiction_tax_lot_ids.append('Missing')
-
-            # jurisdiction_tax_lot_ids = [""]
-
-            join_dict = property_map[join.property_view_id].copy()
-            join_dict.update({
-                'primary': 'P' if join.primary else 'S',
-                'calculated_taxlot_ids': '; '.join(jurisdiction_tax_lot_ids)
-            })
-
-            # fix specific time stamps - total hack right now. Need to reconcile with
-            # /data_importer/views.py and /seed/views/properties.py
-            if join_dict.get('recent_sale_date'):
-                join_dict['recent_sale_date'] = make_naive(join_dict['recent_sale_date']).strftime(
-                    '%Y-%m-%dT%H:%M:%S')
-
-            if join_dict.get('release_date'):
-                join_dict['release_date'] = make_naive(join_dict['release_date']).strftime(
-                    '%Y-%m-%dT%H:%M:%S')
-
-            if join_dict.get('generation_date'):
-                join_dict['generation_date'] = make_naive(join_dict['generation_date']).strftime(
-                    '%Y-%m-%dT%H:%M:%S')
-
-            try:
-                join_map[join.taxlot_view_id].append(join_dict)
-            except KeyError:
-                join_map[join.taxlot_view_id] = [join_dict]
-
-        for lot in taxlot_views:
-            # Each object in the response is built from the state data, with related data added on.
-            taxlot_dict = model_to_dict(lot.state, exclude=['extra_data'])
-
-            for extra_data_field, extra_data_value in lot.state.extra_data.items():
-                if extra_data_field == 'id':
-                    extra_data_field += '_extra'
-
-                # Check if the extra data field is already a database field
-                while extra_data_field in db_columns:
-                    extra_data_field += '_extra'
-
-                # save to dictionary
-                taxlot_dict[extra_data_field] = extra_data_value
-
-            # Use taxlot_id instead of default (state_id)
-            taxlot_dict['id'] = lot.taxlot_id
-
-            taxlot_dict['taxlot_state_id'] = lot.state.id
-            taxlot_dict['taxlot_view_id'] = lot.id
-
-            # All the related property states.
-            taxlot_dict['related'] = join_map.get(lot.pk, [])
-
-            response['results'].append(taxlot_dict)
 
         return JsonResponse(response, encoder=PintJSONEncoder)
 
