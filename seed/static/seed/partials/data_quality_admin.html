@@ -87,11 +87,11 @@
                             </td>
                             <td ng-if="rule.data_type !== 'string'">
                                 <input class="form-control input-sm" type="number" ng-model="rule.min" ng-change="rule.rule_type = 1" ng-if="_.includes([null, 'number', 'year', 'area', 'eui'], rule.data_type)" placeholder="{$ '(no minimum)' | translate $}">
-                                <input class="form-control input-sm" type="date" ng-model="rule.min" ng-change="rule.rule_type = 1" ng-if="rule.data_type == 'date'">
+                                <input class="form-control input-sm" type="date" ng-model="rule.min" ng-change="rule.rule_type = 1" ng-if="rule.data_type === 'date'">
                             </td>
                             <td ng-if="rule.data_type !== 'string'">
-                                <input class="form-control input-sm" type="number" ng-model="rule.max" ng-change="rule.rule_type = 1" ng-if="rule.data_type != 'date'" placeholder="{$ '(no maximum)' | translate $}">
-                                <input class="form-control input-sm" type="date" ng-model="rule.max" ng-change="rule.rule_type = 1" ng-if="rule.data_type == 'date'">
+                                <input class="form-control input-sm" type="number" ng-model="rule.max" ng-change="rule.rule_type = 1" ng-if="rule.data_type !== 'date'" placeholder="{$ '(no maximum)' | translate $}">
+                                <input class="form-control input-sm" type="date" ng-model="rule.max" ng-change="rule.rule_type = 1" ng-if="rule.data_type === 'date'">
                             </td>
                             <td>
                                 <select class="form-control input-sm" ng-options="unit.id as unit.label for unit in units" ng-model="rule.units" ng-change="rule.rule_type = 1"></select>
