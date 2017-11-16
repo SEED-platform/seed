@@ -31,7 +31,7 @@ from seed.models import (
     TaxLotState, TaxLotView
 )
 from seed.models.auditlog import AUDIT_USER_CREATE
-from seed.utils.string import titlecase
+from seed.utils.strings import titlecase
 
 Owner = namedtuple(
     'Owner',
@@ -464,6 +464,9 @@ class FakeGreenAssessmentPropertyFactory(BaseFake):
             )
         details = self.get_details(assessment, property_view, organization)
         details.update(kw)
+        # remove the organization because it is not a valid field
+        details.pop('organization', None)
+
         gap = GreenAssessmentProperty.objects.create(**details)
         if urls:
             for url in urls:

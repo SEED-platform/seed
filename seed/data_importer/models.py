@@ -11,12 +11,10 @@ import logging
 import math
 import tempfile
 from urllib import unquote
-import os.path
 
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
-from django.core.files import File
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models import Q
@@ -50,22 +48,6 @@ STATUS_LIVE = 9
 STATUS_UNKNOWN = 10
 STATUS_MATCHING = 11
 
-# TODO: use these instead of the others defined in models.py
-IMPORT_STATII = [
-    (STATUS_UPLOADING, "Uploading"),
-    (STATUS_MACHINE_MAPPING, "Machine Mapping"),
-    (STATUS_MAPPING, "Needs Mapping"),
-    (STATUS_MACHINE_CLEANING, "Machine Cleaning"),
-    (STATUS_CLEANING, "Needs Cleaning"),
-    (STATUS_READY_TO_PRE_MERGE, "Ready to Merge"),
-    (STATUS_PRE_MERGING, "Merging"),
-    (STATUS_READY_TO_MERGE, "Merge Complete"),
-    (STATUS_MERGING, "Importing"),
-    (STATUS_LIVE, "Live"),
-    (STATUS_UNKNOWN, "Unknown"),
-    (STATUS_MATCHING, "Matching")
-]
-
 
 class DuplicateDataError(RuntimeError):
     def __init__(self, dup_id):
@@ -89,6 +71,22 @@ class NotDeletableModel(models.Model):
 
 
 class ImportRecord(NotDeletableModel):
+    # TODO: use these instead of the others defined in models.py
+    IMPORT_STATUSES = [
+        (STATUS_UPLOADING, "Uploading"),
+        (STATUS_MACHINE_MAPPING, "Machine Mapping"),
+        (STATUS_MAPPING, "Needs Mapping"),
+        (STATUS_MACHINE_CLEANING, "Machine Cleaning"),
+        (STATUS_CLEANING, "Needs Cleaning"),
+        (STATUS_READY_TO_PRE_MERGE, "Ready to Merge"),
+        (STATUS_PRE_MERGING, "Merging"),
+        (STATUS_READY_TO_MERGE, "Merge Complete"),
+        (STATUS_MERGING, "Importing"),
+        (STATUS_LIVE, "Live"),
+        (STATUS_UNKNOWN, "Unknown"),
+        (STATUS_MATCHING, "Matching")
+    ]
+
     name = models.CharField(max_length=255, blank=True, null=True, verbose_name="Name Your Dataset",
                             default="Unnamed Dataset")
     app = models.CharField(max_length=64, blank=False, null=False, verbose_name='Destination App',
@@ -113,7 +111,7 @@ class ImportRecord(NotDeletableModel):
     matching_done = models.BooleanField(default=False)
     is_imported_live = models.BooleanField(default=False)
     keep_missing_buildings = models.BooleanField(default=True)
-    status = models.IntegerField(default=0, choices=IMPORT_STATII)
+    status = models.IntegerField(default=0, choices=IMPORT_STATUSES)
     import_completed_at = models.DateTimeField(blank=True, null=True)
     merge_completed_at = models.DateTimeField(blank=True, null=True)
     mcm_version = models.IntegerField(blank=True, null=True)
@@ -594,7 +592,7 @@ class ImportRecord(NotDeletableModel):
                 'save_import_meta_url': self.save_import_meta_url,
                 'percent_files_ready_to_merge': self.percent_files_ready_to_merge,
                 'status': self.status,
-                'status_text': IMPORT_STATII[self.status][1],
+                'status_text': self.IMPORT_STATUSES[self.status][1],
                 'status_percent': round(self.status_percent, 0),
                 'status_numerator': self.status_numerator,
                 'status_denominator': self.status_denominator,
@@ -1117,11 +1115,6 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
 
         from seed.models import TaxLotState
         return self.find_unmatched_states(TaxLotState)
-
-    def load_import_file(self, filename):
-        if os.path.isfile(filename):
-            self.file = File(open(filename))
-            self.save()
 
 
 class TableColumnMapping(models.Model):

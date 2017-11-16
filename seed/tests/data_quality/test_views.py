@@ -52,5 +52,5 @@ class DataQualityViewTests(TestCase):
             }]
         }]
         cache.set('data_quality_results__1', data)
-        response = self.client.get(reverse('api:v2:import_files-data-quality-results-csv', args=[1]))
+        response = self.client.get(reverse('api:v2:data_quality_checks-csv', args=[1]))
         self.assertEqual(200, response.status_code)

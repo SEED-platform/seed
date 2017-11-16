@@ -2,45 +2,42 @@
 :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-import optparse
-from django.core.management.base import BaseCommand, CommandError
+import urllib2
 from os import makedirs, remove
 from os.path import abspath, dirname, join, exists
 from sys import argv
-import urllib2
+
+from django.core.management.base import BaseCommand, CommandError
 
 CACHE_DIR = "CACHE"
 MANIFEST_FILENAME = "manifest.json"
 
 
 class Command(BaseCommand):
-
-    option_list = BaseCommand.option_list + (
-        optparse.make_option('--force',
-            action='store_true', dest='force', default=False,
-            help="Force download."),
-    )
-
     help = 'Syncs the complete STATIC_ROOT structure and files to S3 into the given bucket name.'
     args = 'bucket_name'
-
     can_import_settings = True
+
+    def add_arguments(self, parser):
+        parser.add_argument('--force',
+                            action='store_true', dest='force', default=False,
+                            help="Force download.")
 
     def handle(self, *args, **options):
         from django.conf import settings
 
         # Check for AWS keys in settings
         if not hasattr(settings, 'AWS_ACCESS_KEY_ID') or \
-           not hasattr(settings, 'AWS_SECRET_ACCESS_KEY'):
-            raise CommandError('Missing AWS keys from settings file.  Please' +\
-                     'supply both AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.')
+            not hasattr(settings, 'AWS_SECRET_ACCESS_KEY'):
+            raise CommandError('Missing AWS keys from settings file.  Please' + \
+                               'supply both AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.')
         else:
             self.AWS_ACCESS_KEY_ID = settings.AWS_ACCESS_KEY_ID
             self.AWS_SECRET_ACCESS_KEY = settings.AWS_SECRET_ACCESS_KEY
 
         if not hasattr(settings, 'AWS_STORAGE_BUCKET_NAME'):
             raise CommandError('Missing bucket name from settings file. Please' +
-                ' add the AWS_STORAGE_BUCKET_NAME to your settings file.')
+                               ' add the AWS_STORAGE_BUCKET_NAME to your settings file.')
         else:
             if not settings.AWS_STORAGE_BUCKET_NAME:
                 raise CommandError('AWS_STORAGE_BUCKET_NAME cannot be empty.')

@@ -206,10 +206,9 @@ def check_progress(main_url, header, progress_key):
     """Delays the sequence until progress is at 100 percent."""
     print "checking progress {}".format(progress_key)
     time.sleep(1)
-    progress_result = requests.post(
-        main_url + '/api/v2/progress/',
-        headers=header,
-        json={'progress_key': progress_key}
+    progress_result = requests.get(
+        main_url + '/api/v2/progress/{}'.format(progress_key),
+        headers=header
     )
     print "... {} ...".format(progress_result.json()['progress'])
 

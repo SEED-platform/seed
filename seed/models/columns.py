@@ -16,7 +16,7 @@ from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
 
 from seed.landing.models import SEEDUser as User
-from seed.utils.string import titlecase
+from seed.utils.strings import titlecase
 from seed.lib.mappings.mapping_data import MappingData
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
 from seed.models.models import (
@@ -810,7 +810,7 @@ class ColumnMapping(models.Model):
             # These should be lists of one element each.
             mapping[key[1]] = value
 
-        _log.debug("Mappings from get_column_mappings is: {}".format(mapping))
+        # _log.debug("Mappings from get_column_mappings is: {}".format(mapping))
         return mapping, []
 
     @staticmethod

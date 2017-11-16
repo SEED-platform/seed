@@ -19,7 +19,7 @@ from seed.models import (
 )
 from seed.models.auditlog import AUDIT_USER_CREATE
 from seed.utils.api import OrgValidator, OrgValidateMixin
-from seed.utils.string import titlecase
+from seed.utils.strings import titlecase
 
 ASSESSMENT_VALIDATOR = OrgValidator('assessment', 'organization_id')
 ASSESSMENT_PROPERTY_VALIDATOR = OrgValidator(
@@ -294,6 +294,7 @@ class GreenAssessmentURLSerializer(OrgValidateMixin, serializers.ModelSerializer
     org_validators = [ASSESSMENT_PROPERTY_VALIDATOR]
 
     class Meta:
+        fields = '__all__'
         model = GreenAssessmentURL
 
 

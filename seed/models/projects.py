@@ -1,4 +1,3 @@
-
 # !/usr/bin/env python
 # encoding: utf-8
 """
@@ -15,17 +14,16 @@ from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization
 from seed.utils.generic import obj_to_dict
 
-PROJECT_NAME_MAX_LENGTH = 255
-
-INACTIVE_STATUS = 0
-ACTIVE_STATUS = 1
-STATUS_CHOICES = (
-    (INACTIVE_STATUS, _('Inactive')),
-    (ACTIVE_STATUS, _('Active')),
-)
-
 
 class Project(TimeStampedModel):
+    PROJECT_NAME_MAX_LENGTH = 255
+
+    INACTIVE_STATUS = 0
+    ACTIVE_STATUS = 1
+    STATUS_CHOICES = (
+        (INACTIVE_STATUS, _('Inactive')),
+        (ACTIVE_STATUS, _('Active')),
+    )
 
     name = models.CharField(_('name'), max_length=PROJECT_NAME_MAX_LENGTH)
     slug = AutoSlugField(
@@ -47,9 +45,6 @@ class Project(TimeStampedModel):
     description = models.TextField(_('description'), blank=True, null=True)
     status = models.IntegerField(
         _('status'), choices=STATUS_CHOICES, default=ACTIVE_STATUS
-    )
-    building_snapshots = models.ManyToManyField(
-        'BuildingSnapshot', through="ProjectBuilding", blank=True
     )
     property_views = models.ManyToManyField(
         'PropertyView', through="ProjectPropertyView", blank=True
@@ -91,32 +86,6 @@ class Project(TimeStampedModel):
             return self.compliance_set.all()[0]
         else:
             return None
-
-    def to_dict(self):
-        return obj_to_dict(self)
-
-
-class ProjectBuilding(TimeStampedModel):
-    building_snapshot = models.ForeignKey(
-        'BuildingSnapshot', related_name='project_building_snapshots'
-    )
-    project = models.ForeignKey(
-        'Project', related_name='project_building_snapshots'
-    )
-    compliant = models.NullBooleanField(null=True, )
-    approved_date = models.DateField(_("approved_date"), null=True, blank=True)
-    approver = models.ForeignKey(
-        User, verbose_name=_('User'), blank=True, null=True
-    )
-
-    class Meta:
-        ordering = ['project', 'building_snapshot']
-        unique_together = ('building_snapshot', 'project')
-        verbose_name = _("project building")
-        verbose_name_plural = _("project buildings")
-
-    def __unicode__(self):
-        return u"{0} - {1}".format(self.building_snapshot, self.project.name)
 
     def to_dict(self):
         return obj_to_dict(self)

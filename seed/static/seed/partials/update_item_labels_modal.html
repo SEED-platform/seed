@@ -32,7 +32,7 @@
             </form>
         </div>
 
-        <div class="edit_text">Add or remove labels from {$ number_matching_search $} selected {$ inventory_ids.length == 1 ? (inventory_type == 'properties' ? 'property' : 'tax lot') : (inventory_type == 'properties' ? inventory_type : 'tax lots') $}</div>
+        <div class="edit_text">Add or remove labels from {$ number_matching_search $} selected {$ inventory_ids.length === 1 ? (inventory_type === 'properties' ? 'property' : 'tax lot') : (inventory_type === 'properties' ? inventory_type : 'tax lots') $}</div>
 
         <div class="table-list-container">
 
@@ -56,7 +56,7 @@
                                 ng-click="toggle_remove(label)">Remove</button>
                         <button type="button" uib-btn-checkbox ng-model="label.is_checked_add" btn-checkbox-true="true" btn-checkbox-false="false"
                                 class="btn btn-sm btn-default action_link" ng-class="{'btn-primary':label.is_checked_add}"
-                                ng-disabled="inventory_ids.length == 1 && label.is_applied.length" ng-click="toggle_add(label)">Add</button>
+                                ng-disabled="inventory_ids.length === 1 && label.is_applied.length" ng-click="toggle_add(label)">Add</button>
                     </td>
                 </tr>
             </table>

@@ -5,7 +5,6 @@
 :author
 """
 import base64
-import csv
 import hashlib
 import hmac
 import json
@@ -16,21 +15,15 @@ from django.apps import apps
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.postgres.fields import JSONField
-from django.core.exceptions import ImproperlyConfigured
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ImproperlyConfigured, ObjectDoesNotExist
 from django.core.files.storage import FileSystemStorage
 from django.core.urlresolvers import reverse
 from django.db.models import Q
-from django.http import HttpResponse
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.utils.timezone import make_naive
-from rest_framework import serializers
-from rest_framework import status
-from rest_framework import viewsets
+from rest_framework import serializers, status, viewsets
 from rest_framework.authentication import SessionAuthentication
-from rest_framework.decorators import api_view
-from rest_framework.decorators import detail_route
-from rest_framework.decorators import parser_classes
+from rest_framework.decorators import api_view, detail_route, parser_classes, permission_classes
 from rest_framework.parsers import MultiPartParser, FormParser
 
 from seed.authentication import SEEDAuthentication
@@ -49,6 +42,7 @@ from seed.decorators import get_prog_key
 from seed.lib.mappings.mapping_data import MappingData
 from seed.lib.merging import merging
 from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.permissions import SEEDOrgPermissions
 from seed.models import (
     obj_to_dict,
     PropertyState,
@@ -140,7 +134,7 @@ def handle_s3_upload_complete(request):
     return JsonResponse({'success': True, "import_file_id": f.pk})
 
 
-class LocalUploaderViewSet(viewsets.GenericViewSet):
+class LocalUploaderViewSet(viewsets.ViewSet):
     """
     Endpoint to upload data files to, if uploading to local file storage.
     Valid source_type values are found in ``seed.models.SEED_DATA_SOURCES``
@@ -354,6 +348,7 @@ class MappingResultsResponseSerializer(serializers.Serializer):
 class ImportFileViewSet(viewsets.ViewSet):
     raise_exception = True
     authentication_classes = (SessionAuthentication, SEEDAuthentication)
+    queryset = ImportFile.objects.all()
 
     @api_endpoint_class
     @ajax_request_class
@@ -1071,6 +1066,7 @@ class ImportFileViewSet(viewsets.ViewSet):
 
     @api_endpoint_class
     @ajax_request_class
+    @permission_classes((SEEDOrgPermissions,))
     @detail_route(methods=['POST'])
     def match(self, request, pk=None):
         body = request.data
@@ -1322,59 +1318,6 @@ class ImportFileViewSet(viewsets.ViewSet):
         prog_key = get_prog_key('get_progress', import_file_id)
         cache = get_cache(prog_key)
         return HttpResponse(cache['progress'])
-
-    @api_endpoint_class
-    @ajax_request_class
-    @detail_route(methods=['GET'], url_path='data_quality_results_csv')
-    def get_csv(self, request, pk=None):
-        """
-        Download a csv of the results.
-        ---
-        type:
-            status:
-                required: true
-                type: string
-                description: either success or error
-            progress_key:
-                type: integer
-                description: ID of background job, for retrieving job progress
-        parameter_strategy: replace
-        parameters:
-            - name: pk
-              description: Import file ID
-              required: true
-              paramType: path
-        """
-
-        import_file_id = pk
-        data_quality_results = get_cache_raw(DataQualityCheck.cache_key(import_file_id))
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="Data Quality Check Results.csv"'
-
-        writer = csv.writer(response)
-        if data_quality_results is None:
-            writer.writerow(['Error'])
-            writer.writerow(['data quality results not found'])
-            return response
-
-        writer.writerow(
-            ['Table', 'Address Line 1', 'PM Property ID', 'Tax Lot ID', 'Custom ID', 'Field',
-             'Error Message', 'Severity'])
-
-        for row in data_quality_results:
-            for result in row['data_quality_results']:
-                writer.writerow([
-                    row['data_quality_results'][0]['table_name'],
-                    row['address_line_1'],
-                    row['pm_property_id'] if 'pm_property_id' in row else None,
-                    row['jurisdiction_tax_lot_id'] if 'jurisdiction_tax_lot_id' in row else None,
-                    row['custom_id_1'],
-                    result['formatted_field'],
-                    result['detailed_message'],
-                    result['severity']
-                ])
-
-        return response
 
     @api_endpoint_class
     @ajax_request_class
@@ -1755,6 +1698,7 @@ class ImportFileViewSet(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
+    @permission_classes((SEEDOrgPermissions,))
     @detail_route(methods=['GET'])
     def mapping_suggestions(self, request, pk):
         """
@@ -1791,8 +1735,51 @@ class ImportFileViewSet(viewsets.ViewSet):
               paramType: query
 
         """
-        org_id = request.query_params.get('organization_id', None)
-
-        result = _mapping_suggestions(pk, org_id, request.user)
+        organization_id = request.query_params.get('organization_id', None)
+        result = _mapping_suggestions(pk, organization_id, request.user)
 
         return JsonResponse(result)
+
+    @api_endpoint_class
+    @ajax_request_class
+    @permission_classes((SEEDOrgPermissions,))
+    @has_perm_class('requires_member')
+    def destroy(self, request, pk):
+        """
+        Returns suggested mappings from an uploaded file's headers to known
+        data fields.
+        ---
+        type:
+            status:
+                required: true
+                type: string
+                description: Either success or error
+        parameter_strategy: replace
+        parameters:
+            - name: pk
+              description: import_file_id
+              required: true
+              paramType: path
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+
+        """
+        organization_id = int(request.query_params.get('organization_id', None))
+        import_file = ImportFile.objects.get(pk=pk)
+
+        # check if the import record exists for the file and organization
+        d = ImportRecord.objects.filter(
+            super_organization_id=organization_id,
+            pk=import_file.import_record.pk
+        )
+
+        if not d.exists():
+            return JsonResponse({
+                'status': 'error',
+                'message': 'user does not have permission to delete file',
+            }, status=status.HTTP_403_FORBIDDEN)
+
+        import_file.delete()
+        return JsonResponse({'status': 'success'})

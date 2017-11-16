@@ -6,14 +6,11 @@
 """
 from __future__ import absolute_import
 
-import calendar
-import datetime
 import sys
 
 from celery import chord, chain
 from celery import shared_task
 from celery.utils.log import get_task_logger
-from django.apps import apps
 from django.conf import settings
 from django.core.mail import send_mail
 from django.core.urlresolvers import reverse_lazy
@@ -21,55 +18,17 @@ from django.template import loader
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
-from seed import search
 from seed.decorators import lock_and_track
 from seed.landing.models import SEEDUser as User
-from seed.lib.exporter import Exporter
 from seed.lib.mcm.utils import batch
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
-    BuildingSnapshot,
-    Compliance,
-    Project,
-    ProjectBuilding,
     Property, PropertyState,
     TaxLot, TaxLotState
 )
-from seed.utils import time as time_utils
-from seed.utils.buildings import get_search_query
-from seed.utils.cache import set_cache, increment_cache, get_cache
+from seed.utils.cache import set_cache, increment_cache
 
 logger = get_task_logger(__name__)
-
-
-@shared_task
-def export_buildings(export_id, export_name, export_type,
-                     building_ids, export_model='seed.BuildingSnapshot',
-                     selected_fields=None):
-    model = apps.get_model(*export_model.split("."))
-
-    selected_buildings = model.objects.filter(pk__in=building_ids)
-
-    def _row_cb(i):
-        data = get_cache("export_buildings__%s" % export_id)
-        data['buildings_processed'] = i
-
-        if data['total_buildings'] == 0 or not data['total_buildings']:
-            data['progress'] = 100
-        else:
-            data['progress'] = (i * 100) / data['total_buildings']
-
-        set_cache("export_buildings__%s" % export_id, data['status'], data)
-
-    exporter = Exporter(export_id, export_name, export_type)
-    if not exporter.valid_export_type():
-        _row_cb(-1)  # this means there was an error
-        return
-
-    exporter.export(selected_buildings, selected_fields, _row_cb)
-    # file return value is not used
-
-    _row_cb(selected_buildings.count())  # means we're done!
 
 
 @shared_task
@@ -109,198 +68,6 @@ def invite_to_seed(domain, email_address, token, user_pk, first_name):
         send_mail(new_subject, email_body, reset_email, [bcc_address])
     except AttributeError:
         pass
-
-
-@shared_task
-def add_buildings(project_slug, project_dict, user_pk):
-    """adds buildings to a project. if a user has selected all buildings,
-       then the the search parameters within project_dict are used to determine
-       the total set
-       of buildings.
-       also creates a Compliance inst. if satisfying params are present
-
-       :param str project_slug: a project's slug used to get the project
-       :param dict project_dict: contains search params, and browser state
-       information
-       :user_pk int or str: the user's pk or id
-
-    """
-    project = Project.objects.get(slug=project_slug)
-
-    # Initialize the progress cache
-    prog_key = project.adding_buildings_status_percentage_cache_key
-    data = {
-        'status': 'processing',
-        'progress': 0,
-        'progress_key': prog_key,
-        'numerator': 0,
-        'denominator': 0,
-    }
-    set_cache(project.adding_buildings_status_percentage_cache_key,
-              data['status'], data)
-
-    user = User.objects.get(pk=user_pk)
-    project.last_modified_by = user
-    project.save()
-
-    # Perform the appropriate filtering to get the raw list of buildings.
-    params = search.process_search_params(project_dict, user,
-                                          is_api_request=False)
-    buildings_queryset = search.orchestrate_search_filter_sort(
-        params=params,
-        user=user,
-    )
-
-    # Get selected buildings based on either individual selection or select-all
-    # selection.
-    if project_dict.get('select_all_checkbox'):
-        selected_buildings = buildings_queryset
-    else:
-        selected_buildings = buildings_queryset.filter(
-            id__in=project_dict.get('selected_buildings', []),
-        )
-
-    denominator = len(selected_buildings)
-
-    # Loop over the buildings adding them to the project and updating the
-    # progress cache.
-    for idx, bs in enumerate(selected_buildings):
-        data = {
-            'status': 'processing',
-            'progress': (float(idx) / denominator * 100),
-            'progress_key': prog_key,
-            'numerator': idx,
-            'denominator': denominator
-        }
-        set_cache(prog_key, data['status'], data)
-        ProjectBuilding.objects.get_or_create(
-            project=project, building_snapshot=bs
-        )
-
-    # Mark the progress cache as complete.
-    result = {
-        'status': 'completed',
-        'progress': 100,
-        'progress_key': prog_key,
-        'numerator': denominator,
-        'denominator': denominator
-    }
-    set_cache(prog_key, result['status'], result)
-
-    deadline_date = time_utils.parse_datetime(
-        project_dict.get('deadline_date'))
-
-    end_date = time_utils.parse_datetime(project_dict.get('end_date'))
-
-    if end_date:
-        last_day_of_month = calendar.monthrange(
-            end_date.year, end_date.month
-        )[1]
-        end_date = datetime.datetime(
-            end_date.year, end_date.month, last_day_of_month
-        )
-
-    if project_dict.get('compliance_type'):
-        compliance = Compliance.objects.create(
-            compliance_type=project_dict.get('compliance_type'),
-            end_date=end_date,
-            deadline_date=deadline_date,
-            project=project
-        )
-        compliance.save()
-
-
-@shared_task
-def remove_buildings(project_slug, project_dict, user_pk):
-    """adds buildings to a project. if a user has selected all buildings,
-       then the the search parameters within project_dict are used to determine
-       the total set of buildings.
-
-       :param str project_slug: a project's slug used to get the project
-       :param dict project_dict: contains search params, and browser state
-           information
-       :user_pk int or str: the user's pk or id
-    """
-    project = Project.objects.get(slug=project_slug)
-    user = User.objects.get(pk=user_pk)
-    project.last_modified_by = user
-    project.save()
-
-    selected_buildings = project_dict.get('selected_buildings', [])
-    prog_key = project.removing_buildings_status_percentage_cache_key
-    data = {
-        'status': 'processing',
-        'progress': 0,
-        'progress_key': prog_key,
-        'numerator': 0,
-        'denominator': 0,
-    }
-    set_cache(prog_key, data['status'], data)
-    i = 0
-    denominator = 1
-    if not project_dict.get('select_all_checkbox', False):
-        for sfid in selected_buildings:
-            i += 1
-            denominator = len(selected_buildings)
-            data = {
-                'status': 'processing',
-                'progress': (float(i) / max(len(selected_buildings), 1) * 100),
-                'progress_key': prog_key,
-                'numerator': i,
-                'denominator': denominator
-            }
-            set_cache(prog_key, data['status'], data)
-            ab = BuildingSnapshot.objects.get(pk=sfid)
-            ProjectBuilding.objects.get(
-                project=project, building_snapshot=ab
-            ).delete()
-    else:
-        query_buildings = get_search_query(user, project_dict)
-        denominator = query_buildings.count() - len(selected_buildings)
-        data = {
-            'status': 'processing',
-            'progress': 10,
-            'progress_key': prog_key,
-            'numerator': i,
-            'denominator': denominator
-        }
-        set_cache(prog_key, data['status'], data)
-        for b in query_buildings:
-            ProjectBuilding.objects.get(
-                project=project, building_snapshot=b
-            ).delete()
-        data = {
-            'status': 'processing',
-            'progress': 50,
-            'progress_key': prog_key,
-            'numerator': denominator - len(selected_buildings),
-            'denominator': denominator
-        }
-        set_cache(prog_key, data['status'], data)
-        for building in selected_buildings:
-            i += 1
-            ab = BuildingSnapshot.objects.get(source_facility_id=building)
-            ProjectBuilding.objects.create(
-                project=project, building_snapshot=ab
-            )
-            data = {
-                'status': 'processing',
-                'progress': (float(denominator - len(
-                    selected_buildings) + i) / denominator * 100),
-                'progress_key': prog_key,
-                'numerator': denominator - len(selected_buildings) + i,
-                'denominator': denominator
-            }
-            set_cache(prog_key, data['status'], data)
-
-    result = {
-        'status': 'complete',
-        'progress': 100,
-        'progress_key': prog_key,
-        'numerator': i,
-        'denominator': denominator
-    }
-    set_cache(prog_key, result['status'], result)
 
 
 @shared_task

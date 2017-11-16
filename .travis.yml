@@ -49,7 +49,7 @@ env:
     - TOX_ENV=python
     - TOX_ENV=flake8
     - TOX_ENV=docs
-#    - TOX_ENV=functional
+    - TOX_ENV=functional
     - TOX_ENV=apitest
 script:
   - tox -e $TOX_ENV

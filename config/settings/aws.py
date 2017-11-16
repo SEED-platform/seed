@@ -29,8 +29,7 @@ ONLY_HTTPS = os.environ.get('ONLY_HTTPS', 'True') == 'True'
 SESSION_COOKIE_SECURE = ONLY_HTTPS
 CSRF_COOKIE_SECURE = ONLY_HTTPS
 if ONLY_HTTPS:
-    MIDDLEWARE_CLASSES = ('sslify.middleware.SSLifyMiddleware',) + \
-        MIDDLEWARE_CLASSES
+    MIDDLEWARE = ('sslify.middleware.SSLifyMiddleware',) + MIDDLEWARE
 
 # Upload to S3
 AWS_S3_MAX_MEMORY_SIZE = 1024 * 1024
@@ -89,7 +88,7 @@ CACHES = {
 # logging
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': True,
+    'disable_existing_loggers': False,
     'root': {
         'level': 'WARNING',
         'handlers': ['sentry']

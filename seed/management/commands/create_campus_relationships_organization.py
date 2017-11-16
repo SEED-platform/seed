@@ -1,13 +1,11 @@
 from __future__ import unicode_literals
 
 import datetime
-import logging
 
 from django.core.management.base import BaseCommand
 
 from _localtools import get_core_organizations
 from _localtools import logging_info
-from _localtools import logging_debug
 from seed.models import *
 
 logging.basicConfig(level=logging.DEBUG)

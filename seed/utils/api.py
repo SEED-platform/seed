@@ -189,17 +189,18 @@ class APIBypassCSRFMiddleware(object):
     """
     This middleware turns off CSRF protection for API clients.
 
-    It must come before CsrfViewMiddleware in settings.MIDDLEWARE_CLASSES.
+    It must come before CsrfViewMiddleware in settings.MIDDLEWARE.
     """
 
-    def process_view(self, request, *args, **kwargs):
-        """
-        If this request is an API request, bypass CSRF protection.
-        """
-        # pylint:disable=unused-argument
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+
         if get_api_request_user(request):
             request.csrf_processing_done = True
-        return None
+        return response
 
 
 def rgetattr(obj, lst):

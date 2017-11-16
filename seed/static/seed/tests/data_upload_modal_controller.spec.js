@@ -4,20 +4,11 @@
  */
 describe('controller: data_upload_modal_controller', function () {
   // globals set up and used in each test scenario
-  var mock_uploader_service, scope, controller, modal_state;
-  var data_upload_modal_controller, data_upload_controller_scope, modalInstance, labels;
-  var deleted_label, updated_label, mock_mapping_service, mock_matching_service;
+  var mock_uploader_service, controller, modal_state;
+  var data_upload_controller_scope;
+  var mock_mapping_service, mock_matching_service;
   var global_step = 1;
   var global_dataset = {};
-  var return_labels = [{
-    name: 'compliant',
-    color: 'green',
-    id: 1
-  }, {
-    name: 'new label',
-    color: 'blue',
-    id: 2
-  }];
 
   var cycles = {
     cycles: [{
@@ -38,13 +29,8 @@ describe('controller: data_upload_modal_controller', function () {
   // 'config.seed' is created in TestFilters.html
   beforeEach(function () {
     module('BE.seed');
-  });
-
-  // inject AngularJS dependencies for the controller
-  beforeEach(inject(
-    function ($controller, $rootScope, $uibModal, urls, $q, uploader_service, mapping_service, matching_service) {
+    inject(function ($controller, $rootScope, $uibModal, urls, $q, uploader_service, mapping_service, matching_service) {
       controller = $controller;
-      scope = $rootScope;
       data_upload_controller_scope = $rootScope.$new();
       modal_state = '';
 
@@ -55,8 +41,8 @@ describe('controller: data_upload_modal_controller', function () {
       mock_matching_service = matching_service;
       spyOn(mock_uploader_service, 'get_AWS_creds')
         .andCallFake(function () {
-          // return $q.reject for error scenario
-          return $q.when({
+            // return $q.reject for error scenario
+          return $q.resolve({
             status: 'success',
             AWS_CLIENT_ACCESS_KEY: '123',
             AWS_UPLOAD_BUCKET_NAME: 'test-bucket'
@@ -66,7 +52,7 @@ describe('controller: data_upload_modal_controller', function () {
       spyOn(mock_uploader_service, 'check_progress')
         .andCallFake(function () {
           // return $q.reject for error scenario
-          return $q.when({
+          return $q.resolve({
             status: 'success',
             progress: '25.0'
           });
@@ -75,7 +61,7 @@ describe('controller: data_upload_modal_controller', function () {
         .andCallFake(function (progress, num, num2, cb) {
           // return $q.reject for error scenario
           cb();
-          return $q.when({
+          return $q.resolve({
             status: 'success',
             progress: '100.0'
           });
@@ -84,7 +70,7 @@ describe('controller: data_upload_modal_controller', function () {
         .andCallFake(function (dataset_name) {
           // return $q.reject for error scenario
           if (dataset_name !== 'fail') {
-            return $q.when({
+            return $q.resolve({
               status: 'success',
               id: 3,
               name: dataset_name
@@ -101,7 +87,7 @@ describe('controller: data_upload_modal_controller', function () {
         .andCallFake(function (dataset_name) {
           // return $q.reject for error scenario
           if (dataset_name !== 'fail') {
-            return $q.when({
+            return $q.resolve({
               status: 'success',
               file_id: 3,
               progress_key: ':1:SEED:save_raw_data:PROG:51'
@@ -116,7 +102,7 @@ describe('controller: data_upload_modal_controller', function () {
         .andCallFake(function (dataset_name) {
           // return $q.reject for error scenario
           if (dataset_name !== 'fail') {
-            return $q.when({
+            return $q.resolve({
               status: 'success',
               file_id: 3
             });
@@ -127,20 +113,21 @@ describe('controller: data_upload_modal_controller', function () {
           }
         });
       spyOn(mock_matching_service, 'start_system_matching')
-        .andCallFake(function (file_id) {
+        .andCallFake(function () {
           // return $q.reject for error scenario
-          return $q.when({
+          return $q.resolve({
             status: 'warning',
             file_id: 3
           });
         });
 
     }
-  ));
+    );
+  });
 
   // this is outside the beforeEach so it can be configured by each unit test
   function create_data_upload_modal_controller () {
-    data_upload_modal_controller = controller('data_upload_modal_controller', {
+    controller('data_upload_modal_controller', {
       $scope: data_upload_controller_scope,
       $uibModalInstance: {
         close: function () {
@@ -220,7 +207,7 @@ describe('controller: data_upload_modal_controller', function () {
     expect(data_upload_controller_scope.step.number).toBe(step);
   });
 
-  it('disables the \'Name it\' button if no text is entered', function () {
+  it('disables the "Name it" button if no text is entered', function () {
     // arrange
     create_data_upload_modal_controller();
 
@@ -230,7 +217,7 @@ describe('controller: data_upload_modal_controller', function () {
     // assertions
     expect(data_upload_controller_scope.dataset.disabled()).toBe(true);
   });
-  it('disables the \'Name it\' button if no text is entered, then cleared', function () {
+  it('disables the "Name it" button if no text is entered, then cleared', function () {
     // arrange
     create_data_upload_modal_controller();
 
@@ -241,7 +228,7 @@ describe('controller: data_upload_modal_controller', function () {
     // assertions
     expect(data_upload_controller_scope.dataset.disabled()).toBe(true);
   });
-  it('enables the \'Name it\' button if text is entered', function () {
+  it('enables the "Name it" button if text is entered', function () {
     // arrange
     create_data_upload_modal_controller();
 
@@ -357,13 +344,12 @@ describe('controller: data_upload_modal_controller', function () {
   it('should start saving the energy data when the file has been uploaded', function () {
     // arrange
     create_data_upload_modal_controller();
-    var message, filename;
-    message = 'upload_complete';
-    file = {
+    var message = 'upload_complete';
+    var file = {
       filename: 'file1.csv',
       file_id: 1234,
-      cycle_id: "myCycle",
-    }
+      cycle_id: 'myCycle'
+    };
     data_upload_controller_scope.step.number = 4;
 
     // act
@@ -371,7 +357,7 @@ describe('controller: data_upload_modal_controller', function () {
     data_upload_controller_scope.$digest();
 
     // assertions
-    expect(mock_uploader_service.save_raw_data).toHaveBeenCalledWith(1234, "myCycle")
+    expect(mock_uploader_service.save_raw_data).toHaveBeenCalledWith(1234, 'myCycle');
     expect(mock_uploader_service.check_progress_loop).toHaveBeenCalled();
     expect(mock_mapping_service.start_mapping).toHaveBeenCalledWith(1234);
     expect(mock_matching_service.start_system_matching).toHaveBeenCalledWith(1234);

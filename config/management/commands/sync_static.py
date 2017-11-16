@@ -33,7 +33,6 @@ Command options are:
 import datetime
 import email
 import mimetypes
-import optparse
 import os
 import time
 
@@ -48,6 +47,8 @@ except ImportError:
 
 
 class Command(BaseCommand):
+    help = 'Syncs the complete STATIC_ROOT structure and files to S3 into the given bucket name.'
+
     # TODO: might be better as instance variables rather than class variables
     #       in case more than one Command instance with different key or dir is needed
     # Extra variables to avoid passing these around
@@ -65,30 +66,31 @@ class Command(BaseCommand):
     upload_count = 0
     skip_count = 0
 
-    option_list = BaseCommand.option_list + (
-        optparse.make_option('-p', '--prefix',
-                             dest='prefix', default='',
-                             help="The prefix to prepend to the path on S3."),
-        optparse.make_option('--gzip',
-                             action='store_true', dest='gzip', default=False,
-                             help="Enables gzipping CSS and Javascript files."),
-        optparse.make_option('--expires',
-                             action='store_true', dest='expires', default=False,
-                             help="Enables setting a far future expires header."),
-        optparse.make_option('--force',
-                             action='store_true', dest='force', default=False,
-                             help="Skip the file mtime check to force upload of all files.")
-    )
-
-    help = 'Syncs the complete STATIC_ROOT structure and files to S3 into the given bucket name.'
     args = 'bucket_name'
+
+    def add_arguments(self, parser):
+        parser.add_argument('-p', '--prefix',
+                            dest='prefix', default='',
+                            help="The prefix to prepend to the path on S3.")
+        parser.add_argument('--gzip',
+                            action='store_true', dest='gzip', default=False,
+                            help="Enables gzipping CSS and Javascript files.")
+        parser.add_argument('--expires',
+                            action='store_true', dest='expires', default=False,
+                            help="Enables setting a far future expires header.")
+        parser.add_argument('--force',
+                            action='store_true', dest='force', default=False,
+                            help="Skip the file mtime check to force upload of all files.")
+        parser.add_argument('-v', '--verbosity',
+                            dest='verbosity', default=1, action='count',
+                            help="Verbose mode. Multiple -v options increase the verbosity.")
 
     def handle(self, *args, **options):
         from django.conf import settings
 
         # Check for AWS keys in settings
         if not hasattr(settings, 'AWS_ACCESS_KEY_ID') or \
-                not hasattr(settings, 'AWS_SECRET_ACCESS_KEY'):
+            not hasattr(settings, 'AWS_SECRET_ACCESS_KEY'):
             raise CommandError('Missing AWS keys from settings file.  Please' +
                                'supply both AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.')
         else:
@@ -242,12 +244,3 @@ class Command(BaseCommand):
                 self.upload_count += 1
 
             file_obj.close()
-
-
-# Backwards compatibility for Django r9110
-if not [opt for opt in Command.option_list if opt.dest == 'verbosity']:
-    Command.option_list += (
-        optparse.make_option('-v', '--verbosity',
-                             dest='verbosity', default=1, action='count',
-                             help="Verbose mode. Multiple -v options increase the verbosity."),
-    )

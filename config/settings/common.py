@@ -61,15 +61,14 @@ TEMPLATES = [
         },
     },
 ]
-
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE = (
     'django.middleware.gzip.GZipMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.BrokenLinkEmailsMiddleware',
     'seed.utils.api.APIBypassCSRFMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
 )
@@ -90,7 +89,6 @@ INSTALLED_APPS = (
     'compressor',
     'django_extensions',
     'raven.contrib.django.raven_compat',
-    'tos',
     'django_filters',
     'rest_framework',
     'rest_framework_swagger',
@@ -171,6 +169,12 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'verbose',
         }
+    },
+    'loggers': {
+        '': {
+            'level': 'INFO',
+            'handlers': ['console'],
+        }
     }
 }
 
@@ -223,8 +227,6 @@ NOSE_PLUGINS = [
 
 # Django 1.5+ way of doing user profiles
 AUTH_USER_MODEL = 'landing.SEEDUser'
-NOSE_ARGS = ['--exclude-dir=libs/dal']
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
@@ -273,8 +275,6 @@ REST_FRAMEWORK = {
     'DATETIME_INPUT_FORMATS': (
         '%Y:%m:%d', 'iso-8601', '%Y-%m-%d'
     ),
-    'VIEW_DESCRIPTION_FUNCTION':
-        'rest_framework_swagger.views.get_restructuredtext',
     'EXCEPTION_HANDLER': 'seed.exception_handler.custom_exception_handler'
 }
 

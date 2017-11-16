@@ -26,7 +26,7 @@ from seed.models.auditlog import (
 )
 from seed.landing.models import SEEDUser
 from seed.models import PropertyView
-from seed.utils.string import titlecase
+from seed.utils.strings import titlecase
 
 DEFAULT_GREEN_ASSESSEMENT_VALIDITY_DURATION = getattr(
     settings, 'GREEN_ASSESSMENT_DEFAULT_VALIDITY_DURATION', None
@@ -382,16 +382,16 @@ class GreenAssessmentPropertyAuditLog(models.Model):
     created = models.DateTimeField(auto_now_add=True, null=True)
     greenassessmentproperty = models.ForeignKey(
         GreenAssessmentProperty,
-        related_name="gapauditlog__assessment"
+        related_name="gapauditlog_assessment"
     )
     property_view = models.ForeignKey(
-        PropertyView, related_name='gapauditlog__view', null=True
+        PropertyView, related_name='gapauditlog_view', null=True
     )
     ancestor = models.ForeignKey(
         'GreenAssessmentPropertyAuditLog', blank=True, null=True,
-        related_name='gapauditlog__ancestor'
+        related_name='gapauditlog_ancestor'
     )
     parent = models.ForeignKey(
         'GreenAssessmentPropertyAuditLog', blank=True, null=True,
-        related_name='gapauditlog__parent'
+        related_name='gapauditlog_parent'
     )

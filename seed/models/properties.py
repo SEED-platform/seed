@@ -11,7 +11,6 @@ import pdb
 
 from django.contrib.postgres.fields import JSONField
 from django.db import models
-
 from quantityfield.fields import QuantityField
 
 from auditlog import AUDIT_IMPORT
@@ -442,20 +441,20 @@ class PropertyView(models.Model):
 class PropertyAuditLog(models.Model):
     organization = models.ForeignKey(Organization)
     parent1 = models.ForeignKey('PropertyAuditLog', blank=True, null=True,
-                                related_name='propertyauditlog__parent1')
+                                related_name='propertyauditlog_parent1')
     parent2 = models.ForeignKey('PropertyAuditLog', blank=True, null=True,
-                                related_name='propertyauditlog__parent2')
+                                related_name='propertyauditlog_parent2')
 
     # store the parent states as well so that we can quickly return which state is associated
     # with the parents of the audit log without having to query the parent audit log to grab
     # the state
     parent_state1 = models.ForeignKey(PropertyState, blank=True, null=True,
-                                      related_name='propertyauditlog__parent_state1')
+                                      related_name='parent_state1')
     parent_state2 = models.ForeignKey(PropertyState, blank=True, null=True,
-                                      related_name='propertyauditlog__parent_state2')
+                                      related_name='parent_state2')
 
-    state = models.ForeignKey('PropertyState', related_name='propertyauditlog__state')
-    view = models.ForeignKey('PropertyView', related_name='propertyauditlog__view', null=True)
+    state = models.ForeignKey('PropertyState', related_name='propertyauditlog_state')
+    view = models.ForeignKey('PropertyView', related_name='propertyauditlog_view', null=True)
 
     name = models.CharField(max_length=255, null=True, blank=True)
     description = models.TextField(null=True, blank=True)

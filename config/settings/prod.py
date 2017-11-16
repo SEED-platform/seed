@@ -24,8 +24,8 @@ ALLOWED_HOSTS = ['*']
 # Enable this if not using Cloudflare
 #ONLY_HTTPS = os.environ.get('ONLY_HTTPS', 'True') == 'True'
 #if ONLY_HTTPS:
-#    MIDDLEWARE_CLASSES = ('sslify.middleware.SSLifyMiddleware',) + \
-#        MIDDLEWARE_CLASSES
+#    MIDDLEWARE = ('sslify.middleware.SSLifyMiddleware',) + \
+#        MIDDLEWARE
 
 # PostgreSQL DB config - override in local_untracked if needed
 DATABASES = {
@@ -63,7 +63,7 @@ CELERY_TASK_QUEUES = (
 # logging
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': True,
+    'disable_existing_loggers': False,  # use the default
     'root': {
         'level': 'WARNING',
         'handlers': ['sentry']

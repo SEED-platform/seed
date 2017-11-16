@@ -8,22 +8,17 @@ All rights reserved.  # NOQA
 :author
 """
 
-# Imports from Standard Library
 import re
 from os import path
 
-# Imports from Django
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
-from django.forms.models import model_to_dict
 from django.http import JsonResponse
-from django.utils.timezone import make_naive
 from rest_framework import status
 from rest_framework.decorators import detail_route, list_route
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-# Local Imports
 from seed.decorators import ajax_request_class
 from seed.filtersets import PropertyViewFilterSet, PropertyStateFilterSet
 from seed.lib.superperms.orgs.decorators import has_perm_class
@@ -60,7 +55,6 @@ from seed.utils.viewsets import (
     SEEDOrgModelViewSet
 )
 
-# Constants
 # Global toggle that controls whether or not to display the raw extra
 # data fields in the columns returned for the view.
 DISPLAY_RAW_EXTRADATA = True
@@ -219,7 +213,8 @@ class PropertyViewSet(GenericViewSet):
                 })
 
         property_views_list = PropertyView.objects.select_related('property', 'state', 'cycle') \
-            .filter(property__organization_id=request.query_params['organization_id'], cycle=cycle)
+            .filter(property__organization_id=request.query_params['organization_id'],
+                    cycle=cycle).order_by('id')
 
         paginator = Paginator(property_views_list, per_page)
 
@@ -244,112 +239,11 @@ class PropertyViewSet(GenericViewSet):
                 'total': paginator.count
             },
             'cycle_id': cycle.id,
-            'results': []
+            'results': TaxLotProperty.get_related(property_views, columns)
         }
-
-        # Ids of propertyviews to look up in m2m
-        prop_ids = [p.pk for p in property_views]
-        joins = TaxLotProperty.objects.filter(property_view_id__in=prop_ids)
-
-        # Get all ids of tax lots on these joins
-        taxlot_view_ids = [j.taxlot_view_id for j in joins]
-
-        # Get all tax lot views that are related
-        taxlot_views = TaxLotView.objects.select_related('taxlot', 'state', 'cycle').filter(
-            pk__in=taxlot_view_ids)
-
-        # Map tax lot view id to tax lot view's state data, so we can reference these easily and save some queries.
-        db_columns = Column.retrieve_db_fields()
-        for lot in taxlot_views:
-            # Each object in the response is built from the state data, with related data added on.
-            l = model_to_dict(lot.state, exclude=['extra_data'])
-
-            for extra_data_field, extra_data_value in lot.state.extra_data.items():
-                if extra_data_field == 'id':
-                    extra_data_field += '_extra'
-
-                # Check if the extra data field is already a database field
-                while extra_data_field in db_columns:
-                    extra_data_field += '_extra'
-
-        taxlot_map = {}
-        for taxlot_view in taxlot_views:
-            l = model_to_dict(taxlot_view.state, exclude=['extra_data'])
-            l['taxlot_state_id'] = taxlot_view.state.id
-
-            # Add extra data fields right to this object.
-            for extra_data_field, extra_data_value in taxlot_view.state.extra_data.items():
-                if extra_data_field == 'id':
-                    extra_data_field += '_extra'
-
-                while extra_data_field in db_columns:
-                    extra_data_field += '_extra'
-
-                l[extra_data_field] = extra_data_value
-
-            # Only return the requested rows. speeds up the json string time.
-            # The front end requests for related columns have 'tax_' prepended to them, so check
-            # for that too.
-            l = {key: value for key, value in l.items() if (key in columns) or
-                 ("tax_{}".format(key) in columns)}
-            taxlot_map[taxlot_view.pk] = l
-            # Replace taxlot_view id with taxlot id
-            taxlot_map[taxlot_view.pk]['id'] = taxlot_view.taxlot.id
-
-        # A mapping of property view pk to a list of taxlot state info for a taxlot view
-        join_map = {}
-        for join in joins:
-            join_dict = taxlot_map[join.taxlot_view_id].copy()
-            join_dict.update({
-                'primary': 'P' if join.primary else 'S',
-                'taxlot_view_id': join.taxlot_view_id
-            })
-            try:
-                join_map[join.property_view_id].append(join_dict)
-            except KeyError:
-                join_map[join.property_view_id] = [join_dict]
-
-        for prop in property_views:
-            # Each object in the response is built from the state data, with related data added on.
-            p = model_to_dict(prop.state, exclude=['extra_data'])
-
-            for extra_data_field, extra_data_value in prop.state.extra_data.items():
-                if extra_data_field == 'id':
-                    extra_data_field += '_extra'
-
-                while extra_data_field in db_columns:
-                    extra_data_field += '_extra'
-
-                p[extra_data_field] = extra_data_value
-
-            # Use property_id instead of default (state_id)
-            p['id'] = prop.property_id
-
-            p['property_state_id'] = prop.state.id
-            p['property_view_id'] = prop.id
-
-            p['campus'] = prop.property.campus
-
-            # All the related tax lot states.
-            p['related'] = join_map.get(prop.pk, [])
-
-            # fix specific time stamps - total hack right now. Need to reconcile with
-            # /data_importer/views.py
-            if p.get('recent_sale_date'):
-                p['recent_sale_date'] = make_naive(p['recent_sale_date']).isoformat()
-
-            if p.get('release_date'):
-                p['release_date'] = make_naive(p['release_date']).isoformat()
-
-            if p.get('generation_date'):
-                p['generation_date'] = make_naive(p['generation_date']).isoformat()
-
-            response['results'].append(p)
 
         return JsonResponse(response, encoder=PintJSONEncoder)
 
-    # @require_organization_id
-    # @require_organization_membership
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
@@ -377,8 +271,6 @@ class PropertyViewSet(GenericViewSet):
         """
         return self._get_filtered_results(request, columns=[])
 
-    # @require_organization_id
-    # @require_organization_membership
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
@@ -473,8 +365,6 @@ class PropertyViewSet(GenericViewSet):
         taxlot_id = int(request.query_params.get('taxlot_id'))
         return pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, False)
 
-    # @require_organization_id
-    # @require_organization_membership
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')

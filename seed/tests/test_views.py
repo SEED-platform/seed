@@ -7,7 +7,6 @@
 import json
 from datetime import datetime
 
-from django.core.cache import cache
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.test import TestCase
 from django.utils import timezone
@@ -23,7 +22,6 @@ from seed.models import (
     Cycle,
     FLOAT,
     Property,
-    ProjectBuilding,
     PropertyState,
     PropertyView,
     StatusLabel,
@@ -39,7 +37,7 @@ from seed.test_helpers.fake import (
     FakeTaxLotStateFactory
 )
 from seed.utils.cache import set_cache
-from seed.views.main import (
+from seed.api.v1.views import (
     DEFAULT_CUSTOM_COLUMNS,
 )
 
@@ -50,7 +48,6 @@ COLUMNS_TO_SEND = DEFAULT_CUSTOM_COLUMNS + ['postal_code', 'pm_parent_property_i
 
 
 class MainViewTests(TestCase):
-
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -65,47 +62,6 @@ class MainViewTests(TestCase):
     def test_home(self):
         response = self.client.get(reverse('seed:home'))
         self.assertEqual(200, response.status_code)
-
-    # def test_export_buildings(self):
-    #     cb = CanonicalBuilding(active=True)
-    #     cb.save()
-    #     b = SEEDFactory.building_snapshot(canonical_building=cb)
-    #     cb.canonical_snapshot = b
-    #     cb.save()
-    #     b.super_organization = self.org
-    #     b.save()
-    #
-    #     payload = {
-    #         'export_name': 'My Export',
-    #         'export_type': 'csv',
-    #         'selected_buildings': [b.pk]
-    #     }
-    #     response = self.client.post(reverse('api:v1:export_buildings'),
-    #                                 json.dumps(payload),
-    #                                 content_type='application/json')
-    #     self.assertTrue(json.loads(response.content)['success'])
-
-    def test_export_buildings_empty(self):
-        payload = {
-            'export_name': 'My Export',
-            'export_type': 'csv',
-            'selected_buildings': []
-        }
-        response = self.client.post(reverse('api:v1:export_buildings'),
-                                    json.dumps(payload),
-                                    content_type='application/json')
-        self.assertTrue(json.loads(response.content)['success'])
-
-    def test_export_buildings_progress(self):
-        payload = {
-            'export_id': '1234'
-        }
-        cache.set('export_buildings__1234',
-                  {'progress': 85, 'total_buildings': 1, 'status': 'success'})
-        response = self.client.post(reverse('api:v1:export_buildings_progress'),
-                                    json.dumps(payload),
-                                    content_type='application/json')
-        self.assertTrue(json.loads(response.content)['success'])
 
 
 class DefaultColumnsViewTests(TestCase):
@@ -134,7 +90,7 @@ class DefaultColumnsViewTests(TestCase):
         self.user.default_custom_columns = columns
         self.user.save()
         columns = ['source_facility_id', 'test_column_0']
-        url = reverse_lazy('api:v1:get_default_columns')
+        url = reverse_lazy('api:v1:columns-get-default-columns')
         response = self.client.get(url)
         json_string = response.content
         data = json.loads(json_string)
@@ -143,7 +99,7 @@ class DefaultColumnsViewTests(TestCase):
         self.assertEqual(data['columns'], columns)
 
     def test_get_default_columns_initial_state(self):
-        url = reverse_lazy('api:v1:get_default_columns')
+        url = reverse_lazy('api:v1:columns-get-default-columns')
         response = self.client.get(url)
         json_string = response.content
         data = json.loads(json_string)
@@ -169,7 +125,7 @@ class DefaultColumnsViewTests(TestCase):
         self.assertEqual(200, response.status_code)
 
         # get the columns
-        url = reverse_lazy('api:v1:get_default_columns')
+        url = reverse_lazy('api:v1:columns-get-default-columns')
         response = self.client.get(url)
         json_string = response.content
         data = json.loads(json_string)
@@ -202,16 +158,10 @@ class DefaultColumnsViewTests(TestCase):
         self.assertEqual(data['show_shared_buildings'], False)
 
     def test_get_columns(self):
-        url = reverse_lazy('api:v1:get_columns')
-
         # test building list columns
-        response = self.client.get(
-            url,
-            {
-                'organization_id': self.org.id
-            }
-        )
-
+        response = self.client.get(reverse('api:v1:columns-list'), {
+            'organization_id': self.org.id
+        })
         data = json.loads(response.content)
         self.assertEqual(data['fields'][0], {
             u'checked': False,
@@ -226,20 +176,28 @@ class DefaultColumnsViewTests(TestCase):
         })
 
         # test org settings columns
-        response = self.client.get(
-            url,
-            {
-                'organization_id': self.org.id,
-                'all_fields': 'true'
-            }
-        )
+        response = self.client.get(reverse('api:v1:columns-list'), {
+            'organization_id': self.org.id,
+            'all_fields': 'true'
+        })
+        data = json.loads(response.content)
+        self.assertEqual(data['fields'][0], {
+            "field_type": "building_information",
+            "sortable": True,
+            "title": "Address Line 1",
+            "sort_column": "address_line_1",
+            "link": True,
+            "checked": False,
+            "static": False,
+            "type": "string",
+            "class": "is_aligned_right"
+        })
 
     def tearDown(self):
         self.user.delete()
 
 
 class GetDatasetsViewsTests(TestCase):
-
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -326,7 +284,6 @@ class GetDatasetsViewsTests(TestCase):
 
 
 class ImportFileViewsTests(TestCase):
-
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -352,20 +309,16 @@ class ImportFileViewsTests(TestCase):
         self.client.login(**user_details)
 
     def test_get_import_file(self):
-        response = self.client.get(reverse('api:v2:import_files-detail', args=[self.import_file.pk]))
+        response = self.client.get(
+            reverse('api:v2:import_files-detail', args=[self.import_file.pk]))
         self.assertEqual(self.import_file.pk,
                          json.loads(response.content)['import_file']['id'])
 
     def test_delete_file(self):
-        post_data = {
-            'file_id': self.import_file.pk,
-            'organization_id': self.org.pk
-        }
-
+        url = reverse("api:v2:import_files-detail", args=[self.import_file.pk])
         response = self.client.delete(
-            reverse_lazy('api:v1:delete_file'),
+            url + '?organization_id=' + str(self.org.pk),
             content_type='application/json',
-            data=json.dumps(post_data)
         )
         self.assertEqual('success', json.loads(response.content)['status'])
         self.assertFalse(
@@ -685,13 +638,8 @@ class TestMCMViews(TestCase):
             'progress_key': progress_key
         }
         set_cache(progress_key, 'parsing', test_progress)
-        resp = self.client.post(
-            reverse_lazy('api:v2:progress'),
-            data=json.dumps({
-                'progress_key': progress_key,
-            }),
-            content_type='application/json'
-        )
+        resp = self.client.get(reverse('api:v2:progress-detail', args=[progress_key]),
+                               content_type='application/json')
 
         self.assertEqual(resp.status_code, 200)
         body = json.loads(resp.content)
@@ -754,7 +702,6 @@ class TestMCMViews(TestCase):
 
 
 class InventoryViewTests(TestCase):
-
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -783,7 +730,6 @@ class InventoryViewTests(TestCase):
         self.status_label.delete()
         Column.objects.all().delete()
         Property.objects.all().delete()
-        ProjectBuilding.objects.all().delete()
         PropertyState.objects.all().delete()
         PropertyView.objects.all().delete()
         TaxLot.objects.all().delete()
@@ -1209,9 +1155,9 @@ class InventoryViewTests(TestCase):
         self.assertEquals(len(results), 1)
 
         property_state_1 = self.property_state_factory.get_property_state(self.org)
-        prprty_1 = self.property_factory.get_property()
+        property_1 = self.property_factory.get_property()
         property_view_1 = PropertyView.objects.create(
-            property=prprty_1, cycle=self.cycle, state=property_state_1
+            property=property_1, cycle=self.cycle, state=property_state_1
         )
         TaxLotProperty.objects.create(
             property_view=property_view_1, taxlot_view=taxlot_view,

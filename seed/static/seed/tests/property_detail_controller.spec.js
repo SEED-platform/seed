@@ -5,19 +5,14 @@
 describe('controller: inventory_detail_controller', function () {
 
   // globals set up and used in each test scenario
-  var scope, ngFilter, delete_called, ngLog, ngUrls;
-  var inventory_detail_controller, inventory_detail_controller_scope;
-  var mock_inventory_service, columns, state;
+  var ngFilter, ngLog, ngUrls;
+  var controller, inventory_detail_controller_scope;
+  var mock_inventory_service, state;
   var mock_uib_modal, mock_label_service, mock_label_payload;
 
   beforeEach(function () {
     module('BE.seed');
-  });
-
-  // inject AngularJS dependencies for the controller
-  beforeEach(inject(
-    function ($controller, $rootScope, $state, $uibModal, $log, $filter, $stateParams, $q, urls, label_service, label_service,
-              inventory_service) {
+    inject(function ($controller, $rootScope, $state, $uibModal, $log, $filter, $stateParams, $q, urls, label_service, inventory_service) {
       controller = $controller;
       state = $state;
       ngFilter = $filter;
@@ -28,8 +23,6 @@ describe('controller: inventory_detail_controller', function () {
       mock_label_service = label_service;
 
       inventory_detail_controller_scope = $rootScope.$new();
-      modal_state = '';
-      delete_called = false;
 
       // mock the inventory_service factory methods used in the controller
       // and return their promises
@@ -38,13 +31,12 @@ describe('controller: inventory_detail_controller', function () {
       spyOn(mock_inventory_service, 'update_property')
         .andCallFake(function (property_id, cycle_id, property_state) {
           inventory_detail_controller_scope.item_state = property_state;
-          return $q.when({
+          return $q.resolve({
             status: 'success'
           });
-        }
-        );
-    }
-  ));
+        });
+    });
+  });
 
   // this is outside the beforeEach so it can be configured by each unit test
   function create_inventory_detail_controller () {
@@ -235,20 +227,18 @@ describe('controller: inventory_detail_controller', function () {
       sortable: true,
       checked: false
     }];
-    inventory_detail_controller = controller('inventory_detail_controller', {
+    controller('inventory_detail_controller', {
       $state: state,
       $scope: inventory_detail_controller_scope,
       $uibModal: mock_uib_modal,
       $stateParams: {
         cycle_id: 2017,
         inventory_id: 4,
-        inventory_type: 'properties',
-        project_id: 2
+        inventory_type: 'properties'
       },
       $log: ngLog,
       $filter: ngFilter,
       urls: ngUrls,
-      label_service: mock_label_service,
       label_service: mock_label_service,
       inventory_service: mock_inventory_service,
       inventory_payload: fake_inventory_payload,

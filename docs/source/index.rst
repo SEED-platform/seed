@@ -39,6 +39,7 @@ with funding from the U.S. Department of Energy.
    developer_resources
    license
    help
+   faq
 
 Updating this documentation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^

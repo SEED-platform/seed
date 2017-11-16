@@ -9,7 +9,7 @@
 # Import all the models in this folder
 from .cycles import *  # noqa
 from .models import *  # noqa
-from .joins import *  # noqa
+from .tax_lot_properties import *  # noqa
 from .properties import *  # noqa
 from .tax_lots import *  # noqa
 from .columns import *  # noqa
@@ -24,8 +24,6 @@ from .certification import (    # noqa
 
 from .projects import (     # noqa
     Project,
-    ProjectBuilding,
     ProjectPropertyView,
     ProjectTaxLotView,
-    STATUS_CHOICES
 )
