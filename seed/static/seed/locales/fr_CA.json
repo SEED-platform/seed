@@ -711,7 +711,7 @@
     "X Axis": "Axe X",
     "X_VERSUS_Y": "{x_axis_label} contre {y_axis_label}",
     "X_VERSUS_Y_AGGREGATED": "{x_axis_label} contre {y_axis_label} (agrégé)",
-    "XSS_TEST": "<span style=\"color:red\">ce texte devrait être <strong>rouge<\/strong>.<\/span> <script>alert(\"XSS VULNERABILITY IN TRANSLATION STRING!!!\");<\/script>",
+    "XSS_TEST": "Texte accentée. <script>alert(\"XSS FAIL IN BASE TRANSLATION STRING\");<\/script>{injectedText}",
     "Y Axis": "Axe Y",
     "Year": "An",
     "Year Built": "Année de construction",

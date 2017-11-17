@@ -1110,9 +1110,8 @@ SEED_app.config(['$translateProvider', function ($translateProvider) {
       'fr_*': 'fr_CA'
     })
     // allow some HTML in the translation strings,
-    // TODO discuss XSS with nlong
     // see https://angular-translate.github.io/docs/#/guide/19_security
-    .useSanitizeValueStrategy('sce')
+    .useSanitizeValueStrategy('escapeParameters')
     // interpolation for plurals
     .useMessageFormatInterpolation();
 
