@@ -168,7 +168,7 @@
     "Data Sets": "Data Sets",
     "Data Type": "Data Type",
     "DATA_MAPPING_AND_VALIDATION": "Data Mapping and Validation ({filename})",
-    "DATASET_FILENAME_UPLOADED_TO": "<strong>{dataset_filename}<\/strong> has been uploaded to <strong>{dataset_filename}<\/strong>.",
+    "DATASET_FILENAME_UPLOADED_TO": "<strong>{dataset_filename}<\/strong> has been uploaded to <strong>{dataset_name}<\/strong>.",
     "DATASET_NAME_ALREADY_EXISTS": "The data set <strong>name \"{dataset_name}\" already exists<\/strong>. Please select a new one.",
     "Date": "Date",
     "Date Imported": "Date Imported",
