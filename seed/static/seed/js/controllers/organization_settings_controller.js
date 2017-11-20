@@ -14,6 +14,8 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     $scope.org = organization_payload.organization;
     $scope.auth = auth_payload.auth;
 
+    var $translate = { instant: _.identity }; // stub in for later
+
     $scope.org_static = angular.copy($scope.org);
 
     /**
