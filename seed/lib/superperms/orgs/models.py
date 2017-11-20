@@ -42,6 +42,18 @@ STATUS_CHOICES = (
     (STATUS_REJECTED, 'Rejected'),
 )
 
+MEASUREMENT_CHOICES_AREA = (
+    ('ft**2', 'square feet'),
+    ('m**2', 'square metres'),
+)
+
+MEASUREMENT_CHOICES_EUI = (
+    ('kBtu/ft**2/year', 'kBtu/sq. ft./year'),
+    ('kWh/m**2/year', 'kWh/m²/year'),
+    ('GJ/m**2/year', 'GJ/m²/year'),
+    ('MJ/m**2/year', 'MJ/m²/year'),
+    ('kBtu/m**2/year', 'kBtu/m²/year'), # really, Toronto?
+)
 
 class ExportableField(models.Model):
     """Tracks which model fields are exportable."""
@@ -120,6 +132,15 @@ class Organization(models.Model):
     parent_org = models.ForeignKey(
         'Organization', blank=True, null=True, related_name='child_orgs'
     )
+
+    display_units_eui = models.CharField(max_length=32,
+                                         choices=MEASUREMENT_CHOICES_EUI,
+                                         blank=False,
+                                         default='kBtu/ft**2/year')
+    display_units_area = models.CharField(max_length=32,
+                                          choices=MEASUREMENT_CHOICES_AREA,
+                                          blank=False,
+                                          default='ft**2')
 
     created = models.DateTimeField(auto_now_add=True, null=True)
     modified = models.DateTimeField(auto_now=True, null=True)
