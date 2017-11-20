@@ -18,6 +18,19 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
 
     $scope.org_static = angular.copy($scope.org);
 
+    $scope.unit_options_eui = [
+      { label: $translate.instant('kBtu/sq. ft./year'), value: 'kBtu/ft**2/year' },
+      { label: $translate.instant('GJ/m²/year'), value: 'GJ/m**2/year' },
+      { label: $translate.instant('MJ/m²/year'), value: 'MJ/m**2/year' },
+      { label: $translate.instant('kWh/m²/year'), value: 'kWh/m**2/year' },
+      { label: $translate.instant('kBtu/m²/year'), value: 'kBtu/m**2/year' }
+    ];
+
+    $scope.unit_options_area = [
+      { label: $translate.instant('square feet'), value: 'ft**2' },
+      { label: $translate.instant('square metres'), value: 'm**2' }
+    ];
+
     /**
      * saves the updates settings
      */
