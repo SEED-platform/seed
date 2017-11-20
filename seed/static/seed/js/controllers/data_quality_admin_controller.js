@@ -82,7 +82,8 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         {id: 'kBtu/ft**2/year', label: 'kBtu/sq. ft./year'},
         {id: 'GJ/m**2/year', label: 'GJ/m²/year'},
         {id: 'MJ/m**2/year', label: 'MJ/m²/year'},
-        {id: 'kWh/m**2/year', label: 'kWh/m²/year'}
+        {id: 'kWh/m**2/year', label: 'kWh/m²/year'},
+        {id: 'kBtu/m**2/year', label: 'kBtu/m²/year'}
       ];
 
     }
