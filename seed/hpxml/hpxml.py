@@ -8,8 +8,16 @@
 import logging
 import os
 import functools
+from copy import deepcopy
+
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from StringIO import StringIO
 
 from lxml import etree, objectify
+import probablepeople as pp
+import usaddress as usadd
 
 _log = logging.getLogger(__name__)
 
@@ -22,7 +30,6 @@ class HPXMLError(Exception):
 
 
 class HPXML(object):
-
     NS = 'http://hpxmlonline.com/2014/6'
 
     HPXML_STRUCT = {
@@ -98,11 +105,205 @@ class HPXML(object):
         :param property_state:  object, PropertyState to merge into HPXMLs
         :return: string, as XML
         """
-        pass
+        if not property_state:
+            f = StringIO()
+            self.tree.write(f, encoding='utf-8', pretty_print=True, xml_declaration=True)
+            return f.getvalue()
 
-    def _get_building(self, building_id=None):
+        root = deepcopy(self.root)
+
+        bldg = self._get_building(property_state.extra_data.get('building_id'), start_from=root)
+
+        for pskey, xml_loc in self.HPXML_STRUCT.items():
+            value = getattr(property_state, pskey)
+            el = self.xpath(xml_loc['path'], start_from=bldg, only_one=True)
+            if value is None or el is None or pskey == 'energy_score':
+                continue
+            setattr(el.getparent(), el.tag[el.tag.index('}') + 1:],
+                    unicode(value) if not isinstance(value, basestring) else value)
+
+        E = objectify.ElementMaker(annotate=False, namespace=self.NS, nsmap={None: self.NS})
+
+        # Owner Information
+        owner = self.xpath((
+            '//h:Customer/h:CustomerDetails/h:Person'
+            '[not(h:IndividualType) or h:IndividualType = "owner-occupant" or h:IndividualType = "owner-non-occupant"]'
+        ), start_from=root)
+
+        if len(owner) > 0:
+            owner = owner[0]
+        else:
+            customer = E.Customer(
+                E.CustomerDetails(
+                    E.Person(
+                        E.SystemIdentifier(id='person1'),
+                        E.Name()
+                    )
+                )
+            )
+            root.Building.addprevious(customer)
+            owner = customer.CustomerDetails.Person
+
+        # Owner Name
+        if property_state.owner is not None:
+            owner_name, _ = pp.tag(property_state.owner, type='person')
+            owner.Name.clear()
+            if 'PrefixMarital' in owner_name or 'PrefixOther' in owner_name:
+                owner.Name.append(
+                    E.PrefixName(
+                        ' '.join([owner_name.get('Prefix' + x, '') for x in ('Marital', 'Other')]).strip()
+                    )
+                )
+            if 'GivenName' in owner_name:
+                owner.Name.append(E.FirstName(owner_name['GivenName']))
+            elif 'FirstInitial' in owner_name:
+                owner.Name.append(E.FirstName(owner_name['FirstInitial']))
+            else:
+                owner.Name.append(E.FirstName())
+            if 'MiddleName' in owner_name:
+                owner.Name.append(E.MiddleName(owner_name['MiddleName']))
+            elif 'MiddleInitial' in owner_name:
+                owner.Name.append(E.MiddleName(owner_name['MiddleInitial']))
+            if 'Surname' in owner_name:
+                owner.Name.append(E.LastName(owner_name['Surname']))
+            elif 'LastInitial' in owner_name:
+                owner.Name.append(E.LastName(owner_name['LastInitial']))
+            else:
+                owner.Name.append(E.LastName())
+            if 'SuffixGenerational' in owner_name or 'SuffixOther' in owner_name:
+                owner.Name.append(
+                    E.SuffixName(
+                        ' '.join([owner_name.get('Suffix' + x, '') for x in ('Generational', 'Other')]).strip()
+                    )
+                )
+
+        # Owner Email
+        if property_state.owner_email is not None:
+            new_email = E.Email(E.EmailAddress(property_state.owner_email), E.PreferredContactMethod(True))
+            if hasattr(owner, 'Email'):
+                if property_state.owner_email not in owner.Email:
+                    owner.append(new_email)
+            else:
+                owner.append(new_email)
+
+        # Owner Telephone
+        if property_state.owner_telephone is not None:
+            insert_phone_number = False
+            if hasattr(owner, 'Telephone'):
+                if property_state.owner_telephone not in owner.Telephone:
+                    insert_phone_number = True
+            else:
+                insert_phone_number = True
+            if insert_phone_number:
+                new_phone = E.Telephone(
+                    E.TelephoneNumber(property_state.owner_telephone),
+                    E.PreferredContactMethod(True)
+                )
+                inserted_phone_number = False
+                for elname in ('Email', 'extension'):
+                    if hasattr(owner, elname):
+                        getattr(owner, elname).addprevious(new_phone)
+                        inserted_phone_number = True
+                        break
+                if not inserted_phone_number:
+                    owner.append(new_phone)
+
+        # Owner Address
+        try:
+            address = owner.getparent().MailingAddress
+        except AttributeError:
+            owner.getparent().Person[-1].addnext(E.MailingAddress())
+            address = owner.getparent().MailingAddress
+        address.clear()
+        if property_state.owner_address is not None:
+            address.append(E.Address1(property_state.owner_address))
+        if property_state.owner_city_state is not None:
+            city_state, _ = usadd.tag(property_state.owner_city_state)
+            address.append(E.CityMunicipality(city_state.get('PlaceName', '')))
+            address.append(E.StateCode(city_state.get('StateName', '')))
+        if property_state.owner_postal_code is not None:
+            address.append(E.ZipCode(property_state.owner_postal_code))
+
+        # Building Certification / Program Certificate
+        program_certificate_options = [
+            'Home Performance with Energy Star',
+            'LEED Certified',
+            'LEED Silver',
+            'LEED Gold',
+            'LEED Platinum',
+            'other'
+        ]
+        if property_state.building_certification is not None:
+            try:
+                root.Project
+            except AttributeError:
+                root.Building[-1].addnext(
+                    E.Project(
+                        E.BuildingID(id=bldg.BuildingID.get('id')),
+                        E.ProjectDetails(
+                            E.ProjectSystemIdentifiers(id=bldg.BuildingID.get('id'))
+                        )
+                    )
+                )
+            new_prog_cert = E.ProgramCertificate(
+                property_state.building_certification
+                if property_state.building_certification in program_certificate_options
+                else 'other'
+            )
+            try:
+                root.Project.ProjectDetails.ProgramCertificate
+            except AttributeError:
+                for elname in ('YearCertified', 'CertifyingOrganizationURL', 'CertifyingOrganization', 'ProgramSponsor',
+                               'ContractorSystemIdentifiers', 'ProgramName', 'ProjectSystemIdentifiers'):
+                    if hasattr(root.Project.ProjectDetails, elname):
+                        getattr(root.Project.ProjectDetails, elname).addnext(
+                            new_prog_cert
+                        )
+                        break
+            else:
+                if property_state.building_certification not in root.Project.ProjectDetails.ProgramCertificate:
+                    root.Project.ProjectDetails.ProgramCertificate[-1].addnext(new_prog_cert)
+
+        # Energy Score
+        energy_score_type_options = [
+            'US DOE Home Energy Score',
+            'RESNET HERS'
+        ]
+        bldg_const = bldg.BuildingDetails.BuildingSummary.BuildingConstruction
+        if property_state.energy_score:
+            energy_score_type = property_state.extra_data.get('energy_score_type')
+            try:
+                found_energy_score = False
+                for energy_score_el in bldg_const.EnergyScore:
+                    if energy_score_type in (energy_score_el.ScoreType, getattr(energy_score_el, 'OtherScoreType', None)):
+                        found_energy_score = True
+                        break
+                if not found_energy_score:
+                    energy_score_el = E.EnergyScore()
+                    bldg_const.EnergyScore[-1].addnext(energy_score_el)
+            except AttributeError:
+                energy_score_el = E.EnergyScore()
+                try:
+                    bldg_const.extension.addprevious(energy_score_el)
+                except AttributeError:
+                    bldg_const.append(energy_score_el)
+            if energy_score_type in energy_score_type_options:
+                energy_score_el.ScoreType = energy_score_type
+            else:
+                energy_score_el.ScoreType = 'other'
+                energy_score_el.OtherScoreType = energy_score_type
+            energy_score_el.Score = property_state.energy_score
+
+        # Serialize
+        tree = etree.ElementTree(root)
+        objectify.deannotate(tree, cleanup_namespaces=True)
+        f = StringIO()
+        tree.write(f, encoding='utf-8', pretty_print=True, xml_declaration=True)
+        return f.getvalue()
+
+    def _get_building(self, building_id=None, **kw):
         if building_id is not None:
-            bldg = self.xpath('//h:Building[h:BuildingID/@id=$bldg_id]', bldg_id=building_id)[0]
+            bldg = self.xpath('//h:Building[h:BuildingID/@id=$bldg_id]', bldg_id=building_id, **kw)[0]
         else:
             event_type_precedence = [
                 'job completion testing/final inspection',
@@ -112,12 +313,12 @@ class HPXML(object):
             ]
             bldg = None
             for event_type in event_type_precedence:
-                bldgs = self.xpath('//h:Building[h:ProjectStatus/h:EventType=$event_type]', event_type=event_type)
+                bldgs = self.xpath('//h:Building[h:ProjectStatus/h:EventType=$event_type]', event_type=event_type, **kw)
                 if len(bldgs) > 0:
                     bldg = bldgs[0]
                     break
             if bldg is None:
-                bldg = self.xpath('//h:Building[1]')
+                bldg = self.xpath('//h:Building[1]', **kw)
         return bldg
 
     def process(self, building_id=None):
@@ -127,11 +328,12 @@ class HPXML(object):
         :return: [dict, list, list], [results, list of errors, list of messages]
         """
         bldg = self._get_building(building_id)
-        building_id = bldg.BuildingID.get('id')
+        res = {
+            'building_id': bldg.BuildingID.get('id')
+        }
         xpath = functools.partial(self.xpath, start_from=bldg, only_one=True)
 
         # Building information from HPXML_STRUCT
-        res = {}
         for pskey, xml_loc in self.HPXML_STRUCT.items():
             value = xpath(xml_loc['path'])
             if value is None:
@@ -182,7 +384,20 @@ class HPXML(object):
         except AttributeError:
             pass
 
+        # Energy Score Type
+        try:
+            energy_score = bldg.BuildingDetails.BuildingSummary.BuildingConstruction.EnergyScore
+        except AttributeError:
+            pass
+        else:
+            score_type = energy_score.ScoreType.text
+            if score_type == 'other':
+                try:
+                    score_type = energy_score.OtherScoreType.text
+                except AttributeError:
+                    pass
+                res['energy_score_type'] = score_type
+            else:
+                res['energy_score_type'] = score_type
+
         return res
-
-
-

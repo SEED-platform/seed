@@ -6,29 +6,40 @@
 """
 import os
 import tempfile
-from django.test.runner import DiscoverRunner
-from django.test import SimpleTestCase as TestCase
+from StringIO import StringIO
+
+from django.test import TestCase
 from lxml import objectify
 from lxml.etree import XMLSyntaxError
+import xmltodict
 
-from seed.hpxml.hpxml import HPXML
-
-
-class NoDbTestRunner(DiscoverRunner):
-    """ A test runner to test without database creation/deletion """
-
-    def setup_databases(self, **kwargs):
-        pass
-
-    def teardown_databases(self, old_config, **kwargs):
-        pass
+from seed.hpxml.hpxml import HPXML, hpxml_parser
+from seed.landing.models import SEEDUser as User
+from seed.lib.superperms.orgs.models import (
+    Organization,
+    OrganizationUser,
+)
+from seed.test_helpers.fake import (
+    FakePropertyStateFactory,
+)
 
 
 class TestHPXML(TestCase):
 
     def setUp(self):
+        user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+        }
+        self.user = User.objects.create_superuser(
+            email='test_user@demo.com', **user_details)
+        self.org = Organization.objects.create()
+        OrganizationUser.objects.create(user=self.user, organization=self.org)
         self.xml_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'audit.xml')
         self.hpxml = HPXML()
+
+    def tearDown(self):
+        pass
 
     def test_constructor(self):
         self.assertTrue(self.hpxml.import_file(self.xml_file))
@@ -59,6 +70,7 @@ class TestHPXML(TestCase):
         self.assertTrue(self.hpxml.import_file(self.xml_file))
         res = self.hpxml.process()
         expected = {
+            'building_id': 'bldg1',
             'address_line_1': '123 Main St',
             'address_line_2': '',
             'city': 'Beverly Hills',
@@ -69,6 +81,7 @@ class TestHPXML(TestCase):
             'owner': 'Jane Customer',
             'owner_email': 'asdf@jkl.com',
             'energy_score': 8,
+            'energy_score_type': 'US DOE Home Energy Score',
             'building_certification': 'Home Performance with Energy Star',
         }
         self.assertDictEqual(expected, res)
@@ -76,3 +89,94 @@ class TestHPXML(TestCase):
         res = self.hpxml.process()
         self.assertNotIn('owner', res.keys())
 
+    def test_export_no_property(self):
+        self.assertTrue(self.hpxml.import_file(self.xml_file))
+        xmlstr = self.hpxml.export(None)
+        self.assertGreater(len(xmlstr), 0)
+        with open(self.xml_file, 'r') as f:
+            orig_d = xmltodict.parse(f, process_namespaces=True)
+        new_d = xmltodict.parse(xmlstr, process_namespaces=True)
+        self.assertDictEqual(orig_d, new_d)
+
+    def test_export(self):
+        self.hpxml.import_file(self.xml_file)
+        psfactory = FakePropertyStateFactory(organization=self.org)
+        ps = psfactory.get_property_state(organization=self.org)
+        ps.extra_data['building_id'] = 'bldg1'
+        ps.owner_email = 'janecustomer@jkl.com'
+        ps.owner_telephone = '555-555-1234'
+        ps.owner_address = '15013 Denver West Pkwy'
+        ps.owner_city_state = 'Golden, CO'
+        ps.owner_postal_code = '80401'
+        ps.building_certification = 'LEED Silver'
+        ps.energy_score = 9
+        ps.extra_data['energy_score_type'] = 'my energy score'
+        ps.save()
+
+        xml = self.hpxml.export(ps)
+        f = StringIO(xml)
+        tree = objectify.parse(f, parser=hpxml_parser)
+        root = tree.getroot()
+        self.assertEqual(
+            int(root.Building.BuildingDetails.BuildingSummary.BuildingConstruction.EnergyScore[1].Score),
+            ps.energy_score
+        )
+        self.assertEqual(
+            root.Customer.CustomerDetails.Person.Email[1].EmailAddress,
+            ps.owner_email
+        )
+        self.assertEqual(
+            root.Customer.CustomerDetails.Person.Email[0].EmailAddress,
+            'asdf@jkl.com'
+        )
+        self.assertEqual(
+            root.Customer.CustomerDetails.Person.Telephone[1].TelephoneNumber,
+            ps.owner_telephone
+        )
+        self.assertEqual(
+            root.Customer.CustomerDetails.Person.Telephone[0].TelephoneNumber,
+            '555-555-5555'
+        )
+        address = root.Customer.CustomerDetails.MailingAddress
+        self.assertEqual(address.Address1, ps.owner_address)
+        self.assertEqual(address.CityMunicipality, 'Golden')
+        self.assertEqual(address.StateCode, 'CO')
+        self.assertEqual(address.ZipCode.text, ps.owner_postal_code)
+        prog_certs = root.Project.ProjectDetails.ProgramCertificate
+        self.assertEqual(prog_certs[0], 'Home Performance with Energy Star')
+        self.assertEqual(prog_certs[1], 'LEED Silver')
+
+    def test_export_owner_name(self):
+        self.hpxml.import_file(self.xml_file)
+        psfactory = FakePropertyStateFactory(organization=self.org)
+        ps = psfactory.get_property_state(organization=self.org)
+        ps.extra_data['building_id'] = 'bldg1'
+        ps.owner = 'Dr. John C. Doe Jr.'
+        ps.save()
+
+        xml = self.hpxml.export(ps)
+        f = StringIO(xml)
+        tree = objectify.parse(f, parser=hpxml_parser)
+        root = tree.getroot()
+        name = root.Customer.CustomerDetails.Person.Name
+        self.assertEqual('Dr.', name.PrefixName.text)
+        self.assertEqual('John', name.FirstName.text)
+        self.assertEqual('C.', name.MiddleName.text)
+        self.assertEqual('Doe', name.LastName.text)
+        self.assertEqual('Jr.', name.SuffixName.text)
+
+    def test_export_create_project(self):
+        self.hpxml.import_file(self.xml_file)
+        self.hpxml.root.remove(self.hpxml.root.Project)
+        psfactory = FakePropertyStateFactory(organization=self.org)
+        ps = psfactory.get_property_state(organization=self.org)
+        ps.extra_data['building_id'] = 'bldg1'
+        ps.building_certification = 'Generic Certification of Green-ness'
+        ps.save()
+
+        xml = self.hpxml.export(ps)
+        f = StringIO(xml)
+        tree = objectify.parse(f, parser=hpxml_parser)
+        root = tree.getroot()
+
+        self.assertEqual(root.Project.ProjectDetails.ProgramCertificate, 'other')
