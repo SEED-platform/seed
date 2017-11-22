@@ -6,6 +6,12 @@ def to_raw_magnitude(obj):
     return "{:.2f}".format(obj.magnitude)
 
 
+def apply_display_unit_preferences(org_id, properties_or_taxlots):
+    """
+    """
+    return properties_or_taxlots
+
+
 class PintJSONEncoder(DjangoJSONEncoder):
     """
     Converts pint Quantity objects for Angular's benefit.

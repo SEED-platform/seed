@@ -33,7 +33,7 @@ from seed.models import (
     TaxLotView
 )
 from seed.models import Property as PropertyModel
-from seed.serializers.pint import PintJSONEncoder
+from seed.serializers.pint import PintJSONEncoder, apply_display_unit_preferences
 from seed.serializers.properties import (
     PropertySerializer,
     PropertyStateSerializer,
@@ -216,7 +216,10 @@ class PropertyViewSet(GenericViewSet):
             .filter(property__organization_id=request.query_params['organization_id'],
                     cycle=cycle).order_by('id')
 
-        paginator = Paginator(property_views_list, per_page)
+        dedimensioned_property_views_list = apply_display_unit_preferences(
+            org_id, property_views_list)
+
+        paginator = Paginator(dedimensioned_property_views_list, per_page)
 
         try:
             property_views = paginator.page(page)
