@@ -10,7 +10,7 @@ import logging
 
 from django.db import models
 
-from seed.models.joins import PropertyMeasure
+from seed.models.property_measures import PropertyMeasure
 from seed.models.properties import PropertyState
 
 _log = logging.getLogger(__name__)

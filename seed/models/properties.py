@@ -465,8 +465,8 @@ class PropertyView(models.Model):
         # get the related taxlot_view.state as well to save time if needed.
         result = []
         for tlp in TaxLotProperty.objects.filter(
-                cycle=self.cycle,
-                property_view=self).select_related('taxlot_view', 'taxlot_view__state'):
+            cycle=self.cycle,
+            property_view=self).select_related('taxlot_view', 'taxlot_view__state'):
             result.append(tlp.taxlot_view)
 
         return result

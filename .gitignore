@@ -45,6 +45,7 @@ src/
 *node_modules*
 bower_components/
 
+package-lock.json
 docs/build/
 dump.rdb
 log

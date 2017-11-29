@@ -1,3 +1,24 @@
+# SEED Version 2.2.1
+
+Closed Issues: 5
+- Fixed [#1486]( https://github.com/SEED-platform/seed/pull/1486 ), Upgrade to Django 1.11
+- Fixed [#1502]( https://github.com/SEED-platform/seed/pull/1502 ), Fix password reset
+- Fixed [#1363]( https://github.com/SEED-platform/seed/issues/1363 ), DQ Check - Add export to Inventory DQ Results modal
+- Fixed [#1397]( https://github.com/SEED-platform/seed/issues/1397 ), DQ Admin: add indication of field source (tax lot or property)
+- Fixed [#1398]( https://github.com/SEED-platform/seed/issues/1398 ), DQ: Add labels for exported records
+- Fixed [#1404]( https://github.com/SEED-platform/seed/issues/1404 ), Inventory Detail - Related Properties - need to display more fields
+- Fixed [#1439]( https://github.com/SEED-platform/seed/issues/1439 ), Strftime fails for buildings older than 1900
+- Fixed [#1496]( https://github.com/SEED-platform/seed/pull/1496 ), Export data from inventory (including labels)
+- Fixed [#1482]( https://github.com/SEED-platform/seed/pull/1482 ), Remove the concept of projects
+- Fixed [#1483]( https://github.com/SEED-platform/seed/pull/1483 ), Added `Custom ID 1` field for Related Properties
+- Fixed [#1484]( https://github.com/SEED-platform/seed/pull/1484 ), Added a mapping button to `Map SEED fields to imported file fields`
+- Fixed [#1481]( https://github.com/SEED-platform/seed/pull/1481 ), Hides `*_pint` columns in Property List Settings view
+- Fixed [#1487]( https://github.com/SEED-platform/seed/pull/1487 ), Improved Column Saving
+- Fixed [#1490]( https://github.com/SEED-platform/seed/pull/1490 ), Export DQ from Inventory
+- Fixed [#1493]( https://github.com/SEED-platform/seed/pull/1493 ), Removes node_modules from fine-uploader after building
+- Fixed [#1473]( https://github.com/SEED-platform/seed/pull/1473 ), Improved Angular unit tests
+- Fixed [#1479]( https://github.com/SEED-platform/seed/pull/1479 ), Disable all client-side caching when the dev profile is used
+
 # SEED Version 2.2
 
 Closed Issues: 25

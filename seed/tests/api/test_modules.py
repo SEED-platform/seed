@@ -184,49 +184,6 @@ def search_and_project(header, main_url, organization_id, log):
         data=json.dumps({'project_loading_cache_key': result.json()['project_loading_cache_key']}))
     log.debug(pprint.pformat(progress.json()))
 
-    # Export
-    print ('\n-------Export-------\n')
-
-    # Export all buildings.
-    print ('API Function: export_buildings\n'),
-    partmsg = 'export_buildings'
-    export_payload = {'export_name': 'project_buildings',
-                      'export_type': "csv",
-                      'select_all_checkbox': True,
-                      'filter_params': {'project__slug': project_slug}}
-
-    result = requests.post(main_url + '/app/export_buildings/',
-                           headers=header,
-                           data=json.dumps(export_payload))
-    check_status(result, partmsg, log)
-    if result.json()['total_buildings'] != 58:
-        log.warning('Export Buildings: ' + str(result.json()['total_buildings']) + " ; expected 58")
-
-        # Get exportID
-    exportID = result.json()['export_id']
-
-    progress = requests.post(main_url + '/app/export_buildings/progress/',
-                             headers=header,
-                             data=json.dumps({'export_id': exportID}))
-    log.debug(pprint.pformat(progress.json()))
-
-    print ('API Function: export_buildings_download\n'),
-    partmsg = 'export_buildings_download'
-
-    count = 100
-    while (count > 0):
-        result = requests.post(main_url + '/app/export_buildings/download/',
-                               headers=header,
-                               data=json.dumps({'export_id': exportID}))
-        if result.status_code == 200:
-            break
-        time.sleep(5)
-        count -= 1
-
-    check_status(result, partmsg, log)
-
-    return project_slug
-
 
 def account(header, main_url, username, log):
     # Retrieve the user id key for later retrievals

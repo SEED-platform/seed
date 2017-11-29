@@ -153,12 +153,6 @@ Install requirements with `pip`
 
     pip install -r requirements/local.txt
 
-Install library with `setup.py`
-
-.. code-block:: bash
-
-    python setup.py install
-
 NodeJS/npm
 ----------
 
