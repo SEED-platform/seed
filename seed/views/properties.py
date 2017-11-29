@@ -537,7 +537,7 @@ class PropertyViewSet(GenericViewSet):
                 done_searching = False
                 while not done_searching:
                     if (log.parent1_id is None and log.parent2_id is None) or \
-                        log.name == 'Manual Edit':
+                            log.name == 'Manual Edit':
                         done_searching = True
                     else:
                         tree = log.parent1
@@ -549,7 +549,7 @@ class PropertyViewSet(GenericViewSet):
                             record = record_dict(log.parent2)
                             history.append(record)
                         elif log.parent2.name == 'System Match' and log.parent2.parent1.name == 'Import Creation' and \
-                            log.parent2.parent2.name == 'Import Creation':
+                                log.parent2.parent2.name == 'Import Creation':
                             # Handle case where an import file matches within itself, and proceeds to match with
                             # existing records
                             record = record_dict(log.parent2.parent2)
@@ -1397,7 +1397,7 @@ class TaxLotViewSet(GenericViewSet):
                 done_searching = False
                 while not done_searching:
                     if (log.parent1_id is None and log.parent2_id is None) or \
-                        log.name == 'Manual Edit':
+                            log.name == 'Manual Edit':
                         done_searching = True
                     elif log.name == 'Merge current state in migration':
                         record = record_dict(log.parent1)

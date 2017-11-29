@@ -269,7 +269,6 @@ class TaxLotProperty(models.Model):
                     label_string.append(label.name)
                 obj_dict['property_labels'] = ','.join(label_string)
 
-
             elif hasattr(obj, 'taxlot'):
                 for label in obj.taxlot.labels.all().order_by('name'):
                     label_string.append(label.name)
