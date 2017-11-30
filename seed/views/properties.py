@@ -13,6 +13,7 @@ import re
 from os import path
 
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
+from django.forms.models import model_to_dict
 from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.decorators import detail_route, list_route
