@@ -9,6 +9,7 @@ import json
 import logging
 import os
 import subprocess
+import xmltodict
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
@@ -33,6 +34,7 @@ from seed.models import (
 )
 from seed.utils.api import api_endpoint
 from seed.views.users import _get_js_role
+from seed.pmintegration.manager import PortfolioManagerImport
 from .. import search
 
 _log = logging.getLogger(__name__)
@@ -446,3 +448,64 @@ def delete_organization_inventory(request):
         'progress': 0,
         'progress_key': deleting_cache_key
     })
+
+
+def pm_integration(request):
+    return render(request, 'seed/pm_integration.html', {})
+
+
+@api_view(['POST'])
+def pm_integration_worker(request):
+    if 'email' not in request.data:
+        return JsonResponse('Invalid call to PM worker: missing email for PM account')
+    if 'username' not in request.data:
+        return JsonResponse('Invalid call to PM worker: missing username for PM account')
+    if 'password' not in request.data:
+        return JsonResponse('Invalid call to PM worker: missing password for PM account')
+    if 'template_name' not in request.data:
+        return JsonResponse('Invalid call to PM worker: missing template_name for PM account')
+    email = request.data['email']
+    username = request.data['username']
+    password = request.data['password']
+    template_name = request.data['template_name']
+    pm = PortfolioManagerImport(email, username, password)
+
+    possible_templates = pm.get_list_of_report_templates()
+    # print("  Index  |  Template Report Name  ")
+    # print("---------|------------------------")
+    # for i, t in enumerate(possible_templates):
+    #     print("  %s  |  %s  " % (str(i).ljust(5), t['name']))
+    # selection = raw_input("\nEnter an Index to download the report: ")
+    # try:
+    #     s_id = int(selection)
+    # except ValueError:
+    #     raise Exception("Invalid Selection; aborting.")
+    # if 0 <= s_id < len(possible_templates):
+    #     selected_template = possible_templates[s_id]
+    # else:
+    #     raise Exception("Invalid Selection; aborting.")
+    selected_template = [p for p in possible_templates if p['name'] == template_name][0]
+    content = pm.generate_and_download_template_report(selected_template)
+    try:
+        content_object = xmltodict.parse(content)
+    except Exception:
+        return JsonResponse({'status': 'error', 'message': 'Malformed XML response from template download'}, status=500)
+    success = True
+    if 'report' not in content_object:
+        success = False
+    if 'informationAndMetrics' not in content_object['report']:
+        success = False
+    if 'row' not in content_object['report']['informationAndMetrics']:
+        success = False
+    if not success:
+        return JsonResponse({'status': 'error',
+                             'message': 'Template XML response was properly formatted but was missing expected keys.'},
+                            status=500)
+    properties = content_object['report']['informationAndMetrics']['row']
+
+    # print("\nProperties found in this template report:")
+    # print("  Property ID  |  Property Name  ")
+    # print("---------------|-----------------")
+    # for prop in properties:
+    #     print("  %s  |  %s  " % (prop['property_id'].ljust(11), prop['property_name']))
+    return JsonResponse({'status': 'success', 'properties': properties})

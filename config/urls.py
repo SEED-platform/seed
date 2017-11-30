@@ -12,7 +12,7 @@ from rest_framework_swagger.views import get_swagger_view
 
 from config.views import robots_txt
 from seed.api.base.urls import urlpatterns as api
-from seed.views.main import angular_js_tests
+from seed.views.main import angular_js_tests, pm_integration, pm_integration_worker
 
 urlpatterns = [
     # Application
@@ -28,6 +28,10 @@ urlpatterns = [
     # API
     url(r'^api/swagger/', get_swagger_view(title='SEED API'), name='swagger'),
     url(r'^api/', include(api, namespace='api')),
+
+    # Temporary
+    url(r'^pm_integration/', pm_integration, name='pm_integration'),
+    url(r'^pm_integration_worker', pm_integration_worker, name='pm_integration_worker'),
 ]
 
 handler404 = 'seed.views.main.error404'
