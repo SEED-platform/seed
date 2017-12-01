@@ -113,7 +113,7 @@ class TestHPXML(TestCase):
         ps.energy_score = 9
         ps.extra_data['energy_score_type'] = 'my energy score'
         ps.save()
-        xml = self.hpxml.export(ps)
+        self.hpxml.export(ps)
 
     def test_export(self):
         self.hpxml.import_file(self.xml_file)
