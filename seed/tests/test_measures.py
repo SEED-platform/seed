@@ -8,7 +8,7 @@
 from django.test import TestCase
 
 from seed.models.measures import Measure, _snake_case
-from seed.models.joins import PropertyMeasure
+from seed.models.property_measures import PropertyMeasure
 from seed.models import Organization
 
 

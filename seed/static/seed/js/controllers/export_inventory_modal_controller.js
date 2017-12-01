@@ -3,18 +3,40 @@
  * :author
  */
 angular.module('BE.seed.controller.export_inventory_modal', []).controller('export_inventory_modal_controller', [
-  '$scope', '$uibModalInstance', 'gridApi', 'uiGridExporterConstants', function ($scope, $uibModalInstance, gridApi, uiGridExporterConstants) {
-    $scope.gridApi = gridApi;
+  '$http',
+  '$scope',
+  '$uibModalInstance',
+  'user_service',
+  'cycle_id',
+  'ids',
+  'columns',
+  'inventory_type', function ($http, $scope, $uibModalInstance, user_service, cycle_id, ids, columns, inventory_type) {
     $scope.export_name = '';
     $scope.export_type = 'csv';
+
 
     $scope.export_selected = function () {
       var filename = $scope.export_name,
         ext = '.' + $scope.export_type;
       if (!_.endsWith(filename, ext)) filename += ext;
-      $scope.gridApi.grid.options.exporterCsvFilename = filename;
-      $scope.gridApi.exporter.csvExport(uiGridExporterConstants.SELECTED, uiGridExporterConstants.VISIBLE);
-      $uibModalInstance.close();
+
+      return $http.post('/api/v2.1/tax_lot_properties/csv/', {
+        columns: columns,
+        ids: ids,
+        filename: filename
+      }, {
+        params: {
+          organization_id: user_service.get_organization().id,
+          cycle_id: cycle_id,
+          inventory_type: inventory_type
+        }
+      }).then(function (response) {
+        var blob = new Blob([response.data], {type: 'text/csv'});
+        saveAs(blob, filename);
+
+        $scope.close();
+        return response.data;
+      });
     };
 
     $scope.cancel = function () {

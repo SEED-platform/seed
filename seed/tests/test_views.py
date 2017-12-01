@@ -1155,9 +1155,9 @@ class InventoryViewTests(TestCase):
         self.assertEquals(len(results), 1)
 
         property_state_1 = self.property_state_factory.get_property_state(self.org)
-        prprty_1 = self.property_factory.get_property()
+        property_1 = self.property_factory.get_property()
         property_view_1 = PropertyView.objects.create(
-            property=prprty_1, cycle=self.cycle, state=property_state_1
+            property=property_1, cycle=self.cycle, state=property_state_1
         )
         TaxLotProperty.objects.create(
             property_view=property_view_1, taxlot_view=taxlot_view,
