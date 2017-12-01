@@ -98,11 +98,29 @@ class TestHPXML(TestCase):
         new_d = xmltodict.parse(xmlstr, process_namespaces=True)
         self.assertDictEqual(orig_d, new_d)
 
+    def test_bad_owner_name(self):
+        self.hpxml.import_file(self.xml_file)
+        psfactory = FakePropertyStateFactory(organization=self.org)
+        ps = psfactory.get_property_state(organization=self.org)
+        ps.extra_data['building_id'] = 'bldg1'
+        ps.owner = 'Miller Reyes PLC'
+        ps.owner_email = 'janecustomer@jkl.com'
+        ps.owner_telephone = '555-555-1234'
+        ps.owner_address = '15013 Denver West Pkwy'
+        ps.owner_city_state = 'Golden, CO'
+        ps.owner_postal_code = '80401'
+        ps.building_certification = 'LEED Silver'
+        ps.energy_score = 9
+        ps.extra_data['energy_score_type'] = 'my energy score'
+        ps.save()
+        xml = self.hpxml.export(ps)
+
     def test_export(self):
         self.hpxml.import_file(self.xml_file)
         psfactory = FakePropertyStateFactory(organization=self.org)
         ps = psfactory.get_property_state(organization=self.org)
         ps.extra_data['building_id'] = 'bldg1'
+        ps.owner = 'Jane Smith'
         ps.owner_email = 'janecustomer@jkl.com'
         ps.owner_telephone = '555-555-1234'
         ps.owner_address = '15013 Denver West Pkwy'
@@ -171,6 +189,7 @@ class TestHPXML(TestCase):
         psfactory = FakePropertyStateFactory(organization=self.org)
         ps = psfactory.get_property_state(organization=self.org)
         ps.extra_data['building_id'] = 'bldg1'
+        ps.owner = 'Jane Smith'
         ps.building_certification = 'Generic Certification of Green-ness'
         ps.save()
 

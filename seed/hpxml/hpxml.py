@@ -146,36 +146,41 @@ class HPXML(object):
 
         # Owner Name
         if property_state.owner is not None:
-            owner_name, _ = pp.tag(property_state.owner, type='person')
-            owner.Name.clear()
-            if 'PrefixMarital' in owner_name or 'PrefixOther' in owner_name:
-                owner.Name.append(
-                    E.PrefixName(
-                        ' '.join([owner_name.get('Prefix' + x, '') for x in ('Marital', 'Other')]).strip()
-                    )
-                )
-            if 'GivenName' in owner_name:
-                owner.Name.append(E.FirstName(owner_name['GivenName']))
-            elif 'FirstInitial' in owner_name:
-                owner.Name.append(E.FirstName(owner_name['FirstInitial']))
+            try:
+                owner_name, name_type = pp.tag(property_state.owner, type='person')
+            except pp.RepeatedLabelError:
+                pass
             else:
-                owner.Name.append(E.FirstName())
-            if 'MiddleName' in owner_name:
-                owner.Name.append(E.MiddleName(owner_name['MiddleName']))
-            elif 'MiddleInitial' in owner_name:
-                owner.Name.append(E.MiddleName(owner_name['MiddleInitial']))
-            if 'Surname' in owner_name:
-                owner.Name.append(E.LastName(owner_name['Surname']))
-            elif 'LastInitial' in owner_name:
-                owner.Name.append(E.LastName(owner_name['LastInitial']))
-            else:
-                owner.Name.append(E.LastName())
-            if 'SuffixGenerational' in owner_name or 'SuffixOther' in owner_name:
-                owner.Name.append(
-                    E.SuffixName(
-                        ' '.join([owner_name.get('Suffix' + x, '') for x in ('Generational', 'Other')]).strip()
-                    )
-                )
+                if name_type.lower() == 'person':
+                    owner.Name.clear()
+                    if 'PrefixMarital' in owner_name or 'PrefixOther' in owner_name:
+                        owner.Name.append(
+                            E.PrefixName(
+                                ' '.join([owner_name.get('Prefix' + x, '') for x in ('Marital', 'Other')]).strip()
+                            )
+                        )
+                    if 'GivenName' in owner_name:
+                        owner.Name.append(E.FirstName(owner_name['GivenName']))
+                    elif 'FirstInitial' in owner_name:
+                        owner.Name.append(E.FirstName(owner_name['FirstInitial']))
+                    else:
+                        owner.Name.append(E.FirstName())
+                    if 'MiddleName' in owner_name:
+                        owner.Name.append(E.MiddleName(owner_name['MiddleName']))
+                    elif 'MiddleInitial' in owner_name:
+                        owner.Name.append(E.MiddleName(owner_name['MiddleInitial']))
+                    if 'Surname' in owner_name:
+                        owner.Name.append(E.LastName(owner_name['Surname']))
+                    elif 'LastInitial' in owner_name:
+                        owner.Name.append(E.LastName(owner_name['LastInitial']))
+                    else:
+                        owner.Name.append(E.LastName())
+                    if 'SuffixGenerational' in owner_name or 'SuffixOther' in owner_name:
+                        owner.Name.append(
+                            E.SuffixName(
+                                ' '.join([owner_name.get('Suffix' + x, '') for x in ('Generational', 'Other')]).strip()
+                            )
+                        )
 
         # Owner Email
         if property_state.owner_email is not None:
