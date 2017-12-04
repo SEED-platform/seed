@@ -612,12 +612,48 @@ VIEW_COLUMNS_PROPERTY = [
         'dataType': 'string',
         'dbField': True,
     }, {
-        # This is attached to Property object, not sure what to do here.
+        # This is attached to Property object - weird hack in tax_lot_properties to make this work
         'name': 'campus',
         'table': 'PropertyState',
         'displayName': 'Campus',
         'dataType': 'boolean',
         'type': 'boolean',
+        'dbField': True,
+    }, {
+        # This is attached to Property object - weird hack in tax_lot_properties to make this work
+        'name': 'db_property_updated',
+        'table': 'PropertyState',
+        'displayName': 'Updated (Property)',
+        'dataType': 'datetime',
+        'type': 'date',
+        'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
+        'dbField': True,
+    }, {
+        # This is attached to Property object - weird hack in tax_lot_properties to make this work
+        'name': 'db_property_created',
+        'table': 'PropertyState',
+        'displayName': 'Created (Property)',
+        'dataType': 'datetime',
+        'type': 'date',
+        'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
+        'dbField': True,
+    }, {
+        # This is attached to TaxLot object - weird hack in tax_lot_properties to make this work
+        'name': 'db_taxlot_created',
+        'table': 'TaxLotState',
+        'displayName': 'Created (Tax Lot)',
+        'dataType': 'datetime',
+        'type': 'date',
+        'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
+        'dbField': True,
+    }, {
+        # This is attached to TaxLot object - weird hack in tax_lot_properties to make this work
+        'name': 'db_taxlot_updated',
+        'table': 'TaxLotState',
+        'displayName': 'Updated (Tax Lot)',
+        'dataType': 'datetime',
+        'type': 'date',
+        'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
         'dbField': True,
     }, {
         'name': 'gross_floor_area',
