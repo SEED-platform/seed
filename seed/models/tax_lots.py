@@ -322,7 +322,7 @@ class TaxLotView(models.Model):
 @receiver(post_save, sender=TaxLotView)
 def post_save_taxlot_view(sender, **kwargs):
     """
-    When changing/saving the PropertyView, go ahead and touch the Property (if linked) so that the record
+    When changing/saving the TaxLotView, go ahead and touch the TaxLot (if linked) so that the record
     receives an updated datetime
     """
     if kwargs['instance'].taxlot:

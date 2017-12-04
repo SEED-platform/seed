@@ -27,7 +27,6 @@ from seed.models import (
     Column,
     Cycle,
     PropertyAuditLog,
-    Property,
     PropertyState,
     PropertyView,
     TaxLotProperty,
@@ -554,6 +553,10 @@ class PropertyViewSet(GenericViewSet):
         Get property details
         ---
         parameters:
+            - name: pk
+              description: The primary key of the Property (not PropertyView nor PropertyState)
+              required: true
+              paramType: path
             - name: cycle_id
               description: The cycle id for filtering the property view
               required: true
@@ -669,8 +672,7 @@ class PropertyViewSet(GenericViewSet):
                             {'status': 'error', 'message': 'Invalid Data'}
                         )
                         status_code = 422  # status.HTTP_422_UNPROCESSABLE_ENTITY
-                elif log.name in ['Manual Edit', 'Manual Match', 'System Match',
-                                  'Merge current state in migration']:
+                elif log.name in ['Manual Edit', 'Manual Match', 'System Match', 'Merge current state in migration']:
                     # Override previous edit state or merge state
                     state = property_view.state
                     for key, value in new_property_state_data.iteritems():

@@ -594,7 +594,7 @@ class Column(models.Model):
 
         # Clean up the columns
         for c in columns:
-            if c['table'] and inventory_type.lower() in c['table'].lower():
+            if c['table'] and (inventory_type.lower() in c['table'].lower()):
                 c['related'] = False
                 if c.get('pinIfNative', False):
                     c['pinnedLeft'] = True
@@ -652,7 +652,7 @@ class Column(models.Model):
                     'table': edc.table_name,
                     'displayName': titlecase(edc.column_name),
                     # 'dataType': 'string',  # TODO: how to check dataTypes on extra_data!
-                    'related': inventory_type.lower() in edc.table_name,
+                    'related': not (inventory_type.lower() in edc.table_name.lower()),
                     'extraData': True
                 }
             )
