@@ -102,6 +102,56 @@ class TestHPXML(TestCase):
         new_d = xmltodict.parse(xmlstr, process_namespaces=True)
         self.assertDictEqual(orig_d, new_d)
 
+    def test_export_no_xml(self):
+        psfactory = FakePropertyStateFactory(organization=self.org)
+        ps = psfactory.get_property_state(organization=self.org)
+        ps.extra_data['building_id'] = 'bldg1'
+        ps.owner = 'Jane Smith'
+        ps.owner_email = 'janecustomer@jkl.com'
+        ps.owner_telephone = '555-555-1234'
+        ps.owner_address = '15013 Denver West Pkwy'
+        ps.owner_city_state = 'Golden, CO'
+        ps.owner_postal_code = '80401'
+        ps.address_line_1 = ps.owner_address
+        ps.address_line_2 = None
+        ps.city = 'Golden'
+        ps.state = 'CO'
+        ps.postal_code = '80401'
+        ps.building_certification = 'LEED Silver'
+        ps.energy_score = 9
+        ps.extra_data['energy_score_type'] = 'my energy score'
+        ps.save()
+        xml = self.hpxml.export(ps)
+        f = StringIO(xml)
+        tree = objectify.parse(f, parser=hpxml_parser)
+        root = tree.getroot()
+        energy_score = root.Building.BuildingDetails.BuildingSummary.BuildingConstruction.EnergyScore
+        self.assertEqual(int(energy_score.Score), ps.energy_score)
+        self.assertEqual(energy_score.ScoreType, 'other')
+        self.assertEqual(energy_score.OtherScoreType, ps.extra_data['energy_score_type'])
+        self.assertEqual(
+            root.Customer.CustomerDetails.Person.Email.EmailAddress,
+            ps.owner_email
+        )
+        self.assertEqual(
+            root.Customer.CustomerDetails.Person.Telephone.TelephoneNumber,
+            ps.owner_telephone
+        )
+        address = root.Customer.CustomerDetails.MailingAddress
+        self.assertEqual(address.Address1, ps.owner_address)
+        self.assertFalse(hasattr(address, 'Address2'))
+        self.assertEqual(address.CityMunicipality, 'Golden')
+        self.assertEqual(address.StateCode, 'CO')
+        self.assertEqual(address.ZipCode.text, ps.owner_postal_code)
+        address = root.Building.Site.Address
+        self.assertEqual(address.Address1, ps.address_line_1)
+        self.assertFalse(hasattr(address, 'Address2'))
+        self.assertEqual(address.CityMunicipality, 'Golden')
+        self.assertEqual(address.StateCode, 'CO')
+        self.assertEqual(address.ZipCode.text, ps.postal_code)
+        self.assertEqual(root.Project.ProjectDetails.ProgramCertificate, 'LEED Silver')
+
+
     def test_bad_owner_name(self):
         self.hpxml.import_file(self.xml_file)
         psfactory = FakePropertyStateFactory(organization=self.org)

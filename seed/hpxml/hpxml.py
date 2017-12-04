@@ -76,7 +76,10 @@ class HPXML(object):
 
     @property
     def root(self):
-        return self.tree.getroot()
+        if self.tree is None:
+            return None
+        else:
+            return self.tree.getroot()
 
     def xpath(self, xpathexpr, start_from=None, only_one=False, **kw):
         if start_from is None:
@@ -110,13 +113,19 @@ class HPXML(object):
             self.tree.write(f, encoding='utf-8', pretty_print=True, xml_declaration=True)
             return f.getvalue()
 
-        root = deepcopy(self.root)
+        if self.tree is None:
+            tree = objectify.parse(os.path.join(here, 'schemas', 'blank.xml'), parser=hpxml_parser)
+            root = tree.getroot()
+        else:
+            root = deepcopy(self.root)
 
         bldg = self._get_building(property_state.extra_data.get('building_id'), start_from=root)
 
         for pskey, xml_loc in self.HPXML_STRUCT.items():
             value = getattr(property_state, pskey)
             el = self.xpath(xml_loc['path'], start_from=bldg, only_one=True)
+            if value is None and self.tree is None:
+                el.getparent().remove(el)
             if value is None or el is None or pskey == 'energy_score':
                 continue
             setattr(el.getparent(), el.tag[el.tag.index('}') + 1:],
