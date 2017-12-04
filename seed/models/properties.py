@@ -11,6 +11,8 @@ import pdb
 
 from django.contrib.postgres.fields import JSONField
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from quantityfield.fields import QuantityField
 
 from auditlog import AUDIT_IMPORT
@@ -440,6 +442,16 @@ class PropertyView(models.Model):
                 view_id=self.pk).order_by('created').first()
             self._import_filename = audit_log.import_filename
         return self._import_filename
+
+
+@receiver(post_save, sender=PropertyView)
+def post_save_property_view(sender, **kwargs):
+    """
+    When changing/saving the PropertyView, go ahead and touch the Property (if linked) so that the record
+    receives an updated datetime
+    """
+    if kwargs['instance'].property:
+        kwargs['instance'].property.save()
 
 
 class PropertyAuditLog(models.Model):

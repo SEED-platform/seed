@@ -693,8 +693,11 @@ class PropertyViewSet(GenericViewSet):
                     return JsonResponse(result, status=status_code)
 
                 # update the property object just to save the new datatime
-                property_obj = Property.objects.get(id=pk)
-                property_obj.save()
+                # property_obj = Property.objects.get(id=pk)
+                # property_obj.save()
+
+            # save the property view, even if it hasn't changed so that the datetime gets updated on the property.
+            property_view.save()
         else:
             status_code = status.HTTP_404_NOT_FOUND
 
