@@ -151,7 +151,6 @@ class TestHPXML(TestCase):
         self.assertEqual(address.ZipCode.text, ps.postal_code)
         self.assertEqual(root.Project.ProjectDetails.ProgramCertificate, 'LEED Silver')
 
-
     def test_bad_owner_name(self):
         self.hpxml.import_file(self.xml_file)
         psfactory = FakePropertyStateFactory(organization=self.org)
