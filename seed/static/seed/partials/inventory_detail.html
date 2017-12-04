@@ -70,10 +70,10 @@
                         <tr ng-repeat="field in ::columns" ng-if="::field.visible">
 
                             <!-- Field name -->
-                            <td ng-attr-title="{$:: field.name $}">{$:: field.displayName $}</td>
+                            <td ng-attr-title="{$::field.name $}">{$::field.displayName $}</td>
 
                             <!-- Show read-only current 'regular' field value -->
-                            <td ng-if="edit_form_showing===false && !field.extraData" ng-class="_.includes(changed_fields.regular_fields, field.name) ? 'highlight' : ''" class="ellipsis">
+                            <td ng-if="edit_form_showing===false && !field.extraData && field.table.toLowerCase().includes('state')" ng-class="_.includes(changed_fields.regular_fields, field.name) ? 'highlight' : ''" class="ellipsis">
                                 <span class="sd-data-content" popover-placement="top-left" popover-animation="false" popover-trigger="outsideClick" uib-popover="{$:: item_state[field.name] $}">
                                     <span ng-if="::field.type !== 'date'">{$:: item_state[field.name] $}</span>
                                     <span ng-if="::field.type === 'date'">{$:: item_state[field.name] | date: 'yyyy-MM-dd h:mm a' $}</span>
@@ -81,17 +81,28 @@
                             </td>
 
                             <!-- Show read-only current 'extra_data' field value -->
-                            <td ng-if="edit_form_showing===false && field.extraData" ng-class="changed_fields.extra_data_fields.indexOf(field.name)>=0 ? 'highlight' : ''" class="ellipsis">
+                            <td ng-if="edit_form_showing===false && field.extraData && field.table.toLowerCase().includes('state')" ng-class="changed_fields.extra_data_fields.indexOf(field.name)>=0 ? 'highlight' : ''" class="ellipsis">
                                 <span class="sd-data-content" popover-placement="top-left" popover-animation="false" popover-trigger="outsideClick" uib-popover="{$ item_state.extra_data[field.name.replace('_extra', '')] $}">
                                     <span ng-if="::field.type !== 'date'">{$:: item_state.extra_data[field.name.replace('_extra', '')] $}</span>
                                     <span ng-if="::field.type === 'date'">{$:: item_state.extra_data[field.name.replace('_extra', '')] | date: 'yyyy-MM-dd h:mm a' $}</span>
                                 </span>
                             </td>
 
+                            <!-- Show read-only current 'property / taxlot' fields -->
+                            <td ng-if="edit_form_showing===false && !field.table.toLowerCase().includes('state')" ng-class="_.includes(changed_fields.regular_fields, field.name) ? 'highlight' : ''" class="ellipsis">
+                                <span class="sd-data-content" popover-placement="top-left" popover-animation="false" popover-trigger="outsideClick" uib-popover="{$ item_state[field.name] $}">
+                                    <span ng-if="::field.type !== 'date'">{$:: item_parent[field.name] $}</span>
+                                    <span ng-if="::field.type === 'date'">{$:: item_parent[field.name] | date: 'yyyy-MM-dd h:mm a' $}</span>
+                                </span>
+                            </td>
+
                             <!-- Show input form to edit current field value -->
                             <td ng-if="edit_form_showing" ng-class="(!field.extraData && changed_fields.extra_data_fields.indexOf(field.name)>=0) || changed_fields.regular_fields.indexOf(field.name)>=0 ? 'highlight' : ''">
-                                <div ng-if="::!field.extraData">
-                                    <input id="edit_attribute_id" class="form-control input-sm" type="text" ng-model="item_state[field.name]" ng-disabled="::_.includes(['campus', 'associated_building_tax_lot_id', 'associated_tax_lot_ids', 'primary_tax_lot_id'], field.name)">
+                                <div ng-if="::!field.extraData && field.table.toLowerCase().includes('state')">
+                                    <input id="edit_attribute_id" class="form-control input-sm" type="text" ng-model="item_state[field.name]" ng-disabled="::_.includes(['campus', 'associated_building_tax_lot_id', 'associated_tax_lot_ids', 'primary_tax_lot_id', 'db_property_updated', 'db_property_created', 'db_taxlot_updated', 'db_taxlot_created'], field.name)">
+                                </div>
+                                <div ng-if="::!field.extraData && !field.table.toLowerCase().includes('state')">
+                                    <input id="edit_attribute_id" class="form-control input-sm" type="text" ng-model="item_parent[field.name]" ng-disabled="::_.includes(['campus', 'associated_building_tax_lot_id', 'associated_tax_lot_ids', 'primary_tax_lot_id', 'db_property_updated', 'db_property_created', 'db_taxlot_updated', 'db_taxlot_created'], field.name)">
                                 </div>
                                 <div ng-if="::field.extraData">
                                     <input id="edit_property_attribute_id" class="form-control input-sm" type="text" ng-model="item_state.extra_data[field.name.replace('_extra', '')]">

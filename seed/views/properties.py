@@ -27,6 +27,7 @@ from seed.models import (
     Column,
     Cycle,
     PropertyAuditLog,
+    Property,
     PropertyState,
     PropertyView,
     TaxLotProperty,
@@ -572,6 +573,8 @@ class PropertyViewSet(GenericViewSet):
             result.update(PropertyViewSerializer(property_view).data)
             # remove PropertyView id from result
             result.pop('id')
+            result['property']['db_property_updated'] = result['property']['updated']
+            result['property']['db_property_created'] = result['property']['created']
             result['state'] = PropertyStateSerializer(property_view.state).data
             result['taxlots'] = self._get_taxlots(property_view.pk)
             result['history'], master = self.get_history(property_view)
@@ -598,6 +601,7 @@ class PropertyViewSet(GenericViewSet):
             return JsonResponse(
                 {'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
         data = request.data
+
         result = self._get_property_view(pk, cycle_pk)
         if result.get('status', None) != 'error':
             property_view = result.pop('property_view')
@@ -688,6 +692,10 @@ class PropertyViewSet(GenericViewSet):
                     status_code = 422
                     return JsonResponse(result, status=status_code)
 
+                # update the property object just to save the new datatime
+                property_obj = Property.objects.get(id=pk)
+                property_obj.save()
         else:
             status_code = status.HTTP_404_NOT_FOUND
+
         return JsonResponse(result, status=status_code)
