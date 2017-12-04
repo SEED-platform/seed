@@ -37,6 +37,10 @@ class TaxLot(models.Model):
     organization = models.ForeignKey(Organization)
     labels = models.ManyToManyField(StatusLabel)
 
+    # Track when the entry was created and when it was updated
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
     def __unicode__(self):
         return u'TaxLot - %s' % self.pk
 

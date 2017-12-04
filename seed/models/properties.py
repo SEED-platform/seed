@@ -53,6 +53,10 @@ class Property(models.Model):
     parent_property = models.ForeignKey('Property', blank=True, null=True)
     labels = models.ManyToManyField(StatusLabel)
 
+    # Track when the entry was created and when it was updated
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
     class Meta:
         verbose_name_plural = 'properties'
 
@@ -408,8 +412,8 @@ class PropertyView(models.Model):
         # get the related taxlot_view.state as well to save time if needed.
         result = []
         for tlp in TaxLotProperty.objects.filter(
-                cycle=self.cycle,
-                property_view=self).select_related('taxlot_view', 'taxlot_view__state'):
+            cycle=self.cycle,
+            property_view=self).select_related('taxlot_view', 'taxlot_view__state'):
             result.append(tlp.taxlot_view)
 
         return result
