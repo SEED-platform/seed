@@ -68,7 +68,9 @@ class TestHPXML(TestCase):
 
     def test_process(self):
         self.assertTrue(self.hpxml.import_file(self.xml_file))
-        res = self.hpxml.process()
+        res, errors, messages = self.hpxml.process()
+        self.assertIsNone(errors)
+        self.assertEqual(len(messages), 0)
         expected = {
             'building_id': 'bldg1',
             'address_line_1': '123 Main St',
@@ -86,7 +88,9 @@ class TestHPXML(TestCase):
         }
         self.assertDictEqual(expected, res)
         self.hpxml.root.Customer.CustomerDetails.Person.Name.clear()
-        res = self.hpxml.process()
+        res, errors, messages = self.hpxml.process()
+        self.assertIsNone(errors)
+        self.assertEqual(len(messages), 0)
         self.assertNotIn('owner', res.keys())
 
     def test_export_no_property(self):

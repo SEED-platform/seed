@@ -36,8 +36,9 @@ class TestBuildingFiles(TestCase):
         self.assertEqual(BuildingFile.str_to_file_type('BUILDINGSYNC'), 1)
         self.assertEqual(BuildingFile.str_to_file_type('Unknown'), 0)
         self.assertEqual(BuildingFile.str_to_file_type('GeoJSON'), 2)
+        self.assertEqual(BuildingFile.str_to_file_type('hpxml'), 3)
 
-    def test_constructor(self):
+    def test_buildingsync_constructor(self):
         filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'ex_1.xml')
         file = open(filename, 'rb')
         simple_uploaded_file = SimpleUploadedFile(file.name, file.read())
@@ -51,6 +52,23 @@ class TestBuildingFiles(TestCase):
         status, property_state, messages = bf.process(self.org.id, self.org.cycles.first())
         self.assertTrue(status)
         self.assertEqual(property_state.address_line_1, '123 Main Street')
+        self.assertEqual(messages, [])
+
+    def test_hpxml_constructor(self):
+        filename = path.join(BASE_DIR, 'seed', 'hpxml', 'tests', 'data', 'audit.xml')
+        file = open(filename, 'rb')
+        simple_uploaded_file = SimpleUploadedFile(file.name, file.read())
+
+        bf = BuildingFile.objects.create(
+            file=simple_uploaded_file,
+            filename=filename,
+            file_type=BuildingFile.HPXML
+        )
+
+        status, property_state, messages = bf.process(self.org.id, self.org.cycles.first())
+        self.assertTrue(status)
+        self.assertEqual(property_state.owner, 'Jane Customer')
+        self.assertEqual(property_state.energy_score, 8)
         self.assertEqual(messages, [])
 
     def test_geojson_error(self):

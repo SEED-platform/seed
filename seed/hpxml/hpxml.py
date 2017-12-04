@@ -405,4 +405,4 @@ class HPXML(object):
             else:
                 res['energy_score_type'] = score_type
 
-        return res
+        return res, None, []
