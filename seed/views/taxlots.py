@@ -260,7 +260,7 @@ class TaxLotViewSet(GenericViewSet):
         organization_id = int(request.query_params.get('organization_id'))
         columns = Column.retrieve_all(organization_id, 'taxlot')
 
-        return JsonResponse({'columns': columns})
+        return JsonResponse({'status': 'success', 'columns': columns})
 
     @api_endpoint_class
     @ajax_request_class

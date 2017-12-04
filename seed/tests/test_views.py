@@ -37,10 +37,14 @@ from seed.test_helpers.fake import (
     FakeTaxLotStateFactory
 )
 from seed.utils.cache import set_cache
-from seed.api.v1.views import (
-    DEFAULT_CUSTOM_COLUMNS,
-)
 
+DEFAULT_CUSTOM_COLUMNS = [
+    'project_id',
+    'project_building_snapshots__status_label__name',
+    'address_line_1',
+    'city',
+    'state_province',
+]
 COLUMNS_TO_SEND = DEFAULT_CUSTOM_COLUMNS + ['postal_code', 'pm_parent_property_id',
                                             'calculated_taxlot_ids', 'primary', 'extra_data_field',
                                             'jurisdiction_tax_lot_id', 'is secret lair',
