@@ -164,7 +164,7 @@ SEED_app.run([
 SEED_app.run([
   'flippers',
   function (flippers) {
-    var make = _.partial(flippers.make_flipper, 'ryan@ryanmccuaig.net', '2018-01-01T00:00:00Z');
+    var make = _.partial(flippers.make_flipper, 'ryan@ryanmccuaig.net', '2018-02-01T00:00:00Z');
     make('release:use_pint', 'boolean', true);
   }
 ]);
