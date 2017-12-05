@@ -124,9 +124,11 @@ class HPXML(object):
         for pskey, xml_loc in self.HPXML_STRUCT.items():
             value = getattr(property_state, pskey)
             el = self.xpath(xml_loc['path'], start_from=bldg, only_one=True)
+            if pskey == 'energy_score':
+                continue
             if value is None and self.tree is None:
                 el.getparent().remove(el)
-            if value is None or el is None or pskey == 'energy_score':
+            if value is None or el is None:
                 continue
             setattr(el.getparent(), el.tag[el.tag.index('}') + 1:],
                     unicode(value) if not isinstance(value, basestring) else value)
