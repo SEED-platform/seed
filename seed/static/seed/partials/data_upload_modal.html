@@ -11,6 +11,7 @@
     <h4 class="modal-title" ng-switch-when="10">{$ step_10_title|titleCase $}</h4>
     <h4 class="modal-title" ng-switch-when="11">Confirm Save Mappings?</h4>
     <h4 class="modal-title" ng-switch-when="12">Error Processing Data</h4>
+    <h4 class="modal-title" ng-switch-when="13">Portfolio Manager Import</h4>
 </div>
 <div class="modal-body no_bottom_padding" ng-switch on="step.number">
     <!-- Step 1 -->
@@ -51,6 +52,9 @@
         </div>
         <div class="row">
             <div class="col-sm-8 col-sm-offset-2" sd-uploader sourcetype="Assessed Raw" sourceprog="PortfolioManager" sourcever="1.0" importrecord="dataset.id" buttontext="Upload Portfolio Manager Data" eventfunc="uploaderfunc(message, file, progress)" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress"></div>
+        </div>
+        <div class="row">
+            <div class="col-sm-8 col-sm-offset-2" sd-uploader sourcetype="Assessed Raw" sourceprog="PortfolioManager" sourcever="1.0" importrecord="dataset.id" buttontext="Import Portfolio Manager Data" eventfunc="uploaderfunc(message, file, progress)" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress"></div>
         </div>
         <div class="row">
             <div class="col-sm-9 col-sm-offset-2" ng-hide="uploader.in_progress">
@@ -199,6 +203,27 @@
                     <p>An error occurred while processing the file. Please ensure that your file meets the required specifications.</p>
                     <pre ng-class="{'pre-scrollable': step_12_error_message.length >= 300}" ng-show="step_12_error_message">{$ step_12_error_message $}</pre>
                 </div>
+            </div>
+        </div>
+    </div>
+    <!-- Step 13: Portfolio Manager Data Import  -->
+    <div class="data_upload_steps" ng-switch-when="13">
+        <div class="row">
+            <label class="control-label col-lg-3 col-sm-3" for="inputPMEmail">Email</label>
+            <div class="col-lg-8 col-sm-8">
+                <input type="text" class="form-control" id="inputPMEmail" ng-model="dataset.name" placeholder="your PM email" sd-enter="SOMETHINGELSEHERE-create_dataset(dataset.name)" required>
+            </div>
+            <label class="control-label col-lg-3 col-sm-3" for="inputPMUsername">Username</label>
+            <div class="col-lg-8 col-sm-8">
+                <input type="text" class="form-control" id="inputPMUsername" ng-model="dataset.name" placeholder="your PM username" sd-enter="SOMETHINGELSEHERE-create_dataset(dataset.name)" required>
+            </div>
+            <label class="control-label col-lg-3 col-sm-3" for="inputPMPassword">Password</label>
+            <div class="col-lg-8 col-sm-8">
+                <input type="password" class="form-control" id="inputPMPassword" ng-model="dataset.name" placeholder="your PM password" sd-enter="SOMETHINGELSEHERE-create_dataset(dataset.name)" required>
+            </div>
+            <label class="control-label col-lg-3 col-sm-3" for="inputPMReportTemplateName">Report Template Name</label>
+            <div class="col-lg-8 col-sm-8">
+                <input type="text" class="form-control" id="inputPMReportTemplateName" ng-model="dataset.name" placeholder="your PM template name" sd-enter="SOMETHINGELSEHERE-create_dataset(dataset.name)" required>
             </div>
         </div>
     </div>

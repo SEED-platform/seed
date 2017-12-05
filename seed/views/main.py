@@ -8,6 +8,7 @@
 import json
 import logging
 import os
+import pint
 import subprocess
 import xmltodict
 
@@ -31,6 +32,7 @@ from seed.lib.superperms.orgs.models import OrganizationUser
 from seed.models import (
     Column,
     get_column_mapping,
+    PropertyState,
 )
 from seed.utils.api import api_endpoint
 from seed.views.users import _get_js_role
@@ -454,6 +456,41 @@ def pm_integration(request):
     return render(request, 'seed/pm_integration.html', {})
 
 
+ATTRIBUTES_TO_PROCESS = [
+    'national_median_site_energy_use',
+    'site_energy_use',
+    'source_energy_use',
+    'site_eui',
+    'source_eui'
+]
+
+
+def normalize_attribute(attribute_object):
+    u_registry = pint.UnitRegistry()
+    if '@uom' in attribute_object and '#text' in attribute_object:
+        # this is the correct expected path for unit-based attributes
+        string_value = attribute_object['#text']
+        try:
+            float_value = float(string_value)
+        except ValueError:
+            return {'status': 'error', 'message': 'Could not cast value to float: \"%s\"' % string_value}
+        original_unit_string = attribute_object['@uom']
+        if original_unit_string == u'kBtu':
+            converted_value = float_value * 3.0
+            return {'status': 'success', 'value': converted_value, 'units': str(u_registry.meter)}
+        elif original_unit_string == u'kBtu/ft²':
+            converted_value = float_value * 3.0
+            return {'status': 'success', 'value': converted_value, 'units': str(u_registry.meter)}
+        elif original_unit_string == u'Metric Tons CO2e':
+            converted_value = float_value * 3.0
+            return {'status': 'success', 'value': converted_value, 'units': str(u_registry.meter)}
+        elif original_unit_string == u'kgCO2e/ft²':
+            converted_value = float_value * 3.0
+            return {'status': 'success', 'value': converted_value, 'units': str(u_registry.meter)}
+        else:
+            return {'status': 'error', 'message': 'Unsupported units string: \"%s\"' % original_unit_string}
+
+
 @api_view(['POST'])
 def pm_integration_worker(request):
     if 'email' not in request.data:
@@ -503,9 +540,69 @@ def pm_integration_worker(request):
                             status=500)
     properties = content_object['report']['informationAndMetrics']['row']
 
-    # print("\nProperties found in this template report:")
-    # print("  Property ID  |  Property Name  ")
-    # print("---------------|-----------------")
-    # for prop in properties:
-    #     print("  %s  |  %s  " % (prop['property_id'].ljust(11), prop['property_name']))
+    # now we need to actually process each property
+    # if we find a match we should update it, if we don't we should create it
+    # then we should assign/update property values, possibly from this list?
+    #  energy_score
+    #  site_eui
+    #  generation_date
+    #  release_date
+    #  source_eui_weather_normalized
+    #  site_eui_weather_normalized
+    #  source_eui
+    #  energy_alerts
+    #  space_alerts
+    #  building_certification
+    for prop in properties:
+        seed_property_match = None
+
+        # first try to match by pm property id if the PM report includes it
+        if 'property_id' in prop:
+            this_property_pm_id = prop['property_id']
+            try:
+                seed_property_match = PropertyState.objects.get(pm_property_id=this_property_pm_id)
+                prop['MATCHED'] = 'Matched via pm_property_id'
+            except PropertyState.DoesNotExist:
+                seed_property_match = None
+
+        # second try to match by address/city/state if the PM report includes it
+        if not seed_property_match:
+            if all(attr in prop for attr in ['address_1', 'city', 'state_province']):
+                this_property_address_one = prop['address_1']
+                this_property_city = prop['city']
+                this_property_state = prop['state_province']
+                try:
+                    seed_property_match = PropertyState.objects.get(
+                        address_line_1__iexact=this_property_address_one,
+                        city__iexact=this_property_city,
+                        state__iexact=this_property_state
+                    )
+                    prop['MATCHED'] = 'Matched via address/city/state'
+                except PropertyState.DoesNotExist:
+                    seed_property_match = None
+
+        # if we didn't match then we need to create a new one
+        if not seed_property_match:
+            prop['MATCHED'] = 'NO! need to create new property'
+
+        # either way at this point we should have a property, existing or new
+        # so now we should process the attributes
+        processed_attributes = {}
+        for attribute_to_check in ATTRIBUTES_TO_PROCESS:
+            if attribute_to_check in prop:
+                found_attribute = prop[attribute_to_check]
+                if isinstance(found_attribute, dict):
+                    if found_attribute['#text']:
+                        if found_attribute['#text'] == 'Not Available':
+                            processed_attributes[attribute_to_check] = 'Requested variable blank/unavailable on PM'
+                        else:
+                            updated_attribute = normalize_attribute(found_attribute)
+                            processed_attributes[attribute_to_check] = updated_attribute
+                    else:
+                        processed_attributes[attribute_to_check] = 'Malformed attribute did not have #text field'
+                else:
+                    pass  # nothing for now
+
+        prop['PROCESSED'] = processed_attributes
+
     return JsonResponse({'status': 'success', 'properties': properties})
