@@ -93,7 +93,7 @@ class TaxLotViewSet(GenericViewSet):
                 })
 
         taxlot_views_list = TaxLotView.objects.select_related('taxlot', 'state', 'cycle') \
-            .filter(taxlot__organization_id=request.query_params['organization_id'], cycle=cycle) \
+            .filter(taxlot__organization_id=org_id, cycle=cycle) \
             .order_by('id')
 
         paginator = Paginator(taxlot_views_list, per_page)

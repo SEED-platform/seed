@@ -220,8 +220,8 @@ class PropertyViewSet(GenericViewSet):
                 })
 
         property_views_list = PropertyView.objects.select_related('property', 'state', 'cycle') \
-            .filter(property__organization_id=request.query_params['organization_id'],
-                    cycle=cycle).order_by('id')
+            .filter(property__organization_id=org_id, cycle=cycle) \
+            .order_by('id')
 
         paginator = Paginator(property_views_list, per_page)
 
