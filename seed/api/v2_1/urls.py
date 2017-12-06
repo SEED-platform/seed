@@ -7,7 +7,8 @@
 from django.conf.urls import url, include
 from rest_framework import routers
 
-from seed.api.v2_1.views import PropertyViewSetV21, pm_integration_worker, pm_integration_get_templates
+from seed.api.v2_1.views import PropertyViewSetV21
+from seed.views.portfoliomanager import pm_integration_worker, pm_integration_get_templates
 from seed.views.tax_lot_properties import TaxLotPropertyViewSet
 
 router = routers.DefaultRouter()
