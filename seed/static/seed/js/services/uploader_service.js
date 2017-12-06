@@ -44,6 +44,23 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
       });
     };
 
+    // TODO: Temporary dropping point for the actual PM functions
+    uploader_factory.get_pm_report_template_names = function (pm_email, pm_username, pm_password) {
+      console.log("Inside pull_from_pm, args = ", pm_email, pm_username, pm_password);
+      // TODO: Will actually call a SEED API endpoint that will query PM for us
+    };
+    uploader_factory.get_pm_report = function (pm_email, pm_username, pm_password, pm_template_name) {
+      console.log("Inside pull_from_pm, args = ", pm_email, pm_username, pm_password, pm_template_name);
+      return $http.post('/pm_integration_worker/', {
+        email: pm_email,
+        username: pm_username,
+        password: pm_password,
+        template_name: pm_template_name
+      }).then(function (response) {
+        return response.data;
+      });
+    };
+
     /**
      * save_raw_data
      * This service call will simply call a view on the backend to save raw
