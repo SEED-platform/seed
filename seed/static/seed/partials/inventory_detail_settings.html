@@ -3,15 +3,11 @@
         <div class="left page_action_container">
             <a ui-sref="inventory_list(::{inventory_type: inventory_type})" class="page_action">
                 <i class="fa fa-chevron-left"></i>
-                {$:: inventory_type === 'taxlots' ?
-                    translations['Tax Lots'] :
-                    translations['Properties'] $}
+                {$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') | translate $}
             </a>
         </div>
         <div class="page_title">
-            <h1>{$:: inventory_type === 'taxlots' ?
-                translations['Tax Lot Detail Settings'] :
-                translations['Property Detail Settings'] $}</h1>
+            <h1>{$:: (inventory_type === 'taxlots' ? 'Tax Lot Detail Settings' : 'Property Detail Settings') | translate $}</h1>
         </div>
         <div class="right page_action_container page_action_btn"></div>
     </div>
@@ -33,9 +29,7 @@
     <div class="section_content with_padding" style="overflow:hidden;">
         <h3 translate="NUMBER_COLUMNS_AVAILABLE"
             translate-values="{ count: (data.length | number) }"></h3>
-        <p>{$:: inventory_type == 'taxlots' ?
-            translations['LIST_GUIDANCE_TAXLOTS_NO_PIN'] :
-            translations['LIST_GUIDANCE_PROPERTIES_NO_PIN'] $}</p>
+        <p>{$:: (inventory_type === 'taxlots' ? 'LIST_GUIDANCE_TAXLOTS_NO_PIN' : 'LIST_GUIDANCE_PROPERTIES_NO_PIN') | translate $}</p>
     </div>
     <div class="section_content">
         <div id="grid-container">

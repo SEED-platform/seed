@@ -6,21 +6,21 @@
         <div class="form-group" ng-class="{ 'has-error' : new_member_form.first_name.$invalid && !new_member_form.first_name.$pristine }">
             <label class="control-label col-sm-3" for="newMemberFirstName" translate>First Name:</label>
             <div class="col-sm-8">
-                <input type="text" class="form-control" name="first_name" id="newMemberFirstName" placeholder="{$ 'Enter first name' | translate $}" ng-model="user.first_name" required>
+                <input type="text" class="form-control" name="first_name" id="newMemberFirstName" placeholder="{$:: 'Enter first name' | translate $}" ng-model="user.first_name" required>
                  <p ng-show="new_member_form.first_name.$invalid && !new_member_form.first_name.$pristine" class="help-block" translate>First name is required.</p>
             </div>
         </div>
         <div class="form-group"  ng-class="{ 'has-error' : new_member_form.last_name.$invalid && !new_member_form.last_name.$pristine }">
             <label class="control-label col-sm-3" for="newMemberLastName" translate>Last Name:</label>
             <div class="col-sm-8">
-                <input type="text" class="form-control" name="last_name" placeholder="{$ 'Enter last name' | translate $}" ng-model="user.last_name" required>
+                <input type="text" class="form-control" name="last_name" placeholder="{$:: 'Enter last name' | translate $}" ng-model="user.last_name" required>
                  <p ng-show="new_member_form.last_name.$invalid && !new_member_form.last_name.$pristine" class="help-block" translate>Last name is required.</p>
             </div>
         </div>
         <div class="form-group"  ng-class="{ 'has-error' : new_member_form.email.$invalid && !new_member_form.email.$pristine }">
             <label class="control-label col-sm-3" for="newMemberEmail" translate>Email Address:</label>
             <div class="col-sm-8">
-                <input type="email" class="form-control" name="email" placeholder="{$ 'Enter email address' | translate $}" ng-model="user.email" required>
+                <input type="email" class="form-control" name="email" placeholder="{$:: 'Enter email address' | translate $}" ng-model="user.email" required>
                 <p ng-show="new_member_form.email.$invalid && !new_member_form.email.$pristine" class="help-block" translate>Enter a valid email address.</p>
             </div>
         </div>

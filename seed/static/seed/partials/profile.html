@@ -15,7 +15,7 @@
 <div class="section">
     <div class="section_header_container">
         <div class="section_header">
-            <h2><i class="fa fa-info-circle"></i> {$ 'Profile Information' | translate $}</h2>
+            <h2><i class="fa fa-info-circle"></i> {$:: 'Profile Information' | translate $}</h2>
         </div>
     </div>
     <div class="section_content_container">
@@ -26,25 +26,25 @@
                         <div class="form-group" ng-class="{ 'has-error' : profile_form.first_name.$invalid && !profile_form.first_name.$pristine }">
                             <label class="control-label" for="first-name-text" translate>First Name:</label>
                             <div>
-                                <input id="first-name-text" type="text" class="form-control" name="first_name" placeholder="{$ 'Enter first name' | translate $}" ng-model="user.first_name" required>
+                                <input id="first-name-text" type="text" class="form-control" name="first_name" placeholder="{$:: 'Enter first name' | translate $}" ng-model="user.first_name" required>
                                  <p ng-show="profile_form.first_name.$invalid && !profile_form.first_name.$pristine" class="help-block" translate>First name is required.</p>
                             </div>
                         </div>
                         <div class="form-group"  ng-class="{ 'has-error' : profile_form.last_name.$invalid && !profile_form.last_name.$pristine }">
                             <label class="control-label" for="last-name-text" translate>Last Name:</label>
                             <div>
-                                <input id="last-name-text" type="text" class="form-control" name="last_name" placeholder="{$ 'Enter last name' | translate $}" ng-model="user.last_name" required>
+                                <input id="last-name-text" type="text" class="form-control" name="last_name" placeholder="{$:: 'Enter last name' | translate $}" ng-model="user.last_name" required>
                                  <p ng-show="profile_form.last_name.$invalid && !profile_form.last_name.$pristine" class="help-block" translate>Last name is required.</p>
                             </div>
                         </div>
                         <div class="form-group"  ng-class="{ 'has-error' : profile_form.email.$invalid && !profile_form.email.$pristine }">
                             <label class="control-label" for="email-text" translate>Email Address:</label>
                             <div>
-                                <input id="email-text" type="email" class="form-control" name="email" placeholder="{$ 'Enter Email Address' | translate $}" ng-model="user.email" required>
+                                <input id="email-text" type="email" class="form-control" name="email" placeholder="{$:: 'Enter Email Address' | translate $}" ng-model="user.email" required>
                                 <p ng-show="profile_form.email.$invalid && !profile_form.email.$pristine" class="help-block" translate>Enter a valid email address.</p>
                             </div>
                         </div>
-                        <button id="update_profile" type="submit" class="btn btn-primary" ng-disabled="profile_form.$invalid">{$ 'Save Changes' | translate $} <i class="fa fa-check" ng-show="user_updated"></i></button>
+                        <button id="update_profile" type="submit" class="btn btn-primary" ng-disabled="profile_form.$invalid">{$:: 'Save Changes' | translate $} <i class="fa fa-check" ng-show="user_updated"></i></button>
                         <button type="button" class="btn btn-default" ng-click="reset_form()" translate>Cancel</button>
                     </form>
                 </div>

@@ -8,7 +8,7 @@
                 <div class="form-group" ng-class="{'has-error': newLabelForm.name.$invalid && newLabelForm.name.$dirty }">
                     <label class="control-label sectionLabel" style="padding-right:20px;" translate>Create new label</label>
                     <div class="input-group" style="padding-right:20px;">
-                        <input id="labelName" type="text" name="name" class="form-control" ng-model="new_label.name" placeholder="{$ 'Label Name' | translate $}" sd-check-label-exists="labels" required>
+                        <input id="labelName" type="text" name="name" class="form-control" ng-model="new_label.name" placeholder="{$:: 'Label Name' | translate $}" sd-check-label-exists="labels" required>
                         <div uib-dropdown class="input-group-btn">
                             <button id="btnSelectLabel" type="button" class="btn btn-{$ new_label.label $}" data-toggle="dropdown">
                                 {$ new_label.color | translate $} <span class="caret"></span>

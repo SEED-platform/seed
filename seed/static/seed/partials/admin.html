@@ -18,7 +18,7 @@
             </div>
             <div class="section_header_container has_btm_margin">
                 <div class="section_header">
-                    <h2><i class="fa fa-users"></i> {$ 'Create an organization' | translate $}</h2>
+                    <h2><i class="fa fa-users"></i> {$:: 'Create an organization' | translate $}</h2>
                 </div>
             </div>
             <div class="section_content_container org_form container-fluid">
@@ -27,7 +27,7 @@
                         <div class="form-group">
                             <label class="col-sm-2 control-label" for="org_name" translate>Organization Name:</label>
                             <div class="col-sm-4">
-                              <input type="text" class="form-control" id="org_name" ng-model="org.name" placeholder="{$ 'Organization Name' | translate $}" required>
+                              <input type="text" class="form-control" id="org_name" ng-model="org.name" placeholder="{$:: 'Organization Name' | translate $}" required>
                             </div>
                         </div>
                         <div class="form-group">
@@ -43,13 +43,13 @@
                             </div>
                         </div>
                     </form>
-                    <div ng-show="org_form.invalid">{$ 'Error' | translate $}: <span>{$ org_form.message | translate $}</span>
+                    <div ng-show="org_form.invalid">{$:: 'Error' | translate $}: <span>{$ org_form.message | translate $}</span>
                     </div>
                 </div>
             </div>
             <div class="section_header_container has_btm_margin">
                 <div class="section_header">
-                    <h2><i class="fa fa-user"></i> {$ 'Create a user' | translate $}</h2>
+                    <h2><i class="fa fa-user"></i> {$:: 'Create a user' | translate $}</h2>
                 </div>
             </div>
             <div class="section_content_container user_admin container-fluid">
@@ -58,19 +58,19 @@
                         <div class="form-group">
                             <label class="col-sm-2 control-label" for="first_name" translate>User First Name:</label>
                             <div class="col-sm-4">
-                              <input type="text" id="first_name" class="form-control" ng-model="user.first_name" placeholder="{$ 'First Name' | translate $}" required>
+                              <input type="text" id="first_name" class="form-control" ng-model="user.first_name" placeholder="{$:: 'First Name' | translate $}" required>
                             </div>
                         </div>
                         <div class="form-group">
                             <label class="col-sm-2 control-label" for="last_name" translate>User Last Name:</label>
                             <div class="col-sm-4">
-                              <input type="text" id="last_name" class="form-control" ng-model="user.last_name" placeholder="{$ 'Last Name' | translate $}" required>
+                              <input type="text" id="last_name" class="form-control" ng-model="user.last_name" placeholder="{$:: 'Last Name' | translate $}" required>
                             </div>
                         </div>
                         <div class="form-group">
                             <label class="col-sm-2 control-label" for="user_email" translate>User E-mail:</label>
                             <div class="col-sm-4">
-                              <input type="email" id="user_email" class="form-control" ng-model="user.email" placeholder="{$ 'User Email' | translate $}" required>
+                              <input type="email" id="user_email" class="form-control" ng-model="user.email" placeholder="{$:: 'User Email' | translate $}" required>
                             </div>
                         </div>
                         <div class="form-group">
@@ -82,7 +82,7 @@
                         <div class="form-group">
                             <label class="col-sm-2 control-label" for="org_name_from_user" translate>Or Create New (With User as Head):</label>
                             <div class="col-sm-4">
-                              <input type="text" class="form-control" id="new_user_org_name" ng-model="user.org_name" placeholder="{$ 'Organization Name' | translate $}">
+                              <input type="text" class="form-control" id="new_user_org_name" ng-model="user.org_name" placeholder="{$:: 'Organization Name' | translate $}">
                             </div>
 
                         </div>
@@ -93,13 +93,13 @@
                             </div>
                         </div>
                     </form>
-                    <div ng-show="user_form.invalid">{$ 'Error' | translate $}: <span>{$ user_form.message | translate $}</span>
+                    <div ng-show="user_form.invalid">{$:: 'Error' | translate $}: <span>{$ user_form.message | translate $}</span>
                     </div>
                 </div>
             </div>
             <div class="section_header_container has_btm_margin">
                 <div class="section_header">
-                    <h2><i class="fa fa-plus-circle"></i> {$ 'Add/Remove a user to an organization' | translate $}</h2>
+                    <h2><i class="fa fa-plus-circle"></i> {$:: 'Add/Remove a user to an organization' | translate $}</h2>
                 </div>
             </div>
             <div class="section_content_container org_user_admin container-fluid">
@@ -107,14 +107,14 @@
                     <div class="col-sm-6">
                         <form name="addRemoveForm" novalidate class="form-horizontal css-form" role="form">
                             <div class="form-group">
-                                <label class="col-sm-4 control-label" for="orgs">{$ 'Organizations' | translate $}:</label>
+                                <label class="col-sm-4 control-label" for="orgs">{$:: 'Organizations' | translate $}:</label>
                                 <div class="col-sm-8">
                                     <select name="orgs" class="form-control" id="orgs" ng-options="o as o.name for o in org_user.organizations" ng-model="org_user.organization" ng-change="get_organizations_users(org_user.organization)"></select>
                                 </div>
                             </div>
 
                             <div class="form-group">
-                                <label class="col-sm-4 control-label" for="add_emails">{$ 'Add user to organization' | translate $}:</label>
+                                <label class="col-sm-4 control-label" for="add_emails">{$:: 'Add user to organization' | translate $}:</label>
                                 <div class="col-sm-8">
                                     <select name="user_emails" class="form-control" id="user_emails" ng-options="u as u.email for u in org.users | orderBy:'email'" ng-model="org_user.user"></select>
                                 </div>
@@ -150,7 +150,7 @@
 
             <div class="section_header_container has_btm_margin">
                 <div class="section_header">
-                    <h2><i class="fa fa-trash-o"></i> {$ 'Remove inventory and organizations' | translate $}</h2>
+                    <h2><i class="fa fa-trash-o"></i> {$:: 'Remove inventory and organizations' | translate $}</h2>
                 </div>
             </div>
             <div class="section_content_container org_user_admin container-fluid">
@@ -190,10 +190,10 @@
                                         <div>
                                             <button class="btn btn-default" ng-click="confirm_inventory_delete(org)" ng-disabled="org.progress > -1" translate>Remove Inventory</button>
                                             <button class="btn btn-warning" type="button" style="margin-left:10px;" ng-click="confirm_column_mappings_delete(org)" ng-disabled="org.progress > -1">
-                                                <i class="fa fa-exclamation-triangle"></i> {$ 'Remove Column Mappings' | translate $}
+                                                <i class="fa fa-exclamation-triangle"></i> {$:: 'Remove Column Mappings' | translate $}
                                             </button>
                                             <button class="btn btn-danger" type="button" style="margin-left:10px;" ng-click="confirm_org_delete(org)" ng-disabled="org.progress > -1">
-                                                <i class="fa fa-exclamation-triangle"></i> {$ 'Delete Organization' | translate $}
+                                                <i class="fa fa-exclamation-triangle"></i> {$:: 'Delete Organization' | translate $}
                                             </button>
                                             <uib-progressbar class="progress-striped active" value="org.progress" type="success" ng-show="org.progress > -1">{$ org.remove_message | translate $}</uib-progressbar>
                                         </div>

@@ -4,9 +4,7 @@
 
         </div>
         <div class="page_title">
-            <h1>{$:: inventory_type === 'taxlots' ?
-                translations['Tax Lots'] :
-                translations['Properties'] $}</h1>
+            <h1>{$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') | translate $}</h1>
         </div>
         <div class="right page_action_container page_action_btn"></div>
     </div>
@@ -29,7 +27,7 @@
                         uib-dropdown-toggle
                         class="btn btn-default btn-sm"
                         ng-disabled="selectedCount === 0">
-                    {$ 'Actions' | translate $} <span class="caret"></span>
+                    {$:: 'Actions' | translate $} <span class="caret"></span>
                 </button>
                 <ul id="inventory-actions-dropdown" uib-dropdown-menu class="dropdown-menu" role="menu" aria-labelledby="btnInventoryActions">
                     <li ng-hide="::menu.user.organization.user_role === 'viewer'">
@@ -53,7 +51,7 @@
                 <tags-input id="tagsInput"
                             ng-model="selected_labels"
                             min-length="1"
-                            placeholder="{$ 'Add a label' | translate $}"
+                            placeholder="{$:: 'Add a label' | translate $}"
                             replace-spaces-with-dashes="false"
                             add-from-autocomplete-only="true"
                             ng-disabled="!labels.length">
@@ -82,7 +80,7 @@
     </form>
 
     <div class="form-group" style="padding-top: 20px;">
-        <label>{$ 'Cycle' | translate $}:</label>
+        <label>{$:: 'Cycle' | translate $}:</label>
         <div style="display: inline-block;">
             <select class="form-control input-sm" ng-model="cycle.selected_cycle" ng-change="update_cycle(cycle.selected_cycle)"
                     ng-options="option.name for option in ::cycle.cycles track by option.id">

@@ -15,7 +15,7 @@
 <div class="section">
     <div class="section_header_container">
         <div class="section_header">
-            <h2><i class="fa fa-lock"></i> {$ 'Change Password' | translate $}</h2>
+            <h2><i class="fa fa-lock"></i> {$:: 'Change Password' | translate $}</h2>
         </div>
     </div>
     <div class="section_content_container">
@@ -38,7 +38,7 @@
                             <input type="password" class="form-control" id="editConfirmNewPassword" ng-model="password_2">
                             <p ng-show="error_message !== 'current password is not valid'" class="help-block">{$ error_message | translate $}</p>
                         </div>
-                        <button type="submit" class="btn btn-primary" ng-click="change_password()">{$ 'Change Password' | translate $} <i class="fa fa-check" ng-show="password_updated"></i></button>
+                        <button type="submit" class="btn btn-primary" ng-click="change_password()">{$:: 'Change Password' | translate $} <i class="fa fa-check" ng-show="password_updated"></i></button>
                     </form>
                 </div>
             </div>

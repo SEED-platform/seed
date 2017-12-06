@@ -3,9 +3,9 @@
     <div class="section_content">
       <div class="home_jump_nav_container">
         <div class="home_jump_nav">
-          <a id="nav-inventory" ui-sref="inventory_list(::{inventory_type: 'properties'})"><span ng-include="'/static/seed/images/icon-city.svg'"></span>{$ 'Inventory' | translate $}</a>
-          <a id="nav-data" ui-sref="dataset_list" ng-show="::menu.user.organization.user_role !== 'viewer'"><i class="fa fa-sitemap"></i>{$ 'Data' | translate $}</a>
-          <a ui-sref="contact"><i class="fa fa-question-circle"></i>{$ 'Contact' | translate $}</a>
+          <a id="nav-inventory" ui-sref="inventory_list(::{inventory_type: 'properties'})"><span ng-include="'/static/seed/images/icon-city.svg'"></span>{$:: 'Inventory' | translate $}</a>
+          <a id="nav-data" ui-sref="dataset_list" ng-show="::menu.user.organization.user_role !== 'viewer'"><i class="fa fa-sitemap"></i>{$:: 'Data' | translate $}</a>
+          <a ui-sref="contact"><i class="fa fa-question-circle"></i>{$:: 'Contact' | translate $}</a>
         </div>
       </div>
       <div class="jumbotron">
@@ -14,7 +14,7 @@
 
           <p translate>The DOE developed the Standard Energy Efficiency Data (SEED) Platform™ as a free software tool that provides a standardized format for collecting, storing and analyzing building energy performance information about large portfolios. Upload your buildings list to get started.</p>
 
-          <p><a data-toggle="modal" data-target="#dataUploadModal" ng-click="open_data_upload_modal()" class="btn btn-primary btn-lg" role="button" ng-hide="menu.user.organization.user_role === 'viewer'"><i class="fa fa-cloud-upload"></i>&nbsp;&nbsp;{$ 'Upload your buildings list' | translate $}</a> <a ng-href="{$ urls.static_url $}seed/pdf/SEED_Platform_V1_3_Getting_Started_Guide.pdf" target="_blank" title="SEED_v1.3_User_Guide" class="btn btn-warning btn-lg" role="button"><i class="fa fa-file-text"></i>&nbsp;&nbsp;{$ 'Getting Started Guide' | translate $}</a></p>
+          <p><a data-toggle="modal" data-target="#dataUploadModal" ng-click="open_data_upload_modal()" class="btn btn-primary btn-lg" role="button" ng-hide="menu.user.organization.user_role === 'viewer'"><i class="fa fa-cloud-upload"></i>&nbsp;&nbsp;{$:: 'Upload your buildings list' | translate $}</a> <a ng-href="{$ urls.static_url $}seed/pdf/SEED_Platform_V1_3_Getting_Started_Guide.pdf" target="_blank" title="SEED_v1.3_User_Guide" class="btn btn-warning btn-lg" role="button"><i class="fa fa-file-text"></i>&nbsp;&nbsp;{$:: 'Getting Started Guide' | translate $}</a></p>
         </div>
       </div>
       <div class="whats_new_container">
@@ -38,7 +38,7 @@
 
                 <p translate>MARKETING_BULLET_1</p>
 
-                <p><a ng-href="{$ urls.static_url $}seed/sample-data/seed-sample-data.zip" class="btn btn-info" role="button"><i class="fa fa-cloud-download"></i>&nbsp;&nbsp;{$ 'Download Sample Data' | translate $}</a></p>
+                <p><a ng-href="{$ urls.static_url $}seed/sample-data/seed-sample-data.zip" class="btn btn-info" role="button"><i class="fa fa-cloud-download"></i>&nbsp;&nbsp;{$:: 'Download Sample Data' | translate $}</a></p>
 
 
               </div>

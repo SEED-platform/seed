@@ -21,28 +21,28 @@
                 <div class="col-md-12" style="margin-bottom:10px;">
                     <div class="row">
                         <div class="col-md-2">
-                            <h2 style="font-size:18px;"><i class="fa fa-bar-chart pull-left"></i> {$ 'Property Reports' | translate $}</h2>
+                            <h2 style="font-size:18px;"><i class="fa fa-bar-chart pull-left"></i> {$:: 'Property Reports' | translate $}</h2>
                         </div>
                         <div class="col-md-10">
                             <form class="form-inline pull-right chart-inputs" role="form">
 
                                 <div class="form-group">
-                                    <label for="fromCycleSelector">{$ 'From first date of' | translate $}:</label>
+                                    <label for="fromCycleSelector">{$:: 'From first date of' | translate $}:</label>
                                     <select id="fromCycleSelector" class="form-control" ng-model="fromCycle.selected_cycle" style="min-width:180px;" ng-change="updateFromCycle(fromCycle.selected_cycle)" ng-options="cycle.name for cycle in cycles track by cycle.id"> </select>
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="toCycleSelector">{$ 'Until last date of' | translate $}:</label>
+                                    <label for="toCycleSelector">{$:: 'Until last date of' | translate $}:</label>
                                     <select id="toCycleSelector" class="form-control" style="min-width:180px;" ng-model="toCycle.selected_cycle" ng-change="updateToCycle(toCycle.selected_cycle)" ng-options="cycle.name for cycle in cycles track by cycle.id"> </select>
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="xAxisSelector">{$ 'X Axis' | translate $}:</label>
+                                    <label for="xAxisSelector">{$:: 'X Axis' | translate $}:</label>
                                     <sd-dropdown is-button id="xAxisSelector" ng-model="xAxisSelectedItem" items="xAxisVars"></sd-dropdown>
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="yAxisSelector">{$ 'Y Axis' | translate $}:</label>
+                                    <label for="yAxisSelector">{$:: 'Y Axis' | translate $}:</label>
                                     <sd-dropdown is-button id="yAxisSelector" ng-model="yAxisSelectedItem" items="yAxisVars"></sd-dropdown>
                                 </div>
 
