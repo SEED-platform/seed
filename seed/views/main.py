@@ -492,6 +492,35 @@ def normalize_attribute(attribute_object):
 
 
 @api_view(['POST'])
+def pm_integration_get_templates(request):
+    if 'email' not in request.data:
+        return JsonResponse('Invalid call to PM worker: missing email for PM account')
+    if 'username' not in request.data:
+        return JsonResponse('Invalid call to PM worker: missing username for PM account')
+    if 'password' not in request.data:
+        return JsonResponse('Invalid call to PM worker: missing password for PM account')
+    email = request.data['email']
+    username = request.data['username']
+    password = request.data['password']
+    pm = PortfolioManagerImport(email, username, password)
+    possible_templates = pm.get_list_of_report_templates()
+    return JsonResponse({'status': 'success', 'templates': possible_templates})  # TODO: Could just return ['name']s...
+    # print("  Index  |  Template Report Name  ")
+    # print("---------|------------------------")
+    # for i, t in enumerate(possible_templates):
+    #     print("  %s  |  %s  " % (str(i).ljust(5), t['name']))
+    # selection = raw_input("\nEnter an Index to download the report: ")
+    # try:
+    #     s_id = int(selection)
+    # except ValueError:
+    #     raise Exception("Invalid Selection; aborting.")
+    # if 0 <= s_id < len(possible_templates):
+    #     selected_template = possible_templates[s_id]
+    # else:
+    #     raise Exception("Invalid Selection; aborting.")
+
+
+@api_view(['POST'])
 def pm_integration_worker(request):
     if 'email' not in request.data:
         return JsonResponse('Invalid call to PM worker: missing email for PM account')
@@ -506,22 +535,8 @@ def pm_integration_worker(request):
     password = request.data['password']
     template_name = request.data['template_name']
     pm = PortfolioManagerImport(email, username, password)
-
     possible_templates = pm.get_list_of_report_templates()
-    # print("  Index  |  Template Report Name  ")
-    # print("---------|------------------------")
-    # for i, t in enumerate(possible_templates):
-    #     print("  %s  |  %s  " % (str(i).ljust(5), t['name']))
-    # selection = raw_input("\nEnter an Index to download the report: ")
-    # try:
-    #     s_id = int(selection)
-    # except ValueError:
-    #     raise Exception("Invalid Selection; aborting.")
-    # if 0 <= s_id < len(possible_templates):
-    #     selected_template = possible_templates[s_id]
-    # else:
-    #     raise Exception("Invalid Selection; aborting.")
-    selected_template = [p for p in possible_templates if p['name'] == template_name][0]
+    selected_template = [p for p in possible_templates if p['name'] == template_name][0]  # TODO: Shouldn't need this
     content = pm.generate_and_download_template_report(selected_template)
     try:
         content_object = xmltodict.parse(content)

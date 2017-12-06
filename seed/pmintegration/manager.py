@@ -38,6 +38,7 @@ class PortfolioManagerImport(object):
         response = requests.post(login_url, data=payload)
         if not response.status_code == 200:
             error("Unsuccessful response from login attempt; aborting.  Check credentials.")
+        # TODO: This returns 200 even if the credentials are bad...
 
         # Upon successful logging in, we should have received a cookie header that we can reuse later
         if 'Cookie' not in response.request.headers:

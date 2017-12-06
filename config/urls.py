@@ -12,7 +12,7 @@ from rest_framework_swagger.views import get_swagger_view
 
 from config.views import robots_txt
 from seed.api.base.urls import urlpatterns as api
-from seed.views.main import angular_js_tests, pm_integration, pm_integration_worker
+from seed.views.main import angular_js_tests, pm_integration, pm_integration_worker, pm_integration_get_templates
 
 urlpatterns = [
     # Application
@@ -31,7 +31,8 @@ urlpatterns = [
 
     # Temporary
     url(r'^pm_integration/', pm_integration, name='pm_integration'),
-    url(r'^pm_integration_worker', pm_integration_worker, name='pm_integration_worker'),
+    url(r'^pm_integration_worker/', pm_integration_worker, name='pm_integration_worker'),
+    url(r'^pm_integration_get_templates', pm_integration_get_templates, name='pm_integration_get_templates'),
 ]
 
 handler404 = 'seed.views.main.error404'
