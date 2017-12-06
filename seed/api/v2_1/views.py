@@ -128,6 +128,31 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
         org_id = self.get_organization(self.request)
         return PropertyView.objects.filter(property__organization_id=org_id).order_by('-state__id')
 
+    def _get_property_view(self, pk, cycle_pk):
+        try:
+            property_view = PropertyView.objects.select_related(
+                'property', 'cycle', 'state'
+            ).get(
+                property_id=pk,
+                cycle_id=cycle_pk,
+                property__organization_id=self.request.GET['organization_id']
+            )
+            result = {
+                'status': 'success',
+                'property_view': property_view
+            }
+        except PropertyView.DoesNotExist:
+            result = {
+                'status': 'error',
+                'message': 'property view with property id {} does not exist'.format(pk)
+            }
+        except PropertyView.MultipleObjectsReturned:
+            result = {
+                'status': 'error',
+                'message': 'Multiple property views with id {}'.format(pk)
+            }
+        return result
+
     @detail_route(methods=['GET'])
     def building_sync(self, request, pk):
         """
