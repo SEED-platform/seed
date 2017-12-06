@@ -7,7 +7,7 @@
 from django.conf.urls import url, include
 from rest_framework import routers
 
-from seed.api.v2_1.views import PropertyViewSetV21
+from seed.api.v2_1.views import PropertyViewSetV21, pm_integration_worker, pm_integration_get_templates
 from seed.views.tax_lot_properties import TaxLotPropertyViewSet
 
 router = routers.DefaultRouter()
@@ -16,4 +16,7 @@ router.register(r'tax_lot_properties', TaxLotPropertyViewSet, base_name="tax_lot
 
 urlpatterns = [
     url(r'^', include(router.urls)),
+    # Temporary
+    url(r'^pm_integration_worker/', pm_integration_worker, name='pm_integration_worker'),
+    url(r'^pm_integration_get_templates', pm_integration_get_templates, name='pm_integration_get_templates'),
 ]
