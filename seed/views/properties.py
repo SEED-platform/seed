@@ -33,7 +33,13 @@ from seed.models import (
     TaxLotView
 )
 from seed.models import Property as PropertyModel
-from seed.serializers.pint import PintJSONEncoder, apply_display_unit_preferences
+from seed.lib.superperms.orgs.models import (
+    Organization
+)
+from seed.serializers.pint import (
+    PintJSONEncoder,
+    add_pint_unit_suffix
+)
 from seed.serializers.properties import (
     PropertySerializer,
     PropertyStateSerializer,
@@ -216,10 +222,7 @@ class PropertyViewSet(GenericViewSet):
             .filter(property__organization_id=request.query_params['organization_id'],
                     cycle=cycle).order_by('id')
 
-        dedimensioned_property_views_list = apply_display_unit_preferences(
-            org_id, property_views_list)
-
-        paginator = Paginator(dedimensioned_property_views_list, per_page)
+        paginator = Paginator(property_views_list, per_page)
 
         try:
             property_views = paginator.page(page)
@@ -382,9 +385,12 @@ class PropertyViewSet(GenericViewSet):
               paramType: query
         """
         organization_id = int(request.query_params.get('organization_id'))
-        columns = Column.retrieve_all(organization_id, 'property')
+        organization = Organization.objects.get(pk=organization_id)
 
-        return JsonResponse({'status': 'success', 'columns': columns})
+        columns = Column.retrieve_all(organization_id, 'property')
+        unitted_columns = [add_pint_unit_suffix(organization, x) for x in columns]
+
+        return JsonResponse({'status': 'success', 'columns': unitted_columns})
 
     @api_endpoint_class
     @ajax_request_class
