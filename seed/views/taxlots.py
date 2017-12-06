@@ -36,6 +36,7 @@ from seed.lib.superperms.orgs.models import (
 )
 from seed.serializers.pint import (
     PintJSONEncoder,
+    apply_display_unit_preferences,
     add_pint_unit_suffix
 )
 from seed.serializers.properties import (
@@ -107,6 +108,14 @@ class TaxLotViewSet(GenericViewSet):
             taxlot_views = paginator.page(paginator.num_pages)
             page = paginator.num_pages
 
+        related_results = TaxLotProperty.get_related(taxlot_views, columns)
+
+        # collapse units here so we're only doing the last page; we're already a
+        # realized list by now and not a lazy queryset
+        org = Organization.objects.get(pk=org_id)
+        unit_collapsed_results = \
+                [apply_display_unit_preferences(org, x) for x in related_results]
+
         response = {
             'pagination': {
                 'page': page,
@@ -118,10 +127,10 @@ class TaxLotViewSet(GenericViewSet):
                 'total': paginator.count
             },
             'cycle_id': cycle.id,
-            'results': TaxLotProperty.get_related(taxlot_views, columns)
+            'results': unit_collapsed_results
         }
 
-        return JsonResponse(response, encoder=PintJSONEncoder)
+        return JsonResponse(response)
 
     # @require_organization_id
     # @require_organization_membership
