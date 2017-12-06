@@ -19,6 +19,7 @@ from rest_framework import status
 from rest_framework.decorators import detail_route
 
 from seed.building_sync.building_sync import BuildingSync
+from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (
     PropertyAuditLog,
     PropertyMeasure,
@@ -31,9 +32,10 @@ from seed.models import (
 )
 from seed.serializers.properties import (
     PropertyStateSerializer,
-    PropertyViewSerializer,
     PropertyViewAsStateSerializer,
 )
+from seed.utils.api import api_endpoint_class
+from seed.decorators import ajax_request_class
 from seed.utils.properties import get_changed_fields
 from seed.utils.viewsets import (
     SEEDOrgReadOnlyModelViewSet
@@ -204,6 +206,9 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
             xml = bs.export(property_view.state, BuildingSync.BRICR_STRUCT)
             return HttpResponse(xml, content_type='application/xml')
 
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('can_modify_data')
     @detail_route(methods=['PUT'])
     def update_with_building_sync(self, request, pk):
         """
@@ -277,9 +282,9 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
         pv_copy = copy.deepcopy(property_view)
 
         # passing in the existing property state allows it to process the buildingsync without creating a new state
-        p_status, new_pv_state, messages = building_file.process(organization_id, cycle,
-                                                                 property_state=pv_copy.state,
-                                                                 property_id=property_id_for_this_view)
+        p_status, new_pv_state, new_pv_view, messages = building_file.process(organization_id, cycle,
+                                                                              property_state=pv_copy.state,
+                                                                              property_id=property_id_for_this_view)
 
         # persist the ids that were saved earlier
         [new_pv_state.scenarios.add(x) for x in scenario_ids_for_this_pv]
@@ -297,7 +302,7 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
                 "status": "success",
                 "message": "successfully imported file",
                 "data": {
-                    "property_view": PropertyViewSerializer(pv_copy).data,
+                    "property_view": PropertyViewAsStateSerializer(pv_copy).data,
                 },
             })
         else:
@@ -353,10 +358,11 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
             if not changed_fields:
                 changed = False
             if not changed:
+                #
                 result.update(
-                    {'status': 'error', 'message': 'Nothing to update'}
+                    {'status': 'success', 'message': 'Records are identical'}
                 )
-                status_code = 422  # status.HTTP_422_UNPROCESSABLE_ENTITY
+                status_code = 204  # 204 No Content
             else:
                 log = PropertyAuditLog.objects.select_related().filter(
                     state=property_view.state
@@ -376,12 +382,12 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
                     if new_property_state_serializer.is_valid():
 
                         # get some items off of this property view
-                        scenario_ids_for_this_pv = [x.id for x in property_state_data.scenarios]
-                        buildingfile_ids_for_this_pv = [x.id for x in property_state_data.building_files]
+                        scenario_ids_for_this_pv = [x for x in property_view.state.scenarios.all()]
+                        buildingfile_ids_for_this_pv = [x for x in property_view.state.building_files.all()]
                         simulation_ids_for_this_pv = [x.id for x in
-                                                      Simulation.objects.filter(property_state=property_state_data)]
+                                                      Simulation.objects.filter(property_state=property_view.state)]
                         measure_ids_for_this_pv = [x.id for x in
-                                                   PropertyMeasure.objects.filter(property_state=property_state_data)]
+                                                   PropertyMeasure.objects.filter(property_state=property_view.state)]
 
                         # create the new property state, and perform an initial save
                         new_state = new_property_state_serializer.save()
@@ -422,9 +428,7 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
                         if 'import_file' in result['state']:
                             result['state'].pop('import_file')
 
-                        # Not sure why we have 201 here. Should be 200 or 204 because there is
-                        # no new content created.
-                        status_code = status.HTTP_201_CREATED
+                        status_code = status.HTTP_200_OK
                     else:
                         result.update({
                             'status': 'error',
@@ -448,7 +452,7 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
                     result['state'].pop('organization')
                     result['state'].pop('import_file')
 
-                    status_code = status.HTTP_201_CREATED
+                    status_code = status.HTTP_200_OK
                 else:
                     result = {'status': 'error',
                               'message': 'Unrecognized audit log name: ' + log.name}
@@ -457,4 +461,5 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
 
         else:
             status_code = status.HTTP_404_NOT_FOUND
+
         return JsonResponse(result, status=status_code)

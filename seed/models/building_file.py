@@ -123,13 +123,14 @@ class BuildingFile(models.Model):
                     is_extra_data=True,
                 )
 
+        property_view = None
         if property_state and property_id:
-            property_state.promote(cycle, property_id)
+            property_view = property_state.promote(cycle, property_id)
         elif not property_state and not property_id:
             # create a new property_state for the objects
             property_state = PropertyState.objects.create(**create_data)
             property_state.extra_data = extra_data
-            property_state.promote(cycle)
+            property_view = property_state.promote(cycle)
             property_state.save()
         else:
             # invalid arguments, must pass both or neither
@@ -236,4 +237,4 @@ class BuildingFile(models.Model):
             record_type=AUDIT_IMPORT
         )
 
-        return True, property_state, messages
+        return True, property_state, property_view, messages
