@@ -119,7 +119,7 @@ class HPXML(object):
         else:
             root = deepcopy(self.root)
 
-        bldg = self._get_building(property_state.extra_data.get('building_id'), start_from=root)
+        bldg = self._get_building(property_state.extra_data.get('hpxml_building_id'), start_from=root)
 
         for pskey, xml_loc in self.HPXML_STRUCT.items():
             value = getattr(property_state, pskey)
@@ -345,7 +345,7 @@ class HPXML(object):
         """
         bldg = self._get_building(building_id)
         res = {
-            'building_id': bldg.BuildingID.get('id')
+            'hpxml_building_id': bldg.BuildingID.get('id')
         }
         xpath = functools.partial(self.xpath, start_from=bldg, only_one=True)
 

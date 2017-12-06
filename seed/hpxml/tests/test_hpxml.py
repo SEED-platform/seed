@@ -72,7 +72,7 @@ class TestHPXML(TestCase):
         self.assertIsNone(errors)
         self.assertEqual(len(messages), 0)
         expected = {
-            'building_id': 'bldg1',
+            'hpxml_building_id': 'bldg1',
             'address_line_1': '123 Main St',
             'address_line_2': '',
             'city': 'Beverly Hills',
