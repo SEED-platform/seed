@@ -37,7 +37,6 @@ from seed.lib.superperms.orgs.models import (
     Organization
 )
 from seed.serializers.pint import (
-    PintJSONEncoder,
     apply_display_unit_preferences,
     add_pint_unit_suffix
 )
@@ -241,7 +240,7 @@ class PropertyViewSet(GenericViewSet):
         # realized list by now and not a lazy queryset
         org = Organization.objects.get(pk=org_id)
         unit_collapsed_results = \
-                [apply_display_unit_preferences(org, x) for x in related_results]
+            [apply_display_unit_preferences(org, x) for x in related_results]
 
         response = {
             'pagination': {

@@ -8,7 +8,6 @@ that's where the display preference lives.
 import re
 from django.core.serializers.json import DjangoJSONEncoder
 from quantityfield import ureg
-from seed.lib.superperms.orgs.models import Organization
 
 AREA_DIMENSIONALITY = '[length] ** 2'
 EUI_DIMENSIONALITY = '[mass] / [time] ** 3'
@@ -18,11 +17,14 @@ EUI_DEFAULT_UNITS = 'kBtu/ft**2/year'
 
 SIGNIFICANT_FIGURES = 2
 
+
 def to_raw_magnitude(obj):
     return "{:.2f}".format(obj.magnitude)
 
+
 def get_dimensionality(quantity_object):
     return str(quantity_object.dimensionality)
+
 
 def apply_display_unit_preferences(org, pt_dict):
     """
@@ -93,7 +95,7 @@ def add_pint_unit_suffix(organization, column):
             column['displayName'] = \
                 format_column_name(column['displayName'], organization.display_units_eui)
     except KeyError:
-        pass # no transform needed if we can't detect dataType, nbd
+        pass  # no transform needed if we can't detect dataType, nbd
     return column
 
 
