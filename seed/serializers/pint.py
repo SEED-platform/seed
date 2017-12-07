@@ -5,6 +5,7 @@ Generally this collapsing relies on having access to the organization, since
 that's where the display preference lives.
 """
 
+import re
 from django.core.serializers.json import DjangoJSONEncoder
 from quantityfield import ureg
 from seed.lib.superperms.orgs.models import Organization
@@ -64,17 +65,33 @@ def pretty_units(quantity):
     return u"{:~P}".format(quantity).split(" ")[1]
 
 
+def pretty_units_from_spec(unit_spec):
+    quantity = 0 * ureg(unit_spec) # doesn't matter what the number is
+    return pretty_units(quantity)
+
+
 def add_pint_unit_suffix(organization, column):
     """
     transforms the displayName coming from `Column.retrieve_all` to add known
     units where applicable,  eg. 'Gross Floor Area' to 'Gross Floor Area (sq.
     ft.)', using the organization's unit preferences.
     """
+
+    def format_column_name(column_name, unit_spec):
+        display_units = pretty_units_from_spec(unit_spec)
+        # strip the suffix; shouldn't have to do this when we've swapped over
+        # the columns. The mere presence of a unit suffix will tell us in the UI
+        # that this is a Pint-aware column
+        stripped_name = re.sub(' \(pint\)$', '', column_name, flags=re.IGNORECASE)
+        return stripped_name + u" ({})".format(display_units)
+
     try:
         if column['dataType'] == "area":
-            column['displayName'] += " (" + organization.display_units_area + ")"
+            column['displayName'] = \
+                format_column_name(column['displayName'], organization.display_units_area)
         elif column['dataType'] == "eui":
-            column['displayName'] += " (" + organization.display_units_eui + ")"
+            column['displayName'] = \
+                format_column_name(column['displayName'], organization.display_units_eui)
     except KeyError:
         pass # no transform needed if we can't detect dataType, nbd
     return column
