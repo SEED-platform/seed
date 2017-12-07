@@ -15,6 +15,7 @@ from django.apps import apps
 from django.db import models
 from django.utils.timezone import get_current_timezone, make_aware, make_naive
 from quantityfield import ureg
+from seed.serializers.pint import pretty_units
 
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
@@ -249,13 +250,6 @@ def format_pint_violation(rule, source_value):
     :param source_value : Quantity - value to format into range
     :return (formatted_value, formatted_min, formatted_max) : (String, String, String)
     """
-
-    def pretty_units(q):
-        """
-        hack; can lose it when Pint gets something like a "{:~U}" format code
-        see https://github.com/hgrecco/pint/pull/231
-        """
-        return u"{:~P}".format(q).split(" ")[1]
 
     formatted_min = formatted_max = None
     incoming_data_units = source_value.units

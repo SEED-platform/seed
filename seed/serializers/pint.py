@@ -56,6 +56,14 @@ def apply_display_unit_preferences(org, pt_dict):
     return converted_dict
 
 
+def pretty_units(quantity):
+    """
+    hack; can lose it when Pint gets something like a "{:~U}" format code
+    see https://github.com/hgrecco/pint/pull/231
+    """
+    return u"{:~P}".format(quantity).split(" ")[1]
+
+
 def add_pint_unit_suffix(organization, column):
     """
     transforms the displayName coming from `Column.retrieve_all` to add known
