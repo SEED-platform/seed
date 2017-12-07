@@ -95,16 +95,14 @@ class PortfolioManagerViewSet(GenericViewSet):
             return JsonResponse('Invalid call to PM worker: missing username for PM account')
         if 'password' not in request.data:
             return JsonResponse('Invalid call to PM worker: missing password for PM account')
-        if 'template_name' not in request.data:
-            return JsonResponse('Invalid call to PM worker: missing template_name for PM account')
+        if 'template' not in request.data:
+            return JsonResponse('Invalid call to PM worker: missing template for PM account')
         email = request.data['email']
         username = request.data['username']
         password = request.data['password']
-        template_name = request.data['template_name']
+        template = request.data['template']
         pm = PortfolioManagerImport(email, username, password)
-        possible_templates = pm.get_list_of_report_templates()
-        selected_template = [p for p in possible_templates if p['name'] == template_name][0]  # TODO: Shouldn't need this  # TODO: Either way, check template_name before calling substring on it
-        content = pm.generate_and_download_template_report(selected_template)
+        content = pm.generate_and_download_template_report(template)
         try:
             content_object = xmltodict.parse(content)
         except Exception:
@@ -150,12 +148,12 @@ class PortfolioManagerViewSet(GenericViewSet):
             # second try to match by address/city/state if the PM report includes it
             if not seed_property_match:
                 if all(attr in prop for attr in ['address_1', 'city', 'state_province']):
-                    this_property_address_one = normalize_address_str(prop['address_1'])
+                    this_property_address_one = prop['address_1']
                     this_property_city = prop['city']
                     this_property_state = prop['state_province']
                     try:
                         seed_property_match = PropertyState.objects.get(
-                            address_line_1=this_property_address_one,  # This is normalized so I don't need iexact
+                            address_line_1__iexact=this_property_address_one,  # This is normalized so I don't need iexact
                             city__iexact=this_property_city,  # But I think I still need iexact on city/state right?
                             state__iexact=this_property_state
                         )
