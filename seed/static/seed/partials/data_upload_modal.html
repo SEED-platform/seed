@@ -246,6 +246,22 @@
                 <div class="btn btn-primary" style="display: block; font-weight: bold;" ng-click="get_pm_report(pm_email, pm_username, pm_password, pm_template);">Submit</div>
             </div>
         </div>
+        <div class="row">
+            <div class="col-lg-12 col-sm-12">
+                <table class="table table-striped" ng-hide="pm_props === undefined">
+                  <tr>
+                    <th>PM Property ID</th>
+                    <th>PM Property Name</th>
+                    <th>SEED Match State</th>
+                  </tr>
+                  <tr ng-repeat="x in pm_props">
+                    <td>{$ x.property_id $}</td>
+                    <td>{$ x.property_name $}</td>
+                    <td>{$ x.MATCHED $}</td>
+                  </tr>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 

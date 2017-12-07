@@ -375,6 +375,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           password: pm_password,
           template_name: pm_template.name
         }).then(function (response) {
+          $scope.pm_props = response.data.properties;
           return response.data;
         });
       };
