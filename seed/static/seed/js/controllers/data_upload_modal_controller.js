@@ -367,13 +367,13 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         });
       };
 
-      $scope.get_pm_report = function (pm_email, pm_username, pm_password, pm_template_name) {
-        console.log("Inside pull_from_pm, args = ", pm_email, pm_username, pm_password, pm_template_name);
+      $scope.get_pm_report = function (pm_email, pm_username, pm_password, pm_template) {
+        console.log("Inside pull_from_pm, args = ", pm_email, pm_username, pm_password, pm_template);
         return $http.post('/api/v2_1/portfolio_manager/report/', {
           email: pm_email,
           username: pm_username,
           password: pm_password,
-          template_name: pm_template_name
+          template_name: pm_template.name
         }).then(function (response) {
           return response.data;
         });

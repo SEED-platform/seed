@@ -20,6 +20,7 @@ from rest_framework.decorators import list_route
 from rest_framework.viewsets import GenericViewSet
 
 from seed.models import PropertyState
+from seed.utils.address import normalize_address_str
 
 
 class PortfolioManagerViewSet(GenericViewSet):
@@ -149,13 +150,13 @@ class PortfolioManagerViewSet(GenericViewSet):
             # second try to match by address/city/state if the PM report includes it
             if not seed_property_match:
                 if all(attr in prop for attr in ['address_1', 'city', 'state_province']):
-                    this_property_address_one = prop['address_1']
+                    this_property_address_one = normalize_address_str(prop['address_1'])
                     this_property_city = prop['city']
                     this_property_state = prop['state_province']
                     try:
                         seed_property_match = PropertyState.objects.get(
-                            address_line_1__iexact=this_property_address_one,
-                            city__iexact=this_property_city,
+                            address_line_1=this_property_address_one,  # This is normalized so I don't need iexact
+                            city__iexact=this_property_city,  # But I think I still need iexact on city/state right?
                             state__iexact=this_property_state
                         )
                         prop['MATCHED'] = 'Matched via address/city/state'
