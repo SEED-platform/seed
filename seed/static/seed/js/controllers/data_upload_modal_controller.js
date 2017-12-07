@@ -357,18 +357,19 @@ angular.module('BE.seed.controller.data_upload_modal', [])
 
       $scope.get_pm_report_template_names = function (pm_email, pm_username, pm_password) {
         console.log("Inside pull_from_pm, args = ", pm_email, pm_username, pm_password);
-        return $http.post('/api/v2_1/pm_integration_get_templates/', {
+        return $http.post('/api/v2_1/portfolio_manager/template_list/', {
           email: pm_email,
           username: pm_username,
           password: pm_password
         }).then(function (response) {
+          $scope.pm_templates = response.data.templates;
           return response.data;
         });
       };
 
       $scope.get_pm_report = function (pm_email, pm_username, pm_password, pm_template_name) {
         console.log("Inside pull_from_pm, args = ", pm_email, pm_username, pm_password, pm_template_name);
-        return $http.post('/api/v2_1/pm_integration_worker/', {
+        return $http.post('/api/v2_1/portfolio_manager/report/', {
           email: pm_email,
           username: pm_username,
           password: pm_password,

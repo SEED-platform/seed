@@ -16,183 +16,181 @@ import pint
 import requests
 import xmltodict
 from django.http import JsonResponse
-from rest_framework.decorators import api_view
+from rest_framework.decorators import list_route
+from rest_framework.viewsets import GenericViewSet
 
 from seed.models import PropertyState
 
-ATTRIBUTES_TO_PROCESS = [
-    'national_median_site_energy_use',
-    'site_energy_use',
-    'source_energy_use',
-    'site_eui',
-    'source_eui'
-]
 
+class PortfolioManagerViewSet(GenericViewSet):
 
-def normalize_attribute(attribute_object):
-    u_registry = pint.UnitRegistry()
-    if '@uom' in attribute_object and '#text' in attribute_object:
-        # this is the correct expected path for unit-based attributes
-        string_value = attribute_object['#text']
-        try:
-            float_value = float(string_value)
-        except ValueError:
-            return {'status': 'error', 'message': 'Could not cast value to float: \"%s\"' % string_value}
-        original_unit_string = attribute_object['@uom']
-        if original_unit_string == u'kBtu':
-            converted_value = float_value * 3.0
-            return {'status': 'success', 'value': converted_value, 'units': str(u_registry.meter)}
-        elif original_unit_string == u'kBtu/ft²':
-            converted_value = float_value * 3.0
-            return {'status': 'success', 'value': converted_value, 'units': str(u_registry.meter)}
-        elif original_unit_string == u'Metric Tons CO2e':
-            converted_value = float_value * 3.0
-            return {'status': 'success', 'value': converted_value, 'units': str(u_registry.meter)}
-        elif original_unit_string == u'kgCO2e/ft²':
-            converted_value = float_value * 3.0
-            return {'status': 'success', 'value': converted_value, 'units': str(u_registry.meter)}
-        else:
-            return {'status': 'error', 'message': 'Unsupported units string: \"%s\"' % original_unit_string}
+    ATTRIBUTES_TO_PROCESS = [
+        'national_median_site_energy_use',
+        'site_energy_use',
+        'source_energy_use',
+        'site_eui',
+        'source_eui'
+    ]
 
-
-@api_view(['POST'])
-def pm_integration_get_templates(request):
-    if 'email' not in request.data:
-        return JsonResponse('Invalid call to PM worker: missing email for PM account')
-    if 'username' not in request.data:
-        return JsonResponse('Invalid call to PM worker: missing username for PM account')
-    if 'password' not in request.data:
-        return JsonResponse('Invalid call to PM worker: missing password for PM account')
-    email = request.data['email']
-    username = request.data['username']
-    password = request.data['password']
-    pm = PortfolioManagerImport(email, username, password)
-    possible_templates = pm.get_list_of_report_templates()
-    return JsonResponse({'status': 'success', 'templates': possible_templates})  # TODO: Could just return ['name']s...
-    # print("  Index  |  Template Report Name  ")
-    # print("---------|------------------------")
-    # for i, t in enumerate(possible_templates):
-    #     print("  %s  |  %s  " % (str(i).ljust(5), t['name']))
-    # selection = raw_input("\nEnter an Index to download the report: ")
-    # try:
-    #     s_id = int(selection)
-    # except ValueError:
-    #     raise Exception("Invalid Selection; aborting.")
-    # if 0 <= s_id < len(possible_templates):
-    #     selected_template = possible_templates[s_id]
-    # else:
-    #     raise Exception("Invalid Selection; aborting.")
-
-
-@api_view(['POST'])
-def pm_integration_worker(request):
-    if 'email' not in request.data:
-        return JsonResponse('Invalid call to PM worker: missing email for PM account')
-    if 'username' not in request.data:
-        return JsonResponse('Invalid call to PM worker: missing username for PM account')
-    if 'password' not in request.data:
-        return JsonResponse('Invalid call to PM worker: missing password for PM account')
-    if 'template_name' not in request.data:
-        return JsonResponse('Invalid call to PM worker: missing template_name for PM account')
-    email = request.data['email']
-    username = request.data['username']
-    password = request.data['password']
-    template_name = request.data['template_name']
-    pm = PortfolioManagerImport(email, username, password)
-    possible_templates = pm.get_list_of_report_templates()
-    selected_template = [p for p in possible_templates if p['name'] == template_name][0]  # TODO: Shouldn't need this
-    content = pm.generate_and_download_template_report(selected_template)
-    try:
-        content_object = xmltodict.parse(content)
-    except Exception:
-        return JsonResponse({'status': 'error', 'message': 'Malformed XML response from template download'}, status=500)
-    success = True
-    if 'report' not in content_object:
-        success = False
-    if 'informationAndMetrics' not in content_object['report']:
-        success = False
-    if 'row' not in content_object['report']['informationAndMetrics']:
-        success = False
-    if not success:
-        return JsonResponse({'status': 'error',
-                             'message': 'Template XML response was properly formatted but was missing expected keys.'},
-                            status=500)
-    properties = content_object['report']['informationAndMetrics']['row']
-
-    # now we need to actually process each property
-    # if we find a match we should update it, if we don't we should create it
-    # then we should assign/update property values, possibly from this list?
-    #  energy_score
-    #  site_eui
-    #  generation_date
-    #  release_date
-    #  source_eui_weather_normalized
-    #  site_eui_weather_normalized
-    #  source_eui
-    #  energy_alerts
-    #  space_alerts
-    #  building_certification
-    for prop in properties:
-        seed_property_match = None
-
-        # first try to match by pm property id if the PM report includes it
-        if 'property_id' in prop:
-            this_property_pm_id = prop['property_id']
+    @staticmethod
+    def normalize_attribute(attribute_object):
+        u_registry = pint.UnitRegistry()
+        if '@uom' in attribute_object and '#text' in attribute_object:
+            # this is the correct expected path for unit-based attributes
+            string_value = attribute_object['#text']
             try:
-                seed_property_match = PropertyState.objects.get(pm_property_id=this_property_pm_id)
-                prop['MATCHED'] = 'Matched via pm_property_id'
-            except PropertyState.DoesNotExist:
-                seed_property_match = None
+                float_value = float(string_value)
+            except ValueError:
+                return {'status': 'error', 'message': 'Could not cast value to float: \"%s\"' % string_value}
+            original_unit_string = attribute_object['@uom']
+            if original_unit_string == u'kBtu':
+                converted_value = float_value * 3.0
+                return {'status': 'success', 'value': converted_value, 'units': str(u_registry.meter)}
+            elif original_unit_string == u'kBtu/ft²':
+                converted_value = float_value * 3.0
+                return {'status': 'success', 'value': converted_value, 'units': str(u_registry.meter)}
+            elif original_unit_string == u'Metric Tons CO2e':
+                converted_value = float_value * 3.0
+                return {'status': 'success', 'value': converted_value, 'units': str(u_registry.meter)}
+            elif original_unit_string == u'kgCO2e/ft²':
+                converted_value = float_value * 3.0
+                return {'status': 'success', 'value': converted_value, 'units': str(u_registry.meter)}
+            else:
+                return {'status': 'error', 'message': 'Unsupported units string: \"%s\"' % original_unit_string}
 
-        # second try to match by address/city/state if the PM report includes it
-        if not seed_property_match:
-            if all(attr in prop for attr in ['address_1', 'city', 'state_province']):
-                this_property_address_one = prop['address_1']
-                this_property_city = prop['city']
-                this_property_state = prop['state_province']
+    @list_route(methods=['POST'])
+    def template_list(self, request):
+        if 'email' not in request.data:
+            return JsonResponse('Invalid call to PM worker: missing email for PM account')
+        if 'username' not in request.data:
+            return JsonResponse('Invalid call to PM worker: missing username for PM account')
+        if 'password' not in request.data:
+            return JsonResponse('Invalid call to PM worker: missing password for PM account')
+        email = request.data['email']
+        username = request.data['username']
+        password = request.data['password']
+        pm = PortfolioManagerImport(email, username, password)
+        possible_templates = pm.get_list_of_report_templates()
+        return JsonResponse({'status': 'success', 'templates': possible_templates})  # TODO: Could just return ['name']s...
+        # print("  Index  |  Template Report Name  ")
+        # print("---------|------------------------")
+        # for i, t in enumerate(possible_templates):
+        #     print("  %s  |  %s  " % (str(i).ljust(5), t['name']))
+        # selection = raw_input("\nEnter an Index to download the report: ")
+        # try:
+        #     s_id = int(selection)
+        # except ValueError:
+        #     raise Exception("Invalid Selection; aborting.")
+        # if 0 <= s_id < len(possible_templates):
+        #     selected_template = possible_templates[s_id]
+        # else:
+        #     raise Exception("Invalid Selection; aborting.")
+
+    @list_route(methods=['POST'])
+    def report(self, request):
+        if 'email' not in request.data:
+            return JsonResponse('Invalid call to PM worker: missing email for PM account')
+        if 'username' not in request.data:
+            return JsonResponse('Invalid call to PM worker: missing username for PM account')
+        if 'password' not in request.data:
+            return JsonResponse('Invalid call to PM worker: missing password for PM account')
+        if 'template_name' not in request.data:
+            return JsonResponse('Invalid call to PM worker: missing template_name for PM account')
+        email = request.data['email']
+        username = request.data['username']
+        password = request.data['password']
+        template_name = request.data['template_name']
+        pm = PortfolioManagerImport(email, username, password)
+        possible_templates = pm.get_list_of_report_templates()
+        selected_template = [p for p in possible_templates if p['name'] == template_name][0]  # TODO: Shouldn't need this  # TODO: Either way, check template_name before calling substring on it
+        content = pm.generate_and_download_template_report(selected_template)
+        try:
+            content_object = xmltodict.parse(content)
+        except Exception:
+            return JsonResponse({'status': 'error', 'message': 'Malformed XML response from template download'}, status=500)
+        success = True
+        if 'report' not in content_object:
+            success = False
+        if 'informationAndMetrics' not in content_object['report']:
+            success = False
+        if 'row' not in content_object['report']['informationAndMetrics']:
+            success = False
+        if not success:
+            return JsonResponse({'status': 'error',
+                                 'message': 'Template XML response was properly formatted but was missing expected keys.'},
+                                status=500)
+        properties = content_object['report']['informationAndMetrics']['row']
+
+        # now we need to actually process each property
+        # if we find a match we should update it, if we don't we should create it
+        # then we should assign/update property values, possibly from this list?
+        #  energy_score
+        #  site_eui
+        #  generation_date
+        #  release_date
+        #  source_eui_weather_normalized
+        #  site_eui_weather_normalized
+        #  source_eui
+        #  energy_alerts
+        #  space_alerts
+        #  building_certification
+        for prop in properties:
+            seed_property_match = None
+
+            # first try to match by pm property id if the PM report includes it
+            if 'property_id' in prop:
+                this_property_pm_id = prop['property_id']
                 try:
-                    seed_property_match = PropertyState.objects.get(
-                        address_line_1__iexact=this_property_address_one,
-                        city__iexact=this_property_city,
-                        state__iexact=this_property_state
-                    )
-                    prop['MATCHED'] = 'Matched via address/city/state'
+                    seed_property_match = PropertyState.objects.get(pm_property_id=this_property_pm_id)
+                    prop['MATCHED'] = 'Matched via pm_property_id'
                 except PropertyState.DoesNotExist:
                     seed_property_match = None
 
-        # if we didn't match then we need to create a new one
-        if not seed_property_match:
-            prop['MATCHED'] = 'NO! need to create new property'
+            # second try to match by address/city/state if the PM report includes it
+            if not seed_property_match:
+                if all(attr in prop for attr in ['address_1', 'city', 'state_province']):
+                    this_property_address_one = prop['address_1']
+                    this_property_city = prop['city']
+                    this_property_state = prop['state_province']
+                    try:
+                        seed_property_match = PropertyState.objects.get(
+                            address_line_1__iexact=this_property_address_one,
+                            city__iexact=this_property_city,
+                            state__iexact=this_property_state
+                        )
+                        prop['MATCHED'] = 'Matched via address/city/state'
+                    except PropertyState.DoesNotExist:
+                        seed_property_match = None
 
-        # either way at this point we should have a property, existing or new
-        # so now we should process the attributes
-        processed_attributes = {}
-        for attribute_to_check in ATTRIBUTES_TO_PROCESS:
-            if attribute_to_check in prop:
-                found_attribute = prop[attribute_to_check]
-                if isinstance(found_attribute, dict):
-                    if found_attribute['#text']:
-                        if found_attribute['#text'] == 'Not Available':
-                            processed_attributes[attribute_to_check] = 'Requested variable blank/unavailable on PM'
+            # if we didn't match then we need to create a new one
+            if not seed_property_match:
+                prop['MATCHED'] = 'NO! need to create new property'
+
+            # either way at this point we should have a property, existing or new
+            # so now we should process the attributes
+            processed_attributes = {}
+            for attribute_to_check in PortfolioManagerViewSet.ATTRIBUTES_TO_PROCESS:
+                if attribute_to_check in prop:
+                    found_attribute = prop[attribute_to_check]
+                    if isinstance(found_attribute, dict):
+                        if found_attribute['#text']:
+                            if found_attribute['#text'] == 'Not Available':
+                                processed_attributes[attribute_to_check] = 'Requested variable blank/unavailable on PM'
+                            else:
+                                updated_attribute = PortfolioManagerViewSet.normalize_attribute(found_attribute)
+                                processed_attributes[attribute_to_check] = updated_attribute
                         else:
-                            updated_attribute = normalize_attribute(found_attribute)
-                            processed_attributes[attribute_to_check] = updated_attribute
+                            processed_attributes[attribute_to_check] = 'Malformed attribute did not have #text field'
                     else:
-                        processed_attributes[attribute_to_check] = 'Malformed attribute did not have #text field'
-                else:
-                    pass  # nothing for now
+                        pass  # nothing for now
 
-        prop['PROCESSED'] = processed_attributes
+            prop['PROCESSED'] = processed_attributes
 
-    return JsonResponse({'status': 'success', 'properties': properties})
-
-
-DEBUG = False
+        return JsonResponse({'status': 'success', 'properties': properties})
 
 
 def log(s):
-    if DEBUG:
-        print s
+    print s
 
 
 def error(s):
