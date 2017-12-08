@@ -9,6 +9,7 @@ All rights reserved.  # NOQA
 """
 
 import json
+import logging
 import time
 import urllib
 
@@ -21,6 +22,8 @@ from rest_framework.viewsets import GenericViewSet
 
 from seed.models import PropertyState
 # from seed.utils.address import normalize_address_str
+
+_log = logging.getLogger(__name__)
 
 
 class PortfolioManagerViewSet(GenericViewSet):
@@ -86,7 +89,7 @@ class PortfolioManagerViewSet(GenericViewSet):
         content = pm.generate_and_download_template_report(template)
         try:
             content_object = xmltodict.parse(content)
-        except Exception:
+        except Exception:  # xmltodict doesn't specify a class of Exceptions, so I'm not sure what all to catch here
             return JsonResponse({'status': 'error', 'message': 'Malformed XML from template download'}, status=500)
         success = True
         if 'report' not in content_object:
@@ -134,8 +137,8 @@ class PortfolioManagerViewSet(GenericViewSet):
                     this_property_state = prop['state_province']
                     try:
                         seed_property_match = PropertyState.objects.get(
-                            address_line_1__iexact=this_property_address_one,  # This is normalized so I don't need iexact
-                            city__iexact=this_property_city,  # But I think I still need iexact on city/state right?
+                            address_line_1__iexact=this_property_address_one,
+                            city__iexact=this_property_city,
                             state__iexact=this_property_state
                         )
                         prop['MATCHED'] = 'Matched via address/city/state'
@@ -169,43 +172,35 @@ class PortfolioManagerViewSet(GenericViewSet):
         return JsonResponse({'status': 'success', 'properties': properties})
 
 
-def log(s):
-    print s
-
-
-def error(s):
-    raise Exception(s)
-
-
-# give username/password for PM
 class PortfolioManagerImport(object):
+
     def __init__(self, m_username, m_password):
+
         # store the original, unmodified versions -- DO NOT ENCODE THESE
         self.username = m_username
         self.password = m_password
-        log(
-            "Created PortfolioManagerManager:\n username: %s \n password: %s" %
-            (self.username, self.password)
-        )
         self.authenticated_headers = None
+        _log.debug("Created PortfolioManagerManager for username: %s" % self.username)
 
     def login_and_set_cookie_header(self):
+
         # First we need to log in to Portfolio Manager
         login_url = "https://portfoliomanager.energystar.gov/pm/j_spring_security_check"
         payload = {"j_username": self.username, "j_password": self.password}
         response = requests.post(login_url, data=payload)
-        if not response.status_code == 200:
-            error("Unsuccessful response from login attempt; aborting.  Check credentials.")
-        # TODO: This returns 200 even if the credentials are bad...
+
+        # This returns a 200 even if the credentials are bad, so I'm having to check some text in the response
+        if 'The username and/or password you entered is not correct. Please try again.' in response.content:
+            raise Exception("Unsuccessful response from login attempt; aborting.  Check credentials.")
 
         # Upon successful logging in, we should have received a cookie header that we can reuse later
         if 'Cookie' not in response.request.headers:
-            error("Could not find Cookie key in response headers; aborting.")
+            raise Exception("Could not find Cookie key in response headers; aborting.")
         cookie_header = response.request.headers['Cookie']
         if '=' not in cookie_header:
-            error("Malformed Cookie key in response headers; aborting.")
+            raise Exception("Malformed Cookie key in response headers; aborting.")
         cookie = cookie_header.split('=')[1]
-        log("Logged in and received cookie: " + cookie)
+        _log.debug("Logged in and received cookie: " + cookie)
 
         # Prepare the fully authenticated headers
         self.authenticated_headers = {
@@ -213,6 +208,8 @@ class PortfolioManagerImport(object):
         }
 
     def get_list_of_report_templates(self):
+
+        # login if needed
         if not self.authenticated_headers:
             self.login_and_set_cookie_header()
 
@@ -220,33 +217,35 @@ class PortfolioManagerImport(object):
         url = "https://portfoliomanager.energystar.gov/pm/reports/templateTableRows"
         response = requests.get(url, headers=self.authenticated_headers)
         if not response.status_code == 200:
-            error("Unsuccessful response from report template rows query; aborting.")
+            raise Exception("Unsuccessful response from report template rows query; aborting.")
         try:
             template_object = json.loads(response.text)
         except ValueError:
-            template_object = None  # to avoid static analysis error for uninitialized variable
-            error("Malformed JSON response from report template rows query; aborting.")
-        log("Received the following JSON return: " + json.dumps(template_object, indent=2))
+            raise Exception("Malformed JSON response from report template rows query; aborting.")
+        _log.debug("Received the following JSON return: " + json.dumps(template_object, indent=2))
 
         # We need to parse the list of report templates
         if 'rows' not in template_object:
-            error("Could not find rows key in template response; aborting.")
+            raise Exception("Could not find rows key in template response; aborting.")
         templates = template_object["rows"]
         for t in templates:
-            log("Found template,\n id=" + str(t["id"]) + "\n name=" + str(t["name"]))
+            _log.debug("Found template,\n id=" + str(t["id"]) + "\n name=" + str(t["name"]))
 
         return templates
 
     @staticmethod
     def get_template_by_name(templates, template_name):
+
         # Then we need to pick a single report template by name, eventually this is defined by the PM user
         matched_template = next((t for t in templates if t["name"] == template_name), None)
         if not matched_template:
-            error("Could not find a matching template for this name, try a different name")
-        log("Desired report name found, template info: " + json.dumps(matched_template, indent=2))
+            raise Exception("Could not find a matching template for this name, try a different name")
+        _log.debug("Desired report name found, template info: " + json.dumps(matched_template, indent=2))
         return matched_template
 
     def generate_and_download_template_report(self, matched_template):
+
+        # login if needed
         if not self.authenticated_headers:
             self.login_and_set_cookie_header()
 
@@ -255,8 +254,8 @@ class PortfolioManagerImport(object):
         generation_url = "https://portfoliomanager.energystar.gov/pm/reports/generateData/" + str(template_report_id)
         response = requests.post(generation_url, headers=self.authenticated_headers)
         if not response.status_code == 200:
-            error("Unsuccessful response from POST to trigger report generation; aborting.")
-        log("Triggered report generation,\n status code=" + str(
+            raise Exception("Unsuccessful response from POST to trigger report generation; aborting.")
+        _log.debug("Triggered report generation,\n status code=" + str(
             response.status_code) + "\n response headers=" + str(
             response.headers))
 
@@ -268,11 +267,11 @@ class PortfolioManagerImport(object):
             attempt_count += 1
             response = requests.get(url, headers=self.authenticated_headers)
             if not response.status_code == 200:
-                error("Unsuccessful response from GET trying to check status on generated report; aborting.")
+                raise Exception("Unsuccessful response from GET trying to check status on generated report; aborting.")
             template_objects = json.loads(response.text)["rows"]
             this_matched_template = next((t for t in template_objects if t["id"] == matched_template["id"]), None)
             if not this_matched_template:
-                error("Couldn't find a match for this report template id...odd at this point")
+                raise Exception("Couldn't find a match for this report template id...odd at this point")
             if this_matched_template["pending"] == 1:
                 time.sleep(2)
                 continue
@@ -280,9 +279,9 @@ class PortfolioManagerImport(object):
                 report_generation_complete = True
                 break
         if report_generation_complete:
-            log("Report appears to have been generated successfully (attempt_count=" + str(attempt_count) + ")")
+            _log.debug("Report appears to have been generated successfully (attempt_count=" + str(attempt_count) + ")")
         else:
-            error("Template report not generated successfully; aborting.")
+            raise Exception("Template report not generated successfully; aborting.")
 
         # Finally we can download the generated report
         template_report_name = urllib.quote(matched_template["name"]) + ".xml"
@@ -291,16 +290,5 @@ class PortfolioManagerImport(object):
         )
         response = requests.get(download_url, headers=self.authenticated_headers)
         if not response.status_code == 200:
-            error("Unsuccessful response from GET trying to download generated report; aborting.")
+            raise Exception("Unsuccessful response from GET trying to download generated report; aborting.")
         return response.content
-
-    def automated_test(self):
-        if not self.authenticated_headers:
-            self.login_and_set_cookie_header()
-        templates = self.get_list_of_report_templates()
-        matched_template = PortfolioManagerImport.get_template_by_name(templates, "SEED City Test Report")
-        template_data = self.generate_and_download_template_report(matched_template)
-        return template_data
-
-# check whether the report matches the last report
-# upload the report into seed if different
