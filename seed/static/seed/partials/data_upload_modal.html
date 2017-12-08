@@ -211,27 +211,21 @@
     <!-- Step 13: Portfolio Manager Data Import  -->
     <div class="data_upload_steps" ng-switch-when="13">
         <div class="row" style="padding-bottom:10px">
-            <label class="control-label col-lg-4 col-sm-4" for="inputPMEmail">Email</label>
-            <div class="col-lg-8 col-sm-8">
-                <input type="text" class="form-control" id="inputPMEmail" name="email" ng-model="pm_email" ng-init="pm_email='rdmitchell@lbl.gov'" sd-enter="console.log('What does sd-enter do?');" required>
-            </div>
-        </div>
-        <div class="row" style="padding-bottom:10px">
             <label class="control-label col-lg-4 col-sm-4" for="inputPMUsername">Username</label>
             <div class="col-lg-8 col-sm-8">
-                <input type="text" class="form-control" id="inputPMUsername" name="username" ng-model="pm_username" ng-init="pm_username='SEED_City_Test'" sd-enter="console.log('What does sd-enter do?');" required>
+                <input type="text" class="form-control" id="inputPMUsername" name="username" ng-model="pm_username" ng-init="pm_username='SEED_City_Test'" required>
             </div>
         </div>
         <div class="row" style="padding-bottom:10px">
             <label class="control-label col-lg-4 col-sm-4" for="inputPMPassword">Password</label>
             <div class="col-lg-8 col-sm-8">
-                <input type="password" class="form-control" id="inputPMPassword" name="password" ng-model="pm_password" sd-enter="console.log('What does sd-enter do?');" required>
+                <input type="password" class="form-control" id="inputPMPassword" name="password" ng-model="pm_password" required>
             </div>
         </div>
         <div class="row" style="padding-bottom:10px">
             <div class="col-lg-4 col-sm-4"></div>
             <div class="col-lg-8 col-sm-8">
-                <div class="btn btn-primary" style="display: block; font-weight: bold;" ng-click="get_pm_report_template_names(pm_email, pm_username, pm_password);">Get Report Templates</div>
+                <div class="btn btn-primary" style="display: block; font-weight: bold;" ng-click="get_pm_report_template_names(pm_username, pm_password);">Get Report Templates</div>
             </div>
         </div>
         <div class="row" style="padding-bottom:10px">
@@ -243,12 +237,13 @@
         <div class="row" style="padding-bottom:10px">
             <div class="col-lg-4 col-sm-4"></div>
             <div class="col-lg-8 col-sm-8">
-                <div class="btn btn-primary" style="display: block; font-weight: bold;" ng-click="get_pm_report(pm_email, pm_username, pm_password, pm_template);">Submit</div>
+                <div class="btn btn-primary" style="display: block; font-weight: bold;" ng-click="get_pm_report(pm_username, pm_password, pm_template);">Submit</div>
             </div>
         </div>
         <div class="row" style="padding-bottom:10px">
             <div class="col-lg-12 col-sm-12">
                 <table class="table table-striped" ng-hide="pm_props === undefined">
+                  <caption style="display: block; font-weight: bold;">Properties Retrieved and Match State</caption>
                   <tr>
                     <th>PM Property ID</th>
                     <th>PM Property Name</th>

@@ -20,7 +20,7 @@ from rest_framework.decorators import list_route
 from rest_framework.viewsets import GenericViewSet
 
 from seed.models import PropertyState
-from seed.utils.address import normalize_address_str
+# from seed.utils.address import normalize_address_str
 
 
 class PortfolioManagerViewSet(GenericViewSet):
@@ -61,52 +61,33 @@ class PortfolioManagerViewSet(GenericViewSet):
 
     @list_route(methods=['POST'])
     def template_list(self, request):
-        if 'email' not in request.data:
-            return JsonResponse('Invalid call to PM worker: missing email for PM account')
         if 'username' not in request.data:
             return JsonResponse('Invalid call to PM worker: missing username for PM account')
         if 'password' not in request.data:
             return JsonResponse('Invalid call to PM worker: missing password for PM account')
-        email = request.data['email']
         username = request.data['username']
         password = request.data['password']
-        pm = PortfolioManagerImport(email, username, password)
+        pm = PortfolioManagerImport(username, password)
         possible_templates = pm.get_list_of_report_templates()
-        return JsonResponse({'status': 'success', 'templates': possible_templates})  # TODO: Could just return ['name']s...
-        # print("  Index  |  Template Report Name  ")
-        # print("---------|------------------------")
-        # for i, t in enumerate(possible_templates):
-        #     print("  %s  |  %s  " % (str(i).ljust(5), t['name']))
-        # selection = raw_input("\nEnter an Index to download the report: ")
-        # try:
-        #     s_id = int(selection)
-        # except ValueError:
-        #     raise Exception("Invalid Selection; aborting.")
-        # if 0 <= s_id < len(possible_templates):
-        #     selected_template = possible_templates[s_id]
-        # else:
-        #     raise Exception("Invalid Selection; aborting.")
+        return JsonResponse({'status': 'success', 'templates': possible_templates})
 
     @list_route(methods=['POST'])
     def report(self, request):
-        if 'email' not in request.data:
-            return JsonResponse('Invalid call to PM worker: missing email for PM account')
         if 'username' not in request.data:
             return JsonResponse('Invalid call to PM worker: missing username for PM account')
         if 'password' not in request.data:
             return JsonResponse('Invalid call to PM worker: missing password for PM account')
         if 'template' not in request.data:
             return JsonResponse('Invalid call to PM worker: missing template for PM account')
-        email = request.data['email']
         username = request.data['username']
         password = request.data['password']
         template = request.data['template']
-        pm = PortfolioManagerImport(email, username, password)
+        pm = PortfolioManagerImport(username, password)
         content = pm.generate_and_download_template_report(template)
         try:
             content_object = xmltodict.parse(content)
         except Exception:
-            return JsonResponse({'status': 'error', 'message': 'Malformed XML response from template download'}, status=500)
+            return JsonResponse({'status': 'error', 'message': 'Malformed XML from template download'}, status=500)
         success = True
         if 'report' not in content_object:
             success = False
@@ -116,7 +97,7 @@ class PortfolioManagerViewSet(GenericViewSet):
             success = False
         if not success:
             return JsonResponse({'status': 'error',
-                                 'message': 'Template XML response was properly formatted but was missing expected keys.'},
+                                 'message': 'Template XML response was properly formatted but missing expected keys.'},
                                 status=500)
         properties = content_object['report']['informationAndMetrics']['row']
 
@@ -198,14 +179,13 @@ def error(s):
 
 # give username/password for PM
 class PortfolioManagerImport(object):
-    def __init__(self, m_email, m_username, m_password):
+    def __init__(self, m_username, m_password):
         # store the original, unmodified versions -- DO NOT ENCODE THESE
-        self.email = m_email
         self.username = m_username
         self.password = m_password
         log(
-            "Created PortfolioManagerManager:\n email: %s \n username: %s \n password: %s" %
-            (self.email, self.username, self.password)
+            "Created PortfolioManagerManager:\n username: %s \n password: %s" %
+            (self.username, self.password)
         )
         self.authenticated_headers = None
 
