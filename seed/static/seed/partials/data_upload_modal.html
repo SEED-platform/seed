@@ -23,7 +23,7 @@
         <div class="form-group" ng-class="{'has-error': dataset.alert, 'has-feedback': dataset.alert}">
             <label class="control-label col-lg-3 col-sm-3" for="inputDataUploadName" translate>Data Set Name</label>
             <div class="col-lg-8 col-sm-8">
-                <input type="text" class="form-control" id="inputDataUploadName" ng-model="dataset.name" placeholder="{$ 'your data set name' | translate $}" sd-enter="create_dataset(dataset.name)" required>
+                <input type="text" class="form-control" id="inputDataUploadName" ng-model="dataset.name" placeholder="{$:: 'your data set name' | translate $}" sd-enter="create_dataset(dataset.name)" required>
             </div>
         </div>
     </div>
@@ -46,10 +46,10 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-sm-8 col-sm-offset-2" sd-uploader sourcetype="Assessed Raw" sourceprog="" sourcever="" importrecord="dataset.id" buttontext="{$ 'Upload a Spreadsheet' | translate $}" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" ng-disabled="!selectedCycle" style="padding-top: 20px;"></div>
+            <div class="col-sm-8 col-sm-offset-2" sd-uploader sourcetype="Assessed Raw" sourceprog="" sourcever="" importrecord="dataset.id" buttontext="{$:: 'Upload a Spreadsheet' | translate $}" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" ng-disabled="!selectedCycle" style="padding-top: 20px;"></div>
         </div>
         <div class="row">
-            <div class="col-sm-8 col-sm-offset-2" sd-uploader sourcetype="Assessed Raw" sourceprog="PortfolioManager" sourcever="1.0" importrecord="dataset.id" buttontext="{$ 'Upload Portfolio Manager Data' | translate $}" eventfunc="uploaderfunc(message, file, progress)" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress"></div>
+            <div class="col-sm-8 col-sm-offset-2" sd-uploader sourcetype="Assessed Raw" sourceprog="PortfolioManager" sourcever="1.0" importrecord="dataset.id" buttontext="{$:: 'Upload Portfolio Manager Data' | translate $}" eventfunc="uploaderfunc(message, file, progress)" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress"></div>
         </div>
         <div class="row">
             <div class="col-sm-9 col-sm-offset-2" ng-hide="uploader.in_progress">
@@ -61,10 +61,10 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-sm-8 col-sm-offset-2 green_button" sd-uploader sourcetype="Green Button Raw" sourceprog="" sourcever="" importrecord="dataset.id" buttontext="{$ 'Upload Green Button Data' | translate $}" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" ng-disabled="true" style="padding-top: 10px;"></div>
+            <div class="col-sm-8 col-sm-offset-2 green_button" sd-uploader sourcetype="Green Button Raw" sourceprog="" sourcever="" importrecord="dataset.id" buttontext="{$:: 'Upload Green Button Data' | translate $}" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" ng-disabled="true" style="padding-top: 10px;"></div>
         </div>
         <div class="progress_bar_container" ng-show="uploader.in_progress">
-            <div class="progress_bar_copy_top" 
+            <div class="progress_bar_copy_top"
                  translate="UPLOADING_PROGRESS"
                  translate-values="{ dataset_filename: dataset.filename }"></div>
 
@@ -91,9 +91,9 @@
         <div class="row">
             <div class="alert alert-danger" ng-show="uploader.invalid_extension_alert" translate="INVALID_EXTENSION_ALERT"></div>
             <div class="form-group col-sm-12">
-                <div sd-uploader sourcetype="Portfolio Raw" importrecord="dataset.id" buttontext="{$ 'Upload your energy data file(s)' | translate $}" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress"></div>
+                <div sd-uploader sourcetype="Portfolio Raw" importrecord="dataset.id" buttontext="{$:: 'Upload your energy data file(s)' | translate $}" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress"></div>
                 <div class="progress_bar_container" ng-show="uploader.in_progress">
-                    <div class="progress_bar_copy_top" 
+                    <div class="progress_bar_copy_top"
                          translate="UPLOADING_PROGRESS"
                          translate-values="{ dataset_filename: dataset.filename }"></div>
 
@@ -125,10 +125,10 @@
         <div class="row">
             <div class="form-group col-sm-12">
                 <div class="progress_bar_container">
-                    <div class="progress_bar_copy_top">{$ 'Finding inventory matches for' | translate $}
+                    <div class="progress_bar_copy_top">{$:: 'Finding inventory matches for' | translate $}
                         <strong>{$ dataset.filename $}</strong></div>
                     <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
-                    <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$ 'Complete' | translate $}</div>
+                    <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $}</div>
                 </div>
             </div>
         </div>
@@ -138,15 +138,15 @@
         <div class="row">
             <div class="alert alert-success">
                 <ul>
-                    <li>{$ 'Total rows in the import file' | translate $}: {$ import_file_records|number:0 $}</li>
-                    <li ng-if="unmatched_properties">{$ 'New properties' | translate $}: {$ unmatched_properties|number:0 $}</li>
-                    <li ng-if="unmatched_taxlots">{$ 'New tax lots' | translate $}: {$ unmatched_taxlots|number:0 $}</li>
-                    <li ng-if="matched_properties">{$ 'Merged properties' | translate $}: {$ matched_properties|number:0 $}</li>
-                    <li ng-if="matched_taxlots">{$ 'Merged tax lots' | translate $}: {$ matched_taxlots|number:0 $}</li>
-                    <li ng-if="duplicate_property_states">{$ 'Ignored property duplicates within the import file' | translate $}: {$ duplicate_property_states|number:0 $}</li>
-                    <li ng-if="duplicate_tax_lot_states">{$ 'Ignored tax lot duplicates within the import file' | translate $}: {$ duplicate_tax_lot_states|number:0 $}</li>
-                    <li ng-if="duplicates_of_existing_property_states">{$ 'Ignored duplicates of existing properties' | translate $}: {$ duplicates_of_existing_property_states|number:0 $}</li>
-                    <li ng-if="duplicates_of_existing_taxlot_states">{$ 'Ignored duplicates of existing tax lots' | translate $}: {$ duplicates_of_existing_taxlot_states|number:0 $}</li>
+                    <li>{$:: 'Total rows in the import file' | translate $}: {$ import_file_records|number:0 $}</li>
+                    <li ng-if="unmatched_properties">{$:: 'New properties' | translate $}: {$ unmatched_properties|number:0 $}</li>
+                    <li ng-if="unmatched_taxlots">{$:: 'New tax lots' | translate $}: {$ unmatched_taxlots|number:0 $}</li>
+                    <li ng-if="matched_properties">{$:: 'Merged properties' | translate $}: {$ matched_properties|number:0 $}</li>
+                    <li ng-if="matched_taxlots">{$:: 'Merged tax lots' | translate $}: {$ matched_taxlots|number:0 $}</li>
+                    <li ng-if="duplicate_property_states">{$:: 'Ignored property duplicates within the import file' | translate $}: {$ duplicate_property_states|number:0 $}</li>
+                    <li ng-if="duplicate_tax_lot_states">{$:: 'Ignored tax lot duplicates within the import file' | translate $}: {$ duplicate_tax_lot_states|number:0 $}</li>
+                    <li ng-if="duplicates_of_existing_property_states">{$:: 'Ignored duplicates of existing properties' | translate $}: {$ duplicates_of_existing_property_states|number:0 $}</li>
+                    <li ng-if="duplicates_of_existing_taxlot_states">{$:: 'Ignored duplicates of existing tax lots' | translate $}: {$ duplicates_of_existing_taxlot_states|number:0 $}</li>
                 </ul>
             </div>
         </div>
@@ -162,15 +162,15 @@
         <div class="row">
             <div class="alert alert-success">
                 <ul>
-                    <li>{$ 'Total rows in the import file' | translate $}: {$ import_file_records|number:0 $}</li>
-                    <li ng-if="unmatched_properties">{$ 'New properties' | translate $}: {$ unmatched_properties|number:0 $}</li>
-                    <li ng-if="unmatched_taxlots">{$ 'New tax lots' | translate $}: {$ unmatched_taxlots|number:0 $}</li>
-                    <li ng-if="matched_properties">{$ 'Merged properties' | translate $}: {$ matched_properties|number:0 $}</li>
-                    <li ng-if="matched_taxlots">{$ 'Merged tax lots' | translate $}: {$ matched_taxlots|number:0 $}</li>
-                    <li ng-if="duplicate_property_states">{$ 'Ignored property duplicates within the import file' | translate $}: {$ duplicate_property_states|number:0 $}</li>
-                    <li ng-if="duplicate_tax_lot_states">{$ 'Ignored tax lot duplicates within the import file' | translate $}: {$ duplicate_tax_lot_states|number:0 $}</li>
-                    <li ng-if="duplicates_of_existing_property_states">{$ 'Ignored duplicates of existing properties' | translate $}: {$ duplicates_of_existing_property_states|number:0 $}</li>
-                    <li ng-if="duplicates_of_existing_taxlot_states">{$ 'Ignored duplicates of existing tax lots' | translate $}: {$ duplicates_of_existing_taxlot_states|number:0 $}</li>
+                    <li>{$:: 'Total rows in the import file' | translate $}: {$ import_file_records|number:0 $}</li>
+                    <li ng-if="unmatched_properties">{$:: 'New properties' | translate $}: {$ unmatched_properties|number:0 $}</li>
+                    <li ng-if="unmatched_taxlots">{$:: 'New tax lots' | translate $}: {$ unmatched_taxlots|number:0 $}</li>
+                    <li ng-if="matched_properties">{$:: 'Merged properties' | translate $}: {$ matched_properties|number:0 $}</li>
+                    <li ng-if="matched_taxlots">{$:: 'Merged tax lots' | translate $}: {$ matched_taxlots|number:0 $}</li>
+                    <li ng-if="duplicate_property_states">{$:: 'Ignored property duplicates within the import file' | translate $}: {$ duplicate_property_states|number:0 $}</li>
+                    <li ng-if="duplicate_tax_lot_states">{$:: 'Ignored tax lot duplicates within the import file' | translate $}: {$ duplicate_tax_lot_states|number:0 $}</li>
+                    <li ng-if="duplicates_of_existing_property_states">{$:: 'Ignored duplicates of existing properties' | translate $}: {$ duplicates_of_existing_property_states|number:0 $}</li>
+                    <li ng-if="duplicates_of_existing_taxlot_states">{$:: 'Ignored duplicates of existing tax lots' | translate $}: {$ duplicates_of_existing_taxlot_states|number:0 $}</li>
                 </ul>
             </div>
             <div class="alert alert-{$ step_10_style $}">

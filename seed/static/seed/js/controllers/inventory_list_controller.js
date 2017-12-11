@@ -49,15 +49,7 @@ angular.module('BE.seed.controller.inventory_list', [])
 
       // set up i18n
       //
-      $scope.columns = _.chain(inventory.columns)
-        .filter('visible')
-        .map(function (o) {
-          // ui-grid will apply whatever filter
-          // we supply ... in this case angular-translate's
-          o.headerCellFilter = 'translate';
-          return o;
-        })
-        .value();
+      $scope.columns = _.filter(inventory.columns, 'visible');
       // let angular-translate be in charge ... need
       // to feed the language-only part of its $translate setting into
       // ui-grid's i18nService
@@ -65,25 +57,6 @@ angular.module('BE.seed.controller.inventory_list', [])
         return _.first(languageTag.split('_'));
       };
       i18nService.setCurrentLang(stripRegion($translate.use()));
-
-      $scope.translations = {};
-
-      var needed_translations = [
-        'Property',
-        'Properties',
-        'Properties List',
-        'Property Detail',
-        'Tax Lot',
-        'Tax Lots',
-        'Tax Lots List',
-        'Tax Lot Detail'
-      ];
-
-      $translate(needed_translations).then(function succeeded (translations) {
-        $scope.translations = translations;
-      }, function failed (translationIds) {
-        $scope.translations = translationIds;
-      });
 
       $scope.total = $scope.pagination.total;
       $scope.number_per_page = 999999999;
@@ -241,6 +214,7 @@ angular.module('BE.seed.controller.inventory_list', [])
 
       // Columns
       var defaults = {
+        headerCellFilter: 'translate',
         minWidth: 75,
         width: 150
         //type: 'string'

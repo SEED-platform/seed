@@ -57,19 +57,6 @@ angular.module('BE.seed.controller.mapping', [])
       // var original_columns = angular.copy(db_field_columns.concat(extra_data_columns));
       $scope.flippers = flippers; // make available in partials/ng-if
 
-      $scope.translations = {};
-
-      var needed_translations = [
-        'Property',
-        'Tax Lot'
-      ];
-
-      $translate(needed_translations).then(function succeeded (translations) {
-        $scope.translations = translations;
-      }, function failed (translationIds) {
-        $scope.translations = translationIds;
-      });
-
       // let angular-translate be in charge ... need
       // to feed the language-only part of its $translate setting into
       // ui-grid's i18nService
@@ -387,6 +374,7 @@ angular.module('BE.seed.controller.mapping', [])
 
           var defaults = {
             enableHiding: false,
+            headerCellFilter: 'translate',
             minWidth: 75,
             width: 150
           };
@@ -674,7 +662,8 @@ angular.module('BE.seed.controller.mapping', [])
             },
             importFileId: function () {
               return $scope.import_file.id;
-            }
+            },
+            orgId: _.constant(user_service.get_organization().id)
           }
         });
       };

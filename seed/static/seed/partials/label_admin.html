@@ -1,7 +1,7 @@
 <div class="page_header_container">
     <div class="page_header">
         <div class="left page_action_container">
-            <a ui-sref="organizations" class="page_action"><i class="fa fa-chevron-left"></i> {$ 'Organizations' | translate $}</a>
+            <a ui-sref="organizations" class="page_action"><i class="fa fa-chevron-left"></i> {$:: 'Organizations' | translate $}</a>
         </div>
         <div class="page_title">
             <h1>{$:: org.name $}</h1>
@@ -20,7 +20,7 @@
             <div class="form-group" ng-class="{'has-error': newLabelForm.name.$invalid && newLabelForm.name.$dirty }">
                 <label class="control-label sectionLabel" style="padding-right:20px;" translate>Create new label</label>
                 <div class="input-group" style="padding-right:20px;">
-                    <input type="text" name="name" class="form-control" ng-minlength="1" ng-maxlength="100" style="min-width:300px;" ng-model="new_label.name" placeholder="{$ 'Label Name' | translate $}" sd-check-label-exists="labels" required>
+                    <input type="text" name="name" class="form-control" ng-minlength="1" ng-maxlength="100" style="min-width:300px;" ng-model="new_label.name" placeholder="{$:: 'Label Name' | translate $}" sd-check-label-exists="labels" required>
 
                     <div uib-dropdown class="input-group-btn">
                         <button type="button" class="btn btn-{$ new_label.label $}" data-toggle="dropdown">
@@ -45,7 +45,7 @@
 
 
     <div style="padding-left:10px;" class="sectionLabel">
-        <p><strong><i class="fa fa-labels"></i>{$ 'Existing Labels' | translate $}</strong></p>
+        <p><strong><i class="fa fa-labels"></i>{$:: 'Existing Labels' | translate $}</strong></p>
     </div>
 
     <div class="table_list_container">
@@ -74,7 +74,7 @@
                 <td style="border:0;">
                     <!-- editable status (select-local) -->
                     <span editable-select="label.color" e-name="color" e-form="rowform" ng-show="rowform.$visible" class="label label-{$:: label.label $}" e-ng-keypress="onLabelNameKeypress($event, rowform)" e-ng-options="s.color as s.uiLabel for s in available_colors">
-                        {$:: (label.color | translate) $}
+                        {$:: label.color | translate $}
                     </span>
                 </td>
 

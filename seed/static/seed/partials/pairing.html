@@ -1,7 +1,7 @@
 <div class="page_header_container">
     <div class="page_header">
         <div class="left page_action_container">
-            <a class="page_action" ui-sref="dataset_list"><i class="fa fa-chevron-left"></i> {$ 'Data Sets' | translate $}</a>
+            <a class="page_action" ui-sref="dataset_list"><i class="fa fa-chevron-left"></i> {$:: 'Data Sets' | translate $}</a>
         </div>
         <div class="page_title">
             <h1 ng-if="inventory_type === 'properties'" translate>Pair Properties to Tax Lots</h1>
@@ -63,7 +63,7 @@
                 <div class="pairing-body left-scroll" dragula='"drag-pairing-row"'>
                   <div class="pairing-row grab-pairing-left"
                        ng-repeat="row in newLeftData | orderBy : getLeftSortColumn() : leftReverseSort : naturalSortComparator | filter:leftSearch"
-                       title="{$ 'Drag from here' | translate $}"
+                       title="{$:: 'Drag from here' | translate $}"
                        ng-click="doubleClick('left',$event)">
                         <div leftParentId="{$ getLeftParentId(row) $}" ng-repeat="col in ::leftColumns track by $index">{$:: row[col.name] $}</div>
                         <div class="paired-column">{$ leftPaired(row) || '' $}</div>
@@ -93,7 +93,7 @@
                 </div>
 
                 <div class="pairing-body right-scroll" dragula='"drag-pairing-row"'>
-                    <div class="right-pairing-container" ng-repeat="row in rightData | orderBy : getRightSortColumn() : rightReverseSort : naturalSortComparator | filter:rightSearch" title="{$ 'Drag to here' | translate $}">
+                    <div class="right-pairing-container" ng-repeat="row in rightData | orderBy : getRightSortColumn() : rightReverseSort : naturalSortComparator | filter:rightSearch" title="{$:: 'Drag to here' | translate $}">
                         <div class="right-pairing-row">
                             <div ng-repeat="col in ::rightColumns track by $index">{$:: row[col.name] $}</div>
                         </div>

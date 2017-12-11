@@ -1,7 +1,7 @@
 <div class="page_header_container">
     <div class="page_header">
         <div class="left page_action_container">
-            <a ui-sref="organizations" class="page_action"><i class="fa fa-chevron-left"></i> {$ 'Organizations' | translate $}</a>
+            <a ui-sref="organizations" class="page_action"><i class="fa fa-chevron-left"></i> {$:: 'Organizations' | translate $}</a>
         </div>
         <div class="page_title">
             <h1>{$:: org.name $}</h1>
@@ -19,11 +19,11 @@
             <div class="form-group" ng-class="{'has-error': newCycleForm.name.$invalid && newCycleForm.name.$dirty }">
                 <label class="control-label sectionLabel" style="padding-right:20px;" translate>Create new cycle</label>
                 <div class="input-group" style="padding-right:20px;">
-                    <input type="text" name="name" class="form-control" ng-minlength="1" ng-maxlength="100" style="min-width:300px;" ng-model="new_cycle.name" placeholder="{$ 'Cycle Name' | translate $}" sd-check-cycle-exists="cycles" required>
+                    <input type="text" name="name" class="form-control" ng-minlength="1" ng-maxlength="100" style="min-width:300px;" ng-model="new_cycle.name" placeholder="{$:: 'Cycle Name' | translate $}" sd-check-cycle-exists="cycles" required>
 
                 </div>
                 <div class="form-group" ng-class="{'has-error' : invalidDates }">
-                    <label for="from-date">{$ 'From date' | translate $}:</label>
+                    <label for="from-date">{$:: 'From date' | translate $}:</label>
 
                     <div class="input-group date-input" style="padding-right:20px;">
                         <input id="from-date" type="text" class="form-control" uib-datepicker-popup="MM-dd-yyyy" is-open="startDatePickerOpen" ng-model="new_cycle.start" uib-tooltip="'From Date' must be before 'To Date'" tooltip-placement="top" tooltip-trigger="mouseenter" tooltip-enable="invalidDates" ng-required="true">
@@ -33,7 +33,7 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="to-date">{$ 'To date' | translate $}:</label>
+                    <label for="to-date">{$:: 'To date' | translate $}:</label>
                     <div class="input-group date-input" style="padding-right:20px;">
                         <input id="to-date" type="text" class="form-control" uib-datepicker-popup="MM-dd-yyyy" is-open="endDatePickerOpen" ng-model="new_cycle.end" uib-tooltip="'From Date' must be before 'To Date'" tooltip-placement="top" tooltip-trigger="mouseenter" tooltip-enable="invalidDates" ng-required="true">
                         <span class="input-group-btn">

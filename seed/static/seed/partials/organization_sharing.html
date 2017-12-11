@@ -1,7 +1,7 @@
 <div class="page_header_container">
     <div class="page_header">
         <div class="left page_action_container">
-            <a ui-sref="organizations" class="page_action"><i class="fa fa-chevron-left"></i> {$ 'Organizations' | translate $}</a>
+            <a ui-sref="organizations" class="page_action"><i class="fa fa-chevron-left"></i> {$:: 'Organizations' | translate $}</a>
         </div>
         <div class="page_title">
             <h1>{$:: org.name $}</h1>
@@ -17,10 +17,10 @@
     <div class="section_header_container">
         <div class="section_header has_no_padding fixed_height_short">
             <div class="section_action_container left">
-                <h2><i class="fa fa-share-square-o"></i> {$ 'Sharing Your Data' | translate $}</h2>
+                <h2><i class="fa fa-share-square-o"></i> {$:: 'Sharing Your Data' | translate $}</h2>
             </div>
             <div class="section_action_container right section_action_btn">
-                <button type="button" class="pull-right btn btn-primary" ng-click="save_settings()">{$ 'Save Changes' | translate $} <i class="fa fa-check" ng-show="settings_updated"></i></button>
+                <button type="button" class="pull-right btn btn-primary" ng-click="save_settings()">{$:: 'Save Changes' | translate $} <i class="fa fa-check" ng-show="settings_updated"></i></button>
             </div>
         </div>
     </div>
@@ -52,7 +52,7 @@
                               <input type="text"
                                      class="form-control input-sm"
                                      ng-model="filter_params.title"
-                                     placeholder="{$ 'Search field name' | translate $}"
+                                     placeholder="{$:: 'Search field name' | translate $}"
                                      ng-class="{active: filter_params.title.length > 0}">
                             </th>
                         </tr>
@@ -84,7 +84,7 @@
                 <form class="form-horizontal" role="form">
                     <div class="form-group">
                         <div class="col-sm-2">
-                            <input type="number" class="form-control" id="editQueryThreshold" placeholder="{$ 'Count #' | translate $}" ng-model="org.query_threshold" min="0">
+                            <input type="number" class="form-control" id="editQueryThreshold" placeholder="{$:: 'Count #' | translate $}" ng-model="org.query_threshold" min="0">
                         </div>
                     </div>
                 </form>
@@ -92,7 +92,7 @@
         </div>
         <div class="section_content_container">
             <div class="section_content with_padding">
-                <button type="button" class="pull-right btn btn-primary" ng-click="save_settings()">{$ 'Save Changes' | translate $} <i class="fa fa-check" ng-show="settings_updated"></i></button>
+                <button type="button" class="pull-right btn btn-primary" ng-click="save_settings()">{$:: 'Save Changes' | translate $} <i class="fa fa-check" ng-show="settings_updated"></i></button>
             </div>
         </div>
     </div>

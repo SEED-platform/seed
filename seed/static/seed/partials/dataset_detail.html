@@ -1,7 +1,7 @@
 <div class="page_header_container">
     <div class="page_header">
         <div class="left page_action_container">
-            <a class="page_action" ui-sref="dataset_list"><i class="fa fa-chevron-left"></i> {$ 'Data Sets' | translate $}</a>
+            <a class="page_action" ui-sref="dataset_list"><i class="fa fa-chevron-left"></i> {$:: 'Data Sets' | translate $}</a>
         </div>
         <div class="page_title">
             <h1>{$:: dataset.name $}</h1>
@@ -38,9 +38,9 @@
                                 <td>{$:: f.created | date: 'MM/dd/yyyy hh:mm:ss a' $}</td>
                                 <td class="is_aligned_right">{$:: f.num_rows || 0 $}</td>
                                 <td>{$:: getCycleName(f.cycle) $}</td>
-                                <td><a id="data-mapping-{$:: $index $}" role="button" class="btn btn-sm btn-primary" ui-sref="mapping(::{importfile_id: f.id})" ng-disabled="::!f.num_rows">{$:: f.number_of_mappings $} {$ 'Data Mapping' | translate $}</a></td>
-                                <td><a id="data-matching-{$:: $index $}" role="button" class="btn btn-sm btn-primary" ui-sref="matching_list(::{importfile_id: f.id, inventory_type: 'properties'})" ng-disabled="::!f.num_rows || !f.mapping_done || getCycleName(f.cycle) === undefined">{$:: f.number_of_matchings $} {$ 'Data Matching' | translate $}</a></td>
-                                <td><a id="data-pairing-{$:: $index $}" role="button" class="btn btn-sm btn-primary" ui-sref="pairing(::{importfile_id: f.id, inventory_type: 'properties'})" ng-disabled="::!f.num_rows || !f.mapping_done || !f.matching_done || getCycleName(f.cycle) === undefined">{$:: f.number_of_pairings $} {$ 'Data Pairing' | translate $}</a></td>
+                                <td><a id="data-mapping-{$:: $index $}" role="button" class="btn btn-sm btn-primary" ui-sref="mapping(::{importfile_id: f.id})" ng-disabled="::!f.num_rows">{$:: f.number_of_mappings $} {$:: 'Data Mapping' | translate $}</a></td>
+                                <td><a id="data-matching-{$:: $index $}" role="button" class="btn btn-sm btn-primary" ui-sref="matching_list(::{importfile_id: f.id, inventory_type: 'properties'})" ng-disabled="::!f.num_rows || !f.mapping_done || getCycleName(f.cycle) === undefined">{$:: f.number_of_matchings $} {$:: 'Data Matching' | translate $}</a></td>
+                                <td><a id="data-pairing-{$:: $index $}" role="button" class="btn btn-sm btn-primary" ui-sref="pairing(::{importfile_id: f.id, inventory_type: 'properties'})" ng-disabled="::!f.num_rows || !f.mapping_done || !f.matching_done || getCycleName(f.cycle) === undefined">{$:: f.number_of_pairings $} {$:: 'Data Pairing' | translate $}</a></td>
                             </tr>
                         </tbody>
                     </table>

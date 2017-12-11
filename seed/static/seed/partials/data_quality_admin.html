@@ -1,7 +1,7 @@
 <div class="page_header_container">
     <div class="page_header">
         <div class="left page_action_container">
-            <a ui-sref="organizations" class="page_action"><i class="fa fa-chevron-left"></i> {$ 'Organizations' | translate $}</a>
+            <a ui-sref="organizations" class="page_action"><i class="fa fa-chevron-left"></i> {$:: 'Organizations' | translate $}</a>
         </div>
         <div class="page_title">
             <h1>{$:: org.name $}</h1>
@@ -19,13 +19,13 @@
                 <h2><i class="fa fa-flag"></i> <span translate>Data Quality</span></h2>
             </div>
             <div class="section_action_container right_40 section_action_btn pull-right">
-                <button type="button" class="btn btn-danger" ng-click="restore_defaults()">{$ 'Restore Default Rules' | translate $}
+                <button type="button" class="btn btn-danger" ng-click="restore_defaults()">{$:: 'Restore Default Rules' | translate $}
                     <i class="fa fa-check" ng-show="defaults_restored"></i>
                 </button>
-                <button type="button" class="btn btn-danger" ng-click="reset_all_rules()">{$ 'Reset All Rules' | translate $}
+                <button type="button" class="btn btn-danger" ng-click="reset_all_rules()">{$:: 'Reset All Rules' | translate $}
                     <i class="fa fa-check" ng-show="rules_reset"></i>
                 </button>
-                <button type="button" class="btn btn-primary" ng-click="save_settings()">{$ 'Save Changes' | translate $}
+                <button type="button" class="btn btn-primary" ng-click="save_settings()">{$:: 'Save Changes' | translate $}
                     <i class="fa fa-check" ng-show="rules_updated"></i>
                 </button>
             </div>
@@ -38,10 +38,10 @@
             <button class="btn btn-info btn-sm" style="margin-bottom: 15px;" ng-click="create_new_rule()" translate>Create a new rule</button>
             <div class="data-quality-tab-container">
                 <ul class="nav nav-tabs" style="margin-bottom:1px;">
-                    <li ui-sref-active="active" heading="{$ 'View by Property' | translate $}">
+                    <li ui-sref-active="active" heading="{$:: 'View by Property' | translate $}">
                         <a ui-sref="organization_data_quality(::{organization_id: org.id, inventory_type: 'properties'})" translate>View by Property</a>
                     </li>
-                    <li ui-sref-active="active" heading="{$ 'View by Tax Lot' | translate $}">
+                    <li ui-sref-active="active" heading="{$:: 'View by Tax Lot' | translate $}">
                         <a ui-sref="organization_data_quality(::{organization_id: org.id, inventory_type: 'taxlots'})" translate>View by Tax Lot</a>
                     </li>
                 </ul>
@@ -83,14 +83,14 @@
                                 <input type="checkbox" ng-model="rule.not_null" class="no-click" ng-change="rule.rule_type = 1">
                             </td>
                             <td ng-if="rule.data_type === 'string'" colspan="2">
-                                <input class="form-control input-sm" type="text" maxlength="200" ng-model="rule.text_match" ng-change="rule.rule_type = 1" placeholder="{$ '(field must contain this text)' | translate $}">
+                                <input class="form-control input-sm" type="text" maxlength="200" ng-model="rule.text_match" ng-change="rule.rule_type = 1" placeholder="{$:: '(field must contain this text)' | translate $}">
                             </td>
                             <td ng-if="rule.data_type !== 'string'">
-                                <input class="form-control input-sm" type="number" ng-model="rule.min" ng-change="rule.rule_type = 1" ng-if="_.includes([null, 'number', 'year', 'area', 'eui'], rule.data_type)" placeholder="{$ '(no minimum)' | translate $}">
+                                <input class="form-control input-sm" type="number" ng-model="rule.min" ng-change="rule.rule_type = 1" ng-if="_.includes([null, 'number', 'year', 'area', 'eui'], rule.data_type)" placeholder="{$:: '(no minimum)' | translate $}">
                                 <input class="form-control input-sm" type="date" ng-model="rule.min" ng-change="rule.rule_type = 1" ng-if="rule.data_type === 'date'">
                             </td>
                             <td ng-if="rule.data_type !== 'string'">
-                                <input class="form-control input-sm" type="number" ng-model="rule.max" ng-change="rule.rule_type = 1" ng-if="rule.data_type !== 'date'" placeholder="{$ '(no maximum)' | translate $}">
+                                <input class="form-control input-sm" type="number" ng-model="rule.max" ng-change="rule.rule_type = 1" ng-if="rule.data_type !== 'date'" placeholder="{$:: '(no maximum)' | translate $}">
                                 <input class="form-control input-sm" type="date" ng-model="rule.max" ng-change="rule.rule_type = 1" ng-if="rule.data_type === 'date'">
                             </td>
                             <td>
@@ -132,13 +132,13 @@
         </div>
         <div class="section_content_container">
             <div class="section_content with_padding pull-right" style="padding-bottom: 15px;">
-                <button type="button" class="btn btn-danger" ng-click="restore_defaults()">{$ 'Restore Default Rules' | translate $}
+                <button type="button" class="btn btn-danger" ng-click="restore_defaults()">{$:: 'Restore Default Rules' | translate $}
                     <i class="fa fa-check" ng-show="defaults_restored"></i>
                 </button>
-                <button type="button" class="btn btn-danger" ng-click="reset_all_rules()">{$ 'Reset All Rules' | translate $}
+                <button type="button" class="btn btn-danger" ng-click="reset_all_rules()">{$:: 'Reset All Rules' | translate $}
                     <i class="fa fa-check" ng-show="rules_reset"></i>
                 </button>
-                <button type="button" class="btn btn-primary" ng-click="save_settings()">{$ 'Save Changes' | translate $}
+                <button type="button" class="btn btn-primary" ng-click="save_settings()">{$:: 'Save Changes' | translate $}
                     <i class="fa fa-check" ng-show="rules_updated"></i>
                 </button>
             </div>

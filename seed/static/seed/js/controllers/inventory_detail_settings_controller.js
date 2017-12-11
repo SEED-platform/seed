@@ -18,15 +18,7 @@ angular.module('BE.seed.controller.inventory_detail_settings', [])
       $scope.translations = {};
 
       var needed_translations = [
-        'LIST_GUIDANCE_PROPERTIES_PIN',
-        'LIST_GUIDANCE_TAXLOTS_NO_PIN',
-        'Properties',
-        'Property Detail Settings',
-        'Property Detail',
-        'Reset Defaults',
-        'Tax Lot Detail Settings',
-        'Tax Lot Detail',
-        'Tax Lots'
+        'Reset Defaults'
       ];
 
       $translate(needed_translations).then(function succeeded (translations) {

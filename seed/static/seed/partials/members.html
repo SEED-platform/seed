@@ -1,7 +1,7 @@
 <div class="page_header_container">
     <div class="page_header">
         <div class="left page_action_container">
-            <a ui-sref="organizations" class="page_action"><i class="fa fa-chevron-left"></i> {$ 'Organizations' | translate $}</a>
+            <a ui-sref="organizations" class="page_action"><i class="fa fa-chevron-left"></i> {$:: 'Organizations' | translate $}</a>
         </div>
         <div class="page_title">
             <h1>{$:: org.name $}</h1>
@@ -16,7 +16,7 @@
 <div class="section">
     <div class="section_header_container">
         <div class="section_header fixed_height_short">
-            <div class="left section_action_container"><h2><i class="fa fa-user"></i> {$ 'Members' | translate $}</h2></div>
+            <div class="left section_action_container"><h2><i class="fa fa-user"></i> {$:: 'Members' | translate $}</h2></div>
             <div class="right_wide section_action_container"><a ng-click="new_member_modal()" ng-if="::auth.can_invite_member" translate>Invite a new member</a></div>
         </div>
     </div>
@@ -33,13 +33,13 @@
                         </tr>
                         <tr class="sub_head">
                             <th class="sub_head">
-                                <input type="text" placeholder="{$ 'member name' | translate $}" class="form-control input-sm" ng-model="filter_params.name" ng-class="{active: filter_params.name.length}">
+                                <input type="text" placeholder="{$:: 'member name' | translate $}" class="form-control input-sm" ng-model="filter_params.name" ng-class="{active: filter_params.name.length}">
                             </th>
                             <th class="sub_head">
-                                <input type="text" placeholder="{$ 'member email' | translate $}" class="form-control input-sm" ng-model="filter_params.email" ng-class="{active: filter_params.email.length}">
+                                <input type="text" placeholder="{$:: 'member email' | translate $}" class="form-control input-sm" ng-model="filter_params.email" ng-class="{active: filter_params.email.length}">
                             </th>
                             <th class="sub_head">
-                                <input type="text" placeholder="{$ 'member role' | translate $}" class="form-control input-sm" ng-model="filter_params.role" ng-class="{active: filter_params.role.length}">
+                                <input type="text" placeholder="{$:: 'member role' | translate $}" class="form-control input-sm" ng-model="filter_params.role" ng-class="{active: filter_params.role.length}">
                             </th>
                             <th class="sub_head" ng-if="::auth.can_remove_member"></th>
                         </tr>
