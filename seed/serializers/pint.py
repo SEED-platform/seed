@@ -68,7 +68,7 @@ def pretty_units(quantity):
 
 
 def pretty_units_from_spec(unit_spec):
-    quantity = 0 * ureg(unit_spec) # doesn't matter what the number is
+    quantity = 0 * ureg(unit_spec)  # doesn't matter what the number is
     return pretty_units(quantity)
 
 
