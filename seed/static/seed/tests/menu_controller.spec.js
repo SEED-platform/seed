@@ -63,24 +63,24 @@ describe('Controller: menu_controller', function () {
    * Test scenarios
    */
 
-  it('should have a buildings payload with potential matches', function () {
-    // arrange
-    create_menu_controller();
-
-    // act
-    menu_controller_scope.$digest();
-
-    menu_controller_scope.$broadcast('$stateChangeError');
-    menu_controller_scope.$broadcast('$stateNotFound');
-    menu_controller_scope.$broadcast('app_error', {data: 'something'});
-    menu_controller_scope.is_active('/seed/data');
-    // expect(menu_controller_scope.href("/something")).toBe(1);
-    menu_controller_scope.menu_toggle_has_never_been_clicked();
-    menu_controller_scope.is_initial_state();
-    menu_controller_scope.open_data_upload_modal();
-
-
-    // assertions
-    expect(1).toEqual(1);
-  });
+  // it('should have a buildings payload with potential matches', function () {
+  //   // arrange
+  //   create_menu_controller();
+  //
+  //   // act
+  //   menu_controller_scope.$digest();
+  //
+  //   menu_controller_scope.$broadcast('$stateChangeError');
+  //   menu_controller_scope.$broadcast('$stateNotFound');
+  //   menu_controller_scope.$broadcast('app_error', {data: 'something'});
+  //   menu_controller_scope.is_active('/seed/data');
+  //   // expect(menu_controller_scope.href("/something")).toBe(1);
+  //   menu_controller_scope.menu_toggle_has_never_been_clicked();
+  //   menu_controller_scope.is_initial_state();
+  //   menu_controller_scope.open_data_upload_modal();
+  //
+  //
+  //   // assertions
+  //   expect(1).toEqual(1);
+  // });
 });
