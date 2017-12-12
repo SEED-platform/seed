@@ -68,7 +68,7 @@ class Measure(models.Model):
         :param organization_id: integer, ID of the organization to populate measures
         :return:
         """
-        filename = "seed/lib/buildingsync/enumerations.json"
+        filename = "seed/building_sync/lib/enumerations.json"
         with open(filename) as f:
             data = json.load(f)
 

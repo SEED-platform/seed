@@ -4,12 +4,21 @@
 :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author Dan Gunter <dkgunter@lbl.gov>
 """
+import copy
 import logging
 from collections import defaultdict
 
+from django.db import IntegrityError
+from django.forms.models import model_to_dict
+
 from seed.lib.mappings.mapping_data import MappingData
-from seed.models import PropertyState
-from seed.models import TaxLotState
+from seed.models import (
+    PropertyState,
+    TaxLotState,
+    Simulation,
+    PropertyMeasure,
+    Scenario,
+)
 from seed.utils.mapping import get_mappable_columns
 
 LINEAR_UNITS = {u'ft', u'm', u'in'}
@@ -83,7 +92,90 @@ def get_state_attrs(state_list):
         return get_taxlotstate_attrs(state_list)
 
 
-def merge_extra_data(b1, b2, default=None):
+def _merge_relationships(merged_state, state1, state2):
+    """
+    Merge together the old relationships with the new.
+    """
+    # get some items off of this property view
+    no_measure_scenarios = [x for x in state2.scenarios.filter(measures__isnull=True)] + \
+        [x for x in state1.scenarios.filter(measures__isnull=True)]
+    building_files = [x for x in state2.building_files.all()] + [x for x in state1.building_files.all()]
+    simulations = [x for x in Simulation.objects.filter(property_state__in=[state1, state2])]
+    measures = [x for x in PropertyMeasure.objects.filter(property_state__in=[state1, state2])]
+
+    # TODO: dedup the relationships, if they are exact then don't add
+
+    # copy in the no measure scenarios
+    for new_s in no_measure_scenarios:
+        new_s.pk = None
+        new_s.save()
+        merged_state.scenarios.add(new_s)
+
+    for new_bf in building_files:
+        new_bf.pk = None
+        new_bf.save()
+        merged_state.building_files.add(new_bf)
+
+    for new_sim in simulations:
+        new_sim.pk = None
+        new_sim.property_state = merged_state
+        new_sim.save()
+
+    if len(measures) > 0:
+        measure_fields = [f.name for f in measures[0]._meta.fields]
+        measure_fields.remove('id')
+        measure_fields.remove('property_state')
+
+        new_items = []
+
+        # Create a list of scenarios and measures to reconstruct
+        # {
+        #   scenario_id_1: [ new_measure_id_1, new_measure_id_2 ],
+        #   scenario_id_2: [ new_measure_id_2, new_measure_id_3 ],  # measure ids can be repeated
+        # }
+        scenario_measure_map = {}
+        for measure in measures:
+            test_dict = model_to_dict(measure, fields=measure_fields)
+
+            if test_dict in new_items:
+                continue
+            else:
+                try:
+                    new_measure = copy.deepcopy(measure)
+                    new_measure.pk = None
+                    new_measure.property_state = merged_state
+                    new_measure.save()
+
+                    # grab the scenario that is attached to the orig measure and create a new connection
+                    for scenario in measure.scenario_set.all():
+                        if scenario.pk not in scenario_measure_map.keys():
+                            scenario_measure_map[scenario.pk] = []
+                        scenario_measure_map[scenario.pk].append(new_measure.pk)
+
+                except IntegrityError:
+                    _log.error(
+                        "Measure state_id, measure_id, application_sacle, and implementation_status already exists -- skipping for now")
+
+            new_items.append(test_dict)
+
+        # connect back up the scenario measures
+        for scenario_id, measure_list in scenario_measure_map.items():
+            # create a new scenario from the old one
+            scenario = Scenario.objects.get(pk=scenario_id)
+            scenario.pk = None
+            scenario.property_state = merged_state
+            scenario.save()  # save to get new id
+
+            # get the measures
+            measures = PropertyMeasure.objects.filter(pk__in=measure_list)
+            for measure in measures:
+                scenario.measures.add(measure)
+            scenario.save()
+
+    return merged_state
+
+
+def _merge_extra_data(b1, b2, default=None):
     """Merge extra_data field between two BuildingSnapshots, return result.
 
     :param b1: BuildingSnapshot inst.
@@ -177,8 +269,11 @@ def merge_state(merged_state, state1, state2, can_attrs, default=None):
             setattr(merged_state, attr, attr_value)
             # setattr(merged_state, '{0}_source'.format(attr), attr_source)
 
-    merged_extra_data, merged_extra_data_sources = merge_extra_data(state1, state2, default=default)
-
+    merged_extra_data, merged_extra_data_sources = _merge_extra_data(state1, state2, default=default)
     merged_state.extra_data = merged_extra_data
+
+    # merge measures, scenarios,
+    if isinstance(merged_state, PropertyState):
+        _merge_relationships(merged_state, state1, state2)
 
     return merged_state, changes

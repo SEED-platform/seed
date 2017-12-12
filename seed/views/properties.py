@@ -25,6 +25,7 @@ from seed.decorators import ajax_request_class
 from seed.filtersets import PropertyViewFilterSet, PropertyStateFilterSet
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import Property as PropertyModel
+from seed.serializers.pint import PintJSONEncoder
 from seed.models import (
     TaxLotAuditLog,
     TaxLotState,
@@ -33,13 +34,14 @@ from seed.models import (
     AUDIT_USER_EDIT,
     Column,
     Cycle,
+    Simulation,
     PropertyAuditLog,
     PropertyState,
     PropertyView,
     TaxLotProperty,
     TaxLotView,
+    Scenario,
 )
-from seed.serializers.pint import PintJSONEncoder
 from seed.serializers.properties import (
     PropertySerializer,
     PropertyStateSerializer,
@@ -251,6 +253,31 @@ class PropertyViewSet(GenericViewSet):
         }
 
         return JsonResponse(response, encoder=PintJSONEncoder)
+
+    def _move_relationships(self, old_state, new_state):
+        """
+        In general, we move the old relationships to the new state since the old state should not be
+        accessible anymore. If we ever unmerge, then we need to decide who gets the data.. both?
+        """
+        for s in old_state.scenarios.all():
+            s.property_state = new_state
+            s.save()
+
+        # Move the measures to the new state
+        for m in PropertyMeasure.objects.filter(property_state=old_state):
+            m.property_state = new_state
+            m.save()
+
+        # Move the old building file to the new state to perserve the history
+        for b in old_state.building_files.all():
+            b.property_state = new_state
+            b.save()
+
+        for s in Simulation.objects.filter(property_state=old_state):
+            s.property_state = new_state
+            s.save()
+
+        return new_state
 
     @api_endpoint_class
     @ajax_request_class
@@ -633,9 +660,29 @@ class PropertyViewSet(GenericViewSet):
     @ajax_request_class
     def update(self, request, pk=None):
         """
-        Update a property
+        Update a property.
+
+        - looks up the property view
+        - casts it as a PropertyState
+        - builds a hash with all the same keys as the original property state
+        - checks if any fields have changed
+        - if nothing has changed, return 422 - Really?  Not sure how I feel about that one, it *is* processable
+        - get the property audit log for this property state
+        - if the new property state has extra_data, the original extra_data is update'd
+        - and then whoa stuff about the audit log?
+        - I'm going to assume 'Import Creation' is the key I'm looking for
+        - create a serializer for the new property state
+        - if it's valid, save this new serialized data to the db
+        - assign it to the original property view and save the property view
+        - create a new property audit log for this change
+        - return a 200 if created
+
         ---
         parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
             - name: cycle_id
               description: The cycle id for filtering the property view
               required: true
@@ -650,23 +697,24 @@ class PropertyViewSet(GenericViewSet):
         if result.get('status', None) != 'error':
             property_view = result.pop('property_view')
             property_state_data = PropertyStateSerializer(property_view.state).data
+
+            # get the new property state information from the request
             new_property_state_data = data['state']
 
-            changed = True
+            # set empty strings to None
             for key, val in new_property_state_data.iteritems():
                 if val == '':
                     new_property_state_data[key] = None
-            changed_fields = get_changed_fields(
-                property_state_data, new_property_state_data
-            )
+
+            changed_fields = get_changed_fields(property_state_data, new_property_state_data)
             if not changed_fields:
-                changed = False
-            if not changed:
                 result.update(
-                    {'status': 'error', 'message': 'Nothing to update'}
+                    {'status': 'success', 'message': 'Records are identical'}
                 )
-                status_code = 422  # status.HTTP_422_UNPROCESSABLE_ENTITY
+                return JsonResponse(result, status=status.HTTP_204_NO_CONTENT)
             else:
+                # Not sure why we are going through the pain of logging this all right now... need to
+                # reevaluate this.
                 log = PropertyAuditLog.objects.select_related().filter(
                     state=property_view.state
                 ).order_by('-id').first()
@@ -683,7 +731,15 @@ class PropertyViewSet(GenericViewSet):
                         data=property_state_data
                     )
                     if new_property_state_serializer.is_valid():
+                        # create the new property state, and perform an initial save / moving relationships
                         new_state = new_property_state_serializer.save()
+
+                        # Since we are creating a new relationship when we are manually editing the Properties, then
+                        # we need to move the relationships over to the new manually edited record.
+                        new_state = self._move_relationships(property_view.state, new_state)
+                        new_state.save()
+
+                        # then assign this state to the property view and save the whole view
                         property_view.state = new_state
                         property_view.save()
 
@@ -708,18 +764,15 @@ class PropertyViewSet(GenericViewSet):
                         if 'import_file' in result['state']:
                             result['state'].pop('import_file')
 
-                        # Not sure why we have 201 here. Should be 200 or 204 because there is
-                        # no new content created.
-                        status_code = status.HTTP_201_CREATED
+                        status_code = status.HTTP_200_OK
                     else:
                         result.update({
                             'status': 'error',
                             'message': 'Invalid update data with errors: {}'.format(
                                 new_property_state_serializer.errors)}
                         )
-                        status_code = 422  # status.HTTP_422_UNPROCESSABLE_ENTITY
-                elif log.name in ['Manual Edit', 'Manual Match', 'System Match',
-                                  'Merge current state in migration']:
+                        return JsonResponse(result, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+                elif log.name in ['Manual Edit', 'Manual Match', 'System Match', 'Merge current state in migration']:
                     # Override previous edit state or merge state
                     state = property_view.state
                     for key, value in new_property_state_data.iteritems():
@@ -733,16 +786,17 @@ class PropertyViewSet(GenericViewSet):
                     # TODO find better solution
                     result['state'].pop('organization')
                     result['state'].pop('import_file')
-
-                    status_code = status.HTTP_201_CREATED
+                    return JsonResponse(result, status=status.HTTP_200_OK)
                 else:
-                    result = {'status': 'error',
-                              'message': 'Unrecognized audit log name: ' + log.name}
-                    status_code = 422
-                    return JsonResponse(result, status=status_code)
+                    result = {
+                        'status': 'error',
+                        'message': 'Unrecognized audit log name: ' + log.name
+                    }
+                    return JsonResponse(result, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
         else:
             status_code = status.HTTP_404_NOT_FOUND
+
         return JsonResponse(result, status=status_code)
 
     @ajax_request_class
