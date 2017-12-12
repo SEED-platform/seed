@@ -16,14 +16,40 @@ angular.module('BE.seed.controller.inventory_reports', [])
     'inventory_reports_service',
     'simple_modal_service',
     'cycles',
+    'organization_payload',
+    'flippers',
     function ($scope,
               $log,
               $stateParams,
               inventory_reports_service,
               simple_modal_service,
-              cycles) {
+              cycles,
+              organization_payload,
+              flippers) {
 
       $scope.inventory_type = $stateParams.inventory_type;
+
+      var pretty_unit = function (pint_spec) {
+        var mappings = {
+          'ft**2': 'ft²',
+          'm**2': 'm²',
+          'kBtu/ft**2/year': 'kBtu/sq. ft./year',
+          'GJ/m**2/year': 'GJ/m²/year',
+          'MJ/m**2/year': 'MJ/m²/year',
+          'kBtu/m**2/year': 'kBtu/m²/year'
+        };
+        return mappings[pint_spec] || pint_spec;
+      };
+
+      var append_eui_units = function (column_name) {
+        var unit = organization_payload.organization.display_units_eui;
+        return column_name + ' (' + pretty_unit(unit) + ')';
+      };
+
+      var append_area_units = function (column_name) {
+        var unit = organization_payload.organization.display_units_area;
+        return column_name + ' (' + pretty_unit(unit) + ')';
+      };
 
       /* Define the first five colors. After that, rely on Dimple's default colors. */
       $scope.defaultColors = ['#458cc8', '#779e1c', '#f2c41d', '#939495', '#c83737', '#f18630'];
@@ -88,6 +114,38 @@ angular.module('BE.seed.controller.inventory_reports', [])
         }
       ];
 
+      if (flippers.is_active('release:use_pint')) {
+        Array.prototype.push.apply($scope.xAxisVars, [{
+          name: 'Site EUI (pint)',
+          label: 'Site Energy Use Intensity',
+          varName: 'site_eui_pint',
+          axisLabel: append_eui_units('Site EUI'),
+          axisType: 'Measure',
+          axisTickFormat: ',.0f'
+        }, {
+          name: 'Source EUI (pint)',
+          label: 'Source Energy Use Intensity',
+          varName: 'source_eui_pint',
+          axisLabel: append_eui_units('Source EUI'),
+          axisType: 'Measure',
+          axisTickFormat: ',.0f'
+        }, {
+          name: 'Weather Norm. Site EUI (pint)',
+          label: 'Weather Normalized Site Energy Use Intensity',
+          varName: 'site_eui_weather_normalized_pint',
+          axisLabel: append_eui_units('Weather Normalized Site EUI'),
+          axisType: 'Measure',
+          axisTickFormat: ',.0f'
+        }, {
+          name: 'Weather Norm. Source EUI (pint)',
+          label: 'Weather Normalized Source Energy Use Intensity',
+          varName: 'source_eui_weather_normalized',
+          axisLabel: append_eui_units('Weather Normalized Source EUI'),
+          axisType: 'Measure',
+          axisTickFormat: ',.0f'
+        }]);
+      }
+
       $scope.yAxisVars = [
         {
           name: 'Gross Floor Area',
@@ -115,6 +173,18 @@ angular.module('BE.seed.controller.inventory_reports', [])
           axisMin: '1900'
         }
       ];
+
+      if (flippers.is_active('release:use_pint')) {
+        Array.prototype.push.apply($scope.yAxisVars, [{
+          name: 'Gross Floor Area (pint)',
+          label: 'Gross Floor Area',
+          varName: 'gross_floor_area_pint',
+          axisLabel: append_area_units('Gross Floor Area'),
+          axisType: 'Measure',
+          axisTickFormat: ',.0f',
+          axisMin: ''
+        }]);
+      }
 
 
       // Chart titles

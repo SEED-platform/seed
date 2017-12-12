@@ -20,6 +20,12 @@ from seed.models import (
     Cycle,
     PropertyView
 )
+from seed.lib.superperms.orgs.models import (
+    Organization
+)
+from seed.serializers.pint import (
+    apply_display_unit_preferences,
+)
 from seed.utils.api import drf_api_endpoint
 from seed.utils.generic import median, round_down_hundred_thousand
 
@@ -77,6 +83,7 @@ class Report(DecoratorMixin(drf_api_endpoint), ViewSet):
             property__organization_id=organization_id,
             cycle_id__in=cycles
         )
+        organization = Organization.objects.get(pk=organization_id)
         results = []
         for cycle in cycles:
             property_views = all_property_views.filter(cycle_id=cycle)
@@ -97,7 +104,8 @@ class Report(DecoratorMixin(drf_api_endpoint), ViewSet):
                     result = self.get_data(property_view, x_var, y_var)
                     if result:
                         result['yr_e'] = cycle.end.strftime('%Y')
-                        data.append(result)
+                        de_unitted_result = apply_display_unit_preferences(organization, result)
+                        data.append(de_unitted_result)
                         count_with_data.append(property_pk)
             result = {
                 "cycle_id": cycle.pk,
@@ -119,7 +127,10 @@ class Report(DecoratorMixin(drf_api_endpoint), ViewSet):
         valid_values = [
             'site_eui', 'source_eui', 'site_eui_weather_normalized',
             'source_eui_weather_normalized', 'energy_score',
-            'gross_floor_area', 'use_description', 'year_built'
+            'gross_floor_area', 'use_description', 'year_built',
+
+            'site_eui_pint', 'source_eui_pint', 'site_eui_weather_normalized_pint',
+            'source_eui_weather_normalized_pint', 'gross_floor_area_pint'
         ]
         for param in ['x_var', 'y_var', 'organization_id', 'start', 'end']:
             val = request.query_params.get(param, None)
@@ -171,8 +182,12 @@ class Report(DecoratorMixin(drf_api_endpoint), ViewSet):
         valid_x_values = [
             'site_eui', 'source_eui', 'site_eui_weather_normalized',
             'source_eui_weather_normalized', 'energy_score',
+
+            'site_eui_pint', 'source_eui_pint', 'site_eui_weather_normalized_pint',
+            'source_eui_weather_normalized_pint',
         ]
-        valid_y_values = ['gross_floor_area', 'use_description', 'year_built']
+        valid_y_values = ['gross_floor_area', 'use_description', 'year_built',
+                          'gross_floor_area_pint']
         params = {}
         missing_params = []
         empty = True
@@ -238,8 +253,7 @@ class Report(DecoratorMixin(drf_api_endpoint), ViewSet):
             'use_description': self.aggregate_use_description,
             'year_built': self.aggregate_year_built,
             'gross_floor_area': self.aggregate_gross_floor_area,
-
-
+            'gross_floor_area_pint': self.aggregate_gross_floor_area,
         }
         return aggregation_method[y_var](yr_e, buildings)
 
