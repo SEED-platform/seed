@@ -13,12 +13,12 @@ method mutiple times will always return the same sequence of results
     Do not edit the seed unless you know what you are doing!
     .. codeauthor:: Paul Munday<paul@paulmunday.net>
 """
-import datetime
 import os
 import re
 import string
 from collections import namedtuple
 
+import datetime
 import mock
 from django.db.models.fields.files import FieldFile
 from django.utils import timezone
@@ -30,7 +30,7 @@ from seed.models import (
     PropertyState, StatusLabel, TaxLot, TaxLotAuditLog, TaxLotProperty,
     TaxLotState, TaxLotView, PropertyMeasure
 )
-from seed.models.auditlog import AUDIT_USER_CREATE
+from seed.models.auditlog import AUDIT_IMPORT, AUDIT_USER_CREATE
 from seed.utils.strings import titlecase
 
 Owner = namedtuple(
@@ -241,9 +241,9 @@ class FakePropertyStateFactory(BaseFake):
         ps = PropertyState.objects.create(
             organization=organization, **property_details
         )
-        auditlog_detail = {}
+        # make sure to create an audit log so that we can test various methods (e.g. updating properties)
         PropertyAuditLog.objects.create(
-            organization=organization, state=ps, **auditlog_detail
+            organization=organization, state=ps, record_type=AUDIT_IMPORT, name='Import Creation'
         )
         return ps
 
@@ -560,9 +560,9 @@ class FakeTaxLotStateFactory(BaseFake):
         taxlot_details = self.get_details(org)
         taxlot_details.update(kw)
         tls = TaxLotState.objects.create(organization=org, **taxlot_details)
-        auditlog_detail = {}
-        TaxLotAuditLog.objects.create(organization=org, state=tls, **auditlog_detail)
-
+        TaxLotAuditLog.objects.create(
+            organization=org, state=tls, record_type=AUDIT_IMPORT, name='Import Creation'
+        )
         return tls
 
 

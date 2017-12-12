@@ -8,7 +8,6 @@
 from django.conf.urls import url, include
 from rest_framework import routers
 
-from seed.api.v1.views import ColumnViewSetV1
 from seed.views.main import (
     search_buildings,
     set_default_columns,
@@ -19,12 +18,10 @@ from seed.views.main import (
 )
 
 router = routers.DefaultRouter()
-router.register(r'columns', ColumnViewSetV1, base_name="columns")
 
 urlpatterns = [
     # template routes
     url(r'^', include(router.urls)),
-
     url(r'^search_buildings/$', search_buildings, name='search_buildings'),
     url(r'^set_default_columns/$', set_default_columns, name='set_default_columns'),
     url(

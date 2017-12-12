@@ -40,8 +40,15 @@ angular.module('BE.seed.controller.inventory_detail', [])
 
       /** See service for structure of returned payload */
       $scope.historical_items = inventory_payload.history;
-
       $scope.item_state = inventory_payload.state;
+
+      // item_parent is the property or the tax lot instead of the PropertyState / TaxLotState
+      if($scope.inventory_type === 'properties'){
+        $scope.item_parent = inventory_payload.property;
+      } else {
+        $scope.item_parent = inventory_payload.taxlot;
+      }
+
       $scope.changed_fields = inventory_payload.changed_fields;
 
       // The server provides of *all* extra_data keys (across current state and all historical state)
