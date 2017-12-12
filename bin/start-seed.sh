@@ -1,6 +1,8 @@
 #!/bin/bash
 # Start SEED in developer mode
 
+CELERY_PIDFILE="/tmp/celery-seed-dev.pid"
+
 # check if "$prog" is running
 running () {
     prog="$1"
@@ -24,10 +26,9 @@ else
 fi
 
 # Celery
-running celery
-if [ $? -eq 0 ]; then
+if [ ! -f $CELERY_PIDFILE ]; then
     printf "Starting Celery\n"
-    celery -A seed worker -l info -c 4 --maxtasksperchild 1000 --events > /tmp/celeryd.log 2>&1 &
+    celery -A seed worker -l info -c 4 --maxtasksperchild 1000 --events --pidfile=$CELERY_PIDFILE > /tmp/celeryd.log 2>&1 &
 else
     printf "Celery is already running\n"
 fi
