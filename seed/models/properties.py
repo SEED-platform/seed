@@ -11,7 +11,7 @@ import pdb
 
 from django.contrib.postgres.fields import JSONField
 from django.db import models
-from django.db.models.signals import pre_delete
+from django.db.models.signals import pre_delete, post_save
 from django.dispatch import receiver
 from quantityfield.fields import QuantityField
 
@@ -54,6 +54,10 @@ class Property(models.Model):
     campus = models.BooleanField(default=False)
     parent_property = models.ForeignKey('Property', blank=True, null=True)
     labels = models.ManyToManyField(StatusLabel)
+
+    # Track when the entry was created and when it was updated
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name_plural = 'properties'
@@ -493,6 +497,16 @@ class PropertyView(models.Model):
                 view_id=self.pk).order_by('created').first()
             self._import_filename = audit_log.import_filename
         return self._import_filename
+
+
+@receiver(post_save, sender=PropertyView)
+def post_save_property_view(sender, **kwargs):
+    """
+    When changing/saving the PropertyView, go ahead and touch the Property (if linked) so that the record
+    receives an updated datetime
+    """
+    if kwargs['instance'].property:
+        kwargs['instance'].property.save()
 
 
 class PropertyAuditLog(models.Model):

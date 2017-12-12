@@ -16,7 +16,6 @@ from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
 
 from seed.landing.models import SEEDUser as User
-from seed.utils.strings import titlecase
 from seed.lib.mappings.mapping_data import MappingData
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
 from seed.models.models import (
@@ -25,13 +24,8 @@ from seed.models.models import (
     SEED_DATA_SOURCES,
 )
 from seed.utils.constants import VIEW_COLUMNS_PROPERTY
+from seed.utils.strings import titlecase
 
-INVENTORY_MAP = {
-    'property': 'PropertyState',
-    'propertystate': 'PropertyState',
-    'taxlot': 'TaxLotState',
-    'taxlotstate': 'TaxLotState',
-}
 # This is the inverse mapping of the property and tax lots that are prepended to the fields
 # for the other table.
 INVENTORY_MAP_PREPEND = {
@@ -600,7 +594,7 @@ class Column(models.Model):
 
         # Clean up the columns
         for c in columns:
-            if c['table'] == INVENTORY_MAP[inventory_type.lower()]:
+            if c['table'] and (inventory_type.lower() in c['table'].lower()):
                 c['related'] = False
                 if c.get('pinIfNative', False):
                     c['pinnedLeft'] = True
@@ -608,8 +602,7 @@ class Column(models.Model):
                 c['related'] = True
                 # For now, a related field has a prepended value to make the columns unique.
                 if c.get('duplicateNameInOtherTable', False):
-                    c['name'] = "{}_{}".format(INVENTORY_MAP_PREPEND[inventory_type.lower()],
-                                               c['name'])
+                    c['name'] = "{}_{}".format(INVENTORY_MAP_PREPEND[inventory_type.lower()], c['name'])
 
             # Remove some keys that are not needed for the API
             try:
@@ -659,7 +652,7 @@ class Column(models.Model):
                     'table': edc.table_name,
                     'displayName': titlecase(edc.column_name),
                     # 'dataType': 'string',  # TODO: how to check dataTypes on extra_data!
-                    'related': edc.table_name != INVENTORY_MAP[inventory_type.lower()],
+                    'related': not (inventory_type.lower() in edc.table_name.lower()),
                     'extraData': True
                 }
             )

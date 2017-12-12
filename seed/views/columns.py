@@ -70,10 +70,12 @@ class ColumnViewSet(viewsets.ViewSet):
     @list_route(methods=['GET'])
     def retrieve_all(self, request):
         """
-        Retrieves all columns for the user's organization including the raw database columns
+        Retrieves all columns for the user's organization including the raw database columns.
+
+        Note that this is the same results as calling /api/v2/properties/columns/?organization_id={}
 
         Example:
-            /api/v2/columns/retrieve_all/?inventory_type=(property|taxlot)
+            /api/v2/columns/retrieve_all/?inventory_type=(property|taxlot)&organization_id={}
         ---
         type:
             status:
