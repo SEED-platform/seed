@@ -25,7 +25,6 @@ from seed.decorators import ajax_request_class
 from seed.filtersets import PropertyViewFilterSet, PropertyStateFilterSet
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import Property as PropertyModel
-from seed.serializers.pint import PintJSONEncoder
 from seed.models import (
     TaxLotAuditLog,
     TaxLotState,
@@ -40,8 +39,8 @@ from seed.models import (
     PropertyView,
     TaxLotProperty,
     TaxLotView,
-    Scenario,
 )
+from seed.serializers.pint import PintJSONEncoder
 from seed.serializers.properties import (
     PropertySerializer,
     PropertyStateSerializer,
