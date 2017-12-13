@@ -9,6 +9,7 @@ To perform a release make sure to do the following.
     ruby docs/scripts/change_log.rb --token GITHUB_API_TOKEN --start-date 2017-07-01 --end-date 2017-09-30 
 
 1. Paste the results (remove unneeded Accepted Pull Requests) into the CHANGELOG.md. Make sure to cleanup the formatting.
+1. Make sure that any new UI needing localization has been tagged for translation, and that any new translation keys exist in the lokalise.co project (see `/docs/translation.md`).
 1. Create new PR against develop with the updates.
 1. Once develop passes, then create a new PR from develop to master.
 1. Draft new Release from Github (https://github.com/SEED-platform/seed/releases).

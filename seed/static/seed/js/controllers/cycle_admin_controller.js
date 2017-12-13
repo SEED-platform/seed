@@ -14,7 +14,9 @@ angular.module('BE.seed.controller.cycle_admin', [])
     'cycles_payload',
     'organization_payload',
     'auth_payload',
-    function ($scope, $log, urls, simple_modal_service, Notification, cycle_service, cycles_payload, organization_payload, auth_payload) {
+    '$translate',
+    '$sce',
+    function ($scope, $log, urls, simple_modal_service, Notification, cycle_service, cycles_payload, organization_payload, auth_payload, $translate, $sce) {
 
       $scope.org = organization_payload.organization;
       $scope.auth = auth_payload.auth;
@@ -31,6 +33,11 @@ angular.module('BE.seed.controller.cycle_admin', [])
         $scope.new_cycle = {start: null, end: null, name: ''};
       }
 
+      function translateMessage (msg, params) {
+        // TODO XSS, discuss with Nick and Alex
+        return $sce.getTrustedHtml($translate.instant(msg, params));
+      }
+
       /*  Take user input from New Cycle form and submit
        to service to create a new cycle. */
       $scope.submitNewCycleForm = function (form) {
@@ -38,7 +45,9 @@ angular.module('BE.seed.controller.cycle_admin', [])
           return;
         }
         cycle_service.create_cycle_for_org($scope.new_cycle, $scope.org.id).then(function () {
-          var msg = 'Created new Cycle ' + getTruncatedName($scope.new_cycle.name);
+          var msg = translateMessage('CREATED_NEW_CYCLE', {
+            cycle_name: getTruncatedName($scope.new_cycle.name)
+          });
           Notification.primary(msg);
           initialize_new_cycle();
           form.$setPristine();
@@ -76,7 +85,7 @@ angular.module('BE.seed.controller.cycle_admin', [])
         //Don't update $scope.cycle until a 'success' from server
         angular.extend(cycle, {id: id});
         cycle_service.update_cycle_for_org(cycle, $scope.org.id).then(function () {
-          var msg = 'Cycle updated.';
+          var msg = translateMessage('Cycle updated.');
           Notification.primary(msg);
           cycle_service.get_cycles_for_org($scope.org.id).then(processCycles);
         }, function (message) {

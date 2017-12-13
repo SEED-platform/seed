@@ -1,7 +1,8 @@
+{% load i18n %}
 <div class="browser_unsupported">
     <div class="browser_unsupported_message">
-        <h2>We've detected an outdated browser.</h2>
-        <div class="message_text">Using your current browser will prevent you from accessing features on our website. Use the links below to download a new browser or upgrade your existing browser.</div>
+        <h2>{% trans "We've detected an outdated browser." %}</h2>
+        <div class="message_text">{% trans "Using your current browser will prevent you from accessing features on our website. Use the links below to download a new browser or upgrade your existing browser." %}</div>
     </div>
     <div class="browser_download_links">
         <a href="https://www.google.com/intl/en/chrome/browser/" target="_blank" class="browser_option chrome">

@@ -17,7 +17,7 @@ describe('When I go to jasmine tests', function () {
     var passingBar = $('.passingAlert.bar');
     browser.wait(EC.presenceOf(passingBar), 30000);
     expect($('.passingAlert.bar').isPresent()).toBe(true);
-  });
+  }, 60000);
   it('should reset sync', function () {
     browser.ignoreSynchronization = false;
   });

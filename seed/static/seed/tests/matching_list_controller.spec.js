@@ -76,7 +76,7 @@ describe('Controller: matching_list_controller', function () {
       $stateParams: {
         cycle_id: 2017,
         inventory_id: 4,
-        inventory_type: 'properties'
+        inventory_type: 'properties',
         import_file_id: 1
       },
       columns: [{
