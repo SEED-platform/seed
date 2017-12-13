@@ -33,7 +33,7 @@ angular.module('BE.seed.controller.inventory_detail_settings', [])
       var stripRegion = function (languageTag) {
         return _.first(languageTag.split('_'));
       };
-      i18nService.setCurrentLang(stripRegion($translate.use()));
+      i18nService.setCurrentLang(stripRegion($translate.proposedLanguage()));
 
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.inventory = {

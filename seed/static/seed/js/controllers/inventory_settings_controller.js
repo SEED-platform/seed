@@ -32,7 +32,7 @@ angular.module('BE.seed.controller.inventory_settings', [])
       var stripRegion = function (languageTag) {
         return _.first(languageTag.split('_'));
       };
-      i18nService.setCurrentLang(stripRegion($translate.use()));
+      i18nService.setCurrentLang(stripRegion($translate.proposedLanguage()));
 
       var localStorageKey = 'grid.' + $scope.inventory_type;
 

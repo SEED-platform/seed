@@ -1107,7 +1107,8 @@ SEED_app.config(['$translateProvider', function ($translateProvider) {
       en: 'en_US',
       fr: 'fr_CA',
       'en_*': 'en_US',
-      'fr_*': 'fr_CA'
+      'fr_*': 'fr_CA',
+      '*': 'en_US'
     })
     // allow some HTML in the translation strings,
     // see https://angular-translate.github.io/docs/#/guide/19_security
