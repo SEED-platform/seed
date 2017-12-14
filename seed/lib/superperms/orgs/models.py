@@ -5,14 +5,11 @@
 :author
 """
 import logging
-from datetime import date, datetime
-from dateutil.relativedelta import relativedelta
 
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.signals import pre_delete
-from django.utils import timezone
 
 from seed.lib.superperms.orgs.exceptions import TooManyNestedOrgs
 
@@ -84,11 +81,8 @@ class OrganizationUser(models.Model):
             all_org_users = OrganizationUser.objects.filter(
                 organization=self.organization,
             ).exclude(pk=self.pk)
-            if (
-                    all_org_users.exists()
-                    and
-                    all_org_users.filter(role_level=ROLE_OWNER).count() == 0
-            ):
+            if (all_org_users.exists() and all_org_users.filter(
+                role_level=ROLE_OWNER).count() == 0):
                 # Make next most high ranking person the owner.
                 other_user = all_org_users.order_by('-role_level', '-pk')[0]
                 if other_user.role_level > ROLE_VIEWER:
@@ -138,18 +132,9 @@ class Organization(models.Model):
 
         # Create a default cycle for the organization if there isn't one already
         from seed.models import Cycle
-        year = date.today().year - 1
-        cycle_name = '{} Calendar Year'.format(year)
-        if not Cycle.objects.filter(name=cycle_name, organization=self).exists():
-            _log.debug("Creating default cycle for new organization")
-            start = datetime(year, 1, 1, tzinfo=timezone.get_current_timezone())
-            end = start + relativedelta(years=1) - relativedelta(seconds=1)
-            Cycle.objects.create(
-                name=cycle_name,
-                organization=self,
-                start=start,
-                end=end
-            )
+        Cycle.get_or_create_default(self)
+        from seed.models import Measure
+        Measure.populate_measures(self.id)
 
     def is_member(self, user):
         """Return True if user object has a relation to this organization."""

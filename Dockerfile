@@ -18,6 +18,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         python-gdbm \
         libpcre3 \
         libpcre3-dev \
+        libxml2-dev \
+        libxslt1-dev \
         nginx \
         supervisor \
         # dev dependencies

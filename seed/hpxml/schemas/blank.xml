@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<HPXML xmlns="http://hpxmlonline.com/2014/6" schemaVersion="2.2.1">
+    <XMLTransactionHeaderInformation>
+        <XMLType></XMLType>
+        <XMLGeneratedBy></XMLGeneratedBy>
+        <CreatedDateAndTime>2017-12-04T12:08:54.811883</CreatedDateAndTime>
+        <Transaction>create</Transaction>
+    </XMLTransactionHeaderInformation>
+    <SoftwareInfo/>
+    <Customer>
+        <CustomerDetails>
+            <Person>
+                <SystemIdentifier id="person1"/>
+                <Name>
+                    <FirstName></FirstName>
+                    <LastName></LastName>
+                </Name>
+            </Person>
+        </CustomerDetails>
+    </Customer>
+    <Building>
+        <BuildingID id="bldg1"/>
+        <Site>
+            <SiteID id="bldg1site"/>
+            <Address>
+                <Address1></Address1>
+                <Address2></Address2>
+                <CityMunicipality></CityMunicipality>
+                <StateCode></StateCode>
+                <ZipCode>00000</ZipCode>
+            </Address>
+        </Site>
+        <ProjectStatus>
+            <EventType>audit</EventType>
+        </ProjectStatus>
+        <BuildingDetails>
+            <BuildingSummary>
+                <BuildingConstruction>
+                    <YearBuilt>0</YearBuilt>
+                    <GrossFloorArea>1</GrossFloorArea>
+                    <ConditionedFloorArea>1</ConditionedFloorArea>
+                    <FinishedFloorArea>1</FinishedFloorArea>
+                </BuildingConstruction>
+            </BuildingSummary>
+        </BuildingDetails>
+    </Building>
+</HPXML>

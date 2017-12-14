@@ -1,0 +1,283 @@
+# !/usr/bin/env python
+# encoding: utf-8
+"""
+:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author nicholas.long@nrel.gov
+"""
+from __future__ import unicode_literals
+
+import logging
+
+from django.db import models
+
+from seed.building_sync.building_sync import BuildingSync
+from seed.hpxml.hpxml import HPXML as HPXMLParser
+from seed.lib.mappings.mapping_data import MappingData
+from seed.lib.merging.merging import merge_state, get_state_attrs
+from seed.models import (
+    PropertyState,
+    Column,
+    PropertyMeasure,
+    Measure,
+    PropertyAuditLog,
+    AUDIT_IMPORT,
+    Scenario,
+    MERGE_STATE_MERGED,
+)
+
+_log = logging.getLogger(__name__)
+
+
+class BuildingFile(models.Model):
+    """
+    BuildingFile contains any building related file, such as a BuildingSync file, that
+    are attached to a PropertyState. Typically the file is used to create/update the
+    PropertyState record.
+    """
+    UNKNOWN = 0
+    BUILDINGSYNC = 1
+    GEOJSON = 2
+    HPXML = 3
+
+    BUILDING_FILE_TYPES = (
+        (UNKNOWN, 'Unknown'),
+        (BUILDINGSYNC, 'BuildingSync'),
+        (GEOJSON, 'GeoJSON'),
+        (HPXML, 'HPXML')
+    )
+
+    BUILDING_FILE_PARSERS = {
+        HPXML: HPXMLParser,
+        BUILDINGSYNC: BuildingSync
+    }
+
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+    property_state = models.ForeignKey('PropertyState', related_name='building_files', null=True)
+    file = models.FileField(upload_to="buildingsync_files", max_length=500, blank=True, null=True)
+    file_type = models.IntegerField(choices=BUILDING_FILE_TYPES, default=UNKNOWN)
+    filename = models.CharField(blank=True, max_length=255)
+
+    @classmethod
+    def str_to_file_type(cls, file_type):
+        """
+        convert an integer or string of the file_type to the integer that will be saved
+
+        :param file_type: integer or string, file type name
+        :return: integer, enum integer
+        """
+        if not file_type:
+            return None
+
+        # If it is already an integer, then move along.
+        try:
+            if int(file_type):
+                return int(file_type)
+        except ValueError:
+            pass
+
+        value = [y[0] for x, y in enumerate(cls.BUILDING_FILE_TYPES) if
+                 y[1].lower() == file_type.lower()]
+        if len(value) == 1:
+            return value[0]
+        else:
+            return None
+
+    def process(self, organization_id, cycle, property_view=None):
+        """
+        Process the building file that was uploaded and create the correct models for the object
+
+        :param organization_id: integer, ID of organization
+        :param cycle: object, instance of cycle object
+        :param property_view: Existing property view of the building file that will be updated from merging the property_view.state
+        :return: list, [status, (PropertyState|None), (PropertyView|None), messages]
+        """
+
+        Parser = self.BUILDING_FILE_PARSERS.get(self.file_type, None)
+        if not Parser:
+            acceptable_file_types = ', '.join(
+                map(dict(self.BUILDING_FILE_TYPES).get, self.BUILDING_FILE_PARSERS.keys())
+            )
+            return False, None, None, "File format was not one of: {}".format(acceptable_file_types)
+
+        parser = Parser()
+        parser.import_file(self.file.path)
+        parser_args = []
+        parser_kwargs = {}
+        if self.file_type == self.BUILDINGSYNC:
+            parser_args.append(BuildingSync.BRICR_STRUCT)
+        data, errors, messages = parser.process(*parser_args, **parser_kwargs)
+
+        if errors or not data:
+            return False, None, None, messages
+
+        # sub-select the data that are needed to create the PropertyState object
+        md = MappingData()
+        create_data = {"organization_id": organization_id}
+        extra_data = {}
+        for k, v in data.items():
+            # Skip the keys that are for measures and reports and process later
+            if k in ['measures', 'reports', 'scenarios']:
+                continue
+
+            if md.find_column('PropertyState', k):
+                create_data[k] = v
+            else:
+                # TODO: break out columns in the extra data that should be part of the
+                # PropertyState and which ones should be added to some other class that
+                # doesn't exist yet.
+                extra_data[k] = v
+                # create columns, if needed, for the extra_data fields
+
+                Column.objects.get_or_create(
+                    organization_id=organization_id,
+                    column_name=k,
+                    table_name='PropertyState',
+                    is_extra_data=True,
+                )
+
+        # always create the new object, then decide if we need to merge it.
+        # create a new property_state for the object and promote to a new property_view
+        property_state = PropertyState.objects.create(**create_data)
+        property_state.extra_data = extra_data
+        property_state.save()
+
+        PropertyAuditLog.objects.create(
+            organization_id=organization_id,
+            state_id=property_state.id,
+            name='Import Creation',
+            description='Creation from Import file.',
+            import_filename=self.file.path,
+            record_type=AUDIT_IMPORT
+        )
+
+        # set the property_state_id so that we can list the building files by properties
+        self.property_state_id = property_state.id
+        self.save()
+
+        # add in the measures
+        for m in data.get('measures', []):
+            # Find the measure in the database
+            try:
+                measure = Measure.objects.get(
+                    category=m['category'], name=m['name'], organization_id=organization_id,
+                )
+            except Measure.DoesNotExist:
+                # TODO: Deal with it
+                continue
+
+            # Add the measure to the join table.
+            # Need to determine what constitutes the unique measure for a property
+            join, _ = PropertyMeasure.objects.get_or_create(
+                property_state_id=self.property_state_id,
+                measure_id=measure.pk,
+                implementation_status=PropertyMeasure.str_to_impl_status(m['implementation_status']),
+                application_scale=PropertyMeasure.str_to_application_scale(
+                    m.get('application_scale_of_application',
+                          PropertyMeasure.SCALE_ENTIRE_FACILITY)
+                ),
+                category_affected=PropertyMeasure.str_to_category_affected(
+                    m.get('system_category_affected', PropertyMeasure.CATEGORY_OTHER)
+                ),
+                recommended=m.get('recommended', 'false') == 'true',
+            )
+            join.description = m.get('description')
+            join.property_measure_name = m.get('property_measure_name')
+            join.cost_mv = m.get('mv_cost')
+            join.cost_total_first = m.get('measure_total_first_cost')
+            join.cost_installation = m.get('measure_installation_cost')
+            join.cost_material = m.get('measure_material_cost')
+            join.cost_capital_replacement = m.get('measure_capital_replacement_cost')
+            join.cost_residual_value = m.get('measure_residual_value')
+            join.save()
+
+        # add in scenarios
+        for s in data.get('scenarios', []):
+            # measures = models.ManyToManyField(PropertyMeasure)
+
+            # {'reference_case': u'Baseline', 'annual_savings_site_energy': None,
+            #  'measures': [], 'id': u'Baseline', 'name': u'Baseline'}
+
+            scenario, _ = Scenario.objects.get_or_create(
+                name=s.get('name'),
+                property_state_id=self.property_state_id,
+            )
+            scenario.description = s.get('description')
+            scenario.annual_site_energy_savings = s.get('annual_site_energy_savings')
+            scenario.annual_source_energy_savings = s.get('annual_source_energy_savings')
+            scenario.annual_cost_savings = s.get('annual_cost_savings')
+            scenario.summer_peak_load_reduction = s.get('summer_peak_load_reduction')
+            scenario.winter_peak_load_reduction = s.get('winter_peak_load_reduction')
+            scenario.hdd = s.get('hdd')
+            scenario.hdd_base_temperature = s.get('hdd_base_temperature')
+            scenario.cdd = s.get('cdd')
+            scenario.cdd_base_temperature = s.get('cdd_base_temperature')
+
+            # temporal_status = models.IntegerField(choices=TEMPORAL_STATUS_TYPES,
+            #                                       default=TEMPORAL_STATUS_CURRENT)
+
+            if s.get('reference_case'):
+                ref_case = Scenario.objects.filter(
+                    name=s.get('reference_case'),
+                    property_state_id=self.property_state_id,
+                )
+                if len(ref_case) == 1:
+                    scenario.reference_case = ref_case.first()
+
+            # set the list of measures
+            for measure_name in s['measures']:
+                # find the join measure in the database
+                measure = None
+                try:
+                    measure = PropertyMeasure.objects.get(
+                        property_state_id=self.property_state_id,
+                        property_measure_name=measure_name,
+                    )
+                except PropertyMeasure.DoesNotExist:
+                    # PropertyMeasure is not in database, skipping silently
+                    continue
+
+                scenario.measures.add(measure)
+
+            scenario.save()
+
+        if property_view:
+            # create a new blank state to merge the two together
+            merged_state = PropertyState.objects.create(organization_id=organization_id)
+
+            # assume the same cycle id as the former state.
+            # should merge_state also copy/move over the relationships?
+            merged_state, changed = merge_state(merged_state, property_view.state, property_state,
+                                                get_state_attrs([property_view.state, property_state]))
+
+            # log the merge
+            # Not a fan of the parent1/parent2 logic here, seems error prone, what this
+            # is also in here: https://github.com/SEED-platform/seed/blob/63536e99cf5be3a9a86391c5cead6dd4ff74462b/seed/data_importer/tasks.py#L1549
+            PropertyAuditLog.objects.create(
+                organization_id=organization_id,
+                parent1=PropertyAuditLog.objects.filter(state=property_view.state).first(),
+                parent2=PropertyAuditLog.objects.filter(state=property_state).first(),
+                parent_state1=property_view.state,
+                parent_state2=property_state,
+                state=merged_state,
+                name='System Match',
+                description='Automatic Merge',
+                import_filename=None,
+                record_type=AUDIT_IMPORT
+            )
+
+            property_view.state = merged_state
+            property_view.save()
+
+            merged_state.merge_state = MERGE_STATE_MERGED
+            merged_state.save()
+
+            # set the property_state to the new one
+            property_state = merged_state
+        elif not property_view:
+            property_view = property_state.promote(cycle)
+        else:
+            # invalid arguments, must pass both or neither
+            return False, None, None, "Invalid arguments passed to BuildingFile.process()"
+
+        return True, property_state, property_view, messages

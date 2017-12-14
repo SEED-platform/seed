@@ -1,0 +1,649 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<HPXML xmlns="http://hpxmlonline.com/2014/6" schemaVersion="2.2.1">
+    <XMLTransactionHeaderInformation>
+        <XMLType/>
+        <XMLGeneratedBy>Super-duper audit software v1.0</XMLGeneratedBy>
+        <CreatedDateAndTime>2014-10-07T20:25:12</CreatedDateAndTime>
+        <Transaction>create</Transaction>
+    </XMLTransactionHeaderInformation>
+    <SoftwareInfo>
+        <SoftwareProgramUsed>Super-duper audit software</SoftwareProgramUsed>
+        <SoftwareProgramVersion>1.0</SoftwareProgramVersion>
+    </SoftwareInfo>
+    <Contractor>
+        <ContractorDetails>
+            <SystemIdentifier id="contractor1"/>
+            <BusinessInfo>
+                <SystemIdentifier id="business1"/>
+                <BusinessName>ACME Home Performance Company</BusinessName>
+                <BusinessContact>
+                    <Person>
+                        <SystemIdentifier id="contractorperson1"/>
+                        <Name>
+                            <FirstName>John</FirstName>
+                            <LastName>Doe</LastName>
+                        </Name>
+                        <Email>
+                            <EmailAddress>john.doe@hpxmlonline.com</EmailAddress>
+                        </Email>
+                    </Person>
+                </BusinessContact>
+            </BusinessInfo>
+        </ContractorDetails>
+    </Contractor>
+    <Customer>
+        <CustomerDetails>
+            <Person>
+                <SystemIdentifier id="customer1"/>
+                <Name>
+                    <FirstName>Jane</FirstName>
+                    <LastName>Customer</LastName>
+                </Name>
+                <IndividualType>owner-occupant</IndividualType>
+                <Telephone>
+                    <TelephoneNumber>555-555-5555</TelephoneNumber>
+                </Telephone>
+                <Email>
+                    <EmailAddress>asdf@jkl.com</EmailAddress>
+                </Email>
+            </Person>
+        </CustomerDetails>
+    </Customer>
+    <Building>
+        <BuildingID id="bldg1"/>
+        <Site>
+            <SiteID id="bldg1site"/>
+            <Address>
+                <Address1>123 Main St</Address1>
+                <Address2/>
+                <CityMunicipality>Beverly Hills</CityMunicipality>
+                <StateCode>CA</StateCode>
+                <ZipCode>90210</ZipCode>
+            </Address>
+        </Site>
+        <ProjectStatus>
+            <EventType>audit</EventType>
+        </ProjectStatus>
+        <BuildingDetails>
+            <BuildingSummary>
+                <BuildingOccupancy>
+                    <NumberofResidents>4</NumberofResidents>
+                </BuildingOccupancy>
+                <BuildingConstruction>
+                    <YearBuilt>1961</YearBuilt>
+                    <ResidentialFacilityType>single-family detached</ResidentialFacilityType>
+                    <ConditionedFloorArea>2400</ConditionedFloorArea>
+                    <NumberofStoriesAboveGrade>1</NumberofStoriesAboveGrade>
+                    <BuildingVolume>19200</BuildingVolume>
+                    <FoundationType>
+                        <Basement>
+                            <Finished>true</Finished>
+                            <Conditioned>true</Conditioned>
+                        </Basement>
+                    </FoundationType>
+                    <EnergyScore>
+                        <ScoreType>US DOE Home Energy Score</ScoreType>
+                        <Score>8</Score>
+                    </EnergyScore>
+                </BuildingConstruction>
+            </BuildingSummary>
+            <Enclosure>
+                <AirInfiltration>
+                    <AirInfiltrationMeasurement>
+                        <SystemIdentifier id="blowerdoor1"/>
+                        <HousePressure>50</HousePressure>
+                        <BuildingAirLeakage>
+                            <UnitofMeasure>CFM</UnitofMeasure>
+                            <AirLeakage>1300</AirLeakage>
+                        </BuildingAirLeakage>
+                    </AirInfiltrationMeasurement>
+                </AirInfiltration>
+                <AtticAndRoof>
+                    <Attics>
+                        <Attic>
+                            <SystemIdentifier id="attic1"/>
+                            <AtticFloorInsulation>
+                                <SystemIdentifier id="attic1ins"/>
+                                <Layer>
+                                    <NominalRValue>19</NominalRValue>
+                                </Layer>
+                            </AtticFloorInsulation>
+                            <AtticRoofInsulation>
+                                <SystemIdentifier id="attic2ins"/>
+                                <Layer>
+                                    <NominalRValue>0</NominalRValue>
+                                </Layer>
+                            </AtticRoofInsulation>
+                        </Attic>
+                    </Attics>
+                </AtticAndRoof>
+                <Foundations>
+                    <Foundation>
+                        <SystemIdentifier id="fnd1"/>
+                        <FoundationType>
+                            <Basement>
+                                <Finished>true</Finished>
+                                <Conditioned>true</Conditioned>
+                            </Basement>
+                        </FoundationType>
+                        <FrameFloor>
+                            <SystemIdentifier id="fnd1flr1"/>
+                            <Insulation>
+                                <SystemIdentifier id="fnd1flr1ins"/>
+                                <Layer>
+                                    <NominalRValue>0</NominalRValue>
+                                </Layer>
+                            </Insulation>
+                        </FrameFloor>
+                    </Foundation>
+                </Foundations>
+                <Walls>
+                    <Wall>
+                        <SystemIdentifier id="wall1"/>
+                        <Insulation>
+                            <SystemIdentifier id="wall1ins"/>
+                            <Layer>
+                                <NominalRValue>13</NominalRValue>
+                            </Layer>
+                        </Insulation>
+                    </Wall>
+                </Walls>
+                <Doors>
+                    <Door>
+                        <SystemIdentifier id="frontdoor1"/>
+                        <StormDoor>true</StormDoor>
+                        <RValue>2.17</RValue>
+                    </Door>
+                </Doors>
+            </Enclosure>
+            <Systems>
+                <HVAC>
+                    <HVACPlant>
+                        <HeatingSystem>
+                            <SystemIdentifier id="htgsys1"/>
+                            <UnitLocation>basement - conditioned</UnitLocation>
+                            <CombustionVentingSystem idref="combvent1"/>
+                            <HeatingSystemType>
+                                <Furnace/>
+                            </HeatingSystemType>
+                            <HeatingSystemFuel>natural gas</HeatingSystemFuel>
+                            <AnnualHeatingEfficiency>
+                                <Units>AFUE</Units>
+                                <Value>0.80</Value>
+                            </AnnualHeatingEfficiency>
+                            <FractionHeatLoadServed>0.7</FractionHeatLoadServed>
+                        </HeatingSystem>
+                        <CoolingSystem>
+                            <SystemIdentifier id="clgsys1"/>
+                            <CoolingSystemType>central air conditioning</CoolingSystemType>
+                            <CoolingSystemFuel>electricity</CoolingSystemFuel>
+                            <CoolingCapacity>24000</CoolingCapacity>
+                            <FractionCoolLoadServed>0.7</FractionCoolLoadServed>
+                            <AnnualCoolingEfficiency>
+                                <Units>SEER</Units>
+                                <Value>10</Value>
+                            </AnnualCoolingEfficiency>
+                        </CoolingSystem>
+                        <HeatPump>
+                            <SystemIdentifier id="heatpump1"/>
+                            <HeatPumpType>air-to-air</HeatPumpType>
+                            <FractionHeatLoadServed>0.3</FractionHeatLoadServed>
+                            <FractionCoolLoadServed>0.3</FractionCoolLoadServed>
+                            <AnnualCoolEfficiency>
+                                <Units>SEER</Units>
+                                <Value>15</Value>
+                            </AnnualCoolEfficiency>
+                            <AnnualHeatEfficiency>
+                                <Units>HSPF</Units>
+                                <Value>8</Value>
+                            </AnnualHeatEfficiency>
+                        </HeatPump>
+                    </HVACPlant>
+                    <HVACControl>
+                        <SystemIdentifier id="thermostat1"/>
+                        <ControlType>programmable thermostat</ControlType>
+                    </HVACControl>
+                    <HVACDistribution>
+                        <SystemIdentifier id="hvacd1"/>
+                        <DistributionSystemType>
+                            <AirDistribution>
+                                <DuctLeakageMeasurement>
+                                    <DuctLeakage>
+                                        <Units>CFM25</Units>
+                                        <Value>123</Value>
+                                    </DuctLeakage>
+                                </DuctLeakageMeasurement>
+                                <Ducts>
+                                    <DuctMaterial>sheet metal</DuctMaterial>
+                                    <DuctInsulationRValue>4</DuctInsulationRValue>
+                                    <DuctLocation>conditioned space</DuctLocation>
+                                </Ducts>
+                            </AirDistribution>
+                        </DistributionSystemType>
+                        <ConditionedFloorAreaServed>2400</ConditionedFloorAreaServed>
+                        <HVACDistributionImprovement>
+                            <DuctSystemSealed>true</DuctSystemSealed>
+                        </HVACDistributionImprovement>
+                    </HVACDistribution>
+                </HVAC>
+                <CombustionVentilation>
+                    <CombustionVentilationSystem>
+                        <SystemIdentifier id="combvent1"/>
+                        <VentSystemType>atmospheric</VentSystemType>
+                    </CombustionVentilationSystem>
+                </CombustionVentilation>
+                <WaterHeating>
+                    <WaterHeatingSystem>
+                        <SystemIdentifier id="dhw1"/>
+                        <FuelType>natural gas</FuelType>
+                        <WaterHeaterType>storage water heater</WaterHeaterType>
+                        <Location>conditioned space</Location>
+                        <CombustionVentingSystem idref="combvent1"/>
+                    </WaterHeatingSystem>
+                </WaterHeating>
+            </Systems>
+            <Appliances>
+                <ClothesWasher>
+                    <SystemIdentifier id="clotheswasher1"/>
+                    <Type>top loader</Type>
+                </ClothesWasher>
+                <Refrigerator>
+                    <SystemIdentifier id="refrig1"/>
+                    <Type>side-by-side</Type>
+                    <PrimaryIndicator>true</PrimaryIndicator>
+                </Refrigerator>
+            </Appliances>
+            <Lighting>
+                <LightingGroup>
+                    <SystemIdentifier id="lights1"/>
+                    <NumberofUnits>20</NumberofUnits>
+                    <LightingType>
+                        <Incandescent/>
+                    </LightingType>
+                    <AverageWattage>60</AverageWattage>
+                    <AverageHoursPerDay>3</AverageHoursPerDay>
+                </LightingGroup>
+            </Lighting>
+            <HealthAndSafety>
+                <Ventilation>
+                    <OtherVentilationIssues>
+                        <SystemIdentifier id="ventissues"/>
+                        <ClothesDryerVented>
+                            <Yes/>
+                        </ClothesDryerVented>
+                    </OtherVentilationIssues>
+                </Ventilation>
+                <MoistureControl>
+                    <MoistureControlInfo>
+                        <SystemIdentifier id="moistctl1"/>
+                    </MoistureControlInfo>
+                    <MoistureControlImprovement>
+                        <VaporRetardersInstalled>false</VaporRetardersInstalled>
+                    </MoistureControlImprovement>
+                </MoistureControl>
+                <CombustionAppliances>
+                    <CombustionApplianceZone>
+                        <SystemIdentifier id="cazzone1"/>
+                        <CombustionApplianceTest>
+                            <CAZAppliance id="dhw1"/>
+                        </CombustionApplianceTest>
+                    </CombustionApplianceZone>
+                </CombustionAppliances>
+            </HealthAndSafety>
+        </BuildingDetails>
+    </Building>
+    <Building>
+        <BuildingID id="bldg1p"/>
+        <Site>
+            <SiteID id="bldg1sitep"/>
+            <Address>
+                <Address1>123 Main St</Address1>
+                <Address2/>
+                <CityMunicipality>Beverly Hills</CityMunicipality>
+                <StateCode>CA</StateCode>
+                <ZipCode>90210</ZipCode>
+            </Address>
+        </Site>
+        <ProjectStatus>
+            <EventType>proposed workscope</EventType>
+        </ProjectStatus>
+        <BuildingDetails>
+            <BuildingSummary>
+                <BuildingOccupancy>
+                    <NumberofResidents>4</NumberofResidents>
+                </BuildingOccupancy>
+                <BuildingConstruction>
+                    <YearBuilt>1961</YearBuilt>
+                    <ResidentialFacilityType>single-family detached</ResidentialFacilityType>
+                    <ConditionedFloorArea>2400</ConditionedFloorArea>
+                    <NumberofStoriesAboveGrade>1</NumberofStoriesAboveGrade>
+                    <BuildingVolume>19200</BuildingVolume>
+                    <FoundationType>
+                        <Basement>
+                            <Finished>true</Finished>
+                            <Conditioned>true</Conditioned>
+                        </Basement>
+                    </FoundationType>
+                </BuildingConstruction>
+            </BuildingSummary>
+            <Enclosure>
+                <AirInfiltration>
+                    <AirInfiltrationMeasurement>
+                        <SystemIdentifier id="blowerdoor1p" sameas="blowerdoor1"/>
+                        <HousePressure>50</HousePressure>
+                        <BuildingAirLeakage>
+                            <UnitofMeasure>CFM</UnitofMeasure>
+                            <AirLeakage>1300</AirLeakage>
+                        </BuildingAirLeakage>
+                    </AirInfiltrationMeasurement>
+                </AirInfiltration>
+                <AtticAndRoof>
+                    <Attics>
+                        <Attic>
+                            <SystemIdentifier id="attic1p" sameas="attic1"/>
+                            <AtticFloorInsulation>
+                                <SystemIdentifier id="attic1insp"/>
+                                <Layer>
+                                    <NominalRValue>49</NominalRValue>
+                                </Layer>
+                            </AtticFloorInsulation>
+                            <AtticRoofInsulation>
+                                <SystemIdentifier id="attic2insp" sameas="attic2ins"/>
+                                <Layer>
+                                    <NominalRValue>0</NominalRValue>
+                                </Layer>
+                            </AtticRoofInsulation>
+                        </Attic>
+                    </Attics>
+                </AtticAndRoof>
+                <Foundations>
+                    <Foundation>
+                        <SystemIdentifier id="fnd1p" sameas="fnd1"/>
+                        <FoundationType>
+                            <Basement>
+                                <Finished>true</Finished>
+                                <Conditioned>true</Conditioned>
+                            </Basement>
+                        </FoundationType>
+                        <FrameFloor>
+                            <SystemIdentifier id="fnd1flr1p" sameas="fnd1flr1"/>
+                            <Insulation>
+                                <SystemIdentifier id="fnd1flr1insp" sameas="fnd1flr1ins"/>
+                                <Layer>
+                                    <NominalRValue>0</NominalRValue>
+                                </Layer>
+                            </Insulation>
+                        </FrameFloor>
+                    </Foundation>
+                </Foundations>
+                <Walls>
+                    <Wall>
+                        <SystemIdentifier id="wall1p" sameas="wall1"/>
+                        <Insulation>
+                            <SystemIdentifier id="wall1insp" sameas="wall1ins"/>
+                            <Layer>
+                                <NominalRValue>13</NominalRValue>
+                            </Layer>
+                        </Insulation>
+                    </Wall>
+                </Walls>
+                <Doors>
+                    <Door>
+                        <SystemIdentifier id="frontdoor1p" sameas="frontdoor1"/>
+                        <StormDoor>true</StormDoor>
+                        <RValue>2.17</RValue>
+                    </Door>
+                </Doors>
+            </Enclosure>
+            <Systems>
+                <HVAC>
+                    <HVACPlant>
+                        <HeatingSystem>
+                            <SystemIdentifier id="htgsys1p"/>
+                            <UnitLocation>basement - conditioned</UnitLocation>
+                            <CombustionVentingSystem idref="combvent1p"/>
+                            <HeatingSystemType>
+                                <Furnace/>
+                            </HeatingSystemType>
+                            <HeatingSystemFuel>natural gas</HeatingSystemFuel>
+                            <AnnualHeatingEfficiency>
+                                <Units>AFUE</Units>
+                                <Value>0.92</Value>
+                            </AnnualHeatingEfficiency>
+                            <FractionHeatLoadServed>0.7</FractionHeatLoadServed>
+                        </HeatingSystem>
+                        <CoolingSystem>
+                            <SystemIdentifier id="clgsys1p" sameas="clgsys1"/>
+                            <CoolingSystemType>central air conditioning</CoolingSystemType>
+                            <CoolingSystemFuel>electricity</CoolingSystemFuel>
+                            <CoolingCapacity>24000</CoolingCapacity>
+                            <FractionCoolLoadServed>0.7</FractionCoolLoadServed>
+                            <AnnualCoolingEfficiency>
+                                <Units>SEER</Units>
+                                <Value>10</Value>
+                            </AnnualCoolingEfficiency>
+                        </CoolingSystem>
+                        <HeatPump>
+                            <SystemIdentifier id="heatpump1p" sameas="heatpump1"/>
+                            <HeatPumpType>air-to-air</HeatPumpType>
+                            <FractionHeatLoadServed>0.3</FractionHeatLoadServed>
+                            <FractionCoolLoadServed>0.3</FractionCoolLoadServed>
+                            <AnnualCoolEfficiency>
+                                <Units>SEER</Units>
+                                <Value>15</Value>
+                            </AnnualCoolEfficiency>
+                            <AnnualHeatEfficiency>
+                                <Units>HSPF</Units>
+                                <Value>8</Value>
+                            </AnnualHeatEfficiency>
+                        </HeatPump>
+                    </HVACPlant>
+                    <HVACControl>
+                        <SystemIdentifier id="thermostat1p" sameas="thermostat1"/>
+                        <ControlType>programmable thermostat</ControlType>
+                    </HVACControl>
+                    <HVACDistribution>
+                        <SystemIdentifier id="hvacd1p" sameas="hvacd1"/>
+                        <DistributionSystemType>
+                            <AirDistribution>
+                                <DuctLeakageMeasurement>
+                                    <DuctLeakage>
+                                        <Units>CFM25</Units>
+                                        <Value>123</Value>
+                                    </DuctLeakage>
+                                </DuctLeakageMeasurement>
+                                <Ducts>
+                                    <DuctMaterial>sheet metal</DuctMaterial>
+                                    <DuctInsulationRValue>4</DuctInsulationRValue>
+                                    <DuctLocation>conditioned space</DuctLocation>
+                                </Ducts>
+                            </AirDistribution>
+                        </DistributionSystemType>
+                        <ConditionedFloorAreaServed>2400</ConditionedFloorAreaServed>
+                        <HVACDistributionImprovement>
+                            <DuctSystemSealed>true</DuctSystemSealed>
+                        </HVACDistributionImprovement>
+                    </HVACDistribution>
+                </HVAC>
+                <CombustionVentilation>
+                    <CombustionVentilationSystem>
+                        <SystemIdentifier id="combvent1p" sameas="combvent1"/>
+                        <VentSystemType>atmospheric</VentSystemType>
+                    </CombustionVentilationSystem>
+                </CombustionVentilation>
+                <WaterHeating>
+                    <WaterHeatingSystem>
+                        <SystemIdentifier id="dhw1p" sameas="dhw1"/>
+                        <FuelType>natural gas</FuelType>
+                        <WaterHeaterType>storage water heater</WaterHeaterType>
+                        <Location>conditioned space</Location>
+                        <CombustionVentingSystem idref="combvent1"/>
+                    </WaterHeatingSystem>
+                </WaterHeating>
+            </Systems>
+            <Appliances>
+                <ClothesWasher>
+                    <SystemIdentifier id="clotheswasher1p" sameas="clotheswasher1"/>
+                    <Type>top loader</Type>
+                </ClothesWasher>
+                <Refrigerator>
+                    <SystemIdentifier id="refrig1p" sameas="refrig1"/>
+                    <Type>side-by-side</Type>
+                    <PrimaryIndicator>true</PrimaryIndicator>
+                </Refrigerator>
+            </Appliances>
+            <Lighting>
+                <LightingGroup>
+                    <SystemIdentifier id="lights1p" sameas="lights1"/>
+                    <NumberofUnits>20</NumberofUnits>
+                    <LightingType>
+                        <Incandescent/>
+                    </LightingType>
+                    <AverageWattage>60</AverageWattage>
+                    <AverageHoursPerDay>3</AverageHoursPerDay>
+                </LightingGroup>
+            </Lighting>
+            <HealthAndSafety>
+                <Ventilation>
+                    <OtherVentilationIssues>
+                        <SystemIdentifier id="ventissuesp" sameas="ventissues"/>
+                        <ClothesDryerVented>
+                            <Yes/>
+                        </ClothesDryerVented>
+                    </OtherVentilationIssues>
+                </Ventilation>
+                <MoistureControl>
+                    <MoistureControlInfo>
+                        <SystemIdentifier id="moistctl1p" sameas="moistctl1"/>
+                    </MoistureControlInfo>
+                    <MoistureControlImprovement>
+                        <VaporRetardersInstalled>false</VaporRetardersInstalled>
+                    </MoistureControlImprovement>
+                </MoistureControl>
+                <CombustionAppliances>
+                    <!-- Seems odd to have all these on the proposed workscope. -->
+                    <CombustionApplianceZone>
+                        <SystemIdentifier id="cazzone1p" sameas="cazzone1"/>
+                        <CAZDepressurizationLimit>1</CAZDepressurizationLimit>
+                        <PoorCaseTest>
+                            <Pressure>50</Pressure>
+                        </PoorCaseTest>
+                        <DepressurizationFindingPoorCase>pass</DepressurizationFindingPoorCase>
+                        <AmountAmbientCOinCAZduringTesting>2</AmountAmbientCOinCAZduringTesting>
+                        <CombustionApplianceTest>
+                            <CAZAppliance id="dhw1p"/>
+                            <FlueDraftTest>
+                                <PoorScenario>456</PoorScenario>
+                                <CurrentCondition>123</CurrentCondition>
+                                <TestResult>passed</TestResult>
+                            </FlueDraftTest>
+                            <SpillageTest>
+                                <PoorScenario>456</PoorScenario>
+                                <CurrentCondition>123</CurrentCondition>
+                                <TestResult>passed</TestResult>
+                            </SpillageTest>
+                            <CarbonMonoxideTest>
+                                <PoorScenario>456.7</PoorScenario>
+                                <CurrentCondition>123.4</CurrentCondition>
+                                <TestResult>passed</TestResult>
+                                <MaxAmbientCOinLivingSpaceDuringAudit>2</MaxAmbientCOinLivingSpaceDuringAudit>
+                            </CarbonMonoxideTest>
+                            <FuelLeaks>
+                                <FuelType>natural gas</FuelType>
+                                <LeaksIdentified>false</LeaksIdentified>
+                                <LeaksAddressed>false</LeaksAddressed>
+                            </FuelLeaks>
+                        </CombustionApplianceTest>
+                        <CombustionApplianceTest>
+                            <CAZAppliance id="htgsys1p"/>
+                            <FlueDraftTest>
+                                <PoorScenario>456</PoorScenario>
+                                <CurrentCondition>123</CurrentCondition>
+                                <TestResult>passed</TestResult>
+                            </FlueDraftTest>
+                            <SpillageTest>
+                                <PoorScenario>456</PoorScenario>
+                                <CurrentCondition>123</CurrentCondition>
+                                <TestResult>passed</TestResult>
+                            </SpillageTest>
+                            <CarbonMonoxideTest>
+                                <PoorScenario>456.7</PoorScenario>
+                                <CurrentCondition>123.4</CurrentCondition>
+                                <TestResult>passed</TestResult>
+                                <MaxAmbientCOinLivingSpaceDuringAudit>2</MaxAmbientCOinLivingSpaceDuringAudit>
+                            </CarbonMonoxideTest>
+                            <FuelLeaks>
+                                <FuelType>natural gas</FuelType>
+                                <LeaksIdentified>false</LeaksIdentified>
+                                <LeaksAddressed>false</LeaksAddressed>
+                            </FuelLeaks>
+                        </CombustionApplianceTest>
+                    </CombustionApplianceZone>
+                </CombustionAppliances>
+            </HealthAndSafety>
+        </BuildingDetails>
+    </Building>
+    <Project>
+        <BuildingID id="bldg1p"/>
+        <ProjectDetails>
+            <ProjectSystemIdentifiers id="bldg1"/>
+            <ProjectSystemIdentifiers id="bldg1p"/>
+            <ProgramCertificate>Home Performance with Energy Star</ProgramCertificate>
+            <ProjectStatus>
+                <EventType>proposed workscope</EventType>
+            </ProjectStatus>
+            <EnergySavingsInfo>
+                <EnergySavingsType>estimated</EnergySavingsType>
+                <FuelSavings>
+                    <Fuel>electricity</Fuel>
+                    <Units>kWh</Units>
+                    <TotalSavings>3000</TotalSavings>
+                    <TotalDollarSavings>55</TotalDollarSavings>
+                    <PctReduction>0.1</PctReduction>
+                </FuelSavings>
+                <FuelSavings>
+                    <Fuel>natural gas</Fuel>
+                    <Units>therms</Units>
+                    <TotalSavings>100</TotalSavings>
+                    <TotalDollarSavings>123</TotalDollarSavings>
+                    <PctReduction>0.3</PctReduction>
+                </FuelSavings>
+                <AnnualPercentReduction>0.25</AnnualPercentReduction><!-- 25% -->
+            </EnergySavingsInfo>
+            <Measures>
+                <Measure>
+                    <MeasureSystemIdentifiers>
+                        <SystemIdentifiersInfo id="insulateattic"/>
+                    </MeasureSystemIdentifiers>
+                    <Cost>1200</Cost>
+                    <ReplacedComponents>
+                        <ReplacedComponent id="attic1ins"/>
+                    </ReplacedComponents>
+                    <InstalledComponent id="attic1insp"/>
+                </Measure>
+                <Measure>
+                    <MeasureSystemIdentifiers>
+                        <SystemIdentifiersInfo id="furnacereplacement"/>
+                    </MeasureSystemIdentifiers>
+                    <Cost>3000</Cost>
+                    <ReplacedComponents>
+                        <ReplacedComponent id="htgsys1"/>
+                    </ReplacedComponents>
+                    <InstalledComponent id="htgsys1p"/>
+                </Measure>
+            </Measures>
+        </ProjectDetails>
+    </Project>
+    <Utility>
+        <UtilitiesorFuelProviders>
+            <UtilityFuelProvider>
+                <SystemIdentifier id="gasco"/>
+                <UtilityServiceTypeProvided>natural gas</UtilityServiceTypeProvided>
+            </UtilityFuelProvider>
+            <UtilityFuelProvider>
+                <SystemIdentifier id="eleco"/>
+                <UtilityServiceTypeProvided>electricity</UtilityServiceTypeProvided>
+            </UtilityFuelProvider>
+        </UtilitiesorFuelProviders>
+    </Utility>
+</HPXML>

@@ -696,7 +696,6 @@ def _save_raw_green_button_data(file_pk):
     """
 
     import_file = ImportFile.objects.get(pk=file_pk)
-
     import_file.raw_save_done = True
     import_file.save()
 

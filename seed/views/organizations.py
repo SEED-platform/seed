@@ -335,12 +335,12 @@ class OrganizationViewSet(viewsets.ViewSet):
                 'message': 'organization does not exist'
             }, status=status.HTTP_404_NOT_FOUND)
         if (
-            not request.user.is_superuser and
-            not OrganizationUser.objects.filter(
-                user=request.user,
-                organization=org,
-                role_level__in=[ROLE_OWNER, ROLE_MEMBER, ROLE_VIEWER]
-            ).exists()
+                not request.user.is_superuser and
+                not OrganizationUser.objects.filter(
+                    user=request.user,
+                    organization=org,
+                    role_level__in=[ROLE_OWNER, ROLE_MEMBER, ROLE_VIEWER]
+                ).exists()
         ):
             # TODO: better permission and return 401 or 403
             return JsonResponse({
@@ -441,7 +441,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             }, status=status.HTTP_404_NOT_FOUND)
 
         if not OrganizationUser.objects.filter(
-                user=request.user, organization=org, role_level=ROLE_OWNER
+            user=request.user, organization=org, role_level=ROLE_OWNER
         ).exists():
             return JsonResponse({
                 'status': 'error',
@@ -499,9 +499,9 @@ class OrganizationViewSet(viewsets.ViewSet):
                type: string
                description: error/informational message, if any
                required: false
-           organization_id:
-               type: string
-               description: The ID of the new org, if created
+           organization:
+               type: dict
+               description: A dictionary of the organization created
                required: false
         """
         body = request.data
@@ -515,9 +515,13 @@ class OrganizationViewSet(viewsets.ViewSet):
             }, status=status.HTTP_409_CONFLICT)
 
         org, _, _ = create_organization(user, org_name, org_name)
-        return JsonResponse({'status': 'success',
-                             'message': 'organization created',
-                             'organization_id': org.pk})
+        return JsonResponse(
+            {
+                'status': 'success',
+                'message': 'organization created',
+                'organization': _dict_org(request, [org])[0]
+            }
+        )
 
     @api_endpoint_class
     @ajax_request_class
@@ -683,13 +687,13 @@ class OrganizationViewSet(viewsets.ViewSet):
         }
 
         for exportable_field in SharedBuildingField.objects.filter(
-                org=org, field_type=INTERNAL
+            org=org, field_type=INTERNAL
         ).select_related('field'):
             field_name = exportable_field.field.name
             shared_field = columns[field_name]
             result['shared_fields'].append(shared_field)
         for exportable_field in SharedBuildingField.objects.filter(
-                org=org, field_type=PUBLIC
+            org=org, field_type=PUBLIC
         ).select_related('field'):
             field_name = exportable_field.field.name
             shared_field = columns[field_name]

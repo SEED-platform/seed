@@ -100,7 +100,13 @@ class TestMappingData(TestCase):
             'state',
             'use_description',
             'year_built',
-            'year_ending'
+            'year_ending',
+            'analysis_start_time',
+            'analysis_state_message',
+            'analysis_state',
+            'analysis_end_time',
+            'site_eui_modeled',
+            'source_eui_modeled',
         ]
 
         # remove or merge into above after we merge/rename 'release:use_pint'
