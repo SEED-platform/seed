@@ -258,7 +258,8 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
 
             property_view = result.pop('property_view')
 
-            # passing in the existing property state allows it to process the buildingsync without creating a new state
+            # passing in the existing propertyview allows it to process the buildingsync file and attach it to the
+            # existing propertyview.
             p_status, new_pv_state, new_pv_view, messages = building_file.process(
                 organization_id, cycle, property_view=property_view
             )
