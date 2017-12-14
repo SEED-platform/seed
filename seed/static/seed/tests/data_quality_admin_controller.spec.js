@@ -11,6 +11,10 @@ describe('controller: data_quality_admin_controller', function () {
   // 'config.seed' is created in TestFilters.html
   beforeEach(function () {
     module('BE.seed');
+    inject(function (_$httpBackend_) {
+      $httpBackend = _$httpBackend_;
+      $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
+    });
     inject(function ($controller, $rootScope/*, $q*/) {
       controller = $controller;
       data_quality_admin_controller_scope = $rootScope.$new();
