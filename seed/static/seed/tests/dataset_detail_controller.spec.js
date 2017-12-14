@@ -11,6 +11,10 @@ describe('controller: dataset_detail_controller', function () {
   // 'config.seed' is created in TestFilters.html
   beforeEach(function () {
     module('BE.seed');
+    inject(function (_$httpBackend_) {
+      $httpBackend = _$httpBackend_;
+      $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
+    });
     inject(function ($controller, $rootScope, $uibModal, urls, $q, dataset_service) {
       controller = $controller;
       dataset_detail_controller_scope = $rootScope.$new();

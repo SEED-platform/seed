@@ -13,6 +13,10 @@ describe('Controller: matching_list_controller', function () {
   // 'config.seed' is created in TestFilters.html
   beforeEach(function () {
     module('BE.seed');
+    inject(function (_$httpBackend_) {
+      $httpBackend = _$httpBackend_;
+      $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
+    });
     inject(function ($controller, $rootScope, $q, _$state_, inventory_service, spinner_utility) {
       controller = $controller;
       $state = _$state_;
