@@ -1,7 +1,7 @@
 <div class="page_header_container">
     <div class="page_header">
         <div class="left page_action_container">
-            <a ui-sref="organizations" class="page_action"><i class="fa fa-chevron-left"></i> Organizations</a>
+            <a ui-sref="organizations" class="page_action"><i class="fa fa-chevron-left"></i> {$:: 'Organizations' | translate $}</a>
         </div>
         <div class="page_title">
             <h1>{$:: org.name $}</h1>
@@ -17,29 +17,29 @@
     <div class="section_header_container">
         <div class="section_header has_no_padding fixed_height_short">
             <div class="section_action_container left">
-                <h2><i class="fa fa-share-square-o"></i> Sharing Your Data</h2>
+                <h2><i class="fa fa-share-square-o"></i> {$:: 'Sharing Your Data' | translate $}</h2>
             </div>
             <div class="section_action_container right section_action_btn">
-                <button type="button" class="pull-right btn btn-primary" ng-click="save_settings()">Save Changes <i class="fa fa-check" ng-show="settings_updated"></i></button>
+                <button type="button" class="pull-right btn btn-primary" ng-click="save_settings()">{$:: 'Save Changes' | translate $} <i class="fa fa-check" ng-show="settings_updated"></i></button>
             </div>
         </div>
     </div>
     <div class="section_content_container">
         <div class="section_content with_padding" ng-if="::org.is_parent && auth.requires_owner">
-            <h3>Selecting Fields to Share</h3>
-            <p>As the admin of your SEED instance you can control what data is shared throughout your organization and between your sub-organizations as well as what data is shared externally with the public-at-large. The subset of data you choose to share with the public can be different than the subset shared between your sub-organizations.</p>
-            <p>From the list below, select the fields that you want to: 1) share internally within your organization, and 2) share publicly with users outside your organization.</p>
+            <h3 translate>Selecting Fields to Share</h3>
+            <p translate>As the admin of your SEED instance you can control what data is shared throughout your organization and between your sub-organizations as well as what data is shared externally with the public-at-large. The subset of data you choose to share with the public can be different than the subset shared between your sub-organizations.</p>
+            <p translate>From the list below, select the fields that you want to: 1) share internally within your organization, and 2) share publicly with users outside your organization.</p>
             <div class="table_list_container has_borders">
                 <table class="table has_no_btm_margin table-striped table_highlight_first">
                     <thead>
                         <tr>
-                            <th colspan="2" class="condensed_head">SHARE DATA WITH</th>
+                            <th colspan="2" class="condensed_head" translate>SHARE DATA WITH</th>
                             <th></th>
                         </tr>
                         <tr>
-                            <th class="condensed_head">INTERNAL</th>
-                            <th class="condensed_head">PUBLIC</th>
-                            <th>Field Name</th>
+                            <th class="condensed_head" translate>INTERNAL</th>
+                            <th class="condensed_head" translate>PUBLIC</th>
+                            <th translate>Field Name</th>
                         </tr>
                         <tr class="sub_head">
                             <th class="sub_head check is_aligned_center condensed_head">
@@ -49,7 +49,11 @@
                                 <input type="checkbox" ng-model="controls.public_select_all" ng-change="select_all_clicked('public')">
                             </th>
                             <th class="sub_head">
-                                <input type="text" class="form-control input-sm" ng-model="filter_params.title" placeholder="Search field name" ng-class="{active: filter_params.title.length > 0}">
+                              <input type="text"
+                                     class="form-control input-sm"
+                                     ng-model="filter_params.title"
+                                     placeholder="{$:: 'Search field name' | translate $}"
+                                     ng-class="{active: filter_params.title.length > 0}">
                             </th>
                         </tr>
                     </thead>
@@ -65,7 +69,7 @@
                                     <input type="checkbox" ng-model="field.public_checked">
                                 </td>
                                 <td>
-                                    <span>{$:: field.title $}</span>
+                                    <span>{$:: field.title | translate $}</span>
                                 </td>
                             </tr>
                         </tbody>
@@ -75,12 +79,12 @@
         </div>
         <div class="section_content with_padding">
             <div ng-if="::org.is_parent && auth.requires_owner">
-                <h3>Set a Query Threshold</h3>
-                <p>Enter the minimum threshold count of buildings that can be returned in a shared query. The building count threshold is important for allowing other organizations to perform statistical analysis on your data without revealing information about individual buildings.</p>
+                <h3 translate>Set a Query Threshold</h3>
+                <p translate>Enter the minimum threshold count of buildings that can be returned in a shared query. The building count threshold is important for allowing other organizations to perform statistical analysis on your data without revealing information about individual buildings.</p>
                 <form class="form-horizontal" role="form">
                     <div class="form-group">
                         <div class="col-sm-2">
-                            <input type="number" class="form-control" id="editQueryThreshold" placeholder="Count #" ng-model="org.query_threshold" min="0">
+                            <input type="number" class="form-control" id="editQueryThreshold" placeholder="{$:: 'Count #' | translate $}" ng-model="org.query_threshold" min="0">
                         </div>
                     </div>
                 </form>
@@ -88,7 +92,7 @@
         </div>
         <div class="section_content_container">
             <div class="section_content with_padding">
-                <button type="button" class="pull-right btn btn-primary" ng-click="save_settings()">Save Changes <i class="fa fa-check" ng-show="settings_updated"></i></button>
+                <button type="button" class="pull-right btn btn-primary" ng-click="save_settings()">{$:: 'Save Changes' | translate $} <i class="fa fa-check" ng-show="settings_updated"></i></button>
             </div>
         </div>
     </div>

@@ -25,6 +25,7 @@ from seed.models import (
     Column,
     Cycle,
     PropertyView,
+    TaxLot,
     TaxLotAuditLog,
     TaxLotProperty,
     TaxLotState,
@@ -260,7 +261,7 @@ class TaxLotViewSet(GenericViewSet):
         organization_id = int(request.query_params.get('organization_id'))
         columns = Column.retrieve_all(organization_id, 'taxlot')
 
-        return JsonResponse({'columns': columns})
+        return JsonResponse({'status': 'success', 'columns': columns})
 
     @api_endpoint_class
     @ajax_request_class
@@ -456,6 +457,8 @@ class TaxLotViewSet(GenericViewSet):
             result.update(TaxLotViewSerializer(taxlot_view).data)
             # remove TaxLotView id from result
             result.pop('id')
+            result['taxlot']['db_taxlot_updated'] = result['taxlot']['updated']
+            result['taxlot']['db_taxlot_created'] = result['taxlot']['created']
             result['state'] = TaxLotStateSerializer(taxlot_view.state).data
             result['properties'] = self._get_properties(taxlot_view.pk)
             result['history'], master = self.get_history(taxlot_view)
@@ -569,6 +572,12 @@ class TaxLotViewSet(GenericViewSet):
                     status_code = 422
                     return JsonResponse(result, status=status_code)
 
+                # update the property object just to save the new datatime
+                taxlot_obj = TaxLot.objects.get(id=pk)
+                taxlot_obj.save()
+
+            # save the tax lot view, even if it hasn't changed so that the datetime gets updated on the taxlot.
+            taxlot_view.save()
         else:
             status_code = status.HTTP_404_NOT_FOUND
         return JsonResponse(result, status=status_code)

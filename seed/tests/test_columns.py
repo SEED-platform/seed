@@ -405,7 +405,11 @@ class TestColumnsByInventory(TestCase):
                 "building_certification": "string",
                 "number_properties": "integer",
                 "block_number": "string",
-                "district": "string"
+                "district": "string",
+                "db_property_created": "datetime",
+                "db_property_updated": "datetime",
+                "db_taxlot_created": "datetime",
+                "db_taxlot_updated": "datetime",
             }
         }
 
@@ -419,14 +423,14 @@ class TestColumnsByInventory(TestCase):
         schema["types"]["source_eui_pint"] = ""
 
         columns = Column.retrieve_db_types()
-        self.assertEqual(schema, columns)
+        self.assertDictEqual(schema, columns)
 
     def test_column_retrieve_db_fields(self):
         c = Column.retrieve_db_fields()
 
         data = ['address_line_1', 'address_line_2', 'block_number', 'building_certification',
                 'building_count', 'campus', 'city', 'conditioned_floor_area', 'custom_id_1',
-                'district',
+                'district', 'db_taxlot_created', 'db_taxlot_updated', 'db_property_updated', 'db_property_created',
                 'energy_alerts', 'energy_score', 'generation_date', 'gross_floor_area',
                 'home_energy_score_id', 'jurisdiction_property_id', 'jurisdiction_tax_lot_id',
                 'lot_number', 'number_properties', 'occupied_floor_area', 'owner', 'owner_address',
