@@ -148,33 +148,47 @@ class TestMapper(TestCase):
         self.assertDictEqual(dyn_mapping, expected)
 
     def test_build_column_mapping_with_defaults(self):
+        raw_columns = [
+            u'Address',
+            u'Name',
+            u'City',
+            u'Jurisdiction',
+            u'Building ID',
+            u'Random Column',
+        ]
         expected = {
             u'Address': [u'PropertyState', u'address_line_1', 90],
-            u'BBL': [u'TaxLotState', u'jurisdiction_tax_lot_id', 0],
-            u'Building ID': [u'PropertyState', u'custom_id_1', 27],
-            u'City': [u'PropertyState', u'city', 100],
             u'Name': [u'PropertyState', u'name', 100],
-            u'Special Column': [u'PropertyState', u'New Special Column', 100]
+            u'City': [u'PropertyState', u'city', 100],
+            u'Jurisdiction': [u'TaxLotState', u'jurisdiction_tax_lot_id', 90],
+            u'Building ID': [u'PropertyState', u'custom_id_1', 90],
+            u'Random Column': [u'PropertyState', u'Random Column', 100]
         }
 
-        # Here we pretend that we're doing a query and returning
-        # relevant results.
-
+        # test a get_mapping method
         def get_mapping(raw, *args, **kwargs):
             if raw == u'Building ID':
-                return [u'PropertyState', u'custom_id_1', 27]
+                return [u'PropertyState', u'custom_id_1', 90]
 
-        defaults = {'Special Column': ['PropertyState', 'New Special Column', 100]}
+        # without defaults to start with
+        dyn_mapping = mapper.build_column_mapping(
+            raw_columns,
+            self.dest_columns,
+            previous_mapping=get_mapping,
+            thresh=60
+        )
+        self.assertDictEqual(dyn_mapping, expected)
 
-        raw_columns = copy.deepcopy(self.raw_columns)
-        raw_columns.append('Special Column')
+        # now with defaults
+        defaults = {'Random Column': ['PropertyState', 'New Random Column Default Name', 100]}
+        # update the expected
+        expected[u'Random Column'] = [u'PropertyState', u'New Random Column Default Name', 100]
         dyn_mapping = mapper.build_column_mapping(
             raw_columns,
             self.dest_columns,
             previous_mapping=get_mapping,
             default_mappings=defaults,
         )
-
         self.assertDictEqual(dyn_mapping, expected)
 
     def test_build_column_mapping_with_callable_and_ignored_column(self):
