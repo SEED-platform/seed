@@ -6,11 +6,11 @@
 """
 import copy
 import csv
-import datetime
 import json
 import logging
 import os.path as osp
 
+import datetime
 from dateutil import parser
 from django.core.files import File
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -139,14 +139,6 @@ class TestMappingPortfolioData(DataMappingBaseTestCase):
         self.assertListEqual(
             sorted([d.column_name for d in data_columns]), ['Double Tester']
         )
-
-    def test_map_data_persist_mappings(self):
-        """Remember the mappings when changing the PM mappings"""
-        tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
-
-        # change a couple of the mappings
-        Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.pk)
-        tasks.map_data(self.import_file.pk)
 
 
 class TestMappingExampleData(DataMappingBaseTestCase):
