@@ -4,20 +4,13 @@
 :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author Dan Gunter <dkgunter@lbl.gov>
 """
-import copy
 import logging
 from collections import defaultdict
-
-from django.db import IntegrityError
-from django.forms.models import model_to_dict
 
 from seed.lib.mappings.mapping_data import MappingData
 from seed.models import (
     PropertyState,
     TaxLotState,
-    Simulation,
-    PropertyMeasure,
-    Scenario,
 )
 from seed.utils.mapping import get_mappable_columns
 
@@ -90,8 +83,6 @@ def get_state_attrs(state_list):
         return get_propertystate_attrs(state_list)
     elif isinstance(state_list[0], TaxLotState):
         return get_taxlotstate_attrs(state_list)
-
-
 
 
 def _merge_extra_data(b1, b2, default=None):

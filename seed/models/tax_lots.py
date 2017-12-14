@@ -253,6 +253,7 @@ class TaxLotState(models.Model):
         """Stub to implement if merging TaxLotState relationships is needed"""
         return None
 
+
 class TaxLotView(models.Model):
     taxlot = models.ForeignKey(TaxLot, related_name='views', null=True,
                                on_delete=models.CASCADE)

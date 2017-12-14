@@ -6,14 +6,17 @@
 """
 from __future__ import unicode_literals
 
+import copy
 import logging
 import pdb
 
-from django.contrib.postgres.fields import JSONField
-from django.db import models
 from django.apps import apps
+from django.contrib.postgres.fields import JSONField
+from django.db import IntegrityError
+from django.db import models
 from django.db.models.signals import pre_delete, post_save
 from django.dispatch import receiver
+from django.forms.models import model_to_dict
 from quantityfield.fields import QuantityField
 
 from auditlog import AUDIT_IMPORT
