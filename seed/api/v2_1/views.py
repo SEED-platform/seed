@@ -18,6 +18,7 @@ from rest_framework import status
 from rest_framework.decorators import detail_route
 
 from seed.building_sync.building_sync import BuildingSync
+from seed.hpxml.hpxml import HPXML
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (
     PropertyView,
@@ -195,6 +196,57 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
         else:
             # create a new XML from the record, do not import existing XML
             xml = bs.export(property_view.state, BuildingSync.BRICR_STRUCT)
+            return HttpResponse(xml, content_type='application/xml')
+
+    @detail_route(methods=['GET'])
+    def hpxml(self, request, pk):
+        """
+        Return HPXML representation of the property
+
+        ---
+        parameters:
+            - name: pk
+              description: The PropertyView to return the HPXML file
+              type: path
+              required: true
+            - name: organization_id
+              type: integer
+              required: true
+              paramType: query
+            - name: cycle_id
+              type: integer
+              required: true
+              paramType: query
+        """
+        cycle_id = request.query_params.get('cycle_id', None)
+
+        if not cycle_id:
+            return JsonResponse({
+                'success': False,
+                'message': "Cycle ID is not defined"
+            })
+        else:
+            cycle = Cycle.objects.get(pk=cycle_id)
+
+        # Organization is checked in the orgfilter of the ViewSet
+        try:
+            property_view = PropertyView.objects.select_related('state').get(pk=pk, cycle=cycle)
+        except PropertyView.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'Cannot match a PropertyView with pk=%s; cycle_id=%s' % (pk, cycle_id)
+            })
+
+        hpxml = HPXML()
+        # Check if there is an existing BuildingSync XML file to merge
+        hpxml_file = property_view.state.building_files.last()
+        if hpxml_file is not None and os.path.exists(hpxml_file.file.path):
+            hpxml.import_file(hpxml_file.file.path)
+            xml = hpxml.export(property_view.state)
+            return HttpResponse(xml, content_type='application/xml')
+        else:
+            # create a new XML from the record, do not import existing XML
+            xml = hpxml.export(property_view.state)
             return HttpResponse(xml, content_type='application/xml')
 
     @detail_route(methods=['PUT'])
