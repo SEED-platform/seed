@@ -11,6 +11,10 @@ describe('controller: concat_modal_controller', function () {
   // 'config.seed' is created in TestFilters.html
   beforeEach(function () {
     module('BE.seed');
+    inject(function (_$httpBackend_) {
+      $httpBackend = _$httpBackend_;
+      $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
+    });
     inject(function ($controller, $rootScope) {
       controller = $controller;
       concat_modal_controller_scope = $rootScope.$new();

@@ -6,29 +6,20 @@ Authentication
 Authentication is handled via an authorization token set in an HTTP header.
 To request an API token, go to ``/app/#/profile/developer`` and click 'Get a New API Key'.
 
-Every request must include an 'Authorization' HTTP header made up of your username (email) and your
-API key, separated with a ':'.  The string must be base 64 encoded per the Basic Auth requirement.
+Authenticate every API request with your username (email) and the API key via `Basic Auth`_.
 
-Using Python, use the requests and base 64 library::
+.. _Basic Auth: https://en.wikipedia.org/wiki/Basic_access_authentication
+
+Using Python, use the requests library::
 
     import requests
-    import base64
 
-    auth_string = base64.urlsafe_b64encode('{}:{}'.format(user_email, api_key)
-    auth_string = 'Basic {}'.format(auth_string)
-    header = {
-        'Authorization': auth_string,
-    }
-
-    >>> header
-    >>> {'Authorization': 'Basic dXNlckBzZWVkLXBsYXRmb3JtLm9yZzpiNThmMTJjMzU4NjA2MTYzYzdmZjFlNTUxMjJjNzUxN2ZkMzJhZjRi'}
-
-    result = requests.get('https://seed-platform.org/api/v2/version/', headers=header)
+    result = requests.get('https://seed-platform.org/api/v2/version/', auth=(user_email, api_key))
     print result.json()
 
-Using curl, pass the header information in the request (use base64 result from above)::
+Using curl, pass the username and API key as follows::
 
-  curl -H Authorization:"Basic bmljaG9sYXMubG9uZ0BucmVsLmdvdjpiNThmMTJjMzU4NjA2MTYzYzdmZjFlNTUxMjJjNzUxN2ZkMzJhZjRi" http://seed-platform.org/api/v2/version/
+  curl -u user_email:api_key http://seed-platform.org/api/v2/version/
 
 If authentication fails, the response's status code will be 302, redirecting the user to ``/app/login``.
 
@@ -38,11 +29,11 @@ Payloads
 Many requests require a JSON-encoded payload and parameters in the query string of the url. A frequent
 requirement is including the organization_id of the org you belong to. For example::
 
-  curl -H <auth-header> https://seed-platform.org/api/v2/organizations/12/
+  curl -u user_email:api_key https://seed-platform.org/api/v2/organizations/12/
 
 Or in a JSON payload::
 
-  curl -H <auth-header> \
+  curl -u user_email:api_key \
     -d '{"organization_id":6, "role": "viewer"}' \
     https://seed-platform.org/api/v2/users/12/update_role/
 
@@ -51,7 +42,7 @@ Using Python::
   params = {'organization_id': 6, 'role': 'viewer'}
   result = requests.post('https://seed-platform.org/api/v2/users/12/update_role/',
                          data=json.dumps(params),
-                         headers=header)
+                         auth=(user_email, api_key))
   print result.json()
 
 Responses

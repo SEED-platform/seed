@@ -19,6 +19,8 @@ angular.module('BE.seed.controller.inventory_list', [])
     'urls',
     'spinner_utility',
     'naturalSort',
+    '$translate',
+    'i18nService', // from ui-grid
     function ($scope,
               $window,
               $uibModal,
@@ -33,15 +35,29 @@ angular.module('BE.seed.controller.inventory_list', [])
               all_columns,
               urls,
               spinner_utility,
-              naturalSort) {
+              naturalSort,
+              $translate,
+              i18nService) {
       spinner_utility.show();
       $scope.selectedCount = 0;
       $scope.selectedParentCount = 0;
 
+
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.data = inventory.results;
       $scope.pagination = inventory.pagination;
+
+      // set up i18n
+      //
       $scope.columns = _.filter(inventory.columns, 'visible');
+      // let angular-translate be in charge ... need
+      // to feed the language-only part of its $translate setting into
+      // ui-grid's i18nService
+      var stripRegion = function (languageTag) {
+        return _.first(languageTag.split('_'));
+      };
+      i18nService.setCurrentLang(stripRegion($translate.proposedLanguage() || $translate.use()));
+
       $scope.total = $scope.pagination.total;
       $scope.number_per_page = 999999999;
       $scope.restoring = false;
@@ -198,6 +214,7 @@ angular.module('BE.seed.controller.inventory_list', [])
 
       // Columns
       var defaults = {
+        headerCellFilter: 'translate',
         minWidth: 75,
         width: 150
         //type: 'string'

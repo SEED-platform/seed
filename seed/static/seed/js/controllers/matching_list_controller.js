@@ -18,6 +18,7 @@ angular.module('BE.seed.controller.matching_list', [])
     'naturalSort',
     'spinner_utility',
     'Notification',
+    '$translate',
     function ($scope,
               $log,
               $window,
@@ -31,7 +32,8 @@ angular.module('BE.seed.controller.matching_list', [])
               inventory_service,
               naturalSort,
               spinner_utility,
-              Notification) {
+              Notification,
+              $translate) {
       spinner_utility.show();
       // Remove import_files that haven't yet been mapped
       _.remove(import_file_payload.import_file.dataset.importfiles, function (importfile) {
@@ -85,9 +87,13 @@ angular.module('BE.seed.controller.matching_list', [])
       $scope.SHOW_MATCHED = 'Show Matched';
       $scope.SHOW_UNMATCHED = 'Show Unmatched';
 
-      $scope.filter_options = [$scope.SHOW_ALL, $scope.SHOW_MATCHED, $scope.SHOW_UNMATCHED];
+      $scope.filter_options = [
+        {value: $scope.SHOW_ALL, label: $translate.instant($scope.SHOW_ALL) },
+        {value: $scope.SHOW_MATCHED, label: $translate.instant($scope.SHOW_MATCHED) },
+        {value: $scope.SHOW_UNMATCHED, label: $translate.instant($scope.SHOW_UNMATCHED) }
+      ];
       var visibility = matching_service.loadVisibility();
-      $scope.selectedFilter = _.includes($scope.filter_options, visibility) ? visibility : $scope.SHOW_ALL;
+      $scope.selectedFilter = _.includes(_.map($scope.filter_options, 'value'), visibility) ? visibility : $scope.SHOW_ALL;
 
       /**
        * Pagination code

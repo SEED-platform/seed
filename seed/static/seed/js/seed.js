@@ -28,7 +28,9 @@ angular.module('BE.seed.vendor_dependencies', [
   'ui.tree',
   'focus-if',
   'xeditable',
-  angularDragula(angular)
+  angularDragula(angular),
+  'pascalprecht.translate',
+  'ngSanitize'
 ]);
 angular.module('BE.seed.controllers', [
   'BE.seed.controller.about',
@@ -1097,6 +1099,31 @@ SEED_app.config(['$compileProvider', function ($compileProvider) {
   $compileProvider.commentDirectivesEnabled(false);
   // $compileProvider.cssClassDirectivesEnabled(false); // This cannot be enabled due to the draggable ui-grid rows
 }]);
+
+SEED_app.config(['$translateProvider', function ($translateProvider) {
+  $translateProvider
+    .useStaticFilesLoader({
+      prefix: '/static/seed/locales/',
+      suffix: '.json'
+    })
+    .registerAvailableLanguageKeys(['en_US', 'fr_CA'], {
+      en: 'en_US',
+      fr: 'fr_CA',
+      'en_*': 'en_US',
+      'fr_*': 'fr_CA',
+      '*': 'en_US'
+    })
+    // allow some HTML in the translation strings,
+    // see https://angular-translate.github.io/docs/#/guide/19_security
+    .useSanitizeValueStrategy('escapeParameters')
+    // interpolation for plurals
+    .useMessageFormatInterpolation();
+
+  $translateProvider.determinePreferredLanguage();
+  moment.locale($translateProvider.preferredLanguage());
+
+}]);
+
 
 /**
  * creates the object 'urls' which can be injected into a service, controller, etc.

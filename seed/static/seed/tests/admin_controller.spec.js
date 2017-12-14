@@ -9,6 +9,10 @@ describe('controller: admin_controller', function () {
 
   beforeEach(function () {
     module('BE.seed');
+    inject(function (_$httpBackend_) {
+      $httpBackend = _$httpBackend_;
+      $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
+    });
     inject(function ($controller, $rootScope, user_service, organization_service, uploader_service, $q) {
       admin_controller_scope = $rootScope.$new();
       controller = $controller;

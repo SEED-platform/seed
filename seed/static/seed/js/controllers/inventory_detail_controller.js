@@ -23,6 +23,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
               urls, label_service, inventory_service, inventory_payload, columns, labels_payload,
               flippers) {
       $scope.inventory_type = $stateParams.inventory_type;
+
       $scope.inventory = {
         id: $stateParams.inventory_id,
         related: $scope.inventory_type === 'properties' ? inventory_payload.taxlots : inventory_payload.properties
