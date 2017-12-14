@@ -49,7 +49,7 @@ class TestBuildingFiles(TestCase):
             file_type=BuildingFile.BUILDINGSYNC,
         )
 
-        status, property_state, messages = bf.process(self.org.id, self.org.cycles.first())
+        status, property_state, property_view, messages = bf.process(self.org.id, self.org.cycles.first())
         self.assertTrue(status)
         self.assertEqual(property_state.address_line_1, '123 Main Street')
         self.assertEqual(messages, [])
@@ -65,7 +65,7 @@ class TestBuildingFiles(TestCase):
             file_type=BuildingFile.HPXML
         )
 
-        status, property_state, messages = bf.process(self.org.id, self.org.cycles.first())
+        status, property_state, property_view, messages = bf.process(self.org.id, self.org.cycles.first())
         self.assertTrue(status)
         self.assertEqual(property_state.owner, 'Jane Customer')
         self.assertEqual(property_state.energy_score, 8)
@@ -82,6 +82,6 @@ class TestBuildingFiles(TestCase):
             file_type=BuildingFile.GEOJSON,
         )
 
-        status, property_view, messages = bf.process(self.org.id, self.org.cycles.first())
+        status, property_state, property_view, messages = bf.process(self.org.id, self.org.cycles.first())
         self.assertFalse(status)
         self.assertEqual(property_view, None)

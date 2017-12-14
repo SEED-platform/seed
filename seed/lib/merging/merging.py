@@ -8,8 +8,10 @@ import logging
 from collections import defaultdict
 
 from seed.lib.mappings.mapping_data import MappingData
-from seed.models import PropertyState
-from seed.models import TaxLotState
+from seed.models import (
+    PropertyState,
+    TaxLotState,
+)
 from seed.utils.mapping import get_mappable_columns
 
 LINEAR_UNITS = {u'ft', u'm', u'in'}
@@ -83,7 +85,7 @@ def get_state_attrs(state_list):
         return get_taxlotstate_attrs(state_list)
 
 
-def merge_extra_data(b1, b2, default=None):
+def _merge_extra_data(b1, b2, default=None):
     """Merge extra_data field between two BuildingSnapshots, return result.
 
     :param b1: BuildingSnapshot inst.
@@ -145,40 +147,29 @@ def merge_state(merged_state, state1, state2, can_attrs, default=None):
         attr_value = None
         # Two, differing values are set.
         if len(attr_values) > 1:
-            # If we have more than one value for this field,
-            # save each of the field options in the DB,
+            # If we have more than one value for this field, save each of the field options in the DB,
             # but opt for the default when there is a difference.
-
-            # WTF is this?
-            # save_variant(merged_state, attr, can_attrs[attr])
-            # attr_source = default
             attr_value = can_attrs[attr][default]
-
-            # if attr_values[0] != attr_values[1]:
-            #     changes.append({"field": attr, "from": attr_values[0], "to": attr_values[1]})
 
         # No values are set
         elif len(attr_values) < 1:
             attr_value = None
-            # attr_source = None
 
         # There is only one value set.
         else:
             attr_value = attr_values.pop()
-            # Get the correct key from the sub dictionary to indicate
-            # the source of a field value.
-            # attr_source = get_attr_source(can_attrs[attr], attr_value)
 
         if callable(attr):
-            # This callable will be responsible for setting
-            # the attribute value, not just returning it.
+            # This callable will be responsible for setting the attribute value, not just returning it.
             attr(merged_state, default)
         else:
             setattr(merged_state, attr, attr_value)
-            # setattr(merged_state, '{0}_source'.format(attr), attr_source)
 
-    merged_extra_data, merged_extra_data_sources = merge_extra_data(state1, state2, default=default)
-
+    merged_extra_data, merged_extra_data_sources = _merge_extra_data(state1, state2, default=default)
     merged_state.extra_data = merged_extra_data
+
+    # merge measures, scenarios, simulations
+    if isinstance(merged_state, PropertyState):
+        PropertyState.merge_relationships(merged_state, state1, state2)
 
     return merged_state, changes
