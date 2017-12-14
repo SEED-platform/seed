@@ -26,7 +26,7 @@ class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
         """
         Does not work in Swagger!
 
-        Create a new Property from a building file. Currently only supports BuildingSync.
+        Create a new Property from a building file.
         ---
         consumes:
             - multipart/form-data
@@ -39,7 +39,7 @@ class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
               required: true
             - name: file_type
               type: string
-              enum: ["Unknown", "BuildingSync", "GeoJSON"]
+              enum: ["Unknown", "BuildingSync", "GeoJSON", "HPXML"]
               required: true
             - name: file
               description: In-memory file object

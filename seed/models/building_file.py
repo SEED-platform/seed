@@ -11,6 +11,7 @@ import logging
 from django.db import models
 
 from seed.building_sync.building_sync import BuildingSync
+from seed.hpxml.hpxml import HPXML as HPXMLParser
 from seed.lib.mappings.mapping_data import MappingData
 from seed.models import (
     PropertyState,
@@ -34,12 +35,20 @@ class BuildingFile(models.Model):
     UNKNOWN = 0
     BUILDINGSYNC = 1
     GEOJSON = 2
+    HPXML = 3
 
     BUILDING_FILE_TYPES = (
         (UNKNOWN, 'Unknown'),
         (BUILDINGSYNC, 'BuildingSync'),
         (GEOJSON, 'GeoJSON'),
+        (HPXML, 'HPXML')
     )
+
+    BUILDING_FILE_PARSERS = {
+        HPXML: HPXMLParser,
+        BUILDINGSYNC: BuildingSync
+    }
+
     # def upload_path(self):
     #     if not self.pk:
     #         i = BuildingSyncFile.objects.create()
@@ -88,12 +97,20 @@ class BuildingFile(models.Model):
         :return: list, [status, (PropertyView|None), messages]
         """
 
-        if self.file_type != self.BUILDINGSYNC:
-            return False, None, "File format was not set to BuildingSync"
+        Parser = self.BUILDING_FILE_PARSERS.get(self.file_type, None)
+        if not Parser:
+            acceptable_file_types = ', '.join(
+                map(dict(self.BUILDING_FILE_TYPES).get, self.BUILDING_FILE_PARSERS.keys())
+            )
+            return False, None, "File format was not one of: {}".format(acceptable_file_types)
 
-        bs = BuildingSync()
-        bs.import_file(self.file.path)
-        data, errors, messages = bs.process(BuildingSync.BRICR_STRUCT)
+        parser = Parser()
+        parser.import_file(self.file.path)
+        parser_args = []
+        parser_kwargs = {}
+        if self.file_type == self.BUILDINGSYNC:
+            parser_args.append(BuildingSync.BRICR_STRUCT)
+        data, errors, messages = parser.process(*parser_args, **parser_kwargs)
 
         if errors or not data:
             return False, None, messages
@@ -140,7 +157,7 @@ class BuildingFile(models.Model):
         self.save()
 
         # add in the measures
-        for m in data['measures']:
+        for m in data.get('measures', []):
             # Find the measure in the database
             try:
                 measure = Measure.objects.get(
@@ -178,7 +195,7 @@ class BuildingFile(models.Model):
             join.save()
 
         # add in scenarios
-        for s in data['scenarios']:
+        for s in data.get('scenarios', []):
             # measures = models.ManyToManyField(PropertyMeasure)
 
             # {'reference_case': u'Baseline', 'annual_savings_site_energy': None,
