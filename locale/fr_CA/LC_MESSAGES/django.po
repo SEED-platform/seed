@@ -1,0 +1,2977 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-10-04 14:26-0700\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: 
+#, fuzzy
+msgid "(field must contain this text)"
+msgstr "(le champ doit contenir ce texte)"
+
+#: 
+msgid "(no address 1)"
+msgstr "(pas d'adresse 1)"
+
+#: 
+msgid "(no labels applied)"
+msgstr "(aucune étiquette appliquée)"
+
+#: 
+msgid "(no maximum)"
+msgstr "(pas de maximum)"
+
+#: 
+msgid "(no minimum)"
+msgstr "(pas de minimum)"
+
+#: 
+msgid "# of Buildings"
+msgstr "# de Bâtiments"
+
+#: 
+msgid "# Of Files"
+msgstr "Nombre de fichiers"
+
+#: 
+msgid "# of Records"
+msgstr "# d'Enregistrements"
+
+#: 
+msgid "A 'Remove' button is shown for tags that are already applied to one or more properties in the current selection"
+msgstr "Un bouton «Supprimer» s'affiche pour les balises déjà appliquées à une ou plusieurs propriétés dans la sélection actuelle"
+
+#: 
+msgid "A list of your imported headers."
+msgstr "Une liste de vos en-têtes importés."
+
+#: 
+msgid "A preview of your concatenated data will appear in the box below."
+msgstr "Un aperçu de vos données concaténées apparaîtra dans la case ci-dessous."
+
+#: 
+msgid "About"
+msgstr "À Propos"
+
+#: 
+msgid "About SEED Platform™"
+msgstr "À propos de SEED Platform™"
+
+#: src/django-tos-master/tos/templates/tos/tos_check.html:19
+msgid "Accept"
+msgstr "Acceptez"
+
+#: src/django-tos-master/tos/templates/tos/tos_check.html:11
+msgid "Accept Terms of Service?"
+msgstr "Accepter les conditions d'utilisation?"
+
+#: 
+msgid "Actions"
+msgstr "Actions"
+
+#: seed/landing/models.py:51 seed/landing/models.py:59
+#: src/django-tos-master/tos/models.py:32
+msgid "active"
+msgstr "actif"
+
+#: seed/models/projects.py:24
+msgid "Active"
+msgstr "actif"
+
+#: 
+msgid "Add"
+msgstr "Ajouter"
+
+#: 
+msgid "Add a label"
+msgstr "Ajouter une étiquette"
+
+#: 
+msgid "Add another file"
+msgstr "Ajouter un autre fichier"
+
+#: 
+msgid "Add compliance information"
+msgstr "Ajouter des informations sur la conformité"
+
+#: 
+msgid "Add compliance information."
+msgstr "Ajouter des informations sur la conformité"
+
+#: 
+msgid "Add Data Files"
+msgstr "Ajouter des fichiers de données"
+
+#: 
+msgid "Add files to"
+msgstr "Ajouter des fichiers à"
+
+#: 
+msgid "Add Label"
+msgstr "Ajouter une étiquette"
+
+#: 
+msgid "Add more data files"
+msgstr "Ajouter plus de fichiers de données"
+
+#: 
+msgid "Add Shared Properties"
+msgstr "Ajouter des propriétés partagées"
+
+#: 
+msgid "Add Shared Tax Lots"
+msgstr "Ajouter des lots d'impôt partagés"
+
+#: 
+msgid "Add user"
+msgstr "Ajouter un utilisateur"
+
+#: 
+msgid "Add user to organization"
+msgstr "Ajoutez un utilisateur à l'organisation"
+
+#: 
+msgid "Add user to organization:"
+msgstr "Ajoutez un utilisateur à l'organisation"
+
+#: 
+msgid "ADD_FILES_TO"
+msgstr "Ajoutez des fichiers à {dataset_name}."
+
+#: 
+msgid "ADD_REMOVE_LABELS_FROM_PROPERTIES"
+msgstr "Ajouter ou supprimer des étiquettes de {num, plural, one{1 propriété sélectionnée} other{# propriétés sélectionnées}}"
+
+#: 
+msgid "ADD_REMOVE_LABELS_FROM_TAXLOTS"
+msgstr "Ajouter ou supprimer des étiquettes de {num, plural, one{1 lot d'impôt sélectionné} other{# lots d'impôt sélectionnés}}"
+
+#: 
+msgid "Add/Remove a user to an organization"
+msgstr "Ajouter/Supprimer un utilisateur d'une organisation"
+
+#: 
+msgid "Add/Remove Labels"
+msgstr "Ajouter/Supprimer Des Étiquettes"
+
+#: 
+msgid "Adding buildings to project"
+msgstr "Ajout de bâtiments à projet"
+
+#: 
+msgid "Address Line 1"
+msgstr "Adresse (Ligne 1)"
+
+#: 
+msgid "Address Line 1 (Property)"
+msgstr "Adresse Ligne 1 (Propriété)"
+
+#: 
+msgid "Address Line 1 (Tax Lot)"
+msgstr "Ligne d'adresse 1 (lot d'impôt)"
+
+#: 
+msgid "Address Line 2 (Property)"
+msgstr "Adresse Ligne 2 (Propriété)"
+
+#: 
+msgid "Address Line 2 (Tax Lot)"
+msgstr "Adresse Ligne 2 (Lot d'impôt)"
+
+#: 
+msgid "Admin"
+msgstr "Admin"
+
+#: 
+msgid "An error occurred while processing the file. Please ensure that your file meets the required specifications."
+msgstr "Une erreur s'est produite lors du traitement du fichier. Assurez-vous que votre fichier respecte les spécifications requises."
+
+#: 
+msgid "AND"
+msgstr "ET"
+
+#: 
+msgid "and"
+msgstr "et"
+
+#: 
+msgid "API Documentation"
+msgstr "Documentation de l'API"
+
+#: seed/landing/models.py:69
+msgid "api key"
+msgstr "clé API"
+
+#: 
+msgid "API Key"
+msgstr "Clé API"
+
+#: seed/models/projects.py:107 seed/models/projects.py:134
+#: seed/models/projects.py:159
+msgid "approved_date"
+msgstr "date approuvée"
+
+#: 
+msgid "Are you sure you want to delete"
+msgstr "Etes-vous sûr de vouloir supprimer"
+
+#: 
+msgid "Are you sure you want to delete the data file"
+msgstr "Êtes-vous sûr de vouloir supprimer le fichier de données"
+
+#: 
+msgid "Are you sure you want to delete the data set"
+msgstr "Êtes-vous sûr de vouloir supprimer le jeu de données"
+
+#: 
+msgid "Are you sure you want to unmerge these properties and then merge with the selected properties?"
+msgstr "Êtes-vous sûr de vouloir annuler la fusion de ces propriétés et fusionner avec les propriétés sélectionnées?"
+
+#: 
+msgid "Are you sure you want to unmerge these tax lots and then merge with the selected tax lots?"
+msgstr "Êtes-vous sûr de vouloir annuler la fusion de ces lots fiscaux pour ensuite fusionner avec les lots d'impôt sélectionnés?"
+
+#: 
+msgid "Area"
+msgstr "Région"
+
+#: 
+msgid "As the admin of your SEED instance you can control what data is shared throughout your organization and between your sub-organizations as well as what data is shared externally with the public-at-large. The subset of data you choose to share with the public can be different than the subset shared between your sub-organizations."
+msgstr "En tant qu'administrateur de votre instance SEED, vous pouvez contrôler les données partagées dans votre organisation et entre vos sous-organisations ainsi que les données partagées à l'externe avec le public. Le sous-ensemble de données que vous choisissez de partager avec le public peut être différent du sous-ensemble partagé entre vos sous-organisations."
+
+#: 
+msgid "Associated Building Tax Lot ID"
+msgstr "ID de lot d'impôt du bâtiment associé"
+
+#: 
+msgid "Associated Tax Lot ID"
+msgstr "ID de lot d'impôt associé"
+
+#: 
+msgid "Associated Tax Lot IDs"
+msgstr "IDs des lots d'impôt associé"
+
+#: 
+msgid "At least one of the following is required: Address Line 1, Custom Id 1, Jurisdiction Tax Lot Id (with inventory type Tax Lot), or Pm Property Id (with inventory type Property)."
+msgstr "Il faut au moins l'un des éléments suivants: Adresse ligne 1, Id personnalisé 1, Numéro d'identification de lot d'impôt de la juridiction (avec le type d'inventaire Lot d'impôt) ou Id de la propriété Pm (avec le type d'inventaire Propriété)."
+
+#: seed/models/models.py:136
+msgid "Auditing"
+msgstr "Audit"
+
+#: 
+msgid "Auto Matching"
+msgstr "Correspondance automatique"
+
+#: 
+msgid "auto-mapping energy data"
+msgstr "mappant automatiquement les données d'énergie"
+
+#: 
+msgid "auto-matching energy data"
+msgstr "correspondant automatiquement les données d'énergie"
+
+#: seed/landing/templates/landing/thank_you.html:17
+msgid "Back"
+msgstr "De retour"
+
+#: seed/landing/templates/landing/password_reset_done.html:17
+msgid "Back to Home"
+msgstr "Retour à l'Accueil"
+
+#: 
+msgid "Back to List"
+msgstr "Retour à la Liste"
+
+#: 
+msgid "Back to Mapping"
+msgstr "Retournez à les mappages"
+
+#: seed/models/models.py:135
+#, fuzzy
+msgid "Benchmarking"
+msgstr "Analyse comparative"
+
+#: 
+msgid "Block Number"
+msgstr "Numéro de bloc"
+
+#: seed/models/models.py:178
+msgid "blue"
+msgstr "bleu"
+
+#: 
+msgid "Both"
+msgstr "Les deux"
+
+#: 
+msgid "Building Certification"
+msgstr "Certification de bâtiment"
+
+#: 
+msgid "Building Count"
+msgstr "Nombre de bâtiments"
+
+#: 
+msgid "BUILDING ENERGY DATA EXCHANGE SPECIFICATION (BEDES)"
+msgstr "SPECIFICATION DE L'ÉCHANGE DE DONNÉES D'ÉNERGIE DES BÂTIMENTS (BEDES)"
+
+#: 
+msgid "Building Filters"
+msgstr "Filtres de bâtiments"
+
+#: 
+msgid "Buildings"
+msgstr "Bâtiments"
+
+#: 
+msgid "Campus"
+msgstr "Campus"
+
+#: seed/landing/templates/landing/home.html:28
+#: seed/landing/templates/landing/password_reset_confirm.html:80
+#: seed/landing/templates/landing/signup.html:79
+msgid "Cancel"
+msgstr "Annuler"
+
+#: 
+msgid "cancel"
+msgstr "annuler"
+
+#: seed/exception_handler.py:45
+#, fuzzy
+msgid "Cannot delete protected objects while related objects still exist"
+msgstr "Impossible de supprimer des objets protégés alors que des objets apparentés existent toujours"
+
+#: 
+msgid "Change Merged Property"
+msgstr "Modifier la propriété fusionnée"
+
+#: 
+msgid "Change Merged Tax Lot"
+msgstr "Modifier le lot d'impôt fusionnée"
+
+#: seed/landing/templates/landing/password_reset_confirm.html:79
+msgid "Change my password"
+msgstr "Changer mon mot de passe"
+
+#: 
+msgid "Change Password"
+msgstr "Changer le mot de passe"
+
+#: seed/landing/templates/landing/password_reset_confirm.html:29
+msgid "Change Your Password"
+msgstr "Changez votre mot de passe"
+
+#: 
+msgid "Changed By"
+msgstr "Changé par"
+
+#: 
+msgid "checkbox &mdash; effectively making a match between these records."
+msgstr "case à cocher—effectivement faire une correspondance entre ces documents."
+
+#: 
+msgid "Choose Existing Organization:"
+msgstr "Choisissez Organisation Existante:"
+
+#: 
+msgid "Choose the year ending month for report period."
+msgstr "Choisissez le mois de fin de l'année pour la période du rapport."
+
+#: 
+msgid "City (Property)"
+msgstr "Ville (Propriété)"
+
+#: 
+msgid "City (Tax Lot)"
+msgstr "Ville (lot d'impôt)"
+
+#: 
+msgid "Classification Type"
+msgstr "Type de classification"
+
+#: 
+msgid "Clear Filters"
+msgstr "Effacer les filtres"
+
+#: 
+msgid "Clear Labels"
+msgstr "Effacer les étiquettes"
+
+#: 
+msgid "Close"
+msgstr "Fermer"
+
+#: 
+msgid "Collapse Tabs"
+msgstr "Réduire les onglets"
+
+#: 
+msgid "Column Name"
+msgstr "Nom de colonne"
+
+#: 
+msgid "Column Order/Visibility"
+msgstr "L'Ordre Des Colonnes/Visibilité"
+
+#: 
+msgid "Commercial"
+msgstr "Commercial"
+
+#: 
+msgid "Complete"
+msgstr "Complète"
+
+#: 
+msgid "Compliance"
+msgstr "Conformité"
+
+#: 
+msgid "Compliance Information"
+msgstr "Informations de conformité"
+
+#: seed/models/models.py:188 seed/models/models.py:231
+msgid "compliance_type"
+msgstr "conformité_type"
+
+#: 
+msgid "Concatenate Headers (Columns of Data)"
+msgstr "Concaténer les en-Têtes (colonnes de données)"
+
+#: 
+msgid "Conditioned Floor Area"
+msgstr "Surface climatisé"
+
+#: seed/landing/templates/landing/password_reset_confirm.html:64
+#: seed/landing/templates/landing/signup.html:63
+msgid "Confirm"
+msgstr "Confirmer"
+
+#: 
+msgid "Confirm delete"
+msgstr "Confirm delete"
+
+#: 
+msgid "Confirm new password"
+msgstr "Confirmer le nouveau mot de passe"
+
+#: 
+msgid "Confirm Save Mappings?"
+msgstr "Confirmer enregistrer les mappages?"
+
+#: 
+msgid "CONFIRM_AND_START_MATCHING"
+msgstr "Confirmer et commencer l'appariement"
+
+#: 
+msgid "Contact"
+msgstr "Contact"
+
+#: src/django-tos-master/tos/models.py:37
+msgid "content"
+msgstr "contenu"
+
+#: 
+msgid "Continue to data mapping"
+msgstr "Continuer à la mappage de données"
+
+#: 
+msgid "Continue to data matching"
+msgstr "Continuer à l'appariement des données"
+
+#: 
+msgid "Copy Buildings"
+msgstr "Copier des bâtiments"
+
+#: 
+msgid "COULD_NOT_LOCATE_MATCHES"
+msgstr "<strong>SEED n'a trouvé aucune correspondance existante</strong>. Voulez-vous ajouter un autre fichier?"
+
+#: 
+msgid "Count #"
+msgstr "Compte #"
+
+#: 
+msgid "Create"
+msgstr "Créer"
+
+#: 
+msgid "Create a New Data Set."
+msgstr "Créer un nouveau jeu de données."
+
+#: 
+msgid "Create a New Project"
+msgstr "Créer un nouveau projet"
+
+#: 
+msgid "Create a new rule"
+msgstr "Créer une nouvelle règle"
+
+#: 
+msgid "Create a new sub-organization"
+msgstr "Créer une nouvelle sous-organisation"
+
+#: 
+msgid "Create a New Sub-Organization"
+msgstr "Créer une nouvelle sous-organisation"
+
+#: 
+msgid "Create a new..."
+msgstr "Créer un nouveau..."
+
+#: 
+msgid "Create a user"
+msgstr "Créer un utilisateur"
+
+#: 
+msgid "Create an organization"
+msgstr "Créer une organisation"
+
+#: 
+msgid "Create Cycle"
+msgstr "Créer un cycle"
+
+#: 
+msgid "Create Data Set"
+msgstr "Créer un ensemble de données"
+
+#: 
+msgid "Create label"
+msgstr "Créer une étiquette"
+
+#: seed/landing/templates/landing/signup.html:78
+msgid "Create my account"
+msgstr "Créer mon compte"
+
+#: 
+msgid "Create new cycle"
+msgstr "Créer un nouveau cycle"
+
+#: 
+msgid "Create new data set"
+msgstr "Créer un nouveau jeu de données"
+
+#: 
+msgid "Create new label"
+msgstr "Créer une nouvelle étiquette"
+
+#: 
+msgid "Create new sub-organization"
+msgstr "Créer une nouvelle sous-organisation"
+
+#: 
+msgid "Create New Sub-Organization"
+msgstr "Créer nouvelle sous-organisation"
+
+#: 
+msgid "Create Project"
+msgstr "Créer un projet"
+
+#: seed/landing/templates/landing/signup.html:29
+msgid "Create Your Account"
+msgstr "Créez votre compte"
+
+#: 
+msgid "Created"
+msgstr "Créé"
+
+#: 
+msgid "created"
+msgstr "créé"
+
+#: 
+msgid "CREATED_LABEL_NAMED"
+msgstr "Créé étiquette {label_name}"
+
+#: 
+msgid "CREATED_NEW_CYCLE"
+msgstr "Nouveau cycle créé avec nom {cycle_name}"
+
+#: 
+msgid "Current password"
+msgstr "Mot de passe actuel"
+
+#: 
+msgid "Custom ID 1"
+msgstr "ID personnalisée 1"
+
+#: 
+msgid "Custom ID 1 (Property)"
+msgstr "ID personnalisé 1 (propriété)"
+
+#: 
+msgid "Custom ID 1 (Tax Lot)"
+msgstr "ID personnalisé 1 (lot d'impôt)"
+
+#: 
+msgid "Cycle"
+msgstr "Cycle"
+
+#: 
+msgid "Cycle Name"
+msgstr "Nom du cycle"
+
+#: 
+msgid "Cycle updated."
+msgstr "Cycle mis à jour."
+
+#: 
+msgid "Cycle:"
+msgstr "Cycle:"
+
+#: 
+msgid "Cycles"
+msgstr "Cycles"
+
+#: 
+msgid "Data"
+msgstr "Les données"
+
+#: 
+msgid "Data File Header"
+msgstr "En-tête du fichier de données"
+
+#: 
+msgid "Data Files"
+msgstr "Fichiers de données"
+
+#: 
+msgid "Data Load Error"
+msgstr "Erreur de chargement de données"
+
+#: 
+msgid "Data Mapping"
+msgstr "Mappage de données"
+
+#: 
+msgid "Data Mapping and Validation"
+msgstr "Mappage de donn&eacute;es et validation"
+
+#: 
+msgid "Data Matching"
+msgstr "Correspondance des données"
+
+#: 
+msgid "Data Pairing"
+msgstr "Appariement des données"
+
+#: 
+msgid "Data Quality"
+msgstr "Qualité des données"
+
+#: 
+msgid "Data Quality Check"
+msgstr "Vérification de la qualité des données"
+
+#: 
+msgid "Data Quality Results"
+msgstr "Résultats de la qualité des données"
+
+#: 
+msgid "Data Set"
+msgstr "Jeu de données"
+
+#: 
+msgid "Data Set Name"
+msgstr "Nom du jeu de données"
+
+#: 
+msgid "Data Sets"
+msgstr "Ensembles de données"
+
+#: 
+msgid "Data Type"
+msgstr "Type de données"
+
+#: 
+msgid "DATA_MAPPING_AND_VALIDATION"
+msgstr "Mappage des données et Validation ({filename})"
+
+#: 
+msgid "DATASET_FILENAME_UPLOADED_TO"
+msgstr "<strong>{dataset_filename}</strong> a été importé dans <strong>{dataset_filename}</strong> ."
+
+#: 
+msgid "DATASET_NAME_ALREADY_EXISTS"
+msgstr "Le <strong>nom du fichier \"{dataset_name}\" existe déjà</strong> . Veuillez en sélectionner un nouveau"
+
+#: 
+msgid "Date"
+msgstr "Date"
+
+#: 
+msgid "Date Imported"
+msgstr "Date d'importation"
+
+#: seed/landing/models.py:54
+msgid "date joined"
+msgstr "date jointe"
+
+#: 
+msgid "Date Uploaded"
+msgstr "Date de téléchargement"
+
+#: 
+msgid "Deadline"
+msgstr "Date limite"
+
+#: seed/models/models.py:238
+msgid "deadline_date"
+msgstr "date limite"
+
+#: 
+msgid "Deadline:"
+msgstr "Date limite:"
+
+#: 
+msgid "Delete"
+msgstr "Supprimer"
+
+#: 
+msgid "Delete Organization"
+msgstr "Supprimer l'organisation"
+
+#: 
+msgid "Delete Selected"
+msgstr "Supprimer la sélection"
+
+#: 
+msgid "Delete your Data File"
+msgstr "Supprimez votre fichier de données"
+
+#: 
+msgid "Delete your Data Set"
+msgstr "Supprimez votre ensemble de données"
+
+#: 
+msgid "Delete your Inventory"
+msgstr "Supprimez votre inventaire"
+
+#: 
+msgid "DELETE_LABEL_AND_REMOVE"
+msgstr "Supprimer l'étiquette '{label_name}' et le retirer de tous les bâtiments auxquels il a été appliqué?"
+
+#: 
+msgid "DELETED_LABEL_NAMED"
+msgstr "Supprimée étiquette {label_name}"
+
+#: seed/models/projects.py:47
+msgid "description"
+msgstr "la description"
+
+#: seed/landing/models.py:48
+msgid "Designates whether the user can log into this admin site."
+msgstr "Désigne si l'utilisateur peut se connecter à ce site d'administration."
+
+#: seed/landing/models.py:52
+msgid "Designates whether this user should be treated as active. Unselect this instead of deleting accounts."
+msgstr "Indique si cet utilisateur doit être traité comme actif. Désélectionnez ceci au lieu de supprimer des comptes."
+
+#: 
+msgid "Determine Time Period from Field:"
+msgstr "Déterminer la durée du champ:"
+
+#: 
+msgid "Developer"
+msgstr "Développeur"
+
+#: 
+msgid "Development Team"
+msgstr "Équipe de développement"
+
+#: 
+msgid "DID_YOU_REVIEW_YOUR_MAPPINGS"
+msgstr "Avez-vous revu vos correspondances? C'est une bonne idée de vérifier vos correspondances. Une fois que SEED correspond à vos propriétés et lots d'impôt, vous ne pouvez pas annuler ou modifier ces mappages."
+
+#: 
+msgid "Dismiss"
+msgstr "Rejeter"
+
+#: 
+msgid "District"
+msgstr "District"
+
+#: 
+msgid "Done"
+msgstr "Fait"
+
+#: 
+msgid "Download Sample Data"
+msgstr "Télécharger les exemples de données"
+
+#: 
+msgid "Drag from here"
+msgstr "Faites glisser à partir d'ici"
+
+#: 
+msgid "Drag headers from your list on the left into the area below to combine them."
+msgstr "Faites glisser les en-têtes de votre liste sur la gauche dans la zone ci-dessous pour les combiner."
+
+#: 
+msgid "Drag Property here to pair with this Tax Lot"
+msgstr "Faites glisser la Propriété ici pour l'associer à ce Lot d'impôt"
+
+#: 
+msgid "Drag Tax Lot here to pair with this Property"
+msgstr "Faites glisser le Lot d'impôt ici pour associer à cette Propriété"
+
+#: 
+msgid "Drag the columns below to change the order that they appear in the table."
+msgstr "Faites glisser les colonnes ci-dessous pour modifier l'ordre dans lequel elles apparaissent dans la table."
+
+#: 
+msgid "Drag the columns below to change the order that they appear in your Buildings List table."
+msgstr "Faites glisser les colonnes ci-dessous pour modifier l'ordre dans lequel elles apparaissent dans votre tableau Liste des bâtiments."
+
+#: 
+msgid "Drag to here"
+msgstr "Faites glisser ici"
+
+#: 
+msgid "Duplicate"
+msgstr "Copie"
+
+#: 
+msgid "duplicate"
+msgstr "dupliquer"
+
+#: 
+msgid "Duplicates"
+msgstr "Copies"
+
+#: 
+msgid "edit"
+msgstr "modifier"
+
+#: 
+msgid "Edit"
+msgstr "Modifier"
+
+#: 
+msgid "Edit Name"
+msgstr "Modifier le nom"
+
+#: seed/landing/forms.py:13
+msgid "Email"
+msgstr "Email"
+
+#: seed/landing/models.py:45
+msgid "email address"
+msgstr "adresse e-mail"
+
+#: seed/landing/forms.py:16
+#, fuzzy
+msgid "Email Address"
+msgstr "adresse e-mail"
+
+#: 
+msgid "Email Address:"
+msgstr "Adresse e-mail:"
+
+#: seed/models/models.py:237
+msgid "end_date"
+msgstr "date de fin"
+
+#: 
+msgid "Energy Alerts"
+msgstr "Alertes énergétiques"
+
+#: 
+msgid "Energy data file"
+msgstr "Fichier de données d'énergie"
+
+#: 
+msgid "ENERGY STAR Score"
+msgstr "Compte ENERGY STAR"
+
+#: config/settings/common.py:214
+msgid "English"
+msgstr "Anglais"
+
+#: 
+msgid "Enter a valid email address."
+msgstr "Entrez une adresse mail valide."
+
+#: 
+msgid "Enter email address"
+msgstr "Entrer l'adresse e-mail"
+
+#: 
+msgid "Enter Email Address"
+msgstr "Entrer l'adresse e-mail"
+
+#: 
+msgid "Enter first name"
+msgstr "Entrez le prénom"
+
+#: 
+msgid "Enter last name"
+msgstr "Entrez le nom de famille"
+
+#: 
+msgid "Enter sub-organization name"
+msgstr "Entrez le nom de la sous-organisation"
+
+#: 
+msgid "Enter the minimum square footage for report period."
+msgstr "Entrez la superficie minimale pour la période du rapport."
+
+#: 
+msgid "Enter the minimum threshold count of buildings that can be returned in a shared query. The building count threshold is important for allowing other organizations to perform statistical analysis on your data without revealing information about individual buildings."
+msgstr "Entrez le nombre de seuils minimal des bâtiments pouvant être renvoyés dans une requête partagée. Le seuil de nombre de bâtiments est important pour permettre à d'autres organisations d'effectuer une analyse statistique de vos données sans révéler d'informations sur les bâtiments individuels."
+
+#: 
+msgid "Error"
+msgstr "Erreur"
+
+#: 
+msgid "Error Processing Data"
+msgstr "Erreur lors du traitement des données"
+
+#: 
+msgid "EUI"
+msgstr "IUE"
+
+#: seed/landing/forms.py:14
+msgid "ex: joe@company.com"
+msgstr "ex: joe@company.com"
+
+#: 
+msgid "EXCLUDE"
+msgstr "EXCLURE"
+
+#: 
+msgid "Existing Cycles"
+msgstr "Cycles existants"
+
+#: 
+msgid "Existing Labels"
+msgstr "Étiquettes existantes"
+
+#: 
+msgid "Existing Properties"
+msgstr "Propriétés existantes"
+
+#: 
+msgid "Existing Tax Lots"
+msgstr "Lots d'impôt existants"
+
+#: 
+msgid "Export"
+msgstr "Exportation"
+
+#: 
+msgid "Export Buildings"
+msgstr "Exporter les bâtiments"
+
+#: 
+msgid "Export Name"
+msgstr "Nom d'exportation"
+
+#: 
+msgid "Export Selected"
+msgstr "Exporter la sélection"
+
+#: 
+msgid "Export your Properties and Tax Lots"
+msgstr "Exportez vos propriétés et vos lots d'impôt"
+
+#: 
+msgid "Failed to delete inventory"
+msgstr "Échec de la suppression de l'inventaire"
+
+#: 
+msgid "Field"
+msgstr "Champ"
+
+#: 
+msgid "Field Name"
+msgstr "Nom de champ"
+
+#: 
+msgid "FIELD_NAMES_FOR_MATCHING_ADVICE"
+msgstr "<span class=\"label label-info\">Noms de zone pour l'appariement:</span> Les champs suivants sont utilisés par SEED pour faire correspondre les enregistrements: <strong>Juridiction Numéro de lot fiscal</strong> , <strong>Numéro de propriété PM</strong> , <strong>ID personnalisé 1</strong> , <strong>Ligne d'adresse 1</strong> . Si des champs dans un fichier de données sont mappés à ces noms, le programme tentera de faire correspondre ces mêmes noms dans les enregistrements existants."
+
+#: 
+msgid "FIELDS NEEDED TO MAKE MATCHES:"
+msgstr "CHAMPS NÉCESSAIRES POUR ÉTABLIR DES CORRESPONDANCES:"
+
+#: 
+msgid "File Name"
+msgstr "Nom de fichier"
+
+#: 
+msgid "File Source:"
+msgstr "Source du fichier:"
+
+#: 
+msgid "FILE_TYPES_SUPPORTED"
+msgstr "Types de fichiers pris en charge: <strong>.csv</strong> , <strong>.xls</strong> , <strong>.xlsx</strong> et <strong>.xml</strong> ."
+
+#: 
+msgid "Filter by label"
+msgstr "Filtrer par étiquette"
+
+#: 
+msgid "Filter by label:"
+msgstr "Filtrer par étiquette:"
+
+#: 
+msgid "Finding inventory matches for"
+msgstr "Trouver des correspondances d'inventaire pour"
+
+#: 
+msgid "Finding inventory matches."
+msgstr "Trouver des correspondances d'inventaire."
+
+#: seed/landing/models.py:43
+msgid "first name"
+msgstr "Prénom"
+
+#: 
+msgid "First Name"
+msgstr "Prénom"
+
+#: 
+msgid "First name is required."
+msgstr "Le prénom est requis."
+
+#: 
+msgid "First Name:"
+msgstr "Prénom:"
+
+#: 
+msgid "For direct help on a specific problem, please email:"
+msgstr "Pour une aide directe sur un problème spécifique, veuillez envoyer un e-mail à:"
+
+#: 
+msgid "For Portfolio Manager files, SEED has a default set of field names which can be used without extra user editing unless desired."
+msgstr "Pour les fichiers Portfolio Manager, SEED dispose d'un ensemble de noms de champs par défaut qui peuvent être utilisés sans modification supplémentaire de l'utilisateur, sauf si vous le souhaitez."
+
+#: 
+msgid "For SEED-Platform Developers"
+msgstr "Pour les développeurs de Plate-forme SEED"
+
+#: 
+msgid "For SEED-Platform Users"
+msgstr "Pour les utilisateurs de la Plate-forme SEED"
+
+#: seed/landing/templates/landing/password_reset_email.html:3
+msgid "for your SEED Platform user account"
+msgstr "pour votre compte utilisateur SEED Platform"
+
+#: seed/landing/templates/landing/home.html:29
+#: seed/landing/templates/landing/login.html:31
+msgid "Forgot password?"
+msgstr "mot de passe oublié?"
+
+#: config/settings/common.py:215
+msgid "French (Canadian)"
+msgstr "Français (Canada)"
+
+#: 
+msgid "From date"
+msgstr "À partir de la date"
+
+#: 
+msgid "From Date"
+msgstr "À Partir De La Date"
+
+#: 
+msgid "From first date of"
+msgstr "De la première date de"
+
+#: 
+msgid "From the list below, select the fields that you want to: 1) share internally within your organization, and 2) share publicly with users outside your organization."
+msgstr "Dans la liste ci-dessous, sélectionnez les champs que vous souhaitez: 1) partager en interne dans votre organisation et 2) partager publiquement avec des utilisateurs extérieurs à votre organisation."
+
+#: 
+msgid "From the table below, select the rules that you want to: 1) enable/disable within your organization, 2) modify the minimum/maximum values to validate against on file upload, and 3) optionally assign or remove a label if the condition is not met."
+msgstr "Dans le tableau ci-dessous, sélectionnez les règles que vous souhaitez: 1) activer / désactiver au sein de votre organisation, 2) modifier les valeurs minimum / maximum pour valider le téléchargement sur le fichier, et 3) affecter ou supprimer facultativement une étiquette si la condition est pas rencontré."
+
+#: 
+msgid "Funding from"
+msgstr "Financement à partir de"
+
+#: 
+msgid "Get a New API Key"
+msgstr "Obtenir une nouvelle clé d'API"
+
+#: seed/landing/templates/landing/_marketing_bullets.html:7
+msgid "Get started using SEED Platform by uploading your buildings list (city tax assessor data) and then your EPA Portfolio Manager data."
+msgstr "Commencez à utiliser SEED Platform en téléchargeant votre liste de bâtiments (données de l'évaluateur de la taxe municipale), puis vos données du EPA Portfolio Manager."
+
+#: 
+msgid "Getting Started"
+msgstr "Prise En Main"
+
+#: 
+msgid "Getting Started Guide"
+msgstr "Guide de Démarrage"
+
+#: 
+msgid "GJ/m²/year"
+msgstr "GJ/m²/année"
+
+#: seed/models/models.py:183
+msgid "gray"
+msgstr "gris"
+
+#: seed/models/models.py:180
+msgid "green"
+msgstr "vert"
+
+#: 
+msgid "Gross Floor Area"
+msgstr "Surface brute"
+
+#: 
+msgid "has been uploaded to"
+msgstr "a été téléchargé à"
+
+#: 
+msgid "header"
+msgstr "en-tête"
+
+#: seed/templates/seed/account_create_email.html:2
+msgid "Hello %(first_name)s, "
+msgstr "Bonjour% (first_name) s,"
+
+#: 
+msgid "Highlights of SEED Platform™"
+msgstr "Points forts de la Plate-Forme SEED™"
+
+#: 
+msgid "Home Energy Score ID"
+msgstr "ID de score d'énergie domestique"
+
+#: 
+msgid "HOW THE SYSTEM AUTO-MATCHES YOUR PROPERTIES AND TAX LOTS:"
+msgstr "COMMENT LE SYSTÈME ADAPTE AUTOMATIQUEMENT VOS PROPRIETES ET LOTS D'IMPÔT:"
+
+#: 
+msgid "HOW TO MANUALLY MATCH YOUR PROPERTIES AND TAX LOTS:"
+msgstr "COMMENT APPORTER MANUELLEMENT VOS PROPRIETES ET LOTS D'IMPÔT:"
+
+#: 
+msgid "HOW_SYSTEM_AUTO_MATCHES_EXPLANATION"
+msgstr "Votre fichier de données source est présenté dans le tableau de gauche. Toutes les propriétés/lots d'impôt où une correspondance de données possible existe sont présentées dans un tableau sur la droite. Le système tente de faire correspondre automatiquement les enregistrements à l'aide d'ID uniques partagés tels que: ID de Propriété PM, ID de Lot d'Impôt de Juridiction et les ID personnalisés, ainsi que des informations d'adresse. Lorsque le système croit qu'une correspondance existe entre un enregistrement de votre fichier source et un enregistrement existant, il vérifie automatiquement la 'correspondance' <i class=\"fa fa-check-square-o\"></i> case à cocher &mdash; faire efficacement une correspondance entre ces enregistrements."
+
+#: 
+msgid "ID"
+msgstr "ID"
+
+#: 
+msgid "IF_MARKED_AS_DUPLICATE_ADVICE"
+msgstr "<label class=\"label label-danger\">Copie</label> - si les champs sont marqués comme des doublons, ils doivent être résolus pour avoir des noms différents."
+
+#: 
+msgid "Ignored duplicates of existing properties"
+msgstr "Copies ignorées des propriétés existantes"
+
+#: 
+msgid "Ignored duplicates of existing tax lots"
+msgstr "Copies ignorées des lots d'impôt existants"
+
+#: 
+msgid "Ignored property duplicates within the import file"
+msgstr "Copies de propriété ignorées dans le fichier d'importation"
+
+#: 
+msgid "Ignored tax lot duplicates within the import file"
+msgstr "Copies des lots d'impôt ignorées dans the fichier d'importation"
+
+#: 
+msgid "In addition, you need to specify where the field should be associated with Tax Lot data or Property data. This will affect how the data is matched and merged, as well as how it is displayed in the Inventory view."
+msgstr "En outre, vous devez spécifier où le champ doit être associé aux données du lot d'impôt ou aux données de la propriété. Cela affectera la manière dont les données sont mises en correspondance et fusionnées, ainsi que la manière dont elles sont affichées dans la vue Inventaire."
+
+#: seed/models/projects.py:23
+msgid "Inactive"
+msgstr "Inactif"
+
+#: 
+msgid "INCLUDE_SHARED_PROPERTIES"
+msgstr "Inclure dans vos Liste de Propriétés toutes les propriétés partagées avec vous."
+
+#: 
+msgid "INCLUDE_SHARED_TAXLOTS"
+msgstr "Inclure dans votre Liste de Lots d'Impôt tous les lots d'impôt partagé avec vous."
+
+#: 
+msgid "INTERNAL"
+msgstr "INTERNE"
+
+#: 
+msgid "INVALID_EXTENSION_ALERT"
+msgstr "<strong>Désolée!</strong> SEED ne supporte actuellement pas ce format de fichier. Seuls les fichiers <strong>.csv</strong> , <strong>.xls</strong> , <strong>.xlsx</strong> et <strong>.xml</strong> sont pris en charge."
+
+#: 
+msgid "Inventory"
+msgstr "Inventaire"
+
+#: 
+msgid "Inventory list file"
+msgstr "Fichier de liste d'inventaire"
+
+#: 
+msgid "Inventory Reports"
+msgstr "Rapports d'inventaire"
+
+#: 
+msgid "Inventory Type"
+msgstr "Type d'inventaire"
+
+#: 
+msgid "Invite a new member"
+msgstr "Inviter un nouveau membre"
+
+#: 
+msgid "Invite a New Member"
+msgstr "Inviter un nouveau membre"
+
+#: 
+msgid "Invite an Owner"
+msgstr "Inviter un propriétaire"
+
+#: 
+msgid "It is necessary to map your field names to SEED field names. You can select from the list that appears as you start to type, which is based on the Building Energy Data Exchange Specification (BEDES), or you can type in your own name, as well as typing in the field name from the original datafile."
+msgstr "Il est nécessaire de mapper vos noms de champs aux noms de champs SEED. Vous pouvez sélectionner dans la liste qui apparaît lorsque vous commencez à taper, qui est basée sur la spécification BEDES (Building Energy Data Exchange Specification) ou vous pouvez taper votre propre nom et saisir le nom du champ dans le fichier de données d'origine."
+
+#: 
+msgid "Jurisdiction Property ID"
+msgstr "Juridiction"
+
+#: 
+msgid "Jurisdiction Tax Lot ID"
+msgstr "ID de lot d'impôt de juridiction"
+
+#: 
+msgid "kBtu/sq. ft./year"
+msgstr "kBtu/pi. ca./année"
+
+#: 
+msgid "kWh/m²/year"
+msgstr "kWh/m²/année"
+
+#: 
+msgid "Label"
+msgstr "Étiquette"
+
+#: 
+msgid "Label Name"
+msgstr "Nom de l'étiquette"
+
+#: 
+#, fuzzy
+msgid "Label updated."
+msgstr "Étiquette mise à jour"
+
+#: 
+msgid "Labels"
+msgstr "Étiquettes"
+
+#: 
+msgid "Last Changed"
+msgstr "Dernière modification"
+
+#: seed/landing/models.py:44
+msgid "last name"
+msgstr "nom de famille"
+
+#: 
+msgid "Last Name"
+msgstr "Nom de famille"
+
+#: 
+msgid "Last name is required."
+msgstr "Le nom de famille est requis."
+
+#: 
+msgid "Last Name:"
+msgstr "Nom de famille:"
+
+#: 
+msgid "Left Half"
+msgstr "Moitié gauche"
+
+#: seed/models/models.py:179
+msgid "light blue"
+msgstr "bleu clair"
+
+#: 
+msgid "List Settings"
+msgstr "Paramètres de la liste"
+
+#: 
+msgid "LIST_GUIDANCE_PROPERTIES"
+msgstr "Sélectionnez des colonnes dans la liste ci-dessous pour les faire apparaître dans votre liste de propriétés. Faites glisser les lignes pour modifier l'ordre dans lequel elles apparaissent. Épinglez les lignes pour qu'elles soient épinglées dans la vue de liste."
+
+#: 
+msgid "LIST_GUIDANCE_PROPERTIES_NO_PIN"
+msgstr "Sélectionnez les colonnes de la liste ci-dessous pour les faire apparaître dans votre tableau des propriétés. Faites glisser les lignes pour modifier l'ordre dans lequel elles apparaissent."
+
+#: 
+msgid "LIST_GUIDANCE_TAXLOTS"
+msgstr "Sélectionnez des colonnes dans la liste ci-dessous pour les faire apparaître dans votre tableau Liste des lots d'impôt. Faites glisser les lignes pour modifier l'ordre dans lequel elles apparaissent. Épinglez les lignes pour qu'elles soient épinglées dans la vue de liste."
+
+#: 
+msgid "LIST_GUIDANCE_TAXLOTS_NO_PIN"
+msgstr "Sélectionnez les colonnes de la liste ci-dessous pour les faire apparaître dans votre tableau Détail des taxes. Faites glisser les lignes pour modifier l'ordre dans lequel elles apparaissent."
+
+#: 
+msgid "Loading data..."
+msgstr "Chargeant les données ..."
+
+#: 
+msgid "Loading labels..."
+msgstr "Chargement des étiquettes ..."
+
+#: 
+msgid "Loading..."
+msgstr "Chargeant..."
+
+#: seed/landing/templates/landing/home.html:27
+#: seed/landing/templates/landing/login.html:29
+msgid "Log In"
+msgstr "S'identifier"
+
+#: seed/landing/templates/landing/login.html:23
+msgid "Log in"
+msgstr "S'identifier"
+
+#: seed/landing/templates/landing/home.html:16
+msgid "Log in to SEED Platform"
+msgstr "Connectez-vous à SEED Platform"
+
+#: 
+msgid "Logout"
+msgstr "Déconnexion"
+
+#: 
+msgid "Make this a snapshot project."
+msgstr "Faire un projet de capture instantanée."
+
+#: 
+msgid "Manage available cycles."
+msgstr "Gérer les cycles disponibles."
+
+#: 
+msgid "Manage compliance"
+msgstr "Gérer la conformité"
+
+#: 
+msgid "Manage Your API Key"
+msgstr "Gérer votre clé API"
+
+#: 
+msgid "Managed by"
+msgstr "Dirigé par"
+
+#: 
+msgid "Manual Matching"
+msgstr "Correspondance manuelle"
+
+#: 
+msgid "Map SEED fields to imported file fields"
+msgstr "Mapper les champs SEED aux champs de fichiers importés"
+
+#: 
+msgid "Map Your Data"
+msgstr "Mappez vos données"
+
+#: 
+msgid "Mapped Fields"
+msgstr "Champs mappés"
+
+#: 
+msgid "MAPPING YOUR DATA TO SEED"
+msgstr "MAPPAGE DE VOS DONNÉES À SEED"
+
+#: 
+msgid "MAPPING_BUILDINGS_FOR"
+msgstr "Appariant bâtiments pour <strong>{filename}</strong>"
+
+#: 
+msgid "MAPPING_STEP_2_ADVICE"
+msgstr "Après avoir cliqué sur le bouton <span class=\"label label-primary\">Mapper vos données</span> , vous verrez une vue avec les champs mappés et vos données dans une grille, de sorte que vous pouvez vérifier que le mappage est ce que vous voulez. Si vous devez modifier le mappage, cliquez sur le bouton <span class=\"label label-primary\">Retour au mappage</span> et modifiez le mappage du champ. Assurez-vous que les mappages sont corrects dans cette étape. Une fois que vous avez cliqué sur le bouton <span class=\"label label-primary\">Enregistrer les correspondances</span> , vous ne pourrez pas modifier les mappages de champs."
+
+#: 
+msgid "MARKETING_BULLET_1"
+msgstr "Commencez à utiliser SEED Platform™ en téléchargeant votre liste de bâtiments (données de l'évaluateur de la taxe de séjour), puis vos données EPA Portfolio Manager. Assurez-vous que ces fichiers sont au format .csv, .xls, .xlsx ou .xml. La plate-forme SEED vous aidera à mapper et valider vos données dans le processus de chargement."
+
+#: 
+msgid "MARKETING_BULLET_2"
+msgstr "Associez votre liste de bâtiments à l'ensemble de données Portfolio Manager pour lier ensemble les enregistrements de construction. SEED Platform vous aidera à apparier automatiquement les couplages de confiance et à vous fournir des outils qui correspondent au reste de votre jeu de données."
+
+#: seed/landing/templates/landing/_marketing_bullets.html:23
+msgid "MARKETING_BULLET_3"
+msgstr "Utilisez le système d'étiquetage flexible et facile à utiliser de SEED Platform et les regroupements d'inventaire pour suivre l'état de la soumission, de l'examen et de la conformité des données."
+
+#: 
+msgid "Master"
+msgstr "Maître"
+
+#: 
+msgid "Match"
+msgstr "Faire correspondre"
+
+#: 
+msgid "Match Properties"
+msgstr "Faire correspondre des propriétes"
+
+#: 
+msgid "Match Tax Lots"
+msgstr "Faire correspondre des lots d'impôt"
+
+#: 
+msgid "Match your data"
+msgstr "Faites correspondre vos données"
+
+#: seed/landing/templates/landing/_marketing_bullets.html:15
+msgid "Match-up your buildings list with the Portfolio Manager dataset to tie building records together."
+msgstr "Associez votre liste de bâtiments à l'ensemble de données Portfolio Manager pour lier ensemble les enregistrements de construction."
+
+#: 
+msgid "Matched Properties"
+msgstr "Propriétés correspondantes"
+
+#: 
+msgid "Matched Tax Lots"
+msgstr "Lots d'impôts correspondants"
+
+#: 
+msgid "Matched!"
+msgstr "Juméle!"
+
+#: 
+msgid "Matching Detail"
+msgstr "Détail sur la correspondance"
+
+#: 
+msgid "Matching Detail Settings"
+msgstr "Paramètres de détail sur la correspondance"
+
+#: 
+msgid "Matching List"
+msgstr "Liste des Correspondances"
+
+#: 
+msgid "Matching List Settings"
+msgstr "Paramètres de la Liste des Correspondances"
+
+#: 
+msgid "Matching Results for file"
+msgstr "Résultats correspondants pour le fichier"
+
+#: 
+msgid "MATCHING_RESULTS_FOR_FILE"
+msgstr "Résultats correspondants pour le fichier {dataset_filename}"
+
+#: 
+msgid "Max"
+msgstr "Max"
+
+#: 
+msgid "Maximum"
+msgstr "Maximum"
+
+#: 
+msgid "Measurement Units"
+msgstr "Unités de mesure"
+
+#: 
+msgid "Member"
+msgstr "Membre"
+
+#: 
+msgid "Member Email"
+msgstr "Email du membre"
+
+#: 
+msgid "member email"
+msgstr "email du membre"
+
+#: 
+msgid "Member Name"
+msgstr "Nom de membre"
+
+#: 
+msgid "member name"
+msgstr "nom de membre"
+
+#: 
+msgid "Member Role"
+msgstr "Rôle de membre"
+
+#: 
+msgid "member role"
+msgstr "rôle de membre"
+
+#: 
+msgid "Members"
+msgstr "Membres"
+
+#: 
+msgid "Merged properties"
+msgstr "Propriétés fusionnées"
+
+#: 
+msgid "Merged tax lots"
+msgstr "Lots d'impôt fusionnés"
+
+#: 
+msgid "Min"
+msgstr "Min"
+
+#: 
+msgid "Min Sq/Ft"
+msgstr "Pi/Ca Min"
+
+#: 
+msgid "Minimum"
+msgstr "Minimum"
+
+#: 
+msgid "Minimum Sq Ft"
+msgstr "Pi/Ca Minimum"
+
+#: 
+msgid "Modifying Data Quality Rules"
+msgstr "Modification des règles de qualité des données"
+
+#: 
+msgid "More details"
+msgstr "Plus de détails"
+
+#: 
+msgid "Move Buildings"
+msgstr "Déplacer les bâtiments"
+
+#: 
+msgid "Move/copy buildings to another project"
+msgstr "Déplacer/copier des bâtiments dans un autre projet"
+
+#: 
+msgid "MULTI_FILE_EXCEL_NOT_SUPPORTED"
+msgstr "<strong>Remarque:</strong> les fichiers Excel multi-feuilles ne sont actuellement pas pris en charge."
+
+#: 
+msgid "multi-sheet Excel files are not currently supported"
+msgstr "les fichiers Excel multi-feuilles ne sont actuellement pas pris en charge"
+
+#: seed/models/models.py:186 seed/models/projects.py:30
+msgid "name"
+msgstr "nom"
+
+#: 
+msgid "Name"
+msgstr "nom"
+
+#: 
+msgid "name already in use"
+msgstr "nom déjà utilisé"
+
+#: 
+msgid "National Renewable Energy Laboratory"
+msgstr "Laboratoire National Des Énergies Renouvelables"
+
+#: seed/landing/templates/landing/password_reset_confirm.html:50
+#: seed/landing/templates/landing/signup.html:49
+msgid "New password"
+msgstr "Nouveau mot de passe"
+
+#: 
+msgid "New properties"
+msgstr "Nouvelles propriétés"
+
+#: 
+msgid "New tax lots"
+msgstr "Nouveaux lots d'impôt"
+
+#: 
+msgid "Next"
+msgstr "Prochain"
+
+#: 
+msgid "No"
+msgstr "Non"
+
+#: 
+msgid "No action was taken"
+msgstr "Aucune action n'a été prise"
+
+#: 
+msgid "No Data"
+msgstr "Pas de données"
+
+#: 
+msgid "No labels available. Add a label above to get started."
+msgstr "Pas d'étiquettes disponibles. Ajoutez une étiquette ci-dessus pour commencer."
+
+#: 
+msgid "No warnings/errors"
+msgstr "Aucun avertissement/erreur"
+
+#: 
+msgid "None"
+msgstr "Aucun"
+
+#: 
+msgid "Not all inventory items were successfully deleted"
+msgstr "Tous les éléments de l'inventaire n'ont pas été supprimés"
+
+#: 
+msgid "not authorized"
+msgstr "pas autorisé"
+
+#: 
+msgid "Not Null"
+msgstr "Pas nul"
+
+#: 
+msgid "Note 1: Sub-organizations cannot be deleted."
+msgstr "Remarque 1: Les sous-organisations ne peuvent pas être supprimées."
+
+#: 
+msgid "Note 2: Parent organization members are not automatically made members of sub-organizations."
+msgstr "Remarque 2: Les membres de l'organisation mère ne sont pas automatiquement membres des sous-organisations."
+
+#: 
+msgid "Note:"
+msgstr "Remarque:"
+
+#: seed/landing/templates/landing/_password_note.html:1
+msgid "Note: Passwords must be 8 or more characters, and must contain at least 1 uppercase character, 1 lowercase character, and 1 digit."
+msgstr "Remarque: Les mots de passe doivent comporter 8 caractères ou plus et contenir au moins 1 caractère majuscule, 1 caractère minuscule et 1 chiffre."
+
+#: 
+msgid "NUM_PROPERTIES_AND_TAXLOTS_DELETED"
+msgstr "{num_properties,plural,=0{aucune propriété} one{<strong>1</strong> propriété} other{<strong>#</strong> propriétés}} et {num_taxlots,plural,=0{aucun lot d'impôt} one{<strong>1</strong>lot d'impôt} other{<strong>#</strong> lots d'impôt}} ont été supprimé"
+
+#: 
+msgid "NUM_PROPERTY_TAXLOT_COLUMNS_AVAILABLE"
+msgstr "Il existe {num_property_columns} colonnes de propriétés et {num_taxlot_colums} colonnes de lot d'impôt qui vous sont accessibles."
+
+#: 
+msgid "Number"
+msgstr "Nombre"
+
+#: 
+msgid "Number of Properties"
+msgstr "Nombre de propriétés"
+
+#: 
+msgid "Number of Tax Lots"
+msgstr "Nombre de lots d'impôt"
+
+#: 
+msgid "Number Properties"
+msgstr "Propriétés du nombre"
+
+#: 
+msgid "NUMBER_COLUMNS_AVAILABLE"
+msgstr "Il existe {count} colonnes de données disponibles pour vous."
+
+#: 
+msgid "NUMBER_OF_DATASETS"
+msgstr "{num, plural, one {1 Jeu de données} other {# Jeux de données}}"
+
+#: 
+msgid "NUMBER_OF_PROPERTIES"
+msgstr "{num, plural, one{1 propriété} other{# propriétés}}"
+
+#: 
+msgid "NUMBER_OF_TAXLOTS"
+msgstr "{num, plural, one{1 lot d'impôt} other{# lot d'impôts}}"
+
+#: 
+msgid "Occupied Floor Area"
+msgstr "Surface occupée"
+
+#: 
+msgid "OK_TO_DELETE_NUM_PROPERTIES_AND_TAXLOTS"
+msgstr "Voulez-vous vraiment supprimer {num_properties,plural,one{<strong>1</strong> propriété} other{<strong>#</strong> propriétés}} et {num_taxlots,plural,one{<strong>1</strong>lot d'impôt} other{<strong>#</strong> lots d'impôt}}?"
+
+#: src/django-tos-master/tos/models.py:34
+msgid "Only one terms of service is allowed to be active"
+msgstr "Un seul des termes du service est autorisé à être actif"
+
+#: 
+msgid "OR"
+msgstr "OU"
+
+#: 
+msgid "Or Create New (With User as Head):"
+msgstr "Ou Créer Nouveau (avec l'utilisateur en tant que chef):"
+
+#: seed/models/models.py:182
+msgid "orange"
+msgstr "orange"
+
+#: 
+msgid "Organization"
+msgstr "Organisation"
+
+#: 
+msgid "Organization Name"
+msgstr "Nom de l'organisation"
+
+#: 
+msgid "Organization Name:"
+msgstr "Nom de l'organisation:"
+
+#: 
+msgid "Organization Owner(s)"
+msgstr "Propriétaire(s) de l'organisation"
+
+#: 
+msgid "Organizations"
+msgstr "Organisations"
+
+#: 
+msgid "Organizations I Belong To"
+msgstr "Organisations auxquelles j'appartiens"
+
+#: 
+msgid "Organizations I Manage"
+msgstr "Organisations que je gère"
+
+#: 
+msgid "Organizations:"
+msgstr "Organisations:"
+
+#: 
+msgid "Owner"
+msgstr "Propriétaire"
+
+#: 
+msgid "owner"
+msgstr "propriétaire"
+
+#: 
+msgid "Owner Address"
+msgstr "Adresse du propriétaire"
+
+#: 
+msgid "Owner City/State"
+msgstr "Propriétaire Ville / État"
+
+#: 
+msgid "Owner Email"
+msgstr "Email du propriétaire"
+
+#: 
+msgid "Owner Name"
+msgstr "Nom du propriétaire"
+
+#: 
+msgid "Owner Postal Code"
+msgstr "Code postal du propriétaire"
+
+#: 
+msgid "Owner Telephone"
+msgstr "Téléphone du propriétaire"
+
+#: 
+msgid "Pair Properties to Tax Lots"
+msgstr "Associer des propriétés à des lots d'impôt"
+
+#: 
+msgid "Pair Tax Lots to Properties"
+msgstr "Associer les lots d'impôt aux propriétés"
+
+#: 
+msgid "Paired"
+msgstr "Jumelé"
+
+#: 
+msgid "Pairing"
+msgstr "Jumelage"
+
+#: 
+msgid "Pairing Settings"
+msgstr "Paramètres de jumelage"
+
+#: 
+msgid "Parent ID"
+msgstr "ID du Parent"
+
+#: seed/landing/forms.py:20
+msgid "Password"
+msgstr "Mot de passe"
+
+#: seed/landing/templates/landing/password_reset_confirm.html:11
+#: seed/landing/templates/landing/signup.html:11
+msgid "Password again"
+msgstr "Mot de passe encore"
+
+#: seed/landing/templates/landing/password_reset_confirm.html:42
+msgid "Password reset"
+msgstr "Réinitialiser le mot de passe"
+
+#: seed/landing/templates/landing/password_reset_subject.txt:1
+msgid "Password reset on SEED"
+msgstr "Réinitialisation du mot de passe sur SEED"
+
+#: seed/landing/templates/landing/password_set.html:6
+msgid "Password set"
+msgstr "Mot de passe défini"
+
+#: seed/landing/templates/landing/password_set.html:12
+msgid "Password set unsuccessful"
+msgstr "Mot de passe pas défini"
+
+#: 
+msgid "PERCENT_COMPLETE"
+msgstr "{progress}% achevé"
+
+#: seed/landing/templates/landing/password_set.html:16
+msgid "Please enter your new password twice so we can verify you typed it in correctly."
+msgstr "Entrez votre nouveau mot de passe deux fois afin que nous puissions vérifier que vous l'avez tapé correctement."
+
+#: seed/landing/templates/landing/password_reset_email.html:5
+msgid "Please go to the following page and choose a new password:"
+msgstr "Passez à la page suivante et choisissez un nouveau mot de passe:"
+
+#: seed/templates/seed/account_create_email.html:8
+msgid "Please go to the following page and setup your account:"
+msgstr "Passez à la page suivante et configurez votre compte:"
+
+#: 
+msgid "Please join the SEED-Platform Dev forum where you can connect with other developers."
+msgstr "Rejoignez le forum SEED-Platform Dev où vous pouvez vous connecter avec d'autres développeurs."
+
+#: 
+msgid "Please review SEED headers.  Duplicate values are not allowed."
+msgstr "Veuillez consulter les en-têtes SEED. Les valeurs en double ne sont pas autorisées."
+
+#: 
+msgid "Please review SEED headers.  Empty values are not allowed."
+msgstr "Veuillez consulter les en-têtes SEED. Les valeurs vides ne sont pas autorisées."
+
+#: 
+msgid "Please visit our User Support website for tutorials and documentation to help you learn how to use SEED-Platform."
+msgstr "S'il vous plaît visitez notre site Web d'assistance aux utilisateurs pour les tutoriels et la documentation pour vous aider à apprendre à utiliser SEED-Platform."
+
+#: 
+msgid "Please wait while your data is loaded..."
+msgstr "Veuillez patienter pendant que vos données sont chargées ..."
+
+#: 
+msgid "PM Generation Date"
+msgstr "PM Date de génération"
+
+#: 
+msgid "PM Parent Property ID"
+msgstr "PM ID de la propriété parent"
+
+#: 
+msgid "PM Property ID"
+msgstr "ID de Propriété PM"
+
+#: 
+msgid "PM Release Date"
+msgstr "PM Date de sortie"
+
+#: 
+msgid "Postal Code (Property)"
+msgstr "Code postal (propriété)"
+
+#: 
+msgid "Postal Code (Tax Lot)"
+msgstr "Code postal (lot d'impôt)"
+
+#: 
+msgid "Potential Matches from Source"
+msgstr "Correspondances possibles à partir de la source"
+
+#: 
+msgid "Preparing your inventory for deletion"
+msgstr "Préparer votre inventaire pour la suppression"
+
+#: 
+msgid "Previous"
+msgstr "Précédente"
+
+#: 
+msgid "Primary Tax Lot ID"
+msgstr "ID de lot d'impôt primaire"
+
+#: 
+msgid "Primary/Secondary"
+msgstr "Primaire/secondaire"
+
+#: 
+msgid "Profile Info"
+msgstr "Informations sur le profil"
+
+#: 
+msgid "Profile Information"
+msgstr "Renseignements sur le profil"
+
+#: seed/models/models.py:239
+msgid "Project"
+msgstr "Projet"
+
+#: 
+msgid "Project Actions"
+msgstr "Actions du projet"
+
+#: seed/models/projects.py:115
+msgid "project building"
+msgstr "bâtiment dans le projet"
+
+#: 
+msgid "Project Building List Settings"
+msgstr "Paramètres de la liste de bâtiments de projet"
+
+#: seed/models/projects.py:116
+msgid "project buildings"
+msgstr "bâtiments dans le projet"
+
+#: 
+msgid "Project Buildings"
+msgstr "Bâtiments de projet"
+
+#: 
+msgid "Project Information"
+msgstr "Renseignements sur le projet"
+
+#: 
+msgid "Project Name"
+msgstr "Nom du projet"
+
+#: seed/models/projects.py:143
+msgid "project property view"
+msgstr "vue de propriété de projet"
+
+#: seed/models/projects.py:144
+msgid "project property views"
+msgstr "vues de propriété de projet"
+
+#: seed/models/projects.py:168
+msgid "project taxlot view"
+msgstr "vue taxlot du projet"
+
+#: seed/models/projects.py:169
+msgid "project taxlot views"
+msgstr "vues taxlot de projet"
+
+#: 
+msgid "Projects"
+msgstr "Projets"
+
+#: 
+msgid "Properties"
+msgstr "Propriétés"
+
+#: 
+msgid "Properties List"
+msgstr "Liste Des Propriétés"
+
+#: 
+msgid "Properties List Settings"
+msgstr "Paramètres de la Liste de Propriétés"
+
+#: 
+msgid "Properties with Data"
+msgstr "Propriétés avec données"
+
+#: 
+msgid "Property"
+msgstr "Propriété"
+
+#: 
+msgid "property"
+msgstr "propriété"
+
+#: 
+msgid "Property Classification"
+msgstr "Classification de la propriété"
+
+#: 
+msgid "Property Count"
+msgstr "Nombre de propriétés"
+
+#: 
+msgid "Property Detail"
+msgstr "Détails de la propriété"
+
+#: 
+msgid "Property Detail Settings"
+msgstr "Paramètres de détail de la propriété"
+
+#: 
+msgid "Property List Settings"
+msgstr "Paramètres de la liste de propriétés"
+
+#: 
+msgid "Property Name"
+msgstr "Nom de la propriété"
+
+#: 
+msgid "Property Notes"
+msgstr "Notes de propriété"
+
+#: 
+msgid "Property Reports"
+msgstr "Rapports de propriété"
+
+#: 
+msgid "Property Type"
+msgstr "Type de propriété"
+
+#: 
+msgid "Property Visibility"
+msgstr "Visibilité de la propriété"
+
+#: 
+msgid "PUBLIC"
+msgstr "PUBLIC"
+
+#: 
+msgid "Read more here."
+msgstr "Lire la suite ici."
+
+#: 
+msgid "Recent Sale Date"
+msgstr "Date de vente récente"
+
+#: 
+msgid "Record from Source"
+msgstr "Enregistrement de la source"
+
+#: seed/models/models.py:177
+msgid "red"
+msgstr "rouge"
+
+#: src/django-tos-master/tos/templates/tos/tos_check.html:18
+msgid "Reject"
+msgstr "Rejeter"
+
+#: 
+msgid "Related Properties"
+msgstr "Propriétés connexes"
+
+#: 
+msgid "Related Tax Lots"
+msgstr "Lots d'impôt connexes"
+
+#: 
+msgid "Remove"
+msgstr "Supprimer"
+
+#: 
+msgid "Remove buildings from project"
+msgstr "Supprimer les bâtiments du projet"
+
+#: 
+msgid "Remove Column Mappings"
+msgstr "Supprimer les mappages de colonnes"
+
+#: 
+msgid "Remove From Project"
+msgstr "Supprimer du projet"
+
+#: 
+msgid "Remove inventory and organizations"
+msgstr "Supprimer l'inventaire et les organisations"
+
+#: 
+msgid "Remove User"
+msgstr "Supprimer l'utilisateur"
+
+#: 
+msgid "Removing buildings from project"
+msgstr "Retrait des bâtiments du projet"
+
+#: 
+msgid "Reorder Columns"
+msgstr "Réorganiser les colonnes"
+
+#: 
+msgid "Reporting Deadline"
+msgstr "Date limite de déclaration"
+
+#: 
+msgid "Reports"
+msgstr "Rapports"
+
+#: 
+msgid "Required"
+msgstr "Requis"
+
+#: 
+msgid "Reset"
+msgstr "Réinitialiser"
+
+#: 
+msgid "Reset All Rules"
+msgstr "Réinitialiser toutes les règles"
+
+#: 
+msgid "Reset Defaults"
+msgstr "Réinitialiser par défaut"
+
+#: 
+msgid "Residential"
+msgstr "Résidentiel"
+
+#: 
+msgid "Restore Default Rules"
+msgstr "Restaurer les règles par défaut"
+
+#: seed/models/models.py:137
+msgid "Retro Commissioning"
+msgstr "Rétrospection de mise en service"
+
+#: 
+msgid "Review Mapped Data"
+msgstr "Examiner les données mappées"
+
+#: 
+msgid "Review matches"
+msgstr "Examiner les correspondences"
+
+#: 
+msgid "REVIEW YOUR DATA MAPPINGS"
+msgstr "EXAMINER VOS MAPPAGES DE DONNÉES"
+
+#: 
+msgid "Right Half"
+msgstr "Moitié droite"
+
+#: 
+msgid "Role:"
+msgstr "Rôle:"
+
+#: 
+msgid "Row 1"
+msgstr "Rangée 1"
+
+#: 
+msgid "Row 2"
+msgstr "Rangée 2"
+
+#: 
+msgid "Row 3"
+msgstr "Rangée 3"
+
+#: 
+msgid "Row 4"
+msgstr "Rangée 4"
+
+#: 
+msgid "Row 5"
+msgstr "Rangée 5"
+
+#: 
+msgid "save"
+msgstr "enregistrer"
+
+#: 
+msgid "Save"
+msgstr "Enregistrer"
+
+#: 
+msgid "Save Changes"
+msgstr "Enregistrer Les Modifications"
+
+#: 
+msgid "Save Concatenation"
+msgstr "Enregistrer la concaténation"
+
+#: 
+msgid "Save Mappings"
+msgstr "Enregistrer les mappages"
+
+#: 
+msgid "Save Settings"
+msgstr "Enregistrer les paramètres"
+
+#: 
+msgid "saving complete"
+msgstr "enregistrement complète"
+
+#: 
+msgid "saving data"
+msgstr "enregistrant les données"
+
+#: 
+msgid "saving energy data"
+msgstr "enregistreant des données de l’énergie"
+
+#: 
+msgid "Search column name"
+msgstr "Rechercher le nom de la colonne"
+
+#: 
+msgid "Search field name"
+msgstr "Rechercher le nom du champ"
+
+#: 
+msgid "Security"
+msgstr "Sécurité"
+
+#: 
+msgid "SEED doesn't currently support that file format"
+msgstr "SEED ne prend pas actuellement en charge ce format de fichier"
+
+#: 
+msgid "SEED Header"
+msgstr "En-tête SEED"
+
+#: seed/templates/seed/account_create_email.html:6
+msgid "SEED is easy, flexible, and cost effective software designed to help organizations clean, manage and share information about large portfolios of buildings. SEED is a free, open source web application that you can use privately.  While SEED was originally designed to help cities and States implement benchmarking programs for public or private buildings, it has the potential to be useful for many other activities by public entities, efficiency programs and private companies."
+msgstr "SEED est un logiciel simple, flexible et rentable conçu pour aider les entreprises à nettoyer, gérer et partager des informations sur les grands portefeuilles de bâtiments. SEED est une application Web open source gratuite que vous pouvez utiliser en privé. Bien que SEED ait été conçue à l'origine pour aider les villes et les États à mettre en œuvre des programmes de benchmarking pour les bâtiments publics ou privés, il est susceptible d'être utile pour de nombreuses autres activités par des entités publiques, des programmes d'efficacité et des entreprises privées."
+
+#: seed/landing/templates/landing/base.html:9
+msgid "SEED Platform"
+msgstr "Plate-forme SEED"
+
+#: seed/templates/seed/base.html:7
+msgid "SEED Platform™"
+msgstr "SEED Platform™"
+
+#: seed/models/columns.py:688 seed/models/models.py:195
+#: seed/models/models.py:256 seed/models/projects.py:42
+msgid "SeedOrg"
+msgstr "SeedOrg"
+
+#: 
+msgid "Select All Columns"
+msgstr "Sélectionnez toutes les colonnes"
+
+#: 
+msgid "Select columns from the list below to make them appear in your Buildings List table."
+msgstr "Sélectionnez les colonnes de la liste ci-dessous pour les faire apparaître dans votre tableau Liste des bâtiments."
+
+#: 
+msgid "Select columns from the list below to make them appear in your Properties Detail table. Drag the rows to change the order in which they appear."
+msgstr "Sélectionnez les colonnes de la liste ci-dessous pour les faire apparaître dans votre tableau de détail des propriétés. Faites glisser les lignes pour modifier l'ordre dans lequel elles apparaissent."
+
+#: 
+msgid "Select columns from the list below to make them appear in your Tax Lots Detail table. Drag the rows to change the order in which they appear."
+msgstr "Sélectionnez les colonnes de la liste ci-dessous pour les faire apparaître dans votre tableau de détail des lots d'impôt. Faites glisser les lignes pour modifier l'ordre dans lequel elles apparaissent."
+
+#: 
+msgid "Select columns from the lists below to make them appear on the left or right halves of your Matching List table. Drag the rows to change the order in which they appear."
+msgstr "Sélectionnez les colonnes dans les listes ci-dessous pour les faire apparaître sur les moitiés gauche ou droite de votre table de Liste des Correspondances. Faites glisser les lignes pour modifier l'ordre dans lequel elles apparaissent."
+
+#: 
+msgid "Select the type of file(s) you would like to add to"
+msgstr "Sélectionnez le type de fichier (s) que vous souhaitez ajouter à"
+
+#: 
+msgid "Select which columns to include in the list:"
+msgstr "Sélectionnez les colonnes à inclure dans la liste:"
+
+#: 
+msgid "SELECT_THE_TYPE_OF_FILE_TO_ADD_TO_DATASET"
+msgstr "Sélectionnez le type de fichier(s) que vous souhaitez ajouter à {dataset_name}."
+
+#: 
+msgid "Selecting Fields to Share"
+msgstr "Sélection des champs à partager"
+
+#: 
+msgid "Send Invite"
+msgstr "Envoyer une invitation"
+
+#: 
+msgid "Set a Query Threshold"
+msgstr "Définir un seuil de requête"
+
+#: 
+msgid "Set all fields to"
+msgstr "Définissez tous les champs"
+
+#: seed/landing/templates/landing/password_set.html:18
+msgid "Set password"
+msgstr "Définir le mot de passe"
+
+#: seed/landing/templates/landing/password_set.html:10
+msgid "Set your password"
+msgstr "Définir votre mot de passe"
+
+#: 
+msgid "Settings"
+msgstr "Paramètres"
+
+#: 
+msgid "Severity"
+msgstr "Gravité"
+
+#: 
+msgid "SHARE DATA WITH"
+msgstr "PARTAGE DE DONNÉES AVEC"
+
+#: 
+msgid "Sharing"
+msgstr "Partage"
+
+#: 
+msgid "Sharing Your Data"
+msgstr "Partage de vos données"
+
+#: 
+msgid "Show All"
+msgstr "Montrer tout"
+
+#: 
+msgid "Show Matched"
+msgstr "Montrer Appariés"
+
+#: 
+msgid "Show only mapped fields"
+msgstr "Afficher seulement les champs mappés"
+
+#: 
+msgid "Show Paired"
+msgstr "Montrer jumelés"
+
+#: 
+msgid "Show Unmatched"
+msgstr "Montrer Non-appariés"
+
+#: 
+msgid "Show Unpaired"
+msgstr "Montrer non-jumelés"
+
+#: 
+msgid "Show/Hide Columns"
+msgstr "Afficher/masquer les colonnes"
+
+#: 
+msgid "SHOWING_AVAILABLE_MATCHES"
+msgstr "Affichage des {start} à {end} de {total} correspondances disponibles "
+
+#: 
+#, fuzzy
+msgid "SHOWING_FILTERED_PROPERTIES"
+msgstr "Affichage {start} à {end} des {total} propriétés en tout (filtrées)"
+
+#: 
+msgid "SHOWING_FILTERED_TAXLOTS"
+msgstr "Affichage {start} à {end} des {total} lots d'impôt en tout (filtrées)"
+
+#: 
+msgid "SHOWING_PAIRED_UNPAIRED_PROPERTIES"
+msgstr "Affichage {paired_count} {paired_count, plural, one{Property} other{Properties}} ({unpaired_count} non apparié)"
+
+#: 
+msgid "SHOWING_PAIRED_UNPAIRED_TAXLOTS"
+msgstr "Affichage {paired_count} {paired_count, plural, one{Lot d'impôt} other{Lots d'impôt}} ({unpaired_count} non apparié)"
+
+#: 
+msgid "SHOWING_UNFILTERED_PROPERTIES"
+msgstr "Affichage {start} à {end} des {total} propriétés en tout"
+
+#: 
+msgid "SHOWING_UNFILTERED_TAXLOTS"
+msgstr "Affichage {start} à {end} des {total} lots d'impôt en tout"
+
+#: seed/landing/models.py:60
+msgid "shows shared buildings within search results"
+msgstr "montre les bâtiments partagés dans les résultats de recherche"
+
+#: 
+msgid "Site Energy Use Intensity"
+msgstr "Intensité d'utilisation de l'énergie au site"
+
+#: 
+msgid "Site EUI"
+msgstr "IUE site"
+
+#: 
+msgid "Site EUI Weather Normalized"
+msgstr "IUE site météo normalisée"
+
+#: seed/models/projects.py:32
+#, fuzzy
+msgid "slug"
+msgstr "limace"
+
+#: 
+msgid "Snapshot projects are useful when you want to freeze the building data at a moment in time."
+msgstr "Les projets Snapshot sont utiles lorsque vous souhaitez geler les données de construction à un moment donné."
+
+#: 
+msgid "Snapshot Timestamp"
+msgstr "Horodatage de l'instantané"
+
+#: 
+msgid "Sorry!"
+msgstr "Désolée!"
+
+#: 
+msgid "Source Energy Use Intensity"
+msgstr "Intensité d'utilisation de l'énergie à la source"
+
+#: 
+msgid "Source EUI"
+msgstr "IUE source"
+
+#: 
+msgid "Source EUI Weather Normalized"
+msgstr "IUE source météo normalisée"
+
+#: 
+msgid "Space Alerts"
+msgstr "Alertes spatiales"
+
+#: 
+msgid "sq. ft."
+msgstr "pi. ca."
+
+#: 
+msgid "square feet"
+msgstr "pieds carrés"
+
+#: 
+msgid "square metres"
+msgstr "mètres carrés"
+
+#: seed/landing/models.py:47
+msgid "staff status"
+msgstr "statut du personnel"
+
+#: seed/models/models.py:236
+msgid "start_date"
+msgstr "date de début"
+
+#: 
+msgid "State (Property)"
+msgstr "Etat (Propriété)"
+
+#: 
+msgid "State (Tax Lot)"
+msgstr "État (lot d'impôt)"
+
+#: seed/models/projects.py:49
+msgid "status"
+msgstr "statut"
+
+#: 
+msgid "STEP 1: Map Your Data"
+msgstr "ÉTAPE 1: Mappez vos données"
+
+#: 
+msgid "STEP 2: Review Your Data Mappings"
+msgstr "ÉTAPE 2: Consultez vos mappages de données"
+
+#: 
+msgid "Sub-Org Name"
+msgstr "Nom de la sous-organisation"
+
+#: 
+msgid "Sub-Org name is required."
+msgstr "Le nom de la sous-organisation est requis."
+
+#: 
+msgid "Sub-Organization Name"
+msgstr "Nom de la sous-organisation"
+
+#: 
+msgid "Sub-Organizations"
+msgstr "Sous-organisations"
+
+#: 
+msgid "Submittal Type"
+msgstr "Type de soumission"
+
+#: 
+msgid "Success"
+msgstr "Succès"
+
+#: 
+msgid "Success!"
+msgstr "Succès!"
+
+#: 
+msgid "Successful upload!"
+msgstr "Téléchargement réussi!"
+
+#: 
+msgid "Tax Lot"
+msgstr "Lot d'impôt"
+
+#: 
+msgid "tax lot"
+msgstr "lot d'impôt"
+
+#: 
+msgid "Tax Lot Count"
+msgstr "Nombre de lots d'impôt"
+
+#: 
+msgid "Tax Lot Detail"
+msgstr "Détail du lot d'impôt"
+
+#: 
+msgid "Tax Lot Detail Settings"
+msgstr "Paramètres de détail du lot d'impôt"
+
+#: 
+msgid "Tax Lot ID"
+msgstr "Numéro de lot d'impôt"
+
+#: 
+msgid "Tax Lot Visibility"
+msgstr "Visibilité du lot d'impôt"
+
+#: 
+msgid "Tax Lots"
+msgstr "Lots d'impôt"
+
+#: 
+msgid "Tax Lots List"
+msgstr "Liste des lots d'impôt"
+
+#: 
+msgid "Tax Lots List Settings"
+msgstr "Paramètres de la Liste des Lots d'impôt"
+
+#: src/django-tos-master/tos/models.py:43
+#: src/django-tos-master/tos/models.py:44
+msgid "Terms of Service"
+msgstr "Conditions d'utilisation"
+
+#: src/django-tos-master/tos/templates/tos/tos.html:3
+#: src/django-tos-master/tos/templates/tos/tos_check.html:6
+msgid "Terms of Service as of %(tos.created|date:\"SHORT_DATE_FORMAT\")s"
+msgstr "Conditions de service à partir de% (tos.created | date: \"SHORT_DATE_FORMAT\") s"
+
+#: 
+msgid "Text"
+msgstr "Texte"
+
+#: seed/landing/templates/landing/password_reset_done.html:12
+msgid "Thank you"
+msgstr "Merci"
+
+#: seed/landing/templates/landing/home.html:18
+msgid "Thank you for creating your account! Please sign in below."
+msgstr "Merci de créer votre compte! Veuillez vous connecter ci-dessous."
+
+#: seed/landing/templates/landing/thank_you.html:16
+msgid "Thank you for your interest in joining the Buildings Performance Database. Our site is in beta and your request is being reviewed for access."
+msgstr "Merci de votre intérêt pour vous joindre à la Base de données sur les performances des bâtiments. Notre site est en version bêta et votre demande est en cours d'examen pour l'accès."
+
+#: seed/landing/templates/landing/thank_you.html:13
+msgid "Thank you!"
+msgstr "Merci!"
+
+#: 
+msgid "The Building Energy Data Exchange Specification (BEDES, pronounced \"beads\" or /bi:ds/) is designed to support analysis of the measured energy performance of commercial, multifamily, and residential buildings, by providing a common data format, definitions, and an exchange protocol for building characteristics, efficiency measures, and energy use."
+msgstr "La Spécification d'Échange de Données Energétiques du Bâtiment (BEDES, prononcée /bi:ds/) est conçue pour soutenir l'analyse de la performance énergétique mesurée des bâtiments commerciaux, multifamiliaux et résidentiels, en fournissant un format de données commun, des définitions et un protocole d'échange pour les caractéristiques du bâtiment, les mesures d'efficacité et l'utilisation de l'énergie."
+
+#: 
+msgid "The DOE developed the Standard Energy Efficiency Data (SEED) Platform™ as a free software tool that provides a standardized format for collecting, storing and analyzing building energy performance information about large portfolios. Upload your buildings list to get started."
+msgstr "Le DOE a développé la Plate-forme SEED™ (Standard Energy Efficiency Data) en tant qu'outil logiciel gratuit qui fournit un format standardisé pour la collecte, le stockage et l'analyse des informations sur la performance énergétique des bâtiments concernant les grands portefeuilles. Téléchargez votre liste de bâtiments pour commencer."
+
+#: 
+msgid ""
+"The following is a list of the fields we use to match up properties/tax lots between different imported files. The more data you have in these four fields the better our"
+"                            system will auto-match your records."
+msgstr "Voici une liste des champs que nous utilisons pour faire correspondre les propriétés/lots d'impôt entre différents fichiers importés. Le plus de données que vous avez dans ces quatre domaines, le mieux notre système correspondra automatiquement à vos enregistrements."
+
+#: 
+msgid "The following is a list of the fields we use to match up properties/tax lots between different imported files. The more data you have in these four fields the better our system will auto-match your records."
+msgstr "Voici une liste des champs que nous utilisons pour faire correspondre les propriétés/lots d'impôt entre différents fichiers importés. Plus vous aurez de données dans ces quatre champs, mieux notre système adaptera automatiquement vos enregistrements."
+
+#: seed/landing/templates/landing/signup.html:41
+msgid "The invite link was invalid, possibly because it has already been used.  Please request a new invitation."
+msgstr "Le lien d'invitation était invalide, peut-être parce qu'il a déjà été utilisé. Veuillez demander une nouvelle invitation."
+
+#: 
+msgid "The Open Source code is available on the Github organization SEED-Platform:"
+msgstr "Le code Open Source est disponible sur l'organisation Github SEED-Platform:"
+
+#: seed/landing/templates/landing/password_reset_confirm.html:41
+msgid "The password link was invalid, possibly because it has already been used.  Please request a new password reset."
+msgstr "Le lien de mot de passe était invalide, peut-être parce qu'il a déjà été utilisé. Veuillez demander une nouvelle réinitialisation du mot de passe."
+
+#: seed/landing/templates/landing/password_reset_email.html:11
+msgid "The SEED team"
+msgstr "L'équipe SEED"
+
+#: seed/templates/seed/account_create_email.html:13
+msgid "The SEED Team"
+msgstr "L'équipe SEED"
+
+#: 
+msgid "The Standard Energy Efficiency Data (SEED)™ Platform is a software application that helps organizations easily manage data on the energy performance of large groups of buildings. Users can combine data from multiple sources, clean and validate it, and share the information with others. The software application provides an easy, flexible, and cost-effective method to improve the quality and availability of data to help demonstrate the economic and environmental benefits of energy efficiency, to implement programs, and to target investment activity."
+msgstr "La Plate-forme SEED™ (Standard Energy Efficiency Data) est une application logicielle qui aide les entreprises à gérer facilement les données sur la performance énergétique de grands groupes de bâtiments. Les utilisateurs peuvent combiner les données provenant de plusieurs sources, les nettoyer et les valider, et partager les informations avec les autres. L'application logicielle fournit une méthode simple, flexible et rentable pour améliorer la qualité et la disponibilité des données afin de démontrer les avantages économiques et environnementaux de l'efficacité énergétique, de mettre en œuvre des programmes et de cibler l'activité d'investissement."
+
+#: 
+msgid "There is also a link to the SEED-Platform Users forum, where you can connect with other users."
+msgstr "Il y a aussi un lien vers le forum SEED-Platform Users, où vous pouvez vous connecter avec d'autres utilisateurs."
+
+#: 
+msgid "This cycle name is already taken."
+msgstr "Ce nom de cycle est déjà pris."
+
+#: 
+msgid "This label name is already taken."
+msgstr "Ce nom d'étiquette est déjà pris."
+
+#: seed/validators.py:17
+msgid "This password must contain at least %(quantity)d %(type)s characters."
+msgstr "Ce mot de passe doit contenir au moins% (quantité) d% (type) s caractères."
+
+#: 
+msgid "Time Period"
+msgstr "Période de temps"
+
+#: seed/landing/templates/landing/password_reset_confirm.html:37
+msgid "To change your password, enter your requested password twice."
+msgstr "Pour changer votre mot de passe, entrez votre mot de passe demandé deux fois."
+
+#: 
+msgid "To date"
+msgstr "À ce jour"
+
+#: 
+msgid "To Date"
+msgstr "À ce jour"
+
+#: seed/landing/templates/landing/signup.html:37
+msgid "To set up your account, enter your password twice in the form below."
+msgstr "Pour configurer votre compte, saisissez votre mot de passe deux fois dans le formulaire ci-dessous."
+
+#: 
+msgid "Toggle Dropdown"
+msgstr "Toggle Dropdown"
+
+#: 
+msgid "Total Properties"
+msgstr "Total des propriétés"
+
+#: 
+msgid "Total rows in the import file"
+msgstr "Nombre total de lignes dans le fichier d'importation"
+
+#: 
+msgid "Type of Submittal"
+msgstr "Type de soumission"
+
+#: 
+msgid "Type of Submittal:"
+msgstr "Type de soumission:"
+
+#: 
+msgid ""
+"U.S."
+"                        Department of Energy"
+msgstr "Département Américain de l'Énergie"
+
+#: 
+msgid "U.S. Department of Energy"
+msgstr "Département Américain de l'Énergie"
+
+#: 
+msgid "Units"
+msgstr "Unités"
+
+#: 
+msgid "Until last date of"
+msgstr "Jusqu'à la dernière date de"
+
+#: 
+msgid "Update Charts"
+msgstr "Mettre à jour les graphiques"
+
+#: 
+msgid "Update Filters"
+msgstr "Mise à jour les filtres"
+
+#: 
+msgid "Upload a Spreadsheet"
+msgstr "Télécharger une feuille de calcul"
+
+#: 
+msgid "Upload another energy data file"
+msgstr "Télécharger un autre fichier de données d'énergie"
+
+#: 
+msgid "upload complete"
+msgstr "téléchargement complet"
+
+#: 
+msgid "Upload Green Button Data"
+msgstr "Télécharger les données du Green Button"
+
+#: 
+msgid "Upload Portfolio Manager Data"
+msgstr "Télécharger les données du Portfolio Manager"
+
+#: 
+msgid "Upload your buildings list"
+msgstr "Télécharger votre liste de bâtiments"
+
+#: 
+msgid "Upload your data"
+msgstr "Télécharger vos données"
+
+#: 
+msgid "Upload your data."
+msgstr "Télécharger vos données."
+
+#: 
+msgid "Upload your energy data file(s)"
+msgstr "Téléchargez vos fichier(s) de données d'énergie"
+
+#: 
+msgid "Upload your energy data."
+msgstr "Téléchargez vos données d'énergie."
+
+#: 
+msgid "uploading file"
+msgstr "téléchargeant le fichier"
+
+#: 
+msgid "UPLOADING_PROGRESS"
+msgstr "Téléchargeant <strong>{dataset_filename}</strong>"
+
+#: 
+msgid "Use Description"
+msgstr "Description de l’emploi"
+
+#: seed/landing/models.py:82
+msgid "user"
+msgstr "utilisateur"
+
+#: seed/models/projects.py:35 seed/models/projects.py:109
+#: seed/models/projects.py:137 seed/models/projects.py:162
+msgid "User"
+msgstr "Utilisateur"
+
+#: 
+msgid "User Count"
+msgstr "Nombre d'utilisateurs"
+
+#: 
+msgid "User E-mail:"
+msgstr "E-mail de l'utilisateur:"
+
+#: 
+msgid "User Email"
+msgstr "Email de l'utilisateur"
+
+#: 
+msgid "User First Name:"
+msgstr "Prénom de l'utilisateur:"
+
+#: 
+msgid "User Last Name:"
+msgstr "Nom de famille de l'utilisateur:"
+
+#: seed/landing/models.py:42
+msgid "User's email address.  Used for auth as well."
+msgstr "Adresse e-mail de l'utilisateur. Utilisé également pour auth."
+
+#: 
+msgid "Username"
+msgstr "Nom d'utilisateur"
+
+#: seed/landing/models.py:41
+msgid "username (email)"
+msgstr "nom d'utilisateur (email)"
+
+#: seed/landing/models.py:83
+msgid "users"
+msgstr "utilisateurs"
+
+#: seed/landing/templates/landing/_browser_supported.html:5
+msgid "Using your current browser will prevent you from accessing features on our website. Use the links below to download a new browser or upgrade your existing browser."
+msgstr "L'utilisation de votre navigateur actuel vous empêchera d'accéder aux fonctionnalités de notre site Web. Utilisez les liens ci-dessous pour télécharger un nouveau navigateur ou mettre à niveau votre navigateur existant."
+
+#: 
+msgid "Version"
+msgstr "Version"
+
+#: 
+msgid "View by Property"
+msgstr "Examiner par propriété"
+
+#: 
+msgid "View by Tax Lot"
+msgstr "Examiner par lot d'impôt"
+
+#: 
+msgid "View my properties"
+msgstr "Voir mes propriétés"
+
+#: 
+msgid "View Project"
+msgstr "Voir le projet"
+
+#: 
+msgid "Viewer"
+msgstr "Spectateur"
+
+#: 
+msgid "Warning"
+msgstr "Mise en garde"
+
+#: seed/landing/templates/landing/_browser_supported.html:4
+msgid "We've detected an outdated browser."
+msgstr "Nous avons détecté un navigateur obsolète."
+
+#: seed/landing/templates/landing/password_reset_done.html:15
+msgid "We've e-mailed instructions for resetting your password."
+msgstr "Nous avons envoyé des instructions par e-mail pour réinitialiser votre mot de passe."
+
+#: 
+msgid "Weather Norm. Site EUI"
+msgstr "IUE site météo norm."
+
+#: 
+msgid "Weather Norm. Source EUI"
+msgstr "IUE source météo norm."
+
+#: 
+msgid "Weather Normalized Site Energy Use Intensity"
+msgstr "Intensité de l'utilisation de l'énergie au site, normalisée par les conditions météorologiques"
+
+#: 
+msgid "Weather Normalized Source Energy Use Intensity"
+msgstr "Intensité de l'utilisation de l'énergie à la site, normalisée par les conditions météorologiques"
+
+#: seed/landing/templates/landing/_marketing_bullets.html:3
+msgid "Welcome to SEED Platform™"
+msgstr "Bienvenue sur SEED Platform™"
+
+#: seed/landing/templates/landing/password_set.html:16
+msgid "Welcome to SEED!"
+msgstr "Bienvenue chez SEED!"
+
+#: 
+msgid "What type of file would you like to upload?"
+msgstr "Quel type de fichier souhaitez-vous télécharger?"
+
+#: 
+msgid "WHEN_YOU_CLICK_MAP_YOUR_DATA"
+msgstr "Lorsque vous cliquez sur le bouton <span class=\"label label-primary\">Mapper vos données</span> , le programme affiche une grille avec les nouveaux noms de champs comme en-têtes de colonne et vos données dans les lignes. Dans cette vue, vous pouvez toujours revenir à l'écran de mappage initial et modifier le mappage de champ."
+
+#: 
+msgid "Where would you like to move these buildings?"
+msgstr "Où aimeriez-vous déplacer ces bâtiments?"
+
+#: seed/models/models.py:181
+msgid "white"
+msgstr "blanc"
+
+#: 
+msgid "X Axis"
+msgstr "Axe X"
+
+#: 
+msgid "X_VERSUS_Y"
+msgstr "{x_axis_label} contre {y_axis_label}"
+
+#: 
+msgid "X_VERSUS_Y_AGGREGATED"
+msgstr "{x_axis_label} contre {y_axis_label} (agrégé)"
+
+#. Using this string to test if the translation machinery is escaping/sanitizing correctly.
+#: 
+msgid "XSS_TEST"
+msgstr "<span style=\"color:red\">ce texte devrait être <strong>rouge</strong>.</span> <script>alert(\"XSS VULNERABILITY IN TRANSLATION STRING!!!\");</script>"
+
+#: 
+msgid "Y Axis"
+msgstr "Axe Y"
+
+#: 
+msgid "Year"
+msgstr "An"
+
+#: 
+msgid "Year Built"
+msgstr "Année de construction"
+
+#: 
+msgid "Year Ending"
+msgstr "Fin de l'année"
+
+#: 
+msgid "Year Ending Date"
+msgstr "Date de fin d'année"
+
+#: 
+msgid "Year Ending:"
+msgstr "Fin de l’année:"
+
+#: 
+msgid "Yes"
+msgstr "Oui"
+
+#: 
+msgid "Yes, Delete Data File"
+msgstr "Oui, supprimer le fichier de données"
+
+#: 
+msgid "Yes, Delete Data Set"
+msgstr "Oui, supprimer le jeu de données"
+
+#: 
+msgid "Yes, Delete Inventory"
+msgstr "Oui, supprimer l'inventaire"
+
+#: 
+msgid "You can review and edit each individual match by clicking one of the linked IDs in the table. This will open a new table that shows the source data for the individual record you are attempting to match. Underneath this record is a searchable list of all potential existing matches. Use this table to explore all your records and to select single or multiple records to match your source data to."
+msgstr "Vous pouvez vérifier et modifier chaque correspondance en cliquant sur l'un des ID liés dans la table. Cela ouvrira une nouvelle table qui montre les données source pour l'enregistrement individuel que vous essayez de faire correspondre. Sous cet enregistrement est une liste consultable de toutes les correspondances existantes potentielles. Utilisez ce tableau pour explorer tous vos enregistrements et pour sélectionner un ou plusieurs enregistrements correspondant à vos données source."
+
+#: src/django-tos-master/tos/views.py:72
+msgid "You cannot login without agreeing to the terms of this site."
+msgstr "Vous ne pouvez pas vous connecter sans accepter les termes de ce site."
+
+#: seed/landing/templates/landing/home.html:21
+msgid "You have successfully logged out. You may log in again below."
+msgstr "Vous vous êtes déconnecté avec succès. Vous pouvez vous reconnecter ci-dessous."
+
+#: seed/landing/templates/landing/password_reset_done.html:15
+msgid "You should be receiving it shortly."
+msgstr "Vous devriez le recevoir sous peu."
+
+#: 
+msgid "You successfully created the project"
+msgstr "Vous avez réussi à créer le projet"
+
+#: seed/landing/templates/landing/password_reset_email.html:2
+msgid "You're receiving this e-mail because you requested a password reset"
+msgstr "Vous recevez cet e-mail car vous avez demandé une réinitialisation du mot de passe"
+
+#: seed/templates/seed/account_create_email.html:4
+msgid "You're receiving this e-mail because you've been registered for a SEED account."
+msgstr "Vous recevez cet e-mail parce que vous avez été enregistré pour un compte SEED."
+
+#: 
+msgid "your data set name"
+msgstr "votre nom du jeu de données"
+
+#: 
+msgid "Your page could not be located!"
+msgstr "Votre page n'a pas pu être trouvé!"
+
+#: seed/validators.py:24
+msgid "Your password must contain at least %(quantity)d %(type)s characters."
+msgstr "Votre mot de passe doit contenir au moins% (quantité) d% (type) s caractères."
+
+#: 
+msgid "Your Role"
+msgstr "Votre Rôle"
+
+#: seed/landing/templates/landing/password_reset_email.html:9
+msgid "Your username, in case you've forgotten:"
+msgstr "Votre nom d'utilisateur, au cas où vous avez oublié:"

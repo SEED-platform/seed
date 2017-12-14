@@ -19,6 +19,7 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
   'spinner_utility',
   'dragulaService',
   'naturalSort',
+  '$translate',
   function ($scope,
             $log,
             $q,
@@ -34,7 +35,8 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
             $stateParams,
             spinner_utility,
             dragulaService,
-            naturalSort) {
+            naturalSort,
+            $translate) {
     spinner_utility.show();
 
     $scope.import_file = import_file_payload.import_file;
@@ -42,8 +44,12 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
     $scope.selectedCount = 0;
     $scope.selectedParentCount = 0;
 
-    $scope.showPaired = 'All';
-    $scope.showPairedOptions = ['All', 'Show Paired', 'Show Unpaired'];
+    $scope.showPaired = 'Show All';
+    $scope.showPairedOptions = [
+      {value: 'Show All', label: $translate.instant('Show All') },
+      {value: 'Show Paired', label: $translate.instant('Show Paired') },
+      {value: 'Show Unpaired', label: $translate.instant('Show Unpaired') }
+    ];
 
     $scope.propertyData = propertyInventory.results;
     $scope.taxlotData = taxlotInventory.results;
@@ -248,7 +254,7 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
       var newLeftData = [];
       var leftMap = $scope.inventory_type === 'properties' ? $scope.propToTaxlot : $scope.taxlotToProp;
       var leftId = $scope.inventory_type === 'properties' ? 'property_view_id' : 'taxlot_view_id';
-      if ($scope.showPaired === 'All') {
+      if ($scope.showPaired === 'Show All') {
         newLeftData = $scope.leftData;
       } else if ($scope.showPaired === 'Show Paired') {
         $scope.leftData.forEach(function (data) {

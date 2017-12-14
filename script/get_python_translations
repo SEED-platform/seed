@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+tmp=tmp/python_locales
+dest=locale
+
+mkdir -p $tmp
+
+lokalise                \
+  --config lokalise.cfg \
+    export              \
+  --langs fr_CA,en_US   \
+  --type po             \
+  --include_comments 1  \
+  --export_sort a_z     \
+  --export_empty base   \
+  --dest $tmp
+
+unzip $tmp/SEED_Platform-locale.zip -d $tmp
+
+mv $tmp/locale/fr_CA.po $dest/fr_CA/LC_MESSAGES/django.po
+/usr/local/opt/gettext/bin/msgfmt -o $dest/fr_CA/LC_MESSAGES/django.{mo,po}
+
+mv $tmp/locale/en_US.po $dest/en_US/LC_MESSAGES/django.po
+/usr/local/opt/gettext/bin/msgfmt -o $dest/en_US/LC_MESSAGES/django.{mo,po}
+
+rm -rf $tmp
