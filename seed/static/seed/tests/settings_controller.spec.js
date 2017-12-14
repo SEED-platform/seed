@@ -10,6 +10,10 @@ describe('controller: organization_settings_controller', function () {
 
   beforeEach(function () {
     module('BE.seed');
+    inject(function (_$httpBackend_) {
+      $httpBackend = _$httpBackend_;
+      $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
+    });
     inject(function ($controller, $rootScope, $uibModal, $q, organization_service) {
       controller = $controller;
       ctrl_scope = $rootScope.$new();

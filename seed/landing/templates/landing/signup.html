@@ -1,4 +1,4 @@
-{% extends "landing/base.html" %}{% load compress %}
+{% extends "landing/base.html" %}{% load compress %}{% load i18n %}
 
 
 
@@ -7,8 +7,8 @@
 
 $(document).ready(function () {
     $('#id_new_password1').focus();
-    $('#id_new_password1').attr('placeholder', 'Password');
-    $('#id_new_password2').attr('placeholder', 'Password again');
+    $('#id_new_password1').attr('placeholder', '{% trans "Password" %}');
+    $('#id_new_password2').attr('placeholder', '{% trans "Password again" %}');
 
 });
 
@@ -26,7 +26,7 @@ $(document).ready(function () {
         <!-- END .section_marketing -->
         <div class="section_forms"> 
             <div class="form_title">
-                <h2>Create Your Account</h2>
+                <h2>{% trans "Create Your Account" %}</h2>
 
                 <form id="AuthNewPassword" class="signup_form" action="" method="post">
                 {% csrf_token %}
@@ -34,11 +34,11 @@ $(document).ready(function () {
 	                <tr>
                     {% if validlink %}
                     	<td>
-	                    	<p>{% block password_set_instructions %}To set up your account, enter your password twice in the form below.{% endblock %}</p>
+                        <p>{% block password_set_instructions %}{% trans "To set up your account, enter your password twice in the form below." %}{% endblock %}</p>
 	                    </td>
                     {% else %}
                     	<td>
-                    		<p>The invite link was invalid, possibly because it has already been used.  Please request a new invitation.
+                        <p>{% trans "The invite link was invalid, possibly because it has already been used.  Please request a new invitation." %}</p>
                     	</td>
                     {% endif %}
 	                </tr>
@@ -46,7 +46,7 @@ $(document).ready(function () {
                     {% if validlink %}
                     <tr>
                     	<th>
-                    		<label for="id_new_password1">New password</label>
+                        <label for="id_new_password1">{% trans "New password" %}</label>
                     	</th>
                     	<td>
 	                        {% if form.new_password1.errors %}
@@ -60,7 +60,7 @@ $(document).ready(function () {
 
                     <tr>
                     	<th>
-                        	<label for="id_new_password2">Confirm</label>
+                        <label for="id_new_password2">{% trans "Confirm" %}</label>
                     	</th>
                     	<td>
 	                        {% if form.new_password2.errors %}
@@ -75,8 +75,8 @@ $(document).ready(function () {
                 </table>
                 {% if validlink %}
                 <div>   
-                	<input class="btn btn-primary" type="submit" value="{% block password_submit %}Create my account{% endblock %}">
-                	<a href="{% url "landing:landing_page" %}" type="submit" class="btn btn-cancel">Cancel</a>
+                  <input class="btn btn-primary" type="submit" value="{% block password_submit %}{% trans "Create my account" %}{% endblock %}">
+                  <a href="{% url "landing:landing_page" %}" type="submit" class="btn btn-cancel">{% trans "Cancel" %}</a>
                 </div>
                 {% endif %}
             </form>

@@ -23,6 +23,8 @@ angular.module('BE.seed.controller.mapping', [])
     '$filter',
     'data_quality_service',
     'inventory_service',
+    '$translate',
+    'i18nService', // from ui-grid
     'flippers',
     function ($scope,
               $log,
@@ -43,6 +45,8 @@ angular.module('BE.seed.controller.mapping', [])
               $filter,
               data_quality_service,
               inventory_service,
+              $translate,
+              i18nService,
               flippers) {
       var db_field_columns = suggested_mappings_payload.column_names;
       var columns = suggested_mappings_payload.columns;
@@ -52,6 +56,15 @@ angular.module('BE.seed.controller.mapping', [])
       });
       // var original_columns = angular.copy(db_field_columns.concat(extra_data_columns));
       $scope.flippers = flippers; // make available in partials/ng-if
+
+      // let angular-translate be in charge ... need
+      // to feed the language-only part of its $translate setting into
+      // ui-grid's i18nService
+      var stripRegion = function (languageTag) {
+        return _.first(languageTag.split('_'));
+      };
+      i18nService.setCurrentLang(stripRegion($translate.proposedLanguage()));
+
 
       // Readability for db columns.
       for (var i = 0; i < db_field_columns.length; i++) {
@@ -361,6 +374,7 @@ angular.module('BE.seed.controller.mapping', [])
 
           var defaults = {
             enableHiding: false,
+            headerCellFilter: 'translate',
             minWidth: 75,
             width: 150
           };
@@ -648,7 +662,8 @@ angular.module('BE.seed.controller.mapping', [])
             },
             importFileId: function () {
               return $scope.import_file.id;
-            }
+            },
+            orgId: _.constant(user_service.get_organization().id)
           }
         });
       };
