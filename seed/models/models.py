@@ -15,8 +15,6 @@ from seed.managers.json import JsonManager
 from seed.models.projects import Project
 from seed.utils.generic import obj_to_dict
 
-# Represents the data source of a given BuildingSnapshot
-
 ASSESSED_RAW = 0
 PORTFOLIO_RAW = 1
 ASSESSED_BS = 2
@@ -313,6 +311,7 @@ class Enum(models.Model):
         )
 
 
+# Deprecate
 class AttributeOption(models.Model):
     """Holds a single conflicting value for a BuildingSnapshot attribute."""
     value = models.TextField()
@@ -323,6 +322,8 @@ class AttributeOption(models.Model):
         blank=True,
         related_name='options'
     )
+
+# Deprecate
 
 
 class BuildingAttributeVariant(models.Model):
