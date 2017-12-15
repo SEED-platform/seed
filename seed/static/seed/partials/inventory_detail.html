@@ -156,6 +156,7 @@
                             <th sd-resizable width="120" ng-if="::inventory_type==='taxlots'">{$:: 'PM Property ID' | translate $}</th>
                             <th sd-resizable class="ellipsis-resizable">{$:: 'Address Line 1' | translate $}</th>
                             <th ng-if="::inventory_type==='taxlots'" sd-resizable class="ellipsis-resizable">{$:: 'Custom ID 1' | translate $}</th>
+                            <th ng-if="::inventory_type==='taxlots'" sd-resizable class="ellipsis-resizable">{$:: 'UBID' | translate $}</th>
                         </tr>
                     </thead>
                     <tbody ng-if="::inventory_type==='properties'">
@@ -178,6 +179,9 @@
                             </td>
                             <td>
                                 <a ui-sref="inventory_detail(::{inventory_type: 'properties', inventory_id: property.property.id, cycle_id: cycle.id})">{$:: property.state.custom_id_1 ? property.state.custom_id_1 : '(no custom id 1)' $}</a>
+                            </td>
+                            <td>
+                                <a ui-sref="inventory_detail(::{inventory_type: 'properties', inventory_id: property.property.id, cycle_id: cycle.id})">{$:: property.state.ubid ? property.state.ubid : '(no UBID)' $}</a>
                             </td>
                         </tr>
                     </tbody>

@@ -81,6 +81,15 @@
     "schema": ""
   },
   {
+    "display_name": "UBID",
+    "to_field": "ubid",
+    "to_table_name": "PropertyState",
+    "from_field": "UBID",
+    "units": "",
+    "type": "string",
+    "schema": ""
+  },
+  {
     "display_name": "ENERGY STAR Score",
     "to_field": "energy_score",
     "to_table_name": "PropertyState",

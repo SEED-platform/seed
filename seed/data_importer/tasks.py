@@ -1052,6 +1052,7 @@ class EquivalencePartitioner(object):
     @classmethod
     def make_propertystate_equivalence(kls):
         property_equivalence_fields = [
+            ("ubid",),
             ("pm_property_id", "custom_id_1"),
             ("custom_id_1",),
             ("normalized_address",)
@@ -1473,13 +1474,14 @@ def list_canonical_property_states(org_id):
     return PropertyState.objects.filter(pk__in=ids)
 
 
-def query_property_matches(properties, pm_id, custom_id):
+def query_property_matches(properties, pm_id, custom_id, ubid):
     """
     Returns query set of PropertyStates that match at least one of the specified ids
 
     :param properties: QuerySet, PropertyStates
     :param pm_id: string, PM Property ID
     :param custom_id: String, Custom ID
+    :param ubid: String, Unique Building Identifier
     :return: QuerySet of objects that meet criteria.
     """
 
@@ -1491,45 +1493,21 @@ def query_property_matches(properties, pm_id, custom_id):
     if pm_id:
         params.append(Q(pm_property_id=pm_id))
         params.append(Q(custom_id_1=pm_id))
+        params.append(Q(ubid=pm_id))
     if custom_id:
         params.append(Q(pm_property_id=custom_id))
         params.append(Q(custom_id_1=custom_id))
+        params.append(Q(ubid=custom_id))
+    if ubid:
+        params.append(Q(pm_property_id=ubid))
+        params.append(Q(custom_id_1=ubid))
+        params.append(Q(ubid=ubid))
 
     if not params:
         # Return an empty QuerySet if we don't have any params.
         return properties.none()
 
     return properties.filter(reduce(operator.or_, params))
-
-
-# TODO: Move this should be on the PropertyState (or property) class
-def is_same_snapshot(s1, s2):
-    fields_to_ignore = ["id",
-                        "created",
-                        "modified",
-                        "match_type",
-                        "confidence",
-                        "source_type",
-                        "canonical_building_id",
-                        "import_file_id",
-                        "_state",
-                        "_import_file_cache",
-                        "import_record"]
-
-    for k, v in s1.__dict__.items():
-        # ignore anything that starts with an underscore
-        if k[0] == "_":
-            continue
-        # also need to ignore any field with "_source" in it
-        # TODO: Remove _source as this is no longer in the database
-        if "_source" in k:
-            continue
-        if k in fields_to_ignore:
-            continue
-        if k not in s2.__dict__ or s2.__dict__[k] != v:
-            return False
-
-    return True
 
 
 def save_state_match(state1, state2):
