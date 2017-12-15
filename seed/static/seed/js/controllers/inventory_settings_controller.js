@@ -12,9 +12,10 @@ angular.module('BE.seed.controller.inventory_settings', [])
     'user_service',
     'all_columns',
     'shared_fields_payload',
+    'flippers',
     '$translate',
     'i18nService', // from ui-grid
-    function ($scope, $window, $uibModalInstance, $stateParams, inventory_service, user_service, all_columns, shared_fields_payload, $translate, i18nService) {
+    function ($scope, $window, $uibModalInstance, $stateParams, inventory_service, user_service, all_columns, shared_fields_payload, flippers, $translate, i18nService) {
 
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.inventory = {
@@ -32,7 +33,7 @@ angular.module('BE.seed.controller.inventory_settings', [])
       var stripRegion = function (languageTag) {
         return _.first(languageTag.split('_'));
       };
-      i18nService.setCurrentLang(stripRegion($translate.proposedLanguage()));
+      i18nService.setCurrentLang(stripRegion($translate.proposedLanguage() || $translate.use()));
 
       var localStorageKey = 'grid.' + $scope.inventory_type;
 

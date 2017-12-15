@@ -63,7 +63,7 @@ angular.module('BE.seed.controller.mapping', [])
       var stripRegion = function (languageTag) {
         return _.first(languageTag.split('_'));
       };
-      i18nService.setCurrentLang(stripRegion($translate.proposedLanguage()));
+      i18nService.setCurrentLang(stripRegion($translate.proposedLanguage() || $translate.use()));
 
 
       // Readability for db columns.

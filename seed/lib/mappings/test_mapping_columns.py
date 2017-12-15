@@ -76,7 +76,7 @@ class TestMappingColumns(TestCase):
             'Address': ['PropertyState', 'address_line_1', 90],
             'BLDGS': ['PropertyState', 'building_count', 69],
             'City': ['PropertyState', 'city', 100],
-            'Data State': ['PropertyState', 'recent_sale_date', 66],
+            'Data State': ['PropertyState', 'analysis_state', 74],
             'GBA': ['PropertyState', 'gross_floor_area', 100],
             'Owner': ['PropertyState', 'owner', 100],
             'Property Type': ['PropertyState', 'property_type', 100],

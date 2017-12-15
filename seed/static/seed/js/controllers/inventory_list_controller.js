@@ -56,7 +56,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       var stripRegion = function (languageTag) {
         return _.first(languageTag.split('_'));
       };
-      i18nService.setCurrentLang(stripRegion($translate.proposedLanguage()));
+      i18nService.setCurrentLang(stripRegion($translate.proposedLanguage() || $translate.use()));
 
       $scope.total = $scope.pagination.total;
       $scope.number_per_page = 999999999;
