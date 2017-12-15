@@ -1,5 +1,6 @@
 .DS_Store
-.idea/
+.cache
+.idea
 .project
 .pydevproject
 .python-version

@@ -167,12 +167,16 @@ string. This can happen either:
   [messageformat docs][messageformat].
 
 #### Form 3
-`<h1>{$ 'SOME_KEY' | translate $}</h1>`
+`<h1>{$:: 'SOME_KEY' | translate $}</h1>`
 
 In Angular HTML. Functionally equivalent to Form 1. This form might be
 necessary if there are scope conflict issues that prevent the tag property
 version from working, or font-awesome icons are contained within the enclosing
 tag, or you want to exclude punctuation from the key.
+
+Make sure to use the `::` so that we use the one-time binding form and don't
+make the number of watchers explode; the translation is never changing
+dynamically.
 
 #### Form 4
 
