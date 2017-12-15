@@ -625,7 +625,7 @@ def _save_raw_data_chunk(chunk, file_pk, prog_key, increment):
             else:
                 new_chunk[key] = v
         raw_property.extra_data = new_chunk
-        raw_property.source_type = source_type  # not defined in new data model
+        raw_property.source_type = source_type
         raw_property.data_state = DATA_STATE_IMPORT
 
         # We require a save to get our PK

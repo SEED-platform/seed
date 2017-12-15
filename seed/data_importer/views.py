@@ -39,10 +39,17 @@ from seed.data_importer.tasks import (
 )
 from seed.decorators import ajax_request, ajax_request_class
 from seed.decorators import get_prog_key
+from seed.lib.mappings import mapper as simple_mapper
+from seed.lib.mappings import mapping_data
 from seed.lib.mappings.mapping_data import MappingData
+from seed.lib.mcm import mapper
 from seed.lib.merging import merging
 from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.models import OrganizationUser
 from seed.lib.superperms.orgs.permissions import SEEDOrgPermissions
+from seed.models import (
+    get_column_mapping,
+)
 from seed.models import (
     obj_to_dict,
     PropertyState,
@@ -67,7 +74,6 @@ from seed.models import (
 from seed.models.data_quality import DataQualityCheck
 from seed.utils.api import api_endpoint, api_endpoint_class
 from seed.utils.cache import get_cache_raw, get_cache
-from seed.views.main import _mapping_suggestions
 
 _log = logging.getLogger(__name__)
 
@@ -1736,7 +1742,66 @@ class ImportFileViewSet(viewsets.ViewSet):
 
         """
         organization_id = request.query_params.get('organization_id', None)
-        result = _mapping_suggestions(pk, organization_id, request.user)
+
+        result = {'status': 'success'}
+
+        membership = OrganizationUser.objects.select_related('organization') \
+            .get(organization_id=organization_id, user=request.user)
+        organization = membership.organization
+
+        import_file = ImportFile.objects.get(
+            pk=pk,
+            import_record__super_organization_id=organization.pk
+        )
+
+        # Get a list of the database fields in a list
+        md = mapping_data.MappingData()
+
+        # TODO: Move this to the MappingData class and remove calling add_extra_data
+        # Check if there are any DB columns that are not defined in the
+        # list of mapping data.
+        # NL 12/2/2016: Removed 'organization__isnull' Query because we only want the
+        # the ones belonging to the organization
+        columns = list(Column.objects.select_related('unit').filter(
+            mapped_mappings__super_organization_id=organization_id).exclude(column_name__in=md.keys))
+        md.add_extra_data(columns)
+
+        # If this is a portfolio manager file, then load in the PM mappings and if the column_mappings
+        # are not in the original mappings, default to PM
+        if import_file.from_portfolio_manager:
+            pm_mappings = simple_mapper.get_pm_mapping(import_file.first_row_columns, resolve_duplicates=True)
+            suggested_mappings = mapper.build_column_mapping(
+                import_file.first_row_columns,
+                md.keys_with_table_names,
+                previous_mapping=get_column_mapping,
+                map_args=[organization],
+                default_mappings=pm_mappings,
+                thresh=80
+            )
+        else:
+            # All other input types
+            suggested_mappings = mapper.build_column_mapping(
+                import_file.first_row_columns,
+                md.keys_with_table_names,
+                previous_mapping=get_column_mapping,
+                map_args=[organization],
+                thresh=80  # percentage match that we require. 80% is random value for now.
+            )
+            # replace None with empty string for column names and PropertyState for tables
+            for m in suggested_mappings:
+                table, field, conf = suggested_mappings[m]
+                if field is None:
+                    suggested_mappings[m][1] = u''
+
+        # Fix the table name, eventually move this to the build_column_mapping and build_pm_mapping
+        for m in suggested_mappings:
+            table, dest, conf = suggested_mappings[m]
+            if not table:
+                suggested_mappings[m][0] = 'PropertyState'
+
+        result['suggested_column_mappings'] = suggested_mappings
+        result['column_names'] = md.building_columns
+        result['columns'] = md.data
 
         return JsonResponse(result)
 

@@ -49,7 +49,7 @@ class TestCleaner(TestCase):
         mapping.column_raw.add(raw)
         mapping.column_mapped.add(mapped)
 
-    def test_build_cleaner(self):
+    def test_clean_value(self):
         cleaner = tasks._build_cleaner(self.org)
 
         # data is cleaned correctly for fields on PropertyState
