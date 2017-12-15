@@ -248,6 +248,7 @@
     "File Name": "Nom de fichier",
     "File Source:": "Source du fichier:",
     "FILE_TYPES_SUPPORTED": "Types de fichiers pris en charge: <strong>.csv<\/strong> , <strong>.xls<\/strong> , <strong>.xlsx<\/strong> et <strong>.xml<\/strong> .",
+    "Files (Master State Only)": "Fichiers (état principal uniquement)",
     "Filter by label": "Filtrer par étiquette",
     "Filter by label:": "Filtrer par étiquette:",
     "Finding inventory matches for": "Trouver des correspondances d'inventaire pour",
