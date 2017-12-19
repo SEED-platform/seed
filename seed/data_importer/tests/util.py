@@ -167,6 +167,7 @@ FAKE_EXTRA_DATA = {
     u'Organization': u'Occidental Management',
     u'Property Name': u'Not Available',
     u'Property Floor Area (Buildings and Parking) (ft2)': u'',
+    u'UBID': u'M5QCN237+OR5-M5QCN237+5YF-M5QCN237+XV9',
     u'Total GHG Emissions (MtCO2e)': u'',
     u'Generation Date': u'',
 }
