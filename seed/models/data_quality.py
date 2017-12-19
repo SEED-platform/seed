@@ -265,7 +265,7 @@ def format_pint_violation(rule, source_value):
             rule_value.magnitude, pretty_rule_units,
         )
     else:
-        formatted_value = u"{:.1f} {}".format(source_value, pretty_rule_units)
+        formatted_value = u"{:.1f} {}".format(source_value.magnitude, pretty_rule_units)
     if rule.min is not None:
         formatted_min = u"{:.1f} {}".format(rule.min, pretty_rule_units)
     if rule.max is not None:
