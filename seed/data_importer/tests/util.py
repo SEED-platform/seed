@@ -72,6 +72,10 @@ PROPERTIES_MAPPING = [
         "to_table_name": u'PropertyState',
         "to_field": u'pm_property_id',
     }, {
+        "from_field": u'UBID',
+        "to_table_name": u'PropertyState',
+        "to_field": u'ubid',
+    }, {
         "from_field": u'custom id 1',
         "to_table_name": u'PropertyState',
         "to_field": u'custom_id_1',

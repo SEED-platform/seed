@@ -58,7 +58,7 @@ class TestMappingColumns(TestCase):
             'extra_data_2': ['PropertyState', 'release_date', 67],
             'Property Type': ['PropertyState', 'property_type', 100],
             'UBI': ['TaxLotState', 'jurisdiction_tax_lot_id', 100],
-            'UBI_BBL': ['PropertyState', 'occupied_floor_area', 59],
+            'UBI_BBL': ['PropertyState', 'ubid', 80],
         }
 
         self.md = mapping_data.MappingData()
@@ -152,7 +152,7 @@ class TestMappingColumns(TestCase):
             'extra_data_2': ['PropertyState', 'extra_data_2', 100],
             'Property Type': ['PropertyState', 'property_type', 100],
             'UBI': ['TaxLotState', 'jurisdiction_tax_lot_id', 100],
-            'UBI_BBL': ['PropertyState', 'UBI_BBL', 100],
+            'UBI_BBL': ['PropertyState', 'ubid', 80],
         }
 
         mc = mapping_columns.MappingColumns(self.raw_columns,
@@ -177,7 +177,7 @@ class TestMappingColumns(TestCase):
         }
         mc = mapping_columns.MappingColumns(self.raw_columns,
                                             self.md.keys_with_table_names,
-                                            threshold=80)
+                                            threshold=81)
         self.assertDictEqual(mc.final_mappings, expected)
 
         expected = {
