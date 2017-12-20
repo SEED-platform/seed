@@ -70,7 +70,9 @@ from seed.models import (
     AUDIT_USER_EDIT,
     Property,
     TaxLot,
-    TaxLotProperty)
+    TaxLotProperty,
+    SEED_DATA_SOURCES,
+    PORTFOLIO_RAW)
 from seed.models.data_quality import DataQualityCheck
 from seed.utils.api import api_endpoint, api_endpoint_class
 from seed.utils.cache import get_cache_raw, get_cache
@@ -186,7 +188,7 @@ class LocalUploaderViewSet(viewsets.ViewSet):
             })
 
         # Fineuploader requires the field to be qqfile it appears... so why not support both? ugh.
-        if 'qqfile' in request.data.keys():
+        if 'qqfile' in request.data.keys():  # TODO: This doesn't need keys(), right?
             the_file = request.data['qqfile']
         else:
             the_file = request.data['file']
@@ -222,7 +224,7 @@ class LocalUploaderViewSet(viewsets.ViewSet):
                 'message': "Import Record %s not found" % import_record_pk
             })
 
-        source_type = request.POST.get('source_type', request.GET.get('source_type'))
+        source_type = request.POST.get('source_type', request.GET.get('source_type'))  # TODO: We shouldn't get() from POST anymore, right?
 
         # Add Program & Version fields (empty string if not given)
         kw_fields = {field: request.POST.get(field, request.GET.get(field, ''))
@@ -233,6 +235,63 @@ class LocalUploaderViewSet(viewsets.ViewSet):
                                       file=path,
                                       source_type=source_type,
                                       **kw_fields)
+
+        return JsonResponse({'success': True, "import_file_id": f.pk})
+
+    @api_endpoint_class
+    @ajax_request_class
+    def create_from_pm_import(self, request):
+        """
+        Create an import_record from a PM import request.
+        This allows the PM import workflow to be treated essentially the same as a standard file upload
+        ---
+        parameters:
+            - name: import_record
+              description: the ID of the ImportRecord to associate this file with.
+              required: true
+              paramType: body
+            - name: pm_data
+              description: In-memory prepared PM import data
+              required: true
+              paramType: body
+        """
+        if 'pm_data' not in request.data:
+            return JsonResponse({
+                'success': False,
+                'message': "Must pass pm_import data in the request body."
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # create a folder to keep pm_import files
+        path = os.path.join(settings.MEDIA_ROOT, "uploads", "pm_imports")
+
+        # Get a unique filename using the get_available_name method in FileSystemStorage
+        s = FileSystemStorage()
+        path = s.get_available_name(path)
+
+        # verify the directory exists
+        if not os.path.exists(os.path.dirname(path)):
+            os.makedirs(os.path.dirname(path))
+
+        # save the file
+        with open(path, 'wb+') as temp_file:
+            temp_file.write(json.dumps(request.data['pm_data']))
+
+        import_record_pk = request.POST.get('import_record', request.GET.get('import_record'))
+        try:
+            record = ImportRecord.objects.get(pk=import_record_pk)
+        except ImportRecord.DoesNotExist:
+            # clean up the uploaded file
+            os.unlink(path)
+            return JsonResponse({
+                'success': False,
+                'message': "Import Record %s not found" % import_record_pk
+            })
+
+        f = ImportFile.objects.create(import_record=record,
+                                      uploaded_filename='pm_import',
+                                      file=path,
+                                      source_type=SEED_DATA_SOURCES[PORTFOLIO_RAW],
+                                      kwargs={'source_program': 'Portfolio Manager', 'source_program_version': ''})
 
         return JsonResponse({'success': True, "import_file_id": f.pk})
 
