@@ -624,6 +624,7 @@ angular.module('BE.seed.controller.mapping', [])
         var required_fields = [
           {header: 'Jurisdiction Tax Lot Id', inventory_type: 'TaxLotState'},
           {header: 'Pm Property Id', inventory_type: 'PropertyState'},
+          {header: 'Ubid', inventory_type: 'PropertyState'},
           {header: 'Custom Id 1', inventory_type: 'PropertyState'},
           {header: 'Custom Id 1', inventory_type: 'TaxLotState'},
           {header: 'Address Line 1', inventory_type: 'PropertyState'},

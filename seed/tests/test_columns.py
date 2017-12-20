@@ -363,6 +363,7 @@ class TestColumnsByInventory(TestCase):
                 "jurisdiction_tax_lot_id": "string",
                 "jurisdiction_property_id": "string",
                 "custom_id_1": "string",
+                "ubid": "string",
                 "address_line_1": "string",
                 "address_line_2": "string",
                 "city": "string",
@@ -435,7 +436,7 @@ class TestColumnsByInventory(TestCase):
         c = Column.retrieve_db_fields()
 
         data = ['address_line_1', 'address_line_2', 'block_number', 'building_certification',
-                'building_count', 'campus', 'city', 'conditioned_floor_area', 'custom_id_1',
+                'building_count', 'campus', 'city', 'conditioned_floor_area', 'custom_id_1', 'ubid',
                 'district', 'db_taxlot_created', 'db_taxlot_updated', 'db_property_updated', 'db_property_created',
                 'energy_alerts', 'energy_score', 'generation_date', 'gross_floor_area',
                 'home_energy_score_id', 'jurisdiction_property_id', 'jurisdiction_tax_lot_id',

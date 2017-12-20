@@ -72,6 +72,16 @@ ASSESSOR_FIELDS = [
         "static": False,
         "link": True
     }, {
+        "title": "UBID",
+        "sort_column": "ubid",
+        "class": "is_aligned_right whitespace",
+        "title_class": "",
+        "type": "string",
+        "field_type": "building_information",
+        "checked": False,
+        "static": False,
+        "link": True
+    }, {
         "title": "Property Name",
         "sort_column": "property_name",
         "class": "",
@@ -492,6 +502,12 @@ VIEW_COLUMNS_PROPERTY = [
         'name': 'jurisdiction_property_id',
         'table': 'PropertyState',
         'displayName': 'Jurisdiction Property ID',
+        'dataType': 'string',
+        'dbField': True,
+    }, {
+        'name': 'ubid',
+        'table': 'PropertyState',
+        'displayName': 'UBID',
         'dataType': 'string',
         'dbField': True,
     }, {

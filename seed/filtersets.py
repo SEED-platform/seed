@@ -134,7 +134,8 @@ class PropertyStateFilterSet(FilterSet):
     class Meta:
         model = PropertyState
         fields = [
-            'energy_score', 'city',
+            'energy_score',
+            'city',
             'pm_parent_property_id',
             'property_identifier'
         ]
@@ -148,11 +149,13 @@ class PropertyStateFilterSet(FilterSet):
         jurisdiction_property_id = Q(jurisdiction_property_id__iexact=value)
         custom_id_1 = Q(custom_id_1__iexact=value)
         pm_property_id = Q(pm_property_id=value)
+        ubid = Q(ubid__iexact=value)
         home_energy_score_id = Q(home_energy_score_id=value)
         query = (
             jurisdiction_property_id
             | custom_id_1
             | pm_property_id
             | home_energy_score_id
+            | ubid
         )
         return queryset.filter(query)
