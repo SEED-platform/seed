@@ -13,6 +13,10 @@ describe('Controller: matching_detail_controller', function () {
   // 'config.seed' is created in TestFilters.html
   beforeEach(function () {
     module('BE.seed');
+    inject(function (_$httpBackend_) {
+      $httpBackend = _$httpBackend_;
+      $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
+    });
     inject(function ($controller, $rootScope, $uibModal, urls, $q, matching_service, inventory_service, spinner_utility) {
       controller = $controller;
       matching_detail_controller_scope = $rootScope.$new();
@@ -128,7 +132,7 @@ describe('Controller: matching_detail_controller', function () {
       $stateParams: {
         cycle_id: 2017,
         inventory_id: 4,
-        inventory_type: 'properties'
+        inventory_type: 'properties',
         import_file_id: 1,
         state_id: 345,
         importfile_id: 999999

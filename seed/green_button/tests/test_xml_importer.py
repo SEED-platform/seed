@@ -6,21 +6,21 @@
 """
 
 import copy
+from datetime import datetime
 from os import path
 
 import xmltodict
 from django.core.files import File
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
+from django.utils import timezone
 
-import seed.models
-from seed.audit_logs.models import AuditLog
 from seed.data_importer.models import ImportRecord, ImportFile
 from seed.green_button import xml_importer
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
-    BuildingSnapshot, TimeSeries
+    PropertyState, TimeSeries, Cycle, Meter
 )
 
 # sample data corresponds to the data that should be extracted by
@@ -92,8 +92,8 @@ class GreenButtonXMLParsingTests(TestCase):
         """
         expected_mappings = {
             -1: None,  # missing keys should return None
-            0: seed.models.ELECTRICITY,
-            1: seed.models.NATURAL_GAS
+            0: Meter.ELECTRICITY,
+            1: Meter.NATURAL_GAS
         }
 
         self.assert_fn_mapping(xml_importer.energy_type, expected_mappings)
@@ -105,8 +105,8 @@ class GreenButtonXMLParsingTests(TestCase):
         """
         expected_mappings = {
             -1: None,  # missing keys should return None
-            72: seed.models.WATT_HOURS,
-            169: seed.models.THERMS
+            72: Meter.WATT_HOURS,
+            169: Meter.THERMS,
         }
 
         self.assert_fn_mapping(xml_importer.energy_units, expected_mappings)
@@ -323,24 +323,6 @@ class GreenButtonXMLImportTests(TestCase):
         )
         self.import_file.save()
 
-    def assert_models_created(self):
-        """
-        Tests that appropriate models for the sample xml file have
-        been created.
-        """
-        # should create BuildingSnapshot, CanonicalBuilding, Meter,
-        # and 2 TimeSeries
-        bs = BuildingSnapshot.objects.get(
-            address_line_1=sample_building_data['address']
-        )
-        # cb = bs.canonical_building
-        meters = bs.meters.all()
-        self.assertEqual(len(meters), 1)
-
-        meter = meters.first()
-        tss = TimeSeries.objects.filter(meter=meter)
-        self.assertEqual(len(tss), 2)
-
     def test_create_models(self):
         """
         Test of xml_importer.create_models.
@@ -348,22 +330,35 @@ class GreenButtonXMLImportTests(TestCase):
         xml_data = xmltodict.parse(self.import_file.file.read())
         b_data = xml_importer.building_data(xml_data)
 
-        # no audit logs should exist yet, testing this way because it
-        # is hard to assert what the content_object of an AuditLog is
-        logs = AuditLog.objects.all()
-        self.assertEqual(logs.count(), 0)
-        xml_importer.create_models(b_data, self.import_file)
-        logs = AuditLog.objects.all()
-        self.assert_models_created()
-        self.assertEqual(logs.count(), 1)
+        cycle = Cycle.objects.create(
+            name="Green Button Cycle",
+            organization=self.org,
+            start=datetime(2016, 1, 1, tzinfo=timezone.get_current_timezone()),
+            end=datetime(2016, 12, 31, tzinfo=timezone.get_current_timezone()),
+        )
+        property_view = xml_importer.create_models(b_data, self.import_file, cycle)
+        self.assertEqual(property_view.meters.count(), 1)
+        self.assertEqual(property_view.meters.first().energy_type, Meter.NATURAL_GAS)
 
-        log = logs.first()
-        self.assertEqual(log.user, self.user)
-        self.assertEqual(log.organization, self.org)
+        # Note: Right now the address coming from green button is a one-liner (not broken up by
+        # address, city, state, zip). This can cause some issues in the future when we start
+        # matching results.
+        property_state = PropertyState.objects.get(
+            address_line_1=b_data['address']
+        )
+        self.assertEqual(property_state, property_view.state)
+
+        tss = TimeSeries.objects.filter(meter=property_view.meters.first())
+        self.assertEqual(len(tss), 2)
 
     def test_import_xml(self):
         """
         Test of xml_importer.import_xml.
         """
-        xml_importer.import_xml(self.import_file)
-        self.assert_models_created()
+        cycle = Cycle.objects.create(
+            name="Green Button Cycle",
+            organization=self.org,
+            start=datetime(2016, 1, 1, tzinfo=timezone.get_current_timezone()),
+            end=datetime(2016, 12, 31, tzinfo=timezone.get_current_timezone()),
+        )
+        xml_importer.import_xml(self.import_file, cycle)

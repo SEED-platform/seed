@@ -6,11 +6,17 @@
 """
 from __future__ import unicode_literals
 
+import copy
 import logging
 import pdb
 
+from django.apps import apps
 from django.contrib.postgres.fields import JSONField
+from django.db import IntegrityError
 from django.db import models
+from django.db.models.signals import pre_delete, post_save
+from django.dispatch import receiver
+from django.forms.models import model_to_dict
 from quantityfield.fields import QuantityField
 
 from auditlog import AUDIT_IMPORT
@@ -53,6 +59,10 @@ class Property(models.Model):
     parent_property = models.ForeignKey('Property', blank=True, null=True)
     labels = models.ManyToManyField(StatusLabel)
 
+    # Track when the entry was created and when it was updated
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
     class Meta:
         verbose_name_plural = 'properties'
 
@@ -61,7 +71,19 @@ class Property(models.Model):
 
 
 class PropertyState(models.Model):
-    """Store a single property"""
+    """Store a single property. This contains all the state information about the property"""
+    ANALYSIS_STATE_NOT_STARTED = 0
+    ANALYSIS_STATE_STARTED = 1
+    ANALYSIS_STATE_COMPLETED = 2
+    ANALYSIS_STATE_FAILED = 3
+
+    ANALYSIS_STATE_TYPES = (
+        (ANALYSIS_STATE_NOT_STARTED, 'Not Started'),
+        (ANALYSIS_STATE_STARTED, 'Started'),
+        (ANALYSIS_STATE_COMPLETED, 'Completed'),
+        (ANALYSIS_STATE_FAILED, 'Failed'),
+    )
+
     # Support finding the property by the import_file and source_type
     import_file = models.ForeignKey(ImportFile, null=True, blank=True)
 
@@ -125,21 +147,38 @@ class PropertyState(models.Model):
     owner_city_state = models.CharField(max_length=255, null=True, blank=True)
     owner_postal_code = models.CharField(max_length=255, null=True, blank=True)
 
-    energy_score = models.IntegerField(null=True, blank=True)
-    site_eui = models.FloatField(null=True, blank=True)
     generation_date = models.DateTimeField(null=True, blank=True)
     release_date = models.DateTimeField(null=True, blank=True)
-    source_eui_weather_normalized = models.FloatField(null=True, blank=True)
+
+    energy_score = models.IntegerField(null=True, blank=True)
+    # Need to add another field eventually to define the source of the EUI's and other
+    # reported fields. Ideally would have the ability to provide the same field from
+    # multiple data sources. For example, site EUI (portfolio manager), site EUI (calculated),
+    # site EUI (modeled 8/4/2017).
+    site_eui = models.FloatField(null=True, blank=True)
     site_eui_weather_normalized = models.FloatField(null=True, blank=True)
+    site_eui_modeled = models.FloatField(null=True, blank=True)
     source_eui = models.FloatField(null=True, blank=True)
+    source_eui_weather_normalized = models.FloatField(null=True, blank=True)
+    source_eui_modeled = models.FloatField(null=True, blank=True)
+
     energy_alerts = models.TextField(null=True, blank=True)
     space_alerts = models.TextField(null=True, blank=True)
     building_certification = models.CharField(max_length=255, null=True, blank=True)
+
+    analysis_start_time = models.DateTimeField(null=True)
+    analysis_end_time = models.DateTimeField(null=True)
+    analysis_state = models.IntegerField(choices=ANALYSIS_STATE_TYPES,
+                                         default=ANALYSIS_STATE_NOT_STARTED,
+                                         null=True)
+    analysis_state_message = models.TextField(null=True)
 
     # extra columns for pint interpretation base units in database will
     # continue to be imperial these will become the canonical columns in
     # future, with the old ones above to be culled once OGBS merges the metric
     # units work (scheduled for late 2017)
+
+    # TODO: eventually need to add these fields to the coparent SQL query below.
     gross_floor_area_pint = QuantityField('ft**2', null=True, blank=True)
     conditioned_floor_area_pint = QuantityField('ft**2', null=True, blank=True)
     occupied_floor_area_pint = QuantityField('ft**2', null=True, blank=True)
@@ -149,19 +188,23 @@ class PropertyState(models.Model):
     source_eui_pint = QuantityField('kBtu/ft**2/year', null=True, blank=True)
 
     extra_data = JSONField(default=dict, blank=True)
+    measures = models.ManyToManyField('Measure', through='PropertyMeasure')
 
     class Meta:
         index_together = [
             ['import_file', 'data_state'],
-            ['import_file', 'data_state', 'merge_state']
+            ['import_file', 'data_state', 'merge_state'],
+            ['analysis_state', 'organization'],
         ]
 
-    def promote(self, cycle):
+    def promote(self, cycle, property_id=None):
         """
         Promote the PropertyState to the view table for the given cycle
 
         Args:
             cycle: Cycle to assign the view
+            property_id: Optional ID of a canonical property model object
+            to retain instead of creating a new property
 
         Returns:
             The resulting PropertyView (note that it is not returning the
@@ -185,7 +228,15 @@ class PropertyState(models.Model):
             if not self.organization:
                 pdb.set_trace()
 
-            prop = Property.objects.create(organization=self.organization)
+            if property_id:
+                try:
+                    # should I validate this further?
+                    prop = Property.objects.get(id=property_id)
+                except Property.DoesNotExist:
+                    _log.debug("Could not promote this property")
+                    return None
+            else:
+                prop = Property.objects.create(organization=self.organization)
 
             pv = PropertyView.objects.create(property=prop, cycle=cycle, state=self)
 
@@ -315,6 +366,7 @@ class PropertyState(models.Model):
                     ps.use_description,
                     ps.energy_score,
                     ps.site_eui,
+                    ps.site_eui_modeled,
                     ps.property_notes,
                     ps.property_type,
                     ps.year_ending,
@@ -334,9 +386,14 @@ class PropertyState(models.Model):
                     ps.source_eui_weather_normalized,
                     ps.site_eui_weather_normalized,
                     ps.source_eui,
+                    ps.source_eui_modeled,
                     ps.energy_alerts,
                     ps.space_alerts,
                     ps.building_certification,
+                    ps.analysis_start_time,
+                    ps.analysis_end_time,
+                    ps.analysis_state,
+                    ps.analysis_state_message,
                     ps.extra_data,
                     NULL
                 FROM seed_propertystate ps, audit_id aid
@@ -346,22 +403,116 @@ class PropertyState(models.Model):
                        aid.parent_state2_id <> aid.original_state_id);""", [int(state_id)])
         )
 
-        # reduce this down to just the fields that were returns and convert to dict. This is
+        # reduce this down to just the fields that were returned and convert to dict. This is
         # important because the fields that were not queried will be deferred and require a new
         # query to retrieve.
         keep_fields = ['id', 'pm_property_id', 'pm_parent_property_id', 'custom_id_1',
                        'address_line_1', 'address_line_2', 'city', 'state', 'postal_code',
                        'lot_number', 'gross_floor_area', 'use_description', 'energy_score',
-                       'site_eui', 'property_notes', 'property_type', 'year_ending', 'owner',
-                       'owner_email', 'owner_telephone', 'building_count', 'year_built',
-                       'recent_sale_date', 'conditioned_floor_area', 'occupied_floor_area',
-                       'owner_address', 'owner_postal_code', 'home_energy_score_id',
-                       'generation_date', 'release_date', 'source_eui_weather_normalized',
-                       'site_eui_weather_normalized', 'source_eui',
-                       'energy_alerts', 'space_alerts', 'building_certification', 'extra_data', ]
+                       'site_eui', 'site_eui_modeled', 'property_notes', 'property_type',
+                       'year_ending', 'owner', 'owner_email', 'owner_telephone', 'building_count',
+                       'year_built', 'recent_sale_date', 'conditioned_floor_area',
+                       'occupied_floor_area', 'owner_address', 'owner_postal_code',
+                       'home_energy_score_id', 'generation_date', 'release_date',
+                       'source_eui_weather_normalized', 'site_eui_weather_normalized',
+                       'source_eui', 'source_eui_modeled', 'energy_alerts', 'space_alerts',
+                       'building_certification', 'analysis_start_time', 'analysis_end_time',
+                       'analysis_state', 'analysis_state_message', 'extra_data', ]
         coparents = [{key: getattr(c, key) for key in keep_fields} for c in coparents]
 
         return coparents, len(coparents)
+
+    @classmethod
+    def merge_relationships(cls, merged_state, state1, state2):
+        """
+        Merge together the old relationships with the new.
+        """
+        SimulationClass = apps.get_model('seed', 'Simulation')
+        ScenarioClass = apps.get_model('seed', 'Scenario')
+        PropertyMeasureClass = apps.get_model('seed', 'PropertyMeasure')
+
+        # get some items off of this property view
+        no_measure_scenarios = [x for x in state2.scenarios.filter(measures__isnull=True)] + \
+                               [x for x in state1.scenarios.filter(measures__isnull=True)]
+        building_files = [x for x in state2.building_files.all()] + [x for x in state1.building_files.all()]
+        simulations = [x for x in SimulationClass.objects.filter(property_state__in=[state1, state2])]
+        measures = [x for x in PropertyMeasureClass.objects.filter(property_state__in=[state1, state2])]
+
+        # copy in the no measure scenarios
+        for new_s in no_measure_scenarios:
+            new_s.pk = None
+            new_s.save()
+            merged_state.scenarios.add(new_s)
+
+        for new_bf in building_files:
+            new_bf.pk = None
+            new_bf.save()
+            merged_state.building_files.add(new_bf)
+
+        for new_sim in simulations:
+            new_sim.pk = None
+            new_sim.property_state = merged_state
+            new_sim.save()
+
+        if len(measures) > 0:
+            measure_fields = [f.name for f in measures[0]._meta.fields]
+            measure_fields.remove('id')
+            measure_fields.remove('property_state')
+
+            new_items = []
+
+            # Create a list of scenarios and measures to reconstruct
+            # {
+            #   scenario_id_1: [ new_measure_id_1, new_measure_id_2 ],
+            #   scenario_id_2: [ new_measure_id_2, new_measure_id_3 ],  # measure ids can be repeated
+            # }
+            scenario_measure_map = {}
+            for measure in measures:
+                test_dict = model_to_dict(measure, fields=measure_fields)
+
+                if test_dict in new_items:
+                    continue
+                else:
+                    try:
+                        new_measure = copy.deepcopy(measure)
+                        new_measure.pk = None
+                        new_measure.property_state = merged_state
+                        new_measure.save()
+
+                        # grab the scenario that is attached to the orig measure and create a new connection
+                        for scenario in measure.scenario_set.all():
+                            if scenario.pk not in scenario_measure_map.keys():
+                                scenario_measure_map[scenario.pk] = []
+                            scenario_measure_map[scenario.pk].append(new_measure.pk)
+
+                    except IntegrityError:
+                        _log.error(
+                            "Measure state_id, measure_id, application_sacle, and implementation_status already exists -- skipping for now")
+
+                new_items.append(test_dict)
+
+            # connect back up the scenario measures
+            for scenario_id, measure_list in scenario_measure_map.items():
+                # create a new scenario from the old one
+                scenario = ScenarioClass.objects.get(pk=scenario_id)
+                scenario.pk = None
+                scenario.property_state = merged_state
+                scenario.save()  # save to get new id
+
+                # get the measures
+                measures = PropertyMeasureClass.objects.filter(pk__in=measure_list)
+                for measure in measures:
+                    scenario.measures.add(measure)
+                scenario.save()
+
+        return merged_state
+
+
+@receiver(pre_delete, sender=PropertyState)
+def pre_delete_state(sender, **kwargs):
+    # remove all the property measures. Not sure why the cascading delete
+    # isn't working here.
+    kwargs['instance'].propertymeasure_set.all().delete()
 
 
 class PropertyView(models.Model):
@@ -373,8 +524,7 @@ class PropertyView(models.Model):
 
     """
     # different property views can be associated with each other (2012, 2013)
-    property = models.ForeignKey(Property, related_name='views',
-                                 on_delete=models.CASCADE)
+    property = models.ForeignKey(Property, related_name='views', on_delete=models.CASCADE)
     cycle = models.ForeignKey(Cycle, on_delete=models.PROTECT)
     state = models.ForeignKey(PropertyState, on_delete=models.CASCADE)
 
@@ -436,6 +586,16 @@ class PropertyView(models.Model):
                 view_id=self.pk).order_by('created').first()
             self._import_filename = audit_log.import_filename
         return self._import_filename
+
+
+@receiver(post_save, sender=PropertyView)
+def post_save_property_view(sender, **kwargs):
+    """
+    When changing/saving the PropertyView, go ahead and touch the Property (if linked) so that the record
+    receives an updated datetime
+    """
+    if kwargs['instance'].property:
+        kwargs['instance'].property.save()
 
 
 class PropertyAuditLog(models.Model):

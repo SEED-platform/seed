@@ -9,15 +9,16 @@ angular.module('BE.seed.controller.new_member_modal', [])
   'organization',
   'user_service',
   '$timeout',
-  function ($scope, $uibModalInstance, organization, user_service, $timeout) {
+  '$translate',
+  function ($scope, $uibModalInstance, organization, user_service, $timeout, $translate) {
     $scope.roles = [{
-      name: 'Member',
+      name: $translate.instant('Member'),
       value: 'member'
     }, {
-      name: 'Owner',
+      name: $translate.instant('Owner'),
       value: 'owner'
     }, {
-      name: 'Viewer',
+      name: $translate.instant('Viewer'),
       value: 'viewer'
     }];
     $scope.user = {};

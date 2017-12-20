@@ -12,7 +12,6 @@ from seed.models import (
 
 
 class TaxLotLabelsField(serializers.RelatedField):
-
     def to_representation(self, value):
         return value.id
 
@@ -27,7 +26,6 @@ class TaxLotSerializer(serializers.ModelSerializer):
 
 
 class TaxLotPropertySerializer(serializers.ModelSerializer):
-
     class Meta:
         model = TaxLotProperty
         fields = '__all__'

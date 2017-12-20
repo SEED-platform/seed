@@ -1,9 +1,10 @@
 {% load compress %}
+{% load i18n %}
 <!DOCTYPE html>
 <html>
     <!-- :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved. -->
     <head>
-        <title>{% block title %}SEED Platform&#0153;{% endblock title %}</title>
+        <title>{% block title %}{% trans "SEED Platform™" %}{% endblock title %}</title>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <!--[if lt IE 8]>
@@ -84,6 +85,8 @@
         <script src="/static/vendors/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
 
         <script src="/static/vendors/bower_components/lodash/dist/lodash.min.js"></script>
+        <script src="/static/vendors/bower_components/moment/min/moment.min.js"></script>
+        <script src="/static/vendors/bower_components/moment/locale/fr.js"></script>
 
             {% if not debug %}
         <script src="/static/vendors/bower_components/angular/angular.min.js"></script>
@@ -106,9 +109,7 @@
         <script src="/static/vendors/bower_components/angular-ui-sortable/sortable.min.js"></script>
         <script src="/static/vendors/bower_components/angular-dragula/dist/angular-dragula.min.js"></script>
         <script src="/static/vendors/bower_components/ng-focus-if/focusIf.min.js"></script>
-
         <script src="/static/vendors/bower_components/file-saver/FileSaver.min.js"></script>
-        <script src="/static/vendors/bower_components/moment/min/moment.min.js"></script>
 
         <!-- reports -->
         <script src="/static/vendors/bower_components/d3/d3.min.js"></script>
@@ -119,6 +120,13 @@
         <script src="/static/vendors/bower_components/ng-tags-input/ng-tags-input.js"></script>
         <script src="/static/vendors/bower_components/angular-ui-notification/dist/angular-ui-notification.min.js"></script>
         <script src="/static/vendors/bower_components/spin.js/spin.min.js"></script>
+
+        <!-- i18n -->
+        <script src="/static/vendors/bower_components/angular-translate/angular-translate.min.js"></script>
+        <script src="/static/vendors/bower_components/angular-translate-loader-static-files/angular-translate-loader-static-files.min.js"></script>
+        <script src="/static/vendors/bower_components/messageformat/messageformat.min.js"></script>
+        <script src="/static/vendors/bower_components/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat.min.js"></script>
+        <script src="/static/vendors/bower_components/angular-sanitize/angular-sanitize.min.js"></script>
 
             {% ifequal FILE_UPLOAD_DESTINATION 'S3' %}
         <script src="/static/vendors/bower_components/fine-uploader/_build/s3.fineuploader.js"></script>

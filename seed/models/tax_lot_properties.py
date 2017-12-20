@@ -114,6 +114,13 @@ class TaxLotProperty(models.Model):
             # custom handling for when it is TaxLotView
             if lookups['obj_class'] == 'TaxLotView':
                 related_dict['campus'] = related_view.property.campus
+                # Do not make these timestamps naive. They persist correctly.
+                related_dict['db_property_updated'] = related_view.property.updated
+                related_dict['db_property_created'] = related_view.property.created
+            elif lookups['obj_class'] == 'PropertyView':
+                # Do not make these timestamps naive. They persist correctly.
+                related_dict['db_taxlot_updated'] = related_view.taxlot.updated
+                related_dict['db_taxlot_created'] = related_view.taxlot.created
 
             # Add extra data fields right to this object.
             for extra_data_field, extra_data_value in related_view.state.extra_data.items():
@@ -129,8 +136,7 @@ class TaxLotProperty(models.Model):
             # The front end requests for related columns have 'tax_'/'property_' prepended
             # to them, so check for that too.
             related_dict = {key: value for key, value in related_dict.items() if
-                            (key in columns) or (
-                                "{}_{}".format(lookups['related_column_key'], key) in columns)}
+                            (key in columns) or ("{}_{}".format(lookups['related_column_key'], key) in columns)}
             related_map[related_view.pk] = related_dict
 
             # Replace taxlot_view id with taxlot id
@@ -138,12 +144,10 @@ class TaxLotProperty(models.Model):
 
         # Not sure what this code is really doing, but it only exists for TaxLotViews
         if lookups['obj_class'] == 'TaxLotView':
-            # A mapping of taxlot view pk to a list of property state info for a property view
-            join_map = {}
             # Get whole taxlotstate table:
             tuple_prop_to_jurisdiction_tl = tuple(
-                TaxLotProperty.objects.values_list('property_view_id',
-                                                   'taxlot_view__state__jurisdiction_tax_lot_id'))
+                TaxLotProperty.objects.values_list('property_view_id', 'taxlot_view__state__jurisdiction_tax_lot_id')
+            )
 
             # create a mapping that defaults to an empty list
             prop_to_jurisdiction_tl = defaultdict(list)
@@ -184,16 +188,25 @@ class TaxLotProperty(models.Model):
             # fix specific time stamps - total hack right now. Need to reconcile with
             # /data_importer/views.py and /seed/views/properties.py
             if join_dict.get('recent_sale_date'):
-                join_dict['recent_sale_date'] = make_naive(
-                    join_dict['recent_sale_date']).isoformat()
+                join_dict['recent_sale_date'] = make_naive(join_dict['recent_sale_date']).isoformat()
 
             if join_dict.get('release_date'):
-                join_dict['release_date'] = make_naive(
-                    join_dict['release_date']).isoformat()
+                join_dict['release_date'] = make_naive(join_dict['release_date']).isoformat()
 
             if join_dict.get('generation_date'):
-                join_dict['generation_date'] = make_naive(
-                    join_dict['generation_date']).isoformat()
+                join_dict['generation_date'] = make_naive(join_dict['generation_date']).isoformat()
+
+            if join_dict.get('analysis_start_time'):
+                join_dict['analysis_start_time'] = make_naive(
+                    join_dict['analysis_start_time']).isoformat()
+
+            if join_dict.get('analysis_end_time'):
+                join_dict['analysis_end_time'] = make_naive(
+                    join_dict['analysis_end_time']).isoformat()
+
+            # remove the measures from this view for now
+            if join_dict.get('measures'):
+                del join_dict['measures']
 
             try:
                 join_map[getattr(join, lookups['obj_view_id'])].append(join_dict)
@@ -219,8 +232,16 @@ class TaxLotProperty(models.Model):
             obj_dict[lookups['obj_state_id']] = obj.state.id
             obj_dict[lookups['obj_view_id']] = obj.id
 
+            # store the property / taxlot data to the object dictionary as well. This is hacky.
             if lookups['obj_class'] == 'PropertyView':
                 obj_dict['campus'] = obj.property.campus
+                # Do not make these timestamps naive. They persist correctly.
+                obj_dict['db_property_updated'] = obj.property.updated
+                obj_dict['db_property_created'] = obj.property.created
+            elif lookups['obj_class'] == 'TaxLotView':
+                # Do not make these timestamps naive. They persist correctly.
+                obj_dict['db_taxlot_updated'] = obj.taxlot.updated
+                obj_dict['db_taxlot_created'] = obj.taxlot.created
 
             # All the related tax lot states.
             obj_dict['related'] = join_map.get(obj.pk, [])
@@ -228,16 +249,25 @@ class TaxLotProperty(models.Model):
             # fix specific time stamps - total hack right now. Need to reconcile with
             # /data_importer/views.py
             if obj_dict.get('recent_sale_date'):
-                obj_dict['recent_sale_date'] = make_naive(
-                    obj_dict['recent_sale_date']).isoformat()
+                obj_dict['recent_sale_date'] = make_naive(obj_dict['recent_sale_date']).isoformat()
 
             if obj_dict.get('release_date'):
-                obj_dict['release_date'] = make_naive(
-                    obj_dict['release_date']).isoformat()
+                obj_dict['release_date'] = make_naive(obj_dict['release_date']).isoformat()
 
             if obj_dict.get('generation_date'):
-                obj_dict['generation_date'] = make_naive(
-                    obj_dict['generation_date']).isoformat()
+                obj_dict['generation_date'] = make_naive(obj_dict['generation_date']).isoformat()
+
+            if obj_dict.get('analysis_start_time'):
+                obj_dict['analysis_start_time'] = make_naive(
+                    obj_dict['analysis_start_time']).isoformat()
+
+            if obj_dict.get('analysis_end_time'):
+                obj_dict['analysis_end_time'] = make_naive(
+                    obj_dict['analysis_end_time']).isoformat()
+
+            # remove the measures from this view for now
+            if obj_dict.get('measures'):
+                del obj_dict['measures']
 
             label_string = []
             if hasattr(obj, 'property'):

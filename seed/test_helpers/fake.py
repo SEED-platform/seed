@@ -13,24 +13,24 @@ method mutiple times will always return the same sequence of results
     Do not edit the seed unless you know what you are doing!
     .. codeauthor:: Paul Munday<paul@paulmunday.net>
 """
-import datetime
 import os
 import re
 import string
 from collections import namedtuple
 
+import datetime
 import mock
 from django.db.models.fields.files import FieldFile
 from django.utils import timezone
 from faker import Factory
 
 from seed.models import (
-    BuildingSnapshot, Cycle, Column, GreenAssessment, GreenAssessmentURL,
+    Cycle, Column, GreenAssessment, GreenAssessmentURL, Measure,
     GreenAssessmentProperty, Property, PropertyAuditLog, PropertyView,
     PropertyState, StatusLabel, TaxLot, TaxLotAuditLog, TaxLotProperty,
-    TaxLotState, TaxLotView
+    TaxLotState, TaxLotView, PropertyMeasure
 )
-from seed.models.auditlog import AUDIT_USER_CREATE
+from seed.models.auditlog import AUDIT_IMPORT, AUDIT_USER_CREATE
 from seed.utils.strings import titlecase
 
 Owner = namedtuple(
@@ -93,50 +93,6 @@ class BaseFake(object):
                             state if state else self.fake.state_abbr()),
             self.fake.postalcode()
         )
-
-
-class FakeBuildingSnapshotFactory(BaseFake):
-    """
-    Factory Class for producing Building Snaphots.
-    """
-
-    def __init__(self, super_organization=None, num_owners=5):
-        # pylint:disable=unused-variable
-        super(FakeBuildingSnapshotFactory, self).__init__()
-        self.super_organization = super_organization
-        # pre-generate a list of owners so they occur more than once.
-        self.owners = [self.owner() for i in range(num_owners)]
-
-    def building_details(self):
-        """Return a dict of pseudo random data for use with Building Snapshot"""
-        owner = self.fake.random_element(elements=self.owners)
-        return {
-            'tax_lot_id': self.fake.numerify(text='#####'),
-            'address_line_1': self.address_line_1(),
-            'city': 'Boring',
-            'state_province': 'Oregon',
-            'postal_code': "970{}".format(self.fake.numerify(text='##')),
-            'year_built': self.fake.random_int(min=1880, max=2015),
-            'site_eui': self.fake.random_int(min=50, max=600),
-            'owner': owner.name,
-            'owner_email': owner.email,
-            'owner_telephone': owner.telephone,
-            'owner_address': owner.address,
-            'owner_city_state': owner.city_state,
-            'owner_postal_code': owner.postal_code,
-        }
-
-    def building_snapshot(self, import_file, canonical_building,
-                          super_organization=None, **kw):
-        """Return a building snapshot populated with pseudo random data"""
-        building_details = {
-            'super_organization': self._get_attr('super_organization', super_organization),
-            'import_file': import_file,
-            'canonical_building': canonical_building,
-        }
-        building_details.update(self.building_details())
-        building_details.update(kw)
-        return BuildingSnapshot.objects.create(**building_details)
 
 
 class FakeColumnFactory(BaseFake):
@@ -285,9 +241,9 @@ class FakePropertyStateFactory(BaseFake):
         ps = PropertyState.objects.create(
             organization=organization, **property_details
         )
-        auditlog_detail = {}
+        # make sure to create an audit log so that we can test various methods (e.g. updating properties)
         PropertyAuditLog.objects.create(
-            organization=organization, state=ps, **auditlog_detail
+            organization=organization, state=ps, record_type=AUDIT_IMPORT, name='Import Creation'
         )
         return ps
 
@@ -336,6 +292,47 @@ class FakePropertyViewFactory(BaseFake):
         return PropertyView.objects.create(**property_view_details)
 
 
+class FakePropertyMeasureFactory(BaseFake):
+    def __init__(self, organization, property_state=None):
+        self.organization = organization
+
+        if not property_state:
+            self.property_state = FakePropertyStateFactory().get_property_state(self.organization)
+        else:
+            self.property_state = property_state
+        super(FakePropertyMeasureFactory, self).__init__()
+
+    def assign_random_measures(self, number_of_measures=5, **kw):
+        # remove any existing measures assigned to the property
+        self.property_state.measures.all().delete()
+
+        # assign a random number of measures to the PropertyState
+        for n in xrange(number_of_measures):
+            measure = Measure.objects.all().order_by('?')[0]
+            property_measure_details = {
+                'measure_id': measure.id,
+                'property_measure_name': self.fake.text(),
+                'property_state': self.property_state,
+                'description': self.fake.text(),
+                'implementation_status': PropertyMeasure.MEASURE_IN_PROGRESS,
+                'application_scale': PropertyMeasure.SCALE_ENTIRE_SITE,
+                'category_affected': PropertyMeasure.CATEGORY_AIR_DISTRIBUTION,
+                'recommended': True,
+                'cost_mv': self.fake.numerify(text='#####'),
+                'cost_total_first': self.fake.numerify(text='#####'),
+                'cost_installation': self.fake.numerify(text='#####'),
+                'cost_material': self.fake.numerify(text='#####'),
+                'cost_capital_replacement': self.fake.numerify(text='#####'),
+                'cost_residual_value': self.fake.numerify(text='#####'),
+            }
+            PropertyMeasure.objects.create(**property_measure_details)
+
+    def get_property_state(self, number_of_measures=5, **kw):
+        """Return a measure"""
+        self.assign_random_measures(number_of_measures)
+        return self.property_state
+
+
 class FakeGreenAssessmentFactory(BaseFake):
     """
     Factory Class for producing GreenAssessment instances.
@@ -373,9 +370,7 @@ class FakeGreenAssessmentFactory(BaseFake):
             if isinstance(validity_duration, int):
                 validity_duration = datetime.timedelta(validity_duration)
             if not (isinstance(validity_duration, datetime.timedelta)):
-                raise TypeError(
-                    'validity_duration must be an integer or timedelta'
-                )
+                raise TypeError('validity_duration must be an integer or timedelta')
             green_assessment['validity_duration'] = validity_duration
         green_assessment.update(kw)
         return GreenAssessment.objects.create(**green_assessment)
@@ -565,9 +560,9 @@ class FakeTaxLotStateFactory(BaseFake):
         taxlot_details = self.get_details(org)
         taxlot_details.update(kw)
         tls = TaxLotState.objects.create(organization=org, **taxlot_details)
-        auditlog_detail = {}
-        TaxLotAuditLog.objects.create(organization=org, state=tls, **auditlog_detail)
-
+        TaxLotAuditLog.objects.create(
+            organization=org, state=tls, record_type=AUDIT_IMPORT, name='Import Creation'
+        )
         return tls
 
 

@@ -10,6 +10,8 @@ import logging
 
 from django.contrib.postgres.fields import JSONField
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 from auditlog import AUDIT_IMPORT
 from auditlog import DATA_UPDATE_TYPE
@@ -36,6 +38,10 @@ class TaxLot(models.Model):
     # should stay consistent although I prefer the name organization (!super_org)
     organization = models.ForeignKey(Organization)
     labels = models.ManyToManyField(StatusLabel)
+
+    # Track when the entry was created and when it was updated
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
 
     def __unicode__(self):
         return u'TaxLot - %s' % self.pk
@@ -242,6 +248,11 @@ class TaxLotState(models.Model):
 
         return coparents, len(coparents)
 
+    @classmethod
+    def merge_relationships(cls, merged_state, state1, state2):
+        """Stub to implement if merging TaxLotState relationships is needed"""
+        return None
+
 
 class TaxLotView(models.Model):
     taxlot = models.ForeignKey(TaxLot, related_name='views', null=True,
@@ -311,6 +322,16 @@ class TaxLotView(models.Model):
                 view_id=self.pk).order_by('created').first()
             self._import_filename = audit_log.import_filename
         return self._import_filename
+
+
+@receiver(post_save, sender=TaxLotView)
+def post_save_taxlot_view(sender, **kwargs):
+    """
+    When changing/saving the TaxLotView, go ahead and touch the TaxLot (if linked) so that the record
+    receives an updated datetime
+    """
+    if kwargs['instance'].taxlot:
+        kwargs['instance'].taxlot.save()
 
 
 class TaxLotAuditLog(models.Model):

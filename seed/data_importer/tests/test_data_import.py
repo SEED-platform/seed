@@ -6,11 +6,11 @@
 """
 import copy
 import csv
-import datetime
 import json
 import logging
 import os.path as osp
 
+import datetime
 from dateutil import parser
 from django.core.files import File
 from django.core.files.uploadedfile import SimpleUploadedFile

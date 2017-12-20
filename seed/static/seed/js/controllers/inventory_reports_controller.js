@@ -16,12 +16,16 @@ angular.module('BE.seed.controller.inventory_reports', [])
     'inventory_reports_service',
     'simple_modal_service',
     'cycles',
+    '$sce',
+    '$translate',
     function ($scope,
               $log,
               $stateParams,
               inventory_reports_service,
               simple_modal_service,
-              cycles) {
+              cycles,
+              $sce,
+              $translate) {
 
       $scope.inventory_type = $stateParams.inventory_type;
 
@@ -34,6 +38,18 @@ angular.module('BE.seed.controller.inventory_reports', [])
       /* Model for pulldowns, initialized in init below */
       $scope.fromCycle = {};
       $scope.toCycle = {};
+
+      var translateAxisLabel = function (label, units) {
+        // rgm - yeah, fair bit of ceremony but I'll have to circle back and
+        // make this respond to display units
+        // TODO make this respond to units display setting later
+        var str = '';
+        str += $translate.instant(label);
+        if (units) {
+          str += ' (' + $translate.instant(units) + ')';
+        }
+        return str;
+      };
 
       /* SCOPE VARS */
       /* ~~~~~~~~~~ */
@@ -51,38 +67,38 @@ angular.module('BE.seed.controller.inventory_reports', [])
        */
       $scope.xAxisVars = [
         {
-          name: 'Site EUI',                     //short name for variable, used in pulldown
-          label: 'Site Energy Use Intensity',   //full name for variable
+          name: $translate.instant('Site EUI'),                     //short name for variable, used in pulldown
+          label: $translate.instant('Site Energy Use Intensity'),   //full name for variable
           varName: 'site_eui',                  //name of variable, to be sent to server
-          axisLabel: 'Site EUI (kBtu/ft2)',     //label to be used in charts, should include units
+          axisLabel: translateAxisLabel('Site EUI', 'kBtu/sq. ft./year'),     //label to be used in charts, should include units
           axisType: 'Measure',                  //DimpleJS property for axis type
           axisTickFormat: ',.0f'                //DimpleJS property for axis tick format
         }, {
-          name: 'Source EUI',
-          label: 'Source Energy Use Intensity',
+          name: $translate.instant('Source EUI'),
+          label: $translate.instant('Source Energy Use Intensity'),
           varName: 'source_eui',
-          axisLabel: 'Source EUI (kBtu/ft2)',
+          axisLabel: translateAxisLabel('Source EUI', 'kBtu/sq. ft./year'),
           axisType: 'Measure',
           axisTickFormat: ',.0f'
         }, {
-          name: 'Weather Norm. Site EUI',
-          label: 'Weather Normalized Site Energy Use Intensity',
+          name: $translate.instant('Weather Norm. Site EUI'),
+          label: $translate.instant('Weather Normalized Site Energy Use Intensity'),
           varName: 'site_eui_weather_normalized',
-          axisLabel: 'Weather Normalized Site EUI (kBtu/ft2)',
+          axisLabel: translateAxisLabel('Weather Normalized Site EUI', 'kBtu/sq. ft./year'),
           axisType: 'Measure',
           axisTickFormat: ',.0f'
         }, {
-          name: 'Weather Norm. Source EUI',
-          label: 'Weather Normalized Source Energy Use Intensity',
+          name: $translate.instant('Weather Norm. Source EUI'),
+          label: $translate.instant('Weather Normalized Source Energy Use Intensity'),
           varName: 'source_eui_weather_normalized',
-          axisLabel: 'Weather Normalized Source EUI (kBtu/ft2)',
+          axisLabel: translateAxisLabel('Weather Normalized Source EUI', 'kBtu/sq. ft./year'),
           axisType: 'Measure',
           axisTickFormat: ',.0f'
         }, {
-          name: 'Energy Star Score',
-          label: 'Energy Star Score',
+          name: $translate.instant('ENERGY STAR Score'),
+          label: $translate.instant('ENERGY STAR Score'),
           varName: 'energy_score',
-          axisLabel: 'Energy Star Score',
+          axisLabel: translateAxisLabel('ENERGY STAR Score'),
           axisType: 'Measure',
           axisTickFormat: ',.0f'
         }
@@ -90,26 +106,26 @@ angular.module('BE.seed.controller.inventory_reports', [])
 
       $scope.yAxisVars = [
         {
-          name: 'Gross Floor Area',
-          label: 'Gross Floor Area',
+          name: $translate.instant('Gross Floor Area'),
+          label: $translate.instant('Gross Floor Area'),
           varName: 'gross_floor_area',
-          axisLabel: 'Gross Floor Area (ft2)',
+          axisLabel: translateAxisLabel('Gross Floor Area', 'sq. ft.'),
           axisTickFormat: ',.0f',
           axisType: 'Measure',
           axisMin: ''
         }, {
-          name: 'Property Classification',
-          label: 'Property Classification',
+          name: $translate.instant('Property Classification'),
+          label: $translate.instant('Property Classification'),
           varName: 'use_description',
-          axisLabel: 'Property Classification',
+          axisLabel: translateAxisLabel('Property Classification'),
           axisTickFormat: '',
           axisType: 'Category',
           axisMin: ''
         }, {
-          name: 'Year Built',
-          label: 'Year Built',
+          name: $translate.instant('Year Built'),
+          label: $translate.instant('Year Built'),
           varName: 'year_built',
-          axisLabel: 'Year Built',
+          axisLabel: translateAxisLabel('Year Built'),
           axisTickFormat: '.0f',
           axisType: 'Measure',
           axisMin: '1900'
@@ -151,8 +167,8 @@ angular.module('BE.seed.controller.inventory_reports', [])
 
       //Setting the status messages will cause the small white status box to show above the chart
       //Setting these to empty string will remove that box
-      $scope.chartStatusMessage = 'No data';
-      $scope.aggChartStatusMessage = 'No data';
+      $scope.chartStatusMessage = 'No Data';
+      $scope.aggChartStatusMessage = 'No Data';
 
 
       /* UI HANDLERS */
@@ -242,10 +258,24 @@ angular.module('BE.seed.controller.inventory_reports', [])
 
       /* Update the titles above each chart*/
       function updateChartTitles () {
-        $scope.chart1Title = $scope.xAxisSelectedItem.label + ' vs. ' + $scope.yAxisSelectedItem.label;
-        $scope.chart2Title = $scope.xAxisSelectedItem.label + ' vs. ' + $scope.yAxisSelectedItem.label + ' (Aggregated)';
+        // need to unwrap these instant translations to use them in another $translate.instant?
+        // smells fishy re XSS, but OK presuming we don't allow any user-gen'd graph titles
+        var interpolationParams;
+        try {
+          interpolationParams = {
+            x_axis_label: $sce.getTrustedHtml($translate.instant($scope.xAxisSelectedItem.label)),
+            y_axis_label: $sce.getTrustedHtml($translate.instant($scope.yAxisSelectedItem.label))
+          };
+        } catch (e) {
+          console.error('$sce issue... missing translation');
+          interpolationParams = {
+            x_axis_label: $scope.xAxisSelectedItem.label,
+            y_axis_label: $scope.yAxisSelectedItem.label
+          };
+        }
+        $scope.chart1Title = $translate.instant('X_VERSUS_Y', interpolationParams);
+        $scope.chart2Title = $translate.instant('X_VERSUS_Y_AGGREGATED', interpolationParams);
       }
-
 
       /** Get the 'raw' (unaggregated) chart data from the server for the scatter plot chart.
        The user's selections are already stored as properties on the scope, so use
@@ -288,7 +318,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
             }
           },
             function (data, status) {
-              $scope.chartStatusMessage = 'Data load error.';
+              $scope.chartStatusMessage = 'Data Load Error';
               $log.error('#InventoryReportsController: Error loading chart data : ' + status);
             })
           .finally(function () {
@@ -338,7 +368,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
           }
         },
           function (data, status) {
-            $scope.aggChartStatusMessage = 'Data load error.';
+            $scope.aggChartStatusMessage = 'Data Load Error';
             $log.error('#InventoryReportsController: Error loading agg chart data : ' + status);
           })
           .finally(function () {

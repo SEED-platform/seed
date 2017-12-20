@@ -380,6 +380,8 @@ class TestColumnsByInventory(TestCase):
                 "use_description": "string",
                 "energy_score": "integer",
                 "site_eui": "float",
+                "site_eui_modeled": "float",
+                "site_eui_weather_normalized": "float",
                 "property_notes": "string",
                 "property_type": "string",
                 "year_ending": "date",
@@ -397,15 +399,23 @@ class TestColumnsByInventory(TestCase):
                 "home_energy_score_id": "string",
                 "generation_date": "datetime",
                 "release_date": "datetime",
-                "source_eui_weather_normalized": "float",
-                "site_eui_weather_normalized": "float",
                 "source_eui": "float",
+                "source_eui_modeled": "float",
+                "source_eui_weather_normalized": "float",
                 "energy_alerts": "string",
                 "space_alerts": "string",
                 "building_certification": "string",
                 "number_properties": "integer",
                 "block_number": "string",
-                "district": "string"
+                "district": "string",
+                "analysis_start_time": "datetime",
+                "analysis_end_time": "datetime",
+                "analysis_state": "string",
+                "analysis_state_message": "string",
+                "db_property_created": "datetime",
+                "db_property_updated": "datetime",
+                "db_taxlot_created": "datetime",
+                "db_taxlot_updated": "datetime",
             }
         }
 
@@ -419,14 +429,14 @@ class TestColumnsByInventory(TestCase):
         schema["types"]["source_eui_pint"] = ""
 
         columns = Column.retrieve_db_types()
-        self.assertEqual(schema, columns)
+        self.assertDictEqual(schema, columns)
 
     def test_column_retrieve_db_fields(self):
         c = Column.retrieve_db_fields()
 
         data = ['address_line_1', 'address_line_2', 'block_number', 'building_certification',
                 'building_count', 'campus', 'city', 'conditioned_floor_area', 'custom_id_1',
-                'district',
+                'district', 'db_taxlot_created', 'db_taxlot_updated', 'db_property_updated', 'db_property_created',
                 'energy_alerts', 'energy_score', 'generation_date', 'gross_floor_area',
                 'home_energy_score_id', 'jurisdiction_property_id', 'jurisdiction_tax_lot_id',
                 'lot_number', 'number_properties', 'occupied_floor_area', 'owner', 'owner_address',
@@ -434,7 +444,9 @@ class TestColumnsByInventory(TestCase):
                 'pm_parent_property_id', 'pm_property_id', 'postal_code', 'property_name',
                 'property_notes', 'property_type', 'recent_sale_date', 'release_date', 'site_eui',
                 'site_eui_weather_normalized', 'source_eui', 'source_eui_weather_normalized',
-                'space_alerts', 'state', 'use_description', 'year_built', 'year_ending']
+                'space_alerts', 'state', 'use_description', 'year_built', 'year_ending',
+                'analysis_end_time', 'source_eui_modeled', 'analysis_state_message',
+                'analysis_start_time', 'site_eui_modeled', 'analysis_state']
 
         # remove or merge into above after we merge/rename 'release:use_pint'
         data += ['gross_floor_area_pint',

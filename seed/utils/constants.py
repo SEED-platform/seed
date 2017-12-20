@@ -51,8 +51,7 @@ ASSESSOR_FIELDS = [
         "checked": False,
         "static": False,
         "link": True
-    },
-    {
+    }, {
         "title": "Tax Lot ID",
         "sort_column": "tax_lot_id",
         "class": "is_aligned_right",
@@ -62,8 +61,7 @@ ASSESSOR_FIELDS = [
         "checked": False,
         "static": False,
         "link": True
-    },
-    {
+    }, {
         "title": "Custom ID 1",
         "sort_column": "custom_id_1",
         "class": "is_aligned_right whitespace",
@@ -73,8 +71,7 @@ ASSESSOR_FIELDS = [
         "checked": False,
         "static": False,
         "link": True
-    },
-    {
+    }, {
         "title": "Property Name",
         "sort_column": "property_name",
         "class": "",
@@ -82,8 +79,7 @@ ASSESSOR_FIELDS = [
         "type": "string",
         "field_type": "building_information",
         "checked": False
-    },
-    {
+    }, {
         "title": "Address Line 1",
         "sort_column": "address_line_1",
         "class": "",
@@ -91,8 +87,7 @@ ASSESSOR_FIELDS = [
         "type": "string",
         "field_type": "building_information",
         "checked": False
-    },
-    {
+    }, {
         "title": "Address Line 2",
         "sort_column": "address_line_2",
         "class": "",
@@ -100,8 +95,7 @@ ASSESSOR_FIELDS = [
         "type": "string",
         "field_type": "building_information",
         "checked": False
-    },
-    {
+    }, {
         "title": "County/District/Ward/Borough",
         "sort_column": "district",
         "class": "",
@@ -109,8 +103,7 @@ ASSESSOR_FIELDS = [
         "type": "string",
         "field_type": "building_information",
         "checked": False
-    },
-    {
+    }, {
         "title": "Lot Number",
         "sort_column": "lot_number",
         "class": "",
@@ -118,8 +111,7 @@ ASSESSOR_FIELDS = [
         "type": "string",
         "field_type": "building_information",
         "checked": False
-    },
-    {
+    }, {
         "title": "Block Number",
         "sort_column": "block_number",
         "class": "",
@@ -127,8 +119,7 @@ ASSESSOR_FIELDS = [
         "type": "string",
         "field_type": "building_information",
         "checked": False
-    },
-    {
+    }, {
         "title": "City",
         "sort_column": "city",
         "class": "",
@@ -136,8 +127,7 @@ ASSESSOR_FIELDS = [
         "type": "string",
         "field_type": "building_information",
         "checked": False
-    },
-    {
+    }, {
         "title": "State Province",
         "sort_column": "state_province",
         "class": "",
@@ -145,8 +135,7 @@ ASSESSOR_FIELDS = [
         "type": "string",
         "field_type": "building_information",
         "checked": False
-    },
-    {
+    }, {
         "title": "Postal Code",
         "sort_column": "postal_code",
         "class": "is_aligned_right",
@@ -154,8 +143,7 @@ ASSESSOR_FIELDS = [
         "type": "string",
         "field_type": "building_information",
         "checked": False
-    },
-    {
+    }, {
         "title": "Year Built",
         "sort_column": "year_built",
         "class": "is_aligned_right",
@@ -165,8 +153,7 @@ ASSESSOR_FIELDS = [
         "max": "year_built__lte",
         "field_type": "building_information",
         "checked": False
-    },
-    {
+    }, {
         "title": "Use Description",
         "sort_column": "use_description",
         "class": "",
@@ -174,8 +161,7 @@ ASSESSOR_FIELDS = [
         "type": "string",
         "field_type": "building_information",
         "checked": False
-    },
-    {
+    }, {
         "title": "Building Count",
         "sort_column": "building_count",
         "class": "is_aligned_right",
@@ -185,8 +171,7 @@ ASSESSOR_FIELDS = [
         "max": "building_count__lte",
         "field_type": "building_information",
         "checked": False
-    },
-    {
+    }, {
         "title": "Property Notes",
         "sort_column": "property_notes",
         "class": "",
@@ -194,8 +179,7 @@ ASSESSOR_FIELDS = [
         "type": "string",
         "field_type": "building_information",
         "checked": False
-    },
-    {
+    }, {
         "title": "Property Type",
         "sort_column": "property_type",
         "class": "",
@@ -203,8 +187,7 @@ ASSESSOR_FIELDS = [
         "type": "string",
         "field_type": "building_information",
         "checked": False
-    },
-    {
+    }, {
         "title": "Recent Sale Date",
         "sort_column": "recent_sale_date",
         "class": "is_aligned_right",
@@ -214,8 +197,7 @@ ASSESSOR_FIELDS = [
         "max": "recent_sale_date__lte",
         "field_type": "building_information",
         "checked": False
-    },
-    {
+    }, {
         "title": "Owner",
         "sort_column": "owner",
         "class": "",
@@ -223,8 +205,7 @@ ASSESSOR_FIELDS = [
         "type": "string",
         "field_type": "contact_information",
         "checked": False
-    },
-    {
+    }, {
         "title": "Owner Address",
         "sort_column": "owner_address",
         "class": "",
@@ -232,8 +213,7 @@ ASSESSOR_FIELDS = [
         "type": "string",
         "field_type": "contact_information",
         "checked": False
-    },
-    {
+    }, {
         "title": "Owner City",
         "sort_column": "owner_city_state",
         "class": "",
@@ -241,8 +221,7 @@ ASSESSOR_FIELDS = [
         "type": "string",
         "field_type": "contact_information",
         "checked": False
-    },
-    {
+    }, {
         "title": "Owner Postal Code",
         "sort_column": "owner_postal_code",
         "class": "",
@@ -250,8 +229,7 @@ ASSESSOR_FIELDS = [
         "type": "string",
         "field_type": "contact_information",
         "checked": False
-    },
-    {
+    }, {
         "title": "Owner Email",
         "sort_column": "owner_email",
         "class": "",
@@ -259,8 +237,7 @@ ASSESSOR_FIELDS = [
         "type": "string",
         "field_type": "contact_information",
         "checked": False
-    },
-    {
+    }, {
         "title": "Owner Telephone",
         "sort_column": "owner_telephone",
         "class": "is_aligned_right",
@@ -268,8 +245,7 @@ ASSESSOR_FIELDS = [
         "type": "string",
         "field_type": "contact_information",
         "checked": False
-    },
-    {
+    }, {
         "title": "Gross Floor Area",
         "sort_column": "gross_floor_area",
         "subtitle": u"ft" + u"\u00B2",
@@ -279,8 +255,7 @@ ASSESSOR_FIELDS = [
         "max": "gross_floor_area__lte",
         "field_type": "assessor",
         "checked": False
-    },
-    {
+    }, {
         "title": "Energy Star Score",
         "sort_column": "energy_score",
         "class": "is_aligned_right",
@@ -289,18 +264,7 @@ ASSESSOR_FIELDS = [
         "max": "energy_score__lte",
         "field_type": "pm",
         "checked": False
-    },
-    {
-        "title": "Site EUI",
-        "sort_column": "site_eui",
-        "class": "is_aligned_right",
-        "type": "number",
-        "min": "site_eui__gte",
-        "max": "site_eui__lte",
-        "field_type": "pm",
-        "checked": False
-    },
-    {
+    }, {
         "title": "Generation Date",
         "sort_column": "generation_date",
         "class": "is_aligned_right",
@@ -310,8 +274,7 @@ ASSESSOR_FIELDS = [
         "max": "generation_date__lte",
         "field_type": "building_information",
         "checked": False
-    },
-    {
+    }, {
         "title": "Release Date",
         "sort_column": "release_date",
         "class": "is_aligned_right",
@@ -321,8 +284,7 @@ ASSESSOR_FIELDS = [
         "max": "release_date__lte",
         "field_type": "building_information",
         "checked": False
-    },
-    {
+    }, {
         "title": "Year Ending",
         "sort_column": "year_ending",
         "class": "is_aligned_right",
@@ -332,8 +294,7 @@ ASSESSOR_FIELDS = [
         "max": "year_ending__lte",
         "field_type": "building_information",
         "checked": False
-    },
-    {
+    }, {
         "title": "Creation Date",
         "sort_column": "created",
         "class": "is_aligned_right",
@@ -343,8 +304,7 @@ ASSESSOR_FIELDS = [
         "max": "created__lte",
         "field_type": "building_information",
         "checked": False
-    },
-    {
+    }, {
         "title": "Modified Date",
         "sort_column": "modified",
         "class": "is_aligned_right",
@@ -354,8 +314,7 @@ ASSESSOR_FIELDS = [
         "max": "modified__lte",
         "field_type": "building_information",
         "checked": False
-    },
-    {
+    }, {
         "title": "Conditioned Floor Area",
         "sort_column": "conditioned_floor_area",
         "class": "is_aligned_right",
@@ -365,8 +324,7 @@ ASSESSOR_FIELDS = [
         "max": "modified__lte",
         "field_type": "building_information",
         "checked": False
-    },
-    {
+    }, {
         "title": "Occupied Floor Area",
         "sort_column": "occupied_floor_area",
         "class": "is_aligned_right",
@@ -376,8 +334,25 @@ ASSESSOR_FIELDS = [
         "max": "modified__lte",
         "field_type": "building_information",
         "checked": False
-    },
-    {
+    }, {
+        "title": "Site EUI",
+        "sort_column": "site_eui",
+        "class": "is_aligned_right",
+        "type": "number",
+        "min": "site_eui__gte",
+        "max": "site_eui__lte",
+        "field_type": "pm",
+        "checked": False
+    }, {
+        "title": "Site EUI Modeled",
+        "sort_column": "site_eui_modeled",
+        "class": "is_aligned_right",
+        "type": "number",
+        "min": "site_eui__gte",
+        "max": "site_eui__lte",
+        "field_type": "pm",
+        "checked": False
+    }, {
         "title": "Site EUI Weather Normalized",
         "sort_column": "site_eui_weather_normalized",
         "class": "is_aligned_right",
@@ -387,8 +362,7 @@ ASSESSOR_FIELDS = [
         "max": "modified__lte",
         "field_type": "building_information",
         "checked": False
-    },
-    {
+    }, {
         "title": "Source EUI",
         "sort_column": "source_eui",
         "class": "is_aligned_right",
@@ -398,8 +372,17 @@ ASSESSOR_FIELDS = [
         "max": "modified__lte",
         "field_type": "building_information",
         "checked": False
-    },
-    {
+    }, {
+        "title": "Source EUI Modeled",
+        "sort_column": "source_eui_modeled",
+        "class": "is_aligned_right",
+        "title_class": "",
+        "type": "date",
+        "min": "modified__gte",
+        "max": "modified__lte",
+        "field_type": "building_information",
+        "checked": False
+    }, {
         "title": "Source EUI Weather Normalized",
         "sort_column": "source_eui_weather_normalized",
         "class": "is_aligned_right",
@@ -409,8 +392,7 @@ ASSESSOR_FIELDS = [
         "max": "modified__lte",
         "field_type": "building_information",
         "checked": False
-    },
-    {
+    }, {
         "title": "Building Certification",
         "sort_column": "building_certification",
         "class": "is_aligned_right",
@@ -420,8 +402,7 @@ ASSESSOR_FIELDS = [
         "max": "modified__lte",
         "field_type": "building_information",
         "checked": False
-    },
-    {
+    }, {
         "title": "Energy Alerts",
         "sort_column": "energy_alerts",
         "class": "is_aligned_right",
@@ -431,8 +412,7 @@ ASSESSOR_FIELDS = [
         "max": "modified__lte",
         "field_type": "building_information",
         "checked": False
-    },
-    {
+    }, {
         "title": "Space Alerts",
         "sort_column": "space_alerts",
         "class": "is_aligned_right",
@@ -441,6 +421,42 @@ ASSESSOR_FIELDS = [
         "min": "modified__gte",
         "max": "modified__lte",
         "field_type": "building_information",
+        "checked": False
+    }, {
+        "title": "Analysis Start Time",
+        "sort_column": "analysis_start_time",
+        "class": "is_aligned_right",
+        "title_class": "",
+        "type": "date",
+        "min": "modified__gte",
+        "max": "modified__lte",
+        "field_type": "building_information",
+        "checked": False
+    }, {
+        "title": "Analysis End Time",
+        "sort_column": "analysis_start_time",
+        "class": "is_aligned_right",
+        "title_class": "",
+        "type": "date",
+        "min": "modified__gte",
+        "max": "modified__lte",
+        "field_type": "building_information",
+        "checked": False
+    }, {
+        "title": "Analysis State",
+        "sort_column": "analysis_state",
+        "class": "",
+        "title_class": "",
+        "type": "string",
+        "field_type": "contact_information",
+        "checked": False
+    }, {
+        "title": "Analysis State Message",
+        "sort_column": "analysis_state_message",
+        "class": "",
+        "title_class": "",
+        "type": "string",
+        "field_type": "contact_information",
         "checked": False
     }
 ]
@@ -612,12 +628,43 @@ VIEW_COLUMNS_PROPERTY = [
         'dataType': 'string',
         'dbField': True,
     }, {
-        # This is attached to Property object, not sure what to do here.
         'name': 'campus',
-        'table': 'PropertyState',
+        'table': 'Property',
         'displayName': 'Campus',
         'dataType': 'boolean',
         'type': 'boolean',
+        'dbField': True,
+    }, {
+        'name': 'db_property_updated',
+        'table': 'Property',
+        'displayName': 'Updated (Property)',
+        'dataType': 'datetime',
+        'type': 'date',
+        'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
+        'dbField': True,
+    }, {
+        'name': 'db_property_created',
+        'table': 'Property',
+        'displayName': 'Created (Property)',
+        'dataType': 'datetime',
+        'type': 'date',
+        'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
+        'dbField': True,
+    }, {
+        'name': 'db_taxlot_created',
+        'table': 'TaxLot',
+        'displayName': 'Created (Tax Lot)',
+        'dataType': 'datetime',
+        'type': 'date',
+        'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
+        'dbField': True,
+    }, {
+        'name': 'db_taxlot_updated',
+        'table': 'TaxLot',
+        'displayName': 'Updated (Tax Lot)',
+        'dataType': 'datetime',
+        'type': 'date',
+        'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
         'dbField': True,
     }, {
         'name': 'gross_floor_area',
@@ -637,13 +684,6 @@ VIEW_COLUMNS_PROPERTY = [
         'table': 'PropertyState',
         'displayName': 'ENERGY STAR Score',
         'dataType': 'integer',
-        'type': 'number',
-        'dbField': True,
-    }, {
-        'name': 'site_eui',
-        'table': 'PropertyState',
-        'displayName': 'Site EUI',
-        'dataType': 'float',
         'type': 'number',
         'dbField': True,
     }, {
@@ -759,9 +799,9 @@ VIEW_COLUMNS_PROPERTY = [
         'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
         'dbField': True,
     }, {
-        'name': 'source_eui_weather_normalized',
+        'name': 'site_eui',
         'table': 'PropertyState',
-        'displayName': 'Source EUI Weather Normalized',
+        'displayName': 'Site EUI',
         'dataType': 'float',
         'type': 'number',
         'dbField': True,
@@ -773,9 +813,30 @@ VIEW_COLUMNS_PROPERTY = [
         'type': 'number',
         'dbField': True,
     }, {
+        'name': 'site_eui_modeled',
+        'table': 'PropertyState',
+        'displayName': 'Site EUI Modeled',
+        'dataType': 'float',
+        'type': 'number',
+        'dbField': True,
+    }, {
         'name': 'source_eui',
         'table': 'PropertyState',
         'displayName': 'Source EUI',
+        'dataType': 'float',
+        'type': 'number',
+        'dbField': True,
+    }, {
+        'name': 'source_eui_weather_normalized',
+        'table': 'PropertyState',
+        'displayName': 'Source EUI Weather Normalized',
+        'dataType': 'float',
+        'type': 'number',
+        'dbField': True,
+    }, {
+        'name': 'source_eui_modeled',
+        'table': 'PropertyState',
+        'displayName': 'Source EUI Modeled',
         'dataType': 'float',
         'type': 'number',
         'dbField': True,
@@ -795,6 +856,34 @@ VIEW_COLUMNS_PROPERTY = [
         'name': 'building_certification',
         'table': 'PropertyState',
         'displayName': 'Building Certification',
+        'dataType': 'string',
+        'dbField': True,
+    }, {
+        'name': 'analysis_start_time',
+        'table': 'PropertyState',
+        'displayName': 'Analysis Start Time',
+        'dataType': 'datetime',
+        'type': 'date',
+        'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
+        'dbField': True,
+    }, {
+        'name': 'analysis_end_time',
+        'table': 'PropertyState',
+        'displayName': 'Analysis End Time',
+        'dataType': 'datetime',
+        'type': 'date',
+        'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
+        'dbField': True,
+    }, {
+        'name': 'analysis_state',
+        'table': 'PropertyState',
+        'displayName': 'Analysis State',
+        'dataType': 'string',
+        'dbField': True,
+    }, {
+        'name': 'analysis_state_message',
+        'table': 'PropertyState',
+        'displayName': 'Analysis State Message',
         'dataType': 'string',
         'dbField': True,
     }, {
