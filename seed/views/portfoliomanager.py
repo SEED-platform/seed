@@ -17,6 +17,7 @@ import pint
 import requests
 import xmltodict
 from django.http import JsonResponse
+from rest_framework.serializers import Serializer
 from rest_framework.decorators import list_route
 from rest_framework.viewsets import GenericViewSet
 
@@ -26,7 +27,13 @@ from seed.models import PropertyState
 _log = logging.getLogger(__name__)
 
 
+class PortfolioManagerSerializer(Serializer):
+    pass
+
+
 class PortfolioManagerViewSet(GenericViewSet):
+
+    serializer_class = PortfolioManagerSerializer
 
     ATTRIBUTES_TO_PROCESS = [
         'national_median_site_energy_use',

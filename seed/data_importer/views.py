@@ -10,6 +10,7 @@ import hmac
 import json
 import logging
 import os
+import uuid
 
 from django.apps import apps
 from django.conf import settings
@@ -23,7 +24,7 @@ from django.http import HttpResponse, JsonResponse
 from django.utils.timezone import make_naive
 from rest_framework import serializers, status, viewsets
 from rest_framework.authentication import SessionAuthentication
-from rest_framework.decorators import api_view, detail_route, parser_classes, permission_classes
+from rest_framework.decorators import api_view, detail_route, list_route, parser_classes, permission_classes
 from rest_framework.parsers import MultiPartParser, FormParser
 
 from seed.authentication import SEEDAuthentication
@@ -211,7 +212,7 @@ class LocalUploaderViewSet(viewsets.ViewSet):
         # The s3 stuff needs to be redone someday... delete?
         if 'S3' in settings.DEFAULT_FILE_STORAGE:
             os.unlink(path)
-            raise ImproperlyConfigured("Local upload not supported")
+            raise ImproperlyConfigured("Local upload not supported")  # TODO: Is this wording correct?
 
         import_record_pk = request.POST.get('import_record', request.GET.get('import_record'))
         try:
@@ -240,6 +241,7 @@ class LocalUploaderViewSet(viewsets.ViewSet):
 
     @api_endpoint_class
     @ajax_request_class
+    @list_route(methods=['POST'])
     def create_from_pm_import(self, request):
         """
         Create an import_record from a PM import request.
@@ -258,15 +260,15 @@ class LocalUploaderViewSet(viewsets.ViewSet):
         if 'pm_data' not in request.data:
             return JsonResponse({
                 'success': False,
-                'message': "Must pass pm_import data in the request body."
+                'message': "Must pass pm_data in the request body."
             }, status=status.HTTP_400_BAD_REQUEST)
 
         # create a folder to keep pm_import files
-        path = os.path.join(settings.MEDIA_ROOT, "uploads", "pm_imports")
+        path = os.path.join(settings.MEDIA_ROOT, "uploads", "pm_imports", str(uuid.uuid4()))  # TODO: Verify this is OK
 
-        # Get a unique filename using the get_available_name method in FileSystemStorage
-        s = FileSystemStorage()
-        path = s.get_available_name(path)
+        # # Get a unique filename using the get_available_name method in FileSystemStorage
+        # s = FileSystemStorage()
+        # path = s.get_available_name(path)
 
         # verify the directory exists
         if not os.path.exists(os.path.dirname(path)):
@@ -276,7 +278,7 @@ class LocalUploaderViewSet(viewsets.ViewSet):
         with open(path, 'wb+') as temp_file:
             temp_file.write(json.dumps(request.data['pm_data']))
 
-        import_record_pk = request.POST.get('import_record', request.GET.get('import_record'))
+        import_record_pk = request.data['import_record']  # TODO: This is a change in protocol
         try:
             record = ImportRecord.objects.get(pk=import_record_pk)
         except ImportRecord.DoesNotExist:
@@ -291,7 +293,7 @@ class LocalUploaderViewSet(viewsets.ViewSet):
                                       uploaded_filename='pm_import',
                                       file=path,
                                       source_type=SEED_DATA_SOURCES[PORTFOLIO_RAW],
-                                      kwargs={'source_program': 'Portfolio Manager', 'source_program_version': ''})
+                                      **{'source_program': 'Portfolio Manager', 'source_program_version': ''})  # TODO: Do I need different data here?
 
         return JsonResponse({'success': True, "import_file_id": f.pk})
 
