@@ -91,7 +91,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
         if columns is None:
             # default the columns for now if no columns are passed
             columns = [
-                'pm_property_id', 'pm_parent_property_id', 'tax_jurisdiction_tax_lot_id',
+                'pm_property_id', 'pm_parent_property_id', 'tax_jurisdiction_tax_lot_id', 'ubid',
                 'custom_id_1', 'tax_custom_id_1', 'city', 'state', 'postal_code',
                 'tax_primary', 'property_name', 'campus', 'gross_floor_area',
                 'use_description', 'energy_score', 'site_eui', 'property_notes',

@@ -72,6 +72,10 @@ PROPERTIES_MAPPING = [
         "to_table_name": u'PropertyState',
         "to_field": u'pm_property_id',
     }, {
+        "from_field": u'UBID',
+        "to_table_name": u'PropertyState',
+        "to_field": u'ubid',
+    }, {
         "from_field": u'custom id 1',
         "to_table_name": u'PropertyState',
         "to_field": u'custom_id_1',
@@ -163,6 +167,7 @@ FAKE_EXTRA_DATA = {
     u'Organization': u'Occidental Management',
     u'Property Name': u'Not Available',
     u'Property Floor Area (Buildings and Parking) (ft2)': u'',
+    u'UBID': u'M5QCN237+OR5-M5QCN237+5YF-M5QCN237+XV9',
     u'Total GHG Emissions (MtCO2e)': u'',
     u'Generation Date': u'',
 }

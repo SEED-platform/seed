@@ -101,6 +101,9 @@ class PropertyState(models.Model):
 
     custom_id_1 = models.CharField(max_length=255, null=True, blank=True)
 
+    # A unique building identifier as defined by DOE's current effort (link to follow)
+    ubid = models.CharField(max_length=255, null=True, blank=True)
+
     # If the property is a campus then the pm_parent_property_id is the same
     # for all the properties. The master campus record (campus=True on Property model) will
     # have the pm_property_id set to be the same as the pm_parent_property_id
@@ -356,6 +359,7 @@ class PropertyState(models.Model):
                     ps.pm_property_id,
                     ps.pm_parent_property_id,
                     ps.custom_id_1,
+                    ps.ubid,
                     ps.address_line_1,
                     ps.address_line_2,
                     ps.city,
@@ -406,7 +410,7 @@ class PropertyState(models.Model):
         # reduce this down to just the fields that were returned and convert to dict. This is
         # important because the fields that were not queried will be deferred and require a new
         # query to retrieve.
-        keep_fields = ['id', 'pm_property_id', 'pm_parent_property_id', 'custom_id_1',
+        keep_fields = ['id', 'pm_property_id', 'pm_parent_property_id', 'custom_id_1', 'ubid',
                        'address_line_1', 'address_line_2', 'city', 'state', 'postal_code',
                        'lot_number', 'gross_floor_area', 'use_description', 'energy_score',
                        'site_eui', 'site_eui_modeled', 'property_notes', 'property_type',
