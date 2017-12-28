@@ -528,95 +528,20 @@ class PropertyViewSet(GenericViewSet):
         return JsonResponse(self._get_taxlots(pk))
 
     def get_history(self, property_view):
-        """Return history in reverse order."""
-        history = []
-        master = {'state': {}, 'date_edited': None, }
+        """Return history in reverse order"""
 
-        def record_dict(log):
-            filename = None if not log.import_filename else path.basename(log.import_filename)
-            if filename:
-                # Attempt to remove NamedTemporaryFile suffix
-                name, ext = path.splitext(filename)
-                pattern = re.compile('(.*?)(_[a-zA-Z0-9]{7})$')
-                match = pattern.match(name)
-                if match:
-                    filename = match.groups()[0] + ext
-            return {
-                'state': PropertyStateSerializer(log.state).data,
-                'date_edited': convert_to_js_timestamp(log.created),
-                'source': log.get_record_type_display(),
-                'filename': filename,
-                # 'changed_fields': json.loads(log.description) if log.record_type == AUDIT_USER_EDIT else None
-            }
+        # access the history from the property state
+        history, master = property_view.state.history()
 
-        log = PropertyAuditLog.objects.select_related('state', 'parent1', 'parent2').filter(
-            state_id=property_view.state_id
-        ).order_by('-id').first()
+        # convert the history and master states to StateSerializers
+        master['state'] = PropertyStateSerializer(master['state_data']).data
+        del master['state_data']
+        del master['state_id']
 
-        if log:
-            master = {
-                'state': PropertyStateSerializer(log.state).data,
-                'date_edited': convert_to_js_timestamp(log.created),
-            }
-
-            # Traverse parents and add to history
-            if log.name in ['Manual Match', 'System Match', 'Merge current state in migration']:
-                done_searching = False
-                while not done_searching:
-                    if (log.parent1_id is None and log.parent2_id is None) or \
-                            log.name == 'Manual Edit':
-                        done_searching = True
-                    else:
-                        tree = log.parent1
-                        log = tree
-                else:
-                    tree = None
-                    if log.parent2:
-                        if log.parent2.name in ['Import Creation', 'Manual Edit']:
-                            record = record_dict(log.parent2)
-                            history.append(record)
-                        elif log.parent2.name == 'System Match' and log.parent2.parent1.name == 'Import Creation' and \
-                                log.parent2.parent2.name == 'Import Creation':
-                            # Handle case where an import file matches within itself, and proceeds to match with
-                            # existing records
-                            record = record_dict(log.parent2.parent2)
-                            history.append(record)
-                            record = record_dict(log.parent2.parent1)
-                            history.append(record)
-                        else:
-                            tree = log.parent2
-                    if log.parent1.name in ['Import Creation', 'Manual Edit']:
-                        record = record_dict(log.parent1)
-                        history.append(record)
-                        if log.parent1.name == 'Import Creation':
-                            done_searching = True
-                        else:
-                            tree = log.parent1
-                            log = tree
-                    else:
-                        tree = None
-                        if log.parent2:
-                            if log.parent2.name in ['Import Creation', 'Manual Edit']:
-                                record = record_dict(log.parent2)
-                                history.append(record)
-                            else:
-                                tree = log.parent2
-                        if log.parent1.name in ['Import Creation', 'Manual Edit']:
-                            record = record_dict(log.parent1)
-                            history.append(record)
-                        else:
-                            tree = log.parent1
-
-                        if not tree:
-                            done_searching = True
-                        else:
-                            log = tree
-            elif log.name == 'Manual Edit':
-                record = record_dict(log.parent1)
-                history.append(record)
-            elif log.name == 'Import Creation':
-                record = record_dict(log)
-                history.append(record)
+        for h in history:
+            h['state'] = PropertyStateSerializer(h['state_data']).data
+            del h['state_data']
+            del h['state_id']
 
         return history, master
 

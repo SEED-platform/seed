@@ -19,7 +19,6 @@ from seed.models import (
     Column,
     PropertyState,
     ASSESSED_RAW,
-    DATA_STATE_MAPPING,
     DATA_STATE_MATCHING,
     MERGE_STATE_UNKNOWN,
     MERGE_STATE_NEW,
@@ -68,7 +67,7 @@ class TestProperties(DataMappingBaseTestCase):
         property_state = PropertyState.objects.filter(
             use_description='Pizza House',
             import_file_id=self.import_file_2,
-            data_state__in=[DATA_STATE_MAPPING, DATA_STATE_MATCHING],
+            data_state__in=[DATA_STATE_MATCHING],
             merge_state__in=[MERGE_STATE_UNKNOWN, MERGE_STATE_NEW]
         ).first()
 
@@ -79,18 +78,18 @@ class TestProperties(DataMappingBaseTestCase):
             use_description='Retail',
             address_line_1=property_state.address_line_1,
             import_file_id=self.import_file,
-            data_state__in=[DATA_STATE_MAPPING, DATA_STATE_MATCHING],
+            data_state__in=[DATA_STATE_MATCHING],
             merge_state__in=[MERGE_STATE_UNKNOWN, MERGE_STATE_NEW]
         ).first()
 
         self.assertEqual(expected.pk, coparent[0]['id'])
 
     def test_get_history(self):
-        # This is the last property state
+        # This is the last property state of the object that is in test_coparent test above
         property_state = PropertyState.objects.filter(
             use_description='Pizza House',
             ubid='M7RZ35FK+6LL-M7RZ35FK+9GS-M7RZ35FK+H0V',
-            data_state__in=[DATA_STATE_MAPPING, DATA_STATE_MATCHING],
+            data_state__in=[DATA_STATE_MATCHING],
             merge_state__in=[MERGE_STATE_MERGED]
         ).first()
         self.assertIsNotNone(property_state)
@@ -98,8 +97,29 @@ class TestProperties(DataMappingBaseTestCase):
 
         self.assertEqual(master['state_id'], property_state.id)
 
-        # self.assertEqual(len(history), 2)
+        self.assertEqual(len(history), 2)
+        self.assertEqual(history[0]['filename'], 'example-data-properties-small-changes.xlsx')
+        self.assertEqual(history[1]['filename'], 'example-data-properties.xlsx')
+
+    def test_get_history_complex(self):
+        # this file includes a case (which seems wrong - regardless) that matches on itself.
+        property_state = PropertyState.objects.filter(
+            ubid='WW2YKUX2+FVE-WW2YKUX2+8SH-WW2YKUX2+3K2',
+            data_state__in=[DATA_STATE_MATCHING],
+            merge_state__in=[MERGE_STATE_MERGED]
+        ).first()
+
+        self.assertIsNotNone(property_state)
+        history, master = property_state.history()
+
+        # grab all the other relationships that this would have merged
+        # for now just verify that 3 records were merged.
+        self.assertTrue(True)
+        self.assertEqual(len(history), 3)
+        self.assertEqual(history[0]['filename'], 'example-data-properties-small-changes.xlsx')
+        self.assertEqual(history[1]['filename'], 'example-data-properties-small-changes.xlsx')
+        self.assertEqual(history[2]['filename'], 'example-data-properties.xlsx')
 
 
-        self.assertIsNotNone(history)
+
 

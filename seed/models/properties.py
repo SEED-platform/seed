@@ -327,7 +327,15 @@ class PropertyState(models.Model):
     def history(self):
         """
         Return the history of the property state by parsing through the auditlog. Returns only the ids
-        of the parent states and some descriptions. The
+        of the parent states and some descriptions.
+
+              master
+              /   \
+             /     \
+          parent1  parent2
+
+        In the records, parent2 is most recent, so make sure to navigate parent two first since we
+        are returning the data in reverse over (that is most recent changes first)
 
         :return: list, history as a list, and the master record
         """
@@ -346,7 +354,6 @@ class PropertyState(models.Model):
                 if match:
                     filename = match.groups()[0] + ext
             return {
-                # 'state': PropertyStateSerializer(log.state).data,
                 'state_id': log.state.id,
                 'state_data': log.state,
                 'date_edited': convert_to_js_timestamp(log.created),
@@ -370,19 +377,23 @@ class PropertyState(models.Model):
             # Traverse parents and add to history
             if log.name in ['Manual Match', 'System Match', 'Merge current state in migration']:
                 done_searching = False
+
                 while not done_searching:
+                    # if there is no parents, then break out immediately
                     if (log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
-                        done_searching = True
-                    else:
-                        tree = log.parent1
-                        log = tree
-                else:
+                        break
+
+                    # initalize the tree to None everytime. If not new tree is found, then we will not iterate
                     tree = None
+
+                    # Check if parent2 has any other parents or is the original import creation. Start with parent2
+                    # because parent2 will be the most recent import file.
                     if log.parent2:
                         if log.parent2.name in ['Import Creation', 'Manual Edit']:
                             record = record_dict(log.parent2)
                             history.append(record)
-                        elif log.parent2.name == 'System Match' and log.parent2.parent1.name == 'Import Creation' and log.parent2.parent2.name == 'Import Creation':
+                        elif log.parent2.name == 'System Match' and log.parent2.parent1.name == 'Import Creation' and \
+                            log.parent2.parent2.name == 'Import Creation':
                             # Handle case where an import file matches within itself, and proceeds to match with
                             # existing records
                             record = record_dict(log.parent2.parent2)
@@ -391,32 +402,26 @@ class PropertyState(models.Model):
                             history.append(record)
                         else:
                             tree = log.parent2
-                    if log.parent1.name in ['Import Creation', 'Manual Edit']:
-                        record = record_dict(log.parent1)
-                        history.append(record)
-                        if log.parent1.name == 'Import Creation':
-                            done_searching = True
-                        else:
-                            tree = log.parent1
-                            log = tree
-                    else:
-                        tree = None
-                        if log.parent2:
-                            if log.parent2.name in ['Import Creation', 'Manual Edit']:
-                                record = record_dict(log.parent2)
-                                history.append(record)
-                            else:
-                                tree = log.parent2
+
+                    if log.parent1:
                         if log.parent1.name in ['Import Creation', 'Manual Edit']:
                             record = record_dict(log.parent1)
+                            history.append(record)
+                        elif log.parent1.name == 'System Match' and log.parent1.parent1.name == 'Import Creation' and \
+                            log.parent1.parent2.name == 'Import Creation':
+                            # Handle case where an import file matches within itself, and proceeds to match with
+                            # existing records
+                            record = record_dict(log.parent1.parent2)
+                            history.append(record)
+                            record = record_dict(log.parent1.parent1)
                             history.append(record)
                         else:
                             tree = log.parent1
 
-                        if not tree:
-                            done_searching = True
-                        else:
-                            log = tree
+                    if not tree:
+                        done_searching = True
+                    else:
+                        log = tree
             elif log.name == 'Manual Edit':
                 record = record_dict(log.parent1)
                 history.append(record)
@@ -540,7 +545,9 @@ class PropertyState(models.Model):
         ScenarioClass = apps.get_model('seed', 'Scenario')
         PropertyMeasureClass = apps.get_model('seed', 'PropertyMeasure')
 
-        # get some items off of this property view
+        # TODO: get some items off of this property view - labels and eventually notes
+
+        # collect the relationships
         no_measure_scenarios = [x for x in state2.scenarios.filter(measures__isnull=True)] + \
                                [x for x in state1.scenarios.filter(measures__isnull=True)]
         building_files = [x for x in state2.building_files.all()] + [x for x in state1.building_files.all()]
