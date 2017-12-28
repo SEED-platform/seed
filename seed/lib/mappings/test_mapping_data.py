@@ -116,7 +116,8 @@ class TestMappingData(TestCase):
                           'site_eui_pint',
                           'source_eui_weather_normalized_pint',
                           'site_eui_weather_normalized_pint',
-                          'source_eui_pint']
+                          'source_eui_pint',
+                          'ubid']
 
         # nope you can't compare a list to keys, as keys are unordered
         # self.assertListEqual(d, expected_data)

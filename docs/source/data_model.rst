@@ -45,7 +45,7 @@ The fields from new snapshot are preferred because that is the newer of the
 two records from the perspective of the system.  By preferring the most recent fields
 this allows for evolving building snapshots over time.  For example, if an existing
 canonical record has a Site EUI value of 75 and some changes happen to a building
-that cause this to change to 80 the user can submit a new record with that change. 
+that cause this to change to 80 the user can submit a new record with that change.
 
 All BuildingSnapshot instances point to a CanonicalBuilding.
 
@@ -183,7 +183,7 @@ CanonicalBuilding pointing to it has its field ``active`` set to ``False``.
     anytime a match is **unmatched** the system will create a new
     CanonicalBuilding or set an existing CanonicalBuilding's active field to
     ``True`` for any leaf BuildingSnapshot trees.
-    
+
 what really happens to the BuildingSnapshot table on import (and when)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -202,8 +202,8 @@ Consider the following simple record:
 +-------------+-------------+---------------------+-----------+--------------+
 
 The first thing the user is upload the file.  When the user sees the
-"Successful Upload!" dialog one record has been added to the 
-BuildingSnapshot table.  
+"Successful Upload!" dialog one record has been added to the
+BuildingSnapshot table.
 
 This new record has an id (73700 in this case) and a created and
 modified timestamp.  Then there are a lot of empty fields and a
@@ -215,7 +215,7 @@ the contents of the record in key-value form:
 :Year Ending: "2000"
 :Release Date: "12/12/2000"
 :Property Floor Area: "1234"
-  
+
 And a corresponding extra_data_sources that looks like
 
 :Address 1: 73700
@@ -224,7 +224,7 @@ And a corresponding extra_data_sources that looks like
 :Release Date:  73700
 :Property Floor Area: 73700
 
-  
+
 All of the fields that look like _source_id are also populated
 with 73700 E.G. owner_postal_code_source_id.
 
@@ -235,7 +235,7 @@ field which is populated with a reference to a data_importer_importfile record.
 At this point the record has been created before the user hits the
 "Continue to data mapping" button.
 
-The second record (id = 73701) is created by the time the user gets to the screen 
+The second record (id = 73701) is created by the time the user gets to the screen
 with the "Save Mappings" button.  This second record has the following fields populated:
 
 - id
@@ -246,7 +246,7 @@ with the "Save Mappings" button.  This second record has the following fields po
 - gross_floor_area
 - address_line_1
 - release_date
-- source_type (this is 2 instead of 0 as with the other record) 
+- source_type (this is 2 instead of 0 as with the other record)
 - import_file_id
 - organization_id.
 
@@ -260,12 +260,12 @@ Now consider the same user uploading a new file from the next year that looks li
 |  499045     | 2000        | 1234                | 1 fake st | 12/12/2001   |
 +-------------+-------------+---------------------+-----------+--------------+
 
-As before one new record is created on upload.  This has id 73702 and follows the same 
-pattern as 73700.  And similarly 73703 is created like 73701 before the "Save Mappings" 
+As before one new record is created on upload.  This has id 73702 and follows the same
+pattern as 73700.  And similarly 73703 is created like 73701 before the "Save Mappings"
 button appears.
 
-However this time the system was able to make a match with an existing record.  
-After the user clicks the "Confirm mappings & start matching" button a new record 
+However this time the system was able to make a match with an existing record.
+After the user clicks the "Confirm mappings & start matching" button a new record
 is created with ID 73704.
 
 73704 is identical to 73703 (in terms of contents of the BuildingSnapshot table only)
@@ -287,18 +287,18 @@ with the following exceptions:
 what really happens to the CanonicalBuilding table on import (and when)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In addition to the BuildingSnapshot table the CanonicalBuilding table is also updated 
-during the import process.  To summarize the above 5 records were created in the 
-BuildingSnapshot table:  
+In addition to the BuildingSnapshot table the CanonicalBuilding table is also updated
+during the import process.  To summarize the above 5 records were created in the
+BuildingSnapshot table:
 
 1. 73700 is created from the raw 2000 data
 2. 73701 is the mapped 2000 data,
 3. 73702 is created from the raw 2001 data
 4. 73703 is the mapped 2001 data
-5. 73704 is the result of merging the 2000 and 2001 data.  
+5. 73704 is the result of merging the 2000 and 2001 data.
 
 In this process CanonicalBuilding is updated twice.  First when the 2000 record is imported the
-CanonicalBuilding gets populated with one new row at the end of the matching step.  
+CanonicalBuilding gets populated with one new row at the end of the matching step.
 I.E. when the user sees the "Load More Data" screen.  At this point there is a new row that looks like
 
 +--------+--------+-----------------------+
@@ -335,7 +335,7 @@ requesting user's membership in the BuildingSnapshot's organization.
 
 Any field in the BuildingSnapshot table that is populated with data from a
 submitted record will have a corresponding _source_id field.  E.G
-pm_property_id has pm_property_id_source_id, 
+pm_property_id has pm_property_id_source_id,
 address_line_1 has address_line_1_source_id,
 etc...
 
@@ -350,11 +350,11 @@ value.  To extend the above table
 | id2   |        | **12** | 12          | BS1                    |
 +-------+--------+--------+-------------+------------------------+
 
-**NOTE:**  The BuildingSnapshot records made from the raw input file have all the 
+**NOTE:**  The BuildingSnapshot records made from the raw input file have all the
 _source_id fields populated with that record's ID.  The non-canonical BuildingSnapshot
 records created from the mapped data have none set.  The canonical BuildingSnapshot
 records that are the result of merging two records have only the _source_id fields
-set where the record itself has data.  E.G. in the above address_line_1 is set to 
+set where the record itself has data.  E.G. in the above address_line_1 is set to
 "1 fake st." so there is a value in the canonical BuildingSnapshot's address_line_1_source_id
 field.  However there is no block number so block_number_source_id is empty.  This
 is unlike the two raw BuildingSnapshot records who also have no block_number but
@@ -363,7 +363,7 @@ nevertheless have a block_number_source_id populated.
 extra_data
 ^^^^^^^^^^
 
-The BuildingSnapshot model has many "named" fields.  Fields like "address_line_1", 
+The BuildingSnapshot model has many "named" fields.  Fields like "address_line_1",
 "year_built", and "pm_property_id".  However the users are allowed to submit files
 with arbitrary fields.  Some of those arbitrary fields can be mapped to "named"
 fields.  E.G. "Street Address" can usually be mapped to "Address Line 1".
@@ -385,12 +385,13 @@ It should have an extra_data_sources field that looks like
 saving and possible data loss
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-When saving a BuildingSnapshot file some fields that are truncated if too long.
-The following are truncated to 128 characters
+When saving a Property file some fields that are truncated if too long.
+The following are truncated to 255 characters
 
-- tax_lot_id
+- jurisdiction_tax_lot_id
 - pm_property_id
 - custom_id_1
+- ubid
 - lot_number
 - block_number
 - district
@@ -410,5 +411,5 @@ And the following are truncated to 255:
 - postal_code
 - state_province
 - building_certification
- 
+
 No truncation happens to any of the fields stored in extra_data.
