@@ -232,7 +232,7 @@
         <div class="row" style="padding-bottom:10px">
             <div class="col-lg-4 col-sm-4"></div>
             <div class="col-lg-8 col-sm-8">
-                <div class="btn btn-primary" style="display: block; font-weight: bold;" ng-click="get_pm_report_template_names(pm_username, pm_password);">Get Report Templates</div>
+                <div class="btn btn-primary" style="display: block; font-weight: bold;" ng-disabled="!pm_buttons_enabled" ng-click="get_pm_report_template_names(pm_username, pm_password);">Get Report Templates</div>
             </div>
         </div>
         <div class="row" style="padding-bottom:10px">
@@ -244,7 +244,7 @@
         <div class="row" style="padding-bottom:10px">
             <div class="col-lg-4 col-sm-4"></div>
             <div class="col-lg-8 col-sm-8">
-                <div class="btn btn-primary" style="display: block; font-weight: bold;" ng-click="get_pm_report(pm_username, pm_password, pm_template);">Submit</div>
+                <div class="btn btn-primary" style="display: block; font-weight: bold;" ng-disabled="!pm_buttons_enabled" ng-click="get_pm_report(pm_username, pm_password, pm_template);">Submit</div>
             </div>
         </div>
         <div class="row" style="padding-bottom:10px">

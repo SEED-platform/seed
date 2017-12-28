@@ -21,6 +21,7 @@
  * ng-switch-when="10" == No matches found
  * ng-switch-when="11" == Confirm Save Mappings?
  * ng-switch-when="12" == Error Processing Data
+ * ng-switch-when="13" == Portfolio Manager Import
  */
 angular.module('BE.seed.controller.data_upload_modal', [])
   .controller('data_upload_modal_controller', [
@@ -61,6 +62,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       $scope.step = {
         number: step
       };
+      $scope.pm_buttons_enabled = true;
       /**
        * dataset: holds the state of the data set
        * name: string - the data set name
@@ -118,7 +120,6 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       /**
        * goto_step: changes the step of the modal, i.e. name dataset -> upload ...
        * step: int - used with the `ng-switch` in the DOM to change state
-       * step_text:
        */
       $scope.goto_step = function (step) {
         $scope.step.number = step;
@@ -212,6 +213,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        * save_map_match_PM_data: saves, maps, and matches PM data
        *
        * @param {string} file_id: the id of the import file
+       * @param {string} cycle_id: the id of the
        */
       var save_map_match_PM_data = function (file_id, cycle_id) {
         $scope.uploader.status_message = 'saving energy data';
@@ -264,7 +266,6 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        *   from 75% to 100%, then shows the PM upload completed
        *
        * @param {string} progress_key: key
-       * @param {string} file_id: id of file
        */
       var monitor_matching = function (progress_key) {
         uploader_service.check_progress_loop(progress_key, 75, 0.25, function () {
@@ -356,24 +357,32 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       };
 
       $scope.get_pm_report_template_names = function (pm_username, pm_password) {
-        console.log("Inside pull_from_pm, args = ", pm_username, pm_password);
-        return $http.post('/api/v2_1/portfolio_manager/template_list/', {
+        // console.log("Inside pull_from_pm, args = ", pm_username, pm_password);
+        spinner_utility.show();
+        $scope.pm_buttons_enabled = false;
+        $http.post('/api/v2_1/portfolio_manager/template_list/', {
           username: pm_username,
           password: pm_password
         }).then(function (response) {
           $scope.pm_templates = response.data.templates;
+          spinner_utility.hide();
+          $scope.pm_buttons_enabled = true;
           return response.data;
         });
       };
 
       $scope.get_pm_report = function (pm_username, pm_password, pm_template) {
-        console.log("Inside pull_from_pm, args = ", pm_username, pm_password, pm_template);
-        return $http.post('/api/v2_1/portfolio_manager/report/', {
+        // console.log("Inside pull_from_pm, args = ", pm_username, pm_password, pm_template);
+        spinner_utility.show();
+        $scope.pm_buttons_enabled = false;
+        $http.post('/api/v2_1/portfolio_manager/report/', {
           username: pm_username,
           password: pm_password,
           template: pm_template
         }).then(function (response) {
           $scope.pm_props = response.data.properties;
+          spinner_utility.hide();
+          $scope.pm_buttons_enabled = true;
           return response.data;
         });
       };
