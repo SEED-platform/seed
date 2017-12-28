@@ -50,7 +50,7 @@ describe('When I visit the data set page', function () {
     // for remote travis ci to grab files
     browser.setFileDetector(new remote.FileDetector());
 
-    var fileToUpload = 'seed/tests/data/protractorProperties.xlsx';
+    var fileToUpload = 'seed/data_importer/tests/data/example-data-properties.xlsx';
     var absolutePath = path.resolve(fileToUpload);
 
     element.all(by.xpath('//input[@type="file"]')).first().sendKeys(absolutePath);
@@ -123,7 +123,7 @@ describe('When I visit the data set page', function () {
     // for remote travis ci to grab the files
     browser.setFileDetector(new remote.FileDetector());
 
-    var fileToUpload = 'seed/tests/data/protractorTaxlots.xlsx';
+    var fileToUpload = 'seed/data_importer/tests/data/example-data-taxlots.xlsx';
     var absolutePath = path.resolve(fileToUpload);
 
     element.all(by.xpath('//input[@type="file"]')).first().sendKeys(absolutePath);
