@@ -101,14 +101,13 @@ class TestProperties(DataMappingBaseTestCase):
         self.assertEqual(history[0]['filename'], 'example-data-properties-small-changes.xlsx')
         self.assertEqual(history[1]['filename'], 'example-data-properties.xlsx')
 
-    def test_get_history_complex(self):
-        # this file includes a case (which seems wrong - regardless) that matches on itself.
+
+        # test a complicated case where there matching on itself
         property_state = PropertyState.objects.filter(
             ubid='WW2YKUX2+FVE-WW2YKUX2+8SH-WW2YKUX2+3K2',
             data_state__in=[DATA_STATE_MATCHING],
             merge_state__in=[MERGE_STATE_MERGED]
         ).first()
-
         self.assertIsNotNone(property_state)
         history, master = property_state.history()
 
