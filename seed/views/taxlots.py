@@ -508,10 +508,6 @@ class TaxLotViewSet(GenericViewSet):
                     status_code = 422
                     return JsonResponse(result, status=status_code)
 
-                # update the property object just to save the new datatime
-                taxlot_obj = TaxLot.objects.get(id=pk)
-                taxlot_obj.save()
-
             # save the tax lot view, even if it hasn't changed so that the datetime gets updated on the taxlot.
             taxlot_view.save()
         else:

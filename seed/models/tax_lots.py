@@ -193,8 +193,8 @@ class TaxLotState(models.Model):
         of the parent states and some descriptions.
 
               master
-              /   \
-             /     \
+              /    \
+             /      \
           parent1  parent2
 
         In the records, parent2 is most recent, so make sure to navigate parent two first since we
@@ -205,7 +205,11 @@ class TaxLotState(models.Model):
 
         """Return history in reverse order."""
         history = []
-        master = {'state': {}, 'date_edited': None, }
+        master = {
+            'state_id': self.id,
+            'state_data': self,
+            'date_edited': None,
+        }
 
         def record_dict(log):
             filename = None if not log.import_filename else path.basename(log.import_filename)

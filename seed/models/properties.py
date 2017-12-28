@@ -342,7 +342,11 @@ class PropertyState(models.Model):
 
         """Return history in reverse order."""
         history = []
-        master = {'state': {}, 'date_edited': None, }
+        master = {
+            'state_id': self.id,
+            'state_data': self,
+            'date_edited': None,
+        }
 
         def record_dict(log):
             filename = None if not log.import_filename else path.basename(log.import_filename)

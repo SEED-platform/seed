@@ -726,10 +726,6 @@ class PropertyViewSet(GenericViewSet):
                     }
                     return JsonResponse(result, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
-                # update the property object just to save the new datatime
-                # property_obj = Property.objects.get(id=pk)
-                # property_obj.save()
-
             # save the property view, even if it hasn't changed so that the datetime gets updated on the property.
             property_view.save()
         else:
