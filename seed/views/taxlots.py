@@ -8,9 +8,6 @@ All rights reserved.  # NOQA
 :author
 """
 
-import re
-from os import path
-
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.http import JsonResponse
 from rest_framework import status
@@ -46,7 +43,6 @@ from seed.utils.properties import (
     pair_unpair_property_taxlot,
     update_result_with_master
 )
-from seed.utils.time import convert_to_js_timestamp
 
 # Global toggle that controls whether or not to display the raw extra
 # data fields in the columns returned for the view.
@@ -333,80 +329,20 @@ class TaxLotViewSet(GenericViewSet):
         return JsonResponse(result)
 
     def get_history(self, taxlot_view):
-        """Return history in reverse order."""
-        history = []
+        """Return history in reverse order"""
 
-        def record_dict(log):
-            filename = None if not log.import_filename else path.basename(log.import_filename)
-            if filename:
-                # Attempt to remove NamedTemporaryFile suffix
-                name, ext = path.splitext(filename)
-                pattern = re.compile('(.*?)(_[a-zA-Z0-9]{7})$')
-                match = pattern.match(name)
-                if match:
-                    filename = match.groups()[0] + ext
-            return {
-                'state': TaxLotStateSerializer(log.state).data,
-                'date_edited': convert_to_js_timestamp(log.created),
-                'source': log.get_record_type_display(),
-                'filename': filename,
-                # 'changed_fields': json.loads(log.description) if log.record_type == AUDIT_USER_EDIT else None
-            }
+        # access the history from the property state
+        history, master = taxlot_view.state.history()
 
-        log = TaxLotAuditLog.objects.select_related('state', 'parent1', 'parent2').filter(
-            state_id=taxlot_view.state_id
-        ).order_by('-id').first()
-        master = {
-            'state': TaxLotStateSerializer(log.state).data,
-            'date_edited': convert_to_js_timestamp(log.created),
-        }
+        # convert the history and master states to StateSerializers
+        master['state'] = TaxLotStateSerializer(master['state_data']).data
+        del master['state_data']
+        del master['state_id']
 
-        # Traverse parents and add to history
-        if log.name in ['Manual Match', 'System Match', 'Merge current state in migration']:
-            done_searching = False
-            while not done_searching:
-                if (log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
-                    done_searching = True
-                elif log.name == 'Merge current state in migration':
-                    record = record_dict(log.parent1)
-                    history.append(record)
-                    if log.parent1.name == 'Import Creation':
-                        done_searching = True
-                    else:
-                        tree = log.parent1
-                        log = tree
-                else:
-                    tree = None
-                    if log.parent2:
-                        if log.parent2.name in ['Import Creation', 'Manual Edit']:
-                            record = record_dict(log.parent2)
-                            history.append(record)
-                        elif log.parent2.name == 'System Match' and log.parent2.parent1.name == 'Import Creation' and \
-                                log.parent2.parent2.name == 'Import Creation':
-                            # Handle case where an import file matches within itself, and proceeds to match with
-                            # existing records
-                            record = record_dict(log.parent2.parent2)
-                            history.append(record)
-                            record = record_dict(log.parent2.parent1)
-                            history.append(record)
-                        else:
-                            tree = log.parent2
-                    if log.parent1.name in ['Import Creation', 'Manual Edit']:
-                        record = record_dict(log.parent1)
-                        history.append(record)
-                    else:
-                        tree = log.parent1
-
-                    if not tree:
-                        done_searching = True
-                    else:
-                        log = tree
-        elif log.name == 'Manual Edit':
-            record = record_dict(log.parent1)
-            history.append(record)
-        elif log.name == 'Import Creation':
-            record = record_dict(log)
-            history.append(record)
+        for h in history:
+            h['state'] = TaxLotStateSerializer(h['state_data']).data
+            del h['state_data']
+            del h['state_id']
 
         return history, master
 

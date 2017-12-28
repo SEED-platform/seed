@@ -368,7 +368,6 @@ class PropertyState(models.Model):
 
         if log:
             master = {
-                # 'state': PropertyStateSerializer(log.state).data,
                 'state_id': log.state.id,
                 'state_data': log.state,
                 'date_edited': convert_to_js_timestamp(log.created),
@@ -393,7 +392,7 @@ class PropertyState(models.Model):
                             record = record_dict(log.parent2)
                             history.append(record)
                         elif log.parent2.name == 'System Match' and log.parent2.parent1.name == 'Import Creation' and \
-                            log.parent2.parent2.name == 'Import Creation':
+                                log.parent2.parent2.name == 'Import Creation':
                             # Handle case where an import file matches within itself, and proceeds to match with
                             # existing records
                             record = record_dict(log.parent2.parent2)
@@ -408,7 +407,7 @@ class PropertyState(models.Model):
                             record = record_dict(log.parent1)
                             history.append(record)
                         elif log.parent1.name == 'System Match' and log.parent1.parent1.name == 'Import Creation' and \
-                            log.parent1.parent2.name == 'Import Creation':
+                                log.parent1.parent2.name == 'Import Creation':
                             # Handle case where an import file matches within itself, and proceeds to match with
                             # existing records
                             record = record_dict(log.parent1.parent2)
@@ -674,8 +673,8 @@ class PropertyView(models.Model):
         # get the related taxlot_view.state as well to save time if needed.
         result = []
         for tlp in TaxLotProperty.objects.filter(
-            cycle=self.cycle,
-            property_view=self).select_related('taxlot_view', 'taxlot_view__state'):
+                cycle=self.cycle,
+                property_view=self).select_related('taxlot_view', 'taxlot_view__state'):
             result.append(tlp.taxlot_view)
 
         return result
