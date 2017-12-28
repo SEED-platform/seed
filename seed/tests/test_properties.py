@@ -23,6 +23,7 @@ from seed.models import (
     DATA_STATE_MATCHING,
     MERGE_STATE_UNKNOWN,
     MERGE_STATE_NEW,
+    MERGE_STATE_MERGED,
 )
 
 
@@ -61,7 +62,9 @@ class TestProperties(DataMappingBaseTestCase):
 
     def test_coparent(self):
         # find a state id
-        # get a specific test case with coparents
+        # get a specific test case with coparents.
+        #   Pizza House is the Child
+        #   Retail is the Master / Parent
         property_state = PropertyState.objects.filter(
             use_description='Pizza House',
             import_file_id=self.import_file_2,
@@ -81,3 +84,22 @@ class TestProperties(DataMappingBaseTestCase):
         ).first()
 
         self.assertEqual(expected.pk, coparent[0]['id'])
+
+    def test_get_history(self):
+        # This is the last property state
+        property_state = PropertyState.objects.filter(
+            use_description='Pizza House',
+            ubid='M7RZ35FK+6LL-M7RZ35FK+9GS-M7RZ35FK+H0V',
+            data_state__in=[DATA_STATE_MAPPING, DATA_STATE_MATCHING],
+            merge_state__in=[MERGE_STATE_MERGED]
+        ).first()
+        self.assertIsNotNone(property_state)
+        history, master = property_state.history()
+
+        self.assertEqual(master['state_id'], property_state.id)
+
+        # self.assertEqual(len(history), 2)
+
+
+        self.assertIsNotNone(history)
+

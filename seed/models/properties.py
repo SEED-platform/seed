@@ -9,6 +9,8 @@ from __future__ import unicode_literals
 import copy
 import logging
 import pdb
+import re
+from os import path
 
 from django.apps import apps
 from django.contrib.postgres.fields import JSONField
@@ -36,6 +38,7 @@ from seed.models import (
 from seed.utils.address import normalize_address_str
 from seed.utils.generic import split_model_fields, obj_to_dict
 from seed.utils.time import convert_datestr
+from seed.utils.time import convert_to_js_timestamp
 
 _log = logging.getLogger(__name__)
 
@@ -321,6 +324,108 @@ class PropertyState(models.Model):
 
         return super(PropertyState, self).save(*args, **kwargs)
 
+    def history(self):
+        """
+        Return the history of the property state by parsing through the auditlog. Returns only the ids
+        of the parent states and some descriptions. The
+
+        :return: list, history as a list, and the master record
+        """
+
+        """Return history in reverse order."""
+        history = []
+        master = {'state': {}, 'date_edited': None, }
+
+        def record_dict(log):
+            filename = None if not log.import_filename else path.basename(log.import_filename)
+            if filename:
+                # Attempt to remove NamedTemporaryFile suffix
+                name, ext = path.splitext(filename)
+                pattern = re.compile('(.*?)(_[a-zA-Z0-9]{7})$')
+                match = pattern.match(name)
+                if match:
+                    filename = match.groups()[0] + ext
+            return {
+                # 'state': PropertyStateSerializer(log.state).data,
+                'state_id': log.state.id,
+                'state_data': log.state,
+                'date_edited': convert_to_js_timestamp(log.created),
+                'source': log.get_record_type_display(),
+                'filename': filename,
+                # 'changed_fields': json.loads(log.description) if log.record_type == AUDIT_USER_EDIT else None
+            }
+
+        log = PropertyAuditLog.objects.select_related('state', 'parent1', 'parent2').filter(
+            state_id=self.id
+        ).order_by('-id').first()
+
+        if log:
+            master = {
+                # 'state': PropertyStateSerializer(log.state).data,
+                'state_id': log.state.id,
+                'state_data': log.state,
+                'date_edited': convert_to_js_timestamp(log.created),
+            }
+
+            # Traverse parents and add to history
+            if log.name in ['Manual Match', 'System Match', 'Merge current state in migration']:
+                done_searching = False
+                while not done_searching:
+                    if (log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
+                        done_searching = True
+                    else:
+                        tree = log.parent1
+                        log = tree
+                else:
+                    tree = None
+                    if log.parent2:
+                        if log.parent2.name in ['Import Creation', 'Manual Edit']:
+                            record = record_dict(log.parent2)
+                            history.append(record)
+                        elif log.parent2.name == 'System Match' and log.parent2.parent1.name == 'Import Creation' and log.parent2.parent2.name == 'Import Creation':
+                            # Handle case where an import file matches within itself, and proceeds to match with
+                            # existing records
+                            record = record_dict(log.parent2.parent2)
+                            history.append(record)
+                            record = record_dict(log.parent2.parent1)
+                            history.append(record)
+                        else:
+                            tree = log.parent2
+                    if log.parent1.name in ['Import Creation', 'Manual Edit']:
+                        record = record_dict(log.parent1)
+                        history.append(record)
+                        if log.parent1.name == 'Import Creation':
+                            done_searching = True
+                        else:
+                            tree = log.parent1
+                            log = tree
+                    else:
+                        tree = None
+                        if log.parent2:
+                            if log.parent2.name in ['Import Creation', 'Manual Edit']:
+                                record = record_dict(log.parent2)
+                                history.append(record)
+                            else:
+                                tree = log.parent2
+                        if log.parent1.name in ['Import Creation', 'Manual Edit']:
+                            record = record_dict(log.parent1)
+                            history.append(record)
+                        else:
+                            tree = log.parent1
+
+                        if not tree:
+                            done_searching = True
+                        else:
+                            log = tree
+            elif log.name == 'Manual Edit':
+                record = record_dict(log.parent1)
+                history.append(record)
+            elif log.name == 'Import Creation':
+                record = record_dict(log)
+                history.append(record)
+
+        return history, master
+
     @classmethod
     def coparent(cls, state_id):
         """
@@ -562,8 +667,8 @@ class PropertyView(models.Model):
         # get the related taxlot_view.state as well to save time if needed.
         result = []
         for tlp in TaxLotProperty.objects.filter(
-                cycle=self.cycle,
-                property_view=self).select_related('taxlot_view', 'taxlot_view__state'):
+            cycle=self.cycle,
+            property_view=self).select_related('taxlot_view', 'taxlot_view__state'):
             result.append(tlp.taxlot_view)
 
         return result
