@@ -264,7 +264,7 @@ class LocalUploaderViewSet(viewsets.ViewSet):
             }, status=status.HTTP_400_BAD_REQUEST)
 
         # create a folder to keep pm_import files
-        path = os.path.join(settings.MEDIA_ROOT, "uploads", "pm_imports", str(uuid.uuid4()))  # TODO: Verify this is OK
+        path = os.path.join(settings.MEDIA_ROOT, "uploads", "pm_imports", "pm_import.json")
 
         # # Get a unique filename using the get_available_name method in FileSystemStorage
         # s = FileSystemStorage()
