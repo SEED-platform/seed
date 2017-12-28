@@ -22,7 +22,6 @@ from seed.models import (
     Column,
     Cycle,
     PropertyView,
-    TaxLot,
     TaxLotAuditLog,
     TaxLotProperty,
     TaxLotState,
