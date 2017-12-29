@@ -21,9 +21,6 @@ from rest_framework.serializers import Serializer
 from rest_framework.decorators import list_route
 from rest_framework.viewsets import GenericViewSet
 
-from seed.models import PropertyState
-# from seed.utils.address import normalize_address_str
-
 _log = logging.getLogger(__name__)
 
 
