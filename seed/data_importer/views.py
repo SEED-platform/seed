@@ -266,9 +266,9 @@ class LocalUploaderViewSet(viewsets.ViewSet):
         # create a folder to keep pm_import files
         path = os.path.join(settings.MEDIA_ROOT, "uploads", "pm_imports", "pm_import.json")
 
-        # # Get a unique filename using the get_available_name method in FileSystemStorage
-        # s = FileSystemStorage()
-        # path = s.get_available_name(path)
+        # Get a unique filename using the get_available_name method in FileSystemStorage
+        s = FileSystemStorage()
+        path = s.get_available_name(path)
 
         # verify the directory exists
         if not os.path.exists(os.path.dirname(path)):
@@ -278,7 +278,7 @@ class LocalUploaderViewSet(viewsets.ViewSet):
         with open(path, 'wb+') as temp_file:
             temp_file.write(json.dumps(request.data['pm_data']))
 
-        import_record_pk = request.data['import_record']  # TODO: This is a change in protocol
+        import_record_pk = request.data['import_record_id']
         try:
             record = ImportRecord.objects.get(pk=import_record_pk)
         except ImportRecord.DoesNotExist:

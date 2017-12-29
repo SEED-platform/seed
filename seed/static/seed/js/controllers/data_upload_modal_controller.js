@@ -191,8 +191,8 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             var is_green_button = (file.source_type === 'Green Button Raw');
             save_raw_assessed_data(file.file_id, file.cycle_id, is_green_button);
           }
-          // Portfolio Data
-          if (current_step === 4) {
+          // Portfolio Data; 4 is upload and 13 is import via PM API
+          if (current_step === 4 || current_step === 13) {
             save_map_match_PM_data(file.file_id, file.cycle_id);
           }
 
@@ -381,9 +381,23 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           template: pm_template
         }).then(function (response) {
           $scope.pm_props = response.data.properties;
+          return response;
+        }).then(function (response) {
+          response = $http.post('/api/v2/upload/create_from_pm_import/', {
+            pm_data: response.data,
+            import_record_id: $scope.dataset.id
+          });
+          return response;
+        }).then(function (response) {
+          $scope.uploaderfunc(
+            'upload_complete',
+            {
+              file_id: response.data.import_file_id,
+              cycle_id: $scope.selectedCycle.id
+            }
+          );
           spinner_utility.hide();
           $scope.pm_buttons_enabled = true;
-          return response.data;
         });
       };
 
