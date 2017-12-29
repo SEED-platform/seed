@@ -11,6 +11,7 @@ import hmac
 import json
 import logging
 import os
+import pint
 
 from django.apps import apps
 from django.conf import settings
@@ -239,6 +240,31 @@ class LocalUploaderViewSet(viewsets.ViewSet):
 
         return JsonResponse({'success': True, "import_file_id": f.pk})
 
+    @staticmethod
+    def _get_pint_var_from_pm_value_object(pm_value):
+        units = pint.UnitRegistry()
+        if '@uom' in pm_value and '#text' in pm_value:
+            # this is the correct expected path for unit-based attributes
+            string_value = pm_value['#text']
+            try:
+                float_value = float(string_value)
+            except ValueError:
+                return {'success': False, 'message': 'Could not cast value to float: \"%s\"' % string_value}
+            original_unit_string = pm_value['@uom']
+            if original_unit_string == u'kBtu':
+                new_val = float_value * 1000  # convert to btu manually
+                pint_val = new_val * units.BTU
+            elif original_unit_string == u'kBtu/ft²':
+                new_val = float_value * 1000  # convert to btu manually
+                pint_val = new_val * units.BTU / units.sq_ft
+            elif original_unit_string == u'Metric Tons CO2e':
+                pint_val = float_value * units.metric_ton
+            elif original_unit_string == u'kgCO2e/ft²':
+                pint_val = float_value * units.kilogram / units.sq_ft
+            else:
+                return {'success': False, 'message': 'Unsupported units string: \"%s\"' % original_unit_string}
+            return {'success': True, 'pint_value': pint_val}
+
     @api_endpoint_class
     @ajax_request_class
     @list_route(methods=['POST'])
@@ -328,13 +354,16 @@ class LocalUploaderViewSet(viewsets.ViewSet):
                     # If it isn't a string, it should be a dictionary, storing numeric data and units, etc.
                     else:
 
-                        # Grab the numeric part and write it to the row
+                        # As long as it is a valid dictionary, try to get a meaningful value out of it
                         if '#text' in this_pm_variable and this_pm_variable['#text'] != 'Not Available':
-                            this_row.append(this_pm_variable['#text'])
-                            added = True
 
-                        if '@uom' in this_pm_variable:
-                            pass  # TODO: Add Units support here
+                            # Coerce the value into a proper set of Pint units for us
+                            new_var = LocalUploaderViewSet._get_pint_var_from_pm_value_object(this_pm_variable)
+                            if new_var['success']:
+                                pint_value = new_var['pint_value']
+                                this_row.append(pint_value.magnitude)
+                                added = True
+                                # TODO: What to do with the pint_value.units here?
 
                 # And finally, if we haven't set the added flag, give the csv column a blank value
                 if not added:

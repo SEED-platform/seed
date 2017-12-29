@@ -13,7 +13,6 @@ import logging
 import time
 import urllib
 
-import pint
 import requests
 import xmltodict
 from django.http import JsonResponse
@@ -31,40 +30,6 @@ class PortfolioManagerSerializer(Serializer):
 class PortfolioManagerViewSet(GenericViewSet):
 
     serializer_class = PortfolioManagerSerializer
-
-    ATTRIBUTES_TO_PROCESS = [
-        'national_median_site_energy_use',
-        'site_energy_use',
-        'source_energy_use',
-        'site_eui',
-        'source_eui'
-    ]
-
-    @staticmethod
-    def normalize_attribute(attribute_object):
-        u_registry = pint.UnitRegistry()
-        if '@uom' in attribute_object and '#text' in attribute_object:
-            # this is the correct expected path for unit-based attributes
-            string_value = attribute_object['#text']
-            try:
-                float_value = float(string_value)
-            except ValueError:
-                return {'status': 'error', 'message': 'Could not cast value to float: \"%s\"' % string_value}
-            original_unit_string = attribute_object['@uom']
-            if original_unit_string == u'kBtu':
-                converted_value = float_value * 3.0
-                return {'status': 'success', 'value': converted_value, 'units': str(u_registry.meter)}
-            elif original_unit_string == u'kBtu/ft²':
-                converted_value = float_value * 3.0
-                return {'status': 'success', 'value': converted_value, 'units': str(u_registry.meter)}
-            elif original_unit_string == u'Metric Tons CO2e':
-                converted_value = float_value * 3.0
-                return {'status': 'success', 'value': converted_value, 'units': str(u_registry.meter)}
-            elif original_unit_string == u'kgCO2e/ft²':
-                converted_value = float_value * 3.0
-                return {'status': 'success', 'value': converted_value, 'units': str(u_registry.meter)}
-            else:
-                return {'status': 'error', 'message': 'Unsupported units string: \"%s\"' % original_unit_string}
 
     @list_route(methods=['POST'])
     def template_list(self, request):
