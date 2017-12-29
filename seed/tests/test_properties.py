@@ -101,7 +101,6 @@ class TestProperties(DataMappingBaseTestCase):
         self.assertEqual(history[0]['filename'], 'example-data-properties-small-changes.xlsx')
         self.assertEqual(history[1]['filename'], 'example-data-properties.xlsx')
 
-
         # test a complicated case where there matching on itself
         property_state = PropertyState.objects.filter(
             ubid='WW2YKUX2+FVE-WW2YKUX2+8SH-WW2YKUX2+3K2',
