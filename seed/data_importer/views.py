@@ -8,6 +8,7 @@ import csv
 import base64
 import hashlib
 import hmac
+import json
 import logging
 import os
 
@@ -188,7 +189,7 @@ class LocalUploaderViewSet(viewsets.ViewSet):
             })
 
         # Fineuploader requires the field to be qqfile it appears... so why not support both? ugh.
-        if 'qqfile' in request.data.keys():  # TODO: This doesn't need keys(), right?
+        if 'qqfile' in request.data:
             the_file = request.data['qqfile']
         else:
             the_file = request.data['file']
@@ -224,7 +225,7 @@ class LocalUploaderViewSet(viewsets.ViewSet):
                 'message': "Import Record %s not found" % import_record_pk
             })
 
-        source_type = request.POST.get('source_type', request.GET.get('source_type'))  # TODO: We shouldn't get() from POST anymore, right?
+        source_type = request.POST.get('source_type', request.GET.get('source_type'))
 
         # Add Program & Version fields (empty string if not given)
         kw_fields = {field: request.POST.get(field, request.GET.get(field, ''))
@@ -273,28 +274,82 @@ class LocalUploaderViewSet(viewsets.ViewSet):
         if not os.path.exists(os.path.dirname(path)):
             os.makedirs(os.path.dirname(path))
 
-        # TODO: Extend this list, what all will we support?
-        predefined_tokens = {'address_1': 'Address', 'city': 'City', 'state_province': 'State', 'postal_code': 'Zip'}
+        # TODO: What all keys should we process from PM?
+        pm_key_to_column_heading_map = {
+            'address_1': 'Address',
+            'city': 'City',
+            'state_province': 'State',
+            'postal_code': 'Zip',
+            'county': 'County',
+            'country': 'Country',
+            'property_name': 'Property Name',
+            'property_id': 'Property ID',
+            'year_built': 'Year Built',
+            'energy_score': 'energy_score',
+            'site_eui': 'site_eui',
+            'generation_date': 'generation_date',
+            'release_date': 'release_date',
+            'source_eui_weather_normalized': 'source_eui_weather_normalized',
+            'site_eui_weather_normalized': 'site_eui_weather_normalized',
+            'source_eui': 'source_eui',
+            'energy_alerts': 'energy_alerts',
+            'space_alerts': 'space_alerts',
+            'building_certification': 'building_certification'
+        }
 
         # Create the header row of the csv file first
         rows = []
         this_row = []
-        for _, csv_header in predefined_tokens.iteritems():
+        for _, csv_header in pm_key_to_column_heading_map.iteritems():
             this_row.append(csv_header)
         rows.append(this_row)
 
         # Create a single row for each building
-        for property in request.data['properties']:
+        for pm_property in request.data['properties']:
             this_row = []
-            for pm_variable, _ in predefined_tokens.iteritems():
-                this_row.append(property[pm_variable])
+
+            # Loop through all known PM variables
+            for pm_variable, _ in pm_key_to_column_heading_map.iteritems():
+
+                # Initialize this to False for each pm_variable we will search through
+                added = False
+
+                # Check if this PM export has this variable in it
+                if pm_variable in pm_property:
+
+                    # If so, create a convenience variable to store it
+                    this_pm_variable = pm_property[pm_variable]
+
+                    # Next we need to check type.  If it is a string, just add it directly
+                    if isinstance(this_pm_variable, basestring):
+                        this_row.append(this_pm_variable)
+                        added = True
+
+                    # If it isn't a string, it should be a dictionary, storing numeric data and units, etc.
+                    else:
+
+                        # Grab the numeric part and write it to the row
+                        if '#text' in this_pm_variable and this_pm_variable['#text'] != 'Not Available':
+                            this_row.append(this_pm_variable['#text'])
+                            added = True
+
+                        if '@uom' in this_pm_variable:
+                            pass  # TODO: Add Units support here
+
+                # And finally, if we haven't set the added flag, give the csv column a blank value
+                if not added:
+                    this_row.append('')
+
+            # Then add this property row of data
             rows.append(this_row)
 
-        with open(path, 'wb') as csvfile:
-            pm_csv_writer = csv.writer(csvfile)
+        # Then write the actual data out as csv
+        with open(path, 'wb') as csv_file:
+            pm_csv_writer = csv.writer(csv_file)
             for row in rows:
                 pm_csv_writer.writerow(row)
 
+        # Look up the import record (data set)
         import_record_pk = request.data['import_record_id']
         try:
             record = ImportRecord.objects.get(pk=import_record_pk)
@@ -306,12 +361,14 @@ class LocalUploaderViewSet(viewsets.ViewSet):
                 'message': "Import Record %s not found" % import_record_pk
             })
 
+        # Create a new import file object in the database
         f = ImportFile.objects.create(import_record=record,
-                                      uploaded_filename='pm_import',
+                                      uploaded_filename='PortfolioManagerImport',
                                       file=path,
                                       source_type=SEED_DATA_SOURCES[PORTFOLIO_RAW],
-                                      **{'source_program': 'Portfolio Manager', 'source_program_version': ''})  # TODO: Do I need different data here?
+                                      **{'source_program': 'PortfolioManager', 'source_program_version': '1.0'})
 
+        # Return the newly created import file ID
         return JsonResponse({'success': True, "import_file_id": f.pk})
 
 
