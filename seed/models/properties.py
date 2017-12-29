@@ -222,14 +222,14 @@ class PropertyState(models.Model):
         pvs = PropertyView.objects.filter(cycle=cycle, state=self)
 
         if len(pvs) == 0:
-            _log.debug("Found 0 PropertyViews, adding property, promoting")
+            # _log.debug("Found 0 PropertyViews, adding property, promoting")
             # There are no PropertyViews for this property state and cycle.
             # Most likely there is nothing to match right now, so just
             # promote it to the view
 
             # Need to create a property for this state
             if self.organization is None:
-                _log.debug("organization is None")
+                _log.warn("organization is None")
 
             if not self.organization:
                 pdb.set_trace()
@@ -239,7 +239,7 @@ class PropertyState(models.Model):
                     # should I validate this further?
                     prop = Property.objects.get(id=property_id)
                 except Property.DoesNotExist:
-                    _log.debug("Could not promote this property")
+                    _log.error("Could not promote this property")
                     return None
             else:
                 prop = Property.objects.create(organization=self.organization)
@@ -252,13 +252,13 @@ class PropertyState(models.Model):
 
             return pv
         elif len(pvs) == 1:
-            _log.debug("Found 1 PropertyView... Nothing to do")
+            # _log.debug("Found 1 PropertyView... Nothing to do")
             # PropertyView already exists for cycle and state. Nothing to do.
 
             return pvs[0]
         else:
-            _log.debug("Found %s PropertyView" % len(pvs))
-            _log.debug("This should never occur, famous last words?")
+            _log.error("Found %s PropertyView" % len(pvs))
+            _log.error("This should never occur, famous last words?")
 
             return None
 

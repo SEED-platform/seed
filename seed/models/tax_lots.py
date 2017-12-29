@@ -106,7 +106,7 @@ class TaxLotState(models.Model):
         tlvs = TaxLotView.objects.filter(cycle=cycle, state=self)
 
         if len(tlvs) == 0:
-            _log.debug("Found 0 TaxLotViews, adding TaxLot, promoting")
+            # _log.debug("Found 0 TaxLotViews, adding TaxLot, promoting")
             # There are no PropertyViews for this property state and cycle.
             # Most likely there is nothing to match right now, so just
             # promote it to the view
@@ -128,13 +128,13 @@ class TaxLotState(models.Model):
 
             return tlv
         elif len(tlvs) == 1:
-            _log.debug("Found 1 PropertyView... Nothing to do")
+            # _log.debug("Found 1 PropertyView... Nothing to do")
             # PropertyView already exists for cycle and state. Nothing to do.
 
             return tlvs[0]
         else:
-            _log.debug("Found %s PropertyView" % len(tlvs))
-            _log.debug("This should never occur, famous last words?")
+            _log.error("Found %s PropertyView" % len(tlvs))
+            _log.error("This should never occur, famous last words?")
 
             return None
 

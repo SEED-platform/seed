@@ -5,14 +5,13 @@
 :author
 """
 
-from django.test import TestCase
-
-from seed.models.scenarios import Scenario
 from seed.models import Organization
+from seed.models.scenarios import Scenario
 from seed.test_helpers.fake import FakePropertyMeasureFactory
+from seed.tests.util import DeleteModelsTestCase
 
 
-class TestMeasures(TestCase):
+class TestMeasures(DeleteModelsTestCase):
     def setUp(self):
         self.org = Organization.objects.create()
 

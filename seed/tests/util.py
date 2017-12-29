@@ -4,11 +4,74 @@
 :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-#
-# Utilities for testing SEED modules.
-###
 
 import json
+
+from django.test import TestCase
+
+from seed.data_importer.models import ImportFile, ImportRecord
+from seed.landing.models import SEEDUser as User
+from seed.lib.superperms.orgs.models import Organization, OrganizationUser
+from seed.models import (
+    Column,
+    ColumnMapping,
+    Cycle,
+    Property,
+    PropertyState,
+    PropertyView,
+    PropertyAuditLog,
+    StatusLabel,
+    TaxLotAuditLog,
+    TaxLotState,
+    TaxLot,
+    TaxLotView,
+    TaxLotProperty,
+)
+from seed.models.data_quality import DataQualityCheck
+
+
+class DeleteModelsTestCase(TestCase):
+    def setUp(self):
+        User.objects.all().delete()
+        Organization.objects.all().delete()
+        OrganizationUser.objects.all().delete()
+        Column.objects.all().delete()
+        ColumnMapping.objects.all().delete()
+        Cycle.objects.all().delete()
+        DataQualityCheck.objects.all().delete()
+        ImportFile.objects.all().delete()
+        ImportRecord.objects.all().delete()
+        Property.objects.all().delete()
+        PropertyState.objects.all().delete()
+        PropertyView.objects.all().delete()
+        PropertyAuditLog.objects.all().delete()
+        StatusLabel.objects.all().delete()
+        TaxLot.objects.all().delete()
+        TaxLotState.objects.all().delete()
+        TaxLotView.objects.all().delete()
+        TaxLotAuditLog.objects.all().delete()
+        TaxLotProperty.objects.all().delete()
+
+    def tearDown(self):
+        User.objects.all().delete()
+        Organization.objects.all().delete()
+        OrganizationUser.objects.all().delete()
+        Column.objects.all().delete()
+        ColumnMapping.objects.all().delete()
+        Cycle.objects.all().delete()
+        DataQualityCheck.objects.all().delete()
+        ImportFile.objects.all().delete()
+        ImportRecord.objects.all().delete()
+        Property.objects.all().delete()
+        PropertyState.objects.all().delete()
+        PropertyView.objects.all().delete()
+        PropertyAuditLog.objects.all().delete()
+        StatusLabel.objects.all().delete()
+        TaxLot.objects.all().delete()
+        TaxLotState.objects.all().delete()
+        TaxLotView.objects.all().delete()
+        TaxLotAuditLog.objects.all().delete()
+        TaxLotProperty.objects.all().delete()
 
 
 class FakeRequest(object):
