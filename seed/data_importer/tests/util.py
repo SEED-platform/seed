@@ -234,6 +234,27 @@ FAKE_MAPPINGS = {
 
 
 class DeleteModelsTestCase(TestCase):
+    def setUp(self):
+        User.objects.all().delete()
+        Organization.objects.all().delete()
+        OrganizationUser.objects.all().delete()
+        Column.objects.all().delete()
+        ColumnMapping.objects.all().delete()
+        Cycle.objects.all().delete()
+        DataQualityCheck.objects.all().delete()
+        ImportFile.objects.all().delete()
+        ImportRecord.objects.all().delete()
+        Property.objects.all().delete()
+        PropertyState.objects.all().delete()
+        PropertyView.objects.all().delete()
+        PropertyAuditLog.objects.all().delete()
+        StatusLabel.objects.all().delete()
+        TaxLot.objects.all().delete()
+        TaxLotState.objects.all().delete()
+        TaxLotView.objects.all().delete()
+        TaxLotAuditLog.objects.all().delete()
+        TaxLotProperty.objects.all().delete()
+
     def tearDown(self):
         User.objects.all().delete()
         Organization.objects.all().delete()
