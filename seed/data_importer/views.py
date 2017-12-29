@@ -4,13 +4,12 @@
 :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+import csv
 import base64
 import hashlib
 import hmac
-import json
 import logging
 import os
-import uuid
 
 from django.apps import apps
 from django.conf import settings
@@ -252,19 +251,19 @@ class LocalUploaderViewSet(viewsets.ViewSet):
               description: the ID of the ImportRecord to associate this file with.
               required: true
               paramType: body
-            - name: pm_data
-              description: In-memory prepared PM import data
+            - name: properties
+              description: In-memory list of properties from PM import
               required: true
               paramType: body
         """
-        if 'pm_data' not in request.data:
+        if 'properties' not in request.data:
             return JsonResponse({
                 'success': False,
                 'message': "Must pass pm_data in the request body."
             }, status=status.HTTP_400_BAD_REQUEST)
 
         # create a folder to keep pm_import files
-        path = os.path.join(settings.MEDIA_ROOT, "uploads", "pm_imports", "pm_import.json")
+        path = os.path.join(settings.MEDIA_ROOT, "uploads", "pm_imports", "pm_import.csv")
 
         # Get a unique filename using the get_available_name method in FileSystemStorage
         s = FileSystemStorage()
@@ -274,9 +273,27 @@ class LocalUploaderViewSet(viewsets.ViewSet):
         if not os.path.exists(os.path.dirname(path)):
             os.makedirs(os.path.dirname(path))
 
-        # save the file
-        with open(path, 'wb+') as temp_file:
-            temp_file.write(json.dumps(request.data['pm_data']))
+        # TODO: Extend this list, what all will we support?
+        predefined_tokens = {'address_1': 'Address', 'city': 'City', 'state_province': 'State', 'postal_code': 'Zip'}
+
+        # Create the header row of the csv file first
+        rows = []
+        this_row = []
+        for _, csv_header in predefined_tokens.iteritems():
+            this_row.append(csv_header)
+        rows.append(this_row)
+
+        # Create a single row for each building
+        for property in request.data['properties']:
+            this_row = []
+            for pm_variable, _ in predefined_tokens.iteritems():
+                this_row.append(property[pm_variable])
+            rows.append(this_row)
+
+        with open(path, 'wb') as csvfile:
+            pm_csv_writer = csv.writer(csvfile)
+            for row in rows:
+                pm_csv_writer.writerow(row)
 
         import_record_pk = request.data['import_record_id']
         try:

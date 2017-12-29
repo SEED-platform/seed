@@ -111,70 +111,71 @@ class PortfolioManagerViewSet(GenericViewSet):
                                 status=500)
         properties = content_object['report']['informationAndMetrics']['row']
 
-        # now we need to actually process each property
-        # if we find a match we should update it, if we don't we should create it
-        # then we should assign/update property values, possibly from this list?
-        #  energy_score
-        #  site_eui
-        #  generation_date
-        #  release_date
-        #  source_eui_weather_normalized
-        #  site_eui_weather_normalized
-        #  source_eui
-        #  energy_alerts
-        #  space_alerts
-        #  building_certification
-        for prop in properties:
-            seed_property_match = None
-
-            # first try to match by pm property id if the PM report includes it
-            if 'property_id' in prop:
-                this_property_pm_id = prop['property_id']
-                try:
-                    seed_property_match = PropertyState.objects.get(pm_property_id=this_property_pm_id)
-                    prop['MATCHED'] = 'Matched via pm_property_id'
-                except PropertyState.DoesNotExist:
-                    seed_property_match = None
-
-            # second try to match by address/city/state if the PM report includes it
-            if not seed_property_match:
-                if all(attr in prop for attr in ['address_1', 'city', 'state_province']):
-                    this_property_address_one = prop['address_1']
-                    this_property_city = prop['city']
-                    this_property_state = prop['state_province']
-                    try:
-                        seed_property_match = PropertyState.objects.get(
-                            address_line_1__iexact=this_property_address_one,
-                            city__iexact=this_property_city,
-                            state__iexact=this_property_state
-                        )
-                        prop['MATCHED'] = 'Matched via address/city/state'
-                    except PropertyState.DoesNotExist:
-                        seed_property_match = None
-
-            # if we didn't match then we need to create a new one
-            if not seed_property_match:
-                prop['MATCHED'] = 'NO! need to create new property'
-
-            # either way at this point we should have a property, existing or new
-            # so now we should process the attributes
-            processed_attributes = {}
-            for attribute_to_check in PortfolioManagerViewSet.ATTRIBUTES_TO_PROCESS:
-                if attribute_to_check in prop:
-                    found_attribute = prop[attribute_to_check]
-                    if isinstance(found_attribute, dict):
-                        if found_attribute['#text']:
-                            if found_attribute['#text'] == 'Not Available':
-                                processed_attributes[attribute_to_check] = 'Requested variable blank/unavailable on PM'
-                            else:
-                                updated_attribute = PortfolioManagerViewSet.normalize_attribute(found_attribute)
-                                processed_attributes[attribute_to_check] = updated_attribute
-                        else:
-                            processed_attributes[attribute_to_check] = 'Malformed attribute did not have #text field'
-                    else:
-                        pass  # nothing for now
-
-            prop['PROCESSED'] = processed_attributes
+        # # now we need to actually process each property
+        # # if we find a match we should update it, if we don't we should create it
+        # # then we should assign/update property values, possibly from this list?
+        # #  energy_score
+        # #  site_eui
+        # #  generation_date
+        # #  release_date
+        # #  source_eui_weather_normalized
+        # #  site_eui_weather_normalized
+        # #  source_eui
+        # #  energy_alerts
+        # #  space_alerts
+        # #  building_certification
+        # # TODO: Either need to remove this, or change the create_from_pm_import so it supports the processed block
+        # for prop in properties:
+        #     seed_property_match = None
+        #
+        #     # first try to match by pm property id if the PM report includes it
+        #     if 'property_id' in prop:
+        #         this_property_pm_id = prop['property_id']
+        #         try:
+        #             seed_property_match = PropertyState.objects.get(pm_property_id=this_property_pm_id)
+        #             prop['MATCHED'] = 'Matched via pm_property_id'
+        #         except PropertyState.DoesNotExist:
+        #             seed_property_match = None
+        #
+        #     # second try to match by address/city/state if the PM report includes it
+        #     if not seed_property_match:
+        #         if all(attr in prop for attr in ['address_1', 'city', 'state_province']):
+        #             this_property_address_one = prop['address_1']
+        #             this_property_city = prop['city']
+        #             this_property_state = prop['state_province']
+        #             try:
+        #                 seed_property_match = PropertyState.objects.get(
+        #                     address_line_1__iexact=this_property_address_one,
+        #                     city__iexact=this_property_city,
+        #                     state__iexact=this_property_state
+        #                 )
+        #                 prop['MATCHED'] = 'Matched via address/city/state'
+        #             except PropertyState.DoesNotExist:
+        #                 seed_property_match = None
+        #
+        #     # if we didn't match then we need to create a new one
+        #     if not seed_property_match:
+        #         prop['MATCHED'] = 'NO! need to create new property'
+        #
+        #     # either way at this point we should have a property, existing or new
+        #     # so now we should process the attributes
+        #     processed_attributes = {}
+        #     for attribute_to_check in PortfolioManagerViewSet.ATTRIBUTES_TO_PROCESS:
+        #         if attribute_to_check in prop:
+        #             found_attribute = prop[attribute_to_check]
+        #             if isinstance(found_attribute, dict):
+        #                 if found_attribute['#text']:
+        #                     if found_attribute['#text'] == 'Not Available':
+        #                         processed_attributes[attribute_to_check] = 'Requested variable blank/unavail on PM'
+        #                     else:
+        #                         updated_attribute = PortfolioManagerViewSet.normalize_attribute(found_attribute)
+        #                         processed_attributes[attribute_to_check] = updated_attribute
+        #                 else:
+        #                     processed_attributes[attribute_to_check] = 'Malformed attribute did not have #text field'
+        #             else:
+        #                 pass  # nothing for now
+        #
+        #     prop['PROCESSED'] = processed_attributes
 
         return JsonResponse({'status': 'success', 'properties': properties})
 

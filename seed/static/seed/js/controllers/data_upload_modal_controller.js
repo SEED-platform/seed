@@ -187,12 +187,12 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           $scope.uploader.status_message = 'upload complete';
           $scope.dataset.import_file_id = file.file_id;
           // Assessed Data
-          if (current_step === 2) {
+          if (current_step === 2 || current_step === 13) {
             var is_green_button = (file.source_type === 'Green Button Raw');
             save_raw_assessed_data(file.file_id, file.cycle_id, is_green_button);
           }
           // Portfolio Data; 4 is upload and 13 is import via PM API
-          if (current_step === 4 || current_step === 13) {
+          if (current_step === 4) {
             save_map_match_PM_data(file.file_id, file.cycle_id);
           }
 
@@ -357,7 +357,6 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       };
 
       $scope.get_pm_report_template_names = function (pm_username, pm_password) {
-        // console.log("Inside pull_from_pm, args = ", pm_username, pm_password);
         spinner_utility.show();
         $scope.pm_buttons_enabled = false;
         $http.post('/api/v2_1/portfolio_manager/template_list/', {
@@ -372,7 +371,6 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       };
 
       $scope.get_pm_report = function (pm_username, pm_password, pm_template) {
-        // console.log("Inside pull_from_pm, args = ", pm_username, pm_password, pm_template);
         spinner_utility.show();
         $scope.pm_buttons_enabled = false;
         $http.post('/api/v2_1/portfolio_manager/report/', {
@@ -380,11 +378,8 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           password: pm_password,
           template: pm_template
         }).then(function (response) {
-          $scope.pm_props = response.data.properties;
-          return response;
-        }).then(function (response) {
           response = $http.post('/api/v2/upload/create_from_pm_import/', {
-            pm_data: response.data,
+            properties: response.data.properties,
             import_record_id: $scope.dataset.id
           });
           return response;
@@ -393,6 +388,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             'upload_complete',
             {
               file_id: response.data.import_file_id,
+              source_type: 'PortfolioManager',
               cycle_id: $scope.selectedCycle.id
             }
           );
