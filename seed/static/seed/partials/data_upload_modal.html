@@ -1,16 +1,4 @@
 <div class="modal-header" ng-switch on="step.number">
-    <h4 class="modal-title" ng-switch-when="1">Create a New Data Set.</h4>
-    <h4 class="modal-title" ng-switch-when="2">Upload your data.</h4>
-    <h4 class="modal-title" ng-switch-when="3">Successful upload!</h4>
-    <h4 class="modal-title" ng-switch-when="4">Upload your energy data.</h4>
-    <h4 class="modal-title" ng-switch-when="5">Successful upload!</h4>
-    <h4 class="modal-title" ng-switch-when="6">What type of file would you like to upload?</h4>
-    <h4 class="modal-title" ng-switch-when="7">Finding inventory matches.</h4>
-    <h4 class="modal-title" ng-switch-when="8">Matching Results for file: <strong>{$ dataset.filename $}</strong></h4>
-    <h4 class="modal-title" ng-switch-when="9">Add files to {$ dataset.name $}.</h4>
-    <h4 class="modal-title" ng-switch-when="10">{$ step_10_title|titleCase $}</h4>
-    <h4 class="modal-title" ng-switch-when="11">Confirm Save Mappings?</h4>
-    <h4 class="modal-title" ng-switch-when="12">Error Processing Data</h4>
     <h4 class="modal-title" ng-switch-when="1" translate>Create a New Data Set.</h4>
     <h4 class="modal-title" ng-switch-when="2" translate>Upload your data.</h4>
     <h4 class="modal-title" ng-switch-when="3" translate>Successful upload!</h4>
@@ -25,7 +13,7 @@
     <h4 class="modal-title" ng-switch-when="10">{$ step_10_title|translate|titleCase $}</h4>
     <h4 class="modal-title" ng-switch-when="11" translate>Confirm Save Mappings?</h4>
     <h4 class="modal-title" ng-switch-when="12" translate>Error Processing Data</h4>
-    <h4 class="modal-title" ng-switch-when="13">Portfolio Manager Import</h4>
+    <h4 class="modal-title" ng-switch-when="13" translate>Portfolio Manager Import</h4>
 </div>
 <div class="modal-body no_bottom_padding" ng-switch on="step.number">
     <!-- Step 1 -->

@@ -186,12 +186,12 @@ angular.module('BE.seed.controller.data_upload_modal', [])
 
           $scope.uploader.status_message = 'upload complete';
           $scope.dataset.import_file_id = file.file_id;
-          // Assessed Data
+          // Assessed Data; upload is step 2; PM import is currently treated as such, and is step 13
           if (current_step === 2 || current_step === 13) {
             var is_green_button = (file.source_type === 'Green Button Raw');
             save_raw_assessed_data(file.file_id, file.cycle_id, is_green_button);
           }
-          // Portfolio Data; 4 is upload and 13 is import via PM API
+          // Portfolio Data
           if (current_step === 4) {
             save_map_match_PM_data(file.file_id, file.cycle_id);
           }
