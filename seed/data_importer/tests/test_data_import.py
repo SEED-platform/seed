@@ -47,6 +47,8 @@ class TestMappingPortfolioData(DataMappingBaseTestCase):
     def setUp(self):
         # Make sure to delete the old mappings and properties because this
         # tests expects very specific column names and properties in order
+        self.maxDiff = None
+
         filename = getattr(self, 'filename', 'portfolio-manager-sample.csv')
         import_file_source_type = PORTFOLIO_RAW
         self.fake_mappings = FAKE_MAPPINGS['portfolio']
@@ -67,7 +69,7 @@ class TestMappingPortfolioData(DataMappingBaseTestCase):
         with patch.object(ImportFile, 'cache_first_rows', return_value=None):
             tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
 
-        expected_first_row = u"Property Id|#*#|UBID|#*#|Property Name|#*#|Year Ending|#*#|Property Floor Area (Buildings and Parking) (ft2)|#*#|Address 1|#*#|Address 2|#*#|City|#*#|State/Province|#*#|Postal Code|#*#|Year Built|#*#|ENERGY STAR Score|#*#|Site EUI (kBtu/ft2)|#*#|Total GHG Emissions (MtCO2e)|#*#|Weather Normalized Site EUI (kBtu/ft2)|#*#|National Median Site EUI (kBtu/ft2)|#*#|Source EUI (kBtu/ft2)|#*#|Weather Normalized Source EUI (kBtu/ft2)|#*#|National Median Source EUI (kBtu/ft2)|#*#|Parking - Gross Floor Area (ft2)|#*#|Organization|#*#|Generation Date|#*#|Release Date"  # NOQA
+        expected_first_row = u"Property Id|#*#|Property Name|#*#|Year Ending|#*#|Property Floor Area (Buildings and Parking) (ft2)|#*#|Address 1|#*#|Address 2|#*#|City|#*#|State/Province|#*#|Postal Code|#*#|Year Built|#*#|ENERGY STAR Score|#*#|Site EUI (kBtu/ft2)|#*#|Total GHG Emissions (MtCO2e)|#*#|Weather Normalized Site EUI (kBtu/ft2)|#*#|National Median Site EUI (kBtu/ft2)|#*#|Source EUI (kBtu/ft2)|#*#|Weather Normalized Source EUI (kBtu/ft2)|#*#|National Median Source EUI (kBtu/ft2)|#*#|Parking - Gross Floor Area (ft2)|#*#|Organization|#*#|Generation Date|#*#|Release Date"  # NOQA
 
         import_file = ImportFile.objects.get(pk=self.import_file.pk)
         first_row = import_file.cached_first_row
