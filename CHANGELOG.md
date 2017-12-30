@@ -1,39 +1,18 @@
 # SEED Version 2.3
 
-Closed Issues: 11
+Closed Issues: 5
 - Fixed [#148]( https://github.com/SEED-platform/seed/issues/148 ), For PM mapping, add feature to remember user defined mappings
 - Fixed [#1238]( https://github.com/SEED-platform/seed/issues/1238 ), Add option in mapping to map all fields to original file field names
 - Fixed [#1298]( https://github.com/SEED-platform/seed/issues/1298 ), Add Import Date as a viewable field in List and Detail view
-- Fixed [#1363]( https://github.com/SEED-platform/seed/issues/1363 ), DQ Check - Add export to Inventory DQ Results modal
-- Fixed [#1397]( https://github.com/SEED-platform/seed/issues/1397 ), DQ Admin: add indication of field source (tax lot or property)
-- Fixed [#1398]( https://github.com/SEED-platform/seed/issues/1398 ), DQ: Add labels for exported records
-- Fixed [#1404]( https://github.com/SEED-platform/seed/issues/1404 ), Inventory Detail - Related Properties - need to display more fields
-- Fixed [#1439]( https://github.com/SEED-platform/seed/issues/1439 ), Strftime fails for buildings older than 1900
 - Fixed [#1499]( https://github.com/SEED-platform/seed/issues/1499 ), Functionality different between two servers with same deployment
 - Fixed [#1501]( https://github.com/SEED-platform/seed/issues/1501 ), migrate django password reset to class based views
-- Fixed [#1503]( https://github.com/SEED-platform/seed/issues/1503 ), Password reset not working
 
-Accepted Pull Requests: 32
-- Fixed [#1468]( https://github.com/SEED-platform/seed/pull/1468 ), Add PUT function for PropertyState via BuildingSync
-- Fixed [#1479]( https://github.com/SEED-platform/seed/pull/1479 ), Disable all client-side caching when the dev profile is used
-- Fixed [#1481]( https://github.com/SEED-platform/seed/pull/1481 ), Hides `*_pint` columns in Property List Settings view
-- Fixed [#1482]( https://github.com/SEED-platform/seed/pull/1482 ), rip out projects
-- Fixed [#1483]( https://github.com/SEED-platform/seed/pull/1483 ), Added `Custom ID 1` field for Related Properties
-- Fixed [#1484]( https://github.com/SEED-platform/seed/pull/1484 ), Added a mapping button to `Map SEED fields to imported file fields`
-- Fixed [#1485]( https://github.com/SEED-platform/seed/pull/1485 ), Fix backup script
-- Fixed [#1486]( https://github.com/SEED-platform/seed/pull/1486 ), Upgrade to Django 1.11
-- Fixed [#1487]( https://github.com/SEED-platform/seed/pull/1487 ), Improved Column Saving
-- Fixed [#1489]( https://github.com/SEED-platform/seed/pull/1489 ), 1488 data quality results
-- Fixed [#1490]( https://github.com/SEED-platform/seed/pull/1490 ), Export DQ from Inventory
+Accepted Pull Requests: 15
 - Fixed [#1491]( https://github.com/SEED-platform/seed/pull/1491 ), BRICR Support - BuildingSync, Measures, Scenarios, etc.
 - Fixed [#1492]( https://github.com/SEED-platform/seed/pull/1492 ), OGBS - French (Canada) localization
-- Fixed [#1493]( https://github.com/SEED-platform/seed/pull/1493 ), Removes node_modules from fine-uploader after building
-- Fixed [#1496]( https://github.com/SEED-platform/seed/pull/1496 ), Label export
-- Fixed [#1500]( https://github.com/SEED-platform/seed/pull/1500 ), Default logging
-- Fixed [#1502]( https://github.com/SEED-platform/seed/pull/1502 ), Fix password reset
-- Fixed [#1504]( https://github.com/SEED-platform/seed/pull/1504 ), Pass organization ID to DQ CSV download
+- Fixed [#1507]( https://github.com/SEED-platform/seed/pull/1507 ), removing instruction to python setup.py install
 - Fixed [#1514]( https://github.com/SEED-platform/seed/pull/1514 ), Simplify API auth docs
-- Fixed [#1515]( https://github.com/SEED-platform/seed/pull/1515 ), 1298 import date field
+- Fixed [#1515]( https://github.com/SEED-platform/seed/pull/1515 ), Import date field
 - Fixed [#1516]( https://github.com/SEED-platform/seed/pull/1516 ), HPXML Integration
 - Fixed [#1517]( https://github.com/SEED-platform/seed/pull/1517 ), Bricr buildingsync upload
 - Fixed [#1518]( https://github.com/SEED-platform/seed/pull/1518 ), Tightens up check for whether celery's running in dev
