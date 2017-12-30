@@ -213,7 +213,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        * save_map_match_PM_data: saves, maps, and matches PM data
        *
        * @param {string} file_id: the id of the import file
-       * @param {string} cycle_id: the id of the
+       * @param {string} cycle_id: the id of the cycle
        */
       var save_map_match_PM_data = function (file_id, cycle_id) {
         $scope.uploader.status_message = 'saving energy data';
