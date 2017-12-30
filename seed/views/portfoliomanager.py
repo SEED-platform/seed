@@ -33,6 +33,7 @@ class PortfolioManagerViewSet(GenericViewSet):
 
     @list_route(methods=['POST'])
     def template_list(self, request):
+
         if 'username' not in request.data:
             return JsonResponse('Invalid call to PM worker: missing username for PM account')
         if 'password' not in request.data:
@@ -45,6 +46,7 @@ class PortfolioManagerViewSet(GenericViewSet):
 
     @list_route(methods=['POST'])
     def report(self, request):
+
         if 'username' not in request.data:
             return JsonResponse('Invalid call to PM worker: missing username for PM account')
         if 'password' not in request.data:

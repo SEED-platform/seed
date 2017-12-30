@@ -300,28 +300,34 @@ class LocalUploaderViewSet(viewsets.ViewSet):
         if not os.path.exists(os.path.dirname(path)):
             os.makedirs(os.path.dirname(path))
 
-        # TODO: What all keys should we process from PM?
+        # This list should cover the core keys coming from PM, ensuring that they map easily
+        # We will also look for keys not in this list and just map them to themselves
         pm_key_to_column_heading_map = {
-            'address_1': 'Address',
-            'city': 'City',
-            'state_province': 'State',
-            'postal_code': 'Zip',
-            'county': 'County',
-            'country': 'Country',
-            'property_name': 'Property Name',
-            'property_id': 'Property ID',
-            'year_built': 'Year Built',
-            'energy_score': 'energy_score',
-            'site_eui': 'site_eui',
-            'generation_date': 'generation_date',
-            'release_date': 'release_date',
-            'source_eui_weather_normalized': 'source_eui_weather_normalized',
-            'site_eui_weather_normalized': 'site_eui_weather_normalized',
-            'source_eui': 'source_eui',
-            'energy_alerts': 'energy_alerts',
-            'space_alerts': 'space_alerts',
-            'building_certification': 'building_certification'
+            u'address_1': u'Address',
+            u'city': u'City',
+            u'state_province': u'State',
+            u'postal_code': u'Zip',
+            u'county': u'County',
+            u'country': u'Country',
+            u'property_name': u'Property Name',
+            u'property_id': u'Property ID',
+            u'year_built': u'Year Built',
         }
+
+        # We will also create a list of values that are used in PM export to indicate a value wasn't available
+        # When we import them into SEED here we will be sure to not write those values
+        pm_flagged_bad_string_values = [
+            u'Not Available',
+            u'Unable to Check (not enough data)',
+            u'No Current Year Ending Date',
+        ]
+
+        # We will make a pass through the first property to get the list of unexpected keys
+        for pm_property in request.data['properties']:
+            for pm_key_name, _ in pm_property.iteritems():
+                if pm_key_name not in pm_key_to_column_heading_map:
+                    pm_key_to_column_heading_map[pm_key_name] = pm_key_name
+            break
 
         # Create the header row of the csv file first
         rows = []
@@ -346,10 +352,16 @@ class LocalUploaderViewSet(viewsets.ViewSet):
                     # If so, create a convenience variable to store it
                     this_pm_variable = pm_property[pm_variable]
 
-                    # Next we need to check type.  If it is a string, just add it directly
+                    # Next we need to check type.  If it is a string, we will add it here to avoid parsing numerics
+                    # However, we need to be sure to not add the flagged bad strings.
+                    # However, a flagged value *could* be a value property name, and we would want to allow that
                     if isinstance(this_pm_variable, basestring):
-                        this_row.append(this_pm_variable)
-                        added = True
+                        if pm_variable == u'property_name':
+                            this_row.append(this_pm_variable)
+                            added = True
+                        elif this_pm_variable not in pm_flagged_bad_string_values:
+                            this_row.append(this_pm_variable)
+                            added = True
 
                     # If it isn't a string, it should be a dictionary, storing numeric data and units, etc.
                     else:
@@ -367,7 +379,7 @@ class LocalUploaderViewSet(viewsets.ViewSet):
 
                 # And finally, if we haven't set the added flag, give the csv column a blank value
                 if not added:
-                    this_row.append('')
+                    this_row.append(u'')
 
             # Then add this property row of data
             rows.append(this_row)
