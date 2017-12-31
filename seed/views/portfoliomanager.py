@@ -19,6 +19,7 @@ from django.http import JsonResponse
 from rest_framework.serializers import Serializer
 from rest_framework.decorators import list_route
 from rest_framework.viewsets import GenericViewSet
+from rest_framework import status
 
 _log = logging.getLogger(__name__)
 
@@ -28,16 +29,21 @@ class PortfolioManagerSerializer(Serializer):
 
 
 class PortfolioManagerViewSet(GenericViewSet):
-
     serializer_class = PortfolioManagerSerializer
 
     @list_route(methods=['POST'])
     def template_list(self, request):
 
         if 'username' not in request.data:
-            return JsonResponse('Invalid call to PM worker: missing username for PM account')
+            return JsonResponse(
+                {'status': 'error', 'message': 'Invalid call to PM worker: missing username for PM account'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         if 'password' not in request.data:
-            return JsonResponse('Invalid call to PM worker: missing password for PM account')
+            return JsonResponse(
+                {'status': 'error', 'message': 'Invalid call to PM worker: missing password for PM account'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         username = request.data['username']
         password = request.data['password']
         pm = PortfolioManagerImport(username, password)
@@ -48,11 +54,20 @@ class PortfolioManagerViewSet(GenericViewSet):
     def report(self, request):
 
         if 'username' not in request.data:
-            return JsonResponse('Invalid call to PM worker: missing username for PM account')
+            return JsonResponse(
+                {'status': 'error', 'message': 'Invalid call to PM worker: missing username for PM account'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         if 'password' not in request.data:
-            return JsonResponse('Invalid call to PM worker: missing password for PM account')
+            return JsonResponse(
+                {'status': 'error', 'message': 'Invalid call to PM worker: missing password for PM account'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         if 'template' not in request.data:
-            return JsonResponse('Invalid call to PM worker: missing template for PM account')
+            return JsonResponse(
+                {'status': 'error', 'message': 'Invalid call to PM worker: missing template for PM account'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         username = request.data['username']
         password = request.data['password']
         template = request.data['template']
@@ -60,25 +75,20 @@ class PortfolioManagerViewSet(GenericViewSet):
         content = pm.generate_and_download_template_report(template)
         try:
             content_object = xmltodict.parse(content)
-        except Exception:  # xmltodict doesn't specify a class of Exceptions, so I'm not sure what all to catch here
+        except Exception:  # catch all because xmltodict doesn't specify a class of Exceptions (just ParsingInterrupted)
             return JsonResponse({'status': 'error', 'message': 'Malformed XML from template download'}, status=500)
-        success = True
-        if 'report' not in content_object:
-            success = False
-        if 'informationAndMetrics' not in content_object['report']:
-            success = False
-        if 'row' not in content_object['report']['informationAndMetrics']:
-            success = False
-        if not success:
-            return JsonResponse({'status': 'error',
-                                 'message': 'Template XML response was properly formatted but missing expected keys.'},
-                                status=500)
-        properties = content_object['report']['informationAndMetrics']['row']
+        try:
+            properties = content_object['report']['informationAndMetrics']['row']
+        except KeyError:
+            return JsonResponse(
+                {'status': 'error', 'message': 'Template XML was properly formatted but missing expected keys.'},
+                status=500
+            )
+
         return JsonResponse({'status': 'success', 'properties': properties})
 
 
 class PortfolioManagerImport(object):
-
     def __init__(self, m_username, m_password):
 
         # store the original, unmodified versions -- DO NOT ENCODE THESE
