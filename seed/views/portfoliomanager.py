@@ -16,15 +16,18 @@ import urllib
 import requests
 import xmltodict
 from django.http import JsonResponse
-from rest_framework.serializers import Serializer
 from rest_framework.decorators import list_route
 from rest_framework.viewsets import GenericViewSet
-from rest_framework import status
+from rest_framework import serializers, status
 
 _log = logging.getLogger(__name__)
 
 
-class PortfolioManagerSerializer(Serializer):
+class PMExcept(Exception):
+    pass
+
+
+class PortfolioManagerSerializer(serializers.Serializer):
     pass
 
 
@@ -47,7 +50,13 @@ class PortfolioManagerViewSet(GenericViewSet):
         username = request.data['username']
         password = request.data['password']
         pm = PortfolioManagerImport(username, password)
-        possible_templates = pm.get_list_of_report_templates()
+        try:
+            possible_templates = pm.get_list_of_report_templates()
+        except PMExcept as pme:
+            return JsonResponse(
+                {'status': 'error', 'message': pme.message},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         return JsonResponse({'status': 'success', 'templates': possible_templates})
 
     @list_route(methods=['POST'])
@@ -72,7 +81,13 @@ class PortfolioManagerViewSet(GenericViewSet):
         password = request.data['password']
         template = request.data['template']
         pm = PortfolioManagerImport(username, password)
-        content = pm.generate_and_download_template_report(template)
+        try:
+            content = pm.generate_and_download_template_report(template)
+        except PMExcept as pme:
+            return JsonResponse(
+                {'status': 'error', 'message': pme.message},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         try:
             content_object = xmltodict.parse(content)
         except Exception:  # catch all because xmltodict doesn't specify a class of Exceptions (just ParsingInterrupted)
@@ -106,14 +121,14 @@ class PortfolioManagerImport(object):
 
         # This returns a 200 even if the credentials are bad, so I'm having to check some text in the response
         if 'The username and/or password you entered is not correct. Please try again.' in response.content:
-            raise Exception("Unsuccessful response from login attempt; aborting.  Check credentials.")
+            raise PMExcept("Unsuccessful response from login attempt; aborting.  Check credentials.")
 
         # Upon successful logging in, we should have received a cookie header that we can reuse later
         if 'Cookie' not in response.request.headers:
-            raise Exception("Could not find Cookie key in response headers; aborting.")
+            raise PMExcept("Could not find Cookie key in response headers; aborting.")
         cookie_header = response.request.headers['Cookie']
         if '=' not in cookie_header:
-            raise Exception("Malformed Cookie key in response headers; aborting.")
+            raise PMExcept("Malformed Cookie key in response headers; aborting.")
         cookie = cookie_header.split('=')[1]
         _log.debug("Logged in and received cookie: " + cookie)
 
@@ -132,16 +147,16 @@ class PortfolioManagerImport(object):
         url = "https://portfoliomanager.energystar.gov/pm/reports/templateTableRows"
         response = requests.get(url, headers=self.authenticated_headers)
         if not response.status_code == 200:
-            raise Exception("Unsuccessful response from report template rows query; aborting.")
+            raise PMExcept("Unsuccessful response from report template rows query; aborting.")
         try:
             template_object = json.loads(response.text)
         except ValueError:
-            raise Exception("Malformed JSON response from report template rows query; aborting.")
+            raise PMExcept("Malformed JSON response from report template rows query; aborting.")
         _log.debug("Received the following JSON return: " + json.dumps(template_object, indent=2))
 
         # We need to parse the list of report templates
         if 'rows' not in template_object:
-            raise Exception("Could not find rows key in template response; aborting.")
+            raise PMExcept("Could not find rows key in template response; aborting.")
         templates = template_object["rows"]
         for t in templates:
             _log.debug("Found template,\n id=" + str(t["id"]) + "\n name=" + str(t["name"]))
@@ -154,7 +169,7 @@ class PortfolioManagerImport(object):
         # Then we need to pick a single report template by name, eventually this is defined by the PM user
         matched_template = next((t for t in templates if t["name"] == template_name), None)
         if not matched_template:
-            raise Exception("Could not find a matching template for this name, try a different name")
+            raise PMExcept("Could not find a matching template for this name, try a different name")
         _log.debug("Desired report name found, template info: " + json.dumps(matched_template, indent=2))
         return matched_template
 
@@ -169,7 +184,7 @@ class PortfolioManagerImport(object):
         generation_url = "https://portfoliomanager.energystar.gov/pm/reports/generateData/" + str(template_report_id)
         response = requests.post(generation_url, headers=self.authenticated_headers)
         if not response.status_code == 200:
-            raise Exception("Unsuccessful response from POST to trigger report generation; aborting.")
+            raise PMExcept("Unsuccessful response from POST to trigger report generation; aborting.")
         _log.debug("Triggered report generation,\n status code=" + str(
             response.status_code) + "\n response headers=" + str(
             response.headers))
@@ -182,11 +197,11 @@ class PortfolioManagerImport(object):
             attempt_count += 1
             response = requests.get(url, headers=self.authenticated_headers)
             if not response.status_code == 200:
-                raise Exception("Unsuccessful response from GET trying to check status on generated report; aborting.")
+                raise PMExcept("Unsuccessful response from GET trying to check status on generated report; aborting.")
             template_objects = json.loads(response.text)["rows"]
             this_matched_template = next((t for t in template_objects if t["id"] == matched_template["id"]), None)
             if not this_matched_template:
-                raise Exception("Couldn't find a match for this report template id...odd at this point")
+                raise PMExcept("Couldn't find a match for this report template id...odd at this point")
             if this_matched_template["pending"] == 1:
                 time.sleep(2)
                 continue
@@ -196,7 +211,7 @@ class PortfolioManagerImport(object):
         if report_generation_complete:
             _log.debug("Report appears to have been generated successfully (attempt_count=" + str(attempt_count) + ")")
         else:
-            raise Exception("Template report not generated successfully; aborting.")
+            raise PMExcept("Template report not generated successfully; aborting.")
 
         # Finally we can download the generated report
         template_report_name = urllib.quote(matched_template["name"]) + ".xml"
@@ -205,5 +220,5 @@ class PortfolioManagerImport(object):
         )
         response = requests.get(download_url, headers=self.authenticated_headers)
         if not response.status_code == 200:
-            raise Exception("Unsuccessful response from GET trying to download generated report; aborting.")
+            raise PMExcept("Unsuccessful response from GET trying to download generated report; aborting.")
         return response.content
