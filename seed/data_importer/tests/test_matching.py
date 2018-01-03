@@ -77,7 +77,7 @@ class TestMatching(DataMappingBaseTestCase):
         self.assertEqual(len(property_states), 0)
 
         # promote two properties
-        ps = PropertyState.objects.filter(custom_id_1='13')
+        ps = PropertyState.objects.filter(custom_id_1='13').order_by('id')
         ps_test = ps.first()
         ps_test_2 = ps.last()
         for p in ps:

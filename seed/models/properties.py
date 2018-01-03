@@ -9,6 +9,8 @@ from __future__ import unicode_literals
 import copy
 import logging
 import pdb
+import re
+from os import path
 
 from django.apps import apps
 from django.contrib.postgres.fields import JSONField
@@ -36,6 +38,7 @@ from seed.models import (
 from seed.utils.address import normalize_address_str
 from seed.utils.generic import split_model_fields, obj_to_dict
 from seed.utils.time import convert_datestr
+from seed.utils.time import convert_to_js_timestamp
 
 _log = logging.getLogger(__name__)
 
@@ -219,14 +222,14 @@ class PropertyState(models.Model):
         pvs = PropertyView.objects.filter(cycle=cycle, state=self)
 
         if len(pvs) == 0:
-            _log.debug("Found 0 PropertyViews, adding property, promoting")
+            # _log.debug("Found 0 PropertyViews, adding property, promoting")
             # There are no PropertyViews for this property state and cycle.
             # Most likely there is nothing to match right now, so just
             # promote it to the view
 
             # Need to create a property for this state
             if self.organization is None:
-                _log.debug("organization is None")
+                _log.warn("organization is None")
 
             if not self.organization:
                 pdb.set_trace()
@@ -236,7 +239,7 @@ class PropertyState(models.Model):
                     # should I validate this further?
                     prop = Property.objects.get(id=property_id)
                 except Property.DoesNotExist:
-                    _log.debug("Could not promote this property")
+                    _log.error("Could not promote this property")
                     return None
             else:
                 prop = Property.objects.create(organization=self.organization)
@@ -249,13 +252,13 @@ class PropertyState(models.Model):
 
             return pv
         elif len(pvs) == 1:
-            _log.debug("Found 1 PropertyView... Nothing to do")
+            # _log.debug("Found 1 PropertyView... Nothing to do")
             # PropertyView already exists for cycle and state. Nothing to do.
 
             return pvs[0]
         else:
-            _log.debug("Found %s PropertyView" % len(pvs))
-            _log.debug("This should never occur, famous last words?")
+            _log.error("Found %s PropertyView" % len(pvs))
+            _log.error("This should never occur, famous last words?")
 
             return None
 
@@ -320,6 +323,116 @@ class PropertyState(models.Model):
             self.normalized_address = None
 
         return super(PropertyState, self).save(*args, **kwargs)
+
+    def history(self):
+        """
+        Return the history of the property state by parsing through the auditlog. Returns only the ids
+        of the parent states and some descriptions.
+
+              master
+              /   \
+             /     \
+          parent1  parent2
+
+        In the records, parent2 is most recent, so make sure to navigate parent two first since we
+        are returning the data in reverse over (that is most recent changes first)
+
+        :return: list, history as a list, and the master record
+        """
+
+        """Return history in reverse order."""
+        history = []
+        master = {
+            'state_id': self.id,
+            'state_data': self,
+            'date_edited': None,
+        }
+
+        def record_dict(log):
+            filename = None if not log.import_filename else path.basename(log.import_filename)
+            if filename:
+                # Attempt to remove NamedTemporaryFile suffix
+                name, ext = path.splitext(filename)
+                pattern = re.compile('(.*?)(_[a-zA-Z0-9]{7})$')
+                match = pattern.match(name)
+                if match:
+                    filename = match.groups()[0] + ext
+            return {
+                'state_id': log.state.id,
+                'state_data': log.state,
+                'date_edited': convert_to_js_timestamp(log.created),
+                'source': log.get_record_type_display(),
+                'filename': filename,
+                # 'changed_fields': json.loads(log.description) if log.record_type == AUDIT_USER_EDIT else None
+            }
+
+        log = PropertyAuditLog.objects.select_related('state', 'parent1', 'parent2').filter(
+            state_id=self.id
+        ).order_by('-id').first()
+
+        if log:
+            master = {
+                'state_id': log.state.id,
+                'state_data': log.state,
+                'date_edited': convert_to_js_timestamp(log.created),
+            }
+
+            # Traverse parents and add to history
+            if log.name in ['Manual Match', 'System Match', 'Merge current state in migration']:
+                done_searching = False
+
+                while not done_searching:
+                    # if there is no parents, then break out immediately
+                    if (log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
+                        break
+
+                    # initalize the tree to None everytime. If not new tree is found, then we will not iterate
+                    tree = None
+
+                    # Check if parent2 has any other parents or is the original import creation. Start with parent2
+                    # because parent2 will be the most recent import file.
+                    if log.parent2:
+                        if log.parent2.name in ['Import Creation', 'Manual Edit']:
+                            record = record_dict(log.parent2)
+                            history.append(record)
+                        elif log.parent2.name == 'System Match' and log.parent2.parent1.name == 'Import Creation' and \
+                                log.parent2.parent2.name == 'Import Creation':
+                            # Handle case where an import file matches within itself, and proceeds to match with
+                            # existing records
+                            record = record_dict(log.parent2.parent2)
+                            history.append(record)
+                            record = record_dict(log.parent2.parent1)
+                            history.append(record)
+                        else:
+                            tree = log.parent2
+
+                    if log.parent1:
+                        if log.parent1.name in ['Import Creation', 'Manual Edit']:
+                            record = record_dict(log.parent1)
+                            history.append(record)
+                        elif log.parent1.name == 'System Match' and log.parent1.parent1.name == 'Import Creation' and \
+                                log.parent1.parent2.name == 'Import Creation':
+                            # Handle case where an import file matches within itself, and proceeds to match with
+                            # existing records
+                            record = record_dict(log.parent1.parent2)
+                            history.append(record)
+                            record = record_dict(log.parent1.parent1)
+                            history.append(record)
+                        else:
+                            tree = log.parent1
+
+                    if not tree:
+                        done_searching = True
+                    else:
+                        log = tree
+            elif log.name == 'Manual Edit':
+                record = record_dict(log.parent1)
+                history.append(record)
+            elif log.name == 'Import Creation':
+                record = record_dict(log)
+                history.append(record)
+
+        return history, master
 
     @classmethod
     def coparent(cls, state_id):
@@ -435,7 +548,9 @@ class PropertyState(models.Model):
         ScenarioClass = apps.get_model('seed', 'Scenario')
         PropertyMeasureClass = apps.get_model('seed', 'PropertyMeasure')
 
-        # get some items off of this property view
+        # TODO: get some items off of this property view - labels and eventually notes
+
+        # collect the relationships
         no_measure_scenarios = [x for x in state2.scenarios.filter(measures__isnull=True)] + \
                                [x for x in state1.scenarios.filter(measures__isnull=True)]
         building_files = [x for x in state2.building_files.all()] + [x for x in state1.building_files.all()]
