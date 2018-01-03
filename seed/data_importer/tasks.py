@@ -465,7 +465,7 @@ def _map_data(import_file_id, mark_as_done):
     :param mark_as_done: bool, tell finish_mapping that import_file.mapping_done is True
     :return:
     """
-    _log.debug("Starting to map the data")
+    # _log.debug("Starting to map the data")
     prog_key = get_prog_key('map_data', import_file_id)
     import_file = ImportFile.objects.get(pk=import_file_id)
 
@@ -639,7 +639,7 @@ def _save_raw_data_chunk(chunk, file_pk, prog_key, increment):
 
     # Indicate progress
     increment_cache(prog_key, increment)
-    _log.debug('Returning from _save_raw_data_chunk')
+    # _log.debug('Returning from _save_raw_data_chunk')
 
     return True
 
@@ -662,7 +662,6 @@ def finish_raw_save(file_pk):
         'progress_key': prog_key
     }
     set_cache(prog_key, result['status'], result)
-    _log.debug('Returning from finish_raw_save')
     return result
 
 
@@ -677,7 +676,7 @@ def cache_first_rows(import_file, parser):
     first_row = parser.headers
     first_five_rows = parser.first_five_rows
 
-    _log.debug(first_five_rows)
+    # _log.debug(first_five_rows)
 
     import_file.cached_second_to_fifth_row = "\n".join(first_five_rows)
     if first_row:
@@ -735,14 +734,12 @@ def _save_raw_data(file_pk, *args, **kwargs):
 
     """Chunk up the CSV or XLSX file and save the raw data into the DB PropertyState table."""
     prog_key = get_prog_key('save_raw_data', file_pk)
-    _log.debug("Current cache state")
     current_cache = get_cache(prog_key)
-    _log.debug(current_cache)
-    # time.sleep(2)  # NL: yuck
+    # _log.debug("Cache state: {}".format(current_cache))
     result = current_cache
 
     try:
-        _log.debug('Attempting to access import_file')
+        # _log.debug('Attempting to access import_file')
         import_file = ImportFile.objects.get(pk=file_pk)
         if import_file.raw_save_done:
             result['status'] = 'warning'
@@ -769,18 +766,18 @@ def _save_raw_data(file_pk, *args, **kwargs):
         tasks = [_save_raw_data_chunk.s(chunk, file_pk, prog_key, increment)
                  for chunk in chunks]
 
-        _log.debug('Appended all tasks')
+        # _log.debug('Appended all tasks')
         import_file.save()
-        _log.debug('Saved import_file')
+        # _log.debug('Saved import_file')
 
         if tasks:
-            _log.debug('Adding chord to queue')
+            # _log.debug('Adding chord to queue')
             chord(tasks, interval=15)(finish_raw_save.si(file_pk))
         else:
-            _log.debug('Skipped chord')
+            # _log.debug('Skipped chord')
             finish_raw_save.s(file_pk)
 
-        _log.debug('Finished raw save tasks')
+        # _log.debug('Finished raw save tasks')
         result = get_cache(prog_key)
     except StopIteration:
         result['status'] = 'error'
@@ -800,8 +797,8 @@ def _save_raw_data(file_pk, *args, **kwargs):
         result['stacktrace'] = traceback.format_exc()
 
     set_cache(prog_key, result['status'], result)
-    _log.debug('Returning from end of _save_raw_data with state:')
-    _log.debug(result)
+    # _log.debug('Returning from end of _save_raw_data with state: {}'.format(result))
+
     return result
 
 
@@ -814,7 +811,6 @@ def save_raw_data(file_pk, *args, **kwargs):
     :param file_pk: ImportFile Primary Key
     :return: Dict, from cache, containing the progress key to track
     """
-    _log.debug('In save_raw_data')
 
     prog_key = get_prog_key('save_raw_data', file_pk)
     initializing_key = {
@@ -824,9 +820,8 @@ def save_raw_data(file_pk, *args, **kwargs):
     }
     set_cache(prog_key, initializing_key['status'], initializing_key)
     _save_raw_data.delay(file_pk)
-    _log.debug('Returning from save_raw_data')
-    result = get_cache(prog_key)
-    return result
+
+    return get_cache(prog_key)
 
 
 @shared_task
@@ -1197,7 +1192,7 @@ def match_and_merge_unmatched_objects(unmatched_states, partitioner):
     :param partitioner: instance of EquivalencePartitioner
     :return: [list, list], merged_objects, equivalence_classes keys
     """
-    _log.debug("Starting to map_and_merge_unmatched_objects")
+    # _log.debug("Starting to map_and_merge_unmatched_objects")
 
     # Sort unmatched states/This should not be happening!
     unmatched_states.sort(key=lambda state: state.pk)
@@ -1234,7 +1229,7 @@ def match_and_merge_unmatched_objects(unmatched_states, partitioner):
         else:
             merged_objects.append(merged_result)
 
-    _log.debug("DONE with map_and_merge_unmatched_objects")
+    # _log.debug("DONE with map_and_merge_unmatched_objects")
     return merged_objects, equivalence_classes.keys()
 
 
@@ -1468,7 +1463,7 @@ def list_canonical_property_states(org_id):
     pvs = PropertyView.objects.filter(
         state__organization=org_id,
         state__data_state__in=[DATA_STATE_MATCHING]
-    ).select_related('state')
+    ).select_related('state').order_by('state__id')
 
     ids = [p.state.id for p in pvs]
     return PropertyState.objects.filter(pk__in=ids)
@@ -1507,7 +1502,7 @@ def query_property_matches(properties, pm_id, custom_id, ubid):
         # Return an empty QuerySet if we don't have any params.
         return properties.none()
 
-    return properties.filter(reduce(operator.or_, params))
+    return properties.filter(reduce(operator.or_, params)).order_by('id')
 
 
 def save_state_match(state1, state2):

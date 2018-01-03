@@ -784,6 +784,7 @@ class ImportFileViewSet(viewsets.ViewSet):
         """
         state_model = PropertyState if inventory_type == 'properties' else TaxLotState
 
+        # TODO: convert coparent to instance method, not class method
         audit_entry, audit_count = state_model.coparent(state_id)
 
         if audit_count == 0:
