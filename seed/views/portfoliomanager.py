@@ -117,7 +117,10 @@ class PortfolioManagerImport(object):
         # First we need to log in to Portfolio Manager
         login_url = "https://portfoliomanager.energystar.gov/pm/j_spring_security_check"
         payload = {"j_username": self.username, "j_password": self.password}
-        response = requests.post(login_url, data=payload)
+        try:
+            response = requests.post(login_url, data=payload)
+        except requests.exceptions.SSLError:
+            raise PMExcept("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
 
         # This returns a 200 even if the credentials are bad, so I'm having to check some text in the response
         if 'The username and/or password you entered is not correct. Please try again.' in response.content:
@@ -145,7 +148,10 @@ class PortfolioManagerImport(object):
 
         # Get the report templates
         url = "https://portfoliomanager.energystar.gov/pm/reports/templateTableRows"
-        response = requests.get(url, headers=self.authenticated_headers)
+        try:
+            response = requests.get(url, headers=self.authenticated_headers)
+        except requests.exceptions.SSLError:
+            raise PMExcept("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
         if not response.status_code == 200:
             raise PMExcept("Unsuccessful response from report template rows query; aborting.")
         try:
@@ -182,7 +188,10 @@ class PortfolioManagerImport(object):
         # We should then trigger generation of the report we selected
         template_report_id = matched_template["id"]
         generation_url = "https://portfoliomanager.energystar.gov/pm/reports/generateData/" + str(template_report_id)
-        response = requests.post(generation_url, headers=self.authenticated_headers)
+        try:
+            response = requests.post(generation_url, headers=self.authenticated_headers)
+        except requests.exceptions.SSLError:
+            raise PMExcept("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
         if not response.status_code == 200:
             raise PMExcept("Unsuccessful response from POST to trigger report generation; aborting.")
         _log.debug("Triggered report generation,\n status code=" + str(
@@ -195,7 +204,10 @@ class PortfolioManagerImport(object):
         report_generation_complete = False
         while attempt_count < 10:
             attempt_count += 1
-            response = requests.get(url, headers=self.authenticated_headers)
+            try:
+                response = requests.get(url, headers=self.authenticated_headers)
+            except requests.exceptions.SSLError:
+                raise PMExcept("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
             if not response.status_code == 200:
                 raise PMExcept("Unsuccessful response from GET trying to check status on generated report; aborting.")
             template_objects = json.loads(response.text)["rows"]
@@ -218,7 +230,10 @@ class PortfolioManagerImport(object):
         download_url = "https://portfoliomanager.energystar.gov/pm/reports/template/download/%s/XML/false/%s" % (
             str(template_report_id), template_report_name
         )
-        response = requests.get(download_url, headers=self.authenticated_headers)
+        try:
+            response = requests.get(download_url, headers=self.authenticated_headers)
+        except requests.exceptions.SSLError:
+            raise PMExcept("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
         if not response.status_code == 200:
             raise PMExcept("Unsuccessful response from GET trying to download generated report; aborting.")
         return response.content
