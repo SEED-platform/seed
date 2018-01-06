@@ -38,7 +38,6 @@ class MappingData(object):
         self.property_state_data = []
         self.tax_lot_state_data = []
 
-
         for f in PropertyState._meta.fields:
             if f.name not in exclude_fields:
                 column = {
@@ -227,7 +226,6 @@ class MappingData(object):
 
         self.tax_lot_state_data = sorted([x for x in self.data if x['table'] == 'TaxLotState'],
                                          key=lambda k: (k['table'].lower(), k['name']))
-
 
     def find_column(self, table_name, column_name):
         """

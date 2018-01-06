@@ -458,16 +458,16 @@ class Column(models.Model):
                                                         table_name=model_obj.__class__.__name__)
                         for c in columns:
                             if not ColumnMapping.objects.filter(
-                                Q(column_raw=c) | Q(column_mapped=c)).exists():
+                                    Q(column_raw=c) | Q(column_mapped=c)).exists():
                                 _log.debug("Deleting column object {}".format(c.column_name))
                                 c.delete()
 
                         # Check if there are more than one column still
                         if Column.objects.filter(
-                            column_name=key[:511],
-                            is_extra_data=is_extra_data,
-                            organization=model_obj.organization,
-                            table_name=model_obj.__class__.__name__).count() > 1:
+                                column_name=key[:511],
+                                is_extra_data=is_extra_data,
+                                organization=model_obj.organization,
+                                table_name=model_obj.__class__.__name__).count() > 1:
                             raise Exception(
                                 "Could not fix duplicate columns for {}. Contact dev team").format(
                                 key)
