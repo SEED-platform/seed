@@ -35,10 +35,12 @@
                         <tr>
                             <th colspan="2" class="condensed_head" translate>SHARE DATA WITH</th>
                             <th></th>
+                            <th></th>
                         </tr>
                         <tr>
                             <th class="condensed_head" translate>INTERNAL</th>
                             <th class="condensed_head" translate>PUBLIC</th>
+                            <th translate>Table Name</th>
                             <th translate>Field Name</th>
                         </tr>
                         <tr class="sub_head">
@@ -48,12 +50,19 @@
                             <th class="sub_head check is_aligned_center condensed_head">
                                 <input type="checkbox" ng-model="controls.public_select_all" ng-change="select_all_clicked('public')">
                             </th>
+                            <th class="sub_head" style="width: 235px;">
+                                <input type="text"
+                                     class="form-control input-sm"
+                                     ng-model="filter_params.table"
+                                     placeholder="{$:: 'Search table name' | translate $}"
+                                     ng-class="{active: filter_params.table.length > 0}">
+                            </th>
                             <th class="sub_head">
                               <input type="text"
                                      class="form-control input-sm"
-                                     ng-model="filter_params.title"
+                                     ng-model="filter_params.displayName"
                                      placeholder="{$:: 'Search field name' | translate $}"
-                                     ng-class="{active: filter_params.title.length > 0}">
+                                     ng-class="{active: filter_params.displayName.length > 0}">
                             </th>
                         </tr>
                     </thead>
@@ -68,8 +77,11 @@
                                 <td class="check is_aligned_center" style="width: 70px;">
                                     <input type="checkbox" ng-model="field.public_checked">
                                 </td>
+                                <td style="width: 235px;">
+                                    <span>{$:: field.table | translate $}</span>
+                                </td>
                                 <td>
-                                    <span>{$:: field.title | translate $}</span>
+                                    <span>{$:: field.displayName | translate $}</span>
                                 </td>
                             </tr>
                         </tbody>

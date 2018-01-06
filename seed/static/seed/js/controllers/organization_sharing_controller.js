@@ -19,7 +19,7 @@ angular.module('BE.seed.controller.organization_sharing', []).controller('organi
             auth_payload,
             organization_service,
             $filter) {
-    $scope.fields = all_columns.fields;
+    $scope.fields = all_columns.columns;
     $scope.org = organization_payload.organization;
     $scope.filter_params = {};
     $scope.org.query_threshold = query_threshold_payload.query_threshold;
