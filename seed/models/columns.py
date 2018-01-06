@@ -643,8 +643,7 @@ class Column(models.Model):
             while any(col['name'] == name and col['table'] != table for col in columns):
                 name += '_extra'
 
-            # TODO: need to check if the column name is already in the list and if it is then
-            # overwrite the data
+            # TODO: need to check if the column name is already in the list and if it is then overwrite the data
 
             columns.append(
                 {
