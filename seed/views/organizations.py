@@ -32,7 +32,6 @@ from seed.lib.superperms.orgs.models import (
 from seed.models import Cycle, PropertyView, TaxLotView, Column
 from seed.public.models import INTERNAL, PUBLIC, SharedBuildingField
 from seed.utils.api import api_endpoint_class
-from seed.utils.buildings import get_columns as utils_get_columns
 from seed.utils.organizations import create_organization
 
 
@@ -336,12 +335,12 @@ class OrganizationViewSet(viewsets.ViewSet):
                 'message': 'organization does not exist'
             }, status=status.HTTP_404_NOT_FOUND)
         if (
-                not request.user.is_superuser and
-                not OrganizationUser.objects.filter(
-                    user=request.user,
-                    organization=org,
-                    role_level__in=[ROLE_OWNER, ROLE_MEMBER, ROLE_VIEWER]
-                ).exists()
+            not request.user.is_superuser and
+            not OrganizationUser.objects.filter(
+                user=request.user,
+                organization=org,
+                role_level__in=[ROLE_OWNER, ROLE_MEMBER, ROLE_VIEWER]
+            ).exists()
         ):
             # TODO: better permission and return 401 or 403
             return JsonResponse({
@@ -606,15 +605,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         org.save()
 
         # Update the selected exportable fields.
-        new_fields = posted_org.get('fields', None)
         new_pub_fields = posted_org.get('public_fields', None)
-        if new_fields is not None:
-            old_fields = SharedBuildingField.objects.filter(
-                org=org, field_type=INTERNAL
-            ).select_related('field')
-
-            _save_fields(org, new_fields, old_fields)
-
         if new_pub_fields is not None:
             old_pub_fields = Column.objects.filter(organization=org, shared_field_type=Column.SHARED_NONE)
 
@@ -662,8 +653,8 @@ class OrganizationViewSet(viewsets.ViewSet):
     @detail_route(methods=['GET'])
     def shared_fields(self, request, pk=None):
         """
-        Retrieves all fields marked as shared for this org tree.
-        DANGER!  Currently broken due to class attribute name in the body, do not use!
+        Retrieves all fields marked as shared for the organization. Will only return used fields.
+
         ---
         parameter_strategy: replace
         parameters:
@@ -674,29 +665,20 @@ class OrganizationViewSet(viewsets.ViewSet):
               paramType: path
         response_serializer: SharedFieldsActualReturnSerializer
         """
-        org_id = pk
-        org = Organization.objects.get(pk=org_id)
-
-        result = {'status': 'success',
-                  'shared_fields': [],
-                  'public_fields': []}
-        columns = utils_get_columns(org_id, True)['fields']
-        columns = {
-            field['sort_column']: field for field in columns
+        result = {
+            'status': 'success',
+            'public_fields': []
         }
 
-        for exportable_field in SharedBuildingField.objects.filter(
-            org=org, field_type=INTERNAL
-        ).select_related('field'):
-            field_name = exportable_field.field.name
-            shared_field = columns[field_name]
-            result['shared_fields'].append(shared_field)
-        for exportable_field in SharedBuildingField.objects.filter(
-            org=org, field_type=PUBLIC
-        ).select_related('field'):
-            field_name = exportable_field.field.name
-            shared_field = columns[field_name]
-            result['public_fields'].append(shared_field)
+        columns = Column.retrieve_all(pk, 'property', True)
+        for c in columns:
+            if c['sharedFieldType'] == 'Public':
+                new_column = {
+                    'table': c['table'],
+                    'name': c['name'],
+                    'display_name': c['displayName']
+                }
+                result['public_fields'].append(new_column)
 
         return JsonResponse(result)
 

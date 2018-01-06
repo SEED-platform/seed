@@ -72,6 +72,7 @@ def get_search_query(user, params):
     return buildings_queryset
 
 
+# TODO: 1/5/2017 Remove -- not used anymore. Use Column.retrieve_all(...)
 def get_columns(org_id, all_fields=False):
     """
     Get default columns, to be overridden in future

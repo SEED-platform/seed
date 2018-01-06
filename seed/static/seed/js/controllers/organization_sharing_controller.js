@@ -41,18 +41,11 @@ angular.module('BE.seed.controller.organization_sharing', []).controller('organi
     $scope.select_all_clicked = function (type) {
       var fields = $filter('filter')($scope.fields, $scope.filter_params);
       fields = fields.map(function (f) {
-        return f.sort_column;
+        return f.name;
       });
-      if (type === 'internal') {
+      if (type === 'public') {
         $scope.fields = $scope.fields.map(function (f) {
-          if (_.includes(fields, f.sort_column)) {
-            f.checked = $scope.controls.select_all;
-          }
-          return f;
-        });
-      } else if (type === 'public') {
-        $scope.fields = $scope.fields.map(function (f) {
-          if (_.includes(fields, f.sort_column)) {
+          if (_.includes(fields, f.name)) {
             f.public_checked = $scope.controls.public_select_all;
           }
           return f;
@@ -64,9 +57,6 @@ angular.module('BE.seed.controller.organization_sharing', []).controller('organi
      * saves the updates settings
      */
     $scope.save_settings = function () {
-      $scope.org.fields = $scope.fields.filter(function (f) {
-        return f.checked;
-      });
       $scope.org.public_fields = $scope.fields.filter(function (f) {
         return f.public_checked;
       });
@@ -82,17 +72,11 @@ angular.module('BE.seed.controller.organization_sharing', []).controller('organi
      * - sets the checked shared fields
      */
     var init = function () {
-      var sort_columns = shared_fields_payload.shared_fields.map(function (f) {
-        return f.sort_column;
-      });
       var public_columns = shared_fields_payload.public_fields.map(function (f) {
-        return f.sort_column;
+        return f.name;
       });
       $scope.fields = $scope.fields.map(function (f) {
-        if (_.includes(sort_columns, f.sort_column)) {
-          f.checked = true;
-        }
-        if (_.includes(public_columns, f.sort_column)) {
+        if (_.includes(public_columns, f.name)) {
           f.public_checked = true;
         }
         return f;
