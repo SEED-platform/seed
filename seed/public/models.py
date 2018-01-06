@@ -22,6 +22,8 @@ FIELD_CHOICES = (
 )
 
 
+# TODO: REMOVE 1/5/2017
+
 class SharedBuildingField(TimeStampedModel):
     """BuildingSnapshot Exported Field, either public or internally shared."""
     org = models.ForeignKey(Organization)

@@ -99,8 +99,8 @@ class PropertyViewTests(TestCase):
         self.assertEqual(len(result['results']), 1)
         self.assertEqual(results['address_line_1'], state.address_line_1)
 
-        db_created_time = results['db_property_created']
-        db_updated_time = results['db_property_updated']
+        db_created_time = results['created']
+        db_updated_time = results['updated']
         self.assertTrue(db_created_time is not None)
         self.assertTrue(db_updated_time is not None)
 
@@ -124,7 +124,7 @@ class PropertyViewTests(TestCase):
         self.assertEqual(result['status'], 'success')
         self.assertEqual(result['state']['address_line_1'], '742 Evergreen Terrace')
         self.assertEqual(datetime.strptime(db_created_time, "%Y-%m-%dT%H:%M:%S.%fZ").replace(microsecond=0),
-                         datetime.strptime(result['property']['db_property_created'], "%Y-%m-%dT%H:%M:%S.%fZ").replace(
+                         datetime.strptime(result['property']['created'], "%Y-%m-%dT%H:%M:%S.%fZ").replace(
                              microsecond=0))
-        self.assertGreater(datetime.strptime(result['property']['db_property_updated'], "%Y-%m-%dT%H:%M:%S.%fZ"),
+        self.assertGreater(datetime.strptime(result['property']['updated'], "%Y-%m-%dT%H:%M:%S.%fZ"),
                            datetime.strptime(db_updated_time, "%Y-%m-%dT%H:%M:%S.%fZ"))

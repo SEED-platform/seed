@@ -29,7 +29,7 @@ from seed.lib.superperms.orgs.models import (
     Organization,
     OrganizationUser,
 )
-from seed.models import Cycle, PropertyView, TaxLotView
+from seed.models import Cycle, PropertyView, TaxLotView, Column
 from seed.public.models import INTERNAL, PUBLIC, SharedBuildingField
 from seed.utils.api import api_endpoint_class
 from seed.utils.buildings import get_columns as utils_get_columns
@@ -152,6 +152,7 @@ def _get_role_from_js(role):
 
 
 # TODO: Another reference to BuildingSnapshot
+# TODO: 1/5/2017 REMOVE!
 def _save_fields(org, new_fields, old_fields, is_public=False):
     """Save Building to be Shared."""
     old_fields_names = set(old_fields.values_list('field__name', flat=True))
@@ -615,9 +616,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             _save_fields(org, new_fields, old_fields)
 
         if new_pub_fields is not None:
-            old_pub_fields = SharedBuildingField.objects.filter(
-                org=org, field_type=PUBLIC
-            ).select_related('field')
+            old_pub_fields = Column.objects.filter(organization=org, shared_field_type=Column.SHARED_NONE)
 
             _save_fields(org, new_pub_fields, old_pub_fields, is_public=True)
 

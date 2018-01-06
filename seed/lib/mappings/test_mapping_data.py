@@ -28,7 +28,7 @@ class TestMappingData(TestCase):
         # _log.debug(json.dumps(self.obj.data, indent=4, sort_keys=True))
 
         # verify that the data loaded as expected
-        fake_data_0 = {
+        expected = {
             "js_type": u"",
             "name": "address_line_1",
             "schema": "BEDES",
@@ -36,9 +36,9 @@ class TestMappingData(TestCase):
             "type": u"CharField",
             "extra_data": False,
         }
-        self.assertDictEqual(fake_data_0, self.obj.data[0])
+        self.assertIn(expected, self.obj.data)
 
-        fake_data_last = {
+        expected = {
             "js_type": "",
             "name": "state",
             "schema": "BEDES",
@@ -46,8 +46,7 @@ class TestMappingData(TestCase):
             "type": "CharField",
             "extra_data": False,
         }
-        self.assertDictEqual(fake_data_last,
-                             self.obj.data[len(self.obj.data) - 1])
+        self.assertIn(expected, self.obj.data)
 
     def test_keys(self):
         d = self.obj.keys
@@ -107,6 +106,10 @@ class TestMappingData(TestCase):
             'analysis_end_time',
             'site_eui_modeled',
             'source_eui_modeled',
+            'updated',
+            'created',
+            'campus',
+            'parent_property',
         ]
 
         # remove or merge into above after we merge/rename 'release:use_pint'

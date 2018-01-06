@@ -16,14 +16,16 @@ from seed.utils.mapping import get_mappable_columns
 
 LINEAR_UNITS = {u'ft', u'm', u'in'}
 
-# TODO: Fix name of this method / remove if possible.
+# TODO: Fix name of this method / remove if possible. REMOVE 1/5/2017
 BuildingSnapshot_to_BuildingSnapshot = tuple([(k, k) for k in get_mappable_columns()])
 
 md = MappingData()
-property_state_fields = [x['name'] for x in md.property_data]
-tax_lot_state_fields = [x['name'] for x in md.tax_lot_data]
+property_state_fields = [x['name'] for x in md.property_state_data]
+tax_lot_state_fields = [x['name'] for x in md.tax_lot_state_data]
 
 PropertyState_to_PropertyState = tuple([(k, k) for k in property_state_fields])
+# print PropertyState_to_PropertyState
+# print BuildingSnapshot_to_BuildingSnapshot
 TaxLotState_to_TaxLotState = tuple([(k, k) for k in tax_lot_state_fields])
 
 _log = logging.getLogger(__name__)

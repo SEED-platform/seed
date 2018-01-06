@@ -115,12 +115,12 @@ class TaxLotProperty(models.Model):
             if lookups['obj_class'] == 'TaxLotView':
                 related_dict['campus'] = related_view.property.campus
                 # Do not make these timestamps naive. They persist correctly.
-                related_dict['db_property_updated'] = related_view.property.updated
-                related_dict['db_property_created'] = related_view.property.created
+                related_dict['updated'] = related_view.property.updated
+                related_dict['created'] = related_view.property.created
             elif lookups['obj_class'] == 'PropertyView':
                 # Do not make these timestamps naive. They persist correctly.
-                related_dict['db_taxlot_updated'] = related_view.taxlot.updated
-                related_dict['db_taxlot_created'] = related_view.taxlot.created
+                related_dict['updated'] = related_view.taxlot.updated
+                related_dict['created'] = related_view.taxlot.created
 
             # Add extra data fields right to this object.
             for extra_data_field, extra_data_value in related_view.state.extra_data.items():
@@ -236,12 +236,12 @@ class TaxLotProperty(models.Model):
             if lookups['obj_class'] == 'PropertyView':
                 obj_dict['campus'] = obj.property.campus
                 # Do not make these timestamps naive. They persist correctly.
-                obj_dict['db_property_updated'] = obj.property.updated
-                obj_dict['db_property_created'] = obj.property.created
+                obj_dict['created'] = obj.property.created
+                obj_dict['updated'] = obj.property.updated
             elif lookups['obj_class'] == 'TaxLotView':
                 # Do not make these timestamps naive. They persist correctly.
-                obj_dict['db_taxlot_updated'] = obj.taxlot.updated
-                obj_dict['db_taxlot_created'] = obj.taxlot.created
+                obj_dict['updated'] = obj.taxlot.updated
+                obj_dict['created'] = obj.taxlot.created
 
             # All the related tax lot states.
             obj_dict['related'] = join_map.get(obj.pk, [])

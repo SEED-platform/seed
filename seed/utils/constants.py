@@ -13,7 +13,6 @@ EXCLUDE_FIELDS = [
     'canonical_for_ds',
     'children',
     'confidence',
-    'created',
     'data_state',
     'duplicate',
     'extra_data',
@@ -594,49 +593,12 @@ VIEW_COLUMNS_PROPERTY = [
         'duplicateNameInOtherTable': True,
         'dbField': True,
     }, {
-        # INCOMPLETE, FIELD DOESN'T EXIST
-        'name': 'primary_tax_lot_id',
-        'table': None,
-        'displayName': 'Primary Tax Lot ID',
-        'dataType': 'string',
-        'type': 'number',
-        # 'dbField': False,
-    }, {
-        # FIELD DOESN'T EXIST
-        'name': 'calculated_taxlot_ids',
-        'table': None,
-        'displayName': 'Associated TaxLot IDs',
-        'dataType': 'string',
-        'dbField': False,
-    }, {
-        # INCOMPLETE, FIELD DOESN'T EXIST
-        'name': 'associated_building_tax_lot_id',
-        'table': None,
-        'displayName': 'Associated Building Tax Lot ID',
-        'dataType': 'string',
-        'dbField': False,
-    }, {
-        # INCOMPLETE, FIELD DOESN'T EXIST
-        'name': 'associated_tax_lot_ids',
-        'table': None,
-        'displayName': 'Associated TaxLot IDs',
-        'dataType': 'string',
-        'type': 'number',
-        'dbField': False,
-    }, {
         # This field should never be mapped to!
         'name': 'lot_number',
         'table': 'PropertyState',
         'displayName': 'Associated Tax Lot ID',
         'dataType': 'string',
         'dbField': True,
-    }, {
-        # INCOMPLETE, FIELD DOESN'T EXIST
-        'name': 'primary',
-        'table': 'TaxLotState',
-        'displayName': 'Primary/Secondary',
-        'dataType': 'boolean',
-        'dbField': False,
     }, {
         'name': 'property_name',
         'table': 'PropertyState',
@@ -651,37 +613,41 @@ VIEW_COLUMNS_PROPERTY = [
         'type': 'boolean',
         'dbField': True,
     }, {
-        'name': 'db_property_updated',
+        'name': 'updated',
         'table': 'Property',
         'displayName': 'Updated (Property)',
         'dataType': 'datetime',
         'type': 'date',
         'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
         'dbField': True,
+        'duplicateNameInOtherTable': True,
     }, {
-        'name': 'db_property_created',
+        'name': 'created',
         'table': 'Property',
         'displayName': 'Created (Property)',
         'dataType': 'datetime',
         'type': 'date',
         'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
         'dbField': True,
+        'duplicateNameInOtherTable': True,
     }, {
-        'name': 'db_taxlot_created',
-        'table': 'TaxLot',
-        'displayName': 'Created (Tax Lot)',
-        'dataType': 'datetime',
-        'type': 'date',
-        'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
-        'dbField': True,
-    }, {
-        'name': 'db_taxlot_updated',
+        'name': 'updated',
         'table': 'TaxLot',
         'displayName': 'Updated (Tax Lot)',
         'dataType': 'datetime',
         'type': 'date',
         'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
         'dbField': True,
+        'duplicateNameInOtherTable': True,
+    }, {
+        'name': 'created',
+        'table': 'TaxLot',
+        'displayName': 'Created (Tax Lot)',
+        'dataType': 'datetime',
+        'type': 'date',
+        'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
+        'dbField': True,
+        'duplicateNameInOtherTable': True,
     }, {
         'name': 'gross_floor_area',
         'table': 'PropertyState',

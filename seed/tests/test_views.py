@@ -141,19 +141,23 @@ class DefaultColumnsViewTests(TestCase):
 
     def test_get_all_columns(self):
         # test building list columns
-        response = self.client.get(reverse('api:v2:columns-retrieve-all'), {
+        response = self.client.get(reverse('api:v2:columns-list'), {
             'organization_id': self.org.id
         })
         data = json.loads(response.content)
-        # randomly check a column
-        self.assertDictEqual(data['columns'][0], {
+
+        expected = {
             u'displayName': u'PM Property ID',
             u'name': u'pm_property_id',
             u'dataType': u'string',
             u'related': False,
             u'table': u'PropertyState',
-            u'pinnedLeft': True}
-        )
+            u'sharedFieldType': u'None',
+            u'pinnedLeft': True
+        }
+
+        # randomly check a column
+        self.assertIn(expected, data['columns'])
 
     def tearDown(self):
         self.user.delete()
@@ -927,7 +931,7 @@ class InventoryViewTests(TestCase):
             'labels': [self.status_label.pk]
         }
         self.assertDictContainsSubset(expected_property, results['property'])
-        self.assertTrue(results['property']['db_property_created'])
+        self.assertTrue(results['property']['created'])
 
         state = results['state']
         self.assertEquals(state['id'], property_state.pk)
@@ -1483,6 +1487,7 @@ class InventoryViewTests(TestCase):
             'table': 'PropertyState',
             'displayName': 'PM Property ID',
             'dataType': 'string',
+            'sharedFieldType': 'None',
             'pinnedLeft': True,
             'related': False,
         }
@@ -1493,6 +1498,7 @@ class InventoryViewTests(TestCase):
             'name': 'property_extra_data_column',
             'table': 'PropertyState',
             'displayName': 'Property Extra Data Column',
+            'sharedFieldType': 'None',
             'related': False,
         }
         self.assertIn(expected_property_extra_data_column, results)
@@ -1502,6 +1508,7 @@ class InventoryViewTests(TestCase):
             'table': 'TaxLotState',
             'name': 'taxlot_extra_data_column',
             'displayName': 'Taxlot Extra Data Column',
+            'sharedFieldType': 'None',
             'related': True,
         }
         self.assertIn(expected_taxlot_extra_data_column, results)
@@ -1530,6 +1537,7 @@ class InventoryViewTests(TestCase):
             'table': 'TaxLotState',
             'displayName': 'Jurisdiction Tax Lot ID',
             'dataType': 'string',
+            'sharedFieldType': 'None',
             'pinnedLeft': True,
             'related': False,
         }
@@ -1540,6 +1548,7 @@ class InventoryViewTests(TestCase):
             'name': 'property_extra_data_column',
             'table': 'PropertyState',
             'displayName': u'Property Extra Data Column',
+            'sharedFieldType': 'None',
             'related': True,
         }
         self.assertIn(expected_property_extra_data_column, results)
@@ -1549,6 +1558,7 @@ class InventoryViewTests(TestCase):
             'name': 'taxlot_extra_data_column',
             'table': 'TaxLotState',
             'displayName': 'Taxlot Extra Data Column',
+            'sharedFieldType': 'None',
             'related': False,
         }
         self.assertIn(expected_taxlot_extra_data_column, results)

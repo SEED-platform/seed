@@ -60,11 +60,17 @@ class ColumnViewSet(viewsets.ViewSet):
                 property or taxlot
               required: true
               paramType: query
+            - name: used_only
+              description: Determine whether or not to show only the used fields. Ones that have been mapped
+              type: boolean
+              required: false
+              paramType: query
         """
         organization_id = request.query_params.get('organization_id', None)
         inventory_type = request.query_params.get('inventory_type', 'property')
+        only_used = request.query_params.get('only_used', False)
 
-        columns = Column.retrieve_all(organization_id, inventory_type)
+        columns = Column.retrieve_all(organization_id, inventory_type, only_used)
 
         # for c in Column.objects.filter(organization=org).order_by('table_name', 'column_name'):
         #     columns.append(c.to_dict())

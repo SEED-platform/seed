@@ -763,7 +763,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         controller: 'organization_sharing_controller',
         resolve: {
           all_columns: ['inventory_service', function (inventory_service) {
-            return inventory_service.get_columns();
+            return inventory_service.get_used_columns();
           }],
           organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
             var organization_id = $stateParams.organization_id;
