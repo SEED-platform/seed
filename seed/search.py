@@ -653,7 +653,7 @@ def mask_results(search_results):
         parent_org = parent_org.get_parent()
         if parent_org.id not in whitelist_fields:
             whitelist_fields[parent_org.id] = []
-            for s in parent_org.sharedbuildingfield_set.filter(field_type=PUBLIC):
+            for s in parent_org.sharedbuildingfield_set.filter(field_type=Column.SHARED_PUBLIC):
                 whitelist_fields[parent_org.id].append(s.field.name)
 
         d = {}

@@ -15,7 +15,6 @@ from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import (
     Organization,
     ROLE_OWNER,
-    ExportableField,
     ROLE_MEMBER
 )
 from seed.models import (
