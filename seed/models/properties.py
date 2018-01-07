@@ -79,9 +79,11 @@ class PropertyState(models.Model):
     ANALYSIS_STATE_STARTED = 1
     ANALYSIS_STATE_COMPLETED = 2
     ANALYSIS_STATE_FAILED = 3
+    ANALYSIS_STATE_QUEUED = 4  # analysis queue was added after the others above.
 
     ANALYSIS_STATE_TYPES = (
         (ANALYSIS_STATE_NOT_STARTED, 'Not Started'),
+        (ANALYSIS_STATE_QUEUED, 'Queued'),
         (ANALYSIS_STATE_STARTED, 'Started'),
         (ANALYSIS_STATE_COMPLETED, 'Completed'),
         (ANALYSIS_STATE_FAILED, 'Failed'),
