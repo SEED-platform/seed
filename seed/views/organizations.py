@@ -30,7 +30,6 @@ from seed.lib.superperms.orgs.models import (
     OrganizationUser,
 )
 from seed.models import Cycle, PropertyView, TaxLotView, Column
-from seed.public.models import INTERNAL, PUBLIC, SharedBuildingField
 from seed.utils.api import api_endpoint_class
 from seed.utils.organizations import create_organization
 
@@ -148,34 +147,6 @@ def _get_role_from_js(role):
         'member': ROLE_MEMBER,
     }
     return roles[role]
-
-
-# TODO: Another reference to BuildingSnapshot
-# TODO: 1/5/2017 REMOVE!
-def _save_fields(org, new_fields, old_fields, is_public=False):
-    """Save Building to be Shared."""
-    old_fields_names = set(old_fields.values_list('field__name', flat=True))
-    new_fields_names = set([f['sort_column'] for f in new_fields])
-    field_type = PUBLIC if is_public else INTERNAL
-
-    # remove the fields that weren't posted
-    to_remove = old_fields_names - new_fields_names
-    SharedBuildingField.objects.filter(
-        field__name__in=to_remove, field_type=field_type
-    ).delete()
-
-    # add new fields that were posted to the db
-    # but only the new ones
-    to_add = new_fields_names - old_fields_names
-    for new_field_name in to_add:
-        # All Exported Fields are stored within superperms.
-        exported_field, created = org.exportable_fields.get_or_create(
-            name=new_field_name, field_model='BuildingSnapshot'
-        )
-        # The granular visibility settings are stored in the 'public' app.
-        SharedBuildingField.objects.create(
-            org=org, field=exported_field, field_type=field_type
-        )
 
 
 _log = logging.getLogger(__name__)
@@ -605,11 +576,21 @@ class OrganizationViewSet(viewsets.ViewSet):
         org.save()
 
         # Update the selected exportable fields.
-        new_pub_fields = posted_org.get('public_fields', None)
-        if new_pub_fields is not None:
-            old_pub_fields = Column.objects.filter(organization=org, shared_field_type=Column.SHARED_NONE)
+        new_public_column_names = posted_org.get('public_fields', None)
+        if new_public_column_names is not None:
+            old_public_columns = Column.objects.filter(organization=org, shared_field_type=Column.SHARED_PUBLIC)
+            # turn off sharing in the old_pub_fields
+            for col in old_public_columns:
+                col.shared_field_type = Column.SHARED_NONE
+                col.save()
 
-            _save_fields(org, new_pub_fields, old_pub_fields, is_public=True)
+            # for now just iterate over this to grab the new columns.
+            for col in new_public_column_names:
+                new_col = Column.objects.filter(organization=org, table_name=col['table'], column_name=col['dbName'])
+                if len(new_col) == 1:
+                    new_col = new_col.first()
+                    new_col.shared_field_type = Column.SHARED_PUBLIC
+                    new_col.save()
 
         return JsonResponse({'status': 'success'})
 
@@ -676,6 +657,7 @@ class OrganizationViewSet(viewsets.ViewSet):
                 new_column = {
                     'table': c['table'],
                     'name': c['name'],
+                    'db_name': c['dbName'],  # this is the field name in the database. The other name can have tax_
                     'display_name': c['displayName']
                 }
                 result['public_fields'].append(new_column)

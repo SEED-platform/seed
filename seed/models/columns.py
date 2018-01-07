@@ -608,6 +608,9 @@ class Column(models.Model):
         remove_columns = []
         # Clean up the columns
         for index, c in enumerate(columns):
+            # set the raw db name as well. Eventually we will want the table/db_name to be the unique id
+            c['dbName'] = c['name']
+
             # check if the column is in the database and if it is then add in the other information that
             # is in the database
             db_col = Column.objects.filter(organization_id=org_id, is_extra_data=False,
@@ -660,15 +663,16 @@ class Column(models.Model):
         for edc in extra_data_columns:
             name = edc.column_name
             table = edc.table_name
+            # set the raw db name as well. Eventually we will want the table/db_name to be the unique id
+            db_name = name
 
-            # MAKE NOTE ABOUT HOW IMPORTANT THIS IN
+            # Why is this important? Need to clarify
             if name == 'id':
                 name += '_extra'
 
             # check if the column name is already defined in the list. For example, gross_floor_area
             # is a core field, but can be an extra field in taxlot, meaning that the other one
             # needs to be tagged something else.
-            # for col in columns:
 
             # add _extra if the column is already in the list and it is not the one of
             while any(col['name'] == name and col['table'] != table for col in columns):
@@ -679,6 +683,7 @@ class Column(models.Model):
             columns.append(
                 {
                     'name': name,
+                    'dbName': db_name,
                     'table': edc.table_name,
                     'displayName': titlecase(edc.column_name),
                     # 'dataType': 'string',  # TODO: how to check dataTypes on extra_data!
@@ -688,7 +693,7 @@ class Column(models.Model):
                 }
             )
 
-        # validate that the column names are unique
+        # validate that the field 'name' is unique.
         uniq = set()
         for c in columns:
             if (c['table'], c['name']) in uniq:

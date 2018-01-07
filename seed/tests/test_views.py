@@ -149,6 +149,7 @@ class DefaultColumnsViewTests(TestCase):
         expected = {
             u'displayName': u'PM Property ID',
             u'name': u'pm_property_id',
+            u'dbName': u'pm_property_id',
             u'dataType': u'string',
             u'related': False,
             u'table': u'PropertyState',
@@ -1484,6 +1485,7 @@ class InventoryViewTests(TestCase):
 
         pm_property_id_col = {
             'name': 'pm_property_id',
+            'dbName': 'pm_property_id',
             'table': 'PropertyState',
             'displayName': 'PM Property ID',
             'dataType': 'string',
@@ -1496,6 +1498,7 @@ class InventoryViewTests(TestCase):
         expected_property_extra_data_column = {
             'extraData': True,
             'name': 'property_extra_data_column',
+            'dbName': 'property_extra_data_column',
             'table': 'PropertyState',
             'displayName': 'Property Extra Data Column',
             'sharedFieldType': 'None',
@@ -1507,6 +1510,7 @@ class InventoryViewTests(TestCase):
             'extraData': True,
             'table': 'TaxLotState',
             'name': 'taxlot_extra_data_column',
+            'dbName': 'taxlot_extra_data_column',
             'displayName': 'Taxlot Extra Data Column',
             'sharedFieldType': 'None',
             'related': True,
@@ -1534,6 +1538,7 @@ class InventoryViewTests(TestCase):
 
         jurisdiction_tax_lot_id_col = {
             'name': 'jurisdiction_tax_lot_id',
+            'dbName': 'jurisdiction_tax_lot_id',
             'table': 'TaxLotState',
             'displayName': 'Jurisdiction Tax Lot ID',
             'dataType': 'string',
@@ -1546,6 +1551,7 @@ class InventoryViewTests(TestCase):
         expected_property_extra_data_column = {
             'extraData': True,
             'name': 'property_extra_data_column',
+            'dbName': 'property_extra_data_column',
             'table': 'PropertyState',
             'displayName': u'Property Extra Data Column',
             'sharedFieldType': 'None',
@@ -1556,6 +1562,7 @@ class InventoryViewTests(TestCase):
         expected_taxlot_extra_data_column = {
             'extraData': True,
             'name': 'taxlot_extra_data_column',
+            'dbName': 'taxlot_extra_data_column',
             'table': 'TaxLotState',
             'displayName': 'Taxlot Extra Data Column',
             'sharedFieldType': 'None',

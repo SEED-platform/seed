@@ -299,6 +299,7 @@ class TestColumnsByInventory(TestCase):
             'extraData': True,
             'displayName': u'Column A',
             'name': u'Column A',
+            'dbName': u'Column A',
             'related': False,
             'sharedFieldType': 'Public',
         }
@@ -310,6 +311,7 @@ class TestColumnsByInventory(TestCase):
             'extraData': True,
             'displayName': u"Apostrophe's Field",
             'name': u"Apostrophe's Field",
+            'dbName': u"Apostrophe's Field",
             'related': False,
             'sharedFieldType': 'None',
         }
@@ -321,6 +323,7 @@ class TestColumnsByInventory(TestCase):
             'extraData': True,
             'displayName': 'Id',
             'name': 'id_extra',
+            'dbName': 'id',
             'related': False,
             'sharedFieldType': 'None',
         }
@@ -330,6 +333,7 @@ class TestColumnsByInventory(TestCase):
 
         c = {
             'name': 'pm_property_id',
+            'dbName': 'pm_property_id',
             'related': False,
             'table': 'PropertyState',
             'displayName': 'PM Property ID',
@@ -346,6 +350,7 @@ class TestColumnsByInventory(TestCase):
             'displayName': 'State (Tax Lot)',
             'dataType': 'string',
             'name': 'tax_state',
+            'dbName': 'state',
             'sharedFieldType': 'None',
         }
         self.assertIn(c, columns)

@@ -378,7 +378,6 @@ class TestApi(TestCase):
         r = json.loads(r.content)
         self.assertEqual(r['status'], 'success')
         self.assertEqual(r['public_fields'], [])
-        self.assertEqual(r['shared_fields'], [])
 
     @skip('appears to be broken by use of login_required')
     def test_upload_buildings_file(self):
