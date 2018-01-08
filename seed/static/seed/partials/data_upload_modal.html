@@ -6,13 +6,12 @@
     <h4 class="modal-title" ng-switch-when="5" translate>Successful upload!</h4>
     <h4 class="modal-title" ng-switch-when="6" translate>What type of file would you like to upload?</h4>
     <h4 class="modal-title" ng-switch-when="7" translate>Finding inventory matches.</h4>
-    <h4 class="modal-title" ng-switch-when="8" translate="MATCHING_RESULTS_FOR_FILE"
-        translate-values="{ dataset_filename: dataset.filename }"></h4>
-    <h4 class="modal-title" ng-switch-when="9" translate="ADD_FILES_TO"
-        translate-values"{ dataset_name: dataset.name }"></h4>
+    <h4 class="modal-title" ng-switch-when="8" translate="MATCHING_RESULTS_FOR_FILE" translate-values="{dataset_filename: dataset.filename}"></h4>
+    <h4 class="modal-title" ng-switch-when="9" translate="ADD_FILES_TO" translate-values="{dataset_name: dataset.name}"></h4>
     <h4 class="modal-title" ng-switch-when="10">{$ step_10_title|translate|titleCase $}</h4>
     <h4 class="modal-title" ng-switch-when="11" translate>Confirm Save Mappings?</h4>
     <h4 class="modal-title" ng-switch-when="12" translate>Error Processing Data</h4>
+    <h4 class="modal-title" ng-switch-when="13" translate>Portfolio Manager Import</h4>
 </div>
 <div class="modal-body no_bottom_padding" ng-switch on="step.number">
     <!-- Step 1 -->
@@ -50,6 +49,11 @@
         </div>
         <div class="row">
             <div class="col-sm-8 col-sm-offset-2" sd-uploader sourcetype="Assessed Raw" sourceprog="PortfolioManager" sourcever="1.0" importrecord="dataset.id" buttontext="{$:: 'Upload Portfolio Manager Data' | translate $}" eventfunc="uploaderfunc(message, file, progress)" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress"></div>
+        </div>
+        <div class="row">
+            <div class="col-sm-8 col-sm-offset-2" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress">
+                <div class="btn btn-primary" style="display: block; font-weight: bold;" ng-click="goto_step(13)">Import Portfolio Manager Data</div>
+            </div>
         </div>
         <div class="row">
             <div class="col-sm-9 col-sm-offset-2" ng-hide="uploader.in_progress">
@@ -194,6 +198,40 @@
                     <p translate>An error occurred while processing the file. Please ensure that your file meets the required specifications.</p>
                     <pre ng-class="{'pre-scrollable': step_12_error_message.length >= 300}" ng-show="step_12_error_message">{$ step_12_error_message | translate $}</pre>
                 </div>
+            </div>
+        </div>
+    </div>
+    <!-- Step 13: Portfolio Manager Data Import -->
+    <div class="data_upload_steps pm_import" ng-switch-when="13">
+        <div class="alert alert-danger" ng-show="pm_error_alert">{$ pm_error_alert $}</div>
+        <div class="row" style="padding-bottom:10px">
+            <label class="control-label col-lg-4 col-sm-4" for="inputPMUsername">Portfolio Manager Username</label>
+            <div class="col-lg-8 col-sm-8">
+                <input type="text" class="form-control" id="inputPMUsername" name="username" ng-model="pm_username" ng-disabled="!pm_buttons_enabled" required>
+            </div>
+        </div>
+        <div class="row" style="padding-bottom:10px">
+            <label class="control-label col-lg-4 col-sm-4" for="inputPMPassword">Portfolio Manager Password</label>
+            <div class="col-lg-8 col-sm-8">
+                <input type="password" class="form-control" id="inputPMPassword" name="password" ng-model="pm_password" ng-disabled="!pm_buttons_enabled" required>
+            </div>
+        </div>
+        <div class="row" style="padding-bottom:10px">
+            <div class="col-lg-4 col-sm-4"></div>
+            <div class="col-lg-8 col-sm-8">
+                <div class="btn btn-primary" style="display: block; font-weight: bold;" ng-disabled="!pm_buttons_enabled" ng-click="get_pm_report_template_names(pm_username, pm_password);">Get Report Templates</div>
+            </div>
+        </div>
+        <div class="row" style="padding-bottom:10px">
+            <label class="control-label col-lg-4 col-sm-4" for="inputPMReportTemplateName">Report Template Name <small>{$ pm_templates.length ? '(' + pm_templates.length + ')' : '' $}</small></label>
+            <div class="col-lg-8 col-sm-8">
+                <select ng-model="pm_template" ng-disabled="!pm_buttons_enabled" ng-options="x.name for x in pm_templates"></select>
+            </div>
+        </div>
+        <div class="row" style="padding-bottom:10px">
+            <div class="col-lg-4 col-sm-4"></div>
+            <div class="col-lg-8 col-sm-8">
+                <div class="btn btn-primary" style="display: block; font-weight: bold;" ng-disabled="!pm_buttons_enabled || !pm_template" ng-click="get_pm_report(pm_username, pm_password, pm_template);">Submit</div>
             </div>
         </div>
     </div>

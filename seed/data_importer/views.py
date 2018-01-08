@@ -4,12 +4,14 @@
 :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+import csv
 import base64
 import hashlib
 import hmac
 import json
 import logging
 import os
+import pint
 
 from django.apps import apps
 from django.conf import settings
@@ -23,7 +25,7 @@ from django.http import HttpResponse, JsonResponse
 from django.utils.timezone import make_naive
 from rest_framework import serializers, status, viewsets
 from rest_framework.authentication import SessionAuthentication
-from rest_framework.decorators import api_view, detail_route, parser_classes, permission_classes
+from rest_framework.decorators import api_view, detail_route, list_route, parser_classes, permission_classes
 from rest_framework.parsers import MultiPartParser, FormParser
 
 from seed.authentication import SEEDAuthentication
@@ -70,7 +72,9 @@ from seed.models import (
     AUDIT_USER_EDIT,
     Property,
     TaxLot,
-    TaxLotProperty)
+    TaxLotProperty,
+    SEED_DATA_SOURCES,
+    PORTFOLIO_RAW)
 from seed.models.data_quality import DataQualityCheck
 from seed.utils.api import api_endpoint, api_endpoint_class
 from seed.utils.cache import get_cache_raw, get_cache
@@ -186,7 +190,7 @@ class LocalUploaderViewSet(viewsets.ViewSet):
             })
 
         # Fineuploader requires the field to be qqfile it appears... so why not support both? ugh.
-        if 'qqfile' in request.data.keys():
+        if 'qqfile' in request.data:
             the_file = request.data['qqfile']
         else:
             the_file = request.data['file']
@@ -209,7 +213,7 @@ class LocalUploaderViewSet(viewsets.ViewSet):
         # The s3 stuff needs to be redone someday... delete?
         if 'S3' in settings.DEFAULT_FILE_STORAGE:
             os.unlink(path)
-            raise ImproperlyConfigured("Local upload not supported")
+            raise ImproperlyConfigured("Local upload not supported")  # TODO: Is this wording correct?
 
         import_record_pk = request.POST.get('import_record', request.GET.get('import_record'))
         try:
@@ -234,6 +238,178 @@ class LocalUploaderViewSet(viewsets.ViewSet):
                                       source_type=source_type,
                                       **kw_fields)
 
+        return JsonResponse({'success': True, "import_file_id": f.pk})
+
+    @staticmethod
+    def _get_pint_var_from_pm_value_object(pm_value):
+        units = pint.UnitRegistry()
+        if '@uom' in pm_value and '#text' in pm_value:
+            # this is the correct expected path for unit-based attributes
+            string_value = pm_value['#text']
+            try:
+                float_value = float(string_value)
+            except ValueError:
+                return {'success': False, 'message': 'Could not cast value to float: \"%s\"' % string_value}
+            original_unit_string = pm_value['@uom']
+            if original_unit_string == u'kBtu':
+                new_val = float_value * 1000  # convert to btu manually
+                pint_val = new_val * units.BTU
+            elif original_unit_string == u'kBtu/ft²':
+                new_val = float_value * 1000  # convert to btu manually
+                pint_val = new_val * units.BTU / units.sq_ft
+            elif original_unit_string == u'Metric Tons CO2e':
+                pint_val = float_value * units.metric_ton
+            elif original_unit_string == u'kgCO2e/ft²':
+                pint_val = float_value * units.kilogram / units.sq_ft
+            else:
+                return {'success': False, 'message': 'Unsupported units string: \"%s\"' % original_unit_string}
+            return {'success': True, 'pint_value': pint_val}
+
+    @api_endpoint_class
+    @ajax_request_class
+    @list_route(methods=['POST'])
+    def create_from_pm_import(self, request):
+        """
+        Create an import_record from a PM import request.
+        This allows the PM import workflow to be treated essentially the same as a standard file upload
+        ---
+        parameters:
+            - name: import_record
+              description: the ID of the ImportRecord to associate this file with.
+              required: true
+              paramType: body
+            - name: properties
+              description: In-memory list of properties from PM import
+              required: true
+              paramType: body
+        """
+        if 'properties' not in request.data:
+            return JsonResponse({
+                'success': False,
+                'message': "Must pass pm_data in the request body."
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # create a folder to keep pm_import files
+        path = os.path.join(settings.MEDIA_ROOT, "uploads", "pm_imports", "pm_import.csv")
+
+        # Get a unique filename using the get_available_name method in FileSystemStorage
+        s = FileSystemStorage()
+        path = s.get_available_name(path)
+
+        # verify the directory exists
+        if not os.path.exists(os.path.dirname(path)):
+            os.makedirs(os.path.dirname(path))
+
+        # This list should cover the core keys coming from PM, ensuring that they map easily
+        # We will also look for keys not in this list and just map them to themselves
+        pm_key_to_column_heading_map = {
+            u'address_1': u'Address',
+            u'city': u'City',
+            u'state_province': u'State',
+            u'postal_code': u'Zip',
+            u'county': u'County',
+            u'country': u'Country',
+            u'property_name': u'Property Name',
+            u'property_id': u'Property ID',
+            u'year_built': u'Year Built',
+        }
+
+        # We will also create a list of values that are used in PM export to indicate a value wasn't available
+        # When we import them into SEED here we will be sure to not write those values
+        pm_flagged_bad_string_values = [
+            u'Not Available',
+            u'Unable to Check (not enough data)',
+            u'No Current Year Ending Date',
+        ]
+
+        # We will make a pass through the first property to get the list of unexpected keys
+        for pm_property in request.data['properties']:
+            for pm_key_name, _ in pm_property.iteritems():
+                if pm_key_name not in pm_key_to_column_heading_map:
+                    pm_key_to_column_heading_map[pm_key_name] = pm_key_name
+            break
+
+        # Create the header row of the csv file first
+        rows = []
+        this_row = []
+        for _, csv_header in pm_key_to_column_heading_map.iteritems():
+            this_row.append(csv_header)
+        rows.append(this_row)
+
+        # Create a single row for each building
+        for pm_property in request.data['properties']:
+            this_row = []
+
+            # Loop through all known PM variables
+            for pm_variable, _ in pm_key_to_column_heading_map.iteritems():
+
+                # Initialize this to False for each pm_variable we will search through
+                added = False
+
+                # Check if this PM export has this variable in it
+                if pm_variable in pm_property:
+
+                    # If so, create a convenience variable to store it
+                    this_pm_variable = pm_property[pm_variable]
+
+                    # Next we need to check type.  If it is a string, we will add it here to avoid parsing numerics
+                    # However, we need to be sure to not add the flagged bad strings.
+                    # However, a flagged value *could* be a value property name, and we would want to allow that
+                    if isinstance(this_pm_variable, basestring):
+                        if pm_variable == u'property_name':
+                            this_row.append(this_pm_variable)
+                            added = True
+                        elif this_pm_variable not in pm_flagged_bad_string_values:
+                            this_row.append(this_pm_variable)
+                            added = True
+
+                    # If it isn't a string, it should be a dictionary, storing numeric data and units, etc.
+                    else:
+
+                        # As long as it is a valid dictionary, try to get a meaningful value out of it
+                        if '#text' in this_pm_variable and this_pm_variable['#text'] != 'Not Available':
+
+                            # Coerce the value into a proper set of Pint units for us
+                            new_var = LocalUploaderViewSet._get_pint_var_from_pm_value_object(this_pm_variable)
+                            if new_var['success']:
+                                pint_value = new_var['pint_value']
+                                this_row.append(pint_value.magnitude)
+                                added = True
+                                # TODO: What to do with the pint_value.units here?
+
+                # And finally, if we haven't set the added flag, give the csv column a blank value
+                if not added:
+                    this_row.append(u'')
+
+            # Then add this property row of data
+            rows.append(this_row)
+
+        # Then write the actual data out as csv
+        with open(path, 'wb') as csv_file:
+            pm_csv_writer = csv.writer(csv_file)
+            for row in rows:
+                pm_csv_writer.writerow(row)
+
+        # Look up the import record (data set)
+        import_record_pk = request.data['import_record_id']
+        try:
+            record = ImportRecord.objects.get(pk=import_record_pk)
+        except ImportRecord.DoesNotExist:
+            # clean up the uploaded file
+            os.unlink(path)
+            return JsonResponse({
+                'success': False,
+                'message': "Import Record %s not found" % import_record_pk
+            })
+
+        # Create a new import file object in the database
+        f = ImportFile.objects.create(import_record=record,
+                                      uploaded_filename='PortfolioManagerImport',
+                                      file=path,
+                                      source_type=SEED_DATA_SOURCES[PORTFOLIO_RAW],
+                                      **{'source_program': 'PortfolioManager', 'source_program_version': '1.0'})
+
+        # Return the newly created import file ID
         return JsonResponse({'success': True, "import_file_id": f.pk})
 
 
