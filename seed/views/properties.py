@@ -247,6 +247,10 @@ class PropertyViewSet(GenericViewSet):
         """
         In general, we move the old relationships to the new state since the old state should not be
         accessible anymore. If we ever unmerge, then we need to decide who gets the data.. both?
+
+        :param old_state: PropertyState
+        :param new_state: PropertyState
+        :return: PropertyState, updated new_state
         """
         for s in old_state.scenarios.all():
             s.property_state = new_state
@@ -620,7 +624,7 @@ class PropertyViewSet(GenericViewSet):
             property_view = result.pop('property_view')
             property_state_data = PropertyStateSerializer(property_view.state).data
 
-            # get the new property state information from the request
+            # get the property state information from the request
             new_property_state_data = data['state']
 
             # set empty strings to None
@@ -642,12 +646,11 @@ class PropertyViewSet(GenericViewSet):
                 ).order_by('-id').first()
 
                 if 'extra_data' in new_property_state_data.keys():
-                    property_state_data['extra_data'].update(
-                        new_property_state_data.pop('extra_data'))
+                    property_state_data['extra_data'].update(new_property_state_data.pop('extra_data'))
                 property_state_data.update(new_property_state_data)
 
                 if log.name == 'Import Creation':
-                    # Add new state
+                    # Add new state by removing the existing ID.
                     property_state_data.pop('id')
                     new_property_state_serializer = PropertyStateSerializer(
                         data=property_state_data
@@ -677,16 +680,9 @@ class PropertyViewSet(GenericViewSet):
                                                         record_type=AUDIT_USER_EDIT)
 
                         result.update(
-                            {'state': new_property_state_serializer.validated_data}
+                            {'state': new_property_state_serializer.data}
                         )
-                        # Removing organization key AND import_file key because they're not JSON-serializable
-                        # TODO find better solution
-                        if 'organization' in result['state']:
-                            result['state'].pop('organization')
-                        if 'import_file' in result['state']:
-                            result['state'].pop('import_file')
-
-                        status_code = status.HTTP_200_OK
+                        return JsonResponse(result, status=status.HTTP_200_OK)
                     else:
                         result.update({
                             'status': 'error',
@@ -695,20 +691,30 @@ class PropertyViewSet(GenericViewSet):
                         )
                         return JsonResponse(result, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
                 elif log.name in ['Manual Edit', 'Manual Match', 'System Match', 'Merge current state in migration']:
-                    # Override previous edit state or merge state
-                    state = property_view.state
-                    for key, value in new_property_state_data.iteritems():
-                        setattr(state, key, value)
-                    state.save()
+                    # Convert this to using the serializer to save the data. This will override the previous values
+                    # in the state object.
 
-                    result.update(
-                        {'state': PropertyStateSerializer(state).data}
+                    # Note: We should be able to use partial update here and pass in the changed fields instead of the
+                    # entire state_data.
+                    updated_property_state_serializer = PropertyStateSerializer(
+                        property_view.state,
+                        data=property_state_data
                     )
-                    # Removing organization key AND import_file key because they're not JSON-serializable
-                    # TODO find better solution
-                    result['state'].pop('organization')
-                    result['state'].pop('import_file')
-                    return JsonResponse(result, status=status.HTTP_200_OK)
+                    if updated_property_state_serializer.is_valid():
+                        # create the new property state, and perform an initial save / moving relationships
+                        updated_property_state_serializer.save()
+
+                        result.update(
+                            {'state': updated_property_state_serializer.data}
+                        )
+                        return JsonResponse(result, status=status.HTTP_200_OK)
+                    else:
+                        result.update({
+                            'status': 'error',
+                            'message': 'Invalid update data with errors: {}'.format(
+                                updated_property_state_serializer.errors)}
+                        )
+                        return JsonResponse(result, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
                 else:
                     result = {
                         'status': 'error',
@@ -717,11 +723,12 @@ class PropertyViewSet(GenericViewSet):
                     return JsonResponse(result, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
             # save the property view, even if it hasn't changed so that the datetime gets updated on the property.
+            # Uhm, does this ever get called? There are a bunch of returns in the code above.
             property_view.save()
         else:
-            status_code = status.HTTP_404_NOT_FOUND
+            return JsonResponse(result, status=status.HTTP_404_NOT_FOUND)
 
-        return JsonResponse(result, status=status_code)
+        return JsonResponse(result, status=status.HTTP_404_NOT_FOUND)
 
     @ajax_request_class
     @has_perm_class('can_modify_data')

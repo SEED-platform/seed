@@ -415,32 +415,34 @@ class TaxLotViewSet(GenericViewSet):
               required: true
               paramType: query
         """
-        data = request.data
         cycle_pk = request.query_params.get('cycle_id', None)
         if not cycle_pk:
             return JsonResponse(
                 {'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
+        data = request.data
+
         result = self._get_taxlot_view(pk, cycle_pk)
         if result.get('status', None) != 'error':
             taxlot_view = result.pop('taxlot_view')
             taxlot_state_data = TaxLotStateSerializer(taxlot_view.state).data
+
+            # get the taxlot state information from the request
             new_taxlot_state_data = data['state']
 
-            changed = True
+            # set empty strings to None
             for key, val in new_taxlot_state_data.iteritems():
                 if val == '':
                     new_taxlot_state_data[key] = None
-            changed_fields = get_changed_fields(
-                taxlot_state_data, new_taxlot_state_data
-            )
+
+            changed_fields = get_changed_fields(taxlot_state_data, new_taxlot_state_data)
             if not changed_fields:
-                changed = False
-            if not changed:
                 result.update(
-                    {'status': 'error', 'message': 'Nothing to update'}
+                    {'status': 'success', 'message': 'Records are identical'}
                 )
-                status_code = 422  # status.HTTP_422_UNPROCESSABLE_ENTITY
+                return JsonResponse(result, status=status.HTTP_204_NO_CONTENT)
             else:
+                # Not sure why we are going through the pain of logging this all right now... need to
+                # reevaluate this.
                 log = TaxLotAuditLog.objects.select_related().filter(
                     state=taxlot_view.state
                 ).order_by('-id').first()
@@ -450,13 +452,16 @@ class TaxLotViewSet(GenericViewSet):
                 taxlot_state_data.update(new_taxlot_state_data)
 
                 if log.name == 'Import Creation':
-                    # Add new state
+                    # Add new state by removing the existing ID.
                     taxlot_state_data.pop('id')
                     new_taxlot_state_serializer = TaxLotStateSerializer(
                         data=taxlot_state_data
                     )
                     if new_taxlot_state_serializer.is_valid():
+                        # create the new property state, and perform an initial save / moving relationships
                         new_state = new_taxlot_state_serializer.save()
+
+                        # then assign this state to the property view and save the whole view
                         taxlot_view.state = new_state
                         taxlot_view.save()
 
@@ -472,43 +477,54 @@ class TaxLotViewSet(GenericViewSet):
                                                       record_type=AUDIT_USER_EDIT)
 
                         result.update(
-                            {'state': new_taxlot_state_serializer.validated_data}
+                            {'state': new_taxlot_state_serializer.data}
                         )
-                        # Removing organization key AND import_file key because they're not JSON-serializable
-                        # TODO find better solution
-                        result['state'].pop('organization')
-                        result['state'].pop('import_file')
-                        status_code = status.HTTP_201_CREATED
+
+                        return JsonResponse(result, status=status.HTTP_200_OK)
                     else:
-                        result.update(
-                            {'status': 'error', 'message': 'Invalid Data'}
+                        result.update({
+                            'status': 'error',
+                            'message': 'Invalid update data with errors: {}'.format(
+                                new_taxlot_state_serializer.errors)}
                         )
-                        status_code = 422  # status.HTTP_422_UNPROCESSABLE_ENTITY
-                elif log.name in ['Manual Edit', 'Manual Match', 'System Match',
-                                  'Merge current state in migration']:
-                    # Override previous edit state or merge state
-                    state = taxlot_view.state
-                    for key, value in new_taxlot_state_data.iteritems():
-                        setattr(state, key, value)
-                    state.save()
+                        return JsonResponse(result, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+                elif log.name in ['Manual Edit', 'Manual Match', 'System Match', 'Merge current state in migration']:
+                    # Convert this to using the serializer to save the data. This will override the previous values
+                    # in the state object.
 
-                    result.update(
-                        {'state': TaxLotStateSerializer(state).data}
+                    # Note: We should be able to use partial update here and pass in the changed fields instead of the
+                    # entire state_data.
+                    updated_taxlot_state_serializer = TaxLotStateSerializer(
+                        taxlot_view.state,
+                        data=taxlot_state_data
                     )
-                    # Removing organization key AND import_file key because they're not JSON-serializable
-                    # TODO find better solution
-                    result['state'].pop('organization')
-                    result['state'].pop('import_file')
+                    if updated_taxlot_state_serializer.is_valid():
+                        # create the new property state, and perform an initial save / moving relationships
+                        updated_taxlot_state_serializer.save()
 
-                    status_code = status.HTTP_201_CREATED
+                        result.update(
+                            {'state': updated_taxlot_state_serializer.data}
+                        )
+
+                        return JsonResponse(result, status=status.HTTP_200_OK)
+                    else:
+                        result.update({
+                            'status': 'error',
+                            'message': 'Invalid update data with errors: {}'.format(
+                                updated_taxlot_state_serializer.errors)}
+                        )
+                        return JsonResponse(result, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
                 else:
-                    result = {'status': 'error',
-                              'message': 'Unrecognized audit log name: ' + log.name}
-                    status_code = 422
-                    return JsonResponse(result, status=status_code)
+                    result = {
+                        'status': 'error',
+                        'message': 'Unrecognized audit log name: ' + log.name
+                    }
+                    return JsonResponse(result, status=status.HTTP_204_NO_CONTENT)
 
             # save the tax lot view, even if it hasn't changed so that the datetime gets updated on the taxlot.
+            # Uhm, does this ever get called? There are a bunch of returns in the code above.
             taxlot_view.save()
         else:
-            status_code = status.HTTP_404_NOT_FOUND
-        return JsonResponse(result, status=status_code)
+            return JsonResponse(result, status=status.HTTP_404_NOT_FOUND)
+
+        return JsonResponse(result, status=status.HTTP_404_NOT_FOUND)
