@@ -3075,3 +3075,17 @@ $pairedCellWidth: 60px;
   }
 
 }
+
+.pm_import {
+  [disabled]{
+    pointer-events: none;
+  }
+
+  select {
+    width: 100%;
+  }
+
+  small {
+    color: #999;
+  }
+}

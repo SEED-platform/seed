@@ -63,6 +63,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         number: step
       };
       $scope.pm_buttons_enabled = true;
+      $scope.pm_error_alert = false;
       /**
        * dataset: holds the state of the data set
        * name: string - the data set name
@@ -185,6 +186,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           var current_step = $scope.step.number;
 
           $scope.uploader.status_message = 'upload complete';
+          $scope.dataset.filename = file.filename;
           $scope.dataset.import_file_id = file.file_id;
           // Assessed Data; upload is step 2; PM import is currently treated as such, and is step 13
           if (current_step === 2 || current_step === 13) {
@@ -363,10 +365,15 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           username: pm_username,
           password: pm_password
         }).then(function (response) {
+          $scope.pm_error_alert = false;
           $scope.pm_templates = response.data.templates;
+          if ($scope.pm_templates.length) $scope.pm_template = _.first($scope.pm_templates);
+          return response.data;
+        }).catch(function (error) {
+          $scope.pm_error_alert = 'Error: ' + error.data.message;
+        }).finally(function () {
           spinner_utility.hide();
           $scope.pm_buttons_enabled = true;
-          return response.data;
         });
       };
 
@@ -384,14 +391,16 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           });
           return response;
         }).then(function (response) {
-          $scope.uploaderfunc(
-            'upload_complete',
-            {
-              file_id: response.data.import_file_id,
-              source_type: 'PortfolioManager',
-              cycle_id: $scope.selectedCycle.id
-            }
-          );
+          $scope.pm_error_alert = false;
+          $scope.uploaderfunc('upload_complete', {
+            filename: 'PortfolioManagerImport',
+            file_id: response.data.import_file_id,
+            source_type: 'PortfolioManager',
+            cycle_id: $scope.selectedCycle.id
+          });
+        }).catch(function (error) {
+          $scope.pm_error_alert = 'Error: ' + error.data.message;
+        }).finally(function () {
           spinner_utility.hide();
           $scope.pm_buttons_enabled = true;
         });

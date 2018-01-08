@@ -6,10 +6,8 @@
     <h4 class="modal-title" ng-switch-when="5" translate>Successful upload!</h4>
     <h4 class="modal-title" ng-switch-when="6" translate>What type of file would you like to upload?</h4>
     <h4 class="modal-title" ng-switch-when="7" translate>Finding inventory matches.</h4>
-    <h4 class="modal-title" ng-switch-when="8" translate="MATCHING_RESULTS_FOR_FILE"
-        translate-values="{ dataset_filename: dataset.filename }"></h4>
-    <h4 class="modal-title" ng-switch-when="9" translate="ADD_FILES_TO"
-        translate-values"{ dataset_name: dataset.name }"></h4>
+    <h4 class="modal-title" ng-switch-when="8" translate="MATCHING_RESULTS_FOR_FILE" translate-values="{dataset_filename: dataset.filename}"></h4>
+    <h4 class="modal-title" ng-switch-when="9" translate="ADD_FILES_TO" translate-values="{dataset_name: dataset.name}"></h4>
     <h4 class="modal-title" ng-switch-when="10">{$ step_10_title|translate|titleCase $}</h4>
     <h4 class="modal-title" ng-switch-when="11" translate>Confirm Save Mappings?</h4>
     <h4 class="modal-title" ng-switch-when="12" translate>Error Processing Data</h4>
@@ -53,7 +51,7 @@
             <div class="col-sm-8 col-sm-offset-2" sd-uploader sourcetype="Assessed Raw" sourceprog="PortfolioManager" sourcever="1.0" importrecord="dataset.id" buttontext="{$:: 'Upload Portfolio Manager Data' | translate $}" eventfunc="uploaderfunc(message, file, progress)" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress"></div>
         </div>
         <div class="row">
-            <div class="col-sm-8 col-sm-offset-2">
+            <div class="col-sm-8 col-sm-offset-2" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress">
                 <div class="btn btn-primary" style="display: block; font-weight: bold;" ng-click="goto_step(13)">Import Portfolio Manager Data</div>
             </div>
         </div>
@@ -203,8 +201,9 @@
             </div>
         </div>
     </div>
-    <!-- Step 13: Portfolio Manager Data Import  -->
-    <div class="data_upload_steps" ng-switch-when="13">
+    <!-- Step 13: Portfolio Manager Data Import -->
+    <div class="data_upload_steps pm_import" ng-switch-when="13">
+        <div class="alert alert-danger" ng-show="pm_error_alert">{$ pm_error_alert $}</div>
         <div class="row" style="padding-bottom:10px">
             <label class="control-label col-lg-4 col-sm-4" for="inputPMUsername">Portfolio Manager Username</label>
             <div class="col-lg-8 col-sm-8">
@@ -224,7 +223,7 @@
             </div>
         </div>
         <div class="row" style="padding-bottom:10px">
-            <label class="control-label col-lg-4 col-sm-4" for="inputPMReportTemplateName">Report Template Name</label>
+            <label class="control-label col-lg-4 col-sm-4" for="inputPMReportTemplateName">Report Template Name <small>{$ pm_templates.length ? '(' + pm_templates.length + ')' : '' $}</small></label>
             <div class="col-lg-8 col-sm-8">
                 <select ng-model="pm_template" ng-disabled="!pm_buttons_enabled" ng-options="x.name for x in pm_templates"></select>
             </div>
@@ -232,7 +231,7 @@
         <div class="row" style="padding-bottom:10px">
             <div class="col-lg-4 col-sm-4"></div>
             <div class="col-lg-8 col-sm-8">
-                <div class="btn btn-primary" style="display: block; font-weight: bold;" ng-disabled="!pm_buttons_enabled" ng-click="get_pm_report(pm_username, pm_password, pm_template);">Submit</div>
+                <div class="btn btn-primary" style="display: block; font-weight: bold;" ng-disabled="!pm_buttons_enabled || !pm_template" ng-click="get_pm_report(pm_username, pm_password, pm_template);">Submit</div>
             </div>
         </div>
     </div>
