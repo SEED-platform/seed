@@ -680,15 +680,8 @@ class PropertyViewSet(GenericViewSet):
                                                         record_type=AUDIT_USER_EDIT)
 
                         result.update(
-                            {'state': new_property_state_serializer.validated_data}
+                            {'state': new_property_state_serializer.data}
                         )
-                        # Removing organization key AND import_file key because they're not JSON-serializable
-                        # TODO find better solution
-                        if 'organization' in result['state']:
-                            result['state'].pop('organization')
-                        if 'import_file' in result['state']:
-                            result['state'].pop('import_file')
-
                         return JsonResponse(result, status=status.HTTP_200_OK)
                     else:
                         result.update({
@@ -712,15 +705,8 @@ class PropertyViewSet(GenericViewSet):
                         updated_property_state_serializer.save()
 
                         result.update(
-                            {'state': updated_property_state_serializer.validated_data}
+                            {'state': updated_property_state_serializer.data}
                         )
-                        # Removing organization key AND import_file key because they're not JSON-serializable
-                        # TODO find better solution
-                        if 'organization' in result['state']:
-                            result['state'].pop('organization')
-                        if 'import_file' in result['state']:
-                            result['state'].pop('import_file')
-
                         return JsonResponse(result, status=status.HTTP_200_OK)
                     else:
                         result.update({

@@ -477,12 +477,8 @@ class TaxLotViewSet(GenericViewSet):
                                                       record_type=AUDIT_USER_EDIT)
 
                         result.update(
-                            {'state': new_taxlot_state_serializer.validated_data}
+                            {'state': new_taxlot_state_serializer.data}
                         )
-                        # Removing organization key AND import_file key because they're not JSON-serializable
-                        # TODO find better solution
-                        result['state'].pop('organization')
-                        result['state'].pop('import_file')
 
                         return JsonResponse(result, status=status.HTTP_200_OK)
                     else:
@@ -507,14 +503,8 @@ class TaxLotViewSet(GenericViewSet):
                         updated_taxlot_state_serializer.save()
 
                         result.update(
-                            {'state': updated_taxlot_state_serializer.validated_data}
+                            {'state': updated_taxlot_state_serializer.data}
                         )
-                        # Removing organization key AND import_file key because they're not JSON-serializable
-                        # TODO find better solution
-                        if 'organization' in result['state']:
-                            result['state'].pop('organization')
-                        if 'import_file' in result['state']:
-                            result['state'].pop('import_file')
 
                         return JsonResponse(result, status=status.HTTP_200_OK)
                     else:
