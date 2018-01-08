@@ -247,6 +247,10 @@ class PropertyViewSet(GenericViewSet):
         """
         In general, we move the old relationships to the new state since the old state should not be
         accessible anymore. If we ever unmerge, then we need to decide who gets the data.. both?
+
+        :param old_state: PropertyState
+        :param new_state: PropertyState
+        :return: PropertyState, updated new_state
         """
         for s in old_state.scenarios.all():
             s.property_state = new_state
