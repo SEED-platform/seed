@@ -5,12 +5,12 @@
 
         </div>
         <div class="page_title">
-            <h1><i class="fa fa-sitemap"></i> {$ datasets.length | number:0 $}
-                <ng-pluralize count="datasets.length" when="{'one': 'Data Set','other': 'Data Sets'}"></ng-pluralize>
+            <h1><i class="fa fa-sitemap"></i>
+                <span translate translate-values="{ num: (datasets.length | number: 0) }">NUMBER_OF_DATASETS<span>
             </h1>
         </div>
         <div class="right page_action_container">
-            <a ui-sref="dataset_list" data-toggle="modal" data-target="#dataUploadModal" ng-click="open_data_upload_modal()" ng-show="::menu.user.organization.user_role !== 'viewer'">Create new data set</a>
+            <a ui-sref="dataset_list" data-toggle="modal" data-target="#dataUploadModal" ng-click="open_data_upload_modal()" ng-show="::menu.user.organization.user_role !== 'viewer'" translate>Create new data set</a>
         </div>
     </div>
 </div>
@@ -20,7 +20,7 @@
             <div class="table_list_container dataset_list" ng-cloak>
                 <table class="table table-striped sorted">
                     <tr>
-                        <th ng-repeat="c in ::columns">{$:: c.title $}</th>
+                        <th ng-repeat="c in ::columns">{$:: c.title | translate $}</th>
                     </tr>
 
                     <tr ng-repeat="d in datasets" class="import_row">
@@ -32,12 +32,12 @@
                             </span>
                             <form class="row action edit_file_name form form-inline edit_import_meta_form" role="form" sd-enter="save_dataset_name(d)" ng-show="d.edit_form_showing">
                                 <div class="form-group col-sm-8">
-                                    <label class="sr-only" for="editDatasetName">Edit Name</label>
-                                    <input class="form-control input-sm" id="editDatasetName" type="text" name="name" ng-model="d.name" style="width: 100%;">
+                                    <label class="sr-only" for="editDatasetName-{$ $index $}" translate>Edit Name</label>
+                                    <input class="form-control input-sm" id="editDatasetName-{$ $index $}" type="text" name="name" ng-model="d.name" style="width: 100%;">
                                 </div>
                                 <div class="form-group col-sm-4" style="text-align: right;">
-                                    <button type="button" class="cancel_button btn btn-sm" ng-click="cancel_edit_name(d)" value="Cancel">Cancel</button>
-                                    <button type="button" class="submit_button btn btn-sm btn-primary" ng-click="save_dataset_name(d)" ng-disabled="d.name === d.old_name" value="Save">Save</button>
+                                    <button type="button" class="cancel_button btn btn-sm" ng-click="cancel_edit_name(d)" value="Cancel" translate>Cancel</button>
+                                    <button type="button" class="submit_button btn btn-sm btn-primary" ng-click="save_dataset_name(d)" ng-disabled="d.name === d.old_name" value="Save" translate>Save</button>
                                 </div>
                             </form>
                         </td>
@@ -45,7 +45,7 @@
                         <td class="last_change last_changed">{$:: d.updated_at | fromNow $}</td>
                         <td class="last_change_user changed_by">{$:: d.last_modified_by $}</td>
                         <td class="status_details percent_done">
-                            <button type="button" class="btn btn-sm btn-primary" ng-click="open_data_upload_modal(d)">Add Data Files</button>
+                            <button type="button" class="btn btn-sm btn-primary" ng-click="open_data_upload_modal(d)" translate>Add Data Files</button>
                         </td>
                     </tr>
 

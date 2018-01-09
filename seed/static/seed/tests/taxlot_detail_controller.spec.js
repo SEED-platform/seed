@@ -12,6 +12,10 @@ describe('controller: inventory_detail_controller', function () {
 
   beforeEach(function () {
     module('BE.seed');
+    inject(function (_$httpBackend_) {
+      $httpBackend = _$httpBackend_;
+      $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
+    });
     inject(function ($controller, $rootScope, $state, $uibModal, $log, $filter, $stateParams, $q, urls, label_service, inventory_service) {
       controller = $controller;
       state = $state;

@@ -10,15 +10,20 @@ angular.module('BE.seed.controller.inventory_detail', [])
     '$log',
     '$filter',
     '$stateParams',
+    '$anchorScroll',
+    '$location',
     'urls',
     'label_service',
     'inventory_service',
     'inventory_payload',
     'columns',
     'labels_payload',
-    function ($state, $scope, $uibModal, $log, $filter, $stateParams, urls, label_service,
-              inventory_service, inventory_payload, columns, labels_payload) {
+    'flippers',
+    function ($state, $scope, $uibModal, $log, $filter, $stateParams, $anchorScroll, $location,
+              urls, label_service, inventory_service, inventory_payload, columns, labels_payload,
+              flippers) {
       $scope.inventory_type = $stateParams.inventory_type;
+
       $scope.inventory = {
         id: $stateParams.inventory_id,
         related: $scope.inventory_type === 'properties' ? inventory_payload.taxlots : inventory_payload.properties
@@ -31,6 +36,8 @@ angular.module('BE.seed.controller.inventory_detail', [])
       var localStorageKey = 'grid.' + $scope.inventory_type + '.detail';
 
       $scope.columns = inventory_service.loadSettings(localStorageKey, columns);
+
+      $scope.hide_bricr = !flippers.is_active('release:bricr');
 
       /** See service for structure of returned payload */
       $scope.historical_items = inventory_payload.history;
@@ -52,7 +59,6 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.user = {};
       $scope.user_role = inventory_payload.user_role;
 
-
       $scope.edit_form_showing = false;
 
       /** Holds a copy of original state of item_state.
@@ -67,6 +73,11 @@ angular.module('BE.seed.controller.inventory_detail', [])
 
       $scope.status = {
         isopen: false
+      };
+
+      $scope.gotoMeasureAnchor = function(x) {
+        $location.hash('measureAnchor' + x);
+        $anchorScroll();
       };
 
       $scope.init_labels = function (item) {

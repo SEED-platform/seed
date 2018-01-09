@@ -1,5 +1,5 @@
+# .git  # For now add in the .git repo so that the version is parsed on the page correctly
 .idea
-.git
 .tox
 collected_static
 media

@@ -372,67 +372,6 @@ epub_exclude_files = ['search.html']
 #epub_use_index = True
 
 
-# # formatters for API auto documentation
-import django
-
-django.setup()
-
-from seed.utils.api import get_api_endpoints
-
-api_endpoints = get_api_endpoints()
-endpoints_by_function = {fn.func_name: url for url, fn in api_endpoints.items()}
-
-
-def skip_non_api_methods(app, what, name, obj, skip, options):
-    """
-    Callback function for sphinx, to skip functions in modules linked
-    from api.rst that don't have is_api_endpoint set.
-    """
-    if app.env.docname != 'api':  # only apply this to api.rst
-        return skip
-
-    # if is_api_endpoint is True, don't skip (i.e. return False)
-    is_api_endpoint = getattr(obj, 'is_api_endpoint', False)
-    if is_api_endpoint:
-        return False  # don't skip api endpoints
-
-    return True  # skip everything else
-
-
-def format_api_docstring(app, what, name, obj, options, lines):
-    """
-    Add in the URI for the API end points into the documentation under the
-    header.
-
-    .. Note:: that sphinx expects lines to be modified in-place.
-    """
-    if app.env.docname != 'api':
-        return  # do nothing
-
-    is_api_endpoint = getattr(obj, 'is_api_endpoint', False)
-    if not is_api_endpoint:
-        while lines:
-            lines.pop()  # modify lines in-place
-        return
-
-    name = name.split('.')[-1]
-
-    if name in endpoints_by_function:
-        url_line = "**URI:** %s" % endpoints_by_function[name]
-        lines.insert(0, '')
-        lines.insert(0, url_line)
-
-
-def format_api_signature(app, what, name, obj, options, signature, return_annotation):
-    """
-    Clean up signatures for api endpoints.
-    """
-    if app.env.docname != 'api':
-        return (signature, return_annotation)
-
-    return (None, return_annotation)
-
-
 def process_remove_copyright_author(app, what, name, obj, options, docstringlines):
     """
     Clean up the docstrings and remove any of the copyright and author strings in the headers
@@ -452,7 +391,4 @@ def setup(app):
     """
     Called by sphinx to hook up event handlers.
     """
-    app.connect("autodoc-skip-member", skip_non_api_methods)
-    app.connect("autodoc-process-docstring", format_api_docstring)
-    app.connect("autodoc-process-signature", format_api_signature)
     app.connect("autodoc-process-docstring", process_remove_copyright_author)

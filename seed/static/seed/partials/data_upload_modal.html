@@ -1,105 +1,108 @@
 <div class="modal-header" ng-switch on="step.number">
-    <h4 class="modal-title" ng-switch-when="1">Create a New Data Set.</h4>
-    <h4 class="modal-title" ng-switch-when="2">Upload your data.</h4>
-    <h4 class="modal-title" ng-switch-when="3">Successful upload!</h4>
-    <h4 class="modal-title" ng-switch-when="4">Upload your energy data.</h4>
-    <h4 class="modal-title" ng-switch-when="5">Successful upload!</h4>
-    <h4 class="modal-title" ng-switch-when="6">What type of file would you like to upload?</h4>
-    <h4 class="modal-title" ng-switch-when="7">Finding inventory matches.</h4>
-    <h4 class="modal-title" ng-switch-when="8">Matching Results for file: <strong>{$ dataset.filename $}</strong></h4>
-    <h4 class="modal-title" ng-switch-when="9">Add files to {$ dataset.name $}.</h4>
-    <h4 class="modal-title" ng-switch-when="10">{$ step_10_title|titleCase $}</h4>
-    <h4 class="modal-title" ng-switch-when="11">Confirm Save Mappings?</h4>
-    <h4 class="modal-title" ng-switch-when="12">Error Processing Data</h4>
+    <h4 class="modal-title" ng-switch-when="1" translate>Create a New Data Set.</h4>
+    <h4 class="modal-title" ng-switch-when="2" translate>Upload your data.</h4>
+    <h4 class="modal-title" ng-switch-when="3" translate>Successful upload!</h4>
+    <h4 class="modal-title" ng-switch-when="4" translate>Upload your energy data.</h4>
+    <h4 class="modal-title" ng-switch-when="5" translate>Successful upload!</h4>
+    <h4 class="modal-title" ng-switch-when="6" translate>What type of file would you like to upload?</h4>
+    <h4 class="modal-title" ng-switch-when="7" translate>Finding inventory matches.</h4>
+    <h4 class="modal-title" ng-switch-when="8" translate="MATCHING_RESULTS_FOR_FILE" translate-values="{dataset_filename: dataset.filename}"></h4>
+    <h4 class="modal-title" ng-switch-when="9" translate="ADD_FILES_TO" translate-values="{dataset_name: dataset.name}"></h4>
+    <h4 class="modal-title" ng-switch-when="10">{$ step_10_title|translate|titleCase $}</h4>
+    <h4 class="modal-title" ng-switch-when="11" translate>Confirm Save Mappings?</h4>
+    <h4 class="modal-title" ng-switch-when="12" translate>Error Processing Data</h4>
+    <h4 class="modal-title" ng-switch-when="13" translate>Portfolio Manager Import</h4>
 </div>
 <div class="modal-body no_bottom_padding" ng-switch on="step.number">
     <!-- Step 1 -->
     <div class="data_upload_steps form-horizontal" ng-switch-when="1">
-        <div class="alert alert-danger" ng-show="dataset.alert">
-            The data set <strong>name "{$ dataset.name $}" already exists</strong>. Please select a new one.
-        </div>
+        <div class="alert alert-danger" ng-show="dataset.alert"
+            translate="DATASET_NAME_ALREADY_EXISTS"
+            translate-values="{ dataset_name: dataset.name }"></div>
         <div class="form-group" ng-class="{'has-error': dataset.alert, 'has-feedback': dataset.alert}">
-            <label class="control-label col-lg-3 col-sm-3" for="inputDataUploadName">Data Set Name</label>
+            <label class="control-label col-lg-3 col-sm-3" for="inputDataUploadName" translate>Data Set Name</label>
             <div class="col-lg-8 col-sm-8">
-                <input type="text" class="form-control" id="inputDataUploadName" ng-model="dataset.name" placeholder="your data set name" sd-enter="create_dataset(dataset.name)" required>
+                <input type="text" class="form-control" id="inputDataUploadName" ng-model="dataset.name" placeholder="{$:: 'your data set name' | translate $}" sd-enter="create_dataset(dataset.name)" required>
             </div>
         </div>
     </div>
     <!-- Step 2: Choose upload type -->
     <div class="data_upload_steps container-fluid" ng-switch-when="2">
-        <div class="alert alert-danger" ng-show="uploader.invalid_extension_alert">
-            <strong>Sorry!</strong> SEED doesn't currently support that file format. Only <strong>.csv</strong>,
-            <strong>.xls</strong>, <strong>.xlsx</strong>, and <strong>.xml</strong> files are supported.
-        </div>
+        <div class="alert alert-danger" ng-show="uploader.invalid_extension_alert" translate="INVALID_EXTENSION_ALERT"></div>
         <div class="row">
             <div class="col-sm-10 col-sm-offset-1" ng-hide="uploader.in_progress">
                 <div class="row">
-                    <label class="col-sm-3 col-sm-offset-1 control-label" for="selected-cycle" style="margin-top: 5px;">Time Period:</label>
+                    <label class="col-sm-3 col-sm-offset-1 control-label" for="selected-cycle" style="margin-top: 5px;" translate>Time Period</label>
                     <div class="col-sm-7">
                         <select id="selected-cycle" name="selected-cycle" class="form-control input-sm" ng-model="selectedCycle" ng-options="cycle.name for cycle in cycles track by cycle.id"></select>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-sm-10 col-sm-offset-4">
-                        <a ui-sref="organization_cycles(::{organization_id: organization.id})" ng-click="cancel()">Manage available cycles.</a>
+                        <a ui-sref="organization_cycles(::{organization_id: organization.id})" ng-click="cancel()" translate>Manage available cycles.</a>
                     </div>
                 </div>
             </div>
         </div>
         <div class="row">
-            <div class="col-sm-8 col-sm-offset-2" sd-uploader sourcetype="Assessed Raw" sourceprog="" sourcever="" importrecord="dataset.id" buttontext="Upload a Spreadsheet" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" ng-disabled="!selectedCycle" style="padding-top: 20px;"></div>
+            <div class="col-sm-8 col-sm-offset-2" sd-uploader sourcetype="Assessed Raw" sourceprog="" sourcever="" importrecord="dataset.id" buttontext="{$:: 'Upload a Spreadsheet' | translate $}" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" ng-disabled="!selectedCycle" style="padding-top: 20px;"></div>
         </div>
         <div class="row">
-            <div class="col-sm-8 col-sm-offset-2" sd-uploader sourcetype="Assessed Raw" sourceprog="PortfolioManager" sourcever="1.0" importrecord="dataset.id" buttontext="Upload Portfolio Manager Data" eventfunc="uploaderfunc(message, file, progress)" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress"></div>
+            <div class="col-sm-8 col-sm-offset-2" sd-uploader sourcetype="Assessed Raw" sourceprog="PortfolioManager" sourcever="1.0" importrecord="dataset.id" buttontext="{$:: 'Upload Portfolio Manager Data' | translate $}" eventfunc="uploaderfunc(message, file, progress)" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress"></div>
+        </div>
+        <div class="row">
+            <div class="col-sm-8 col-sm-offset-2" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress">
+                <div class="btn btn-primary" style="display: block; font-weight: bold;" ng-click="goto_step(13)">Import Portfolio Manager Data</div>
+            </div>
         </div>
         <div class="row">
             <div class="col-sm-9 col-sm-offset-2" ng-hide="uploader.in_progress">
                 <!--<div class="row">-->
                     <!--<span class="col-xs-1"><input type="checkbox" id="use-field-option" name="pm-cycle-option" ng-model="useField" ng-init="useField = true" value="field"></span>-->
-                    <!--<label class="col-sm-7 control-label" for="use-field-option">Determine Time Period from Field:</label>-->
-                    <!--<span class="col-sm-4">Year Ending</span>-->
+                    <!--<label class="col-sm-7 control-label" for="use-field-option" translate>Determine Time Period from Field:</label>-->
+                    <!--<span class="col-sm-4" translate>Year Ending</span>-->
                 <!--</div>-->
             </div>
         </div>
         <div class="row">
-            <div class="col-sm-8 col-sm-offset-2 green_button" sd-uploader sourcetype="Green Button Raw" sourceprog="" sourcever="" importrecord="dataset.id" buttontext="Upload Green Button Data" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" ng-disabled="true" style="padding-top: 10px;">Upload Green Button Data</div>
+            <div class="col-sm-8 col-sm-offset-2 green_button" sd-uploader sourcetype="Green Button Raw" sourceprog="" sourcever="" importrecord="dataset.id" buttontext="{$:: 'Upload Green Button Data' | translate $}" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" ng-disabled="true" style="padding-top: 10px;"></div>
         </div>
         <div class="progress_bar_container" ng-show="uploader.in_progress">
-            <div class="progress_bar_copy_top">Uploading <strong>{$ dataset.filename $}</strong></div>
+            <div class="progress_bar_copy_top"
+                 translate="UPLOADING_PROGRESS"
+                 translate-values="{ dataset_filename: dataset.filename }"></div>
 
             <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
-            <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$ uploader.status_message $}</div>
+            <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$ uploader.status_message | translate $}</div>
         </div>
         <div ng-hide="uploader.in_progress" style="margin-top: 30px;">
             <div>
-                <p>File types supported: <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, and
-                    <strong>.xml</strong>.</p>
-                <p><strong>Note:</strong> multi-sheet Excel files are not currently supported.</p>
+              <p translate>FILE_TYPES_SUPPORTED</p>
+              <p translate>MULTI_FILE_EXCEL_NOT_SUPPORTED</p>
             </div>
         </div>
     </div>
     <!-- Step 3 -->
     <div class="data_upload_steps" ng-switch-when="3">
         <div class="row">
-            <div class="alert alert-success">
-                <strong>{$ dataset.filename $}</strong> has been uploaded to <strong>{$ dataset.name $}</strong>.
-            </div>
+            <div class="alert alert-success"
+            translate="DATASET_FILENAME_UPLOADED_TO"
+            translate-values="{ dataset_name: dataset.name , dataset_filename: dataset.filename }"></div>
         </div>
     </div>
     <!-- Step 4: load Portfolio Manager report data -->
     <div class="data_upload_steps" ng-switch-when="4">
         <div class="row">
-            <div class="alert alert-danger" ng-show="uploader.invalid_extension_alert">
-                <strong>Sorry!</strong> SEED doesn't currently support that file format. Only <strong>.csv</strong>,
-                <strong>.xls</strong>, <strong>.xlsx</strong>, and <strong>.xml</strong> files are supported.
-            </div>
+            <div class="alert alert-danger" ng-show="uploader.invalid_extension_alert" translate="INVALID_EXTENSION_ALERT"></div>
             <div class="form-group col-sm-12">
-                <div sd-uploader sourcetype="Portfolio Raw" importrecord="dataset.id" buttontext="Upload your energy data file(s)" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress"></div>
+                <div sd-uploader sourcetype="Portfolio Raw" importrecord="dataset.id" buttontext="{$:: 'Upload your energy data file(s)' | translate $}" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress"></div>
                 <div class="progress_bar_container" ng-show="uploader.in_progress">
-                    <div class="progress_bar_copy_top">Uploading <strong>{$ dataset.filename $}</strong></div>
+                    <div class="progress_bar_copy_top"
+                         translate="UPLOADING_PROGRESS"
+                         translate-values="{ dataset_filename: dataset.filename }"></div>
 
                     <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
-                    <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$ uploader.status_message $}</div>
+                    <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$ uploader.status_message | translate$}</div>
                 </div>
             </div>
         </div>
@@ -107,17 +110,17 @@
     <!-- Step 5 -->
     <div class="data_upload_steps" ng-switch-when="5">
         <div class="row">
-            <div class="alert alert-success" ng-show="uploader.complete">
-                <strong>{$ dataset.filename $}</strong> has been uploaded to <strong>{$ dataset.name $}</strong>.
-            </div>
+            <div class="alert alert-success"
+            translate="DATASET_FILENAME_UPLOADED_TO"
+            translate-values="{ dataset_name: dataset.name , dataset_filename: dataset.filename }"></div>
         </div>
     </div>
     <!-- Step 6 -->
     <div class="data_upload_steps" ng-switch-when="6">
         <div class="row">
             <div class="form-group col-sm-12">
-                <button type="button" class="btn btn-primary" ng-click="goto_step(2)">Inventory list file</button>
-                <button type="button" class="btn btn-primary" ng-click="goto_step(4)">Energy data file</button>
+                <button type="button" class="btn btn-primary" ng-click="goto_step(2)" translate>Inventory list file</button>
+                <button type="button" class="btn btn-primary" ng-click="goto_step(4)" translate>Energy data file</button>
             </div>
         </div>
     </div>
@@ -126,10 +129,10 @@
         <div class="row">
             <div class="form-group col-sm-12">
                 <div class="progress_bar_container">
-                    <div class="progress_bar_copy_top">Finding inventory matches for
+                    <div class="progress_bar_copy_top">{$:: 'Finding inventory matches for' | translate $}
                         <strong>{$ dataset.filename $}</strong></div>
                     <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
-                    <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% Complete</div>
+                    <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $}</div>
                 </div>
             </div>
         </div>
@@ -139,15 +142,15 @@
         <div class="row">
             <div class="alert alert-success">
                 <ul>
-                    <li>Total rows in the import file: {$ import_file_records|number:0 $}</li>
-                    <li ng-if="unmatched_properties">New properties: {$ unmatched_properties|number:0 $}</li>
-                    <li ng-if="unmatched_taxlots">New tax lots: {$ unmatched_taxlots|number:0 $}</li>
-                    <li ng-if="matched_properties">Merged properties: {$ matched_properties|number:0 $}</li>
-                    <li ng-if="matched_taxlots">Merged tax lots: {$ matched_taxlots|number:0 $}</li>
-                    <li ng-if="duplicate_property_states">Ignored property duplicates within the import file: {$ duplicate_property_states|number:0 $}</li>
-                    <li ng-if="duplicate_tax_lot_states">Ignored tax lot duplicates within the import file: {$ duplicate_tax_lot_states|number:0 $}</li>
-                    <li ng-if="duplicates_of_existing_property_states">Ignored duplicates of existing properties: {$ duplicates_of_existing_property_states|number:0 $}</li>
-                    <li ng-if="duplicates_of_existing_taxlot_states">Ignored duplicates of existing tax lots: {$ duplicates_of_existing_taxlot_states|number:0 $}</li>
+                    <li>{$:: 'Total rows in the import file' | translate $}: {$ import_file_records|number:0 $}</li>
+                    <li ng-if="unmatched_properties">{$:: 'New properties' | translate $}: {$ unmatched_properties|number:0 $}</li>
+                    <li ng-if="unmatched_taxlots">{$:: 'New tax lots' | translate $}: {$ unmatched_taxlots|number:0 $}</li>
+                    <li ng-if="matched_properties">{$:: 'Merged properties' | translate $}: {$ matched_properties|number:0 $}</li>
+                    <li ng-if="matched_taxlots">{$:: 'Merged tax lots' | translate $}: {$ matched_taxlots|number:0 $}</li>
+                    <li ng-if="duplicate_property_states">{$:: 'Ignored property duplicates within the import file' | translate $}: {$ duplicate_property_states|number:0 $}</li>
+                    <li ng-if="duplicate_tax_lot_states">{$:: 'Ignored tax lot duplicates within the import file' | translate $}: {$ duplicate_tax_lot_states|number:0 $}</li>
+                    <li ng-if="duplicates_of_existing_property_states">{$:: 'Ignored duplicates of existing properties' | translate $}: {$ duplicates_of_existing_property_states|number:0 $}</li>
+                    <li ng-if="duplicates_of_existing_taxlot_states">{$:: 'Ignored duplicates of existing tax lots' | translate $}: {$ duplicates_of_existing_taxlot_states|number:0 $}</li>
                 </ul>
             </div>
         </div>
@@ -155,9 +158,7 @@
     <!-- Step 9: Select the type of file to upload. -->
     <div class="data_upload_steps" ng-switch-when="9">
         <div class="row">
-            <div class="form-group col-sm-12">
-                Select the type of file(s) you would like to add to {$ dataset.name $}.
-            </div>
+            <div class="form-group col-sm-12" translate="SELECT_THE_TYPE_OF_FILE_TO_ADD_TO_DATASET" translation-values="{ dataset_name: dataset.name }"></div>
         </div>
     </div>
     <!-- Step 10: No matches -->
@@ -165,20 +166,20 @@
         <div class="row">
             <div class="alert alert-success">
                 <ul>
-                    <li>Total rows in the import file: {$ import_file_records|number:0 $}</li>
-                    <li ng-if="unmatched_properties">New properties: {$ unmatched_properties|number:0 $}</li>
-                    <li ng-if="unmatched_taxlots">New tax lots: {$ unmatched_taxlots|number:0 $}</li>
-                    <li ng-if="matched_properties">Merged properties: {$ matched_properties|number:0 $}</li>
-                    <li ng-if="matched_taxlots">Merged tax lots: {$ matched_taxlots|number:0 $}</li>
-                    <li ng-if="duplicate_property_states">Ignored property duplicates within the import file: {$ duplicate_property_states|number:0 $}</li>
-                    <li ng-if="duplicate_tax_lot_states">Ignored tax lot duplicates within the import file: {$ duplicate_tax_lot_states|number:0 $}</li>
-                    <li ng-if="duplicates_of_existing_property_states">Ignored duplicates of existing properties: {$ duplicates_of_existing_property_states|number:0 $}</li>
-                    <li ng-if="duplicates_of_existing_taxlot_states">Ignored duplicates of existing tax lots: {$ duplicates_of_existing_taxlot_states|number:0 $}</li>
+                    <li>{$:: 'Total rows in the import file' | translate $}: {$ import_file_records|number:0 $}</li>
+                    <li ng-if="unmatched_properties">{$:: 'New properties' | translate $}: {$ unmatched_properties|number:0 $}</li>
+                    <li ng-if="unmatched_taxlots">{$:: 'New tax lots' | translate $}: {$ unmatched_taxlots|number:0 $}</li>
+                    <li ng-if="matched_properties">{$:: 'Merged properties' | translate $}: {$ matched_properties|number:0 $}</li>
+                    <li ng-if="matched_taxlots">{$:: 'Merged tax lots' | translate $}: {$ matched_taxlots|number:0 $}</li>
+                    <li ng-if="duplicate_property_states">{$:: 'Ignored property duplicates within the import file' | translate $}: {$ duplicate_property_states|number:0 $}</li>
+                    <li ng-if="duplicate_tax_lot_states">{$:: 'Ignored tax lot duplicates within the import file' | translate $}: {$ duplicate_tax_lot_states|number:0 $}</li>
+                    <li ng-if="duplicates_of_existing_property_states">{$:: 'Ignored duplicates of existing properties' | translate $}: {$ duplicates_of_existing_property_states|number:0 $}</li>
+                    <li ng-if="duplicates_of_existing_taxlot_states">{$:: 'Ignored duplicates of existing tax lots' | translate $}: {$ duplicates_of_existing_taxlot_states|number:0 $}</li>
                 </ul>
             </div>
             <div class="alert alert-{$ step_10_style $}">
-                <span ng-show="step_10_error_message">{$ step_10_error_message $}</span>
-                <span ng-hide="step_10_error_message"><strong>SEED could not locate any existing matches</strong>. Would you like to add another file?</span>
+                <span ng-show="step_10_error_message">{$ step_10_error_message | translate $}</span>
+                <span ng-hide="step_10_error_message" translate="COULD_NOT_LOCATE_MATCHES"></span>
             </div>
             <div class="form-group col-sm-12"></div>
         </div>
@@ -186,9 +187,7 @@
     <!-- Step 11: Save Mappings Permanently  -->
     <div class="data_upload_steps" ng-switch-when="11">
         <div class="row">
-            <div class="alert alert-warning">
-                Did you review your mappings? It's a good idea to double check your mappings. Once SEED matches your properties &amp; tax lots you cannot undo or edit these mappings.
-            </div>
+            <div class="alert alert-warning" translate>DID_YOU_REVIEW_YOUR_MAPPINGS</div>
         </div>
     </div>
     <!-- Step 12: Error Processing Data  -->
@@ -196,9 +195,43 @@
         <div class="row">
             <div class="col-sm-12">
                 <div>
-                    <p>An error occurred while processing the file. Please ensure that your file meets the required specifications.</p>
-                    <pre ng-class="{'pre-scrollable': step_12_error_message.length >= 300}" ng-show="step_12_error_message">{$ step_12_error_message $}</pre>
+                    <p translate>An error occurred while processing the file. Please ensure that your file meets the required specifications.</p>
+                    <pre ng-class="{'pre-scrollable': step_12_error_message.length >= 300}" ng-show="step_12_error_message">{$ step_12_error_message | translate $}</pre>
                 </div>
+            </div>
+        </div>
+    </div>
+    <!-- Step 13: Portfolio Manager Data Import -->
+    <div class="data_upload_steps pm_import" ng-switch-when="13">
+        <div class="alert alert-danger" ng-show="pm_error_alert">{$ pm_error_alert $}</div>
+        <div class="row" style="padding-bottom:10px">
+            <label class="control-label col-lg-4 col-sm-4" for="inputPMUsername">Portfolio Manager Username</label>
+            <div class="col-lg-8 col-sm-8">
+                <input type="text" class="form-control" id="inputPMUsername" name="username" ng-model="pm_username" ng-disabled="!pm_buttons_enabled" required>
+            </div>
+        </div>
+        <div class="row" style="padding-bottom:10px">
+            <label class="control-label col-lg-4 col-sm-4" for="inputPMPassword">Portfolio Manager Password</label>
+            <div class="col-lg-8 col-sm-8">
+                <input type="password" class="form-control" id="inputPMPassword" name="password" ng-model="pm_password" ng-disabled="!pm_buttons_enabled" required>
+            </div>
+        </div>
+        <div class="row" style="padding-bottom:10px">
+            <div class="col-lg-4 col-sm-4"></div>
+            <div class="col-lg-8 col-sm-8">
+                <div class="btn btn-primary" style="display: block; font-weight: bold;" ng-disabled="!pm_buttons_enabled" ng-click="get_pm_report_template_names(pm_username, pm_password);">Get Report Templates</div>
+            </div>
+        </div>
+        <div class="row" style="padding-bottom:10px">
+            <label class="control-label col-lg-4 col-sm-4" for="inputPMReportTemplateName">Report Template Name <small>{$ pm_templates.length ? '(' + pm_templates.length + ')' : '' $}</small></label>
+            <div class="col-lg-8 col-sm-8">
+                <select ng-model="pm_template" ng-disabled="!pm_buttons_enabled" ng-options="x.name for x in pm_templates"></select>
+            </div>
+        </div>
+        <div class="row" style="padding-bottom:10px">
+            <div class="col-lg-4 col-sm-4"></div>
+            <div class="col-lg-8 col-sm-8">
+                <div class="btn btn-primary" style="display: block; font-weight: bold;" ng-disabled="!pm_buttons_enabled || !pm_template" ng-click="get_pm_report(pm_username, pm_password, pm_template);">Submit</div>
             </div>
         </div>
     </div>
@@ -207,7 +240,7 @@
 <div class="modal-footer container-fluid" ng-switch on="step.number">
     <div ng-switch-when="1">
         <div class="row text-center">
-            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="create_dataset(dataset.name)" ng-disabled="dataset.disabled()">Create Data Set</button>
+            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="create_dataset(dataset.name)" ng-disabled="dataset.disabled()" translate>Create Data Set</button>
         </div>
     </div>
     <div ng-switch-when="2"></div>
@@ -215,49 +248,49 @@
         <!-- Leaving this out for now as I'm not sure we want to allow the user to do this right here.
         <button type="button" class="btn btn-default">Upload another building list file</button> -->
         <div class="row text-center">
-            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="goto_data_mapping()">Continue to data mapping</button>
+            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="goto_data_mapping()" translate>Continue to data mapping</button>
         </div>
     </div>
     <div ng-switch-when="4"></div>
     <div ng-switch-when="5">
         <div class="row text-center">
-            <button type="button" class="btn btn-default col-sm-6" center-block ng-click="goto_step(4)">Upload another energy data file</button>
+            <button type="button" class="btn btn-default col-sm-6" center-block ng-click="goto_step(4)" translate>Upload another energy data file</button>
         </div>
         <div class="row text-center">
-            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="goto_data_matching()">Continue to data matching</button>
+            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="goto_data_matching()" translate>Continue to data matching</button>
         </div>
     </div>
     <div ng-switch-when="7"></div>
     <div ng-switch-when="8">
         <div class="row text-center">
-            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="goto_step(2)">Add another file</button>
+            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="goto_step(2)" translate>Add another file</button>
         </div>
         <div class="row text-center">
-            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="view_my_properties()">View my properties</button>
+            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="view_my_properties()" translate>View my properties</button>
         </div>
         <div class="row text-center">
-            <button id="review-mapping" type="button" class="btn btn-primary col-sm-6 center-block" ng-click="goto_data_matching()">Review matches</button>
+            <button id="review-mapping" type="button" class="btn btn-primary col-sm-6 center-block" ng-click="goto_data_matching()" translate>Review matches</button>
         </div>
     </div>
     <div ng-switch-when="9">
         <div class="row text-center">
-            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="goto_step(2)">Add another file</button>
+            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="goto_step(2)" translate>Add another file</button>
         </div>
     </div>
     <div ng-switch-when="10">
         <div class="row text-center">
-            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="goto_step(2)">Add another file</button>
+            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="goto_step(2)" translate>Add another file</button>
         </div>
         <div class="row text-center">
-            <button id="view-buildings" type="button" class="btn btn-primary col-sm-6 center-block" ng-click="view_my_properties()">View my properties</button>
+            <button id="view-buildings" type="button" class="btn btn-primary col-sm-6 center-block" ng-click="view_my_properties()" translate>View my properties</button>
         </div>
     </div>
     <div ng-switch-when="11">
         <div class="row text-center">
-            <button type="button" id="confirm-mapping" class="btn btn-primary col-sm-6 center-block" ng-click="save_mappings()">Confirm mappings &amp; start matching</button>
+            <button type="button" id="confirm-mapping" class="btn btn-primary col-sm-6 center-block" ng-click="save_mappings()" translate>CONFIRM_AND_START_MATCHING</button>
         </div>
     </div>
     <div class="row text-center">
-        <button type="button" class="btn btn-default col-sm-6 center-block" ng-click="cancel()">Dismiss</button>
+        <button type="button" class="btn btn-default col-sm-6 center-block" ng-click="cancel()" translate>Dismiss</button>
     </div>
 </div>

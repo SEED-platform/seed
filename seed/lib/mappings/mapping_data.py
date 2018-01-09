@@ -45,7 +45,7 @@ class MappingData(object):
                     'table': 'PropertyState',
                     'name': f.name,
                     'type': f.get_internal_type() if f.get_internal_type else 'string',
-                    'js_type': self.normalize_mappable_type(f.get_internal_type()),
+                    'js_type': self._normalize_mappable_type(f.get_internal_type()),
                     'schema': 'BEDES',
                     'extra_data': False,
                 }
@@ -58,7 +58,7 @@ class MappingData(object):
                     'table': 'TaxLotState',
                     'name': f.name,
                     'type': f.get_internal_type() if f.get_internal_type else 'string',
-                    'js_type': self.normalize_mappable_type(f.get_internal_type()),
+                    'js_type': self._normalize_mappable_type(f.get_internal_type()),
                     'schema': 'BEDES',
                     'extra_data': False,
                 }
@@ -67,7 +67,7 @@ class MappingData(object):
 
         self.sort_data()
 
-    def normalize_mappable_type(self, in_str):
+    def _normalize_mappable_type(self, in_str):
         """
         Normalize the data types for when we communicate the fields in JavaScript. ensures that the data
         types are consistent.
@@ -103,7 +103,7 @@ class MappingData(object):
                 {
                     'name': c.column_name,
                     'type': unit,
-                    'js_type': self.normalize_mappable_type(unit),
+                    'js_type': self._normalize_mappable_type(unit),
                     'schema': 'BEDES',
                     'table': c.table_name,
                     'extra_data': True,

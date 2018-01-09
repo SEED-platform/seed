@@ -1,3 +1,27 @@
+# SEED Version 2.3
+
+Closed Issues: 5
+- Fixed [#148]( https://github.com/SEED-platform/seed/issues/148 ), For PM mapping, add feature to remember user defined mappings
+- Fixed [#1238]( https://github.com/SEED-platform/seed/issues/1238 ), Add option in mapping to map all fields to original file field names
+- Fixed [#1298]( https://github.com/SEED-platform/seed/issues/1298 ), Add Import Date as a viewable field in List and Detail view
+- Fixed [#1499]( https://github.com/SEED-platform/seed/issues/1499 ), Functionality different between two servers with same deployment
+- Fixed [#1501]( https://github.com/SEED-platform/seed/issues/1501 ), migrate django password reset to class based views
+
+Accepted Pull Requests: 15
+- Fixed [#1491]( https://github.com/SEED-platform/seed/pull/1491 ), BRICR Support - BuildingSync, Measures, Scenarios, etc.
+- Fixed [#1492]( https://github.com/SEED-platform/seed/pull/1492 ), OGBS - French (Canada) localization
+- Fixed [#1507]( https://github.com/SEED-platform/seed/pull/1507 ), removing instruction to python setup.py install
+- Fixed [#1514]( https://github.com/SEED-platform/seed/pull/1514 ), Simplify API auth docs
+- Fixed [#1515]( https://github.com/SEED-platform/seed/pull/1515 ), Import date field
+- Fixed [#1516]( https://github.com/SEED-platform/seed/pull/1516 ), HPXML Integration
+- Fixed [#1517]( https://github.com/SEED-platform/seed/pull/1517 ), Bricr buildingsync upload
+- Fixed [#1518]( https://github.com/SEED-platform/seed/pull/1518 ), Tightens up check for whether celery's running in dev
+- Fixed [#1519]( https://github.com/SEED-platform/seed/pull/1519 ), save pm mapping changes to database.
+- Fixed [#1520]( https://github.com/SEED-platform/seed/pull/1520 ), Translation example
+- Fixed [#1521]( https://github.com/SEED-platform/seed/pull/1521 ), Add UBID
+- Fixed [#1522]( https://github.com/SEED-platform/seed/pull/1522 ), Fixes HTML error in sub-org submit button
+- Fixed [#1526]( https://github.com/SEED-platform/seed/pull/1526 ), Update ubid in example files
+
 # SEED Version 2.2.1
 
 Closed Issues: 5

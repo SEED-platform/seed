@@ -70,18 +70,17 @@ class FakePropertyStateExtraDataFactory(BaseFake):
         :return: a dict of pseudo random data for use with properties
         """
 
-        property_extra_data = {"CoStar Property ID": self.fake.numerify(text='#######'),
-                               "Organization": organization.name,
-                               "Compliance Required": self.fake.random_element(elements=COMPLIANCE),
-                               "County": self.fake.random_element(elements=COUNTIES),
-                               "Date / Last Personal Correspondence": self.fake.date(
-                                   pattern='%m/%d/%Y'),
-                               "property_extra_data_field_1": "property_extra_data_field_" + str(
-                                   id),
-                               "Does Not Need to Comply": self.fake.random_element(
-                                   elements=COMPLIANCE)}
+        property_extra_data = {
+            "CoStar Property ID": self.fake.numerify(text='#######'),
+            "Organization": organization.name,
+            "Compliance Required": self.fake.random_element(elements=COMPLIANCE),
+            "County": self.fake.random_element(elements=COUNTIES),
+            "Date / Last Personal Correspondence": self.fake.date(pattern='%m/%d/%Y'),
+            "property_extra_data_field_1": "property_extra_data_field_" + str(id),
+            "Does Not Need to Comply": self.fake.random_element(elements=COMPLIANCE)
+        }
 
-        property_extra_data = {k: str(v) for k, v in property_extra_data.iteritems()}
+        property_extra_data = {k: str(v) for k, v in property_extra_data.items()}
 
         return property_extra_data
 
@@ -369,7 +368,7 @@ def create_cases(org, cycle, tax_lots, properties):
         def _create_state(view_model, state_model, org, state_def):
             state, created = state_model.objects.get_or_create(**state_def)
             if not created and not view_model.objects.filter(state=state).filter(
-                    cycle__organization=org).exists():
+                cycle__organization=org).exists():
                 state = state_model.objects.create(**state_def)
                 created = True
             return state, created

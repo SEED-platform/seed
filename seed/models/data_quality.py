@@ -504,7 +504,7 @@ class DataQualityCheck(models.Model):
         dq, _ = DataQualityCheck.objects.get_or_create(organization=organization)
 
         if dq.rules.count() == 0:
-            _log.debug("No rules found in DataQualityCheck, initializing default rules")
+            # _log.debug("No rules found in DataQualityCheck, initializing default rules")
             dq.initialize_rules()
 
         return dq

@@ -33,13 +33,14 @@ class MappingColumns(object):
     """
 
     # TODO: convert dest_columns to mapping_data class instance
-    def __init__(self, raw_columns, dest_columns, previous_mapping=None, map_args=None,
+    def __init__(self, raw_columns, dest_columns, previous_mapping=None, map_args=None, default_mappings=None,
                  threshold=0):
         """
         :param raw_columns: list of str. The column names we're trying to map.
         :param dest_columns: list of str. The columns we're mapping to.
         :param previous_mapping: Method that contains previous mapped columns
-        :param map_args: .. todo: document as I have no idea what this is doing.
+        :param map_args: Arguments to pass into the previous_mapping method (e.g. Organzation ID)
+        :param default_mappings: dict of mappings. Use these mappings if the column is not found in the previous mapping call
         :param thresh: int, Minimum value of the matching confidence to allow for matching.
         """
         self.data = {}
@@ -52,6 +53,8 @@ class MappingColumns(object):
                 mapping = previous_mapping(raw, *args)
                 if mapping:
                     self.add_mappings(raw, [mapping], True)
+                elif default_mappings and raw in default_mappings.keys():
+                    self.add_mappings(raw, [default_mappings[raw]], True)
                 else:
                     attempt_best_match = True
             else:
@@ -80,7 +83,7 @@ class MappingColumns(object):
                 # go get the top 5 matches. format will be [('PropertyState', 'building_count', 62), ...]
                 self.add_mappings(raw, matches)
 
-        # convert this to an exception and catch it some day...
+        # convert this to an exception and catch it some day.
         index = 0
         while self.duplicates and index < 10:
             index += 1
@@ -220,8 +223,7 @@ class MappingColumns(object):
                 _log.info("The mappings have a None table or column name")
                 self.data[raw_column]['initial_mapping_cmp'] = None
         else:
-            # if there are no mappings left, then the mapping suggestion will look like
-            # extra data
+            # if there are no mappings left, then the mapping suggestion will look like extra data
             # print "Setting set_initial_mapping to None for {}".format(raw_column)
             self.data[raw_column]['initial_mapping_cmp'] = None
 

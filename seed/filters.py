@@ -12,7 +12,6 @@ from seed import search
 
 
 class LabelFilterBackend(filters.BaseFilterBackend):
-
     def filter_queryset(self, request, queryset, view):
         if 'organization_id' in request.query_params:
             return queryset.filter(

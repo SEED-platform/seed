@@ -3,27 +3,26 @@
     <div class="section_content">
       <div class="home_jump_nav_container">
         <div class="home_jump_nav">
-          <a id="nav-inventory" ui-sref="inventory_list(::{inventory_type: 'properties'})"><span ng-include="'/static/seed/images/icon-city.svg'"></span>Inventory</a>
-          <a id="nav-data" ui-sref="dataset_list" ng-show="::menu.user.organization.user_role !== 'viewer'"><i class="fa fa-sitemap"></i>Data</a>
-          <a ui-sref="contact"><i class="fa fa-question-circle"></i>Contact</a>
+          <a id="nav-inventory" ui-sref="inventory_list(::{inventory_type: 'properties'})"><span ng-include="'/static/seed/images/icon-city.svg'"></span>{$:: 'Inventory' | translate $}</a>
+          <a id="nav-data" ui-sref="dataset_list" ng-show="::menu.user.organization.user_role !== 'viewer'"><i class="fa fa-sitemap"></i>{$:: 'Data' | translate $}</a>
+          <a ui-sref="contact"><i class="fa fa-question-circle"></i>{$:: 'Contact' | translate $}</a>
         </div>
       </div>
       <div class="jumbotron">
         <div class="home_hero_content_container">
-          <h1>Getting Started</h1>
+          <h1 translate>Getting Started</h1>
 
-          <p>The DOE developed the Standard Energy Efficiency Data
-          (SEED) Platform&#0153; as a free software tool that provides
-          a standardized format for collecting, storing and analyzing
-          building energy performance information about large
-          portfolios. Upload your buildings list to get started.</p>
+          <p translate>The DOE developed the Standard Energy Efficiency Data (SEED) Platform™ as a free software tool that provides a standardized format for collecting, storing and analyzing building energy performance information about large portfolios. Upload your buildings list to get started.</p>
 
-          <p><a data-toggle="modal" data-target="#dataUploadModal" ng-click="open_data_upload_modal()" class="btn btn-primary btn-lg" role="button" ng-hide="menu.user.organization.user_role === 'viewer'"><i class="fa fa-cloud-upload"></i>&nbsp;&nbsp;Upload your buildings list</a> <a ng-href="{$ urls.static_url $}seed/pdf/SEED_Platform_V1_3_Getting_Started_Guide.pdf" target="_blank" title="SEED_v1.3_User_Guide" class="btn btn-warning btn-lg" role="button"><i class="fa fa-file-text"></i>&nbsp;&nbsp;Getting Started Guide</a></p>
+          <p><a data-toggle="modal" data-target="#dataUploadModal" ng-click="open_data_upload_modal()" class="btn btn-primary btn-lg" role="button" ng-hide="menu.user.organization.user_role === 'viewer'"><i class="fa fa-cloud-upload"></i>&nbsp;&nbsp;{$:: 'Upload your buildings list' | translate $}</a> <a ng-href="{$ urls.static_url $}seed/pdf/SEED_Platform_V1_3_Getting_Started_Guide.pdf" target="_blank" title="SEED_v1.3_User_Guide" class="btn btn-warning btn-lg" role="button"><i class="fa fa-file-text"></i>&nbsp;&nbsp;{$:: 'Getting Started Guide' | translate $}</a></p>
         </div>
       </div>
       <div class="whats_new_container">
         <div class="whats_new">
-          <h2>Highlights of SEED Platform&#0153;</h2>
+          <h2 translate>Highlights of SEED Platform™</h2>
+
+          <!-- <p translate="XSS_TEST" -->
+          <!--    translate-values="{ injectedText: '<script>alert(\'XSS IN INJECTED VALUE!\');</script>' }"></p> -->
 
           <div class="row">
             <div class="content_col col-md-4">
@@ -32,19 +31,14 @@
                   <span><i class="fa fa-cloud-upload"></i></span>
                 </div>
                 <div class="content_col_header_right">
-                  <h3>Upload your data</h3>
+                  <h3 translate>Upload your data</h3>
                 </div>
               </div>
               <div class="copy">
 
-                <p>Get started using SEED Platform&#0153; by uploading your buildings
-                list (city tax assessor data) and then your EPA
-                Portfolio Manager data. Make sure these files are each
-                in .csv, .xls, .xlsx, or .xml format. The SEED
-                Platform will help you map and validate your data in
-                the process of loading.</p>
+                <p translate>MARKETING_BULLET_1</p>
 
-                <p><a ng-href="{$ urls.static_url $}seed/sample-data/seed-sample-data.zip" class="btn btn-info" role="button"><i class="fa fa-cloud-download"></i>&nbsp;&nbsp;Download Sample Data</a></p>
+                <p><a ng-href="{$ urls.static_url $}seed/sample-data/seed-sample-data.zip" class="btn btn-info" role="button"><i class="fa fa-cloud-download"></i>&nbsp;&nbsp;{$:: 'Download Sample Data' | translate $}</a></p>
 
 
               </div>
@@ -55,16 +49,12 @@
                   <span><i class="fa fa-exchange"></i></span>
                 </div>
                 <div class="content_col_header_right">
-                  <h3>Match your data</h3>
+                  <h3 translate>Match your data</h3>
                 </div>
               </div>
               <div class="copy">
 
-                <p>Match-up your buildings list with the Portfolio
-                Manager dataset to tie building records together. SEED
-                Platform will help you by auto-matching high confidence
-                pairings and then provide you with tools to match the
-                rest of your dataset.</p>
+                <p translate>MARKETING_BULLET_2</p>
 
               </div>
             </div>
@@ -74,11 +64,11 @@
                   <span><i class="fa fa-check-square"></i></span>
                 </div>
                 <div class="content_col_header_right">
-                  <h3>Manage compliance</h3>
+                  <h3 translate>Manage compliance</h3>
                 </div>
               </div>
               <div class="copy">
-                <p>Use SEED Platform's flexible, easy-to-use labeling system and inventory groupings to track the status of data submission, review, and compliance.</p>
+                <p translate>MARKETING_BULLET_3</p>
               </div>
             </div>
           </div>

@@ -196,6 +196,18 @@ class TaxLotProperty(models.Model):
             if join_dict.get('generation_date'):
                 join_dict['generation_date'] = make_naive(join_dict['generation_date']).isoformat()
 
+            if join_dict.get('analysis_start_time'):
+                join_dict['analysis_start_time'] = make_naive(
+                    join_dict['analysis_start_time']).isoformat()
+
+            if join_dict.get('analysis_end_time'):
+                join_dict['analysis_end_time'] = make_naive(
+                    join_dict['analysis_end_time']).isoformat()
+
+            # remove the measures from this view for now
+            if join_dict.get('measures'):
+                del join_dict['measures']
+
             try:
                 join_map[getattr(join, lookups['obj_view_id'])].append(join_dict)
             except KeyError:
@@ -244,6 +256,18 @@ class TaxLotProperty(models.Model):
 
             if obj_dict.get('generation_date'):
                 obj_dict['generation_date'] = make_naive(obj_dict['generation_date']).isoformat()
+
+            if obj_dict.get('analysis_start_time'):
+                obj_dict['analysis_start_time'] = make_naive(
+                    obj_dict['analysis_start_time']).isoformat()
+
+            if obj_dict.get('analysis_end_time'):
+                obj_dict['analysis_end_time'] = make_naive(
+                    obj_dict['analysis_end_time']).isoformat()
+
+            # remove the measures from this view for now
+            if obj_dict.get('measures'):
+                del obj_dict['measures']
 
             label_string = []
             if hasattr(obj, 'property'):

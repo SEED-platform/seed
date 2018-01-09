@@ -4,50 +4,74 @@
 :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-#
-# Utilities for testing SEED modules.
-###
 
-import datetime
 import json
 
+from django.test import TestCase
+
+from seed.data_importer.models import ImportFile, ImportRecord
+from seed.landing.models import SEEDUser as User
+from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
-    PropertyState,
+    Column,
+    ColumnMapping,
     Cycle,
+    Property,
+    PropertyState,
+    PropertyView,
+    PropertyAuditLog,
+    StatusLabel,
+    TaxLotAuditLog,
+    TaxLotState,
+    TaxLot,
+    TaxLotView,
+    TaxLotProperty,
 )
+from seed.models.data_quality import DataQualityCheck
 
 
-def make_fake_property(import_file, init_data, bs_type, is_canon=False, org=None):
-    """For making fake mapped PropertyState to test matching against."""
+class DeleteModelsTestCase(TestCase):
+    def setUp(self):
+        User.objects.all().delete()
+        Organization.objects.all().delete()
+        OrganizationUser.objects.all().delete()
+        Column.objects.all().delete()
+        ColumnMapping.objects.all().delete()
+        Cycle.objects.all().delete()
+        DataQualityCheck.objects.all().delete()
+        ImportFile.objects.all().delete()
+        ImportRecord.objects.all().delete()
+        Property.objects.all().delete()
+        PropertyState.objects.all().delete()
+        PropertyView.objects.all().delete()
+        PropertyAuditLog.objects.all().delete()
+        StatusLabel.objects.all().delete()
+        TaxLot.objects.all().delete()
+        TaxLotState.objects.all().delete()
+        TaxLotView.objects.all().delete()
+        TaxLotAuditLog.objects.all().delete()
+        TaxLotProperty.objects.all().delete()
 
-    if not org:
-        raise "no org"
-
-    ps = PropertyState.objects.create(**init_data)
-    ps.import_file = import_file
-    ps.organization = org
-    if import_file is None:
-        ps.import_record = None
-    else:
-        ps.import_record = import_file.import_record
-        ps.source_type = bs_type
-
-    ps.save()
-
-    # The idea of canon is no longer applicable. The linked property state
-    # in the PropertyView is now canon
-    if is_canon:
-        # need to create a cycle and add it to the PropertyView table
-        cycle, _ = Cycle.objects.get_or_create(
-            name=u'Test Cycle',
-            organization=org,
-            start=datetime.datetime(2015, 1, 1),
-            end=datetime.datetime(2015, 12, 31),
-        )
-
-        ps.promote(cycle)
-
-    return ps
+    def tearDown(self):
+        User.objects.all().delete()
+        Organization.objects.all().delete()
+        OrganizationUser.objects.all().delete()
+        Column.objects.all().delete()
+        ColumnMapping.objects.all().delete()
+        Cycle.objects.all().delete()
+        DataQualityCheck.objects.all().delete()
+        ImportFile.objects.all().delete()
+        ImportRecord.objects.all().delete()
+        Property.objects.all().delete()
+        PropertyState.objects.all().delete()
+        PropertyView.objects.all().delete()
+        PropertyAuditLog.objects.all().delete()
+        StatusLabel.objects.all().delete()
+        TaxLot.objects.all().delete()
+        TaxLotState.objects.all().delete()
+        TaxLotView.objects.all().delete()
+        TaxLotAuditLog.objects.all().delete()
+        TaxLotProperty.objects.all().delete()
 
 
 class FakeRequest(object):
@@ -58,9 +82,7 @@ class FakeRequest(object):
     body = None
     GET = POST = {}
 
-    def __init__(
-        self, data=None, headers=None, user=None, method='POST', **kwargs
-    ):
+    def __init__(self, data=None, headers=None, user=None, method='POST', **kwargs):
         if 'body' in kwargs:
             self.body = kwargs['body']
         if data is None:

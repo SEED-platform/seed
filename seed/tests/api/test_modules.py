@@ -208,9 +208,9 @@ def account(header, main_url, username, log):
                           headers=header)
     check_status(result, partmsg, log, piid_flag='organizations')
 
-    # # Get the organization id to be used.
-    # # NOTE: Loop through the organizations and get the org_id
-    # # where the organization owner is 'username' else get the first organization.
+    # Get the organization id to be used.
+    # NOTE: Loop through the organizations and get the org_id
+    # where the organization owner is 'username' else get the first organization.
     orgs_result = result.json()
 
     for org in orgs_result['organizations']:
@@ -226,17 +226,18 @@ def account(header, main_url, username, log):
     # Get the organization details
     partmsg = 'get_organization (2)'
     mod_url = main_url + '/api/v2/organizations/%s' % str(organization_id)
-    result = requests.get(mod_url,
-                          headers=header)
+    result = requests.get(mod_url, headers=header)
     check_status(result, partmsg, log)
 
     # Change user profile
     # NOTE: Make sure these credentials are ok.
     print ('API Function: update_user\n'),
     partmsg = 'update_user'
-    user_payload = {'first_name': 'Sherlock',
-                    'last_name': 'Holmes',
-                    'email': username}
+    user_payload = {
+        'first_name': 'Sherlock',
+        'last_name': 'Holmes',
+        'email': username
+    }
     result = requests.put(main_url + '/api/v2/users/%s/' % user_pk,
                           headers=header,
                           data=user_payload)

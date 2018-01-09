@@ -37,7 +37,7 @@ logger = logging.getLogger(__name__)
 
 TAXLOT_MAPPING = [
     {
-        "from_field": u'jurisdiction tax lot id',
+        "from_field": u'jurisdiction_tax_lot_id',
         "to_table_name": u'TaxLotState',
         "to_field": u'jurisdiction_tax_lot_id',
     },
@@ -52,9 +52,14 @@ TAXLOT_MAPPING = [
         "to_field": u'city'
     },
     {
-        "from_field": u'number buildings',
+        "from_field": u'number_buildings',
         "to_table_name": u'TaxLotState',
         "to_field": u'number_properties'
+    },
+    {
+        "from_field": u'block_number',
+        "to_table_name": u'TaxLotState',
+        "to_field": u'block_number'
     },
 ]
 
@@ -71,6 +76,10 @@ PROPERTIES_MAPPING = [
         "from_field": u'pm property id',
         "to_table_name": u'PropertyState',
         "to_field": u'pm_property_id',
+    }, {
+        "from_field": u'UBID',
+        "to_table_name": u'PropertyState',
+        "to_field": u'ubid',
     }, {
         "from_field": u'custom id 1',
         "to_table_name": u'PropertyState',
@@ -225,6 +234,27 @@ FAKE_MAPPINGS = {
 
 
 class DeleteModelsTestCase(TestCase):
+    def setUp(self):
+        User.objects.all().delete()
+        Organization.objects.all().delete()
+        OrganizationUser.objects.all().delete()
+        Column.objects.all().delete()
+        ColumnMapping.objects.all().delete()
+        Cycle.objects.all().delete()
+        DataQualityCheck.objects.all().delete()
+        ImportFile.objects.all().delete()
+        ImportRecord.objects.all().delete()
+        Property.objects.all().delete()
+        PropertyState.objects.all().delete()
+        PropertyView.objects.all().delete()
+        PropertyAuditLog.objects.all().delete()
+        StatusLabel.objects.all().delete()
+        TaxLot.objects.all().delete()
+        TaxLotState.objects.all().delete()
+        TaxLotView.objects.all().delete()
+        TaxLotAuditLog.objects.all().delete()
+        TaxLotProperty.objects.all().delete()
+
     def tearDown(self):
         User.objects.all().delete()
         Organization.objects.all().delete()

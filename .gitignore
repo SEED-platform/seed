@@ -1,5 +1,6 @@
 .DS_Store
-.idea/
+.cache
+.idea
 .project
 .pydevproject
 .python-version
@@ -59,6 +60,7 @@ seed_api_test_seedhost.txt
 seed/data_importer/tests/data/tmp_*
 seed/data_importer/tests/data/~*
 seed/tests/api/api_test_user.json
+seed/building_sync/tests/data/test_file.xml
 test.sqlite
 
 # Ignore all protractor coverage
@@ -68,3 +70,4 @@ protractorSaved/
 protractorCoverage/
 
 docs/scripts/Gemfile.lock
+lokalise.cfg
