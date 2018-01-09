@@ -20,6 +20,7 @@ from .scenarios import *  # noqa
 from .meters import *  # noqa
 from .simulations import *  # noqa
 from .building_file import *  # noqa
+from .notes import *  # noqa
 
 from .certification import (    # noqa
     GreenAssessment,

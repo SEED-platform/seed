@@ -28,7 +28,7 @@ from seed.models import (
     Cycle, Column, GreenAssessment, GreenAssessmentURL, Measure,
     GreenAssessmentProperty, Property, PropertyAuditLog, PropertyView,
     PropertyState, StatusLabel, TaxLot, TaxLotAuditLog, TaxLotProperty,
-    TaxLotState, TaxLotView, PropertyMeasure
+    TaxLotState, TaxLotView, PropertyMeasure, Note,
 )
 from seed.models.auditlog import AUDIT_IMPORT, AUDIT_USER_CREATE
 from seed.utils.strings import titlecase
@@ -503,6 +503,27 @@ class FakeStatusLabelFactory(BaseFake):
         statuslabel_details.update(kw)
         label, _ = StatusLabel.objects.get_or_create(**statuslabel_details)
         return label
+
+
+class FakeNoteFactory(BaseFake):
+    """
+    Facotry Class for producing Note instances.
+    """
+
+    def __init__(self):
+        super(FakeNoteFactory, self).__init__()
+
+    def get_note(self, **kw):
+        """Get Note instance."""
+        name = 'Nothing of importance'
+        text = self.fake.text()
+        note_details = {
+            'name': name,
+            'text': text,
+        }
+        note_details.update(kw)
+        note, _ = Note.objects.get_or_create(**note_details)
+        return note
 
 
 class FakeTaxLotFactory(BaseFake):
