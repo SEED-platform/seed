@@ -5,14 +5,10 @@
 :author
 """
 
-from django.db.models import Q
-
 from seed import models
 from seed import search
 from seed.models import ASSESSED_RAW, BuildingSnapshot
-from seed.utils.constants import ASSESSOR_FIELDS_BY_COLUMN
 from seed.utils.mapping import get_mappable_types
-from seed.utils.strings import titlecase
 
 
 def get_source_type(import_file, source_type=''):
@@ -70,100 +66,3 @@ def get_search_query(user, params):
     )
 
     return buildings_queryset
-
-
-def get_columns(org_id, all_fields=False):
-    """
-    Get default columns, to be overridden in future
-
-    Returns::
-
-        title: HTML presented title of column
-        sort_column: semantic name used by js and for searching DB
-        class: HTML CSS class for row td elements
-        title_class: HTML CSS class for column td elements
-        type: 'string', 'number', 'date'
-        min, max: the django filter key e.g. gross_floor_area__gte
-        field_type: assessor, pm, or compliance (currently not used)
-        sortable: determines if the column is sortable
-        checked: initial state of "edit columns" modal
-        static: True if option can be toggle (ID is false because it is
-            always needed to link to the building detail page)
-        link: signifies that the cell's data should link to a building detail
-            page
-
-    """
-    cols = []
-    translator = {
-        '': 'string',
-        'date': 'date',
-        'float': 'number',
-        'string': 'string',
-        'decimal': 'number',
-        'datetime': 'date',
-        'foreignkey': 'number'
-    }
-    field_types = {}
-    for k, v in get_mappable_types().items():
-        d = {
-            "title": titlecase(k),
-            "sort_column": k,
-            "type": translator[v],
-            "class": "is_aligned_right",
-            "sortable": True,
-            "checked": False,
-            "static": False,
-            "field_type": field_types.get(k),
-            "link": True if '_id' in k or 'address' in k.lower() else False,
-        }
-        if d['sort_column'] == 'gross_floor_area':
-            d['type'] = 'floor_area'
-            d['subtitle'] = u"ft" + u"\u00B2"
-        if d['type'] != 'string':
-            d["min"] = "{0}__gte".format(k)
-            d["max"] = "{0}__lte".format(k)
-
-        cols.append(d)
-
-    for col in cols:
-        if col['sort_column'] in ASSESSOR_FIELDS_BY_COLUMN:
-            assessor_field = ASSESSOR_FIELDS_BY_COLUMN[col['sort_column']]
-            col['field_type'] = assessor_field['field_type']
-
-    if all_fields:
-        qs = models.Column.objects.filter(is_extra_data=True).filter(
-            Q(organization=None) |
-            Q(mapped_mappings__super_organization=org_id)
-        ).select_related('unit').distinct()
-    else:
-        qs = models.Column.objects.filter(is_extra_data=True).filter(
-            mapped_mappings__super_organization=org_id
-        ).select_related('unit').distinct()
-    for c in qs:
-        t = c.unit.get_unit_type_display().lower() if c.unit else 'string'
-        link = False
-        if '_id' in c.column_name or 'address' in c.column_name.lower():
-            link = True
-        d = {
-            "title": c.column_name,
-            "sort_column": c.column_name,
-            "type": translator[t],
-            "class": "is_aligned_right",
-            "field_type": "assessor",
-            "sortable": True,
-            "checked": False,
-            "static": False,
-            "link": link,
-            "is_extra_data": True,
-        }
-        if d['type'] != 'string':
-            d["min"] = "{0}__gte".format(c.column_name)
-            d["max"] = "{0}__lte".format(c.column_name)
-        cols.append(d)
-
-    cols.sort(key=lambda x: x['title'])
-    columns = {
-        'fields': cols,
-    }
-
-    return columns

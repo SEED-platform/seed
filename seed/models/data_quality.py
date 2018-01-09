@@ -561,7 +561,7 @@ class DataQualityCheck(models.Model):
         """
 
         # grab the columns so we can grab the display names
-        columns = Column.retrieve_all(self.organization, record_type)
+        columns = Column.retrieve_all(self.organization, record_type, False)
 
         # create lookup tuple for the display name
         for c in columns:

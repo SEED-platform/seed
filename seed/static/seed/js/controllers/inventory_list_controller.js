@@ -283,7 +283,9 @@ angular.module('BE.seed.controller.inventory_list', [])
                 city: 'tax_city',
                 state: 'tax_state',
                 postal_code: 'tax_postal_code',
-                custom_id_1: 'tax_custom_id_1'
+                custom_id_1: 'tax_custom_id_1',
+                updated: 'tax_updated',
+                created: 'tax_created'
               };
             } else if ($scope.inventory_type === 'taxlots') {
               map = {
@@ -292,7 +294,9 @@ angular.module('BE.seed.controller.inventory_list', [])
                 city: 'property_city',
                 state: 'property_state',
                 postal_code: 'property_postal_code',
-                custom_id_1: 'property_custom_id_1'
+                custom_id_1: 'property_custom_id_1',
+                updated: 'property_updated',
+                created: 'property_created'
               };
             }
             var updated = _.reduce(related[j], function (result, value, key) {

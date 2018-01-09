@@ -99,13 +99,13 @@
                             <!-- Show input form to edit current field value -->
                             <td ng-if="edit_form_showing" ng-class="(!field.extraData && changed_fields.extra_data_fields.indexOf(field.name)>=0) || changed_fields.regular_fields.indexOf(field.name)>=0 ? 'highlight' : ''">
                                 <div ng-if="::!field.extraData && field.table.toLowerCase().includes('state')">
-                                    <input id="edit_attribute_id" class="form-control input-sm" type="text" ng-model="item_state[field.name]" ng-disabled="::_.includes(['campus', 'associated_building_tax_lot_id', 'associated_tax_lot_ids', 'primary_tax_lot_id', 'db_property_updated', 'db_property_created', 'db_taxlot_updated', 'db_taxlot_created'], field.name)">
+                                    <input id="edit_attribute_id" class="form-control input-sm" type="text" ng-model="item_state[field.name]" ng-disabled="::_.includes(['campus', 'updated', 'created'], field.name)">
                                 </div>
                                 <div ng-if="::field.extraData && field.table.toLowerCase().includes('state')">
                                     <input id="edit_property_attribute_id" class="form-control input-sm" type="text" ng-model="item_state.extra_data[field.name.replace('_extra', '')]">
                                 </div>
                                 <div ng-if="::!field.extraData && !field.table.toLowerCase().includes('state')">
-                                    <input id="edit_attribute_id" class="form-control input-sm" type="text" ng-model="item_parent[field.name]" ng-disabled="::_.includes(['campus', 'associated_building_tax_lot_id', 'associated_tax_lot_ids', 'primary_tax_lot_id', 'db_property_updated', 'db_property_created', 'db_taxlot_updated', 'db_taxlot_created'], field.name)">
+                                    <input id="edit_attribute_id" class="form-control input-sm" type="text" ng-model="item_parent[field.name]" ng-disabled="::_.includes(['campus', 'updated', 'created'], field.name)">
                                 </div>
                             </td>
 
