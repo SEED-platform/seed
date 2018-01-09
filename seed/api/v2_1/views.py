@@ -24,7 +24,9 @@ from seed.models import (
     PropertyView,
     PropertyState,
     BuildingFile,
-    Cycle
+    Cycle,
+    # PropertyMeasure,
+    # Simulation,
 )
 from seed.serializers.properties import (
     PropertyViewAsStateSerializer,
@@ -251,6 +253,36 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
             xml = hpxml.export(property_view.state)
             return HttpResponse(xml, content_type='application/xml')
 
+    def _merge_relationships(self, old_state, new_state):
+        """
+        Merge the relationships between the old state and the new state. This is different than the version
+        in views/properties.py because if this is a buildingsync update, then the buildingsync file may
+        contain new or removed items that we want to merge.
+
+        :param old_state: PropertyState
+        :param new_state: PropertyState
+        :return: PropertyState, updated new_state
+        """
+        # for s in old_state.scenarios.all():
+        #     s.property_state = new_state
+        #     s.save()
+        #
+        # # Move the measures to the new state
+        # for m in PropertyMeasure.objects.filter(property_state=old_state):
+        #     m.property_state = new_state
+        #     m.save()
+        #
+        # # Move the old building file to the new state to perserve the history
+        # for b in old_state.building_files.all():
+        #     b.property_state = new_state
+        #     b.save()
+        #
+        # for s in Simulation.objects.filter(property_state=old_state):
+        #     s.property_state = new_state
+        #     s.save()
+
+        return new_state
+
     @detail_route(methods=['PUT'])
     @has_perm_class('can_modify_data')
     def update_with_building_sync(self, request, pk):
@@ -311,12 +343,16 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
             )
 
             property_view = result.pop('property_view')
-
+            previous_state = property_view.state
             # passing in the existing propertyview allows it to process the buildingsync file and attach it to the
             # existing propertyview.
             p_status, new_pv_state, new_pv_view, messages = building_file.process(
                 organization_id, cycle, property_view=property_view
             )
+
+            # merge the relationships from the old property state
+            self._merge_relationships(previous_state, new_pv_state)
+
         else:
             messages = ['Cannot match a PropertyView with pk=%s; cycle_id=%s' % (pk, cycle_pk)]
 
