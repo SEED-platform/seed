@@ -767,12 +767,11 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       });
     };
 
-    inventory_service.get_columns = function (all_fields) {
-      all_fields = all_fields || '';
-      return $http.get('/api/v1/columns/', {
+    inventory_service.get_used_columns = function (org_id) {
+      return $http.get('/api/v2/columns/', {
         params: {
-          all_fields: all_fields,
-          organization_id: user_service.get_organization().id
+          organization_id: org_id,
+          only_used: true
         }
       }).then(function (response) {
         return response.data;

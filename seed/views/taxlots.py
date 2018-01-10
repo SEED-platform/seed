@@ -266,11 +266,17 @@ class TaxLotViewSet(GenericViewSet):
               description: The organization_id for this user's organization
               required: true
               paramType: query
+            - name: used_only
+              description: Determine whether or not to show only the used fields. Ones that have been mapped
+              type: boolean
+              required: false
+              paramType: query
         """
         organization_id = int(request.query_params.get('organization_id'))
         organization = Organization.objects.get(pk=organization_id)
 
-        columns = Column.retrieve_all(organization_id, 'taxlot')
+        only_used = request.query_params.get('only_used', False)
+        columns = Column.retrieve_all(organization_id, 'taxlot', only_used)
         unitted_columns = [add_pint_unit_suffix(organization, x) for x in columns]
 
         return JsonResponse({'status': 'success', 'columns': unitted_columns})
@@ -409,8 +415,7 @@ class TaxLotViewSet(GenericViewSet):
             result.update(TaxLotViewSerializer(taxlot_view).data)
             # remove TaxLotView id from result
             result.pop('id')
-            result['taxlot']['db_taxlot_updated'] = result['taxlot']['updated']
-            result['taxlot']['db_taxlot_created'] = result['taxlot']['created']
+
             result['state'] = TaxLotStateSerializer(taxlot_view.state).data
             result['properties'] = self._get_properties(taxlot_view.pk)
             result['history'], master = self.get_history(taxlot_view)

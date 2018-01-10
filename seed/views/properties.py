@@ -419,11 +419,16 @@ class PropertyViewSet(GenericViewSet):
               description: The organization_id for this user's organization
               required: true
               paramType: query
+            - name: used_only
+              description: Determine whether or not to show only the used fields. Ones that have been mapped
+              type: boolean
+              required: false
+              paramType: query
         """
         organization_id = int(request.query_params.get('organization_id'))
+        only_used = request.query_params.get('only_used', False)
+        columns = Column.retrieve_all(organization_id, 'property', only_used)
         organization = Organization.objects.get(pk=organization_id)
-
-        columns = Column.retrieve_all(organization_id, 'property')
         unitted_columns = [add_pint_unit_suffix(organization, x) for x in columns]
 
         return JsonResponse({'status': 'success', 'columns': unitted_columns})
@@ -587,8 +592,6 @@ class PropertyViewSet(GenericViewSet):
             # remove PropertyView id from result
             result.pop('id')
 
-            result['property']['db_property_updated'] = result['property']['updated']
-            result['property']['db_property_created'] = result['property']['created']
             result['state'] = PropertyStateSerializer(property_view.state).data
             result['taxlots'] = self._get_taxlots(property_view.pk)
             result['history'], master = self.get_history(property_view)

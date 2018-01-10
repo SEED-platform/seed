@@ -173,7 +173,7 @@ describe('controller: mapping_controller', function () {
       property_columns: mock_raw_column_names,
       taxlot_columns: mock_raw_column_names,
       first_five_rows_payload: first_five_rows_payload,
-      all_columns: {fields: []},
+      all_columns: {columns: []},
       inventory_service: mock_inventory_service,
       $timeout: timeout,
       cycles: mock_cycles

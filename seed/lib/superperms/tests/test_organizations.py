@@ -12,7 +12,6 @@ from seed.lib.superperms.orgs.models import (
     ROLE_MEMBER,
     ROLE_OWNER,
     STATUS_PENDING,
-    ExportableField,
     Organization,
     OrganizationUser,
 )
@@ -21,8 +20,7 @@ from seed.landing.models import SEEDUser as User
 
 
 class TestOrganizationUser(TestCase):
-    # TODO: I know I should not need these. Need to figure out what's up with
-    # Django's TestCase.
+    # TODO: I know I should not need these. Need to figure out what's up with Django's TestCase.
     def setUp(self, *args, **kwargs):
         self.user1 = User.objects.create(
             username='user1', email='asdf@asdf.com'
@@ -41,7 +39,6 @@ class TestOrganizationUser(TestCase):
         User.objects.all().delete()
         OrganizationUser.objects.all().delete()
         Organization.objects.all().delete()
-        ExportableField.objects.all().delete()
         super(TestOrganizationUser, self).tearDown(*args, **kwargs)
 
     def test_last_organization_user_is_owner(self):
@@ -84,7 +81,6 @@ class TestOrganization(TestCase):
         User.objects.all().delete()
         OrganizationUser.objects.all().delete()
         Organization.objects.all().delete()
-        ExportableField.objects.all().delete()
         super(TestOrganization, self).tearDown(*args, **kwargs)
 
     def test_add_user_to_org(self):
@@ -104,21 +100,6 @@ class TestOrganization(TestCase):
 
         self.assertEqual(
             org.users.all()[0], self.user
-        )
-
-    def test_exportable_fields(self):
-        """We can set a list of fields to be exportable for an org."""
-        org = Organization.objects.create()
-        exportable_fields = [
-            ExportableField.objects.create(
-                name='test-{0}'.format(x),
-                organization=org,
-                field_model='FakeModel'
-            ) for x in range(10)
-            ]
-
-        self.assertListEqual(
-            list(org.exportable_fields.all()), exportable_fields
         )
 
     def test_one_level_org_nesting(self):
@@ -161,37 +142,6 @@ class TestOrganization(TestCase):
         """Test for get_parent() in a solo org situation."""
         org = Organization.objects.create(name='Solo Org')
         self.assertEqual(org.get_parent(), org)
-
-    def test_get_exportable_fields(self):
-        """Make sure we use parent exportable_fields."""
-        parent_org = Organization.objects.create(name='Parent')
-        parent_fields = [
-            ExportableField.objects.create(
-                name='parent-{0}'.format(x),
-                organization=parent_org,
-                field_model='FakeModel'
-            ) for x in range(10)
-            ]
-
-        child_org = Organization.objects.create(name='Child')
-        child_fields = [
-            ExportableField.objects.create(
-                name='child-{0}'.format(x),
-                organization=child_org,
-                field_model='FakeModel'
-            ) for x in range(10)
-            ]
-
-        self.assertListEqual(
-            list(child_org.get_exportable_fields()), child_fields
-        )
-
-        child_org.parent_org = parent_org
-        child_org.save()
-
-        self.assertListEqual(
-            list(child_org.get_exportable_fields()), parent_fields
-        )
 
     def test_get_query_threshold(self):
         """Make sure we use the parent's query threshold."""

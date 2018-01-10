@@ -5,8 +5,8 @@
 :author
 """
 import json
-from datetime import date
 
+from datetime import date
 from django.core.urlresolvers import reverse_lazy, NoReverseMatch
 from django.test import TestCase
 
@@ -19,10 +19,10 @@ from seed.lib.superperms.orgs.models import (
     OrganizationUser,
     Organization
 )
+from seed.models.columns import Column
 from seed.models.cycles import Cycle
 from seed.models.properties import PropertyState
 from seed.models.tax_lots import TaxLotState
-from seed.public.models import SharedBuildingField
 from seed.tests.util import FakeRequest
 from seed.views.main import _get_default_org
 from seed.views.organizations import _dict_org
@@ -520,90 +520,52 @@ class AccountsViewTests(TestCase):
         url = reverse_lazy('api:v2:organizations-shared-fields', args=[self.org.pk])
         res = self.client.get(url)
         response = json.loads(res.content)
-        self.assertEqual(response,
-                         {'status': 'success',
-                          'shared_fields': [],
-                          'public_fields': []})
-
-    def test_get_shared_fields(self):
-        field1 = self.org.exportable_fields.create(
-            name='property_name', field_model='BuildingSnapshot'
-        )
-        field2 = self.org.exportable_fields.create(
-            name='building_count', field_model='BuildingSnapshot'
-        )
-
-        SharedBuildingField.objects.create(
-            org=self.org, field=field1
-        )
-
-        SharedBuildingField.objects.create(
-            org=self.org, field=field2
-        )
-
-        url = reverse_lazy('api:v2:organizations-shared-fields', args=[self.org.pk])
-        res = self.client.get(url)
-        response = json.loads(res.content)
-        self.assertEqual(response['status'], 'success')
-
-        shared_fields = response['shared_fields']
-        self.assertEqual(len(shared_fields), 2)
-
-        self.assertEqual(shared_fields[0]['title'],
-                         'Building Count')
-        self.assertEqual(shared_fields[0]['sort_column'],
-                         'building_count')
-        self.assertEqual(shared_fields[1]['title'],
-                         'Property Name')
-        self.assertEqual(shared_fields[1]['sort_column'],
-                         'property_name')
+        self.assertEqual(response, {'status': 'success', 'public_fields': []})
 
     def test_add_shared_fields(self):
         url = reverse_lazy('api:v2:organizations-save-settings', args=[self.org.pk])
+
+        # create a couple columns for use.
+        Column.objects.create(table_name='PropertyState', column_name='ubid', organization_id=self.org.pk)
+        Column.objects.create(table_name='PropertyState', column_name='address_line_1', organization_id=self.org.pk)
         payload = {
             u'organization_id': self.org.pk,
             u'organization': {
                 u'owners': self.user.pk,
                 u'query_threshold': 2,
                 u'name': self.org.name,
-                u'fields': [
+                u'public_fields': [
                     {
-                        u'field_type': u'building_information',
-                        u'sortable': True,
-                        u'title': u'PM Property ID',
-                        u'sort_column': u'pm_property_id',
-                        u'class': u'is_aligned_right',
-                        u'link': True,
-                        u'checked': True,
-                        u'static': False,
-                        u'type': u'link',
-                        u'title_class': u''
-                    },
-                    {
-                        u'field_type': u'building_information',
-                        u'sortable': True,
-                        u'title': u'Tax Lot ID',
-                        u'sort_column': u'tax_lot_id',
-                        u'class': u'is_aligned_right',
-                        u'link': True,
-                        u'checked': True,
-                        u'static': False,
-                        u'type': u'link',
-                        u'title_class': u''
+                        "displayName": "UBID",
+                        "name": "ubid",
+                        "dataType": "string",
+                        "related": False,
+                        "sharedFieldType": "Public",
+                        "table": "PropertyState",
+                        "dbName": "ubid",
+                        "public_checked": True
+                    }, {
+                        "displayName": "Address Line 1 (Property)",
+                        "name": "address_line_1",
+                        "dataType": "string",
+                        "related": False,
+                        "dbName": "address_line_1",
+                        "sharedFieldType": "None",
+                        "table": "PropertyState",
+                        "public_checked": True
                     }
-                ],
+                ]
             }
         }
 
-        self.client.put(
-            url,
-            json.dumps(payload),
-            content_type='application/json'
-        )
+        self.client.put(url, json.dumps(payload), content_type='application/json')
 
-        fields = self.org.exportable_fields.values_list('name', flat=True)
-        self.assertTrue('tax_lot_id' in fields)
-        self.assertTrue('pm_property_id' in fields)
+        fields = Column.objects.filter(organization=self.org, shared_field_type=Column.SHARED_PUBLIC).values_list(
+            'table_name', 'column_name')
+
+        # fields = self.org.exportable_fields.values_list('name', flat=True)
+        self.assertTrue(('PropertyState', 'ubid') in fields)
+        self.assertTrue(('PropertyState', 'address_line_1') in fields)
         self.assertEqual(len(fields), 2)
 
     # def test_get_data_quality_rules_matching(self):

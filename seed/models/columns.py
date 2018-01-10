@@ -111,6 +111,14 @@ class Column(models.Model):
     #     SOURCE_TAXLOT: 'taxlot',
     # }
 
+    SHARED_NONE = 0
+    SHARED_PUBLIC = 1
+
+    SHARED_FIELD_TYPES = (
+        (SHARED_NONE, 'None'),
+        (SHARED_PUBLIC, 'Public')
+    )
+
     organization = models.ForeignKey(SuperOrganization, blank=True, null=True)
     column_name = models.CharField(max_length=512, db_index=True)
 
@@ -122,6 +130,8 @@ class Column(models.Model):
     is_extra_data = models.BooleanField(default=False)
     import_file = models.ForeignKey('data_importer.ImportFile', blank=True, null=True)
     units_pint = models.CharField(max_length=64, blank=True, null=True)
+
+    shared_field_type = models.IntegerField(choices=SHARED_FIELD_TYPES, default=SHARED_NONE)
 
     # Do not enable this until running through the database and merging the columns down.
     # BUT first, make sure to add an import file ID into the column class.
@@ -506,18 +516,21 @@ class Column(models.Model):
     @staticmethod
     def _retrieve_db_columns():
         """
-        # Retrieve all the columns from the database, independent of the destination of the data,
-        # that is, there may be duplicate names, but the table_name.column_name will be unique.
+        Returns a predefined list of columns that can be in the database. This is a hardcoded list of all the
+        database fields along with additional information such as the display name.
 
         :return: dict
         """
 
         # Grab the default columns and their details
-        columns = copy.deepcopy(VIEW_COLUMNS_PROPERTY)
+        hard_coded_columns = copy.deepcopy(VIEW_COLUMNS_PROPERTY)
 
-        # TODO: check to make sure that all the fields in the DB are in this list!
+        md = MappingData()
+        for c in hard_coded_columns:
+            if not md.find_column(c['table'], c['name']):
+                print "Could not find column field in database for {}".format(c)
 
-        return columns
+        return hard_coded_columns
 
     @staticmethod
     def retrieve_db_types():
@@ -573,7 +586,7 @@ class Column(models.Model):
         return list(fields)
 
     @staticmethod
-    def retrieve_all(org_id, inventory_type):
+    def retrieve_all(org_id, inventory_type, only_used):
         """
         # Retrieve all the columns for an organization. First, grab the columns from the
         # VIEW_COLUMNS_PROPERTY schema which defines the database columns with added data for
@@ -585,15 +598,32 @@ class Column(models.Model):
 
         :param org_id: Organization ID
         :param inventory_type: Inventory Type (property|taxlot)
+        :param only_used: View only the used columns that exist in the Column's table
 
         :return: dict
         """
 
         # Grab the default columns and their details
         columns = Column._retrieve_db_columns()
-
+        remove_columns = []
         # Clean up the columns
-        for c in columns:
+        for index, c in enumerate(columns):
+            # set the raw db name as well. Eventually we will want the table/db_name to be the unique id
+            c['dbName'] = c['name']
+
+            # check if the column is in the database and if it is then add in the other information that
+            # is in the database
+            db_col = Column.objects.filter(organization_id=org_id, is_extra_data=False,
+                                           table_name=c['table'], column_name=c['name'])
+            if len(db_col) == 1:
+                db_col = db_col.first()
+                c['sharedFieldType'] = db_col.get_shared_field_type_display()
+            elif len(db_col) == 0:
+                if only_used:
+                    remove_columns.append(index)
+                else:
+                    c['sharedFieldType'] = 'None'
+
             if c['table'] and (inventory_type.lower() in c['table'].lower()):
                 c['related'] = False
                 if c.get('pinIfNative', False):
@@ -620,6 +650,10 @@ class Column(models.Model):
             except KeyError:
                 pass
 
+        # reverse the remove_columns list and remove the indexes from the columns
+        for remove_column in remove_columns[::-1]:
+            del columns[remove_column]
+
         # Add in all the extra columns
         # don't return columns that have no table_name as these are the columns of the import files
         extra_data_columns = Column.objects.filter(
@@ -629,41 +663,43 @@ class Column(models.Model):
         for edc in extra_data_columns:
             name = edc.column_name
             table = edc.table_name
+            # set the raw db name as well. Eventually we will want the table/db_name to be the unique id
+            db_name = name
 
-            # MAKE NOTE ABOUT HOW IMPORTANT THIS IN
+            # Why is this important? Need to clarify
             if name == 'id':
                 name += '_extra'
 
             # check if the column name is already defined in the list. For example, gross_floor_area
             # is a core field, but can be an extra field in taxlot, meaning that the other one
             # needs to be tagged something else.
-            # for col in columns:
 
             # add _extra if the column is already in the list and it is not the one of
             while any(col['name'] == name and col['table'] != table for col in columns):
                 name += '_extra'
 
-            # TODO: need to check if the column name is already in the list and if it is then
-            # overwrite the data
+            # TODO: need to check if the column name is already in the list and if it is then overwrite the data
 
             columns.append(
                 {
                     'name': name,
+                    'dbName': db_name,
                     'table': edc.table_name,
                     'displayName': titlecase(edc.column_name),
                     # 'dataType': 'string',  # TODO: how to check dataTypes on extra_data!
                     'related': not (inventory_type.lower() in edc.table_name.lower()),
-                    'extraData': True
+                    'extraData': True,
+                    'sharedFieldType': edc.get_shared_field_type_display(),
                 }
             )
 
-        # validate that the column names are unique
+        # validate that the field 'name' is unique.
         uniq = set()
         for c in columns:
-            if c['name'] in uniq:
+            if (c['table'], c['name']) in uniq:
                 raise Exception("Duplicate name '{}' found in columns".format(c['name']))
             else:
-                uniq.add(c['name'])
+                uniq.add((c['table'], c['name']))
 
         return columns
 

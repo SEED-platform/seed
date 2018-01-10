@@ -52,26 +52,6 @@ MEASUREMENT_CHOICES_EUI = (
     ('kBtu/m**2/year', 'kBtu/m²/year'), # really, Toronto?
 )
 
-class ExportableField(models.Model):
-    """Tracks which model fields are exportable."""
-
-    class Meta:
-        unique_together = ('field_model', 'name', 'organization')
-        ordering = ['organization', 'name']
-
-    # For relating to the model-type whose fields we're exporting.
-    field_model = models.CharField(max_length=100)
-    name = models.CharField(max_length=200)
-    organization = models.ForeignKey(
-        'Organization', related_name='exportable_fields'
-    )
-
-    def __unicode__(self):
-        return u'ExportableField: {0} <{1}> {2}'.format(
-            self.field_model, self.name, self.organization.name
-        )
-
-
 class OrganizationUser(models.Model):
     class Meta:
         ordering = ['organization', '-role_level']
