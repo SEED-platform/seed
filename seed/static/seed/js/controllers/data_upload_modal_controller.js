@@ -125,6 +125,11 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       $scope.goto_step = function (step) {
         $scope.step.number = step;
       };
+
+      $scope.cycleChanged = function (selected) {
+        $scope.selectedCycle = selected;
+      };
+
       /**
        * close: closes the modal, routes to the close function of the parent scope
        */
