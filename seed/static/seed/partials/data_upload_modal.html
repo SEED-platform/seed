@@ -34,7 +34,7 @@
                 <div class="row">
                     <label class="col-sm-3 col-sm-offset-1 control-label" for="selected-cycle" style="margin-top: 5px;" translate>Time Period</label>
                     <div class="col-sm-7">
-                        <select id="selected-cycle" name="selected-cycle" class="form-control input-sm" ng-model="selectedCycle" ng-options="cycle.name for cycle in cycles track by cycle.id"></select>
+                        <select id="selected-cycle" name="selected-cycle" class="form-control input-sm" ng-change="cycleChanged(selectedCycle)" ng-model="selectedCycle" ng-options="cycle.name for cycle in cycles track by cycle.id"></select>
                     </div>
                 </div>
                 <div class="row">
