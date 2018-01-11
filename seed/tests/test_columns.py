@@ -433,14 +433,6 @@ class TestColumnsByInventory(TestCase):
                 "year_built": "integer",
             }
         }
-        # remove or merge into above after we merge/rename 'release:use_pint'
-        schema["types"]["gross_floor_area_pint"] = ""
-        schema["types"]["conditioned_floor_area_pint"] = ""
-        schema["types"]["occupied_floor_area_pint"] = ""
-        schema["types"]["site_eui_pint"] = ""
-        schema["types"]["source_eui_weather_normalized_pint"] = ""
-        schema["types"]["site_eui_weather_normalized_pint"] = ""
-        schema["types"]["source_eui_pint"] = ""
 
         columns = Column.retrieve_db_types()
         self.assertDictEqual(schema, columns)
@@ -461,14 +453,5 @@ class TestColumnsByInventory(TestCase):
                 'space_alerts', 'state', 'use_description', 'year_built', 'year_ending',
                 'analysis_end_time', 'source_eui_modeled', 'analysis_state_message',
                 'analysis_start_time', 'site_eui_modeled', 'analysis_state']
-
-        # remove or merge into above after we merge/rename 'release:use_pint'
-        data += ['gross_floor_area_pint',
-                 'conditioned_floor_area_pint',
-                 'occupied_floor_area_pint',
-                 'site_eui_pint',
-                 'source_eui_weather_normalized_pint',
-                 'site_eui_weather_normalized_pint',
-                 'source_eui_pint']
 
         self.assertItemsEqual(data, c)
