@@ -652,7 +652,7 @@ VIEW_COLUMNS_PROPERTY = [
         'name': 'gross_floor_area',
         'table': 'PropertyState',
         'displayName': 'Gross Floor Area',
-        'dataType': 'float',
+        'dataType': 'area',
         'type': 'number',
         'dbField': True,
     }, {
@@ -730,14 +730,14 @@ VIEW_COLUMNS_PROPERTY = [
         'name': 'conditioned_floor_area',
         'table': 'PropertyState',
         'displayName': 'Conditioned Floor Area',
-        'dataType': 'float',
+        'dataType': 'area',
         'type': 'number',
         'dbField': True,
     }, {
         'name': 'occupied_floor_area',
         'table': 'PropertyState',
         'displayName': 'Occupied Floor Area',
-        'dataType': 'float',
+        'dataType': 'area',
         'type': 'number',
         'dbField': True,
     }, {
@@ -784,42 +784,42 @@ VIEW_COLUMNS_PROPERTY = [
         'name': 'site_eui',
         'table': 'PropertyState',
         'displayName': 'Site EUI',
-        'dataType': 'float',
+        'dataType': 'eui',
         'type': 'number',
         'dbField': True,
     }, {
         'name': 'site_eui_weather_normalized',
         'table': 'PropertyState',
         'displayName': 'Site EUI Weather Normalized',
-        'dataType': 'float',
+        'dataType': 'eui',
         'type': 'number',
         'dbField': True,
     }, {
         'name': 'site_eui_modeled',
         'table': 'PropertyState',
         'displayName': 'Site EUI Modeled',
-        'dataType': 'float',
+        'dataType': 'eui',
         'type': 'number',
         'dbField': True,
     }, {
         'name': 'source_eui',
         'table': 'PropertyState',
         'displayName': 'Source EUI',
-        'dataType': 'float',
+        'dataType': 'eui',
         'type': 'number',
         'dbField': True,
     }, {
         'name': 'source_eui_weather_normalized',
         'table': 'PropertyState',
         'displayName': 'Source EUI Weather Normalized',
-        'dataType': 'float',
+        'dataType': 'eui',
         'type': 'number',
         'dbField': True,
     }, {
         'name': 'source_eui_modeled',
         'table': 'PropertyState',
         'displayName': 'Source EUI Modeled',
-        'dataType': 'float',
+        'dataType': 'eui',
         'type': 'number',
         'dbField': True,
     }, {
@@ -889,53 +889,3 @@ VIEW_COLUMNS_PROPERTY = [
         'dbField': True,
     }
 ]
-
-PINT_VIEW_COLUMNS_PROPERTY = [
-    {
-        'name': 'gross_floor_area_pint',
-        'table': 'PropertyState',
-        'displayName': 'Gross Floor Area (Pint)',
-        'dataType': 'area',
-        'dbField': True,
-    }, {
-        'name': 'conditioned_floor_area_pint',
-        'table': 'PropertyState',
-        'displayName': 'Conditioned Floor Area (Pint)',
-        'dataType': 'area',
-        'dbField': True,
-    }, {
-        'name': 'occupied_floor_area_pint',
-        'table': 'PropertyState',
-        'displayName': 'Occupied Floor Area (Pint)',
-        'dataType': 'area',
-        'dbField': True,
-    }, {
-        'name': 'source_eui_pint',
-        'table': 'PropertyState',
-        'displayName': 'Source EUI (pint)',
-        'dataType': 'eui',
-        'dbField': True,
-    }, {
-        'name': 'source_eui_weather_normalized_pint',
-        'table': 'PropertyState',
-        'displayName': 'Source EUI Weather Normalized (pint)',
-        'dataType': 'eui',
-        'dbField': True,
-    }, {
-        'name': 'site_eui_weather_normalized_pint',
-        'table': 'PropertyState',
-        'displayName': 'Site EUI Weather Normalized (pint)',
-        'dataType': 'eui',
-        'dbField': True,
-    }, {
-        'name': 'site_eui_pint',
-        'table': 'PropertyState',
-        'displayName': 'Site EUI (pint)',
-        'dataType': 'eui',
-        'dbField': True,
-    }
-]
-
-
-if True:  # give a flippering point if needed
-    VIEW_COLUMNS_PROPERTY += PINT_VIEW_COLUMNS_PROPERTY
