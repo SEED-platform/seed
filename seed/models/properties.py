@@ -141,11 +141,8 @@ class PropertyState(models.Model):
     # Tax IDs are often stuck here.
     use_description = models.CharField(max_length=255, null=True, blank=True)
 
-    gross_floor_area_orig = models.FloatField(null=True, blank=True)
     year_built = models.IntegerField(null=True, blank=True)
     recent_sale_date = models.DateTimeField(null=True, blank=True)
-    conditioned_floor_area_orig = models.FloatField(null=True, blank=True)
-    occupied_floor_area_orig = models.FloatField(null=True, blank=True)
 
     # Normalize eventually on owner/address table
     owner = models.CharField(max_length=255, null=True, blank=True)
@@ -159,23 +156,6 @@ class PropertyState(models.Model):
     release_date = models.DateTimeField(null=True, blank=True)
 
     energy_score = models.IntegerField(null=True, blank=True)
-    # Need to add another field eventually to define the source of the EUI's and other
-    # reported fields. Ideally would have the ability to provide the same field from
-    # multiple data sources. For example, site EUI (portfolio manager), site EUI (calculated),
-    # site EUI (modeled 8/4/2017).
-    #
-    # note: `*_orig` are all the unit-unaware original fields in the property
-    # state, which have been superceded by unit-aware Quantity fields. The old
-    # ones are left in place via the rename from eg. site_eui -> site_eui_orig
-    # with their original data intact until we're sure things are OK with the
-    # new columns. At that point (probably 2.4 release) these can be safely
-    # deleted and removed with a migration.
-    site_eui_orig = models.FloatField(null=True, blank=True)
-    site_eui_weather_normalized_orig = models.FloatField(null=True, blank=True)
-    site_eui_modeled_orig = models.FloatField(null=True, blank=True)
-    source_eui_orig = models.FloatField(null=True, blank=True)
-    source_eui_weather_normalized_orig = models.FloatField(null=True, blank=True)
-    source_eui_modeled_orig = models.FloatField(null=True, blank=True)
 
     energy_alerts = models.TextField(null=True, blank=True)
     space_alerts = models.TextField(null=True, blank=True)
@@ -188,14 +168,40 @@ class PropertyState(models.Model):
                                          null=True)
     analysis_state_message = models.TextField(null=True)
 
+    # Need to add another field eventually to define the source of the EUI's and other
+    # reported fields. Ideally would have the ability to provide the same field from
+    # multiple data sources. For example, site EUI (portfolio manager), site EUI (calculated),
+    # site EUI (modeled 8/4/2017).
+    #
+    # note: `*_orig` are all the unit-unaware original fields in the property
+    # state, which have been superceded by unit-aware Quantity fields. The old
+    # ones are left in place via the rename from eg. site_eui -> site_eui_orig
+    # with their original data intact until we're sure things are OK with the
+    # new columns. At that point (probably 2.4 release) these can be safely
+    # deleted and removed with a migration.
+
+    # old pre-Quantity columns
+
+    gross_floor_area_orig = models.FloatField(null=True, blank=True)
+    conditioned_floor_area_orig = models.FloatField(null=True, blank=True)
+    occupied_floor_area_orig = models.FloatField(null=True, blank=True)
+    site_eui_orig = models.FloatField(null=True, blank=True)
+    site_eui_weather_normalized_orig = models.FloatField(null=True, blank=True)
+    site_eui_modeled_orig = models.FloatField(null=True, blank=True)
+    source_eui_orig = models.FloatField(null=True, blank=True)
+    source_eui_weather_normalized_orig = models.FloatField(null=True, blank=True)
+    source_eui_modeled_orig = models.FloatField(null=True, blank=True)
+
+    # new Quantity columns
+
     gross_floor_area = QuantityField('ft**2', null=True, blank=True)
     conditioned_floor_area = QuantityField('ft**2', null=True, blank=True)
     occupied_floor_area = QuantityField('ft**2', null=True, blank=True)
     site_eui = QuantityField('kBtu/ft**2/year', null=True, blank=True)
-    source_eui_weather_normalized = QuantityField('kBtu/ft**2/year', null=True, blank=True)
-    site_eui_modeled = QuantityField('kBtu/ft**2/year', null=True, blank=True)
     site_eui_weather_normalized = QuantityField('kBtu/ft**2/year', null=True, blank=True)
+    site_eui_modeled = QuantityField('kBtu/ft**2/year', null=True, blank=True)
     source_eui = QuantityField('kBtu/ft**2/year', null=True, blank=True)
+    source_eui_weather_normalized = QuantityField('kBtu/ft**2/year', null=True, blank=True)
     source_eui_modeled = QuantityField('kBtu/ft**2/year', null=True, blank=True)
 
     extra_data = JSONField(default=dict, blank=True)
