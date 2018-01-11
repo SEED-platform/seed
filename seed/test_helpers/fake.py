@@ -253,41 +253,29 @@ class FakePropertyViewFactory(BaseFake):
     Factory Class for producing PropertyView instances.
     """
 
-    def __init__(self, prprty=None, cycle=None,
-                 organization=None, user=None):
+    def __init__(self, prprty=None, cycle=None, organization=None, user=None):
         super(FakePropertyViewFactory, self).__init__()
         self.prprty = prprty
         self.cycle = cycle
         self.organization = organization
         self.user = user
-        self.property_factory = FakePropertyFactory(
-            organization=organization
-        )
-        self.cycle_factory = FakeCycleFactory(
-            organization=organization,
-            user=user
-        )
+        self.property_factory = FakePropertyFactory(organization=organization)
+        self.cycle_factory = FakeCycleFactory(organization=organization, user=user)
         self.state_factory = FakePropertyStateFactory(organization=organization)
 
-    def get_property_view(self, prprty=None, cycle=None, state=None,
-                          organization=None, user=None, **kw):
+    def get_property_view(self, prprty=None, cycle=None, state=None, organization=None, user=None, **kwargs):
         # pylint:disable=too-many-arguments
         """Get property view instance."""
         organization = organization if organization else self.organization
         user = user if user else self.user
         if not prprty:
-            prprty = self.prprty if self.prprty else \
-                self.property_factory.get_property(organization=organization)
+            prprty = self.prprty if self.prprty else self.property_factory.get_property(organization=organization)
         if not cycle:
-            cycle = self.cycle if self.cycle else self.cycle_factory.get_cycle(
-                organization=organization
-            )
+            cycle = self.cycle if self.cycle else self.cycle_factory.get_cycle(organization=organization)
         property_view_details = {
             'property': prprty,
             'cycle': cycle,
-            'state': state if state else self.state_factory.get_property_state(
-                organization=organization, **kw
-            )
+            'state': state if state else self.state_factory.get_property_state(organization=organization, **kwargs)
         }
         return PropertyView.objects.create(**property_view_details)
 
@@ -410,11 +398,8 @@ class FakeGreenAssessmentPropertyFactory(BaseFake):
 
     def get_details(self, assessment, property_view, organization):
         """Get GreenAssessmentProperty details"""
-        metric = self.fake.random_digit_not_null() \
-            if assessment.is_numeric_score else None
-        rating = None if assessment.is_numeric_score else u'{} stars'.format(
-            self.fake.random.randint(1, 5)
-        )
+        metric = self.fake.random_digit_not_null() if assessment.is_numeric_score else None
+        rating = None if assessment.is_numeric_score else u'{} stars'.format(self.fake.random.randint(1, 5))
         details = {
             'organization': organization,
             'view': property_view,
@@ -510,11 +495,12 @@ class FakeNoteFactory(BaseFake):
     Facotry Class for producing Note instances.
     """
 
-    def __init__(self, organization=None):
+    def __init__(self, organization=None, user=None):
         self.organization = organization
+        self.user = user
         super(FakeNoteFactory, self).__init__()
 
-    def get_note(self, organization=None, **kw):
+    def get_note(self, organization=None, user=None, **kw):
         """Get Note instance."""
         name = 'Nothing of importance'
         text = self.fake.text()
@@ -523,12 +509,13 @@ class FakeNoteFactory(BaseFake):
             'note_type': Note.NOTE,
             'name': name,
             'text': text,
+            'user': self._get_attr('user', self.user),
         }
         note_details.update(kw)
         note, _ = Note.objects.get_or_create(**note_details)
         return note
 
-    def get_log_note(self, organization=None, **kw):
+    def get_log_note(self, organization=None, user=None, **kw):
         name = 'Nothing of importance for log'
         text = 'Data changed'
         note_details = {
@@ -536,6 +523,7 @@ class FakeNoteFactory(BaseFake):
             'note_type': Note.LOG,
             'name': name,
             'text': text,
+            'user': self._get_attr('user', self.user),
             'log_data': {
                 'property_state': [
                     {
@@ -617,8 +605,7 @@ class FakeTaxLotPropertyFactory(BaseFake):
     Factory Class for producing TaxlotView instances.
     """
 
-    def __init__(self, prprty=None, cycle=None,
-                 organization=None, user=None):
+    def __init__(self, prprty=None, cycle=None,                 organization=None, user=None):
         super(FakeTaxLotPropertyFactory, self).__init__()
         self.organization = organization
         self.user = user
@@ -665,40 +652,31 @@ class FakeTaxLotViewFactory(BaseFake):
     Factory Class for producing TaxlotView instances.
     """
 
-    def __init__(self, organization=None, user=None):
+    def __init__(self, taxlot=None, cycle=None, organization=None, user=None):
         super(FakeTaxLotViewFactory, self).__init__()
+        self.taxlot = taxlot
+        self.cycle = cycle
         self.organization = organization
         self.user = user
-        self.taxlot_factory = FakeTaxLotFactory(
-            organization=organization
-        )
-        self.taxlot_state_factory = FakeTaxLotStateFactory(
-            organization=organization
-        )
-        self.cycle_factory = FakeCycleFactory(
-            organization=organization,
-            user=user
-        )
+        self.taxlot_factory = FakeTaxLotFactory(organization=organization)
+        self.taxlot_state_factory = FakeTaxLotStateFactory(organization=organization)
+        self.cycle_factory = FakeCycleFactory(organization=organization, user=user)
+        self.state_factory = FakeTaxLotStateFactory(organization=organization)
 
-    def get_taxlot_view(self, organization=None, user=None, **kwargs):
+    def get_taxlot_view(self, taxlot=None, cycle=None, state=None, organization=None, user=None, **kwargs):
         """Get a fake taxlot view."""
-        organization = self._get_attr('organization', organization)
-        user = self._get_attr('user', user)
-        cycle = kwargs.get(
-            'cycle',
-            self.cycle_factory.get_cycle(organization=organization, user=user)
-        )
-        state = kwargs.get(
-            'state',
-            self.taxlot_state_factory.get_taxlot_state()
-        )
-        taxlot = kwargs.get(
-            'taxlot',
-            self.taxlot_factory.get_taxlot(organization=organization)
-        )
-        return TaxLotView.objects.create(
-            taxlot=taxlot, cycle=cycle, state=state
-        )
+        organization = organization if organization else self.organization
+        user = user if user else self.user
+        if not taxlot:
+            taxlot = self.taxlot if self.taxlot else self.taxlot_factory.get_taxlot(organization=organization)
+        if not cycle:
+            cycle = self.cycle if self.cycle else self.cycle_factory.get_cycle(organization=organization)
+        property_view_details = {
+            'taxlot': taxlot,
+            'cycle': cycle,
+            'state': state if state else self.state_factory.get_taxlot_state(organization=organization, **kwargs)
+        }
+        return TaxLotView.objects.create(**property_view_details)
 
 
 def mock_file_factory(name, size=None, url=None, path=None):

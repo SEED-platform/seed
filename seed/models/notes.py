@@ -16,6 +16,7 @@ from seed.models import (
 )
 from seed.models.projects import Project
 from seed.utils.generic import obj_to_dict
+from seed.landing.models import SEEDUser as User
 
 
 class Note(models.Model):
@@ -34,6 +35,7 @@ class Note(models.Model):
     text = models.TextField()
 
     organization = models.ForeignKey(Organization, null=True, related_name='notes')
+    user = models.ForeignKey(User, null=True, related_name='notes') # who added the note
     property = models.ForeignKey(Property, null=True, related_name='notes')
     taxlot = models.ForeignKey(TaxLot, null=True, related_name='notes')
 
@@ -49,7 +51,7 @@ class Note(models.Model):
     #    "tax_lot_state": [ { ... } ],
     # }
     #
-    log_data = JSONField(default=dict, blank=True)
+    log_data = JSONField(default=dict, null=True)
 
     # Track when the entry was created and when it was updated
     created = models.DateTimeField(auto_now_add=True)

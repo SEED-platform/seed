@@ -31,7 +31,7 @@ class TestNotes(TestCase):
 
         # Fake Factories
         self.property_view_factory = FakePropertyViewFactory(organization=self.org)
-        self.note_factory = FakeNoteFactory(organization=self.org)
+        self.note_factory = FakeNoteFactory(organization=self.org, user=self.user)
 
     def test_note_assignments(self):
         """Make sure that properties can contain notes"""

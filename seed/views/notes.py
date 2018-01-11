@@ -4,7 +4,7 @@
 :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author 'Piper Merriam <pmerriam@quickleft.com>'
 """
-from collections import namedtuple
+import logging
 
 from rest_framework.parsers import JSONParser, FormParser
 from rest_framework.renderers import JSONRenderer
@@ -17,7 +17,7 @@ from seed.serializers.notes import (
 )
 from seed.utils.viewsets import SEEDOrgCreateUpdateModelViewSet
 
-ErrorState = namedtuple('ErrorState', ['status_code', 'message'])
+_log = logging.getLogger(__name__)
 
 
 class NoteViewSet(SEEDOrgCreateUpdateModelViewSet):
@@ -38,5 +38,27 @@ class NoteViewSet(SEEDOrgCreateUpdateModelViewSet):
     renderer_classes = (JSONRenderer,)
     model = Note
     parser_classes = (JSONParser, FormParser)
-    queryset = Note.objects.none()
     orgfilter = 'organization_id'
+
+    def get_queryset(self):
+        # check if the request is properties or taxlots
+        org_id = self.get_organization(self.request)
+        if self.kwargs.get('properties_pk', None):
+            return Note.objects.filter(organization_id=org_id, property_id=self.kwargs.get('properties_pk'))
+        elif self.kwargs.get('taxlots_pk', None):
+            return Note.objects.filter(organization_id=org_id, taxlot_id=self.kwargs.get('taxlots_pk'))
+        else:
+            return Note.objects.filter(organization_id=org_id)
+
+    def perform_create(self, serializer):
+        org_id = self.get_organization(self.request)
+        if self.kwargs.get('properties_pk', None):
+            serializer.save(
+                organization_id=org_id, user=self.request.user, property_id=self.kwargs.get('properties_pk', None)
+            )
+        elif self.kwargs.get('taxlots_pk', None):
+            serializer.save(
+                organization_id=org_id, user=self.request.user, taxlot_id=self.kwargs.get('taxlots_pk', None)
+            )
+        else:
+            _log.warn("Unable to create model without a property_pk or taxlots_pk")
