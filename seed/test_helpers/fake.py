@@ -605,7 +605,7 @@ class FakeTaxLotPropertyFactory(BaseFake):
     Factory Class for producing TaxlotView instances.
     """
 
-    def __init__(self, prprty=None, cycle=None,                 organization=None, user=None):
+    def __init__(self, prprty=None, cycle=None, organization=None, user=None):
         super(FakeTaxLotPropertyFactory, self).__init__()
         self.organization = organization
         self.user = user

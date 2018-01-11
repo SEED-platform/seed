@@ -35,7 +35,7 @@ class Note(models.Model):
     text = models.TextField()
 
     organization = models.ForeignKey(Organization, null=True, related_name='notes')
-    user = models.ForeignKey(User, null=True, related_name='notes') # who added the note
+    user = models.ForeignKey(User, null=True, related_name='notes')  # who added the note
     property = models.ForeignKey(Property, null=True, related_name='notes')
     taxlot = models.ForeignKey(TaxLot, null=True, related_name='notes')
 
