@@ -61,6 +61,7 @@ class Property(models.Model):
     campus = models.BooleanField(default=False)
     parent_property = models.ForeignKey('Property', blank=True, null=True)
     labels = models.ManyToManyField(StatusLabel)
+    # notes has a relationship here
 
     # Track when the entry was created and when it was updated
     created = models.DateTimeField(auto_now_add=True)

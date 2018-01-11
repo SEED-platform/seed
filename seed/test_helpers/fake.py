@@ -510,16 +510,41 @@ class FakeNoteFactory(BaseFake):
     Facotry Class for producing Note instances.
     """
 
-    def __init__(self):
+    def __init__(self, organization=None):
+        self.organization = organization
         super(FakeNoteFactory, self).__init__()
 
-    def get_note(self, **kw):
+    def get_note(self, organization=None, **kw):
         """Get Note instance."""
         name = 'Nothing of importance'
         text = self.fake.text()
         note_details = {
+            'organization_id': self._get_attr('organization', self.organization).pk,
+            'note_type': Note.NOTE,
             'name': name,
             'text': text,
+        }
+        note_details.update(kw)
+        note, _ = Note.objects.get_or_create(**note_details)
+        return note
+
+    def get_log_note(self, organization=None, **kw):
+        name = 'Nothing of importance for log'
+        text = 'Data changed'
+        note_details = {
+            'organization_id': self._get_attr('organization', self.organization).pk,
+            'note_type': Note.LOG,
+            'name': name,
+            'text': text,
+            'log_data': {
+                'property_state': [
+                    {
+                        "field": "address_line_1",
+                        "previous_value": "123 Main Street",
+                        "new_value": "742 Evergreen Terrace"
+                    }
+                ]
+            }
         }
         note_details.update(kw)
         note, _ = Note.objects.get_or_create(**note_details)

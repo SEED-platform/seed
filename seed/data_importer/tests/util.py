@@ -5,9 +5,9 @@
 :author
 """
 
-import datetime
 import logging
 
+import datetime
 from django.test import TestCase
 from django.utils import timezone
 
@@ -23,6 +23,7 @@ from seed.models import (
     PropertyView,
     DATA_STATE_IMPORT,
     ASSESSED_RAW,
+    Note,
     PropertyAuditLog,
     StatusLabel,
     TaxLotAuditLog,
@@ -248,6 +249,7 @@ class DeleteModelsTestCase(TestCase):
         PropertyState.objects.all().delete()
         PropertyView.objects.all().delete()
         PropertyAuditLog.objects.all().delete()
+        Note.objects.all().delete()
         StatusLabel.objects.all().delete()
         TaxLot.objects.all().delete()
         TaxLotState.objects.all().delete()
@@ -269,6 +271,7 @@ class DeleteModelsTestCase(TestCase):
         PropertyState.objects.all().delete()
         PropertyView.objects.all().delete()
         PropertyAuditLog.objects.all().delete()
+        Note.objects.all().delete()
         StatusLabel.objects.all().delete()
         TaxLot.objects.all().delete()
         TaxLotState.objects.all().delete()

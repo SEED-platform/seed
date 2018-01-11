@@ -17,6 +17,7 @@ from seed.data_importer.views import (
     LocalUploaderViewSet
 )
 from seed.views.api import get_api_schema
+from seed.views.building_file import BuildingFileViewSet
 from seed.views.certification import (
     GreenAssessmentViewSet,
     GreenAssessmentPropertyViewSet,
@@ -28,6 +29,9 @@ from seed.views.data_quality import DataQualityViews
 from seed.views.datasets import DatasetViewSet
 from seed.views.labels import LabelViewSet, UpdateInventoryLabelsAPIView
 from seed.views.main import version
+from seed.views.measures import MeasureViewSet
+from seed.views.meters import MeterViewSet
+from seed.views.notes import NoteViewSet
 from seed.views.organizations import OrganizationViewSet
 from seed.views.projects import ProjectViewSet
 from seed.views.properties import (PropertyViewSet, PropertyStateViewSet,
@@ -35,9 +39,6 @@ from seed.views.properties import (PropertyViewSet, PropertyStateViewSet,
 from seed.views.reports import Report
 from seed.views.taxlots import TaxLotViewSet
 from seed.views.users import UserViewSet
-from seed.views.building_file import BuildingFileViewSet
-from seed.views.meters import MeterViewSet
-from seed.views.measures import MeasureViewSet
 
 api_v2_router = routers.DefaultRouter()
 api_v2_router.register(r'building_file', BuildingFileViewSet, base_name='building_file')
@@ -48,12 +49,12 @@ api_v2_router.register(r'data_quality_checks', DataQualityViews, base_name='data
 api_v2_router.register(r'datasets', DatasetViewSet, base_name="datasets")
 api_v2_router.register(r'import_files', ImportFileViewSet, base_name="import_files")
 api_v2_router.register(r'gbr_properties', GBRPropertyViewSet, base_name="properties")
-api_v2_router.register(r'green_assessment_urls', GreenAssessmentURLViewSet,
-                       base_name="green_assessment_urls")
+api_v2_router.register(r'green_assessment_urls', GreenAssessmentURLViewSet, base_name="green_assessment_urls")
 api_v2_router.register(r'green_assessment_properties', GreenAssessmentPropertyViewSet,
                        base_name="green_assessment_properties")
 api_v2_router.register(r'green_assessments', GreenAssessmentViewSet, base_name="green_assessments")
 api_v2_router.register(r'labels', LabelViewSet, base_name="labels")
+api_v2_router.register(r'notes', NoteViewSet, base_name='notes')
 api_v2_router.register(r'measures', MeasureViewSet, base_name='measures')
 api_v2_router.register(r'meters', MeterViewSet, base_name='meters')
 api_v2_router.register(r'organizations', OrganizationViewSet, base_name="organizations")
@@ -67,7 +68,6 @@ api_v2_router.register(r'reverse_and_test', TestReverseViewSet, base_name="rever
 api_v2_router.register(r'taxlots', TaxLotViewSet, base_name="taxlots")
 api_v2_router.register(r'upload', LocalUploaderViewSet, base_name='local_uploader')
 api_v2_router.register(r'users', UserViewSet, base_name="users")
-
 
 urlpatterns = [
     # v2 api

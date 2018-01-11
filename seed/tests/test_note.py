@@ -31,10 +31,7 @@ class TestNotes(TestCase):
 
         # Fake Factories
         self.property_view_factory = FakePropertyViewFactory(organization=self.org)
-        self.note_factory = FakeNoteFactory()
-
-    def tearDown(self):
-        pass
+        self.note_factory = FakeNoteFactory(organization=self.org)
 
     def test_note_assignments(self):
         """Make sure that properties can contain notes"""
@@ -48,4 +45,3 @@ class TestNotes(TestCase):
         self.assertTrue(pv)
         self.assertIn(note1, pv.property.notes.all())
         self.assertIn(note2, pv.property.notes.all())
-

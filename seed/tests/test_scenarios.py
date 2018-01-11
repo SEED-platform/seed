@@ -6,7 +6,6 @@
 """
 
 from seed.models import Organization
-from seed.models.scenarios import Scenario
 from seed.test_helpers.fake import FakePropertyMeasureFactory
 from seed.tests.util import DeleteModelsTestCase
 
@@ -15,18 +14,15 @@ class TestMeasures(DeleteModelsTestCase):
     def setUp(self):
         self.org = Organization.objects.create()
 
-    def tearDown(self):
-        Scenario.objects.all().delete()
-
     def test_scenario_meters(self):
         ps = FakePropertyMeasureFactory(self.org).get_property_state()
 
         self.assertEqual(ps.measures.count(), 5)
         self.assertEqual(ps.propertymeasure_set.count(), 5)
 
-        for m in ps.propertymeasure_set.all():
-            print m.measure
-            print m.cost_mv
+        # for m in ps.propertymeasure_set.all():
+        #     print m.measure
+        #     print m.cost_mv
 
         # s = Scenario.objects.create(
         #     name='Test'

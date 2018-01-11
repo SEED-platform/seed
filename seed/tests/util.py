@@ -20,6 +20,8 @@ from seed.models import (
     PropertyState,
     PropertyView,
     PropertyAuditLog,
+    Note,
+    Scenario,
     StatusLabel,
     TaxLotAuditLog,
     TaxLotState,
@@ -45,6 +47,8 @@ class DeleteModelsTestCase(TestCase):
         PropertyState.objects.all().delete()
         PropertyView.objects.all().delete()
         PropertyAuditLog.objects.all().delete()
+        Note.objects.all().delete()
+        Scenario.objects.all().delete()
         StatusLabel.objects.all().delete()
         TaxLot.objects.all().delete()
         TaxLotState.objects.all().delete()
@@ -66,6 +70,8 @@ class DeleteModelsTestCase(TestCase):
         PropertyState.objects.all().delete()
         PropertyView.objects.all().delete()
         PropertyAuditLog.objects.all().delete()
+        Note.objects.all().delete()
+        Scenario.objects.all().delete()
         StatusLabel.objects.all().delete()
         TaxLot.objects.all().delete()
         TaxLotState.objects.all().delete()
