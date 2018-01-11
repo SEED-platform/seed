@@ -192,8 +192,10 @@ class PropertyState(models.Model):
     occupied_floor_area_pint = QuantityField('ft**2', null=True, blank=True)
     site_eui_pint = QuantityField('kBtu/ft**2/year', null=True, blank=True)
     source_eui_weather_normalized_pint = QuantityField('kBtu/ft**2/year', null=True, blank=True)
+    site_eui_modeled_pint = QuantityField('kBtu/ft**2/year', null=True, blank=True)
     site_eui_weather_normalized_pint = QuantityField('kBtu/ft**2/year', null=True, blank=True)
     source_eui_pint = QuantityField('kBtu/ft**2/year', null=True, blank=True)
+    source_eui_modeled_pint = QuantityField('kBtu/ft**2/year', null=True, blank=True)
 
     extra_data = JSONField(default=dict, blank=True)
     measures = models.ManyToManyField('Measure', through='PropertyMeasure')
