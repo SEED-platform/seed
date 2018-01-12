@@ -166,9 +166,6 @@ SEED_app.run([
 SEED_app.run([
   'flippers',
   function (flippers) {
-    var make = _.partial(flippers.make_flipper, 'ryan@ryanmccuaig.net', '2018-02-01T00:00:00Z');
-    make('release:use_pint', 'boolean', true);
-
     // wraps some minor UI that we'll need until we migrate to delete the old
     // PropertyState columns for EUI and area. This flipper should be removed
     // for 2.4 when we remove the archived "_orig" area and EUI columns.
