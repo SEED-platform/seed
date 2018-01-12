@@ -50,15 +50,6 @@ class ProjectViewTests(DeleteModelsTestCase):
         self.fake_request = FakeRequest(user=self.user)
         self.maxDiff = None
 
-    # def tearDown(self):
-    #     Property.objects.all().delete()
-    #     PropertyState.objects.all().delete()
-    #     PropertyView.objects.all().delete()
-    #     Project.objects.all().delete()
-    #     ProjectPropertyView.objects.all().delete()
-    #     self.user.delete()
-    #     self.org.delete()
-
     def _create_project(self, name=DEFAULT_NAME, org_id=None, user=None,
                         via_http=False, **kwargs):
         """helper to create a project, returns the response"""
