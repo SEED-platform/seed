@@ -63,3 +63,7 @@ Building Energy
 - Jed Clinger (noonian)
 - Swetha Varadharajan (swetha.vara@buildingenergy.com)
 - Michael Dougherty (michael.dougherty@buildingenergy.com)
+
+---
+Open Green Building Society
+- Ryan McCuaig (https://github.com/rgm/)
