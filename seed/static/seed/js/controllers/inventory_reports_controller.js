@@ -280,13 +280,11 @@ angular.module('BE.seed.controller.inventory_reports', [])
 
       /* Update the titles above each chart*/
       function updateChartTitles () {
-        // need to unwrap these instant translations to use them in another $translate.instant?
-        // smells fishy re XSS, but OK presuming we don't allow any user-gen'd graph titles
         var interpolationParams;
         try {
           interpolationParams = {
-            x_axis_label: $sce.getTrustedHtml($translate.instant($scope.xAxisSelectedItem.label)),
-            y_axis_label: $sce.getTrustedHtml($translate.instant($scope.yAxisSelectedItem.label))
+            x_axis_label: $translate.instant($scope.xAxisSelectedItem.label),
+            y_axis_label: $translate.instant($scope.yAxisSelectedItem.label)
           };
         } catch (e) {
           console.error('$sce issue... missing translation');
