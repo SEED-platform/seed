@@ -55,7 +55,7 @@
     "Are you sure you want to delete the data set": "Êtes-vous sûr de vouloir supprimer le jeu de données",
     "Are you sure you want to unmerge these properties and then merge with the selected properties?": "Êtes-vous sûr de vouloir annuler la fusion de ces propriétés et fusionner avec les propriétés sélectionnées?",
     "Are you sure you want to unmerge these tax lots and then merge with the selected tax lots?": "Êtes-vous sûr de vouloir annuler la fusion de ces lots fiscaux pour ensuite fusionner avec les lots d'impôt sélectionnés?",
-    "Area": "Région",
+    "Area": "Superficie",
     "As the admin of your SEED instance you can control what data is shared throughout your organization and between your sub-organizations as well as what data is shared externally with the public-at-large. The subset of data you choose to share with the public can be different than the subset shared between your sub-organizations.": "En tant qu'administrateur de votre instance SEED, vous pouvez contrôler les données partagées dans votre organisation et entre vos sous-organisations ainsi que les données partagées à l'externe avec le public. Le sous-ensemble de données que vous choisissez de partager avec le public peut être différent du sous-ensemble partagé entre vos sous-organisations.",
     "Associated Building Tax Lot ID": "ID de lot d'impôt du bâtiment associé",
     "Associated Tax Lot ID": "ID de lot d'impôt associé",

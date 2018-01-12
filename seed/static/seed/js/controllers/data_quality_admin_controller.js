@@ -52,52 +52,30 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       {id: 'number', label: $translate.instant('Number')},
       {id: 'string', label: $translate.instant('Text')},
       {id: 'date', label: $translate.instant('Date')},
-      {id: 'year', label: $translate.instant('Year')}
+      {id: 'year', label: $translate.instant('Year')},
+      {id: 'area', label: $translate.instant('Area')},
+      {id: 'eui', label: $translate.instant('EUI')}
     ];
-
-    if (flippers.is_active('release:use_pint')) {
-
-      $scope.data_types = [
-        {id: null, label: ''},
-        {id: 'number', label: 'Number'},
-        {id: 'string', label: 'Text'},
-        {id: 'date', label: 'Date'},
-        {id: 'year', label: 'Year'},
-        {id: 'area', label: 'Area'},
-        {id: 'eui', label: 'EUI'}
-      ];
-
-    }
 
     $scope.units = [
       {id: null, label: ''},
-      {id: 'square feet', label: $translate.instant('square feet')},
-      {id: 'kBtu/sq. ft./year', label: $translate.instant('kBtu/sq. ft./year')}
+      {id: 'ft**2', label: 'square feet'},
+      {id: 'm**2', label: 'square metres'},
+      {id: 'kBtu/ft**2/year', label: 'kBtu/sq. ft./year'},
+      {id: 'GJ/m**2/year', label: 'GJ/m²/year'},
+      {id: 'MJ/m**2/year', label: 'MJ/m²/year'},
+      {id: 'kWh/m**2/year', label: 'kWh/m²/year'},
+      {id: 'kBtu/m**2/year', label: 'kBtu/m²/year'}
     ];
-
-    if (flippers.is_active('release:use_pint')) {
-
-      $scope.units = [
-        {id: null, label: ''},
-        {id: 'ft**2', label: 'square feet'},
-        {id: 'm**2', label: 'square metres'},
-        {id: 'kBtu/ft**2/year', label: 'kBtu/sq. ft./year'},
-        {id: 'GJ/m**2/year', label: 'GJ/m²/year'},
-        {id: 'MJ/m**2/year', label: 'MJ/m²/year'},
-        {id: 'kWh/m**2/year', label: 'kWh/m²/year'},
-        {id: 'kBtu/m**2/year', label: 'kBtu/m²/year'}
-      ];
-
-    }
 
     $scope.columns = columns;
 
-    if (!flippers.is_active('release:use_pint')) {
-      // db may return _pint columns; don't suggest them in the select
-      var is_pint_column = function (o) {
-        return /_pint$/.test(o.name);
+    if (flippers.is_active('release:orig_columns')) {
+      // db may return _orig columns; don't suggest them in the select
+      var is_retired_pre_pint_column = function (o) {
+        return /_orig$/.test(o.name);
       };
-      _.remove($scope.columns, is_pint_column);
+      _.remove($scope.columns, is_retired_pre_pint_column);
     }
 
     $scope.all_labels = labels_payload;
