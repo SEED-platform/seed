@@ -117,6 +117,8 @@ class TaxLotProperty(models.Model):
                 # Do not make these timestamps naive. They persist correctly.
                 related_dict['updated'] = related_view.property.updated
                 related_dict['created'] = related_view.property.created
+                # Replace the enumerations
+                related_dict['analysis_state'] = related_view.state.get_analysis_state_display()
             elif lookups['obj_class'] == 'PropertyView':
                 # Do not make these timestamps naive. They persist correctly.
                 related_dict['updated'] = related_view.taxlot.updated
@@ -170,8 +172,6 @@ class TaxLotProperty(models.Model):
                 if none_in_jurisdiction_tax_lot_ids:
                     jurisdiction_tax_lot_ids.append('Missing')
 
-                    # jurisdiction_tax_lot_ids = [""]
-
                 join_dict = related_map[join.property_view_id].copy()
                 join_dict.update({
                     'primary': 'P' if join.primary else 'S',
@@ -197,12 +197,10 @@ class TaxLotProperty(models.Model):
                 join_dict['generation_date'] = make_naive(join_dict['generation_date']).isoformat()
 
             if join_dict.get('analysis_start_time'):
-                join_dict['analysis_start_time'] = make_naive(
-                    join_dict['analysis_start_time']).isoformat()
+                join_dict['analysis_start_time'] = make_naive(join_dict['analysis_start_time']).isoformat()
 
             if join_dict.get('analysis_end_time'):
-                join_dict['analysis_end_time'] = make_naive(
-                    join_dict['analysis_end_time']).isoformat()
+                join_dict['analysis_end_time'] = make_naive(join_dict['analysis_end_time']).isoformat()
 
             # remove the measures from this view for now
             if join_dict.get('measures'):
@@ -238,6 +236,7 @@ class TaxLotProperty(models.Model):
                 # Do not make these timestamps naive. They persist correctly.
                 obj_dict['created'] = obj.property.created
                 obj_dict['updated'] = obj.property.updated
+                obj_dict['analysis_state'] = obj.state.get_analysis_state_display()
             elif lookups['obj_class'] == 'TaxLotView':
                 # Do not make these timestamps naive. They persist correctly.
                 obj_dict['updated'] = obj.taxlot.updated
@@ -258,12 +257,10 @@ class TaxLotProperty(models.Model):
                 obj_dict['generation_date'] = make_naive(obj_dict['generation_date']).isoformat()
 
             if obj_dict.get('analysis_start_time'):
-                obj_dict['analysis_start_time'] = make_naive(
-                    obj_dict['analysis_start_time']).isoformat()
+                obj_dict['analysis_start_time'] = make_naive(obj_dict['analysis_start_time']).isoformat()
 
             if obj_dict.get('analysis_end_time'):
-                obj_dict['analysis_end_time'] = make_naive(
-                    obj_dict['analysis_end_time']).isoformat()
+                obj_dict['analysis_end_time'] = make_naive(obj_dict['analysis_end_time']).isoformat()
 
             # remove the measures from this view for now
             if obj_dict.get('measures'):

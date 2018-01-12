@@ -19,15 +19,11 @@ from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
     Column,
     ColumnMapping,
-    Cycle,
     FLOAT,
-    Property,
-    PropertyState,
     PropertyView,
     StatusLabel,
     TaxLot,
     TaxLotProperty,
-    TaxLotState,
     TaxLotView,
     Unit,
 )
@@ -45,6 +41,9 @@ DEFAULT_CUSTOM_COLUMNS = [
     'city',
     'state_province',
 ]
+
+from seed.tests.util import DeleteModelsTestCase
+
 COLUMNS_TO_SEND = DEFAULT_CUSTOM_COLUMNS + ['postal_code', 'pm_parent_property_id',
                                             'calculated_taxlot_ids', 'primary', 'extra_data_field',
                                             'jurisdiction_tax_lot_id', 'is secret lair',
@@ -68,7 +67,7 @@ class MainViewTests(TestCase):
         self.assertEqual(200, response.status_code)
 
 
-class DefaultColumnsViewTests(TestCase):
+class DefaultColumnsViewTests(DeleteModelsTestCase):
     """
     Tests of the SEED default custom saved columns
     """
@@ -159,9 +158,6 @@ class DefaultColumnsViewTests(TestCase):
 
         # randomly check a column
         self.assertIn(expected, data['columns'])
-
-    def tearDown(self):
-        self.user.delete()
 
 
 class GetDatasetsViewsTests(TestCase):
@@ -668,7 +664,7 @@ class TestMCMViews(TestCase):
         self.assertEqual(self.org, import_record.super_organization)
 
 
-class InventoryViewTests(TestCase):
+class InventoryViewTests(DeleteModelsTestCase):
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -681,8 +677,8 @@ class InventoryViewTests(TestCase):
         self.cycle_factory = FakeCycleFactory(organization=self.org,
                                               user=self.user)
         self.property_factory = FakePropertyFactory(organization=self.org)
-        self.property_state_factory = FakePropertyStateFactory()
-        self.taxlot_state_factory = FakeTaxLotStateFactory()
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+        self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
         self.org_user = OrganizationUser.objects.create(
             user=self.user, organization=self.org
         )
@@ -693,23 +689,8 @@ class InventoryViewTests(TestCase):
         )
         self.client.login(**user_details)
 
-    def tearDown(self):
-        self.status_label.delete()
-        Column.objects.all().delete()
-        Property.objects.all().delete()
-        PropertyState.objects.all().delete()
-        PropertyView.objects.all().delete()
-        TaxLot.objects.all().delete()
-        TaxLotProperty.objects.all().delete()
-        TaxLotState.objects.all().delete()
-        TaxLotView.objects.all().delete()
-        Cycle.objects.all().delete()
-        self.user.delete()
-        self.org.delete()
-        self.org_user.delete()
-
     def test_get_properties(self):
-        state = self.property_state_factory.get_property_state(self.org)
+        state = self.property_state_factory.get_property_state()
         prprty = self.property_factory.get_property()
         PropertyView.objects.create(
             property=prprty, cycle=self.cycle, state=state
@@ -727,7 +708,7 @@ class InventoryViewTests(TestCase):
         self.assertEquals(results['address_line_1'], state.address_line_1)
 
     def test_get_properties_cycle_id(self):
-        state = self.property_state_factory.get_property_state(self.org)
+        state = self.property_state_factory.get_property_state()
         prprty = self.property_factory.get_property()
         PropertyView.objects.create(
             property=prprty, cycle=self.cycle, state=state
@@ -751,10 +732,7 @@ class InventoryViewTests(TestCase):
             'paint color': 'pink',
             'number of secret gadgets': 5
         }
-        state = self.property_state_factory.get_property_state(
-            self.org,
-            extra_data=extra_data
-        )
+        state = self.property_state_factory.get_property_state(extra_data=extra_data)
         prprty = self.property_factory.get_property()
         PropertyView.objects.create(
             property=prprty, cycle=self.cycle, state=state
@@ -775,13 +753,12 @@ class InventoryViewTests(TestCase):
         self.assertEquals(results['number of secret gadgets'], 5)
 
     def test_get_properties_with_taxlots(self):
-        property_state = self.property_state_factory.get_property_state(self.org)
+        property_state = self.property_state_factory.get_property_state()
         property_property = self.property_factory.get_property(campus=True)
         property_view = PropertyView.objects.create(
             property=property_property, cycle=self.cycle, state=property_state
         )
         taxlot_state = self.taxlot_state_factory.get_taxlot_state(
-            self.org,
             address_line_1=property_state.address_line_1,
             postal_code=property_state.postal_code
         )
@@ -813,13 +790,12 @@ class InventoryViewTests(TestCase):
             'paint color': 'pink',
             'number of secret gadgets': 5
         }
-        property_state = self.property_state_factory.get_property_state(self.org)
+        property_state = self.property_state_factory.get_property_state()
         prprty = self.property_factory.get_property()
         property_view = PropertyView.objects.create(
             property=prprty, cycle=self.cycle, state=property_state
         )
         taxlot_state = self.taxlot_state_factory.get_taxlot_state(
-            self.org,
             address_line_1=property_state.address_line_1,
             postal_code=property_state.postal_code,
             extra_data=extra_data,
@@ -847,7 +823,7 @@ class InventoryViewTests(TestCase):
         self.assertEquals(related['number of secret gadgets'], 5)
 
     def test_get_properties_page_not_an_integer(self):
-        state = self.property_state_factory.get_property_state(self.org)
+        state = self.property_state_factory.get_property_state()
         prprty = self.property_factory.get_property()
         PropertyView.objects.create(
             property=prprty, cycle=self.cycle, state=state
@@ -887,7 +863,7 @@ class InventoryViewTests(TestCase):
         self.assertEquals(pagination['total'], 0)
 
     def test_get_property(self):
-        property_state = self.property_state_factory.get_property_state(self.org)
+        property_state = self.property_state_factory.get_property_state()
         property_property = self.property_factory.get_property()
         property_property.labels.add(self.status_label)
         property_property.save()
@@ -895,7 +871,6 @@ class InventoryViewTests(TestCase):
             property=property_property, cycle=self.cycle, state=property_state
         )
         taxlot_state = self.taxlot_state_factory.get_taxlot_state(
-            self.org,
             postal_code=property_state.postal_code
         )
         taxlot = TaxLot.objects.create(organization=self.org)
@@ -962,13 +937,12 @@ class InventoryViewTests(TestCase):
         self.assertEqual(tstate['address_line_1'], taxlot_state.address_line_1)
 
     def test_get_property_multiple_taxlots(self):
-        property_state = self.property_state_factory.get_property_state(self.org)
+        property_state = self.property_state_factory.get_property_state()
         property_property = self.property_factory.get_property()
         property_view = PropertyView.objects.create(
             property=property_property, cycle=self.cycle, state=property_state
         )
         taxlot_state_1 = self.taxlot_state_factory.get_taxlot_state(
-            self.org,
             postal_code=property_state.postal_code
         )
         taxlot_1 = TaxLot.objects.create(organization=self.org)
@@ -980,7 +954,6 @@ class InventoryViewTests(TestCase):
             cycle=self.cycle
         )
         taxlot_state_2 = self.taxlot_state_factory.get_taxlot_state(
-            self.org,
             postal_code=property_state.postal_code
         )
         taxlot_2 = TaxLot.objects.create(organization=self.org)
@@ -1056,16 +1029,12 @@ class InventoryViewTests(TestCase):
         self.assertEquals(state['id'], property_state.pk)
 
     def test_get_taxlots(self):
-        property_state = self.property_state_factory.get_property_state(
-            self.org,
-            extra_data={'extra_data_field': 'edfval'},
-        )
+        property_state = self.property_state_factory.get_property_state(extra_data={'extra_data_field': 'edfval'})
         property_property = self.property_factory.get_property()
         property_view = PropertyView.objects.create(
             property=property_property, cycle=self.cycle, state=property_state
         )
         taxlot_state = self.taxlot_state_factory.get_taxlot_state(
-            self.org,
             postal_code=property_state.postal_code
         )
         taxlot = TaxLot.objects.create(organization=self.org)
@@ -1101,13 +1070,12 @@ class InventoryViewTests(TestCase):
         self.assertEquals(related['extra_data_field'], 'edfval')
 
     def test_get_taxlots_no_cycle_id(self):
-        property_state = self.property_state_factory.get_property_state(self.org)
+        property_state = self.property_state_factory.get_property_state()
         property_property = self.property_factory.get_property()
         property_view = PropertyView.objects.create(
             property=property_property, cycle=self.cycle, state=property_state
         )
         taxlot_state = self.taxlot_state_factory.get_taxlot_state(
-            self.org,
             postal_code=property_state.postal_code
         )
         taxlot = TaxLot.objects.create(organization=self.org)
@@ -1127,7 +1095,7 @@ class InventoryViewTests(TestCase):
 
         self.assertEquals(len(results), 1)
 
-        property_state_1 = self.property_state_factory.get_property_state(self.org)
+        property_state_1 = self.property_state_factory.get_property_state()
         property_1 = self.property_factory.get_property()
         property_view_1 = PropertyView.objects.create(
             property=property_1, cycle=self.cycle, state=property_state_1
@@ -1161,16 +1129,12 @@ class InventoryViewTests(TestCase):
         )
 
     def test_get_taxlots_multiple_taxlots(self):
-        property_state = self.property_state_factory.get_property_state(
-            self.org,
-            extra_data={'extra_data_field': 'edfval'},
-        )
+        property_state = self.property_state_factory.get_property_state(extra_data={'extra_data_field': 'edfval'})
         property_property = self.property_factory.get_property()
         property_view = PropertyView.objects.create(
             property=property_property, cycle=self.cycle, state=property_state
         )
         taxlot_state_1 = self.taxlot_state_factory.get_taxlot_state(
-            self.org,
             postal_code=property_state.postal_code
         )
         taxlot_1 = TaxLot.objects.create(organization=self.org)
@@ -1181,7 +1145,6 @@ class InventoryViewTests(TestCase):
             property_view=property_view, taxlot_view=taxlot_view_1, cycle=self.cycle
         )
         taxlot_state_2 = self.taxlot_state_factory.get_taxlot_state(
-            self.org,
             postal_code=property_state.postal_code
         )
         taxlot_2 = TaxLot.objects.create(organization=self.org)
@@ -1233,13 +1196,12 @@ class InventoryViewTests(TestCase):
         self.assertEquals(related['extra_data_field'], 'edfval')
 
     def test_get_taxlots_extra_data(self):
-        property_state = self.property_state_factory.get_property_state(self.org)
+        property_state = self.property_state_factory.get_property_state()
         property_property = self.property_factory.get_property()
         property_view = PropertyView.objects.create(
             property=property_property, cycle=self.cycle, state=property_state
         )
         taxlot_state = self.taxlot_state_factory.get_taxlot_state(
-            self.org,
             postal_code=property_state.postal_code,
             extra_data={'extra_data_field': 'edfval'}
         )
@@ -1266,16 +1228,12 @@ class InventoryViewTests(TestCase):
         self.assertEquals(len(result['related']), 1)
 
     def test_get_taxlots_page_not_an_integer(self):
-        property_state = self.property_state_factory.get_property_state(
-            self.org,
-            extra_data={'extra_data_field': 'edfval'},
-        )
+        property_state = self.property_state_factory.get_property_state(extra_data={'extra_data_field': 'edfval'})
         property_property = self.property_factory.get_property()
         property_view = PropertyView.objects.create(
             property=property_property, cycle=self.cycle, state=property_state
         )
         taxlot_state = self.taxlot_state_factory.get_taxlot_state(
-            self.org,
             postal_code=property_state.postal_code
         )
         taxlot = TaxLot.objects.create(organization=self.org)
@@ -1304,16 +1262,12 @@ class InventoryViewTests(TestCase):
         self.assertEquals(pagination['total'], 1)
 
     def test_get_taxlots_empty_page(self):
-        property_state = self.property_state_factory.get_property_state(
-            self.org,
-            extra_data={'extra_data_field': 'edfval'},
-        )
+        property_state = self.property_state_factory.get_property_state(extra_data={'extra_data_field': 'edfval'})
         property_property = self.property_factory.get_property()
         property_view = PropertyView.objects.create(
             property=property_property, cycle=self.cycle, state=property_state
         )
         taxlot_state = self.taxlot_state_factory.get_taxlot_state(
-            self.org,
             postal_code=property_state.postal_code
         )
         taxlot = TaxLot.objects.create(organization=self.org)
@@ -1342,16 +1296,12 @@ class InventoryViewTests(TestCase):
         self.assertEquals(pagination['total'], 1)
 
     def test_get_taxlots_missing_jurisdiction_tax_lot_id(self):
-        property_state = self.property_state_factory.get_property_state(
-            self.org,
-            extra_data={'extra_data_field': 'edfval'}
-        )
+        property_state = self.property_state_factory.get_property_state(extra_data={'extra_data_field': 'edfval'})
         property_property = self.property_factory.get_property(self.org)
         property_view = PropertyView.objects.create(
             property=property_property, cycle=self.cycle, state=property_state
         )
         taxlot_state = self.taxlot_state_factory.get_taxlot_state(
-            self.org,
             postal_code=property_state.postal_code,
             jurisdiction_tax_lot_id=None
         )
@@ -1372,14 +1322,14 @@ class InventoryViewTests(TestCase):
         self.assertEqual(related['calculated_taxlot_ids'], 'Missing')
 
     def test_get_taxlot(self):
-        taxlot_state = self.taxlot_state_factory.get_taxlot_state(self.org)
+        taxlot_state = self.taxlot_state_factory.get_taxlot_state()
         taxlot = TaxLot.objects.create(organization=self.org)
         taxlot.labels.add(self.status_label)
         taxlot_view = TaxLotView.objects.create(
             taxlot=taxlot, state=taxlot_state, cycle=self.cycle
         )
 
-        property_state_1 = self.property_state_factory.get_property_state(self.org)
+        property_state_1 = self.property_state_factory.get_property_state()
         property_property_1 = self.property_factory.get_property()
         property_view_1 = PropertyView.objects.create(
             property=property_property_1, cycle=self.cycle,
@@ -1390,7 +1340,7 @@ class InventoryViewTests(TestCase):
             cycle=self.cycle
         )
 
-        property_state_2 = self.property_state_factory.get_property_state(self.org)
+        property_state_2 = self.property_state_factory.get_property_state()
         property_property_2 = self.property_factory.get_property()
         property_view_2 = PropertyView.objects.create(
             property=property_property_2, cycle=self.cycle,

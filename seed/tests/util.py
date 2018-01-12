@@ -33,13 +33,10 @@ from seed.models.data_quality import DataQualityCheck
 
 
 class DeleteModelsTestCase(TestCase):
-    def setUp(self):
-        User.objects.all().delete()
-        Organization.objects.all().delete()
-        OrganizationUser.objects.all().delete()
+    def _delete_models(self):
+        # Order matters here
         Column.objects.all().delete()
         ColumnMapping.objects.all().delete()
-        Cycle.objects.all().delete()
         DataQualityCheck.objects.all().delete()
         ImportFile.objects.all().delete()
         ImportRecord.objects.all().delete()
@@ -56,28 +53,19 @@ class DeleteModelsTestCase(TestCase):
         TaxLotAuditLog.objects.all().delete()
         TaxLotProperty.objects.all().delete()
 
-    def tearDown(self):
+        # Now delete the cycle after all the states and views have been removed
+        Cycle.objects.all().delete()
+
+        # Delete users last
         User.objects.all().delete()
         Organization.objects.all().delete()
         OrganizationUser.objects.all().delete()
-        Column.objects.all().delete()
-        ColumnMapping.objects.all().delete()
-        Cycle.objects.all().delete()
-        DataQualityCheck.objects.all().delete()
-        ImportFile.objects.all().delete()
-        ImportRecord.objects.all().delete()
-        Property.objects.all().delete()
-        PropertyState.objects.all().delete()
-        PropertyView.objects.all().delete()
-        PropertyAuditLog.objects.all().delete()
-        Note.objects.all().delete()
-        Scenario.objects.all().delete()
-        StatusLabel.objects.all().delete()
-        TaxLot.objects.all().delete()
-        TaxLotState.objects.all().delete()
-        TaxLotView.objects.all().delete()
-        TaxLotAuditLog.objects.all().delete()
-        TaxLotProperty.objects.all().delete()
+
+    def setUp(self):
+        self._delete_models()
+
+    def tearDown(self):
+        self._delete_models()
 
 
 class FakeRequest(object):

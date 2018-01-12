@@ -193,9 +193,7 @@ class FakePropertyAuditLogFactory(BaseFake):
         }
         details.update(kw)
         if not details.get('state'):
-            details['state'] = self.state_factory.get_property_state(
-                organization=self.organization
-            )
+            details['state'] = self.state_factory.get_property_state(organization=self.organization)
         if not details.get('view'):
             details['view'] = self.view_factory.get_property_view()
         return PropertyAuditLog.objects.create(**details)
@@ -234,16 +232,20 @@ class FakePropertyStateFactory(BaseFake):
             'owner_postal_code': owner.postal_code,
         }
 
-    def get_property_state(self, organization, **kw):
+    def get_property_state(self, organization=None, **kw):
         """Return a property state populated with pseudo random data"""
         property_details = self.get_details()
         property_details.update(kw)
         ps = PropertyState.objects.create(
-            organization=organization, **property_details
+            organization=self._get_attr('organization', self.organization),
+            **property_details
         )
         # make sure to create an audit log so that we can test various methods (e.g. updating properties)
         PropertyAuditLog.objects.create(
-            organization=organization, state=ps, record_type=AUDIT_IMPORT, name='Import Creation'
+            organization=self._get_attr('organization', self.organization),
+            state=ps,
+            record_type=AUDIT_IMPORT,
+            name='Import Creation'
         )
         return ps
 
@@ -285,7 +287,7 @@ class FakePropertyMeasureFactory(BaseFake):
         self.organization = organization
 
         if not property_state:
-            self.property_state = FakePropertyStateFactory().get_property_state(self.organization)
+            self.property_state = FakePropertyStateFactory(organization=self.organization).get_property_state()
         else:
             self.property_state = property_state
         super(FakePropertyMeasureFactory, self).__init__()
@@ -315,7 +317,7 @@ class FakePropertyMeasureFactory(BaseFake):
             }
             PropertyMeasure.objects.create(**property_measure_details)
 
-    def get_property_state(self, number_of_measures=5, **kw):
+    def get_property_state(self, number_of_measures=5):
         """Return a measure"""
         self.assign_random_measures(number_of_measures)
         return self.property_state
@@ -412,8 +414,7 @@ class FakeGreenAssessmentPropertyFactory(BaseFake):
             details['rating'] = rating
         return details
 
-    def get_green_assessment_property(self, assessment=None, property_view=None,
-                                      organization=None, user=None,
+    def get_green_assessment_property(self, assessment=None, property_view=None, organization=None, user=None,
                                       urls=None, with_url=None, **kw):
         """
         Get a GreenAssessmentProperty instance.
@@ -575,7 +576,7 @@ class FakeTaxLotStateFactory(BaseFake):
         super(FakeTaxLotStateFactory, self).__init__()
         self.organization = organization
 
-    def get_details(self, organization):
+    def get_details(self):
         """Get taxlot details."""
         taxlot_details = {
             'jurisdiction_tax_lot_id': self.fake.numerify(text='#####'),
@@ -591,7 +592,7 @@ class FakeTaxLotStateFactory(BaseFake):
     def get_taxlot_state(self, organization=None, **kw):
         """Return a taxlot state populated with pseudo random data"""
         org = self._get_attr('organization', organization)
-        taxlot_details = self.get_details(org)
+        taxlot_details = self.get_details()
         taxlot_details.update(kw)
         tls = TaxLotState.objects.create(organization=org, **taxlot_details)
         TaxLotAuditLog.objects.create(

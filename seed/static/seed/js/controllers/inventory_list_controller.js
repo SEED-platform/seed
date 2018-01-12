@@ -221,9 +221,8 @@ angular.module('BE.seed.controller.inventory_list', [])
       };
       _.map($scope.columns, function (col) {
         var options = {};
-        if (col.type === 'number') options.filter = inventory_service.numFilter();
-        else if (col.type === 'date') options.filter = inventory_service.dateFilter();
-        else options.filter = inventory_service.textFilter();
+        if (col.type === 'date') options.filter = inventory_service.dateFilter();
+        else options.filter = inventory_service.combinedFilter();
         if (col.type === 'text' || _.isUndefined(col.type)) options.sortingAlgorithm = naturalSort;
         if (col.name === 'number_properties' && col.related) options.treeAggregationType = 'total';
         else if (col.related || col.extraData) options.treeAggregationType = 'uniqueList';
