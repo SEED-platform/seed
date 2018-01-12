@@ -45,14 +45,14 @@ angular.module('BE.seed.controller.inventory_reports', [])
         return mappings[pint_spec] || pint_spec;
       };
 
-      var append_eui_units = function (column_name) {
+      var eui_units = function () {
         var unit = organization_payload.organization.display_units_eui;
-        return column_name + ' (' + pretty_unit(unit) + ')';
+        return pretty_unit(unit);
       };
 
-      var append_area_units = function (column_name) {
+      var area_units = function () {
         var unit = organization_payload.organization.display_units_area;
-        return column_name + ' (' + pretty_unit(unit) + ')';
+        return pretty_unit(unit);
       };
 
       /* Define the first five colors. After that, rely on Dimple's default colors. */
@@ -66,9 +66,6 @@ angular.module('BE.seed.controller.inventory_reports', [])
       $scope.toCycle = {};
 
       var translateAxisLabel = function (label, units) {
-        // rgm - yeah, fair bit of ceremony but I'll have to circle back and
-        // make this respond to display units
-        // TODO make this respond to units display setting later
         var str = '';
         str += $translate.instant(label);
         if (units) {
@@ -96,28 +93,28 @@ angular.module('BE.seed.controller.inventory_reports', [])
           name: $translate.instant('Site EUI'),                     //short name for variable, used in pulldown
           label: $translate.instant('Site Energy Use Intensity'),   //full name for variable
           varName: 'site_eui',                  //name of variable, to be sent to server
-          axisLabel: translateAxisLabel('Site EUI', 'kBtu/sq. ft./year'),     //label to be used in charts, should include units
+          axisLabel: translateAxisLabel('Site EUI', eui_units()),     //label to be used in charts, should include units
           axisType: 'Measure',                  //DimpleJS property for axis type
           axisTickFormat: ',.0f'                //DimpleJS property for axis tick format
         }, {
           name: $translate.instant('Source EUI'),
           label: $translate.instant('Source Energy Use Intensity'),
           varName: 'source_eui',
-          axisLabel: translateAxisLabel('Source EUI', 'kBtu/sq. ft./year'),
+          axisLabel: translateAxisLabel('Source EUI', eui_units()),
           axisType: 'Measure',
           axisTickFormat: ',.0f'
         }, {
           name: $translate.instant('Weather Norm. Site EUI'),
           label: $translate.instant('Weather Normalized Site Energy Use Intensity'),
           varName: 'site_eui_weather_normalized',
-          axisLabel: translateAxisLabel('Weather Normalized Site EUI', 'kBtu/sq. ft./year'),
+          axisLabel: translateAxisLabel('Weather Normalized Site EUI', eui_units()),
           axisType: 'Measure',
           axisTickFormat: ',.0f'
         }, {
           name: $translate.instant('Weather Norm. Source EUI'),
           label: $translate.instant('Weather Normalized Source Energy Use Intensity'),
           varName: 'source_eui_weather_normalized',
-          axisLabel: translateAxisLabel('Weather Normalized Source EUI', 'kBtu/sq. ft./year'),
+          axisLabel: translateAxisLabel('Weather Normalized Source EUI', eui_units()),
           axisType: 'Measure',
           axisTickFormat: ',.0f'
         }, {
@@ -130,44 +127,12 @@ angular.module('BE.seed.controller.inventory_reports', [])
         }
       ];
 
-      if (flippers.is_active('release:use_pint')) {
-        Array.prototype.push.apply($scope.xAxisVars, [{
-          name: 'Site EUI (pint)',
-          label: 'Site Energy Use Intensity',
-          varName: 'site_eui_pint',
-          axisLabel: append_eui_units('Site EUI'),
-          axisType: 'Measure',
-          axisTickFormat: ',.0f'
-        }, {
-          name: 'Source EUI (pint)',
-          label: 'Source Energy Use Intensity',
-          varName: 'source_eui_pint',
-          axisLabel: append_eui_units('Source EUI'),
-          axisType: 'Measure',
-          axisTickFormat: ',.0f'
-        }, {
-          name: 'Weather Norm. Site EUI (pint)',
-          label: 'Weather Normalized Site Energy Use Intensity',
-          varName: 'site_eui_weather_normalized_pint',
-          axisLabel: append_eui_units('Weather Normalized Site EUI'),
-          axisType: 'Measure',
-          axisTickFormat: ',.0f'
-        }, {
-          name: 'Weather Norm. Source EUI (pint)',
-          label: 'Weather Normalized Source Energy Use Intensity',
-          varName: 'source_eui_weather_normalized',
-          axisLabel: append_eui_units('Weather Normalized Source EUI'),
-          axisType: 'Measure',
-          axisTickFormat: ',.0f'
-        }]);
-      }
-
       $scope.yAxisVars = [
         {
           name: $translate.instant('Gross Floor Area'),
           label: $translate.instant('Gross Floor Area'),
           varName: 'gross_floor_area',
-          axisLabel: translateAxisLabel('Gross Floor Area', 'sq. ft.'),
+          axisLabel: translateAxisLabel('Gross Floor Area', area_units()),
           axisTickFormat: ',.0f',
           axisType: 'Measure',
           axisMin: ''
@@ -189,19 +154,6 @@ angular.module('BE.seed.controller.inventory_reports', [])
           axisMin: '1900'
         }
       ];
-
-      if (flippers.is_active('release:use_pint')) {
-        Array.prototype.push.apply($scope.yAxisVars, [{
-          name: 'Gross Floor Area (pint)',
-          label: 'Gross Floor Area',
-          varName: 'gross_floor_area_pint',
-          axisLabel: append_area_units('Gross Floor Area'),
-          axisType: 'Measure',
-          axisTickFormat: ',.0f',
-          axisMin: ''
-        }]);
-      }
-
 
       // Chart titles
       $scope.chart1Title = '';
