@@ -8,27 +8,23 @@ import json
 
 from datetime import datetime
 from django.core.urlresolvers import reverse
-from django.test import TestCase
 from django.utils import timezone
 
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
-    Column,
-    Cycle,
-    Property,
     PropertyState,
     PropertyView,
-    TaxLot,
-    TaxLotProperty,
-    TaxLotState,
-    TaxLotView,
 )
 from seed.test_helpers.fake import (
-    FakeCycleFactory, FakeColumnFactory,
-    FakePropertyFactory, FakePropertyStateFactory,
-    FakeTaxLotStateFactory
+    FakeCycleFactory,
+    FakeColumnFactory,
+    FakePropertyFactory,
+    FakePropertyStateFactory,
+    FakeTaxLotStateFactory,
+    FakePropertyViewFactory,
 )
+from seed.tests.util import DeleteModelsTestCase
 
 COLUMNS_TO_SEND = [
     'project_id',
@@ -44,7 +40,7 @@ COLUMNS_TO_SEND = [
 ]
 
 
-class PropertyViewTests(TestCase):
+class PropertyViewTests(DeleteModelsTestCase):
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -56,8 +52,9 @@ class PropertyViewTests(TestCase):
         self.column_factory = FakeColumnFactory(organization=self.org)
         self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
         self.property_factory = FakePropertyFactory(organization=self.org)
-        self.property_state_factory = FakePropertyStateFactory()
-        self.taxlot_state_factory = FakeTaxLotStateFactory()
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+        self.property_view_factory = FakePropertyViewFactory(organization=self.org)
+        self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
         self.org_user = OrganizationUser.objects.create(
             user=self.user, organization=self.org
         )
@@ -65,22 +62,8 @@ class PropertyViewTests(TestCase):
             start=datetime(2010, 10, 10, tzinfo=timezone.get_current_timezone()))
         self.client.login(**user_details)
 
-    def tearDown(self):
-        Column.objects.all().delete()
-        Property.objects.all().delete()
-        PropertyState.objects.all().delete()
-        PropertyView.objects.all().delete()
-        TaxLot.objects.all().delete()
-        TaxLotProperty.objects.all().delete()
-        TaxLotState.objects.all().delete()
-        TaxLotView.objects.all().delete()
-        Cycle.objects.all().delete()
-        self.user.delete()
-        self.org.delete()
-        self.org_user.delete()
-
     def test_get_and_edit_properties(self):
-        state = self.property_state_factory.get_property_state(self.org)
+        state = self.property_state_factory.get_property_state()
         prprty = self.property_factory.get_property()
         PropertyView.objects.create(
             property=prprty, cycle=self.cycle, state=state
@@ -110,8 +93,8 @@ class PropertyViewTests(TestCase):
                 "address_line_1": "742 Evergreen Terrace"
             }
         }
-        url = reverse('api:v2:properties-detail', args=[prprty.id]) + \
-            '?cycle_id={}&organization_id={}'.format(self.cycle.pk, self.org.pk)
+        url = reverse('api:v2:properties-detail', args=[prprty.id]) + '?cycle_id={}&organization_id={}'.format(
+            self.cycle.pk, self.org.pk)
         response = self.client.put(url, json.dumps(new_data), content_type='application/json')
         result = json.loads(response.content)
         self.assertEqual(result['status'], 'success')
@@ -128,3 +111,73 @@ class PropertyViewTests(TestCase):
                              microsecond=0))
         self.assertGreater(datetime.strptime(result['property']['updated'], "%Y-%m-%dT%H:%M:%S.%fZ"),
                            datetime.strptime(db_updated_time, "%Y-%m-%dT%H:%M:%S.%fZ"))
+
+    def test_search_identifier(self):
+        self.property_view_factory.get_property_view(cycle=self.cycle, custom_id_1='123456')
+        self.property_view_factory.get_property_view(cycle=self.cycle, custom_id_1='987654 Long Street')
+        self.property_view_factory.get_property_view(cycle=self.cycle, address_line_1='123 Main Street')
+        self.property_view_factory.get_property_view(cycle=self.cycle, address_line_1='Hamilton Road',
+                                                     analysis_state=PropertyState.ANALYSIS_STATE_QUEUED)
+        self.property_view_factory.get_property_view(cycle=self.cycle, custom_id_1='long road',
+                                                     analysis_state=PropertyState.ANALYSIS_STATE_QUEUED)
+
+        # Typically looks like this
+        # http://localhost:8000/api/v2.1/properties/?organization_id=265&cycle=219&identifier=09-IS
+
+        # check for all items
+        query_params = "?cycle={}&organization_id={}".format(self.cycle.pk, self.org.pk)
+        url = reverse('api:v2.1:properties-list') + query_params
+        response = self.client.get(url)
+        result = json.loads(response.content)
+        self.assertEqual(result['status'], 'success')
+        results = result['properties']
+        self.assertEqual(len(results), 5)
+
+        # check for 2 items with 123
+        query_params = "?cycle={}&organization_id={}&identifier={}".format(self.cycle.pk, self.org.pk, '123')
+        url = reverse('api:v2.1:properties-list') + query_params
+        response = self.client.get(url)
+        result = json.loads(response.content)
+        self.assertEqual(result['status'], 'success')
+        results = result['properties']
+        self.assertEqual(len(results), 2)
+
+        # check the analysis states
+        query_params = "?cycle={}&organization_id={}&analysis_state={}".format(self.cycle.pk, self.org.pk, 'Completed')
+        url = reverse('api:v2.1:properties-list') + query_params
+        response = self.client.get(url)
+        result = json.loads(response.content)
+        self.assertEqual(result['status'], 'success')
+        results = result['properties']
+        self.assertEqual(len(results), 0)
+
+        query_params = "?cycle={}&organization_id={}&analysis_state={}".format(
+            self.cycle.pk, self.org.pk, 'Not Started'
+        )
+        url = reverse('api:v2.1:properties-list') + query_params
+        response = self.client.get(url)
+        result = json.loads(response.content)
+        self.assertEqual(result['status'], 'success')
+        results = result['properties']
+        self.assertEqual(len(results), 3)
+
+        query_params = "?cycle={}&organization_id={}&analysis_state={}".format(
+            self.cycle.pk, self.org.pk, 'Queued'
+        )
+        url = reverse('api:v2.1:properties-list') + query_params
+        response = self.client.get(url)
+        result = json.loads(response.content)
+        self.assertEqual(result['status'], 'success')
+        results = result['properties']
+        self.assertEqual(len(results), 2)
+
+        # check the combination of both the identifier and the analysis state
+        query_params = "?cycle={}&organization_id={}&identifier={}&analysis_state={}".format(
+            self.cycle.pk, self.org.pk, 'Long', 'Queued'
+        )
+        url = reverse('api:v2.1:properties-list') + query_params
+        response = self.client.get(url)
+        result = json.loads(response.content)
+        self.assertEqual(result['status'], 'success')
+        results = result['properties']
+        self.assertEqual(len(results), 1)

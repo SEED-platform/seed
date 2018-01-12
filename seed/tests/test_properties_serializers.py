@@ -285,7 +285,7 @@ class TestPropertyViewAsStateSerializers(TestCase):
         )
         self.assessment = self.ga_factory.get_green_assessment()
         self.cycle = self.cycle_factory.get_cycle()
-        self.property_state = self.property_state_factory.get_property_state(self.org)
+        self.property_state = self.property_state_factory.get_property_state()
         self.property_view = self.property_view_factory.get_property_view(
             state=self.property_state, cycle=self.cycle
         )
