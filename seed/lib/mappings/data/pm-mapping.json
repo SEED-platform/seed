@@ -130,7 +130,7 @@
     "to_field": "gross_floor_area",
     "to_table_name": "PropertyState",
     "from_field": "propGrossFloorArea",
-    "units": "",
+    "units": "ft**2",
     "type": "float",
     "schema": ""
   },
@@ -139,7 +139,7 @@
     "to_field": "gross_floor_area",
     "to_table_name": "PropertyState",
     "from_field": "Property Floor Area (Buildings) (ft2)",
-    "units": "ft2",
+    "units": "ft**2",
     "type": "float",
     "schema": ""
   },
@@ -373,7 +373,7 @@
     "to_field": "site_eui",
     "to_table_name": "PropertyState",
     "from_field": "Site EUI (kBtu/ft2)",
-    "units": "kBtu/ft2",
+    "units": "kBtu/ft**2/year",
     "type": "float",
     "schema": ""
   },
@@ -382,7 +382,7 @@
     "to_field": "site_eui",
     "to_table_name": "PropertyState",
     "from_field": "siteIntensity",
-    "units": "",
+    "units": "kBtu/ft**2/year",
     "type": "float",
     "schema": ""
   },
@@ -391,7 +391,7 @@
     "to_field": "site_eui_weather_normalized",
     "to_table_name": "PropertyState",
     "from_field": "Weather Normalized Site EUI (kBtu/ft2)",
-    "units": "kBtu/ft2",
+    "units": "kBtu/ft**2/year",
     "type": "float",
     "schema": ""
   },
@@ -409,7 +409,7 @@
     "to_field": "source_eui",
     "to_table_name": "PropertyState",
     "from_field": "Source EUI (kBtu/ft2)",
-    "units": "kBtu/ft2",
+    "units": "kBtu/ft**2/year",
     "type": "float",
     "schema": ""
   },
@@ -418,7 +418,7 @@
     "to_field": "source_eui",
     "to_table_name": "PropertyState",
     "from_field": "sourceIntensity",
-    "units": "",
+    "units": "kBtu/ft**2/year",
     "type": "float",
     "schema": ""
   },
@@ -427,7 +427,7 @@
     "to_field": "source_eui_weather_normalized",
     "to_table_name": "PropertyState",
     "from_field": "Weather Normalized Source EUI (kBtu/ft2)",
-    "units": "kBtu/ft2",
+    "units": "kBtu/ft**2/year",
     "type": "float",
     "schema": ""
   },
