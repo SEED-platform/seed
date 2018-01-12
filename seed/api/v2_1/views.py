@@ -48,8 +48,7 @@ class PropertyViewFilterSet(FilterSet):
 
     class Meta:
         model = PropertyView
-        fields = ['identifier', 'address_line_1', 'cycle', 'property', 'cycle_start', 'cycle_end',
-                  'analysis_state']
+        fields = ['identifier', 'address_line_1', 'cycle', 'property', 'cycle_start', 'cycle_end', 'analysis_state']
 
     def identifier_filter(self, queryset, name, value):
         address_line_1 = Q(state__address_line_1__icontains=value)
