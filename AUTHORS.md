@@ -37,7 +37,7 @@ Cake Systems
 - Brandon Gallagher (bgallagher@cakesystems.com)
 - Julie Gallagher	(https://github.com/juliecov)
 
---
+---
 Windfall Technical
 - Nathan Addy (nathan.addy@gmail.com)
 
