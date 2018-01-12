@@ -35,6 +35,9 @@ from seed.serializers.measures import PropertyMeasureSerializer
 from seed.serializers.scenarios import ScenarioSerializer
 from seed.serializers.taxlots import TaxLotViewSerializer
 
+from seed.lib.superperms.orgs.models import Organization
+from seed.serializers.pint import collapse_unit
+
 # expose internal model
 PropertyLabel = apps.get_model('seed', 'Property_labels')
 
@@ -148,6 +151,61 @@ class PropertyStateSerializer(serializers.ModelSerializer):
     # to support the old state serializer method with the PROPERTY_STATE_FIELDS variables
     import_file_id = serializers.IntegerField(allow_null=True, read_only=True)
     organization_id = serializers.IntegerField()
+
+    site_eui = serializers.SerializerMethodField()
+    site_eui_weather_normalized = serializers.SerializerMethodField()
+    site_eui_modeled = serializers.SerializerMethodField()
+    source_eui = serializers.SerializerMethodField()
+    source_eui_weather_normalized = serializers.SerializerMethodField()
+    source_eui_modeled = serializers.SerializerMethodField()
+    gross_floor_area = serializers.SerializerMethodField()
+    conditioned_floor_area = serializers.SerializerMethodField()
+    occupied_floor_area = serializers.SerializerMethodField()
+
+    def get_site_eui(self, obj):
+        organization = Organization.objects.get(pk=obj.organization_id)
+        unitless_value = collapse_unit(organization, obj.site_eui)
+        return unitless_value
+
+    def get_site_eui_weather_normalized(self, obj):
+        organization = Organization.objects.get(pk=obj.organization_id)
+        unitless_value = collapse_unit(organization, obj.site_eui_weather_normalized)
+        return unitless_value
+
+    def get_site_eui_modeled(self, obj):
+        organization = Organization.objects.get(pk=obj.organization_id)
+        unitless_value = collapse_unit(organization, obj.site_eui_modeled)
+        return unitless_value
+
+    def get_source_eui(self, obj):
+        organization = Organization.objects.get(pk=obj.organization_id)
+        unitless_value = collapse_unit(organization, obj.source_eui)
+        return unitless_value
+
+    def get_source_eui_weather_normalized(self, obj):
+        organization = Organization.objects.get(pk=obj.organization_id)
+        unitless_value = collapse_unit(organization, obj.source_eui_weather_normalized)
+        return unitless_value
+
+    def get_source_eui_modeled(self, obj):
+        organization = Organization.objects.get(pk=obj.organization_id)
+        unitless_value = collapse_unit(organization, obj.source_eui_modeled)
+        return unitless_value
+
+    def get_gross_floor_area(self, obj):
+        organization = Organization.objects.get(pk=obj.organization_id)
+        unitless_value = collapse_unit(organization, obj.gross_floor_area)
+        return unitless_value
+
+    def get_conditioned_floor_area(self, obj):
+        organization = Organization.objects.get(pk=obj.organization_id)
+        unitless_value = collapse_unit(organization, obj.conditioned_floor_area)
+        return unitless_value
+
+    def get_occupied_floor_area(self, obj):
+        organization = Organization.objects.get(pk=obj.organization_id)
+        unitless_value = collapse_unit(organization, obj.occupied_floor_area)
+        return unitless_value
 
     class Meta:
         model = PropertyState
