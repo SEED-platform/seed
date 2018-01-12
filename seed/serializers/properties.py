@@ -162,51 +162,6 @@ class PropertyStateSerializer(serializers.ModelSerializer):
     conditioned_floor_area = serializers.SerializerMethodField()
     occupied_floor_area = serializers.SerializerMethodField()
 
-    def get_site_eui(self, obj):
-        organization = Organization.objects.get(pk=obj.organization_id)
-        unitless_value = collapse_unit(organization, obj.site_eui)
-        return unitless_value
-
-    def get_site_eui_weather_normalized(self, obj):
-        organization = Organization.objects.get(pk=obj.organization_id)
-        unitless_value = collapse_unit(organization, obj.site_eui_weather_normalized)
-        return unitless_value
-
-    def get_site_eui_modeled(self, obj):
-        organization = Organization.objects.get(pk=obj.organization_id)
-        unitless_value = collapse_unit(organization, obj.site_eui_modeled)
-        return unitless_value
-
-    def get_source_eui(self, obj):
-        organization = Organization.objects.get(pk=obj.organization_id)
-        unitless_value = collapse_unit(organization, obj.source_eui)
-        return unitless_value
-
-    def get_source_eui_weather_normalized(self, obj):
-        organization = Organization.objects.get(pk=obj.organization_id)
-        unitless_value = collapse_unit(organization, obj.source_eui_weather_normalized)
-        return unitless_value
-
-    def get_source_eui_modeled(self, obj):
-        organization = Organization.objects.get(pk=obj.organization_id)
-        unitless_value = collapse_unit(organization, obj.source_eui_modeled)
-        return unitless_value
-
-    def get_gross_floor_area(self, obj):
-        organization = Organization.objects.get(pk=obj.organization_id)
-        unitless_value = collapse_unit(organization, obj.gross_floor_area)
-        return unitless_value
-
-    def get_conditioned_floor_area(self, obj):
-        organization = Organization.objects.get(pk=obj.organization_id)
-        unitless_value = collapse_unit(organization, obj.conditioned_floor_area)
-        return unitless_value
-
-    def get_occupied_floor_area(self, obj):
-        organization = Organization.objects.get(pk=obj.organization_id)
-        unitless_value = collapse_unit(organization, obj.occupied_floor_area)
-        return unitless_value
-
     class Meta:
         model = PropertyState
         fields = '__all__'
@@ -234,6 +189,43 @@ class PropertyStateSerializer(serializers.ModelSerializer):
             result['analysis_end_time'] = make_naive(data.analysis_end_time).isoformat()
 
         return result
+
+    def _collapse_pint_value(self, property_state, field_name):
+        # optimize - could memoize org lookup if needed this with py 3.2+ and
+        # `functools.lru_cache` decorator
+        org = Organization.objects.get(pk=property_state.organization_id)
+        unitless_value = collapse_unit(org, getattr(property_state, field_name))
+        return unitless_value
+
+    # the get_* with field names are implicitly invoked by SerializerMethodField
+    # see http://www.django-rest-framework.org/api-guide/fields/#serializermethodfield
+
+    def get_site_eui(self, property_state):
+        return self._collapse_pint_value(property_state, "site_eui")
+
+    def get_site_eui_weather_normalized(self, property_state):
+        return self._collapse_pint_value(property_state, "site_eui_weather_normalized")
+
+    def get_site_eui_modeled(self, property_state):
+        return self._collapse_pint_value(property_state, "site_eui_modeled")
+
+    def get_source_eui(self, property_state):
+        return self._collapse_pint_value(property_state, "source_eui")
+
+    def get_source_eui_weather_normalized(self, property_state):
+        return self._collapse_pint_value(property_state, "source_eui_weather_normalized")
+
+    def get_source_eui_modeled(self, property_state):
+        return self._collapse_pint_value(property_state, "source_eui_modeled")
+
+    def get_gross_floor_area(self, property_state):
+        return self._collapse_pint_value(property_state, "gross_floor_area")
+
+    def get_conditioned_floor_area(self, property_state):
+        return self._collapse_pint_value(property_state, "conditioned_floor_area")
+
+    def get_occupied_floor_area(self, property_state):
+        return self._collapse_pint_value(property_state, "occupied_floor_area")
 
     # def create(self, validated_data):
     #     """Need to update this method to add in the measures, scenarios, and files"""
