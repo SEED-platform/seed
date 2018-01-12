@@ -15,7 +15,7 @@ EUI_DIMENSIONALITY = '[mass] / [time] ** 3'
 AREA_DEFAULT_UNITS = 'ft**2'
 EUI_DEFAULT_UNITS = 'kBtu/ft**2/year'
 
-SIGNIFICANT_FIGURES = 2
+SIGNIFICANT_FIGURES = 2  # this should be... someplace else?
 
 
 def to_raw_magnitude(obj):
@@ -26,13 +26,12 @@ def get_dimensionality(quantity_object):
     return str(quantity_object.dimensionality)
 
 
-def apply_display_unit_preferences(org, pt_dict):
+def collapse_unit(org, x):
     """
-    take a dict of property/taxlot data just before it gets sent off across the
-    API and collapse any Quantity objects present down to a straight float, per
-    the organization preferences.
+    Collapse a Quantity object present down to a straight Float, per the
+    preferences of the organization supplied (or the base units). Generally
+    used to hide the fact of Quantities from Angular.
     """
-
     # make extensible / field name agnostic by just branching on the dimensionality
     # and not the field name (eg. 'gross_floor_area') ... the dimensionality gets
     # enforced separately by the django pint column type
@@ -41,20 +40,26 @@ def apply_display_unit_preferences(org, pt_dict):
         AREA_DIMENSIONALITY: org.display_units_area or AREA_DEFAULT_UNITS
     }
 
-    def collapse_unit(x):
-        if isinstance(x, ureg.Quantity):
-            dimensionality = get_dimensionality(x)
-            pint_spec = pint_specs[dimensionality]
-            converted_value = x.to(pint_spec).magnitude
-            return round(converted_value, SIGNIFICANT_FIGURES)
-        elif isinstance(x, list):
-            # recurse for eg. the `related` key that contains properties
-            # when the pt_dict is for a taxlot and vice-versa
-            return [apply_display_unit_preferences(org, y) for y in x]
-        else:
-            return x
+    if isinstance(x, ureg.Quantity):
+        dimensionality = get_dimensionality(x)
+        pint_spec = pint_specs[dimensionality]
+        converted_value = x.to(pint_spec).magnitude
+        return round(converted_value, SIGNIFICANT_FIGURES)
+    elif isinstance(x, list):
+        # recurse out to collapse a dict for eg. the `related` key that
+        # contains properties when the pt_dict is for a taxlot and vice-versa
+        return [apply_display_unit_preferences(org, y) for y in x]
+    else:
+        return x
 
-    converted_dict = {k: collapse_unit(v) for k, v in pt_dict.iteritems()}
+
+def apply_display_unit_preferences(org, pt_dict):
+    """
+    take a dict of property/taxlot data just before it gets sent off across the
+    API and collapse any Quantity objects present down to a straight float, per
+    the organization preferences.
+    """
+    converted_dict = {k: collapse_unit(org, v) for k, v in pt_dict.iteritems()}
 
     return converted_dict
 
