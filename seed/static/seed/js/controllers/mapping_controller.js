@@ -101,6 +101,17 @@ angular.module('BE.seed.controller.mapping', [])
         return is_area;
       };
 
+      var get_default_quantity_units = function (mapped_column_name) {
+        // use the NREL default case for now
+        // TODO - hook up to org preferences / last mapping in DB
+        if ($scope.is_eui_column(mapped_column_name)) {
+          return 'kBtu/ft**2/year';
+        } else if ($scope.is_area_column(mapped_column_name)) {
+          return 'ft**2';
+        } else {
+          return null;
+        }
+      };
 
       if (flippers.is_active('release:orig_columns')) {
         var is_archived_pre_pint_column = function (s) {
@@ -235,6 +246,9 @@ angular.module('BE.seed.controller.mapping', [])
           tcm.invalids = $scope.validator_service.validate(
             tcm.raw_data, type
           );
+
+          // tack on a plausible suggestion where needed
+          tcm.from_units = get_default_quantity_units(tcm.suggestion);
           tcm.validity = $scope.get_validity(tcm);
         } else {
           tcm.validity = null;
