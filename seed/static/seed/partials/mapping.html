@@ -171,8 +171,6 @@
                                 </select>
                             </td>
                             <td>
-                                <!-- values are Python Pint-parseable -->
-                                <!-- FIXME extract to JS value, share with data controller -->
                                 <select ng-model="tcm.from_units" ng-if="is_area_column(tcm.suggestion)">
                                   <option value="ft**2" translate>square feet</option>
                                   <option value="m**2" translate>square metres</option>
