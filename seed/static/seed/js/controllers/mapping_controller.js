@@ -101,11 +101,11 @@ angular.module('BE.seed.controller.mapping', [])
         return is_area;
       };
 
-      var is_archived_pre_pint_column = function (s) {
-        return /\s+Orig$/.test(s);
-      };
 
       if (flippers.is_active('release:orig_columns')) {
+        var is_archived_pre_pint_column = function (s) {
+          return /\s+Orig$/.test(s);
+        };
         _.remove($scope.typeahead_columns, is_archived_pre_pint_column);
       }
 
