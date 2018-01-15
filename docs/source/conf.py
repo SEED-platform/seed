@@ -62,7 +62,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'SEED Platform'
-copyright = u'2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory'
+copyright = u'2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory'
 author = u'The Regents of the University of California, through Lawrence Berkeley National Laboratory'
 
 # The version info for the project you're documenting, acts as replacement for
