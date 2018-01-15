@@ -734,5 +734,7 @@
     "Viewer": "Viewer",
     "FIELD_NAMES_FOR_MATCHING_ADVICE": "<span class=\"label label-info\">Field names for matching:<\/span> The following fields are used by SEED to match records: <strong>Jurisdiction Tax Lot ID<\/strong>, <strong>PM Property ID<\/strong>, <strong>Custom ID 1<\/strong>, <strong>Address Line 1<\/strong>. If there are fields in a datafile mapped to these names, the program will attempt to match on those same names in existing records.",
     "Files (Master State Only)": "Files (Master State Only)",
-    "true": "true"
+    "true": "true",
+    "kBtu\/m²\/year": "kBtu\/m²\/year",
+    "MJ\/m²\/year": "MJ\/m²\/year"
 }
