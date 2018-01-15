@@ -40,6 +40,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
           'kBtu/ft**2/year': 'kBtu/sq. ft./year',
           'GJ/m**2/year': 'GJ/m²/year',
           'MJ/m**2/year': 'MJ/m²/year',
+          'kWh/m**2/year': 'kWh/m²/year',
           'kBtu/m**2/year': 'kBtu/m²/year'
         };
         return mappings[pint_spec] || pint_spec;
