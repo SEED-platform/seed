@@ -436,76 +436,72 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       });
     };
 
-    var textRegex = /^(!?)"(([^"]|\\")*)"$/;
-    inventory_service.textFilter = function () {
+    // https://regexr.com/3j1tq
+    var combinedRegex = /^(!?)=\s*(-?\d+)$|^(!?)=?\s*"((?:[^"]|\\")*)"$|^(<=?|>=?)\s*(-?\d+)$/;
+    inventory_service.combinedFilter = function () {
       return {
         condition: function (searchTerm, cellValue) {
           if (_.isNil(cellValue)) cellValue = '';
-          var filterData = searchTerm.match(textRegex);
-          var regex;
-          if (filterData) {
-            var inverse = filterData[1] === '!';
-            var value = filterData[2];
-            regex = new RegExp('^' + value + '$');
-            return inverse ? !regex.test(cellValue) : regex.test(cellValue);
-          } else {
-            regex = new RegExp(searchTerm, 'i');
-            return regex.test(cellValue);
-          }
-        }
-      };
-    };
-
-
-    var numRegex = /^(==?|!=?|<>)?\s*(null|-?\d+)$|^(<=?|>=?)\s*(-?\d+)$/;
-    inventory_service.numFilter = function () {
-      return {
-        condition: function (searchTerm, cellValue) {
           var match = true;
           var searchTerms = _.map(_.split(searchTerm, ','), _.trim);
+          // Loop over multiple comma-separated filters
           _.forEach(searchTerms, function (search) {
-            var filterData = search.match(numRegex);
+            var operator, regex, value;
+            var filterData = search.match(combinedRegex);
             if (filterData) {
-              var operator, value;
               if (!_.isUndefined(filterData[2])) {
-                // Equality condition
+                // Numeric Equality
                 operator = filterData[1];
                 value = filterData[2];
-                if (_.isUndefined(operator) || _.startsWith(operator, '=')) {
-                  // Equal
-                  match = (value === 'null') ? (_.isNil(cellValue)) : (cellValue == value);
-                  return match;
-                } else {
+                if (operator === '!') {
                   // Not equal
-                  match = (value === 'null') ? (!_.isNil(cellValue)) : (cellValue != value);
-                  return match;
+                  match = cellValue != value;
+                } else {
+                  // Equal
+                  match = cellValue == value;
                 }
+                return match;
+              } else if (!_.isUndefined(filterData[4])) {
+                // Text Equality
+                operator = filterData[3];
+                value = filterData[4];
+                regex = new RegExp('^' + value + '$');
+                if (operator === '!') {
+                  // Not equal
+                  match = !regex.test(cellValue);
+                } else {
+                  // Equal
+                  match = regex.test(cellValue);
+                }
+                return match;
               } else {
-                // Range condition
-                if (_.isNil(cellValue)) {
+                // Numeric Comparison
+                if (cellValue === '') {
                   match = false;
                   return match;
                 }
-
-                operator = filterData[3];
-                value = Number(filterData[4]);
+                operator = filterData[5];
+                value = Number(filterData[6]);
                 switch (operator) {
                   case '<':
                     match = cellValue < value;
-                    return match;
+                    break;
                   case '<=':
                     match = cellValue <= value;
-                    return match;
+                    break;
                   case '>':
                     match = cellValue > value;
-                    return match;
+                    break;
                   case '>=':
                     match = cellValue >= value;
-                    return match;
+                    break;
                 }
+                return match;
               }
-            } else {
-              match = false;
+            }  else {
+              // Case-insensitive Contains
+              regex = new RegExp(search, 'i');
+              match = regex.test(cellValue);
               return match;
             }
           });
@@ -514,7 +510,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       };
     };
 
-    var dateRegex = /^(==?|!=?|<>)?\s*(null|\d{4}(?:-\d{2}(?:-\d{2})?)?)$|^(<=?|>=?)\s*(\d{4}(?:-\d{2}(?:-\d{2})?)?)$/;
+    var dateRegex = /^(=|!=)?\s*(null|\d{4}(?:-\d{2}(?:-\d{2})?)?)$|^(<=?|>=?)\s*(\d{4}(?:-\d{2}(?:-\d{2})?)?)$/;
     inventory_service.dateFilter = function () {
       return {
         condition: function (searchTerm, cellValue) {
