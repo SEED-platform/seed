@@ -6,14 +6,15 @@ angular.module('BE.seed.controller.inventory_detail_notes', [])
   .controller('inventory_detail_notes_controller', [
     '$scope',
     '$window',
-    '$uibModalInstance',
+    '$uibModal',
     '$stateParams',
+    'urls',
     'inventory_service',
     'user_service',
     'note_service',
     '$translate',
     'i18nService', // from ui-grid
-    function ($scope, $window, $uibModalInstance, $stateParams, inventory_service, user_service, note_service, $translate, i18nService) {
+    function ($scope, $window, $uibModal, $stateParams, urls, inventory_service, user_service, note_service, $translate, i18nService) {
 
       $scope.translations = {};
 
@@ -41,5 +42,38 @@ angular.module('BE.seed.controller.inventory_detail_notes', [])
       $scope.cycle = $stateParams.cycle_id;
       $scope.org_id = user_service.get_organization().id;
 
-      $scope.notes = note_service.get_notes($scope.org_id, $scope.inventory_type, $scope.inventory_id);
+      var refreshNotes = function () {
+        $scope.notes = {results: []};
+        note_service.get_notes($scope.org_id, $scope.inventory_type, $scope.inventory_id).then(function (data) {
+          $scope.notes = data;
+        });
+      };
+
+      refreshNotes();
+
+      /**
+       * open_data_quality_modal: modal to present data data_quality warnings and errors
+       */
+      $scope.open_create_note_modal = function () {
+        var newNoteModalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/inventory_detail_notes_modal.html',
+          controller: 'inventory_detail_notes_modal_controller',
+          size: 'lg',
+          resolve: {
+            inventoryType: function () {
+              return $scope.inventory_type;
+            },
+            inventoryId: function () {
+              return $scope.inventory_id;
+            },
+            orgId: function () {
+              return $scope.org_id;
+            }
+          }
+        });
+
+        newNoteModalInstance.result.finally(function () {
+          refreshNotes();
+        });
+      };
     }]);

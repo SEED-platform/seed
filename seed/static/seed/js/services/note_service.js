@@ -55,9 +55,7 @@ angular.module('BE.seed.service.note', []).factory('note_service', [
     note_factory.create_note = function (org_id, inventory_type, inventory_id, note_data) {
       var payload = note_data;
       payload.organization_id = org_id;
-      return $http.post('/api/v2.1/' + inventory_type + '/' + inventory_id + /notes/, {
-        params: payload
-      }).then(function (response) {
+      return $http.post('/api/v2.1/' + inventory_type + '/' + inventory_id + /notes/, payload).then(function (response) {
         return response.data;
       });
     };

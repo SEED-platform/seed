@@ -17,21 +17,27 @@
     <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_detail_nav.html'"></div>
 </div>
 
+
 <div class="section_header_container">
     <table class="table table-striped table_highlight_first fixed-layout" style="margin-bottom:-1px;">
         <thead>
         <tr>
-            <th sd-resizable>Note</th>
+            <th sd-resizable>Created</th>
             <th sd-resizable class="ellipsis-resizable">Type</th>
-            <th sd-resizable class="ellipsis-resizable">Information</th>
+            <th sd-resizable class="ellipsis-resizable">Name</th>
+            <th sd-resizable class="ellipsis-resizable">Text</th>
+            <button type="button" class="btn btn-default" ng-click="open_create_note_modal()" translate>New Note</button>
         </tr>
         </thead>
         <tbody>
-        <tr ng-repeat="note in notes">
-            <td> {$ note.name $}</td>
+        <tr ng-repeat="note in notes.results">
+            <td> {$ note.created | date: 'MM/dd/yyyy hh:mm:ss a' $}</td>
             <td> {$ note.note_type $}</td>
+            <td> {$ note.name $}</td>
             <td> {$ note.text $}
         </tr>
         </tbody>
     </table>
 </div>
+
+

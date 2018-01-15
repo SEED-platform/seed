@@ -54,6 +54,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.inventory_detail',
   'BE.seed.controller.inventory_detail_settings',
   'BE.seed.controller.inventory_detail_notes',
+  'BE.seed.controller.inventory_detail_notes_modal',
   'BE.seed.controller.inventory_list',
   'BE.seed.controller.inventory_reports',
   'BE.seed.controller.inventory_settings',
@@ -309,7 +310,32 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         name: 'detail_settings',
         url: '/{inventory_type:properties|taxlots}/{inventory_id:int}/cycles/{cycle_id:int}/settings',
         templateUrl: static_url + 'seed/partials/inventory_detail_settings.html',
-        controller: 'inventory_detail_settings_controller'
+        controller: 'inventory_detail_settings_controller',
+        resolve: {
+          $uibModalInstance: function () {
+            return {
+              close: function () {
+              }
+            };
+          },
+          columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+            if ($stateParams.inventory_type === 'properties') {
+              return inventory_service.get_property_columns().then(function (columns) {
+                _.remove(columns, 'related');
+                return _.map(columns, function (col) {
+                  return _.omit(col, ['pinnedLeft', 'related']);
+                });
+              });
+            } else if ($stateParams.inventory_type === 'taxlots') {
+              return inventory_service.get_taxlot_columns().then(function (columns) {
+                _.remove(columns, 'related');
+                return _.map(columns, function (col) {
+                  return _.omit(col, ['pinnedLeft', 'related']);
+                });
+              });
+            }
+          }]
+        }
       })
       .state({
         name: 'inventory_detail_notes',
