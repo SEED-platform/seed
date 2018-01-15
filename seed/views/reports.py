@@ -127,10 +127,7 @@ class Report(DecoratorMixin(drf_api_endpoint), ViewSet):
         valid_values = [
             'site_eui', 'source_eui', 'site_eui_weather_normalized',
             'source_eui_weather_normalized', 'energy_score',
-            'gross_floor_area', 'use_description', 'year_built',
-
-            'site_eui_pint', 'source_eui_pint', 'site_eui_weather_normalized_pint',
-            'source_eui_weather_normalized_pint', 'gross_floor_area_pint'
+            'gross_floor_area', 'use_description', 'year_built'
         ]
         for param in ['x_var', 'y_var', 'organization_id', 'start', 'end']:
             val = request.query_params.get(param, None)
@@ -182,12 +179,8 @@ class Report(DecoratorMixin(drf_api_endpoint), ViewSet):
         valid_x_values = [
             'site_eui', 'source_eui', 'site_eui_weather_normalized',
             'source_eui_weather_normalized', 'energy_score',
-
-            'site_eui_pint', 'source_eui_pint', 'site_eui_weather_normalized_pint',
-            'source_eui_weather_normalized_pint',
         ]
-        valid_y_values = ['gross_floor_area', 'use_description', 'year_built',
-                          'gross_floor_area_pint']
+        valid_y_values = ['gross_floor_area', 'use_description', 'year_built']
         params = {}
         missing_params = []
         empty = True
@@ -253,7 +246,8 @@ class Report(DecoratorMixin(drf_api_endpoint), ViewSet):
             'use_description': self.aggregate_use_description,
             'year_built': self.aggregate_year_built,
             'gross_floor_area': self.aggregate_gross_floor_area,
-            'gross_floor_area_pint': self.aggregate_gross_floor_area,
+
+
         }
         return aggregation_method[y_var](yr_e, buildings)
 
