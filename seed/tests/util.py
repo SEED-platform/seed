@@ -28,6 +28,9 @@ from seed.models import (
     TaxLot,
     TaxLotView,
     TaxLotProperty,
+    GreenAssessment,
+    GreenAssessmentProperty,
+    GreenAssessmentURL,
 )
 from seed.models.data_quality import DataQualityCheck
 
@@ -52,6 +55,9 @@ class DeleteModelsTestCase(TestCase):
         TaxLotView.objects.all().delete()
         TaxLotAuditLog.objects.all().delete()
         TaxLotProperty.objects.all().delete()
+        GreenAssessmentURL.objects.all().delete()
+        GreenAssessmentProperty.objects.all().delete()
+        GreenAssessment.objects.all().delete()
 
         # Now delete the cycle after all the states and views have been removed
         Cycle.objects.all().delete()

@@ -5,9 +5,9 @@
 :author
 """
 import logging
-from datetime import datetime
 
 import pytz
+from datetime import datetime
 from django.test import TestCase
 from django.utils.timezone import make_aware, make_naive
 
@@ -24,6 +24,7 @@ from seed.models.data_quality import (
     RULE_TYPE_DEFAULT,
     SEVERITY_ERROR,
 )
+from seed.tests.util import DeleteModelsTestCase
 
 _log = logging.getLogger(__name__)
 
@@ -238,15 +239,9 @@ class DataQualityCheckCase(TestCase):
         self.assertEqual(dq.name, 'Default Data Quality Check')
 
 
-class DataQualityCheckRules(TestCase):
+class DataQualityCheckRules(DeleteModelsTestCase):
     def setUp(self):
         self.org = Organization.objects.create()
-
-    def tearDown(self):
-        # Explicity remove all the data quality checks because the default tearDown method
-        # tries to set postgres constraints on the database which throws an integrity error.
-        # As far as I can tell, the data are still right, just an overly eager postgres.
-        DataQualityCheck.objects.all().delete()
 
     def test_ensure_default_rules(self):
         dq = DataQualityCheck.retrieve(self.org)

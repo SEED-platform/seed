@@ -2023,5 +2023,6 @@ class ImportFileViewSet(viewsets.ViewSet):
                 'message': 'user does not have permission to delete file',
             }, status=status.HTTP_403_FORBIDDEN)
 
+        # This does not actually delete the object because it is a NonDeletableModel
         import_file.delete()
         return JsonResponse({'status': 'success'})
