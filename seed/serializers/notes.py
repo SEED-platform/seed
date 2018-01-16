@@ -12,10 +12,10 @@ from seed.serializers.base import ChoiceField
 class NoteSerializer(serializers.ModelSerializer):
     note_type = ChoiceField(choices=Note.NOTE_TYPES)
     organization_id = serializers.IntegerField(allow_null=True, read_only=True)
-    property_id = serializers.IntegerField(allow_null=True, read_only=True)
+    property_view_id = serializers.IntegerField(allow_null=True, read_only=True)
     taxlot_id = serializers.IntegerField(allow_null=True, read_only=True)
     user_id = serializers.IntegerField(allow_null=True, read_only=True)
 
     class Meta:
         model = Note
-        exclude = ('property', 'taxlot', 'user', 'organization')
+        exclude = ('property_view', 'taxlot', 'user', 'organization')

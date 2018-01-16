@@ -39,9 +39,9 @@ class TestNotes(TestCase):
         note1 = self.note_factory.get_note()
         note2 = self.note_factory.get_note()
 
-        pv.property.notes.add(note1)
-        pv.property.notes.add(note2)
+        pv.notes.add(note1)
+        pv.notes.add(note2)
 
         self.assertTrue(pv)
-        self.assertIn(note1, pv.property.notes.all())
-        self.assertIn(note2, pv.property.notes.all())
+        self.assertIn(note1, pv.notes.all())
+        self.assertIn(note2, pv.notes.all())

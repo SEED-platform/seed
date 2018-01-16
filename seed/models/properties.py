@@ -61,7 +61,6 @@ class Property(models.Model):
     campus = models.BooleanField(default=False)
     parent_property = models.ForeignKey('Property', blank=True, null=True)
     labels = models.ManyToManyField(StatusLabel)
-    # notes has a relationship here
 
     # Track when the entry was created and when it was updated
     created = models.DateTimeField(auto_now_add=True)
@@ -649,6 +648,8 @@ class PropertyView(models.Model):
     property = models.ForeignKey(Property, related_name='views', on_delete=models.CASCADE)
     cycle = models.ForeignKey(Cycle, on_delete=models.PROTECT)
     state = models.ForeignKey(PropertyState, on_delete=models.CASCADE)
+
+    # notes has a relationship here -- PropertyViews have notes, not the state, and not the property.
 
     def __unicode__(self):
         return u'Property View - %s' % self.pk

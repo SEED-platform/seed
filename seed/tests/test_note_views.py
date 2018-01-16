@@ -46,8 +46,8 @@ class NoteViewTests(TestCase):
         self.note1 = self.note_factory.get_note()
         self.note2 = self.note_factory.get_log_note()
 
-        self.pv.property.notes.add(self.note1)
-        self.pv.property.notes.add(self.note2)
+        self.pv.notes.add(self.note1)
+        self.pv.notes.add(self.note2)
 
         # create a taxlot with some views
         self.tl = self.taxlot_view_factory.get_taxlot_view(organization=self.org)
@@ -94,7 +94,7 @@ class NoteViewTests(TestCase):
         # check that the note was attached to the property
         self.assertEqual(result['note_type'], 'Note')
         self.assertEqual(result['text'], payload['text'])
-        self.assertEqual(result['property_id'], self.pv.property.pk)
+        self.assertEqual(result['property_view_id'], self.pv.property.pk)
         self.assertIsNone(result['taxlot_id'])
         self.assertEqual(result['organization_id'], self.org.pk)
         self.assertEqual(result['user_id'], self.user.pk)
@@ -114,7 +114,7 @@ class NoteViewTests(TestCase):
         # check that the note was attached to the property
         self.assertEqual(result['note_type'], 'Note')
         self.assertEqual(result['text'], payload['text'])
-        self.assertIsNone(result['property_id'])
+        self.assertIsNone(result['property_view_id'])
         self.assertEqual(result['taxlot_id'], self.tl.taxlot.pk)
 
     def test_update_note(self):
@@ -152,13 +152,13 @@ class NoteViewTests(TestCase):
 
     def test_get_detail_and_delete_note(self):
         note5 = self.note_factory.get_note()
-        self.pv.property.notes.add(note5)
+        self.pv.notes.add(note5)
 
         url = reverse('api:v2.1:property-notes-detail', args=[self.pv.property.pk, note5.pk])
         response = self.client.get(url, content_type='application/json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         result = json.loads(response.content)
-        self.assertEqual(result['property_id'], self.pv.property.pk)
+        self.assertEqual(result['property_view_id'], self.pv.pk)
         self.assertEqual(result['id'], note5.pk)
 
         # now delete the note

@@ -44,7 +44,7 @@ class NoteViewSet(SEEDOrgCreateUpdateModelViewSet):
         # check if the request is properties or taxlots
         org_id = self.get_organization(self.request)
         if self.kwargs.get('properties_pk', None):
-            return Note.objects.filter(organization_id=org_id, property_id=self.kwargs.get('properties_pk'))
+            return Note.objects.filter(organization_id=org_id, property_view_id=self.kwargs.get('properties_pk'))
         elif self.kwargs.get('taxlots_pk', None):
             return Note.objects.filter(organization_id=org_id, taxlot_id=self.kwargs.get('taxlots_pk'))
         else:
@@ -54,7 +54,7 @@ class NoteViewSet(SEEDOrgCreateUpdateModelViewSet):
         org_id = self.get_organization(self.request)
         if self.kwargs.get('properties_pk', None):
             serializer.save(
-                organization_id=org_id, user=self.request.user, property_id=self.kwargs.get('properties_pk', None)
+                organization_id=org_id, user=self.request.user, property_view_id=self.kwargs.get('properties_pk', None)
             )
         elif self.kwargs.get('taxlots_pk', None):
             serializer.save(
