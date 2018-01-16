@@ -74,6 +74,36 @@ angular.module('BE.seed.service.matching', []).factory('matching_service', [
       });
     };
 
+    matching_service.mergeProperties = function (state_ids) {
+      spinner_utility.show();
+      return $http.post('/api/v2/properties/merge/', {
+        state_ids: state_ids
+      }, {
+        params: {
+          organization_id: user_service.get_organization().id
+        }
+      }).then(function (response) {
+        return response.data;
+      }).finally(function () {
+        spinner_utility.hide();
+      });
+    };
+
+    matching_service.mergeTaxlots = function (state_ids) {
+      spinner_utility.show();
+      return $http.post('/api/v2/taxlots/merge/', {
+        state_ids: state_ids
+      }, {
+        params: {
+          organization_id: user_service.get_organization().id
+        }
+      }).then(function (response) {
+        return response.data;
+      }).finally(function () {
+        spinner_utility.hide();
+      });
+    };
+
     matching_service.saveVisibility = function (matchingVisibility) {
       var key = 'matchingVisibility.' + user_service.get_organization().id;
       localStorage.setItem(key, matchingVisibility);

@@ -41,6 +41,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       spinner_utility.show();
       $scope.selectedCount = 0;
       $scope.selectedParentCount = 0;
+      $scope.selectedOrder = [];
 
 
       $scope.inventory_type = $stateParams.inventory_type;
@@ -165,6 +166,37 @@ angular.module('BE.seed.controller.inventory_list', [])
         modalInstance.result.then(function () {
           //dialog was closed with 'Done' button.
           get_labels();
+        });
+      };
+
+      $scope.open_merge_modal = function () {
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/merge_modal.html',
+          controller: 'merge_modal_controller',
+          windowClass: 'merge-modal',
+          resolve: {
+            columns: function () {
+              return _.map(_.reject($scope.columns, {name: 'id'}), function (column) {
+                return _.pick(column, ['displayName', 'extraData', 'name', 'table']);
+              });
+            },
+            data: function () {
+              var data = new Array($scope.selectedOrder.length);
+              _.forEach($scope.data, function (datum) {
+                var index = _.indexOf($scope.selectedOrder.slice().reverse(), datum.id);
+                if (index !== -1) data[index] = datum;
+              });
+              return data;
+            },
+            inventory_type: function () {
+              return $scope.inventory_type;
+            }
+          }
+        });
+        modalInstance.result.then(function () {
+          // dialog was closed with 'Merge' button.
+          $scope.selectedOrder = [];
+          refresh_objects();
         });
       };
 
@@ -580,12 +612,45 @@ angular.module('BE.seed.controller.inventory_list', [])
 
           var selectionChanged = function () {
             var selected = gridApi.selection.getSelectedRows();
+            var parentsSelectedIds = _.map(_.filter(selected, {$$treeLevel: 0}), 'id');
             $scope.selectedCount = selected.length;
-            $scope.selectedParentCount = _.filter(selected, {$$treeLevel: 0}).length;
+            $scope.selectedParentCount = parentsSelectedIds.length;
+
+            const removed = _.difference($scope.selectedOrder, parentsSelectedIds);
+            const added = _.difference(parentsSelectedIds, $scope.selectedOrder);
+            if (removed.length === 1 && !added.length) {
+              // console.log('Removed ', removed);
+              _.remove($scope.selectedOrder, function (item) {
+                return item === removed[0];
+              });
+            } else if (added.length === 1 && !removed.length) {
+              // console.log('Added ', added);
+              $scope.selectedOrder.push(added[0]);
+            }
+          };
+
+          var selectAllChanged = function () {
+            var allSelected = $scope.gridApi.selection.getSelectedRows();
+
+            if (!allSelected.length) {
+              $scope.selectedCount = 0;
+              $scope.selectedParentCount = 0;
+              $scope.selectedOrder = [];
+            } else {
+              var parentsSelectedIds = _.map(_.filter(allSelected, {$$treeLevel: 0}), 'id');
+              var sortedIds = _.map($scope.gridApi.core.getVisibleRows($scope.gridApi.grid), function (row) {
+                return row.entity.id;
+              });
+              $scope.selectedOrder = _.filter(sortedIds, function (id) {
+                return _.includes(parentsSelectedIds, id);
+              });
+              $scope.selectedCount = allSelected.length;
+              $scope.selectedParentCount = parentsSelectedIds.length;
+            }
           };
 
           gridApi.selection.on.rowSelectionChanged($scope, selectionChanged);
-          gridApi.selection.on.rowSelectionChangedBatch($scope, selectionChanged);
+          gridApi.selection.on.rowSelectionChangedBatch($scope, selectAllChanged);
 
           gridApi.core.on.rowsRendered($scope, _.debounce(function () {
             $scope.$apply(function () {

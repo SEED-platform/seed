@@ -128,17 +128,17 @@
         </div>
     </div>
 
-    <!-- Related Items Section -->
+    <!-- Paired Items Section -->
     <div class="section">
         <div class="section_header_container" style="margin-top: 20px; border-bottom: 0;">
             <div class="section_header fixed_height_short has_no_padding">
                 <div class="section_action_container left">
                 <span>
                     <h2 ng-if="::inventory_type==='taxlots'">
-                        <i class="fa fa-building-o"></i> {$:: 'Related Properties' | translate $}
+                        <i class="fa fa-building-o"></i> {$:: 'Paired Properties' | translate $}
                     </h2>
                     <h2 ng-if="::inventory_type==='properties'">
-                        <i class="fa fa-map-o"></i> {$:: 'Related Tax Lots' | translate $}
+                        <i class="fa fa-map-o"></i> {$:: 'Paired Tax Lots' | translate $}
                     </h2>
                     </span>
                 </div>
@@ -146,7 +146,7 @@
         </div>
     </div>
     <div class="section_content_container" style="margin-bottom:200px;">
-        <!-- List of related items -->
+        <!-- List of paired items -->
         <div class="section_content">
             <div class="table_list_container table_item_detail" style="max-width:700px;">
                 <table class="table table-striped table_highlight_first fixed-layout" style="margin-bottom:-1px;">
@@ -157,6 +157,7 @@
                             <th sd-resizable class="ellipsis-resizable">{$:: 'Address Line 1' | translate $}</th>
                             <th ng-if="::inventory_type==='taxlots'" sd-resizable class="ellipsis-resizable">{$:: 'Custom ID 1' | translate $}</th>
                             <th ng-if="::inventory_type==='taxlots'" sd-resizable class="ellipsis-resizable">{$:: 'UBID' | translate $}</th>
+                            <th width="60">Unpair</th>
                         </tr>
                     </thead>
                     <tbody ng-if="::inventory_type==='properties'">
@@ -166,6 +167,9 @@
                             </td>
                             <td>
                                 <a ui-sref="inventory_detail(::{inventory_type: 'taxlots', inventory_id: taxlot.taxlot.id, cycle_id: cycle.id})">{$:: taxlot.state.address_line_1 ? taxlot.state.address_line_1 : '(no address 1)' $}</a>
+                            </td>
+                            <td>
+                                <div class="unpair-child" ng-click="unpair(taxlot.id)" style="text-align: center;">&#10006;</div>
                             </td>
                         </tr>
                     </tbody>
@@ -182,6 +186,9 @@
                             </td>
                             <td>
                                 <a ui-sref="inventory_detail(::{inventory_type: 'properties', inventory_id: property.property.id, cycle_id: cycle.id})">{$:: property.state.ubid ? property.state.ubid : '(no UBID)' $}</a>
+                            </td>
+                            <td>
+                                <div class="unpair-child" ng-click="unpair(property.id)" style="text-align: center;">&#10006;</div>
                             </td>
                         </tr>
                     </tbody>

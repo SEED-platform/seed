@@ -2514,6 +2514,11 @@ gs-input .tags .tag-item .remove-button {
 .table_item_detail {
   margin: 0 10px;
   border: 1px solid #F1F1F1;
+
+  td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 
 .highlight {
@@ -3074,6 +3079,16 @@ $pairedCellWidth: 60px;
 
   }
 
+}
+
+.merge-modal .modal-dialog {
+  max-height: 80vh;
+  width: 750px;
+  max-width: 85vw;
+}
+
+.merge-modal .merge-grid .ui-grid-menu-button {
+  height: 28px;
 }
 
 .pm_import {

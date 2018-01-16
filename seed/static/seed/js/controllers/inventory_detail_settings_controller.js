@@ -89,6 +89,7 @@ angular.module('BE.seed.controller.inventory_detail_settings', [])
         enableFiltering: true,
         enableGridMenu: true,
         enableSorting: false,
+        flatEntityAccess: true,
         gridMenuCustomItems: [{
           title: $scope.translations['Reset defaults'],
           action: restoreDefaults
@@ -101,6 +102,7 @@ angular.module('BE.seed.controller.inventory_detail_settings', [])
           displayName: 'Column Name',
           headerCellFilter: 'translate',
           cellFilter: 'translate',
+          cellTemplate: '<div class="ui-grid-cell-contents inventory-settings-cell" title="TOOLTIP" data-after-content="{$ row.entity.name $}">{$ COL_FIELD CUSTOM_FILTERS $}</div>',
           enableHiding: false
         }],
         onRegisterApi: function (gridApi) {

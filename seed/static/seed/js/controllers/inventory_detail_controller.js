@@ -283,6 +283,10 @@ angular.module('BE.seed.controller.inventory_detail', [])
         });
       };
 
+      $scope.unpair = function (id) {
+        // Todo
+      };
+
       /**
        *   init: sets default state of inventory detail page,
        *   sets the field arrays for each section, performs

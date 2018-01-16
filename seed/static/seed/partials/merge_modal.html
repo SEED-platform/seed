@@ -1,0 +1,18 @@
+<div class="modal-header">
+    <h4 class="modal-title">Merge Multiple {$:: inventory_type === 'properties' ? 'Properties' : 'Tax Lots' $}</h4>
+</div>
+<div class="modal-body row" ng-class="{'no-click': processing}">
+    <div class="col-sm-12">
+        <strong style="padding-left: 10px;">Resulting Merge</strong>
+        <div ui-grid="resultingGridOptions" ui-grid-resize-columns style="margin-top: 5px;"></div>
+    </div>
+
+    <div class="col-sm-12" style="padding-top: 30px;">
+        <strong style="padding-left: 10px;">Records will be merged together from bottom to top, with the top record having the highest priority. Drag to reorder.</strong>
+        <div ui-grid="gridOptions" class="merge-grid" ui-grid-draggable-rows ui-grid-resize-columns style="margin-top: 5px;"></div>
+    </div>
+</div>
+<div class="modal-footer" ng-class="{'no-click': processing}">
+    <button type="button" class="btn btn-default" ng-click="cancel()">Cancel</button>
+    <button type="button" class="btn btn-info" ng-click="merge()" autofocus>Merge</button>
+</div>

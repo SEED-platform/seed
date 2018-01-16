@@ -7,6 +7,8 @@
  */
 
 angular.module('BE.seed.angular_dependencies', [
+  'ngAnimate',
+  'ngAria',
   'ngCookies'
 ]);
 angular.module('BE.seed.vendor_dependencies', [
@@ -64,6 +66,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.matching_detail_settings',
   'BE.seed.controller.members',
   'BE.seed.controller.menu',
+  'BE.seed.controller.merge_modal',
   'BE.seed.controller.new_member_modal',
   'BE.seed.controller.organization',
   'BE.seed.controller.organization_settings',
@@ -319,6 +322,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             if ($stateParams.inventory_type === 'properties') {
               return inventory_service.get_property_columns().then(function (columns) {
                 _.remove(columns, 'related');
+                _.remove(columns, {name: 'lot_number', table: 'PropertyState'});
                 return _.map(columns, function (col) {
                   return _.omit(col, ['pinnedLeft', 'related']);
                 });
@@ -407,6 +411,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             if ($stateParams.inventory_type === 'properties') {
               return inventory_service.get_property_columns().then(function (columns) {
                 _.remove(columns, 'related');
+                _.remove(columns, {name: 'lot_number', table: 'PropertyState'});
                 return _.map(columns, function (col) {
                   return _.omit(col, ['pinnedLeft', 'related']);
                 });
@@ -459,18 +464,15 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             if ($stateParams.inventory_type === 'properties') {
               return inventory_service.get_property_columns().then(function (columns) {
-                _.remove(columns, function (col) {
-                  return col.related === true;
-                });
+                _.remove(columns, 'related');
+                _.remove(columns, {name: 'lot_number', table: 'PropertyState'});
                 return _.map(columns, function (col) {
                   return _.omit(col, ['pinnedLeft', 'related']);
                 });
               });
             } else if ($stateParams.inventory_type === 'taxlots') {
               return inventory_service.get_taxlot_columns().then(function (columns) {
-                _.remove(columns, function (col) {
-                  return col.related === true;
-                });
+                _.remove(columns, 'related');
                 return _.map(columns, function (col) {
                   return _.omit(col, ['pinnedLeft', 'related']);
                 });
@@ -504,18 +506,15 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             if ($stateParams.inventory_type === 'properties') {
               return inventory_service.get_property_columns().then(function (columns) {
-                _.remove(columns, function (col) {
-                  return col.related === true;
-                });
+                _.remove(columns, 'related');
+                _.remove(columns, {name: 'lot_number', table: 'PropertyState'});
                 return _.map(columns, function (col) {
                   return _.omit(col, ['pinnedLeft', 'related']);
                 });
               });
             } else if ($stateParams.inventory_type === 'taxlots') {
               return inventory_service.get_taxlot_columns().then(function (columns) {
-                _.remove(columns, function (col) {
-                  return col.related === true;
-                });
+                _.remove(columns, 'related');
                 return _.map(columns, function (col) {
                   return _.omit(col, ['pinnedLeft', 'related']);
                 });
@@ -543,18 +542,15 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             if ($stateParams.inventory_type === 'properties') {
               return inventory_service.get_property_columns().then(function (columns) {
-                _.remove(columns, function (col) {
-                  return col.related === true;
-                });
+                _.remove(columns, 'related');
+                _.remove(columns, {name: 'lot_number', table: 'PropertyState'});
                 return _.map(columns, function (col) {
                   return _.omit(col, ['pinnedLeft', 'related']);
                 });
               });
             } else if ($stateParams.inventory_type === 'taxlots') {
               return inventory_service.get_taxlot_columns().then(function (columns) {
-                _.remove(columns, function (col) {
-                  return col.related === true;
-                });
+                _.remove(columns, 'related');
                 return _.map(columns, function (col) {
                   return _.omit(col, ['pinnedLeft', 'related']);
                 });
@@ -1050,14 +1046,15 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           columns: ['inventory_service', '$stateParams', function (inventory_service, $stateParams) {
             if ($stateParams.inventory_type === 'properties') {
               return inventory_service.get_property_columns().then(function (columns) {
-                columns = _.reject(columns, 'related');
+                _.remove(columns, 'related');
+                _.remove(columns, {name: 'lot_number', table: 'PropertyState'});
                 return _.map(columns, function (col) {
                   return _.omit(col, ['pinnedLeft', 'related']);
                 });
               });
             } else if ($stateParams.inventory_type === 'taxlots') {
               return inventory_service.get_taxlot_columns().then(function (columns) {
-                columns = _.reject(columns, 'related');
+                _.remove(columns, 'related');
                 return _.map(columns, function (col) {
                   return _.omit(col, ['pinnedLeft', 'related']);
                 });
