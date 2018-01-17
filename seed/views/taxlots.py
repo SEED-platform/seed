@@ -24,8 +24,10 @@ from seed.models import (
     AUDIT_IMPORT,
     AUDIT_USER_EDIT,
     DATA_STATE_MATCHING,
-    MERGE_STATE_MERGED,
     MERGE_STATE_UNKNOWN,
+    MERGE_STATE_NEW,
+    MERGE_STATE_MERGED,
+    MERGE_STATE_DELETE,
     Column,
     Cycle,
     PropertyView,
@@ -309,6 +311,121 @@ class TaxLotViewSet(GenericViewSet):
 
         return {
             'status': 'success'
+        }
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('can_modify_data')
+    @detail_route(methods=['POST'])
+    def unmerge(self, request, pk=None):
+        """
+        Unmerge a taxlot view into two taxlot views
+        ---
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+        """
+        try:
+            old_view = TaxLotView.objects.select_related(
+                'taxlot', 'cycle', 'state'
+            ).get(
+                id=pk,
+                taxlot__organization_id=self.request.GET['organization_id']
+            )
+        except TaxLotView.DoesNotExist:
+            return {
+                'status': 'error',
+                'message': 'taxlot view with id {} does not exist'.format(pk)
+            }
+
+        merged_state = old_view.state
+        if merged_state.data_state != DATA_STATE_MATCHING or merged_state.merge_state != MERGE_STATE_MERGED:
+            return {
+                'status': 'error',
+                'message': 'taxlot view with id {} is not a merged taxlot view'.format(pk)
+            }
+
+        log = TaxLotAuditLog.objects.select_related('parent_state1', 'parent_state2').filter(
+            state=merged_state
+        ).order_by('-id').first()
+
+        if log.parent_state1 is None or log.parent_state2 is None:
+            return {
+                'status': 'error',
+                'message': 'taxlot view with id {} must have two parent states'.format(pk)
+            }
+
+        label = apps.get_model('seed', 'TaxLot_labels')
+        state1 = log.parent_state1
+        state2 = log.parent_state2
+        cycle_id = old_view.cycle_id
+
+        # Clone the taxlot record, then the labels
+        old_taxlot = old_view.taxlot
+        label_ids = list(old_taxlot.labels.all().values_list('id', flat=True))
+        new_taxlot = old_taxlot
+        new_taxlot.id = None
+        new_taxlot.save()
+
+        for label_id in label_ids:
+            label(taxlot_id=new_taxlot.id, statuslabel_id=label_id).save()
+
+        # Create the views
+        new_view1 = TaxLotView(
+            cycle_id=cycle_id,
+            taxlot_id=new_taxlot.id,
+            state=state1
+        )
+        new_view2 = TaxLotView(
+            cycle_id=cycle_id,
+            taxlot_id=old_view.taxlot_id,
+            state=state2
+        )
+
+        # Mark the merged state as deleted
+        merged_state.merge_state = MERGE_STATE_DELETE
+        merged_state.save()
+
+        # Change the merge_state of the individual states
+        if log.parent1.name in ['Import Creation', 'Manual Edit'] and log.parent1.import_filename is not None:
+            # State belongs to a new record
+            state1.merge_state = MERGE_STATE_NEW
+        else:
+            state1.merge_state = MERGE_STATE_MERGED
+        if log.parent2.name in ['Import Creation', 'Manual Edit'] and log.parent2.import_filename is not None:
+            # State belongs to a new record
+            state2.merge_state = MERGE_STATE_NEW
+        else:
+            state2.merge_state = MERGE_STATE_MERGED
+        state1.save()
+        state2.save()
+
+        # Delete the audit log entry for the merge
+        log.delete()
+
+        # Duplicate pairing
+        paired_view_ids = list(TaxLotProperty.objects.filter(taxlot_view_id=old_view.id)
+                               .order_by('property_view_id').values_list('property_view_id', flat=True))
+
+        old_view.delete()
+        new_view1.save()
+        new_view2.save()
+
+        for paired_view_id in paired_view_ids:
+            TaxLotProperty(primary=True,
+                           cycle_id=cycle_id,
+                           taxlot_view_id=new_view1.id,
+                           property_view_id=paired_view_id).save()
+            TaxLotProperty(primary=True,
+                           cycle_id=cycle_id,
+                           taxlot_view_id=new_view2.id,
+                           property_view_id=paired_view_id).save()
+
+        return {
+            'status': 'success',
+            'view_id': new_view1.id
         }
 
     @api_endpoint_class

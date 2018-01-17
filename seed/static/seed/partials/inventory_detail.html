@@ -53,6 +53,12 @@
                 </div>
             </div>
 
+            <div ng-if="::historical_items.length > 1" style="margin:10px 250px 10px 0; padding:0 10px;">
+                <button type="button" class="btn btn-warning" ng-click="unmerge()" style="vertical-align: top;">
+                    <i class="fa fa-files-o"></i> {$:: 'Unmerge Last' | translate $}
+                </button>
+            </div>
+
             <div class="table_list_container table_item_detail">
                 <table class="table table-striped table_highlight_first fixed-layout" style="margin-bottom:0;">
                     <thead>

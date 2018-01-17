@@ -15,14 +15,15 @@ angular.module('BE.seed.controller.inventory_detail', [])
     'urls',
     'label_service',
     'inventory_service',
+    'matching_service',
     'pairing_service',
     'inventory_payload',
     'columns',
     'labels_payload',
     'flippers',
     function ($state, $scope, $uibModal, $log, $filter, $stateParams, $anchorScroll, $location,
-              urls, label_service, inventory_service, pairing_service, inventory_payload, columns, labels_payload,
-              flippers) {
+              urls, label_service, inventory_service, matching_service, pairing_service, inventory_payload,
+              columns, labels_payload, flippers) {
       $scope.inventory_type = $stateParams.inventory_type;
 
       $scope.inventory = {
@@ -277,6 +278,31 @@ angular.module('BE.seed.controller.inventory_detail', [])
           });
         }, function () {
           // Do nothing
+        });
+      };
+
+      $scope.unmerge = function () {
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/unmerge_modal.html',
+          controller: 'unmerge_modal_controller',
+          resolve: {
+            inventory_type: function () {
+              return $scope.inventory_type;
+            }
+          }
+        });
+
+        return modalInstance.result.then(function () {
+          if ($scope.inventory_type === 'properties') {
+            return matching_service.unmergeProperties($scope.inventory.view_id);
+          } else {
+            return matching_service.unmergeTaxlots($scope.inventory.view_id);
+          }
+        }).then(function (result) {
+          $state.go('inventory_detail', {
+            inventory_type: $scope.inventory_type,
+            view_id: result.view_id
+          });
         });
       };
 

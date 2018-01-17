@@ -14,7 +14,6 @@ from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.decorators import detail_route, list_route
 from rest_framework.renderers import JSONRenderer
-from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from seed.data_importer.views import ImportFileViewSet
@@ -29,7 +28,9 @@ from seed.models import (
     AUDIT_USER_EDIT,
     DATA_STATE_MATCHING,
     MERGE_STATE_UNKNOWN,
+    MERGE_STATE_NEW,
     MERGE_STATE_MERGED,
+    MERGE_STATE_DELETE,
     Column,
     Cycle,
     Simulation,
@@ -269,7 +270,7 @@ class PropertyViewSet(GenericViewSet):
             m.property_state = new_state
             m.save()
 
-        # Move the old building file to the new state to perserve the history
+        # Move the old building file to the new state to preserve the history
         for b in old_state.building_files.all():
             b.property_state = new_state
             b.save()
@@ -465,6 +466,121 @@ class PropertyViewSet(GenericViewSet):
 
         return {
             'status': 'success'
+        }
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('can_modify_data')
+    @detail_route(methods=['POST'])
+    def unmerge(self, request, pk=None):
+        """
+        Unmerge a property view into two property views
+        ---
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+        """
+        try:
+            old_view = PropertyView.objects.select_related(
+                'property', 'cycle', 'state'
+            ).get(
+                id=pk,
+                property__organization_id=self.request.GET['organization_id']
+            )
+        except PropertyView.DoesNotExist:
+            return {
+                'status': 'error',
+                'message': 'property view with id {} does not exist'.format(pk)
+            }
+
+        merged_state = old_view.state
+        if merged_state.data_state != DATA_STATE_MATCHING or merged_state.merge_state != MERGE_STATE_MERGED:
+            return {
+                'status': 'error',
+                'message': 'property view with id {} is not a merged property view'.format(pk)
+            }
+
+        log = PropertyAuditLog.objects.select_related('parent_state1', 'parent_state2').filter(
+            state=merged_state
+        ).order_by('-id').first()
+
+        if log.parent_state1 is None or log.parent_state2 is None:
+            return {
+                'status': 'error',
+                'message': 'property view with id {} must have two parent states'.format(pk)
+            }
+
+        label = apps.get_model('seed', 'Property_labels')
+        state1 = log.parent_state1
+        state2 = log.parent_state2
+        cycle_id = old_view.cycle_id
+
+        # Clone the property record, then the labels
+        old_property = old_view.property
+        label_ids = list(old_property.labels.all().values_list('id', flat=True))
+        new_property = old_property
+        new_property.id = None
+        new_property.save()
+
+        for label_id in label_ids:
+            label(property_id=new_property.id, statuslabel_id=label_id).save()
+
+        # Create the views
+        new_view1 = PropertyView(
+            cycle_id=cycle_id,
+            property_id=new_property.id,
+            state=state1
+        )
+        new_view2 = PropertyView(
+            cycle_id=cycle_id,
+            property_id=old_view.property_id,
+            state=state2
+        )
+
+        # Mark the merged state as deleted
+        merged_state.merge_state = MERGE_STATE_DELETE
+        merged_state.save()
+
+        # Change the merge_state of the individual states
+        if log.parent1.name in ['Import Creation', 'Manual Edit'] and log.parent1.import_filename is not None:
+            # State belongs to a new record
+            state1.merge_state = MERGE_STATE_NEW
+        else:
+            state1.merge_state = MERGE_STATE_MERGED
+        if log.parent2.name in ['Import Creation', 'Manual Edit'] and log.parent2.import_filename is not None:
+            # State belongs to a new record
+            state2.merge_state = MERGE_STATE_NEW
+        else:
+            state2.merge_state = MERGE_STATE_MERGED
+        state1.save()
+        state2.save()
+
+        # Delete the audit log entry for the merge
+        log.delete()
+
+        # Duplicate pairing
+        paired_view_ids = list(TaxLotProperty.objects.filter(property_view_id=old_view.id)
+                               .order_by('taxlot_view_id').values_list('taxlot_view_id', flat=True))
+
+        old_view.delete()
+        new_view1.save()
+        new_view2.save()
+
+        for paired_view_id in paired_view_ids:
+            TaxLotProperty(primary=True,
+                           cycle_id=cycle_id,
+                           property_view_id=new_view1.id,
+                           taxlot_view_id=paired_view_id).save()
+            TaxLotProperty(primary=True,
+                           cycle_id=cycle_id,
+                           property_view_id=new_view2.id,
+                           taxlot_view_id=paired_view_id).save()
+
+        return {
+            'status': 'success',
+            'view_id': new_view1.id
         }
 
     @api_endpoint_class

@@ -89,11 +89,37 @@ angular.module('BE.seed.service.matching', []).factory('matching_service', [
       });
     };
 
+    matching_service.unmergeProperties = function (view_id) {
+      spinner_utility.show();
+      return $http.post('/api/v2/properties/' + view_id + '/unmerge/', {}, {
+        params: {
+          organization_id: user_service.get_organization().id
+        }
+      }).then(function (response) {
+        return response.data;
+      }).finally(function () {
+        spinner_utility.hide();
+      });
+    };
+
     matching_service.mergeTaxlots = function (state_ids) {
       spinner_utility.show();
       return $http.post('/api/v2/taxlots/merge/', {
         state_ids: state_ids
       }, {
+        params: {
+          organization_id: user_service.get_organization().id
+        }
+      }).then(function (response) {
+        return response.data;
+      }).finally(function () {
+        spinner_utility.hide();
+      });
+    };
+
+    matching_service.unmergeTaxlots = function (view_id) {
+      spinner_utility.show();
+      return $http.post('/api/v2/taxlots/' + view_id + '/unmerge/', {}, {
         params: {
           organization_id: user_service.get_organization().id
         }
