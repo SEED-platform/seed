@@ -5,12 +5,10 @@
 :author
 """
 import copy
-import json
 import logging
 import os.path as osp
 
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.core.urlresolvers import reverse
 
 from seed.data_importer import tasks
 from seed.data_importer.tests.util import (
@@ -23,7 +21,6 @@ from seed.models import (
     PropertyState,
     PropertyView,
     ASSESSED_RAW,
-    PropertyAuditLog,
     DATA_STATE_MAPPING,
     DATA_STATE_MATCHING,
     MERGE_STATE_UNKNOWN,
