@@ -308,7 +308,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
       })
       .state({
         name: 'detail_settings',
-        url: '/{inventory_type:properties|taxlots}/{inventory_id:int}/cycles/{cycle_id:int}/settings',
+        url: '/{inventory_type:properties|taxlots}/{view_id:int}/settings',
         templateUrl: static_url + 'seed/partials/inventory_detail_settings.html',
         controller: 'inventory_detail_settings_controller',
         resolve: {
@@ -1024,17 +1024,16 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
       })
       .state({
         name: 'inventory_detail',
-        url: '/{inventory_type:properties|taxlots}/{inventory_id:int}/cycles/{cycle_id:int}',
+        url: '/{inventory_type:properties|taxlots}/{view_id:int}',
         templateUrl: static_url + 'seed/partials/inventory_detail.html',
         controller: 'inventory_detail_controller',
         resolve: {
           inventory_payload: ['$state', '$stateParams', 'inventory_service', function ($state, $stateParams, inventory_service) {
             // load `get_building` before page is loaded to avoid page flicker.
-            var inventory_id = $stateParams.inventory_id;
-            var cycle_id = $stateParams.cycle_id;
+            var view_id = $stateParams.view_id;
             var promise;
-            if ($stateParams.inventory_type === 'properties') promise = inventory_service.get_property(inventory_id, cycle_id);
-            else if ($stateParams.inventory_type === 'taxlots') promise = inventory_service.get_taxlot(inventory_id, cycle_id);
+            if ($stateParams.inventory_type === 'properties') promise = inventory_service.get_property(view_id);
+            else if ($stateParams.inventory_type === 'taxlots') promise = inventory_service.get_taxlot(view_id);
             promise.catch(function (err) {
               if (err.message.match(/^(?:property|taxlot) view with id \d+ does not exist$/)) {
                 // Inventory item not found for current organization, redirecting
@@ -1061,8 +1060,14 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
               });
             }
           }],
-          labels_payload: ['$stateParams', 'label_service', function ($stateParams, label_service) {
-            return label_service.get_labels([$stateParams.inventory_id], {
+          labels_payload: ['$stateParams', 'label_service', 'inventory_payload', function ($stateParams, label_service, inventory_payload) {
+            var inventory_id;
+            if ($stateParams.inventory_type === 'properties') {
+              inventory_id = inventory_payload.property.id;
+            } else {
+              inventory_id = inventory_payload.taxlot.id;
+            }
+            return label_service.get_labels([inventory_id], {
               inventory_type: $stateParams.inventory_type
             });
           }]

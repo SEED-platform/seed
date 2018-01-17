@@ -264,10 +264,10 @@ angular.module('BE.seed.controller.inventory_list', [])
         name: 'id',
         displayName: '',
         cellTemplate: '<div class="ui-grid-row-header-link">' +
-        '  <a class="ui-grid-cell-contents" ng-if="row.entity.$$treeLevel === 0" ng-href="#/{$grid.appScope.inventory_type === \'properties\' ? \'properties\' : \'taxlots\'$}/{$COL_FIELD$}/cycles/{$grid.appScope.cycle.selected_cycle.id$}">' +
+        '  <a class="ui-grid-cell-contents" ng-if="row.entity.$$treeLevel === 0" ng-href="#/{$grid.appScope.inventory_type === \'properties\' ? \'properties/\' + row.entity.property_view_id : \'taxlots/\' + row.entity.taxlot_view_id$}">' +
         '    <i class="ui-grid-icon-info-circled"></i>' +
         '  </a>' +
-        '  <a class="ui-grid-cell-contents" ng-if="!row.entity.hasOwnProperty($$treeLevel)" ng-href="#/{$grid.appScope.inventory_type === \'properties\' ? \'taxlots\' : \'properties\'$}/{$COL_FIELD$}/cycles/{$grid.appScope.cycle.selected_cycle.id$}">' +
+        '  <a class="ui-grid-cell-contents" ng-if="!row.entity.hasOwnProperty($$treeLevel)" ng-href="#/{$grid.appScope.inventory_type === \'properties\' ? \'taxlots/\' + row.entity.taxlot_view_id : \'properties/\' + row.entity.property_view_id$}">' +
         '    <i class="ui-grid-icon-info-circled"></i>' +
         '  </a>' +
         '</div>',
@@ -286,7 +286,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       // Data
       var processData = function () {
         var visibleColumns = _.map(_.filter($scope.columns, 'visible'), 'name')
-          .concat(['$$treeLevel', 'id', 'property_state_id', 'taxlot_state_id']);
+          .concat(['$$treeLevel', 'id', 'property_state_id', 'property_view_id', 'taxlot_state_id', 'taxlot_view_id']);
 
         var columnsToAggregate = _.filter($scope.columns, function (col) {
           return col.treeAggregationType && _.includes(visibleColumns, col.name);

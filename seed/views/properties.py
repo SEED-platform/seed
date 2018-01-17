@@ -624,21 +624,26 @@ class PropertyViewSet(GenericViewSet):
     @api_endpoint_class
     @ajax_request_class
     @detail_route(methods=['GET'])
-    def view(self, request, pk=None):
+    def view(self, pk=None):
         """
         Get the property view
-        ---
-        parameters:
-            - name: cycle_id
-              description: The cycle ID to query on
-              required: true
-              paramType: query
         """
-        cycle_pk = request.query_params.get('cycle_id', None)
-        if not cycle_pk:
-            return JsonResponse(
-                {'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
-        result = self._get_property_view(pk, cycle_pk)
+        try:
+            property_view = PropertyView.objects.select_related(
+                'property', 'cycle', 'state'
+            ).get(
+                id=pk,
+                property__organization_id=self.request.GET['organization_id']
+            )
+            result = {
+                'status': 'success',
+                'property_view': property_view
+            }
+        except PropertyView.DoesNotExist:
+            result = {
+                'status': 'error',
+                'message': 'property view with id {} does not exist'.format(pk)
+            }
         return JsonResponse(result)
 
     def _get_taxlots(self, pk):
@@ -685,25 +690,24 @@ class PropertyViewSet(GenericViewSet):
         ---
         parameters:
             - name: pk
-              description: The primary key of the Property (not PropertyView nor PropertyState)
+              description: The primary key of the PropertyView
               required: true
               paramType: path
-            - name: cycle_id
-              description: The cycle id for filtering the property view
-              required: true
-              paramType: query
             - name: organization_id
               description: The organization_id for this user's organization
               required: true
               paramType: query
         """
-        cycle_pk = request.query_params.get('cycle_id', None)
-        if not cycle_pk:
-            return JsonResponse(
-                {'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
-        result = self._get_property_view(pk, cycle_pk)
-        if result.get('status', None) != 'error':
-            property_view = result.pop('property_view')
+        try:
+            property_view = PropertyView.objects.select_related(
+                'property', 'cycle', 'state'
+            ).get(
+                id=pk,
+                property__organization_id=self.request.GET['organization_id']
+            )
+            result = {
+                'status': 'success'
+            }
             result.update(PropertyViewSerializer(property_view).data)
             # remove PropertyView id from result
             result.pop('id')
@@ -713,9 +717,13 @@ class PropertyViewSet(GenericViewSet):
             result['history'], master = self.get_history(property_view)
             result = update_result_with_master(result, master)
             status_code = status.HTTP_200_OK
-        else:
+        except PropertyView.DoesNotExist:
+            result = {
+                'status': 'error',
+                'message': 'property view with id {} does not exist'.format(pk)
+            }
             status_code = status.HTTP_404_NOT_FOUND
-        return Response(result, status=status_code)
+        return JsonResponse(result, status=status_code)
 
     @api_endpoint_class
     @ajax_request_class
@@ -744,20 +752,25 @@ class PropertyViewSet(GenericViewSet):
               description: The organization_id for this user's organization
               required: true
               paramType: query
-            - name: cycle_id
-              description: The cycle id for filtering the property view
-              required: true
-              paramType: query
         """
-        cycle_pk = request.query_params.get('cycle_id', None)
-        if not cycle_pk:
-            return JsonResponse(
-                {'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
         data = request.data
 
-        result = self._get_property_view(pk, cycle_pk)
+        try:
+            property_view = PropertyView.objects.select_related(
+                'property', 'cycle', 'state'
+            ).get(
+                id=pk,
+                property__organization_id=self.request.GET['organization_id']
+            )
+            result = {
+                'status': 'success'
+            }
+        except PropertyView.DoesNotExist:
+            result = {
+                'status': 'error',
+                'message': 'property view with id {} does not exist'.format(pk)
+            }
         if result.get('status', None) != 'error':
-            property_view = result.pop('property_view')
             property_state_data = PropertyStateSerializer(property_view.state).data
 
             # get the property state information from the request

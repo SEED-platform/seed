@@ -448,21 +448,26 @@ class TaxLotViewSet(GenericViewSet):
     @api_endpoint_class
     @ajax_request_class
     @detail_route(methods=['GET'])
-    def view(self, request, pk=None):
+    def view(self, pk=None):
         """
         Get the TaxLot view
-        ---
-        parameters:
-            - name: cycle_id
-              description: The cycle ID to query on
-              required: true
-              paramType: query
         """
-        cycle_pk = request.query_params.get('cycle_id', None)
-        if not cycle_pk:
-            return JsonResponse(
-                {'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
-        result = self._get_taxlot_view(pk, cycle_pk)
+        try:
+            taxlot_view = TaxLotView.objects.select_related(
+                'taxlot', 'cycle', 'state'
+            ).get(
+                id=pk,
+                taxlot__organization_id=self.request.GET['organization_id']
+            )
+            result = {
+                'status': 'success',
+                'taxlot_view': taxlot_view
+            }
+        except TaxLotView.DoesNotExist:
+            result = {
+                'status': 'error',
+                'message': 'taxlot view with id {} does not exist'.format(pk)
+            }
         return JsonResponse(result)
 
     def get_history(self, taxlot_view):
@@ -508,25 +513,28 @@ class TaxLotViewSet(GenericViewSet):
     @ajax_request_class
     def retrieve(self, request, pk):
         """
-        Get property details
+        Get taxlot details
         ---
         parameters:
-            - name: cycle_id
-              description: The cycle id for filtering the taxlot view
+            - name: pk
+              description: The primary key of the TaxLotView
               required: true
-              paramType: query
+              paramType: path
             - name: organization_id
               description: The organization_id for this user's organization
               required: true
               paramType: query
         """
-        cycle_pk = request.query_params.get('cycle_id', None)
-        if not cycle_pk:
-            return JsonResponse(
-                {'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
-        result = self._get_taxlot_view(pk, cycle_pk)
-        if result.get('status', None) != 'error':
-            taxlot_view = result.pop('taxlot_view')
+        try:
+            taxlot_view = TaxLotView.objects.select_related(
+                'taxlot', 'cycle', 'state'
+            ).get(
+                id=pk,
+                taxlot__organization_id=self.request.GET['organization_id']
+            )
+            result = {
+                'status': 'success'
+            }
             result.update(TaxLotViewSerializer(taxlot_view).data)
             # remove TaxLotView id from result
             result.pop('id')
@@ -536,7 +544,11 @@ class TaxLotViewSet(GenericViewSet):
             result['history'], master = self.get_history(taxlot_view)
             result = update_result_with_master(result, master)
             status_code = status.HTTP_200_OK
-        else:
+        except TaxLotView.DoesNotExist:
+            result = {
+                'status': 'error',
+                'message': 'taxlot view with id {} does not exist'.format(pk)
+            }
             status_code = status.HTTP_404_NOT_FOUND
         return JsonResponse(result, status=status_code)
 
@@ -547,20 +559,29 @@ class TaxLotViewSet(GenericViewSet):
         Update a taxlot
         ---
         parameters:
-            - name: cycle_id
-              description: The cycle id for filtering the taxlot view
+            - name: organization_id
+              description: The organization_id for this user's organization
               required: true
               paramType: query
         """
-        cycle_pk = request.query_params.get('cycle_id', None)
-        if not cycle_pk:
-            return JsonResponse(
-                {'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
         data = request.data
 
-        result = self._get_taxlot_view(pk, cycle_pk)
+        try:
+            taxlot_view = TaxLotView.objects.select_related(
+                'taxlot', 'cycle', 'state'
+            ).get(
+                id=pk,
+                taxlot__organization_id=self.request.GET['organization_id']
+            )
+            result = {
+                'status': 'success'
+            }
+        except TaxLotView.DoesNotExist:
+            result = {
+                'status': 'error',
+                'message': 'taxlot view with id {} does not exist'.format(pk)
+            }
         if result.get('status', None) != 'error':
-            taxlot_view = result.pop('taxlot_view')
             taxlot_state_data = TaxLotStateSerializer(taxlot_view.state).data
 
             # get the taxlot state information from the request

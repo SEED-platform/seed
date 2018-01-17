@@ -26,7 +26,7 @@ describe('controller: inventory_detail_controller', function () {
       mock_building_service = inventory_service;
 
       spyOn(mock_building_service, 'update_property')
-        .andCallFake(function (property_id, cycle_id, state) {
+        .andCallFake(function (view_id, state) {
           mock_building = state;
           return $q.resolve({
             status: 'success'
@@ -161,8 +161,7 @@ describe('controller: inventory_detail_controller', function () {
     controller('inventory_detail_controller', {
       $scope: inventory_detail_controller_scope,
       $stateParams: {
-        cycle_id: 2017,
-        inventory_id: 1,
+        view_id: 1,
         inventory_type: 'properties'
       },
       inventory_payload: fake_payload,
@@ -185,9 +184,8 @@ describe('controller: inventory_detail_controller', function () {
     inventory_detail_controller_scope.$digest();
 
     // assertions
-    expect(inventory_detail_controller_scope.cycle.id).toBe(2017);
     expect(inventory_detail_controller_scope.item_state.id).toBe(511);
-    expect(inventory_detail_controller_scope.inventory.id).toBe(1);
+    expect(inventory_detail_controller_scope.inventory.view_id).toBe(1);
     // expect(inventory_detail_controller_scope.imported_buildings[0].id).toBe(2);
   });
 
@@ -231,7 +229,7 @@ describe('controller: inventory_detail_controller', function () {
     inventory_detail_controller_scope.$digest();
 
     // assertions
-    expect(mock_building_service.update_property).toHaveBeenCalledWith(1, 2017, {gross_floor_area: 43214});
+    expect(mock_building_service.update_property).toHaveBeenCalledWith(1, {gross_floor_area: 43214});
     expect(mock_building.gross_floor_area).toEqual(43214);
   });
 

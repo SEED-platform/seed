@@ -37,7 +37,7 @@ angular.module('BE.seed.controller.inventory_detail_settings', [])
 
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.inventory = {
-        id: $stateParams.inventory_id
+        view_id: $stateParams.view_id
       };
       $scope.cycle = {
         id: $stateParams.cycle_id

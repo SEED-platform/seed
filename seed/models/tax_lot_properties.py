@@ -172,10 +172,11 @@ class TaxLotProperty(models.Model):
                 if none_in_jurisdiction_tax_lot_ids:
                     jurisdiction_tax_lot_ids.append('Missing')
 
-                join_dict = related_map[join.property_view_id].copy()
+                join_dict = related_map[getattr(join, lookups['related_view_id_name'])].copy()
                 join_dict.update({
                     'primary': 'P' if join.primary else 'S',
-                    'calculated_taxlot_ids': '; '.join(jurisdiction_tax_lot_ids)
+                    'calculated_taxlot_ids': '; '.join(jurisdiction_tax_lot_ids),
+                    lookups['related_view_id_name']: getattr(join, lookups['related_view_id_name'])
                 })
 
             else:

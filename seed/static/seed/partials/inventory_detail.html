@@ -43,7 +43,7 @@
             </div>
 
             <div style="margin:10px 250px 10px 0; padding:0 10px;">
-                <button type="button" class="btn btn-default" ng-click="open_update_labels_modal(inventory.id, inventory_type)" style="vertical-align: top;">
+                <button type="button" class="btn btn-default" ng-click="open_update_labels_modal()" style="vertical-align: top;">
                     <i class="fa fa-tag"></i> {$:: 'Add/Remove Labels' | translate $}
                 </button>
                 <span style="display:inline-block; margin-top:9px; padding-left:15px; vertical-align: top;"><strong>{$:: 'Labels' | translate $}:</strong></span>
@@ -161,34 +161,34 @@
                         </tr>
                     </thead>
                     <tbody ng-if="::inventory_type==='properties'">
-                        <tr ng-repeat="taxlot in ::inventory.related">
+                        <tr ng-repeat="taxlotView in ::inventory.related">
                             <td>
-                                <a ui-sref="inventory_detail(::{inventory_type: 'taxlots', inventory_id: taxlot.taxlot.id, cycle_id: cycle.id})">{$:: taxlot.state.jurisdiction_tax_lot_id $}</a>
+                                <a ui-sref="inventory_detail(::{inventory_type: 'taxlots', view_id: taxlotView.id})">{$:: taxlotView.state.jurisdiction_tax_lot_id $}</a>
                             </td>
                             <td>
-                                <a ui-sref="inventory_detail(::{inventory_type: 'taxlots', inventory_id: taxlot.taxlot.id, cycle_id: cycle.id})">{$:: taxlot.state.address_line_1 ? taxlot.state.address_line_1 : '(no address 1)' $}</a>
+                                <a ui-sref="inventory_detail(::{inventory_type: 'taxlots', view_id: taxlotView.id})">{$:: taxlotView.state.address_line_1 ? taxlotView.state.address_line_1 : '(no address 1)' $}</a>
                             </td>
                             <td>
-                                <div class="unpair-child" ng-click="unpair(taxlot.id)" style="text-align: center;">&#10006;</div>
+                                <div class="unpair-child" ng-click="unpair(taxlotView.id)" style="text-align: center;">&#10006;</div>
                             </td>
                         </tr>
                     </tbody>
                     <tbody ng-if="::inventory_type==='taxlots'">
-                        <tr ng-repeat="property in ::inventory.related">
+                        <tr ng-repeat="propertyView in ::inventory.related">
                             <td>
-                                <a ui-sref="inventory_detail(::{inventory_type: 'properties', inventory_id: property.property.id, cycle_id: cycle.id})">{$:: property.state.pm_property_id $}</a>
+                                <a ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: propertyView.id})">{$:: propertyView.state.pm_property_id $}</a>
                             </td>
                             <td>
-                                <a ui-sref="inventory_detail(::{inventory_type: 'properties', inventory_id: property.property.id, cycle_id: cycle.id})">{$:: property.state.address_line_1 ? property.state.address_line_1 : '(no address 1)' $}</a>
+                                <a ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: propertyView.id})">{$:: propertyView.state.address_line_1 ? propertyView.state.address_line_1 : '(no address 1)' $}</a>
                             </td>
                             <td>
-                                <a ui-sref="inventory_detail(::{inventory_type: 'properties', inventory_id: property.property.id, cycle_id: cycle.id})">{$:: property.state.custom_id_1 ? property.state.custom_id_1 : '(no custom id 1)' $}</a>
+                                <a ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: propertyView.id})">{$:: propertyView.state.custom_id_1 ? propertyView.state.custom_id_1 : '(no custom id 1)' $}</a>
                             </td>
                             <td>
-                                <a ui-sref="inventory_detail(::{inventory_type: 'properties', inventory_id: property.property.id, cycle_id: cycle.id})">{$:: property.state.ubid ? property.state.ubid : '(no UBID)' $}</a>
+                                <a ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: propertyView.id})">{$:: propertyView.state.ubid ? propertyView.state.ubid : '(no UBID)' $}</a>
                             </td>
                             <td>
-                                <div class="unpair-child" ng-click="unpair(property.id)" style="text-align: center;">&#10006;</div>
+                                <div class="unpair-child" ng-click="unpair(propertyView.id)" style="text-align: center;">&#10006;</div>
                             </td>
                         </tr>
                     </tbody>
@@ -225,7 +225,7 @@
                             <tbody>
                                 <tr ng-repeat="file in item_state.files">
                                     <td> {$ file.file_type $}</td>
-                                    <td><a href='{$ file.file $}'>{$ file.filename $}</td>
+                                    <td><a href='{$ file.file $}'>{$ file.filename $}</a></td>
                                 </tr>
                             </tbody>
                         </table>
