@@ -690,4 +690,4 @@ class PropertyViewSet(GenericViewSet):
 
         else:
             status_code = status.HTTP_404_NOT_FOUND
-        return JsonResponse(result, status=status_code)
+        return JsonResponse(result, status=status_code, encoder=PintJSONEncoder)

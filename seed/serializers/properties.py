@@ -29,6 +29,7 @@ from seed.models import (
 from seed.serializers.certification import (
     GreenAssessmentPropertyReadOnlySerializer
 )
+from seed.serializers.pint import PintQuantitySerializerField
 from seed.serializers.taxlots import TaxLotViewSerializer
 
 # expose internal model
@@ -134,6 +135,15 @@ class PropertyMinimalSerializer(serializers.ModelSerializer):
 class PropertyStateSerializer(serializers.ModelSerializer):
     extra_data = serializers.JSONField(required=False)
 
+    # support the pint objects
+    gross_floor_area_pint = PintQuantitySerializerField(allow_null=True)
+    conditioned_floor_area_pint = PintQuantitySerializerField(allow_null=True)
+    occupied_floor_area_pint = PintQuantitySerializerField(allow_null=True)
+    site_eui_pint = PintQuantitySerializerField(allow_null=True)
+    source_eui_weather_normalized_pint = PintQuantitySerializerField(allow_null=True)
+    site_eui_weather_normalized_pint = PintQuantitySerializerField(allow_null=True)
+    source_eui_pint = PintQuantitySerializerField(allow_null=True)
+
     # to support the old state serializer method with the PROPERTY_STATE_FIELDS variables
     import_file_id = serializers.IntegerField(allow_null=True, read_only=True)
     organization_id = serializers.IntegerField()
@@ -165,6 +175,15 @@ class PropertyStateWritableSerializer(serializers.ModelSerializer):
 
     extra_data = serializers.JSONField(required=False)
 
+    # support the pint objects
+    gross_floor_area_pint = PintQuantitySerializerField(allow_null=True)
+    conditioned_floor_area_pint = PintQuantitySerializerField(allow_null=True)
+    occupied_floor_area_pint = PintQuantitySerializerField(allow_null=True)
+    site_eui_pint = PintQuantitySerializerField(allow_null=True)
+    source_eui_weather_normalized_pint = PintQuantitySerializerField(allow_null=True)
+    site_eui_weather_normalized_pint = PintQuantitySerializerField(allow_null=True)
+    source_eui_pint = PintQuantitySerializerField(allow_null=True)
+
     class Meta:
         fields = '__all__'
         model = PropertyState
@@ -174,7 +193,12 @@ class PropertyViewSerializer(serializers.ModelSerializer):
     class Meta:
         model = PropertyView
         depth = 1
-        fields = ('id', 'state', 'cycle', 'property')
+        fields = ('id', 'cycle', 'property')
+
+    def to_representation(self, obj):
+        result = super(PropertyViewSerializer, self).to_representation(obj)
+        result.update(**{'state': PropertyStateSerializer(obj.state).data})
+        return result
 
 
 class PropertyViewListSerializer(serializers.ListSerializer):
