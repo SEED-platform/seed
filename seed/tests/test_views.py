@@ -813,7 +813,7 @@ class InventoryViewTests(TestCase):
             gross_floor_area_pint=3.14159
         )
         prprty = self.property_factory.get_property()
-        pv = PropertyView.objects.create(
+        PropertyView.objects.create(
             property=prprty, cycle=self.cycle, state=state
         )
         params = {
