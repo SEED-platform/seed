@@ -169,7 +169,7 @@
                                 <a ui-sref="inventory_detail(::{inventory_type: 'taxlots', view_id: taxlotView.id})">{$:: taxlotView.state.address_line_1 ? taxlotView.state.address_line_1 : '(no address 1)' $}</a>
                             </td>
                             <td>
-                                <div class="unpair-child" ng-click="unpair(taxlotView.id)" style="text-align: center;">&#10006;</div>
+                                <div class="unpair-child" ng-click="unpair_taxlot_from_property(taxlotView.id)" style="text-align: center;">&#10006;</div>
                             </td>
                         </tr>
                     </tbody>
@@ -188,7 +188,7 @@
                                 <a ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: propertyView.id})">{$:: propertyView.state.ubid ? propertyView.state.ubid : '(no UBID)' $}</a>
                             </td>
                             <td>
-                                <div class="unpair-child" ng-click="unpair(propertyView.id)" style="text-align: center;">&#10006;</div>
+                                <div class="unpair-child" ng-click="unpair_property_from_taxlot(propertyView.id)" style="text-align: center;">&#10006;</div>
                             </td>
                         </tr>
                     </tbody>

@@ -15,12 +15,13 @@ angular.module('BE.seed.controller.inventory_detail', [])
     'urls',
     'label_service',
     'inventory_service',
+    'pairing_service',
     'inventory_payload',
     'columns',
     'labels_payload',
     'flippers',
     function ($state, $scope, $uibModal, $log, $filter, $stateParams, $anchorScroll, $location,
-              urls, label_service, inventory_service, inventory_payload, columns, labels_payload,
+              urls, label_service, inventory_service, pairing_service, inventory_payload, columns, labels_payload,
               flippers) {
       $scope.inventory_type = $stateParams.inventory_type;
 
@@ -279,8 +280,14 @@ angular.module('BE.seed.controller.inventory_detail', [])
         });
       };
 
-      $scope.unpair = function (id) {
-        // Todo
+      $scope.unpair_property_from_taxlot = function (property_id) {
+        pairing_service.unpair_property_from_taxlot($scope.inventory.view_id, property_id);
+        $state.reload();
+      };
+
+      $scope.unpair_taxlot_from_property = function (taxlot_id) {
+        pairing_service.unpair_taxlot_from_property($scope.inventory.view_id, taxlot_id);
+        $state.reload();
       };
 
       /**
