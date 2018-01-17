@@ -820,14 +820,14 @@ class InventoryViewTests(TestCase):
             'organization_id': self.org.pk,
             'cycle_id': self.cycle.id
         }
-        url = reverse('api:v2:properties-detail', args=[pv.id])
+        url = reverse('api:v2:properties-detail', args=[prprty.id])
         response = self.client.get(url, params)
         result = json.loads(response.content)
         self.assertEqual(result['state']['gross_floor_area_pint'], 3.14159)
 
         # test writing the field -- does not work for pint fields, but other fields should persist fine
         # /api/v2/properties/4/?cycle_id=4&organization_id=3
-        url = reverse('api:v2:properties-detail', args=[pv.id]) + '?cycle_id=%s&organization_id=%s' % (
+        url = reverse('api:v2:properties-detail', args=[prprty.id]) + '?cycle_id=%s&organization_id=%s' % (
             self.cycle.id, self.org.id)
         params = {
             'state': {
