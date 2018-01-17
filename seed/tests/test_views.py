@@ -882,13 +882,10 @@ class InventoryViewTests(DeleteModelsTestCase):
             cycle=self.cycle
         )
         params = {
-            'cycle_id': self.cycle.pk,
-            'organization_id': self.org.pk,
-            'page': 1,
-            'per_page': 999999999,
+            'organization_id': self.org.pk
         }
         response = self.client.get(
-            '/api/v2/properties/' + str(property_property.id) + '/',
+            '/api/v2/properties/' + str(property_view.id) + '/',
             params
         )
         results = json.loads(response.content)
@@ -965,13 +962,10 @@ class InventoryViewTests(DeleteModelsTestCase):
             cycle=self.cycle
         )
         params = {
-            'cycle_id': self.cycle.pk,
-            'organization_id': self.org.pk,
-            'page': 1,
-            'per_page': 999999999,
+            'organization_id': self.org.pk
         }
         response = self.client.get(
-            '/api/v2/properties/' + str(property_property.id) + '/',
+            '/api/v2/properties/' + str(property_view.id) + '/',
             params
         )
         results = json.loads(response.content)
@@ -1352,12 +1346,9 @@ class InventoryViewTests(DeleteModelsTestCase):
         )
 
         params = {
-            'cycle_id': self.cycle.pk,
             'organization_id': self.org.pk,
-            'page': 1,
-            'per_page': 999999999,
         }
-        response = self.client.get('/api/v2/taxlots/' + str(taxlot.id) + '/', params)
+        response = self.client.get('/api/v2/taxlots/' + str(taxlot_view.id) + '/', params)
         result = json.loads(response.content)
 
         cycle = result['cycle']
