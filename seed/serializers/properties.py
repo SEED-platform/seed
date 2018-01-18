@@ -32,6 +32,7 @@ from seed.serializers.certification import (
     GreenAssessmentPropertyReadOnlySerializer
 )
 from seed.serializers.measures import PropertyMeasureSerializer
+from seed.serializers.pint import PintQuantitySerializerField
 from seed.serializers.scenarios import ScenarioSerializer
 from seed.serializers.taxlots import TaxLotViewSerializer
 
@@ -145,6 +146,15 @@ class PropertyStateSerializer(serializers.ModelSerializer):
     files = BuildingFileSerializer(source='building_files', many=True, read_only=True)
     analysis_state = ChoiceField(choices=PropertyState.ANALYSIS_STATE_TYPES)
 
+    # support the pint objects
+    gross_floor_area_pint = PintQuantitySerializerField(allow_null=True)
+    conditioned_floor_area_pint = PintQuantitySerializerField(allow_null=True)
+    occupied_floor_area_pint = PintQuantitySerializerField(allow_null=True)
+    site_eui_pint = PintQuantitySerializerField(allow_null=True)
+    source_eui_weather_normalized_pint = PintQuantitySerializerField(allow_null=True)
+    site_eui_weather_normalized_pint = PintQuantitySerializerField(allow_null=True)
+    source_eui_pint = PintQuantitySerializerField(allow_null=True)
+
     # to support the old state serializer method with the PROPERTY_STATE_FIELDS variables
     import_file_id = serializers.IntegerField(allow_null=True, read_only=True)
     organization_id = serializers.IntegerField()
@@ -198,6 +208,15 @@ class PropertyStateWritableSerializer(serializers.ModelSerializer):
     import_file_id = serializers.IntegerField(allow_null=True, read_only=True)
     organization_id = serializers.IntegerField()
 
+    # support the pint objects
+    gross_floor_area_pint = PintQuantitySerializerField(allow_null=True)
+    conditioned_floor_area_pint = PintQuantitySerializerField(allow_null=True)
+    occupied_floor_area_pint = PintQuantitySerializerField(allow_null=True)
+    site_eui_pint = PintQuantitySerializerField(allow_null=True)
+    source_eui_weather_normalized_pint = PintQuantitySerializerField(allow_null=True)
+    site_eui_weather_normalized_pint = PintQuantitySerializerField(allow_null=True)
+    source_eui_pint = PintQuantitySerializerField(allow_null=True)
+
     class Meta:
         fields = '__all__'
         model = PropertyState
@@ -230,7 +249,7 @@ class PropertyViewSerializer(serializers.ModelSerializer):
     class Meta:
         model = PropertyView
         depth = 1
-        fields = ('id', 'state', 'cycle', 'property')
+        fields = ('id', 'cycle', 'state', 'property')
 
 
 class PropertyViewListSerializer(serializers.ListSerializer):
