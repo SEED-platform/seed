@@ -287,7 +287,7 @@ class FakePropertyStateFactory(BaseFake):
         )
         auditlog_detail = {}
         PropertyAuditLog.objects.create(
-            organization=organization, state=ps, **auditlog_detail
+            organization=organization, state=ps, name='Import Creation', **auditlog_detail
         )
         return ps
 
