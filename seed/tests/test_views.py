@@ -783,8 +783,8 @@ class InventoryViewTests(DeleteModelsTestCase):
         response = self.client.put(url, data=json.dumps(params), content_type='application/json')
         result = json.loads(response.content)
         self.assertEqual(result['state']['gross_floor_area'], 11235)
-        self.assertEqual(result['state']['gross_floor_area_pint'], '3.14')  # this becomes the magnitude in pintencocer
-        self.assertEqual(result['state']['site_eui_pint'], '90.10')  # this becomes the magnitude in pintencoder
+        self.assertEqual(result['state']['gross_floor_area_pint'], 3.14159)
+        self.assertEqual(result['state']['site_eui_pint'], 90.1)
 
     def test_get_properties_with_taxlots(self):
         property_state = self.property_state_factory.get_property_state()

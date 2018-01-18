@@ -249,12 +249,7 @@ class PropertyViewSerializer(serializers.ModelSerializer):
     class Meta:
         model = PropertyView
         depth = 1
-        fields = ('id', 'cycle', 'property')
-
-    def to_representation(self, obj):
-        result = super(PropertyViewSerializer, self).to_representation(obj)
-        result.update(**{'state': PropertyStateSerializer(obj.state).data})
-        return result
+        fields = ('id', 'cycle', 'state', 'property')
 
 
 class PropertyViewListSerializer(serializers.ListSerializer):
