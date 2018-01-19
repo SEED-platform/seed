@@ -36,8 +36,10 @@ before_script:
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start &
   - sleep 3
-  - psql -c "create database seeddb;" -U postgres
+  - psql -c "DROP DATABASE IF EXISTS seeddb;" -U postgres
+  - psql -c "DROP DATABASE IF EXISTS test_seeddb;" -U postgres
   - mv config/settings/test_local_untracked.py config/settings/local_untracked.py
+  - psql -c "CREATE DATABASE seeddb;" -U postgres
 env:
   global:
     - DOCKER_COMPOSE_VERSION=1.16.0

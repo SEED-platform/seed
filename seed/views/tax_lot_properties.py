@@ -11,7 +11,6 @@ All rights reserved.  # NOQA
 import csv
 import re
 
-
 from django.http import JsonResponse, HttpResponse
 from rest_framework.decorators import list_route
 from rest_framework.renderers import JSONRenderer
@@ -22,8 +21,8 @@ from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (
     TaxLotProperty,
     PropertyView,
-    TaxLotView
-
+    TaxLotView,
+    Column,
 )
 from seed.serializers.tax_lot_properties import (
     TaxLotPropertySerializer
@@ -48,7 +47,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
     @list_route(methods=['POST'])
     def csv(self, request):
         """
-        Download a csv of the data quality checks by the pk which is the cache_key
+        Download a csv of the TaxLot and Properties
 
         .. code-block::
 
@@ -108,31 +107,43 @@ class TaxLotPropertyViewSet(GenericViewSet):
         # get the class to operate on and the relationships
         view_klass_str = request.query_params.get('inventory_type', 'properties')
         view_klass = INVENTORY_MODELS[view_klass_str]
+
+        # Grab all the columns and create a column name lookup
+        col_inventory_type = 'property' if view_klass_str == 'properties' else 'taxlot'
+        columns_db = Column.retrieve_all(request.query_params['organization_id'], col_inventory_type, False)
+        column_lookup = {}
+        for c in columns_db:
+            column_lookup[c['name']] = c['displayName']
+        # make the csv header
+        header = []
+        for c in columns:
+            if c in column_lookup:
+                header.append(column_lookup[c])
+            else:
+                header.append(c)
+
         select_related = ['state', 'cycle']
         ids = request.data.get('ids', [])
         filter_str = {'cycle': cycle_pk}
         if hasattr(view_klass, 'property'):
             select_related.append('property')
-            filter_str = {
-                'property__organization_id': request.query_params['organization_id'],
-            }
+            filter_str = {'property__organization_id': request.query_params['organization_id']}
             if ids:
                 filter_str['property__id__in'] = ids
             # always export the labels
             columns += ['property_labels']
+            header.append('Property Labels')
 
         elif hasattr(view_klass, 'taxlot'):
             select_related.append('taxlot')
-            filter_str = {
-                'taxlot__organization_id': request.query_params['organization_id'],
-            }
+            filter_str = {'taxlot__organization_id': request.query_params['organization_id']}
             if ids:
                 filter_str['taxlot__id__in'] = ids
             # always export the labels
             columns += ['taxlot_labels']
+            header.append('Tax Lot Labels')
 
-        model_views = view_klass.objects.select_related(*select_related).filter(
-            **filter_str).order_by('id')
+        model_views = view_klass.objects.select_related(*select_related).filter(**filter_str).order_by('id')
 
         filename = request.data.get('filename', "ExportedData.csv")
         response = HttpResponse(content_type='text/csv')
@@ -151,7 +162,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
         # TaxLotProperty.get_related method.
 
         # header
-        writer.writerow(columns)
+        writer.writerow(header)
 
         # iterate over the results to preserve column order and write row.
         # The front end returns columns with prepended tax_ and property_ columns for the
@@ -163,21 +174,29 @@ class TaxLotPropertyViewSet(GenericViewSet):
             for column in columns:
                 if column in ['property_name', 'property_notes', 'property_type', 'property_labels']:
                     row.append(datum.get(column, None))
-                elif column.startswith('tax_') or column == 'jurisdiction_tax_lot_id':
+                elif column.startswith('tax_'):
+                    # There are times when there are duplicate column names in tax/property
                     if datum.get('related') and len(datum['related']) > 0:
                         # Looks like related returns a list. Is this as expected?
                         row.append(datum['related'][0].get(re.sub(r'^tax_', '', column), None))
                     else:
                         row.append(None)
-                elif column.startswith('property_') or column == 'jurisdiction_tax_lot_id':
+                elif column.startswith('property_'):
+                    # There are times when there are duplicate column names in tax/property
                     if datum.get('related') and len(datum['related']) > 0:
                         # Looks like related returns a list. Is this as expected?
                         row.append(datum['related'][0].get(re.sub(r'^property_', '', column), None))
                     else:
                         row.append(None)
                 else:
-                    row.append(datum.get(column, None))
-
+                    # check if the data is in the normal section of the result, if not, then try to grab it from
+                    # the related section. There shouldn't be any duplicates here because the former two
+                    # if methods will grab those instances.
+                    result = datum.get(column, None)
+                    if not result:
+                        if datum.get('related'):
+                            result = datum['related'][0].get(column, None)
+                    row.append(result)
             writer.writerow(row)
 
         return response
