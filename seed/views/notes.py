@@ -27,7 +27,7 @@ class NoteViewSet(SEEDOrgCreateUpdateModelViewSet):
                 [
                     {
                         'id': Note's primary key
-                        'name': Superfulous name,
+                        'name': Superfluous name,
                         'text': Note's text
                     }
                 ]
@@ -46,7 +46,7 @@ class NoteViewSet(SEEDOrgCreateUpdateModelViewSet):
         if self.kwargs.get('properties_pk', None):
             return Note.objects.filter(organization_id=org_id, property_view_id=self.kwargs.get('properties_pk'))
         elif self.kwargs.get('taxlots_pk', None):
-            return Note.objects.filter(organization_id=org_id, taxlot_id=self.kwargs.get('taxlots_pk'))
+            return Note.objects.filter(organization_id=org_id, taxlot_view_id=self.kwargs.get('taxlots_pk'))
         else:
             return Note.objects.filter(organization_id=org_id)
 
@@ -58,7 +58,7 @@ class NoteViewSet(SEEDOrgCreateUpdateModelViewSet):
             )
         elif self.kwargs.get('taxlots_pk', None):
             serializer.save(
-                organization_id=org_id, user=self.request.user, taxlot_id=self.kwargs.get('taxlots_pk', None)
+                organization_id=org_id, user=self.request.user, taxlot_view_id=self.kwargs.get('taxlots_pk', None)
             )
         else:
             _log.warn("Unable to create model without a property_pk or taxlots_pk")

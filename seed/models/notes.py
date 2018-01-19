@@ -13,7 +13,7 @@ from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     PropertyView,
-    TaxLot,
+    TaxLotView,
 )
 from seed.models.projects import Project
 from seed.utils.generic import obj_to_dict
@@ -37,7 +37,7 @@ class Note(models.Model):
     organization = models.ForeignKey(Organization, null=True, related_name='notes')
     user = models.ForeignKey(User, null=True, related_name='notes')  # who added the note
     property_view = models.ForeignKey(PropertyView, null=True, related_name='notes')
-    taxlot = models.ForeignKey(TaxLot, null=True, related_name='notes')
+    taxlot_view = models.ForeignKey(TaxLotView, null=True, related_name='notes')
 
     # in the near future track the changes to the Property View records by storing the changes in JSON. Proposed format:
     # {

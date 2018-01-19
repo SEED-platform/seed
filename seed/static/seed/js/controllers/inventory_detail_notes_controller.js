@@ -38,13 +38,15 @@ angular.module('BE.seed.controller.inventory_detail_notes', [])
 
       // set some defaults and load the notes
       $scope.inventory_type = $stateParams.inventory_type;
-      $scope.view_id = $stateParams.view_id;
+      $scope.inventory = {
+        view_id: $stateParams.view_id
+      };
       $scope.cycle = $stateParams.cycle_id;
       $scope.org_id = user_service.get_organization().id;
 
       var refreshNotes = function () {
         $scope.notes = {results: []};
-        note_service.get_notes($scope.org_id, $scope.inventory_type, $scope.view_id).then(function (data) {
+        note_service.get_notes($scope.org_id, $scope.inventory_type, $scope.inventory.view_id).then(function (data) {
           $scope.notes = data;
         });
       };
@@ -64,7 +66,7 @@ angular.module('BE.seed.controller.inventory_detail_notes', [])
               return $scope.inventory_type;
             },
             viewId: function () {
-              return $scope.view_id;
+              return $scope.inventory.view_id;
             },
             orgId: function () {
               return $scope.org_id;
