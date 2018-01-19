@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 // inventory services
@@ -116,21 +116,16 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
      *
      */
 
-    inventory_service.get_property = function (property_id, cycle_id) {
+    inventory_service.get_property = function (view_id) {
       // Error checks
-      if (_.isNil(property_id)) {
-        $log.error('#inventory_service.get_property(): property_id is undefined');
-        throw new Error('Invalid Parameter');
-      }
-      if (_.isNil(cycle_id)) {
-        $log.error('#inventory_service.get_property(): cycle_id is undefined');
+      if (_.isNil(view_id)) {
+        $log.error('#inventory_service.get_property(): view_id is undefined');
         throw new Error('Invalid Parameter');
       }
 
       spinner_utility.show();
-      return $http.get('/api/v2/properties/' + property_id + '/', {
+      return $http.get('/api/v2/properties/' + view_id + '/', {
         params: {
-          cycle_id: cycle_id,
           organization_id: user_service.get_organization().id
         }
       }).then(function (response) {
@@ -140,23 +135,18 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       });
     };
 
-    /** Update Property State for a specified property, cycle, and organization.
+    /** Update Property State for a specified property view and organization.
      *
-     * @param property_id         Property ID of the property
-     * @param cycle_id            Cycle ID for the cycle
+     * @param view_id             Property View ID of the property view
      * @param state               A Property state object, which should include key/values for
      *                              all state values
      *
      * @returns {Promise}
      */
-    inventory_service.update_property = function (property_id, cycle_id, state) {
+    inventory_service.update_property = function (view_id, state) {
       // Error checks
-      if (_.isNil(property_id)) {
-        $log.error('#inventory_service.update_property(): property_id is undefined');
-        throw new Error('Invalid Parameter');
-      }
-      if (_.isNil(cycle_id)) {
-        $log.error('#inventory_service.update_property(): cycle_id is undefined');
+      if (_.isNil(view_id)) {
+        $log.error('#inventory_service.update_property(): view_id is undefined');
         throw new Error('Invalid Parameter');
       }
       if (_.isNil(state)) {
@@ -172,11 +162,10 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       state = _.omit(state, 'measures');
       state = _.omit(state, 'scenarios');
 
-      return $http.put('/api/v2/properties/' + property_id + '/', {
+      return $http.put('/api/v2/properties/' + view_id + '/', {
         state: state
       }, {
         params: {
-          cycle_id: cycle_id,
           organization_id: user_service.get_organization().id
         }
       }).then(function (response) {
@@ -313,22 +302,16 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
      */
 
 
-    inventory_service.get_taxlot = function (taxlot_id, cycle_id) {
-
+    inventory_service.get_taxlot = function (view_id) {
       // Error checks
-      if (_.isNil(taxlot_id)) {
-        $log.error('#inventory_service.get_taxlot(): null taxlot_id parameter');
-        throw new Error('Invalid Parameter');
-      }
-      if (_.isNil(cycle_id)) {
-        $log.error('#inventory_service.get_taxlot(): null cycle_id parameter');
+      if (_.isNil(view_id)) {
+        $log.error('#inventory_service.get_taxlot(): null view_id parameter');
         throw new Error('Invalid Parameter');
       }
 
       spinner_utility.show();
-      return $http.get('/api/v2/taxlots/' + taxlot_id + '/', {
+      return $http.get('/api/v2/taxlots/' + view_id + '/', {
         params: {
-          cycle_id: cycle_id,
           organization_id: user_service.get_organization().id
         }
       }).then(function (response) {
@@ -339,23 +322,18 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
 
-    /** Update Tax Lot State for a specified Tax Lot, cycle, and organization.
+    /** Update Tax Lot State for a specified Tax Lot View and organization.
      *
-     * @param taxlot_id          Tax Lot ID of the tax lot
-     * @param cycle_id            Cycle ID for the cycle
+     * @param view_id             Tax Lot View ID of the tax lot view
      * @param state               A Tax Lot state object, which should include key/values for
      *                              all state values
      *
      * @returns {Promise}
      */
-    inventory_service.update_taxlot = function (taxlot_id, cycle_id, state) {
+    inventory_service.update_taxlot = function (view_id, state) {
       // Error checks
-      if (_.isNil(taxlot_id)) {
-        $log.error('#inventory_service.update_taxlot(): taxlot_id is undefined');
-        throw new Error('Invalid Parameter');
-      }
-      if (_.isNil(cycle_id)) {
-        $log.error('#inventory_service.update_taxlot(): cycle_id is undefined');
+      if (_.isNil(view_id)) {
+        $log.error('#inventory_service.update_taxlot(): view_id is undefined');
         throw new Error('Invalid Parameter');
       }
       if (_.isNil(state)) {
@@ -364,11 +342,10 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }
 
       spinner_utility.show();
-      return $http.put('/api/v2/taxlots/' + taxlot_id + '/', {
+      return $http.put('/api/v2/taxlots/' + view_id + '/', {
         state: state
       }, {
         params: {
-          cycle_id: cycle_id,
           organization_id: user_service.get_organization().id
         }
       }).then(function (response) {

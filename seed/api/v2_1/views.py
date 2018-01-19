@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2017, The Regents of the University of California,
+:copyright (c) 2014 - 2018, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
@@ -182,6 +182,8 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
 
         try:
             # TODO: not checking organization? Is that right?
+            # TODO: this needs to call _get_property_view and use the property pk, not the property_view pk.
+            #   or we need to state the v2.1 of API uses property views instead of property
             property_view = PropertyView.objects.select_related('state').get(pk=pk, cycle=cycle)
         except PropertyView.DoesNotExist:
             return JsonResponse({

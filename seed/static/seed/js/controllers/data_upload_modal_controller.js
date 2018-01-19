@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 /**
@@ -140,10 +140,10 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         $uibModalInstance.close();
         $state.go('mapping', {importfile_id: $scope.dataset.import_file_id});
       };
-      $scope.goto_data_matching = function () {
+      /*$scope.goto_data_matching = function () {
         $uibModalInstance.close();
         $state.go('matching_list', {importfile_id: $scope.dataset.import_file_id, inventory_type: 'properties'});
-      };
+      };*/
       $scope.view_my_properties = function () {
         $uibModalInstance.close();
         $state.go('inventory_list', {inventory_type: 'properties'});

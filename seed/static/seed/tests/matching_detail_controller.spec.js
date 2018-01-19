@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 describe('Controller: matching_detail_controller', function () {
@@ -239,34 +239,22 @@ describe('Controller: matching_detail_controller', function () {
     // arrange
     create_dataset_detail_controller();
     expect(function () {
-      mock_inventory_service.get_property(null, null);
+      mock_inventory_service.get_property(null);
     }).toThrow(new Error('Invalid Parameter'));
     expect(function () {
-      mock_inventory_service.get_property(0, null);
+      mock_inventory_service.update_property(null, null);
     }).toThrow(new Error('Invalid Parameter'));
     expect(function () {
-      mock_inventory_service.update_property(null, null, null);
+      mock_inventory_service.update_property(0, null);
     }).toThrow(new Error('Invalid Parameter'));
     expect(function () {
-      mock_inventory_service.update_property(0, null, null);
+      mock_inventory_service.get_taxlot(null);
     }).toThrow(new Error('Invalid Parameter'));
     expect(function () {
-      mock_inventory_service.update_property(0, 0, null);
+      mock_inventory_service.update_taxlot(null, null);
     }).toThrow(new Error('Invalid Parameter'));
     expect(function () {
-      mock_inventory_service.get_taxlot(null, null);
-    }).toThrow(new Error('Invalid Parameter'));
-    expect(function () {
-      mock_inventory_service.get_taxlot(0, null);
-    }).toThrow(new Error('Invalid Parameter'));
-    expect(function () {
-      mock_inventory_service.update_taxlot(null, null, null);
-    }).toThrow(new Error('Invalid Parameter'));
-    expect(function () {
-      mock_inventory_service.update_taxlot(0, null, null);
-    }).toThrow(new Error('Invalid Parameter'));
-    expect(function () {
-      mock_inventory_service.update_taxlot(0, 0, null);
+      mock_inventory_service.update_taxlot(0, null);
     }).toThrow(new Error('Invalid Parameter'));
   });
 

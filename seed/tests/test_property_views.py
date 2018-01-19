@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import json
@@ -65,7 +65,7 @@ class PropertyViewTests(DeleteModelsTestCase):
     def test_get_and_edit_properties(self):
         state = self.property_state_factory.get_property_state()
         prprty = self.property_factory.get_property()
-        PropertyView.objects.create(
+        view = PropertyView.objects.create(
             property=prprty, cycle=self.cycle, state=state
         )
         params = {
@@ -93,8 +93,7 @@ class PropertyViewTests(DeleteModelsTestCase):
                 "address_line_1": "742 Evergreen Terrace"
             }
         }
-        url = reverse('api:v2:properties-detail', args=[prprty.id]) + '?cycle_id={}&organization_id={}'.format(
-            self.cycle.pk, self.org.pk)
+        url = reverse('api:v2:properties-detail', args=[view.id]) + '?organization_id={}'.format(self.org.pk)
         response = self.client.put(url, json.dumps(new_data), content_type='application/json')
         result = json.loads(response.content)
         self.assertEqual(result['status'], 'success')

@@ -2,7 +2,7 @@
 {% load i18n %}
 <!DOCTYPE html>
 <html>
-    <!-- :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved. -->
+    <!-- :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved. -->
     <head>
         <title>{% block title %}{% trans "SEED Platform™" %}{% endblock title %}</title>
         <meta charset="utf-8">
@@ -93,6 +93,8 @@
             {% else %}
         <script src="/static/vendors/bower_components/angular/angular.js"></script>
             {% endif %}
+        <script src="/static/vendors/bower_components/angular-animate/angular-animate.min.js"></script>
+        <script src="/static/vendors/bower_components/angular-aria/angular-aria.min.js"></script>
         <script src="/static/vendors/bower_components/angular-cookies/angular-cookies.min.js"></script>
         <script src="/static/vendors/bower_components/angular-ui-router/release/angular-ui-router.min.js"></script>
         <script src="/static/vendors/bower_components/angular-ui-router.stateHelper/statehelper.min.js"></script>

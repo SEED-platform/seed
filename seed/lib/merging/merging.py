@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author Dan Gunter <dkgunter@lbl.gov>
 """
 import logging
@@ -132,10 +132,8 @@ def merge_state(merged_state, state1, state2, can_attrs, default=None):
     default = default or state2
     changes = []
     for attr in can_attrs:
-        # Do we have any differences between these fields?
-        attr_values = list(set([
-            value for value in can_attrs[attr].values() if value
-        ]))
+        # Do we have any differences between these fields? - Check if not None instead of if value.
+        attr_values = list(set([value for value in can_attrs[attr].values() if value is not None]))
         attr_values = [v for v in attr_values if v is not None]
 
         attr_value = None

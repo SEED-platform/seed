@@ -1,12 +1,12 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import json
-
 from datetime import datetime
+
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.test import TestCase
 from django.utils import timezone
@@ -752,6 +752,40 @@ class InventoryViewTests(DeleteModelsTestCase):
         self.assertEquals(results['paint color'], 'pink')
         self.assertEquals(results['number of secret gadgets'], 5)
 
+    def test_get_properties_pint_fields(self):
+        state = self.property_state_factory.get_property_state(
+            self.org,
+            gross_floor_area_pint=3.14159
+        )
+        prprty = self.property_factory.get_property()
+        pv = PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=state
+        )
+        params = {
+            'organization_id': self.org.pk,
+            'cycle_id': self.cycle.id
+        }
+        url = reverse('api:v2:properties-detail', args=[pv.id])
+        response = self.client.get(url, params)
+        result = json.loads(response.content)
+        self.assertEqual(result['state']['gross_floor_area_pint'], 3.14159)
+
+        # test writing the field -- does not work for pint fields, but other fields should persist fine
+        # /api/v2/properties/4/?cycle_id=4&organization_id=3
+        url = reverse('api:v2:properties-detail', args=[pv.id]) + '?cycle_id=%s&organization_id=%s' % (
+            self.cycle.id, self.org.id)
+        params = {
+            'state': {
+                'gross_floor_area': 11235,
+                'site_eui_pint': 90.1,
+            }
+        }
+        response = self.client.put(url, data=json.dumps(params), content_type='application/json')
+        result = json.loads(response.content)
+        self.assertEqual(result['state']['gross_floor_area'], 11235)
+        self.assertEqual(result['state']['gross_floor_area_pint'], 3.14159)
+        self.assertEqual(result['state']['site_eui_pint'], 90.1)
+
     def test_get_properties_with_taxlots(self):
         property_state = self.property_state_factory.get_property_state()
         property_property = self.property_factory.get_property(campus=True)
@@ -882,18 +916,16 @@ class InventoryViewTests(DeleteModelsTestCase):
             cycle=self.cycle
         )
         params = {
-            'cycle_id': self.cycle.pk,
-            'organization_id': self.org.pk,
-            'page': 1,
-            'per_page': 999999999,
+            'organization_id': self.org.pk
         }
         response = self.client.get(
-            '/api/v2/properties/' + str(property_property.id) + '/',
+            '/api/v2/properties/' + str(property_view.id) + '/',
             params
         )
         results = json.loads(response.content)
 
         self.assertEqual(results['status'], 'success')
+
         # there should be 1 history item now because we are creating an audit log entry
         self.assertEqual(len(results['history']), 1)
         self.assertEqual(results['property']['labels'], [self.status_label.pk])
@@ -965,13 +997,10 @@ class InventoryViewTests(DeleteModelsTestCase):
             cycle=self.cycle
         )
         params = {
-            'cycle_id': self.cycle.pk,
-            'organization_id': self.org.pk,
-            'page': 1,
-            'per_page': 999999999,
+            'organization_id': self.org.pk
         }
         response = self.client.get(
-            '/api/v2/properties/' + str(property_property.id) + '/',
+            '/api/v2/properties/' + str(property_view.id) + '/',
             params
         )
         results = json.loads(response.content)
@@ -1352,12 +1381,9 @@ class InventoryViewTests(DeleteModelsTestCase):
         )
 
         params = {
-            'cycle_id': self.cycle.pk,
             'organization_id': self.org.pk,
-            'page': 1,
-            'per_page': 999999999,
         }
-        response = self.client.get('/api/v2/taxlots/' + str(taxlot.id) + '/', params)
+        response = self.client.get('/api/v2/taxlots/' + str(taxlot_view.id) + '/', params)
         result = json.loads(response.content)
 
         cycle = result['cycle']

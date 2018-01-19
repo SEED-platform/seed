@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from __future__ import unicode_literals
@@ -172,10 +172,11 @@ class TaxLotProperty(models.Model):
                 if none_in_jurisdiction_tax_lot_ids:
                     jurisdiction_tax_lot_ids.append('Missing')
 
-                join_dict = related_map[join.property_view_id].copy()
+                join_dict = related_map[getattr(join, lookups['related_view_id_name'])].copy()
                 join_dict.update({
                     'primary': 'P' if join.primary else 'S',
-                    'calculated_taxlot_ids': '; '.join(jurisdiction_tax_lot_ids)
+                    'calculated_taxlot_ids': '; '.join(jurisdiction_tax_lot_ids),
+                    lookups['related_view_id_name']: getattr(join, lookups['related_view_id_name'])
                 })
 
             else:
