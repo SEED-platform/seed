@@ -712,13 +712,19 @@ class PropertyViewSet(GenericViewSet):
 
         return JsonResponse({'status': 'success', 'properties': resp[1]['seed.PropertyState']})
 
-    def _get_property_view(self, pk, cycle_pk):
+    def _get_property_view(self, pk):
+        """
+        Return the property view
+
+        :param pk: id, The property view ID
+        :param cycle_pk: cycle
+        :return:
+        """
         try:
             property_view = PropertyView.objects.select_related(
                 'property', 'cycle', 'state'
             ).get(
-                property_id=pk,
-                cycle_id=cycle_pk,
+                id=pk,
                 property__organization_id=self.request.GET['organization_id']
             )
             result = {
@@ -743,24 +749,13 @@ class PropertyViewSet(GenericViewSet):
     def view(self, pk=None):
         """
         Get the property view
+        # TODO: This can most likely be removed
         """
-        try:
-            property_view = PropertyView.objects.select_related(
-                'property', 'cycle', 'state'
-            ).get(
-                id=pk,
-                property__organization_id=self.request.GET['organization_id']
-            )
-            result = {
-                'status': 'success',
-                'property_view': property_view
-            }
-        except PropertyView.DoesNotExist:
-            result = {
-                'status': 'error',
-                'message': 'property view with id {} does not exist'.format(pk)
-            }
-        return JsonResponse(result)
+        result = self._get_property_view(pk)
+        if result.get('status', None) != 'error':
+            return JsonResponse(result.pop('property_view'))
+        else:
+            return JsonResponse(result)
 
     def _get_taxlots(self, pk):
         lot_view_pks = TaxLotProperty.objects.filter(property_view_id=pk).values_list(
@@ -814,32 +809,20 @@ class PropertyViewSet(GenericViewSet):
               required: true
               paramType: query
         """
-        try:
-            property_view = PropertyView.objects.select_related(
-                'property', 'cycle', 'state'
-            ).get(
-                id=pk,
-                property__organization_id=self.request.GET['organization_id']
-            )
-            result = {
-                'status': 'success'
-            }
+        result = self._get_property_view(pk)
+        if result.get('status', None) != 'error':
+            property_view = result.pop('property_view')
+            result = {'status': 'success'}
             result.update(PropertyViewSerializer(property_view).data)
             # remove PropertyView id from result
             result.pop('id')
-
             result['state'] = PropertyStateSerializer(property_view.state).data
             result['taxlots'] = self._get_taxlots(property_view.pk)
             result['history'], master = self.get_history(property_view)
             result = update_result_with_master(result, master)
-            status_code = status.HTTP_200_OK
-        except PropertyView.DoesNotExist:
-            result = {
-                'status': 'error',
-                'message': 'property view with id {} does not exist'.format(pk)
-            }
-            status_code = status.HTTP_404_NOT_FOUND
-        return JsonResponse(result, status=status_code)
+            return JsonResponse(result, status=status.HTTP_200_OK)
+        else:
+            return JsonResponse(result)
 
     @api_endpoint_class
     @ajax_request_class
@@ -871,22 +854,9 @@ class PropertyViewSet(GenericViewSet):
         """
         data = request.data
 
-        try:
-            property_view = PropertyView.objects.select_related(
-                'property', 'cycle', 'state'
-            ).get(
-                id=pk,
-                property__organization_id=self.request.GET['organization_id']
-            )
-            result = {
-                'status': 'success'
-            }
-        except PropertyView.DoesNotExist:
-            result = {
-                'status': 'error',
-                'message': 'property view with id {} does not exist'.format(pk)
-            }
+        result = self._get_property_view(pk)
         if result.get('status', None) != 'error':
+            property_view = result.pop('property_view')
             property_state_data = PropertyStateSerializer(property_view.state).data
 
             # get the property state information from the request
@@ -1061,7 +1031,7 @@ class PropertyViewSet(GenericViewSet):
                 {'status': 'error', 'message': 'None or invalid implementation_status type'}
             )
 
-        result = self._get_property_view(pk, cycle_pk)
+        result = self._get_property_view(pk)
         pv = None
         if result.get('status', None) != 'error':
             pv = result.pop('property_view')
@@ -1153,7 +1123,7 @@ class PropertyViewSet(GenericViewSet):
         else:
             impl_status = [PropertyMeasure.str_to_impl_status(impl_status)]
 
-        result = self._get_property_view(pk, cycle_pk)
+        result = self._get_property_view(pk)
         pv = None
         if result.get('status', None) != 'error':
             pv = result.pop('property_view')
@@ -1205,35 +1175,33 @@ class PropertyViewSet(GenericViewSet):
             return JsonResponse(
                 {'status': 'error', 'message': 'Must pass cycle_id as query parameter'})
 
-        result = self._get_property_view(pk, cycle_pk)
-        pv = None
+        result = self._get_property_view(pk)
         if result.get('status', None) != 'error':
             pv = result.pop('property_view')
+            property_state_id = pv.state.pk
+            join = PropertyMeasure.objects.filter(property_state_id=property_state_id).select_related(
+                'measure')
+            result = []
+            for j in join:
+                result.append({
+                    "implementation_type": j.get_implementation_status_display(),
+                    "category": j.measure.category,
+                    "category_display_name": j.measure.category_display_name,
+                    "name": j.measure.name,
+                    "display_name": j.measure.display_name,
+                    "unique_name": "{}.{}".format(j.measure.category, j.measure.name),
+                    "pk": j.measure.id,
+                })
+
+            return JsonResponse(
+                {
+                    "status": "success",
+                    "message": "Found {} measures".format(len(result)),
+                    "measures": result,
+                }
+            )
         else:
             return JsonResponse(result)
-
-        property_state_id = pv.state.pk
-        join = PropertyMeasure.objects.filter(property_state_id=property_state_id).select_related(
-            'measure')
-        result = []
-        for j in join:
-            result.append({
-                "implementation_type": j.get_implementation_status_display(),
-                "category": j.measure.category,
-                "category_display_name": j.measure.category_display_name,
-                "name": j.measure.name,
-                "display_name": j.measure.display_name,
-                "unique_name": "{}.{}".format(j.measure.category, j.measure.name),
-                "pk": j.measure.id,
-            })
-
-        return JsonResponse(
-            {
-                "status": "success",
-                "message": "Found {} measures".format(len(result)),
-                "measures": result,
-            }
-        )
 
 
 def diffupdate(old, new):
