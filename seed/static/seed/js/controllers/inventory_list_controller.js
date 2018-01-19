@@ -181,10 +181,13 @@ angular.module('BE.seed.controller.inventory_list', [])
               });
             },
             data: function () {
+              var selectedOrder = $scope.selectedOrder.slice().reverse();
               var data = new Array($scope.selectedOrder.length);
               _.forEach($scope.data, function (datum) {
-                var index = _.indexOf($scope.selectedOrder.slice().reverse(), datum.id);
-                if (index !== -1) data[index] = datum;
+                if (datum.$$treeLevel === 0) {
+                  var index = _.indexOf(selectedOrder, datum.id);
+                  if (index !== -1) data[index] = datum;
+                }
               });
               return data;
             },
