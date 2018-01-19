@@ -53,11 +53,11 @@ class NoteViewTests(TestCase):
         self.tl = self.taxlot_view_factory.get_taxlot_view(organization=self.org)
         self.note3 = self.note_factory.get_note()
         self.note4 = self.note_factory.get_log_note()
-        self.tl.taxlot.notes.add(self.note3)
-        self.tl.taxlot.notes.add(self.note4)
+        self.tl.notes.add(self.note3)
+        self.tl.notes.add(self.note4)
 
     def test_get_notes_property(self):
-        url = reverse('api:v2.1:property-notes-list', args=[self.pv.property.pk])
+        url = reverse('api:v2.1:property-notes-list', args=[self.pv.pk])
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         result = json.loads(response.content)
@@ -80,7 +80,7 @@ class NoteViewTests(TestCase):
         self.assertEqual(results[1]['note_type'], 'Note')
 
     def test_create_note_property(self):
-        url = reverse('api:v2.1:property-notes-list', args=[self.pv.property.pk])
+        url = reverse('api:v2.1:property-notes-list', args=[self.pv.pk])
 
         payload = {
             "note_type": "Note",
@@ -94,13 +94,13 @@ class NoteViewTests(TestCase):
         # check that the note was attached to the property
         self.assertEqual(result['note_type'], 'Note')
         self.assertEqual(result['text'], payload['text'])
-        self.assertEqual(result['property_view_id'], self.pv.property.pk)
-        self.assertIsNone(result['taxlot_id'])
+        self.assertEqual(result['property_view_id'], self.pv.pk)
+        self.assertIsNone(result['taxlot_view_id'])
         self.assertEqual(result['organization_id'], self.org.pk)
         self.assertEqual(result['user_id'], self.user.pk)
 
     def test_create_note_taxlot(self):
-        url = reverse('api:v2.1:taxlot-notes-list', args=[self.tl.taxlot.pk])
+        url = reverse('api:v2.1:taxlot-notes-list', args=[self.tl.pk])
 
         payload = {
             "note_type": "Note",
@@ -115,10 +115,10 @@ class NoteViewTests(TestCase):
         self.assertEqual(result['note_type'], 'Note')
         self.assertEqual(result['text'], payload['text'])
         self.assertIsNone(result['property_view_id'])
-        self.assertEqual(result['taxlot_id'], self.tl.taxlot.pk)
+        self.assertEqual(result['taxlot_view_id'], self.tl.pk)
 
     def test_update_note(self):
-        url = reverse('api:v2.1:taxlot-notes-detail', args=[self.tl.taxlot.pk, self.note3.pk])
+        url = reverse('api:v2.1:taxlot-notes-detail', args=[self.tl.pk, self.note3.pk])
 
         payload = {
             "name": "update, validation should fail"
@@ -140,7 +140,7 @@ class NoteViewTests(TestCase):
         self.assertEqual(result['text'], payload['text'])
 
     def test_patch_note(self):
-        url = reverse('api:v2.1:taxlot-notes-detail', args=[self.tl.taxlot.pk, self.note4.pk])
+        url = reverse('api:v2.1:taxlot-notes-detail', args=[self.tl.pk, self.note4.pk])
 
         payload = {
             "name": "new note name that is meaningless"
@@ -154,7 +154,7 @@ class NoteViewTests(TestCase):
         note5 = self.note_factory.get_note()
         self.pv.notes.add(note5)
 
-        url = reverse('api:v2.1:property-notes-detail', args=[self.pv.property.pk, note5.pk])
+        url = reverse('api:v2.1:property-notes-detail', args=[self.pv.pk, note5.pk])
         response = self.client.get(url, content_type='application/json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         result = json.loads(response.content)
