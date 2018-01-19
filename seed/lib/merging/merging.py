@@ -132,10 +132,8 @@ def merge_state(merged_state, state1, state2, can_attrs, default=None):
     default = default or state2
     changes = []
     for attr in can_attrs:
-        # Do we have any differences between these fields?
-        attr_values = list(set([
-            value for value in can_attrs[attr].values() if value
-        ]))
+        # Do we have any differences between these fields? - Check if not None instead of if value.
+        attr_values = list(set([value for value in can_attrs[attr].values() if value is not None]))
         attr_values = [v for v in attr_values if v is not None]
 
         attr_value = None
