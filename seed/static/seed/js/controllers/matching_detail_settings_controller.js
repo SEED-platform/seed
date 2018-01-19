@@ -72,6 +72,7 @@ angular.module('BE.seed.controller.matching_detail_settings', [])
         columnDefs: [{
           name: 'displayName',
           displayName: 'Column Name',
+          cellTemplate: '<div class="ui-grid-cell-contents inventory-settings-cell" title="TOOLTIP" data-after-content="{$ row.entity.name $}">{$ COL_FIELD CUSTOM_FILTERS $}</div>',
           enableHiding: false
         }],
         onRegisterApi: function (gridApi) {

@@ -25,8 +25,8 @@ angular.module('BE.seed.service.note', []).factory('note_service', [
         "user_id": 1
       }
      */
-    note_factory.get_notes = function (org_id, inventory_type, inventory_id) {
-      return $http.get('/api/v2.1/' + inventory_type + '/' + inventory_id + /notes/, {
+    note_factory.get_notes = function (org_id, inventory_type, view_id) {
+      return $http.get('/api/v2.1/' + inventory_type + '/' + view_id + /notes/, {
         params: {
           organization_id: org_id
         }
@@ -35,8 +35,8 @@ angular.module('BE.seed.service.note', []).factory('note_service', [
       });
     };
 
-    note_factory.delete_note = function (inventory_type, inventory_id) {
-      return $http.delete('/api/v2.1/' + inventory_type + '/' + inventory_id + /notes/, {}).then(function (response) {
+    note_factory.delete_note = function (inventory_type, view_id) {
+      return $http.delete('/api/v2.1/' + inventory_type + '/' + view_id + /notes/, {}).then(function (response) {
         return response.data;
       });
     };
@@ -52,10 +52,10 @@ angular.module('BE.seed.service.note', []).factory('note_service', [
 
       There are other fields, but for now this is the basic required information
      */
-    note_factory.create_note = function (org_id, inventory_type, inventory_id, note_data) {
+    note_factory.create_note = function (org_id, inventory_type, view_id, note_data) {
       var payload = note_data;
       payload.organization_id = org_id;
-      return $http.post('/api/v2.1/' + inventory_type + '/' + inventory_id + /notes/, payload).then(function (response) {
+      return $http.post('/api/v2.1/' + inventory_type + '/' + view_id + /notes/, payload).then(function (response) {
         return response.data;
       });
     };

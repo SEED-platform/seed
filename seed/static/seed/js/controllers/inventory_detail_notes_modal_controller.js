@@ -8,17 +8,17 @@ angular.module('BE.seed.controller.inventory_detail_notes_modal', [])
     '$uibModalInstance',
     'note_service',
     'inventoryType',
-    'inventoryId',
+    'viewId',
     'orgId',
     function ($scope,
               $uibModalInstance,
               note_service,
               inventoryType,
-              inventoryId,
+              viewId,
               orgId) {
       $scope.inventoryType = inventoryType;
       $scope.newNote = '';
-      $scope.inventoryId = inventoryId;
+      $scope.viewId = viewId;
       $scope.orgId = orgId;
 
       $scope.close = function () {
@@ -32,7 +32,7 @@ angular.module('BE.seed.controller.inventory_detail_notes_modal', [])
           note_type: 'Note',
           text: $scope.newNote
         };
-        note_service.create_note($scope.orgId, $scope.inventoryType, $scope.inventoryId, data).then(function () {
+        note_service.create_note($scope.orgId, $scope.inventoryType, $scope.viewId, data).then(function () {
           $uibModalInstance.close();
         });
       };
