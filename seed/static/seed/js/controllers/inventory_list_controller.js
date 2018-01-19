@@ -41,6 +41,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       spinner_utility.show();
       $scope.selectedCount = 0;
       $scope.selectedParentCount = 0;
+      $scope.selectedOrder = [];
 
 
       $scope.inventory_type = $stateParams.inventory_type;
@@ -168,6 +169,40 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
+      $scope.open_merge_modal = function () {
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/merge_modal.html',
+          controller: 'merge_modal_controller',
+          windowClass: 'merge-modal',
+          resolve: {
+            columns: function () {
+              return _.map(_.reject($scope.columns, {name: 'id'}), function (column) {
+                return _.pick(column, ['displayName', 'extraData', 'name', 'table']);
+              });
+            },
+            data: function () {
+              var selectedOrder = $scope.selectedOrder.slice().reverse();
+              var data = new Array($scope.selectedOrder.length);
+              _.forEach($scope.data, function (datum) {
+                if (datum.$$treeLevel === 0) {
+                  var index = _.indexOf(selectedOrder, datum.id);
+                  if (index !== -1) data[index] = datum;
+                }
+              });
+              return data;
+            },
+            inventory_type: function () {
+              return $scope.inventory_type;
+            }
+          }
+        });
+        modalInstance.result.then(function () {
+          // dialog was closed with 'Merge' button.
+          $scope.selectedOrder = [];
+          refresh_objects();
+        });
+      };
+
       $scope.run_data_quality_check = function () {
         spinner_utility.show();
 
@@ -232,10 +267,10 @@ angular.module('BE.seed.controller.inventory_list', [])
         name: 'id',
         displayName: '',
         cellTemplate: '<div class="ui-grid-row-header-link">' +
-        '  <a class="ui-grid-cell-contents" ng-if="row.entity.$$treeLevel === 0" ng-href="#/{$grid.appScope.inventory_type === \'properties\' ? \'properties\' : \'taxlots\'$}/{$COL_FIELD$}/cycles/{$grid.appScope.cycle.selected_cycle.id$}">' +
+        '  <a class="ui-grid-cell-contents" ng-if="row.entity.$$treeLevel === 0" ng-href="#/{$grid.appScope.inventory_type === \'properties\' ? \'properties/\' + row.entity.property_view_id : \'taxlots/\' + row.entity.taxlot_view_id$}">' +
         '    <i class="ui-grid-icon-info-circled"></i>' +
         '  </a>' +
-        '  <a class="ui-grid-cell-contents" ng-if="!row.entity.hasOwnProperty($$treeLevel)" ng-href="#/{$grid.appScope.inventory_type === \'properties\' ? \'taxlots\' : \'properties\'$}/{$COL_FIELD$}/cycles/{$grid.appScope.cycle.selected_cycle.id$}">' +
+        '  <a class="ui-grid-cell-contents" ng-if="!row.entity.hasOwnProperty($$treeLevel)" ng-href="#/{$grid.appScope.inventory_type === \'properties\' ? \'taxlots/\' + row.entity.taxlot_view_id : \'properties/\' + row.entity.property_view_id$}">' +
         '    <i class="ui-grid-icon-info-circled"></i>' +
         '  </a>' +
         '</div>',
@@ -254,7 +289,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       // Data
       var processData = function () {
         var visibleColumns = _.map(_.filter($scope.columns, 'visible'), 'name')
-          .concat(['$$treeLevel', 'id', 'property_state_id', 'taxlot_state_id']);
+          .concat(['$$treeLevel', 'id', 'property_state_id', 'property_view_id', 'taxlot_state_id', 'taxlot_view_id']);
 
         var columnsToAggregate = _.filter($scope.columns, function (col) {
           return col.treeAggregationType && _.includes(visibleColumns, col.name);
@@ -580,12 +615,45 @@ angular.module('BE.seed.controller.inventory_list', [])
 
           var selectionChanged = function () {
             var selected = gridApi.selection.getSelectedRows();
+            var parentsSelectedIds = _.map(_.filter(selected, {$$treeLevel: 0}), 'id');
             $scope.selectedCount = selected.length;
-            $scope.selectedParentCount = _.filter(selected, {$$treeLevel: 0}).length;
+            $scope.selectedParentCount = parentsSelectedIds.length;
+
+            const removed = _.difference($scope.selectedOrder, parentsSelectedIds);
+            const added = _.difference(parentsSelectedIds, $scope.selectedOrder);
+            if (removed.length === 1 && !added.length) {
+              // console.log('Removed ', removed);
+              _.remove($scope.selectedOrder, function (item) {
+                return item === removed[0];
+              });
+            } else if (added.length === 1 && !removed.length) {
+              // console.log('Added ', added);
+              $scope.selectedOrder.push(added[0]);
+            }
+          };
+
+          var selectAllChanged = function () {
+            var allSelected = $scope.gridApi.selection.getSelectedRows();
+
+            if (!allSelected.length) {
+              $scope.selectedCount = 0;
+              $scope.selectedParentCount = 0;
+              $scope.selectedOrder = [];
+            } else {
+              var parentsSelectedIds = _.map(_.filter(allSelected, {$$treeLevel: 0}), 'id');
+              var sortedIds = _.map($scope.gridApi.core.getVisibleRows($scope.gridApi.grid), function (row) {
+                return row.entity.id;
+              });
+              $scope.selectedOrder = _.filter(sortedIds, function (id) {
+                return _.includes(parentsSelectedIds, id);
+              });
+              $scope.selectedCount = allSelected.length;
+              $scope.selectedParentCount = parentsSelectedIds.length;
+            }
           };
 
           gridApi.selection.on.rowSelectionChanged($scope, selectionChanged);
-          gridApi.selection.on.rowSelectionChangedBatch($scope, selectionChanged);
+          gridApi.selection.on.rowSelectionChangedBatch($scope, selectAllChanged);
 
           gridApi.core.on.rowsRendered($scope, _.debounce(function () {
             $scope.$apply(function () {
