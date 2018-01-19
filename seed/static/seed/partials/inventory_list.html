@@ -30,6 +30,9 @@
                     {$:: 'Actions' | translate $} <span class="caret"></span>
                 </button>
                 <ul id="inventory-actions-dropdown" uib-dropdown-menu class="dropdown-menu" role="menu" aria-labelledby="btnInventoryActions">
+                    <li>
+                        <a ng-click="open_merge_modal()" ng-disabled="selectedParentCount < 2">Merge Selected</a>
+                    </li>
                     <li ng-hide="::menu.user.organization.user_role === 'viewer'">
                       <a ng-click="open_delete_modal()" translate>Delete Selected</a>
                     </li>

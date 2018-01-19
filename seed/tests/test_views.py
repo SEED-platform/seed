@@ -758,21 +758,21 @@ class InventoryViewTests(DeleteModelsTestCase):
             gross_floor_area_pint=3.14159
         )
         prprty = self.property_factory.get_property()
-        PropertyView.objects.create(
+        pv = PropertyView.objects.create(
             property=prprty, cycle=self.cycle, state=state
         )
         params = {
             'organization_id': self.org.pk,
             'cycle_id': self.cycle.id
         }
-        url = reverse('api:v2:properties-detail', args=[prprty.id])
+        url = reverse('api:v2:properties-detail', args=[pv.id])
         response = self.client.get(url, params)
         result = json.loads(response.content)
         self.assertEqual(result['state']['gross_floor_area_pint'], 3.14159)
 
         # test writing the field -- does not work for pint fields, but other fields should persist fine
         # /api/v2/properties/4/?cycle_id=4&organization_id=3
-        url = reverse('api:v2:properties-detail', args=[prprty.id]) + '?cycle_id=%s&organization_id=%s' % (
+        url = reverse('api:v2:properties-detail', args=[pv.id]) + '?cycle_id=%s&organization_id=%s' % (
             self.cycle.id, self.org.id)
         params = {
             'state': {
@@ -916,13 +916,10 @@ class InventoryViewTests(DeleteModelsTestCase):
             cycle=self.cycle
         )
         params = {
-            'cycle_id': self.cycle.pk,
-            'organization_id': self.org.pk,
-            'page': 1,
-            'per_page': 999999999,
+            'organization_id': self.org.pk
         }
         response = self.client.get(
-            '/api/v2/properties/' + str(property_property.id) + '/',
+            '/api/v2/properties/' + str(property_view.id) + '/',
             params
         )
         results = json.loads(response.content)
@@ -1000,13 +997,10 @@ class InventoryViewTests(DeleteModelsTestCase):
             cycle=self.cycle
         )
         params = {
-            'cycle_id': self.cycle.pk,
-            'organization_id': self.org.pk,
-            'page': 1,
-            'per_page': 999999999,
+            'organization_id': self.org.pk
         }
         response = self.client.get(
-            '/api/v2/properties/' + str(property_property.id) + '/',
+            '/api/v2/properties/' + str(property_view.id) + '/',
             params
         )
         results = json.loads(response.content)
@@ -1387,12 +1381,9 @@ class InventoryViewTests(DeleteModelsTestCase):
         )
 
         params = {
-            'cycle_id': self.cycle.pk,
             'organization_id': self.org.pk,
-            'page': 1,
-            'per_page': 999999999,
         }
-        response = self.client.get('/api/v2/taxlots/' + str(taxlot.id) + '/', params)
+        response = self.client.get('/api/v2/taxlots/' + str(taxlot_view.id) + '/', params)
         result = json.loads(response.content)
 
         cycle = result['cycle']

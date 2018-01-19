@@ -43,7 +43,7 @@
             </div>
 
             <div style="margin:10px 250px 10px 0; padding:0 10px;">
-                <button type="button" class="btn btn-default" ng-click="open_update_labels_modal(inventory.id, inventory_type)" style="vertical-align: top;">
+                <button type="button" class="btn btn-default" ng-click="open_update_labels_modal()" style="vertical-align: top;">
                     <i class="fa fa-tag"></i> {$:: 'Add/Remove Labels' | translate $}
                 </button>
                 <span style="display:inline-block; margin-top:9px; padding-left:15px; vertical-align: top;"><strong>{$:: 'Labels' | translate $}:</strong></span>
@@ -51,6 +51,12 @@
                 <div ng-if="labels.length" style="display: inline-block; width: calc(100vw - 570px); vertical-align: top;">
                     <span ng-repeat="label in labels" class="label label-{$:: label.label $}" style="display: inline-block; margin-top: 7px; padding: 4.6px 7px;">{$:: label.name $}</span>
                 </div>
+            </div>
+
+            <div ng-if="::historical_items.length > 1" style="margin:10px 250px 10px 0; padding:0 10px;">
+                <button type="button" class="btn btn-warning" ng-click="unmerge()" style="vertical-align: top;">
+                    <i class="fa fa-files-o"></i> {$:: 'Unmerge Last' | translate $}
+                </button>
             </div>
 
             <div class="table_list_container table_item_detail">
@@ -128,17 +134,17 @@
         </div>
     </div>
 
-    <!-- Related Items Section -->
+    <!-- Paired Items Section -->
     <div class="section">
         <div class="section_header_container" style="margin-top: 20px; border-bottom: 0;">
             <div class="section_header fixed_height_short has_no_padding">
                 <div class="section_action_container left">
                 <span>
                     <h2 ng-if="::inventory_type==='taxlots'">
-                        <i class="fa fa-building-o"></i> {$:: 'Related Properties' | translate $}
+                        <i class="fa fa-building-o"></i> {$:: 'Paired Properties' | translate $}
                     </h2>
                     <h2 ng-if="::inventory_type==='properties'">
-                        <i class="fa fa-map-o"></i> {$:: 'Related Tax Lots' | translate $}
+                        <i class="fa fa-map-o"></i> {$:: 'Paired Tax Lots' | translate $}
                     </h2>
                     </span>
                 </div>
@@ -146,7 +152,7 @@
         </div>
     </div>
     <div class="section_content_container" style="margin-bottom:200px;">
-        <!-- List of related items -->
+        <!-- List of paired items -->
         <div class="section_content">
             <div class="table_list_container table_item_detail" style="max-width:700px;">
                 <table class="table table-striped table_highlight_first fixed-layout" style="margin-bottom:-1px;">
@@ -157,31 +163,38 @@
                             <th sd-resizable class="ellipsis-resizable">{$:: 'Address Line 1' | translate $}</th>
                             <th ng-if="::inventory_type==='taxlots'" sd-resizable class="ellipsis-resizable">{$:: 'Custom ID 1' | translate $}</th>
                             <th ng-if="::inventory_type==='taxlots'" sd-resizable class="ellipsis-resizable">{$:: 'UBID' | translate $}</th>
+                            <th width="60">Unpair</th>
                         </tr>
                     </thead>
                     <tbody ng-if="::inventory_type==='properties'">
-                        <tr ng-repeat="taxlot in ::inventory.related">
+                        <tr ng-repeat="taxlotView in ::inventory.related">
                             <td>
-                                <a ui-sref="inventory_detail(::{inventory_type: 'taxlots', inventory_id: taxlot.taxlot.id, cycle_id: cycle.id})">{$:: taxlot.state.jurisdiction_tax_lot_id $}</a>
+                                <a ui-sref="inventory_detail(::{inventory_type: 'taxlots', view_id: taxlotView.id})">{$:: taxlotView.state.jurisdiction_tax_lot_id $}</a>
                             </td>
                             <td>
-                                <a ui-sref="inventory_detail(::{inventory_type: 'taxlots', inventory_id: taxlot.taxlot.id, cycle_id: cycle.id})">{$:: taxlot.state.address_line_1 ? taxlot.state.address_line_1 : '(no address 1)' $}</a>
+                                <a ui-sref="inventory_detail(::{inventory_type: 'taxlots', view_id: taxlotView.id})">{$:: taxlotView.state.address_line_1 ? taxlotView.state.address_line_1 : '(no address 1)' $}</a>
+                            </td>
+                            <td>
+                                <div class="unpair-child" ng-click="unpair_taxlot_from_property(taxlotView.id)" style="text-align: center;">&#10006;</div>
                             </td>
                         </tr>
                     </tbody>
                     <tbody ng-if="::inventory_type==='taxlots'">
-                        <tr ng-repeat="property in ::inventory.related">
+                        <tr ng-repeat="propertyView in ::inventory.related">
                             <td>
-                                <a ui-sref="inventory_detail(::{inventory_type: 'properties', inventory_id: property.property.id, cycle_id: cycle.id})">{$:: property.state.pm_property_id $}</a>
+                                <a ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: propertyView.id})">{$:: propertyView.state.pm_property_id $}</a>
                             </td>
                             <td>
-                                <a ui-sref="inventory_detail(::{inventory_type: 'properties', inventory_id: property.property.id, cycle_id: cycle.id})">{$:: property.state.address_line_1 ? property.state.address_line_1 : '(no address 1)' $}</a>
+                                <a ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: propertyView.id})">{$:: propertyView.state.address_line_1 ? propertyView.state.address_line_1 : '(no address 1)' $}</a>
                             </td>
                             <td>
-                                <a ui-sref="inventory_detail(::{inventory_type: 'properties', inventory_id: property.property.id, cycle_id: cycle.id})">{$:: property.state.custom_id_1 ? property.state.custom_id_1 : '(no custom id 1)' $}</a>
+                                <a ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: propertyView.id})">{$:: propertyView.state.custom_id_1 ? propertyView.state.custom_id_1 : '(no custom id 1)' $}</a>
                             </td>
                             <td>
-                                <a ui-sref="inventory_detail(::{inventory_type: 'properties', inventory_id: property.property.id, cycle_id: cycle.id})">{$:: property.state.ubid ? property.state.ubid : '(no UBID)' $}</a>
+                                <a ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: propertyView.id})">{$:: propertyView.state.ubid ? propertyView.state.ubid : '(no UBID)' $}</a>
+                            </td>
+                            <td>
+                                <div class="unpair-child" ng-click="unpair_property_from_taxlot(propertyView.id)" style="text-align: center;">&#10006;</div>
                             </td>
                         </tr>
                     </tbody>
@@ -218,7 +231,7 @@
                             <tbody>
                                 <tr ng-repeat="file in item_state.files">
                                     <td> {$ file.file_type $}</td>
-                                    <td><a href='{$ file.file $}'>{$ file.filename $}</td>
+                                    <td><a href='{$ file.file $}'>{$ file.filename $}</a></td>
                                 </tr>
                             </tbody>
                         </table>
