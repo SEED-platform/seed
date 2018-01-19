@@ -743,20 +743,6 @@ class PropertyViewSet(GenericViewSet):
             }
         return result
 
-    @api_endpoint_class
-    @ajax_request_class
-    @detail_route(methods=['GET'])
-    def view(self, pk=None):
-        """
-        Get the property view
-        # TODO: This can most likely be removed
-        """
-        result = self._get_property_view(pk)
-        if result.get('status', None) != 'error':
-            return JsonResponse(result.pop('property_view'))
-        else:
-            return JsonResponse(result)
-
     def _get_taxlots(self, pk):
         lot_view_pks = TaxLotProperty.objects.filter(property_view_id=pk).values_list(
             'taxlot_view_id', flat=True)
