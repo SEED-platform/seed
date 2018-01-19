@@ -55,6 +55,8 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.export_inventory_modal',
   'BE.seed.controller.inventory_detail',
   'BE.seed.controller.inventory_detail_settings',
+  'BE.seed.controller.inventory_detail_notes',
+  'BE.seed.controller.inventory_detail_notes_modal',
   'BE.seed.controller.inventory_list',
   'BE.seed.controller.inventory_reports',
   'BE.seed.controller.inventory_settings',
@@ -112,6 +114,7 @@ angular.module('BE.seed.services', [
   'BE.seed.service.main',
   'BE.seed.service.mapping',
   'BE.seed.service.matching',
+  'BE.seed.service.note',
   'BE.seed.service.organization',
   'BE.seed.service.pairing',
   'BE.seed.service.search',
@@ -336,6 +339,20 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
               });
             }
           }]
+        }
+      })
+      .state({
+        name: 'inventory_detail_notes',
+        url: '/{inventory_type:properties|taxlots}/{view_id:int}/notes',
+        templateUrl: static_url + 'seed/partials/inventory_detail_notes.html',
+        controller: 'inventory_detail_notes_controller',
+        resolve: {
+          $uibModalInstance: function () {
+            return {
+              close: function () {
+              }
+            };
+          }
         }
       })
       .state({
