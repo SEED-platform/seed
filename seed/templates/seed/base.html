@@ -100,8 +100,11 @@
         <script src="/static/vendors/bower_components/angular-ui-router.stateHelper/statehelper.min.js"></script>
 
             {% if not debug and SENTRY_JS_DSN %}
-        <script src="https://cdn.ravenjs.com/2.1.0/angular/raven.min.js"></script>
-        <script>Raven.config('{{ SENTRY_JS_DSN }}').install();</script>
+        <script src="/static/vendors/bower_components/raven-js/dist/raven.js"></script>
+        <script src="/static/vendors/bower_components/raven-js/dist/plugins/angular.js"></script>
+        <script>
+            Raven.config('{{ SENTRY_JS_DSN }}').addPlugin(Raven.Plugins.Angular).install();
+        </script>
             {% endif %}
 
         <script src="/static/vendors/bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>

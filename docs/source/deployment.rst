@@ -19,5 +19,20 @@ Monitoring
 Sentry
 ^^^^^^
 
-Sentry is used for development. The front end tests are run on Sentry for every commit through
-travis.
+Sentry can monitor your webservers for any issues. To enable sentry add the following to
+your local_untracked.py files after setting up your Sentry account on sentry.io.
+
+The RAVEN_CONFIG is used for the backend and the SENTRY_JS_DSN is used for the frontend. At the moment,
+it is recommended to setup two sentry projects, one for backend and one for frontend.
+
+.. code-block:: python
+
+    import raven
+
+    RAVEN_CONFIG = {
+       'dsn': 'https://<user>:<key>@sentry.io/<job_id>',
+       # If you are using git, you can also automatically configure the
+       # release based on the git info.
+       'release': raven.fetch_git_sha(os.path.abspath(os.curdir)),
+    }
+    SENTRY_JS_DSN = 'https://<key>@sentry.io/<job_id>'
