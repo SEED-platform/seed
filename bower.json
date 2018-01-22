@@ -41,7 +41,8 @@
     "angular-translate": "^2.16.0",
     "angular-translate-loader-static-files": "^2.16.0",
     "angular-sanitize": "^1.6.6",
-    "angular-translate-interpolation-messageformat": "^2.16.0"
+    "angular-translate-interpolation-messageformat": "^2.16.0",
+    "raven-js": "^3.22.1"
   },
   "resolutions": {
     "angular": "~1.6.8",

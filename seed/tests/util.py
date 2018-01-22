@@ -20,12 +20,17 @@ from seed.models import (
     PropertyState,
     PropertyView,
     PropertyAuditLog,
+    Note,
+    Scenario,
     StatusLabel,
     TaxLotAuditLog,
     TaxLotState,
     TaxLot,
     TaxLotView,
     TaxLotProperty,
+    GreenAssessment,
+    GreenAssessmentProperty,
+    GreenAssessmentURL,
 )
 from seed.models.data_quality import DataQualityCheck
 
@@ -42,12 +47,17 @@ class DeleteModelsTestCase(TestCase):
         PropertyState.objects.all().delete()
         PropertyView.objects.all().delete()
         PropertyAuditLog.objects.all().delete()
+        Note.objects.all().delete()
+        Scenario.objects.all().delete()
         StatusLabel.objects.all().delete()
         TaxLot.objects.all().delete()
         TaxLotState.objects.all().delete()
         TaxLotView.objects.all().delete()
         TaxLotAuditLog.objects.all().delete()
         TaxLotProperty.objects.all().delete()
+        GreenAssessmentURL.objects.all().delete()
+        GreenAssessmentProperty.objects.all().delete()
+        GreenAssessment.objects.all().delete()
 
         # Now delete the cycle after all the states and views have been removed
         Cycle.objects.all().delete()

@@ -256,13 +256,10 @@ class ImportFileViewsTests(TestCase):
         self.user = User.objects.create_superuser(**user_details)
         self.org = Organization.objects.create()
         self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
-        self.cycle = self.cycle_factory.get_cycle(
-            start=datetime(2016, 1, 1, tzinfo=timezone.get_current_timezone()))
+        self.cycle = self.cycle_factory.get_cycle(start=datetime(2016, 1, 1, tzinfo=timezone.get_current_timezone()))
         OrganizationUser.objects.create(user=self.user, organization=self.org)
 
-        self.import_record = ImportRecord.objects.create(owner=self.user)
-        self.import_record.super_organization = self.org
-        self.import_record.save()
+        self.import_record = ImportRecord.objects.create(owner=self.user, super_organization=self.org)
         self.import_file = ImportFile.objects.create(
             import_record=self.import_record,
             cycle=self.cycle,
@@ -272,10 +269,8 @@ class ImportFileViewsTests(TestCase):
         self.client.login(**user_details)
 
     def test_get_import_file(self):
-        response = self.client.get(
-            reverse('api:v2:import_files-detail', args=[self.import_file.pk]))
-        self.assertEqual(self.import_file.pk,
-                         json.loads(response.content)['import_file']['id'])
+        response = self.client.get(reverse('api:v2:import_files-detail', args=[self.import_file.pk]))
+        self.assertEqual(self.import_file.pk, json.loads(response.content)['import_file']['id'])
 
     def test_delete_file(self):
         url = reverse("api:v2:import_files-detail", args=[self.import_file.pk])
@@ -284,8 +279,7 @@ class ImportFileViewsTests(TestCase):
             content_type='application/json',
         )
         self.assertEqual('success', json.loads(response.content)['status'])
-        self.assertFalse(
-            ImportFile.objects.filter(pk=self.import_file.pk).exists())
+        self.assertFalse(ImportFile.objects.filter(pk=self.import_file.pk).exists())
 
     def test_get_matching_results(self):
         response = self.client.get(
