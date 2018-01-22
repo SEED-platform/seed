@@ -554,20 +554,6 @@ class TaxLotViewSet(GenericViewSet):
             }
         return result
 
-    @api_endpoint_class
-    @ajax_request_class
-    @detail_route(methods=['GET'])
-    def view(self, pk=None):
-        """
-        Get the TaxLot view
-        # TODO: This can most likely be removed
-        """
-        result = self._get_taxlot_view(pk)
-        if result.get('status', None) != 'error':
-            return JsonResponse(result.pop('taxlot_view'))
-        else:
-            return JsonResponse(result)
-
     def get_history(self, taxlot_view):
         """Return history in reverse order"""
 

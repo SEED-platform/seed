@@ -39,8 +39,6 @@ angular.module('BE.seed.controller.inventory_detail', [])
 
       $scope.columns = inventory_service.loadSettings(localStorageKey, columns);
 
-      $scope.hide_bricr = !flippers.is_active('release:bricr');
-
       /** See service for structure of returned payload */
       $scope.historical_items = inventory_payload.history;
       $scope.item_state = inventory_payload.state;
