@@ -9,41 +9,24 @@ All rights reserved
 
 Tests for serializers used by GreenAssessments/Energy Certifications
 """
-from collections import OrderedDict
-import datetime
 import json
-import mock
+from collections import OrderedDict
 
-from django.test import TestCase
+import datetime
+import mock
 
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import (
     Organization,
     OrganizationUser,
 )
-
 from seed.models import (
-    Cycle,
-    GreenAssessment,
-    GreenAssessmentProperty,
-    GreenAssessmentURL,
-    Property,
-    PropertyAuditLog,
-    PropertyState,
-    PropertyView,
-    StatusLabel,
-    TaxLot,
-    TaxLotProperty,
-    TaxLotState,
-    TaxLotView
+    PropertyView
 )
-
 from seed.models.auditlog import AUDIT_USER_EDIT
-
 from seed.serializers.certification import (
     GreenAssessmentPropertyReadOnlySerializer
 )
-
 from seed.serializers.properties import (
     PropertyAuditLogReadOnlySerializer,
     PropertyListSerializer,
@@ -53,7 +36,6 @@ from seed.serializers.properties import (
     PropertyViewAsStateSerializer,
     unflatten_values,
 )
-
 from seed.test_helpers.fake import (
     FakeCycleFactory,
     FakeGreenAssessmentFactory,
@@ -67,9 +49,10 @@ from seed.test_helpers.fake import (
     FakeTaxLotStateFactory,
     FakeTaxLotViewFactory
 )
+from seed.tests.util import DeleteModelsTestCase
 
 
-class TestPropertySerializers(TestCase):
+class TestPropertySerializers(DeleteModelsTestCase):
 
     def setUp(self):
         self.maxDiff = None
@@ -114,19 +97,6 @@ class TestPropertySerializers(TestCase):
             'view': self.property_view,
         }
         self.urls = ['http://example.com', 'http://example.org']
-
-    def tearDown(self):
-        Property.objects.all().delete()
-        PropertyState.objects.all().delete()
-        PropertyView.objects.all().delete()
-        PropertyAuditLog.objects.all().delete()
-        GreenAssessmentURL.objects.all().delete()
-        GreenAssessmentProperty.objects.all().delete()
-        GreenAssessment.objects.all().delete()
-        StatusLabel.objects.all().delete()
-        Cycle.objects.all().delete()
-        self.user.delete()
-        self.org.delete()
 
     def test_audit_log_serializer(self):
         """Test to_representation method."""
@@ -246,7 +216,7 @@ class TestPropertySerializers(TestCase):
         self.assertEqual(expected, result)
 
 
-class TestPropertyViewAsStateSerializers(TestCase):
+class TestPropertyViewAsStateSerializers(DeleteModelsTestCase):
 
     def setUp(self):
         self.maxDiff = None
@@ -318,22 +288,6 @@ class TestPropertyViewAsStateSerializers(TestCase):
         self.serializer = PropertyViewAsStateSerializer(
             instance=self.property_view
         )
-
-    def tearDown(self):
-        TaxLot.objects.all().delete()
-        TaxLotState.objects.all().delete()
-        TaxLotView.objects.all().delete()
-        TaxLotProperty.objects.all().delete()
-        Property.objects.all().delete()
-        PropertyState.objects.all().delete()
-        PropertyView.objects.all().delete()
-        PropertyAuditLog.objects.all().delete()
-        GreenAssessmentURL.objects.all().delete()
-        GreenAssessmentProperty.objects.all().delete()
-        GreenAssessment.objects.all().delete()
-        Cycle.objects.all().delete()
-        self.user.delete()
-        self.org.delete()
 
     def test_init(self):
         """Test __init__."""
@@ -470,7 +424,7 @@ class TestPropertyViewAsStateSerializers(TestCase):
         self.assertTrue(mock_serializer.return_value.save.called)
 
 
-class TestMisc(TestCase):
+class TestMisc(DeleteModelsTestCase):
     """Miscellaneous tests."""
 
     def test_unflatten_values(self):

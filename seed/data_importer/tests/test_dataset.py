@@ -27,42 +27,15 @@ class DeleteFileViewTests(DataMappingBaseTestCase):
         }
         self.user = User.objects.create_user(**user_details)
         self.org = Organization.objects.create()
-        OrganizationUser.objects.create(user=self.user, organization=self.org)
-        self.client.login(**user_details)
-
-        import_record = ImportRecord.objects.create(
-            super_organization=self.org
-        )
         self.org_2 = org_2 = Organization.objects.create()
-        import_record_2 = ImportRecord.objects.create(
-            super_organization=org_2
-        )
-        import_file_1 = ImportFile.objects.create(
-            import_record=import_record,
-        )
-        import_file_1.save()
-        import_file_2 = ImportFile.objects.create(
-            import_record=import_record_2,
-        )
-        import_file_2.save()
+        OrganizationUser.objects.create(user=self.user, organization=self.org)
 
-        self.import_record = import_record
-        self.import_file_1 = import_file_1
-        self.import_file_2 = import_file_2
+        self.import_record = ImportRecord.objects.create(owner=self.user, super_organization=self.org)
+        self.import_record_2 = ImportRecord.objects.create(owner=self.user, super_organization=org_2)
+        self.import_file_1 = ImportFile.objects.create(import_record=self.import_record)
+        self.import_file_2 = ImportFile.objects.create(import_record=self.import_record_2)
 
-    def test_delete_file(self):
-        """ tests the delete_file request"""
-        url = reverse("api:v2:import_files-detail", args=[self.import_file_1.pk])
-        response = self.client.delete(
-            url + '?organization_id=' + str(self.org.pk),
-            content_type='application/json',
-        )
-        json_string = response.content
-        data = json.loads(json_string)
-
-        # assert
-        self.assertEqual(data, {'status': 'success'})
-        self.assertEqual(ImportFile.objects.all().count(), 1)
+        self.client.login(**user_details)
 
     def test_delete_file_no_perms(self):
         """ tests the delete_file request invalid request"""

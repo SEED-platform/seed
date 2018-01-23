@@ -5,8 +5,8 @@
 :author
 """
 import json
-
 from datetime import datetime
+
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.test import TestCase
 from django.utils import timezone
@@ -256,13 +256,10 @@ class ImportFileViewsTests(TestCase):
         self.user = User.objects.create_superuser(**user_details)
         self.org = Organization.objects.create()
         self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
-        self.cycle = self.cycle_factory.get_cycle(
-            start=datetime(2016, 1, 1, tzinfo=timezone.get_current_timezone()))
+        self.cycle = self.cycle_factory.get_cycle(start=datetime(2016, 1, 1, tzinfo=timezone.get_current_timezone()))
         OrganizationUser.objects.create(user=self.user, organization=self.org)
 
-        self.import_record = ImportRecord.objects.create(owner=self.user)
-        self.import_record.super_organization = self.org
-        self.import_record.save()
+        self.import_record = ImportRecord.objects.create(owner=self.user, super_organization=self.org)
         self.import_file = ImportFile.objects.create(
             import_record=self.import_record,
             cycle=self.cycle,
@@ -272,10 +269,8 @@ class ImportFileViewsTests(TestCase):
         self.client.login(**user_details)
 
     def test_get_import_file(self):
-        response = self.client.get(
-            reverse('api:v2:import_files-detail', args=[self.import_file.pk]))
-        self.assertEqual(self.import_file.pk,
-                         json.loads(response.content)['import_file']['id'])
+        response = self.client.get(reverse('api:v2:import_files-detail', args=[self.import_file.pk]))
+        self.assertEqual(self.import_file.pk, json.loads(response.content)['import_file']['id'])
 
     def test_delete_file(self):
         url = reverse("api:v2:import_files-detail", args=[self.import_file.pk])
@@ -284,8 +279,7 @@ class ImportFileViewsTests(TestCase):
             content_type='application/json',
         )
         self.assertEqual('success', json.loads(response.content)['status'])
-        self.assertFalse(
-            ImportFile.objects.filter(pk=self.import_file.pk).exists())
+        self.assertFalse(ImportFile.objects.filter(pk=self.import_file.pk).exists())
 
     def test_get_matching_results(self):
         response = self.client.get(
@@ -752,6 +746,40 @@ class InventoryViewTests(DeleteModelsTestCase):
         self.assertEquals(results['paint color'], 'pink')
         self.assertEquals(results['number of secret gadgets'], 5)
 
+    def test_get_properties_pint_fields(self):
+        state = self.property_state_factory.get_property_state(
+            self.org,
+            gross_floor_area_pint=3.14159
+        )
+        prprty = self.property_factory.get_property()
+        pv = PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=state
+        )
+        params = {
+            'organization_id': self.org.pk,
+            'cycle_id': self.cycle.id
+        }
+        url = reverse('api:v2:properties-detail', args=[pv.id])
+        response = self.client.get(url, params)
+        result = json.loads(response.content)
+        self.assertEqual(result['state']['gross_floor_area_pint'], 3.14159)
+
+        # test writing the field -- does not work for pint fields, but other fields should persist fine
+        # /api/v2/properties/4/?cycle_id=4&organization_id=3
+        url = reverse('api:v2:properties-detail', args=[pv.id]) + '?cycle_id=%s&organization_id=%s' % (
+            self.cycle.id, self.org.id)
+        params = {
+            'state': {
+                'gross_floor_area': 11235,
+                'site_eui_pint': 90.1,
+            }
+        }
+        response = self.client.put(url, data=json.dumps(params), content_type='application/json')
+        result = json.loads(response.content)
+        self.assertEqual(result['state']['gross_floor_area'], 11235)
+        self.assertEqual(result['state']['gross_floor_area_pint'], 3.14159)
+        self.assertEqual(result['state']['site_eui_pint'], 90.1)
+
     def test_get_properties_with_taxlots(self):
         property_state = self.property_state_factory.get_property_state()
         property_property = self.property_factory.get_property(campus=True)
@@ -882,18 +910,16 @@ class InventoryViewTests(DeleteModelsTestCase):
             cycle=self.cycle
         )
         params = {
-            'cycle_id': self.cycle.pk,
-            'organization_id': self.org.pk,
-            'page': 1,
-            'per_page': 999999999,
+            'organization_id': self.org.pk
         }
         response = self.client.get(
-            '/api/v2/properties/' + str(property_property.id) + '/',
+            '/api/v2/properties/' + str(property_view.id) + '/',
             params
         )
         results = json.loads(response.content)
 
         self.assertEqual(results['status'], 'success')
+
         # there should be 1 history item now because we are creating an audit log entry
         self.assertEqual(len(results['history']), 1)
         self.assertEqual(results['property']['labels'], [self.status_label.pk])
@@ -965,13 +991,10 @@ class InventoryViewTests(DeleteModelsTestCase):
             cycle=self.cycle
         )
         params = {
-            'cycle_id': self.cycle.pk,
-            'organization_id': self.org.pk,
-            'page': 1,
-            'per_page': 999999999,
+            'organization_id': self.org.pk
         }
         response = self.client.get(
-            '/api/v2/properties/' + str(property_property.id) + '/',
+            '/api/v2/properties/' + str(property_view.id) + '/',
             params
         )
         results = json.loads(response.content)
@@ -1352,12 +1375,9 @@ class InventoryViewTests(DeleteModelsTestCase):
         )
 
         params = {
-            'cycle_id': self.cycle.pk,
             'organization_id': self.org.pk,
-            'page': 1,
-            'per_page': 999999999,
         }
-        response = self.client.get('/api/v2/taxlots/' + str(taxlot.id) + '/', params)
+        response = self.client.get('/api/v2/taxlots/' + str(taxlot_view.id) + '/', params)
         result = json.loads(response.content)
 
         cycle = result['cycle']

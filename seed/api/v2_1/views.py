@@ -182,6 +182,8 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
 
         try:
             # TODO: not checking organization? Is that right?
+            # TODO: this needs to call _get_property_view and use the property pk, not the property_view pk.
+            #   or we need to state the v2.1 of API uses property views instead of property
             property_view = PropertyView.objects.select_related('state').get(pk=pk, cycle=cycle)
         except PropertyView.DoesNotExist:
             return JsonResponse({

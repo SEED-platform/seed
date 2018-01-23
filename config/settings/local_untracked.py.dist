@@ -28,6 +28,17 @@ import os
 # email through SES (django-ses)
 #EMAIL_BACKEND = 'django_ses.SESBackend'
 
+# Optional Sentry Configuration
+# import raven
+
+# RAVEN_CONFIG = {
+#    'dsn': 'https://<user>:<key>@sentry.io/<job_id>',
+#    # If you are using git, you can also automatically configure the
+#    # release based on the git info.
+#    'release': raven.fetch_git_sha(os.path.abspath(os.curdir)),
+# }
+# SENTRY_JS_DSN = 'https://<key>@sentry.io/<job_id>'
+
 # postgres DB config
 DATABASES = {
     'default': {

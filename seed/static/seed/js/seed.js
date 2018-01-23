@@ -7,6 +7,8 @@
  */
 
 angular.module('BE.seed.angular_dependencies', [
+  'ngAnimate',
+  'ngAria',
   'ngCookies'
 ]);
 angular.module('BE.seed.vendor_dependencies', [
@@ -53,6 +55,8 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.export_inventory_modal',
   'BE.seed.controller.inventory_detail',
   'BE.seed.controller.inventory_detail_settings',
+  'BE.seed.controller.inventory_detail_notes',
+  'BE.seed.controller.inventory_detail_notes_modal',
   'BE.seed.controller.inventory_list',
   'BE.seed.controller.inventory_reports',
   'BE.seed.controller.inventory_settings',
@@ -64,6 +68,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.matching_detail_settings',
   'BE.seed.controller.members',
   'BE.seed.controller.menu',
+  'BE.seed.controller.merge_modal',
   'BE.seed.controller.new_member_modal',
   'BE.seed.controller.organization',
   'BE.seed.controller.organization_settings',
@@ -109,6 +114,7 @@ angular.module('BE.seed.services', [
   'BE.seed.service.main',
   'BE.seed.service.mapping',
   'BE.seed.service.matching',
+  'BE.seed.service.note',
   'BE.seed.service.organization',
   'BE.seed.service.pairing',
   'BE.seed.service.search',
@@ -313,7 +319,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
       })
       .state({
         name: 'detail_settings',
-        url: '/{inventory_type:properties|taxlots}/{inventory_id:int}/cycles/{cycle_id:int}/settings',
+        url: '/{inventory_type:properties|taxlots}/{view_id:int}/settings',
         templateUrl: static_url + 'seed/partials/inventory_detail_settings.html',
         controller: 'inventory_detail_settings_controller',
         resolve: {
@@ -327,6 +333,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             if ($stateParams.inventory_type === 'properties') {
               return inventory_service.get_property_columns().then(function (columns) {
                 _.remove(columns, 'related');
+                _.remove(columns, {name: 'lot_number', table: 'PropertyState'});
                 return _.map(columns, function (col) {
                   return _.omit(col, ['pinnedLeft', 'related']);
                 });
@@ -340,6 +347,20 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
               });
             }
           }]
+        }
+      })
+      .state({
+        name: 'inventory_detail_notes',
+        url: '/{inventory_type:properties|taxlots}/{view_id:int}/notes',
+        templateUrl: static_url + 'seed/partials/inventory_detail_notes.html',
+        controller: 'inventory_detail_notes_controller',
+        resolve: {
+          $uibModalInstance: function () {
+            return {
+              close: function () {
+              }
+            };
+          }
         }
       })
       .state({
@@ -415,6 +436,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             if ($stateParams.inventory_type === 'properties') {
               return inventory_service.get_property_columns().then(function (columns) {
                 _.remove(columns, 'related');
+                _.remove(columns, {name: 'lot_number', table: 'PropertyState'});
                 return _.map(columns, function (col) {
                   return _.omit(col, ['pinnedLeft', 'related']);
                 });
@@ -467,18 +489,15 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             if ($stateParams.inventory_type === 'properties') {
               return inventory_service.get_property_columns().then(function (columns) {
-                _.remove(columns, function (col) {
-                  return col.related === true;
-                });
+                _.remove(columns, 'related');
+                _.remove(columns, {name: 'lot_number', table: 'PropertyState'});
                 return _.map(columns, function (col) {
                   return _.omit(col, ['pinnedLeft', 'related']);
                 });
               });
             } else if ($stateParams.inventory_type === 'taxlots') {
               return inventory_service.get_taxlot_columns().then(function (columns) {
-                _.remove(columns, function (col) {
-                  return col.related === true;
-                });
+                _.remove(columns, 'related');
                 return _.map(columns, function (col) {
                   return _.omit(col, ['pinnedLeft', 'related']);
                 });
@@ -512,18 +531,15 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             if ($stateParams.inventory_type === 'properties') {
               return inventory_service.get_property_columns().then(function (columns) {
-                _.remove(columns, function (col) {
-                  return col.related === true;
-                });
+                _.remove(columns, 'related');
+                _.remove(columns, {name: 'lot_number', table: 'PropertyState'});
                 return _.map(columns, function (col) {
                   return _.omit(col, ['pinnedLeft', 'related']);
                 });
               });
             } else if ($stateParams.inventory_type === 'taxlots') {
               return inventory_service.get_taxlot_columns().then(function (columns) {
-                _.remove(columns, function (col) {
-                  return col.related === true;
-                });
+                _.remove(columns, 'related');
                 return _.map(columns, function (col) {
                   return _.omit(col, ['pinnedLeft', 'related']);
                 });
@@ -551,18 +567,15 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             if ($stateParams.inventory_type === 'properties') {
               return inventory_service.get_property_columns().then(function (columns) {
-                _.remove(columns, function (col) {
-                  return col.related === true;
-                });
+                _.remove(columns, 'related');
+                _.remove(columns, {name: 'lot_number', table: 'PropertyState'});
                 return _.map(columns, function (col) {
                   return _.omit(col, ['pinnedLeft', 'related']);
                 });
               });
             } else if ($stateParams.inventory_type === 'taxlots') {
               return inventory_service.get_taxlot_columns().then(function (columns) {
-                _.remove(columns, function (col) {
-                  return col.related === true;
-                });
+                _.remove(columns, 'related');
                 return _.map(columns, function (col) {
                   return _.omit(col, ['pinnedLeft', 'related']);
                 });
@@ -1036,17 +1049,16 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
       })
       .state({
         name: 'inventory_detail',
-        url: '/{inventory_type:properties|taxlots}/{inventory_id:int}/cycles/{cycle_id:int}',
+        url: '/{inventory_type:properties|taxlots}/{view_id:int}',
         templateUrl: static_url + 'seed/partials/inventory_detail.html',
         controller: 'inventory_detail_controller',
         resolve: {
           inventory_payload: ['$state', '$stateParams', 'inventory_service', function ($state, $stateParams, inventory_service) {
             // load `get_building` before page is loaded to avoid page flicker.
-            var inventory_id = $stateParams.inventory_id;
-            var cycle_id = $stateParams.cycle_id;
+            var view_id = $stateParams.view_id;
             var promise;
-            if ($stateParams.inventory_type === 'properties') promise = inventory_service.get_property(inventory_id, cycle_id);
-            else if ($stateParams.inventory_type === 'taxlots') promise = inventory_service.get_taxlot(inventory_id, cycle_id);
+            if ($stateParams.inventory_type === 'properties') promise = inventory_service.get_property(view_id);
+            else if ($stateParams.inventory_type === 'taxlots') promise = inventory_service.get_taxlot(view_id);
             promise.catch(function (err) {
               if (err.message.match(/^(?:property|taxlot) view with id \d+ does not exist$/)) {
                 // Inventory item not found for current organization, redirecting
@@ -1058,22 +1070,29 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           columns: ['inventory_service', '$stateParams', function (inventory_service, $stateParams) {
             if ($stateParams.inventory_type === 'properties') {
               return inventory_service.get_property_columns().then(function (columns) {
-                columns = _.reject(columns, 'related');
+                _.remove(columns, 'related');
+                _.remove(columns, {name: 'lot_number', table: 'PropertyState'});
                 return _.map(columns, function (col) {
                   return _.omit(col, ['pinnedLeft', 'related']);
                 });
               });
             } else if ($stateParams.inventory_type === 'taxlots') {
               return inventory_service.get_taxlot_columns().then(function (columns) {
-                columns = _.reject(columns, 'related');
+                _.remove(columns, 'related');
                 return _.map(columns, function (col) {
                   return _.omit(col, ['pinnedLeft', 'related']);
                 });
               });
             }
           }],
-          labels_payload: ['$stateParams', 'label_service', function ($stateParams, label_service) {
-            return label_service.get_labels([$stateParams.inventory_id], {
+          labels_payload: ['$stateParams', 'label_service', 'inventory_payload', function ($stateParams, label_service, inventory_payload) {
+            var inventory_id;
+            if ($stateParams.inventory_type === 'properties') {
+              inventory_id = inventory_payload.property.id;
+            } else {
+              inventory_id = inventory_payload.taxlot.id;
+            }
+            return label_service.get_labels([inventory_id], {
               inventory_type: $stateParams.inventory_type
             });
           }]

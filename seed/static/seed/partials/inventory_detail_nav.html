@@ -1,2 +1,7 @@
-        <a id="inventory-detail" ui-sref="inventory_detail(::{inventory_type: inventory_type, inventory_id: inventory.id, cycle_id: cycle.id})" ui-sref-active="active">{$:: (inventory_type === 'taxlots' ? 'Tax Lot Detail' : 'Property Detail') | translate $}</a><!--
-     --><a id="settings" ui-sref="detail_settings(::{inventory_type: inventory_type, inventory_id: inventory.id, cycle_id: cycle.id})" ui-sref-active="active" translate>Settings</a>
+<a id="inventory-detail" ui-sref="inventory_detail(::{inventory_type: inventory_type, view_id: inventory.view_id})"
+   ui-sref-active="active">{$:: (inventory_type === 'taxlots' ? 'Tax Lot Detail' : 'Property Detail') | translate $}</a>
+<a id="inventory-detail-notes"
+   ui-sref="inventory_detail_notes(::{inventory_type: inventory_type, view_id: inventory.view_id})"
+   ui-sref-active="active" translate>Notes</a>
+<a id="settings" ui-sref="detail_settings(::{inventory_type: inventory_type, view_id: inventory.view_id})"
+   ui-sref-active="active" translate>Settings</a>

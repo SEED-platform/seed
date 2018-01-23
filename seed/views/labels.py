@@ -34,9 +34,6 @@ from seed.serializers.labels import (
 )
 from seed.utils.api import drf_api_endpoint
 
-# missing from DRF specified in requirements
-status.HTTP_422_UNPROCESSABLE_ENTITY = 422
-
 ErrorState = namedtuple('ErrorState', ['status_code', 'message'])
 
 

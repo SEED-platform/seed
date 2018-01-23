@@ -308,9 +308,7 @@ class ProjectViewTests(DeleteModelsTestCase):
 
     def test_delete_project(self):
         """tests delete_project"""
-        project = json.loads(
-            self._create_project(name='proj1', via_http=True).content
-        )['project']
+        project = json.loads(self._create_project(name='proj1', via_http=True).content)['project']
         self._set_role_level(ROLE_MEMBER)
         # standard case
         self.assertEqual(Project.objects.all().count(), 1)

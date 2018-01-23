@@ -658,6 +658,8 @@ class PropertyView(models.Model):
     cycle = models.ForeignKey(Cycle, on_delete=models.PROTECT)
     state = models.ForeignKey(PropertyState, on_delete=models.CASCADE)
 
+    # notes has a relationship here -- PropertyViews have notes, not the state, and not the property.
+
     def __unicode__(self):
         return u'Property View - %s' % self.pk
 

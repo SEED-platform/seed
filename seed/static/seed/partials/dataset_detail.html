@@ -25,7 +25,7 @@
                                 <th translate># of Records</th>
                                 <th translate>Cycle</th>
                                 <th translate>Data Mapping</th>
-                                <th translate>Data Matching</th>
+                                <!--<th translate>Data Matching</th>-->
                                 <th translate>Data Pairing</th>
                             </tr>
                         </thead>
@@ -39,7 +39,7 @@
                                 <td class="is_aligned_right">{$:: f.num_rows || 0 $}</td>
                                 <td>{$:: getCycleName(f.cycle) $}</td>
                                 <td><a id="data-mapping-{$:: $index $}" role="button" class="btn btn-sm btn-primary" ui-sref="mapping(::{importfile_id: f.id})" ng-disabled="::!f.num_rows">{$:: f.number_of_mappings $} {$:: 'Data Mapping' | translate $}</a></td>
-                                <td><a id="data-matching-{$:: $index $}" role="button" class="btn btn-sm btn-primary" ui-sref="matching_list(::{importfile_id: f.id, inventory_type: 'properties'})" ng-disabled="::!f.num_rows || !f.mapping_done || getCycleName(f.cycle) === undefined">{$:: f.number_of_matchings $} {$:: 'Data Matching' | translate $}</a></td>
+                                <!--<td><a id="data-matching-{$:: $index $}" role="button" class="btn btn-sm btn-primary" ui-sref="matching_list(::{importfile_id: f.id, inventory_type: 'properties'})" ng-disabled="::!f.num_rows || !f.mapping_done || getCycleName(f.cycle) === undefined">{$:: f.number_of_matchings $} {$:: 'Data Matching' | translate $}</a></td>-->
                                 <td><a id="data-pairing-{$:: $index $}" role="button" class="btn btn-sm btn-primary" ui-sref="pairing(::{importfile_id: f.id, inventory_type: 'properties'})" ng-disabled="::!f.num_rows || !f.mapping_done || !f.matching_done || getCycleName(f.cycle) === undefined">{$:: f.number_of_pairings $} {$:: 'Data Pairing' | translate $}</a></td>
                             </tr>
                         </tbody>

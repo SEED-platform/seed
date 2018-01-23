@@ -15,17 +15,19 @@ angular.module('BE.seed.controller.inventory_detail', [])
     'urls',
     'label_service',
     'inventory_service',
+    'matching_service',
+    'pairing_service',
     'inventory_payload',
     'columns',
     'labels_payload',
     'flippers',
     function ($state, $scope, $uibModal, $log, $filter, $stateParams, $anchorScroll, $location,
-              urls, label_service, inventory_service, inventory_payload, columns, labels_payload,
-              flippers) {
+              urls, label_service, inventory_service, matching_service, pairing_service, inventory_payload,
+              columns, labels_payload, flippers) {
       $scope.inventory_type = $stateParams.inventory_type;
 
       $scope.inventory = {
-        id: $stateParams.inventory_id,
+        view_id: $stateParams.view_id,
         related: $scope.inventory_type === 'properties' ? inventory_payload.taxlots : inventory_payload.properties
       };
       $scope.cycle = inventory_payload.cycle;
@@ -36,8 +38,6 @@ angular.module('BE.seed.controller.inventory_detail', [])
       var localStorageKey = 'grid.' + $scope.inventory_type + '.detail';
 
       $scope.columns = inventory_service.loadSettings(localStorageKey, columns);
-
-      $scope.hide_bricr = !flippers.is_active('release:bricr');
 
       /** See service for structure of returned payload */
       $scope.historical_items = inventory_payload.history;
@@ -221,7 +221,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.save_item = function () {
         $scope.$emit('show_saving');
         if ($scope.inventory_type === 'properties') {
-          inventory_service.update_property($scope.inventory.id, $scope.cycle.id, $scope.diff())
+          inventory_service.update_property($scope.inventory.view_id, $scope.diff())
             .then(function () {
               // In the short term, we're just refreshing the page after a save so the table
               // shows new history.
@@ -235,7 +235,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
               $log.error(String(data));
             });
         } else if ($scope.inventory_type === 'taxlots') {
-          inventory_service.update_taxlot($scope.inventory.id, $scope.cycle.id, $scope.diff())
+          inventory_service.update_taxlot($scope.inventory.view_id, $scope.diff())
             .then(function () {
               // In the short term, we're just refreshing the page after a save so the table
               // shows new history.
@@ -251,28 +251,24 @@ angular.module('BE.seed.controller.inventory_detail', [])
         }
       };
 
-      /** Open a model to edit labels for the current detail item.
-       *
-       * @param inventory_id  A Property or TaxLot ID
-       * @param inventory_type  "properties" or "taxlots"
-       */
+      /** Open a model to edit labels for the current detail item. */
 
-      $scope.open_update_labels_modal = function (inventory_id, inventory_type) {
+      $scope.open_update_labels_modal = function () {
         var modalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/update_item_labels_modal.html',
           controller: 'update_item_labels_modal_controller',
           resolve: {
             inventory_ids: function () {
-              return [inventory_id];
+              return [$scope.item_parent.id];
             },
             inventory_type: function () {
-              return inventory_type;
+              return $scope.inventory_type;
             }
           }
         });
         modalInstance.result.then(function () {
-          label_service.get_labels([inventory_id], {
-            inventory_type: $stateParams.inventory_type
+          label_service.get_labels([$scope.item_parent.id], {
+            inventory_type: $scope.inventory_type
           }).then(function (labels) {
             $scope.labels = _.filter(labels, function (label) {
               return !_.isEmpty(label.is_applied);
@@ -281,6 +277,41 @@ angular.module('BE.seed.controller.inventory_detail', [])
         }, function () {
           // Do nothing
         });
+      };
+
+      $scope.unmerge = function () {
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/unmerge_modal.html',
+          controller: 'unmerge_modal_controller',
+          resolve: {
+            inventory_type: function () {
+              return $scope.inventory_type;
+            }
+          }
+        });
+
+        return modalInstance.result.then(function () {
+          if ($scope.inventory_type === 'properties') {
+            return matching_service.unmergeProperties($scope.inventory.view_id);
+          } else {
+            return matching_service.unmergeTaxlots($scope.inventory.view_id);
+          }
+        }).then(function (result) {
+          $state.go('inventory_detail', {
+            inventory_type: $scope.inventory_type,
+            view_id: result.view_id
+          });
+        });
+      };
+
+      $scope.unpair_property_from_taxlot = function (property_id) {
+        pairing_service.unpair_property_from_taxlot($scope.inventory.view_id, property_id);
+        $state.reload();
+      };
+
+      $scope.unpair_taxlot_from_property = function (taxlot_id) {
+        pairing_service.unpair_taxlot_from_property($scope.inventory.view_id, taxlot_id);
+        $state.reload();
       };
 
       /**
