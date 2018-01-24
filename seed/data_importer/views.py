@@ -4,16 +4,15 @@
 :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-import base64
 import csv
-import datetime
+import base64
 import hashlib
 import hmac
 import json
 import logging
 import os
-
 import pint
+
 from django.apps import apps
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -290,12 +289,8 @@ class LocalUploaderViewSet(viewsets.ViewSet):
                 'message': "Must pass pm_data in the request body."
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        # base file name (will be appended with a random string to ensure uniqueness anyway, but this helps for display)
-        today_date = datetime.datetime.today().strftime('%Y-%m-%d')
-        file_name = "pm_import_%s.csv" % today_date
-
         # create a folder to keep pm_import files
-        path = os.path.join(settings.MEDIA_ROOT, "uploads", "pm_imports", file_name)
+        path = os.path.join(settings.MEDIA_ROOT, "uploads", "pm_imports", "pm_import.csv")
 
         # Get a unique filename using the get_available_name method in FileSystemStorage
         s = FileSystemStorage()
