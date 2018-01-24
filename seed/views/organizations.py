@@ -577,27 +577,29 @@ class OrganizationViewSet(viewsets.ViewSet):
         if desired_name is not None:
             org.name = desired_name
 
-        def is_valid_choice(choice_tuples, s):
+        def is_valid_pint_spec(choice_tuples, s):
             """choice_tuples is std model ((value, label), ...)"""
             return (s is not None) and (s in [choice[0] for choice in choice_tuples])
+
+        def warn_bad_pint_spec(kind, unit_string):
+            _log.warn("got bad {0} unit string {1} for org {2}".format(
+                kind, unit_string, org.name))
 
         def warn_bad_units(kind, unit_string):
             _log.warn("got bad {0} unit string {1} for org {2}".format(
                 kind, unit_string, org.name))
 
         desired_display_units_eui = posted_org.get('display_units_eui')
-        _log.info(desired_display_units_eui)
-        if is_valid_choice(Organization.MEASUREMENT_CHOICES_EUI, desired_display_units_eui):
+        if is_valid_pint_spec(Organization.MEASUREMENT_CHOICES_EUI, desired_display_units_eui):
             org.display_units_eui = desired_display_units_eui
         else:
-            warn_bad_units('eui', desired_display_units_eui)
+            warn_bad_pint_spec('eui', desired_display_units_eui)
 
         desired_display_units_area = posted_org.get('display_units_area')
-        _log.info(desired_display_units_area)
-        if is_valid_choice(Organization.MEASUREMENT_CHOICES_AREA, desired_display_units_area):
+        if is_valid_pint_spec(Organization.MEASUREMENT_CHOICES_AREA, desired_display_units_area):
             org.display_units_area = desired_display_units_area
         else:
-            warn_bad_units('area', desired_display_units_area)
+            warn_bad_pint_spec('area', desired_display_units_area)
 
         desired_display_significant_figures = posted_org.get('display_significant_figures')
         if isinstance(desired_display_significant_figures, int) \
