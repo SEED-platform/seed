@@ -85,6 +85,7 @@ def _dict_org(request, organizations):
             'parent_id': o.parent_id,
             'display_units_eui': o.display_units_eui,
             'display_units_area': o.display_units_area,
+            'display_significant_figures': o.display_significant_figures,
             'cycles': cycles,
             'created': o.created.strftime('%Y-%m-%d') if o.created else '',
         }
@@ -597,6 +598,15 @@ class OrganizationViewSet(viewsets.ViewSet):
             org.display_units_area = desired_display_units_area
         else:
             warn_bad_units('area', desired_display_units_area)
+
+        desired_display_significant_figures = posted_org.get('display_significant_figures')
+        if isinstance(desired_display_significant_figures, int) \
+                and desired_display_significant_figures >= 0:
+            org.display_significant_figures = desired_display_significant_figures
+        else:
+            _log.warn("got bad sig figs {1} for org {2}".format(
+                desired_display_significant_figures, org.name))
+
 
         org.save()
 

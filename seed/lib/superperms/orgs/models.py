@@ -116,6 +116,8 @@ class Organization(models.Model):
                                           choices=MEASUREMENT_CHOICES_AREA,
                                           blank=False,
                                           default='ft**2')
+    display_significant_figures = \
+        models.PositiveSmallIntegerField(blank=False, default=2)
 
     created = models.DateTimeField(auto_now_add=True, null=True)
     modified = models.DateTimeField(auto_now=True, null=True)

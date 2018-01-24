@@ -16,8 +16,6 @@ EUI_DIMENSIONALITY = '[mass] / [time] ** 3'
 AREA_DEFAULT_UNITS = 'ft**2'
 EUI_DEFAULT_UNITS = 'kBtu/ft**2/year'
 
-SIGNIFICANT_FIGURES = 2  # this should be... someplace else?
-
 
 def to_raw_magnitude(obj):
     return "{:.2f}".format(obj.magnitude)
@@ -45,7 +43,7 @@ def collapse_unit(org, x):
         dimensionality = get_dimensionality(x)
         pint_spec = pint_specs[dimensionality]
         converted_value = x.to(pint_spec).magnitude
-        return round(converted_value, SIGNIFICANT_FIGURES)
+        return round(converted_value, org.display_significant_figures)
     elif isinstance(x, list):
         # recurse out to collapse a dict for eg. the `related` key that
         # contains properties when the pt_dict is for a taxlot and vice-versa

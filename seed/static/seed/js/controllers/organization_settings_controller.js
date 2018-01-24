@@ -31,6 +31,14 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       { label: $translate.instant('square metres'), value: 'm**2' }
     ];
 
+    $scope.significant_figures_options = [
+      { label: '0', value: 0 },
+      { label: '0.1', value: 1 },
+      { label: '0.02', value: 2 },
+      { label: '0.003', value: 3 },
+      { label: '0.0004', value: 4 }
+    ];
+
     /**
      * saves the updates settings
      */
