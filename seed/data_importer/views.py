@@ -290,7 +290,7 @@ class LocalUploaderViewSet(viewsets.ViewSet):
                 'message': "Must pass pm_data in the request body."
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        # base file name (will be appended with a random string to ensure uniqueness anyway, but this helps for display)
+        # base file name (will be appended with a random string to ensure uniqueness if multiple on the same day)
         today_date = datetime.datetime.today().strftime('%Y-%m-%d')
         file_name = "pm_import_%s.csv" % today_date
 
