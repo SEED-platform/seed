@@ -919,7 +919,7 @@ class PropertyViewSet(GenericViewSet):
                         result.update(
                             {'state': new_property_state_serializer.data}
                         )
-                        return JsonResponse(result, status=status.HTTP_200_OK, encoder=PintJSONEncoder)
+                        return JsonResponse(result, status=status.HTTP_200_OK)
                     else:
                         result.update({
                             'status': 'error',
@@ -944,7 +944,7 @@ class PropertyViewSet(GenericViewSet):
                         result.update(
                             {'state': updated_property_state_serializer.data}
                         )
-                        return JsonResponse(result, status=status.HTTP_200_OK, encoder=PintJSONEncoder)
+                        return JsonResponse(result, status=status.HTTP_200_OK)
                     else:
                         result.update({
                             'status': 'error',
@@ -963,9 +963,9 @@ class PropertyViewSet(GenericViewSet):
             # Uhm, does this ever get called? There are a bunch of returns in the code above.
             property_view.save()
         else:
-            return JsonResponse(result, status=status.HTTP_404_NOT_FOUND, encoder=PintJSONEncoder)
+            return JsonResponse(result, status=status.HTTP_404_NOT_FOUND)
 
-        return JsonResponse(result, status=status.HTTP_404_NOT_FOUND, encoder=PintJSONEncoder)
+        return JsonResponse(result, status=status.HTTP_404_NOT_FOUND)
 
     @ajax_request_class
     @has_perm_class('can_modify_data')
