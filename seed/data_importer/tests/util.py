@@ -1,43 +1,30 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
-import datetime
 import logging
 
-from django.test import TestCase
+import datetime
 from django.utils import timezone
 
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
-    Column,
-    ColumnMapping,
     Cycle,
-    Property,
-    PropertyState,
-    PropertyView,
     DATA_STATE_IMPORT,
     ASSESSED_RAW,
-    PropertyAuditLog,
-    StatusLabel,
-    TaxLotAuditLog,
-    TaxLotState,
-    TaxLot,
-    TaxLotView,
-    TaxLotProperty,
 )
-from seed.models.data_quality import DataQualityCheck
+from seed.tests.util import DeleteModelsTestCase
 
 logger = logging.getLogger(__name__)
 
 TAXLOT_MAPPING = [
     {
-        "from_field": u'jurisdiction tax lot id',
+        "from_field": u'jurisdiction_tax_lot_id',
         "to_table_name": u'TaxLotState',
         "to_field": u'jurisdiction_tax_lot_id',
     },
@@ -52,9 +39,14 @@ TAXLOT_MAPPING = [
         "to_field": u'city'
     },
     {
-        "from_field": u'number buildings',
+        "from_field": u'number_buildings',
         "to_table_name": u'TaxLotState',
         "to_field": u'number_properties'
+    },
+    {
+        "from_field": u'block_number',
+        "to_table_name": u'TaxLotState',
+        "to_field": u'block_number'
     },
 ]
 
@@ -71,6 +63,10 @@ PROPERTIES_MAPPING = [
         "from_field": u'pm property id',
         "to_table_name": u'PropertyState',
         "to_field": u'pm_property_id',
+    }, {
+        "from_field": u'UBID',
+        "to_table_name": u'PropertyState',
+        "to_field": u'ubid',
     }, {
         "from_field": u'custom id 1',
         "to_table_name": u'PropertyState',
@@ -224,29 +220,6 @@ FAKE_MAPPINGS = {
 }
 
 
-class DeleteModelsTestCase(TestCase):
-    def tearDown(self):
-        User.objects.all().delete()
-        Organization.objects.all().delete()
-        OrganizationUser.objects.all().delete()
-        Column.objects.all().delete()
-        ColumnMapping.objects.all().delete()
-        Cycle.objects.all().delete()
-        DataQualityCheck.objects.all().delete()
-        ImportFile.objects.all().delete()
-        ImportRecord.objects.all().delete()
-        Property.objects.all().delete()
-        PropertyState.objects.all().delete()
-        PropertyView.objects.all().delete()
-        PropertyAuditLog.objects.all().delete()
-        StatusLabel.objects.all().delete()
-        TaxLot.objects.all().delete()
-        TaxLotState.objects.all().delete()
-        TaxLotView.objects.all().delete()
-        TaxLotAuditLog.objects.all().delete()
-        TaxLotProperty.objects.all().delete()
-
-
 class DataMappingBaseTestCase(DeleteModelsTestCase):
     """Base Test Case Class to handle data import"""
 
@@ -277,8 +250,7 @@ class DataMappingBaseTestCase(DeleteModelsTestCase):
 
         return user, org, import_file, import_record, cycle
 
-    def create_import_file(self, user, org, cycle, source_type=ASSESSED_RAW,
-                           data_state=DATA_STATE_IMPORT):
+    def create_import_file(self, user, org, cycle, source_type=ASSESSED_RAW, data_state=DATA_STATE_IMPORT):
         import_record = ImportRecord.objects.create(
             owner=user, last_modified_by=user, super_organization=org
         )
@@ -288,6 +260,3 @@ class DataMappingBaseTestCase(DeleteModelsTestCase):
         import_file.save()
 
         return import_record, import_file
-
-    def tearDown(self):
-        super(DataMappingBaseTestCase, self).tearDown()

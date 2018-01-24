@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import json
@@ -112,8 +112,8 @@ class TestTaxLotProperty(TestCase):
         # parse the content as array
         data = response.content.split('\n')
 
-        self.assertTrue('address_line_1' in data[0].split(','))
-        self.assertTrue('property_labels\r' in data[0].split(','))
+        self.assertTrue('Address Line 1 (Property)' in data[0].split(','))
+        self.assertTrue('Property Labels\r' in data[0].split(','))
 
         self.assertEqual(len(data), 53)
         # last row should be blank

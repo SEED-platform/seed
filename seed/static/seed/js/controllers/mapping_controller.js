@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.mapping', [])
@@ -23,6 +23,8 @@ angular.module('BE.seed.controller.mapping', [])
     '$filter',
     'data_quality_service',
     'inventory_service',
+    '$translate',
+    'i18nService', // from ui-grid
     'flippers',
     function ($scope,
               $log,
@@ -43,6 +45,8 @@ angular.module('BE.seed.controller.mapping', [])
               $filter,
               data_quality_service,
               inventory_service,
+              $translate,
+              i18nService,
               flippers) {
       var db_field_columns = suggested_mappings_payload.column_names;
       var columns = suggested_mappings_payload.columns;
@@ -52,6 +56,15 @@ angular.module('BE.seed.controller.mapping', [])
       });
       // var original_columns = angular.copy(db_field_columns.concat(extra_data_columns));
       $scope.flippers = flippers; // make available in partials/ng-if
+
+      // let angular-translate be in charge ... need
+      // to feed the language-only part of its $translate setting into
+      // ui-grid's i18nService
+      var stripRegion = function (languageTag) {
+        return _.first(languageTag.split('_'));
+      };
+      i18nService.setCurrentLang(stripRegion($translate.proposedLanguage() || $translate.use()));
+
 
       // Readability for db columns.
       for (var i = 0; i < db_field_columns.length; i++) {
@@ -361,6 +374,7 @@ angular.module('BE.seed.controller.mapping', [])
 
           var defaults = {
             enableHiding: false,
+            headerCellFilter: 'translate',
             minWidth: 75,
             width: 150
           };
@@ -370,10 +384,11 @@ angular.module('BE.seed.controller.mapping', [])
           var existing_extra_taxlot_keys = existing_taxlot_keys.length ? _.keys(data.tax_lots[0].extra_data) : [];
           _.map($scope.property_columns, function (col) {
             var options = {};
-            if (!_.includes(existing_property_keys, col.name) && !_.includes(existing_extra_property_keys, col.name)) col.visible = false;
-            else {
-              if (col.type === 'number') options.filter = inventory_service.numFilter();
-              else options.filter = inventory_service.textFilter();
+            if (!_.includes(existing_property_keys, col.name) && !_.includes(existing_extra_property_keys, col.name)) {
+              col.visible = false;
+            } else {
+              if (col.type === 'date') options.filter = inventory_service.dateFilter();
+              else options.filter = inventory_service.combinedFilter();
             }
             return _.defaults(col, options, defaults);
           });
@@ -382,8 +397,8 @@ angular.module('BE.seed.controller.mapping', [])
             if (!_.includes(existing_taxlot_keys, col.name) && !_.includes(existing_extra_taxlot_keys, col.name)) {
               col.visible = false;
             } else {
-              if (col.type === 'number') options.filter = inventory_service.numFilter();
-              else options.filter = inventory_service.textFilter();
+              if (col.type === 'date') options.filter = inventory_service.dateFilter();
+              else options.filter = inventory_service.combinedFilter();
             }
             return _.defaults(col, options, defaults);
           });
@@ -610,6 +625,7 @@ angular.module('BE.seed.controller.mapping', [])
         var required_fields = [
           {header: 'Jurisdiction Tax Lot Id', inventory_type: 'TaxLotState'},
           {header: 'Pm Property Id', inventory_type: 'PropertyState'},
+          {header: 'Ubid', inventory_type: 'PropertyState'},
           {header: 'Custom Id 1', inventory_type: 'PropertyState'},
           {header: 'Custom Id 1', inventory_type: 'TaxLotState'},
           {header: 'Address Line 1', inventory_type: 'PropertyState'},
@@ -648,7 +664,8 @@ angular.module('BE.seed.controller.mapping', [])
             },
             importFileId: function () {
               return $scope.import_file.id;
-            }
+            },
+            orgId: _.constant(user_service.get_organization().id)
           }
         });
       };

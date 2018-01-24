@@ -15,20 +15,20 @@
 <div class="section">
     <div class="section_header_container">
         <div class="section_header">
-            <h2><i class="fa fa-code" style="font-weight: bold;"></i> API Key</h2>
+            <h2><i class="fa fa-code" style="font-weight: bold;"></i> {$:: 'API Key' | translate $}</h2>
         </div>
     </div>
     <div class="section_content_container">
         <div class="section_content with_padding container-fluid">
             <div class="row">
                 <div class="section_form_container col-sm-8">
-                    <p>Manage Your API Key</p>
+                    <p translate>Manage Your API Key</p>
                     <div class="table_list_container">
                         <table class="table table-striped">
                             <thead>
                                 <tr>
-                                    <th>API Key</th>
-                                    <th>Username</th>
+                                    <th translate>API Key</th>
+                                    <th translate>Username</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -40,7 +40,7 @@
                         </table>
                     </div>
                     <div class="table_footer">
-                        <button type="submit" class="btn btn-primary" ng-click="generate_api_key()">Get a New API Key <i class="fa fa-check" ng-show="new_key_generated"></i></button>
+                        <button type="submit" class="btn btn-primary" ng-click="generate_api_key()"><span translate>Get a New API Key</span> <i class="fa fa-check" ng-show="new_key_generated"></i></button>
                     </div>
                 </div>
             </div>

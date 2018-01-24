@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.menu', [])
@@ -18,6 +18,7 @@ angular.module('BE.seed.controller.menu', [])
     '$state',
     '$cookies',
     'spinner_utility',
+    '$translate',
     function ($rootScope,
               $scope,
               $location,
@@ -31,7 +32,8 @@ angular.module('BE.seed.controller.menu', [])
               $timeout,
               $state,
               $cookies,
-              spinner_utility) {
+              spinner_utility,
+              $translate) {
 
       // initial state of css classes for menu and sidebar
       $scope.expanded_controller = false;
@@ -56,7 +58,7 @@ angular.module('BE.seed.controller.menu', [])
         $scope.menu.route_load_error = true;
         $log.error(error);
         if (error === 'not authorized' || error === 'Your page could not be located!') {
-          $scope.menu.error_message = error;
+          $scope.menu.error_message = $translate.instant(error);
         }
         spinner_utility.hide();
       });

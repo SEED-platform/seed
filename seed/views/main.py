@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -22,15 +22,7 @@ from seed.data_importer.models import ImportFile, ImportRecord
 from seed.decorators import (
     ajax_request, get_prog_key
 )
-from seed.lib.mappings import mapper as simple_mapper
-from seed.lib.mappings import mapping_data
-from seed.lib.mcm import mapper
 from seed.lib.superperms.orgs.decorators import has_perm
-from seed.lib.superperms.orgs.models import OrganizationUser
-from seed.models import (
-    Column,
-    get_column_mapping,
-)
 from seed.utils.api import api_endpoint
 from seed.views.users import _get_js_role
 from .. import search
@@ -299,74 +291,6 @@ def set_default_building_detail_columns(request):
         _set_default_columns_by_request(body, request.user,
                                         'default_building_detail_custom_columns')
     )
-
-
-def _mapping_suggestions(import_file_id, org_id, user):
-    """
-    Temp function for allowing both api version for mapping suggestions to
-    return the same data. Move this to the mapping_suggestions once we can
-    deprecate the old get_column_mapping_suggestion method.
-
-    :param import_file_id: import file id
-    :param org_id: organization id of user
-    :param user: user object from request
-    :return: dict
-    """
-    result = {'status': 'success'}
-
-    membership = OrganizationUser.objects.select_related('organization') \
-        .get(organization_id=org_id, user=user)
-    organization = membership.organization
-
-    import_file = ImportFile.objects.get(
-        pk=import_file_id,
-        import_record__super_organization_id=organization.pk
-    )
-
-    # Get a list of the database fields in a list
-    md = mapping_data.MappingData()
-
-    # TODO: Move this to the MappingData class and remove calling add_extra_data
-    # Check if there are any DB columns that are not defined in the
-    # list of mapping data.
-    # NL 12/2/2016: Removed 'organization__isnull' Query because we only want the
-    # the ones belonging to the organization
-    columns = list(Column.objects.select_related('unit').filter(
-        mapped_mappings__super_organization_id=org_id).exclude(column_name__in=md.keys))
-    md.add_extra_data(columns)
-
-    # Portfolio manager files have their own mapping scheme - yuck, really?
-    if import_file.from_portfolio_manager:
-        _log.debug("map Portfolio Manager input file")
-        suggested_mappings = simple_mapper.get_pm_mapping(import_file.first_row_columns,
-                                                          resolve_duplicates=True)
-    else:
-        _log.debug("custom mapping of input file")
-        # All other input types
-        suggested_mappings = mapper.build_column_mapping(
-            import_file.first_row_columns,
-            md.keys_with_table_names,
-            previous_mapping=get_column_mapping,
-            map_args=[organization],
-            thresh=80  # percentage match that we require. 80% is random value for now.
-        )
-        # replace None with empty string for column names and PropertyState for tables
-        for m in suggested_mappings:
-            table, field, conf = suggested_mappings[m]
-            if field is None:
-                suggested_mappings[m][1] = u''
-
-    # Fix the table name, eventually move this to the build_column_mapping and build_pm_mapping
-    for m in suggested_mappings:
-        table, dest, conf = suggested_mappings[m]
-        if not table:
-            suggested_mappings[m][0] = 'PropertyState'
-
-    result['suggested_column_mappings'] = suggested_mappings
-    result['column_names'] = md.building_columns
-    result['columns'] = md.data
-
-    return result
 
 
 @api_endpoint

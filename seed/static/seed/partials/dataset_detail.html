@@ -1,13 +1,13 @@
 <div class="page_header_container">
     <div class="page_header">
         <div class="left page_action_container">
-            <a class="page_action" ui-sref="dataset_list"><i class="fa fa-chevron-left"></i> Data Sets</a>
+            <a class="page_action" ui-sref="dataset_list"><i class="fa fa-chevron-left"></i> {$:: 'Data Sets' | translate $}</a>
         </div>
         <div class="page_title">
             <h1>{$:: dataset.name $}</h1>
         </div>
         <div class="right page_action_container">
-            <a data-toggle="modal" data-target="#dataUploadModal" ng-click="open_data_upload_modal()">Add more data files</a>
+            <a data-toggle="modal" data-target="#dataUploadModal" ng-click="open_data_upload_modal()" translate>Add more data files</a>
         </div>
     </div>
 </div>
@@ -19,14 +19,14 @@
                     <table class="import_results table table-striped">
                         <thead>
                             <tr>
-                                <th>Data Files</th>
+                                <th translate>Data Files</th>
                                 <th></th>
-                                <th>Date Imported</th>
-                                <th># of Records</th>
-                                <th>Cycle</th>
-                                <th>Data Mapping</th>
-                                <th>Data Matching</th>
-                                <th>Data Pairing</th>
+                                <th translate>Date Imported</th>
+                                <th translate># of Records</th>
+                                <th translate>Cycle</th>
+                                <th translate>Data Mapping</th>
+                                <!--<th translate>Data Matching</th>-->
+                                <th translate>Data Pairing</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -38,9 +38,9 @@
                                 <td>{$:: f.created | date: 'MM/dd/yyyy hh:mm:ss a' $}</td>
                                 <td class="is_aligned_right">{$:: f.num_rows || 0 $}</td>
                                 <td>{$:: getCycleName(f.cycle) $}</td>
-                                <td><a id="data-mapping-{$:: $index $}" role="button" class="btn btn-sm btn-primary" ui-sref="mapping(::{importfile_id: f.id})" ng-disabled="::!f.num_rows">{$:: f.number_of_mappings $} Data Mapping</a></td>
-                                <td><a id="data-matching-{$:: $index $}" role="button" class="btn btn-sm btn-primary" ui-sref="matching_list(::{importfile_id: f.id, inventory_type: 'properties'})" ng-disabled="::!f.num_rows || !f.mapping_done || getCycleName(f.cycle) === undefined">{$:: f.number_of_matchings $} Data Matching</a></td>
-                                <td><a id="data-pairing-{$:: $index $}" role="button" class="btn btn-sm btn-primary" ui-sref="pairing(::{importfile_id: f.id, inventory_type: 'properties'})" ng-disabled="::!f.num_rows || !f.mapping_done || !f.matching_done || getCycleName(f.cycle) === undefined">{$:: f.number_of_pairings $} Data Pairing</a></td>
+                                <td><a id="data-mapping-{$:: $index $}" role="button" class="btn btn-sm btn-primary" ui-sref="mapping(::{importfile_id: f.id})" ng-disabled="::!f.num_rows">{$:: f.number_of_mappings $} {$:: 'Data Mapping' | translate $}</a></td>
+                                <!--<td><a id="data-matching-{$:: $index $}" role="button" class="btn btn-sm btn-primary" ui-sref="matching_list(::{importfile_id: f.id, inventory_type: 'properties'})" ng-disabled="::!f.num_rows || !f.mapping_done || getCycleName(f.cycle) === undefined">{$:: f.number_of_matchings $} {$:: 'Data Matching' | translate $}</a></td>-->
+                                <td><a id="data-pairing-{$:: $index $}" role="button" class="btn btn-sm btn-primary" ui-sref="pairing(::{importfile_id: f.id, inventory_type: 'properties'})" ng-disabled="::!f.num_rows || !f.mapping_done || !f.matching_done || getCycleName(f.cycle) === undefined">{$:: f.number_of_pairings $} {$:: 'Data Pairing' | translate $}</a></td>
                             </tr>
                         </tbody>
                     </table>

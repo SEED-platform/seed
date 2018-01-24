@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.new_member_modal', [])
@@ -9,15 +9,16 @@ angular.module('BE.seed.controller.new_member_modal', [])
   'organization',
   'user_service',
   '$timeout',
-  function ($scope, $uibModalInstance, organization, user_service, $timeout) {
+  '$translate',
+  function ($scope, $uibModalInstance, organization, user_service, $timeout, $translate) {
     $scope.roles = [{
-      name: 'Member',
+      name: $translate.instant('Member'),
       value: 'member'
     }, {
-      name: 'Owner',
+      name: $translate.instant('Owner'),
       value: 'owner'
     }, {
-      name: 'Viewer',
+      name: $translate.instant('Viewer'),
       value: 'viewer'
     }];
     $scope.user = {};

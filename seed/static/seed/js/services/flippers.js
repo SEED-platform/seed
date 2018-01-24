@@ -23,9 +23,9 @@ angular.module('BE.seed.service.flippers', [])
       return (now > expires);
     };
 
-    var log_stale_flipper = function (/*flipper*/) {
+    var log_stale_flipper = function (flipper) {
       // TODO throw someplace more useful; raven? sentry?
-      // console.warn('Flipper \'' + flipper.label + '\' is stale; tell ' + flipper.owner + ' to tidy up.');
+      console.warn('Flipper \'' + flipper.label + '\' is stale; tell ' + flipper.owner + ' to tidy up.');
     };
 
     flippers.is_active = function (s) {

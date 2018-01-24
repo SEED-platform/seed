@@ -1,16 +1,16 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import copy
 import csv
-import datetime
 import json
 import logging
 import os.path as osp
 
+import datetime
 from dateutil import parser
 from django.core.files import File
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -47,6 +47,8 @@ class TestMappingPortfolioData(DataMappingBaseTestCase):
     def setUp(self):
         # Make sure to delete the old mappings and properties because this
         # tests expects very specific column names and properties in order
+        self.maxDiff = None
+
         filename = getattr(self, 'filename', 'portfolio-manager-sample.csv')
         import_file_source_type = PORTFOLIO_RAW
         self.fake_mappings = FAKE_MAPPINGS['portfolio']

@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 // inventory services
@@ -116,21 +116,16 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
      *
      */
 
-    inventory_service.get_property = function (property_id, cycle_id) {
+    inventory_service.get_property = function (view_id) {
       // Error checks
-      if (_.isNil(property_id)) {
-        $log.error('#inventory_service.get_property(): property_id is undefined');
-        throw new Error('Invalid Parameter');
-      }
-      if (_.isNil(cycle_id)) {
-        $log.error('#inventory_service.get_property(): cycle_id is undefined');
+      if (_.isNil(view_id)) {
+        $log.error('#inventory_service.get_property(): view_id is undefined');
         throw new Error('Invalid Parameter');
       }
 
       spinner_utility.show();
-      return $http.get('/api/v2/properties/' + property_id + '/', {
+      return $http.get('/api/v2/properties/' + view_id + '/', {
         params: {
-          cycle_id: cycle_id,
           organization_id: user_service.get_organization().id
         }
       }).then(function (response) {
@@ -140,23 +135,18 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       });
     };
 
-    /** Update Property State for a specified property, cycle, and organization.
+    /** Update Property State for a specified property view and organization.
      *
-     * @param property_id         Property ID of the property
-     * @param cycle_id            Cycle ID for the cycle
+     * @param view_id             Property View ID of the property view
      * @param state               A Property state object, which should include key/values for
      *                              all state values
      *
      * @returns {Promise}
      */
-    inventory_service.update_property = function (property_id, cycle_id, state) {
+    inventory_service.update_property = function (view_id, state) {
       // Error checks
-      if (_.isNil(property_id)) {
-        $log.error('#inventory_service.update_property(): property_id is undefined');
-        throw new Error('Invalid Parameter');
-      }
-      if (_.isNil(cycle_id)) {
-        $log.error('#inventory_service.update_property(): cycle_id is undefined');
+      if (_.isNil(view_id)) {
+        $log.error('#inventory_service.update_property(): view_id is undefined');
         throw new Error('Invalid Parameter');
       }
       if (_.isNil(state)) {
@@ -165,11 +155,17 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }
 
       spinner_utility.show();
-      return $http.put('/api/v2/properties/' + property_id + '/', {
+
+      // Remove files, measures, scenarios from the update of the property.
+      // These relationships will be dropped on the new state.
+      state = _.omit(state, 'files');
+      state = _.omit(state, 'measures');
+      state = _.omit(state, 'scenarios');
+
+      return $http.put('/api/v2/properties/' + view_id + '/', {
         state: state
       }, {
         params: {
-          cycle_id: cycle_id,
           organization_id: user_service.get_organization().id
         }
       }).then(function (response) {
@@ -306,22 +302,16 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
      */
 
 
-    inventory_service.get_taxlot = function (taxlot_id, cycle_id) {
-
+    inventory_service.get_taxlot = function (view_id) {
       // Error checks
-      if (_.isNil(taxlot_id)) {
-        $log.error('#inventory_service.get_taxlot(): null taxlot_id parameter');
-        throw new Error('Invalid Parameter');
-      }
-      if (_.isNil(cycle_id)) {
-        $log.error('#inventory_service.get_taxlot(): null cycle_id parameter');
+      if (_.isNil(view_id)) {
+        $log.error('#inventory_service.get_taxlot(): null view_id parameter');
         throw new Error('Invalid Parameter');
       }
 
       spinner_utility.show();
-      return $http.get('/api/v2/taxlots/' + taxlot_id + '/', {
+      return $http.get('/api/v2/taxlots/' + view_id + '/', {
         params: {
-          cycle_id: cycle_id,
           organization_id: user_service.get_organization().id
         }
       }).then(function (response) {
@@ -332,23 +322,18 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
 
-    /** Update Tax Lot State for a specified Tax Lot, cycle, and organization.
+    /** Update Tax Lot State for a specified Tax Lot View and organization.
      *
-     * @param taxlot_id          Tax Lot ID of the tax lot
-     * @param cycle_id            Cycle ID for the cycle
+     * @param view_id             Tax Lot View ID of the tax lot view
      * @param state               A Tax Lot state object, which should include key/values for
      *                              all state values
      *
      * @returns {Promise}
      */
-    inventory_service.update_taxlot = function (taxlot_id, cycle_id, state) {
+    inventory_service.update_taxlot = function (view_id, state) {
       // Error checks
-      if (_.isNil(taxlot_id)) {
-        $log.error('#inventory_service.update_taxlot(): taxlot_id is undefined');
-        throw new Error('Invalid Parameter');
-      }
-      if (_.isNil(cycle_id)) {
-        $log.error('#inventory_service.update_taxlot(): cycle_id is undefined');
+      if (_.isNil(view_id)) {
+        $log.error('#inventory_service.update_taxlot(): view_id is undefined');
         throw new Error('Invalid Parameter');
       }
       if (_.isNil(state)) {
@@ -357,11 +342,10 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }
 
       spinner_utility.show();
-      return $http.put('/api/v2/taxlots/' + taxlot_id + '/', {
+      return $http.put('/api/v2/taxlots/' + view_id + '/', {
         state: state
       }, {
         params: {
-          cycle_id: cycle_id,
           organization_id: user_service.get_organization().id
         }
       }).then(function (response) {
@@ -429,76 +413,72 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       });
     };
 
-    var textRegex = /^(!?)"(([^"]|\\")*)"$/;
-    inventory_service.textFilter = function () {
+    // https://regexr.com/3j1tq
+    var combinedRegex = /^(!?)=\s*(-?\d+)$|^(!?)=?\s*"((?:[^"]|\\")*)"$|^(<=?|>=?)\s*(-?\d+)$/;
+    inventory_service.combinedFilter = function () {
       return {
         condition: function (searchTerm, cellValue) {
           if (_.isNil(cellValue)) cellValue = '';
-          var filterData = searchTerm.match(textRegex);
-          var regex;
-          if (filterData) {
-            var inverse = filterData[1] === '!';
-            var value = filterData[2];
-            regex = new RegExp('^' + value + '$');
-            return inverse ? !regex.test(cellValue) : regex.test(cellValue);
-          } else {
-            regex = new RegExp(searchTerm, 'i');
-            return regex.test(cellValue);
-          }
-        }
-      };
-    };
-
-
-    var numRegex = /^(==?|!=?|<>)?\s*(null|-?\d+)$|^(<=?|>=?)\s*(-?\d+)$/;
-    inventory_service.numFilter = function () {
-      return {
-        condition: function (searchTerm, cellValue) {
           var match = true;
           var searchTerms = _.map(_.split(searchTerm, ','), _.trim);
+          // Loop over multiple comma-separated filters
           _.forEach(searchTerms, function (search) {
-            var filterData = search.match(numRegex);
+            var operator, regex, value;
+            var filterData = search.match(combinedRegex);
             if (filterData) {
-              var operator, value;
               if (!_.isUndefined(filterData[2])) {
-                // Equality condition
+                // Numeric Equality
                 operator = filterData[1];
                 value = filterData[2];
-                if (_.isUndefined(operator) || _.startsWith(operator, '=')) {
-                  // Equal
-                  match = (value === 'null') ? (_.isNil(cellValue)) : (cellValue == value);
-                  return match;
-                } else {
+                if (operator === '!') {
                   // Not equal
-                  match = (value === 'null') ? (!_.isNil(cellValue)) : (cellValue != value);
-                  return match;
+                  match = cellValue != value;
+                } else {
+                  // Equal
+                  match = cellValue == value;
                 }
+                return match;
+              } else if (!_.isUndefined(filterData[4])) {
+                // Text Equality
+                operator = filterData[3];
+                value = filterData[4];
+                regex = new RegExp('^' + value + '$');
+                if (operator === '!') {
+                  // Not equal
+                  match = !regex.test(cellValue);
+                } else {
+                  // Equal
+                  match = regex.test(cellValue);
+                }
+                return match;
               } else {
-                // Range condition
-                if (_.isNil(cellValue)) {
+                // Numeric Comparison
+                if (cellValue === '') {
                   match = false;
                   return match;
                 }
-
-                operator = filterData[3];
-                value = Number(filterData[4]);
+                operator = filterData[5];
+                value = Number(filterData[6]);
                 switch (operator) {
                   case '<':
                     match = cellValue < value;
-                    return match;
+                    break;
                   case '<=':
                     match = cellValue <= value;
-                    return match;
+                    break;
                   case '>':
                     match = cellValue > value;
-                    return match;
+                    break;
                   case '>=':
                     match = cellValue >= value;
-                    return match;
+                    break;
                 }
+                return match;
               }
-            } else {
-              match = false;
+            }  else {
+              // Case-insensitive Contains
+              regex = new RegExp(search, 'i');
+              match = regex.test(cellValue);
               return match;
             }
           });
@@ -507,7 +487,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       };
     };
 
-    var dateRegex = /^(==?|!=?|<>)?\s*(null|\d{4}(?:-\d{2}(?:-\d{2})?)?)$|^(<=?|>=?)\s*(\d{4}(?:-\d{2}(?:-\d{2})?)?)$/;
+    var dateRegex = /^(=|!=)?\s*(null|\d{4}(?:-\d{2}(?:-\d{2})?)?)$|^(<=?|>=?)\s*(\d{4}(?:-\d{2}(?:-\d{2})?)?)$/;
     inventory_service.dateFilter = function () {
       return {
         condition: function (searchTerm, cellValue) {
@@ -760,12 +740,11 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       });
     };
 
-    inventory_service.get_columns = function (all_fields) {
-      all_fields = all_fields || '';
-      return $http.get('/api/v1/columns/', {
+    inventory_service.get_used_columns = function (org_id) {
+      return $http.get('/api/v2/columns/', {
         params: {
-          all_fields: all_fields,
-          organization_id: user_service.get_organization().id
+          organization_id: org_id,
+          only_used: true
         }
       }).then(function (response) {
         return response.data;

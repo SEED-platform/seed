@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from rest_framework import serializers
@@ -12,7 +12,6 @@ from seed.models import (
 
 
 class TaxLotLabelsField(serializers.RelatedField):
-
     def to_representation(self, value):
         return value.id
 
@@ -27,7 +26,6 @@ class TaxLotSerializer(serializers.ModelSerializer):
 
 
 class TaxLotPropertySerializer(serializers.ModelSerializer):
-
     class Meta:
         model = TaxLotProperty
         fields = '__all__'

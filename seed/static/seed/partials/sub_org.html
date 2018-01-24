@@ -1,7 +1,7 @@
 <div class="page_header_container">
     <div class="page_header">
         <div class="left page_action_container">
-            <a ui-sref="organizations" class="page_action"><i class="fa fa-chevron-left"></i> Organizations</a>
+            <a ui-sref="organizations" class="page_action"><i class="fa fa-chevron-left"></i> {$:: 'Organizations' | translate $}</a>
         </div>
         <div class="page_title">
             <h1>{$:: org.name $}</h1>
@@ -16,8 +16,8 @@
 <div class="section" ng-if="::auth.requires_owner">
     <div class="section_header_container">
         <div class="section_header fixed_height_short">
-            <div class="left section_action_container"><h2><i class="fa fa-users"></i> Sub-Organizations</h2></div>
-            <div class="right_wide section_action_container"><a ng-click="create_sub_organization_modal()">Create a new sub-organization</a></div>
+            <div class="left section_action_container"><h2><i class="fa fa-users"></i> {$:: 'Sub-Organizations' | translate $}</h2></div>
+            <div class="right_wide section_action_container"><a ng-click="create_sub_organization_modal()" translate>Create a new sub-organization</a></div>
         </div>
     </div>
         <div class="section_content_container">
@@ -26,9 +26,9 @@
                 <table class="table table-striped table_highlight_first">
                     <thead>
                         <tr>
-                            <th>Sub-Organization Name</th>
-                            <th>Owner Name</th>
-                            <th>Owner Email</th>
+                            <th translate>Sub-Organization Name</th>
+                            <th translate>Owner Name</th>
+                            <th translate>Owner Email</th>
                             <th ng-if="false"></th>
                         </tr>
                     </thead>
@@ -44,7 +44,7 @@
                                 <span ng-repeat="owner in ::sub_org.owners">{$:: owner.email $}<br></span>
                             </td>
                             <td ng-if="false">
-                                <a ng-click="remove_sub_org(sub_org)">Remove</a>
+                                <a ng-click="remove_sub_org(sub_org)" translate>Remove</a>
                             </td>
                         </tr>
                     </tbody>

@@ -1,19 +1,21 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 
 Search methods pertaining to buildings.
 
 """
-import operator
 import json
-import re
 import logging
+import re
+from functools import reduce
 
+import operator
 from django.db.models import Q
 from django.http.request import RawPostDataException
+
 from seed.lib.superperms.orgs.models import Organization
 from .models import (
     BuildingSnapshot,
@@ -23,12 +25,11 @@ from .models import (
     PropertyView,
     TaxLot,
     TaxLotState,
-    TaxLotView
+    TaxLotView,
+    Column,
 )
-from .utils.mapping import get_mappable_types
 from .utils import search as search_utils
-from seed.public.models import PUBLIC
-from functools import reduce
+from .utils.mapping import get_mappable_types
 
 _log = logging.getLogger(__name__)
 
@@ -189,15 +190,15 @@ def generate_paginated_results(queryset, number_per_page=25, page=1,
 
         # This data is only needed on mapping/matching steps, not general filtering
         # if matching:
-            # co_parent = b.co_parent
-            # if co_parent:
-            #     building_dict['matched'] = True
-            #     building_dict['coparent'] = co_parent.to_dict()
-            #     child = b.children.first()
-            #     if child:
-            #         building_dict['confidence'] = child.confidence
-            # else:
-            #     building_dict['matched'] = False
+        # co_parent = b.co_parent
+        # if co_parent:
+        #     building_dict['matched'] = True
+        #     building_dict['coparent'] = co_parent.to_dict()
+        #     child = b.children.first()
+        #     if child:
+        #         building_dict['confidence'] = child.confidence
+        # else:
+        #     building_dict['matched'] = False
 
         # only add the buildings if it is in an org the user belongs or the
         # query count exceeds the query threshold
@@ -484,10 +485,11 @@ def build_json_params(order_by, sort_reverse):
 def get_orgs_w_public_fields():
     """returns a list of orgs that have publicly shared fields"""
     return list(Organization.objects.filter(
-        sharedbuildingfield__field_type=PUBLIC
+        column__shared_field_type=Column.SHARED_PUBLIC
     ).distinct())
 
 
+# TODO: Fix this for the new data model
 def search_public_buildings(request, orgs):
     """returns a queryset or list of buildings matching the search params and count
 
@@ -532,11 +534,11 @@ def search_public_buildings(request, orgs):
 
 
 def create_building_queryset(
-        orgs,
-        exclude,
-        order_by,
-        other_orgs=None,
-        extra_data_sort=False,
+    orgs,
+    exclude,
+    order_by,
+    other_orgs=None,
+    extra_data_sort=False,
 ):
     """creates a queryset of buildings within orgs. If ``other_orgs``, buildings
     in both orgs and other_orgs will be represented in the queryset.
@@ -651,9 +653,7 @@ def mask_results(search_results):
         parent_org = parent_org.get_parent()
         if parent_org.id not in whitelist_fields:
             whitelist_fields[parent_org.id] = []
-            for s in parent_org.sharedbuildingfield_set.filter(
-                    field_type=PUBLIC
-            ):
+            for s in parent_org.sharedbuildingfield_set.filter(field_type=Column.SHARED_PUBLIC):
                 whitelist_fields[parent_org.id].append(s.field.name)
 
         d = {}

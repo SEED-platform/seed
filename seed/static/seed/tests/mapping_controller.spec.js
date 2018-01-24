@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 describe('controller: mapping_controller', function () {
@@ -13,6 +13,10 @@ describe('controller: mapping_controller', function () {
   // 'config.seed' is created in TestFilters.html
   beforeEach(function () {
     module('BE.seed');
+    inject(function (_$httpBackend_) {
+      $httpBackend = _$httpBackend_;
+      $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
+    });
     inject(function ($controller, $rootScope, $uibModal, urls, $q, inventory_service, $timeout, user_service) {
       controller = $controller;
       mapping_controller_scope = $rootScope.$new();
@@ -169,7 +173,7 @@ describe('controller: mapping_controller', function () {
       property_columns: mock_raw_column_names,
       taxlot_columns: mock_raw_column_names,
       first_five_rows_payload: first_five_rows_payload,
-      all_columns: {fields: []},
+      all_columns: {columns: []},
       inventory_service: mock_inventory_service,
       $timeout: timeout,
       cycles: mock_cycles

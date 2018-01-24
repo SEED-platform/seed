@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 describe('Controller: matching_list_controller', function () {
@@ -13,6 +13,10 @@ describe('Controller: matching_list_controller', function () {
   // 'config.seed' is created in TestFilters.html
   beforeEach(function () {
     module('BE.seed');
+    inject(function (_$httpBackend_) {
+      $httpBackend = _$httpBackend_;
+      $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
+    });
     inject(function ($controller, $rootScope, $q, _$state_, inventory_service, spinner_utility) {
       controller = $controller;
       $state = _$state_;
@@ -76,7 +80,7 @@ describe('Controller: matching_list_controller', function () {
       $stateParams: {
         cycle_id: 2017,
         inventory_id: 4,
-        inventory_type: 'properties'
+        inventory_type: 'properties',
         import_file_id: 1
       },
       columns: [{

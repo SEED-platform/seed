@@ -1,18 +1,15 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import logging
-from datetime import date, datetime
-from dateutil.relativedelta import relativedelta
 
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.signals import pre_delete
-from django.utils import timezone
 
 from seed.lib.superperms.orgs.exceptions import TooManyNestedOrgs
 
@@ -43,26 +40,6 @@ STATUS_CHOICES = (
 )
 
 
-class ExportableField(models.Model):
-    """Tracks which model fields are exportable."""
-
-    class Meta:
-        unique_together = ('field_model', 'name', 'organization')
-        ordering = ['organization', 'name']
-
-    # For relating to the model-type whose fields we're exporting.
-    field_model = models.CharField(max_length=100)
-    name = models.CharField(max_length=200)
-    organization = models.ForeignKey(
-        'Organization', related_name='exportable_fields'
-    )
-
-    def __unicode__(self):
-        return u'ExportableField: {0} <{1}> {2}'.format(
-            self.field_model, self.name, self.organization.name
-        )
-
-
 class OrganizationUser(models.Model):
     class Meta:
         ordering = ['organization', '-role_level']
@@ -84,11 +61,8 @@ class OrganizationUser(models.Model):
             all_org_users = OrganizationUser.objects.filter(
                 organization=self.organization,
             ).exclude(pk=self.pk)
-            if (
-                    all_org_users.exists()
-                    and
-                    all_org_users.filter(role_level=ROLE_OWNER).count() == 0
-            ):
+            if (all_org_users.exists() and all_org_users.filter(
+                role_level=ROLE_OWNER).count() == 0):
                 # Make next most high ranking person the owner.
                 other_user = all_org_users.order_by('-role_level', '-pk')[0]
                 if other_user.role_level > ROLE_VIEWER:
@@ -138,18 +112,9 @@ class Organization(models.Model):
 
         # Create a default cycle for the organization if there isn't one already
         from seed.models import Cycle
-        year = date.today().year - 1
-        cycle_name = '{} Calendar Year'.format(year)
-        if not Cycle.objects.filter(name=cycle_name, organization=self).exists():
-            _log.debug("Creating default cycle for new organization")
-            start = datetime(year, 1, 1, tzinfo=timezone.get_current_timezone())
-            end = start + relativedelta(years=1) - relativedelta(seconds=1)
-            Cycle.objects.create(
-                name=cycle_name,
-                organization=self,
-                start=start,
-                end=end
-            )
+        Cycle.get_or_create_default(self)
+        from seed.models import Measure
+        Measure.populate_measures(self.id)
 
     def is_member(self, user):
         """Return True if user object has a relation to this organization."""

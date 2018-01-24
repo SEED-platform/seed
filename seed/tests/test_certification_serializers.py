@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 """
-copyright (c) 2014 -2017 The Regents of the University of California,
+copyright (c) 2014 - 2018 The Regents of the University of California,
 through Lawrence Berkeley National Laboratory(subject to receipt of any
 required approvals from the US. Department of Energy) and contributors.
 All rights reserved
@@ -9,31 +9,17 @@ All rights reserved
 
 Tests for serializers used by GreenAssessments/Energy Certifications
 """
-import datetime
 from collections import OrderedDict
-import mock
 
+import datetime
+import mock
 from django.core.exceptions import ValidationError
-from django.test import TestCase
 
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import (
     Organization,
     OrganizationUser,
 )
-from seed.utils.strings import titlecase
-
-from seed.models import (
-    Cycle,
-    GreenAssessment,
-    GreenAssessmentProperty,
-    GreenAssessmentURL,
-    Property,
-    PropertyState,
-    PropertyView,
-)
-
-
 from seed.serializers.certification import (
     GreenAssessmentURLField,
     PropertyViewField,
@@ -41,15 +27,16 @@ from seed.serializers.certification import (
     GreenAssessmentSerializer,
     GreenAssessmentPropertySerializer
 )
-
 from seed.test_helpers.fake import (
     FakePropertyViewFactory,
     FakeGreenAssessmentFactory,
     FakeGreenAssessmentPropertyFactory
 )
+from seed.tests.util import DeleteModelsTestCase
+from seed.utils.strings import titlecase
 
 
-class TestFields(TestCase):
+class TestFields(DeleteModelsTestCase):
 
     def get_date_string(self, dtobj):
         """Get YY-MM-DD string"""
@@ -68,15 +55,6 @@ class TestFields(TestCase):
         self.property_view_factory = FakePropertyViewFactory(
             organization=self.org, user=self.user
         )
-
-    def tearDown(self):
-        Property.objects.all().delete()
-        PropertyState.objects.all().delete()
-        PropertyView.objects.all().delete()
-        GreenAssessment.objects.all().delete()
-        Cycle.objects.all().delete()
-        self.user.delete()
-        self.org.delete()
 
     def test_url_field(self):
         """Test GreenAssessmentURLField"""
@@ -147,7 +125,7 @@ class TestFields(TestCase):
         self.assertRaises(ValidationError, field.to_internal_value, -10)
 
 
-class TestGreenAssessmentPropertySerializer(TestCase):
+class TestGreenAssessmentPropertySerializer(DeleteModelsTestCase):
 
     def setUp(self):
         self.maxDiff = None
@@ -183,17 +161,6 @@ class TestGreenAssessmentPropertySerializer(TestCase):
             ('http://example.com', 'example.com'),
             ('http://example.org', 'example.org')
         ]
-
-    def tearDown(self):
-        Property.objects.all().delete()
-        PropertyState.objects.all().delete()
-        PropertyView.objects.all().delete()
-        GreenAssessmentURL.objects.all().delete()
-        GreenAssessmentProperty.objects.all().delete()
-        GreenAssessment.objects.all().delete()
-        Cycle.objects.all().delete()
-        self.user.delete()
-        self.org.delete()
 
     @mock.patch('seed.serializers.certification.GreenAssessmentURL')
     def test_create(self, mock_url_model):
@@ -309,7 +276,7 @@ class TestGreenAssessmentPropertySerializer(TestCase):
         self.assertEqual(expected, str(exception))
 
 
-class TestGreenAssessmentSerializer(TestCase):
+class TestGreenAssessmentSerializer(DeleteModelsTestCase):
 
     def setUp(self):
         self.maxDiff = None
@@ -334,11 +301,6 @@ class TestGreenAssessmentSerializer(TestCase):
         self.assessment = self.ga_factory.get_green_assessment(
             **assessment_data
         )
-
-    def tearDown(self):
-        GreenAssessment.objects.all().delete()
-        self.user.delete()
-        self.org.delete()
 
     def test_serialization(self):
         """Test object serialization."""

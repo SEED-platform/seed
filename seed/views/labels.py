@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author 'Piper Merriam <pmerriam@quickleft.com>'
 """
 from collections import namedtuple
@@ -14,7 +14,7 @@ from rest_framework import (
     viewsets
 )
 from rest_framework.decorators import list_route
-from rest_framework.parsers import JSONParser
+from rest_framework.parsers import JSONParser, FormParser
 from rest_framework.renderers import JSONRenderer
 from rest_framework.views import APIView
 
@@ -34,16 +34,28 @@ from seed.serializers.labels import (
 )
 from seed.utils.api import drf_api_endpoint
 
-# missing from DRF specified in requirements
-status.HTTP_422_UNPROCESSABLE_ENTITY = 422
-
 ErrorState = namedtuple('ErrorState', ['status_code', 'message'])
 
 
 class LabelViewSet(DecoratorMixin(drf_api_endpoint), viewsets.ModelViewSet):
+    """API endpoint for viewing and creating labels.
+
+            Returns::
+                [
+                    {
+                        'id': Label's primary key
+                        'name': Name given to label
+                        'color': Color of label,
+                        'organization_id': Id of organization label belongs to,
+                        'is_applied': Whether or not the label is applied
+                    }
+                ]
+
+    ---
+    """
     serializer_class = LabelSerializer
     renderer_classes = (JSONRenderer,)
-    parser_classes = (JSONParser,)
+    parser_classes = (JSONParser, FormParser)
     queryset = Label.objects.none()
     filter_backends = (LabelFilterBackend,)
     pagination_class = NoPagination

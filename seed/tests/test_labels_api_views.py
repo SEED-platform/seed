@@ -1,13 +1,12 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author 'Piper Merriam <pipermerriam@gmail.com>', Paul Munday<paul@paulmunday.net>
 
 Unit tests for seed/views/labels.py
 """
 from django.core.urlresolvers import reverse
-from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
 
@@ -19,6 +18,7 @@ from seed.models import (
 from seed.test_helpers.fake import (
     mock_queryset_factory,
 )
+from seed.tests.util import DeleteModelsTestCase
 from seed.utils.organizations import (
     create_organization,
 )
@@ -27,7 +27,7 @@ from seed.views.labels import (
 )
 
 
-class TestLabelsViewSet(TestCase):
+class TestLabelsViewSet(DeleteModelsTestCase):
     """Test the label DRF viewset"""
 
     def test_results_are_not_actually_paginated(self):
@@ -110,7 +110,7 @@ class TestLabelsViewSet(TestCase):
         assert results_b == {organization_b.pk}
 
 
-class TestUpdateInventoryLabelsAPIView(TestCase):
+class TestUpdateInventoryLabelsAPIView(DeleteModelsTestCase):
 
     def setUp(self):
         self.api_view = UpdateInventoryLabelsAPIView()
@@ -138,16 +138,6 @@ class TestUpdateInventoryLabelsAPIView(TestCase):
             name='test', super_organization=self.org
         )
         self.client.login(**self.user_details)
-
-    def tearDown(self):
-        self.user.delete()
-        self.org.delete()
-        self.org_user.delete()
-        self.status_label.delete()
-
-        # Models can't be imported directly hence self
-        self.PropertyLabels.objects.all().delete()
-        self.TaxlotLabels.objects.all().delete()
 
     def test_get_label_desc(self):
         add_label_ids = [self.status_label.id]

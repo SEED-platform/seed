@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.inventory_detail_settings', [])
@@ -11,10 +11,33 @@ angular.module('BE.seed.controller.inventory_detail_settings', [])
     'inventory_service',
     'user_service',
     'columns',
-    function ($scope, $window, $uibModalInstance, $stateParams, inventory_service, user_service, columns) {
+    '$translate',
+    'i18nService', // from ui-grid
+    function ($scope, $window, $uibModalInstance, $stateParams, inventory_service, user_service, columns, $translate, i18nService) {
+
+      $scope.translations = {};
+
+      var needed_translations = [
+        'Reset Defaults'
+      ];
+
+      $translate(needed_translations).then(function succeeded (translations) {
+        $scope.translations = translations;
+      }, function failed (translationIds) {
+        $scope.translations = translationIds;
+      });
+
+      // let angular-translate be in charge ... need
+      // to feed the language-only part of its $translate setting into
+      // ui-grid's i18nService
+      var stripRegion = function (languageTag) {
+        return _.first(languageTag.split('_'));
+      };
+      i18nService.setCurrentLang(stripRegion($translate.proposedLanguage() || $translate.use()));
+
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.inventory = {
-        id: $stateParams.inventory_id
+        view_id: $stateParams.view_id
       };
       $scope.cycle = {
         id: $stateParams.cycle_id
@@ -66,8 +89,9 @@ angular.module('BE.seed.controller.inventory_detail_settings', [])
         enableFiltering: true,
         enableGridMenu: true,
         enableSorting: false,
+        flatEntityAccess: true,
         gridMenuCustomItems: [{
-          title: 'Reset defaults',
+          title: $scope.translations['Reset defaults'],
           action: restoreDefaults
         }],
         gridMenuShowHideColumns: false,
@@ -76,6 +100,9 @@ angular.module('BE.seed.controller.inventory_detail_settings', [])
         columnDefs: [{
           name: 'displayName',
           displayName: 'Column Name',
+          headerCellFilter: 'translate',
+          cellFilter: 'translate',
+          cellTemplate: '<div class="ui-grid-cell-contents inventory-settings-cell" title="TOOLTIP" data-after-content="{$ row.entity.name $}">{$ COL_FIELD CUSTOM_FILTERS $}</div>',
           enableHiding: false
         }],
         onRegisterApi: function (gridApi) {

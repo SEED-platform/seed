@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 // create and test new dataset with import
@@ -50,7 +50,7 @@ describe('When I visit the data set page', function () {
     // for remote travis ci to grab files
     browser.setFileDetector(new remote.FileDetector());
 
-    var fileToUpload = 'seed/tests/data/protractorProperties.xlsx';
+    var fileToUpload = 'seed/data_importer/tests/data/example-data-properties.xlsx';
     var absolutePath = path.resolve(fileToUpload);
 
     element.all(by.xpath('//input[@type="file"]')).first().sendKeys(absolutePath);
@@ -123,7 +123,7 @@ describe('When I visit the data set page', function () {
     // for remote travis ci to grab the files
     browser.setFileDetector(new remote.FileDetector());
 
-    var fileToUpload = 'seed/tests/data/protractorTaxlots.xlsx';
+    var fileToUpload = 'seed/data_importer/tests/data/example-data-taxlots.xlsx';
     var absolutePath = path.resolve(fileToUpload);
 
     element.all(by.xpath('//input[@type="file"]')).first().sendKeys(absolutePath);

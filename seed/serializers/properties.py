@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2017, The Regents of the University of California,
+:copyright (c) 2014 - 2018, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
@@ -24,12 +24,16 @@ from seed.models import (
     PropertyState,
     PropertyView,
     TaxLotProperty,
-    TaxLotView
+    TaxLotView,
 )
+from seed.serializers.base import ChoiceField
+from seed.serializers.building_file import BuildingFileSerializer
 from seed.serializers.certification import (
     GreenAssessmentPropertyReadOnlySerializer
 )
+from seed.serializers.measures import PropertyMeasureSerializer
 from seed.serializers.pint import PintQuantitySerializerField
+from seed.serializers.scenarios import ScenarioSerializer
 from seed.serializers.taxlots import TaxLotViewSerializer
 
 # expose internal model
@@ -37,18 +41,21 @@ PropertyLabel = apps.get_model('seed', 'Property_labels')
 
 CYCLE_FIELDS = ['id', 'name', 'start', 'end', 'created']
 
+# Need to reevaluate this list of fields that are being removed.
+# I would really like to keep this logic in the serializers and not here.
 PROPERTY_STATE_FIELDS = [
     field.name for field in PropertyState._meta.get_fields()
 ]
 REMOVE_FIELDS = [field for field in PROPERTY_STATE_FIELDS
                  if field.startswith('propertyauditlog__')]
-REMOVE_FIELDS.extend(['organization', 'import_file'])
+# eventually we can remove the measures, building_file, and property_state as soon as we remove
+# the use of PVFIELDS... someday
+REMOVE_FIELDS.extend(['organization', 'import_file', 'measures', 'building_files', 'scenarios'])
 for field in REMOVE_FIELDS:
     PROPERTY_STATE_FIELDS.remove(field)
 PROPERTY_STATE_FIELDS.extend(['organization_id', 'import_file_id'])
 
 PVFIELDS = ['state__{}'.format(f) for f in PROPERTY_STATE_FIELDS]
-
 PVFIELDS.extend(['cycle__{}'.format(f) for f in CYCLE_FIELDS])
 PVFIELDS.extend(['id', 'property_id'])
 
@@ -134,6 +141,10 @@ class PropertyMinimalSerializer(serializers.ModelSerializer):
 
 class PropertyStateSerializer(serializers.ModelSerializer):
     extra_data = serializers.JSONField(required=False)
+    measures = PropertyMeasureSerializer(source='propertymeasure_set', many=True, read_only=True)
+    scenarios = ScenarioSerializer(many=True, read_only=True)
+    files = BuildingFileSerializer(source='building_files', many=True, read_only=True)
+    analysis_state = ChoiceField(choices=PropertyState.ANALYSIS_STATE_TYPES)
 
     # support the pint objects
     gross_floor_area_pint = PintQuantitySerializerField(allow_null=True)
@@ -158,6 +169,7 @@ class PropertyStateSerializer(serializers.ModelSerializer):
     def to_representation(self, data):
         """Overwritten to handle time conversion"""
         result = super(PropertyStateSerializer, self).to_representation(data)
+        # for datetime to be isoformat and remove timezone data
         if data.generation_date:
             result['generation_date'] = make_naive(data.generation_date).isoformat()
 
@@ -167,13 +179,34 @@ class PropertyStateSerializer(serializers.ModelSerializer):
         if data.release_date:
             result['release_date'] = make_naive(data.release_date).isoformat()
 
+        if data.analysis_start_time:
+            result['analysis_start_time'] = make_naive(data.analysis_start_time).isoformat()
+
+        if data.analysis_end_time:
+            result['analysis_end_time'] = make_naive(data.analysis_end_time).isoformat()
+
         return result
+
+    # def create(self, validated_data):
+    #     """Need to update this method to add in the measures, scenarios, and files"""
+    #     return new_object
 
 
 class PropertyStateWritableSerializer(serializers.ModelSerializer):
-    """Used by PropertyViewAsState as a nested serializer"""
+    """
+    Used by PropertyViewAsState as a nested serializer
 
+    Not sure why this is different than PropertyStateSerializer
+    """
     extra_data = serializers.JSONField(required=False)
+    measures = PropertyMeasureSerializer(source='propertymeasure_set', many=True, read_only=True)
+    scenarios = ScenarioSerializer(many=True, read_only=True)
+    files = BuildingFileSerializer(source='building_files', many=True, read_only=True)
+    analysis_state = ChoiceField(choices=PropertyState.ANALYSIS_STATE_TYPES)
+
+    # to support the old state serializer method with the PROPERTY_STATE_FIELDS variables
+    import_file_id = serializers.IntegerField(allow_null=True, read_only=True)
+    organization_id = serializers.IntegerField()
 
     # support the pint objects
     gross_floor_area_pint = PintQuantitySerializerField(allow_null=True)
@@ -188,17 +221,35 @@ class PropertyStateWritableSerializer(serializers.ModelSerializer):
         fields = '__all__'
         model = PropertyState
 
+    def to_representation(self, data):
+        """Overwritten to handle time conversion"""
+        result = super(PropertyStateWritableSerializer, self).to_representation(data)
+        # for datetime to be isoformat and remove timezone data
+        if data.generation_date:
+            result['generation_date'] = make_naive(data.generation_date).isoformat()
+
+        if data.recent_sale_date:
+            result['recent_sale_date'] = make_naive(data.recent_sale_date).isoformat()
+
+        if data.release_date:
+            result['release_date'] = make_naive(data.release_date).isoformat()
+
+        if data.analysis_start_time:
+            result['analysis_start_time'] = make_naive(data.analysis_start_time).isoformat()
+
+        if data.analysis_end_time:
+            result['analysis_end_time'] = make_naive(data.analysis_end_time).isoformat()
+
+        return result
+
 
 class PropertyViewSerializer(serializers.ModelSerializer):
+    state = PropertyStateSerializer()
+
     class Meta:
         model = PropertyView
         depth = 1
-        fields = ('id', 'cycle', 'property')
-
-    def to_representation(self, obj):
-        result = super(PropertyViewSerializer, self).to_representation(obj)
-        result.update(**{'state': PropertyStateSerializer(obj.state).data})
-        return result
+        fields = ('id', 'cycle', 'state', 'property')
 
 
 class PropertyViewListSerializer(serializers.ListSerializer):
@@ -206,7 +257,10 @@ class PropertyViewListSerializer(serializers.ListSerializer):
 
     def to_representation(self, data):
         """Overridden to optimize db calls."""
-        # print(PVFIELDS)
+
+        # Not sure when the data is a models.Manager or a QuerySet. It seems
+        # like this method, in general, is going to cause a bunch of issues as we
+        # extend the data model.
         if isinstance(data, (models.Manager, models.QuerySet)):
             iterable = data.all().values(*PVFIELDS)
             view_ids = []
@@ -220,15 +274,10 @@ class PropertyViewListSerializer(serializers.ListSerializer):
             results = []
             for item in iterable:
                 cycle = [
-                    (field, getattr(item.cycle, field, None))
-                    for field in CYCLE_FIELDS
+                    (field, getattr(item.cycle, field, None)) for field in CYCLE_FIELDS
                 ]
                 cycle = OrderedDict(cycle)
-                state = [
-                    (field, getattr(item.state, field, None))
-                    for field in PROPERTY_STATE_FIELDS
-                ]
-                state = OrderedDict(state)
+                state = PropertyStateSerializer(item.state).data
                 representation = OrderedDict((
                     ('id', item.id),
                     ('property_id', item.property_id),
@@ -277,20 +326,13 @@ class PropertyViewAsStateSerializer(serializers.ModelSerializer):
     def __init__(self, instance=None, data=empty, **kwargs):
         """Override __init__ to get audit logs if instance is passed"""
         if instance and isinstance(instance, PropertyView):
-            self._audit_logs = PropertyAuditLog.objects.select_related(
-                'state'
-            ).filter(view=instance).order_by('-created', '-state_id')
-            current = self._audit_logs.filter(
-                state=instance.state
-            ).first()
-            self.current = PropertyAuditLogReadOnlySerializer(
-                current
-            ).data if current else {}
+            self._audit_logs = PropertyAuditLog.objects.select_related('state').filter(
+                view=instance).order_by('-created', '-state_id')
+            current = self._audit_logs.filter(state=instance.state).first()
+            self.current = PropertyAuditLogReadOnlySerializer(current).data if current else {}
         else:
             self.current = {}
-        super(PropertyViewAsStateSerializer, self).__init__(
-            instance=instance, data=data, **kwargs
-        )
+        super(PropertyViewAsStateSerializer, self).__init__(instance=instance, data=data, **kwargs)
 
     def to_internal_value(self, data):
         """Serialize state"""
@@ -395,9 +437,7 @@ class PropertyViewAsStateSerializer(serializers.ModelSerializer):
         validated_data['property_id'] = property_id
         cycle_id = conv_value(validated_data.pop('cycle'))
         validated_data['cycle_id'] = cycle_id
-        new_property_state_serializer = PropertyStateWritableSerializer(
-            data=state
-        )
+        new_property_state_serializer = PropertyStateWritableSerializer(data=state)
         if new_property_state_serializer.is_valid():
             new_state = new_property_state_serializer.save()
         instance = PropertyView.objects.create(

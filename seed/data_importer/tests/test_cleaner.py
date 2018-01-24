@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import logging
@@ -49,7 +49,7 @@ class TestCleaner(TestCase):
         mapping.column_raw.add(raw)
         mapping.column_mapped.add(mapped)
 
-    def test_build_cleaner(self):
+    def test_clean_value(self):
         cleaner = tasks._build_cleaner(self.org)
 
         # data is cleaned correctly for fields on PropertyState

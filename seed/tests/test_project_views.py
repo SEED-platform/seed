@@ -1,13 +1,12 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import json
 
 from django.core.urlresolvers import reverse_lazy
-from django.test import TestCase
 from django.utils.text import slugify
 
 from seed.data_importer.models import ImportRecord
@@ -21,15 +20,15 @@ from seed.lib.superperms.orgs.models import (
 )
 from seed.models import (
     Project, ProjectPropertyView,
-    Property, PropertyState, PropertyView
+    PropertyView
 )
 from seed.test_helpers import fake
-from seed.tests.util import FakeRequest
+from seed.tests.util import FakeRequest, DeleteModelsTestCase
 
 DEFAULT_NAME = 'proj1'
 
 
-class ProjectViewTests(TestCase):
+class ProjectViewTests(DeleteModelsTestCase):
     """
     Tests of the SEED project views: get_project, get_projects, create_project,
     delete_project, update_project, add_buildings_to_project,
@@ -50,15 +49,6 @@ class ProjectViewTests(TestCase):
         self.client.login(**user_details)
         self.fake_request = FakeRequest(user=self.user)
         self.maxDiff = None
-
-    def tearDown(self):
-        self.user.delete()
-        self.org.delete()
-        Property.objects.all().delete()
-        PropertyState.objects.all().delete()
-        PropertyView.objects.all().delete()
-        Project.objects.all().delete()
-        ProjectPropertyView.objects.all().delete()
 
     def _create_project(self, name=DEFAULT_NAME, org_id=None, user=None,
                         via_http=False, **kwargs):
@@ -100,8 +90,8 @@ class ProjectViewTests(TestCase):
     def _create_property_view(self, project):
         property_factory = fake.FakePropertyFactory(organization=self.org)
         property = property_factory.get_property()
-        property_state_factory = fake.FakePropertyStateFactory()
-        state = property_state_factory.get_property_state(self.org)
+        property_state_factory = fake.FakePropertyStateFactory(organization=self.org)
+        state = property_state_factory.get_property_state()
         cycle_factory = fake.FakeCycleFactory()
         cycle = cycle_factory.get_cycle()
         property_view, _ = PropertyView.objects.get_or_create(
@@ -318,9 +308,7 @@ class ProjectViewTests(TestCase):
 
     def test_delete_project(self):
         """tests delete_project"""
-        project = json.loads(
-            self._create_project(name='proj1', via_http=True).content
-        )['project']
+        project = json.loads(self._create_project(name='proj1', via_http=True).content)['project']
         self._set_role_level(ROLE_MEMBER)
         # standard case
         self.assertEqual(Project.objects.all().count(), 1)

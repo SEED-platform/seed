@@ -1,12 +1,12 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author Nicholas Long <nicholas.long@nrel.gov>
 """
 import logging
 
-from seed.models import PropertyState, TaxLotState
+from seed.models import PropertyState, TaxLotState, Property, TaxLot
 from seed.utils import constants
 
 _log = logging.getLogger(__name__)
@@ -35,31 +35,56 @@ class MappingData(object):
 
         # So bedes compliant fields are defined in the database? That is strange
         self.data = []
-        self.property_data = []
-        self.tax_lot_data = []
+        self.property_state_data = []
+        self.tax_lot_state_data = []
 
         for f in PropertyState._meta.fields:
-            # _source have been removed from new data model
-            if f.name not in exclude_fields:  # and '_source' not in f.name:
+            if f.name not in exclude_fields:
                 column = {
                     'table': 'PropertyState',
                     'name': f.name,
                     'type': f.get_internal_type() if f.get_internal_type else 'string',
-                    'js_type': self.normalize_mappable_type(f.get_internal_type()),
+                    'js_type': self._normalize_mappable_type(f.get_internal_type()),
                     'schema': 'BEDES',
                     'extra_data': False,
                 }
                 self.data.append(column)
 
         for f in TaxLotState._meta.fields:
-            # _source have been removed from new data model
-            if f.name not in exclude_fields:  # and '_source' not in f.name:
+            if f.name not in exclude_fields:
                 column = {
                     'table': 'TaxLotState',
                     'name': f.name,
                     'type': f.get_internal_type() if f.get_internal_type else 'string',
-                    'js_type': self.normalize_mappable_type(f.get_internal_type()),
+                    'js_type': self._normalize_mappable_type(f.get_internal_type()),
                     'schema': 'BEDES',
+                    'extra_data': False,
+                }
+
+                self.data.append(column)
+
+        # add in the property and taxlot fields
+        for f in TaxLot._meta.fields:
+            if f.name not in exclude_fields:
+                column = {
+                    'table': 'TaxLot',
+                    'name': f.name,
+                    'type': f.get_internal_type() if f.get_internal_type else 'string',
+                    'js_type': self._normalize_mappable_type(f.get_internal_type()),
+                    'schema': 'Unknown',
+                    'extra_data': False,
+                }
+
+                self.data.append(column)
+
+        for f in Property._meta.fields:
+            if f.name not in exclude_fields:
+                column = {
+                    'table': 'Property',
+                    'name': f.name,
+                    'type': f.get_internal_type() if f.get_internal_type else 'string',
+                    'js_type': self._normalize_mappable_type(f.get_internal_type()),
+                    'schema': 'Unknown',
                     'extra_data': False,
                 }
 
@@ -67,7 +92,7 @@ class MappingData(object):
 
         self.sort_data()
 
-    def normalize_mappable_type(self, in_str):
+    def _normalize_mappable_type(self, in_str):
         """
         Normalize the data types for when we communicate the fields in JavaScript. ensures that the data
         types are consistent.
@@ -103,7 +128,7 @@ class MappingData(object):
                 {
                     'name': c.column_name,
                     'type': unit,
-                    'js_type': self.normalize_mappable_type(unit),
+                    'js_type': self._normalize_mappable_type(unit),
                     'schema': 'BEDES',
                     'table': c.table_name,
                     'extra_data': True,
@@ -194,11 +219,13 @@ class MappingData(object):
         self.data = sorted(self.data,
                            key=lambda k: (k['table'].lower(), k['name']))
 
-        self.property_data = sorted([x for x in self.data if x['table'] == 'PropertyState'],
-                                    key=lambda k: (k['table'].lower(), k['name']))
+        # Only look at the property state and tax lot state. The fields that are on Property and Tax Lot just ignore
+        # for now.
+        self.property_state_data = sorted([x for x in self.data if x['table'] == 'PropertyState'],
+                                          key=lambda k: (k['table'].lower(), k['name']))
 
-        self.tax_lot_data = sorted([x for x in self.data if x['table'] == 'TaxLotState'],
-                                   key=lambda k: (k['table'].lower(), k['name']))
+        self.tax_lot_state_data = sorted([x for x in self.data if x['table'] == 'TaxLotState'],
+                                         key=lambda k: (k['table'].lower(), k['name']))
 
     def find_column(self, table_name, column_name):
         """

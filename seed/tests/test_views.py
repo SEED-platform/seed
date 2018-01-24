@@ -1,20 +1,17 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import json
-
 from datetime import datetime
+
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.test import TestCase
 from django.utils import timezone
 
 from seed import decorators
-from seed.api.v1.views import (
-    DEFAULT_CUSTOM_COLUMNS,
-)
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
 from seed.lib.mcm.reader import ROW_DELIMITER
@@ -22,15 +19,11 @@ from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
     Column,
     ColumnMapping,
-    Cycle,
     FLOAT,
-    Property,
-    PropertyState,
     PropertyView,
     StatusLabel,
     TaxLot,
     TaxLotProperty,
-    TaxLotState,
     TaxLotView,
     Unit,
 )
@@ -40,6 +33,16 @@ from seed.test_helpers.fake import (
     FakeTaxLotStateFactory
 )
 from seed.utils.cache import set_cache
+
+DEFAULT_CUSTOM_COLUMNS = [
+    'project_id',
+    'project_building_snapshots__status_label__name',
+    'address_line_1',
+    'city',
+    'state_province',
+]
+
+from seed.tests.util import DeleteModelsTestCase
 
 COLUMNS_TO_SEND = DEFAULT_CUSTOM_COLUMNS + ['postal_code', 'pm_parent_property_id',
                                             'calculated_taxlot_ids', 'primary', 'extra_data_field',
@@ -64,7 +67,7 @@ class MainViewTests(TestCase):
         self.assertEqual(200, response.status_code)
 
 
-class DefaultColumnsViewTests(TestCase):
+class DefaultColumnsViewTests(DeleteModelsTestCase):
     """
     Tests of the SEED default custom saved columns
     """
@@ -85,28 +88,6 @@ class DefaultColumnsViewTests(TestCase):
 
         self.client.login(**user_details)
 
-    def test_get_default_columns_with_set_columns(self):
-        columns = ['source_facility_id', 'test_column_0']
-        self.user.default_custom_columns = columns
-        self.user.save()
-        columns = ['source_facility_id', 'test_column_0']
-        url = reverse_lazy('api:v1:columns-get-default-columns')
-        response = self.client.get(url)
-        json_string = response.content
-        data = json.loads(json_string)
-
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(data['columns'], columns)
-
-    def test_get_default_columns_initial_state(self):
-        url = reverse_lazy('api:v1:columns-get-default-columns')
-        response = self.client.get(url)
-        json_string = response.content
-        data = json.loads(json_string)
-
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(data['columns'], DEFAULT_CUSTOM_COLUMNS)
-
     def test_set_default_columns(self):
         url = reverse_lazy('api:v1:set_default_columns')
         columns = ['s', 'c1', 'c2']
@@ -125,11 +106,11 @@ class DefaultColumnsViewTests(TestCase):
         self.assertEqual(200, response.status_code)
 
         # get the columns
-        url = reverse_lazy('api:v1:columns-get-default-columns')
-        response = self.client.get(url)
-        json_string = response.content
-        data = json.loads(json_string)
-        self.assertEqual(data['columns'], columns)
+        # url = reverse_lazy('api:v1:columns-get-default-columns')
+        # response = self.client.get(url)
+        # json_string = response.content
+        # data = json.loads(json_string)
+        # self.assertEqual(data['columns'], columns)
 
         # get show_shared_buildings
         url = reverse_lazy('api:v2:users-shared-buildings', args=[self.user.pk])
@@ -139,62 +120,44 @@ class DefaultColumnsViewTests(TestCase):
         self.assertEqual(data['show_shared_buildings'], True)
 
         # set show_shared_buildings to False
-        post_data['show_shared_buildings'] = False
-        url = reverse_lazy('api:v1:set_default_columns')
-        response = self.client.post(
-            url,
-            content_type='application/json',
-            data=json.dumps(post_data)
-        )
-        json_string = response.content
-        data = json.loads(json_string)
-        self.assertEqual(200, response.status_code)
+        # post_data['show_shared_buildings'] = False
+        # url = reverse_lazy('api:v1:set_default_columns')
+        # response = self.client.post(
+        #     url,
+        #     content_type='application/json',
+        #     data=json.dumps(post_data)
+        # )
+        # json_string = response.content
+        # data = json.loads(json_string)
+        # self.assertEqual(200, response.status_code)
 
         # get show_shared_buildings
-        url = reverse_lazy('api:v2:users-shared-buildings', args=[self.user.pk])
-        response = self.client.get(url)
-        json_string = response.content
-        data = json.loads(json_string)
-        self.assertEqual(data['show_shared_buildings'], False)
+        # url = reverse_lazy('api:v2:users-shared-buildings', args=[self.user.pk])
+        # response = self.client.get(url)
+        # json_string = response.content
+        # data = json.loads(json_string)
+        # self.assertEqual(data['show_shared_buildings'], False)
 
-    def test_get_columns(self):
+    def test_get_all_columns(self):
         # test building list columns
-        response = self.client.get(reverse('api:v1:columns-list'), {
+        response = self.client.get(reverse('api:v2:columns-list'), {
             'organization_id': self.org.id
         })
         data = json.loads(response.content)
-        self.assertEqual(data['fields'][0], {
-            u'checked': False,
-            u'class': u'is_aligned_right',
-            u'field_type': u'building_information',
-            u'link': True,
-            u'sort_column': u'address_line_1',
-            u'sortable': True,
-            u'static': False,
-            u'title': u'Address Line 1',
-            u'type': u'string',
-        })
 
-        # test org settings columns
-        response = self.client.get(reverse('api:v1:columns-list'), {
-            'organization_id': self.org.id,
-            'all_fields': 'true'
-        })
-        data = json.loads(response.content)
-        self.assertEqual(data['fields'][0], {
-            "field_type": "building_information",
-            "sortable": True,
-            "title": "Address Line 1",
-            "sort_column": "address_line_1",
-            "link": True,
-            "checked": False,
-            "static": False,
-            "type": "string",
-            "class": "is_aligned_right"
-        })
+        expected = {
+            u'displayName': u'PM Property ID',
+            u'name': u'pm_property_id',
+            u'dbName': u'pm_property_id',
+            u'dataType': u'string',
+            u'related': False,
+            u'table': u'PropertyState',
+            u'sharedFieldType': u'None',
+            u'pinnedLeft': True
+        }
 
-    def tearDown(self):
-        self.user.delete()
+        # randomly check a column
+        self.assertIn(expected, data['columns'])
 
 
 class GetDatasetsViewsTests(TestCase):
@@ -293,13 +256,10 @@ class ImportFileViewsTests(TestCase):
         self.user = User.objects.create_superuser(**user_details)
         self.org = Organization.objects.create()
         self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
-        self.cycle = self.cycle_factory.get_cycle(
-            start=datetime(2016, 1, 1, tzinfo=timezone.get_current_timezone()))
+        self.cycle = self.cycle_factory.get_cycle(start=datetime(2016, 1, 1, tzinfo=timezone.get_current_timezone()))
         OrganizationUser.objects.create(user=self.user, organization=self.org)
 
-        self.import_record = ImportRecord.objects.create(owner=self.user)
-        self.import_record.super_organization = self.org
-        self.import_record.save()
+        self.import_record = ImportRecord.objects.create(owner=self.user, super_organization=self.org)
         self.import_file = ImportFile.objects.create(
             import_record=self.import_record,
             cycle=self.cycle,
@@ -309,10 +269,8 @@ class ImportFileViewsTests(TestCase):
         self.client.login(**user_details)
 
     def test_get_import_file(self):
-        response = self.client.get(
-            reverse('api:v2:import_files-detail', args=[self.import_file.pk]))
-        self.assertEqual(self.import_file.pk,
-                         json.loads(response.content)['import_file']['id'])
+        response = self.client.get(reverse('api:v2:import_files-detail', args=[self.import_file.pk]))
+        self.assertEqual(self.import_file.pk, json.loads(response.content)['import_file']['id'])
 
     def test_delete_file(self):
         url = reverse("api:v2:import_files-detail", args=[self.import_file.pk])
@@ -321,8 +279,7 @@ class ImportFileViewsTests(TestCase):
             content_type='application/json',
         )
         self.assertEqual('success', json.loads(response.content)['status'])
-        self.assertFalse(
-            ImportFile.objects.filter(pk=self.import_file.pk).exists())
+        self.assertFalse(ImportFile.objects.filter(pk=self.import_file.pk).exists())
 
     def test_get_matching_results(self):
         response = self.client.get(
@@ -701,7 +658,7 @@ class TestMCMViews(TestCase):
         self.assertEqual(self.org, import_record.super_organization)
 
 
-class InventoryViewTests(TestCase):
+class InventoryViewTests(DeleteModelsTestCase):
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -714,8 +671,8 @@ class InventoryViewTests(TestCase):
         self.cycle_factory = FakeCycleFactory(organization=self.org,
                                               user=self.user)
         self.property_factory = FakePropertyFactory(organization=self.org)
-        self.property_state_factory = FakePropertyStateFactory()
-        self.taxlot_state_factory = FakeTaxLotStateFactory()
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+        self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
         self.org_user = OrganizationUser.objects.create(
             user=self.user, organization=self.org
         )
@@ -726,23 +683,8 @@ class InventoryViewTests(TestCase):
         )
         self.client.login(**user_details)
 
-    def tearDown(self):
-        self.status_label.delete()
-        Column.objects.all().delete()
-        Property.objects.all().delete()
-        PropertyState.objects.all().delete()
-        PropertyView.objects.all().delete()
-        TaxLot.objects.all().delete()
-        TaxLotProperty.objects.all().delete()
-        TaxLotState.objects.all().delete()
-        TaxLotView.objects.all().delete()
-        Cycle.objects.all().delete()
-        self.user.delete()
-        self.org.delete()
-        self.org_user.delete()
-
     def test_get_properties(self):
-        state = self.property_state_factory.get_property_state(self.org)
+        state = self.property_state_factory.get_property_state()
         prprty = self.property_factory.get_property()
         PropertyView.objects.create(
             property=prprty, cycle=self.cycle, state=state
@@ -760,7 +702,7 @@ class InventoryViewTests(TestCase):
         self.assertEquals(results['address_line_1'], state.address_line_1)
 
     def test_get_properties_cycle_id(self):
-        state = self.property_state_factory.get_property_state(self.org)
+        state = self.property_state_factory.get_property_state()
         prprty = self.property_factory.get_property()
         PropertyView.objects.create(
             property=prprty, cycle=self.cycle, state=state
@@ -784,10 +726,7 @@ class InventoryViewTests(TestCase):
             'paint color': 'pink',
             'number of secret gadgets': 5
         }
-        state = self.property_state_factory.get_property_state(
-            self.org,
-            extra_data=extra_data
-        )
+        state = self.property_state_factory.get_property_state(extra_data=extra_data)
         prprty = self.property_factory.get_property()
         PropertyView.objects.create(
             property=prprty, cycle=self.cycle, state=state
@@ -813,21 +752,21 @@ class InventoryViewTests(TestCase):
             gross_floor_area_pint=3.14159
         )
         prprty = self.property_factory.get_property()
-        PropertyView.objects.create(
+        pv = PropertyView.objects.create(
             property=prprty, cycle=self.cycle, state=state
         )
         params = {
             'organization_id': self.org.pk,
             'cycle_id': self.cycle.id
         }
-        url = reverse('api:v2:properties-detail', args=[prprty.id])
+        url = reverse('api:v2:properties-detail', args=[pv.id])
         response = self.client.get(url, params)
         result = json.loads(response.content)
         self.assertEqual(result['state']['gross_floor_area_pint'], 3.14159)
 
         # test writing the field -- does not work for pint fields, but other fields should persist fine
         # /api/v2/properties/4/?cycle_id=4&organization_id=3
-        url = reverse('api:v2:properties-detail', args=[prprty.id]) + '?cycle_id=%s&organization_id=%s' % (
+        url = reverse('api:v2:properties-detail', args=[pv.id]) + '?cycle_id=%s&organization_id=%s' % (
             self.cycle.id, self.org.id)
         params = {
             'state': {
@@ -838,17 +777,16 @@ class InventoryViewTests(TestCase):
         response = self.client.put(url, data=json.dumps(params), content_type='application/json')
         result = json.loads(response.content)
         self.assertEqual(result['state']['gross_floor_area'], 11235)
-        self.assertEqual(result['state']['gross_floor_area_pint'], '3.14')  # this becomes the magnitude in pintencocer
-        self.assertEqual(result['state']['site_eui_pint'], '90.10')  # this becomes the magnitude in pintencoder
+        self.assertEqual(result['state']['gross_floor_area_pint'], 3.14159)
+        self.assertEqual(result['state']['site_eui_pint'], 90.1)
 
     def test_get_properties_with_taxlots(self):
-        property_state = self.property_state_factory.get_property_state(self.org)
+        property_state = self.property_state_factory.get_property_state()
         property_property = self.property_factory.get_property(campus=True)
         property_view = PropertyView.objects.create(
             property=property_property, cycle=self.cycle, state=property_state
         )
         taxlot_state = self.taxlot_state_factory.get_taxlot_state(
-            self.org,
             address_line_1=property_state.address_line_1,
             postal_code=property_state.postal_code
         )
@@ -880,13 +818,12 @@ class InventoryViewTests(TestCase):
             'paint color': 'pink',
             'number of secret gadgets': 5
         }
-        property_state = self.property_state_factory.get_property_state(self.org)
+        property_state = self.property_state_factory.get_property_state()
         prprty = self.property_factory.get_property()
         property_view = PropertyView.objects.create(
             property=prprty, cycle=self.cycle, state=property_state
         )
         taxlot_state = self.taxlot_state_factory.get_taxlot_state(
-            self.org,
             address_line_1=property_state.address_line_1,
             postal_code=property_state.postal_code,
             extra_data=extra_data,
@@ -914,7 +851,7 @@ class InventoryViewTests(TestCase):
         self.assertEquals(related['number of secret gadgets'], 5)
 
     def test_get_properties_page_not_an_integer(self):
-        state = self.property_state_factory.get_property_state(self.org)
+        state = self.property_state_factory.get_property_state()
         prprty = self.property_factory.get_property()
         PropertyView.objects.create(
             property=prprty, cycle=self.cycle, state=state
@@ -954,7 +891,7 @@ class InventoryViewTests(TestCase):
         self.assertEquals(pagination['total'], 0)
 
     def test_get_property(self):
-        property_state = self.property_state_factory.get_property_state(self.org)
+        property_state = self.property_state_factory.get_property_state()
         property_property = self.property_factory.get_property()
         property_property.labels.add(self.status_label)
         property_property.save()
@@ -962,7 +899,6 @@ class InventoryViewTests(TestCase):
             property=property_property, cycle=self.cycle, state=property_state
         )
         taxlot_state = self.taxlot_state_factory.get_taxlot_state(
-            self.org,
             postal_code=property_state.postal_code
         )
         taxlot = TaxLot.objects.create(organization=self.org)
@@ -974,29 +910,30 @@ class InventoryViewTests(TestCase):
             cycle=self.cycle
         )
         params = {
-            'cycle_id': self.cycle.pk,
-            'organization_id': self.org.pk,
-            'page': 1,
-            'per_page': 999999999,
+            'organization_id': self.org.pk
         }
         response = self.client.get(
-            '/api/v2/properties/' + str(property_property.id) + '/',
+            '/api/v2/properties/' + str(property_view.id) + '/',
             params
         )
         results = json.loads(response.content)
 
         self.assertEqual(results['status'], 'success')
-        # There is a history for some reason here. Hmm... commenting out for now
-        # self.assertEqual(results['history'], [])
+
+        # there should be 1 history item now because we are creating an audit log entry
+        self.assertEqual(len(results['history']), 1)
         self.assertEqual(results['property']['labels'], [self.status_label.pk])
         self.assertEqual(results['changed_fields'], None)
 
         expected_property = {
-            'campus': False, 'id': property_property.pk,
-            'organization': self.org.pk, 'parent_property': None,
+            'id': property_property.pk,
+            'campus': False,
+            'organization': self.org.pk,
+            'parent_property': None,
             'labels': [self.status_label.pk]
         }
-        self.assertEquals(results['property'], expected_property)
+        self.assertDictContainsSubset(expected_property, results['property'])
+        self.assertTrue(results['property']['created'])
 
         state = results['state']
         self.assertEquals(state['id'], property_state.pk)
@@ -1011,9 +948,9 @@ class InventoryViewTests(TestCase):
 
         rtaxlot = results['taxlots'][0]
         self.assertEqual(rtaxlot['id'], taxlot.pk)
-        self.assertEqual(
+        self.assertDictContainsSubset(
+            {'id': taxlot.pk, 'organization': self.org.pk, 'labels': []},
             rtaxlot['taxlot'],
-            {'id': taxlot.pk, 'organization': self.org.pk, 'labels': []}
         )
 
         tcycle = rtaxlot['cycle']
@@ -1026,13 +963,12 @@ class InventoryViewTests(TestCase):
         self.assertEqual(tstate['address_line_1'], taxlot_state.address_line_1)
 
     def test_get_property_multiple_taxlots(self):
-        property_state = self.property_state_factory.get_property_state(self.org)
+        property_state = self.property_state_factory.get_property_state()
         property_property = self.property_factory.get_property()
         property_view = PropertyView.objects.create(
             property=property_property, cycle=self.cycle, state=property_state
         )
         taxlot_state_1 = self.taxlot_state_factory.get_taxlot_state(
-            self.org,
             postal_code=property_state.postal_code
         )
         taxlot_1 = TaxLot.objects.create(organization=self.org)
@@ -1044,7 +980,6 @@ class InventoryViewTests(TestCase):
             cycle=self.cycle
         )
         taxlot_state_2 = self.taxlot_state_factory.get_taxlot_state(
-            self.org,
             postal_code=property_state.postal_code
         )
         taxlot_2 = TaxLot.objects.create(organization=self.org)
@@ -1056,13 +991,10 @@ class InventoryViewTests(TestCase):
             cycle=self.cycle
         )
         params = {
-            'cycle_id': self.cycle.pk,
-            'organization_id': self.org.pk,
-            'page': 1,
-            'per_page': 999999999,
+            'organization_id': self.org.pk
         }
         response = self.client.get(
-            '/api/v2/properties/' + str(property_property.id) + '/',
+            '/api/v2/properties/' + str(property_view.id) + '/',
             params
         )
         results = json.loads(response.content)
@@ -1076,9 +1008,9 @@ class InventoryViewTests(TestCase):
 
         rtaxlot_1 = results['taxlots'][0]
         self.assertEqual(rtaxlot_1['id'], taxlot_1.pk)
-        self.assertEqual(
+        self.assertDictContainsSubset(
+            {'id': taxlot_1.pk, 'organization': self.org.pk, 'labels': []},
             rtaxlot_1['taxlot'],
-            {'id': taxlot_1.pk, 'organization': self.org.pk, 'labels': []}
         )
 
         tcycle_1 = rtaxlot_1['cycle']
@@ -1092,9 +1024,9 @@ class InventoryViewTests(TestCase):
 
         rtaxlot_2 = results['taxlots'][1]
         self.assertEqual(rtaxlot_2['id'], taxlot_2.pk)
-        self.assertEqual(
+        self.assertDictContainsSubset(
+            {'id': taxlot_2.pk, 'organization': self.org.pk, 'labels': []},
             rtaxlot_2['taxlot'],
-            {'id': taxlot_2.pk, 'organization': self.org.pk, 'labels': []}
         )
 
         tcycle_2 = rtaxlot_2['cycle']
@@ -1107,27 +1039,25 @@ class InventoryViewTests(TestCase):
         self.assertEqual(tstate_2['address_line_1'], taxlot_state_2.address_line_1)
 
         expected_property = {
-            'campus': False, 'id': property_property.pk, 'labels': [],
-            'organization': self.org.pk, 'parent_property': None,
+            'campus': False,
+            'id': property_property.pk,
+            'labels': [],
+            'organization': self.org.pk,
+            'parent_property': None,
         }
-        self.assertEquals(results['property'], expected_property)
+        self.assertDictContainsSubset(expected_property, results['property'])
 
         state = results['state']
-        self.assertEquals(state['address_line_1'],
-                          property_state.address_line_1)
+        self.assertEquals(state['address_line_1'], property_state.address_line_1)
         self.assertEquals(state['id'], property_state.pk)
 
     def test_get_taxlots(self):
-        property_state = self.property_state_factory.get_property_state(
-            self.org,
-            extra_data={'extra_data_field': 'edfval'},
-        )
+        property_state = self.property_state_factory.get_property_state(extra_data={'extra_data_field': 'edfval'})
         property_property = self.property_factory.get_property()
         property_view = PropertyView.objects.create(
             property=property_property, cycle=self.cycle, state=property_state
         )
         taxlot_state = self.taxlot_state_factory.get_taxlot_state(
-            self.org,
             postal_code=property_state.postal_code
         )
         taxlot = TaxLot.objects.create(organization=self.org)
@@ -1163,13 +1093,12 @@ class InventoryViewTests(TestCase):
         self.assertEquals(related['extra_data_field'], 'edfval')
 
     def test_get_taxlots_no_cycle_id(self):
-        property_state = self.property_state_factory.get_property_state(self.org)
+        property_state = self.property_state_factory.get_property_state()
         property_property = self.property_factory.get_property()
         property_view = PropertyView.objects.create(
             property=property_property, cycle=self.cycle, state=property_state
         )
         taxlot_state = self.taxlot_state_factory.get_taxlot_state(
-            self.org,
             postal_code=property_state.postal_code
         )
         taxlot = TaxLot.objects.create(organization=self.org)
@@ -1189,7 +1118,7 @@ class InventoryViewTests(TestCase):
 
         self.assertEquals(len(results), 1)
 
-        property_state_1 = self.property_state_factory.get_property_state(self.org)
+        property_state_1 = self.property_state_factory.get_property_state()
         property_1 = self.property_factory.get_property()
         property_view_1 = PropertyView.objects.create(
             property=property_1, cycle=self.cycle, state=property_state_1
@@ -1223,16 +1152,12 @@ class InventoryViewTests(TestCase):
         )
 
     def test_get_taxlots_multiple_taxlots(self):
-        property_state = self.property_state_factory.get_property_state(
-            self.org,
-            extra_data={'extra_data_field': 'edfval'},
-        )
+        property_state = self.property_state_factory.get_property_state(extra_data={'extra_data_field': 'edfval'})
         property_property = self.property_factory.get_property()
         property_view = PropertyView.objects.create(
             property=property_property, cycle=self.cycle, state=property_state
         )
         taxlot_state_1 = self.taxlot_state_factory.get_taxlot_state(
-            self.org,
             postal_code=property_state.postal_code
         )
         taxlot_1 = TaxLot.objects.create(organization=self.org)
@@ -1243,7 +1168,6 @@ class InventoryViewTests(TestCase):
             property_view=property_view, taxlot_view=taxlot_view_1, cycle=self.cycle
         )
         taxlot_state_2 = self.taxlot_state_factory.get_taxlot_state(
-            self.org,
             postal_code=property_state.postal_code
         )
         taxlot_2 = TaxLot.objects.create(organization=self.org)
@@ -1295,13 +1219,12 @@ class InventoryViewTests(TestCase):
         self.assertEquals(related['extra_data_field'], 'edfval')
 
     def test_get_taxlots_extra_data(self):
-        property_state = self.property_state_factory.get_property_state(self.org)
+        property_state = self.property_state_factory.get_property_state()
         property_property = self.property_factory.get_property()
         property_view = PropertyView.objects.create(
             property=property_property, cycle=self.cycle, state=property_state
         )
         taxlot_state = self.taxlot_state_factory.get_taxlot_state(
-            self.org,
             postal_code=property_state.postal_code,
             extra_data={'extra_data_field': 'edfval'}
         )
@@ -1328,16 +1251,12 @@ class InventoryViewTests(TestCase):
         self.assertEquals(len(result['related']), 1)
 
     def test_get_taxlots_page_not_an_integer(self):
-        property_state = self.property_state_factory.get_property_state(
-            self.org,
-            extra_data={'extra_data_field': 'edfval'},
-        )
+        property_state = self.property_state_factory.get_property_state(extra_data={'extra_data_field': 'edfval'})
         property_property = self.property_factory.get_property()
         property_view = PropertyView.objects.create(
             property=property_property, cycle=self.cycle, state=property_state
         )
         taxlot_state = self.taxlot_state_factory.get_taxlot_state(
-            self.org,
             postal_code=property_state.postal_code
         )
         taxlot = TaxLot.objects.create(organization=self.org)
@@ -1366,16 +1285,12 @@ class InventoryViewTests(TestCase):
         self.assertEquals(pagination['total'], 1)
 
     def test_get_taxlots_empty_page(self):
-        property_state = self.property_state_factory.get_property_state(
-            self.org,
-            extra_data={'extra_data_field': 'edfval'},
-        )
+        property_state = self.property_state_factory.get_property_state(extra_data={'extra_data_field': 'edfval'})
         property_property = self.property_factory.get_property()
         property_view = PropertyView.objects.create(
             property=property_property, cycle=self.cycle, state=property_state
         )
         taxlot_state = self.taxlot_state_factory.get_taxlot_state(
-            self.org,
             postal_code=property_state.postal_code
         )
         taxlot = TaxLot.objects.create(organization=self.org)
@@ -1404,16 +1319,12 @@ class InventoryViewTests(TestCase):
         self.assertEquals(pagination['total'], 1)
 
     def test_get_taxlots_missing_jurisdiction_tax_lot_id(self):
-        property_state = self.property_state_factory.get_property_state(
-            self.org,
-            extra_data={'extra_data_field': 'edfval'}
-        )
+        property_state = self.property_state_factory.get_property_state(extra_data={'extra_data_field': 'edfval'})
         property_property = self.property_factory.get_property(self.org)
         property_view = PropertyView.objects.create(
             property=property_property, cycle=self.cycle, state=property_state
         )
         taxlot_state = self.taxlot_state_factory.get_taxlot_state(
-            self.org,
             postal_code=property_state.postal_code,
             jurisdiction_tax_lot_id=None
         )
@@ -1434,14 +1345,14 @@ class InventoryViewTests(TestCase):
         self.assertEqual(related['calculated_taxlot_ids'], 'Missing')
 
     def test_get_taxlot(self):
-        taxlot_state = self.taxlot_state_factory.get_taxlot_state(self.org)
+        taxlot_state = self.taxlot_state_factory.get_taxlot_state()
         taxlot = TaxLot.objects.create(organization=self.org)
         taxlot.labels.add(self.status_label)
         taxlot_view = TaxLotView.objects.create(
             taxlot=taxlot, state=taxlot_state, cycle=self.cycle
         )
 
-        property_state_1 = self.property_state_factory.get_property_state(self.org)
+        property_state_1 = self.property_state_factory.get_property_state()
         property_property_1 = self.property_factory.get_property()
         property_view_1 = PropertyView.objects.create(
             property=property_property_1, cycle=self.cycle,
@@ -1452,7 +1363,7 @@ class InventoryViewTests(TestCase):
             cycle=self.cycle
         )
 
-        property_state_2 = self.property_state_factory.get_property_state(self.org)
+        property_state_2 = self.property_state_factory.get_property_state()
         property_property_2 = self.property_factory.get_property()
         property_view_2 = PropertyView.objects.create(
             property=property_property_2, cycle=self.cycle,
@@ -1464,12 +1375,9 @@ class InventoryViewTests(TestCase):
         )
 
         params = {
-            'cycle_id': self.cycle.pk,
             'organization_id': self.org.pk,
-            'page': 1,
-            'per_page': 999999999,
         }
-        response = self.client.get('/api/v2/taxlots/' + str(taxlot.id) + '/', params)
+        response = self.client.get('/api/v2/taxlots/' + str(taxlot_view.id) + '/', params)
         result = json.loads(response.content)
 
         cycle = result['cycle']
@@ -1500,12 +1408,13 @@ class InventoryViewTests(TestCase):
         state = result['state']
         self.assertEqual(state['id'], taxlot_state.pk)
         self.assertEqual(state['block_number'], taxlot_state.block_number)
-        self.assertEqual(
-            result['taxlot'], {
+        self.assertDictContainsSubset(
+            {
                 'id': taxlot.pk,
                 'labels': [self.status_label.pk],
                 'organization': self.org.pk
-            }
+            },
+            result['taxlot'],
         )
 
     def test_get_cycles(self):
@@ -1546,9 +1455,11 @@ class InventoryViewTests(TestCase):
 
         pm_property_id_col = {
             'name': 'pm_property_id',
+            'dbName': 'pm_property_id',
             'table': 'PropertyState',
             'displayName': 'PM Property ID',
             'dataType': 'string',
+            'sharedFieldType': 'None',
             'pinnedLeft': True,
             'related': False,
         }
@@ -1557,8 +1468,10 @@ class InventoryViewTests(TestCase):
         expected_property_extra_data_column = {
             'extraData': True,
             'name': 'property_extra_data_column',
+            'dbName': 'property_extra_data_column',
             'table': 'PropertyState',
             'displayName': 'Property Extra Data Column',
+            'sharedFieldType': 'None',
             'related': False,
         }
         self.assertIn(expected_property_extra_data_column, results)
@@ -1567,7 +1480,9 @@ class InventoryViewTests(TestCase):
             'extraData': True,
             'table': 'TaxLotState',
             'name': 'taxlot_extra_data_column',
+            'dbName': 'taxlot_extra_data_column',
             'displayName': 'Taxlot Extra Data Column',
+            'sharedFieldType': 'None',
             'related': True,
         }
         self.assertIn(expected_taxlot_extra_data_column, results)
@@ -1593,9 +1508,11 @@ class InventoryViewTests(TestCase):
 
         jurisdiction_tax_lot_id_col = {
             'name': 'jurisdiction_tax_lot_id',
+            'dbName': 'jurisdiction_tax_lot_id',
             'table': 'TaxLotState',
             'displayName': 'Jurisdiction Tax Lot ID',
             'dataType': 'string',
+            'sharedFieldType': 'None',
             'pinnedLeft': True,
             'related': False,
         }
@@ -1604,8 +1521,10 @@ class InventoryViewTests(TestCase):
         expected_property_extra_data_column = {
             'extraData': True,
             'name': 'property_extra_data_column',
+            'dbName': 'property_extra_data_column',
             'table': 'PropertyState',
             'displayName': u'Property Extra Data Column',
+            'sharedFieldType': 'None',
             'related': True,
         }
         self.assertIn(expected_property_extra_data_column, results)
@@ -1613,8 +1532,10 @@ class InventoryViewTests(TestCase):
         expected_taxlot_extra_data_column = {
             'extraData': True,
             'name': 'taxlot_extra_data_column',
+            'dbName': 'taxlot_extra_data_column',
             'table': 'TaxLotState',
             'displayName': 'Taxlot Extra Data Column',
+            'sharedFieldType': 'None',
             'related': False,
         }
         self.assertIn(expected_taxlot_extra_data_column, results)

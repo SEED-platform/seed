@@ -1,9 +1,9 @@
 /**
- * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('sdBasicPropertyInfoChart', [])
-  .directive('sdBasicPropertyInfoChart', ['$window', function ($window) {
+  .directive('sdBasicPropertyInfoChart', ['$window', '$translate', function ($window, $translate) {
     return {
       restrict: 'E',
       replace: true,
@@ -132,7 +132,7 @@ angular.module('sdBasicPropertyInfoChart', [])
           }
           s.getTooltipText = function (e) {
             var arr = [];
-            arr.push('Year Ending : ' + e.aggField[1]);
+            arr.push($translate.instant('Year Ending') + ' : ' + e.aggField[1]);
             arr.push(yAxisTitle + ' : ' + e.cy.toString());
             arr.push(xAxisTitle + ' : ' + e.cx.toString());
             return arr;

@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 describe('controller: inventory_detail_controller', function () {
@@ -12,6 +12,10 @@ describe('controller: inventory_detail_controller', function () {
 
   beforeEach(function () {
     module('BE.seed');
+    inject(function (_$httpBackend_) {
+      $httpBackend = _$httpBackend_;
+      $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
+    });
     inject(function ($controller, $rootScope, $state, $uibModal, $log, $filter, $stateParams, $q, urls, label_service, inventory_service) {
       controller = $controller;
       state = $state;
@@ -29,7 +33,7 @@ describe('controller: inventory_detail_controller', function () {
       mock_inventory_service = inventory_service;
 
       spyOn(mock_inventory_service, 'update_property')
-        .andCallFake(function (property_id, cycle_id, property_state) {
+        .andCallFake(function (view_id, property_state) {
           inventory_detail_controller_scope.item_state = property_state;
           return $q.resolve({
             status: 'success'
@@ -232,8 +236,7 @@ describe('controller: inventory_detail_controller', function () {
       $scope: inventory_detail_controller_scope,
       $uibModal: mock_uib_modal,
       $stateParams: {
-        cycle_id: 2017,
-        inventory_id: 4,
+        view_id: 4,
         inventory_type: 'properties'
       },
       $log: ngLog,
@@ -264,8 +267,7 @@ describe('controller: inventory_detail_controller', function () {
     inventory_detail_controller_scope.$digest();
 
     // assertions
-    expect(inventory_detail_controller_scope.inventory.id).toBe(4);
-    expect(inventory_detail_controller_scope.cycle.id).toBe(1);
+    expect(inventory_detail_controller_scope.inventory.view_id).toBe(4);
     expect(inventory_detail_controller_scope.item_state.address_line_1).toBe('123 Main St.');
 
   });
@@ -331,8 +333,7 @@ describe('controller: inventory_detail_controller', function () {
 
     // assertions
     expect(mock_inventory_service.update_property)
-      .toHaveBeenCalledWith(inventory_detail_controller_scope.inventory.id,
-        inventory_detail_controller_scope.cycle.id,
+      .toHaveBeenCalledWith(inventory_detail_controller_scope.inventory.view_id,
         inventory_detail_controller_scope.item_state);
     expect(inventory_detail_controller_scope.item_state.address_line_1).toEqual('ABC Main St.');
   });

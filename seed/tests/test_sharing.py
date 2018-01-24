@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 Tests related to sharing of data between users, orgs, suborgs, etc.
 """
@@ -15,14 +15,12 @@ from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import (
     Organization,
     ROLE_OWNER,
-    ExportableField,
     ROLE_MEMBER
 )
 from seed.models import (
     CanonicalBuilding,
     BuildingSnapshot
 )
-from seed.public.models import INTERNAL, PUBLIC, SharedBuildingField
 
 
 class SharingViewTests(TestCase):
@@ -62,7 +60,6 @@ class SharingViewTests(TestCase):
         self.des_org.add_member(self.des_user, ROLE_MEMBER)
 
         self._create_buildings()
-        self._create_sharing()
 
     def _search_buildings(self, is_public=False):
         """
@@ -89,34 +86,6 @@ class SharingViewTests(TestCase):
         )
         json_string = response.content
         return json.loads(json_string)
-
-    def _create_sharing(self):
-        """
-        Creates ExportableField objects for this org.
-        """
-        fields = ['property_name',
-                  'year_built',
-                  'postal_code']
-
-        for field in fields:
-            exportable = ExportableField.objects.create(
-                field_model='BuildingSnapshot',
-                name=field,
-                organization=self.parent_org
-            )
-            SharedBuildingField.objects.create(
-                org=self.parent_org,
-                field=exportable,
-                field_type=INTERNAL
-            )
-
-        # Also create one public field
-        # In this case, postal_code!
-        SharedBuildingField.objects.create(
-            org=self.parent_org,
-            field=exportable,
-            field_type=PUBLIC
-        )
 
     def _create_buildings(self):
         """
@@ -168,21 +137,22 @@ class SharingViewTests(TestCase):
         self.assertTrue(self.des_org.is_member(self.des_user))
         self.assertTrue(self.eng_org.is_owner(self.eng_user))
 
-    def test_public_viewer(self):
-        """Public viewer requires no credentials, and should see public fields.
+    # @skip("Fix for new data model")
+    # def test_public_viewer(self):
+    #     """Public viewer requires no credentials, and should see public fields.
 
-        In this case, only postal_code data.
-        """
-        results = self._search_buildings(is_public=True)
+    #     In this case, only postal_code data.
+    #     """
+    #     results = self._search_buildings(is_public=True)
 
-        fields = []
+    #     fields = []
 
-        for f in results['buildings']:
-            fields.extend(f.keys())
+    #     for f in results['buildings']:
+    #         fields.extend(f.keys())
 
-        fields = list(set(fields))
+    #     fields = list(set(fields))
 
-        self.assertListEqual(fields, [u'postal_code'])
+    #     self.assertListEqual(fields, [u'postal_code'])
 
         # @skip("Fix for new data model")
         # def test_parent_viewer(self):

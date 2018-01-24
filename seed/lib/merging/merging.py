@@ -1,27 +1,23 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author Dan Gunter <dkgunter@lbl.gov>
 """
 import logging
 from collections import defaultdict
 
 from seed.lib.mappings.mapping_data import MappingData
-from seed.models import PropertyState
-from seed.models import TaxLotState
-from seed.utils.mapping import get_mappable_columns
-
-LINEAR_UNITS = {u'ft', u'm', u'in'}
-
-# TODO: Fix name of this method / remove if possible.
-BuildingSnapshot_to_BuildingSnapshot = tuple([(k, k) for k in get_mappable_columns()])
+from seed.models import (
+    PropertyState,
+    TaxLotState,
+)
 
 md = MappingData()
-property_state_fields = [x['name'] for x in md.property_data]
-tax_lot_state_fields = [x['name'] for x in md.tax_lot_data]
-
-PropertyState_to_PropertyState = tuple([(k, k) for k in property_state_fields])
+property_state_fields = [x['name'] for x in sorted(md.property_state_data)]
+tax_lot_state_fields = [x['name'] for x in md.tax_lot_state_data]
+# TODO: Move these methods to the MappingData object and return from there
+PropertyState_to_PropertyState = tuple([(k, k) for k in sorted(property_state_fields)])
 TaxLotState_to_TaxLotState = tuple([(k, k) for k in tax_lot_state_fields])
 
 _log = logging.getLogger(__name__)
@@ -64,7 +60,7 @@ def get_attrs_with_mapping(data_set_buildings, mapping):
 
 def get_propertystate_attrs(data_set_buildings):
     # Old school approach.
-    mapping = BuildingSnapshot_to_BuildingSnapshot
+    mapping = PropertyState_to_PropertyState
     return get_attrs_with_mapping(data_set_buildings, mapping)
 
 
@@ -83,7 +79,7 @@ def get_state_attrs(state_list):
         return get_taxlotstate_attrs(state_list)
 
 
-def merge_extra_data(b1, b2, default=None):
+def _merge_extra_data(b1, b2, default=None):
     """Merge extra_data field between two BuildingSnapshots, return result.
 
     :param b1: BuildingSnapshot inst.
@@ -136,49 +132,36 @@ def merge_state(merged_state, state1, state2, can_attrs, default=None):
     default = default or state2
     changes = []
     for attr in can_attrs:
-        # Do we have any differences between these fields?
-        attr_values = list(set([
-            value for value in can_attrs[attr].values() if value
-        ]))
+        # Do we have any differences between these fields? - Check if not None instead of if value.
+        attr_values = list(set([value for value in can_attrs[attr].values() if value is not None]))
         attr_values = [v for v in attr_values if v is not None]
 
         attr_value = None
         # Two, differing values are set.
         if len(attr_values) > 1:
-            # If we have more than one value for this field,
-            # save each of the field options in the DB,
+            # If we have more than one value for this field, save each of the field options in the DB,
             # but opt for the default when there is a difference.
-
-            # WTF is this?
-            # save_variant(merged_state, attr, can_attrs[attr])
-            # attr_source = default
             attr_value = can_attrs[attr][default]
-
-            # if attr_values[0] != attr_values[1]:
-            #     changes.append({"field": attr, "from": attr_values[0], "to": attr_values[1]})
 
         # No values are set
         elif len(attr_values) < 1:
             attr_value = None
-            # attr_source = None
 
         # There is only one value set.
         else:
             attr_value = attr_values.pop()
-            # Get the correct key from the sub dictionary to indicate
-            # the source of a field value.
-            # attr_source = get_attr_source(can_attrs[attr], attr_value)
 
         if callable(attr):
-            # This callable will be responsible for setting
-            # the attribute value, not just returning it.
+            # This callable will be responsible for setting the attribute value, not just returning it.
             attr(merged_state, default)
         else:
             setattr(merged_state, attr, attr_value)
-            # setattr(merged_state, '{0}_source'.format(attr), attr_source)
 
-    merged_extra_data, merged_extra_data_sources = merge_extra_data(state1, state2, default=default)
-
+    merged_extra_data, merged_extra_data_sources = _merge_extra_data(state1, state2, default=default)
     merged_state.extra_data = merged_extra_data
+
+    # merge measures, scenarios, simulations
+    if isinstance(merged_state, PropertyState):
+        PropertyState.merge_relationships(merged_state, state1, state2)
 
     return merged_state, changes

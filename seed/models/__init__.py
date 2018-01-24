@@ -2,7 +2,7 @@
 # encoding: utf-8
 
 """
-:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -15,6 +15,12 @@ from .tax_lots import *  # noqa
 from .columns import *  # noqa
 from .auditlog import *  # noqa
 from .deprecate import *  # noqa
+from .measures import *  # noqa
+from .scenarios import *  # noqa
+from .meters import *  # noqa
+from .simulations import *  # noqa
+from .building_file import *  # noqa
+from .notes import *  # noqa
 
 from .certification import (    # noqa
     GreenAssessment,

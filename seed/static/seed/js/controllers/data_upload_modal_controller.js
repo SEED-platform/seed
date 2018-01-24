@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 /**
@@ -21,6 +21,7 @@
  * ng-switch-when="10" == No matches found
  * ng-switch-when="11" == Confirm Save Mappings?
  * ng-switch-when="12" == Error Processing Data
+ * ng-switch-when="13" == Portfolio Manager Import
  */
 angular.module('BE.seed.controller.data_upload_modal', [])
   .controller('data_upload_modal_controller', [
@@ -61,6 +62,8 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       $scope.step = {
         number: step
       };
+      $scope.pm_buttons_enabled = true;
+      $scope.pm_error_alert = false;
       /**
        * dataset: holds the state of the data set
        * name: string - the data set name
@@ -118,11 +121,15 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       /**
        * goto_step: changes the step of the modal, i.e. name dataset -> upload ...
        * step: int - used with the `ng-switch` in the DOM to change state
-       * step_text:
        */
       $scope.goto_step = function (step) {
         $scope.step.number = step;
       };
+
+      $scope.cycleChanged = function (selected) {
+        $scope.selectedCycle = selected;
+      };
+
       /**
        * close: closes the modal, routes to the close function of the parent scope
        */
@@ -133,10 +140,10 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         $uibModalInstance.close();
         $state.go('mapping', {importfile_id: $scope.dataset.import_file_id});
       };
-      $scope.goto_data_matching = function () {
+      /*$scope.goto_data_matching = function () {
         $uibModalInstance.close();
         $state.go('matching_list', {importfile_id: $scope.dataset.import_file_id, inventory_type: 'properties'});
-      };
+      };*/
       $scope.view_my_properties = function () {
         $uibModalInstance.close();
         $state.go('inventory_list', {inventory_type: 'properties'});
@@ -184,9 +191,10 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           var current_step = $scope.step.number;
 
           $scope.uploader.status_message = 'upload complete';
+          $scope.dataset.filename = file.filename;
           $scope.dataset.import_file_id = file.file_id;
-          // Assessed Data
-          if (current_step === 2) {
+          // Assessed Data; upload is step 2; PM import is currently treated as such, and is step 13
+          if (current_step === 2 || current_step === 13) {
             var is_green_button = (file.source_type === 'Green Button Raw');
             save_raw_assessed_data(file.file_id, file.cycle_id, is_green_button);
           }
@@ -212,6 +220,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        * save_map_match_PM_data: saves, maps, and matches PM data
        *
        * @param {string} file_id: the id of the import file
+       * @param {string} cycle_id: the id of the cycle
        */
       var save_map_match_PM_data = function (file_id, cycle_id) {
         $scope.uploader.status_message = 'saving energy data';
@@ -264,7 +273,6 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        *   from 75% to 100%, then shows the PM upload completed
        *
        * @param {string} progress_key: key
-       * @param {string} file_id: id of file
        */
       var monitor_matching = function (progress_key) {
         uploader_service.check_progress_loop(progress_key, 75, 0.25, function () {
@@ -352,6 +360,54 @@ angular.module('BE.seed.controller.data_upload_modal', [])
               $scope.uploader
             );
           }
+        });
+      };
+
+      $scope.get_pm_report_template_names = function (pm_username, pm_password) {
+        spinner_utility.show();
+        $scope.pm_buttons_enabled = false;
+        $http.post('/api/v2_1/portfolio_manager/template_list/', {
+          username: pm_username,
+          password: pm_password
+        }).then(function (response) {
+          $scope.pm_error_alert = false;
+          $scope.pm_templates = response.data.templates;
+          if ($scope.pm_templates.length) $scope.pm_template = _.first($scope.pm_templates);
+          return response.data;
+        }).catch(function (error) {
+          $scope.pm_error_alert = 'Error: ' + error.data.message;
+        }).finally(function () {
+          spinner_utility.hide();
+          $scope.pm_buttons_enabled = true;
+        });
+      };
+
+      $scope.get_pm_report = function (pm_username, pm_password, pm_template) {
+        spinner_utility.show();
+        $scope.pm_buttons_enabled = false;
+        $http.post('/api/v2_1/portfolio_manager/report/', {
+          username: pm_username,
+          password: pm_password,
+          template: pm_template
+        }).then(function (response) {
+          response = $http.post('/api/v2/upload/create_from_pm_import/', {
+            properties: response.data.properties,
+            import_record_id: $scope.dataset.id
+          });
+          return response;
+        }).then(function (response) {
+          $scope.pm_error_alert = false;
+          $scope.uploaderfunc('upload_complete', {
+            filename: 'PortfolioManagerImport',
+            file_id: response.data.import_file_id,
+            source_type: 'PortfolioManager',
+            cycle_id: $scope.selectedCycle.id
+          });
+        }).catch(function (error) {
+          $scope.pm_error_alert = 'Error: ' + error.data.message;
+        }).finally(function () {
+          spinner_utility.hide();
+          $scope.pm_buttons_enabled = true;
         });
       };
 

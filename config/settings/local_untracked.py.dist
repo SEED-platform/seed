@@ -1,5 +1,5 @@
 """
-:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 :license: see LICENSE for more details.
 
@@ -27,6 +27,17 @@ import os
 
 # email through SES (django-ses)
 #EMAIL_BACKEND = 'django_ses.SESBackend'
+
+# Optional Sentry Configuration
+# import raven
+
+# RAVEN_CONFIG = {
+#    'dsn': 'https://<user>:<key>@sentry.io/<job_id>',
+#    # If you are using git, you can also automatically configure the
+#    # release based on the git info.
+#    'release': raven.fetch_git_sha(os.path.abspath(os.curdir)),
+# }
+# SENTRY_JS_DSN = 'https://<key>@sentry.io/<job_id>'
 
 # postgres DB config
 DATABASES = {

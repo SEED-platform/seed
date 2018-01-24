@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -250,6 +250,7 @@ class TestColumnMapping(TestCase):
 class TestColumnsByInventory(TestCase):
 
     def setUp(self):
+        self.maxDiff = None
         self.fake_user = User.objects.create(username='test')
         self.fake_org = Organization.objects.create()
         OrganizationUser.objects.create(
@@ -257,12 +258,12 @@ class TestColumnsByInventory(TestCase):
             organization=self.fake_org
         )
 
-    def test_column_retrieve_all(self):
         seed_models.Column.objects.create(
             column_name=u'Column A',
             table_name=u'PropertyState',
             organization=self.fake_org,
-            is_extra_data=True
+            is_extra_data=True,
+            shared_field_type=Column.SHARED_PUBLIC,
         )
         seed_models.Column.objects.create(
             column_name=u"Apostrophe's Field",
@@ -276,20 +277,21 @@ class TestColumnsByInventory(TestCase):
             organization=self.fake_org,
             is_extra_data=True
         )
+        # This is an invalid column. It is not a db field but is not marked as extra data
         seed_models.Column.objects.create(
             column_name=u'not extra data',
             table_name=u'PropertyState',
             organization=self.fake_org,
             is_extra_data=False
         )
+        # field that is in the import, but not mapped to
         seed_models.Column.objects.create(
             column_name=u'not mapped data',
             organization=self.fake_org,
         )
 
-        columns = Column.retrieve_all(self.fake_org.pk, 'property')
-        # import json
-        # print json.dumps(columns, indent=2)
+    def test_column_retrieve_all(self):
+        columns = Column.retrieve_all(self.fake_org.pk, 'property', False)
 
         # Check for new column
         c = {
@@ -297,7 +299,9 @@ class TestColumnsByInventory(TestCase):
             'extraData': True,
             'displayName': u'Column A',
             'name': u'Column A',
+            'dbName': u'Column A',
             'related': False,
+            'sharedFieldType': 'Public',
         }
         self.assertIn(c, columns)
 
@@ -307,42 +311,58 @@ class TestColumnsByInventory(TestCase):
             'extraData': True,
             'displayName': u"Apostrophe's Field",
             'name': u"Apostrophe's Field",
+            'dbName': u"Apostrophe's Field",
             'related': False,
+            'sharedFieldType': 'None',
         }
         self.assertIn(c, columns)
 
         # Check 'id' field if extra_data
         c = {
-            "table": "PropertyState",
-            "extraData": True,
-            "displayName": "Id",
-            "name": "id_extra",
-            "related": False,
+            'table': 'PropertyState',
+            'extraData': True,
+            'displayName': 'Id',
+            'name': 'id_extra',
+            'dbName': 'id',
+            'related': False,
+            'sharedFieldType': 'None',
         }
         self.assertIn(c, columns)
 
         # check the 'pinIfNative' argument
+
         c = {
-            "name": "pm_property_id",
-            "related": False,
-            "table": "PropertyState",
-            "displayName": "PM Property ID",
-            "dataType": "string",
-            "pinnedLeft": True,
+            'name': 'pm_property_id',
+            'dbName': 'pm_property_id',
+            'related': False,
+            'table': 'PropertyState',
+            'displayName': 'PM Property ID',
+            'dataType': 'string',
+            'pinnedLeft': True,
+            'sharedFieldType': 'None',
         }
         self.assertIn(c, columns)
 
         # verity that the 'duplicateNameInOtherTable' is working
         c = {
-            "related": True,
-            "table": "TaxLotState",
-            "displayName": "State (Tax Lot)",
-            "dataType": "string",
-            "name": "tax_state",
+            'related': True,
+            'table': 'TaxLotState',
+            'displayName': 'State (Tax Lot)',
+            'dataType': 'string',
+            'name': 'tax_state',
+            'dbName': 'state',
+            'sharedFieldType': 'None',
         }
         self.assertIn(c, columns)
         self.assertNotIn('not extra data', [d['name'] for d in columns])
         self.assertNotIn('not mapped data', [d['name'] for d in columns])
+
+    def test_column_retrieve_only_used(self):
+        columns = Column.retrieve_all(self.fake_org.pk, 'property', True)
+        self.assertEqual(len(columns), 3)
+        for c in columns:
+            if c['name'] == 'Column A':
+                self.assertEqual(c['sharedFieldType'], 'Public')
 
     def test_column_retrieve_all_duplicate_error(self):
         seed_models.Column.objects.create(
@@ -353,62 +373,66 @@ class TestColumnsByInventory(TestCase):
         )
 
         with self.assertRaisesRegexp(Exception, 'Duplicate name'):
-            Column.retrieve_all(self.fake_org.pk, 'property')
+            Column.retrieve_all(self.fake_org.pk, 'property', False)
 
     def test_column_retrieve_schema(self):
+
         schema = {
             "types": {
-                "pm_property_id": "string",
-                "pm_parent_property_id": "string",
-                "jurisdiction_tax_lot_id": "string",
-                "jurisdiction_property_id": "string",
-                "custom_id_1": "string",
                 "address_line_1": "string",
                 "address_line_2": "string",
-                "city": "string",
-                "state": "string",
-                "postal_code": "string",
-                "primary_tax_lot_id": "string",
-                "calculated_taxlot_ids": "string",
-                "associated_building_tax_lot_id": "string",
-                "associated_tax_lot_ids": "string",
-                "lot_number": "string",
-                "primary": "boolean",
-                "property_name": "string",
-                "campus": "boolean",
-                "gross_floor_area": "float",
-                "use_description": "string",
-                "energy_score": "integer",
-                "site_eui": "float",
-                "property_notes": "string",
-                "property_type": "string",
-                "year_ending": "date",
-                "owner": "string",
-                "owner_email": "string",
-                "owner_telephone": "string",
+                "analysis_end_time": "datetime",
+                "analysis_start_time": "datetime",
+                "analysis_state": "string",
+                "analysis_state_message": "string",
+                "block_number": "string",
+                "building_certification": "string",
                 "building_count": "integer",
-                "year_built": "integer",
-                "recent_sale_date": "datetime",
+                "campus": "boolean",
+                "city": "string",
                 "conditioned_floor_area": "float",
+                "created": "datetime",
+                "custom_id_1": "string",
+                "district": "string",
+                "energy_alerts": "string",
+                "energy_score": "integer",
+                "generation_date": "datetime",
+                "gross_floor_area": "float",
+                "home_energy_score_id": "string",
+                "jurisdiction_property_id": "string",
+                "jurisdiction_tax_lot_id": "string",
+                "lot_number": "string",
+                "number_properties": "integer",
                 "occupied_floor_area": "float",
+                "owner": "string",
                 "owner_address": "string",
                 "owner_city_state": "string",
+                "owner_email": "string",
                 "owner_postal_code": "string",
-                "home_energy_score_id": "string",
-                "generation_date": "datetime",
+                "owner_telephone": "string",
+                "pm_parent_property_id": "string",
+                "pm_property_id": "string",
+                "postal_code": "string",
+                "property_name": "string",
+                "property_notes": "string",
+                "property_type": "string",
+                "recent_sale_date": "datetime",
                 "release_date": "datetime",
-                "source_eui_weather_normalized": "float",
+                "site_eui": "float",
+                "site_eui_modeled": "float",
                 "site_eui_weather_normalized": "float",
                 "source_eui": "float",
-                "energy_alerts": "string",
+                "source_eui_modeled": "float",
+                "source_eui_weather_normalized": "float",
                 "space_alerts": "string",
-                "building_certification": "string",
-                "number_properties": "integer",
-                "block_number": "string",
-                "district": "string"
+                "state": "string",
+                "ubid": "string",
+                "updated": "datetime",
+                "use_description": "string",
+                "year_ending": "date",
+                "year_built": "integer",
             }
         }
-
         # remove or merge into above after we merge/rename 'release:use_pint'
         schema["types"]["gross_floor_area_pint"] = ""
         schema["types"]["conditioned_floor_area_pint"] = ""
@@ -419,14 +443,14 @@ class TestColumnsByInventory(TestCase):
         schema["types"]["source_eui_pint"] = ""
 
         columns = Column.retrieve_db_types()
-        self.assertEqual(schema, columns)
+        self.assertDictEqual(schema, columns)
 
     def test_column_retrieve_db_fields(self):
         c = Column.retrieve_db_fields()
 
         data = ['address_line_1', 'address_line_2', 'block_number', 'building_certification',
-                'building_count', 'campus', 'city', 'conditioned_floor_area', 'custom_id_1',
-                'district',
+                'building_count', 'campus', 'city', 'conditioned_floor_area', 'custom_id_1', 'ubid',
+                'district', 'created', 'updated',
                 'energy_alerts', 'energy_score', 'generation_date', 'gross_floor_area',
                 'home_energy_score_id', 'jurisdiction_property_id', 'jurisdiction_tax_lot_id',
                 'lot_number', 'number_properties', 'occupied_floor_area', 'owner', 'owner_address',
@@ -434,7 +458,9 @@ class TestColumnsByInventory(TestCase):
                 'pm_parent_property_id', 'pm_property_id', 'postal_code', 'property_name',
                 'property_notes', 'property_type', 'recent_sale_date', 'release_date', 'site_eui',
                 'site_eui_weather_normalized', 'source_eui', 'source_eui_weather_normalized',
-                'space_alerts', 'state', 'use_description', 'year_built', 'year_ending']
+                'space_alerts', 'state', 'use_description', 'year_built', 'year_ending',
+                'analysis_end_time', 'source_eui_modeled', 'analysis_state_message',
+                'analysis_start_time', 'site_eui_modeled', 'analysis_state']
 
         # remove or merge into above after we merge/rename 'release:use_pint'
         data += ['gross_floor_area_pint',

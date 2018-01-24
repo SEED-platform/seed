@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2017, The Regents of the University of California,
+:copyright (c) 2014 - 2018, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
@@ -134,7 +134,8 @@ class PropertyStateFilterSet(FilterSet):
     class Meta:
         model = PropertyState
         fields = [
-            'energy_score', 'city',
+            'energy_score',
+            'city',
             'pm_parent_property_id',
             'property_identifier'
         ]
@@ -148,11 +149,13 @@ class PropertyStateFilterSet(FilterSet):
         jurisdiction_property_id = Q(jurisdiction_property_id__iexact=value)
         custom_id_1 = Q(custom_id_1__iexact=value)
         pm_property_id = Q(pm_property_id=value)
+        ubid = Q(ubid__iexact=value)
         home_energy_score_id = Q(home_energy_score_id=value)
         query = (
             jurisdiction_property_id
             | custom_id_1
             | pm_property_id
             | home_energy_score_id
+            | ubid
         )
         return queryset.filter(query)

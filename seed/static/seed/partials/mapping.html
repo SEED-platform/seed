@@ -4,7 +4,8 @@
             <a class="page_action" ui-sref="dataset_detail(::{dataset_id: import_file.dataset.id})"><i class="fa fa-chevron-left"></i> {$:: import_file.dataset.name $}</a>
         </div>
         <div class="page_title">
-            <h1>Data Mapping &amp; Validation ({$:: import_file.uploaded_filename $})</h1>
+            <h1 translate="DATA_MAPPING_AND_VALIDATION"
+                translate-values="{ filename: import_file.uploaded_filename }"></h1>
         </div>
         <div class="right page_action_container"></div>
     </div>
@@ -13,37 +14,26 @@
 <div class="section">
     <div class="section_tab_container">
         <uib-tabset>
-            <uib-tab heading="STEP 1: Map Your Data" active="tabs.one_active">
+            <uib-tab heading="{$:: 'STEP 1: Map Your Data' | translate $}" active="tabs.one_active">
                 <div class="row">
                     <div class="col-sm-7 tab_content wide">
-                        <p><strong>MAPPING YOUR DATA TO SEED</strong></p>
-                        <p>It is necessary to map your field names to SEED field names. You can select from the list that appears as you start to type, which is based on the Building Energy Data Exchange Specification (BEDES), or you can type in your own name, as well as typing in the field name from the original datafile.</p>
-                        <p>In addition, you need to specify where the field should be associated with Tax Lot data or Property data. This will affect how the data is matched and merged, as well as how it is displayed in the Inventory view.</p>
-                        <p>
-                            <span class="label label-info">Field names for matching:</span> The following fields are used by SEED to match records:
-                            <strong>Jurisdiction Tax Lot ID</strong>, <strong>PM Property ID</strong>, <strong>Custom ID 1</strong>,
-                            <strong>Address Line 1</strong>. If there are fields in a datafile mapped to these names, the program will attempt to match on those same names in existing records.
-                        </p>
-                        <p>For Portfolio Manager files, SEED has a default set of field names which can be used without extra user editing unless desired.</p>
-                        <p>When you click the
-                            <span class="label label-primary">Map Your Data</span> button, the program will show a grid with the new field names as the column headings and your data in the rows. In that view, you can still come back to the initial mapping screen and change the field mapping.
-                        </p>
+                        <p><strong translate>MAPPING YOUR DATA TO SEED</strong></p>
+                        <p translate>It is necessary to map your field names to SEED field names. You can select from the list that appears as you start to type, which is based on the Building Energy Data Exchange Specification (BEDES), or you can type in your own name, as well as typing in the field name from the original datafile.</p>
+                        <p translate>In addition, you need to specify where the field should be associated with Tax Lot data or Property data. This will affect how the data is matched and merged, as well as how it is displayed in the Inventory view.</p>
+                        <p translate>FIELD_NAMES_FOR_MATCHING_ADVICE</p>
+                        <p translate>For Portfolio Manager files, SEED has a default set of field names which can be used without extra user editing unless desired.</p>
+                        <p translate>WHEN_YOU_CLICK_MAP_YOUR_DATA</p>
                     </div>
                     <div class="col-sm-5 key tab_content wide">
-                        <p>
-                            <label class="label label-danger">Duplicate</label> -- if fields are marked as duplicates they need to be resolved to have different names
-                        </p>
+                        <p translate>IF_MARKED_AS_DUPLICATE_ADVICE</p>
                     </div>
                 </div>
             </uib-tab>
-            <uib-tab heading="STEP 2: Review Your Data Mappings" active="tabs.two_active">
+            <uib-tab heading="{$:: 'STEP 2: Review Your Data Mappings' | translate $}" active="tabs.two_active">
                 <div class="row">
                     <div class="col-sm-7 tab_content wide">
-                        <p><strong>REVIEW YOUR DATA MAPPINGS</strong></p>
-                        <p>After you click the
-                            <span class="label label-primary">Map Your Data</span> button, you will see a view with the mapped fields and your data in a grid, so that you can verify the mapping is what you want. If you need to change the mapping, click the
-                            <span class="label label-primary">Back to Mapping</span> button and edit the field mapping. Make sure that the mappings are correct in this step. Once you have clicked on the
-                            <span class="label label-primary">Save Mappings</span> button, you will not be able to change the field mappings.
+                        <p><strong translate>REVIEW YOUR DATA MAPPINGS</strong></p>
+                        <p translate>MAPPING_STEP_2_ADVICE</p>
                         </p>
                     </div>
                 </div>
@@ -51,26 +41,26 @@
             <uib-tab heading="BEDES" active="tabs.three_active">
                 <div class="row">
                     <div class="col-sm-7 tab_content wide">
-                        <p><strong>BUILDING ENERGY DATA EXCHANGE SPECIFICATION (BEDES)</strong></p>
-                        <p>The Building Energy Data Exchange Specification (BEDES, pronounced "beads" or /bi:ds/) is designed to support analysis of the measured energy performance of commercial, multifamily, and residential buildings, by providing a common data format, definitions, and an exchange protocol for building characteristics, efficiency measures, and energy use.</p>
+                        <p><strong translate>BUILDING ENERGY DATA EXCHANGE SPECIFICATION (BEDES)</strong></p>
+                        <p translate>The Building Energy Data Exchange Specification (BEDES, pronounced "beads" or /bi:ds/) is designed to support analysis of the measured energy performance of commercial, multifamily, and residential buildings, by providing a common data format, definitions, and an exchange protocol for building characteristics, efficiency measures, and energy use.</p>
                         <p>
-                            <a href="http://energy.gov/eere/buildings/building-energy-data-exchange-specification-bedes" target="_blank">Read more here.</a>
+                            <a href="http://energy.gov/eere/buildings/building-energy-data-exchange-specification-bedes" target="_blank" translate>Read more here.</a>
                         </p>
                     </div>
                 </div>
             </uib-tab>
-            <uib-tab class="pull-right" heading="Collapse Tabs"></uib-tab>
+            <uib-tab class="pull-right" heading="{$:: 'Collapse Tabs' | translate $}"></uib-tab>
         </uib-tabset>
     </div>
 
     <div class="section_header_container has_no_border" ng-hide="review_mappings">
         <div class="section_header fixed_height">
             <div class="left section_action_container">
-                <button type="button" class="btn btn-primary" ng-hide="import_file.matching_done && isValidCycle" ng-disabled="check_reset_mappings()" ng-click="reset_mappings()">Map SEED fields to imported file fields</button>
+                <button type="button" class="btn btn-primary" ng-hide="import_file.matching_done && isValidCycle" ng-disabled="check_reset_mappings()" ng-click="reset_mappings()" translate>Map SEED fields to imported file fields</button>
             </div>
             <div class="right section_action_container section_action_btn">
-                <button type="button" class="pull-right btn btn-primary mapping-button" ng-disabled="check_fields()" ng-click="remap_buildings()" ng-hide="import_file.matching_done">Map Your Data</button>
-                <button type="button" class="pull-right btn btn-default" ng-click="get_mapped_buildings()" ng-show="import_file.matching_done && isValidCycle">Review Mapped Data</button>
+                <button type="button" class="pull-right btn btn-primary mapping-button" ng-disabled="check_fields()" ng-click="remap_buildings()" ng-hide="import_file.matching_done" translate>Map Your Data</button>
+                <button type="button" class="pull-right btn btn-default" ng-click="get_mapped_buildings()" ng-show="import_file.matching_done && isValidCycle" translate>Review Mapped Data</button>
             </div>
         </div>
     </div>
@@ -78,9 +68,9 @@
         <div class="section_content">
             <div class="table_list_container mapping" ng-cloak>
                 <div class="alert warning file_error_messages" ng-show="has_mapping_error_messages()" ng-bind-html="mapping_error_messages"></div>
-                <div class="alert alert-danger" ng-show="!required_fields_present() && !import_file.matching_done">At least one of the following is required: Address Line 1, Custom Id 1, Jurisdiction Tax Lot Id (with inventory type Tax Lot), or Pm Property Id (with inventory type Property).</div>
-                <div class="alert alert-danger" ng-show="duplicates_present()">Please review SEED headers.  Duplicate values are not allowed.</div>
-                <div class="alert alert-danger" ng-show="empty_fields_present()">Please review SEED headers.  Empty values are not allowed.</div>
+                <div class="alert alert-danger" ng-show="!required_fields_present() && !import_file.matching_done" translate>At least one of the following is required: Address Line 1, Custom Id 1, Jurisdiction Tax Lot Id (with inventory type Tax Lot), UBID (with inventory type Property), or Pm Property Id (with inventory type Property).</div>
+                <div class="alert alert-danger" ng-show="duplicates_present()" translate>Please review SEED headers.  Duplicate values are not allowed.</div>
+                <div class="alert alert-danger" ng-show="empty_fields_present()" translate>Please review SEED headers.  Empty values are not allowed.</div>
                 <table class="table table-striped" ng-hide="review_mappings">
                     <thead>
                         <tr>
@@ -89,26 +79,26 @@
                             <th colspan="99" class="source_data">{$:: import_file.uploaded_filename $}</th>
                         </tr>
                         <tr ng-show="duplicates.length">
-                            <th class="sub_head is_aligned_center hide">Map
+                            <th class="sub_head is_aligned_center hide">{$:: 'Map' | translate $}
                                 <a uib-popover="{$MAP_copy$}" popover-placement="right"><i class="fa fa-info-circle" style="cursor: pointer;"></i></a>
                             </th>
-                            <th class="mapping_field">header</th>
+                            <th class="mapping_field" translate>header</th>
                             <!--th class="sub_head is_aligned_center">BEDES <a uib-popover="{$BEDES_copy$}" popover-placement="right"><i class="fa fa-info-circle" style="cursor: pointer;"></i></a></th-->
-                            <th class="sub_head is_aligned_center">Duplicate
+                            <th class="sub_head is_aligned_center">{$:: 'Duplicate' | translate $}
                                 <a uib-popover="{$VALIDATE_copy$}" popover-placement="right"><i class="fa fa-info-circle" style="cursor: pointer;"></i></a>
                             </th>
-                            <th class="import_column_name"> header</th>
-                            <th>Row 1</th>
-                            <th>Row 2</th>
-                            <th>Row 3</th>
-                            <th>Row 4</th>
-                            <th>Row 5</th>
+                            <th class="import_column_name" translate>header</th>
+                            <th translate>Row 1</th>
+                            <th translate>Row 2</th>
+                            <th translate>Row 3</th>
+                            <th translate>Row 4</th>
+                            <th translate>Row 5</th>
                         </tr>
                     </thead>
                     <tbody ng-if="duplicates.length">
                         <tr>
                             <td></td>
-                            <td colspan="8"><h3>Duplicates</h3></td>
+                            <td colspan="8"><h3 translate>Duplicates</h3></td>
                         </tr>
                     </tbody>
                     <tbody ng-if="duplicates.length" id="duplicate-table">
@@ -120,11 +110,11 @@
                                 <input type="text" uib-typeahead="column for column in typeahead_columns | filter:$viewValue | limitTo:30" ng-model="tcm.suggestion" class="form-control input-sm tcm_field" ng-disabled="!tcm.mapped_row || import_file.matching_done" ng-change="change(tcm)" typeahead-on-select='change(tcm)' id="duplicate-row-input-box-{$ $index $}">
                             </td>
                             <td class="check is_aligned_center">
-                                <label class="label label-{$ tcm.label_status() $}" ng-if="tcm.is_duplicate">duplicate</label>
-                                <label class="label label-{$ tcm.label_status() $}" ng-if="!tcm.is_duplicate">{$ tcm.validity $}</label>
+                                <label class="label label-{$ tcm.label_status() $}" ng-if="tcm.is_duplicate" translate>duplicate</label>
+                                <label class="label label-{$ tcm.label_status() $}" ng-if="!tcm.is_duplicate">{$ tcm.validity | translate $}</label>
                             </td>
                             <td>
-                                <strong id="duplicate-header-{$:: $index $}">{$ tcm.name $}</strong>
+                                <strong id="duplicate-header-{$:: $index $}">{$ tcm.name | translate $}</strong>
                             </td>
                             <td ng-repeat="cell_value in tcm.raw_data track by $index" ng-class="{'danger': set_td_class(tcm, cell_value) === 'danger', 'warning': set_td_class(tcm, cell_value) === 'warning'}">
                                 {$:: cell_value $}
@@ -134,10 +124,10 @@
                     <tbody>
                         <tr>
                             <td class="hide"></td>
-                            <td style="border-right: 0 none;"><h3>Mapped Fields</h3></td>
-                            <td style="border-right: 0 none; text-align: right;"><span ng-hide="import_file.matching_done">Set all fields to:</span></td>
+                            <td style="border-right: 0 none;"><h3 translate>Mapped Fields</h3></td>
+                            <td style="border-right: 0 none; text-align: right;"><span ng-hide="import_file.matching_done">{$:: 'Set all fields to' | translate $}:</span></td>
                             <td style="border-right: 0 none;">
-                                <select ng-model="setAllFields" ng-change="setAllInventoryTypes()" ng-options="item as item.name for item in ::setAllFieldsOptions track by item.value" ng-hide="import_file.matching_done"></select>
+                                <select ng-model="setAllFields" ng-change="setAllInventoryTypes()" ng-options="item as (item.name | translate) for item in ::setAllFieldsOptions track by item.value" ng-hide="import_file.matching_done"></select>
                             </td>
                             <td colspan="{$:: flippers.is_active('release:use_pint') ? 6 : 5 $}"></td>
                         </tr>
@@ -147,16 +137,16 @@
                             <th class="sub_head is_aligned_center hide">Map
                                 <a uib-popover="{$ MAP_copy $}" popover-placement="right"><i class="fa fa-info-circle" style="cursor: pointer;"></i></a>
                             </th>
-                            <th class="mapping_field">SEED Header</th>
+                            <th class="mapping_field" translate>SEED Header</th>
                             <!--th class="sub_head is_aligned_center">Duplicate <a uib-popover="{$VALIDATE_copy$}" popover-placement="right"><i class="fa fa-info-circle" style="cursor: pointer;"></i></a></th-->
-                            <th class="import_column_name">Data File Header</th>
-                            <th>Inventory Type</th>
-                            <th ng-if="flippers.is_active('release:use_pint')">Measurement Units</th>
-                            <th>Row 1</th>
-                            <th>Row 2</th>
-                            <th>Row 3</th>
-                            <th>Row 4</th>
-                            <th>Row 5</th>
+                            <th class="import_column_name" translate>Data File Header</th>
+                            <th translate>Inventory Type</th>
+                            <th ng-if="flippers.is_active('release:use_pint')" translate>Measurement Units</th>
+                            <th translate>Row 1</th>
+                            <th translate>Row 2</th>
+                            <th translate>Row 3</th>
+                            <th translate>Row 4</th>
+                            <th translate>Row 5</th>
                         </tr>
                     </thead>
                     <tbody id="mapped-table">
@@ -176,22 +166,22 @@
                             </td>
                             <td ng-class="{'danger': tcm.is_duplicate === true}" id="mapped-row-type-{$:: $index $}">
                                 <select ng-model="tcm.suggestion_table_name" ng-change="updateInventoryTypeDropdown(); change(tcm)" ng-disabled="!tcm.mapped_row || import_file.matching_done">
-                                    <option value="PropertyState">Property</option>
-                                    <option value="TaxLotState">Tax Lot</option>
+                                    <option value="PropertyState" translate>Property</option>
+                                    <option value="TaxLotState" translate>Tax Lot</option>
                                 </select>
                             </td>
                             <td ng-if="flippers.is_active('release:use_pint')">
                               <select ng-model="tcm.from_units" ng-if="is_pint_column(tcm.suggestion)">
-                                <option value="">None</option>
-                                <optgroup label="Area">
-                                  <option value="ft**2">square feet</option>
-                                  <option value="m**2">square metres</option>
+                                <option value="" translate>None</option>
+                                <optgroup label="{$:: 'Area' | translate $}">
+                                  <option value="ft**2" translate>square feet</option>
+                                  <option value="m**2" translate>square metres</option>
                                 </optgroup>
-                                <optgroup label="EUI">
+                                <optgroup label="{$:: 'EUI' | translate $}">
                                   <!-- values are pint-parseable  -->
-                                  <option value="kBtu/ft**2/year">kBtu/sq. ft./year</option>
-                                  <option value="kWh/m**2/year">kWh/m²/year</option>
-                                  <option value="GJ/m**2/year">GJ/m²/year</option>
+                                  <option value="kBtu/ft**2/year" translate>kBtu/sq. ft./year</option>
+                                  <option value="kWh/m**2/year" translate>kWh/m²/year</option>
+                                  <option value="GJ/m**2/year" translate>GJ/m²/year</option>
                                 </optgroup>
                               </select>
                             </td>
@@ -208,9 +198,13 @@
     <div class="section_content_container" ng-if="save_mappings">
         <div class="section_content">
             <div class="progress_bar_container progressbar_fill_area">
-                <div class="progress_bar_copy_top">Mapping buildings for <strong>{$ import_file.uploaded_filename $}</strong></div>
+                <div class="progress_bar_copy_top"
+                    translate="MAPPING_BUILDINGS_FOR"
+                    translate-values="{ filename: import_file.uploaded_filename }"></div>
                 <uib-progressbar class="progress-striped active" value="import_file.progress" type="success"></uib-progressbar>
-                <div class="progress_bar_copy_bottom">{$ import_file.progress | number:0 $}% Complete</div>
+                <div class="progress_bar_copy_bottom"
+                    translate="PERCENT_COMPLETE"
+                    translate-values="{ progress: (import_file.progress | number: 0) }"></div>
             </div>
         </div>
     </div>
@@ -218,7 +212,7 @@
         <div class="section_header fixed_height">
             <div class="left_40 section_action_container">
                 <button type="button" class="btn btn-primary" ng-click="backToMapping()">
-                    <i class="fa fa-chevron-left"></i> Back to Mapping
+                    <i class="fa fa-chevron-left"></i> {$:: 'Back to Mapping' | translate $}
                 </button>
             </div>
             <div class="right_60 section_action_container section_action_btn">
@@ -230,20 +224,20 @@
                     <span ng-if="data_quality_results_ready && data_quality_warnings > 0">
                         {$ data_quality_warnings $} <i class="fa fa-exclamation-triangle" style="color: #fdf4bf"></i>
                     </span>
-                    Data Quality Results
+                    {$:: 'Data Quality Results' | translate $}
                 </button>
                 <a ui-sref="mapping(::{importfile_id: import_file.id})">
-                    <button id="save-mapping" type="button" class="pull-right btn btn-primary" ng-click="open_data_upload_modal(import_file.dataset)" ng-hide="import_file.matching_done">Save Mappings</button>
+                    <button id="save-mapping" type="button" class="pull-right btn btn-primary" ng-click="open_data_upload_modal(import_file.dataset)" ng-hide="import_file.matching_done" translate>Save Mappings</button>
                 </a>
             </div>
         </div>
     </div>
     <div class="inventory-list-tab-container" ng-if="show_mapped_buildings && mappedData.properties.length">
         <div class="item-count">
-            <i class="fa fa-building-o"></i> {$ mappedData.properties.length $} <span><ng-pluralize count="mappedData.properties.length" when="{'one': 'Property', 'other': 'Properties'}">Properties</ng-pluralize></span>
+            <i class="fa fa-building-o"></i> <span translate="NUMBER_OF_PROPERTIES" translate-values="{ num: mappedData.properties.length }"></span>
         </div>
         <ul class="nav nav-tabs" style="margin-bottom:1px;">
-            <li heading="View by Property" class="active"><a>View by Property</a></li>
+            <li heading="View by Property" class="active"><a translate>View by Property</a></li>
         </ul>
     </div>
     <div class="section_content_container" ng-if="show_mapped_buildings && mappedData.properties.length">
@@ -255,10 +249,10 @@
     </div>
     <div class="inventory-list-tab-container" ng-if="show_mapped_buildings && mappedData.tax_lots.length" style="margin-top: 20px;">
         <div class="item-count">
-            <i class="fa fa-map-o"></i> {$ mappedData.tax_lots.length $} <span><ng-pluralize count="mappedData.tax_lots.length" when="{'one': 'Tax Lot', 'other': 'Tax Lots'}">Tax Lots</ng-pluralize></span>
+            <i class="fa fa-map-o"></i> <span translate="NUMBER_OF_TAXLOTS" translate-values="{ num: mappedData.tax_lots.length }"></span>
         </div>
         <ul class="nav nav-tabs" style="margin-bottom:1px;">
-            <li heading="View by Tax Lot" class="active"><a>View by Tax Lot</a></li>
+            <li heading="View by Tax Lot" class="active"><a translate>View by Tax Lot</a></li>
         </ul>
     </div>
     <div class="section_content_container" ng-if="show_mapped_buildings && mappedData.tax_lots.length">
@@ -272,16 +266,16 @@
         <div class="col-sm-6">
             <!--button type="button" class="btn btn-primary" ng-click="open_concat_modal(building_column_types, raw_columns)" ng-hide="show_mapped_buildings">Concatenate Headers</button-->
             <button type="button" class="btn btn-primary" ng-click="backToMapping()" ng-show="show_mapped_buildings">
-                <i class="fa fa-chevron-left"></i> Back to Mapping
+                <i class="fa fa-chevron-left"></i> {$:: 'Back to Mapping' | translate $}
             </button>
         </div>
         <div class="col-sm-6" ng-hide="review_mappings">
-            <button type="button" class="pull-right btn btn-primary mapping-button" ng-disabled="check_fields()" ng-click="remap_buildings()" ng-hide="import_file.matching_done" id="map-data-button">Map Your Data</button>
-            <button type="button" class="pull-right btn btn-default" ng-click="get_mapped_buildings()" ng-show="import_file.matching_done && isValidCycle">Review Mapped Data</button>
+            <button type="button" class="pull-right btn btn-primary mapping-button" ng-disabled="check_fields()" ng-click="remap_buildings()" ng-hide="import_file.matching_done" id="map-data-button" translate>Map Your Data</button>
+            <button type="button" class="pull-right btn btn-default" ng-click="get_mapped_buildings()" ng-show="import_file.matching_done && isValidCycle" translate>Review Mapped Data</button>
         </div>
         <div class="col-sm-6" ng-show="show_mapped_buildings">
             <a ui-sref="mapping(::{importfile_id: import_file.id})">
-                <button type="button" class="pull-right btn btn-primary" ng-click="open_data_upload_modal(import_file.dataset)" ng-hide="import_file.matching_done">Save Mappings</button>
+                <button type="button" class="pull-right btn btn-primary" ng-click="open_data_upload_modal(import_file.dataset)" ng-hide="import_file.matching_done" translate>Save Mappings</button>
             </a>
         </div>
     </div>

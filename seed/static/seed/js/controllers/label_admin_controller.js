@@ -1,5 +1,5 @@
 /*
- * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 
@@ -14,11 +14,16 @@ angular.module('BE.seed.controller.label_admin', [])
   'label_service',
   'simple_modal_service',
   'Notification',
-  function ($scope, $log, urls, organization_payload, labels_payload, auth_payload, label_service, simple_modal_service, notification) {
+  '$translate',
+  '$sce',
+  function ($scope, $log, urls, organization_payload, labels_payload, auth_payload, label_service, simple_modal_service, notification, $translate, $sce) {
     $scope.org = organization_payload.organization;
     $scope.auth = auth_payload.auth;
 
-    $scope.available_colors = label_service.get_available_colors();
+    $scope.available_colors = _.map(label_service.get_available_colors(), function (color) {
+      // label is already used for danger, success, etc.
+      return _.extend(color, {uiLabel: $translate.instant(color.color)});
+    });
     $scope.labels = labels_payload;
 
     function initialize_new_label () {
@@ -44,7 +49,9 @@ angular.module('BE.seed.controller.label_admin', [])
       }
       label_service.create_label_for_org($scope.org.id, $scope.new_label).then(function () {
         get_labels();
-        var msg = 'Created label ' + getTruncatedName($scope.new_label.name);
+        var msg = translateMessage('CREATED_LABEL_NAMED', {
+          label_name: getTruncatedName($scope.new_label.name)
+        });
         notification.primary(msg);
         initialize_new_label();
         form.$setPristine();
@@ -86,13 +93,16 @@ angular.module('BE.seed.controller.label_admin', [])
       }
     };
 
-
+    function translateMessage (msg, params) {
+      // TODO XSS, discuss with Nick and Alex
+      return $sce.getTrustedHtml($translate.instant(msg, params));
+    }
 
     $scope.saveLabel = function (label, id, index) {
       //Don't update $scope.label until a 'success' from server
       angular.extend(label, {id: id});
       label_service.update_label_for_org($scope.org.id, label).then(function (data) {
-        var msg = 'Label updated.';
+        var msg = translateMessage('Label updated');
         notification.primary(msg);
         $scope.labels.splice(index, 1, data);
         $scope.label = data;
@@ -105,17 +115,19 @@ angular.module('BE.seed.controller.label_admin', [])
     $scope.deleteLabel = function (label, index) {
       var modalOptions = {
         type: 'default',
-        okButtonText: 'OK',
-        cancelButtonText: 'Cancel',
-        headerText: 'Confirm delete',
-        bodyText: 'Delete label "' + label.name + '" and remove it from all buildings it\'s been applied to?'
+        okButtonText: $translate.instant('OK'),
+        cancelButtonText: $translate.instant('Cancel'),
+        headerText: $translate.instant('Confirm delete'),
+        bodyText: $translate.instant('DELETE_LABEL_AND_REMOVE', { label_name: label.name })
       };
       simple_modal_service.showModal(modalOptions).then(function () {
         //user confirmed delete, so go ahead and do it.
         label_service.delete_label_for_org($scope.org.id, label).then(function () {
           //server deleted label, so remove it locally
           $scope.labels.splice(index, 1);
-          var msg = 'Deleted label ' + getTruncatedName(label.name);
+          var msg = translateMessage('DELETED_LABEL_NAMED', {
+            label_name: getTruncatedName(label.name)
+          });
           notification.primary(msg);
         }, function (message) {
           $log.error('Error deleting label.', message);

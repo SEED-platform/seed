@@ -18,14 +18,14 @@
 </div>
 </script>
 <div class="modal-header">
-    <h4>Concatenate Headers (Columns of Data)</h4>
+    <h4 translate>Concatenate Headers (Columns of Data)</h4>
 </div>
 <div class="modal-body no_bottom_padding">
 
     <div class="row">
         <!-- These are all columns -->
         <div class="col-sm-6">
-            <h5>A list of your imported headers.</h5>
+            <h5 translate>A list of your imported headers.</h5>
             <div ui-tree id="raw-columns-tree" class="angular-ui-tree">
                 <ol ui-tree-nodes ng-model="raw_columns" class="ng-pristine ng-valid angular-ui-tree-nodes">
                     <li ng-repeat="node in raw_columns" ui-tree-node ng-include="'concat_nodes.html'" class="angular-ui-tree-node"></li>
@@ -35,7 +35,7 @@
 
         <!-- These are the concatenated columns -->
         <div class="col-sm-6">
-            <h5>Drag headers from your list on the left into the area below to combine them.</h5>
+            <h5 translate>Drag headers from your list on the left into the area below to combine them.</h5>
             <div ui-tree id="concat-columns-tree" class="angular-ui-tree">
                 <ol ui-tree-nodes="" ng-model="concat_columns" class="ng-prestine ng-valid angular-ui-tree-nodes">
                     <li ng-repeat="node in concat_columns" ui-tree-node ng-include="'concat_nodes2.html'" class="angular-ui-tree-node"></li>
@@ -43,7 +43,7 @@
             </div>
             <!-- concatenation preview -->
             <hr>
-            <h5>A preview of your concatenated data will appear in the box below.</h5>
+            <h5 translate>A preview of your concatenated data will appear in the box below.</h5>
             <div class="well">
                 <span ng-repeat="c in concat_columns">{$ c.raw_data[0] $} </span>
             </div>
@@ -51,8 +51,8 @@
     </div>
 
     <div class="modal-footer">
-        <button class="btn btn-default" ng-click="close_concat_modal()">Cancel</button>
-        <button type="button" class="btn btn-primary" ng-click="save_concat()" ng-disabled="concat_columns === undefined || concat_columns.length < 2">Save Concatenation</button>
+        <button class="btn btn-default" ng-click="close_concat_modal()" translate>Cancel</button>
+        <button type="button" class="btn btn-primary" ng-click="save_concat()" ng-disabled="concat_columns === undefined || concat_columns.length < 2" translate>Save Concatenation</button>
     </div>
 
 

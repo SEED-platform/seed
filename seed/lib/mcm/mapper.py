@@ -1,14 +1,15 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
 import copy
-import itertools
 import logging
 import re
+
+import itertools
 from datetime import datetime, date
 
 from cleaners import default_cleaner
@@ -27,7 +28,8 @@ def build_pm_mapping():
     return True
 
 
-def build_column_mapping(raw_columns, dest_columns, previous_mapping=None, map_args=None, thresh=0):
+def build_column_mapping(raw_columns, dest_columns, previous_mapping=None, map_args=None,
+                         default_mappings=None, thresh=0):
     """
     Wrapper around the MappingColumns class to create the list of suggested mappings
 
@@ -44,16 +46,17 @@ def build_column_mapping(raw_columns, dest_columns, previous_mapping=None, map_a
                 previous_mapping('example field', *map_args) ->
                     ('field_1', 0.93)
 
-        map_args: .. todo: document
-        thresh: .. todo: document
+        map_args: Arguments to pass into the previous_mapping method
+        default_mappings: dict of mappings. Use these mappings if the column is not found in the previous mapping call
+        thresh: threshold on which automaticlally suggested columns will be considered.
 
     Returns:
         dict: {'raw_column': ('dest_column', score)
 
     """
 
-    return MappingColumns(raw_columns, dest_columns, previous_mapping, map_args,
-                          thresh).final_mappings
+    return MappingColumns(raw_columns, dest_columns, previous_mapping=previous_mapping,
+                          map_args=map_args, default_mappings=default_mappings, threshold=thresh).final_mappings
 
 
 def apply_initial_data(model, initial_data):

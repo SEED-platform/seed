@@ -13,24 +13,24 @@ method mutiple times will always return the same sequence of results
     Do not edit the seed unless you know what you are doing!
     .. codeauthor:: Paul Munday<paul@paulmunday.net>
 """
-import datetime
 import os
 import re
 import string
 from collections import namedtuple
 
+import datetime
 import mock
 from django.db.models.fields.files import FieldFile
 from django.utils import timezone
 from faker import Factory
 
 from seed.models import (
-    BuildingSnapshot, Cycle, Column, GreenAssessment, GreenAssessmentURL,
+    Cycle, Column, GreenAssessment, GreenAssessmentURL, Measure,
     GreenAssessmentProperty, Property, PropertyAuditLog, PropertyView,
     PropertyState, StatusLabel, TaxLot, TaxLotAuditLog, TaxLotProperty,
-    TaxLotState, TaxLotView
+    TaxLotState, TaxLotView, PropertyMeasure, Note,
 )
-from seed.models.auditlog import AUDIT_USER_CREATE
+from seed.models.auditlog import AUDIT_IMPORT, AUDIT_USER_CREATE
 from seed.utils.strings import titlecase
 
 Owner = namedtuple(
@@ -93,50 +93,6 @@ class BaseFake(object):
                             state if state else self.fake.state_abbr()),
             self.fake.postalcode()
         )
-
-
-class FakeBuildingSnapshotFactory(BaseFake):
-    """
-    Factory Class for producing Building Snaphots.
-    """
-
-    def __init__(self, super_organization=None, num_owners=5):
-        # pylint:disable=unused-variable
-        super(FakeBuildingSnapshotFactory, self).__init__()
-        self.super_organization = super_organization
-        # pre-generate a list of owners so they occur more than once.
-        self.owners = [self.owner() for i in range(num_owners)]
-
-    def building_details(self):
-        """Return a dict of pseudo random data for use with Building Snapshot"""
-        owner = self.fake.random_element(elements=self.owners)
-        return {
-            'tax_lot_id': self.fake.numerify(text='#####'),
-            'address_line_1': self.address_line_1(),
-            'city': 'Boring',
-            'state_province': 'Oregon',
-            'postal_code': "970{}".format(self.fake.numerify(text='##')),
-            'year_built': self.fake.random_int(min=1880, max=2015),
-            'site_eui': self.fake.random_int(min=50, max=600),
-            'owner': owner.name,
-            'owner_email': owner.email,
-            'owner_telephone': owner.telephone,
-            'owner_address': owner.address,
-            'owner_city_state': owner.city_state,
-            'owner_postal_code': owner.postal_code,
-        }
-
-    def building_snapshot(self, import_file, canonical_building,
-                          super_organization=None, **kw):
-        """Return a building snapshot populated with pseudo random data"""
-        building_details = {
-            'super_organization': self._get_attr('super_organization', super_organization),
-            'import_file': import_file,
-            'canonical_building': canonical_building,
-        }
-        building_details.update(self.building_details())
-        building_details.update(kw)
-        return BuildingSnapshot.objects.create(**building_details)
 
 
 class FakeColumnFactory(BaseFake):
@@ -237,9 +193,7 @@ class FakePropertyAuditLogFactory(BaseFake):
         }
         details.update(kw)
         if not details.get('state'):
-            details['state'] = self.state_factory.get_property_state(
-                organization=self.organization
-            )
+            details['state'] = self.state_factory.get_property_state(organization=self.organization)
         if not details.get('view'):
             details['view'] = self.view_factory.get_property_view()
         return PropertyAuditLog.objects.create(**details)
@@ -278,16 +232,20 @@ class FakePropertyStateFactory(BaseFake):
             'owner_postal_code': owner.postal_code,
         }
 
-    def get_property_state(self, organization, **kw):
+    def get_property_state(self, organization=None, **kw):
         """Return a property state populated with pseudo random data"""
         property_details = self.get_details()
         property_details.update(kw)
         ps = PropertyState.objects.create(
-            organization=organization, **property_details
+            organization=self._get_attr('organization', self.organization),
+            **property_details
         )
-        auditlog_detail = {}
+        # make sure to create an audit log so that we can test various methods (e.g. updating properties)
         PropertyAuditLog.objects.create(
-            organization=organization, state=ps, name='Import Creation', **auditlog_detail
+            organization=self._get_attr('organization', self.organization),
+            state=ps,
+            record_type=AUDIT_IMPORT,
+            name='Import Creation'
         )
         return ps
 
@@ -297,43 +255,72 @@ class FakePropertyViewFactory(BaseFake):
     Factory Class for producing PropertyView instances.
     """
 
-    def __init__(self, prprty=None, cycle=None,
-                 organization=None, user=None):
+    def __init__(self, prprty=None, cycle=None, organization=None, user=None):
         super(FakePropertyViewFactory, self).__init__()
         self.prprty = prprty
         self.cycle = cycle
         self.organization = organization
         self.user = user
-        self.property_factory = FakePropertyFactory(
-            organization=organization
-        )
-        self.cycle_factory = FakeCycleFactory(
-            organization=organization,
-            user=user
-        )
+        self.property_factory = FakePropertyFactory(organization=organization)
+        self.cycle_factory = FakeCycleFactory(organization=organization, user=user)
         self.state_factory = FakePropertyStateFactory(organization=organization)
 
-    def get_property_view(self, prprty=None, cycle=None, state=None,
-                          organization=None, user=None, **kw):
+    def get_property_view(self, prprty=None, cycle=None, state=None, organization=None, user=None, **kwargs):
         # pylint:disable=too-many-arguments
         """Get property view instance."""
         organization = organization if organization else self.organization
         user = user if user else self.user
         if not prprty:
-            prprty = self.prprty if self.prprty else \
-                self.property_factory.get_property(organization=organization)
+            prprty = self.prprty if self.prprty else self.property_factory.get_property(organization=organization)
         if not cycle:
-            cycle = self.cycle if self.cycle else self.cycle_factory.get_cycle(
-                organization=organization
-            )
+            cycle = self.cycle if self.cycle else self.cycle_factory.get_cycle(organization=organization)
         property_view_details = {
             'property': prprty,
             'cycle': cycle,
-            'state': state if state else self.state_factory.get_property_state(
-                organization=organization, **kw
-            )
+            'state': state if state else self.state_factory.get_property_state(organization=organization, **kwargs)
         }
         return PropertyView.objects.create(**property_view_details)
+
+
+class FakePropertyMeasureFactory(BaseFake):
+    def __init__(self, organization, property_state=None):
+        self.organization = organization
+
+        if not property_state:
+            self.property_state = FakePropertyStateFactory(organization=self.organization).get_property_state()
+        else:
+            self.property_state = property_state
+        super(FakePropertyMeasureFactory, self).__init__()
+
+    def assign_random_measures(self, number_of_measures=5, **kw):
+        # remove any existing measures assigned to the property
+        self.property_state.measures.all().delete()
+
+        # assign a random number of measures to the PropertyState
+        for n in xrange(number_of_measures):
+            measure = Measure.objects.all().order_by('?')[0]
+            property_measure_details = {
+                'measure_id': measure.id,
+                'property_measure_name': self.fake.text(),
+                'property_state': self.property_state,
+                'description': self.fake.text(),
+                'implementation_status': PropertyMeasure.MEASURE_IN_PROGRESS,
+                'application_scale': PropertyMeasure.SCALE_ENTIRE_SITE,
+                'category_affected': PropertyMeasure.CATEGORY_AIR_DISTRIBUTION,
+                'recommended': True,
+                'cost_mv': self.fake.numerify(text='#####'),
+                'cost_total_first': self.fake.numerify(text='#####'),
+                'cost_installation': self.fake.numerify(text='#####'),
+                'cost_material': self.fake.numerify(text='#####'),
+                'cost_capital_replacement': self.fake.numerify(text='#####'),
+                'cost_residual_value': self.fake.numerify(text='#####'),
+            }
+            PropertyMeasure.objects.create(**property_measure_details)
+
+    def get_property_state(self, number_of_measures=5):
+        """Return a measure"""
+        self.assign_random_measures(number_of_measures)
+        return self.property_state
 
 
 class FakeGreenAssessmentFactory(BaseFake):
@@ -373,9 +360,7 @@ class FakeGreenAssessmentFactory(BaseFake):
             if isinstance(validity_duration, int):
                 validity_duration = datetime.timedelta(validity_duration)
             if not (isinstance(validity_duration, datetime.timedelta)):
-                raise TypeError(
-                    'validity_duration must be an integer or timedelta'
-                )
+                raise TypeError('validity_duration must be an integer or timedelta')
             green_assessment['validity_duration'] = validity_duration
         green_assessment.update(kw)
         return GreenAssessment.objects.create(**green_assessment)
@@ -415,11 +400,8 @@ class FakeGreenAssessmentPropertyFactory(BaseFake):
 
     def get_details(self, assessment, property_view, organization):
         """Get GreenAssessmentProperty details"""
-        metric = self.fake.random_digit_not_null() \
-            if assessment.is_numeric_score else None
-        rating = None if assessment.is_numeric_score else u'{} stars'.format(
-            self.fake.random.randint(1, 5)
-        )
+        metric = self.fake.random_digit_not_null() if assessment.is_numeric_score else None
+        rating = None if assessment.is_numeric_score else u'{} stars'.format(self.fake.random.randint(1, 5))
         details = {
             'organization': organization,
             'view': property_view,
@@ -432,8 +414,7 @@ class FakeGreenAssessmentPropertyFactory(BaseFake):
             details['rating'] = rating
         return details
 
-    def get_green_assessment_property(self, assessment=None, property_view=None,
-                                      organization=None, user=None,
+    def get_green_assessment_property(self, assessment=None, property_view=None, organization=None, user=None,
                                       urls=None, with_url=None, **kw):
         """
         Get a GreenAssessmentProperty instance.
@@ -510,6 +491,55 @@ class FakeStatusLabelFactory(BaseFake):
         return label
 
 
+class FakeNoteFactory(BaseFake):
+    """
+    Facotry Class for producing Note instances.
+    """
+
+    def __init__(self, organization=None, user=None):
+        self.organization = organization
+        self.user = user
+        super(FakeNoteFactory, self).__init__()
+
+    def get_note(self, organization=None, user=None, **kw):
+        """Get Note instance."""
+        name = 'Nothing of importance'
+        text = self.fake.text()
+        note_details = {
+            'organization_id': self._get_attr('organization', self.organization).pk,
+            'note_type': Note.NOTE,
+            'name': name,
+            'text': text,
+            'user': self._get_attr('user', self.user),
+        }
+        note_details.update(kw)
+        note, _ = Note.objects.get_or_create(**note_details)
+        return note
+
+    def get_log_note(self, organization=None, user=None, **kw):
+        name = 'Nothing of importance for log'
+        text = 'Data changed'
+        note_details = {
+            'organization_id': self._get_attr('organization', self.organization).pk,
+            'note_type': Note.LOG,
+            'name': name,
+            'text': text,
+            'user': self._get_attr('user', self.user),
+            'log_data': {
+                'property_state': [
+                    {
+                        "field": "address_line_1",
+                        "previous_value": "123 Main Street",
+                        "new_value": "742 Evergreen Terrace"
+                    }
+                ]
+            }
+        }
+        note_details.update(kw)
+        note, _ = Note.objects.get_or_create(**note_details)
+        return note
+
+
 class FakeTaxLotFactory(BaseFake):
     """
     Factory Class for producing Taxlot instances.
@@ -546,7 +576,7 @@ class FakeTaxLotStateFactory(BaseFake):
         super(FakeTaxLotStateFactory, self).__init__()
         self.organization = organization
 
-    def get_details(self, organization):
+    def get_details(self):
         """Get taxlot details."""
         taxlot_details = {
             'jurisdiction_tax_lot_id': self.fake.numerify(text='#####'),
@@ -562,12 +592,12 @@ class FakeTaxLotStateFactory(BaseFake):
     def get_taxlot_state(self, organization=None, **kw):
         """Return a taxlot state populated with pseudo random data"""
         org = self._get_attr('organization', organization)
-        taxlot_details = self.get_details(org)
+        taxlot_details = self.get_details()
         taxlot_details.update(kw)
         tls = TaxLotState.objects.create(organization=org, **taxlot_details)
-        auditlog_detail = {}
-        TaxLotAuditLog.objects.create(organization=org, state=tls, **auditlog_detail)
-
+        TaxLotAuditLog.objects.create(
+            organization=org, state=tls, record_type=AUDIT_IMPORT, name='Import Creation'
+        )
         return tls
 
 
@@ -576,8 +606,7 @@ class FakeTaxLotPropertyFactory(BaseFake):
     Factory Class for producing TaxlotView instances.
     """
 
-    def __init__(self, prprty=None, cycle=None,
-                 organization=None, user=None):
+    def __init__(self, prprty=None, cycle=None, organization=None, user=None):
         super(FakeTaxLotPropertyFactory, self).__init__()
         self.organization = organization
         self.user = user
@@ -624,40 +653,31 @@ class FakeTaxLotViewFactory(BaseFake):
     Factory Class for producing TaxlotView instances.
     """
 
-    def __init__(self, organization=None, user=None):
+    def __init__(self, taxlot=None, cycle=None, organization=None, user=None):
         super(FakeTaxLotViewFactory, self).__init__()
+        self.taxlot = taxlot
+        self.cycle = cycle
         self.organization = organization
         self.user = user
-        self.taxlot_factory = FakeTaxLotFactory(
-            organization=organization
-        )
-        self.taxlot_state_factory = FakeTaxLotStateFactory(
-            organization=organization
-        )
-        self.cycle_factory = FakeCycleFactory(
-            organization=organization,
-            user=user
-        )
+        self.taxlot_factory = FakeTaxLotFactory(organization=organization)
+        self.taxlot_state_factory = FakeTaxLotStateFactory(organization=organization)
+        self.cycle_factory = FakeCycleFactory(organization=organization, user=user)
+        self.state_factory = FakeTaxLotStateFactory(organization=organization)
 
-    def get_taxlot_view(self, organization=None, user=None, **kwargs):
+    def get_taxlot_view(self, taxlot=None, cycle=None, state=None, organization=None, user=None, **kwargs):
         """Get a fake taxlot view."""
-        organization = self._get_attr('organization', organization)
-        user = self._get_attr('user', user)
-        cycle = kwargs.get(
-            'cycle',
-            self.cycle_factory.get_cycle(organization=organization, user=user)
-        )
-        state = kwargs.get(
-            'state',
-            self.taxlot_state_factory.get_taxlot_state()
-        )
-        taxlot = kwargs.get(
-            'taxlot',
-            self.taxlot_factory.get_taxlot(organization=organization)
-        )
-        return TaxLotView.objects.create(
-            taxlot=taxlot, cycle=cycle, state=state
-        )
+        organization = organization if organization else self.organization
+        user = user if user else self.user
+        if not taxlot:
+            taxlot = self.taxlot if self.taxlot else self.taxlot_factory.get_taxlot(organization=organization)
+        if not cycle:
+            cycle = self.cycle if self.cycle else self.cycle_factory.get_cycle(organization=organization)
+        property_view_details = {
+            'taxlot': taxlot,
+            'cycle': cycle,
+            'state': state if state else self.state_factory.get_taxlot_state(organization=organization, **kwargs)
+        }
+        return TaxLotView.objects.create(**property_view_details)
 
 
 def mock_file_factory(name, size=None, url=None, path=None):

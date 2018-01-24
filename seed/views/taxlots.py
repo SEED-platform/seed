@@ -1,16 +1,14 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2017, The Regents of the University of California,
+:copyright (c) 2014 - 2018, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
 :author
 """
 
-import re
-from os import path
-
+from django.apps import apps
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.http import JsonResponse
 from rest_framework import status
@@ -18,17 +16,26 @@ from rest_framework.decorators import detail_route, list_route
 from rest_framework.renderers import JSONRenderer
 from rest_framework.viewsets import GenericViewSet
 
+from seed.data_importer.views import ImportFileViewSet
 from seed.decorators import ajax_request_class
+from seed.lib.merging import merging
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (
+    AUDIT_IMPORT,
     AUDIT_USER_EDIT,
+    DATA_STATE_MATCHING,
+    MERGE_STATE_UNKNOWN,
+    MERGE_STATE_NEW,
+    MERGE_STATE_MERGED,
+    MERGE_STATE_DELETE,
     Column,
     Cycle,
     PropertyView,
     TaxLotAuditLog,
     TaxLotProperty,
     TaxLotState,
-    TaxLotView
+    TaxLotView,
+    TaxLot,
 )
 from seed.serializers.pint import PintJSONEncoder
 from seed.serializers.properties import (
@@ -45,7 +52,6 @@ from seed.utils.properties import (
     pair_unpair_property_taxlot,
     update_result_with_master
 )
-from seed.utils.time import convert_to_js_timestamp
 
 # Global toggle that controls whether or not to display the raw extra
 # data fields in the columns returned for the view.
@@ -186,6 +192,245 @@ class TaxLotViewSet(GenericViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
+    @list_route(methods=['POST'])
+    def merge(self, request):
+        """
+        Merge multiple tax lot records into a single new record
+        ---
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+            - name: state_ids
+              description: Array containing tax lot state ids to merge
+              paramType: body
+        """
+        body = request.data
+
+        state_ids = body.get('state_ids', [])
+        organization_id = int(request.query_params.get('organization_id', None))
+
+        # Check the number of state_ids to merge
+        if len(state_ids) < 2:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'At least two ids are necessary to merge'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Make sure the state isn't already matched
+        for state_id in state_ids:
+            if ImportFileViewSet.has_coparent(state_id, 'properties'):
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Source state [' + state_id + '] is already matched'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+        audit_log = TaxLotAuditLog
+        inventory = TaxLot
+        label = apps.get_model('seed', 'TaxLot_labels')
+        state = TaxLotState
+        view = TaxLotView
+
+        index = 1
+        merged_state = None
+        while index < len(state_ids):
+            # state 1 is the base, state 2 is merged on top of state 1
+            # Use index 0 the first time through, merged_state from then on
+            if index == 1:
+                state1 = state.objects.get(id=state_ids[index - 1])
+            else:
+                state1 = merged_state
+            state2 = state.objects.get(id=state_ids[index])
+
+            merged_state = state.objects.create(organization_id=organization_id)
+            merged_state, changes = merging.merge_state(merged_state,
+                                                        state1,
+                                                        state2,
+                                                        merging.get_state_attrs([state1, state2]),
+                                                        default=state2)
+
+            state_1_audit_log = audit_log.objects.filter(state=state1).first()
+            state_2_audit_log = audit_log.objects.filter(state=state2).first()
+
+            audit_log.objects.create(organization=state1.organization,
+                                     parent1=state_1_audit_log,
+                                     parent2=state_2_audit_log,
+                                     parent_state1=state1,
+                                     parent_state2=state2,
+                                     state=merged_state,
+                                     name='Manual Match',
+                                     description='Automatic Merge',
+                                     import_filename=None,
+                                     record_type=AUDIT_IMPORT)
+
+            # Set the merged_state to merged
+            merged_state.data_state = DATA_STATE_MATCHING
+            merged_state.merge_state = MERGE_STATE_MERGED
+            merged_state.save()
+            state1.merge_state = MERGE_STATE_UNKNOWN
+            state1.save()
+            state2.merge_state = MERGE_STATE_UNKNOWN
+            state2.save()
+
+            # Delete existing views and inventory records
+            views = view.objects.filter(state_id__in=[state1.id, state2.id])
+            view_ids = list(views.values_list('id', flat=True))
+            cycle_id = views.first().cycle_id
+            label_ids = []
+            # Get paired view ids
+            paired_view_ids = list(TaxLotProperty.objects.filter(taxlot_view_id__in=view_ids)
+                                   .order_by('property_view_id').distinct('property_view_id')
+                                   .values_list('property_view_id', flat=True))
+            for v in views:
+                label_ids.extend(list(v.taxlot.labels.all().values_list('id', flat=True)))
+                v.taxlot.delete()
+            label_ids = list(set(label_ids))
+
+            # Create new inventory record
+            inventory_record = inventory(organization_id=organization_id)
+            inventory_record.save()
+
+            # Create new labels and view
+            for label_id in label_ids:
+                label(taxlot_id=inventory_record.id, statuslabel_id=label_id).save()
+            new_view = view(cycle_id=cycle_id, state_id=merged_state.id,
+                            taxlot_id=inventory_record.id)
+            new_view.save()
+
+            # Delete existing pairs and re-pair all to new view
+            # Probably already deleted by cascade
+            TaxLotProperty.objects.filter(taxlot_view_id__in=view_ids).delete()
+            for paired_view_id in paired_view_ids:
+                TaxLotProperty(primary=True,
+                               cycle_id=cycle_id,
+                               property_view_id=paired_view_id,
+                               taxlot_view_id=new_view.id).save()
+
+            index += 1
+
+        return {
+            'status': 'success'
+        }
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('can_modify_data')
+    @detail_route(methods=['POST'])
+    def unmerge(self, request, pk=None):
+        """
+        Unmerge a taxlot view into two taxlot views
+        ---
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+        """
+        try:
+            old_view = TaxLotView.objects.select_related(
+                'taxlot', 'cycle', 'state'
+            ).get(
+                id=pk,
+                taxlot__organization_id=self.request.GET['organization_id']
+            )
+        except TaxLotView.DoesNotExist:
+            return {
+                'status': 'error',
+                'message': 'taxlot view with id {} does not exist'.format(pk)
+            }
+
+        merged_state = old_view.state
+        if merged_state.data_state != DATA_STATE_MATCHING or merged_state.merge_state != MERGE_STATE_MERGED:
+            return {
+                'status': 'error',
+                'message': 'taxlot view with id {} is not a merged taxlot view'.format(pk)
+            }
+
+        log = TaxLotAuditLog.objects.select_related('parent_state1', 'parent_state2').filter(
+            state=merged_state
+        ).order_by('-id').first()
+
+        if log.parent_state1 is None or log.parent_state2 is None:
+            return {
+                'status': 'error',
+                'message': 'taxlot view with id {} must have two parent states'.format(pk)
+            }
+
+        label = apps.get_model('seed', 'TaxLot_labels')
+        state1 = log.parent_state1
+        state2 = log.parent_state2
+        cycle_id = old_view.cycle_id
+
+        # Clone the taxlot record, then the labels
+        old_taxlot = old_view.taxlot
+        label_ids = list(old_taxlot.labels.all().values_list('id', flat=True))
+        new_taxlot = old_taxlot
+        new_taxlot.id = None
+        new_taxlot.save()
+
+        for label_id in label_ids:
+            label(taxlot_id=new_taxlot.id, statuslabel_id=label_id).save()
+
+        # Create the views
+        new_view1 = TaxLotView(
+            cycle_id=cycle_id,
+            taxlot_id=new_taxlot.id,
+            state=state1
+        )
+        new_view2 = TaxLotView(
+            cycle_id=cycle_id,
+            taxlot_id=old_view.taxlot_id,
+            state=state2
+        )
+
+        # Mark the merged state as deleted
+        merged_state.merge_state = MERGE_STATE_DELETE
+        merged_state.save()
+
+        # Change the merge_state of the individual states
+        if log.parent1.name in ['Import Creation', 'Manual Edit'] and log.parent1.import_filename is not None:
+            # State belongs to a new record
+            state1.merge_state = MERGE_STATE_NEW
+        else:
+            state1.merge_state = MERGE_STATE_MERGED
+        if log.parent2.name in ['Import Creation', 'Manual Edit'] and log.parent2.import_filename is not None:
+            # State belongs to a new record
+            state2.merge_state = MERGE_STATE_NEW
+        else:
+            state2.merge_state = MERGE_STATE_MERGED
+        state1.save()
+        state2.save()
+
+        # Delete the audit log entry for the merge
+        log.delete()
+
+        # Duplicate pairing
+        paired_view_ids = list(TaxLotProperty.objects.filter(taxlot_view_id=old_view.id)
+                               .order_by('property_view_id').values_list('property_view_id', flat=True))
+
+        old_view.delete()
+        new_view1.save()
+        new_view2.save()
+
+        for paired_view_id in paired_view_ids:
+            TaxLotProperty(primary=True,
+                           cycle_id=cycle_id,
+                           taxlot_view_id=new_view1.id,
+                           property_view_id=paired_view_id).save()
+            TaxLotProperty(primary=True,
+                           cycle_id=cycle_id,
+                           taxlot_view_id=new_view2.id,
+                           property_view_id=paired_view_id).save()
+
+        return {
+            'status': 'success',
+            'view_id': new_view1.id
+        }
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('can_modify_data')
     @detail_route(methods=['PUT'])
     def pair(self, request, pk=None):
         """
@@ -256,11 +501,17 @@ class TaxLotViewSet(GenericViewSet):
               description: The organization_id for this user's organization
               required: true
               paramType: query
+            - name: used_only
+              description: Determine whether or not to show only the used fields. Ones that have been mapped
+              type: boolean
+              required: false
+              paramType: query
         """
         organization_id = int(request.query_params.get('organization_id'))
-        columns = Column.retrieve_all(organization_id, 'taxlot')
+        only_used = request.query_params.get('only_used', False)
+        columns = Column.retrieve_all(organization_id, 'taxlot', only_used)
 
-        return JsonResponse({'columns': columns})
+        return JsonResponse({'status': 'success', 'columns': columns})
 
     @api_endpoint_class
     @ajax_request_class
@@ -284,13 +535,12 @@ class TaxLotViewSet(GenericViewSet):
 
         return JsonResponse({'status': 'success', 'taxlots': resp[1]['seed.TaxLotState']})
 
-    def _get_taxlot_view(self, taxlot_pk, cycle_pk):
+    def _get_taxlot_view(self, taxlot_pk):
         try:
             taxlot_view = TaxLotView.objects.select_related(
                 'taxlot', 'cycle', 'state'
             ).get(
-                taxlot_id=taxlot_pk,
-                cycle_id=cycle_pk,
+                id=taxlot_pk,
                 taxlot__organization_id=self.request.GET['organization_id']
             )
             result = {
@@ -300,112 +550,25 @@ class TaxLotViewSet(GenericViewSet):
         except TaxLotView.DoesNotExist:
             result = {
                 'status': 'error',
-                'message': 'taxlot view with id {} does not exist'.format(
-                    taxlot_pk)
-            }
-        except TaxLotView.MultipleObjectsReturned:
-            result = {
-                'status': 'error',
-                'message': 'Multiple taxlot views with id {}'.format(
-                    taxlot_pk)
+                'message': 'taxlot view with id {} does not exist'.format(taxlot_pk)
             }
         return result
 
-    @api_endpoint_class
-    @ajax_request_class
-    @detail_route(methods=['GET'])
-    def view(self, request, pk=None):
-        """
-        Get the TaxLot view
-        ---
-        parameters:
-            - name: cycle_id
-              description: The cycle ID to query on
-              required: true
-              paramType: query
-        """
-        cycle_pk = request.query_params.get('cycle_id', None)
-        if not cycle_pk:
-            return JsonResponse(
-                {'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
-        result = self._get_taxlot_view(pk, cycle_pk)
-        return JsonResponse(result)
-
     def get_history(self, taxlot_view):
-        """Return history in reverse order."""
-        history = []
+        """Return history in reverse order"""
 
-        def record_dict(log):
-            filename = None if not log.import_filename else path.basename(log.import_filename)
-            if filename:
-                # Attempt to remove NamedTemporaryFile suffix
-                name, ext = path.splitext(filename)
-                pattern = re.compile('(.*?)(_[a-zA-Z0-9]{7})$')
-                match = pattern.match(name)
-                if match:
-                    filename = match.groups()[0] + ext
-            return {
-                'state': TaxLotStateSerializer(log.state).data,
-                'date_edited': convert_to_js_timestamp(log.created),
-                'source': log.get_record_type_display(),
-                'filename': filename,
-                # 'changed_fields': json.loads(log.description) if log.record_type == AUDIT_USER_EDIT else None
-            }
+        # access the history from the property state
+        history, master = taxlot_view.state.history()
 
-        log = TaxLotAuditLog.objects.select_related('state', 'parent1', 'parent2').filter(
-            state_id=taxlot_view.state_id
-        ).order_by('-id').first()
-        master = {
-            'state': TaxLotStateSerializer(log.state).data,
-            'date_edited': convert_to_js_timestamp(log.created),
-        }
+        # convert the history and master states to StateSerializers
+        master['state'] = TaxLotStateSerializer(master['state_data']).data
+        del master['state_data']
+        del master['state_id']
 
-        # Traverse parents and add to history
-        if log.name in ['Manual Match', 'System Match', 'Merge current state in migration']:
-            done_searching = False
-            while not done_searching:
-                if (log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
-                    done_searching = True
-                elif log.name == 'Merge current state in migration':
-                    record = record_dict(log.parent1)
-                    history.append(record)
-                    if log.parent1.name == 'Import Creation':
-                        done_searching = True
-                    else:
-                        tree = log.parent1
-                        log = tree
-                else:
-                    tree = None
-                    if log.parent2:
-                        if log.parent2.name in ['Import Creation', 'Manual Edit']:
-                            record = record_dict(log.parent2)
-                            history.append(record)
-                        elif log.parent2.name == 'System Match' and log.parent2.parent1.name == 'Import Creation' and \
-                                log.parent2.parent2.name == 'Import Creation':
-                            # Handle case where an import file matches within itself, and proceeds to match with
-                            # existing records
-                            record = record_dict(log.parent2.parent2)
-                            history.append(record)
-                            record = record_dict(log.parent2.parent1)
-                            history.append(record)
-                        else:
-                            tree = log.parent2
-                    if log.parent1.name in ['Import Creation', 'Manual Edit']:
-                        record = record_dict(log.parent1)
-                        history.append(record)
-                    else:
-                        tree = log.parent1
-
-                    if not tree:
-                        done_searching = True
-                    else:
-                        log = tree
-        elif log.name == 'Manual Edit':
-            record = record_dict(log.parent1)
-            history.append(record)
-        elif log.name == 'Import Creation':
-            record = record_dict(log)
-            history.append(record)
+        for h in history:
+            h['state'] = TaxLotStateSerializer(h['state_data']).data
+            del h['state_data']
+            del h['state_id']
 
         return history, master
 
@@ -434,36 +597,32 @@ class TaxLotViewSet(GenericViewSet):
     @ajax_request_class
     def retrieve(self, request, pk):
         """
-        Get property details
+        Get taxlot details
         ---
         parameters:
-            - name: cycle_id
-              description: The cycle id for filtering the taxlot view
+            - name: pk
+              description: The primary key of the TaxLotView
               required: true
-              paramType: query
+              paramType: path
             - name: organization_id
               description: The organization_id for this user's organization
               required: true
               paramType: query
         """
-        cycle_pk = request.query_params.get('cycle_id', None)
-        if not cycle_pk:
-            return JsonResponse(
-                {'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
-        result = self._get_taxlot_view(pk, cycle_pk)
+        result = self._get_taxlot_view(pk)
         if result.get('status', None) != 'error':
             taxlot_view = result.pop('taxlot_view')
             result.update(TaxLotViewSerializer(taxlot_view).data)
             # remove TaxLotView id from result
             result.pop('id')
+
             result['state'] = TaxLotStateSerializer(taxlot_view.state).data
             result['properties'] = self._get_properties(taxlot_view.pk)
             result['history'], master = self.get_history(taxlot_view)
             result = update_result_with_master(result, master)
-            status_code = status.HTTP_200_OK
+            return JsonResponse(result, status=status.HTTP_200_OK)
         else:
-            status_code = status.HTTP_404_NOT_FOUND
-        return JsonResponse(result, status=status_code)
+            return JsonResponse(result, status_code=status.HTTP_404_NOT_FOUND)
 
     @api_endpoint_class
     @ajax_request_class
@@ -472,37 +631,35 @@ class TaxLotViewSet(GenericViewSet):
         Update a taxlot
         ---
         parameters:
-            - name: cycle_id
-              description: The cycle id for filtering the taxlot view
+            - name: organization_id
+              description: The organization_id for this user's organization
               required: true
               paramType: query
         """
         data = request.data
-        cycle_pk = request.query_params.get('cycle_id', None)
-        if not cycle_pk:
-            return JsonResponse(
-                {'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
-        result = self._get_taxlot_view(pk, cycle_pk)
-        if result.get('status', None) != 'error':
+
+        result = self._get_taxlot_view(pk)
+        if result.get('status', 'error') != 'error':
             taxlot_view = result.pop('taxlot_view')
             taxlot_state_data = TaxLotStateSerializer(taxlot_view.state).data
+
+            # get the taxlot state information from the request
             new_taxlot_state_data = data['state']
 
-            changed = True
+            # set empty strings to None
             for key, val in new_taxlot_state_data.iteritems():
                 if val == '':
                     new_taxlot_state_data[key] = None
-            changed_fields = get_changed_fields(
-                taxlot_state_data, new_taxlot_state_data
-            )
+
+            changed_fields = get_changed_fields(taxlot_state_data, new_taxlot_state_data)
             if not changed_fields:
-                changed = False
-            if not changed:
                 result.update(
-                    {'status': 'error', 'message': 'Nothing to update'}
+                    {'status': 'success', 'message': 'Records are identical'}
                 )
-                status_code = 422  # status.HTTP_422_UNPROCESSABLE_ENTITY
+                return JsonResponse(result, status=status.HTTP_204_NO_CONTENT)
             else:
+                # Not sure why we are going through the pain of logging this all right now... need to
+                # reevaluate this.
                 log = TaxLotAuditLog.objects.select_related().filter(
                     state=taxlot_view.state
                 ).order_by('-id').first()
@@ -512,13 +669,16 @@ class TaxLotViewSet(GenericViewSet):
                 taxlot_state_data.update(new_taxlot_state_data)
 
                 if log.name == 'Import Creation':
-                    # Add new state
+                    # Add new state by removing the existing ID.
                     taxlot_state_data.pop('id')
                     new_taxlot_state_serializer = TaxLotStateSerializer(
                         data=taxlot_state_data
                     )
                     if new_taxlot_state_serializer.is_valid():
+                        # create the new property state, and perform an initial save / moving relationships
                         new_state = new_taxlot_state_serializer.save()
+
+                        # then assign this state to the property view and save the whole view
                         taxlot_view.state = new_state
                         taxlot_view.save()
 
@@ -534,41 +694,54 @@ class TaxLotViewSet(GenericViewSet):
                                                       record_type=AUDIT_USER_EDIT)
 
                         result.update(
-                            {'state': new_taxlot_state_serializer.validated_data}
+                            {'state': new_taxlot_state_serializer.data}
                         )
-                        # Removing organization key AND import_file key because they're not JSON-serializable
-                        # TODO find better solution
-                        result['state'].pop('organization')
-                        result['state'].pop('import_file')
-                        status_code = status.HTTP_201_CREATED
+
+                        return JsonResponse(result, status=status.HTTP_200_OK)
                     else:
-                        result.update(
-                            {'status': 'error', 'message': 'Invalid Data'}
+                        result.update({
+                            'status': 'error',
+                            'message': 'Invalid update data with errors: {}'.format(
+                                new_taxlot_state_serializer.errors)}
                         )
-                        status_code = 422  # status.HTTP_422_UNPROCESSABLE_ENTITY
-                elif log.name in ['Manual Edit', 'Manual Match', 'System Match',
-                                  'Merge current state in migration']:
-                    # Override previous edit state or merge state
-                    state = taxlot_view.state
-                    for key, value in new_taxlot_state_data.iteritems():
-                        setattr(state, key, value)
-                    state.save()
+                        return JsonResponse(result, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+                elif log.name in ['Manual Edit', 'Manual Match', 'System Match', 'Merge current state in migration']:
+                    # Convert this to using the serializer to save the data. This will override the previous values
+                    # in the state object.
 
-                    result.update(
-                        {'state': TaxLotStateSerializer(state).data}
+                    # Note: We should be able to use partial update here and pass in the changed fields instead of the
+                    # entire state_data.
+                    updated_taxlot_state_serializer = TaxLotStateSerializer(
+                        taxlot_view.state,
+                        data=taxlot_state_data
                     )
-                    # Removing organization key AND import_file key because they're not JSON-serializable
-                    # TODO find better solution
-                    result['state'].pop('organization')
-                    result['state'].pop('import_file')
+                    if updated_taxlot_state_serializer.is_valid():
+                        # create the new property state, and perform an initial save / moving relationships
+                        updated_taxlot_state_serializer.save()
 
-                    status_code = status.HTTP_201_CREATED
+                        result.update(
+                            {'state': updated_taxlot_state_serializer.data}
+                        )
+
+                        return JsonResponse(result, status=status.HTTP_200_OK)
+                    else:
+                        result.update({
+                            'status': 'error',
+                            'message': 'Invalid update data with errors: {}'.format(
+                                updated_taxlot_state_serializer.errors)}
+                        )
+                        return JsonResponse(result, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
                 else:
-                    result = {'status': 'error',
-                              'message': 'Unrecognized audit log name: ' + log.name}
-                    status_code = 422
-                    return JsonResponse(result, status=status_code)
+                    result = {
+                        'status': 'error',
+                        'message': 'Unrecognized audit log name: ' + log.name
+                    }
+                    return JsonResponse(result, status=status.HTTP_204_NO_CONTENT)
 
+            # save the tax lot view, even if it hasn't changed so that the datetime gets updated on the taxlot.
+            # Uhm, does this ever get called? There are a bunch of returns in the code above.
+            taxlot_view.save()
         else:
-            status_code = status.HTTP_404_NOT_FOUND
-        return JsonResponse(result, status=status_code)
+            return JsonResponse(result, status=status.HTTP_404_NOT_FOUND)
+
+        return JsonResponse(result, status=status.HTTP_404_NOT_FOUND)

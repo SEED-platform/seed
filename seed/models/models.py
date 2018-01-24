@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -14,8 +14,6 @@ from seed.lib.superperms.orgs.models import Organization as SuperOrganization
 from seed.managers.json import JsonManager
 from seed.models.projects import Project
 from seed.utils.generic import obj_to_dict
-
-# Represents the data source of a given BuildingSnapshot
 
 ASSESSED_RAW = 0
 PORTFOLIO_RAW = 1
@@ -70,60 +68,6 @@ SEARCH_CONFIDENCE_RANGES = {
     'high': 1.0,
 }
 
-NATURAL_GAS = 1
-ELECTRICITY = 2
-FUEL_OIL = 3
-FUEL_OIL_NO_1 = 4
-FUEL_OIL_NO_2 = 5
-FUEL_OIL_NO_4 = 6
-FUEL_OIL_NO_5_AND_NO_6 = 7
-DISTRICT_STEAM = 8
-DISTRICT_HOT_WATER = 9
-DISTRICT_CHILLED_WATER = 10
-PROPANE = 11
-LIQUID_PROPANE = 12
-KEROSENE = 13
-DIESEL = 14
-COAL = 15
-COAL_ANTHRACITE = 16
-COAL_BITUMINOUS = 17
-COKE = 18
-WOOD = 19
-OTHER = 20
-WATER = 21
-
-ENERGY_TYPES = (
-    (NATURAL_GAS, 'Natural Gas'),
-    (ELECTRICITY, 'Electricity'),
-    (FUEL_OIL, 'Fuel Oil'),
-    (FUEL_OIL_NO_1, 'Fuel Oil No. 1'),
-    (FUEL_OIL_NO_2, 'Fuel Oil No. 2'),
-    (FUEL_OIL_NO_4, 'Fuel Oil No. 4'),
-    (FUEL_OIL_NO_5_AND_NO_6, 'Fuel Oil No. 5 and No. 6'),
-    (DISTRICT_STEAM, 'District Steam'),
-    (DISTRICT_HOT_WATER, 'District Hot Water'),
-    (DISTRICT_CHILLED_WATER, 'District Chilled Water'),
-    (PROPANE, 'Propane'),
-    (LIQUID_PROPANE, 'Liquid Propane'),
-    (KEROSENE, 'Kerosene'),
-    (DIESEL, 'Diesel'),
-    (COAL, 'Coal'),
-    (COAL_ANTHRACITE, 'Coal Anthracite'),
-    (COAL_BITUMINOUS, 'Coal Bituminous'),
-    (COKE, 'Coke'),
-    (WOOD, 'Wood'),
-    (OTHER, 'Other'),
-)
-
-KILOWATT_HOURS = 1
-THERMS = 2
-WATT_HOURS = 3
-
-ENERGY_UNITS = (
-    (KILOWATT_HOURS, 'kWh'),
-    (THERMS, 'Therms'),
-    (WATT_HOURS, 'Wh'),
-)
 
 # Used by compliance model but imported elsewhere
 BENCHMARK_COMPLIANCE_CHOICE = 'Benchmarking'
@@ -313,6 +257,7 @@ class Enum(models.Model):
         )
 
 
+# Deprecate
 class AttributeOption(models.Model):
     """Holds a single conflicting value for a BuildingSnapshot attribute."""
     value = models.TextField()
@@ -323,6 +268,8 @@ class AttributeOption(models.Model):
         blank=True,
         related_name='options'
     )
+
+# Deprecate
 
 
 class BuildingAttributeVariant(models.Model):
@@ -341,24 +288,3 @@ class BuildingAttributeVariant(models.Model):
 
     class Meta:
         unique_together = ('field_name', 'building_snapshot')
-
-
-class Meter(models.Model):
-    """Meter specific attributes."""
-    name = models.CharField(max_length=100)
-    building_snapshot = models.ManyToManyField(
-        'BuildingSnapshot', related_name='meters', blank=True
-    )
-    energy_type = models.IntegerField(choices=ENERGY_TYPES)
-    energy_units = models.IntegerField(choices=ENERGY_UNITS)
-
-
-class TimeSeries(models.Model):
-    """For storing energy use over time."""
-    begin_time = models.DateTimeField(null=True, blank=True)
-    end_time = models.DateTimeField(null=True, blank=True)
-    reading = models.FloatField(null=True)
-    cost = models.DecimalField(max_digits=11, decimal_places=4, null=True)
-    meter = models.ForeignKey(
-        Meter, related_name='timeseries_data', null=True, blank=True
-    )

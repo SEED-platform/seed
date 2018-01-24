@@ -1,21 +1,12 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
 from seed.models import PropertyState
 from seed.utils import constants
-
-
-# TODO: deprecate method - use MappingData class
-def get_mappable_columns(exclude_fields=None):
-    """
-    Get a list of all the columns we're able to map to that are fields
-    in the database already
-    """
-    return get_mappable_types(exclude_fields).keys()
 
 
 # TODO: deprecate method - use MappingData class

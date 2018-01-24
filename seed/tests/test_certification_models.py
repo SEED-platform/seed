@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2017, The Regents of the University of California,
+:copyright (c) 2014 - 2018, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
@@ -9,34 +9,27 @@ All rights reserved.  # NOQA
 """
 # pylint:disable=no-name-in-module
 import datetime
-
 from django.core.exceptions import ValidationError
-from django.test import TestCase
 
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import (
     Organization,
     OrganizationUser,
 )
-
 from seed.models import (
-    Cycle,
     GreenAssessment,
-    GreenAssessmentProperty,
-    GreenAssessmentURL,
-    Property,
-    PropertyState,
-    PropertyView,
 )
-
 from seed.test_helpers.fake import (
     FakeGreenAssessmentFactory,
-    FakeGreenAssessmentPropertyFactory, FakeGreenAssessmentURLFactory,
+    FakeGreenAssessmentPropertyFactory,
+    FakeGreenAssessmentURLFactory,
 )
+from seed.tests.util import DeleteModelsTestCase
 
 
-class GreenAssessmentTests(TestCase):
+class GreenAssessmentTests(DeleteModelsTestCase):
     """Tests for certification/Green Assesment models and methods"""
+
     # pylint: disable=too-many-instance-attributes
 
     def setUp(self):
@@ -73,17 +66,6 @@ class GreenAssessmentTests(TestCase):
             version='1', eligibility=True
         )
         self.urls = [url.url for url in self.gap.urls.all()]
-
-    def tearDown(self):
-        PropertyView.objects.all().delete()
-        Cycle.objects.all().delete()
-        Property.objects.all().delete()
-        PropertyState.objects.all().delete()
-        GreenAssessmentURL.objects.all().delete()
-        GreenAssessmentProperty.objects.all().delete()
-        GreenAssessment.objects.all().delete()
-        self.user.delete()
-        self.org.delete()
 
     def test_unicode_magic_methods(self):
         """Test unicode repr methods"""

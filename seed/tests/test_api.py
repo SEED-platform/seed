@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import base64
@@ -83,10 +83,13 @@ class SchemaGenerationTests(TestCase):
                  '/api/v2/labels',
                  '/api/v2/green_assessment',
                  '/api/v2/green_assessment_url',
+                 '/api/v2/building_file',
                  '/api/v2/cycles',
                  '/api/v2/green_assessment_property',
                  '/api/v2/gbr_properties',
-                 '/api/v2.1/properties',)):
+                 '/api/v2/notes',
+                 '/api/v2.1/properties',
+                 '/api/v2.1/scenarios',)):
                 self.assertTrue(
                     url.endswith('/'),
                     "Endpoint %s does not end with / as expected" % url
@@ -94,7 +97,7 @@ class SchemaGenerationTests(TestCase):
 
     def test_get_api_schema(self):
         """
-        Test of 'schem`a' generator.
+        Test of 'schema' generator.
         """
         url = reverse('api:v2:schema')
         res = self.client.get(url)
@@ -376,7 +379,6 @@ class TestApi(TestCase):
         r = json.loads(r.content)
         self.assertEqual(r['status'], 'success')
         self.assertEqual(r['public_fields'], [])
-        self.assertEqual(r['shared_fields'], [])
 
     @skip('appears to be broken by use of login_required')
     def test_upload_buildings_file(self):

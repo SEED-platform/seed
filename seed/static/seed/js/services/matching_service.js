@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 
@@ -64,6 +64,62 @@ angular.module('BE.seed.service.matching', []).factory('matching_service', [
         state_id: state_id,
         matching_state_id: matching_state_id
       }, {
+        params: {
+          organization_id: user_service.get_organization().id
+        }
+      }).then(function (response) {
+        return response.data;
+      }).finally(function () {
+        spinner_utility.hide();
+      });
+    };
+
+    matching_service.mergeProperties = function (state_ids) {
+      spinner_utility.show();
+      return $http.post('/api/v2/properties/merge/', {
+        state_ids: state_ids
+      }, {
+        params: {
+          organization_id: user_service.get_organization().id
+        }
+      }).then(function (response) {
+        return response.data;
+      }).finally(function () {
+        spinner_utility.hide();
+      });
+    };
+
+    matching_service.unmergeProperties = function (view_id) {
+      spinner_utility.show();
+      return $http.post('/api/v2/properties/' + view_id + '/unmerge/', {}, {
+        params: {
+          organization_id: user_service.get_organization().id
+        }
+      }).then(function (response) {
+        return response.data;
+      }).finally(function () {
+        spinner_utility.hide();
+      });
+    };
+
+    matching_service.mergeTaxlots = function (state_ids) {
+      spinner_utility.show();
+      return $http.post('/api/v2/taxlots/merge/', {
+        state_ids: state_ids
+      }, {
+        params: {
+          organization_id: user_service.get_organization().id
+        }
+      }).then(function (response) {
+        return response.data;
+      }).finally(function () {
+        spinner_utility.hide();
+      });
+    };
+
+    matching_service.unmergeTaxlots = function (view_id) {
+      spinner_utility.show();
+      return $http.post('/api/v2/taxlots/' + view_id + '/unmerge/', {}, {
         params: {
           organization_id: user_service.get_organization().id
         }

@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import json
@@ -510,7 +510,7 @@ class DataQualityCheck(models.Model):
         dq, _ = DataQualityCheck.objects.get_or_create(organization=organization)
 
         if dq.rules.count() == 0:
-            _log.debug("No rules found in DataQualityCheck, initializing default rules")
+            # _log.debug("No rules found in DataQualityCheck, initializing default rules")
             dq.initialize_rules()
 
         return dq
@@ -561,7 +561,7 @@ class DataQualityCheck(models.Model):
         """
 
         # grab the columns so we can grab the display names
-        columns = Column.retrieve_all(self.organization, record_type)
+        columns = Column.retrieve_all(self.organization, record_type, False)
 
         # create lookup tuple for the display name
         for c in columns:

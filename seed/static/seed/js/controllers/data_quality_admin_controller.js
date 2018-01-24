@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.data_quality_admin', [])
@@ -21,6 +21,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
   'urls',
   'naturalSort',
   'flippers',
+  '$translate',
   function ($scope,
             $q,
             $state,
@@ -37,7 +38,8 @@ angular.module('BE.seed.controller.data_quality_admin', [])
             $uibModal,
             urls,
             naturalSort,
-            flippers) {
+            flippers,
+            $translate) {
     $scope.inventory_type = $stateParams.inventory_type;
     $scope.org = organization_payload.organization;
     $scope.auth = auth_payload.auth;
@@ -47,10 +49,10 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
     $scope.data_types = [
       {id: null, label: ''},
-      {id: 'number', label: 'Number'},
-      {id: 'string', label: 'Text'},
-      {id: 'date', label: 'Date'},
-      {id: 'year', label: 'Year'}
+      {id: 'number', label: $translate.instant('Number')},
+      {id: 'string', label: $translate.instant('Text')},
+      {id: 'date', label: $translate.instant('Date')},
+      {id: 'year', label: $translate.instant('Year')}
     ];
 
     if (flippers.is_active('release:use_pint')) {
@@ -69,8 +71,8 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
     $scope.units = [
       {id: null, label: ''},
-      {id: 'square feet', label: 'square feet'},
-      {id: 'kBtu/sq. ft./year', label: 'kBtu/sq. ft./year'}
+      {id: 'square feet', label: $translate.instant('square feet')},
+      {id: 'kBtu/sq. ft./year', label: $translate.instant('kBtu/sq. ft./year')}
     ];
 
     if (flippers.is_active('release:use_pint')) {
@@ -357,6 +359,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
     var displayNames = {};
     _.forEach($scope.columns, function (column) {
+      // TRANSLATION_FIXME
       displayNames[column.name] = column.displayName;
     });
 
