@@ -472,7 +472,7 @@ class PropertyViewSet(GenericViewSet):
     @ajax_request_class
     @has_perm_class('can_modify_data')
     @detail_route(methods=['POST'])
-    def unmerge(self, pk=None):
+    def unmerge(self, request, pk=None):
         """
         Unmerge a property view into two property views
         ---
@@ -734,7 +734,7 @@ class PropertyViewSet(GenericViewSet):
         except PropertyView.DoesNotExist:
             result = {
                 'status': 'error',
-                'message': 'property view with property id {} does not exist'.format(pk)
+                'message': 'property view with id {} does not exist'.format(pk)
             }
         return result
 

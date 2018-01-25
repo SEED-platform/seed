@@ -137,7 +137,8 @@ angular.module('BE.seed.controller.inventory_list', [])
 
       $scope.labelLogic = localStorage.getItem('labelLogic');
       $scope.labelLogic = _.includes(['and', 'or', 'exclude'], $scope.labelLogic) ? $scope.labelLogic : 'and';
-      $scope.labelLogicUpdated = function () {
+      $scope.labelLogicUpdated = function (labelLogic) {
+        $scope.labelLogic = labelLogic;
         localStorage.setItem('labelLogic', $scope.labelLogic);
         filterUsingLabels();
       };
