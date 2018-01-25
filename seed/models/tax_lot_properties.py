@@ -67,11 +67,11 @@ class TaxLotProperty(models.Model):
                 'obj_query_in': 'property_view_id__in',
                 'obj_state_id': 'property_state_id',
                 'obj_view_id': 'property_view_id',
-                'obj_id_name': 'property_id',
+                'obj_id': 'property_id',
                 'related_class': 'TaxLotView',
                 'select_related': 'taxlot',
-                'related_view_name': 'taxlot_view',
-                'related_view_id_name': 'taxlot_view_id',
+                'related_view': 'taxlot_view',
+                'related_view_id': 'taxlot_view_id',
                 'related_state_id': 'taxlot_state_id',
                 'related_column_key': 'tax',
             }
@@ -81,11 +81,11 @@ class TaxLotProperty(models.Model):
                 'obj_query_in': 'taxlot_view_id__in',
                 'obj_state_id': 'taxlot_state_id',
                 'obj_view_id': 'taxlot_view_id',
-                'obj_id_name': 'taxlot_id',
+                'obj_id': 'taxlot_id',
                 'related_class': 'PropertyView',
                 'select_related': 'property',
-                'related_view_name': 'property_view',
-                'related_view_id_name': 'property_view_id',
+                'related_view': 'property_view',
+                'related_view_id': 'property_view_id',
                 'related_state_id': 'property_state_id',
                 'related_column_key': 'property',
             }
@@ -93,10 +93,10 @@ class TaxLotProperty(models.Model):
         # Ids of propertyviews to look up in m2m
         ids = [obj.pk for obj in object_list]
         joins = TaxLotProperty.objects.filter(**{lookups['obj_query_in']: ids}).select_related(
-            lookups['related_view_name'])
+            lookups['related_view'])
 
         # Get all ids of tax lots on these joins
-        related_ids = [getattr(j, lookups['related_view_id_name']) for j in joins]
+        related_ids = [getattr(j, lookups['related_view_id']) for j in joins]
 
         # Get all tax lot views that are related
         related_views = apps.get_model('seed', lookups['related_class']).objects.select_related(
@@ -172,19 +172,21 @@ class TaxLotProperty(models.Model):
                 if none_in_jurisdiction_tax_lot_ids:
                     jurisdiction_tax_lot_ids.append('Missing')
 
-                join_dict = related_map[getattr(join, lookups['related_view_id_name'])].copy()
+                join_dict = related_map[getattr(join, lookups['related_view_id'])].copy()
                 join_dict.update({
                     'primary': 'P' if join.primary else 'S',
                     'calculated_taxlot_ids': '; '.join(jurisdiction_tax_lot_ids),
-                    lookups['related_view_id_name']: getattr(join, lookups['related_view_id_name'])
+                    lookups['related_view_id']: getattr(join, lookups['related_view_id'])
                 })
 
             else:
-                join_dict = related_map[getattr(join, lookups['related_view_id_name'])].copy()
+                join_dict = related_map[getattr(join, lookups['related_view_id'])].copy()
                 join_dict.update({
                     'primary': 'P' if join.primary else 'S',
-                    lookups['related_view_id_name']: getattr(join, lookups['related_view_id_name'])
+                    lookups['related_view_id']: getattr(join, lookups['related_view_id'])
                 })
+
+            join_dict['notes_count'] = getattr(join, lookups['related_view']).notes.count()
 
             # fix specific time stamps - total hack right now. Need to reconcile with
             # /data_importer/views.py and /seed/views/properties.py
@@ -226,7 +228,8 @@ class TaxLotProperty(models.Model):
                 obj_dict[extra_data_field] = extra_data_value
 
             # Use property_id instead of default (state_id)
-            obj_dict['id'] = getattr(obj, lookups['obj_id_name'])
+            obj_dict['id'] = getattr(obj, lookups['obj_id'])
+            obj_dict['notes_count'] = obj.notes.count()
 
             obj_dict[lookups['obj_state_id']] = obj.state.id
             obj_dict[lookups['obj_view_id']] = obj.id

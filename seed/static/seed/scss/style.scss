@@ -3104,3 +3104,25 @@ $pairedCellWidth: 60px;
     color: #999;
   }
 }
+
+.notes-button {
+  font-size: 9px;
+  text-decoration: none !important;
+
+  i.fa {
+    font-size: 13px;
+    padding-left: 3px;
+
+    &.text-muted {
+      color: #222;
+      opacity: 0.1;
+    }
+  }
+
+  div {
+    position: relative;
+    text-align: right;
+    top: -2px;
+    width: 20px;
+  }
+}
