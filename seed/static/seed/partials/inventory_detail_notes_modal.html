@@ -14,5 +14,5 @@
 
 <div class="modal-footer">
     <button type="button" class="btn btn-default" ng-click="close()" translate>Cancel</button>
-    <button type="submit" class="btn btn-primary" ng-click="save()" translate>Add Note</button>
+    <button type="submit" class="btn btn-primary" ng-click="save()" ng-disabled="isNoteEmpty()" translate>Add Note</button>
 </div>
