@@ -16,5 +16,5 @@ if [ "${IMAGETAG}" != "skip" ] && [ "${TRAVIS_PULL_REQUEST}" == "false" ]; then
     docker tag seedplatform/seed seedplatform/seed:$IMAGETAG
     docker push seedplatform/seed:$IMAGETAG
 else
-    echo "Not on a deployable branch this is a pull request"
+    echo "Not on a deployable branch, this is a pull request"
 fi
