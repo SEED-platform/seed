@@ -242,7 +242,7 @@
     "Failed to delete inventory": "Failed to delete inventory",
     "Field": "Field",
     "Field Name": "Field Name",
-    "FIELD_NAMES_FOR_MATCHING_ADVICE": "<span class=\"label label-info\">Field names for matching:<\/span> The following fields are used by SEED to match records: <strong>Jurisdiction Tax Lot ID<\/strong>, <strong>PM Property ID<\/strong>, <strong>Custom ID 1<\/strong>, <strong>Address Line 1<\/strong>. If there are fields in a datafile mapped to these names, the program will attempt to match on those same names in existing records.",
+    "FIELD_NAMES_FOR_MATCHING_ADVICE": "<span class=\"label label-info\">Field names for matching:<\/span> The following fields are used by SEED to match records: <strong>Jurisdiction Tax Lot ID<\/strong>, <strong>PM Property ID<\/strong>, <strong>Custom ID 1<\/strong>, <strong>Address Line 1<\/strong>, and <strong>UBID<\/strong>. If there are fields in a datafile mapped to these names, the program will attempt to match on those same names in existing records.",
     "FIELDS NEEDED TO MAKE MATCHES:": "FIELDS NEEDED TO MAKE MATCHES:",
     "File Name": "File Name",
     "File Source:": "File Source:",

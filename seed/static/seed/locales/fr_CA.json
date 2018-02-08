@@ -242,7 +242,7 @@
     "Failed to delete inventory": "Échec de la suppression de l'inventaire",
     "Field": "Champ",
     "Field Name": "Nom de champ",
-    "FIELD_NAMES_FOR_MATCHING_ADVICE": "<span class=\"label label-info\">Noms de zone pour l'appariement:<\/span> Les champs suivants sont utilisés par SEED pour faire correspondre les enregistrements: <strong>Juridiction Numéro de lot fiscal<\/strong> , <strong>Numéro de propriété PM<\/strong> , <strong>ID personnalisé 1<\/strong> , <strong>Ligne d'adresse 1<\/strong> . Si des champs dans un fichier de données sont mappés à ces noms, le programme tentera de faire correspondre ces mêmes noms dans les enregistrements existants.",
+    "FIELD_NAMES_FOR_MATCHING_ADVICE": "<span class=\"label label-info\">Noms de zone pour l'appariement:<\/span> Les champs suivants sont utilisés par SEED pour faire correspondre les enregistrements: <strong>Juridiction Numéro de lot fiscal<\/strong>, <strong>Numéro de propriété PM<\/strong>, <strong>ID personnalisé 1<\/strong>, <strong>Ligne d'adresse 1<\/strong>, et <strong>UBID<\/strong>. Si des champs dans un fichier de données sont mappés à ces noms, le programme tentera de faire correspondre ces mêmes noms dans les enregistrements existants.",
     "FIELDS NEEDED TO MAKE MATCHES:": "CHAMPS NÉCESSAIRES POUR ÉTABLIR DES CORRESPONDANCES:",
     "File Name": "Nom de fichier",
     "File Source:": "Source du fichier:",

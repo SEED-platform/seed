@@ -137,7 +137,8 @@ angular.module('BE.seed.controller.inventory_list', [])
 
       $scope.labelLogic = localStorage.getItem('labelLogic');
       $scope.labelLogic = _.includes(['and', 'or', 'exclude'], $scope.labelLogic) ? $scope.labelLogic : 'and';
-      $scope.labelLogicUpdated = function () {
+      $scope.labelLogicUpdated = function (labelLogic) {
+        $scope.labelLogic = labelLogic;
         localStorage.setItem('labelLogic', $scope.labelLogic);
         filterUsingLabels();
       };
@@ -176,7 +177,9 @@ angular.module('BE.seed.controller.inventory_list', [])
           windowClass: 'merge-modal',
           resolve: {
             columns: function () {
-              return _.map(_.reject($scope.columns, {name: 'id'}), function (column) {
+              return _.map(_.reject($scope.columns, function (column) {
+                return _.includes(['id', 'notes_count'], column.name)
+              }), function (column) {
                 return _.pick(column, ['displayName', 'extraData', 'name', 'table']);
               });
             },
@@ -264,13 +267,33 @@ angular.module('BE.seed.controller.inventory_list', [])
         return _.defaults(col, options, defaults);
       });
       $scope.columns.unshift({
+        name: 'notes_count',
+        displayName: '',
+        cellTemplate: '<div class="ui-grid-row-header-link">' +
+        '  <a class="ui-grid-cell-contents notes-button" ng-if="row.entity.$$treeLevel === 0" ui-sref="inventory_detail_notes(grid.appScope.inventory_type === \'properties\' ? {inventory_type: \'properties\', view_id: row.entity.property_view_id} : {inventory_type: \'taxlots\', view_id: row.entity.taxlot_view_id})">' +
+        '    <i class="fa fa-comment" ng-class="{\'text-muted\': !row.entity.notes_count}"></i><div>{$ row.entity.notes_count > 999 ? \'> 999\' : row.entity.notes_count ? row.entity.notes_count : \'\' $}</div>' +
+        '  </a>' +
+        '  <a class="ui-grid-cell-contents notes-button" ng-if="!row.entity.hasOwnProperty($$treeLevel)" ui-sref="inventory_detail_notes(grid.appScope.inventory_type === \'properties\' ? {inventory_type: \'taxlots\', view_id: row.entity.taxlot_view_id} : {inventory_type: \'properties\', view_id: row.entity.property_view_id})">' +
+        '    <i class="fa fa-comment" ng-class="{\'text-muted\': !row.entity.notes_count}"></i><div>{$ row.entity.notes_count > 999 ? \'> 999\' : row.entity.notes_count ? row.entity.notes_count : \'\' $}</div>' +
+        '  </a>' +
+        '</div>',
+        enableColumnMenu: false,
+        enableColumnMoving: false,
+        enableColumnResizing: false,
+        enableFiltering: false,
+        enableHiding: false,
+        exporterSuppressExport: true,
+        pinnedLeft: true,
+        visible: true,
+        width: 30
+      }, {
         name: 'id',
         displayName: '',
         cellTemplate: '<div class="ui-grid-row-header-link">' +
-        '  <a class="ui-grid-cell-contents" ng-if="row.entity.$$treeLevel === 0" ng-href="#/{$grid.appScope.inventory_type === \'properties\' ? \'properties/\' + row.entity.property_view_id : \'taxlots/\' + row.entity.taxlot_view_id$}">' +
+        '  <a class="ui-grid-cell-contents" ng-if="row.entity.$$treeLevel === 0" ui-sref="inventory_detail(grid.appScope.inventory_type === \'properties\' ? {inventory_type: \'properties\', view_id: row.entity.property_view_id} : {inventory_type: \'taxlots\', view_id: row.entity.taxlot_view_id})">' +
         '    <i class="ui-grid-icon-info-circled"></i>' +
         '  </a>' +
-        '  <a class="ui-grid-cell-contents" ng-if="!row.entity.hasOwnProperty($$treeLevel)" ng-href="#/{$grid.appScope.inventory_type === \'properties\' ? \'taxlots/\' + row.entity.taxlot_view_id : \'properties/\' + row.entity.property_view_id$}">' +
+        '  <a class="ui-grid-cell-contents" ng-if="!row.entity.hasOwnProperty($$treeLevel)" ui-sref="inventory_detail(grid.appScope.inventory_type === \'properties\' ? {inventory_type: \'taxlots\', view_id: row.entity.taxlot_view_id} : {inventory_type: \'properties\', view_id: row.entity.property_view_id})">' +
         '    <i class="ui-grid-icon-info-circled"></i>' +
         '  </a>' +
         '</div>',
@@ -289,7 +312,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       // Data
       var processData = function () {
         var visibleColumns = _.map(_.filter($scope.columns, 'visible'), 'name')
-          .concat(['$$treeLevel', 'id', 'property_state_id', 'property_view_id', 'taxlot_state_id', 'taxlot_view_id']);
+          .concat(['$$treeLevel', 'notes_count', 'id', 'property_state_id', 'property_view_id', 'taxlot_state_id', 'taxlot_view_id']);
 
         var columnsToAggregate = _.filter($scope.columns, function (col) {
           return col.treeAggregationType && _.includes(visibleColumns, col.name);
@@ -520,7 +543,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       var saveSettings = function () {
         // Save all columns except first 3
         var cols = _.filter($scope.gridApi.grid.columns, function (col) {
-          return !_.includes(['treeBaseRowHeaderCol', 'selectionRowHeaderCol', 'id'], col.name);
+          return !_.includes(['treeBaseRowHeaderCol', 'selectionRowHeaderCol', 'notes_count', 'id'], col.name);
         });
         cols = _.map(cols, function (col) {
           col.pinnedLeft = col.renderContainer === 'left' && col.visible;
@@ -599,12 +622,18 @@ angular.module('BE.seed.controller.inventory_list', [])
           });
 
           gridApi.colMovable.on.columnPositionChanged($scope, function () {
-            // Ensure that 'id' remains first
-            var idIndex = _.findIndex($scope.gridApi.grid.columns, {name: 'id'});
+            // Ensure that 'notes_count' and 'id' remain first
+            var idIndex = _.findIndex($scope.gridApi.grid.columns, {name: 'notes_count'});
             if (idIndex !== 2) {
               var col = $scope.gridApi.grid.columns[idIndex];
               $scope.gridApi.grid.columns.splice(idIndex, 1);
               $scope.gridApi.grid.columns.splice(2, 0, col);
+            }
+            var idIndex = _.findIndex($scope.gridApi.grid.columns, {name: 'id'});
+            if (idIndex !== 3) {
+              var col = $scope.gridApi.grid.columns[idIndex];
+              $scope.gridApi.grid.columns.splice(idIndex, 1);
+              $scope.gridApi.grid.columns.splice(3, 0, col);
             }
             saveSettings();
           });

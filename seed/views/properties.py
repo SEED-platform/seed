@@ -22,22 +22,23 @@ from seed.filtersets import PropertyViewFilterSet, PropertyStateFilterSet
 from seed.lib.merging import merging
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (
-    Measure,
-    PropertyMeasure,
     AUDIT_IMPORT,
     AUDIT_USER_EDIT,
-    DATA_STATE_MATCHING,
-    MERGE_STATE_UNKNOWN,
-    MERGE_STATE_NEW,
-    MERGE_STATE_MERGED,
-    MERGE_STATE_DELETE,
     Column,
     Cycle,
-    Simulation,
+    DATA_STATE_MATCHING,
+    MERGE_STATE_DELETE,
+    MERGE_STATE_MERGED,
+    MERGE_STATE_NEW,
+    MERGE_STATE_UNKNOWN,
+    Measure,
+    Note,
     Property,
     PropertyAuditLog,
+    PropertyMeasure,
     PropertyState,
     PropertyView,
+    Simulation,
     TaxLotProperty,
     TaxLotView,
 )
@@ -445,6 +446,12 @@ class PropertyViewSet(GenericViewSet):
             # Delete existing views and inventory records
             views = view.objects.filter(state_id__in=[state1.id, state2.id])
             view_ids = list(views.values_list('id', flat=True))
+
+            # Find unique notes
+            notes = list(Note.objects.values(
+                'name', 'note_type', 'text', 'log_data', 'created', 'updated', 'organization_id', 'user_id'
+            ).filter(property_view_id__in=view_ids).distinct())
+
             cycle_id = views.first().cycle_id
             label_ids = []
             # Get paired view ids
@@ -466,6 +473,14 @@ class PropertyViewSet(GenericViewSet):
             new_view = view(cycle_id=cycle_id, state_id=merged_state.id,
                             property_id=inventory_record.id)
             new_view.save()
+
+            # Assign notes to the new view
+            for note in notes:
+                note['property_view'] = new_view
+                n = Note(**note)
+                n.save()
+                # Correct the created and updated times to match the original note
+                Note.objects.filter(id=n.id).update(created=note['created'], updated=note['updated'])
 
             # Delete existing pairs and re-pair all to new view
             # Probably already deleted by cascade
@@ -508,6 +523,10 @@ class PropertyViewSet(GenericViewSet):
                 'status': 'error',
                 'message': 'property view with id {} does not exist'.format(pk)
             }
+
+        notes = old_view.notes.all()
+        for note in notes:
+            note.property_view = None
 
         merged_state = old_view.state
         if merged_state.data_state != DATA_STATE_MATCHING or merged_state.merge_state != MERGE_STATE_MERGED:
@@ -581,6 +600,21 @@ class PropertyViewSet(GenericViewSet):
         old_view.delete()
         new_view1.save()
         new_view2.save()
+
+        # Duplicate notes to the new views
+        for note in notes:
+            created = note.created
+            updated = note.updated
+            note.id = None
+            note.property_view = new_view1
+            note.save()
+            ids = [note.id]
+            note.id = None
+            note.property_view = new_view2
+            note.save()
+            ids.append(note.id)
+            # Correct the created and updated times to match the original note
+            Note.objects.filter(id__in=ids).update(created=created, updated=updated)
 
         for paired_view_id in paired_view_ids:
             TaxLotProperty(primary=True,
@@ -750,12 +784,7 @@ class PropertyViewSet(GenericViewSet):
         except PropertyView.DoesNotExist:
             result = {
                 'status': 'error',
-                'message': 'property view with property id {} does not exist'.format(pk)
-            }
-        except PropertyView.MultipleObjectsReturned:
-            result = {
-                'status': 'error',
-                'message': 'Multiple property views with id {}'.format(pk)
+                'message': 'property view with id {} does not exist'.format(pk)
             }
         return result
 
