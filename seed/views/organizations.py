@@ -609,7 +609,6 @@ class OrganizationViewSet(viewsets.ViewSet):
             _log.warn("got bad sig figs {1} for org {2}".format(
                 desired_display_significant_figures, org.name))
 
-
         org.save()
 
         # Update the selected exportable fields.
