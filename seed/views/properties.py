@@ -954,14 +954,14 @@ class PropertyViewSet(GenericViewSet):
                         result.update(
                             {'state': new_property_state_serializer.data}
                         )
-                        return JsonResponse(result, status=status.HTTP_200_OK)
+                        return JsonResponse(result, encoder=PintJSONEncoder, status=status.HTTP_200_OK)
                     else:
                         result.update({
                             'status': 'error',
                             'message': 'Invalid update data with errors: {}'.format(
                                 new_property_state_serializer.errors)}
                         )
-                        return JsonResponse(result, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+                        return JsonResponse(result, encoder=PintJSONEncoder, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
                 elif log.name in ['Manual Edit', 'Manual Match', 'System Match',
                                   'Merge current state in migration']:
                     # Convert this to using the serializer to save the data. This will override the previous values
@@ -980,14 +980,14 @@ class PropertyViewSet(GenericViewSet):
                         result.update(
                             {'state': updated_property_state_serializer.data}
                         )
-                        return JsonResponse(result, status=status.HTTP_200_OK)
+                        return JsonResponse(result, encoder=PintJSONEncoder, status=status.HTTP_200_OK)
                     else:
                         result.update({
                             'status': 'error',
                             'message': 'Invalid update data with errors: {}'.format(
                                 updated_property_state_serializer.errors)}
                         )
-                        return JsonResponse(result, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+                        return JsonResponse(result, encoder=PintJSONEncoder, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
                 else:
                     result = {
                         'status': 'error',

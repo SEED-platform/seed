@@ -776,7 +776,7 @@ class InventoryViewTests(DeleteModelsTestCase):
         }
         response = self.client.put(url, data=json.dumps(params), content_type='application/json')
         result = json.loads(response.content)
-        self.assertEqual(result['state']['gross_floor_area'], 11235)
+        self.assertEqual(result['state']['gross_floor_area'], '11235.00')
         self.assertEqual(result['state']['site_eui'], 90.1)
 
     def test_get_properties_with_taxlots(self):
