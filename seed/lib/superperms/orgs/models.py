@@ -104,9 +104,7 @@ class Organization(models.Model):
         related_name='orgs',
     )
 
-    parent_org = models.ForeignKey(
-        'Organization', blank=True, null=True, related_name='child_orgs'
-    )
+    parent_org = models.ForeignKey('Organization', blank=True, null=True, related_name='child_orgs')
 
     display_units_eui = models.CharField(max_length=32,
                                          choices=MEASUREMENT_CHOICES_EUI,
@@ -116,8 +114,7 @@ class Organization(models.Model):
                                           choices=MEASUREMENT_CHOICES_AREA,
                                           blank=False,
                                           default='ft**2')
-    display_significant_figures = \
-        models.PositiveSmallIntegerField(blank=False, default=2)
+    display_significant_figures = models.PositiveSmallIntegerField(blank=False, default=2)
 
     created = models.DateTimeField(auto_now_add=True, null=True)
     modified = models.DateTimeField(auto_now=True, null=True)

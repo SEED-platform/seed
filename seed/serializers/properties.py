@@ -36,9 +36,6 @@ from seed.serializers.pint import PintQuantitySerializerField
 from seed.serializers.scenarios import ScenarioSerializer
 from seed.serializers.taxlots import TaxLotViewSerializer
 
-from seed.lib.superperms.orgs.models import Organization
-from seed.serializers.pint import collapse_unit
-
 # expose internal model
 PropertyLabel = apps.get_model('seed', 'Property_labels')
 
@@ -150,27 +147,19 @@ class PropertyStateSerializer(serializers.ModelSerializer):
     analysis_state = ChoiceField(choices=PropertyState.ANALYSIS_STATE_TYPES)
 
     # support the pint objects
-    gross_floor_area_pint = PintQuantitySerializerField(allow_null=True)
-    conditioned_floor_area_pint = PintQuantitySerializerField(allow_null=True)
-    occupied_floor_area_pint = PintQuantitySerializerField(allow_null=True)
-    site_eui_pint = PintQuantitySerializerField(allow_null=True)
-    source_eui_weather_normalized_pint = PintQuantitySerializerField(allow_null=True)
-    site_eui_weather_normalized_pint = PintQuantitySerializerField(allow_null=True)
-    source_eui_pint = PintQuantitySerializerField(allow_null=True)
+    conditioned_floor_area = PintQuantitySerializerField(allow_null=True)
+    gross_floor_area = PintQuantitySerializerField(allow_null=True)
+    occupied_floor_area = PintQuantitySerializerField(allow_null=True)
+    site_eui = PintQuantitySerializerField(allow_null=True)
+    site_eui_modeled = PintQuantitySerializerField(allow_null=True)
+    source_eui_weather_normalized = PintQuantitySerializerField(allow_null=True)
+    source_eui = PintQuantitySerializerField(allow_null=True)
+    source_eui_modeled = PintQuantitySerializerField(allow_null=True)
+    site_eui_weather_normalized = PintQuantitySerializerField(allow_null=True)
 
     # to support the old state serializer method with the PROPERTY_STATE_FIELDS variables
     import_file_id = serializers.IntegerField(allow_null=True, read_only=True)
     organization_id = serializers.IntegerField()
-
-    site_eui = serializers.SerializerMethodField()
-    site_eui_weather_normalized = serializers.SerializerMethodField()
-    site_eui_modeled = serializers.SerializerMethodField()
-    source_eui = serializers.SerializerMethodField()
-    source_eui_weather_normalized = serializers.SerializerMethodField()
-    source_eui_modeled = serializers.SerializerMethodField()
-    gross_floor_area = serializers.SerializerMethodField()
-    conditioned_floor_area = serializers.SerializerMethodField()
-    occupied_floor_area = serializers.SerializerMethodField()
 
     class Meta:
         model = PropertyState
@@ -200,47 +189,6 @@ class PropertyStateSerializer(serializers.ModelSerializer):
 
         return result
 
-    def _collapse_pint_value(self, property_state, field_name):
-        # optimize - could memoize org lookup if needed this with py 3.2+ and
-        # `functools.lru_cache` decorator
-        org = Organization.objects.get(pk=property_state.organization_id)
-        unitless_value = collapse_unit(org, getattr(property_state, field_name))
-        return unitless_value
-
-    # the get_* with field names are implicitly invoked by SerializerMethodField
-    # see http://www.django-rest-framework.org/api-guide/fields/#serializermethodfield
-
-    def get_site_eui(self, property_state):
-        return self._collapse_pint_value(property_state, "site_eui")
-
-    def get_site_eui_weather_normalized(self, property_state):
-        return self._collapse_pint_value(property_state, "site_eui_weather_normalized")
-
-    def get_site_eui_modeled(self, property_state):
-        return self._collapse_pint_value(property_state, "site_eui_modeled")
-
-    def get_source_eui(self, property_state):
-        return self._collapse_pint_value(property_state, "source_eui")
-
-    def get_source_eui_weather_normalized(self, property_state):
-        return self._collapse_pint_value(property_state, "source_eui_weather_normalized")
-
-    def get_source_eui_modeled(self, property_state):
-        return self._collapse_pint_value(property_state, "source_eui_modeled")
-
-    def get_gross_floor_area(self, property_state):
-        return self._collapse_pint_value(property_state, "gross_floor_area")
-
-    def get_conditioned_floor_area(self, property_state):
-        return self._collapse_pint_value(property_state, "conditioned_floor_area")
-
-    def get_occupied_floor_area(self, property_state):
-        return self._collapse_pint_value(property_state, "occupied_floor_area")
-
-    # def create(self, validated_data):
-    #     """Need to update this method to add in the measures, scenarios, and files"""
-    #     return new_object
-
 
 class PropertyStateWritableSerializer(serializers.ModelSerializer):
     """
@@ -259,13 +207,15 @@ class PropertyStateWritableSerializer(serializers.ModelSerializer):
     organization_id = serializers.IntegerField()
 
     # support the pint objects
-    gross_floor_area_pint = PintQuantitySerializerField(allow_null=True)
-    conditioned_floor_area_pint = PintQuantitySerializerField(allow_null=True)
-    occupied_floor_area_pint = PintQuantitySerializerField(allow_null=True)
-    site_eui_pint = PintQuantitySerializerField(allow_null=True)
-    source_eui_weather_normalized_pint = PintQuantitySerializerField(allow_null=True)
-    site_eui_weather_normalized_pint = PintQuantitySerializerField(allow_null=True)
-    source_eui_pint = PintQuantitySerializerField(allow_null=True)
+    conditioned_floor_area = PintQuantitySerializerField(allow_null=True)
+    gross_floor_area = PintQuantitySerializerField(allow_null=True)
+    occupied_floor_area = PintQuantitySerializerField(allow_null=True)
+    site_eui = PintQuantitySerializerField(allow_null=True)
+    site_eui_modeled = PintQuantitySerializerField(allow_null=True)
+    source_eui_weather_normalized = PintQuantitySerializerField(allow_null=True)
+    source_eui = PintQuantitySerializerField(allow_null=True)
+    source_eui_modeled = PintQuantitySerializerField(allow_null=True)
+    site_eui_weather_normalized = PintQuantitySerializerField(allow_null=True)
 
     class Meta:
         fields = '__all__'

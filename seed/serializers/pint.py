@@ -6,9 +6,13 @@ that's where the display preference lives.
 """
 
 import re
+
 from django.core.serializers.json import DjangoJSONEncoder
 from quantityfield import ureg
 from rest_framework import serializers
+
+from seed.lib.superperms.orgs.models import Organization
+from seed.models import PropertyView
 
 AREA_DIMENSIONALITY = '[length] ** 2'
 EUI_DIMENSIONALITY = '[mass] / [time] ** 3'
@@ -121,14 +125,20 @@ class PintQuantitySerializerField(serializers.Field):
     """
 
     def to_representation(self, obj):
-        return obj.magnitude
+        if isinstance(self.root.instance, PropertyView):
+            org_id = self.root.instance.state.organization_id
+            org = Organization.objects.get(pk=org_id)
+            value = collapse_unit(org, obj)
+            return value
+        else:
+            return obj
 
     def to_internal_value(self, data):
         # get the field off of the database table to get the base units
         field = self.root.Meta.model._meta.get_field(self.field_name)
 
         try:
-            data = data * ureg(field.base_units)
+            data = float(data) * ureg(field.base_units)
         except ValueError:
             data = None
 

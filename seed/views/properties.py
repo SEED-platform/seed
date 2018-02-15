@@ -21,6 +21,9 @@ from seed.decorators import ajax_request_class
 from seed.filtersets import PropertyViewFilterSet, PropertyStateFilterSet
 from seed.lib.merging import merging
 from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.models import (
+    Organization
+)
 from seed.models import (
     AUDIT_IMPORT,
     AUDIT_USER_EDIT,
@@ -43,9 +46,7 @@ from seed.models import (
     TaxLotView,
 )
 from seed.models import Property as PropertyModel
-from seed.lib.superperms.orgs.models import (
-    Organization
-)
+from seed.serializers.pint import PintJSONEncoder
 from seed.serializers.pint import (
     apply_display_unit_preferences,
     add_pint_unit_suffix
@@ -449,7 +450,8 @@ class PropertyViewSet(GenericViewSet):
 
             # Find unique notes
             notes = list(Note.objects.values(
-                'name', 'note_type', 'text', 'log_data', 'created', 'updated', 'organization_id', 'user_id'
+                'name', 'note_type', 'text', 'log_data', 'created', 'updated', 'organization_id',
+                'user_id'
             ).filter(property_view_id__in=view_ids).distinct())
 
             cycle_id = views.first().cycle_id
@@ -480,7 +482,8 @@ class PropertyViewSet(GenericViewSet):
                 n = Note(**note)
                 n.save()
                 # Correct the created and updated times to match the original note
-                Note.objects.filter(id=n.id).update(created=note['created'], updated=note['updated'])
+                Note.objects.filter(id=n.id).update(created=note['created'],
+                                                    updated=note['updated'])
 
             # Delete existing pairs and re-pair all to new view
             # Probably already deleted by cascade
@@ -577,12 +580,14 @@ class PropertyViewSet(GenericViewSet):
         merged_state.save()
 
         # Change the merge_state of the individual states
-        if log.parent1.name in ['Import Creation', 'Manual Edit'] and log.parent1.import_filename is not None:
+        if log.parent1.name in ['Import Creation',
+                                'Manual Edit'] and log.parent1.import_filename is not None:
             # State belongs to a new record
             state1.merge_state = MERGE_STATE_NEW
         else:
             state1.merge_state = MERGE_STATE_MERGED
-        if log.parent2.name in ['Import Creation', 'Manual Edit'] and log.parent2.import_filename is not None:
+        if log.parent2.name in ['Import Creation',
+                                'Manual Edit'] and log.parent2.import_filename is not None:
             # State belongs to a new record
             state2.merge_state = MERGE_STATE_NEW
         else:
@@ -851,7 +856,7 @@ class PropertyViewSet(GenericViewSet):
             result['taxlots'] = self._get_taxlots(property_view.pk)
             result['history'], master = self.get_history(property_view)
             result = update_result_with_master(result, master)
-            return JsonResponse(result, status=status.HTTP_200_OK)
+            return JsonResponse(result, encoder=PintJSONEncoder, status=status.HTTP_200_OK)
         else:
             return JsonResponse(result)
 
@@ -912,7 +917,8 @@ class PropertyViewSet(GenericViewSet):
                 ).order_by('-id').first()
 
                 if 'extra_data' in new_property_state_data.keys():
-                    property_state_data['extra_data'].update(new_property_state_data.pop('extra_data'))
+                    property_state_data['extra_data'].update(
+                        new_property_state_data.pop('extra_data'))
                 property_state_data.update(new_property_state_data)
 
                 if log.name == 'Import Creation':
@@ -956,7 +962,8 @@ class PropertyViewSet(GenericViewSet):
                                 new_property_state_serializer.errors)}
                         )
                         return JsonResponse(result, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
-                elif log.name in ['Manual Edit', 'Manual Match', 'System Match', 'Merge current state in migration']:
+                elif log.name in ['Manual Edit', 'Manual Match', 'System Match',
+                                  'Merge current state in migration']:
                     # Convert this to using the serializer to save the data. This will override the previous values
                     # in the state object.
 
@@ -1210,7 +1217,8 @@ class PropertyViewSet(GenericViewSet):
         if result.get('status', None) != 'error':
             pv = result.pop('property_view')
             property_state_id = pv.state.pk
-            join = PropertyMeasure.objects.filter(property_state_id=property_state_id).select_related(
+            join = PropertyMeasure.objects.filter(
+                property_state_id=property_state_id).select_related(
                 'measure')
             result = []
             for j in join:
