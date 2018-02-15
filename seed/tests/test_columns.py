@@ -193,7 +193,8 @@ class TestColumns(TestCase):
     def test_save_column_mapping_by_file_exception(self):
         self.mapping_import_file = os.path.abspath("./no-file.csv")
         with self.assertRaisesRegexp(Exception, "Mapping file does not exist: .*/seed/no-file.csv"):
-            Column.create_mappings_from_file(self.mapping_import_file, self.fake_org, self.fake_user)
+            Column.create_mappings_from_file(self.mapping_import_file, self.fake_org,
+                                             self.fake_user)
 
     def test_save_column_mapping_by_file(self):
         self.mapping_import_file = os.path.abspath("./seed/tests/data/test_mapping.csv")
