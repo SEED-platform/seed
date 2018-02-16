@@ -351,9 +351,7 @@ class PropertyViewAsStateSerializer(serializers.ModelSerializer):
                 ).data
             except ValueError:
                 state = json.loads(state)
-            required = True if self.context['request'].method in [
-                'PUT', 'POST'
-            ] else False
+            required = True if self.context['request'].method in ['PUT', 'POST'] else False
             org = state.get('organization')
             org_id = org if org else org_id
             if not org_id and required:

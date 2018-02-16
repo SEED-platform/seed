@@ -28,6 +28,16 @@ EXCLUDE_FIELDS = [
     'seed_org',
     'source_type',
     'super_organization',
+    # Do not map to the original fields that are no longer quantities
+    'source_eui_modeled_orig',
+    'site_eui_orig',
+    'occupied_floor_area_orig',
+    'site_eui_weather_normalized_orig',
+    'site_eui_modeled_orig',
+    'source_eui_orig',
+    'gross_floor_area_orig',
+    'conditioned_floor_area_orig',
+    'source_eui_weather_normalized_orig',
 ]
 
 META_FIELDS = [
