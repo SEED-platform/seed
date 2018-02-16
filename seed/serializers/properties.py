@@ -86,7 +86,7 @@ class PropertyAuditLogReadOnlySerializer(serializers.BaseSerializer):
             'source': obj.get_record_type_display(),
             'filename': obj.import_filename,
             'changed_fields': changed_fields,
-            'description': description
+            'description': str(description)
         }
 
 
