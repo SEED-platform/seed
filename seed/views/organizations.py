@@ -582,8 +582,9 @@ class OrganizationViewSet(viewsets.ViewSet):
             return (s is not None) and (s in [choice[0] for choice in choice_tuples])
 
         def warn_bad_pint_spec(kind, unit_string):
-            _log.warn("got bad {0} unit string {1} for org {2}".format(
-                kind, unit_string, org.name))
+            if unit_string is not None:
+                _log.warn("got bad {0} unit string {1} for org {2}".format(
+                    kind, unit_string, org.name))
 
         def warn_bad_units(kind, unit_string):
             _log.warn("got bad {0} unit string {1} for org {2}".format(
@@ -605,8 +606,8 @@ class OrganizationViewSet(viewsets.ViewSet):
         if isinstance(desired_display_significant_figures, int) \
                 and desired_display_significant_figures >= 0:
             org.display_significant_figures = desired_display_significant_figures
-        else:
-            _log.warn("got bad sig figs {1} for org {2}".format(
+        elif desired_display_significant_figures is not None:
+            _log.warn("got bad sig figs {0} for org {1}".format(
                 desired_display_significant_figures, org.name))
 
         org.save()
