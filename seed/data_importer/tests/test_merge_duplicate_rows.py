@@ -27,7 +27,7 @@ from seed.models import (
     ASSESSED_RAW,
 )
 
-from QuantityField import ureg
+from quantityfield import ureg
 
 logger = logging.getLogger(__name__)
 
