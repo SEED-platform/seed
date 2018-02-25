@@ -1,12 +1,10 @@
-Fill out the following information detailing the issue. Make sure to not disclose protected data (e.g. passwords). Screenshots are helpful.
-
+Fill in the following information detailing the issue. Make sure to not disclose protected data (e.g. passwords). Screenshots are helpful.
 
 ### Expected Behavior
 
 ### Actual Behavior 
 
 ### Steps to Reproduce
-
 
 ### Instance Information
 
