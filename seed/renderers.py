@@ -22,6 +22,8 @@ override View(Set) methods unnecessarily, if e.g. ModelViewSet is used.
 from rest_framework import status
 from rest_framework.renderers import JSONRenderer
 
+from quantityfield import ureg
+
 
 class SEEDJSONRenderer(JSONRenderer):
     """
@@ -69,6 +71,21 @@ class SEEDJSONRenderer(JSONRenderer):
         data = {'status': status_type, data_name: results}
         if pagination:
             data['pagination'] = pagination
+
+        def to_raw_magnitude(obj):
+            return "{:.2f}".format(obj.magnitude)
+
+        def collapse_units(x):
+            if isinstance(x, ureg.Quantity):
+                return to_raw_magnitude(x)
+            else:
+                return x
+
+        if "properties" in data:
+            for i in range(len(data["properties"])):
+                unit_stripped = {k: collapse_units(v)
+                                 for k, v in data["properties"][i]["state"].iteritems()}
+                data["properties"][i]["state"] = unit_stripped
 
         return super(SEEDJSONRenderer, self).render(
             data,
