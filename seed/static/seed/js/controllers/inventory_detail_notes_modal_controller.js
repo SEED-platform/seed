@@ -21,6 +21,10 @@ angular.module('BE.seed.controller.inventory_detail_notes_modal', [])
       $scope.viewId = viewId;
       $scope.orgId = orgId;
 
+      $scope.isNoteEmpty = function () {
+        return _.isEmpty(_.trim($scope.newNote));
+      };
+
       $scope.close = function () {
         $uibModalInstance.dismiss();
       };

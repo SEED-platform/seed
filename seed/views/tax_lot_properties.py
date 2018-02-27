@@ -19,10 +19,10 @@ from rest_framework.viewsets import GenericViewSet
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (
-    TaxLotProperty,
-    PropertyView,
-    TaxLotView,
     Column,
+    PropertyView,
+    TaxLotProperty,
+    TaxLotView,
 )
 from seed.serializers.tax_lot_properties import (
     TaxLotPropertySerializer
@@ -167,7 +167,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
         # iterate over the results to preserve column order and write row.
         # The front end returns columns with prepended tax_ and property_ columns for the
         # related fields. This is an expensive operation and can cause issues with stripping
-        # off property_ from items such as propety_name, property_notes, and property_type
+        # off property_ from items such as property_name, property_notes, and property_type
         # which are explicitly excluded below
         for datum in data:
             row = []

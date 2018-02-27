@@ -1,3 +1,21 @@
+# SEED Version 2.3.1
+
+Closed Issues: 4
+- Fixed [#1289]( https://github.com/SEED-platform/seed/issues/1289 ), Filter on numeric fields
+- Fixed [#1321]( https://github.com/SEED-platform/seed/issues/1321 ), Hand Matching screen -- Fix field headers, add vertical scroll bar, other UI improvements
+- Fixed [#1524]( https://github.com/SEED-platform/seed/issues/1524 ), Editing record in inventory view corrupts the record
+- Fixed [#1576]( https://github.com/SEED-platform/seed/issues/1576 ), Rework Exporting from Hamburger view
+
+Accepted Pull Requests: 8
+- Fixed [#1551]( https://github.com/SEED-platform/seed/pull/1551 ), Added UBID to the mapping instructions
+- Fixed [#1552]( https://github.com/SEED-platform/seed/pull/1552 ), Fixed the count for the imported number of mapped tax lots
+- Fixed [#1556]( https://github.com/SEED-platform/seed/pull/1556 ), Add date to PM import filename
+- Fixed [#1557]( https://github.com/SEED-platform/seed/pull/1557 ), Release 2.3
+- Fixed [#1558]( https://github.com/SEED-platform/seed/pull/1558 ), Notes Improvements
+- Fixed [#1559]( https://github.com/SEED-platform/seed/pull/1559 ), Cleanup Travis
+- Fixed [#1562]( https://github.com/SEED-platform/seed/pull/1562 ), Added UBID to the mapping instructions
+- Fixed [#1564]( https://github.com/SEED-platform/seed/pull/1564 ), Temporarily hid the `Upload Green Button Data` button
+
 # SEED Version 2.3
 
 Closed Issues: 21

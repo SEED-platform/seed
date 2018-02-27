@@ -30,6 +30,7 @@ from seed.models import (
     MERGE_STATE_DELETE,
     Column,
     Cycle,
+    Note,
     PropertyView,
     TaxLotAuditLog,
     TaxLotProperty,
@@ -276,6 +277,12 @@ class TaxLotViewSet(GenericViewSet):
             # Delete existing views and inventory records
             views = view.objects.filter(state_id__in=[state1.id, state2.id])
             view_ids = list(views.values_list('id', flat=True))
+
+            # Find unique notes
+            notes = list(Note.objects.values(
+                'name', 'note_type', 'text', 'log_data', 'created', 'updated', 'organization_id', 'user_id'
+            ).filter(taxlot_view_id__in=view_ids).distinct())
+
             cycle_id = views.first().cycle_id
             label_ids = []
             # Get paired view ids
@@ -297,6 +304,14 @@ class TaxLotViewSet(GenericViewSet):
             new_view = view(cycle_id=cycle_id, state_id=merged_state.id,
                             taxlot_id=inventory_record.id)
             new_view.save()
+
+            # Assign notes to the new view
+            for note in notes:
+                note['taxlot_view'] = new_view
+                n = Note(**note)
+                n.save()
+                # Correct the created and updated times to match the original note
+                Note.objects.filter(id=n.id).update(created=note['created'], updated=note['updated'])
 
             # Delete existing pairs and re-pair all to new view
             # Probably already deleted by cascade
@@ -339,6 +354,10 @@ class TaxLotViewSet(GenericViewSet):
                 'status': 'error',
                 'message': 'taxlot view with id {} does not exist'.format(pk)
             }
+
+        notes = old_view.notes.all()
+        for note in notes:
+            note.taxlot_view = None
 
         merged_state = old_view.state
         if merged_state.data_state != DATA_STATE_MATCHING or merged_state.merge_state != MERGE_STATE_MERGED:
@@ -412,6 +431,21 @@ class TaxLotViewSet(GenericViewSet):
         old_view.delete()
         new_view1.save()
         new_view2.save()
+
+        # Duplicate notes to the new views
+        for note in notes:
+            created = note.created
+            updated = note.updated
+            note.id = None
+            note.taxlot_view = new_view1
+            note.save()
+            ids = [note.id]
+            note.id = None
+            note.taxlot_view = new_view2
+            note.save()
+            ids.append(note.id)
+            # Correct the created and updated times to match the original note
+            Note.objects.filter(id__in=ids).update(created=created, updated=updated)
 
         for paired_view_id in paired_view_ids:
             TaxLotProperty(primary=True,

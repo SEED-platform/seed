@@ -1,5 +1,6 @@
 sudo: required
 dist: trusty
+group: deprecated-2017Q4
 cache:
   directories:
     - node_modules
@@ -58,5 +59,7 @@ script:
 jobs:
   include:
     - stage: publish
-      script: if ([ "$TRAVIS_BRANCH" == "develop" ] || [ "$TRAVIS_BRANCH" == "bricr" ] || [ "$TRAVIS_BRANCH" == "master" ]) && [ "$TRAVIS_PULL_REQUEST" == false ]; then docker/travis_build_docker.sh; else echo 0; fi
+      install: skip
+      before_script: skip
+      script: docker/travis_build_docker.sh
       env: DJANGO_SETTINGS_MODULE=config.settings.docker

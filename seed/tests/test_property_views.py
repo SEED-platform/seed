@@ -139,6 +139,11 @@ class PropertyViewTests(DeleteModelsTestCase):
         result = json.loads(response.content)
         self.assertEqual(result['status'], 'success')
         results = result['properties']
+        # print out the result of this when there are more than two in an attempt to catch the
+        # non-deterministic part of this test
+        if len(results) > 2:
+            print results
+
         self.assertEqual(len(results), 2)
 
         # check the analysis states
