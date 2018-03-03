@@ -25,25 +25,28 @@
                 <button id="btnInventoryActions"
                         type="button"
                         uib-dropdown-toggle
-                        class="btn btn-default btn-sm"
-                        ng-disabled="selectedCount === 0">
+                        class="btn btn-default btn-sm">
                     {$:: 'Actions' | translate $} <span class="caret"></span>
                 </button>
                 <ul id="inventory-actions-dropdown" uib-dropdown-menu class="dropdown-menu" role="menu" aria-labelledby="btnInventoryActions">
-                    <li>
+                    <li role="menuitem">
                         <a ng-click="open_merge_modal()" ng-disabled="selectedParentCount < 2">Merge Selected</a>
                     </li>
-                    <li ng-hide="::menu.user.organization.user_role === 'viewer'">
-                      <a ng-click="open_delete_modal()" translate>Delete Selected</a>
+                    <li role="menuitem" ng-hide="::menu.user.organization.user_role === 'viewer'">
+                        <a ng-click="open_delete_modal()" ng-disabled="selectedCount === 0" translate>Delete Selected</a>
                     </li>
-                    <li>
-                        <a ng-click="open_export_modal()" translate>Export Selected</a>
+                    <li role="menuitem">
+                        <a ng-click="open_export_modal()" ng-disabled="selectedCount === 0" translate>Export Selected</a>
                     </li>
-                    <li>
+                    <li role="menuitem">
                         <a ng-click="open_update_labels_modal()" ng-disabled="selectedParentCount === 0" translate>Add/Remove Labels</a>
                     </li>
-                    <li>
-                        <a ng-click="run_data_quality_check()" translate>Data Quality Check</a>
+                    <li role="menuitem">
+                        <a ng-click="run_data_quality_check()" ng-disabled="selectedCount === 0" translate>Data Quality Check</a>
+                    </li>
+                    <li class="divider"></li>
+                    <li role="menuitem">
+                        <a ng-click="open_show_populated_columns_modal()" ng-disabled="data.length === 0" translate>Only Show Populated Columns</a>
                     </li>
                 </ul>
             </div>

@@ -1,0 +1,21 @@
+<div class="modal-header" ng-switch="state">
+    <h4 class="modal-title" ng-switch-default translate>Only Show Populated Columns</h4>
+    <h4 class="modal-title" ng-switch-when="running" translate>Processing records...</h4>
+</div>
+<div class="modal-body row" ng-switch="state">
+    <div class="col-sm-12">
+        <div ng-switch-default translate>
+            This will reset your visible columns and column order to only columns that contain data. Are you sure you want to continue?
+        </div>
+        <div class="progress_bar_container" ng-switch-when="running">
+            <div class="progress_bar_copy_top">{$ status $}</div>
+            <uib-progressbar class="progress-striped active" value="progress" type="success"></uib-progressbar>
+        </div>
+        <div ng-switch-when="done">{$ status $}</div>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-default" ng-click="cancel()" ng-if="state!=='done'" ng-disabled="state==='running'">Cancel</button>
+    <button type="button" class="btn btn-info" ng-click="start()" ng-if="state!=='done'" ng-disabled="state==='running'" autofocus>Start</button>
+    <button type="button" class="btn btn-info" ng-click="refresh()" ng-if="state==='done'" autofocus>Refresh</button>
+</div>

@@ -77,6 +77,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.pairing_settings',
   'BE.seed.controller.profile',
   'BE.seed.controller.security',
+  'BE.seed.controller.show_populated_columns_modal',
   'BE.seed.controller.unmerge_modal',
   'BE.seed.controller.update_item_labels_modal'
 ]);
@@ -991,9 +992,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/inventory_list.html',
         controller: 'inventory_list_controller',
         resolve: {
-          inventory: ['$stateParams', 'inventory_service', 'columns', function ($stateParams, inventory_service, columns) {
+          inventory: ['$stateParams', 'inventory_service', 'all_columns', function ($stateParams, inventory_service, all_columns) {
             // inventory: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             var localStorageKey = 'grid.' + $stateParams.inventory_type;
+            var columns = angular.copy(all_columns);
             var myColumns = inventory_service.loadSettings(localStorageKey, columns);
             var visibleColumns = _.map(_.filter(myColumns, 'visible'), 'name');
             // console.log('before: ', visibleColumns);
@@ -1019,13 +1021,6 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
                 return !_.isEmpty(label.is_applied);
               });
             });
-          }],
-          columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
-            if ($stateParams.inventory_type === 'properties') {
-              return inventory_service.get_property_columns();
-            } else if ($stateParams.inventory_type === 'taxlots') {
-              return inventory_service.get_taxlot_columns();
-            }
           }],
           all_columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             if ($stateParams.inventory_type === 'properties') {
