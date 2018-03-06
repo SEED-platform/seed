@@ -86,7 +86,7 @@ class PropertyAuditLogReadOnlySerializer(serializers.BaseSerializer):
             'source': obj.get_record_type_display(),
             'filename': obj.import_filename,
             'changed_fields': changed_fields,
-            'description': description
+            'description': str(description)
         }
 
 
@@ -147,13 +147,15 @@ class PropertyStateSerializer(serializers.ModelSerializer):
     analysis_state = ChoiceField(choices=PropertyState.ANALYSIS_STATE_TYPES)
 
     # support the pint objects
-    gross_floor_area_pint = PintQuantitySerializerField(allow_null=True)
-    conditioned_floor_area_pint = PintQuantitySerializerField(allow_null=True)
-    occupied_floor_area_pint = PintQuantitySerializerField(allow_null=True)
-    site_eui_pint = PintQuantitySerializerField(allow_null=True)
-    source_eui_weather_normalized_pint = PintQuantitySerializerField(allow_null=True)
-    site_eui_weather_normalized_pint = PintQuantitySerializerField(allow_null=True)
-    source_eui_pint = PintQuantitySerializerField(allow_null=True)
+    conditioned_floor_area = PintQuantitySerializerField(allow_null=True)
+    gross_floor_area = PintQuantitySerializerField(allow_null=True)
+    occupied_floor_area = PintQuantitySerializerField(allow_null=True)
+    site_eui = PintQuantitySerializerField(allow_null=True)
+    site_eui_modeled = PintQuantitySerializerField(allow_null=True)
+    source_eui_weather_normalized = PintQuantitySerializerField(allow_null=True)
+    source_eui = PintQuantitySerializerField(allow_null=True)
+    source_eui_modeled = PintQuantitySerializerField(allow_null=True)
+    site_eui_weather_normalized = PintQuantitySerializerField(allow_null=True)
 
     # to support the old state serializer method with the PROPERTY_STATE_FIELDS variables
     import_file_id = serializers.IntegerField(allow_null=True, read_only=True)
@@ -187,10 +189,6 @@ class PropertyStateSerializer(serializers.ModelSerializer):
 
         return result
 
-    # def create(self, validated_data):
-    #     """Need to update this method to add in the measures, scenarios, and files"""
-    #     return new_object
-
 
 class PropertyStateWritableSerializer(serializers.ModelSerializer):
     """
@@ -209,13 +207,15 @@ class PropertyStateWritableSerializer(serializers.ModelSerializer):
     organization_id = serializers.IntegerField()
 
     # support the pint objects
-    gross_floor_area_pint = PintQuantitySerializerField(allow_null=True)
-    conditioned_floor_area_pint = PintQuantitySerializerField(allow_null=True)
-    occupied_floor_area_pint = PintQuantitySerializerField(allow_null=True)
-    site_eui_pint = PintQuantitySerializerField(allow_null=True)
-    source_eui_weather_normalized_pint = PintQuantitySerializerField(allow_null=True)
-    site_eui_weather_normalized_pint = PintQuantitySerializerField(allow_null=True)
-    source_eui_pint = PintQuantitySerializerField(allow_null=True)
+    conditioned_floor_area = PintQuantitySerializerField(allow_null=True)
+    gross_floor_area = PintQuantitySerializerField(allow_null=True)
+    occupied_floor_area = PintQuantitySerializerField(allow_null=True)
+    site_eui = PintQuantitySerializerField(allow_null=True)
+    site_eui_modeled = PintQuantitySerializerField(allow_null=True)
+    source_eui_weather_normalized = PintQuantitySerializerField(allow_null=True)
+    source_eui = PintQuantitySerializerField(allow_null=True)
+    source_eui_modeled = PintQuantitySerializerField(allow_null=True)
+    site_eui_weather_normalized = PintQuantitySerializerField(allow_null=True)
 
     class Meta:
         fields = '__all__'
@@ -351,9 +351,7 @@ class PropertyViewAsStateSerializer(serializers.ModelSerializer):
                 ).data
             except ValueError:
                 state = json.loads(state)
-            required = True if self.context['request'].method in [
-                'PUT', 'POST'
-            ] else False
+            required = True if self.context['request'].method in ['PUT', 'POST'] else False
             org = state.get('organization')
             org_id = org if org else org_id
             if not org_id and required:

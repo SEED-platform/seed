@@ -99,11 +99,21 @@ def apply_column_value(raw_column_name, column_value, model, mapping, is_extra_d
     :rtype: model inst
     """
 
-    def is_pint_column(column_name):
+    def is_quantity_type_column(column_name):
         """Test if the column_name is a QuantityField"""
-        # TODO rgm change this to a test against a set (the 7 db column names) after feature release
         # TODO rgm re-locate to someplace else, eg. Column
-        return re.search(r'_pint$', column_name)
+        quantity_column_names = [
+            'gross_floor_area',
+            'occupied_floor_area',
+            'conditioned_floor_area',
+            'site_eui',
+            'site_eui_modeled',
+            'site_eui_weather_normalized',
+            'source_eui',
+            'source_eui_modeled',
+            'source_eui_weather_normalized',
+        ]
+        return (column_name in quantity_column_names)
 
     # If the item is the extra_data column, then make sure to save it to the
     # extra_data field of the database
@@ -114,7 +124,7 @@ def apply_column_value(raw_column_name, column_value, model, mapping, is_extra_d
 
         cleaned_value = None
         if cleaner:
-            if is_pint_column(mapped_column_name):
+            if is_quantity_type_column(mapped_column_name):
                 # clean against the raw name with pint because that's the column
                 # that holds the units needed to interpret the value correctly
                 cleaned_value = cleaner.clean_value(column_value, raw_column_name)

@@ -129,7 +129,7 @@
                             <td style="border-right: 0 none;">
                                 <select ng-model="setAllFields" ng-change="setAllInventoryTypes()" ng-options="item as (item.name | translate) for item in ::setAllFieldsOptions track by item.value" ng-hide="import_file.matching_done"></select>
                             </td>
-                            <td colspan="{$:: flippers.is_active('release:use_pint') ? 6 : 5 $}"></td>
+                            <td colspan="6"></td>
                         </tr>
                     </tbody>
                     <thead>
@@ -141,7 +141,7 @@
                             <!--th class="sub_head is_aligned_center">Duplicate <a uib-popover="{$VALIDATE_copy$}" popover-placement="right"><i class="fa fa-info-circle" style="cursor: pointer;"></i></a></th-->
                             <th class="import_column_name" translate>Data File Header</th>
                             <th translate>Inventory Type</th>
-                            <th ng-if="flippers.is_active('release:use_pint')" translate>Measurement Units</th>
+                            <th translate>Measurement Units</th>
                             <th translate>Row 1</th>
                             <th translate>Row 2</th>
                             <th translate>Row 3</th>
@@ -170,19 +170,17 @@
                                     <option value="TaxLotState" translate>Tax Lot</option>
                                 </select>
                             </td>
-                            <td ng-if="flippers.is_active('release:use_pint')">
-                              <select ng-model="tcm.from_units" ng-if="is_pint_column(tcm.suggestion)">
-                                <option value="" translate>None</option>
-                                <optgroup label="{$:: 'Area' | translate $}">
+                            <td>
+                                <select ng-model="tcm.from_units" ng-if="is_area_column(tcm.suggestion)">
                                   <option value="ft**2" translate>square feet</option>
                                   <option value="m**2" translate>square metres</option>
-                                </optgroup>
-                                <optgroup label="{$:: 'EUI' | translate $}">
-                                  <!-- values are pint-parseable  -->
+                              </select>
+                              <select ng-model="tcm.from_units" ng-if="is_eui_column(tcm.suggestion)">
                                   <option value="kBtu/ft**2/year" translate>kBtu/sq. ft./year</option>
                                   <option value="kWh/m**2/year" translate>kWh/m²/year</option>
                                   <option value="GJ/m**2/year" translate>GJ/m²/year</option>
-                                </optgroup>
+                                  <option value="MJ/m**2/year" translate>MJ/m²/year</option>
+                                  <option value="kBtu/m**2/year" translate>kBtu/m²/year</option>
                               </select>
                             </td>
                             <td ng-repeat="cell_value in ::tcm.raw_data track by $index" ng-class="{'danger': set_td_class(tcm, cell_value) === 'danger', 'warning': set_td_class(tcm, cell_value) === 'warning'}">

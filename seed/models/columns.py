@@ -556,6 +556,8 @@ class Column(models.Model):
             'datetime': 'datetime',
             'date': 'date',
             'boolean': 'boolean',
+            'area': 'float',
+            'eui': 'float'
         }
 
         types = OrderedDict()
@@ -563,6 +565,7 @@ class Column(models.Model):
             try:
                 types[c['name']] = MAP_TYPES[c['dataType']]
             except KeyError:
+                print "could not find data_type for %s" % c
                 types[c['name']] = ''
 
         return {"types": types}

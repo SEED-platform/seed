@@ -51,7 +51,7 @@ class AccountsViewTests(TestCase):
         self.maxDiff = None
 
         year = date.today().year - 1
-        self.cal_year_name = "{} Calendar Year".format(year)
+        self.cal_year_name = "{} Calendar Year".format(year).encode('utf-8')
 
     def test_dict_org(self):
         """_dict_org turns our org structure into a json payload."""
@@ -65,6 +65,9 @@ class AccountsViewTests(TestCase):
                 'id': self.user.pk}],
             'number_of_users': 1,
             'name': 'my org',
+            'display_significant_figures': 2,
+            'display_units_area': 'ft**2',
+            'display_units_eui': 'kBtu/ft**2/year',
             'user_role': 'owner',
             'is_parent': True,
             'parent_id': self.org.pk,
@@ -74,7 +77,7 @@ class AccountsViewTests(TestCase):
             'cycles': [{
                 'num_taxlots': 0,
                 'num_properties': 0,
-                'name': self.cal_year_name,
+                'name': str(self.cal_year_name),
                 'cycle_id': self.cycle.pk
             }],
             'created': self.org.created.strftime('%Y-%m-%d'),
@@ -124,17 +127,20 @@ class AccountsViewTests(TestCase):
                     'email': u'test_user@demo.com',
                     'id': self.user.pk}],
                 'number_of_users': 1,
-                'name': 'sub',
+                'name': u'sub',
                 'user_role': 'owner',
                 'is_parent': False,
                 'parent_id': self.org.pk,
                 'org_id': new_org.pk,
                 'id': new_org.pk,
                 'user_is_owner': True,
+                'display_units_area': u'ft**2',
+                'display_units_eui': u'kBtu/ft**2/year',
+                'display_significant_figures': 2,
                 'cycles': [{
                     'num_taxlots': 0,
                     'num_properties': 0,
-                    'name': self.cal_year_name,
+                    'name': str(self.cal_year_name),
                     'cycle_id': new_cycle.pk
                 }],
                 'created': self.org.created.strftime('%Y-%m-%d'),
@@ -145,17 +151,20 @@ class AccountsViewTests(TestCase):
                 'email': u'test_user@demo.com',
                 'id': self.user.pk}],
             'number_of_users': 1,
-            'name': 'my org',
+            'name': u'my org',
             'user_role': 'owner',
             'is_parent': True,
             'parent_id': self.org.pk,
             'org_id': self.org.pk,
             'id': self.org.pk,
             'user_is_owner': True,
+            'display_significant_figures': 2,
+            'display_units_area': u'ft**2',
+            'display_units_eui': u'kBtu/ft**2/year',
             'cycles': [{
                 'num_taxlots': 0,
                 'num_properties': 0,
-                'name': self.cal_year_name,
+                'name': str(self.cal_year_name),
                 'cycle_id': self.cycle.pk
             }],
             'created': self.org.created.strftime('%Y-%m-%d'),

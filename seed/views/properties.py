@@ -21,6 +21,9 @@ from seed.decorators import ajax_request_class
 from seed.filtersets import PropertyViewFilterSet, PropertyStateFilterSet
 from seed.lib.merging import merging
 from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.models import (
+    Organization
+)
 from seed.models import (
     AUDIT_IMPORT,
     AUDIT_USER_EDIT,
@@ -44,6 +47,10 @@ from seed.models import (
 )
 from seed.models import Property as PropertyModel
 from seed.serializers.pint import PintJSONEncoder
+from seed.serializers.pint import (
+    apply_display_unit_preferences,
+    add_pint_unit_suffix
+)
 from seed.serializers.properties import (
     PropertySerializer,
     PropertyStateSerializer,
@@ -222,8 +229,8 @@ class PropertyViewSet(GenericViewSet):
                 })
 
         property_views_list = PropertyView.objects.select_related('property', 'state', 'cycle') \
-            .filter(property__organization_id=request.query_params['organization_id'],
-                    cycle=cycle).order_by('id')
+            .filter(property__organization_id=org_id, cycle=cycle) \
+            .order_by('id')
 
         paginator = Paginator(property_views_list, per_page)
 
@@ -237,6 +244,14 @@ class PropertyViewSet(GenericViewSet):
             property_views = paginator.page(paginator.num_pages)
             page = paginator.num_pages
 
+        related_results = TaxLotProperty.get_related(property_views, columns)
+
+        # collapse units here so we're only doing the last page; we're already a
+        # realized list by now and not a lazy queryset
+        org = Organization.objects.get(pk=org_id)
+        unit_collapsed_results = \
+            [apply_display_unit_preferences(org, x) for x in related_results]
+
         response = {
             'pagination': {
                 'page': page,
@@ -248,10 +263,10 @@ class PropertyViewSet(GenericViewSet):
                 'total': paginator.count
             },
             'cycle_id': cycle.id,
-            'results': TaxLotProperty.get_related(property_views, columns)
+            'results': unit_collapsed_results
         }
 
-        return JsonResponse(response, encoder=PintJSONEncoder)
+        return JsonResponse(response)
 
     def _move_relationships(self, old_state, new_state):
         """
@@ -435,7 +450,8 @@ class PropertyViewSet(GenericViewSet):
 
             # Find unique notes
             notes = list(Note.objects.values(
-                'name', 'note_type', 'text', 'log_data', 'created', 'updated', 'organization_id', 'user_id'
+                'name', 'note_type', 'text', 'log_data', 'created', 'updated', 'organization_id',
+                'user_id'
             ).filter(property_view_id__in=view_ids).distinct())
 
             cycle_id = views.first().cycle_id
@@ -466,7 +482,8 @@ class PropertyViewSet(GenericViewSet):
                 n = Note(**note)
                 n.save()
                 # Correct the created and updated times to match the original note
-                Note.objects.filter(id=n.id).update(created=note['created'], updated=note['updated'])
+                Note.objects.filter(id=n.id).update(created=note['created'],
+                                                    updated=note['updated'])
 
             # Delete existing pairs and re-pair all to new view
             # Probably already deleted by cascade
@@ -563,12 +580,14 @@ class PropertyViewSet(GenericViewSet):
         merged_state.save()
 
         # Change the merge_state of the individual states
-        if log.parent1.name in ['Import Creation', 'Manual Edit'] and log.parent1.import_filename is not None:
+        if log.parent1.name in ['Import Creation',
+                                'Manual Edit'] and log.parent1.import_filename is not None:
             # State belongs to a new record
             state1.merge_state = MERGE_STATE_NEW
         else:
             state1.merge_state = MERGE_STATE_MERGED
-        if log.parent2.name in ['Import Creation', 'Manual Edit'] and log.parent2.import_filename is not None:
+        if log.parent2.name in ['Import Creation',
+                                'Manual Edit'] and log.parent2.import_filename is not None:
             # State belongs to a new record
             state2.merge_state = MERGE_STATE_NEW
         else:
@@ -696,8 +715,10 @@ class PropertyViewSet(GenericViewSet):
         organization_id = int(request.query_params.get('organization_id'))
         only_used = request.query_params.get('only_used', False)
         columns = Column.retrieve_all(organization_id, 'property', only_used)
+        organization = Organization.objects.get(pk=organization_id)
+        unitted_columns = [add_pint_unit_suffix(organization, x) for x in columns]
 
-        return JsonResponse({'status': 'success', 'columns': columns})
+        return JsonResponse({'status': 'success', 'columns': unitted_columns})
 
     @api_endpoint_class
     @ajax_request_class
@@ -835,7 +856,7 @@ class PropertyViewSet(GenericViewSet):
             result['taxlots'] = self._get_taxlots(property_view.pk)
             result['history'], master = self.get_history(property_view)
             result = update_result_with_master(result, master)
-            return JsonResponse(result, status=status.HTTP_200_OK)
+            return JsonResponse(result, encoder=PintJSONEncoder, status=status.HTTP_200_OK)
         else:
             return JsonResponse(result)
 
@@ -896,7 +917,8 @@ class PropertyViewSet(GenericViewSet):
                 ).order_by('-id').first()
 
                 if 'extra_data' in new_property_state_data.keys():
-                    property_state_data['extra_data'].update(new_property_state_data.pop('extra_data'))
+                    property_state_data['extra_data'].update(
+                        new_property_state_data.pop('extra_data'))
                 property_state_data.update(new_property_state_data)
 
                 if log.name == 'Import Creation':
@@ -932,15 +954,16 @@ class PropertyViewSet(GenericViewSet):
                         result.update(
                             {'state': new_property_state_serializer.data}
                         )
-                        return JsonResponse(result, status=status.HTTP_200_OK, encoder=PintJSONEncoder)
+                        return JsonResponse(result, encoder=PintJSONEncoder, status=status.HTTP_200_OK)
                     else:
                         result.update({
                             'status': 'error',
                             'message': 'Invalid update data with errors: {}'.format(
                                 new_property_state_serializer.errors)}
                         )
-                        return JsonResponse(result, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
-                elif log.name in ['Manual Edit', 'Manual Match', 'System Match', 'Merge current state in migration']:
+                        return JsonResponse(result, encoder=PintJSONEncoder, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+                elif log.name in ['Manual Edit', 'Manual Match', 'System Match',
+                                  'Merge current state in migration']:
                     # Convert this to using the serializer to save the data. This will override the previous values
                     # in the state object.
 
@@ -957,14 +980,14 @@ class PropertyViewSet(GenericViewSet):
                         result.update(
                             {'state': updated_property_state_serializer.data}
                         )
-                        return JsonResponse(result, status=status.HTTP_200_OK, encoder=PintJSONEncoder)
+                        return JsonResponse(result, encoder=PintJSONEncoder, status=status.HTTP_200_OK)
                     else:
                         result.update({
                             'status': 'error',
                             'message': 'Invalid update data with errors: {}'.format(
                                 updated_property_state_serializer.errors)}
                         )
-                        return JsonResponse(result, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+                        return JsonResponse(result, encoder=PintJSONEncoder, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
                 else:
                     result = {
                         'status': 'error',
@@ -976,9 +999,9 @@ class PropertyViewSet(GenericViewSet):
             # Uhm, does this ever get called? There are a bunch of returns in the code above.
             property_view.save()
         else:
-            return JsonResponse(result, status=status.HTTP_404_NOT_FOUND, encoder=PintJSONEncoder)
+            return JsonResponse(result, status=status.HTTP_404_NOT_FOUND)
 
-        return JsonResponse(result, status=status.HTTP_404_NOT_FOUND, encoder=PintJSONEncoder)
+        return JsonResponse(result, status=status.HTTP_404_NOT_FOUND)
 
     @ajax_request_class
     @has_perm_class('can_modify_data')
@@ -1194,7 +1217,8 @@ class PropertyViewSet(GenericViewSet):
         if result.get('status', None) != 'error':
             pv = result.pop('property_view')
             property_state_id = pv.state.pk
-            join = PropertyMeasure.objects.filter(property_state_id=property_state_id).select_related(
+            join = PropertyMeasure.objects.filter(
+                property_state_id=property_state_id).select_related(
                 'measure')
             result = []
             for j in join:

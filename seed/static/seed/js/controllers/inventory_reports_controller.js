@@ -16,6 +16,8 @@ angular.module('BE.seed.controller.inventory_reports', [])
     'inventory_reports_service',
     'simple_modal_service',
     'cycles',
+    'organization_payload',
+    'flippers',
     '$sce',
     '$translate',
     function ($scope,
@@ -24,10 +26,35 @@ angular.module('BE.seed.controller.inventory_reports', [])
               inventory_reports_service,
               simple_modal_service,
               cycles,
+              organization_payload,
+              flippers,
               $sce,
               $translate) {
 
       $scope.inventory_type = $stateParams.inventory_type;
+
+      var pretty_unit = function (pint_spec) {
+        var mappings = {
+          'ft**2': 'ft²',
+          'm**2': 'm²',
+          'kBtu/ft**2/year': 'kBtu/sq. ft./year',
+          'GJ/m**2/year': 'GJ/m²/year',
+          'MJ/m**2/year': 'MJ/m²/year',
+          'kWh/m**2/year': 'kWh/m²/year',
+          'kBtu/m**2/year': 'kBtu/m²/year'
+        };
+        return mappings[pint_spec] || pint_spec;
+      };
+
+      var eui_units = function () {
+        var unit = organization_payload.organization.display_units_eui;
+        return pretty_unit(unit);
+      };
+
+      var area_units = function () {
+        var unit = organization_payload.organization.display_units_area;
+        return pretty_unit(unit);
+      };
 
       /* Define the first five colors. After that, rely on Dimple's default colors. */
       $scope.defaultColors = ['#458cc8', '#779e1c', '#f2c41d', '#939495', '#c83737', '#f18630'];
@@ -40,9 +67,6 @@ angular.module('BE.seed.controller.inventory_reports', [])
       $scope.toCycle = {};
 
       var translateAxisLabel = function (label, units) {
-        // rgm - yeah, fair bit of ceremony but I'll have to circle back and
-        // make this respond to display units
-        // TODO make this respond to units display setting later
         var str = '';
         str += $translate.instant(label);
         if (units) {
@@ -70,28 +94,28 @@ angular.module('BE.seed.controller.inventory_reports', [])
           name: $translate.instant('Site EUI'),                     //short name for variable, used in pulldown
           label: $translate.instant('Site Energy Use Intensity'),   //full name for variable
           varName: 'site_eui',                  //name of variable, to be sent to server
-          axisLabel: translateAxisLabel('Site EUI', 'kBtu/sq. ft./year'),     //label to be used in charts, should include units
+          axisLabel: translateAxisLabel('Site EUI', eui_units()),     //label to be used in charts, should include units
           axisType: 'Measure',                  //DimpleJS property for axis type
           axisTickFormat: ',.0f'                //DimpleJS property for axis tick format
         }, {
           name: $translate.instant('Source EUI'),
           label: $translate.instant('Source Energy Use Intensity'),
           varName: 'source_eui',
-          axisLabel: translateAxisLabel('Source EUI', 'kBtu/sq. ft./year'),
+          axisLabel: translateAxisLabel('Source EUI', eui_units()),
           axisType: 'Measure',
           axisTickFormat: ',.0f'
         }, {
           name: $translate.instant('Weather Norm. Site EUI'),
           label: $translate.instant('Weather Normalized Site Energy Use Intensity'),
           varName: 'site_eui_weather_normalized',
-          axisLabel: translateAxisLabel('Weather Normalized Site EUI', 'kBtu/sq. ft./year'),
+          axisLabel: translateAxisLabel('Weather Normalized Site EUI', eui_units()),
           axisType: 'Measure',
           axisTickFormat: ',.0f'
         }, {
           name: $translate.instant('Weather Norm. Source EUI'),
           label: $translate.instant('Weather Normalized Source Energy Use Intensity'),
           varName: 'source_eui_weather_normalized',
-          axisLabel: translateAxisLabel('Weather Normalized Source EUI', 'kBtu/sq. ft./year'),
+          axisLabel: translateAxisLabel('Weather Normalized Source EUI', eui_units()),
           axisType: 'Measure',
           axisTickFormat: ',.0f'
         }, {
@@ -109,7 +133,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
           name: $translate.instant('Gross Floor Area'),
           label: $translate.instant('Gross Floor Area'),
           varName: 'gross_floor_area',
-          axisLabel: translateAxisLabel('Gross Floor Area', 'sq. ft.'),
+          axisLabel: translateAxisLabel('Gross Floor Area', area_units()),
           axisTickFormat: ',.0f',
           axisType: 'Measure',
           axisMin: ''
@@ -131,7 +155,6 @@ angular.module('BE.seed.controller.inventory_reports', [])
           axisMin: '1900'
         }
       ];
-
 
       // Chart titles
       $scope.chart1Title = '';
@@ -258,13 +281,11 @@ angular.module('BE.seed.controller.inventory_reports', [])
 
       /* Update the titles above each chart*/
       function updateChartTitles () {
-        // need to unwrap these instant translations to use them in another $translate.instant?
-        // smells fishy re XSS, but OK presuming we don't allow any user-gen'd graph titles
         var interpolationParams;
         try {
           interpolationParams = {
-            x_axis_label: $sce.getTrustedHtml($translate.instant($scope.xAxisSelectedItem.label)),
-            y_axis_label: $sce.getTrustedHtml($translate.instant($scope.yAxisSelectedItem.label))
+            x_axis_label: $translate.instant($scope.xAxisSelectedItem.label),
+            y_axis_label: $translate.instant($scope.yAxisSelectedItem.label)
           };
         } catch (e) {
           console.error('$sce issue... missing translation');

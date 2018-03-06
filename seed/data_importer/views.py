@@ -1966,13 +1966,13 @@ class ImportFileViewSet(viewsets.ViewSet):
             )
             # replace None with empty string for column names and PropertyState for tables
             for m in suggested_mappings:
-                table, field, conf = suggested_mappings[m]
-                if field is None:
+                table, destination_field, _confidence = suggested_mappings[m]
+                if destination_field is None:
                     suggested_mappings[m][1] = u''
 
         # Fix the table name, eventually move this to the build_column_mapping and build_pm_mapping
         for m in suggested_mappings:
-            table, dest, conf = suggested_mappings[m]
+            table, _destination_field, _confidence = suggested_mappings[m]
             if not table:
                 suggested_mappings[m][0] = 'PropertyState'
 

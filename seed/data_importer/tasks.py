@@ -260,8 +260,7 @@ def _build_cleaner_2(org):
     # start with the predefined types
     ontology = {'types': Column.retrieve_db_types()['types']}
 
-    query_set = Column.objects \
-        .filter(organization=org, units_pint__isnull=False)
+    query_set = Column.objects.filter(organization=org, units_pint__isnull=False)
     for column in query_set:
         # add available pint types as a tuple type
         ontology['types'][column.column_name] = ('quantity', column.units_pint)
