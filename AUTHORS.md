@@ -37,7 +37,7 @@ Cake Systems
 - Brandon Gallagher (bgallagher@cakesystems.com)
 - Julie Gallagher	(https://github.com/juliecov)
 
---
+---
 Windfall Technical
 - Nathan Addy (nathan.addy@gmail.com)
 
@@ -63,3 +63,7 @@ Building Energy
 - Jed Clinger (noonian)
 - Swetha Varadharajan (swetha.vara@buildingenergy.com)
 - Michael Dougherty (michael.dougherty@buildingenergy.com)
+
+---
+Open Green Building Society
+- Ryan McCuaig (https://github.com/rgm/)

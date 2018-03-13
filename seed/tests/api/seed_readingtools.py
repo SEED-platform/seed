@@ -235,8 +235,9 @@ def read_map_file(mapfile_path):
         maplist.append(
             {
                 'from_field': rowitem[0],
-                'to_table_name': rowitem[1],
-                'to_field': rowitem[2],
+                'from_units': rowitem[1],
+                'to_table_name': rowitem[2],
+                'to_field': rowitem[3],
             }
         )
 

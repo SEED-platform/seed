@@ -83,6 +83,9 @@ def _dict_org(request, organizations):
             'sub_orgs': _dict_org(request, o.child_orgs.all()),
             'is_parent': o.is_parent,
             'parent_id': o.parent_id,
+            'display_units_eui': o.display_units_eui,
+            'display_units_area': o.display_units_area,
+            'display_significant_figures': o.display_significant_figures,
             'cycles': cycles,
             'created': o.created.strftime('%Y-%m-%d') if o.created else '',
         }
@@ -573,6 +576,40 @@ class OrganizationViewSet(viewsets.ViewSet):
         desired_name = posted_org.get('name', None)
         if desired_name is not None:
             org.name = desired_name
+
+        def is_valid_pint_spec(choice_tuples, s):
+            """choice_tuples is std model ((value, label), ...)"""
+            return (s is not None) and (s in [choice[0] for choice in choice_tuples])
+
+        def warn_bad_pint_spec(kind, unit_string):
+            if unit_string is not None:
+                _log.warn("got bad {0} unit string {1} for org {2}".format(
+                    kind, unit_string, org.name))
+
+        def warn_bad_units(kind, unit_string):
+            _log.warn("got bad {0} unit string {1} for org {2}".format(
+                kind, unit_string, org.name))
+
+        desired_display_units_eui = posted_org.get('display_units_eui')
+        if is_valid_pint_spec(Organization.MEASUREMENT_CHOICES_EUI, desired_display_units_eui):
+            org.display_units_eui = desired_display_units_eui
+        else:
+            warn_bad_pint_spec('eui', desired_display_units_eui)
+
+        desired_display_units_area = posted_org.get('display_units_area')
+        if is_valid_pint_spec(Organization.MEASUREMENT_CHOICES_AREA, desired_display_units_area):
+            org.display_units_area = desired_display_units_area
+        else:
+            warn_bad_pint_spec('area', desired_display_units_area)
+
+        desired_display_significant_figures = posted_org.get('display_significant_figures')
+        if isinstance(desired_display_significant_figures, int) \
+                and desired_display_significant_figures >= 0:
+            org.display_significant_figures = desired_display_significant_figures
+        elif desired_display_significant_figures is not None:
+            _log.warn("got bad sig figs {0} for org {1}".format(
+                desired_display_significant_figures, org.name))
+
         org.save()
 
         # Update the selected exportable fields.

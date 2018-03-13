@@ -81,6 +81,19 @@ class OrganizationUser(models.Model):
 class Organization(models.Model):
     """A group of people that optionally contains another sub group."""
 
+    MEASUREMENT_CHOICES_AREA = (
+        ('ft**2', 'square feet'),
+        ('m**2', 'square metres'),
+    )
+
+    MEASUREMENT_CHOICES_EUI = (
+        ('kBtu/ft**2/year', 'kBtu/sq. ft./year'),
+        ('kWh/m**2/year', 'kWh/m²/year'),
+        ('GJ/m**2/year', 'GJ/m²/year'),
+        ('MJ/m**2/year', 'MJ/m²/year'),
+        ('kBtu/m**2/year', 'kBtu/m²/year'),  # really, Toronto?
+    )
+
     class Meta:
         ordering = ['name']
 
@@ -91,9 +104,17 @@ class Organization(models.Model):
         related_name='orgs',
     )
 
-    parent_org = models.ForeignKey(
-        'Organization', blank=True, null=True, related_name='child_orgs'
-    )
+    parent_org = models.ForeignKey('Organization', blank=True, null=True, related_name='child_orgs')
+
+    display_units_eui = models.CharField(max_length=32,
+                                         choices=MEASUREMENT_CHOICES_EUI,
+                                         blank=False,
+                                         default='kBtu/ft**2/year')
+    display_units_area = models.CharField(max_length=32,
+                                          choices=MEASUREMENT_CHOICES_AREA,
+                                          blank=False,
+                                          default='ft**2')
+    display_significant_figures = models.PositiveSmallIntegerField(blank=False, default=2)
 
     created = models.DateTimeField(auto_now_add=True, null=True)
     modified = models.DateTimeField(auto_now=True, null=True)

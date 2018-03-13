@@ -73,8 +73,8 @@ angular.module('BE.seed.controller.admin', [])
           get_organizations();
           $scope.user_form.reset();
 
-        }, function (data) {
-          update_alert(false, 'error creating user: ' + data.message);
+        }, function (response) {
+          update_alert(false, 'error creating user: ' + response.data.message);
         });
       };
       $scope.org_form.not_ready = function () {
@@ -105,19 +105,18 @@ angular.module('BE.seed.controller.admin', [])
       };
 
       var get_organizations = function () {
-        organization_service.get_organizations().then(process_organizations)
-          .catch(function (data, status) {
-            $log.log({message: 'error from data call', status: status, data: data});
-            update_alert(false, 'error getting organizations. check console log ');
-          });
+        organization_service.get_organizations().then(process_organizations, function (response) {
+          $log.log({message: 'error from data call', status: response.status, data: response.data});
+          update_alert(false, 'error getting organizations: ' + response.data.message);
+        });
       };
 
       $scope.get_organizations_users = function (org) {
         organization_service.get_organization_users(org).then(function (data) {
           $scope.org_user.users = data.users;
-        }, function (data, status) {
-          $log.log({message: 'error from data call', status: status, data: data});
-          update_alert(false, 'error getting organizations. check console log ');
+        }, function (response) {
+          $log.log({message: 'error from data call', status: response.status, data: response.data});
+          update_alert(false, 'error getting organizations: ' + response.data.message);
         });
       };
 
@@ -125,9 +124,9 @@ angular.module('BE.seed.controller.admin', [])
         organization_service.add_user_to_org($scope.org_user).then(function () {
           $scope.get_organizations_users($scope.org_user.organization);
           update_alert(true, 'user ' + $scope.org_user.user.email + ' added to organization ' + $scope.org_user.organization.name);
-        }, function (data, status) {
-          $log.log({message: 'error from data call', status: status, data: data});
-          update_alert(false, 'error adding user to organization: ' + data.message);
+        }, function (response) {
+          $log.log({message: 'error from data call', status: response.status, data: response.data});
+          update_alert(false, 'error adding user to organization: ' + response.data.message);
         });
       };
 
@@ -135,9 +134,9 @@ angular.module('BE.seed.controller.admin', [])
         organization_service.remove_user(user_id, org_id).then(function () {
           $scope.get_organizations_users($scope.org_user.organization);
           update_alert(true, 'user removed organization');
-        }, function (data, status) {
-          $log.log({message: 'error from data call', status: status, data: data});
-          update_alert(false, 'error removing user from organization: ' + data.message);
+        }, function (response) {
+          $log.log({message: 'error from data call', status: response.status, data: response.data});
+          update_alert(false, 'error removing user from organization: ' + response.data.message);
         });
       };
 
@@ -181,11 +180,11 @@ angular.module('BE.seed.controller.admin', [])
           .then(function (data) {
             // resolve promise
             uploader_service.check_progress_loop(data.progress_key, 0, 1, function () {
-              org.remove_message = 'success';
-              get_organizations();
-            }, function () {
+                org.remove_message = 'success';
+                get_organizations();
+              }, function () {
                 // Do nothing
-            },
+              },
               org);
           });
       };

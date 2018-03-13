@@ -172,11 +172,11 @@ class TestMappingExampleData(DataMappingBaseTestCase):
         # make sure that the new data was loaded correctly and that the lot_number was set
         # appropriately
         ps = PropertyState.objects.filter(address_line_1='2700 Welstone Ave NE')[0]
-        self.assertEqual(ps.site_eui, 1202)
+        self.assertEqual(ps.site_eui.magnitude, 1202)
         self.assertEqual(ps.lot_number, '11160509')
 
         ps = PropertyState.objects.filter(address_line_1='521 Elm Street')[0]
-        self.assertEqual(ps.site_eui, 1358)
+        self.assertEqual(ps.site_eui.magnitude, 1358)
         # The lot_number should also have the normalized code run, then re-delimited
         self.assertEqual(ps.lot_number, '333/66555;333/66125;333/66148')
 
@@ -195,7 +195,7 @@ class TestMappingExampleData(DataMappingBaseTestCase):
 
         # make sure that the new data was loaded correctly
         ps = PropertyState.objects.filter(address_line_1='50 Willow Ave SE')[0]
-        self.assertEqual(ps.site_eui, 125)
+        self.assertEqual(ps.site_eui.magnitude, 125)
 
         # Promote the PropertyState to a PropertyView
         pv1 = ps.promote(self.cycle)
@@ -251,7 +251,7 @@ class TestMappingPropertiesOnly(DataMappingBaseTestCase):
 
         # make sure that the new data was loaded correctly
         ps = PropertyState.objects.filter(address_line_1='2700 Welstone Ave NE')[0]
-        self.assertEqual(ps.site_eui, 1202)
+        self.assertEqual(ps.site_eui.magnitude, 1202)
         self.assertEqual(ps.extra_data['jurisdiction_tax_lot_id'], '11160509')
 
 

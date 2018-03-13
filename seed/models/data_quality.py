@@ -15,6 +15,7 @@ from django.apps import apps
 from django.db import models
 from django.utils.timezone import get_current_timezone, make_aware, make_naive
 from quantityfield import ureg
+from seed.serializers.pint import pretty_units
 
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
@@ -94,20 +95,20 @@ DEFAULT_RULES = [
     }, {
         'table_name': 'PropertyState',
         'field': 'conditioned_floor_area',
-        'data_type': TYPE_NUMBER,
+        'data_type': TYPE_AREA,
         'rule_type': RULE_TYPE_DEFAULT,
         'min': 0,
         'max': 7000000,
         'severity': SEVERITY_ERROR,
-        'units': 'square feet',
+        'units': 'ft**2',
     }, {
         'table_name': 'PropertyState',
         'field': 'conditioned_floor_area',
-        'data_type': TYPE_NUMBER,
+        'data_type': TYPE_AREA,
         'rule_type': RULE_TYPE_DEFAULT,
         'min': 100,
         'severity': SEVERITY_WARNING,
-        'units': 'square feet',
+        'units': 'ft**2',
     }, {
         'table_name': 'PropertyState',
         'field': 'energy_score',
@@ -139,7 +140,7 @@ DEFAULT_RULES = [
         'min': 100,
         'max': 7000000,
         'severity': SEVERITY_ERROR,
-        'units': 'square feet',
+        'units': 'ft**2',
     }, {
         'table_name': 'PropertyState',
         'field': 'occupied_floor_area',
@@ -148,7 +149,7 @@ DEFAULT_RULES = [
         'min': 100,
         'max': 7000000,
         'severity': SEVERITY_ERROR,
-        'units': 'square feet',
+        'units': 'ft**2',
     }, {
         'table_name': 'PropertyState',
         'field': 'recent_sale_date',
@@ -168,55 +169,55 @@ DEFAULT_RULES = [
     }, {
         'table_name': 'PropertyState',
         'field': 'site_eui',
-        'data_type': TYPE_NUMBER,
+        'data_type': TYPE_EUI,
         'rule_type': RULE_TYPE_DEFAULT,
         'min': 0,
         'max': 1000,
         'severity': SEVERITY_ERROR,
-        'units': 'kBtu/sq. ft./year',
+        'units': 'kBtu/ft**2/year',
     }, {
         'table_name': 'PropertyState',
         'field': 'site_eui',
-        'data_type': TYPE_NUMBER,
+        'data_type': TYPE_EUI,
         'rule_type': RULE_TYPE_DEFAULT,
         'min': 10,
         'severity': SEVERITY_WARNING,
-        'units': 'kBtu/sq. ft./year',
+        'units': 'kBtu/ft**2/year',
     }, {
         'table_name': 'PropertyState',
         'field': 'site_eui_weather_normalized',
-        'data_type': TYPE_NUMBER,
+        'data_type': TYPE_EUI,
         'rule_type': RULE_TYPE_DEFAULT,
         'min': 0,
         'max': 1000,
         'severity': SEVERITY_ERROR,
-        'units': 'kBtu/sq. ft./year',
+        'units': 'kBtu/ft**2/year',
     }, {
         'table_name': 'PropertyState',
         'field': 'source_eui',
-        'data_type': TYPE_NUMBER,
+        'data_type': TYPE_EUI,
         'rule_type': RULE_TYPE_DEFAULT,
         'min': 0,
         'max': 1000,
         'severity': SEVERITY_ERROR,
-        'units': 'kBtu/sq. ft./year',
+        'units': 'kBtu/ft**2/year',
     }, {
         'table_name': 'PropertyState',
         'field': 'source_eui',
-        'data_type': TYPE_NUMBER,
+        'data_type': TYPE_EUI,
         'rule_type': RULE_TYPE_DEFAULT,
         'min': 10,
         'severity': SEVERITY_WARNING,
-        'units': 'kBtu/sq. ft./year',
+        'units': 'kBtu/ft**2/year',
     }, {
         'table_name': 'PropertyState',
         'field': 'source_eui_weather_normalized',
-        'data_type': TYPE_NUMBER,
+        'data_type': TYPE_EUI,
         'rule_type': RULE_TYPE_DEFAULT,
         'min': 10,
         'max': 1000,
         'severity': SEVERITY_ERROR,
-        'units': 'kBtu/sq. ft./year',
+        'units': 'kBtu/ft**2/year',
     }, {
         'table_name': 'PropertyState',
         'field': 'year_built',
@@ -250,13 +251,6 @@ def format_pint_violation(rule, source_value):
     :return (formatted_value, formatted_min, formatted_max) : (String, String, String)
     """
 
-    def pretty_units(q):
-        """
-        hack; can lose it when Pint gets something like a "{:~U}" format code
-        see https://github.com/hgrecco/pint/pull/231
-        """
-        return u"{:~P}".format(q).split(" ")[1]
-
     formatted_min = formatted_max = None
     incoming_data_units = source_value.units
     rule_units = ureg(rule.units)
@@ -271,7 +265,7 @@ def format_pint_violation(rule, source_value):
             rule_value.magnitude, pretty_rule_units,
         )
     else:
-        formatted_value = u"{:.1f} {}".format(source_value, pretty_rule_units)
+        formatted_value = u"{:.1f} {}".format(source_value.magnitude, pretty_rule_units)
     if rule.min is not None:
         formatted_min = u"{:.1f} {}".format(rule.min, pretty_rule_units)
     if rule.max is not None:

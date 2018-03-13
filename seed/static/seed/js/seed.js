@@ -173,8 +173,14 @@ SEED_app.run([
 SEED_app.run([
   'flippers',
   function (flippers) {
-    var make = _.partial(flippers.make_flipper, 'ryan@ryanmccuaig.net', '2018-01-01T00:00:00Z');
-    make('release:use_pint', 'boolean', false);
+    // wraps some minor UI that we'll need until we migrate to delete the old
+    // PropertyState columns for EUI and area. This flipper should be removed
+    // for 2.4 when we remove the archived "_orig" area and EUI columns.
+    flippers.make_flipper('ryan@ryanmccuaig.net', '2018-05-31T00:00:00Z',
+      'release:orig_columns', 'boolean', true);
+
+    var make2 = _.partial(flippers.make_flipper, 'nicholas.long@nrel.gov', '2018-01-01T00:00:00Z');
+    make2('release:bricr', 'boolean', true);
   }
 ]);
 
@@ -280,6 +286,11 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         resolve: {
           cycles: ['cycle_service', function (cycle_service) {
             return cycle_service.get_cycles();
+          }],
+          organization_payload: ['organization_service', 'user_service', function (organization_service, user_service) {
+            var organization_id = user_service.get_organization().id;
+            var organization = organization_service.get_organization(organization_id);
+            return organization;
           }]
         }
       })

@@ -379,10 +379,10 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           return !_.isEmpty(col.name);
         });
 
-        // Remove _pint columns
-        if (!flippers.is_active('release:use_pint')) {
+        // Remove _orig columns
+        if (flippers.is_active('release:orig_columns')) {
           _.remove(columns, function (col) {
-            return /_pint$/.test(col.name);
+            return /_orig/.test(col.name);
           });
         }
 
@@ -402,10 +402,10 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           return !_.isEmpty(col.name);
         });
 
-        // Remove _pint columns
-        if (!flippers.is_active('release:use_pint')) {
+        // Remove _orig columns
+        if (flippers.is_active('release:orig_columns')) {
           _.remove(columns, function (col) {
-            return /_pint$/.test(col.name);
+            return /_orig/.test(col.name);
           });
         }
 
