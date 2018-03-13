@@ -44,7 +44,6 @@ angular.module('BE.seed.controller.show_populated_columns_modal', [])
         }
 
         promise.then(function (inventory) {
-          console.log('inv', inventory);
           $scope.progress = 50;
           $scope.status = 'Processing ' + $scope.columns.length + ' columns in ' + inventory.length + ' records';
 
@@ -98,7 +97,7 @@ angular.module('BE.seed.controller.show_populated_columns_modal', [])
 
           $scope.progress = 100;
           $scope.state = 'done';
-          $scope.status = 'Found ' + results.length + ' populated columns';
+          $scope.status = 'Found ' + visible.length + ' populated columns';
         });
       };
 

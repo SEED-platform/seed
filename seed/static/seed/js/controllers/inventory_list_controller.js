@@ -97,11 +97,6 @@ angular.module('BE.seed.controller.inventory_list', [])
             }
           }
         });
-        modalInstance.result.then(function () {
-          // dialog was closed with 'Merge' button.
-          $scope.selectedOrder = [];
-          refresh_objects();
-        });
       };
 
       $scope.loadLabelsForFilter = function (query) {

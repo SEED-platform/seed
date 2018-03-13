@@ -126,7 +126,7 @@ class TaxLotProperty(models.Model):
 
             # Add extra data fields right to this object.
             for extra_data_field, extra_data_value in related_view.state.extra_data.items():
-                if extra_data_field == 'id':
+                if extra_data_field in ['id', 'notes_count']:
                     extra_data_field += '_extra'
 
                 while extra_data_field in db_columns:
@@ -219,7 +219,7 @@ class TaxLotProperty(models.Model):
             obj_dict = model_to_dict(obj.state, exclude=['extra_data'])
 
             for extra_data_field, extra_data_value in obj.state.extra_data.items():
-                if extra_data_field == 'id':
+                if extra_data_field in ['id', 'notes_count']:
                     extra_data_field += '_extra'
 
                 while extra_data_field in db_columns:
