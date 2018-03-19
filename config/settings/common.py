@@ -277,12 +277,14 @@ REST_FRAMEWORK = {
     'DATETIME_INPUT_FORMATS': (
         '%Y:%m:%d', 'iso-8601', '%Y-%m-%d'
     ),
-    'EXCEPTION_HANDLER': 'seed.exception_handler.custom_exception_handler'
+    'EXCEPTION_HANDLER': 'seed.exception_handler.custom_exception_handler',
+
 }
 
 SWAGGER_SETTINGS = {
     "exclude_namespaces": ["app"],  # List URL namespaces to ignore
-    'APIS_SORTER': 'alpha'
+    'APIS_SORTER': 'alpha',
+    'LOGOUT_URL': '/accounts/logout',
 }
 
 # Certification
