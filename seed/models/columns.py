@@ -669,8 +669,8 @@ class Column(models.Model):
             # set the raw db name as well. Eventually we will want the table/db_name to be the unique id
             db_name = name
 
-            # Why is this important? Need to clarify
-            if name == 'id':
+            # Avoid name conflicts with protected front-end columns
+            if name in ['id', 'notes_count']:
                 name += '_extra'
 
             # check if the column name is already defined in the list. For example, gross_floor_area

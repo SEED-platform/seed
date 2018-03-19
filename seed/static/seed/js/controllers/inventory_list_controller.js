@@ -80,6 +80,25 @@ angular.module('BE.seed.controller.inventory_list', [])
         $scope.selected_labels = [];
       };
 
+      $scope.open_show_populated_columns_modal = function () {
+        var modalInstance = $uibModal.open({
+          backdrop: 'static',
+          templateUrl: urls.static_url + 'seed/partials/show_populated_columns_modal.html',
+          controller: 'show_populated_columns_modal_controller',
+          resolve: {
+            columns: function () {
+              return all_columns;
+            },
+            cycle_id: function () {
+              return $scope.cycle.selected_cycle.id;
+            },
+            inventory_type: function () {
+              return $stateParams.inventory_type;
+            }
+          }
+        });
+      };
+
       $scope.loadLabelsForFilter = function (query) {
         return _.filter($scope.labels, function (lbl) {
           if (_.isEmpty(query)) {
