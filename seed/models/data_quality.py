@@ -241,8 +241,10 @@ DEFAULT_RULES = [
 class ComparisonError(Exception):
     pass
 
+
 class DataQualityTypeCastError(Exception):
     pass
+
 
 def format_pint_violation(rule, source_value):
     """
@@ -640,7 +642,7 @@ class DataQualityCheck(models.Model):
                     value = row.extra_data[rule.field]
                     try:
                         value = rule.str_to_data_type(value)
-                    except DataQualityTypeCastError as e:
+                    except DataQualityTypeCastError:
                         self.add_result_type_error(row.id, rule, display_name, value)
                         continue
 
