@@ -236,6 +236,9 @@ class OrgMixin(object):
         :return: int representing a valid organization pk or
             organization object.
         """
+        if not request.user:
+            return None
+
         if not getattr(self, '_organization', None):
             org_id = get_org_id(request)
             org = None
