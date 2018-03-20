@@ -15,7 +15,6 @@ from django.apps import apps
 from django.db import models
 from django.utils.timezone import get_current_timezone, make_aware, make_naive
 from quantityfield import ureg
-from seed.serializers.pint import pretty_units
 
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
@@ -23,6 +22,7 @@ from seed.models import (
     StatusLabel,
     PropertyView, TaxLotView)
 from seed.models import obj_to_dict
+from seed.serializers.pint import pretty_units
 from seed.utils.cache import (
     set_cache_raw, get_cache_raw
 )
@@ -242,6 +242,10 @@ class ComparisonError(Exception):
     pass
 
 
+class DataQualityTypeCastError(Exception):
+    pass
+
+
 def format_pint_violation(rule, source_value):
     """
     Format a pint min, max violation for human readability.
@@ -419,7 +423,7 @@ class Rule(models.Model):
                             if dt is not None:
                                 return dt.date()
             except ValueError as e:
-                raise TypeError("Error converting {} with {}".format(value, e))
+                raise DataQualityTypeCastError("Error converting {} with {}".format(value, e))
         else:
             return value
 
@@ -630,14 +634,18 @@ class DataQualityCheck(models.Model):
             if hasattr(row, rule.field) or rule.field in row.extra_data:
                 value = None
                 label_applied = False
+                display_name = rule.field
 
                 if hasattr(row, rule.field):
                     value = getattr(row, rule.field)
                 elif rule.field in row.extra_data:
                     value = row.extra_data[rule.field]
-                    value = rule.str_to_data_type(value)
+                    try:
+                        value = rule.str_to_data_type(value)
+                    except DataQualityTypeCastError:
+                        self.add_result_type_error(row.id, rule, display_name, value)
+                        continue
 
-                display_name = rule.field
                 if (rule.table_name, rule.field) in self.column_lookup:
                     display_name = self.column_lookup[(rule.table_name, rule.field)]
 
@@ -811,6 +819,19 @@ class DataQualityCheck(models.Model):
                 'table_name': rule.table_name,
                 'message': display_name + ' could not be compared numerically',
                 'detailed_message': display_name + ' [' + value + '] <> ' + rule_check,
+                'severity': rule.get_severity_display(),
+            }
+        )
+
+    def add_result_type_error(self, row_id, rule, display_name, value):
+        self.results[row_id]['data_quality_results'].append(
+            {
+                'field': rule.field,
+                'formatted_field': display_name,
+                'value': value,
+                'table_name': rule.table_name,
+                'message': display_name + ' could not be converted to numerical value',
+                'detailed_message': 'Value [' + value + '] could not be converted to number',
                 'severity': rule.get_severity_display(),
             }
         )
