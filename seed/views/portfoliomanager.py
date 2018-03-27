@@ -164,10 +164,18 @@ class PortfolioManagerImport(object):
         if 'rows' not in template_object:
             raise PMExcept("Could not find rows key in template response; aborting.")
         templates = template_object["rows"]
+        return_templates = []
         for t in templates:
-            _log.debug("Found template,\n id=" + str(t["id"]) + "\n name=" + str(t["name"]))
-
-        return templates
+            if "id" not in t and "name" not in t:
+                _log.debug("Template retrieved from PortfolioManager but with no id or name keys")
+            elif "id" not in t:
+                _log.debug("Template retrieved but did not include \"id\" key; name = " + str(t["name"]))
+            elif "name" not in t:
+                _log.debug("Template retrieved but did not include \"name\" key; id = " + str(t["id"]))
+            else:
+                _log.debug("Found template,\n id=" + str(t["id"]) + "\n name=" + str(t["name"]))
+                return_templates.append(t)
+        return return_templates
 
     @staticmethod
     def get_template_by_name(templates, template_name):
