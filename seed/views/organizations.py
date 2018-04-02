@@ -12,11 +12,9 @@ from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from rest_framework import status
 from rest_framework import viewsets, serializers
-from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import detail_route
 
 from seed import tasks
-from seed.authentication import SEEDAuthentication
 from seed.decorators import ajax_request_class
 from seed.decorators import get_prog_key
 from seed.landing.models import SEEDUser as User
@@ -205,7 +203,6 @@ class OrganizationUsersSerializer(serializers.Serializer):
 
 class OrganizationViewSet(viewsets.ViewSet):
     raise_exception = True
-    authentication_classes = (SessionAuthentication, SEEDAuthentication)
 
     @api_endpoint_class
     @ajax_request_class

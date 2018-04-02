@@ -10,22 +10,23 @@ import logging
 from django.http import JsonResponse
 from rest_framework import status
 from rest_framework import viewsets
-from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import list_route
+from rest_framework.exceptions import NotFound, ParseError
+from rest_framework.response import Response
 
-from seed.authentication import SEEDAuthentication
 from seed.decorators import ajax_request_class, require_organization_id_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models.columns import Column, ColumnMapping
-from seed.utils.api import api_endpoint_class
+from seed.utils.api import api_endpoint_class, OrgQuerySetMixin
+from seed.serializers.columns import ColumnSerializer
+from seed.models import PropertyState, TaxLotState
 
 _log = logging.getLogger(__name__)
 
 
-class ColumnViewSet(viewsets.ViewSet):
+class ColumnViewSet(OrgQuerySetMixin, viewsets.ViewSet):
     raise_exception = True
-    authentication_classes = (SessionAuthentication, SEEDAuthentication)
 
     @require_organization_id_class
     @api_endpoint_class
@@ -183,10 +184,44 @@ class ColumnViewSet(viewsets.ViewSet):
                 'message': 'organization with with id {} does not exist'.format(organization_id)
             }, status=status.HTTP_404_NOT_FOUND)
 
+    @list_route()
+    def add_column_names(self, request):
+        model_obj = None
+        inventory_pk = request.query_params.get('inventory_pk')
+        inventory_type = request.query_params.get('inventory_type', 'property')
+        if inventory_type in ['property', 'propertystate']:
+            if not inventory_pk:
+                model_obj = PropertyState.objects.order_by('-id').first()
+            try:
+                model_obj = PropertyState.objects.get(id=inventory_pk)
+            except PropertyState.DoesNotExist:
+                pass
+        elif inventory_type in ['taxlot', 'taxlotstate']:
+            if not inventory_pk:
+                model_obj = TaxLotState.objects.order_by('-id').first()
+            else:
+                try:
+                    model_obj = TaxLotState.objects.get(id=inventory_pk)
+                    inventory_type = 'taxlotstate'
+                except TaxLotState.DoesNotExist:
+                    pass
+        else:
+            msg = "{} is not a valid inventory type".format(inventory_type)
+            raise ParseError(msg)
+        if not model_obj:
+            msg = "No {} was found matching {}".format(
+                inventory_type, inventory_pk
+            )
+            raise NotFound(msg)
+        Column.save_column_names(model_obj)
+        org_id = self.get_organization(request)
+        columns = Column.retrieve_all(org_id, inventory_type, only_used=False)
+        columns = ColumnSerializer(columns, many=True)
+        return Response(columns, status=status.HTTP_200_OK)
+
 
 class ColumnMappingViewSet(viewsets.ViewSet):
     raise_exception = True
-    authentication_classes = (SessionAuthentication, SEEDAuthentication)
 
     @require_organization_id_class
     @api_endpoint_class

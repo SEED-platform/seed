@@ -10,10 +10,8 @@ from django.http import JsonResponse
 from django.utils import timezone
 from rest_framework import status
 from rest_framework import viewsets
-from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import list_route
 
-from seed.authentication import SEEDAuthentication
 from seed.data_importer.models import ImportRecord
 from seed.decorators import ajax_request_class, require_organization_id_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
@@ -27,7 +25,6 @@ _log = logging.getLogger(__name__)
 
 class DatasetViewSet(viewsets.ViewSet):
     raise_exception = True
-    authentication_classes = (SessionAuthentication, SEEDAuthentication)
 
     @require_organization_id_class
     @api_endpoint_class

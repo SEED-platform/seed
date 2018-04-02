@@ -8,6 +8,10 @@ All rights reserved.  # NOQA
 :author Paul Munday <paul@paulmunday.net>
 """
 
+from rest_framework.decorators import detail_route
+from rest_framework import status
+from rest_framework.response import Response
+
 from seed.filtersets import GAPropertyFilterSet, GreenAssessmentFilterSet
 from seed.models import (
     GreenAssessment,
@@ -21,7 +25,10 @@ from seed.serializers.certification import (
     GreenAssessmentURLSerializer
 )
 
-from seed.utils.viewsets import (SEEDOrgModelViewSet, SEEDOrgCreateUpdateModelViewSet)
+from seed.utils.viewsets import (
+    SEEDOrgModelViewSet,
+    SEEDOrgCreateUpdateModelViewSet
+)
 
 
 class GreenAssessmentViewSet(SEEDOrgCreateUpdateModelViewSet):
@@ -172,6 +179,7 @@ class GreenAssessmentViewSet(SEEDOrgCreateUpdateModelViewSet):
 
 
 class GreenAssessmentURLViewSet(SEEDOrgModelViewSet):
+
     """API endpoint for viewing and creating green assessment urls.
 
         Returns::
@@ -289,7 +297,7 @@ class GreenAssessmentPropertyViewSet(SEEDOrgModelViewSet):
                         'rating': score if value is non-numeric,
                         'version': version of certification issued,
                         'date': date certification issued,
-                        'target_date': date achievement of certification expected,
+                        'target_date': date achievement of cert is expected,
                         'eligibility': BEDES eligibility,
                         'expiration_date': date certification expires,
                         'is_valid': state of certification validity,
@@ -306,180 +314,37 @@ class GreenAssessmentPropertyViewSet(SEEDOrgModelViewSet):
         Return an assessment property instance by pk if its associated
         assessment is within the specified organization.
 
-        :GET: Expects organization_id in query string.
-        :Parameters:
-            :Parameter: organization_id
-            :Description: organization_id for this user`s organization
-            :required: true
-            :Parameter: green assessment property pk
-            :Description: id for desired green assessment property
-            :required: true
-
     list:
         Return all green assessment properties available to user through
         associated green assessment via specified organization.
 
-        :GET: Expects organization_id in query string.
-        :Parameters:
-            :Parameter: organization_id
-            :Description: organization_id for this user`s organization
-            :required: true
     create:
-        Create a new green assessment property.
-
-        :POST: Expects organization_id in query string.
-        :Parameters:
-            :Parameter: organization_id
-            :Description: organization_id for this user`s organization
-            :required: true
-            :Parameter: source
-            :Description:  source of this certification e.g. assessor
-            :required: false
-            :Parameter: status
-            :Description:  status for multi-step processes
-            :required: false
-            :Parameter: status_date
-            :Description:  date status first applied
-            :required: false
-            :Parameter: metric
-            :Description:  score if value is numeric
-            :required: false
-            :Parameter: rating
-            :Description:  score if value is non-numeric
-            :required: false
-            :Parameter: version
-            :Description:  version of certification issued
-            :required: false
-            :Parameter: date
-            :Description:  date certification issued  ``YYYY-MM-DD``
-            :required: false
-            :Parameter: target_date
-            :Description:  date achievement expected ``YYYY-MM-DD``
-            :required: false
-            :Parameter: eligibility
-            :Description:  BEDES eligible if true
-            :required: false
-            :Parameter: urls
-            :Description:  array of related green assessment urls
-            :required: false
-            :Parameter: assessment
-            :Description:  id of associated green assessment
-            :required: true
-            :Parameter: view
-            :Description:  id of associated property view
-            :required: true
+        Create a new green assessment property within user`s specified org.
 
     delete:
         Remove an existing green assessment property.
 
-        :DELETE: Expects organization_id in query string.
-        :Parameters:
-            :Parameter: organization_id
-            :Description: organization_id for this user`s organization
-            :required: true
-            :Parameter: green assessment property pk
-            :Description: id for desired green assessment property
-            :required: true
-
     update:
         Update a green assessment property record.
 
-        :PUT: Expects organization_id in query string.
-        :Parameters:
-            :Parameter: organization_id
-            :Description: organization_id for this user`s organization
-            :required: true
-            :Parameter: green assessment pk
-            :Description: id for desired green assessment
-            :required: true
-            :Parameter: source
-            :Description:  source of this certification e.g. assessor
-            :required: false
-            :Parameter: status
-            :Description:  status for multi-step processes
-            :required: false
-            :Parameter: status_date
-            :Description:  date status first applied
-            :required: false
-            :Parameter: metric
-            :Description:  score if value is numeric
-            :required: false
-            :Parameter: rating
-            :Description:  score if value is non-numeric
-            :required: false
-            :Parameter: version
-            :Description:  version of certification issued
-            :required: false
-            :Parameter: date
-            :Description:  date certification issued  ``YYYY-MM-DD``
-            :required: false
-            :Parameter: target_date
-            :Description:  date achievement expected ``YYYY-MM-DD``
-            :required: false
-            :Parameter: eligibility
-            :Description:  BEDES eligible if true
-            :required: false
-            :Parameter: urls
-            :Description:  array of related green assessment urls
-            :required: false
-            :Parameter: assessment
-            :Description:  id of associated green assessment
-            :required: true
-            :Parameter: view
-            :Description:  id of associated property view
-            :required: true
-
-
     partial_update:
-        Update one or more fields on an existing green assessment.
-
-        :PUT: Expects organization_id in query string.
-        :Parameters:
-            :Parameter: organization_id
-            :Description: organization_id for this user`s organization
-            :required: true
-            :Parameter: green assessment pk
-            :Description: id for desired green assessment
-            :required: true
-            :Parameter: source
-            :Description:  source of this certification e.g. assessor
-            :required: false
-            :Parameter: status
-            :Description:  status for multi-step processes
-            :required: false
-            :Parameter: status_date
-            :Description:  date status first applied
-            :required: false
-            :Parameter: metric
-            :Description:  score if value is numeric
-            :required: false
-            :Parameter: rating
-            :Description:  score if value is non-numeric
-            :required: false
-            :Parameter: version
-            :Description:  version of certification issued
-            :required: false
-            :Parameter: date
-            :Description:  date certification issued  ``YYYY-MM-DD``
-            :required: false
-            :Parameter: target_date
-            :Description:  date achievement expected ``YYYY-MM-DD``
-            :required: false
-            :Parameter: eligibility
-            :Description:  BEDES eligible if true
-            :required: false
-            :Parameter: urls
-            :Description:  array of related green assessment urls
-            :required: false
-            :Parameter: assessment
-            :Description:  id of associated green assessment
-            :required: false
-            :Parameter: view
-            :Description:  id of associated property view
-            :required: false
-
+        Update one or more fields on an existing green assessment...
     """
     serializer_class = GreenAssessmentPropertySerializer
     model = GreenAssessmentProperty
     orgfilter = 'assessment__organization_id'
     filter_class = GAPropertyFilterSet
+
+    @detail_route(methods=['get'])
+    def reso_format(self, request, pk=None):
+        """Return an assessment property instance by pk in reso format"""
+        assessment = self.get_object()
+        status_code = status.HTTP_200_OK
+        return Response(assessment.to_reso_dict(), status=status_code)
+
+    @detail_route(methods=['get'])
+    def bedes_format(self, request, pk=None):
+        """Return an assessment property instance by pk in bedes format"""
+        assessment = self.get_object()
+        status_code = status.HTTP_200_OK
+        return Response(assessment.to_bedes_dict(), status=status_code)

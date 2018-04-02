@@ -762,7 +762,7 @@ class InventoryViewTests(DeleteModelsTestCase):
         url = reverse('api:v2:properties-detail', args=[pv.id])
         response = self.client.get(url, params)
         result = json.loads(response.content)
-        self.assertEqual(result['state']['gross_floor_area'], '3.14')
+        self.assertEqual(result['state']['gross_floor_area'], 3.14)
 
         # test writing the field -- does not work for pint fields, but other fields should persist fine
         # /api/v2/properties/4/?cycle_id=4&organization_id=3
@@ -776,8 +776,8 @@ class InventoryViewTests(DeleteModelsTestCase):
         }
         response = self.client.put(url, data=json.dumps(params), content_type='application/json')
         result = json.loads(response.content)
-        self.assertEqual(result['state']['gross_floor_area'], '11235.00')
-        self.assertEqual(result['state']['site_eui'], '90.10')
+        self.assertEqual(result['state']['gross_floor_area'], 11235.00)
+        self.assertEqual(result['state']['site_eui'], 90.10)
 
     def test_get_properties_with_taxlots(self):
         property_state = self.property_state_factory.get_property_state()

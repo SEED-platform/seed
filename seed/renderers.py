@@ -73,17 +73,6 @@ class SEEDJSONRenderer(JSONRenderer):
         if pagination:
             data['pagination'] = pagination
 
-        if "properties" in data and len(data["properties"]) > 0:
-            # good enough to just use the org_id of the first property state to
-            # get display preferences for the Quantity values. Hard to imagine
-            # a situation where we'd want to vary units running down a column of
-            # data per-org.
-            org_id = data["properties"][0]["state"]["organization_id"]
-            org = Organization.objects.get(pk=org_id)
-            for i in range(len(data["properties"])):
-                data["properties"][i]["state"] = \
-                    apply_display_unit_preferences(org, data["properties"][i]["state"])
-
         return super(SEEDJSONRenderer, self).render(
             data,
             accepted_media_type=accepted_media_type,

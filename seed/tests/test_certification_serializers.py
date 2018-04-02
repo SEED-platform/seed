@@ -9,10 +9,10 @@ All rights reserved
 
 Tests for serializers used by GreenAssessments/Energy Certifications
 """
-from collections import OrderedDict
-
 import datetime
 import mock
+from collections import OrderedDict
+
 from django.core.exceptions import ValidationError
 
 from seed.landing.models import SEEDUser as User
@@ -20,6 +20,17 @@ from seed.lib.superperms.orgs.models import (
     Organization,
     OrganizationUser,
 )
+
+from seed.models import (
+    Cycle,
+    GreenAssessment,
+    GreenAssessmentProperty,
+    GreenAssessmentURL,
+    Property,
+    PropertyState,
+    PropertyView,
+)
+
 from seed.serializers.certification import (
     GreenAssessmentURLField,
     PropertyViewField,
@@ -27,11 +38,13 @@ from seed.serializers.certification import (
     GreenAssessmentSerializer,
     GreenAssessmentPropertySerializer
 )
+
 from seed.test_helpers.fake import (
     FakePropertyViewFactory,
     FakeGreenAssessmentFactory,
     FakeGreenAssessmentPropertyFactory
 )
+
 from seed.tests.util import DeleteModelsTestCase
 from seed.utils.strings import titlecase
 
@@ -157,10 +170,7 @@ class TestGreenAssessmentPropertySerializer(DeleteModelsTestCase):
             'assessment': self.assessment,
             'view': self.property_view,
         }
-        self.urls = [
-            ('http://example.com', 'example.com'),
-            ('http://example.org', 'example.org')
-        ]
+        self.urls = ['http://example.com', 'http://example.org']
 
     @mock.patch('seed.serializers.certification.GreenAssessmentURL')
     def test_create(self, mock_url_model):
@@ -192,8 +202,7 @@ class TestGreenAssessmentPropertySerializer(DeleteModelsTestCase):
             property_assessment=instance
         )
         mock_url_model.assert_called_with(
-            url='http://example.org', property_assessment=gap,
-            description='example.org'
+            url='http://example.org', property_assessment=gap
         )
 
     def test_validate(self):

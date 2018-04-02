@@ -51,3 +51,8 @@ xmltodict==0.11.0
 requests==2.18.4
 lxml==4.1.1
 probablepeople==0.5.4
+
+jwt-oauth2>=0.1.0
+django-oauth-toolkit==0.12.0
+django-braces>=1.11.0
+

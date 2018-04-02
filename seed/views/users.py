@@ -12,10 +12,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse
 from rest_framework import viewsets, status, serializers
-from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import list_route, detail_route
 
-from seed.authentication import SEEDAuthentication
 from seed.models.data_quality import (
     DATA_TYPES as DATA_QUALITY_DATA_TYPES,
     SEVERITY as DATA_QUALITY_SEVERITY,
@@ -116,7 +114,6 @@ class ListUsersResponseSerializer(serializers.Serializer):
 
 class UserViewSet(viewsets.ViewSet):
     raise_exception = True
-    authentication_classes = (SessionAuthentication, SEEDAuthentication)
 
     def validate_request_user(self, pk, request):
         try:
