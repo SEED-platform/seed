@@ -11,9 +11,6 @@ from django.core.serializers.json import DjangoJSONEncoder
 from quantityfield import ureg
 from rest_framework import serializers
 
-from seed.lib.superperms.orgs.models import Organization
-from seed.models import PropertyView
-
 AREA_DIMENSIONALITY = '[length] ** 2'
 EUI_DIMENSIONALITY = '[mass] / [time] ** 3'
 

@@ -7,7 +7,7 @@ required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
 :author Paul Munday <paul@paulmunday.net>
 """
-from collections import OrderedDict, Sequence
+from collections import OrderedDict
 from datetime import timedelta
 
 from django.core.exceptions import ValidationError

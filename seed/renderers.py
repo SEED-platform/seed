@@ -22,9 +22,6 @@ override View(Set) methods unnecessarily, if e.g. ModelViewSet is used.
 from rest_framework import status
 from rest_framework.renderers import JSONRenderer
 
-from seed.lib.superperms.orgs.models import Organization
-from seed.serializers.pint import apply_display_unit_preferences
-
 
 class SEEDJSONRenderer(JSONRenderer):
     """

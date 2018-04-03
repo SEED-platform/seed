@@ -21,16 +21,6 @@ from seed.lib.superperms.orgs.models import (
     OrganizationUser,
 )
 
-from seed.models import (
-    Cycle,
-    GreenAssessment,
-    GreenAssessmentProperty,
-    GreenAssessmentURL,
-    Property,
-    PropertyState,
-    PropertyView,
-)
-
 from seed.serializers.certification import (
     GreenAssessmentURLField,
     PropertyViewField,
