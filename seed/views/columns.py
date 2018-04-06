@@ -186,6 +186,11 @@ class ColumnViewSet(OrgQuerySetMixin, viewsets.ViewSet):
 
     @list_route()
     def add_column_names(self, request):
+        """
+        Allow columns to be added based on an existing record.
+        This my be necessary to make column selections available when
+        records are upload through API endpoint rather than the frontend.
+        """
         model_obj = None
         inventory_pk = request.query_params.get('inventory_pk')
         inventory_type = request.query_params.get('inventory_type', 'property')
