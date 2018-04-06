@@ -4,11 +4,9 @@
 :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-from rest_framework.authentication import SessionAuthentication
 from rest_framework.parsers import JSONParser, FormParser
 from rest_framework.renderers import JSONRenderer
 
-from seed.authentication import SEEDAuthentication
 from seed.models import (
     Scenario,
 )
@@ -24,7 +22,6 @@ class ScenarioViewSet(SEEDOrgReadOnlyModelViewSet):
     API View for Scenarios. This only includes retrieve and list for now.
     """
     serializer_class = ScenarioSerializer
-    authentication_classes = [SessionAuthentication, SEEDAuthentication]
     parser_classes = (JSONParser, FormParser,)
     renderer_classes = (JSONRenderer,)
     queryset = Scenario.objects.all()

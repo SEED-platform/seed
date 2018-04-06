@@ -9,10 +9,8 @@ import csv
 from celery.utils.log import get_task_logger
 from django.http import JsonResponse, HttpResponse
 from rest_framework import viewsets, serializers, status
-from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import list_route, detail_route
 
-from seed.authentication import SEEDAuthentication
 from seed.data_importer.tasks import do_checks
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
@@ -99,7 +97,6 @@ class DataQualityViews(viewsets.ViewSet):
     (1) Post, wait, get…
     (2) Respond with what changed
     """
-    authentication_classes = (SessionAuthentication, SEEDAuthentication)
 
     def create(self, request):
         """
