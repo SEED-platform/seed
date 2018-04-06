@@ -100,8 +100,7 @@ class SEEDUser(AbstractBaseUser, PermissionsMixin):
         if not auth_header:
             return None
 
-        if not auth_header.startswith(
-                'Bearer') or not getattr(request, 'user', None):
+        if not auth_header.startswith('Bearer') or not getattr(request, 'user', None):
             try:
                 if not auth_header.startswith('Basic'):
                     raise exceptions.AuthenticationFailed(
