@@ -3,6 +3,7 @@ django==1.11.6
 dj-database-url==0.4.2
 django-autoslug==1.9.3
 django-storages==1.6.5
+django-crispy-forms==1.7.2
 modeltranslation==0.25
 
 # Persistence stores
@@ -52,6 +53,7 @@ requests==2.18.4
 lxml==4.1.1
 probablepeople==0.5.4
 
+enum34==1.1.6  # enum34 needs to be specified to support cryptography and oauth2
 jwt-oauth2>=0.1.0
 django-oauth-toolkit==0.12.0
 django-braces>=1.11.0
