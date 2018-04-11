@@ -11,9 +11,6 @@ from django.core.serializers.json import DjangoJSONEncoder
 from quantityfield import ureg
 from rest_framework import serializers
 
-from seed.lib.superperms.orgs.models import Organization
-from seed.models import PropertyView
-
 AREA_DIMENSIONALITY = '[length] ** 2'
 EUI_DIMENSIONALITY = '[mass] / [time] ** 3'
 
@@ -97,11 +94,11 @@ def add_pint_unit_suffix(organization, column):
 
     try:
         if column['dataType'] == "area":
-            column['displayName'] = \
-                format_column_name(column['displayName'], organization.display_units_area)
+            column['displayName'] = format_column_name(
+                column['displayName'], organization.display_units_area)
         elif column['dataType'] == "eui":
-            column['displayName'] = \
-                format_column_name(column['displayName'], organization.display_units_eui)
+            column['displayName'] = format_column_name(
+                column['displayName'], organization.display_units_eui)
     except KeyError:
         pass  # no transform needed if we can't detect dataType, nbd
     return column
@@ -125,9 +122,15 @@ class PintQuantitySerializerField(serializers.Field):
     """
 
     def to_representation(self, obj):
-        if isinstance(self.root.instance, PropertyView):
-            org_id = self.root.instance.state.organization_id
-            org = Organization.objects.get(pk=org_id)
+        if isinstance(obj, ureg.Quantity):
+            if isinstance(self.root.instance, list):
+                state = self.root.instance[0] if self.root.instance else None
+            else:
+                state = self.root.instance
+            try:
+                org = state.organization
+            except AttributeError:
+                org = state.state.organization
             value = collapse_unit(org, obj)
             return value
         else:
