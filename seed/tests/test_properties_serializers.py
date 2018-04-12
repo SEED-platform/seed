@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 """
-copyright (c) 2014 -2016 The Regents of the University of California,
+copyright (c) 2014 - 2018 The Regents of the University of California,
 through Lawrence Berkeley National Laboratory(subject to receipt of any
 required approvals from the US. Department of Energy) and contributors.
 All rights reserved
@@ -296,7 +296,7 @@ class TestPropertyViewAsStateSerializers(DeleteModelsTestCase):
         # for now convert the site_eui to a magnitude to get the test to pass
         # this really needs to be at another level
         data = self.serializer.current
-        data['state']['site_eui'] = data['state']['site_eui'].magnitude
+        # data['state']['site_eui'] = data['state']['site_eui'].magnitude
         self.assertEqual(data, expected)
 
     def test_get_certifications(self):
@@ -334,7 +334,7 @@ class TestPropertyViewAsStateSerializers(DeleteModelsTestCase):
 
         data = self.serializer.get_history(obj)
         # Really need to figure out how to get the serializer to save the magnitude correctly.
-        data[0]['state']['site_eui'] = data[0]['state']['site_eui'].magnitude
+        # data[0]['state']['site_eui'] = data[0]['state']['site_eui'].magnitude
 
         expected = [PropertyAuditLogReadOnlySerializer(self.audit_log2).data]
         self.assertEqual(data, expected)
@@ -364,9 +364,8 @@ class TestPropertyViewAsStateSerializers(DeleteModelsTestCase):
     def test_create(self, mock_serializer, mock_pview):
         """Test create"""
         mock_serializer.return_value.is_valid.return_value = True
-        mock_serializer.return_value.save.return_value = 'mock_state'
-        mock_property_view = mock.MagicMock()
-        mock_pview.objects.create.return_value = mock_property_view
+        mock_serializer.return_value.save.return_value = self.property_state
+        mock_pview.objects.create.return_value = self.property_view
         data = {
             'org_id': 1,
             'cycle': 2,
@@ -381,15 +380,14 @@ class TestPropertyViewAsStateSerializers(DeleteModelsTestCase):
         )
         self.assertTrue(mock_serializer.return_value.save.called)
         mock_pview.objects.create.assert_called_with(
-            state='mock_state', cycle_id=2, property_id=4, org_id=1
+            state=self.property_state, cycle_id=2, property_id=4, org_id=1
         )
 
     @mock.patch('seed.serializers.properties.PropertyStateWritableSerializer')
     def test_update_put(self, mock_serializer):
         """Test update with PUT"""
         mock_serializer.return_value.is_valid.return_value = True
-        mock_serializer.return_value.save.return_value = 'mock_state'
-        mock_property_view = mock.MagicMock()
+        mock_serializer.return_value.save.return_value = self.property_state
         mock_request = mock.MagicMock()
         data = {
             'org_id': 1,
@@ -401,7 +399,7 @@ class TestPropertyViewAsStateSerializers(DeleteModelsTestCase):
         serializer = PropertyViewAsStateSerializer()
         mock_request.METHOD = 'PUT'
         serializer.context = {'request': mock_request}
-        serializer.update(mock_property_view, data)
+        serializer.update(self.property_view, data)
         mock_serializer.assert_called_with(
             data={'test': 3}
         )
@@ -411,8 +409,7 @@ class TestPropertyViewAsStateSerializers(DeleteModelsTestCase):
     def test_update_patch(self, mock_serializer):
         """Test update with PATCH"""
         mock_serializer.return_value.is_valid.return_value = True
-        mock_serializer.return_value.save.return_value = 'mock_state'
-        mock_property_view = mock.MagicMock()
+        mock_serializer.return_value.save.return_value = self.property_state
         mock_request = mock.MagicMock()
         mock_request.method = 'PATCH'
         data = {
@@ -422,11 +419,10 @@ class TestPropertyViewAsStateSerializers(DeleteModelsTestCase):
             'property': 4
         }
         serializer = PropertyViewAsStateSerializer()
-        mock_property_view.state = 'pv_state'
         serializer.context = {'request': mock_request}
-        serializer.update(mock_property_view, data)
+        serializer.update(self.property_view, data)
         mock_serializer.assert_called_with(
-            'pv_state',
+            self.property_state,
             data={'test': 3}
         )
         self.assertTrue(mock_serializer.return_value.save.called)

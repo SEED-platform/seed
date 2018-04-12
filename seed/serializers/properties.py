@@ -17,6 +17,7 @@ from rest_framework import serializers
 from rest_framework.fields import empty
 
 from seed.models import (
+    AUDIT_USER_CREATE,
     AUDIT_USER_EDIT,
     GreenAssessmentProperty,
     PropertyAuditLog,
@@ -280,7 +281,7 @@ class PropertyViewListSerializer(serializers.ListSerializer):
                 state = PropertyStateSerializer(item.state).data
                 representation = OrderedDict((
                     ('id', item.id),
-                    ('property_id', item.property_id),
+                    ('property', item.property_id),
                     ('state', state),
                     ('cycle', cycle),
                 ))
@@ -441,27 +442,41 @@ class PropertyViewAsStateSerializer(serializers.ModelSerializer):
         instance = PropertyView.objects.create(
             state=new_state, **validated_data
         )
+        PropertyAuditLog.objects.create(
+            organization_id=instance.property.organization_id,
+            state=instance.state, view=instance,
+            record_type=AUDIT_USER_CREATE, description='Initial audit log'
+        )
         return instance
 
     def update(self, instance, validated_data):
         """Override update to add state"""
         state = validated_data.pop('state', None)
         if state:
+            audit_log = {
+                'state': instance.state,
+                'view': instance,
+                'organization_id': instance.property.organization_id
+            }
             # update exisiting state if PATCH
             if self.context['request'].method == 'PATCH':
                 property_state_serializer = PropertyStateWritableSerializer(
                     instance.state, data=state
                 )
-                # description = 'Updated via API PATCH call'
-                # record_type = AUDIT_USER_EDIT
+                description = 'Updated via API PATCH call'
+                record_type = AUDIT_USER_EDIT
             # otherwise create a new state
             else:
                 property_state_serializer = PropertyStateWritableSerializer(data=state)
-                # description = '["state"]'
-                # record_type = AUDIT_USER_CREATE
+                description = '["state"]'
+                record_type = AUDIT_USER_CREATE
             if property_state_serializer.is_valid():
                 new_state = property_state_serializer.save()
                 instance.state = new_state
+                audit_log.update(
+                    {'description': description, 'record_type': record_type}
+                )
+                self.update_state_audit_log(new_state, **audit_log)
         cycle_id = conv_value(validated_data.pop('cycle', None))
         if cycle_id:
             instance.cycle_id = cycle_id
@@ -519,6 +534,24 @@ class PropertyViewAsStateSerializer(serializers.ModelSerializer):
         return [
             TaxLotViewSerializer(lot).data for lot in lot_views
         ] if lot_views else None
+
+    def update_state_audit_log(self, new_state, **kwargs):
+        state = kwargs.pop('state')
+        view_audit_log = PropertyAuditLog.objects.filter(
+            state=state
+        ).first()
+        if not view_audit_log:
+            kwargs.update(
+                {'description': "Initial audit log added on update."}
+            )
+
+        audit_log = PropertyAuditLog.objects.create(
+            parent1=view_audit_log,
+            parent_state1=state,
+            state=new_state,
+            **kwargs
+        )
+        return audit_log
 
 
 def conv_value(val):
