@@ -22,7 +22,7 @@ Ubuntu server 14.04 or newer.
     sudo apt-get upgrade
     sudo apt-get install -y libpq-dev python-dev python-pip libatlas-base-dev \
     gfortran build-essential g++ npm libxml2-dev libxslt1-dev git mercurial \
-    libssl-dev curl uwsgi-core uwsgi-plugin-python
+    libssl-dev libffi-dev curl uwsgi-core uwsgi-plugin-python
 
 
 PostgreSQL and Redis are not included in the above commands. For a quick installation on AWS it

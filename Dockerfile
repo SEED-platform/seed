@@ -16,8 +16,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         python-pip \
         python-dev \
         python-gdbm \
+        libffi-dev \
         libpcre3 \
         libpcre3-dev \
+        libssl-dev \
         libxml2-dev \
         libxslt1-dev \
         nginx \

@@ -102,6 +102,7 @@ INSTALLED_APPS = (
     'rest_framework_swagger',
     'oauth2_provider',
     'oauth2_jwt_provider',
+    'crispy_forms',  # needed to squash warnings around collectstatic with rest_framework
 )
 
 SEED_CORE_APPS = (
