@@ -9,6 +9,7 @@ import copy
 import json
 import logging
 import os
+from quantityfield import ureg
 from collections import OrderedDict
 
 import xmltodict
@@ -225,8 +226,7 @@ class BuildingSync(object):
             if value:
                 full_path = "{}.{}".format(process_struct['root'], v['path'])
 
-                if v.get('key_path_name', None) and v.get('value_path_name', None) and v.get(
-                        'key_path_value', None):
+                if v.get('key_path_name', None) and v.get('value_path_name', None) and v.get('key_path_value', None):
                     # iterate over the paths and find the correct node to set
                     self._set_compound_node(
                         full_path,
@@ -339,7 +339,10 @@ class BuildingSync(object):
                             new_sub_item = {key_path_name: key_path_value, value_path_name: value}
                             data[p].append(new_sub_item)
                 else:
-                    data[p] = {key_path_name: key_path_value, value_path_name: value}
+                    if isinstance(value, ureg.Quantity):
+                        data[p] = {key_path_name: key_path_value, value_path_name: value.magnitude}
+                    else:
+                        data[p] = {key_path_name: key_path_value, value_path_name: value}
 
                 return True
             else:
