@@ -204,6 +204,7 @@
     <!-- Step 13: Portfolio Manager Data Import -->
     <div class="data_upload_steps pm_import" ng-switch-when="13">
         <div class="alert alert-danger" ng-show="pm_error_alert">{$ pm_error_alert $}</div>
+        <div class="alert alert-warning" ng-show="pm_warning_message">{$ pm_warning_message $}</div>
         <div class="row" style="padding-bottom:10px">
             <label class="control-label col-lg-4 col-sm-4" for="inputPMUsername">Portfolio Manager Username</label>
             <div class="col-lg-8 col-sm-8">

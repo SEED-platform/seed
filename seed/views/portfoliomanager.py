@@ -51,13 +51,13 @@ class PortfolioManagerViewSet(GenericViewSet):
         password = request.data['password']
         pm = PortfolioManagerImport(username, password)
         try:
-            possible_templates = pm.get_list_of_report_templates()
+            possible_templates, any_errors = pm.get_list_of_report_templates()
         except PMExcept as pme:
             return JsonResponse(
                 {'status': 'error', 'message': pme.message},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        return JsonResponse({'status': 'success', 'templates': possible_templates})
+        return JsonResponse({'status': 'success', 'templates': possible_templates, 'any_errors': any_errors})
 
     @list_route(methods=['POST'])
     def report(self, request):
@@ -82,7 +82,7 @@ class PortfolioManagerViewSet(GenericViewSet):
         template = request.data['template']
         pm = PortfolioManagerImport(username, password)
         try:
-            content = pm.generate_and_download_template_report(template)
+            content, any_errors = pm.generate_and_download_template_report(template)
         except PMExcept as pme:
             return JsonResponse(
                 {'status': 'error', 'message': pme.message},
@@ -100,7 +100,7 @@ class PortfolioManagerViewSet(GenericViewSet):
                 status=500
             )
 
-        return JsonResponse({'status': 'success', 'properties': properties})
+        return JsonResponse({'status': 'success', 'properties': properties, 'any_errors': any_errors})
 
 
 class PortfolioManagerImport(object):
@@ -165,17 +165,21 @@ class PortfolioManagerImport(object):
             raise PMExcept("Could not find rows key in template response; aborting.")
         templates = template_object["rows"]
         return_templates = []
+        any_errors = False
         for t in templates:
             if "id" not in t and "name" not in t:
                 _log.debug("Template retrieved from PortfolioManager but with no id or name keys")
+                any_errors = True
             elif "id" not in t:
                 _log.debug("Template retrieved but did not include \"id\" key; name = " + str(t["name"]))
+                any_errors = True
             elif "name" not in t:
                 _log.debug("Template retrieved but did not include \"name\" key; id = " + str(t["id"]))
+                any_errors = True
             else:
                 _log.debug("Found template,\n id=" + str(t["id"]) + "\n name=" + str(t["name"]))
                 return_templates.append(t)
-        return return_templates
+        return return_templates, any_errors
 
     @staticmethod
     def get_template_by_name(templates, template_name):
@@ -194,6 +198,8 @@ class PortfolioManagerImport(object):
             self.login_and_set_cookie_header()
 
         # We should then trigger generation of the report we selected
+        if "id" not in matched_template:
+            raise PMExcept("Matched template does not have id field, this should not be possible")
         template_report_id = matched_template["id"]
         generation_url = "https://portfoliomanager.energystar.gov/pm/reports/generateData/" + str(template_report_id)
         try:
@@ -210,6 +216,7 @@ class PortfolioManagerImport(object):
         url = "https://portfoliomanager.energystar.gov/pm/reports/templateTableRows"
         attempt_count = 0
         report_generation_complete = False
+        any_errors = False
         while attempt_count < 10:
             attempt_count += 1
             try:
@@ -226,6 +233,8 @@ class PortfolioManagerImport(object):
                 raise PMExcept("Could not find rows key in template response; aborting.")
             template_objects = template_object_dictionary["rows"]
             valid_templates = [t for t in template_objects if "id" in t]
+            if len(template_objects) != len(valid_templates):
+                any_errors = True
             this_matched_template = next((t for t in valid_templates if t["id"] == matched_template["id"]), None)
             if not this_matched_template:
                 raise PMExcept("Couldn't find a match for this report template id...odd at this point")
@@ -251,4 +260,4 @@ class PortfolioManagerImport(object):
             raise PMExcept("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
         if not response.status_code == 200:
             raise PMExcept("Unsuccessful response from GET trying to download generated report; aborting.")
-        return response.content
+        return response.content, any_errors
