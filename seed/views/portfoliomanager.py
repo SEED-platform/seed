@@ -218,8 +218,15 @@ class PortfolioManagerImport(object):
                 raise PMExcept("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
             if not response.status_code == 200:
                 raise PMExcept("Unsuccessful response from GET trying to check status on generated report; aborting.")
-            template_objects = json.loads(response.text)["rows"]
-            this_matched_template = next((t for t in template_objects if t["id"] == matched_template["id"]), None)
+            try:
+                template_object_dictionary = json.loads(response.text)
+            except ValueError:
+                raise PMExcept("Malformed JSON response from report template rows query; aborting.")
+            if "rows" not in template_object_dictionary:
+                raise PMExcept("Could not find rows key in template response; aborting.")
+            template_objects = template_object_dictionary["rows"]
+            valid_templates = [t for t in template_objects if "id" in t]
+            this_matched_template = next((t for t in valid_templates if t["id"] == matched_template["id"]), None)
             if not this_matched_template:
                 raise PMExcept("Couldn't find a match for this report template id...odd at this point")
             if this_matched_template["pending"] == 1:
