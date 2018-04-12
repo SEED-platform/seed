@@ -10,7 +10,6 @@ from seed.utils.cache import get_cache
 
 class ProgressViewSetV2(viewsets.ViewSet):
     raise_exception = True
-    authentication_classes = (SessionAuthentication, SEEDAuthentication)
 
     @api_endpoint_class
     @ajax_request_class
