@@ -103,8 +103,7 @@ class SEEDUser(AbstractBaseUser, PermissionsMixin):
         if not auth_header.startswith('Bearer') or not getattr(request, 'user', None):
             try:
                 if not auth_header.startswith('Basic'):
-                    raise exceptions.AuthenticationFailed(
-                        "Only Basic HTTP_AUTHORIZATION is supported")
+                    raise exceptions.AuthenticationFailed("Only Basic HTTP_AUTHORIZATION is supported")
 
                 auth_header = auth_header.split()[1]
                 auth_header = base64.urlsafe_b64decode(auth_header)
@@ -112,8 +111,7 @@ class SEEDUser(AbstractBaseUser, PermissionsMixin):
                 user = SEEDUser.objects.get(api_key=api_key, username=username)
                 return user
             except ValueError:
-                raise exceptions.AuthenticationFailed(
-                    "Invalid HTTP_AUTHORIZATION Header")
+                raise exceptions.AuthenticationFailed("Invalid HTTP_AUTHORIZATION Header")
             except SEEDUser.DoesNotExist:
                 raise exceptions.AuthenticationFailed("Invalid API key")
 

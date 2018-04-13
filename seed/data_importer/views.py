@@ -4,15 +4,15 @@
 :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-import csv
 import base64
+import csv
 import hashlib
 import hmac
 import json
 import logging
 import os
-import pint
 
+import pint
 from django.apps import apps
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -24,11 +24,9 @@ from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
 from django.utils.timezone import make_naive
 from rest_framework import serializers, status, viewsets
-from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import api_view, detail_route, list_route, parser_classes, permission_classes
 from rest_framework.parsers import MultiPartParser, FormParser
 
-from seed.authentication import SEEDAuthentication
 from seed.data_importer.models import (
     ImportFile,
     ImportRecord
@@ -529,7 +527,6 @@ class MappingResultsResponseSerializer(serializers.Serializer):
 
 class ImportFileViewSet(viewsets.ViewSet):
     raise_exception = True
-    authentication_classes = (SessionAuthentication, SEEDAuthentication)
     queryset = ImportFile.objects.all()
 
     @api_endpoint_class

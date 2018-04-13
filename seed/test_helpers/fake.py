@@ -224,6 +224,7 @@ class FakePropertyStateFactory(BaseFake):
             'postal_code': "970{}".format(self.fake.numerify(text='##')),
             'year_built': self.fake.random_int(min=1880, max=2015),
             'site_eui': self.fake.random_int(min=50, max=600),
+            'gross_floor_area': self.fake.random_number(digits=6),
             'owner': owner.name,
             'owner_email': owner.email,
             'owner_telephone': owner.telephone,
