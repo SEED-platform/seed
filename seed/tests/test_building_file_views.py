@@ -57,8 +57,7 @@ class InventoryViewTests(DeleteModelsTestCase):
 
         # go to buildingsync endpoint
         params = {
-            'organization_id': self.org.pk,
-            'cycle_id': self.cycle.id,
+            'organization_id': self.org.pk
         }
         url = reverse('api:v2.1:properties-building-sync', args=[pv.id])
         response = self.client.get(url, params)
@@ -73,8 +72,7 @@ class InventoryViewTests(DeleteModelsTestCase):
 
         # go to buildingsync endpoint
         params = {
-            'organization_id': self.org.pk,
-            'cycle_id': self.cycle.id,
+            'organization_id': self.org.pk
         }
         url = reverse('api:v2.1:properties-hpxml', args=[pv.id])
         response = self.client.get(url, params)
