@@ -34,7 +34,7 @@ from seed.utils.api import (
 AUTHENTICATION_CLASSES = (
     OAuth2Authentication,
     SessionAuthentication,
-    SEEDAuthentication
+    SEEDAuthentication,
 )
 PARSER_CLASSES = (FormParser, MultiPartParser, JSONParser)
 RENDERER_CLASSES = (JSONRenderer,)

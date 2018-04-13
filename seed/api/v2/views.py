@@ -1,8 +1,6 @@
 from django.http import JsonResponse
 from rest_framework import viewsets
-from rest_framework.authentication import SessionAuthentication
 
-from seed.authentication import SEEDAuthentication
 from seed.decorators import ajax_request_class
 from seed.utils.api import api_endpoint_class
 from seed.utils.cache import get_cache
@@ -10,7 +8,6 @@ from seed.utils.cache import get_cache
 
 class ProgressViewSetV2(viewsets.ViewSet):
     raise_exception = True
-    authentication_classes = (SessionAuthentication, SEEDAuthentication)
 
     @api_endpoint_class
     @ajax_request_class
