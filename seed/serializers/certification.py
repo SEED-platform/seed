@@ -130,8 +130,7 @@ class GreenAssessmentSerializer(serializers.ModelSerializer):
         return obj.get_recognition_type_display()
 
 
-class GreenAssessmentPropertySerializer(OrgValidateMixin,
-                                        serializers.ModelSerializer):
+class GreenAssessmentPropertySerializer(OrgValidateMixin, serializers.ModelSerializer):
     # use all for queryset as model ensures orgs match
     assessment = GreenAssessmentField(
         queryset=GreenAssessment.objects.all(), allow_null=True

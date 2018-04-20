@@ -618,14 +618,18 @@ class Column(models.Model):
             # is in the database
             db_col = Column.objects.filter(organization_id=org_id, is_extra_data=False,
                                            table_name=c['table'], column_name=c['name'])
+
+            # TODO: make sure user has permission to access this org
             if len(db_col) == 1:
                 db_col = db_col.first()
                 c['sharedFieldType'] = db_col.get_shared_field_type_display()
+                c['id'] = db_col.id
             elif len(db_col) == 0:
                 if only_used:
                     remove_columns.append(index)
                 else:
                     c['sharedFieldType'] = 'None'
+                    c['id'] = None
 
             if c['table'] and (inventory_type.lower() in c['table'].lower()):
                 c['related'] = False
