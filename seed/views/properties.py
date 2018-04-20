@@ -195,6 +195,7 @@ class PropertyViewViewSet(SEEDOrgModelViewSet):
     filter_class = PropertyViewFilterSet
     orgfilter = 'property__organization_id'
     data_name = "property_views"
+    queryset = PropertyView.objects.all().select_related('state')
 
 
 class PropertyViewSet(GenericViewSet):

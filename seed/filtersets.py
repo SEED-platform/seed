@@ -126,10 +126,35 @@ class PropertyViewFilterSet(FilterSet):
     postal_code = CharFilter(
         name='state__postal_code', lookup_expr='iexact'
     )
+    property_identifier = CharFilter(method='identifier_filter')
 
     class Meta:
         model = PropertyView
-        fields = ['cycle', 'property', 'cycle_start', 'cycle_end']
+        fields = [
+            'cycle', 'property',
+            'cycle_start', 'cycle_end',
+            'property_identifier'
+        ]
+
+    def identifier_filter(self, queryset, name, value):
+        """
+        Filter queryset for case-insensitive value matching
+        jurisdiction_property_id OR custom_id_1 OR pm_property_id
+        OR home_energy_score_id.
+        """
+        jurisdiction_property_id = Q(state__jurisdiction_property_id__iexact=value)
+        custom_id_1 = Q(state__custom_id_1__iexact=value)
+        pm_property_id = Q(state__pm_property_id=value)
+        ubid = Q(state__ubid__iexact=value)
+        home_energy_score_id = Q(state__home_energy_score_id=value)
+        query = (
+            jurisdiction_property_id
+            | custom_id_1
+            | pm_property_id
+            | home_energy_score_id
+            | ubid
+        )
+        return queryset.filter(query)
 
 
 class PropertyStateFilterSet(FilterSet):
