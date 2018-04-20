@@ -81,6 +81,7 @@ class SchemaGenerationTests(TestCase):
                  '/api/v2/property_states',
                  '/api/v2/properties',
                  '/api/v2/labels',
+                 '/api/v2/column_list_settings',
                  '/api/v2/green_assessment',
                  '/api/v2/green_assessment_url',
                  '/api/v2/building_file',

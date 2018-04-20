@@ -27,6 +27,19 @@ class ColumnListingViewSet(SEEDOrgCreateUpdateModelViewSet):
     create:
         Create a new list setting. The list of columns is an array of column primary keys. If using Swagger, then
         this will be enters as a list with returns between each primary key.
+
+        JSON POST Example:
+
+            {
+                "name": "some new name 3",
+                "settings_location": "List View Settings",
+                "columns": [
+                    {"id": 1, "pinned": false, "order": 10},
+                    {"id": 5, "pinned": true, "order": 14},
+                    {"id": 7, "pinned": true, "order": 14}
+                ]
+            }
+
     """
     serializer_class = ColumnListSettingSerializer
     model = ColumnListSetting

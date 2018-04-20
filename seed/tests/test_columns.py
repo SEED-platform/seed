@@ -251,7 +251,6 @@ class TestColumnMapping(TestCase):
 class TestColumnsByInventory(TestCase):
 
     def setUp(self):
-        self.maxDiff = None
         self.fake_user = User.objects.create(username='test')
         self.fake_org = Organization.objects.create()
         OrganizationUser.objects.create(
@@ -333,6 +332,7 @@ class TestColumnsByInventory(TestCase):
         # check the 'pinIfNative' argument
 
         c = {
+            'id': None,
             'name': 'pm_property_id',
             'dbName': 'pm_property_id',
             'related': False,
@@ -346,6 +346,7 @@ class TestColumnsByInventory(TestCase):
 
         # verity that the 'duplicateNameInOtherTable' is working
         c = {
+            'id': None,
             'related': True,
             'table': 'TaxLotState',
             'displayName': 'State (Tax Lot)',

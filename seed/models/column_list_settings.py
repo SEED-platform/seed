@@ -17,6 +17,14 @@ class ColumnListSetting(models.Model):
     """Ability to persist a list of views with different columns. The list of column views points to the columns that
     are contained in the list view."""
 
+    VIEW_LIST = 0
+    VIEW_DETAIL = 1
+    VIEW_LOCATION_TYPES = [
+        (VIEW_LIST, 'List View Settings'),
+        (VIEW_DETAIL, 'Detail View Settings'),
+    ]
+
     organization = models.ForeignKey(SuperOrganization, blank=True, null=True)
     name = models.CharField(max_length=512, db_index=True)
-    columns = models.ManyToManyField(Column)
+    settings_location = models.IntegerField(choices=VIEW_LOCATION_TYPES, default=VIEW_LIST)
+    columns = models.ManyToManyField(Column, related_name='column_list_settings', through='seed.ColumnListSettingColumn')

@@ -78,7 +78,7 @@ def get_column_mapping(raw_column, organization, attr_name='column_mapped'):
         # the old matches are no longer valid.
         return None
     except ColumnMapping.DoesNotExist:
-        _log.debug("ColumnMapping.DoesNotExist")
+        # Mapping column does not exist
         return None
 
     column_names = get_table_and_column_names(previous_mapping, attr_name=attr_name)
@@ -619,7 +619,6 @@ class Column(models.Model):
             db_col = Column.objects.filter(organization_id=org_id, is_extra_data=False,
                                            table_name=c['table'], column_name=c['name'])
 
-            # TODO: make sure user has permission to access this org
             if len(db_col) == 1:
                 db_col = db_col.first()
                 c['sharedFieldType'] = db_col.get_shared_field_type_display()
@@ -693,6 +692,7 @@ class Column(models.Model):
                     'dbName': db_name,
                     'table': edc.table_name,
                     'displayName': titlecase(edc.column_name),
+                    'id': edc.id,
                     # 'dataType': 'string',  # TODO: how to check dataTypes on extra_data!
                     'related': not (inventory_type.lower() in edc.table_name.lower()),
                     'extraData': True,

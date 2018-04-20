@@ -127,10 +127,8 @@ class PropertyMeasure(models.Model):
     property_measure_name = models.CharField(max_length=255, null=False)
     property_state = models.ForeignKey('PropertyState', on_delete=models.DO_NOTHING)
     description = models.TextField(null=True)
-    implementation_status = models.IntegerField(choices=IMPLEMENTATION_TYPES,
-                                                default=MEASURE_PROPOSED)
-    application_scale = models.IntegerField(choices=APPLICATION_SCALE_TYPES,
-                                            default=SCALE_ENTIRE_FACILITY)
+    implementation_status = models.IntegerField(choices=IMPLEMENTATION_TYPES, default=MEASURE_PROPOSED)
+    application_scale = models.IntegerField(choices=APPLICATION_SCALE_TYPES, default=SCALE_ENTIRE_FACILITY)
     recommended = models.BooleanField(default=False)
     cost_mv = models.FloatField(null=True)
     cost_total_first = models.FloatField(null=True)

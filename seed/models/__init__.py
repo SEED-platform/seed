@@ -14,6 +14,7 @@ from .properties import *  # noqa
 from .tax_lots import *  # noqa
 from .columns import *  # noqa
 from .column_list_settings import *  # noqa
+from .column_list_settings_columns import *  # noqa
 from .auditlog import *  # noqa
 from .deprecate import *  # noqa
 from .measures import *  # noqa

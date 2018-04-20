@@ -12,6 +12,7 @@ from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
     Column,
     ColumnListSetting,
+    ColumnListSettingColumn,
 )
 
 
@@ -41,12 +42,13 @@ class TestColumnListSettings(TestCase):
         )
 
         new_list_setting = ColumnListSetting.objects.create(name='example list setting')
-        new_list_setting.columns.add(col1)
-        new_list_setting.columns.add(col2)
+        ColumnListSettingColumn.objects.create(column=col1, column_list_setting=new_list_setting, order=1, pinned=False)
+        ColumnListSettingColumn.objects.create(column=col2, column_list_setting=new_list_setting, order=2, pinned=True)
 
         self.assertEqual(new_list_setting.columns.count(), 2)
         self.assertEqual(new_list_setting.columns.first().column_name, 'New Column')
 
-        new_list_setting.columns.remove(col1)
+        ColumnListSettingColumn.objects.filter(column=col1, column_list_setting=new_list_setting).delete()
         self.assertEqual(new_list_setting.columns.count(), 1)
-        self.assertEqual(new_list_setting.columns.first().column_name, 'Second Column')
+        self.assertEqual(new_list_setting.columnlistsettingcolumn_set.count(), 1)
+        self.assertEqual(new_list_setting.columnlistsettingcolumn_set.first().column.column_name, 'Second Column')
