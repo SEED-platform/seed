@@ -1364,7 +1364,7 @@ class InventoryViewTests(DeleteModelsTestCase):
         # go through and delete all the results.ids so that it is easy to do a compare
         for result in results:
             del result['id']
-            
+
         pm_property_id_col = {
             'name': 'pm_property_id',
             'dbName': 'pm_property_id',

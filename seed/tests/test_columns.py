@@ -292,6 +292,9 @@ class TestColumnsByInventory(TestCase):
 
     def test_column_retrieve_all(self):
         columns = Column.retrieve_all(self.fake_org.pk, 'property', False)
+        # go through and delete all the results.ids so that it is easy to do a compare
+        for result in columns:
+            del result['id']
 
         # Check for new column
         c = {
@@ -332,7 +335,6 @@ class TestColumnsByInventory(TestCase):
         # check the 'pinIfNative' argument
 
         c = {
-            'id': None,
             'name': 'pm_property_id',
             'dbName': 'pm_property_id',
             'related': False,
@@ -346,7 +348,6 @@ class TestColumnsByInventory(TestCase):
 
         # verity that the 'duplicateNameInOtherTable' is working
         c = {
-            'id': None,
             'related': True,
             'table': 'TaxLotState',
             'displayName': 'State (Tax Lot)',
