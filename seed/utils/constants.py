@@ -622,7 +622,7 @@ VIEW_COLUMNS_PROPERTY = [
         'displayName': 'Latitude',
         'dataType': 'number',
         'dbField': True,
-}, {
+    }, {
         'name': 'longitude',
         'table': 'PropertyState',
         'displayName': 'Longitude',

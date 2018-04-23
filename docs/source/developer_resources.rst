@@ -40,7 +40,6 @@ fields. Follow the steps below to add new fields to the SEED database:
 1. Add the field to the PropertyState or the TaxLotState model. Adding fields to the Property or TaxLot is more
 complicated and not documented yet.
 2. Add field to list in the following locations:
-    * TaxLotPropertyViewSet.csv
     * constants.py: VIEW_COLUMNS_PROPERTY
     * TaxLotState.coparent or PropertyState.coparent: SQL query and keep_fields
 3. Run `./manage.py makemigrations`
