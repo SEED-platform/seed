@@ -49,6 +49,7 @@ META_FIELDS = [
     'source_type',
 ]
 
+# TODO: 04232018 Delete these fields... I don't think they are used
 ASSESSOR_FIELDS = [
     {
         "title": "PM Property ID",
@@ -614,6 +615,18 @@ VIEW_COLUMNS_PROPERTY = [
         'table': 'PropertyState',
         'displayName': 'Property Name',
         'dataType': 'string',
+        'dbField': True,
+    }, {
+        'name': 'latitude',
+        'table': 'PropertyState',
+        'displayName': 'Latitude',
+        'dataType': 'number',
+        'dbField': True,
+}, {
+        'name': 'longitude',
+        'table': 'PropertyState',
+        'displayName': 'Longitude',
+        'dataType': 'number',
         'dbField': True,
     }, {
         'name': 'campus',

@@ -377,7 +377,6 @@ class TestColumnsByInventory(TestCase):
             Column.retrieve_all(self.fake_org.pk, 'property', False)
 
     def test_column_retrieve_schema(self):
-
         schema = {
             "types": {
                 "address_line_1": "string",
@@ -402,6 +401,8 @@ class TestColumnsByInventory(TestCase):
                 "home_energy_score_id": "string",
                 "jurisdiction_property_id": "string",
                 "jurisdiction_tax_lot_id": "string",
+                "latitude": "float",
+                "longitude": "float",
                 "lot_number": "string",
                 "number_properties": "integer",
                 "occupied_floor_area": "float",
@@ -443,7 +444,7 @@ class TestColumnsByInventory(TestCase):
 
         data = ['address_line_1', 'address_line_2', 'block_number', 'building_certification',
                 'building_count', 'campus', 'city', 'conditioned_floor_area', 'custom_id_1', 'ubid',
-                'district', 'created', 'updated',
+                'district', 'created', 'updated', 'latitude', 'longitude',
                 'energy_alerts', 'energy_score', 'generation_date', 'gross_floor_area',
                 'home_energy_score_id', 'jurisdiction_property_id', 'jurisdiction_tax_lot_id',
                 'lot_number', 'number_properties', 'occupied_floor_area', 'owner', 'owner_address',

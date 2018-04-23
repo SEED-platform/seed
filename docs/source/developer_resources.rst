@@ -32,7 +32,27 @@ To run flake locally call:
 Django Notes
 ------------
 
-Both Django and AngurlarJS are used for url routing. Django routes are in `seed/urls/main.py`
+Adding New Fields to Database
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Adding new fields to SEED can be complicated since SEED has a mix of typed fields (database fields) and extra data
+fields. Follow the steps below to add new fields to the SEED database:
+
+1. Add the field to the PropertyState or the TaxLotState model. Adding fields to the Property or TaxLot is more
+complicated and not documented yet.
+2. Add field to list in the following locations:
+    * TaxLotPropertyViewSet.csv
+    * constants.py: VIEW_COLUMNS_PROPERTY
+    * TaxLotState.coparent or PropertyState.coparent: SQL query and keep_fields
+3. Run `./manage.py makemigrations`
+4. Run migrations `./manage.py migrate`
+5. Run unit tests, fix failures
+    * test_mapping_data.py:test_keys
+    * test_columns.py:test_column_retrieve_schema
+    * test_columns.py:test_column_retrieve_db_fields
+
+6. (Optional) Update example files to include new fields
+7. Test import workflow with mapping to new fields
+
 
 AWS S3
 ^^^^^^
