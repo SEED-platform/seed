@@ -195,28 +195,30 @@ class PropertyStateWritableSerializer(serializers.ModelSerializer):
     """
     Used by PropertyViewAsState as a nested serializer
 
-    Not sure why this is different than PropertyStateSerializer
+    This serializer is for use with the PropertyViewAsStateSerializer such that
+    PropertyState can be created and updated through a single call to the
+    associated PropertyViewViewSet.
     """
     extra_data = serializers.JSONField(required=False)
     measures = PropertyMeasureSerializer(source='propertymeasure_set', many=True, read_only=True)
     scenarios = ScenarioSerializer(many=True, read_only=True)
     files = BuildingFileSerializer(source='building_files', many=True, read_only=True)
-    analysis_state = ChoiceField(choices=PropertyState.ANALYSIS_STATE_TYPES)
+    analysis_state = ChoiceField(choices=PropertyState.ANALYSIS_STATE_TYPES, required=False)
 
     # to support the old state serializer method with the PROPERTY_STATE_FIELDS variables
     import_file_id = serializers.IntegerField(allow_null=True, read_only=True)
-    organization_id = serializers.IntegerField()
+    organization_id = serializers.IntegerField(read_only=True)
 
     # support the pint objects
-    conditioned_floor_area = PintQuantitySerializerField(allow_null=True)
-    gross_floor_area = PintQuantitySerializerField(allow_null=True)
-    occupied_floor_area = PintQuantitySerializerField(allow_null=True)
-    site_eui = PintQuantitySerializerField(allow_null=True)
-    site_eui_modeled = PintQuantitySerializerField(allow_null=True)
-    source_eui_weather_normalized = PintQuantitySerializerField(allow_null=True)
-    source_eui = PintQuantitySerializerField(allow_null=True)
-    source_eui_modeled = PintQuantitySerializerField(allow_null=True)
-    site_eui_weather_normalized = PintQuantitySerializerField(allow_null=True)
+    conditioned_floor_area = PintQuantitySerializerField(allow_null=True, required=False)
+    gross_floor_area = PintQuantitySerializerField(allow_null=True, required=False)
+    occupied_floor_area = PintQuantitySerializerField(allow_null=True, required=False)
+    site_eui = PintQuantitySerializerField(allow_null=True, required=False)
+    site_eui_modeled = PintQuantitySerializerField(allow_null=True, required=False)
+    source_eui_weather_normalized = PintQuantitySerializerField(allow_null=True, required=False)
+    source_eui = PintQuantitySerializerField(allow_null=True, required=False)
+    source_eui_modeled = PintQuantitySerializerField(allow_null=True, required=False)
+    site_eui_weather_normalized = PintQuantitySerializerField(allow_null=True, required=False)
 
     class Meta:
         fields = '__all__'
@@ -437,7 +439,7 @@ class PropertyViewAsStateSerializer(serializers.ModelSerializer):
         cycle_id = conv_value(validated_data.pop('cycle'))
         validated_data['cycle_id'] = cycle_id
         new_property_state_serializer = PropertyStateWritableSerializer(data=state)
-        if new_property_state_serializer.is_valid():
+        if new_property_state_serializer.is_valid(raise_exception=True):
             new_state = new_property_state_serializer.save()
         instance = PropertyView.objects.create(
             state=new_state, **validated_data
