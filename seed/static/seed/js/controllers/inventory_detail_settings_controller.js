@@ -6,19 +6,60 @@ angular.module('BE.seed.controller.inventory_detail_settings', [])
   .controller('inventory_detail_settings_controller', [
     '$scope',
     '$window',
-    '$uibModalInstance',
+    '$uibModal',
+    'Notification',
     '$stateParams',
     'inventory_service',
+    'modified_service',
     'user_service',
+    'urls',
     'columns',
     'profiles',
     '$translate',
     'i18nService', // from ui-grid
-    function ($scope, $window, $uibModalInstance, $stateParams, inventory_service, user_service, columns, profiles, $translate, i18nService) {
+    function ($scope, $window, $uibModal, Notification, $stateParams, inventory_service, modified_service, user_service, urls, columns, profiles, $translate, i18nService) {
 
       $scope.translations = {};
 
       $scope.profiles = profiles;
+      var validProfileIds = _.map(profiles, 'id');
+      var lastProfileId = inventory_service.get_last_detail_profile();
+      if (_.includes(validProfileIds, lastProfileId)) {
+        $scope.currentProfile = _.find($scope.profiles, {id: lastProfileId});
+      } else {
+        $scope.currentProfile = _.first($scope.profiles);
+      }
+
+      var ignoreNextChange = true;
+      $scope.$watch('currentProfile', function (newProfile, oldProfile) {
+        if (ignoreNextChange) {
+          ignoreNextChange = false;
+          return;
+        }
+
+        if (!modified_service.isModified()) {
+          switchProfile(newProfile);
+        } else {
+          $uibModal.open({
+            template: '<div class="modal-header"><h3 class="modal-title" translate>You have unsaved changes</h3></div><div class="modal-body" translate>You will lose your unsaved changes if you switch profiles without saving. Would you like to continue?</div><div class="modal-footer"><button type="button" class="btn btn-warning" ng-click="$dismiss()" translate>Cancel</button><button type="button" class="btn btn-primary" ng-click="$close()" autofocus translate>Switch Profiles</button></div>'
+          }).result.then(function () {
+            modified_service.resetModified();
+            switchProfile(newProfile);
+          }).catch(function () {
+            ignoreNextChange = true;
+            $scope.currentProfile = oldProfile;
+          });
+        }
+      });
+
+      function switchProfile(newProfile) {
+        $scope.currentProfile = newProfile;
+        if (newProfile) {
+          inventory_service.save_last_detail_profile(newProfile.id);
+        }
+
+        // TODO refresh columns
+      }
 
       var needed_translations = [
         'Reset Defaults'
@@ -64,6 +105,8 @@ angular.module('BE.seed.controller.inventory_detail_settings', [])
       var saveSettings = function () {
         $scope.data = inventory_service.reorderSettings($scope.data);
         inventory_service.saveSettings(localStorageKey, $scope.data);
+
+        modified_service.setModified();
       };
 
       var rowSelectionChanged = function () {
@@ -82,6 +125,81 @@ angular.module('BE.seed.controller.inventory_detail_settings', [])
         angular.element('#grid-container').css('height', 'calc(100vh - ' + (height + 2) + 'px)');
         angular.element('#grid-container > div').css('height', 'calc(100vh - ' + (height + 4) + 'px)');
         $scope.gridApi.core.handleWindowResize();
+      };
+
+      $scope.saveProfile = function () {
+        var id = $scope.currentProfile.id;
+        // TODO process column data
+        var profile = _.omit($scope.currentProfile, 'id');
+        inventory_service.update_settings_profile(id, profile).then(function () {
+          modified_service.resetModified();
+          Notification.primary('Saved ' + $scope.currentProfile.name);
+        });
+      };
+
+      $scope.renameProfile = function () {
+        var oldProfile = angular.copy($scope.currentProfile);
+
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/settings_profile_modal.html',
+          controller: 'settings_profile_modal_controller',
+          resolve: {
+            action: _.constant('rename'),
+            data: _.constant($scope.currentProfile),
+            settings_location: _.constant('Detail View Settings')
+          }
+        });
+
+        modalInstance.result.then(function (newName) {
+          $scope.currentProfile.name = newName;
+          _.find($scope.profiles, {id: $scope.currentProfile.id}).name = newName;
+          Notification.primary('Renamed ' + oldProfile.name + ' to ' + newName);
+        });
+      };
+
+      $scope.removeProfile = function () {
+        var oldProfile = angular.copy($scope.currentProfile);
+
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/settings_profile_modal.html',
+          controller: 'settings_profile_modal_controller',
+          resolve: {
+            action: _.constant('remove'),
+            data: _.constant($scope.currentProfile),
+            settings_location: _.constant('Detail View Settings')
+          }
+        });
+
+        modalInstance.result.then(function () {
+          _.remove($scope.profiles, oldProfile);
+          modified_service.resetModified();
+          $scope.currentProfile = _.first($scope.profiles);
+          Notification.primary('Removed ' + oldProfile.name);
+        });
+      };
+
+      $scope.newProfile = function () {
+        // TODO process and pass current column configuration
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/settings_profile_modal.html',
+          controller: 'settings_profile_modal_controller',
+          resolve: {
+            action: _.constant('new'),
+            data: _.constant(),
+            settings_location: _.constant('Detail View Settings')
+          }
+        });
+
+        modalInstance.result.then(function (newProfile) {
+          $scope.profiles.push(newProfile);
+          modified_service.resetModified();
+          $scope.currentProfile = _.last($scope.profiles);
+          Notification.primary('Created ' + newProfile.name);
+        });
+      };
+
+      $scope.isModified = function () {
+        return modified_service.isModified();
       };
 
       $scope.data = inventory_service.loadSettings(localStorageKey, columns);

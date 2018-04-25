@@ -145,7 +145,8 @@ angular.module('BE.seed.controller.inventory_settings', [])
           controller: 'settings_profile_modal_controller',
           resolve: {
             action: _.constant('rename'),
-            data: _.constant($scope.currentProfile)
+            data: _.constant($scope.currentProfile),
+            settings_location: _.constant('List View Settings')
           }
         });
 
@@ -164,7 +165,8 @@ angular.module('BE.seed.controller.inventory_settings', [])
           controller: 'settings_profile_modal_controller',
           resolve: {
             action: _.constant('remove'),
-            data: _.constant($scope.currentProfile)
+            data: _.constant($scope.currentProfile),
+            settings_location: _.constant('List View Settings')
           }
         });
 
@@ -183,7 +185,8 @@ angular.module('BE.seed.controller.inventory_settings', [])
           controller: 'settings_profile_modal_controller',
           resolve: {
             action: _.constant('new'),
-            data: _.constant()
+            data: _.constant(),
+            settings_location: _.constant('List View Settings')
           }
         });
 

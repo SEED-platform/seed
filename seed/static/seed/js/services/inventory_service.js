@@ -380,6 +380,18 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       localStorage.setItem('profiles', JSON.stringify(profiles));
     };
 
+    inventory_service.get_last_detail_profile = function () {
+      var organization_id = user_service.get_organization().id;
+      return (JSON.parse(localStorage.getItem('detailProfiles')) || {})[organization_id];
+    };
+
+    inventory_service.save_last_detail_profile = function (pk) {
+      var organization_id = user_service.get_organization().id,
+        profiles = JSON.parse(localStorage.getItem('detailProfiles')) || {};
+      profiles[organization_id] = _.toInteger(pk);
+      localStorage.setItem('detailProfiles', JSON.stringify(profiles));
+    };
+
 
     inventory_service.get_property_columns = function () {
       return $http.get('/api/v2/properties/columns/', {

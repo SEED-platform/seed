@@ -330,12 +330,6 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/inventory_detail_settings.html',
         controller: 'inventory_detail_settings_controller',
         resolve: {
-          $uibModalInstance: function () {
-            return {
-              close: function () {
-              }
-            };
-          },
           columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             if ($stateParams.inventory_type === 'properties') {
               return inventory_service.get_property_columns().then(function (columns) {
@@ -363,15 +357,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         name: 'inventory_detail_notes',
         url: '/{inventory_type:properties|taxlots}/{view_id:int}/notes',
         templateUrl: static_url + 'seed/partials/inventory_detail_notes.html',
-        controller: 'inventory_detail_notes_controller',
-        resolve: {
-          $uibModalInstance: function () {
-            return {
-              close: function () {
-              }
-            };
-          }
-        }
+        controller: 'inventory_detail_notes_controller'
       })
       .state({
         name: 'mapping',

@@ -9,9 +9,11 @@ angular.module('BE.seed.controller.settings_profile_modal', [])
     'inventory_service',
     'action',
     'data',
-    function ($scope, $uibModalInstance, inventory_service, action, data) {
+    'settings_location',
+    function ($scope, $uibModalInstance, inventory_service, action, data, settings_location) {
       $scope.action = action;
       $scope.data = data;
+      $scope.settings_location = settings_location;
 
       $scope.rename_profile = function () {
         if (!$scope.disabled()) {
@@ -34,7 +36,7 @@ angular.module('BE.seed.controller.settings_profile_modal', [])
         if (!$scope.disabled()) {
           inventory_service.new_settings_profile({
             name: $scope.newName,
-            settings_location: 'List View Settings',
+            settings_location: $scope.settings_location,
             columns: [{
               id: 674,
               pinned: Math.random() >= 0.5,
