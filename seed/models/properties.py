@@ -131,6 +131,10 @@ class PropertyState(models.Model):
     state = models.CharField(max_length=255, null=True, blank=True)
     postal_code = models.CharField(max_length=255, null=True, blank=True)
 
+    # New fields for latitude and longitude as native database objects
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
+
     # Only spot where it's 'building' in the app, b/c this is a PM field.
     building_count = models.IntegerField(null=True, blank=True)
 
@@ -489,6 +493,8 @@ class PropertyState(models.Model):
                     ps.city,
                     ps.state,
                     ps.postal_code,
+                    ps.longitude,
+                    ps.latitude,
                     ps.lot_number,
                     ps.gross_floor_area,
                     ps.use_description,
@@ -535,7 +541,7 @@ class PropertyState(models.Model):
         # important because the fields that were not queried will be deferred and require a new
         # query to retrieve.
         keep_fields = ['id', 'pm_property_id', 'pm_parent_property_id', 'custom_id_1', 'ubid',
-                       'address_line_1', 'address_line_2', 'city', 'state', 'postal_code',
+                       'address_line_1', 'address_line_2', 'city', 'state', 'postal_code', 'longitude', 'latitude',
                        'lot_number', 'gross_floor_area', 'use_description', 'energy_score',
                        'site_eui', 'site_eui_modeled', 'property_notes', 'property_type',
                        'year_ending', 'owner', 'owner_email', 'owner_telephone', 'building_count',

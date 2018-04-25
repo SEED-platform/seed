@@ -89,20 +89,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
         columns = request.data.get('columns', None)
         if columns is None:
             # default the columns for now if no columns are passed
-            columns = [
-                'pm_property_id', 'pm_parent_property_id', 'tax_jurisdiction_tax_lot_id', 'ubid',
-                'custom_id_1', 'tax_custom_id_1', 'city', 'state', 'postal_code',
-                'tax_primary', 'property_name', 'campus', 'gross_floor_area',
-                'use_description', 'energy_score', 'site_eui', 'property_notes',
-                'property_type', 'year_ending', 'owner', 'owner_email', 'owner_telephone',
-                'building_count', 'year_built', 'recent_sale_date', 'conditioned_floor_area',
-                'occupied_floor_area', 'owner_address', 'owner_city_state', 'owner_postal_code',
-                'home_energy_score_id', 'generation_date', 'release_date',
-                'source_eui_weather_normalized', 'site_eui_weather_normalized', 'source_eui',
-                'energy_alerts', 'space_alerts', 'building_certification', 'number_properties',
-                'block_number', 'district', 'BLDGS', 'property_state_id', 'taxlot_state_id',
-                'property_view_id', 'taxlot_view_id'
-            ]
+            columns = Column.retrieve_db_fields()
 
         # get the class to operate on and the relationships
         view_klass_str = request.query_params.get('inventory_type', 'properties')
