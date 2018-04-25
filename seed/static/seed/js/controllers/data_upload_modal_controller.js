@@ -64,6 +64,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       };
       $scope.pm_buttons_enabled = true;
       $scope.pm_error_alert = false;
+      $scope.pm_warning_message = false;
       /**
        * dataset: holds the state of the data set
        * name: string - the data set name
@@ -366,12 +367,16 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       $scope.get_pm_report_template_names = function (pm_username, pm_password) {
         spinner_utility.show();
         $scope.pm_buttons_enabled = false;
+        $scope.pm_warning_message = false;
         $http.post('/api/v2_1/portfolio_manager/template_list/', {
           username: pm_username,
           password: pm_password
         }).then(function (response) {
           $scope.pm_error_alert = false;
-          $scope.pm_templates = response.data.templates;
+          if (response.data.any_errors) {
+            $scope.pm_warning_message = 'Issues encountered getting templates, but I will keep trying!';
+          }
+          $scope.pm_templates = response.data.templates; // response.data now also has an 'any_errors' member we could check
           if ($scope.pm_templates.length) $scope.pm_template = _.first($scope.pm_templates);
           return response.data;
         }).catch(function (error) {
@@ -385,13 +390,17 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       $scope.get_pm_report = function (pm_username, pm_password, pm_template) {
         spinner_utility.show();
         $scope.pm_buttons_enabled = false;
+        $scope.pm_warning_message = false;
         $http.post('/api/v2_1/portfolio_manager/report/', {
           username: pm_username,
           password: pm_password,
           template: pm_template
         }).then(function (response) {
+          if (response.data.any_errors) {
+            $scope.pm_warning_message = 'Issues encountered generating report, but I will keep trying!';
+          }
           response = $http.post('/api/v2/upload/create_from_pm_import/', {
-            properties: response.data.properties,
+            properties: response.data.properties, // response.data now also has an 'any_errors' member we could check
             import_record_id: $scope.dataset.id
           });
           return response;
