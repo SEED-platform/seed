@@ -21,6 +21,7 @@ from seed.models.columns import Column, ColumnMapping
 from seed.utils.api import api_endpoint_class, OrgQuerySetMixin
 from seed.serializers.columns import ColumnSerializer
 from seed.models import PropertyState, TaxLotState
+from seed.renderers import SEEDJSONRenderer
 
 _log = logging.getLogger(__name__)
 
@@ -181,7 +182,7 @@ class ColumnViewSet(OrgQuerySetMixin, viewsets.ViewSet):
                 'message': 'organization with with id {} does not exist'.format(organization_id)
             }, status=status.HTTP_404_NOT_FOUND)
 
-    @list_route()
+    @list_route(renderer_classes=(SEEDJSONRenderer,))
     def add_column_names(self, request):
         """
         Allow columns to be added based on an existing record.
@@ -189,18 +190,23 @@ class ColumnViewSet(OrgQuerySetMixin, viewsets.ViewSet):
         records are upload through API endpoint rather than the frontend.
         """
         model_obj = None
+        org = self.get_organization(request, return_obj=True)
         inventory_pk = request.query_params.get('inventory_pk')
         inventory_type = request.query_params.get('inventory_type', 'property')
         if inventory_type in ['property', 'propertystate']:
             if not inventory_pk:
-                model_obj = PropertyState.objects.order_by('-id').first()
+                model_obj = PropertyState.objects.filter(
+                    organization=org
+                ).order_by('-id').first()
             try:
                 model_obj = PropertyState.objects.get(id=inventory_pk)
             except PropertyState.DoesNotExist:
                 pass
         elif inventory_type in ['taxlot', 'taxlotstate']:
             if not inventory_pk:
-                model_obj = TaxLotState.objects.order_by('-id').first()
+                model_obj = TaxLotState.objects.filter(
+                    organization=org
+                ).order_by('-id').first()
             else:
                 try:
                     model_obj = TaxLotState.objects.get(id=inventory_pk)
@@ -216,10 +222,13 @@ class ColumnViewSet(OrgQuerySetMixin, viewsets.ViewSet):
             )
             raise NotFound(msg)
         Column.save_column_names(model_obj)
-        org_id = self.get_organization(request)
-        columns = Column.retrieve_all(org_id, inventory_type, only_used=False)
+
+        columns = Column.objects.filter(
+            organization=model_obj.organization,
+            table_name=model_obj.__class__.__name__
+        )
         columns = ColumnSerializer(columns, many=True)
-        return Response(columns, status=status.HTTP_200_OK)
+        return Response(columns.data, status=status.HTTP_200_OK)
 
 
 class ColumnMappingViewSet(viewsets.ViewSet):

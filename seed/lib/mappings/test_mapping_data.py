@@ -86,6 +86,8 @@ class TestMappingData(TestCase):
             'pm_parent_property_id',
             'pm_property_id',
             'postal_code',
+            'latitude',
+            'longitude',
             'property_name',
             'property_notes',
             'property_type',

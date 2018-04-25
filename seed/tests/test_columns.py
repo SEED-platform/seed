@@ -379,7 +379,6 @@ class TestColumnsByInventory(TestCase):
             Column.retrieve_all(self.fake_org.pk, 'property', False)
 
     def test_column_retrieve_schema(self):
-
         schema = {
             "types": {
                 "address_line_1": "string",
@@ -404,6 +403,8 @@ class TestColumnsByInventory(TestCase):
                 "home_energy_score_id": "string",
                 "jurisdiction_property_id": "string",
                 "jurisdiction_tax_lot_id": "string",
+                "latitude": "float",
+                "longitude": "float",
                 "lot_number": "string",
                 "number_properties": "integer",
                 "occupied_floor_area": "float",
@@ -443,18 +444,15 @@ class TestColumnsByInventory(TestCase):
     def test_column_retrieve_db_fields(self):
         c = Column.retrieve_db_fields()
 
-        data = ['address_line_1', 'address_line_2', 'block_number', 'building_certification',
-                'building_count', 'campus', 'city', 'conditioned_floor_area', 'custom_id_1', 'ubid',
-                'district', 'created', 'updated',
-                'energy_alerts', 'energy_score', 'generation_date', 'gross_floor_area',
-                'home_energy_score_id', 'jurisdiction_property_id', 'jurisdiction_tax_lot_id',
-                'lot_number', 'number_properties', 'occupied_floor_area', 'owner', 'owner_address',
-                'owner_city_state', 'owner_email', 'owner_postal_code', 'owner_telephone',
-                'pm_parent_property_id', 'pm_property_id', 'postal_code', 'property_name',
-                'property_notes', 'property_type', 'recent_sale_date', 'release_date', 'site_eui',
-                'site_eui_weather_normalized', 'source_eui', 'source_eui_weather_normalized',
-                'space_alerts', 'state', 'use_description', 'year_built', 'year_ending',
-                'analysis_end_time', 'source_eui_modeled', 'analysis_state_message',
-                'analysis_start_time', 'site_eui_modeled', 'analysis_state']
+        data = ['address_line_1', 'address_line_2', 'analysis_end_time', 'analysis_start_time', 'analysis_state',
+                'analysis_state_message', 'block_number', 'building_certification', 'building_count', 'campus', 'city',
+                'conditioned_floor_area', 'created', 'custom_id_1', 'district', 'energy_alerts', 'energy_score',
+                'generation_date', 'gross_floor_area', 'home_energy_score_id', 'jurisdiction_property_id',
+                'jurisdiction_tax_lot_id', 'latitude', 'longitude', 'lot_number', 'number_properties',
+                'occupied_floor_area', 'owner', 'owner_address', 'owner_city_state', 'owner_email', 'owner_postal_code',
+                'owner_telephone', 'pm_parent_property_id', 'pm_property_id', 'postal_code', 'property_name',
+                'property_notes', 'property_type', 'recent_sale_date', 'release_date', 'site_eui', 'site_eui_modeled',
+                'site_eui_weather_normalized', 'source_eui', 'source_eui_modeled', 'source_eui_weather_normalized',
+                'space_alerts', 'state', 'ubid', 'updated', 'use_description', 'year_built', 'year_ending']
 
         self.assertItemsEqual(data, c)
