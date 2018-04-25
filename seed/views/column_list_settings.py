@@ -11,6 +11,8 @@ from seed.models import (
     ColumnListSetting
 )
 
+from seed.pagination import NoPagination
+
 from seed.serializers.column_list_settings import (
     ColumnListSettingSerializer,
 )
@@ -43,3 +45,4 @@ class ColumnListingViewSet(SEEDOrgCreateUpdateModelViewSet):
     """
     serializer_class = ColumnListSettingSerializer
     model = ColumnListSetting
+    pagination_class = NoPagination

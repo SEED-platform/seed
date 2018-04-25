@@ -10,8 +10,9 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
   'user_service',
   'cycle_service',
   'spinner_utility',
+  'naturalSort',
   'flippers',
-  function ($http, $log, urls, user_service, cycle_service, spinner_utility, flippers) {
+  function ($http, $log, urls, user_service, cycle_service, spinner_utility, naturalSort, flippers) {
 
     var inventory_service = {
       total_properties_for_user: 0,
@@ -367,6 +368,18 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       localStorage.setItem('cycles', JSON.stringify(cycles));
     };
 
+    inventory_service.get_last_profile = function () {
+      var organization_id = user_service.get_organization().id;
+      return (JSON.parse(localStorage.getItem('profiles')) || {})[organization_id];
+    };
+
+    inventory_service.save_last_profile = function (pk) {
+      var organization_id = user_service.get_organization().id,
+        profiles = JSON.parse(localStorage.getItem('profiles')) || {};
+      profiles[organization_id] = _.toInteger(pk);
+      localStorage.setItem('profiles', JSON.stringify(profiles));
+    };
+
 
     inventory_service.get_property_columns = function () {
       return $http.get('/api/v2/properties/columns/', {
@@ -475,7 +488,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
                 }
                 return match;
               }
-            }  else {
+            } else {
               // Case-insensitive Contains
               regex = new RegExp(search, 'i');
               match = regex.test(cellValue);
@@ -769,6 +782,48 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         }
       }).then(function (response) {
         return response.data;
+      });
+    };
+
+    inventory_service.get_settings_profiles = function (settings_location) {
+      return $http.get('/api/v2/column_list_settings/', {
+        params: {
+          organization_id: user_service.get_organization().id
+        }
+      }).then(function (response) {
+        return _.filter(response.data.data, {
+          settings_location: settings_location
+        }).sort(function (a, b) {
+          return naturalSort(a.name, b.name);
+        });
+      });
+    };
+
+    inventory_service.new_settings_profile = function (data) {
+      return $http.post('/api/v2/column_list_settings/', data, {
+        params: {
+          organization_id: user_service.get_organization().id
+        }
+      }).then(function (response) {
+        return response.data.data;
+      });
+    };
+
+    inventory_service.update_settings_profile = function (id, data) {
+      return $http.put('/api/v2/column_list_settings/' + id + '/', data, {
+        params: {
+          organization_id: user_service.get_organization().id
+        }
+      }).then(function (response) {
+        return response.data.data;
+      });
+    };
+
+    inventory_service.remove_settings_profile = function (id) {
+      return $http.delete('/api/v2/column_list_settings/' + id + '/', {
+        params: {
+          organization_id: user_service.get_organization().id
+        }
       });
     };
 

@@ -14,6 +14,7 @@ angular.module('BE.seed.controller.menu', [])
     'organization_service',
     'user_service',
     'dataset_service',
+    'modified_service',
     '$timeout',
     '$state',
     '$cookies',
@@ -29,6 +30,7 @@ angular.module('BE.seed.controller.menu', [])
               organization_service,
               user_service,
               dataset_service,
+              modified_service,
               $timeout,
               $state,
               $cookies,
@@ -62,9 +64,19 @@ angular.module('BE.seed.controller.menu', [])
         }
         spinner_utility.hide();
       });
-      $rootScope.$on('$stateChangeStart', function (event, toState) {
-        $scope.menu.loading = toState.controller === 'mapping_controller';
-        spinner_utility.show();
+      $rootScope.$on('$stateChangeStart', function (event, toState, toParams) {
+        if (modified_service.isModified()) {
+          event.preventDefault();
+
+          modified_service.showModifiedDialog().then(function () {
+            modified_service.resetModified();
+            $state.go(toState, toParams);
+          });
+
+        } else {
+          $scope.menu.loading = toState.controller === 'mapping_controller';
+          spinner_utility.show();
+        }
       });
       $rootScope.$on('$stateChangeSuccess', function () {
         $scope.menu.loading = false;

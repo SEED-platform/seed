@@ -301,6 +301,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         enableColumnResizing: false,
         enableFiltering: false,
         enableHiding: false,
+        enableSorting: false,
         exporterSuppressExport: true,
         pinnedLeft: true,
         visible: true,
@@ -667,8 +668,8 @@ angular.module('BE.seed.controller.inventory_list', [])
             $scope.selectedCount = selected.length;
             $scope.selectedParentCount = parentsSelectedIds.length;
 
-            const removed = _.difference($scope.selectedOrder, parentsSelectedIds);
-            const added = _.difference(parentsSelectedIds, $scope.selectedOrder);
+            var removed = _.difference($scope.selectedOrder, parentsSelectedIds);
+            var added = _.difference(parentsSelectedIds, $scope.selectedOrder);
             if (removed.length === 1 && !added.length) {
               // console.log('Removed ', removed);
               _.remove($scope.selectedOrder, function (item) {

@@ -69,6 +69,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.members',
   'BE.seed.controller.menu',
   'BE.seed.controller.merge_modal',
+  'BE.seed.controller.modified_modal',
   'BE.seed.controller.new_member_modal',
   'BE.seed.controller.organization',
   'BE.seed.controller.organization_settings',
@@ -77,6 +78,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.pairing_settings',
   'BE.seed.controller.profile',
   'BE.seed.controller.security',
+  'BE.seed.controller.settings_profile_modal',
   'BE.seed.controller.show_populated_columns_modal',
   'BE.seed.controller.unmerge_modal',
   'BE.seed.controller.update_item_labels_modal'
@@ -115,6 +117,7 @@ angular.module('BE.seed.services', [
   'BE.seed.service.main',
   'BE.seed.service.mapping',
   'BE.seed.service.matching',
+  'BE.seed.service.modified',
   'BE.seed.service.note',
   'BE.seed.service.organization',
   'BE.seed.service.pairing',
@@ -313,6 +316,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
               return inventory_service.get_taxlot_columns();
             }
           }],
+          profiles: ['inventory_service', function (inventory_service) {
+            return inventory_service.get_settings_profiles('List View Settings');
+          }],
           shared_fields_payload: ['user_service', function (user_service) {
             return user_service.get_shared_buildings();
           }]
@@ -347,6 +353,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
                 });
               });
             }
+          }],
+          profiles: ['inventory_service', function (inventory_service) {
+            return inventory_service.get_settings_profiles('Detail View Settings');
           }]
         }
       })

@@ -11,11 +11,14 @@ angular.module('BE.seed.controller.inventory_detail_settings', [])
     'inventory_service',
     'user_service',
     'columns',
+    'profiles',
     '$translate',
     'i18nService', // from ui-grid
-    function ($scope, $window, $uibModalInstance, $stateParams, inventory_service, user_service, columns, $translate, i18nService) {
+    function ($scope, $window, $uibModalInstance, $stateParams, inventory_service, user_service, columns, profiles, $translate, i18nService) {
 
       $scope.translations = {};
+
+      $scope.profiles = profiles;
 
       var needed_translations = [
         'Reset Defaults'
