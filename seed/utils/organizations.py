@@ -9,6 +9,7 @@ from seed.lib.superperms.orgs.models import (
     OrganizationUser as SuperOrganizationUser
 )
 
+from seed.models import Column
 
 def create_organization(user, org_name='', *args, **kwargs):
     """Helper script to create a user/org relationship from scratch.
@@ -32,5 +33,12 @@ def create_organization(user, org_name='', *args, **kwargs):
             super_organization=org,
             defaults={'color': 'blue'},
         )
+
+    for column in Column.DEFAULT_COLUMNS:
+        details = {
+            'organization_id': org.id,
+        }
+        details.update(column)
+        Column.objects.create(**details)
 
     return org, org_user, user_added

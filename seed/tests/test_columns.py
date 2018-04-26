@@ -5,6 +5,7 @@
 :author
 """
 
+import json
 import os.path
 
 from django.test import TestCase
@@ -17,6 +18,7 @@ from seed.models import (
     Column,
     ColumnMapping,
 )
+from seed.utils.organizations import create_organization
 
 
 class TestColumns(TestCase):
@@ -252,19 +254,25 @@ class TestColumnsByInventory(TestCase):
 
     def setUp(self):
         self.fake_user = User.objects.create(username='test')
-        self.fake_org = Organization.objects.create()
-        OrganizationUser.objects.create(
-            user=self.fake_user,
-            organization=self.fake_org
+        self.fake_org, _org_user, _user_created = create_organization(
+            self.fake_user, name='Existing Org'
         )
-
-        seed_models.Column.objects.create(
+        column_a = seed_models.Column.objects.create(
             column_name=u'Column A',
             table_name=u'PropertyState',
             organization=self.fake_org,
             is_extra_data=True,
             shared_field_type=Column.SHARED_PUBLIC,
         )
+        # field that is in the import, but not mapped to
+        raw_column = seed_models.Column.objects.create(
+            column_name=u'not mapped data',
+            organization=self.fake_org,
+        )
+        dm = seed_models.ColumnMapping.objects.create()
+        dm.column_raw.add(raw_column)
+        dm.column_mapped.add(column_a)
+        dm.save()
         seed_models.Column.objects.create(
             column_name=u"Apostrophe's Field",
             table_name=u'PropertyState',
@@ -277,17 +285,24 @@ class TestColumnsByInventory(TestCase):
             organization=self.fake_org,
             is_extra_data=True
         )
+        seed_models.Column.objects.create(
+            column_name=u'tax_lot_id_not_used',
+            table_name=u'TaxLotState',
+            organization=self.fake_org,
+            is_extra_data=True
+        )
+        seed_models.Column.objects.create(
+            column_name=u'gross_floor_area',
+            table_name=u'TaxLotState',
+            organization=self.fake_org,
+            is_extra_data=True
+        )
         # This is an invalid column. It is not a db field but is not marked as extra data
         seed_models.Column.objects.create(
             column_name=u'not extra data',
             table_name=u'PropertyState',
             organization=self.fake_org,
             is_extra_data=False
-        )
-        # field that is in the import, but not mapped to
-        seed_models.Column.objects.create(
-            column_name=u'not mapped data',
-            organization=self.fake_org,
         )
 
     def test_column_retrieve_all(self):
@@ -296,12 +311,14 @@ class TestColumnsByInventory(TestCase):
         for result in columns:
             del result['id']
 
-        # Check for new column
+        # Check for columns
         c = {
-            'table': u'PropertyState',
-            'extraData': True,
-            'displayName': u'Column A',
-            'name': u'Column A',
+            'name': 'Column A',
+            'table_name': u'PropertyState',
+            'column_name': u'Column A',
+            'display_name': u'Column A',
+            'is_extra_data': True,
+            'data_type': 'None',
             'dbName': u'Column A',
             'related': False,
             'sharedFieldType': 'Public',
@@ -310,10 +327,12 @@ class TestColumnsByInventory(TestCase):
 
         # Check that display_name doesn't capitalize after apostrophe
         c = {
-            'table': u'PropertyState',
-            'extraData': True,
-            'displayName': u"Apostrophe's Field",
             'name': u"Apostrophe's Field",
+            'table_name': u'PropertyState',
+            'column_name': u"Apostrophe's Field",
+            'display_name': u"Apostrophe's Field",
+            'is_extra_data': True,
+            'data_type': 'None',
             'dbName': u"Apostrophe's Field",
             'related': False,
             'sharedFieldType': 'None',
@@ -322,10 +341,12 @@ class TestColumnsByInventory(TestCase):
 
         # Check 'id' field if extra_data
         c = {
-            'table': 'PropertyState',
-            'extraData': True,
-            'displayName': 'Id',
             'name': 'id_extra',
+            'table_name': 'PropertyState',
+            'column_name': 'id',
+            'display_name': 'Id',
+            'is_extra_data': True,
+            'data_type': 'None',
             'dbName': 'id',
             'related': False,
             'sharedFieldType': 'None',
@@ -333,36 +354,73 @@ class TestColumnsByInventory(TestCase):
         self.assertIn(c, columns)
 
         # check the 'pinIfNative' argument
-
         c = {
             'name': 'pm_property_id',
+            'table_name': 'PropertyState',
+            'column_name': 'pm_property_id',
+            'display_name': 'PM Property ID',
+            'is_extra_data': False,
+            'data_type': 'string',
             'dbName': 'pm_property_id',
-            'related': False,
-            'table': 'PropertyState',
-            'displayName': 'PM Property ID',
-            'dataType': 'string',
             'pinnedLeft': True,
+            'related': False,
             'sharedFieldType': 'None',
         }
         self.assertIn(c, columns)
 
         # verity that the 'duplicateNameInOtherTable' is working
         c = {
-            'related': True,
-            'table': 'TaxLotState',
-            'displayName': 'State (Tax Lot)',
-            'dataType': 'string',
             'name': 'tax_state',
+            'table_name': 'TaxLotState',
+            'column_name': 'state',
+            'display_name': 'State (Tax Lot)',
+            'data_type': 'string',
+            'is_extra_data': False,
             'dbName': 'state',
             'sharedFieldType': 'None',
+            'related': True,
         }
         self.assertIn(c, columns)
-        self.assertNotIn('not extra data', [d['name'] for d in columns])
+
+        c = {
+            "name": "tax_gross_floor_area",
+            "table_name": "TaxLotState",
+            "column_name": "gross_floor_area",
+            "display_name": "Gross Floor Area (Tax Lot)",
+            "data_type": "None",
+            "is_extra_data": True,
+            "dbName": "gross_floor_area",
+            "sharedFieldType": "None",
+            "related": True,
+        }
+        self.assertIn(c, columns)
+
+        # TODO: 4/25/2018 Need to decide how to check for bad columns and not return them in the request
+        # self.assertNotIn('not extra data', [d['name'] for d in columns])
         self.assertNotIn('not mapped data', [d['name'] for d in columns])
+
+    def test_columns_extra_tag(self):
+        columns = Column.retrieve_all(self.fake_org.pk, 'taxlot', False)
+        # go through and delete all the results.ids so that it is easy to do a compare
+        for result in columns:
+            del result['id']
+
+        c = {
+            "name": "gross_floor_area_extra",
+            "table_name": "TaxLotState",
+            "column_name": "gross_floor_area",
+            "display_name": "Gross Floor Area",
+            "data_type": "None",
+            "is_extra_data": True,
+            "dbName": "gross_floor_area",
+            "sharedFieldType": "None",
+            "related": False,
+        }
+        self.assertIn(c, columns)
 
     def test_column_retrieve_only_used(self):
         columns = Column.retrieve_all(self.fake_org.pk, 'property', True)
-        self.assertEqual(len(columns), 3)
+        self.assertEqual(len(columns), 1)
         for c in columns:
             if c['name'] == 'Column A':
                 self.assertEqual(c['sharedFieldType'], 'Public')
@@ -456,3 +514,36 @@ class TestColumnsByInventory(TestCase):
                 'space_alerts', 'state', 'ubid', 'updated', 'use_description', 'year_built', 'year_ending']
 
         self.assertItemsEqual(data, c)
+
+    def test_db_columns_in_default_columns(self):
+        """
+        This test ensures that all the columns in the database are defined in the Column.DEFAULT_COLUMNS
+
+        If a user add a new database column then this test will fail until the column is defined in
+        Column.DEFAULT_COLUMNS
+        """
+
+        all_columns = Column.retrieve_db_fields_by_table()
+        print json.dumps(all_columns, indent=2)
+
+        # {
+        #     "table_name": "PropertyState",
+        #     "data_type": "CharField",
+        #     "column_name": "jurisdiction_property_id"
+        # }
+        #
+        errors = []
+        for column in all_columns:
+            found = False
+            for def_column in Column.DEFAULT_COLUMNS:
+                if column['table_name'] == def_column['table_name'] and \
+                    column['column_name'] == def_column['column_name']:
+                    found = True
+                    continue
+
+            if found:
+                continue
+            else:
+                errors.append('Could not find column_name/table_name/data_type in Column.DEFAULT_COLUMNS: %s' % column)
+
+        self.assertEqual(errors, [])
