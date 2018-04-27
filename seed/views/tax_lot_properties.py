@@ -89,7 +89,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
         columns = request.data.get('columns', None)
         if columns is None:
             # default the columns for now if no columns are passed
-            columns = Column.retrieve_db_fields()
+            columns = Column.retrieve_db_fields(request.query_params['organization_id'])
 
         # get the class to operate on and the relationships
         view_klass_str = request.query_params.get('inventory_type', 'properties')
@@ -138,7 +138,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
         writer = csv.writer(response)
 
         # get the data in a dict which includes the related data
-        data = TaxLotProperty.get_related(model_views, columns)
+        data = TaxLotProperty.get_related(model_views, columns, request.query_params['organization_id'])
 
         # force the data into the same order as the IDs
         if ids:

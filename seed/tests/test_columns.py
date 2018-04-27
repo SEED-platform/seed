@@ -552,7 +552,7 @@ class TestColumnsByInventory(TestCase):
         """
 
         all_columns = Column.retrieve_db_fields_by_table()
-        print json.dumps(all_columns, indent=2)
+        # print json.dumps(all_columns, indent=2)
 
         # {
         #     "table_name": "PropertyState",

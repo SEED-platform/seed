@@ -40,7 +40,7 @@ class TaxLotProperty(models.Model):
         ]
 
     @classmethod
-    def get_related(cls, object_list, columns):
+    def get_related(cls, object_list, columns, org_id):
         """
         This method takes a list of TaxLotViews or PropertyViews and returns the data along
         with the related TaxLotView or PropertyView.
@@ -54,6 +54,7 @@ class TaxLotProperty(models.Model):
 
         :param object_list: list
         :param columns: list, columns (as defined by frontend)
+        :param org_id: int, organization id
         :return: list
         """
         results = []
@@ -104,7 +105,7 @@ class TaxLotProperty(models.Model):
 
         # Map the related view id to the other view's state data
         # so we can reference these easily and save some queries.
-        db_columns = apps.get_model('seed', 'Column').retrieve_db_fields()
+        db_columns = apps.get_model('seed', 'Column').retrieve_db_fields(org_id)
 
         related_map = {}
         for related_view in related_views:

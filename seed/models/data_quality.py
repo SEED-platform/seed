@@ -563,11 +563,10 @@ class DataQualityCheck(models.Model):
 
         # create lookup tuple for the display name
         for c in columns:
-            self.column_lookup[(c['table'], c['name'])] = c['displayName']
+            self.column_lookup[(c['table_name'], c['column_name'])] = c['display_name']
 
         # grab all the rules once, save query time
-        rules = self.rules.filter(enabled=True, table_name=record_type).order_by('field',
-                                                                                 'severity')
+        rules = self.rules.filter(enabled=True, table_name=record_type).order_by('field', 'severity')
 
         # Get the list of the field names that will show in every result
         fields = self.get_fieldnames(record_type)

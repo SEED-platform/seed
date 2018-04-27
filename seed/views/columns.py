@@ -225,7 +225,9 @@ class ColumnViewSet(OrgQuerySetMixin, viewsets.ViewSet):
 
         columns = Column.objects.filter(
             organization=model_obj.organization,
-            table_name=model_obj.__class__.__name__
+            table_name=model_obj.__class__.__name__,
+            is_extra_data=True,
+
         )
         columns = ColumnSerializer(columns, many=True)
         return Response(columns.data, status=status.HTTP_200_OK)

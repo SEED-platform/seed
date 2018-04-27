@@ -165,7 +165,7 @@ class TestMappingData(TestCase):
         # load up a bunch of columns
         Column.objects.get_or_create(column_name="a_column", table_name="")
         u, _ = Unit.objects.get_or_create(unit_name="faraday", unit_type=FLOAT)
-        Column.objects.get_or_create(column_name="z_column", table_name="PropertyState", unit=u)
+        Column.objects.get_or_create(column_name="z_column", table_name="PropertyState", is_extra_data=True, unit=u)
         columns = list(Column.objects.select_related('unit').exclude(column_name__in=self.obj.keys))
         self.obj.add_extra_data(columns)
 

@@ -33,12 +33,14 @@ class TestColumnListSettings(TestCase):
         col1 = Column.objects.create(
             column_name=u'New Column',
             table_name=u'PropertyState',
-            organization=self.fake_org
+            organization=self.fake_org,
+            is_extra_data=True,
         )
         col2 = Column.objects.create(
             column_name=u'Second Column',
             table_name=u'PropertyState',
-            organization=self.fake_org
+            organization=self.fake_org,
+            is_extra_data=True,
         )
 
         new_list_setting = ColumnListSetting.objects.create(name='example list setting')
