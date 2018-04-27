@@ -8,6 +8,7 @@
 import json
 import os.path
 
+from django.core.exceptions import ValidationError
 from django.test import TestCase
 
 from seed import models as seed_models
@@ -297,13 +298,41 @@ class TestColumnsByInventory(TestCase):
             organization=self.fake_org,
             is_extra_data=True
         )
+
+    def test_is_extra_data_validation(self):
         # This is an invalid column. It is not a db field but is not marked as extra data
-        seed_models.Column.objects.create(
-            column_name=u'not extra data',
-            table_name=u'PropertyState',
+        with self.assertRaises(ValidationError):
+            seed_models.Column.objects.create(
+                column_name=u'not extra data',
+                table_name=u'PropertyState',
+                organization=self.fake_org,
+                is_extra_data=False
+            )
+
+        # verify that creating columns from CSV's will not raise ValidationErrors
+        column = seed_models.Column.objects.create(
+            column_name=u'column from csv file',
+            # table_name=u'PropertyState',
+            organization=self.fake_org,
+            # is_extra_data=False
+        )
+        column.delete()
+
+        column = seed_models.Column.objects.create(
+            column_name=u'column from csv file empty table',
+            table_name='',
+            organization=self.fake_org,
+            # is_extra_data=False
+        )
+        column.delete()
+
+        column = seed_models.Column.objects.create(
+            column_name=u'column from csv file empty table false extra_data',
+            table_name='',
             organization=self.fake_org,
             is_extra_data=False
         )
+        column.delete()
 
     def test_column_retrieve_all(self):
         columns = Column.retrieve_all(self.fake_org.pk, 'property', False)
@@ -313,7 +342,7 @@ class TestColumnsByInventory(TestCase):
 
         # Check for columns
         c = {
-            'name': 'Column A',
+            'name': 'Column A_extra',
             'table_name': u'PropertyState',
             'column_name': u'Column A',
             'display_name': u'Column A',
@@ -327,7 +356,7 @@ class TestColumnsByInventory(TestCase):
 
         # Check that display_name doesn't capitalize after apostrophe
         c = {
-            'name': u"Apostrophe's Field",
+            'name': u"Apostrophe's Field_extra",
             'table_name': u'PropertyState',
             'column_name': u"Apostrophe's Field",
             'display_name': u"Apostrophe's Field",
@@ -396,7 +425,6 @@ class TestColumnsByInventory(TestCase):
         self.assertIn(c, columns)
 
         # TODO: 4/25/2018 Need to decide how to check for bad columns and not return them in the request
-        # self.assertNotIn('not extra data', [d['name'] for d in columns])
         self.assertNotIn('not mapped data', [d['name'] for d in columns])
 
     def test_columns_extra_tag(self):
@@ -500,7 +528,7 @@ class TestColumnsByInventory(TestCase):
         self.assertDictEqual(schema, columns)
 
     def test_column_retrieve_db_fields(self):
-        c = Column.retrieve_db_fields()
+        c = Column.retrieve_db_fields(self.fake_org.pk)
 
         data = ['address_line_1', 'address_line_2', 'analysis_end_time', 'analysis_start_time', 'analysis_state',
                 'analysis_state_message', 'block_number', 'building_certification', 'building_count', 'campus', 'city',
@@ -513,7 +541,7 @@ class TestColumnsByInventory(TestCase):
                 'site_eui_weather_normalized', 'source_eui', 'source_eui_modeled', 'source_eui_weather_normalized',
                 'space_alerts', 'state', 'ubid', 'updated', 'use_description', 'year_built', 'year_ending']
 
-        self.assertItemsEqual(data, c)
+        self.assertItemsEqual(c, data)
 
     def test_db_columns_in_default_columns(self):
         """

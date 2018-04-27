@@ -12,8 +12,10 @@ import os.path
 from collections import OrderedDict
 
 from django.apps import apps
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q
+from django.db.models.signals import pre_save
 from django.forms.models import model_to_dict
 from django.utils.translation import ugettext_lazy as _
 
@@ -156,6 +158,17 @@ class Column(models.Model):
         'source_eui_weather_normalized_orig',
     ]
 
+    INTERNAL_TYPE_TO_DATA_TYPE = {
+        'FloatField': 'double',  # yes, technically this is not the same, move along.
+        'IntegerField': 'integer',
+        'CharField': 'string',
+        'TextField': 'string',
+        'DateField': 'date',
+        'DateTimeField': 'datetime',
+        'BooleanField': 'boolean',
+    }
+
+    # These are the default columns ( also known as the fields in the database)
     DEFAULT_COLUMNS = [
         {
             'column_name': 'pm_property_id',
@@ -533,6 +546,19 @@ class Column(models.Model):
     def __unicode__(self):
         return u'{} - {}'.format(self.pk, self.column_name)
 
+    def clean(self):
+        # Don't allow Columns that are not extra_data and not a field in the database
+        if (not self.is_extra_data) and self.table_name:
+            # if it isn't extra data and the table_name IS set, then it must be part of the database fields
+            found = False
+            for c in Column.DEFAULT_COLUMNS:
+                if self.table_name == c['table_name'] and self.column_name == c['column_name']:
+                    found = True
+
+            if not found:
+                raise ValidationError(
+                    {'is_extra_data': _('Column \'%s\':\'%s\' is not marked as extra data, but the field is not in the database') % (self.table_name, self.column_name)})
+
     @staticmethod
     def create_mappings_from_file(filename, organization, user, import_file_id=None):
         """
@@ -907,7 +933,7 @@ class Column(models.Model):
     @staticmethod
     def _retrieve_db_columns():
         """
-        Returns a predefined list of columns that can be in the database. This is a hardcoded list of all the
+        Returns a predefined list of core columns in the database. This is a hardcoded list of all the
         database fields along with additional information such as the display name.
 
         :return: dict
@@ -918,7 +944,7 @@ class Column(models.Model):
 
         md = MappingData()
         for c in hard_coded_columns:
-            if not md.find_column(c['table'], c['name']):
+            if not md.find_column(c['table_name'], c['column_name']):
                 print "Could not find column field in database for {}".format(c)
 
         return hard_coded_columns
@@ -954,30 +980,30 @@ class Column(models.Model):
         types = OrderedDict()
         for c in columns:
             try:
-                types[c['name']] = MAP_TYPES[c['dataType']]
+                types[c['column_name']] = MAP_TYPES[c['data_type']]
             except KeyError:
                 print "could not find data_type for %s" % c
-                types[c['name']] = ''
+                types[c['column_name']] = ''
 
         return {"types": types}
 
     @staticmethod
-    def retrieve_db_fields():
+    def retrieve_db_fields(org_id):
         """
-        return the fields in the database regardless of properties or taxlots
+        return the fields in the database regardless of properties or taxlots. For example, there is an address_line_1
+        in both the TaxLotState and the PropertyState. The command below will take the `set` to remove the duplicates.
 
         [ "address_line_1", "gross_floor_area", ... ]
+        :param org_id: int, Organization ID
         :return: list
         """
 
-        columns = Column._retrieve_db_columns()
+        result = list(
+            set(list(Column.objects.filter(organization_id=org_id, is_extra_data=False).order_by('column_name').exclude(
+                table_name='').exclude(table_name=None).values_list('column_name', flat=True))))
 
-        fields = set()
-        for c in columns:
-            if 'dbField' in c.keys() and c['dbField']:
-                fields.add(c['name'])
-
-        return list(fields)
+        print result
+        return result
 
     @staticmethod
     def retrieve_db_fields_by_table():
@@ -996,12 +1022,16 @@ class Column(models.Model):
                 continue
 
             if f.name not in Column.COLUMN_EXCLUDE_FIELDS:
+                dt = f.get_internal_type() if f.get_internal_type else 'string',
+                dt = Column.INTERNAL_TYPE_TO_DATA_TYPE[dt[0]]
                 all_columns.append(
+
                     {
                         'table_name': f.model.__name__,
                         'column_name': f.name,
-                        'data_type': f.get_internal_type() if f.get_internal_type else 'string',
+                        'data_type': dt,
                     }
+
                 )
         return all_columns
 
@@ -1045,25 +1075,21 @@ class Column(models.Model):
             # Related fields
             new_c['related'] = not (inventory_type.lower() in new_c['table_name'].lower())
 
-            # check if the column name exists in the other table (and not extra data)
+            # check if the column name exists in the other table (and not extra data).
+            # Example, gross_floor_area is a core field, but can be an extra field in taxlot, meaning that the other one
+            # needs to be tagged something else. (prepended with tax_ or property_).
             if new_c['related']:
-                if Column.objects.filter(organization_id=org_id,
-                                         table_name=COLUMN_OPPOSITE_TABLE[new_c['table_name']],
-                                         column_name=new_c['column_name'],
-                                         is_extra_data=False).exists():
-                    new_c['display_name'] = new_c['display_name'] + ' (%s)' % INVENTORY_DISPLAY[new_c['table_name']]
-                    new_c['name'] = "%s_%s" % (INVENTORY_MAP_OPPOSITE_PREPEND[inventory_type.lower()], new_c['name'])
-
-            if c.is_extra_data:
-                # Avoid name conflicts with protected front-end columns and
-                # check if the column name is already defined in the list. For example, gross_floor_area
-                # is a core field, but can be an extra field in taxlot, meaning that the other one
-                # needs to be tagged something else.
-                if Column.objects.filter(
-                    organization_id=org_id,
-                    table_name=COLUMN_OPPOSITE_TABLE[new_c['table_name']],
-                    column_name=new_c['column_name'],
-                    is_extra_data=False).exists() or new_c['name'] in ['id', 'notes_count']:
+                # This only pertains to the tables: PropertyState and TaxLotState
+                if 'State' in new_c['table_name']:
+                    if Column.objects.filter(organization_id=org_id,
+                                             table_name=COLUMN_OPPOSITE_TABLE[new_c['table_name']],
+                                             column_name=new_c['column_name'],
+                                             is_extra_data=False).exists():
+                        new_c['display_name'] = new_c['display_name'] + ' (%s)' % INVENTORY_DISPLAY[new_c['table_name']]
+                        new_c['name'] = "%s_%s" % (INVENTORY_MAP_OPPOSITE_PREPEND[inventory_type.lower()], new_c['name'])
+            else:
+                # if it is extra data and is not related, then tag the name with _extra
+                if c.is_extra_data or new_c['name'] in ['id', 'notes_count']:
                     new_c['name'] += '_extra'
 
             # remove a bunch of fields that are not needed in the list of columns
@@ -1080,18 +1106,26 @@ class Column(models.Model):
             else:
                 columns.append(new_c)
 
-        import json
-        print json.dumps(columns, indent=2)
+        # import json
+        # print json.dumps(columns, indent=2)
 
         # validate that the field 'name' is unique.
         uniq = set()
         for c in columns:
-            if (c['table_name'], c['name']) in uniq:
+            if (c['table_name'], c['column_name']) in uniq:
                 raise Exception("Duplicate name '{}' found in columns".format(c['name']))
             else:
-                uniq.add((c['table_name'], c['name']))
+                uniq.add((c['table_name'], c['column_name']))
 
         return columns
+
+
+def validate_model(sender, **kwargs):
+    if 'raw' in kwargs and not kwargs['raw']:
+        kwargs['instance'].full_clean()
+
+
+pre_save.connect(validate_model, sender=Column)
 
 
 class ColumnMapping(models.Model):
