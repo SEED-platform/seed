@@ -14,6 +14,7 @@ from rest_framework import status
 from rest_framework import viewsets, serializers
 from rest_framework.decorators import detail_route
 
+from seed.utils.organizations import create_organization
 from seed import tasks
 from seed.decorators import ajax_request_class
 from seed.decorators import get_prog_key
@@ -29,7 +30,6 @@ from seed.lib.superperms.orgs.models import (
 )
 from seed.models import Cycle, PropertyView, TaxLotView, Column
 from seed.utils.api import api_endpoint_class
-from seed.utils.organizations import create_organization
 
 
 def _dict_org(request, organizations):
@@ -744,6 +744,8 @@ class OrganizationViewSet(viewsets.ViewSet):
                 'status': 'error',
                 'message': 'User with email address (%s) does not exist' % email
             }, status=status.HTTP_404_NOT_FOUND)
+
+        # Sub orgs do not get their own list of columns
         sub_org = Organization.objects.create(
             name=body['sub_org_name']
         )

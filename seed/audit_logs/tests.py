@@ -4,24 +4,18 @@
 :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-# sys imports
 import json
 
-# Django imports
 from django.core.exceptions import PermissionDenied
-from django.test import TestCase
 from django.core.urlresolvers import reverse_lazy
-
-# vendor imports
-from seed.lib.superperms.orgs.models import Organization
-
-# app imports
-from seed.landing.models import SEEDUser as User
-from seed.factory import SEEDFactory
-from seed.models import CanonicalBuilding
-from seed.tests.util import FakeRequest
+from django.test import TestCase
 
 from seed.audit_logs.models import AuditLog, LOG, NOTE
+from seed.factory import SEEDFactory
+from seed.landing.models import SEEDUser as User
+from seed.models import CanonicalBuilding
+from seed.tests.util import FakeRequest
+from seed.utils.organizations import create_organization
 
 
 class AuditLogModelTests(TestCase):
@@ -35,8 +29,7 @@ class AuditLogModelTests(TestCase):
             'last_name': 'Energy',
         }
         self.user = User.objects.create_user(**user_details)
-        self.org = Organization.objects.create(name='my org')
-        self.org.add_member(self.user)
+        self.org, _, _ = create_organization(self.user, 'my org')
         self.client.login(**user_details)
         self.fake_request = FakeRequest(user=self.user)
         # create BuildingSnapshot and CanonicalBuilding
@@ -179,8 +172,7 @@ class AuditLogViewTests(TestCase):
             'last_name': 'Energy',
         }
         self.user = User.objects.create_user(**user_details)
-        self.org = Organization.objects.create(name='my org')
-        self.org.add_member(self.user)
+        self.org, _, _ = create_organization(self.user, 'my org')
         self.client.login(**user_details)
         self.fake_request = FakeRequest(user=self.user)
         # create BuildingSnapshot and CanonicalBuilding

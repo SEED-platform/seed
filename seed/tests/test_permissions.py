@@ -9,7 +9,6 @@ All rights reserved.  # NOQA
 """
 # pylint:disable=no-name-in-module
 import mock
-
 from django.test import TestCase
 
 from seed.landing.models import SEEDUser as User
@@ -20,7 +19,6 @@ from seed.lib.superperms.orgs.models import (
     ROLE_MEMBER,
     ROLE_VIEWER,
 )
-
 from seed.lib.superperms.orgs.permissions import (
     get_org_or_id,
     get_org_id,
@@ -28,6 +26,7 @@ from seed.lib.superperms.orgs.permissions import (
     SEEDOrgPermissions,
     SEEDPublicPermissions
 )
+from seed.utils.organizations import create_organization
 
 
 class PermissionsFunctionsTests(TestCase):
@@ -103,17 +102,8 @@ class SEEDOrgPermissionsTests(TestCase):
     # pylint: disable=too-many-instance-attributes
 
     def setUp(self):
-        self.maxDiff = None
-        user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
-        }
-        self.user = User.objects.create_superuser(
-            email='test_user@demo.com', **user_details)
-        self.org = Organization.objects.create()
-        self.org_user = OrganizationUser.objects.create(
-            user=self.user, organization=self.org
-        )
+        self.user = User.objects.create_superuser('test_user@demo.com', 'test_user@demo.com', 'test_pass')
+        self.org, self.org_user, _ = create_organization(self.user)
 
     def tearDown(self):
         self.user.delete()
@@ -214,17 +204,8 @@ class SEEDPublicPermissionsTests(TestCase):
     # pylint: disable=too-many-instance-attributes
 
     def setUp(self):
-        self.maxDiff = None
-        user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
-        }
-        self.user = User.objects.create_superuser(
-            email='test_user@demo.com', **user_details)
-        self.org = Organization.objects.create()
-        self.org_user = OrganizationUser.objects.create(
-            user=self.user, organization=self.org
-        )
+        self.user = User.objects.create_superuser('test_user@demo.com', 'test_user@demo.com', 'test_pass')
+        self.org, self.org_user, _ = create_organization(self.user)
 
     def tearDown(self):
         self.user.delete()

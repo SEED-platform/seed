@@ -93,8 +93,7 @@ class TaxLotProperty(models.Model):
 
         # Ids of propertyviews to look up in m2m
         ids = [obj.pk for obj in object_list]
-        joins = TaxLotProperty.objects.filter(**{lookups['obj_query_in']: ids}).select_related(
-            lookups['related_view'])
+        joins = TaxLotProperty.objects.filter(**{lookups['obj_query_in']: ids}).select_related(lookups['related_view'])
 
         # Get all ids of tax lots on these joins
         related_ids = [getattr(j, lookups['related_view_id']) for j in joins]

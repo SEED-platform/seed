@@ -5,20 +5,20 @@
 :author
 """
 
+import datetime
 import logging
 
-import datetime
 from django.utils import timezone
 
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
     Cycle,
     DATA_STATE_IMPORT,
     ASSESSED_RAW,
 )
 from seed.tests.util import DeleteModelsTestCase
+from seed.utils.organizations import create_organization
 
 logger = logging.getLogger(__name__)
 
@@ -232,7 +232,7 @@ class DataMappingBaseTestCase(DeleteModelsTestCase):
         else:
             user = User.objects.get(username='test_user@demo.com')
 
-        org = Organization.objects.create()
+        org, _, _ = create_organization(user, "test-organization-a")
 
         cycle, _ = Cycle.objects.get_or_create(
             name=u'Test Hack Cycle 2015',
@@ -240,9 +240,6 @@ class DataMappingBaseTestCase(DeleteModelsTestCase):
             start=datetime.datetime(2015, 1, 1, tzinfo=timezone.get_current_timezone()),
             end=datetime.datetime(2015, 12, 31, tzinfo=timezone.get_current_timezone()),
         )
-
-        # Create an org user
-        OrganizationUser.objects.create(user=user, organization=org)
 
         import_record, import_file = self.create_import_file(user, org, cycle,
                                                              import_file_source_type,

@@ -12,15 +12,12 @@ from django.test import TestCase
 from rest_framework import status
 
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.models import (
-    Organization,
-    OrganizationUser,
-)
 from seed.test_helpers.fake import (
     FakePropertyViewFactory,
     FakeTaxLotViewFactory,
     FakeNoteFactory,
 )
+from seed.utils.organizations import create_organization
 
 
 class NoteViewTests(TestCase):
@@ -28,11 +25,10 @@ class NoteViewTests(TestCase):
         user_details = {
             'username': 'test_user@demo.com',
             'password': 'test_pass',
-            'email': 'test_user@demo.com',
+            'email': 'test_user@demo.com'
         }
         self.user = User.objects.create_superuser(**user_details)
-        self.org = Organization.objects.create()
-        OrganizationUser.objects.create(user=self.user, organization=self.org)
+        self.org, _, _ = create_organization(self.user)
 
         # Fake Factories
         self.property_view_factory = FakePropertyViewFactory(organization=self.org)

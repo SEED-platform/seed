@@ -5,8 +5,8 @@
 :author
 """
 import json
-
 from datetime import date
+
 from django.core.urlresolvers import reverse_lazy, NoReverseMatch
 from django.test import TestCase
 
@@ -24,6 +24,7 @@ from seed.models.cycles import Cycle
 from seed.models.properties import PropertyState
 from seed.models.tax_lots import TaxLotState
 from seed.tests.util import FakeRequest
+from seed.utils.organizations import create_organization
 from seed.views.main import _get_default_org
 from seed.views.organizations import _dict_org
 from seed.views.users import _get_js_role, _get_role_from_js
@@ -43,9 +44,8 @@ class AccountsViewTests(TestCase):
             'last_name': 'Energy',
         }
         self.user = User.objects.create_user(**user_details)
-        self.org = Organization.objects.create(name='my org')
+        self.org, _, _ = create_organization(self.user, "my org")
         self.cycle = Cycle.objects.filter(organization=self.org).first()
-        self.org.add_member(self.user)
         self.client.login(**user_details)
         self.fake_request = FakeRequest(user=self.user)
         self.maxDiff = None
@@ -112,10 +112,9 @@ class AccountsViewTests(TestCase):
     def test_dic_org_w_member_in_parent_and_child(self):
         """What happens when a user has a role in parent and child."""
 
-        new_org = Organization.objects.create(name="sub")
+        new_org, _, _ = create_organization(self.user, "sub")
         new_org.parent_org = self.org
         new_org.save()
-        new_org.add_member(self.user)
         new_cycle = Cycle.objects.filter(organization=new_org).first()
 
         expected_multiple_org_payload = {
@@ -227,12 +226,11 @@ class AccountsViewTests(TestCase):
 
     def test_get_organization_user_not_owner(self):
         """test for the case where a user does not have access"""
-        other_org = Organization.objects.create(name='not my org')
         other_user = User.objects.create(
             username='tester@be.com',
             email='tester@be.com',
         )
-        other_org.add_member(other_user)
+        other_org, _, _ = create_organization(other_user, "not my org")
 
         resp = self.client.get(
             reverse_lazy('api:v2:organizations-detail', args=[other_org.id]),
@@ -528,9 +526,7 @@ class AccountsViewTests(TestCase):
     def test_add_shared_fields(self):
         url = reverse_lazy('api:v2:organizations-save-settings', args=[self.org.pk])
 
-        # create a couple columns for use.
-        Column.objects.create(table_name='PropertyState', column_name='ubid', organization_id=self.org.pk)
-        Column.objects.create(table_name='PropertyState', column_name='address_line_1', organization_id=self.org.pk)
+        # There are already several columns in the database due to the create_organization method
         payload = {
             u'organization_id': self.org.pk,
             u'organization': {
@@ -949,8 +945,7 @@ class AuthViewTests(TestCase):
             'last_name': 'Energy',
         }
         self.user = User.objects.create_user(**user_details)
-        self.org = Organization.objects.create(name='my org')
-        self.org.add_member(self.user)
+        self.org, _, _ = create_organization(self.user, "my org")
         self.client.login(**user_details)
 
     def test_is_authorized_base(self):
@@ -975,12 +970,11 @@ class AuthViewTests(TestCase):
             })
 
     def test_is_authorized_parent_org_owner(self):
-        other_org = Organization.objects.create(name='not my org')
         other_user = User.objects.create(
             username='tester@be.com',
             email='tester@be.com',
         )
-        other_org.add_member(other_user)
+        other_org, _, _ = create_organization(other_user, "not my org")
         other_org.parent_org = self.org
         other_org.save()
         resp = self.client.post(
@@ -1002,12 +996,11 @@ class AuthViewTests(TestCase):
             })
 
     def test_is_authorized_not_in_org(self):
-        other_org = Organization.objects.create(name='not my org')
         other_user = User.objects.create(
             username='tester@be.com',
             email='tester@be.com',
         )
-        other_org.add_member(other_user)
+        other_org, _, _ = create_organization(other_user, "not my org")
         resp = self.client.post(
             reverse_lazy("api:v2:users-is-authorized",
                          args=[self.user.pk]) + '?organization_id=' + str(other_org.id),

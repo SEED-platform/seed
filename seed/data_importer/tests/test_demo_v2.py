@@ -20,7 +20,6 @@ from seed.data_importer.tests.util import (
     FAKE_ROW,
 )
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
     Column,
     PropertyView,
@@ -34,6 +33,7 @@ from seed.models import (
     Cycle,
     PropertyState,
 )
+from seed.utils.organizations import create_organization
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +46,7 @@ class TestDemoV2(DataMappingBaseTestCase):
         import_file_data_state = getattr(self, 'import_file_data_state', DATA_STATE_IMPORT)
 
         user = User.objects.create(username='test')
-        org = Organization.objects.create()
+        org, _, _ = create_organization(user, "test-organization-a")
 
         cycle, _ = Cycle.objects.get_or_create(
             name=u'Test Hack Cycle 2015',
@@ -54,9 +54,6 @@ class TestDemoV2(DataMappingBaseTestCase):
             start=datetime.datetime(2015, 1, 1, tzinfo=timezone.get_current_timezone()),
             end=datetime.datetime(2015, 12, 31, tzinfo=timezone.get_current_timezone()),
         )
-
-        # Create an org user
-        OrganizationUser.objects.create(user=user, organization=org)
 
         import_record_1 = ImportRecord.objects.create(
             owner=user, last_modified_by=user, super_organization=org

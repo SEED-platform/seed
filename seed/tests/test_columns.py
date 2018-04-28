@@ -5,7 +5,6 @@
 :author
 """
 
-import json
 import os.path
 
 from django.core.exceptions import ValidationError
@@ -13,7 +12,7 @@ from django.test import TestCase
 
 from seed import models as seed_models
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.models import Organization, OrganizationUser
+from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     PropertyState,
     Column,
@@ -27,14 +26,13 @@ class TestColumns(TestCase):
 
     def setUp(self):
         self.fake_user = User.objects.create(username='test')
-        self.fake_org = Organization.objects.create()
-        OrganizationUser.objects.create(
-            user=self.fake_user,
-            organization=self.fake_org
-        )
+        self.fake_org, _, _ = create_organization(self.fake_user)
 
     def test_get_column_mapping(self):
         """Honor organizational bounds, get mapping data."""
+
+        # Calling organization create like this will not generate the default
+        # columns, which is okay for this test.
         org1 = Organization.objects.create()
         org2 = Organization.objects.create()
 
@@ -565,7 +563,7 @@ class TestColumnsByInventory(TestCase):
             found = False
             for def_column in Column.DEFAULT_COLUMNS:
                 if column['table_name'] == def_column['table_name'] and \
-                    column['column_name'] == def_column['column_name']:
+                        column['column_name'] == def_column['column_name']:
                     found = True
                     continue
 

@@ -100,7 +100,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
         columns_db = Column.retrieve_all(request.query_params['organization_id'], col_inventory_type, False)
         column_lookup = {}
         for c in columns_db:
-            column_lookup[c['name']] = c['displayName']
+            column_lookup[c['name']] = c['display_name']
         # make the csv header
         header = []
         for c in columns:

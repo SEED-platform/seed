@@ -42,5 +42,3 @@ EXCLUDE_FIELDS = [
     'conditioned_floor_area_orig',
     'source_eui_weather_normalized_orig',
 ]
-
-

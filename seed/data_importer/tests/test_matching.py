@@ -7,6 +7,8 @@
 import logging
 import os.path as osp
 
+from django.core.files.uploadedfile import SimpleUploadedFile
+
 from seed.data_importer import tasks
 from seed.data_importer.models import ImportFile
 from seed.data_importer.tests.util import (
@@ -15,7 +17,6 @@ from seed.data_importer.tests.util import (
     FAKE_MAPPINGS,
     FAKE_ROW,
 )
-from django.core.files.uploadedfile import SimpleUploadedFile
 from seed.models import (
     ASSESSED_RAW,
     ASSESSED_BS,

@@ -8,12 +8,12 @@
 from django.test import TestCase
 
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
     Column,
     ColumnListSetting,
     ColumnListSettingColumn,
 )
+from seed.utils.organizations import create_organization
 
 
 class TestColumnListSettings(TestCase):
@@ -21,11 +21,7 @@ class TestColumnListSettings(TestCase):
 
     def setUp(self):
         self.fake_user = User.objects.create(username='test')
-        self.fake_org = Organization.objects.create()
-        OrganizationUser.objects.create(
-            user=self.fake_user,
-            organization=self.fake_org
-        )
+        self.fake_org, _, _ = create_organization(self.fake_user)
 
     def test_adding_columns(self):
         """These are simple tests which really only test the m2m part. If these don't work, then django has

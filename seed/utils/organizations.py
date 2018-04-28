@@ -5,13 +5,14 @@
 :author
 """
 from seed.lib.superperms.orgs.models import (
-    Organization as SuperOrganization,
-    OrganizationUser as SuperOrganizationUser
+    Organization,
+    OrganizationUser,
 )
 
 from seed.models import Column
 
-def create_organization(user, org_name='', *args, **kwargs):
+
+def create_organization(user=None, org_name='', *args, **kwargs):
     """Helper script to create a user/org relationship from scratch.
 
     :param user: user inst.
@@ -20,12 +21,17 @@ def create_organization(user, org_name='', *args, **kwargs):
 
     """
     from seed.models import StatusLabel as Label
-    org = SuperOrganization.objects.create(
+    org_user = None
+    user_added = False
+
+    org = Organization.objects.create(
         name=org_name
     )
-    org_user, user_added = SuperOrganizationUser.objects.get_or_create(
-        user=user, organization=org
-    )
+
+    if user:
+        org_user, user_added = OrganizationUser.objects.get_or_create(
+            user=user, organization=org
+        )
 
     for label in Label.DEFAULT_LABELS:
         Label.objects.get_or_create(
@@ -34,6 +40,8 @@ def create_organization(user, org_name='', *args, **kwargs):
             defaults={'color': 'blue'},
         )
 
+    # upon initializing a new organization (SuperOrganization), create
+    # the default columns
     for column in Column.DEFAULT_COLUMNS:
         details = {
             'organization_id': org.id,
