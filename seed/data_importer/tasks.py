@@ -419,6 +419,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
                     hash_state_object(STR_TO_CLASS[table](organization=map_model_obj.organization),
                                       include_extra_data=False):
                     # Skip this object as it has no data...
+                    _log.warn("Skipping building during mapping")
                     continue
 
                 try:
@@ -910,9 +911,7 @@ def hash_state_object(obj, include_extra_data=True):
             return getattr(field_obj, field)
 
     m = hashlib.md5()
-
-    # TODO: Test the ALL_COMPARISON_FIELDS vs THIS METHOD
-    for f in Column.retrieve_db_field_name_from_db_tables():
+    for f in Column.retrieve_db_field_name_for_hash_comparison():
         obj_val = _get_field_from_obj(obj, f)
         m.update(str(f))
         m.update(str(obj_val))

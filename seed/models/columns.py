@@ -139,15 +139,16 @@ class Column(models.Model):
         ('TaxLotState', 'jurisdiction_tax_lot_id')
     ]
 
-    # These are the columns that are removed when looking for mapping fields or when attempting to merge
+    # These are the columns that are removed when looking to see if the records are the same
     COLUMN_EXCLUDE_FIELDS = [
         'id',
-        'extra_data',
         'source_type',
         'data_state',
+        'import_file',
         'merge_state',
         'confidence',
-        'normalized_address',
+        'extra_data',
+        # Records below are old and should not be uesed
         'source_eui_modeled_orig',
         'site_eui_orig',
         'occupied_floor_area_orig',
@@ -159,9 +160,12 @@ class Column(models.Model):
         'source_eui_weather_normalized_orig',
     ]
 
+    # These are fields that should not be mapped to
     EXCLUDED_MAPPING_FIELDS = [
+        'extra_data',
+        'normalized_address',
         'parent_property'
-        'import_file'
+
     ]
 
     INTERNAL_TYPE_TO_DATA_TYPE = {
@@ -172,6 +176,7 @@ class Column(models.Model):
         'DateField': 'date',
         'DateTimeField': 'datetime',
         'BooleanField': 'boolean',
+        'JSONField': 'string',
     }
 
     # These are the default columns ( also known as the fields in the database)
@@ -1014,7 +1019,7 @@ class Column(models.Model):
         return list(sorted(result))
 
     @staticmethod
-    def retrieve_db_field_name_from_db_tables():
+    def retrieve_db_field_name_for_hash_comparison():
         """
         Names only of the columns in the database (fields only, not extra data), indpendent of inventory type
 
