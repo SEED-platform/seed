@@ -13,13 +13,6 @@ from seed.models import (
     TaxLotState,
 )
 
-md = MappingData()
-property_state_fields = [x['name'] for x in sorted(md.property_state_data)]
-tax_lot_state_fields = [x['name'] for x in md.tax_lot_state_data]
-# TODO: Move these methods to the MappingData object and return from there
-PropertyState_to_PropertyState = tuple([(k, k) for k in sorted(property_state_fields)])
-TaxLotState_to_TaxLotState = tuple([(k, k) for k in tax_lot_state_fields])
-
 _log = logging.getLogger(__name__)
 
 
@@ -58,25 +51,32 @@ def get_attrs_with_mapping(data_set_buildings, mapping):
     return can_attrs
 
 
-def get_propertystate_attrs(data_set_buildings):
-    # Old school approach.
-    mapping = PropertyState_to_PropertyState
-    return get_attrs_with_mapping(data_set_buildings, mapping)
+def get_propertystate_attrs(organization_id, data_set_buildings):
+    # TODO: 4/28/2018 Move this to another class/method
+    md = MappingData(organization_id)
+    property_state_fields = [x['column_name'] for x in sorted(md.property_state_data)]
+    propertystate_to_propertystate = tuple([(k, k) for k in sorted(property_state_fields)])
+
+    return get_attrs_with_mapping(data_set_buildings, propertystate_to_propertystate)
 
 
-def get_taxlotstate_attrs(data_set_buildings):
-    mapping = TaxLotState_to_TaxLotState
-    return get_attrs_with_mapping(data_set_buildings, mapping)
+def get_taxlotstate_attrs(organization_id, data_set_buildings):
+    # TODO: 4/28/2018 Move this to another class/method
+    md = MappingData(organization_id)
+    tax_lot_state_fields = [x['column_name'] for x in md.tax_lot_state_data]
+    taxlotstate_to_taxlotstate = tuple([(k, k) for k in tax_lot_state_fields])
+
+    return get_attrs_with_mapping(data_set_buildings, taxlotstate_to_taxlotstate)
 
 
-def get_state_attrs(state_list):
+def get_state_attrs(organization_id, state_list):
     if not state_list:
         return []
 
     if isinstance(state_list[0], PropertyState):
-        return get_propertystate_attrs(state_list)
+        return get_propertystate_attrs(organization_id, state_list)
     elif isinstance(state_list[0], TaxLotState):
-        return get_taxlotstate_attrs(state_list)
+        return get_taxlotstate_attrs(organization_id, state_list)
 
 
 def _merge_extra_data(b1, b2, default=None):

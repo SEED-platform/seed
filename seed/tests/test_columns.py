@@ -541,6 +541,30 @@ class TestColumnsByInventory(TestCase):
 
         self.assertItemsEqual(c, data)
 
+    def test_retrieve_db_field_name_from_db_tables(self):
+        # should return the list of database columns without the need for an organization
+        names = Column.retrieve_db_field_name_from_db_tables()
+        expected = ['address_line_1', 'address_line_2', 'analysis_end_time', 'analysis_start_time', 'analysis_state',
+                    'analysis_state_message', 'block_number', 'building_certification', 'building_count', 'campus',
+                    'city', 'conditioned_floor_area', 'created', 'custom_id_1', 'district', 'energy_alerts',
+                    'energy_score', 'generation_date', 'gross_floor_area', 'home_energy_score_id',
+                    'jurisdiction_property_id', 'jurisdiction_tax_lot_id', 'latitude', 'longitude', 'lot_number',
+                    'number_properties', 'occupied_floor_area', 'owner', 'owner_address', 'owner_city_state',
+                    'owner_email', 'owner_postal_code', 'owner_telephone', 'pm_parent_property_id', 'pm_property_id',
+                    'postal_code', 'property_name', 'property_notes', 'property_type', 'recent_sale_date',
+                    'release_date', 'site_eui', 'site_eui_modeled', 'site_eui_weather_normalized', 'source_eui',
+                    'source_eui_modeled', 'source_eui_weather_normalized', 'space_alerts', 'state', 'ubid', 'updated',
+                    'use_description', 'year_built', 'year_ending']
+
+        self.assertListEqual(names, expected)
+
+    def test_retrieve_db_field_table_and_names_from_db_tables(self):
+        names = Column.retrieve_db_field_table_and_names_from_db_tables()
+        self.assertIn(('Property', 'campus'), names)
+        self.assertIn(('PropertyState', 'gross_floor_area'), names)
+        self.assertIn(('TaxLotState', 'address_line_1'), names)
+        self.assertNotIn(('PropertyState', 'gross_floor_area_orig'), names)
+
     def test_db_columns_in_default_columns(self):
         """
         This test ensures that all the columns in the database are defined in the Column.DEFAULT_COLUMNS
@@ -549,7 +573,7 @@ class TestColumnsByInventory(TestCase):
         Column.DEFAULT_COLUMNS
         """
 
-        all_columns = Column.retrieve_db_fields_by_table()
+        all_columns = Column.retrieve_db_fields_from_db_tables()
         # print json.dumps(all_columns, indent=2)
 
         # {
@@ -561,9 +585,9 @@ class TestColumnsByInventory(TestCase):
         errors = []
         for column in all_columns:
             found = False
-            for def_column in Column.DEFAULT_COLUMNS:
+            for def_column in Column.DATABASE_COLUMNS:
                 if column['table_name'] == def_column['table_name'] and \
-                        column['column_name'] == def_column['column_name']:
+                    column['column_name'] == def_column['column_name']:
                     found = True
                     continue
 

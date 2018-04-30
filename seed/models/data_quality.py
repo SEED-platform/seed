@@ -558,11 +558,8 @@ class DataQualityCheck(models.Model):
         :return: None
         """
 
-        # grab the columns so we can grab the display names
-        columns = Column.retrieve_all(self.organization, record_type, False)
-
-        # create lookup tuple for the display name
-        for c in columns:
+        # grab the columns so we can grab the display names, create lookup tuple for display name
+        for c in Column.retrieve_all(self.organization, record_type, False):
             self.column_lookup[(c['table_name'], c['column_name'])] = c['display_name']
 
         # grab all the rules once, save query time

@@ -457,7 +457,7 @@ def get_taxlot_columns(org):
 
 property_by_byorg = collections.defaultdict(lambda : set())
 def get_property_columns(org):
-    # HOHO TODO - Verify these functions and relocate to _localtools
+    # TODO - Verify these functions and relocate to _localtools
     org_id = str(org.pk)
 
     global property_by_byorg

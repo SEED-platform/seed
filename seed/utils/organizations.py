@@ -42,7 +42,7 @@ def create_organization(user=None, org_name='', *args, **kwargs):
 
     # upon initializing a new organization (SuperOrganization), create
     # the default columns
-    for column in Column.DEFAULT_COLUMNS:
+    for column in Column.DATABASE_COLUMNS:
         details = {
             'organization_id': org.id,
         }

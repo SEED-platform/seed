@@ -221,8 +221,7 @@ def _build_cleaner(org):
     :returns: dict of dicts. {'types': {'col_name': 'type'},}
     """
     units = {'types': {}}
-    for column in Column.objects.filter(mapped_mappings__super_organization=org).select_related(
-            'unit'):
+    for column in Column.objects.filter(mapped_mappings__super_organization=org).select_related('unit'):
         column_type = 'string'
         if column.unit:
             column_type = _translate_unit_to_type(
@@ -350,7 +349,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
     # *** END BREAK OUT ***
 
     # yes, there are three cascading for loops here. sorry :(
-    md = MappingData()
+    md = MappingData(org.id)
 
     for table, mappings in table_mappings.items():
         if not table:
@@ -416,12 +415,9 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
                 # sure that the object hasn't already been created.
                 # For example, in the test data the tax lot id is the same for many rows. Make sure
                 # to only create/save the object if it hasn't been created before.
-                if hash_state_object(
-                    map_model_obj,
-                    include_extra_data=False) == hash_state_object(
-                    STR_TO_CLASS[table](organization=map_model_obj.organization),
-                    include_extra_data=False
-                ):
+                if hash_state_object(map_model_obj, include_extra_data=False) == \
+                    hash_state_object(STR_TO_CLASS[table](organization=map_model_obj.organization),
+                                      include_extra_data=False):
                     # Skip this object as it has no data...
                     continue
 
@@ -519,15 +515,17 @@ def _data_quality_check(property_state_ids, taxlot_state_ids, identifier):
     """
     # initialize the cache for the data_quality results using the data_quality static method
     tasks = []
-    id_chunks = [[obj for obj in chunk] for chunk in batch(property_state_ids, 100)]
-    increment = get_cache_increment_value(id_chunks)
-    for ids in id_chunks:
-        tasks.append(check_data_chunk.s("PropertyState", ids, identifier, increment))
+    if property_state_ids:
+        id_chunks = [[obj for obj in chunk] for chunk in batch(property_state_ids, 100)]
+        increment = get_cache_increment_value(id_chunks)
+        for ids in id_chunks:
+            tasks.append(check_data_chunk.s("PropertyState", ids, identifier, increment))
 
-    id_chunks_tl = [[obj for obj in chunk] for chunk in batch(taxlot_state_ids, 100)]
-    increment_tl = get_cache_increment_value(id_chunks_tl)
-    for ids in id_chunks_tl:
-        tasks.append(check_data_chunk.s("TaxLotState", ids, identifier, increment_tl))
+    if taxlot_state_ids:
+        id_chunks_tl = [[obj for obj in chunk] for chunk in batch(taxlot_state_ids, 100)]
+        increment_tl = get_cache_increment_value(id_chunks_tl)
+        for ids in id_chunks_tl:
+            tasks.append(check_data_chunk.s("TaxLotState", ids, identifier, increment_tl))
 
     if tasks:
         # specify the chord as an immutable with .si
@@ -904,17 +902,6 @@ def _find_matches(un_m_address, canonical_buildings_addresses):
     return match_list
 
 
-# TODO: CLEANUP - What are we doing here?
-md = MappingData()
-ALL_COMPARISON_FIELDS = sorted(list(set([field['name'] for field in md.data])))
-# Make sure that the import_file isn't part of the hash, as the import_file filename always has
-# random characters appended to it in the uploads directory
-try:
-    ALL_COMPARISON_FIELDS.remove('import_file')
-except ValueError:
-    pass
-
-
 def hash_state_object(obj, include_extra_data=True):
     def _get_field_from_obj(field_obj, field):
         if not hasattr(field_obj, field):
@@ -924,7 +911,8 @@ def hash_state_object(obj, include_extra_data=True):
 
     m = hashlib.md5()
 
-    for f in ALL_COMPARISON_FIELDS:
+    # TODO: Test the ALL_COMPARISON_FIELDS vs THIS METHOD
+    for f in Column.retrieve_db_field_name_from_db_tables():
         obj_val = _get_field_from_obj(obj, f)
         m.update(str(f))
         m.update(str(obj_val))
@@ -1166,7 +1154,7 @@ class EquivalencePartitioner(object):
             for class_key in equivalence_classes:
                 if self.calculate_key_equivalence(class_key,
                                                   cmp_key) and not self.identities_are_different(
-                        identities_for_equivalence[class_key], identity_key):
+                    identities_for_equivalence[class_key], identity_key):
 
                     equivalence_classes[class_key].append(ndx)
 
@@ -1509,7 +1497,7 @@ def save_state_match(state1, state2):
 
     merged_state, changes = merging.merge_state(merged_state,
                                                 state1, state2,
-                                                merging.get_state_attrs([state1, state2]),
+                                                merging.get_state_attrs(state1.organization, [state1, state2]),
                                                 default=state2)
 
     AuditLogClass = PropertyAuditLog if isinstance(merged_state, PropertyState) else TaxLotAuditLog

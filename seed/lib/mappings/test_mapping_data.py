@@ -11,8 +11,10 @@ import logging
 
 from django.test import TestCase
 
+from seed.landing.models import SEEDUser as User
 from seed.lib.mappings import mapping_data
 from seed.models import Column, Unit, FLOAT
+from seed.utils.organizations import create_organization
 
 _log = logging.getLogger(__name__)
 
@@ -21,98 +23,106 @@ class TestMappingData(TestCase):
     """Test mapping data methods."""
 
     def setUp(self):
-        self.maxDiff = None
-        self.obj = mapping_data.MappingData()
+        self.user = User.objects.create_superuser('test_user@demo.com', 'test_user@demo.com', 'test_pass')
+        self.org, _, _ = create_organization(self.user)
 
     def test_mapping_data_init(self):
-        # _log.debug(json.dumps(self.obj.data, indent=4, sort_keys=True))
-
         # verify that the data loaded as expected
-        expected = {
-            "js_type": u"",
-            "name": "address_line_1",
-            "schema": "BEDES",
-            "table": "PropertyState",
-            "type": u"CharField",
-            "extra_data": False,
-        }
-        self.assertIn(expected, self.obj.data)
+        md = mapping_data.MappingData(self.org)
+        for d in md.data:
+            del d['id']
+
+        import json
+        print(json.dumps(md.data, indent=2))
 
         expected = {
-            "js_type": "",
-            "name": "state",
-            "schema": "BEDES",
-            "table": "TaxLotState",
-            "type": "CharField",
-            "extra_data": False,
+            "is_extra_data": False,
+            "display_name": "Address Line 1",
+            "dbName": "address_line_1",
+            "data_type": "string",
+            "sharedFieldType": "None",
+            "table_name": "PropertyState",
+            "column_name": "address_line_1"
         }
-        self.assertIn(expected, self.obj.data)
+        self.assertIn(expected, md.data)
+
+        expected = {
+            "is_extra_data": False,
+            "display_name": "State",
+            "dbName": "state",
+            "data_type": "string",
+            "sharedFieldType": "None",
+            "table_name": "TaxLotState",
+            "column_name": "state"
+        }
+        self.assertIn(expected, md.data)
 
     def test_keys(self):
-        d = self.obj.keys
+        md = mapping_data.MappingData(self.org)
+
+        d = md.keys
         # _log.debug(d)
+
+        print d
 
         # should only have one of each (3 of the fields are common in tax
         # lot and property table.
 
         expected_data = [
-            'address_line_1',
-            'address_line_2',
-            'block_number',
-            'building_certification',
-            'building_count',
-            'city',
-            'conditioned_floor_area',
-            'custom_id_1',
-            'district',
-            'energy_alerts',
-            'energy_score',
-            'generation_date',
-            'gross_floor_area',
-            'home_energy_score_id',
-            'import_file',
-            'jurisdiction_property_id',
-            'jurisdiction_tax_lot_id',
-            'lot_number',
-            'normalized_address',
-            'number_properties',
-            'occupied_floor_area',
-            'owner',
-            'owner_address',
-            'owner_city_state',
-            'owner_email',
-            'owner_postal_code',
-            'owner_telephone',
-            'pm_parent_property_id',
-            'pm_property_id',
-            'postal_code',
-            'latitude',
-            'longitude',
-            'property_name',
-            'property_notes',
-            'property_type',
-            'recent_sale_date',
-            'release_date',
-            'site_eui',
-            'site_eui_modeled',
-            'site_eui_weather_normalized',
-            'source_eui',
-            'source_eui_weather_normalized',
-            'space_alerts',
-            'state',
-            'use_description',
-            'year_built',
-            'year_ending',
-            'analysis_start_time',
-            'analysis_state_message',
-            'analysis_state',
-            'analysis_end_time',
-            'source_eui_modeled',
-            'updated',
-            'created',
-            'campus',
-            'parent_property',
-            'ubid'
+            u'address_line_1',
+            u'address_line_2',
+            u'block_number',
+            u'building_certification',
+            u'building_count',
+            u'city',
+            u'conditioned_floor_area',
+            u'custom_id_1',
+            u'district',
+            u'energy_alerts',
+            u'energy_score',
+            u'generation_date',
+            u'gross_floor_area',
+            u'home_energy_score_id',
+            u'jurisdiction_property_id',
+            u'jurisdiction_tax_lot_id',
+            u'lot_number',
+            u'number_properties',
+            u'occupied_floor_area',
+            u'owner',
+            u'owner_address',
+            u'owner_city_state',
+            u'owner_email',
+            u'owner_postal_code',
+            u'owner_telephone',
+            u'pm_parent_property_id',
+            u'pm_property_id',
+            u'postal_code',
+            u'latitude',
+            u'longitude',
+            u'property_name',
+            u'property_notes',
+            u'property_type',
+            u'recent_sale_date',
+            u'release_date',
+            u'site_eui',
+            u'site_eui_modeled',
+            u'site_eui_weather_normalized',
+            u'source_eui',
+            u'source_eui_weather_normalized',
+            u'space_alerts',
+            u'state',
+            u'use_description',
+            u'year_built',
+            u'year_ending',
+            u'analysis_start_time',
+            u'analysis_state_message',
+            u'analysis_state',
+            u'analysis_end_time',
+            u'source_eui_modeled',
+            u'updated',
+            u'created',
+            u'campus',
+            u'ubid'
         ]
 
         # nope you can't compare a list to keys, as keys are unordered
@@ -124,95 +134,74 @@ class TestMappingData(TestCase):
         self.assertEqual(set(expected_data), set(d))
 
     def test_find_column(self):
+        md = mapping_data.MappingData(self.org)
+
         expect_0 = {
-            "js_type": "",
-            "name": "city",
-            "schema": "BEDES",
-            "table": "TaxLotState",
-            "type": "CharField",
-            "extra_data": False,
+            'is_extra_data': False,
+            'display_name': u'City',
+            'dbName': u'city',
+            'data_type': u'string',
+            'sharedFieldType': u'None',
+            'table_name': u'TaxLotState',
+            'column_name': u'city'
         }
-
-        c = self.obj.find_column(expect_0['table'], expect_0['name'])
-
+        c = md.find_column(expect_0['table_name'], expect_0['column_name'])
+        del c['id']
         # _log.debug(json.dumps(c, indent=4, sort_keys=True))
         self.assertDictEqual(c, expect_0)
 
-        expect_0 = {
-            "js_type": "",
-            "name": "city",
-            "schema": "BEDES",
-            "table": "PropertyState",
-            "type": "CharField",
-            "extra_data": False,
-        }
-
-        c = self.obj.find_column(expect_0['table'], expect_0['name'])
-        self.assertDictEqual(c, expect_0)
-
-    def test_keys_with_table_names(self):
-        c = self.obj.keys_with_table_names
-        c_1 = [x for x in c if x[0] == 'PropertyState' and x[1] == 'address_line_1'][0]
-        self.assertEqual(c_1, ('PropertyState', 'address_line_1'))
-
-        c_2 = [x for x in c if x[0] == 'TaxLotState' and x[1] == 'address_line_1'][0]
-        self.assertEqual(c_2, ('TaxLotState', 'address_line_1'))
-
     def test_null_extra_data(self):
-        self.assertEquals(self.obj.extra_data, [])
+        md = mapping_data.MappingData(self.org)
+        self.assertEquals(md.extra_data, [])
 
     def test_extra_data(self):
         # load up a bunch of columns
-        Column.objects.get_or_create(column_name="a_column", table_name="")
+
+        Column.objects.get_or_create(organization=self.org, column_name="a_column", table_name="TaxLotState",
+                                     is_extra_data=True)
         u, _ = Unit.objects.get_or_create(unit_name="faraday", unit_type=FLOAT)
-        Column.objects.get_or_create(column_name="z_column", table_name="PropertyState", is_extra_data=True, unit=u)
-        columns = list(Column.objects.select_related('unit').exclude(column_name__in=self.obj.keys))
-        self.obj.add_extra_data(columns)
+        Column.objects.get_or_create(organization=self.org, column_name="z_column", table_name="PropertyState",
+                                     is_extra_data=True, unit=u)
+        # columns = list(Column.objects.select_related('unit').exclude(column_name__in=self.obj.keys))
+        # self.obj.add_extra_data(columns)
+
+        md = mapping_data.MappingData(self.org)
+
+        for c in md.data:
+            del c['id']
 
         # _log.debug(json.dumps(self.obj.data[0], indent=4, sort_keys=True))
         expected_data_0 = {
-            "extra_data": True,
-            "js_type": "string",
-            "name": "a_column",
-            "schema": "BEDES",
-            "table": "",
-            "type": "string"
-        }
-        expected_data_z = {
-            "extra_data": True,
-            "js_type": "float",
-            "name": "z_column",
-            "schema": "BEDES",
-            "table": "PropertyState",
-            "type": "float"
+            "is_extra_data": True,
+            "display_name": "A Column",
+            "dbName": "a_column",
+            "data_type": "None",
+            "sharedFieldType": "None",
+            "table_name": "TaxLotState",
+            "column_name": "a_column"
         }
 
-        self.assertDictEqual(self.obj.data[0], expected_data_0)
+        expected_data_z = {
+            "is_extra_data": True,
+            "display_name": "Z Column",
+            "dbName": "z_column",
+            "data_type": "None",
+            "sharedFieldType": "None",
+            "table_name": "PropertyState",
+            "column_name": "z_column"
+        }
+
+        import json
+        print json.dumps(md.data, indent=2)
 
         # _log.debug(json.dumps(self.obj.data, indent=4, sort_keys=True))
-        c = self.obj.find_column('', 'a_column')
+        c = md.find_column('TaxLotState', 'a_column')
         self.assertDictEqual(c, expected_data_0)
-        c = self.obj.find_column('PropertyState', 'z_column')
+        c = md.find_column('PropertyState', 'z_column')
         self.assertDictEqual(c, expected_data_z)
-        c = self.obj.find_column('DNE', 'z_column')
+        c = md.find_column('DNE', 'z_column')
         self.assertEqual(c, None)
 
-        expected = [
-            {
-                'name': u'a_column',
-                'js_type': 'string',
-                'table': '',
-                'extra_data': True,
-                'type': 'string',
-                'schema': 'BEDES'
-            }, {
-                'name': u'z_column',
-                'js_type': u'float',
-                'table': 'PropertyState',
-                'extra_data': True,
-                'type': u'float',
-                'schema': 'BEDES'
-            }
-        ]
-        c = self.obj.extra_data
+        expected = [ expected_data_z, expected_data_0]
+        c = md.extra_data
         self.assertListEqual(expected, c)

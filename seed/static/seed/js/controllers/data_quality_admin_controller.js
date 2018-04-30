@@ -339,7 +339,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
     var displayNames = {};
     _.forEach($scope.columns, function (column) {
       // TRANSLATION_FIXME
-      displayNames[column.name] = column.displayName;
+      displayNames[column.name] = column.display_name;
     });
 
     $scope.sortedRuleGroups = function () {

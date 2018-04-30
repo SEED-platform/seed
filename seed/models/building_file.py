@@ -112,7 +112,7 @@ class BuildingFile(models.Model):
             return False, None, None, messages
 
         # sub-select the data that are needed to create the PropertyState object
-        md = MappingData()
+        md = MappingData(organization_id)
         create_data = {"organization_id": organization_id}
         extra_data = {}
         for k, v in data.items():

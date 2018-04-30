@@ -715,12 +715,9 @@ class ImportFileViewSet(viewsets.ViewSet):
         import_file = ImportFile.objects.get(id=import_file_id)
         field_names = import_file.get_cached_mapped_columns
 
-        # get the columns in the db...
-        md = MappingData()
-        # _log.debug('md.keys_with_table_names are: {}'.format(md.keys_with_table_names))
-
+        # iterate over the columns in the database
         raw_db_fields = []
-        for db_field in md.keys_with_table_names:
+        for db_field in Column.retrieve_db_field_table_and_names_from_db_tables():
             if db_field in field_names:
                 raw_db_fields.append(db_field)
 
@@ -784,8 +781,7 @@ class ImportFileViewSet(viewsets.ViewSet):
                 if get_coparents:
                     for state in properties:
                         state['matched'] = False
-                        coparent = self.has_coparent(state['id'], 'properties',
-                                                     fields['PropertyState'])
+                        coparent = self.has_coparent(state['id'], 'properties', fields['PropertyState'])
                         if coparent:
                             state['matched'] = True
                             state['coparent'] = coparent
@@ -849,12 +845,8 @@ class ImportFileViewSet(viewsets.ViewSet):
         import_file = ImportFile.objects.get(id=import_file_id)
         field_names = import_file.get_cached_mapped_columns
 
-        # get the columns in the db...
-        md = MappingData()
-        _log.debug('md.keys_with_table_names are: {}'.format(md.keys_with_table_names))
-
         raw_db_fields = []
-        for db_field in md.keys_with_table_names:
+        for db_field in Column.retrieve_db_field_table_and_names_from_db_tables():
             if db_field in field_names:
                 raw_db_fields.append(db_field)
 
@@ -1929,8 +1921,7 @@ class ImportFileViewSet(viewsets.ViewSet):
         )
 
         # Get a list of the database fields in a list
-        md = mapping_data.MappingData()
-
+        md = mapping_data.MappingData(organization_id)
         # TODO: Move this to the MappingData class and remove calling add_extra_data
         # Check if there are any DB columns that are not defined in the
         # list of mapping data.

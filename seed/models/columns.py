@@ -139,6 +139,7 @@ class Column(models.Model):
         ('TaxLotState', 'jurisdiction_tax_lot_id')
     ]
 
+    # These are the columns that are removed when looking for mapping fields or when attempting to merge
     COLUMN_EXCLUDE_FIELDS = [
         'id',
         'extra_data',
@@ -158,6 +159,11 @@ class Column(models.Model):
         'source_eui_weather_normalized_orig',
     ]
 
+    EXCLUDED_MAPPING_FIELDS = [
+        'parent_property'
+        'import_file'
+    ]
+
     INTERNAL_TYPE_TO_DATA_TYPE = {
         'FloatField': 'double',  # yes, technically this is not the same, move along.
         'IntegerField': 'integer',
@@ -169,7 +175,7 @@ class Column(models.Model):
     }
 
     # These are the default columns ( also known as the fields in the database)
-    DEFAULT_COLUMNS = [
+    DATABASE_COLUMNS = [
         {
             'column_name': 'pm_property_id',
             'table_name': 'PropertyState',
@@ -551,13 +557,15 @@ class Column(models.Model):
         if (not self.is_extra_data) and self.table_name:
             # if it isn't extra data and the table_name IS set, then it must be part of the database fields
             found = False
-            for c in Column.DEFAULT_COLUMNS:
+            for c in Column.DATABASE_COLUMNS:
                 if self.table_name == c['table_name'] and self.column_name == c['column_name']:
                     found = True
 
             if not found:
                 raise ValidationError(
-                    {'is_extra_data': _('Column \'%s\':\'%s\' is not marked as extra data, but the field is not in the database') % (self.table_name, self.column_name)})
+                    {'is_extra_data': _(
+                        'Column \'%s\':\'%s\' is not marked as extra data, but the field is not in the database') % (
+                                          self.table_name, self.column_name)})
 
     @staticmethod
     def create_mappings_from_file(filename, organization, user, import_file_id=None):
@@ -769,18 +777,17 @@ class Column(models.Model):
                         )
                         return [obj]
 
-        md = MappingData()
-
         # Container to store the dicts with the Column object
         new_data = []
 
         for field in fields:
             new_field = field
 
-            # find the mapping data column (i.e. the database fields) that match, if it exists
-            # then set the extra data flag to true
-            db_field = md.find_column(field['to_table_name'], field['to_field'])
-            is_extra_data = False if db_field else True  # yes i am a db column, thus I am not extra_data
+            # Check if the extra_data field in the model object is a database column
+            is_extra_data = True
+            for c in Column.DATABASE_COLUMNS:
+                if field['to_table_name'] == c['table_name'] and field['to_field'] == c['column_name']:
+                    is_extra_data = False
 
             try:
                 to_org_col, _ = Column.objects.get_or_create(
@@ -825,8 +832,7 @@ class Column(models.Model):
                                                      is_extra_data=is_extra_data).first()
                 _log.debug("Grabbing the first from_column")
 
-            new_field['to_column_object'] = select_col_obj(field['to_field'],
-                                                           field['to_table_name'], to_org_col)
+            new_field['to_column_object'] = select_col_obj(field['to_field'], field['to_table_name'], to_org_col)
             new_field['from_column_object'] = select_col_obj(field['from_field'], "", from_org_col)
             new_data.append(new_field)
 
@@ -841,16 +847,12 @@ class Column(models.Model):
 
         :param model_obj: model_obj instance (either PropertyState or TaxLotState).
         """
-
-        md = MappingData()
-
         for key in model_obj.extra_data:
-            # Ascertain if our key is ``extra_data`` or not.
-
-            # This is doing way too much work to find if the fields are extra data, especially
-            # since that has been asked probably many times before.
-            db_field = md.find_column(model_obj.__class__.__name__, key)
-            is_extra_data = False if db_field else True  # yes i am a db column, thus I am not extra_data
+            # Check if the extra_data field in the model object is a database column
+            is_extra_data = True
+            for c in Column.DATABASE_COLUMNS:
+                if model_obj.__class__.__name__ == c['table_name'] and key == c['column_name']:
+                    is_extra_data = False
 
             # handle the special edge-case where an old organization may have duplicate columns
             # in the database. We should make this a migration in the future and put a validation
@@ -875,16 +877,16 @@ class Column(models.Model):
                                                         table_name=model_obj.__class__.__name__)
                         for c in columns:
                             if not ColumnMapping.objects.filter(
-                                    Q(column_raw=c) | Q(column_mapped=c)).exists():
+                                Q(column_raw=c) | Q(column_mapped=c)).exists():
                                 _log.debug("Deleting column object {}".format(c.column_name))
                                 c.delete()
 
                         # Check if there are more than one column still
                         if Column.objects.filter(
-                                column_name=key[:511],
-                                is_extra_data=is_extra_data,
-                                organization=model_obj.organization,
-                                table_name=model_obj.__class__.__name__).count() > 1:
+                            column_name=key[:511],
+                            is_extra_data=is_extra_data,
+                            organization=model_obj.organization,
+                            table_name=model_obj.__class__.__name__).count() > 1:
                             raise Exception(
                                 "Could not fix duplicate columns for {}. Contact dev team").format(
                                 key)
@@ -931,25 +933,6 @@ class Column(models.Model):
         return [c_count, cm_delete_count]
 
     @staticmethod
-    def _retrieve_db_columns():
-        """
-        Returns a predefined list of core columns in the database. This is a hardcoded list of all the
-        database fields along with additional information such as the display name.
-
-        :return: dict
-        """
-
-        # Grab the default columns and their details
-        hard_coded_columns = copy.deepcopy(Column.DEFAULT_COLUMNS)
-
-        md = MappingData()
-        for c in hard_coded_columns:
-            if not md.find_column(c['table_name'], c['column_name']):
-                print "Could not find column field in database for {}".format(c)
-
-        return hard_coded_columns
-
-    @staticmethod
     def retrieve_db_types():
         """
         return the data types for the database columns in the format of:
@@ -963,7 +946,7 @@ class Column(models.Model):
 
         :return: dict
         """
-        columns = Column._retrieve_db_columns()
+        columns = copy.deepcopy(Column.DATABASE_COLUMNS)
 
         MAP_TYPES = {
             'number': 'float',
@@ -1002,11 +985,50 @@ class Column(models.Model):
             set(list(Column.objects.filter(organization_id=org_id, is_extra_data=False).order_by('column_name').exclude(
                 table_name='').exclude(table_name=None).values_list('column_name', flat=True))))
 
-        print result
         return result
 
     @staticmethod
-    def retrieve_db_fields_by_table():
+    def retrieve_db_field_table_and_names_from_db_tables():
+        """
+        Similar to keys, except it returns a list of tuples of the columns that are in the database
+
+        .. code:
+            [
+              ('PropertyState', 'address_line_1'),
+              ('PropertyState', 'address_line_2'),
+              ('PropertyState', 'building_certification'),
+              ('PropertyState', 'building_count'),
+              ('TaxLotState', 'address_line_1'),
+              ('TaxLotState', 'address_line_2'),
+              ('TaxLotState', 'block_number'),
+              ('TaxLotState', 'city'),
+              ('TaxLotState', 'jurisdiction_tax_lot_id'),
+            ]
+
+        :return:list of tuples
+        """
+        result = set()
+        for d in Column.retrieve_db_fields_from_db_tables():
+            result.add((d['table_name'], d['column_name']))
+
+        return list(sorted(result))
+
+    @staticmethod
+    def retrieve_db_field_name_from_db_tables():
+        """
+        Names only of the columns in the database (fields only, not extra data), indpendent of inventory type
+
+        :return: list, names of columns
+        """
+        result = []
+        columns = Column.retrieve_db_fields_from_db_tables()
+        for c in columns:
+            result.append(c['column_name'])
+
+        return list(sorted(set(result)))
+
+    @staticmethod
+    def retrieve_db_fields_from_db_tables():
         """
         Return the list of database fields that are in the models. This is independent of what are in the
         Columns table.
@@ -1015,9 +1037,11 @@ class Column(models.Model):
         """
         all_columns = []
         for f in apps.get_model('seed', 'PropertyState')._meta.fields + \
-                apps.get_model('seed', 'TaxLotState')._meta.fields + \
-                apps.get_model('seed', 'Property')._meta.fields + \
-                apps.get_model('seed', 'TaxLot')._meta.fields:
+                 apps.get_model('seed', 'TaxLotState')._meta.fields + \
+                 apps.get_model('seed', 'Property')._meta.fields + \
+                 apps.get_model('seed', 'TaxLot')._meta.fields:
+
+            # this remove import_file and others
             if f.get_internal_type() == 'ForeignKey':
                 continue
 
@@ -1034,6 +1058,45 @@ class Column(models.Model):
 
                 )
         return all_columns
+
+    @staticmethod
+    def retrieve_mapping_columns(org_id):
+        """
+        Retrieve all the columns that are for maping for an organization in a dictionary.
+
+        :param org_id: org_id, Organization ID
+        :return: list, list of dict
+        """
+        columns_db = Column.objects.filter(organization_id=org_id).exclude(table_name='').exclude(table_name=None)
+        columns = []
+        for c in columns_db:
+            if c.column_name in Column.COLUMN_EXCLUDE_FIELDS or c.column_name in Column.EXCLUDED_MAPPING_FIELDS:
+                continue
+
+            # Eventually move this over to Column serializer directly
+            new_c = model_to_dict(c)
+
+            # dbName is the raw column name. Eventually move column_name to be this name, but
+            # that will require front end changes
+            new_c['dbName'] = new_c['column_name']
+            del new_c['shared_field_type']
+            new_c['sharedFieldType'] = c.get_shared_field_type_display()
+
+            if (new_c['table_name'], new_c['column_name']) in Column.PINNED_COLUMNS:
+                new_c['pinnedLeft'] = True
+
+            if not new_c['display_name']:
+                new_c['display_name'] = titlecase(new_c['column_name'])
+
+            del new_c['import_file']
+            del new_c['organization']
+            del new_c['enum']
+            del new_c['units_pint']
+            del new_c['unit']
+
+            columns.append(new_c)
+
+        return columns
 
     @staticmethod
     def retrieve_all(org_id, inventory_type, only_used):
@@ -1085,10 +1148,11 @@ class Column(models.Model):
                                              column_name=new_c['column_name'],
                                              is_extra_data=False).exists():
                         new_c['display_name'] = new_c['display_name'] + ' (%s)' % INVENTORY_DISPLAY[new_c['table_name']]
-                        new_c['name'] = "%s_%s" % (INVENTORY_MAP_OPPOSITE_PREPEND[inventory_type.lower()], new_c['name'])
+                        new_c['name'] = "%s_%s" % (
+                            INVENTORY_MAP_OPPOSITE_PREPEND[inventory_type.lower()], new_c['name'])
             else:
                 # if it is extra data and is not related, then tag the name with _extra
-                if c.is_extra_data or new_c['name'] in ['id', 'notes_count']:
+                if new_c['is_extra_data'] or new_c['name'] in ['id', 'notes_count']:
                     new_c['name'] += '_extra'
 
             # remove a bunch of fields that are not needed in the list of columns

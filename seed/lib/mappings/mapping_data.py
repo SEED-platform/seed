@@ -6,8 +6,7 @@
 """
 import logging
 
-from seed.models import PropertyState, TaxLotState, Property, TaxLot
-from seed.utils import constants
+from django.apps import apps
 
 _log = logging.getLogger(__name__)
 
@@ -29,66 +28,10 @@ class MappingData(object):
 
     """
 
-    def __init__(self, exclude_fields=None):
-        if not exclude_fields:
-            exclude_fields = constants.EXCLUDE_FIELDS
-
-        # So bedes compliant fields are defined in the database? That is strange
-        self.data = []
+    def __init__(self, organization_id ):
+        self.data = apps.get_model('seed', 'Column').retrieve_mapping_columns(organization_id)
         self.property_state_data = []
         self.tax_lot_state_data = []
-
-        for f in PropertyState._meta.fields:
-            if f.name not in exclude_fields:
-                column = {
-                    'table': 'PropertyState',
-                    'name': f.name,
-                    'type': f.get_internal_type() if f.get_internal_type else 'string',
-                    'js_type': self._normalize_mappable_type(f.get_internal_type()),
-                    'schema': 'BEDES',
-                    'extra_data': False,
-                }
-                self.data.append(column)
-
-        for f in TaxLotState._meta.fields:
-            if f.name not in exclude_fields:
-                column = {
-                    'table': 'TaxLotState',
-                    'name': f.name,
-                    'type': f.get_internal_type() if f.get_internal_type else 'string',
-                    'js_type': self._normalize_mappable_type(f.get_internal_type()),
-                    'schema': 'BEDES',
-                    'extra_data': False,
-                }
-
-                self.data.append(column)
-
-        # add in the property and taxlot fields
-        for f in TaxLot._meta.fields:
-            if f.name not in exclude_fields:
-                column = {
-                    'table': 'TaxLot',
-                    'name': f.name,
-                    'type': f.get_internal_type() if f.get_internal_type else 'string',
-                    'js_type': self._normalize_mappable_type(f.get_internal_type()),
-                    'schema': 'Unknown',
-                    'extra_data': False,
-                }
-
-                self.data.append(column)
-
-        for f in Property._meta.fields:
-            if f.name not in exclude_fields:
-                column = {
-                    'table': 'Property',
-                    'name': f.name,
-                    'type': f.get_internal_type() if f.get_internal_type else 'string',
-                    'js_type': self._normalize_mappable_type(f.get_internal_type()),
-                    'schema': 'Unknown',
-                    'extra_data': False,
-                }
-
-                self.data.append(column)
 
         self.sort_data()
 
@@ -122,8 +65,7 @@ class MappingData(object):
         """
         for c in columns:
             unit = c.unit.get_unit_type_display().lower() if c.unit else 'string'
-            _log.debug("Adding extra data column for table {} and column {}".format(c.column_name,
-                                                                                    c.table_name))
+            _log.debug("Adding extra data column for table {} and column {}".format(c.column_name, c.table_name))
             self.data.append(
                 {
                     'name': c.column_name,
@@ -148,7 +90,7 @@ class MappingData(object):
 
         result = set()
         for d in self.data:
-            result.add(d['name'])
+            result.add(d['column_name'])
 
         return list(sorted(result))
 
@@ -173,10 +115,9 @@ class MappingData(object):
             ]
 
         """
-
         result = set()
         for d in self.data:
-            result.add((d['table'], d['name']))
+            result.add((d['table_name'], d['column_name']))
 
         return list(sorted(result))
 
@@ -203,7 +144,7 @@ class MappingData(object):
 
         f = None
         try:
-            f = [item for item in self.data if item['extra_data']]
+            f = [item for item in self.data if item['is_extra_data']]
         except StopIteration:
             pass
 
@@ -216,16 +157,15 @@ class MappingData(object):
         Returns: None, updates member variable
 
         """
-        self.data = sorted(self.data,
-                           key=lambda k: (k['table'].lower(), k['name']))
+        self.data = sorted(self.data, key=lambda k: (k['table_name'].lower(), k['column_name']))
 
         # Only look at the property state and tax lot state. The fields that are on Property and Tax Lot just ignore
         # for now.
-        self.property_state_data = sorted([x for x in self.data if x['table'] == 'PropertyState'],
-                                          key=lambda k: (k['table'].lower(), k['name']))
+        self.property_state_data = sorted([x for x in self.data if x['table_name'] == 'PropertyState'],
+                                          key=lambda k: (k['table_name'].lower(), k['column_name']))
 
-        self.tax_lot_state_data = sorted([x for x in self.data if x['table'] == 'TaxLotState'],
-                                         key=lambda k: (k['table'].lower(), k['name']))
+        self.tax_lot_state_data = sorted([x for x in self.data if x['table_name'] == 'TaxLotState'],
+                                         key=lambda k: (k['table_name'].lower(), k['column_name']))
 
     def find_column(self, table_name, column_name):
         """
@@ -243,9 +183,10 @@ class MappingData(object):
 
         f = None
         try:
-            f = (item for item in self.data if
-                 item['name'].lower() == column_name and
-                 item['table'].lower() == table_name).next()
+            f = (
+                item for item in self.data if
+                item['table_name'].lower() == table_name and item['column_name'].lower() == column_name
+            ).next()
         except StopIteration:
             pass
 

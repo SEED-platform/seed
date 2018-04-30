@@ -546,27 +546,6 @@ angular.module('BE.seed.controller.mapping', [])
         });
       };
 
-      // As far as I can tell, this is never used.
-      // /**
-      //  * show_mapping_progress: shows the progress bar and kicks off the mapping,
-      //  *   after saving column mappings
-      //  */
-      // $scope.show_mapping_progress = function () {
-      //   $scope.import_file.progress = 0;
-      //   $scope.save_mappings = true;
-      //   mapping_service.save_mappings(
-      //     $scope.import_file.id,
-      //     $scope.get_mappings()
-      //   ).then(function (data) {
-      //       // start mapping
-      //       mapping_service.start_mapping($scope.import_file.id).then(function (data) {
-      //         // save maps start mapping data
-      //         check_mapping(data.progress_key);
-      //       });
-      //     });
-      // };
-
-
       /**
        * reverse titleCase mappings which were titleCase in the suggestion input
        */
