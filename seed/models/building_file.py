@@ -250,7 +250,7 @@ class BuildingFile(models.Model):
             merged_state, changed = merge_state(merged_state,
                                                 property_view.state,
                                                 property_state,
-                                                get_state_attrs(organization_id, [property_view.state, property_state]))
+                                                get_state_attrs([property_view.state, property_state]))
 
             # log the merge
             # Not a fan of the parent1/parent2 logic here, seems error prone, what this

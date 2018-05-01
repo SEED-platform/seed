@@ -52,7 +52,8 @@ def get_attrs_with_mapping(data_set_buildings, mapping):
 
 
 def get_state_to_state_tuple(organization_id, inventory):
-    columns = Column.retrieve_hash_columns(organization_id)
+    """Return the list of the database fields based on the inventory type"""
+    columns = Column.retrieve_db_fields_from_db_tables()
 
     fields = []
     for c in columns:
@@ -62,24 +63,25 @@ def get_state_to_state_tuple(organization_id, inventory):
     return tuple([(k, k) for k in sorted(fields)])
 
 
-def get_propertystate_attrs(organization_id, data_set_buildings):
-    state_to_state = get_state_to_state_tuple(organization_id, 'PropertyState')
+def get_propertystate_attrs(data_set_buildings):
+    state_to_state = get_state_to_state_tuple('PropertyState')
     return get_attrs_with_mapping(data_set_buildings, state_to_state)
 
 
-def get_taxlotstate_attrs(organization_id, data_set_buildings):
-    state_to_state = get_state_to_state_tuple(organization_id, 'TaxLotState')
+def get_taxlotstate_attrs(data_set_buildings):
+    state_to_state = get_state_to_state_tuple('TaxLotState')
     return get_attrs_with_mapping(data_set_buildings, state_to_state)
 
 
-def get_state_attrs(organization_id, state_list):
+def get_state_attrs(state_list):
+    """Return a list of state attributes. This does not include any of the extra data columns"""
     if not state_list:
         return []
 
     if isinstance(state_list[0], PropertyState):
-        return get_propertystate_attrs(organization_id, state_list)
+        return get_propertystate_attrs(state_list)
     elif isinstance(state_list[0], TaxLotState):
-        return get_taxlotstate_attrs(organization_id, state_list)
+        return get_taxlotstate_attrs(state_list)
 
 
 def _merge_extra_data(b1, b2, default=None):

@@ -491,6 +491,7 @@ class FakeStatusLabelFactory(BaseFake):
         if created:
             # If a new label, then assign a color.
             label.color = label_value[0]
+
         return label
 
 

@@ -9,11 +9,12 @@ import logging
 from django.test import TestCase
 
 from seed.landing.models import SEEDUser as User
-from seed.lib.merging.merging import get_state_to_state_tuple
+from seed.lib.merging.merging import get_state_attrs, get_state_to_state_tuple
 from seed.test_helpers.fake import (
     FakePropertyViewFactory,
     FakeTaxLotViewFactory
 )
+from seed.models.columns import Column
 from seed.utils.organizations import create_organization
 
 logger = logging.getLogger(__name__)
@@ -34,6 +35,25 @@ class StateFieldsTest(TestCase):
         self.org, _, _ = create_organization(self.user)
         self.taxlot_view_factory = FakeTaxLotViewFactory(organization=self.org)
         self.property_view_factory = FakePropertyViewFactory(organization=self.org, user=self.user)
+
+    def test_get_state_attrs(self):
+        # create the column for data_1
+        Column.objects.create(
+            column_name=u'data_1',
+            table_name=u'TaxLotState',
+            organization=self.org,
+            is_extra_data=True,
+        )
+        tlv1 = self.taxlot_view_factory.get_taxlot_view(extra_data={"data_1": "value_1"})
+        tlv2 = self.taxlot_view_factory.get_taxlot_view(extra_data={"data_1": "value_2"})
+
+        self.assertEqual(tlv1.state.extra_data['data_1'], 'value_1')
+        self.assertEqual(tlv2.state.extra_data['data_1'], 'value_2')
+
+        res = get_state_attrs([tlv1.state, tlv2.state])
+        self.assertEqual(res['custom_id_1'], {tlv2.state: None, tlv1.state: None})
+        self.assertEqual(res['postal_code'], {tlv2.state: tlv2.state.postal_code, tlv1.state: tlv1.state.postal_code})
+        self.assertTrue('data_1' not in res.keys())
 
     def test_property_state(self):
         property_view_1 = self.property_view_factory.get_property_view()
@@ -69,7 +89,7 @@ class StateFieldsTest(TestCase):
                     (u'use_description', u'use_description'), (u'year_built', u'year_built'),
                     (u'year_ending', u'year_ending'))
 
-        result = get_state_to_state_tuple(self.org, 'PropertyState')
+        result = get_state_to_state_tuple('PropertyState')
         self.assertSequenceEqual(expected, result)
 
     def test_taxlot_state(self):
@@ -79,5 +99,5 @@ class StateFieldsTest(TestCase):
             (u'district', u'district'), (u'jurisdiction_tax_lot_id', u'jurisdiction_tax_lot_id'),
             (u'normalized_address', u'normalized_address'), (u'number_properties', u'number_properties'),
             (u'postal_code', u'postal_code'), (u'state', u'state'))
-        result = get_state_to_state_tuple(self.org, u'TaxLotState')
+        result = get_state_to_state_tuple(u'TaxLotState')
         self.assertSequenceEqual(expected, result)
