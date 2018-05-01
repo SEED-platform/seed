@@ -51,22 +51,26 @@ def get_attrs_with_mapping(data_set_buildings, mapping):
     return can_attrs
 
 
-def get_propertystate_attrs(organization_id, data_set_buildings):
-    # TODO: 4/28/2018 Move this to another class/method
+def get_state_to_state_tuple(organization_id, inventory):
     md = MappingData(organization_id)
-    property_state_fields = [x['column_name'] for x in sorted(md.property_state_data)]
-    propertystate_to_propertystate = tuple([(k, k) for k in sorted(property_state_fields)])
+    if inventory == 'PropertyState':
+        property_state_fields = [x['column_name'] for x in sorted(md.property_state_data)]
+        return tuple([(k, k) for k in sorted(property_state_fields)])
+    elif inventory == 'TaxLotState':
+        tax_lot_state_fields = [x['column_name'] for x in md.tax_lot_state_data]
+        return tuple([(k, k) for k in tax_lot_state_fields])
+    else:
+        raise Exception("Inventory type not defined for get_state_to_state_tuple")
 
-    return get_attrs_with_mapping(data_set_buildings, propertystate_to_propertystate)
+
+def get_propertystate_attrs(organization_id, data_set_buildings):
+    state_to_state = get_state_to_state_tuple(organization_id, 'PropertyState')
+    return get_attrs_with_mapping(data_set_buildings, state_to_state)
 
 
 def get_taxlotstate_attrs(organization_id, data_set_buildings):
-    # TODO: 4/28/2018 Move this to another class/method
-    md = MappingData(organization_id)
-    tax_lot_state_fields = [x['column_name'] for x in md.tax_lot_state_data]
-    taxlotstate_to_taxlotstate = tuple([(k, k) for k in tax_lot_state_fields])
-
-    return get_attrs_with_mapping(data_set_buildings, taxlotstate_to_taxlotstate)
+    state_to_state = get_state_to_state_tuple(organization_id, 'TaxLotState')
+    return get_attrs_with_mapping(data_set_buildings, state_to_state)
 
 
 def get_state_attrs(organization_id, state_list):

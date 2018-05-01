@@ -61,25 +61,13 @@ class TestPropertySerializers(DeleteModelsTestCase):
             email='test_user@demo.com', **user_details
         )
         self.org, _, _ = create_organization(self.user)
-        self.audit_log_factory = FakePropertyAuditLogFactory(
-            organization=self.org, user=self.user
-        )
-        self.property_factory = FakePropertyFactory(
-            organization=self.org
-        )
-        self.property_state_factory = FakePropertyStateFactory(
-            organization=self.org
-        )
-        self.property_view_factory = FakePropertyViewFactory(
-            organization=self.org, user=self.user
-        )
+        self.audit_log_factory = FakePropertyAuditLogFactory(organization=self.org, user=self.user)
+        self.property_factory = FakePropertyFactory(organization=self.org)
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+        self.property_view_factory = FakePropertyViewFactory(organization=self.org, user=self.user)
         self.ga_factory = FakeGreenAssessmentFactory(organization=self.org)
-        self.gap_factory = FakeGreenAssessmentPropertyFactory(
-            organization=self.org, user=self.user
-        )
-        self.label_factory = FakeStatusLabelFactory(
-            organization=self.org
-        )
+        self.gap_factory = FakeGreenAssessmentPropertyFactory(organization=self.org, user=self.user)
+        self.label_factory = FakeStatusLabelFactory(organization=self.org)
         self.assessment = self.ga_factory.get_green_assessment()
         self.property_view = self.property_view_factory.get_property_view()
         self.gap_data = {

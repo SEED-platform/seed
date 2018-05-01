@@ -28,7 +28,7 @@ class MappingData(object):
 
     """
 
-    def __init__(self, organization_id ):
+    def __init__(self, organization_id):
         self.data = apps.get_model('seed', 'Column').retrieve_mapping_columns(organization_id)
         self.property_state_data = []
         self.tax_lot_state_data = []
@@ -46,7 +46,6 @@ class MappingData(object):
         Returns: normalized string with JavaScript data types
 
         """
-
         return in_str.lower().replace('field', ''). \
             replace('integer', 'float'). \
             replace('time', ''). \
