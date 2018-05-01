@@ -162,9 +162,8 @@ class Column(models.Model):
     # These are fields that should not be mapped to
     EXCLUDED_MAPPING_FIELDS = [
         'extra_data',
+        'lot_number',
         'normalized_address',
-        'parent_property'
-
     ]
 
     INTERNAL_TYPE_TO_DATA_TYPE = {
@@ -254,6 +253,18 @@ class Column(models.Model):
             'column_name': 'state',
             'table_name': 'TaxLotState',
             'display_name': 'State',
+            'data_type': 'string',
+        }, {
+            # This should never be mapped to!
+            'column_name': 'normalized_address',
+            'table_name': 'PropertyState',
+            'display_name': 'Normalized Address',
+            'data_type': 'string',
+        }, {
+            # This should never be mapped to!
+            'column_name': 'normalized_address',
+            'table_name': 'TaxLotState',
+            'display_name': 'Normalized Address',
             'data_type': 'string',
         }, {
             'column_name': 'postal_code',
@@ -569,7 +580,7 @@ class Column(models.Model):
                 raise ValidationError(
                     {'is_extra_data': _(
                         'Column \'%s\':\'%s\' is not marked as extra data, but the field is not in the database') % (
-                                          self.table_name, self.column_name)})
+                        self.table_name, self.column_name)})
 
     @staticmethod
     def create_mappings_from_file(filename, organization, user, import_file_id=None):
@@ -882,16 +893,16 @@ class Column(models.Model):
                                                         table_name=model_obj.__class__.__name__)
                         for c in columns:
                             if not ColumnMapping.objects.filter(
-                                Q(column_raw=c) | Q(column_mapped=c)).exists():
+                                    Q(column_raw=c) | Q(column_mapped=c)).exists():
                                 _log.debug("Deleting column object {}".format(c.column_name))
                                 c.delete()
 
                         # Check if there are more than one column still
                         if Column.objects.filter(
-                            column_name=key[:511],
-                            is_extra_data=is_extra_data,
-                            organization=model_obj.organization,
-                            table_name=model_obj.__class__.__name__).count() > 1:
+                                column_name=key[:511],
+                                is_extra_data=is_extra_data,
+                                organization=model_obj.organization,
+                                table_name=model_obj.__class__.__name__).count() > 1:
                             raise Exception(
                                 "Could not fix duplicate columns for {}. Contact dev team").format(
                                 key)
@@ -1042,9 +1053,9 @@ class Column(models.Model):
         """
         all_columns = []
         for f in apps.get_model('seed', 'PropertyState')._meta.fields + \
-                 apps.get_model('seed', 'TaxLotState')._meta.fields + \
-                 apps.get_model('seed', 'Property')._meta.fields + \
-                 apps.get_model('seed', 'TaxLot')._meta.fields:
+                apps.get_model('seed', 'TaxLotState')._meta.fields + \
+                apps.get_model('seed', 'Property')._meta.fields + \
+                apps.get_model('seed', 'TaxLot')._meta.fields:
 
             # this remove import_file and others
             if f.get_internal_type() == 'ForeignKey':
@@ -1063,6 +1074,45 @@ class Column(models.Model):
 
                 )
         return all_columns
+
+    @staticmethod
+    def retrieve_hash_columns(org_id):
+        """
+        Retrieve all the columns that are for hashing the property and taxlot for merging
+
+        :param org_id: org_id, Organization ID
+        :return: list, list of dict
+        """
+        columns_db = Column.objects.filter(organization_id=org_id).exclude(table_name='').exclude(table_name=None)
+        columns = []
+        for c in columns_db:
+            if c.column_name in Column.COLUMN_EXCLUDE_FIELDS:
+                continue
+
+            # Eventually move this over to Column serializer directly
+            new_c = model_to_dict(c)
+
+            # dbName is the raw column name. Eventually move column_name to be this name, but
+            # that will require front end changes
+            new_c['dbName'] = new_c['column_name']
+            del new_c['shared_field_type']
+            new_c['sharedFieldType'] = c.get_shared_field_type_display()
+
+            if (new_c['table_name'], new_c['column_name']) in Column.PINNED_COLUMNS:
+                new_c['pinnedLeft'] = True
+
+            if not new_c['display_name']:
+                new_c['display_name'] = titlecase(new_c['column_name'])
+
+            del new_c['import_file']
+            del new_c['organization']
+            del new_c['enum']
+            del new_c['units_pint']
+            del new_c['unit']
+
+            columns.append(new_c)
+
+        return columns
 
     @staticmethod
     def retrieve_mapping_columns(org_id):

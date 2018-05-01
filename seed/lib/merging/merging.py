@@ -7,8 +7,8 @@
 import logging
 from collections import defaultdict
 
-from seed.lib.mappings.mapping_data import MappingData
 from seed.models import (
+    Column,
     PropertyState,
     TaxLotState,
 )
@@ -52,15 +52,14 @@ def get_attrs_with_mapping(data_set_buildings, mapping):
 
 
 def get_state_to_state_tuple(organization_id, inventory):
-    md = MappingData(organization_id)
-    if inventory == 'PropertyState':
-        property_state_fields = [x['column_name'] for x in sorted(md.property_state_data)]
-        return tuple([(k, k) for k in sorted(property_state_fields)])
-    elif inventory == 'TaxLotState':
-        tax_lot_state_fields = [x['column_name'] for x in md.tax_lot_state_data]
-        return tuple([(k, k) for k in tax_lot_state_fields])
-    else:
-        raise Exception("Inventory type not defined for get_state_to_state_tuple")
+    columns = Column.retrieve_hash_columns(organization_id)
+
+    fields = []
+    for c in columns:
+        if c['table_name'] == inventory:
+            fields.append(c['column_name'])
+
+    return tuple([(k, k) for k in sorted(fields)])
 
 
 def get_propertystate_attrs(organization_id, data_set_buildings):

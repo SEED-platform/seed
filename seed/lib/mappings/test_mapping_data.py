@@ -191,8 +191,8 @@ class TestMappingData(TestCase):
             "column_name": "z_column"
         }
 
-        import json
-        print json.dumps(md.data, indent=2)
+        # import json
+        # print json.dumps(md.data, indent=2)
 
         # _log.debug(json.dumps(self.obj.data, indent=4, sort_keys=True))
         c = md.find_column('TaxLotState', 'a_column')
@@ -202,6 +202,6 @@ class TestMappingData(TestCase):
         c = md.find_column('DNE', 'z_column')
         self.assertEqual(c, None)
 
-        expected = [ expected_data_z, expected_data_0]
+        expected = [expected_data_z, expected_data_0]
         c = md.extra_data
         self.assertListEqual(expected, c)

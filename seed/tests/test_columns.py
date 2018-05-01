@@ -136,11 +136,11 @@ class TestColumns(TestCase):
         seed_models.Column.create_mappings(test_map, self.fake_org, self.fake_user)
         test_mapping, _ = ColumnMapping.get_column_mappings(self.fake_org)
         expected = {
-            u'Wookiee': (u'PropertyState', u'Dothraki'),
-            u'address': (u'TaxLotState', u'address'),
-            u'eui': (u'PropertyState', u'site_eui'),
+            u'Wookiee': (u'PropertyState', u'Dothraki', u'', True),
+            u'address': (u'TaxLotState', u'address', u'', True),
+            u'eui': (u'PropertyState', u'site_eui', u'Site EUI', False),
             # u'Ewok': (u'TaxLotState', u'Merovingian'), # this does not show up because it was set before the last one
-            u'Ewok': (u'TaxLotState', u'Hattin'),
+            u'Ewok': (u'TaxLotState', u'Hattin', u'', True),
         }
         self.assertDictEqual(expected, test_mapping)
         self.assertTrue(test_mapping['Ewok'], 'Hattin')
@@ -166,12 +166,12 @@ class TestColumns(TestCase):
         test_mapping = ColumnMapping.get_column_mappings_by_table_name(self.fake_org)
         expected = {
             u'PropertyState': {
-                u'Wookiee': (u'PropertyState', u'Dothraki'),
-                u'eui': (u'PropertyState', u'site_eui'),
+                u'Wookiee': (u'PropertyState', u'Dothraki', u'', True),
+                u'eui': (u'PropertyState', u'site_eui', u'Site EUI', False),
             },
             u'TaxLotState': {
-                u'address': (u'TaxLotState', u'address'),
-                u'Ewok': (u'TaxLotState', u'Hattin'),
+                u'address': (u'TaxLotState', u'address', u'', True),
+                u'Ewok': (u'TaxLotState', u'Hattin', u'', True),
             }
         }
         self.assertDictEqual(test_mapping, expected)
@@ -587,13 +587,13 @@ class TestColumnsByInventory(TestCase):
             found = False
             for def_column in Column.DATABASE_COLUMNS:
                 if column['table_name'] == def_column['table_name'] and \
-                    column['column_name'] == def_column['column_name']:
+                        column['column_name'] == def_column['column_name']:
                     found = True
                     continue
 
             if found:
                 continue
             else:
-                errors.append('Could not find column_name/table_name/data_type in Column.DEFAULT_COLUMNS: %s' % column)
+                errors.append('Could not find column_name/table_name/data_type in Column.DATABASE_COLUMNS: %s' % column)
 
         self.assertEqual(errors, [])

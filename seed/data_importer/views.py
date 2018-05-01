@@ -41,7 +41,6 @@ from seed.decorators import ajax_request, ajax_request_class
 from seed.decorators import get_prog_key
 from seed.lib.mappings import mapper as simple_mapper
 from seed.lib.mappings import mapping_data
-from seed.lib.mappings.mapping_data import MappingData
 from seed.lib.mcm import mapper
 from seed.lib.merging import merging
 from seed.lib.superperms.orgs.decorators import has_perm_class
