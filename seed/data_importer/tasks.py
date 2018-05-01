@@ -1150,7 +1150,7 @@ class EquivalencePartitioner(object):
             for class_key in equivalence_classes:
                 if self.calculate_key_equivalence(class_key,
                                                   cmp_key) and not self.identities_are_different(
-                        identities_for_equivalence[class_key], identity_key):
+                    identities_for_equivalence[class_key], identity_key):
 
                     equivalence_classes[class_key].append(ndx)
 
@@ -1334,8 +1334,7 @@ def _match_properties_and_taxlots(file_pk):
     duplicates_of_existing_taxlot_states = []
     if all_unmatched_properties:
         # Filter out the duplicates within the import file.
-        unmatched_properties, duplicate_property_states = filter_duplicated_states(
-            all_unmatched_properties)
+        unmatched_properties, duplicate_property_states = filter_duplicated_states(all_unmatched_properties)
 
         property_partitioner = EquivalencePartitioner.make_default_state_equivalence(PropertyState)
 
@@ -1343,7 +1342,8 @@ def _match_properties_and_taxlots(file_pk):
         # provided by the partitioner, while ignoring duplicates.
         unmatched_properties, property_equivalence_keys = match_and_merge_unmatched_objects(
             unmatched_properties,
-            property_partitioner)
+            property_partitioner
+        )
 
         # Take the final merged-on-import objects, and find Views that
         # correspond to it and merge those together.
@@ -1351,11 +1351,12 @@ def _match_properties_and_taxlots(file_pk):
             unmatched_properties,
             property_partitioner,
             org,
-            import_file)
+            import_file
+        )
 
         # Filter out the exact duplicates found in the previous step
-        duplicates_of_existing_property_states = [state for state in unmatched_properties
-                                                  if state.data_state == DATA_STATE_DELETE]
+        duplicates_of_existing_property_states = [state for state in unmatched_properties if
+                                                  state.data_state == DATA_STATE_DELETE]
         unmatched_properties = [state for state in unmatched_properties
                                 if state not in duplicates_of_existing_property_states]
     else:
@@ -1368,8 +1369,7 @@ def _match_properties_and_taxlots(file_pk):
     if all_unmatched_tax_lots:
         # Filter out the duplicates.  Do we actually want to delete them
         # here?  Mark their abandonment in the Audit Logs?
-        unmatched_tax_lots, duplicate_tax_lot_states = filter_duplicated_states(
-            all_unmatched_tax_lots)
+        unmatched_tax_lots, duplicate_tax_lot_states = filter_duplicated_states(all_unmatched_tax_lots)
 
         taxlot_partitioner = EquivalencePartitioner.make_default_state_equivalence(TaxLotState)
 
@@ -1377,7 +1377,8 @@ def _match_properties_and_taxlots(file_pk):
         # provided by the partitioner.
         unmatched_tax_lots, taxlot_equivalence_keys = match_and_merge_unmatched_objects(
             unmatched_tax_lots,
-            taxlot_partitioner)
+            taxlot_partitioner
+        )
 
         # Take the final merged-on-import objects, and find Views that
         # correspond to it and merge those together.
@@ -1385,13 +1386,14 @@ def _match_properties_and_taxlots(file_pk):
             unmatched_tax_lots,
             taxlot_partitioner,
             org,
-            import_file)
+            import_file
+        )
 
         # Filter out the exact duplicates found in the previous step
         duplicates_of_existing_taxlot_states = [state for state in unmatched_tax_lots
                                                 if state.data_state == DATA_STATE_DELETE]
-        unmatched_tax_lots = [state for state in unmatched_tax_lots
-                              if state not in duplicates_of_existing_taxlot_states]
+        unmatched_tax_lots = [state for state in unmatched_tax_lots if
+                              state not in duplicates_of_existing_taxlot_states]
     else:
         duplicate_tax_lot_states = []
         merged_taxlot_views = []
@@ -1493,7 +1495,7 @@ def save_state_match(state1, state2):
 
     merged_state, changes = merging.merge_state(merged_state,
                                                 state1, state2,
-                                                merging.get_state_attrs(state1.organization, [state1, state2]),
+                                                merging.get_state_attrs(state1.organization.id, [state1, state2]),
                                                 default=state2)
 
     AuditLogClass = PropertyAuditLog if isinstance(merged_state, PropertyState) else TaxLotAuditLog
