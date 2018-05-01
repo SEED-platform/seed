@@ -20,7 +20,6 @@ from django.forms.models import model_to_dict
 from django.utils.translation import ugettext_lazy as _
 
 from seed.landing.models import SEEDUser as User
-from seed.lib.mappings.mapping_data import MappingData
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
 from seed.models.models import (
     Enum,
@@ -793,6 +792,7 @@ class Column(models.Model):
             for c in Column.DATABASE_COLUMNS:
                 if field['to_table_name'] == c['table_name'] and field['to_field'] == c['column_name']:
                     is_extra_data = False
+                    break
 
             try:
                 to_org_col, _ = Column.objects.get_or_create(
@@ -1300,24 +1300,32 @@ class ColumnMapping(models.Model):
         Returns dict of all the column mappings for an Organization's given
         source type
 
-        :param organization: instance, Organization.
-        :returns: dict, list of dict.
-
         Use this when actually performing mapping between data sources, but only
         call it after all of the mappings have been saved to the ``ColumnMapping``
         table.
+
+        ..code:
+
+            {
+                u'Wookiee': (u'PropertyState', u'Dothraki', 'DisplayName', True),
+                u'Ewok': (u'TaxLotState', u'Hattin', 'DisplayName', True),
+                u'eui': (u'PropertyState', u'site_eui', 'DisplayName', True),
+                u'address': (u'TaxLotState', u'address', 'DisplayName', True)
+            }
+
+        :param organization: instance, Organization.
+        :returns: dict, list of dict.
         """
-        column_mappings = ColumnMapping.objects.filter(
-            super_organization=organization
-        )
+        column_mappings = ColumnMapping.objects.filter(super_organization=organization)
         mapping = {}
         for cm in column_mappings:
-            # What in the world is this doings? -- explanation please
+            # Iterate over the column_mappings. The column_mapping is a pointer to a raw column and a mapped column.
+            # See the method documentation to understand the result.
             if not cm.column_mapped.all().exists():
                 continue
 
-            key = cm.column_raw.all().values_list('table_name', 'column_name')
-            value = cm.column_mapped.all().values_list('table_name', 'column_name')
+            key = cm.column_raw.all().values_list('table_name', 'column_name', 'display_name', 'is_extra_data')
+            value = cm.column_mapped.all().values_list('table_name', 'column_name', 'display_name', 'is_extra_data')
 
             if len(key) != 1:
                 raise Exception("There is either none or more than one mapping raw column")
@@ -1345,13 +1353,6 @@ class ColumnMapping(models.Model):
         """
 
         data, _ = ColumnMapping.get_column_mappings(organization)
-        # data will be in format
-        # {
-        #     u'Wookiee': (u'PropertyState', u'Dothraki'),
-        #     u'Ewok': (u'TaxLotState', u'Hattin'),
-        #     u'eui': (u'PropertyState', u'site_eui'),
-        #     u'address': (u'TaxLotState', u'address')
-        # }
 
         tables = set()
         for k, v in data.iteritems():

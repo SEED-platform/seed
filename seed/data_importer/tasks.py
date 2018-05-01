@@ -35,7 +35,6 @@ from seed.data_importer.models import (
 from seed.decorators import get_prog_key
 from seed.decorators import lock_and_track
 from seed.green_button import xml_importer
-from seed.lib.mappings.mapping_data import MappingData
 from seed.lib.mcm import cleaners, mapper, reader
 from seed.lib.mcm.mapper import expand_rows
 from seed.lib.mcm.utils import batch
@@ -344,13 +343,10 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
     if 'PropertyState' in table_mappings.keys():
         if delimited_fields and delimited_fields['jurisdiction_tax_lot_id']:
             table_mappings['PropertyState'][
-                delimited_fields['jurisdiction_tax_lot_id']['from_field']] = (
-                'PropertyState', 'lot_number')
+                delimited_fields['jurisdiction_tax_lot_id']['from_field']] = ('PropertyState', 'lot_number')
     # *** END BREAK OUT ***
 
     # yes, there are three cascading for loops here. sorry :(
-    md = MappingData(org.id)
-
     for table, mappings in table_mappings.items():
         if not table:
             continue
@@ -359,7 +355,8 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
         # mapper.map_row. apply_columns are extra_data columns (the raw column names)
         extra_data_fields = []
         for k, v in mappings.items():
-            if not md.find_column(v[0], v[1]):
+            # the 3rd element is the is_extra_data flag. Need to convert this to a dict and not a tuple.
+            if v[3]:
                 extra_data_fields.append(k)
         # _log.debug("extra data fields: {}".format(extra_data_fields))
 
@@ -387,7 +384,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
 
             # _log.debug("delimited_field_list is set to {}".format(delimited_field_list))
 
-            # Weeee... the data are in the extra_data column.
+            # The raw data upon import is in the extra_data column
             for row in expand_rows(original_row.extra_data, delimited_field_list, expand_row):
                 map_model_obj = mapper.map_row(
                     row,

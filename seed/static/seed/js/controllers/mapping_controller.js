@@ -52,7 +52,7 @@ angular.module('BE.seed.controller.mapping', [])
       var columns = suggested_mappings_payload.columns;
       var extra_data_columns = _.filter(columns, 'extra_data');
       var original_columns = _.map(columns, function f(n) {
-        return n.name;
+        return n.column_name;
       });
       // var original_columns = angular.copy(db_field_columns.concat(extra_data_columns));
       $scope.flippers = flippers; // make available in partials/ng-if
