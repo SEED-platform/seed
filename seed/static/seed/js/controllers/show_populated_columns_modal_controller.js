@@ -56,8 +56,8 @@ angular.module('BE.seed.controller.show_populated_columns_modal', [])
           _.forEach(inventory, function (record, index) {
             // console.log(cols.length + ' remaining cols to check');
             _.forEachRight(cols, function (col, colIndex) {
-              if (notEmpty(record[col.dbName])) {
-                // console.log('Removing ' + col.dbName + ' from cols');
+              if (notEmpty(record[col.column_name])) {
+                // console.log('Removing ' + col.column_name + ' from cols');
                 cols.splice(colIndex, 1);
               }
             });
@@ -65,8 +65,8 @@ angular.module('BE.seed.controller.show_populated_columns_modal', [])
             _.forEach(record.related, function (relatedRecord) {
               // console.log(relatedCols.length + ' remaining related cols to check');
               _.forEachRight(relatedCols, function (col, colIndex) {
-                if (notEmpty(relatedRecord[col.dbName])) {
-                  // console.log('Removing ' + col.dbName + ' from relatedCols');
+                if (notEmpty(relatedRecord[col.column_name])) {
+                  // console.log('Removing ' + col.column_name + ' from relatedCols');
                   relatedCols.splice(colIndex, 1);
                 }
               });
@@ -78,13 +78,13 @@ angular.module('BE.seed.controller.show_populated_columns_modal', [])
           // determine hidden columns
           var visible = _.reject($scope.columns, function (col) {
             if (!col.related) {
-              return _.find(cols, {dbName: col.dbName, table: col.table});
+              return _.find(cols, {column_name: col.column_name, table: col.table});
             }
-            return _.find(relatedCols, {dbName: col.dbName, table: col.table});
+            return _.find(relatedCols, {column_name: col.column_name, table: col.table});
           });
 
           var hidden = _.reject($scope.columns, function (col) {
-            return _.find(visible, {dbName: col.dbName, table: col.table});
+            return _.find(visible, {column_name: col.column_name, table: col.table});
           });
 
           _.forEach(hidden, function (col) {

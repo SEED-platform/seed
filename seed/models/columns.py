@@ -1167,7 +1167,8 @@ class Column(models.Model):
         :return: dict
         """
         # Grab all the columns out of the database for the organization that are assigned to a table_name
-        columns_db = Column.objects.filter(organization_id=org_id).exclude(table_name='').exclude(table_name=None)
+        # Order extra_data last so that extra data duplicate-checking will happen after processing standard columns
+        columns_db = Column.objects.filter(organization_id=org_id).exclude(table_name='').exclude(table_name=None).order_by('is_extra_data', 'display_name')
         columns = []
         for c in columns_db:
             # Eventually move this over to Column serializer directly
@@ -1205,9 +1206,14 @@ class Column(models.Model):
                         new_c['display_name'] = new_c['display_name'] + ' (%s)' % INVENTORY_DISPLAY[new_c['table_name']]
                         new_c['name'] = "%s_%s" % (
                             INVENTORY_MAP_OPPOSITE_PREPEND[inventory_type.lower()], new_c['name'])
-            else:
-                # if it is extra data and is not related, then tag the name with _extra
-                if new_c['is_extra_data'] or new_c['name'] in ['id', 'notes_count']:
+
+            if new_c['is_extra_data']:
+                # Avoid name conflicts with protected front-end columns and extra_data columns
+                if new_c['name'] in ['id', 'notes_count']:
+                    new_c['name'] += '_extra'
+
+                # add _extra if the column is already in the list for the other table
+                while any(col['name'] == new_c['name'] and col['table'] != new_c['table'] for col in columns):
                     new_c['name'] += '_extra'
 
             # remove a bunch of fields that are not needed in the list of columns
