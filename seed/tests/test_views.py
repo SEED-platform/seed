@@ -1374,7 +1374,7 @@ class InventoryViewTests(DeleteModelsTestCase):
         self.assertIn(pm_property_id_col, results)
 
         expected_property_extra_data_column = {
-            'name': 'property_extra_data_column_extra',
+            'name': 'property_extra_data_column',
             'table_name': 'PropertyState',
             'column_name': 'property_extra_data_column',
             'display_name': 'Property Extra Data Column',
@@ -1450,7 +1450,7 @@ class InventoryViewTests(DeleteModelsTestCase):
         self.assertIn(expected_property_extra_data_column, results)
 
         expected_taxlot_extra_data_column = {
-            'name': 'taxlot_extra_data_column_extra',
+            'name': 'taxlot_extra_data_column',
             'table_name': 'TaxLotState',
             'column_name': 'taxlot_extra_data_column',
             'display_name': 'Taxlot Extra Data Column',

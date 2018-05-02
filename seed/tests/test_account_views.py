@@ -526,6 +526,11 @@ class AccountsViewTests(TestCase):
     def test_add_shared_fields(self):
         url = reverse_lazy('api:v2:organizations-save-settings', args=[self.org.pk])
 
+        columns = list(Column.objects.filter(organization=self.org).values('id', 'table_name', 'column_name'))
+        ubid_id = [c for c in columns if c['table_name'] == 'PropertyState' and c['column_name'] == 'ubid'][0]['id']
+        address_line_1_id = [c for c in columns if c['table_name'] == 'PropertyState'
+                             and c['column_name'] == 'address_line_1'][0]['id']
+
         # There are already several columns in the database due to the create_organization method
         payload = {
             u'organization_id': self.org.pk,
@@ -535,6 +540,7 @@ class AccountsViewTests(TestCase):
                 u'name': self.org.name,
                 u'public_fields': [
                     {
+                        "id": ubid_id,
                         "displayName": "UBID",
                         "name": "ubid",
                         "dataType": "string",
@@ -544,6 +550,7 @@ class AccountsViewTests(TestCase):
                         "column_name": "ubid",
                         "public_checked": True
                     }, {
+                        "id": address_line_1_id,
                         "displayName": "Address Line 1 (Property)",
                         "name": "address_line_1",
                         "dataType": "string",

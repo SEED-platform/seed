@@ -340,7 +340,7 @@ class TestColumnsByInventory(TestCase):
 
         # Check for columns
         c = {
-            'name': 'Column A_extra',
+            'name': 'Column A',
             'table_name': u'PropertyState',
             'column_name': u'Column A',
             'display_name': u'Column A',
@@ -353,7 +353,7 @@ class TestColumnsByInventory(TestCase):
 
         # Check that display_name doesn't capitalize after apostrophe
         c = {
-            'name': u"Apostrophe's Field_extra",
+            'name': u"Apostrophe's Field",
             'table_name': u'PropertyState',
             'column_name': u"Apostrophe's Field",
             'display_name': u"Apostrophe's Field",
