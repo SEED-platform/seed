@@ -38,7 +38,6 @@ class TestMappingData(TestCase):
         expected = {
             "is_extra_data": False,
             "display_name": "Address Line 1",
-            "dbName": "address_line_1",
             "data_type": "string",
             "sharedFieldType": "None",
             "table_name": "PropertyState",
@@ -49,7 +48,6 @@ class TestMappingData(TestCase):
         expected = {
             "is_extra_data": False,
             "display_name": "State",
-            "dbName": "state",
             "data_type": "string",
             "sharedFieldType": "None",
             "table_name": "TaxLotState",
@@ -138,7 +136,6 @@ class TestMappingData(TestCase):
         expect_0 = {
             'is_extra_data': False,
             'display_name': u'City',
-            'dbName': u'city',
             'data_type': u'string',
             'sharedFieldType': u'None',
             'table_name': u'TaxLotState',
@@ -173,7 +170,6 @@ class TestMappingData(TestCase):
         expected_data_0 = {
             "is_extra_data": True,
             "display_name": "A Column",
-            "dbName": "a_column",
             "data_type": "None",
             "sharedFieldType": "None",
             "table_name": "TaxLotState",
@@ -183,7 +179,6 @@ class TestMappingData(TestCase):
         expected_data_z = {
             "is_extra_data": True,
             "display_name": "Z Column",
-            "dbName": "z_column",
             "data_type": "None",
             "sharedFieldType": "None",
             "table_name": "PropertyState",

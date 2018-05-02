@@ -540,17 +540,17 @@ class AccountsViewTests(TestCase):
                         "dataType": "string",
                         "related": False,
                         "sharedFieldType": "Public",
-                        "table": "PropertyState",
-                        "dbName": "ubid",
+                        "table_name": "PropertyState",
+                        "column_name": "ubid",
                         "public_checked": True
                     }, {
                         "displayName": "Address Line 1 (Property)",
                         "name": "address_line_1",
                         "dataType": "string",
                         "related": False,
-                        "dbName": "address_line_1",
+                        "column_name": "address_line_1",
                         "sharedFieldType": "None",
-                        "table": "PropertyState",
+                        "table_name": "PropertyState",
                         "public_checked": True
                     }
                 ]

@@ -1076,48 +1076,9 @@ class Column(models.Model):
         return all_columns
 
     @staticmethod
-    def retrieve_hash_columns(org_id):
-        """
-        Retrieve all the columns that are for hashing the property and taxlot for merging
-
-        :param org_id: org_id, Organization ID
-        :return: list, list of dict
-        """
-        columns_db = Column.objects.filter(organization_id=org_id).exclude(table_name='').exclude(table_name=None)
-        columns = []
-        for c in columns_db:
-            if c.column_name in Column.COLUMN_EXCLUDE_FIELDS:
-                continue
-
-            # Eventually move this over to Column serializer directly
-            new_c = model_to_dict(c)
-
-            # dbName is the raw column name. Eventually move column_name to be this name, but
-            # that will require front end changes
-            new_c['dbName'] = new_c['column_name']
-            del new_c['shared_field_type']
-            new_c['sharedFieldType'] = c.get_shared_field_type_display()
-
-            if (new_c['table_name'], new_c['column_name']) in Column.PINNED_COLUMNS:
-                new_c['pinnedLeft'] = True
-
-            if not new_c['display_name']:
-                new_c['display_name'] = titlecase(new_c['column_name'])
-
-            del new_c['import_file']
-            del new_c['organization']
-            del new_c['enum']
-            del new_c['units_pint']
-            del new_c['unit']
-
-            columns.append(new_c)
-
-        return columns
-
-    @staticmethod
     def retrieve_mapping_columns(org_id):
         """
-        Retrieve all the columns that are for maping for an organization in a dictionary.
+        Retrieve all the columns that are for mapping for an organization in a dictionary.
 
         :param org_id: org_id, Organization ID
         :return: list, list of dict
@@ -1131,9 +1092,6 @@ class Column(models.Model):
             # Eventually move this over to Column serializer directly
             new_c = model_to_dict(c)
 
-            # dbName is the raw column name. Eventually move column_name to be this name, but
-            # that will require front end changes
-            new_c['dbName'] = new_c['column_name']
             del new_c['shared_field_type']
             new_c['sharedFieldType'] = c.get_shared_field_type_display()
 
@@ -1168,15 +1126,12 @@ class Column(models.Model):
         """
         # Grab all the columns out of the database for the organization that are assigned to a table_name
         # Order extra_data last so that extra data duplicate-checking will happen after processing standard columns
-        columns_db = Column.objects.filter(organization_id=org_id).exclude(table_name='').exclude(table_name=None).order_by('is_extra_data', 'display_name')
+        columns_db = Column.objects.filter(organization_id=org_id).exclude(table_name='').exclude(table_name=None).order_by('is_extra_data', 'column_name')
         columns = []
         for c in columns_db:
             # Eventually move this over to Column serializer directly
             new_c = model_to_dict(c)
 
-            # dbName is the raw column name. Eventually move column_name to be this name, but
-            # that will require front end changes
-            new_c['dbName'] = new_c['column_name']
             del new_c['shared_field_type']
             new_c['sharedFieldType'] = c.get_shared_field_type_display()
 
@@ -1213,7 +1168,7 @@ class Column(models.Model):
                     new_c['name'] += '_extra'
 
                 # add _extra if the column is already in the list for the other table
-                while any(col['name'] == new_c['name'] and col['table'] != new_c['table'] for col in columns):
+                while any(col['name'] == new_c['name'] and col['table_name'] != new_c['table_name'] for col in columns):
                     new_c['name'] += '_extra'
 
             # remove a bunch of fields that are not needed in the list of columns

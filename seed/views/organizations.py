@@ -620,7 +620,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
             # for now just iterate over this to grab the new columns.
             for col in new_public_column_names:
-                new_col = Column.objects.filter(organization=org, table_name=col['table'], column_name=col['dbName'])
+                new_col = Column.objects.filter(organization=org, id=col['id'])
                 if len(new_col) == 1:
                     new_col = new_col.first()
                     new_col.shared_field_type = Column.SHARED_PUBLIC
@@ -689,10 +689,10 @@ class OrganizationViewSet(viewsets.ViewSet):
         for c in columns:
             if c['sharedFieldType'] == 'Public':
                 new_column = {
-                    'table': c['table'],
+                    'table_name': c['table_name'],
                     'name': c['name'],
-                    'db_name': c['dbName'],  # this is the field name in the database. The other name can have tax_
-                    'display_name': c['displayName']
+                    'column_name': c['column_name'],  # this is the field name in the db. The other name can have tax_
+                    'display_name': c['display_name']
                 }
                 result['public_fields'].append(new_column)
 

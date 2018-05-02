@@ -71,7 +71,7 @@
                                 <input type="checkbox" ng-model="rule.enabled" class="no-click">
                             </td>
                             <td>
-                                <select class="form-control input-sm" ng-model="rule.field" ng-options="col.name as col.display_name for col in ::columns" ng-change="rule.rule_type = 1; change_field(rule, '{$ rule.field $}', $index)" title="{$ rule.field $}" focus-if="{$ rule.autofocus || 'false' $}"></select>
+                                <select class="form-control input-sm" ng-model="rule.field" ng-options="col.name as col.displayName for col in ::columns" ng-change="rule.rule_type = 1; change_field(rule, '{$ rule.field $}', $index)" title="{$ rule.field $}" focus-if="{$ rule.autofocus || 'false' $}"></select>
                             </td>
                             <td>
                                 <select class="form-control input-sm" ng-model="rule.data_type" ng-options="type.id as type.label for type in ::data_types" ng-change="rule.rule_type = 1; change_data_type(rule, '{$ rule.data_type $}')"></select>

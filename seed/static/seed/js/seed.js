@@ -824,7 +824,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
                   return _.omit(col, ['pinnedLeft', 'related']);
                 });
                 columns.sort(function (a, b) {
-                  return naturalSort(a.display_name, b.display_name);
+                  return naturalSort(a.displayName, b.displayName);
                 });
                 return columns;
               });
@@ -835,7 +835,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
                   return _.omit(col, ['pinnedLeft', 'related']);
                 });
                 columns.sort(function (a, b) {
-                  return naturalSort(a.display_name, b.display_name);
+                  return naturalSort(a.displayName, b.displayName);
                 });
                 return columns;
               });

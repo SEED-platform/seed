@@ -117,7 +117,6 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
             u'display_name': u'PM Property ID',
             u'is_extra_data': False,
             u'data_type': u'string',
-            u'dbName': u'pm_property_id',
             u'related': False,
             u'sharedFieldType': u'None',
             u'pinnedLeft': True

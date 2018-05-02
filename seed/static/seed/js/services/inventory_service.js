@@ -404,9 +404,8 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           return !_.isEmpty(col.name);
         });
 
-        // Rename display_name to displayName (ui-grid compatibility) and remove dbName (deprecated)
+        // Rename display_name to displayName (ui-grid compatibility)
         columns = _.map(columns, function (col) {
-          delete col.dbName;
           return _.mapKeys(col, function(value, key) {
             return key === 'display_name' ? 'displayName' : key;
           });
@@ -454,9 +453,8 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           return !_.isEmpty(col.name);
         });
 
-        // Rename display_name to displayName (ui-grid compatibility) and remove dbName (deprecated)
+        // Rename display_name to displayName (ui-grid compatibility)
         columns = _.map(columns, function (col) {
-          delete col.dbName;
           return _.mapKeys(col, function(value, key) {
             return key === 'display_name' ? 'displayName' : key;
           });

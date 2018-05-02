@@ -346,7 +346,6 @@ class TestColumnsByInventory(TestCase):
             'display_name': u'Column A',
             'is_extra_data': True,
             'data_type': 'None',
-            'dbName': u'Column A',
             'related': False,
             'sharedFieldType': 'Public',
         }
@@ -360,7 +359,6 @@ class TestColumnsByInventory(TestCase):
             'display_name': u"Apostrophe's Field",
             'is_extra_data': True,
             'data_type': 'None',
-            'dbName': u"Apostrophe's Field",
             'related': False,
             'sharedFieldType': 'None',
         }
@@ -374,7 +372,6 @@ class TestColumnsByInventory(TestCase):
             'display_name': 'Id',
             'is_extra_data': True,
             'data_type': 'None',
-            'dbName': 'id',
             'related': False,
             'sharedFieldType': 'None',
         }
@@ -388,7 +385,6 @@ class TestColumnsByInventory(TestCase):
             'display_name': 'PM Property ID',
             'is_extra_data': False,
             'data_type': 'string',
-            'dbName': 'pm_property_id',
             'pinnedLeft': True,
             'related': False,
             'sharedFieldType': 'None',
@@ -403,7 +399,6 @@ class TestColumnsByInventory(TestCase):
             'display_name': 'State (Tax Lot)',
             'data_type': 'string',
             'is_extra_data': False,
-            'dbName': 'state',
             'sharedFieldType': 'None',
             'related': True,
         }
@@ -416,7 +411,6 @@ class TestColumnsByInventory(TestCase):
             "display_name": "Gross Floor Area (Tax Lot)",
             "data_type": "None",
             "is_extra_data": True,
-            "dbName": "gross_floor_area",
             "sharedFieldType": "None",
             "related": True,
         }
@@ -438,7 +432,6 @@ class TestColumnsByInventory(TestCase):
             "display_name": "Gross Floor Area",
             "data_type": "None",
             "is_extra_data": True,
-            "dbName": "gross_floor_area",
             "sharedFieldType": "None",
             "related": False,
         }

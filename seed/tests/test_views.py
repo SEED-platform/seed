@@ -1367,7 +1367,6 @@ class InventoryViewTests(DeleteModelsTestCase):
             'display_name': 'PM Property ID',
             'data_type': 'string',
             'is_extra_data': False,
-            'dbName': 'pm_property_id',
             'sharedFieldType': 'None',
             'pinnedLeft': True,
             'related': False,
@@ -1381,7 +1380,6 @@ class InventoryViewTests(DeleteModelsTestCase):
             'display_name': 'Property Extra Data Column',
             'is_extra_data': True,
             'data_type': 'None',
-            'dbName': 'property_extra_data_column',
             'sharedFieldType': 'None',
             'related': False,
         }
@@ -1394,7 +1392,6 @@ class InventoryViewTests(DeleteModelsTestCase):
             'display_name': 'Taxlot Extra Data Column',
             'is_extra_data': True,
             'data_type': 'None',
-            'dbName': 'taxlot_extra_data_column',
             'sharedFieldType': 'None',
             'related': True,
         }
@@ -1434,7 +1431,6 @@ class InventoryViewTests(DeleteModelsTestCase):
             'display_name': 'Jurisdiction Tax Lot ID',
             'is_extra_data': False,
             'data_type': 'string',
-            'dbName': 'jurisdiction_tax_lot_id',
             'sharedFieldType': 'None',
             'related': False,
             'pinnedLeft': True,
@@ -1448,7 +1444,6 @@ class InventoryViewTests(DeleteModelsTestCase):
             'display_name': u'Property Extra Data Column',
             'is_extra_data': True,
             'data_type': 'None',
-            'dbName': 'property_extra_data_column',
             'sharedFieldType': 'None',
             'related': True,
         }
@@ -1461,7 +1456,6 @@ class InventoryViewTests(DeleteModelsTestCase):
             'display_name': 'Taxlot Extra Data Column',
             'is_extra_data': True,
             'data_type': 'None',
-            'dbName': 'taxlot_extra_data_column',
             'sharedFieldType': 'None',
             'related': False,
         }

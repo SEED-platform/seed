@@ -76,7 +76,7 @@
                     <tbody>
                         <tr ng-repeat="field in ::columns" ng-if="::field.visible">
                             <!-- Field name -->
-                            <td ng-attr-title="{$:: field.name $}">{$:: field.display_name | translate $}</td>
+                            <td ng-attr-title="{$:: field.name $}">{$:: field.displayName | translate $}</td>
 
                             <!-- Show read-only current 'regular' field value -->
                             <td ng-if="edit_form_showing===false && !field.is_extra_data && field.table.toLowerCase().includes('state')" ng-class="_.includes(changed_fields.regular_fields, field.name) ? 'highlight' : ''" class="ellipsis">
