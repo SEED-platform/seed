@@ -51,7 +51,7 @@ def get_attrs_with_mapping(data_set_buildings, mapping):
     return can_attrs
 
 
-def get_state_to_state_tuple(organization_id, inventory):
+def get_state_to_state_tuple(inventory):
     """Return the list of the database fields based on the inventory type"""
     columns = Column.retrieve_db_fields_from_db_tables()
 

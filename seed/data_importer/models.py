@@ -1264,12 +1264,12 @@ class DataCoercionMapping(models.Model):
             field.to_python(self.destination_value)
             if hasattr(field, "choices") and field.choices != []:
                 assert self.destination_value in [f[0] for f in field.choices] or \
-                       "%s" % self.destination_value in [f[0] for f in field.choices]
+                    "%s" % self.destination_value in [f[0] for f in field.choices]
             self.valid_destination_value = True
         except BaseException:
             self.valid_destination_value = False
         self.is_mapped = (
-                             self.confidence > 0.6 or self.was_a_human_decision) and self.valid_destination_value
+            self.confidence > 0.6 or self.was_a_human_decision) and self.valid_destination_value
         super(DataCoercionMapping, self).save(*args, **kwargs)
 
     @property

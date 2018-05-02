@@ -311,6 +311,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
         _log.error('this code should not be running here...')
         debug_inferred_prop_state_mapping = table_mappings['']
         table_mappings['PropertyState'] = debug_inferred_prop_state_mapping
+        raise Exception("This code has been deprecated, but is being called. Need to review the column cleanup")
     # TODO: *END TOTAL TERRIBLE HACK**
 
     map_cleaner = _build_cleaner_2(org)
@@ -323,7 +324,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
         delimited_fields = {}
         if 'TaxLotState' in table_mappings.keys():
             tmp = table_mappings['TaxLotState'].keys()[table_mappings['TaxLotState'].values().index(
-                ('TaxLotState', 'jurisdiction_tax_lot_id'))]
+                ('TaxLotState', 'jurisdiction_tax_lot_id', 'Jurisdiction Tax Lot ID', False))]
             delimited_fields['jurisdiction_tax_lot_id'] = {
                 'from_field': tmp,
                 'to_table': 'TaxLotState',
@@ -343,7 +344,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
     if 'PropertyState' in table_mappings.keys():
         if delimited_fields and delimited_fields['jurisdiction_tax_lot_id']:
             table_mappings['PropertyState'][
-                delimited_fields['jurisdiction_tax_lot_id']['from_field']] = ('PropertyState', 'lot_number')
+                delimited_fields['jurisdiction_tax_lot_id']['from_field']] = ('PropertyState', 'lot_number', 'Lot Number', False)
     # *** END BREAK OUT ***
 
     # yes, there are three cascading for loops here. sorry :(
@@ -1150,7 +1151,7 @@ class EquivalencePartitioner(object):
             for class_key in equivalence_classes:
                 if self.calculate_key_equivalence(class_key,
                                                   cmp_key) and not self.identities_are_different(
-                    identities_for_equivalence[class_key], identity_key):
+                        identities_for_equivalence[class_key], identity_key):
 
                     equivalence_classes[class_key].append(ndx)
 

@@ -32,8 +32,8 @@ class TestMappingData(TestCase):
         for d in md.data:
             del d['id']
 
-        import json
-        print(json.dumps(md.data, indent=2))
+        # import json
+        # print(json.dumps(md.data, indent=2))
 
         expected = {
             "is_extra_data": False,
@@ -85,7 +85,6 @@ class TestMappingData(TestCase):
             u'home_energy_score_id',
             u'jurisdiction_property_id',
             u'jurisdiction_tax_lot_id',
-            u'lot_number',
             u'number_properties',
             u'occupied_floor_area',
             u'owner',

@@ -56,11 +56,8 @@ class StateFieldsTest(TestCase):
         self.assertTrue('data_1' not in res.keys())
 
     def test_property_state(self):
-        property_view_1 = self.property_view_factory.get_property_view()
-        tax_lot_view_1 = self.taxlot_view_factory.get_taxlot_view()
-
-        print property_view_1
-        print tax_lot_view_1
+        self.property_view_factory.get_property_view()
+        self.taxlot_view_factory.get_taxlot_view()
 
         expected = ((u'address_line_1', u'address_line_1'), (u'address_line_2', u'address_line_2'),
                     (u'analysis_end_time', u'analysis_end_time'), (u'analysis_start_time', u'analysis_start_time'),
