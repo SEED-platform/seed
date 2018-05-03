@@ -51,6 +51,15 @@ INVENTORY_DISPLAY = {
 _log = logging.getLogger(__name__)
 
 
+def get_table_and_column_names(column_mapping, attr_name='column_raw'):
+    """Turns the Column.column_names into a serializable list of str."""
+    attr = getattr(column_mapping, attr_name, None)
+    if not attr:
+        return attr
+
+    return [t for t in attr.all().values_list('table_name', 'column_name')]
+
+
 def get_column_mapping(raw_column, organization, attr_name='column_mapped'):
     """Find the ColumnMapping objects that exist in the database from a raw_column
 
@@ -63,8 +72,6 @@ def get_column_mapping(raw_column, organization, attr_name='column_mapped'):
     :returns: list of mapped items, float representation of confidence.
 
     """
-    from seed.utils.mapping import get_table_and_column_names
-
     if not isinstance(raw_column, list):
         column_raw = [raw_column]
     else:
@@ -863,12 +870,10 @@ class Column(models.Model):
 
         :param model_obj: model_obj instance (either PropertyState or TaxLotState).
         """
+        db_columns = Column.retrieve_db_field_table_and_names_from_db_tables()
         for key in model_obj.extra_data:
             # Check if the extra_data field in the model object is a database column
-            is_extra_data = True
-            for c in Column.DATABASE_COLUMNS:
-                if model_obj.__class__.__name__ == c['table_name'] and key == c['column_name']:
-                    is_extra_data = False
+            is_extra_data = (model_obj.__class__.__name__, key[:511]) not in db_columns
 
             # handle the special edge-case where an old organization may have duplicate columns
             # in the database. We should make this a migration in the future and put a validation
@@ -877,32 +882,31 @@ class Column(models.Model):
                 while True:
                     try:
                         Column.objects.get_or_create(
+                            table_name=model_obj.__class__.__name__,
                             column_name=key[:511],
                             is_extra_data=is_extra_data,
                             organization=model_obj.organization,
-                            table_name=model_obj.__class__.__name__
                         )
                     except Column.MultipleObjectsReturned:
                         _log.debug(
                             "Column.MultipleObjectsReturned for {} in save_column_names".format(
                                 key[:511]))
 
-                        columns = Column.objects.filter(column_name=key[:511],
+                        columns = Column.objects.filter(table_name=model_obj.__class__.__name__,
+                                                        column_name=key[:511],
                                                         is_extra_data=is_extra_data,
-                                                        organization=model_obj.organization,
-                                                        table_name=model_obj.__class__.__name__)
+                                                        organization=model_obj.organization)
                         for c in columns:
-                            if not ColumnMapping.objects.filter(
-                                    Q(column_raw=c) | Q(column_mapped=c)).exists():
+                            if not ColumnMapping.objects.filter(Q(column_raw=c) | Q(column_mapped=c)).exists():
                                 _log.debug("Deleting column object {}".format(c.column_name))
                                 c.delete()
 
                         # Check if there are more than one column still
                         if Column.objects.filter(
+                                table_name=model_obj.__class__.__name__,
                                 column_name=key[:511],
                                 is_extra_data=is_extra_data,
-                                organization=model_obj.organization,
-                                table_name=model_obj.__class__.__name__).count() > 1:
+                                organization=model_obj.organization).count() > 1:
                             raise Exception(
                                 "Could not fix duplicate columns for {}. Contact dev team").format(
                                 key)
@@ -1032,9 +1036,12 @@ class Column(models.Model):
     @staticmethod
     def retrieve_db_field_name_for_hash_comparison():
         """
-        Names only of the columns in the database (fields only, not extra data), indpendent of inventory type
+        Names only of the columns in the database (fields only, not extra data), indpendent of inventory type.
+        These fields are used for generating an MD5 hash to quickly check if the data are the same across
+        multiple records. Note that this ignores extra_data. The result is a superset of all the fields that are used
+        in the database across all of the intentory types of interest.
 
-        :return: list, names of columns
+        :return: list, names of columns, independent of inventory type.
         """
         result = []
         columns = Column.retrieve_db_fields_from_db_tables()
@@ -1126,7 +1133,8 @@ class Column(models.Model):
         """
         # Grab all the columns out of the database for the organization that are assigned to a table_name
         # Order extra_data last so that extra data duplicate-checking will happen after processing standard columns
-        columns_db = Column.objects.filter(organization_id=org_id).exclude(table_name='').exclude(table_name=None).order_by('is_extra_data', 'column_name')
+        columns_db = Column.objects.filter(organization_id=org_id).exclude(table_name='').exclude(
+            table_name=None).order_by('is_extra_data', 'column_name')
         columns = []
         for c in columns_db:
             # Eventually move this over to Column serializer directly
@@ -1197,6 +1205,33 @@ class Column(models.Model):
                 uniq.add((c['table_name'], c['column_name']))
 
         return columns
+
+    @staticmethod
+    def retrieve_all_by_tuple(org_id):
+        """
+        Return list of all columns for an organization as a tuple.
+
+        .. code:
+            [
+              ('PropertyState', 'address_line_1'),
+              ('PropertyState', 'address_line_2'),
+              ('PropertyState', 'building_certification'),
+              ('PropertyState', 'building_count'),
+              ('TaxLotState', 'address_line_1'),
+              ('TaxLotState', 'address_line_2'),
+              ('TaxLotState', 'block_number'),
+              ('TaxLotState', 'city'),
+              ('TaxLotState', 'jurisdiction_tax_lot_id'),
+            ]
+
+        :param org_id: int, Organization ID
+        :return: list of tuples
+        """
+        result = []
+        for col in Column.retrieve_all(org_id, 'PropertyState', False):
+            result.append((col['table_name'], col['column_name']))
+
+        return result
 
 
 def validate_model(sender, **kwargs):

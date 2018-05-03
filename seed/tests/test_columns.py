@@ -560,6 +560,13 @@ class TestColumnsByInventory(TestCase):
         self.assertIn(('TaxLotState', 'address_line_1'), names)
         self.assertNotIn(('PropertyState', 'gross_floor_area_orig'), names)
 
+    def test_retrieve_all_as_tuple(self):
+        list_result = Column.retrieve_all_by_tuple(self.fake_org)
+        self.assertIn((u'PropertyState', u'site_eui_modeled'), list_result)
+        self.assertIn((u'TaxLotState', u'tax_lot_id_not_used'), list_result)
+        self.assertIn((u'PropertyState', u'gross_floor_area'), list_result)  # extra field in taxlot, but not in property
+        self.assertIn((u'TaxLotState', u'gross_floor_area'), list_result)  # extra field in taxlot, but not in property
+
     def test_db_columns_in_default_columns(self):
         """
         This test ensures that all the columns in the database are defined in the Column.DEFAULT_COLUMNS
