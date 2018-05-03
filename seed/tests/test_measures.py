@@ -9,12 +9,14 @@ from django.test import TestCase
 
 from seed.models.measures import Measure, _snake_case
 from seed.models.property_measures import PropertyMeasure
-from seed.models import Organization
+from seed.utils.organizations import create_organization
+from seed.landing.models import SEEDUser as User
 
 
 class TestMeasures(TestCase):
     def setUp(self):
-        self.org = Organization.objects.create()
+        self.user = User.objects.create_superuser('test_user@demo.com', 'test_user@demo.com', 'test_pass')
+        self.org, _, _ = create_organization(self.user)
         Measure.populate_measures(self.org.id)
 
     def test_populate_measures(self):
@@ -77,7 +79,8 @@ class TestMeasures(TestCase):
 
 class TestPropertyMeasures(TestCase):
     def setUp(self):
-        self.org = Organization.objects.create()
+        self.user = User.objects.create_superuser('test_user@demo.com', 'test_user@demo.com', 'test_pass')
+        self.org, _, _ = create_organization(self.user)
         Measure.populate_measures(self.org.id)
 
         # get some property instances

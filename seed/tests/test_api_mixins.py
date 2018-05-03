@@ -9,16 +9,13 @@ All rights reserved.  # NOQA
 """
 # pylint:disable=no-name-in-module
 import mock
-
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.test import TestCase
 
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import (
     Organization,
-    OrganizationUser,
 )
-
 from seed.utils.api import (
     OrgMixin,
     OrgCreateMixin,
@@ -29,6 +26,7 @@ from seed.utils.api import (
     rgetattr,
     get_org_id_from_validator
 )
+from seed.utils.organizations import create_organization
 
 
 class TestOrgMixin(TestCase):
@@ -42,13 +40,11 @@ class TestOrgMixin(TestCase):
         }
         self.user = User.objects.create_superuser(
             email='test_user@demo.com', **user_details)
-        self.org = Organization.objects.create()
-        self.org_user = OrganizationUser.objects.create(
-            user=self.user, organization=self.org
-        )
+        self.org, self.org_user, _ = create_organization(self.user)
 
         class OrgMixinClass(OrgMixin):
             pass
+
         self.mixin_class = OrgMixinClass()
 
     def tearDown(self):
@@ -105,10 +101,7 @@ class TestOrgCreateMixin(TestCase):
         }
         self.user = User.objects.create_superuser(
             email='test_user@demo.com', **user_details)
-        self.org = Organization.objects.create()
-        self.org_user = OrganizationUser.objects.create(
-            user=self.user, organization=self.org
-        )
+        self.org, self.org_user, _ = create_organization(self.user)
         mock_request = mock.MagicMock()
         mock_request.user = self.user
 
@@ -143,10 +136,7 @@ class TestOrgUpdateMixin(TestCase):
         }
         self.user = User.objects.create_superuser(
             email='test_user@demo.com', **user_details)
-        self.org = Organization.objects.create()
-        self.org_user = OrganizationUser.objects.create(
-            user=self.user, organization=self.org
-        )
+        self.org, self.org_user, _ = create_organization(self.user)
         mock_request = mock.MagicMock()
         mock_request.user = self.user
 
@@ -180,11 +170,9 @@ class TestOrgValidateMixin(TestCase):
             'password': 'test_pass',
         }
         self.user = User.objects.create_superuser(
-            email='test_user@demo.com', **user_details)
-        self.org = Organization.objects.create()
-        self.org_user = OrganizationUser.objects.create(
-            user=self.user, organization=self.org
+            email='test_user@demo.com', **user_details
         )
+        self.org, self.org_user, _ = create_organization(self.user)
         mock_request = mock.MagicMock()
         mock_request.user = self.user
         self.org_validator = OrgValidator(
@@ -242,8 +230,10 @@ class TestOrgValidateMixin(TestCase):
         Test to ensure validate fails if org_validators is not set
         on the class usind this mixin.
         """
+
         class OrgValidateClass(OrgValidateMixin):
             pass
+
         my_class = OrgValidateClass()
         self.assertRaises(ValidationError, my_class.validate, {})
 
@@ -281,12 +271,8 @@ class TestOrgQuerySetMixin(TestCase):
             'username': 'test_user@demo.com',
             'password': 'test_pass',
         }
-        self.user = User.objects.create_superuser(
-            email='test_user@demo.com', **user_details)
-        self.org = Organization.objects.create()
-        self.org_user = OrganizationUser.objects.create(
-            user=self.user, organization=self.org
-        )
+        self.user = User.objects.create_superuser(email='test_user@demo.com', **user_details)
+        self.org, self.org_user, _ = create_organization(self.user)
 
     def tearDown(self):
         self.user.delete()

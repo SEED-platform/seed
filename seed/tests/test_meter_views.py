@@ -12,7 +12,6 @@ from rest_framework import status
 from rest_framework.test import APIClient
 
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     PropertyState,
     Meter,
@@ -23,14 +22,12 @@ from seed.utils.organizations import create_organization
 
 class TestMeterViewSet(TestCase):
     def setUp(self):
-        self.org = Organization.objects.create()
         self.user = User.objects.create_superuser(
             email='test_user@demo.com',
             username='test_user@demo.com',
             password='secret',
         )
         self.org, _, _ = create_organization(self.user, "test-organization-a")
-        self.org.add_member(self.user)
         self.cycle = self.org.cycles.first()
 
         self.maxDiff = None

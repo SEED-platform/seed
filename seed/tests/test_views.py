@@ -15,7 +15,7 @@ from seed import decorators
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
 from seed.lib.mcm.reader import ROW_DELIMITER
-from seed.lib.superperms.orgs.models import Organization, OrganizationUser
+from seed.lib.superperms.orgs.models import OrganizationUser
 from seed.models import (
     Column,
     ColumnMapping,
@@ -33,6 +33,7 @@ from seed.test_helpers.fake import (
     FakeTaxLotStateFactory
 )
 from seed.utils.cache import set_cache
+from seed.utils.organizations import create_organization
 
 DEFAULT_CUSTOM_COLUMNS = [
     'project_id',
@@ -57,9 +58,9 @@ class MainViewTests(TestCase):
             'password': 'test_pass',
         }
         self.user = User.objects.create_superuser(
-            email='test_user@demo.com', **user_details)
-        self.org = Organization.objects.create()
-        OrganizationUser.objects.create(user=self.user, organization=self.org)
+            email='test_user@demo.com', **user_details
+        )
+        self.org, _, _ = create_organization(self.user)
         self.client.login(**user_details)
 
     def test_home(self):
@@ -75,8 +76,7 @@ class GetDatasetsViewsTests(TestCase):
             'email': 'test_user@demo.com'
         }
         self.user = User.objects.create_superuser(**user_details)
-        self.org = Organization.objects.create()
-        OrganizationUser.objects.create(user=self.user, organization=self.org)
+        self.org, _, _ = create_organization(self.user)
         self.client.login(**user_details)
 
     def test_get_datasets(self):
@@ -161,10 +161,9 @@ class ImportFileViewsTests(TestCase):
             'email': 'test_user@demo.com'
         }
         self.user = User.objects.create_superuser(**user_details)
-        self.org = Organization.objects.create()
+        self.org, _, _ = create_organization(self.user)
         self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
         self.cycle = self.cycle_factory.get_cycle(start=datetime(2016, 1, 1, tzinfo=timezone.get_current_timezone()))
-        OrganizationUser.objects.create(user=self.user, organization=self.org)
 
         self.import_record = ImportRecord.objects.create(owner=self.user, super_organization=self.org)
         self.import_file = ImportFile.objects.create(
@@ -204,8 +203,7 @@ class ImportFileViewsTests(TestCase):
 #             'email': 'test_user@demo.com'
 #         }
 #         self.user = User.objects.create_superuser(**user_details)
-#         self.org = Organization.objects.create()
-#         OrganizationUser.objects.create(user=self.user, organization=self.org)
+#         self.org, _, _ = create_organization(self.user)
 #
 #         self.import_record = ImportRecord.objects.create(owner=self.user)
 #         self.import_record.super_organization = self.org
@@ -305,14 +303,14 @@ class TestMCMViews(TestCase):
 
     def setUp(self):
         self.maxDiff = None
-        self.org = Organization.objects.create()
         user_details = {
             'username': 'test_user@demo.com',
             'password': 'test_pass',
             'email': 'test_user@demo.com',
         }
         self.user = User.objects.create_superuser(**user_details)
-        OrganizationUser.objects.create(user=self.user, organization=self.org)
+        self.org, _, _ = create_organization(self.user)
+
         self.client.login(**user_details)
         self.import_record = ImportRecord.objects.create(
             owner=self.user
@@ -573,16 +571,13 @@ class InventoryViewTests(DeleteModelsTestCase):
             'email': 'test_user@demo.com'
         }
         self.user = User.objects.create_superuser(**user_details)
-        self.org = Organization.objects.create()
+        self.org, _, _ = create_organization(self.user)
         self.column_factory = FakeColumnFactory(organization=self.org)
         self.cycle_factory = FakeCycleFactory(organization=self.org,
                                               user=self.user)
         self.property_factory = FakePropertyFactory(organization=self.org)
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
         self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
-        self.org_user = OrganizationUser.objects.create(
-            user=self.user, organization=self.org
-        )
         self.cycle = self.cycle_factory.get_cycle(
             start=datetime(2010, 10, 10, tzinfo=timezone.get_current_timezone()))
         self.status_label = StatusLabel.objects.create(
@@ -1367,10 +1362,11 @@ class InventoryViewTests(DeleteModelsTestCase):
 
         pm_property_id_col = {
             'name': 'pm_property_id',
-            'dbName': 'pm_property_id',
-            'table': 'PropertyState',
-            'displayName': 'PM Property ID',
-            'dataType': 'string',
+            'table_name': 'PropertyState',
+            'column_name': 'pm_property_id',
+            'display_name': 'PM Property ID',
+            'data_type': 'string',
+            'is_extra_data': False,
             'sharedFieldType': 'None',
             'pinnedLeft': True,
             'related': False,
@@ -1378,22 +1374,24 @@ class InventoryViewTests(DeleteModelsTestCase):
         self.assertIn(pm_property_id_col, results)
 
         expected_property_extra_data_column = {
-            'extraData': True,
             'name': 'property_extra_data_column',
-            'dbName': 'property_extra_data_column',
-            'table': 'PropertyState',
-            'displayName': 'Property Extra Data Column',
+            'table_name': 'PropertyState',
+            'column_name': 'property_extra_data_column',
+            'display_name': 'Property Extra Data Column',
+            'is_extra_data': True,
+            'data_type': 'None',
             'sharedFieldType': 'None',
             'related': False,
         }
         self.assertIn(expected_property_extra_data_column, results)
 
         expected_taxlot_extra_data_column = {
-            'extraData': True,
-            'table': 'TaxLotState',
             'name': 'taxlot_extra_data_column',
-            'dbName': 'taxlot_extra_data_column',
-            'displayName': 'Taxlot Extra Data Column',
+            'table_name': 'TaxLotState',
+            'column_name': 'taxlot_extra_data_column',
+            'display_name': 'Taxlot Extra Data Column',
+            'is_extra_data': True,
+            'data_type': 'None',
             'sharedFieldType': 'None',
             'related': True,
         }
@@ -1424,35 +1422,40 @@ class InventoryViewTests(DeleteModelsTestCase):
         for result in results:
             del result['id']
 
+        # print json.dumps(results, indent=2)
+
         jurisdiction_tax_lot_id_col = {
             'name': 'jurisdiction_tax_lot_id',
-            'dbName': 'jurisdiction_tax_lot_id',
-            'table': 'TaxLotState',
-            'displayName': 'Jurisdiction Tax Lot ID',
-            'dataType': 'string',
+            'table_name': 'TaxLotState',
+            'column_name': 'jurisdiction_tax_lot_id',
+            'display_name': 'Jurisdiction Tax Lot ID',
+            'is_extra_data': False,
+            'data_type': 'string',
             'sharedFieldType': 'None',
-            'pinnedLeft': True,
             'related': False,
+            'pinnedLeft': True,
         }
         self.assertIn(jurisdiction_tax_lot_id_col, results)
 
         expected_property_extra_data_column = {
-            'extraData': True,
             'name': 'property_extra_data_column',
-            'dbName': 'property_extra_data_column',
-            'table': 'PropertyState',
-            'displayName': u'Property Extra Data Column',
+            'table_name': 'PropertyState',
+            'column_name': 'property_extra_data_column',
+            'display_name': u'Property Extra Data Column',
+            'is_extra_data': True,
+            'data_type': 'None',
             'sharedFieldType': 'None',
             'related': True,
         }
         self.assertIn(expected_property_extra_data_column, results)
 
         expected_taxlot_extra_data_column = {
-            'extraData': True,
             'name': 'taxlot_extra_data_column',
-            'dbName': 'taxlot_extra_data_column',
-            'table': 'TaxLotState',
-            'displayName': 'Taxlot Extra Data Column',
+            'table_name': 'TaxLotState',
+            'column_name': 'taxlot_extra_data_column',
+            'display_name': 'Taxlot Extra Data Column',
+            'is_extra_data': True,
+            'data_type': 'None',
             'sharedFieldType': 'None',
             'related': False,
         }

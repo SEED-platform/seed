@@ -8,26 +8,17 @@
 from django.test import TestCase
 
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.models import (
-    Organization,
-    OrganizationUser,
-)
 from seed.test_helpers.fake import (
     FakePropertyViewFactory,
     FakeNoteFactory,
 )
+from seed.utils.organizations import create_organization
 
 
 class TestNotes(TestCase):
     def setUp(self):
-        user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
-        }
-        self.user = User.objects.create_superuser(
-            email='test_user@demo.com', **user_details)
-        self.org = Organization.objects.create()
-        OrganizationUser.objects.create(user=self.user, organization=self.org)
+        self.user = User.objects.create_superuser('test_user@demo.com', 'test_user@demo.com', 'test_pass')
+        self.org, _, _ = create_organization(self.user)
 
         # Fake Factories
         self.property_view_factory = FakePropertyViewFactory(organization=self.org)

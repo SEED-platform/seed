@@ -7,7 +7,7 @@ import logging
 from django.core.management.base import BaseCommand
 
 import seed.models
-from seed.lib.superperms.orgs.models import Organization
+from seed.utils.organizations import create_organization
 
 # import numpy as np
 # from scipy.sparse import dok_matrix
@@ -176,23 +176,23 @@ property_extra_data_map[6798215] = {"CoStar Property ID": "",
 
 
 def create_structure():
-    org = Organization.objects.create(name="SampleDataDemo_caseA")
+    org, _, _ = create_organization(None, "SampleDataDemo_caseA")
     create_cycle(org)
     create_case_A_objects(org)
 
-    org, _ = Organization.objects.get_or_create(name="SampleDataDemo_caseB")
+    org, _, _ = create_organization(None, "SampleDataDemo_caseB")
     create_cycle(org)
     create_case_B_objects(org)
 
-    org, _ = Organization.objects.get_or_create(name="SampleDataDemo_caseC")
+    org, _, _ = create_organization(None, "SampleDataDemo_caseC")
     create_cycle(org)
     create_case_C_objects(org)
 
-    org, _ = Organization.objects.get_or_create(name="SampleDataDemo_caseD")
+    org, _, _ = create_organization(None, "SampleDataDemo_caseD")
     create_cycle(org)
     create_case_D_objects(org)
 
-    org, _ = Organization.objects.get_or_create(name="SampleDataDemo_caseALL")
+    org, _, _ = create_organization(None, "SampleDataDemo_caseALL")
     create_cycle(org)
     create_case_A_objects(org)
     create_case_B_objects(org)

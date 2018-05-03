@@ -40,8 +40,6 @@ from seed.data_importer.tasks import (
 from seed.decorators import ajax_request, ajax_request_class
 from seed.decorators import get_prog_key
 from seed.lib.mappings import mapper as simple_mapper
-from seed.lib.mappings import mapping_data
-from seed.lib.mappings.mapping_data import MappingData
 from seed.lib.mcm import mapper
 from seed.lib.merging import merging
 from seed.lib.superperms.orgs.decorators import has_perm_class
@@ -715,12 +713,9 @@ class ImportFileViewSet(viewsets.ViewSet):
         import_file = ImportFile.objects.get(id=import_file_id)
         field_names = import_file.get_cached_mapped_columns
 
-        # get the columns in the db...
-        md = MappingData()
-        # _log.debug('md.keys_with_table_names are: {}'.format(md.keys_with_table_names))
-
+        # iterate over the columns in the database
         raw_db_fields = []
-        for db_field in md.keys_with_table_names:
+        for db_field in Column.retrieve_db_field_table_and_names_from_db_tables():
             if db_field in field_names:
                 raw_db_fields.append(db_field)
 
@@ -784,8 +779,7 @@ class ImportFileViewSet(viewsets.ViewSet):
                 if get_coparents:
                     for state in properties:
                         state['matched'] = False
-                        coparent = self.has_coparent(state['id'], 'properties',
-                                                     fields['PropertyState'])
+                        coparent = self.has_coparent(state['id'], 'properties', fields['PropertyState'])
                         if coparent:
                             state['matched'] = True
                             state['coparent'] = coparent
@@ -849,12 +843,8 @@ class ImportFileViewSet(viewsets.ViewSet):
         import_file = ImportFile.objects.get(id=import_file_id)
         field_names = import_file.get_cached_mapped_columns
 
-        # get the columns in the db...
-        md = MappingData()
-        _log.debug('md.keys_with_table_names are: {}'.format(md.keys_with_table_names))
-
         raw_db_fields = []
-        for db_field in md.keys_with_table_names:
+        for db_field in Column.retrieve_db_field_table_and_names_from_db_tables():
             if db_field in field_names:
                 raw_db_fields.append(db_field)
 
@@ -1928,17 +1918,11 @@ class ImportFileViewSet(viewsets.ViewSet):
             import_record__super_organization_id=organization.pk
         )
 
-        # Get a list of the database fields in a list
-        md = mapping_data.MappingData()
+        # Get a list of the database fields in a list, these are the db columns and the extra_data columns
+        mapping_data = Column.retrieve_mapping_columns(organization_id)
 
-        # TODO: Move this to the MappingData class and remove calling add_extra_data
-        # Check if there are any DB columns that are not defined in the
-        # list of mapping data.
-        # NL 12/2/2016: Removed 'organization__isnull' Query because we only want the
-        # the ones belonging to the organization
-        columns = list(Column.objects.select_related('unit').filter(
-            mapped_mappings__super_organization_id=organization_id).exclude(column_name__in=md.keys))
-        md.add_extra_data(columns)
+        # I think we want column_name to be display_name, but need to change front end.
+        column_names = [c['column_name'] for c in mapping_data]
 
         # If this is a portfolio manager file, then load in the PM mappings and if the column_mappings
         # are not in the original mappings, default to PM
@@ -1946,7 +1930,7 @@ class ImportFileViewSet(viewsets.ViewSet):
             pm_mappings = simple_mapper.get_pm_mapping(import_file.first_row_columns, resolve_duplicates=True)
             suggested_mappings = mapper.build_column_mapping(
                 import_file.first_row_columns,
-                md.keys_with_table_names,
+                Column.retrieve_all_by_tuple(organization_id),
                 previous_mapping=get_column_mapping,
                 map_args=[organization],
                 default_mappings=pm_mappings,
@@ -1956,7 +1940,7 @@ class ImportFileViewSet(viewsets.ViewSet):
             # All other input types
             suggested_mappings = mapper.build_column_mapping(
                 import_file.first_row_columns,
-                md.keys_with_table_names,
+                Column.retrieve_all_by_tuple(organization_id),
                 previous_mapping=get_column_mapping,
                 map_args=[organization],
                 thresh=80  # percentage match that we require. 80% is random value for now.
@@ -1974,8 +1958,8 @@ class ImportFileViewSet(viewsets.ViewSet):
                 suggested_mappings[m][0] = 'PropertyState'
 
         result['suggested_column_mappings'] = suggested_mappings
-        result['column_names'] = md.building_columns
-        result['columns'] = md.data
+        result['column_names'] = column_names
+        result['columns'] = mapping_data
 
         return JsonResponse(result)
 

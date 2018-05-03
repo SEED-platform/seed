@@ -404,11 +404,37 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           return !_.isEmpty(col.name);
         });
 
+        // Rename display_name to displayName (ui-grid compatibility)
+        columns = _.map(columns, function (col) {
+          return _.mapKeys(col, function(value, key) {
+            return key === 'display_name' ? 'displayName' : key;
+          });
+        });
+
         // Remove _orig columns
         if (flippers.is_active('release:orig_columns')) {
           _.remove(columns, function (col) {
             return /_orig/.test(col.name);
           });
+        }
+
+        // TEMP: fix some columns
+        _.forEach(columns, function (col) {
+          if (col.name === 'created' && col.table_name === 'TaxLot') {
+            col.name = 'tax_created';
+            col.displayName = 'Created (Tax Lot)';
+          } else if (col.name === 'updated' && col.table_name === 'TaxLot') {
+            col.name = 'tax_updated';
+            col.displayName = 'Updated (Tax Lot)';
+          }
+        });
+
+        // Check for problems
+        var duplicates = _.filter(_.map(columns, 'name'), function (value, index, iteratee) {
+          return _.includes(iteratee, value, index + 1);
+        });
+        if (duplicates.length) {
+          console.error('Duplicate property column names detected:', duplicates);
         }
 
         return columns;
@@ -427,11 +453,37 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           return !_.isEmpty(col.name);
         });
 
+        // Rename display_name to displayName (ui-grid compatibility)
+        columns = _.map(columns, function (col) {
+          return _.mapKeys(col, function(value, key) {
+            return key === 'display_name' ? 'displayName' : key;
+          });
+        });
+
         // Remove _orig columns
         if (flippers.is_active('release:orig_columns')) {
           _.remove(columns, function (col) {
             return /_orig/.test(col.name);
           });
+        }
+
+        // TEMP: fix some columns
+        _.forEach(columns, function (col) {
+          if (col.name === 'created' && col.table_name === 'Property') {
+            col.name = 'property_created';
+            col.displayName = 'Created (Property)';
+          } else if (col.name === 'updated' && col.table_name === 'Property') {
+            col.name = 'property_updated';
+            col.displayName = 'Updated (Property)';
+          }
+        });
+
+        // Check for problems
+        var duplicates = _.filter(_.map(columns, 'name'), function (value, index, iteratee) {
+          return _.includes(iteratee, value, index + 1);
+        });
+        if (duplicates.length) {
+          console.error('Duplicate tax lot column names detected:', duplicates);
         }
 
         return columns;

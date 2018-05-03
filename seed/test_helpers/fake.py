@@ -489,8 +489,8 @@ class FakeStatusLabelFactory(BaseFake):
         statuslabel_details.update(kw)
         label, created = StatusLabel.objects.get_or_create(**statuslabel_details)
         if created:
-            # add in the color
-            label.color = label_value[0],
+            # If a new label, then assign a color.
+            label.color = label_value[0]
 
         return label
 

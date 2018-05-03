@@ -118,7 +118,7 @@ def apply_column_value(raw_column_name, column_value, model, mapping, is_extra_d
     # If the item is the extra_data column, then make sure to save it to the
     # extra_data field of the database
     if raw_column_name in mapping:
-        table_name, mapped_column_name = mapping.get(raw_column_name)
+        table_name, mapped_column_name, display_name, is_extra_data = mapping.get(raw_column_name)
         # NL: 9/29/16 turn off all the debug logging because it was too verbose.
         # _log.debug("item is in the mapping: %s -- %s" % (table_name, field_name))
 

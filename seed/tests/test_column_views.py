@@ -9,10 +9,10 @@ import json
 from django.core.urlresolvers import reverse, reverse_lazy
 
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
     Column,
 )
+from seed.utils.organizations import create_organization
 
 DEFAULT_CUSTOM_COLUMNS = [
     'project_id',
@@ -42,12 +42,10 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
             'email': 'test_user@demo.com'
         }
         self.user = User.objects.create_superuser(**user_details)
-        self.org = Organization.objects.create()
-        OrganizationUser.objects.create(user=self.user, organization=self.org)
+        self.org, _, _ = create_organization(self.user, "test-organization-a")
 
         Column.objects.create(column_name='test')
-        Column.objects.create(column_name='extra_data_test',
-                              is_extra_data=True)
+        Column.objects.create(column_name='extra_data_test', table_name='PropertyState', is_extra_data=True)
 
         self.client.login(**user_details)
 
@@ -106,19 +104,23 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
         response = self.client.get(reverse('api:v2:columns-list'), {
             'organization_id': self.org.id
         })
-        data = json.loads(response.content)
+        data = json.loads(response.content)['columns']
+
+        # remove the id columns to make checking existence easier
+        for result in data:
+            del result['id']
 
         expected = {
-            u'id': None,
-            u'displayName': u'PM Property ID',
             u'name': u'pm_property_id',
-            u'dbName': u'pm_property_id',
-            u'dataType': u'string',
+            u'table_name': u'PropertyState',
+            u'column_name': u'pm_property_id',
+            u'display_name': u'PM Property ID',
+            u'is_extra_data': False,
+            u'data_type': u'string',
             u'related': False,
-            u'table': u'PropertyState',
             u'sharedFieldType': u'None',
             u'pinnedLeft': True
         }
 
         # randomly check a column
-        self.assertIn(expected, data['columns'])
+        self.assertIn(expected, data)

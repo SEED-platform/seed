@@ -16,10 +16,6 @@ from collections import OrderedDict
 import mock
 
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.models import (
-    Organization,
-    OrganizationUser,
-)
 from seed.models import (
     PropertyView
 )
@@ -50,6 +46,7 @@ from seed.test_helpers.fake import (
     FakeTaxLotViewFactory
 )
 from seed.tests.util import DeleteModelsTestCase
+from seed.utils.organizations import create_organization
 
 
 class TestPropertySerializers(DeleteModelsTestCase):
@@ -61,28 +58,16 @@ class TestPropertySerializers(DeleteModelsTestCase):
             'password': 'test_pass',
         }
         self.user = User.objects.create_superuser(
-            email='test_user@demo.com', **user_details)
-        self.org = Organization.objects.create()
-        OrganizationUser.objects.create(user=self.user, organization=self.org)
-        self.audit_log_factory = FakePropertyAuditLogFactory(
-            organization=self.org, user=self.user
+            email='test_user@demo.com', **user_details
         )
-        self.property_factory = FakePropertyFactory(
-            organization=self.org
-        )
-        self.property_state_factory = FakePropertyStateFactory(
-            organization=self.org
-        )
-        self.property_view_factory = FakePropertyViewFactory(
-            organization=self.org, user=self.user
-        )
+        self.org, _, _ = create_organization(self.user)
+        self.audit_log_factory = FakePropertyAuditLogFactory(organization=self.org, user=self.user)
+        self.property_factory = FakePropertyFactory(organization=self.org)
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+        self.property_view_factory = FakePropertyViewFactory(organization=self.org, user=self.user)
         self.ga_factory = FakeGreenAssessmentFactory(organization=self.org)
-        self.gap_factory = FakeGreenAssessmentPropertyFactory(
-            organization=self.org, user=self.user
-        )
-        self.label_factory = FakeStatusLabelFactory(
-            organization=self.org
-        )
+        self.gap_factory = FakeGreenAssessmentPropertyFactory(organization=self.org, user=self.user)
+        self.label_factory = FakeStatusLabelFactory(organization=self.org)
         self.assessment = self.ga_factory.get_green_assessment()
         self.property_view = self.property_view_factory.get_property_view()
         self.gap_data = {
@@ -226,8 +211,7 @@ class TestPropertyViewAsStateSerializers(DeleteModelsTestCase):
         }
         self.user = User.objects.create_superuser(
             email='test_user@demo.com', **user_details)
-        self.org = Organization.objects.create()
-        OrganizationUser.objects.create(user=self.user, organization=self.org)
+        self.org, _, _ = create_organization(self.user)
         self.audit_log_factory = FakePropertyAuditLogFactory(
             organization=self.org, user=self.user
         )

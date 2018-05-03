@@ -40,17 +40,64 @@ fields. Follow the steps below to add new fields to the SEED database:
 1. Add the field to the PropertyState or the TaxLotState model. Adding fields to the Property or TaxLot is more
 complicated and not documented yet.
 2. Add field to list in the following locations:
-    * constants.py: VIEW_COLUMNS_PROPERTY
+    * models/columns.py: Column.DATABASE_COLUMNS
     * TaxLotState.coparent or PropertyState.coparent: SQL query and keep_fields
 3. Run `./manage.py makemigrations`
-4. Run migrations `./manage.py migrate`
-5. Run unit tests, fix failures
+4. Add in a Python script in the new migration to add in the new column into every organizations list of columns
+
+    .. code-block:: python
+
+        def forwards(apps, schema_editor):
+            Column = apps.get_model("seed", "Column")
+            Organization = apps.get_model("orgs", "Organization")
+
+            # from seed.lib.superperms.orgs.models import (
+            new_db_field = {
+                'column_name': 'pm_property_id',
+                'table_name': 'PropertyState',
+                'display_name': 'PM Property ID',
+                'data_type': 'string',
+            }
+
+            # Go through all the organizatoins
+            for org in Organization.objects.all():
+                 columns = Column.objects.filter(
+                    organization_id=org.id,
+                    table_name=new_db_field['table_name'],
+                    column_name=new_db_field['column_name'],
+                    is_extra_data=False,
+                )
+
+                if not columns.count():
+                    details.update(new_db_field)
+                    Column.objects.create(**details)
+                elif columns.count() == 1:
+                    c = columns.first()
+                    if c.display_name is None or c.display_name == '':
+                        c.display_name = new_db_field['display_name']
+                    if c.data_type is None or c.data_type == '' or c.data_type == 'None':
+                        c.data_type = new_db_field['data_type']
+                    c.save()
+                else:
+                    print "  More than one column returned"
+
+        class Migration(migrations.Migration):
+            dependencies = [
+                ('seed', '0090_auto_20180425_1154'),
+            ]
+
+            operations = [
+                migrations.RunPython(forwards),
+            ]
+
+
+5. Run migrations `./manage.py migrate`
+6. Run unit tests, fix failures. Below is a list of files that need to be fixed (this is not an exhaustive list):
     * test_mapping_data.py:test_keys
     * test_columns.py:test_column_retrieve_schema
     * test_columns.py:test_column_retrieve_db_fields
-
-6. (Optional) Update example files to include new fields
-7. Test import workflow with mapping to new fields
+7. (Optional) Update example files to include new fields
+8. Test import workflow with mapping to new fields
 
 
 AWS S3

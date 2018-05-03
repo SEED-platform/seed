@@ -10,7 +10,6 @@ from django.core.urlresolvers import reverse
 from django.utils import timezone
 
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
     PropertyView,
     StatusLabel,
@@ -21,6 +20,7 @@ from seed.test_helpers.fake import (
     FakeTaxLotStateFactory
 )
 from seed.tests.util import DeleteModelsTestCase
+from seed.utils.organizations import create_organization
 
 
 class InventoryViewTests(DeleteModelsTestCase):
@@ -31,21 +31,22 @@ class InventoryViewTests(DeleteModelsTestCase):
             'email': 'test_user@demo.com'
         }
         self.user = User.objects.create_superuser(**user_details)
-        self.org = Organization.objects.create()
+        self.org, _, _ = create_organization(self.user)
+        self.status_label = StatusLabel.objects.create(
+            name='test', super_organization=self.org
+        )
+
         self.column_factory = FakeColumnFactory(organization=self.org)
         self.cycle_factory = FakeCycleFactory(organization=self.org,
                                               user=self.user)
         self.property_factory = FakePropertyFactory(organization=self.org)
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
         self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
-        self.org_user = OrganizationUser.objects.create(
-            user=self.user, organization=self.org
-        )
+
         self.cycle = self.cycle_factory.get_cycle(
-            start=datetime(2010, 10, 10, tzinfo=timezone.get_current_timezone()))
-        self.status_label = StatusLabel.objects.create(
-            name='test', super_organization=self.org
+            start=datetime(2010, 10, 10, tzinfo=timezone.get_current_timezone())
         )
+
         self.client.login(**user_details)
 
     def test_get_building_sync(self):

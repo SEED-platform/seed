@@ -245,7 +245,7 @@ class PropertyViewSet(GenericViewSet):
             property_views = paginator.page(paginator.num_pages)
             page = paginator.num_pages
 
-        related_results = TaxLotProperty.get_related(property_views, columns)
+        related_results = TaxLotProperty.get_related(property_views, columns, org_id)
 
         # collapse units here so we're only doing the last page; we're already a
         # realized list by now and not a lazy queryset

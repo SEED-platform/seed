@@ -93,12 +93,12 @@
                         </tr>
                         <tr class="noselect">
                             <th class="column-row matching-link"></th>
-                            <th ng-repeat="col in ::leftColumns" class="pointer noselect" ng-click="sortData(col.name, col.extraData)">
-                                {$:: col.displayName | translate $} <span ng-class="getSortClass(col.name, col.extraData)"></span>
+                            <th ng-repeat="col in ::leftColumns" class="pointer noselect" ng-click="sortData(col.name, col.is_extra_data)">
+                                {$:: col.display_name | translate $} <span ng-class="getSortClass(col.name, col.is_extra_data)"></span>
                             </th>
                             <th ng-if="::!leftColumns.length"></th>
                             <th class="sub_head is_aligned_center filter-unmatched-hide" translate>Match</th>
-                            <th ng-repeat="col in ::rightColumns" class="noselect filter-unmatched-hide">{$:: col.displayName | translate $}</th>
+                            <th ng-repeat="col in ::rightColumns" class="noselect filter-unmatched-hide">{$:: col.display_name | translate $}</th>
                         </tr>
                         <tr class="filter-row">
                             <th class="sub_head matching-link"></th>
@@ -117,7 +117,7 @@
                             <td class="matching-link"><a ui-sref="matching_detail(::{importfile_id: import_file.id, inventory_type: inventory_type, state_id: i.id})"><i class="ui-grid-icon-info-circled"></i></a></td>
                             <td ng-if="::!leftColumns.length"></td>
                             <td ng-repeat="col in ::leftColumns">
-                                <span>{$:: col.extraData ? i.extra_data[col.name] : i[col.name] $}</span>
+                                <span>{$:: col.is_extra_data ? i.extra_data[col.name] : i[col.name] $}</span>
                             </td>
                             <td class="is_aligned_center has_no_padding filter-unmatched-hide">
                                 <label class="checkbox_fill_area">
@@ -125,7 +125,7 @@
                                 </label>
                             </td>
                             <td ng-repeat="col in ::rightColumns" class="filter-unmatched-hide">
-                                <span>{$:: col.extraData ? i.coparent.extra_data[col.name] : i.coparent[col.name] $}</span>
+                                <span>{$:: col.is_extra_data ? i.coparent.extra_data[col.name] : i.coparent[col.name] $}</span>
                             </td>
                         </tr>
                     </tbody>

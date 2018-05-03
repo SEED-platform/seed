@@ -10,10 +10,6 @@ from django.core.urlresolvers import reverse_lazy
 from django.test import TestCase
 
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.models import (
-    Organization,
-    OrganizationUser,
-)
 from seed.models import (
     Cycle,
     PropertyView,
@@ -25,6 +21,7 @@ from seed.test_helpers.fake import (
     FakePropertyViewFactory,
     FakeStatusLabelFactory
 )
+from seed.utils.organizations import create_organization
 
 
 class TestTaxLotProperty(TestCase):
@@ -38,10 +35,9 @@ class TestTaxLotProperty(TestCase):
             'password': 'test_pass',
         }
         self.user = User.objects.create_superuser(email='test_user@demo.com', **user_details)
-        self.org = Organization.objects.create()
+        self.org, _, _ = create_organization(self.user)
         # create a default cycle
         self.cycle = Cycle.objects.filter(organization_id=self.org).first()
-        OrganizationUser.objects.create(user=self.user, organization=self.org)
         self.property_factory = FakePropertyFactory(
             organization=self.org
         )
@@ -76,7 +72,7 @@ class TestTaxLotProperty(TestCase):
             'pm_property_id', 'use_description', 'source_type', 'year_built', 'release_date',
             'gross_floor_area', 'owner_city_state', 'owner_telephone', 'recent_sale_date',
         ]
-        data = TaxLotProperty.get_related(qs, columns)
+        data = TaxLotProperty.get_related(qs, columns, self.org.pk)
 
         self.assertEqual(len(data), 50)
         self.assertEqual(len(data[0]['related']), 0)
@@ -112,7 +108,7 @@ class TestTaxLotProperty(TestCase):
         # parse the content as array
         data = response.content.split('\n')
 
-        self.assertTrue('Address Line 1 (Property)' in data[0].split(','))
+        self.assertTrue('Address Line 1' in data[0].split(','))
         self.assertTrue('Property Labels\r' in data[0].split(','))
 
         self.assertEqual(len(data), 53)
