@@ -1919,16 +1919,8 @@ class ImportFileViewSet(viewsets.ViewSet):
             import_record__super_organization_id=organization.pk
         )
 
-        # Get a list of the database fields in a list
+        # Get a list of the database fields in a list, these are the db columns and the extra_data columns
         md = mapping_data.MappingData(organization_id)
-        # TODO: Move this to the MappingData class and remove calling add_extra_data
-        # Check if there are any DB columns that are not defined in the
-        # list of mapping data.
-        # NL 12/2/2016: Removed 'organization__isnull' Query because we only want the
-        # the ones belonging to the organization
-        columns = list(Column.objects.select_related('unit').filter(
-            mapped_mappings__super_organization_id=organization_id).exclude(column_name__in=md.keys))
-        md.add_extra_data(columns)
 
         # If this is a portfolio manager file, then load in the PM mappings and if the column_mappings
         # are not in the original mappings, default to PM

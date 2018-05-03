@@ -67,12 +67,10 @@ class MappingData(object):
             _log.debug("Adding extra data column for table {} and column {}".format(c.column_name, c.table_name))
             self.data.append(
                 {
-                    'name': c.column_name,
+                    'column_name': c.column_name,
                     'type': unit,
-                    'js_type': self._normalize_mappable_type(unit),
-                    'schema': 'BEDES',
-                    'table': c.table_name,
-                    'extra_data': True,
+                    'table_name': c.table_name,
+                    'is_extra_data': True,
                 }
             )
 
