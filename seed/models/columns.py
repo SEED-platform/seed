@@ -1160,13 +1160,15 @@ class Column(models.Model):
             # Example, gross_floor_area is a core field, but can be an extra field in taxlot, meaning that the other one
             # needs to be tagged something else. (prepended with tax_ or property_).
             if new_c['related']:
+                # if it is related then have the display name show the other table
+                new_c['display_name'] = new_c['display_name'] + ' (%s)' % INVENTORY_DISPLAY[new_c['table_name']]
+
                 # This only pertains to the tables: PropertyState and TaxLotState
                 if 'State' in new_c['table_name']:
                     if Column.objects.filter(organization_id=org_id,
                                              table_name=COLUMN_OPPOSITE_TABLE[new_c['table_name']],
                                              column_name=new_c['column_name'],
                                              is_extra_data=False).exists():
-                        new_c['display_name'] = new_c['display_name'] + ' (%s)' % INVENTORY_DISPLAY[new_c['table_name']]
                         new_c['name'] = "%s_%s" % (
                             INVENTORY_MAP_OPPOSITE_PREPEND[inventory_type.lower()], new_c['name'])
 
