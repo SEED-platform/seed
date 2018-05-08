@@ -42,7 +42,7 @@ angular.module('BE.seed.controller.merge_modal', [])
 
         // Concatenate Jurisdiction Tax Lot IDs if inventory_type is property
         if ($scope.inventory_type === 'properties') {
-          if (_.find($scope.columns, {name: 'jurisdiction_tax_lot_id', table: 'TaxLotState'})) {
+          if (_.find($scope.columns, {column_name: 'jurisdiction_tax_lot_id', table_name: 'TaxLotState'})) {
             var values = [];
             _.forEach(cleanedData, function (datum) {
               values = values.concat(_.split(datum.jurisdiction_tax_lot_id, '; '));

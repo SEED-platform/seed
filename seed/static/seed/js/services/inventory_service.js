@@ -368,28 +368,28 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       localStorage.setItem('cycles', JSON.stringify(cycles));
     };
 
-    inventory_service.get_last_profile = function () {
+    inventory_service.get_last_profile = function (key) {
       var organization_id = user_service.get_organization().id;
-      return (JSON.parse(localStorage.getItem('profiles')) || {})[organization_id];
+      return (JSON.parse(localStorage.getItem('profiles.' + key)) || {})[organization_id];
     };
 
-    inventory_service.save_last_profile = function (pk) {
+    inventory_service.save_last_profile = function (pk, key) {
       var organization_id = user_service.get_organization().id,
-        profiles = JSON.parse(localStorage.getItem('profiles')) || {};
+        profiles = JSON.parse(localStorage.getItem('profiles.' + key)) || {};
       profiles[organization_id] = _.toInteger(pk);
-      localStorage.setItem('profiles', JSON.stringify(profiles));
+      localStorage.setItem('profiles.' + key, JSON.stringify(profiles));
     };
 
-    inventory_service.get_last_detail_profile = function () {
+    inventory_service.get_last_detail_profile = function (key) {
       var organization_id = user_service.get_organization().id;
-      return (JSON.parse(localStorage.getItem('detailProfiles')) || {})[organization_id];
+      return (JSON.parse(localStorage.getItem('detailProfiles.' + key)) || {})[organization_id];
     };
 
-    inventory_service.save_last_detail_profile = function (pk) {
+    inventory_service.save_last_detail_profile = function (pk, key) {
       var organization_id = user_service.get_organization().id,
-        profiles = JSON.parse(localStorage.getItem('detailProfiles')) || {};
+        profiles = JSON.parse(localStorage.getItem('detailProfiles.' + key)) || {};
       profiles[organization_id] = _.toInteger(pk);
-      localStorage.setItem('detailProfiles', JSON.stringify(profiles));
+      localStorage.setItem('detailProfiles.' + key, JSON.stringify(profiles));
     };
 
 
@@ -688,47 +688,6 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       };
     };
 
-    inventory_service.saveSettings = function (key, columns) {
-      key += '.' + user_service.get_organization().id;
-      var toSave = inventory_service.reorderSettings(_.map(columns, function (col) {
-        return _.pick(col, ['name', 'table', 'visible', 'pinnedLeft']);
-      }));
-      localStorage.setItem(key, JSON.stringify(toSave));
-    };
-
-    inventory_service.loadSettings = function (key, columns) {
-      key += '.' + user_service.get_organization().id;
-      columns = angular.copy(columns);
-
-      // Hide extra data columns by default
-      _.forEach(columns, function (col) {
-        col.visible = !col.extraData;
-      });
-
-      var localColumns = localStorage.getItem(key);
-      if (!_.isNull(localColumns)) {
-        localColumns = JSON.parse(localColumns);
-
-        // Remove nonexistent columns
-        _.remove(localColumns, function (col) {
-          return !_.find(columns, {name: col.name, table: col.table});
-        });
-        // Use saved column settings with original data as defaults
-        localColumns = _.map(localColumns, function (col) {
-          return _.defaults(col, _.remove(columns, {name: col.name, table: col.table})[0]);
-        });
-        // If no columns are visible, reset visibility only
-        if (!_.find(localColumns, 'visible')) {
-          _.forEach(localColumns, function (col) {
-            col.visible = !col.extraData;
-          });
-        }
-        return inventory_service.reorderSettings(localColumns.concat(columns));
-      } else {
-        return inventory_service.reorderSettings(columns);
-      }
-    };
-
     inventory_service.saveSelectedLabels = function (key, ids) {
       key += '.' + user_service.get_organization().id;
       localStorage.setItem(key, JSON.stringify(ids));
@@ -748,11 +707,6 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     inventory_service.loadGridSettings = function (key) {
       key += '.' + user_service.get_organization().id;
       return localStorage.getItem(key);
-    };
-
-    inventory_service.removeSettings = function (key) {
-      key += '.' + user_service.get_organization().id;
-      localStorage.removeItem(key);
     };
 
     inventory_service.saveMatchesPerPage = function (matchesPerPage) {
@@ -849,17 +803,24 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       });
     };
 
-    inventory_service.get_settings_profiles = function (settings_location) {
+    inventory_service.get_settings_profiles = function (settings_location, inventory_type) {
       return $http.get('/api/v2/column_list_settings/', {
         params: {
           organization_id: user_service.get_organization().id
         }
       }).then(function (response) {
-        return _.filter(response.data.data, {
-          settings_location: settings_location
+        var profiles = _.filter(response.data.data, {
+          settings_location: settings_location,
+          inventory_type: inventory_type
         }).sort(function (a, b) {
           return naturalSort(a.name, b.name);
         });
+
+        _.forEach(profiles, function (profile) {
+          profile.columns = _.sortBy(profile.columns, ['order', 'column_name']);
+        });
+
+        return profiles;
       });
     };
 

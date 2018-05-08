@@ -26,14 +26,14 @@
                                 <tr class="sub_head">
                                     <th class="sub_head" ng-repeat="c in ::columns" style="min-width: 140px;">
                                         <!-- for string & numeric filters -->
-                                        <input ng-if=":: _.includes(['string', 'link', 'number', 'floor_area'], c.type)" type="text" class="form-control input-sm show" ng-class="{active: search.filter_params[c.sort_column].length}" placeholder="{$:: c.title | translate $}" ng-change="search.filter_search()" ng-model="search.filter_params[c.sort_column]">
+                                        <input ng-if=":: _.includes(['string', 'link', 'number', 'floor_area'], c.data_type)" type="text" class="form-control input-sm show" ng-class="{active: search.filter_params[c.sort_column].length}" placeholder="{$:: c.title | translate $}" ng-change="search.filter_search()" ng-model="search.filter_params[c.sort_column]">
 
                                         <!-- for range filters -->
-                                        <div ng-if="c.type === 'date'" class="col-xs-6">
-                                            <input ng-if="::c.type === 'date'" type="date" class="form-control input-sm" placeholder="{$:: 'Min' | translate $}" ng-change="search.filter_search()" ng-model="search.filter_params[c.min]" ng-class="{active: search.filter_params[c.min].length}">
+                                        <div ng-if="c.data_type === 'date'" class="col-xs-6">
+                                            <input ng-if="::c.data_type === 'date'" type="date" class="form-control input-sm" placeholder="{$:: 'Min' | translate $}" ng-change="search.filter_search()" ng-model="search.filter_params[c.min]" ng-class="{active: search.filter_params[c.min].length}">
                                         </div>
-                                        <div ng-if="c.type === 'date'" class="col-xs-6">
-                                            <input ng-if="::c.type === 'date'" type="date" class="form-control input-sm" placeholder="{$:: 'Max' | translate $}" ng-change="search.filter_search()" ng-model="search.filter_params[c.max]" ng-class="{active: search.filter_params[c.max].length}">
+                                        <div ng-if="c.data_type === 'date'" class="col-xs-6">
+                                            <input ng-if="::c.data_type === 'date'" type="date" class="form-control input-sm" placeholder="{$:: 'Max' | translate $}" ng-change="search.filter_search()" ng-model="search.filter_params[c.max]" ng-class="{active: search.filter_params[c.max].length}">
                                         </div>
                                     </th>
                                 </tr>

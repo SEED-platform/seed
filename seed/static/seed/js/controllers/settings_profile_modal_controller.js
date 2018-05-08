@@ -10,10 +10,12 @@ angular.module('BE.seed.controller.settings_profile_modal', [])
     'action',
     'data',
     'settings_location',
-    function ($scope, $uibModalInstance, inventory_service, action, data, settings_location) {
+    'inventory_type',
+    function ($scope, $uibModalInstance, inventory_service, action, data, settings_location, inventory_type) {
       $scope.action = action;
       $scope.data = data;
       $scope.settings_location = settings_location;
+      $scope.inventory_type = inventory_type;
 
       $scope.rename_profile = function () {
         if (!$scope.disabled()) {
@@ -37,19 +39,8 @@ angular.module('BE.seed.controller.settings_profile_modal', [])
           inventory_service.new_settings_profile({
             name: $scope.newName,
             settings_location: $scope.settings_location,
-            columns: [{
-              id: 674,
-              pinned: Math.random() >= 0.5,
-              order: 1
-            }, {
-              id: 676,
-              pinned: Math.random() >= 0.5,
-              order: 2
-            }, {
-              id: 678,
-              pinned: Math.random() >= 0.5,
-              order: 3
-            }]
+            inventory_type: $scope.inventory_type,
+            columns: $scope.data
           }).then(function (result) {
             $uibModalInstance.close(result);
           });

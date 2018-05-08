@@ -7,7 +7,8 @@
             </a>
         </div>
         <div class="page_title">
-            <h1>{$:: (inventory_type === 'taxlots' ? 'Tax Lot Detail Settings' : 'Property Detail Settings') | translate $}</h1>
+            <h1 ng-if="::inventory_type === 'taxlots'" translate>Tax Lot Detail Settings</h1>
+            <h1 ng-if="::inventory_type === 'properties'" translate>Property Detail Settings</h1>
         </div>
         <div class="right page_action_container page_action_btn"></div>
     </div>

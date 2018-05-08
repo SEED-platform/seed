@@ -14,6 +14,7 @@ angular.module('BE.seed.controller.inventory_list', [])
     'user_service',
     'inventory',
     'cycles',
+    'profiles',
     'labels',
     'all_columns',
     'urls',
@@ -31,6 +32,7 @@ angular.module('BE.seed.controller.inventory_list', [])
               user_service,
               inventory,
               cycles,
+              profiles,
               labels,
               all_columns,
               urls,
@@ -50,7 +52,6 @@ angular.module('BE.seed.controller.inventory_list', [])
 
       // set up i18n
       //
-      $scope.columns = _.filter(inventory.columns, 'visible');
       // let angular-translate be in charge ... need
       // to feed the language-only part of its $translate setting into
       // ui-grid's i18nService
@@ -58,6 +59,28 @@ angular.module('BE.seed.controller.inventory_list', [])
         return _.first(languageTag.split('_'));
       };
       i18nService.setCurrentLang(stripRegion($translate.proposedLanguage() || $translate.use()));
+
+      // List Settings Profile
+      $scope.profiles = profiles;
+      var validProfileIds = _.map(profiles, 'id');
+      var lastProfileId = inventory_service.get_last_profile($scope.inventory_type);
+      if (_.includes(validProfileIds, lastProfileId)) {
+        $scope.currentProfile = _.find($scope.profiles, {id: lastProfileId});
+      } else {
+        $scope.currentProfile = _.first($scope.profiles);
+        if ($scope.currentProfile) inventory_service.save_last_profile($scope.currentProfile.id, $scope.inventory_type);
+      }
+
+      if ($scope.currentProfile) {
+        $scope.columns = _.map($scope.currentProfile.columns, function (col) {
+          var c = _.find(all_columns, {id: col.id});
+          c.pinnedLeft = col.pinned;
+          return c;
+        });
+      } else {
+        // No profiles exist
+        $scope.columns = _.reject(all_columns, 'is_extra_data');
+      }
 
       $scope.total = $scope.pagination.total;
       $scope.number_per_page = 999999999;
@@ -80,7 +103,52 @@ angular.module('BE.seed.controller.inventory_list', [])
         $scope.selected_labels = [];
       };
 
+      var ignoreNextChange = true;
+      $scope.$watch('currentProfile', function (newProfile, oldProfile) {
+        if (ignoreNextChange) {
+          ignoreNextChange = false;
+          return;
+        }
+
+        inventory_service.save_last_profile(newProfile.id, $scope.inventory_type);
+        spinner_utility.show();
+        $window.location.reload();
+      });
+
+      $scope.newProfile = function () {
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/settings_profile_modal.html',
+          controller: 'settings_profile_modal_controller',
+          resolve: {
+            action: _.constant('new'),
+            data: currentColumns,
+            settings_location: _.constant('List View Settings'),
+            inventory_type: function () {
+              return $scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
+            }
+          }
+        });
+
+        return modalInstance.result.then(function (newProfile) {
+          $scope.profiles.push(newProfile);
+          ignoreNextChange = true;
+          $scope.currentProfile = _.last($scope.profiles);
+          inventory_service.save_last_profile(newProfile.id, $scope.inventory_type);
+        });
+      };
+
       $scope.open_show_populated_columns_modal = function () {
+        if (!profiles.length) {
+          // Create a profile first
+          $scope.newProfile().then(function () {
+            populated_columns_modal();
+          });
+        } else {
+          populated_columns_modal();
+        }
+      };
+
+      function populated_columns_modal() {
         var modalInstance = $uibModal.open({
           backdrop: 'static',
           templateUrl: urls.static_url + 'seed/partials/show_populated_columns_modal.html',
@@ -88,6 +156,9 @@ angular.module('BE.seed.controller.inventory_list', [])
           resolve: {
             columns: function () {
               return all_columns;
+            },
+            currentProfile: function () {
+              return $scope.currentProfile;
             },
             cycle_id: function () {
               return $scope.cycle.selected_cycle.id;
@@ -97,7 +168,7 @@ angular.module('BE.seed.controller.inventory_list', [])
             }
           }
         });
-      };
+      }
 
       $scope.loadLabelsForFilter = function (query) {
         return _.filter($scope.labels, function (lbl) {
@@ -111,7 +182,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
-      function updateApplicableLabels () {
+      function updateApplicableLabels() {
         var inventoryIds = _.map($scope.data, 'id').sort();
         $scope.labels = _.filter(labels, function (label) {
           return _.some(label.is_applied, function (id) {
@@ -278,9 +349,13 @@ angular.module('BE.seed.controller.inventory_list', [])
       };
       _.map($scope.columns, function (col) {
         var options = {};
-        if (col.type === 'date') options.filter = inventory_service.dateFilter();
-        else options.filter = inventory_service.combinedFilter();
-        if (col.type === 'text' || _.isUndefined(col.type)) options.sortingAlgorithm = naturalSort;
+        if (col.data_type === 'datetime') {
+          options.cellFilter = 'date:\'yyyy-MM-dd h:mm a\'';
+          options.filter = inventory_service.dateFilter();
+        } else {
+          options.filter = inventory_service.combinedFilter();
+        }
+        if (col.data_type === 'text' || _.isUndefined(col.data_type) || col.data_type === 'None') options.sortingAlgorithm = naturalSort;
         if (col.name === 'number_properties' && col.related) options.treeAggregationType = 'total';
         else if (col.related || col.extraData) options.treeAggregationType = 'uniqueList';
         return _.defaults(col, options, defaults);
@@ -331,7 +406,7 @@ angular.module('BE.seed.controller.inventory_list', [])
 
       // Data
       var processData = function () {
-        var visibleColumns = _.map(_.filter($scope.columns, 'visible'), 'name')
+        var visibleColumns = _.map($scope.columns, 'name')
           .concat(['$$treeLevel', 'notes_count', 'id', 'property_state_id', 'property_view_id', 'taxlot_state_id', 'taxlot_view_id']);
 
         var columnsToAggregate = _.filter($scope.columns, function (col) {
@@ -560,29 +635,47 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
-      var saveSettings = function () {
+      function currentColumns() {
         // Save all columns except first 3
-        var cols = _.filter($scope.gridApi.grid.columns, function (col) {
-          return !_.includes(['treeBaseRowHeaderCol', 'selectionRowHeaderCol', 'notes_count', 'id'], col.name);
-        });
-        cols = _.map(cols, function (col) {
-          col.pinnedLeft = col.renderContainer === 'left' && col.visible;
-          var result = col.colDef;
-          result.pinnedLeft = col.pinnedLeft;
-          return result;
-        });
-        var oldSettings = inventory_service.loadSettings(localStorageKey, all_columns);
-        oldSettings = _.map(oldSettings, function (col) {
-          col.pinnedLeft = false;
-          col.visible = false;
-          return col;
-        });
-        var visibleColumns = _.map(cols, 'name');
-        oldSettings = _.filter(oldSettings, function (col) {
-          return !_.includes(visibleColumns, col.name);
+        var gridCols = _.filter($scope.gridApi.grid.columns, function (col) {
+          return !_.includes(['treeBaseRowHeaderCol', 'selectionRowHeaderCol', 'notes_count', 'id'], col.name) && col.visible;
         });
 
-        inventory_service.saveSettings(localStorageKey, cols.concat(oldSettings));
+        // Ensure pinned ordering first
+        var pinned = _.remove(gridCols, function (col) {
+          return col.renderContainer === 'left';
+        });
+        gridCols = pinned.concat(gridCols);
+
+        var columns = [];
+        _.forEach(gridCols, function (col) {
+          columns.push({
+            column_name: col.colDef.column_name,
+            id: col.colDef.id,
+            order: columns.length + 1,
+            pinned: col.renderContainer === 'left',
+            table_name: col.colDef.table_name
+          });
+        });
+
+        return columns;
+      }
+
+      var saveSettings = function () {
+        if (!profiles.length) {
+          // Create a profile first
+          $scope.newProfile().then(function () {
+            var id = $scope.currentProfile.id;
+            var profile = _.omit($scope.currentProfile, 'id');
+            profile.columns = currentColumns();
+            inventory_service.update_settings_profile(id, profile);
+          });
+        } else {
+          var id = $scope.currentProfile.id;
+          var profile = _.omit($scope.currentProfile, 'id');
+          profile.columns = currentColumns();
+          inventory_service.update_settings_profile(id, profile);
+        }
       };
 
       var saveGridSettings = function () {
@@ -720,8 +813,4 @@ angular.module('BE.seed.controller.inventory_list', [])
           });
         }
       };
-
-      // $scope.$on('$destroy', function () {
-      //   console.log('Destroying!');
-      // });
     }]);

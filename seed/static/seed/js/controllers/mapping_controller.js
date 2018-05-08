@@ -428,8 +428,12 @@ angular.module('BE.seed.controller.mapping', [])
             if (!_.includes(existing_property_keys, col.name) && !_.includes(existing_extra_property_keys, col.name)) {
               col.visible = false;
             } else {
-              if (col.type === 'date') options.filter = inventory_service.dateFilter();
-              else options.filter = inventory_service.combinedFilter();
+              if (col.data_type === 'datetime') {
+                options.cellFilter = 'date:\'yyyy-MM-dd h:mm a\'';
+                options.filter = inventory_service.dateFilter();
+              } else {
+                options.filter = inventory_service.combinedFilter();
+              }
             }
             return _.defaults(col, options, defaults);
           });
@@ -438,8 +442,12 @@ angular.module('BE.seed.controller.mapping', [])
             if (!_.includes(existing_taxlot_keys, col.name) && !_.includes(existing_extra_taxlot_keys, col.name)) {
               col.visible = false;
             } else {
-              if (col.type === 'date') options.filter = inventory_service.dateFilter();
-              else options.filter = inventory_service.combinedFilter();
+              if (col.data_type === 'datetime') {
+                options.cellFilter = 'date:\'yyyy-MM-dd h:mm a\'';
+                options.filter = inventory_service.dateFilter();
+              } else {
+                options.filter = inventory_service.combinedFilter();
+              }
             }
             return _.defaults(col, options, defaults);
           });
