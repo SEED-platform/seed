@@ -34,11 +34,12 @@ class ColumnListSettingColumnSerializer(serializers.HyperlinkedModelSerializer):
 class ColumnListSettingSerializer(OrgMixin, OrgValidateMixin, serializers.ModelSerializer):
     columns = ColumnListSettingColumnSerializer(source="columnlistsettingcolumn_set", read_only=True, many=True)
     settings_location = ChoiceField(choices=ColumnListSetting.VIEW_LOCATION_TYPES)
+    inventory_type = ChoiceField(choices=ColumnListSetting.VIEW_LIST_INVENTORY_TYPE)
     org_validators = [COLUMN_VALIDATOR]
 
     class Meta:
         model = ColumnListSetting
-        fields = ('id', 'name', 'settings_location', 'columns')
+        fields = ('id', 'name', 'settings_location', 'inventory_type', 'columns')
 
     def update(self, instance, validated_data):
         # remove the relationships -- to be added again in next step
@@ -63,8 +64,7 @@ class ColumnListSettingSerializer(OrgMixin, OrgValidateMixin, serializers.ModelS
                 column_id = column.get("id")
                 order = column.get("order")
                 pinned = column.get("pinned")
-                ColumnListSettingColumn(column_list_setting=cls, column_id=column_id, pinned=pinned,
-                                        order=order).save()
+                ColumnListSettingColumn(column_list_setting=cls, column_id=column_id, pinned=pinned, order=order).save()
         cls.save()
 
         return cls

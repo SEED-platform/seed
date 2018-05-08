@@ -24,7 +24,15 @@ class ColumnListSetting(models.Model):
         (VIEW_DETAIL, 'Detail View Settings'),
     ]
 
+    VIEW_LIST_PROPERTY = 0
+    VIEW_LIST_TAXLOT = 1
+    VIEW_LIST_INVENTORY_TYPE = [
+        (VIEW_LIST_PROPERTY, 'Property List'),
+        (VIEW_LIST_TAXLOT, 'Tax Lot List'),
+    ]
+
     organization = models.ForeignKey(SuperOrganization, blank=True, null=True)
     name = models.CharField(max_length=512, db_index=True)
     settings_location = models.IntegerField(choices=VIEW_LOCATION_TYPES, default=VIEW_LIST)
+    inventory_type = models.IntegerField(choices=VIEW_LIST_INVENTORY_TYPE, default=VIEW_LIST_PROPERTY)
     columns = models.ManyToManyField(Column, related_name='column_list_settings', through='seed.ColumnListSettingColumn')
