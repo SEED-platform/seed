@@ -35,6 +35,7 @@ class ColumnListingViewSet(SEEDOrgCreateUpdateModelViewSet):
             {
                 "name": "some new name 3",
                 "settings_location": "List View Settings",
+                "inventory_type": "Tax Lot",
                 "columns": [
                     {"id": 1, "pinned": false, "order": 10},
                     {"id": 5, "pinned": true, "order": 14},

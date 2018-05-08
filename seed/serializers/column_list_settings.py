@@ -44,7 +44,7 @@ class ColumnListSettingSerializer(OrgMixin, OrgValidateMixin, serializers.ModelS
     def update(self, instance, validated_data):
         # remove the relationships -- to be added again in next step
         ColumnListSettingColumn.objects.filter(column_list_setting_id=instance.id).delete()
-        for column in self.initial_data.get("columns"):
+        for column in self.initial_data.get("columns", []):
             column_id = column.get("id")
             order = column.get("order")
             pinned = column.get("pinned")
@@ -59,7 +59,7 @@ class ColumnListSettingSerializer(OrgMixin, OrgValidateMixin, serializers.ModelS
     def create(self, validated_data):
         cls = ColumnListSetting.objects.create(**validated_data)
         if "columns" in self.initial_data:
-            for column in self.initial_data.get("columns"):
+            for column in self.initial_data.get("columns", []):
                 # At this point the column will exist for the organization based on the validation step
                 column_id = column.get("id")
                 order = column.get("order")
@@ -74,7 +74,7 @@ class ColumnListSettingSerializer(OrgMixin, OrgValidateMixin, serializers.ModelS
         if "columns" in self.initial_data:
             request = self.context.get('request', None)
             org_id = self.get_organization(request)
-            for column in self.initial_data.get("columns"):
+            for column in self.initial_data.get("columns", []):
                 if not Column.objects.filter(pk=column.get("id"), organization_id=org_id).exists():
                     raise ValidationError('Column does not exist for organization, column id: %s' % column.get("id"))
 

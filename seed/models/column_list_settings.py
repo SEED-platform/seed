@@ -27,8 +27,8 @@ class ColumnListSetting(models.Model):
     VIEW_LIST_PROPERTY = 0
     VIEW_LIST_TAXLOT = 1
     VIEW_LIST_INVENTORY_TYPE = [
-        (VIEW_LIST_PROPERTY, 'Property List'),
-        (VIEW_LIST_TAXLOT, 'Tax Lot List'),
+        (VIEW_LIST_PROPERTY, 'Property'),
+        (VIEW_LIST_TAXLOT, 'Tax Lot'),
     ]
 
     organization = models.ForeignKey(SuperOrganization, blank=True, null=True)
