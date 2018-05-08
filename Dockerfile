@@ -28,7 +28,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         enchant \
         vim \
         curl \
-    && pip install --upgrade pip \
+    && pip install --upgrade pip==9.0.3 \
     && pip install setuptools \
     && groupadd --gid 1000 uwsgi \
     && useradd -g uwsgi -M -u 1000 -r uwsgi \
