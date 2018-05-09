@@ -177,22 +177,5 @@ describe('controller: dataset_list_controller', function () {
     // assertions
     expect($state.href('mapping', {importfile_id: 3})).toBe('#/data/mapping/3');
   });
-  it('should respond to URL when the ``Matching`` button is clicked', function () {
-    // arrange
-    create_dataset_list_controller();
-
-    // act
-    dataset_list_controller_scope.$digest();
-
-    // assertions
-    expect($state.href('matching_list', {
-      importfile_id: 3,
-      inventory_type: 'properties'
-    })).toBe('#/data/matching/3/properties');
-    expect($state.href('matching_list', {
-      importfile_id: 3,
-      inventory_type: 'taxlots'
-    })).toBe('#/data/matching/3/taxlots');
-  });
 
 });

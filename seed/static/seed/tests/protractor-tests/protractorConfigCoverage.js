@@ -13,7 +13,6 @@ exports.config = {
     // 'seed/static/seed/tests/protractor-tests/propPages.spec.js',
     // 'seed/static/seed/tests/protractor-tests/taxlotPages.spec.js',
     // 'seed/static/seed/tests/protractor-tests/datasetMapping.spec.js',
-    // 'seed/static/seed/tests/protractor-tests/datasetMatching.spec.js',
     // 'seed/static/seed/tests/protractor-tests/datasetPairing.spec.js',
     // 'seed/static/seed/tests/protractor-tests/miscellaneous.spec.js',
     // 'seed/static/seed/tests/protractor-tests/adminLogout.spec.js'
