@@ -13,6 +13,7 @@ from itertools import chain
 from django.apps import apps
 from django.db import models
 from django.utils.timezone import make_naive
+from seed.models.columns import Column
 
 logger = logging.getLogger(__name__)
 
@@ -40,18 +41,18 @@ class TaxLotProperty(models.Model):
         ]
 
     @classmethod
-    def extra_data_to_dict_with_mapping(cls, instance, mappings, exclude=[]):
+    def extra_data_to_dict_with_mapping(cls, instance, mappings, fields=None):
         """
         Convert the extra data to a dictionary with a name mapping for the keys
 
         :param instance: dict, the extra data dictionary
         :param mappings: dict, mapping names { "from_name": "to_name", ...}
-        :param exclude: list, extra data fields to ignore. Use the original column names (the ones in the database)
+        :param fields: list, extra data fields to include. Use the original column names (the ones in the database)
         :return: dict
         """
         data = {}
         for extra_data_field, extra_data_value in instance.items():
-            if extra_data_field in exclude:
+            if fields and extra_data_field not in fields:
                 continue
 
             if extra_data_field in mappings:
@@ -64,7 +65,8 @@ class TaxLotProperty(models.Model):
     @classmethod
     def model_to_dict_with_mapping(cls, instance, mappings, fields=None, exclude=None):
         """
-        Copied from Django method and added a mapping for field names
+        Copied from Django method and added a mapping for field names and excluding
+        specific API fields.
         """
         from django.db import models
         opts = instance._meta
@@ -76,10 +78,12 @@ class TaxLotProperty(models.Model):
                 continue
             if exclude and f.name in exclude:
                 continue
+            if f.name in Column.EXCLUDED_API_FIELDS:
+                continue
 
-            # fix specific time stamps - total hack right now. Need to reconcile with
-            # /data_importer/views.py and /seed/views/properties.py
-            if f.name in ['recent_sale_date', 'release_date', 'generation_date', 'analysis_start_time', 'analysis_end_time']:
+            # fix specific time stamps
+            if f.name in ['recent_sale_date', 'release_date', 'generation_date', 'analysis_start_time',
+                          'analysis_end_time']:
                 value = f.value_from_object(instance)
                 if value:
                     value = make_naive(value).isoformat()
@@ -98,7 +102,7 @@ class TaxLotProperty(models.Model):
         return data
 
     @classmethod
-    def get_related(cls, object_list, show_columns, columns_from_database, org_id):
+    def get_related(cls, object_list, show_columns, columns_from_database):
         """
         This method takes a list of TaxLotViews or PropertyViews and returns the data along
         with the related TaxLotView or PropertyView.
@@ -111,9 +115,8 @@ class TaxLotProperty(models.Model):
         here so that we can use this method to create the data for exporting to CSV on the backend.
 
         :param object_list: list
-        :param show_columns: list, columns (as defined by frontend)
+        :param show_columns: list, columns (as defined by frontend), Pass None to default to all columns
         :param columns_from_database: list, columns from the database as list of dict
-        :param org_id: int, organization id
         :return: list
         """
         results = []
@@ -133,7 +136,6 @@ class TaxLotProperty(models.Model):
                 'related_view': 'taxlot_view',
                 'related_view_id': 'taxlot_view_id',
                 'related_state_id': 'taxlot_state_id',
-                'related_column_key': 'tax',
             }
         else:
             lookups = {
@@ -147,7 +149,6 @@ class TaxLotProperty(models.Model):
                 'related_view': 'property_view',
                 'related_view_id': 'property_view_id',
                 'related_state_id': 'property_state_id',
-                'related_column_key': 'property',
             }
 
         # Ids of propertyviews to look up in m2m
@@ -171,8 +172,9 @@ class TaxLotProperty(models.Model):
 
         related_map = {}
         for related_view in related_views:
-            related_dict = TaxLotProperty.model_to_dict_with_mapping(related_view.state, related_column_name_mapping,
-                                                                     # fields=show_columns, # TODO: hook this back up!
+            related_dict = TaxLotProperty.model_to_dict_with_mapping(related_view.state,
+                                                                     related_column_name_mapping,
+                                                                     fields=show_columns,
                                                                      exclude=['extra_data'])
 
             related_dict[lookups['related_state_id']] = related_view.state.id
@@ -190,13 +192,13 @@ class TaxLotProperty(models.Model):
                 related_dict[related_column_name_mapping['updated']] = related_view.taxlot.updated
                 related_dict[related_column_name_mapping['created']] = related_view.taxlot.created
 
-            # Add extra data fields right to this object.
-            for extra_data_field, extra_data_value in related_view.state.extra_data.items():
-                if extra_data_field in related_column_name_mapping:
-                    related_dict[related_column_name_mapping[extra_data_field]] = extra_data_value
-                else:
-                    related_dict[extra_data_field] = extra_data_value
-
+            related_dict = dict(
+                related_dict.items() +
+                TaxLotProperty.extra_data_to_dict_with_mapping(
+                    related_view.state.extra_data,
+                    related_column_name_mapping, fields=show_columns
+                ).items()
+            )
             related_map[related_view.pk] = related_dict
 
             # Replace taxlot_view id with taxlot id
@@ -257,16 +259,19 @@ class TaxLotProperty(models.Model):
 
         for obj in object_list:
             # Each object in the response is built from the state data, with related data added on.
-            obj_dict = TaxLotProperty.model_to_dict_with_mapping(obj.state, obj_column_name_mapping,
-                                                                 # fields=show_columns, # TODO: hook this back up!
+            obj_dict = TaxLotProperty.model_to_dict_with_mapping(obj.state,
+                                                                 obj_column_name_mapping,
+                                                                 fields=show_columns,
                                                                  exclude=['extra_data'])
 
-            # Add extra data fields right to this object.
-            for extra_data_field, extra_data_value in obj.state.extra_data.items():
-                if extra_data_field in obj_column_name_mapping:
-                    obj_dict[obj_column_name_mapping[extra_data_field]] = extra_data_value
-                else:
-                    obj_dict[extra_data_field] = extra_data_value
+            obj_dict = dict(
+                obj_dict.items() +
+                TaxLotProperty.extra_data_to_dict_with_mapping(
+                    obj.state.extra_data,
+                    obj_column_name_mapping,
+                    fields=show_columns
+                ).items()
+            )
 
             # Use property_id instead of default (state_id)
             obj_dict['id'] = getattr(obj, lookups['obj_id'])

@@ -145,16 +145,12 @@ class Column(models.Model):
         ('TaxLotState', 'jurisdiction_tax_lot_id')
     ]
 
-    # These are the columns that are removed when looking to see if the records are the same
-    COLUMN_EXCLUDE_FIELDS = [
-        'id',
-        'source_type',
-        'data_state',
-        'import_file',
-        'merge_state',
-        'confidence',
-        'extra_data',
-        # Records below are old and should not be uesed
+    # These fileds are excluded from being returned to the front end via the API. Note that not all the endpoints
+    # are respecting this at the moment
+    EXCLUDED_API_FIELDS = [
+        'normalized_address',
+
+        # Records below are old and should not be used
         'source_eui_modeled_orig',
         'site_eui_orig',
         'occupied_floor_area_orig',
@@ -165,6 +161,16 @@ class Column(models.Model):
         'conditioned_floor_area_orig',
         'source_eui_weather_normalized_orig',
     ]
+    # These are the columns that are removed when looking to see if the records are the same
+    COLUMN_EXCLUDE_FIELDS = [
+        'id',
+        'source_type',
+        'data_state',
+        'import_file',
+        'merge_state',
+        'confidence',
+        'extra_data',
+    ] + EXCLUDED_API_FIELDS
 
     # These are fields that should not be mapped to
     EXCLUDED_MAPPING_FIELDS = [

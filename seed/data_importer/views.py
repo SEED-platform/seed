@@ -712,30 +712,31 @@ class ImportFileViewSet(viewsets.ViewSet):
         # List of the only fields to show
         field_names = import_file.get_cached_mapped_columns
 
-        columns_from_database = Column.retrieve_all(org_id)
-        property_column_name_mapping = {}
-        taxlot_column_name_mapping = {}
-        for column in columns_from_database:
-            if column['table_name'] == 'PropertyState':
-                property_column_name_mapping[column['column_name']] = column['name']
-            elif column['table_name'] == 'TaxLotState':
-                taxlot_column_name_mapping[column['column_name']] = column['name']
-
-        # iterate over the columns in the database
-        raw_db_fields = []
-        for db_field in Column.retrieve_db_field_table_and_names_from_db_tables():
-            if db_field in field_names:
-                raw_db_fields.append(db_field)
-
-        # go through the list and find the ones that are properties
+        # set of fields
         fields = {
             'PropertyState': ['id', 'extra_data', 'lot_number'],
             'TaxLotState': ['id', 'extra_data']
         }
-        for f in raw_db_fields:
-            fields[f[0]].append(f[1])
-
-        # _log.debug('Field names that will be returned are: {}'.format(fields))
+        columns_from_db = Column.retrieve_all(org_id)
+        property_column_name_mapping = {}
+        taxlot_column_name_mapping = {}
+        for field_name in field_names:
+            # find the field from the columns in the database
+            for column in columns_from_db:
+                if column['table_name'] == 'PropertyState' and \
+                        field_name[0] == 'PropertyState' and \
+                        field_name[1] == column['column_name']:
+                    property_column_name_mapping[column['column_name']] = column['name']
+                    if not column['is_extra_data']:
+                        fields['PropertyState'].append(field_name[1])  # save to the raw db fields
+                    continue
+                elif column['table_name'] == 'TaxLotState' and \
+                        field_name[0] == 'TaxLotState' and \
+                        field_name[1] == column['column_name']:
+                    taxlot_column_name_mapping[column['column_name']] = column['name']
+                    if not column['is_extra_data']:
+                        fields['TaxLotState'].append(field_name[1])  # save to the raw db fields
+                    continue
 
         inventory_type = request.data.get('inventory_type', 'all')
 

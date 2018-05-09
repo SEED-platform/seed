@@ -203,7 +203,6 @@ class PropertyViewSet(GenericViewSet):
     serializer_class = PropertySerializer
 
     def _get_filtered_results(self, request, columns):
-
         page = request.query_params.get('page', 1)
         per_page = request.query_params.get('per_page', 1)
         org_id = request.query_params.get('organization_id', None)
@@ -249,7 +248,7 @@ class PropertyViewSet(GenericViewSet):
 
         # Retrieve all the columns that are in the db for this organization
         columns_from_database = Column.retrieve_all(org_id, 'property', False)
-        related_results = TaxLotProperty.get_related(property_views, columns, columns_from_database, org_id)
+        related_results = TaxLotProperty.get_related(property_views, columns, columns_from_database)
 
         # collapse units here so we're only doing the last page; we're already a
         # realized list by now and not a lazy queryset
@@ -325,7 +324,7 @@ class PropertyViewSet(GenericViewSet):
               required: false
               paramType: query
         """
-        return self._get_filtered_results(request, columns=[])
+        return self._get_filtered_results(request, columns=None)
 
     @api_endpoint_class
     @ajax_request_class
@@ -361,6 +360,9 @@ class PropertyViewSet(GenericViewSet):
             columns = dict(request.data.iterlists())['columns']
         except AttributeError:
             columns = request.data['columns']
+
+        # TODO: fix this
+        columns = None
         return self._get_filtered_results(request, columns=columns)
 
     @api_endpoint_class

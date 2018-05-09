@@ -74,7 +74,7 @@ class TestTaxLotProperty(TestCase):
             'gross_floor_area', 'owner_city_state', 'owner_telephone', 'recent_sale_date',
         ]
         columns_from_database = Column.retrieve_all(self.org.id, 'property', False)
-        data = TaxLotProperty.get_related(qs, columns, columns_from_database, self.org.pk)
+        data = TaxLotProperty.get_related(qs, columns, columns_from_database)
 
         self.assertEqual(len(data), 50)
         self.assertEqual(len(data[0]['related']), 0)

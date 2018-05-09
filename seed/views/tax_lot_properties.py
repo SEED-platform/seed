@@ -138,7 +138,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
         writer = csv.writer(response)
 
         # get the data in a dict which includes the related data
-        data = TaxLotProperty.get_related(model_views, columns, columns_db, request.query_params['organization_id'])
+        data = TaxLotProperty.get_related(model_views, columns, columns_db)
 
         # force the data into the same order as the IDs
         if ids:

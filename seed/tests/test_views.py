@@ -601,6 +601,7 @@ class InventoryViewTests(DeleteModelsTestCase):
         result = json.loads(response.content)
         results = result['results'][0]
         self.assertEquals(len(result['results']), 1)
+        print results
         self.assertEquals(results['address_line_1'], state.address_line_1)
 
     def test_get_properties_cycle_id(self):

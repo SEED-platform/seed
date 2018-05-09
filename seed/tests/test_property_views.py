@@ -40,6 +40,7 @@ COLUMNS_TO_SEND = [
 ]
 
 
+# These tests mostly use V2.1 API except for when writing back to the API for updates
 class PropertyViewTests(DeleteModelsTestCase):
     def setUp(self):
         user_details = {
@@ -72,15 +73,15 @@ class PropertyViewTests(DeleteModelsTestCase):
             'columns': COLUMNS_TO_SEND,
         }
 
-        url = reverse('api:v2:properties-list') + '?cycle_id={}'.format(self.cycle.pk)
+        url = reverse('api:v2.1:properties-list') + '?cycle_id={}'.format(self.cycle.pk)
         response = self.client.get(url, params)
-        result = json.loads(response.content)
-        results = result['results'][0]
-        self.assertEqual(len(result['results']), 1)
-        self.assertEqual(results['address_line_1'], state.address_line_1)
+        data = json.loads(response.content)
+        self.assertEqual(len(data['properties']), 1)
+        result = data['properties'][0]
+        self.assertEqual(result['state']['address_line_1'], state.address_line_1)
 
-        db_created_time = results['created']
-        db_updated_time = results['updated']
+        db_created_time = result['created']
+        db_updated_time = result['updated']
         self.assertTrue(db_created_time is not None)
         self.assertTrue(db_updated_time is not None)
 
@@ -92,20 +93,20 @@ class PropertyViewTests(DeleteModelsTestCase):
         }
         url = reverse('api:v2:properties-detail', args=[view.id]) + '?organization_id={}'.format(self.org.pk)
         response = self.client.put(url, json.dumps(new_data), content_type='application/json')
-        result = json.loads(response.content)
-        self.assertEqual(result['status'], 'success')
+        data = json.loads(response.content)
+        self.assertEqual(data['status'], 'success')
 
         # the above call returns data from the PropertyState, need to get the Property --
         # call the get on the same API to retrieve it
         response = self.client.get(url, content_type='application/json')
-        result = json.loads(response.content)
+        data = json.loads(response.content)
         # make sure the address was updated and that the datetimes were modified
-        self.assertEqual(result['status'], 'success')
-        self.assertEqual(result['state']['address_line_1'], '742 Evergreen Terrace')
+        self.assertEqual(data['status'], 'success')
+        self.assertEqual(data['state']['address_line_1'], '742 Evergreen Terrace')
         self.assertEqual(datetime.strptime(db_created_time, "%Y-%m-%dT%H:%M:%S.%fZ").replace(microsecond=0),
-                         datetime.strptime(result['property']['created'], "%Y-%m-%dT%H:%M:%S.%fZ").replace(
+                         datetime.strptime(data['property']['created'], "%Y-%m-%dT%H:%M:%S.%fZ").replace(
                              microsecond=0))
-        self.assertGreater(datetime.strptime(result['property']['updated'], "%Y-%m-%dT%H:%M:%S.%fZ"),
+        self.assertGreater(datetime.strptime(data['property']['updated'], "%Y-%m-%dT%H:%M:%S.%fZ"),
                            datetime.strptime(db_updated_time, "%Y-%m-%dT%H:%M:%S.%fZ"))
 
     def test_search_identifier(self):

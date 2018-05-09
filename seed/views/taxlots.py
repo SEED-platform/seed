@@ -114,7 +114,7 @@ class TaxLotViewSet(GenericViewSet):
             page = paginator.num_pages
 
         columns_from_database = Column.retrieve_all(org_id, 'taxlot', False)
-        related_results = TaxLotProperty.get_related(taxlot_views, columns, columns_from_database, org_id)
+        related_results = TaxLotProperty.get_related(taxlot_views, columns, columns_from_database)
 
         # collapse units here so we're only doing the last page; we're already a
         # realized list by now and not a lazy queryset
@@ -165,7 +165,7 @@ class TaxLotViewSet(GenericViewSet):
               required: false
               paramType: query
         """
-        return self._get_filtered_results(request, columns=[])
+        return self._get_filtered_results(request, columns=None)
 
     # @require_organization_id
     # @require_organization_membership
@@ -203,6 +203,9 @@ class TaxLotViewSet(GenericViewSet):
             columns = dict(request.data.iterlists())['columns']
         except AttributeError:
             columns = request.data['columns']
+
+        # TODO: fix this
+        columns = None
         return self._get_filtered_results(request, columns=columns)
 
     @api_endpoint_class
