@@ -713,6 +713,15 @@ class ImportFileViewSet(viewsets.ViewSet):
         import_file = ImportFile.objects.get(id=import_file_id)
         field_names = import_file.get_cached_mapped_columns
 
+        columns_from_database = Column.retrieve_all(org_id, 'property', False)
+        related_column_name_mapping = {}
+        obj_column_name_mapping = {}
+        for column in columns_from_database:
+            if column['related']:
+                related_column_name_mapping[column['column_name']] = column['name']
+            else:
+                obj_column_name_mapping[column['column_name']] = column['name']
+
         # iterate over the columns in the database
         raw_db_fields = []
         for db_field in Column.retrieve_db_field_table_and_names_from_db_tables():

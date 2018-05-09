@@ -14,6 +14,7 @@ from seed.models import (
     Cycle,
     PropertyView,
     TaxLotProperty,
+    Column,
 )
 from seed.test_helpers.fake import (
     FakePropertyFactory,
@@ -72,7 +73,8 @@ class TestTaxLotProperty(TestCase):
             'pm_property_id', 'use_description', 'source_type', 'year_built', 'release_date',
             'gross_floor_area', 'owner_city_state', 'owner_telephone', 'recent_sale_date',
         ]
-        data = TaxLotProperty.get_related(qs, columns, self.org.pk)
+        columns_from_database = Column.retrieve_all(self.org.id, 'property', False)
+        data = TaxLotProperty.get_related(qs, columns, columns_from_database, self.org.pk)
 
         self.assertEqual(len(data), 50)
         self.assertEqual(len(data[0]['related']), 0)

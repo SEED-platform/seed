@@ -8,6 +8,7 @@ from __future__ import unicode_literals
 
 import logging
 from collections import defaultdict
+from itertools import chain
 
 from django.apps import apps
 from django.db import models
@@ -40,7 +41,43 @@ class TaxLotProperty(models.Model):
         ]
 
     @classmethod
-    def get_related(cls, object_list, columns, org_id):
+    def model_to_dict_with_mapping(cls, instance, mappings, fields=None, exclude=None):
+        """
+        Copied from Django method and added a mapping for field names
+        """
+        from django.db import models
+        opts = instance._meta
+        data = {}
+        for f in chain(opts.concrete_fields, opts.private_fields, opts.many_to_many):
+            if not getattr(f, 'editable', False):
+                continue
+            if fields and f.name not in fields:
+                continue
+            if exclude and f.name in exclude:
+                continue
+
+            # fix specific time stamps - total hack right now. Need to reconcile with
+            # /data_importer/views.py and /seed/views/properties.py
+            if f.name in ['recent_sale_date', 'release_date', 'generation_date', 'analysis_start_time', 'analysis_end_time']:
+                value = f.value_from_object(instance)
+                if value:
+                    value = make_naive(value).isoformat()
+            else:
+                value = f.value_from_object(instance)
+
+            if f.name in mappings:
+                data[mappings[f.name]] = value
+            else:
+                data[f.name] = value
+
+            # Evaluate ManyToManyField QuerySets to prevent subsequent model
+            # alteration of that field from being reflected in the data.
+            if isinstance(f, models.ManyToManyField):
+                data[f.name] = list(data[f.name])
+        return data
+
+    @classmethod
+    def get_related(cls, object_list, show_columns, columns_from_database, org_id):
         """
         This method takes a list of TaxLotViews or PropertyViews and returns the data along
         with the related TaxLotView or PropertyView.
@@ -53,7 +90,8 @@ class TaxLotProperty(models.Model):
         here so that we can use this method to create the data for exporting to CSV on the backend.
 
         :param object_list: list
-        :param columns: list, columns (as defined by frontend)
+        :param show_columns: list, columns (as defined by frontend)
+        :param columns_from_database: list, columns from the database as list of dict
         :param org_id: int, organization id
         :return: list
         """
@@ -75,7 +113,6 @@ class TaxLotProperty(models.Model):
                 'related_view_id': 'taxlot_view_id',
                 'related_state_id': 'taxlot_state_id',
                 'related_column_key': 'tax',
-                'related_state_class': 'TaxLotState',
             }
         else:
             lookups = {
@@ -90,7 +127,6 @@ class TaxLotProperty(models.Model):
                 'related_view_id': 'property_view_id',
                 'related_state_id': 'property_state_id',
                 'related_column_key': 'property',
-                'related_state_class': 'PropertyState',
             }
 
         # Ids of propertyviews to look up in m2m
@@ -100,50 +136,46 @@ class TaxLotProperty(models.Model):
         # Get all ids of tax lots on these joins
         related_ids = [getattr(j, lookups['related_view_id']) for j in joins]
 
-        # Get all tax lot views that are related
+        # Get all related views from the related_class
         related_views = apps.get_model('seed', lookups['related_class']).objects.select_related(
             lookups['select_related'], 'state', 'cycle').filter(pk__in=related_ids)
 
-        # Map the related view id to the other view's state data
-        # so we can reference these easily and save some queries.
-        db_columns = apps.get_model('seed', 'Column').retrieve_db_field_table_and_names_from_db_tables()
+        related_column_name_mapping = {}
+        obj_column_name_mapping = {}
+        for column in columns_from_database:
+            if column['related']:
+                related_column_name_mapping[column['column_name']] = column['name']
+            else:
+                obj_column_name_mapping[column['column_name']] = column['name']
 
         related_map = {}
         for related_view in related_views:
-            related_dict = model_to_dict(related_view.state, exclude=['extra_data'])
+            related_dict = TaxLotProperty.model_to_dict_with_mapping(related_view.state, related_column_name_mapping,
+                                                                     # fields=show_columns, # TODO: hook this back up!
+                                                                     exclude=['extra_data'])
+
             related_dict[lookups['related_state_id']] = related_view.state.id
 
             # custom handling for when it is TaxLotView
             if lookups['obj_class'] == 'TaxLotView':
-                related_dict['campus'] = related_view.property.campus
+                related_dict[related_column_name_mapping['campus']] = related_view.property.campus
                 # Do not make these timestamps naive. They persist correctly.
-                related_dict['updated'] = related_view.property.updated
-                related_dict['created'] = related_view.property.created
+                related_dict[related_column_name_mapping['updated']] = related_view.property.updated
+                related_dict[related_column_name_mapping['created']] = related_view.property.created
                 # Replace the enumerations
                 related_dict['analysis_state'] = related_view.state.get_analysis_state_display()
             elif lookups['obj_class'] == 'PropertyView':
                 # Do not make these timestamps naive. They persist correctly.
-                related_dict['updated'] = related_view.taxlot.updated
-                related_dict['created'] = related_view.taxlot.created
+                related_dict[related_column_name_mapping['updated']] = related_view.taxlot.updated
+                related_dict[related_column_name_mapping['created']] = related_view.taxlot.created
 
             # Add extra data fields right to this object.
             for extra_data_field, extra_data_value in related_view.state.extra_data.items():
-                extra_data_field += '_extra'
+                if extra_data_field in related_column_name_mapping:
+                    related_dict[related_column_name_mapping[extra_data_field]] = extra_data_value
+                else:
+                    related_dict[extra_data_field] = extra_data_value
 
-                # if extra_data_field in ['id', 'notes_count']:
-                #     extra_data_field += '_extra'
-                #
-                # while (lookups['related_state_class'], extra_data_field) in db_columns:
-                #     extra_data_field += '_extra'
-
-                related_dict[extra_data_field] = extra_data_value
-
-            # Only return the requested rows. speeds up the json string time.
-            # The front end requests for related columns have 'tax_'/'property_' prepended
-            # to them, so check for that too.
-            #   TODO: HOOK THIS BACK UP - 2018-05-09
-            # related_dict = {key: value for key, value in related_dict.items() if
-            #                 (key in columns) or ("{}_{}".format(lookups['related_column_key'], key) in columns)}
             related_map[related_view.pk] = related_dict
 
             # Replace taxlot_view id with taxlot id
@@ -193,23 +225,6 @@ class TaxLotProperty(models.Model):
 
             join_dict['notes_count'] = getattr(join, lookups['related_view']).notes.count()
 
-            # fix specific time stamps - total hack right now. Need to reconcile with
-            # /data_importer/views.py and /seed/views/properties.py
-            if join_dict.get('recent_sale_date'):
-                join_dict['recent_sale_date'] = make_naive(join_dict['recent_sale_date']).isoformat()
-
-            if join_dict.get('release_date'):
-                join_dict['release_date'] = make_naive(join_dict['release_date']).isoformat()
-
-            if join_dict.get('generation_date'):
-                join_dict['generation_date'] = make_naive(join_dict['generation_date']).isoformat()
-
-            if join_dict.get('analysis_start_time'):
-                join_dict['analysis_start_time'] = make_naive(join_dict['analysis_start_time']).isoformat()
-
-            if join_dict.get('analysis_end_time'):
-                join_dict['analysis_end_time'] = make_naive(join_dict['analysis_end_time']).isoformat()
-
             # remove the measures from this view for now
             if join_dict.get('measures'):
                 del join_dict['measures']
@@ -221,16 +236,16 @@ class TaxLotProperty(models.Model):
 
         for obj in object_list:
             # Each object in the response is built from the state data, with related data added on.
-            obj_dict = model_to_dict(obj.state, exclude=['extra_data'])
+            obj_dict = TaxLotProperty.model_to_dict_with_mapping(obj.state, obj_column_name_mapping,
+                                                                     # fields=show_columns, # TODO: hook this back up!
+                                                                     exclude=['extra_data'])
 
+            # Add extra data fields right to this object.
             for extra_data_field, extra_data_value in obj.state.extra_data.items():
-                if extra_data_field in ['id', 'notes_count']:
-                    extra_data_field += '_extra'
-
-                while extra_data_field in db_columns:
-                    extra_data_field += '_extra'
-
-                obj_dict[extra_data_field] = extra_data_value
+                if extra_data_field in obj_column_name_mapping:
+                    obj_dict[obj_column_name_mapping[extra_data_field]] = extra_data_value
+                else:
+                    obj_dict[extra_data_field] = extra_data_value
 
             # Use property_id instead of default (state_id)
             obj_dict['id'] = getattr(obj, lookups['obj_id'])
@@ -243,33 +258,16 @@ class TaxLotProperty(models.Model):
             if lookups['obj_class'] == 'PropertyView':
                 obj_dict['campus'] = obj.property.campus
                 # Do not make these timestamps naive. They persist correctly.
-                obj_dict['created'] = obj.property.created
-                obj_dict['updated'] = obj.property.updated
+                obj_dict[obj_column_name_mapping['created']] = obj.property.created
+                obj_dict[obj_column_name_mapping['updated']] = obj.property.updated
                 obj_dict['analysis_state'] = obj.state.get_analysis_state_display()
             elif lookups['obj_class'] == 'TaxLotView':
                 # Do not make these timestamps naive. They persist correctly.
-                obj_dict['updated'] = obj.taxlot.updated
-                obj_dict['created'] = obj.taxlot.created
+                obj_dict[obj_column_name_mapping['updated']] = obj.taxlot.updated
+                obj_dict[obj_column_name_mapping['created']] = obj.taxlot.created
 
             # All the related tax lot states.
             obj_dict['related'] = join_map.get(obj.pk, [])
-
-            # fix specific time stamps - total hack right now. Need to reconcile with
-            # /data_importer/views.py
-            if obj_dict.get('recent_sale_date'):
-                obj_dict['recent_sale_date'] = make_naive(obj_dict['recent_sale_date']).isoformat()
-
-            if obj_dict.get('release_date'):
-                obj_dict['release_date'] = make_naive(obj_dict['release_date']).isoformat()
-
-            if obj_dict.get('generation_date'):
-                obj_dict['generation_date'] = make_naive(obj_dict['generation_date']).isoformat()
-
-            if obj_dict.get('analysis_start_time'):
-                obj_dict['analysis_start_time'] = make_naive(obj_dict['analysis_start_time']).isoformat()
-
-            if obj_dict.get('analysis_end_time'):
-                obj_dict['analysis_end_time'] = make_naive(obj_dict['analysis_end_time']).isoformat()
 
             # remove the measures from this view for now
             if obj_dict.get('measures'):

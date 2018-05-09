@@ -113,7 +113,8 @@ class TaxLotViewSet(GenericViewSet):
             taxlot_views = paginator.page(paginator.num_pages)
             page = paginator.num_pages
 
-        related_results = TaxLotProperty.get_related(taxlot_views, columns, org_id)
+        columns_from_database = Column.retrieve_all(org_id, 'taxlot', False)
+        related_results = TaxLotProperty.get_related(taxlot_views, columns, columns_from_database, org_id)
 
         # collapse units here so we're only doing the last page; we're already a
         # realized list by now and not a lazy queryset

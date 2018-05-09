@@ -245,13 +245,15 @@ class PropertyViewSet(GenericViewSet):
             property_views = paginator.page(paginator.num_pages)
             page = paginator.num_pages
 
-        related_results = TaxLotProperty.get_related(property_views, columns, org_id)
+        org = Organization.objects.get(pk=org_id)
+
+        # Retrieve all the columns that are in the db for this organization
+        columns_from_database = Column.retrieve_all(org_id, 'property', False)
+        related_results = TaxLotProperty.get_related(property_views, columns, columns_from_database, org_id)
 
         # collapse units here so we're only doing the last page; we're already a
         # realized list by now and not a lazy queryset
-        org = Organization.objects.get(pk=org_id)
-        unit_collapsed_results = \
-            [apply_display_unit_preferences(org, x) for x in related_results]
+        unit_collapsed_results = [apply_display_unit_preferences(org, x) for x in related_results]
 
         response = {
             'pagination': {

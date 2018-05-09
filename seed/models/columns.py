@@ -1127,7 +1127,7 @@ class Column(models.Model):
         """
         Retrieve all the columns for an organization. This method will query for all the columns in the
         database assigned to the organization. It will then go through and cleanup the names to ensure that
-        there are no duplicates.
+        there are no duplicates. The name column is used for uniquely labeling the columns for UI Grid purposes.
 
         :param org_id: Organization ID
         :param inventory_type: Inventory Type (property|taxlot) from the requester. This sets the related columns correctly
@@ -1150,43 +1150,19 @@ class Column(models.Model):
             if (new_c['table_name'], new_c['column_name']) in Column.PINNED_COLUMNS:
                 new_c['pinnedLeft'] = True
 
+            # Set a default display_name if there isn't already one in the database
             if not new_c['display_name']:
                 new_c['display_name'] = titlecase(new_c['column_name'])
 
             # set the name of the column which is a special field because it can take on a relationship
             # with the table_name and have an _extra associated with it
-            new_c['name'] = new_c['column_name']
+            new_c['name'] = '%s_%s' % (new_c['column_name'], new_c['id'])
 
             # Related fields
             new_c['related'] = not (inventory_type.lower() in new_c['table_name'].lower())
-
-            # check if the column name exists in the other table (and not extra data).
-            # Example, gross_floor_area is a core field, but can be an extra field in taxlot, meaning that the other one
-            # needs to be tagged something else. (prepended with tax_ or property_).
             if new_c['related']:
                 # if it is related then have the display name show the other table
                 new_c['display_name'] = new_c['display_name'] + ' (%s)' % INVENTORY_DISPLAY[new_c['table_name']]
-
-                # This only pertains to the tables: PropertyState and TaxLotState
-                # if 'State' in new_c['table_name']:
-                #     if Column.objects.filter(organization_id=org_id,
-                #                              table_name=COLUMN_OPPOSITE_TABLE[new_c['table_name']],
-                #                              column_name=new_c['column_name'],
-                #                              is_extra_data=False).exists():
-                #         new_c['name'] = "%s_%s" % (
-                #             INVENTORY_MAP_OPPOSITE_PREPEND[inventory_type.lower()], new_c['name'])
-
-            if new_c['is_extra_data']:
-                new_c['name'] += '_extra'
-
-                # Avoid name conflicts with protected front-end columns and extra_data columns
-                # if new_c['name'] in ['id', 'notes_count']:
-                #     new_c['name'] += '_extra'
-
-                # add _extra if the column is already in the list for the other table
-                # this should always be set to extra if it is extra_data... ugh.
-                # while any(col['name'] == new_c['name'] and col['table_name'] != new_c['table_name'] for col in columns):
-                #     new_c['name'] += '_extra'
 
             # remove a bunch of fields that are not needed in the list of columns
             del new_c['import_file']
