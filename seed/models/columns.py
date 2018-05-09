@@ -553,6 +553,10 @@ class Column(models.Model):
     display_name = models.CharField(max_length=512, blank=True)
     data_type = models.CharField(max_length=64, default='None')
 
+    # Add created/modified timestamps
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
     # TODO: decide if we need this? I don't think I do.
     # If exclude_from_mapping, then the column will not be used as mapping suggestions
     # exclude_from_mapping = models.BooleanField(default=False)
@@ -572,7 +576,7 @@ class Column(models.Model):
     #         'organization', 'column_name', 'is_extra_data', 'table_name', 'import_file')
 
     def __unicode__(self):
-        return u'{} - {}'.format(self.pk, self.column_name)
+        return u'{} - {}:{}'.format(self.pk, self.table_name, self.column_name)
 
     def clean(self):
         # Don't allow Columns that are not extra_data and not a field in the database
@@ -921,14 +925,14 @@ class Column(models.Model):
 
         :return: dict
         """
-
         c = {
             'pk': self.id,
             'id': self.id,
             'organization_id': self.organization.id,
             'table_name': self.table_name,
             'column_name': self.column_name,
-            'is_extra_data': self.is_extra_data
+            'is_extra_data': self.is_extra_data,
+            'data_type': self.data_type,
         }
         if self.unit:
             c['unit_name'] = self.unit.unit_name
@@ -1164,22 +1168,25 @@ class Column(models.Model):
                 new_c['display_name'] = new_c['display_name'] + ' (%s)' % INVENTORY_DISPLAY[new_c['table_name']]
 
                 # This only pertains to the tables: PropertyState and TaxLotState
-                if 'State' in new_c['table_name']:
-                    if Column.objects.filter(organization_id=org_id,
-                                             table_name=COLUMN_OPPOSITE_TABLE[new_c['table_name']],
-                                             column_name=new_c['column_name'],
-                                             is_extra_data=False).exists():
-                        new_c['name'] = "%s_%s" % (
-                            INVENTORY_MAP_OPPOSITE_PREPEND[inventory_type.lower()], new_c['name'])
+                # if 'State' in new_c['table_name']:
+                #     if Column.objects.filter(organization_id=org_id,
+                #                              table_name=COLUMN_OPPOSITE_TABLE[new_c['table_name']],
+                #                              column_name=new_c['column_name'],
+                #                              is_extra_data=False).exists():
+                #         new_c['name'] = "%s_%s" % (
+                #             INVENTORY_MAP_OPPOSITE_PREPEND[inventory_type.lower()], new_c['name'])
 
             if new_c['is_extra_data']:
+                new_c['name'] += '_extra'
+
                 # Avoid name conflicts with protected front-end columns and extra_data columns
-                if new_c['name'] in ['id', 'notes_count']:
-                    new_c['name'] += '_extra'
+                # if new_c['name'] in ['id', 'notes_count']:
+                #     new_c['name'] += '_extra'
 
                 # add _extra if the column is already in the list for the other table
-                while any(col['name'] == new_c['name'] and col['table_name'] != new_c['table_name'] for col in columns):
-                    new_c['name'] += '_extra'
+                # this should always be set to extra if it is extra_data... ugh.
+                # while any(col['name'] == new_c['name'] and col['table_name'] != new_c['table_name'] for col in columns):
+                #     new_c['name'] += '_extra'
 
             # remove a bunch of fields that are not needed in the list of columns
             del new_c['import_file']

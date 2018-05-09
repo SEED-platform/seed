@@ -75,6 +75,7 @@ class TaxLotProperty(models.Model):
                 'related_view_id': 'taxlot_view_id',
                 'related_state_id': 'taxlot_state_id',
                 'related_column_key': 'tax',
+                'related_state_class': 'TaxLotState',
             }
         else:
             lookups = {
@@ -89,6 +90,7 @@ class TaxLotProperty(models.Model):
                 'related_view_id': 'property_view_id',
                 'related_state_id': 'property_state_id',
                 'related_column_key': 'property',
+                'related_state_class': 'PropertyState',
             }
 
         # Ids of propertyviews to look up in m2m
@@ -104,7 +106,7 @@ class TaxLotProperty(models.Model):
 
         # Map the related view id to the other view's state data
         # so we can reference these easily and save some queries.
-        db_columns = apps.get_model('seed', 'Column').retrieve_db_fields(org_id)
+        db_columns = apps.get_model('seed', 'Column').retrieve_db_field_table_and_names_from_db_tables()
 
         related_map = {}
         for related_view in related_views:
@@ -126,19 +128,22 @@ class TaxLotProperty(models.Model):
 
             # Add extra data fields right to this object.
             for extra_data_field, extra_data_value in related_view.state.extra_data.items():
-                if extra_data_field in ['id', 'notes_count']:
-                    extra_data_field += '_extra'
+                extra_data_field += '_extra'
 
-                while extra_data_field in db_columns:
-                    extra_data_field += '_extra'
+                # if extra_data_field in ['id', 'notes_count']:
+                #     extra_data_field += '_extra'
+                #
+                # while (lookups['related_state_class'], extra_data_field) in db_columns:
+                #     extra_data_field += '_extra'
 
                 related_dict[extra_data_field] = extra_data_value
 
             # Only return the requested rows. speeds up the json string time.
             # The front end requests for related columns have 'tax_'/'property_' prepended
             # to them, so check for that too.
-            related_dict = {key: value for key, value in related_dict.items() if
-                            (key in columns) or ("{}_{}".format(lookups['related_column_key'], key) in columns)}
+            #   TODO: HOOK THIS BACK UP - 2018-05-09
+            # related_dict = {key: value for key, value in related_dict.items() if
+            #                 (key in columns) or ("{}_{}".format(lookups['related_column_key'], key) in columns)}
             related_map[related_view.pk] = related_dict
 
             # Replace taxlot_view id with taxlot id
