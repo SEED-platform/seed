@@ -248,6 +248,7 @@ describe('controller: inventory_detail_controller', function () {
       columns: {
         fields: fake_all_columns
       },
+      profiles: [],
       labels_payload: mock_label_payload
 
     });
