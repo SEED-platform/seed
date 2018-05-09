@@ -270,7 +270,7 @@ angular.module('BE.seed.controller.inventory_list', [])
               return _.map(_.reject($scope.columns, function (column) {
                 return _.includes(['id', 'notes_count'], column.name)
               }), function (column) {
-                return _.pick(column, ['displayName', 'extraData', 'name', 'table']);
+                return _.pick(column, ['column_name', 'displayName', 'id', 'is_extra_data', 'name', 'table_name']);
               });
             },
             data: function () {
@@ -354,10 +354,10 @@ angular.module('BE.seed.controller.inventory_list', [])
           options.filter = inventory_service.dateFilter();
         } else {
           options.filter = inventory_service.combinedFilter();
+          options.sortingAlgorithm = naturalSort;
         }
-        if (col.data_type === 'text' || _.isUndefined(col.data_type) || col.data_type === 'None') options.sortingAlgorithm = naturalSort;
         if (col.name === 'number_properties' && col.related) options.treeAggregationType = 'total';
-        else if (col.related || col.extraData) options.treeAggregationType = 'uniqueList';
+        else if (col.related || col.is_extra_data) options.treeAggregationType = 'uniqueList';
         return _.defaults(col, options, defaults);
       });
       $scope.columns.unshift({

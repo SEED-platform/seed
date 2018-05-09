@@ -77,7 +77,7 @@ angular.module('BE.seed.service.pairing', []).factory('pairing_service', [
 
       // Hide extra data columns by default
       _.forEach(columns, function (col) {
-        col.visible = !col.extraData;
+        col.visible = !col.is_extra_data;
       });
 
       var localColumns = localStorage.getItem(key);
@@ -95,7 +95,7 @@ angular.module('BE.seed.service.pairing', []).factory('pairing_service', [
         // If no columns are visible, reset visibility only
         if (!_.find(localColumns, 'visible')) {
           _.forEach(localColumns, function (col) {
-            col.visible = !col.extraData;
+            col.visible = !col.is_extra_data;
           });
         }
         return pairing_service.reorderSettings(localColumns.concat(columns));
@@ -125,7 +125,7 @@ angular.module('BE.seed.service.pairing', []).factory('pairing_service', [
 
       // Hide extra data columns by default
       _.forEach(columns, function (col) {
-        col.visible = !col.extraData;
+        col.visible = !col.is_extra_data;
       });
 
       var localColumns = localStorage.getItem(key);
@@ -143,7 +143,7 @@ angular.module('BE.seed.service.pairing', []).factory('pairing_service', [
         // If no columns are visible, reset visibility only
         if (!_.find(localColumns, 'visible')) {
           _.forEach(localColumns, function (col) {
-            col.visible = !col.extraData;
+            col.visible = !col.is_extra_data;
           });
         }
         return pairing_service.reorderSettings(localColumns.concat(columns));

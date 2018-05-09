@@ -12,7 +12,6 @@ from itertools import chain
 
 from django.apps import apps
 from django.db import models
-from django.forms.models import model_to_dict
 from django.utils.timezone import make_naive
 
 logger = logging.getLogger(__name__)
@@ -39,7 +38,6 @@ class TaxLotProperty(models.Model):
             ['cycle', 'taxlot_view'],
             ['property_view', 'taxlot_view']
         ]
-
 
     @classmethod
     def extra_data_to_dict_with_mapping(cls, instance, mappings, exclude=[]):
@@ -260,8 +258,8 @@ class TaxLotProperty(models.Model):
         for obj in object_list:
             # Each object in the response is built from the state data, with related data added on.
             obj_dict = TaxLotProperty.model_to_dict_with_mapping(obj.state, obj_column_name_mapping,
-                                                                     # fields=show_columns, # TODO: hook this back up!
-                                                                     exclude=['extra_data'])
+                                                                 # fields=show_columns, # TODO: hook this back up!
+                                                                 exclude=['extra_data'])
 
             # Add extra data fields right to this object.
             for extra_data_field, extra_data_value in obj.state.extra_data.items():

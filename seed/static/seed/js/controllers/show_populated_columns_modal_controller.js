@@ -58,8 +58,8 @@ angular.module('BE.seed.controller.show_populated_columns_modal', [])
           _.forEach(inventory, function (record, index) {
             // console.log(cols.length + ' remaining cols to check');
             _.forEachRight(cols, function (col, colIndex) {
-              if (notEmpty(record[col.column_name])) {
-                // console.log('Removing ' + col.column_name + ' from cols');
+              if (notEmpty(record[col.name])) {
+                // console.log('Removing ' + col.name + ' from cols');
                 cols.splice(colIndex, 1);
               }
             });
@@ -67,8 +67,8 @@ angular.module('BE.seed.controller.show_populated_columns_modal', [])
             _.forEach(record.related, function (relatedRecord) {
               // console.log(relatedCols.length + ' remaining related cols to check');
               _.forEachRight(relatedCols, function (col, colIndex) {
-                if (notEmpty(relatedRecord[col.column_name])) {
-                  // console.log('Removing ' + col.column_name + ' from relatedCols');
+                if (notEmpty(relatedRecord[col.name])) {
+                  // console.log('Removing ' + col.name + ' from relatedCols');
                   relatedCols.splice(colIndex, 1);
                 }
               });
