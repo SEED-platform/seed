@@ -40,6 +40,29 @@ class TaxLotProperty(models.Model):
             ['property_view', 'taxlot_view']
         ]
 
+
+    @classmethod
+    def extra_data_to_dict_with_mapping(cls, instance, mappings, exclude=[]):
+        """
+        Convert the extra data to a dictionary with a name mapping for the keys
+
+        :param instance: dict, the extra data dictionary
+        :param mappings: dict, mapping names { "from_name": "to_name", ...}
+        :param exclude: list, extra data fields to ignore. Use the original column names (the ones in the database)
+        :return: dict
+        """
+        data = {}
+        for extra_data_field, extra_data_value in instance.items():
+            if extra_data_field in exclude:
+                continue
+
+            if extra_data_field in mappings:
+                data[mappings[extra_data_field]] = extra_data_value
+            else:
+                data[extra_data_field] = extra_data_value
+
+        return data
+
     @classmethod
     def model_to_dict_with_mapping(cls, instance, mappings, fields=None, exclude=None):
         """

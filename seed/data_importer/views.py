@@ -22,7 +22,6 @@ from django.core.files.storage import FileSystemStorage
 from django.core.urlresolvers import reverse
 from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
-from django.utils.timezone import make_naive
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import api_view, detail_route, list_route, parser_classes, permission_classes
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -705,22 +704,22 @@ class ImportFileViewSet(viewsets.ViewSet):
         response_serializer: MappingResultsResponseSerializer
         """
         import_file_id = pk
-
-        get_coparents = request.data.get('get_coparents', False)
-        get_state_id = request.data.get('state_id', False)
+        org_id = request.query_params.get('organization_id', False)
 
         # get the field names that were in the mapping
         import_file = ImportFile.objects.get(id=import_file_id)
+
+        # List of the only fields to show
         field_names = import_file.get_cached_mapped_columns
 
-        columns_from_database = Column.retrieve_all(org_id, 'property', False)
-        related_column_name_mapping = {}
-        obj_column_name_mapping = {}
+        columns_from_database = Column.retrieve_all(org_id)
+        property_column_name_mapping = {}
+        taxlot_column_name_mapping = {}
         for column in columns_from_database:
-            if column['related']:
-                related_column_name_mapping[column['column_name']] = column['name']
-            else:
-                obj_column_name_mapping[column['column_name']] = column['name']
+            if column['table_name'] == 'PropertyState':
+                property_column_name_mapping[column['column_name']] = column['name']
+            elif column['table_name'] == 'TaxLotState':
+                taxlot_column_name_mapping[column['column_name']] = column['name']
 
         # iterate over the columns in the database
         raw_db_fields = []
@@ -738,106 +737,66 @@ class ImportFileViewSet(viewsets.ViewSet):
 
         # _log.debug('Field names that will be returned are: {}'.format(fields))
 
-        if get_state_id:
-            state_id = int(get_state_id)
-            inventory_type = request.data.get('inventory_type', 'properties')
-            result = {}
-            if inventory_type == 'properties':
-                state = PropertyState.objects.get(id=state_id)
-                for k in fields['PropertyState']:
-                    result[k] = getattr(state, k)
-            else:
-                state = TaxLotState.objects.get(id=state_id)
-                for k in fields['TaxLotState']:
-                    result[k] = getattr(state, k)
+        inventory_type = request.data.get('inventory_type', 'all')
 
-            if get_coparents:
-                result['matched'] = False
-                coparent = self.has_coparent(state.id, inventory_type)
+        result = {
+            'status': 'success'
+        }
 
-                if coparent:
-                    result['matched'] = True
-                    result['coparent'] = coparent
+        if inventory_type == 'properties' or inventory_type == 'all':
+            properties = PropertyState.objects.filter(
+                import_file_id=import_file_id,
+                data_state__in=[DATA_STATE_MAPPING, DATA_STATE_MATCHING],
+                merge_state__in=[MERGE_STATE_UNKNOWN, MERGE_STATE_NEW]
+            ).only(*fields['PropertyState']).order_by('id')
 
-            return {
-                'status': 'success',
-                'state': result
-            }
-        else:
-            inventory_type = request.data.get('inventory_type', 'all')
-
-            result = {
-                'status': 'success'
-            }
-
-            if inventory_type == 'properties' or inventory_type == 'all':
-                properties = list(PropertyState.objects.filter(
-                    import_file_id=import_file_id,
-                    data_state__in=[DATA_STATE_MAPPING, DATA_STATE_MATCHING],
-                    merge_state__in=[MERGE_STATE_UNKNOWN, MERGE_STATE_NEW]
-                ).order_by('id').values(*fields['PropertyState']))
-
-                # If a record was manually edited then remove the edited version
-                properties_to_remove = list(
-                    PropertyAuditLog.objects.filter(state_id__in=[p['id'] for p in properties],
-                                                    name='Manual Edit').values_list('state_id',
-                                                                                    flat=True)
+            property_results = []
+            for prop in properties:
+                prop_dict = TaxLotProperty.model_to_dict_with_mapping(
+                    prop,
+                    property_column_name_mapping,
+                    fields=fields['PropertyState'],
+                    exclude=['extra_data']
                 )
-                properties = [p for p in properties if p['id'] not in properties_to_remove]
 
-                if get_coparents:
-                    for state in properties:
-                        state['matched'] = False
-                        coparent = self.has_coparent(state['id'], 'properties', fields['PropertyState'])
-                        if coparent:
-                            state['matched'] = True
-                            state['coparent'] = coparent
-
-                _log.debug('Found {} properties'.format(len(properties)))
-
-                # if the data contain date/times, then cast them to local time per Djangos' TIME_ZONE
-                # configuration option. This should really be a serializer and be consistent with
-                # the property/taxlot serializer. Total hack right now.
-                for p in properties:
-                    if p.get('recent_sale_date'):
-                        p['recent_sale_date'] = make_naive(p['recent_sale_date']).isoformat()
-
-                    if p.get('release_date'):
-                        p['release_date'] = make_naive(p['release_date']).isoformat()
-
-                    if p.get('generation_date'):
-                        p['generation_date'] = make_naive(p['generation_date']).isoformat()
-
-                result['properties'] = properties
-
-            if inventory_type == 'taxlots' or inventory_type == 'all':
-                tax_lots = list(TaxLotState.objects.filter(
-                    import_file_id=import_file_id,
-                    data_state__in=[DATA_STATE_MAPPING, DATA_STATE_MATCHING],
-                    merge_state__in=[MERGE_STATE_UNKNOWN, MERGE_STATE_NEW]
-                ).order_by('id').values(*fields['TaxLotState']))
-
-                # If a record was manually edited then remove the edited version
-                taxlots_to_remove = list(
-                    TaxLotAuditLog.objects.filter(state_id__in=[t['id'] for t in tax_lots],
-                                                  name='Manual Edit').values_list('state_id',
-                                                                                  flat=True)
+                prop_dict = dict(
+                    prop_dict.items() +
+                    TaxLotProperty.extra_data_to_dict_with_mapping(
+                        prop.extra_data,
+                        property_column_name_mapping
+                    ).items()
                 )
-                tax_lots = [t for t in tax_lots if t['id'] not in taxlots_to_remove]
+                property_results.append(prop_dict)
 
-                if get_coparents:
-                    for state in tax_lots:
-                        state['matched'] = False
-                        coparent = self.has_coparent(state['id'], 'taxlots', fields['TaxLotState'])
-                        if coparent:
-                            state['matched'] = True
-                            state['coparent'] = coparent
+            result['properties'] = property_results
 
-                _log.debug('Found {} tax lots'.format(len(tax_lots)))
+        if inventory_type == 'taxlots' or inventory_type == 'all':
+            tax_lots = TaxLotState.objects.filter(
+                import_file_id=import_file_id,
+                data_state__in=[DATA_STATE_MAPPING, DATA_STATE_MATCHING],
+                merge_state__in=[MERGE_STATE_UNKNOWN, MERGE_STATE_NEW]
+            ).only(*fields['TaxLotState']).order_by('id')
 
-                result['tax_lots'] = tax_lots
+            tax_lot_results = []
+            for tax_lot in tax_lots:
+                tax_lot_dict = TaxLotProperty.model_to_dict_with_mapping(
+                    tax_lot,
+                    taxlot_column_name_mapping,
+                    fields=fields['TaxLotState'],
+                    exclude=['extra_data']
+                )
+                tax_lot_dict = dict(
+                    tax_lot_dict.items() +
+                    TaxLotProperty.extra_data_to_dict_with_mapping(
+                        tax_lot.extra_data,
+                        taxlot_column_name_mapping
+                    ).items()
+                )
+                tax_lot_results.append(tax_lot_dict)
 
-            return result
+            result['tax_lots'] = tax_lot_results
+
+        return result
 
     @staticmethod
     def has_coparent(state_id, inventory_type, fields=None):

@@ -231,7 +231,7 @@ class PropertyViewSet(GenericViewSet):
 
         property_views_list = PropertyView.objects.select_related('property', 'state', 'cycle') \
             .filter(property__organization_id=org_id, cycle=cycle) \
-            .order_by('id')
+            .order_by('id')  # TODO: test adding .only(*fields['PropertyState'])
 
         paginator = Paginator(property_views_list, per_page)
 

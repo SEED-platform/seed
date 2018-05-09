@@ -1123,14 +1123,14 @@ class Column(models.Model):
         return columns
 
     @staticmethod
-    def retrieve_all(org_id, inventory_type, only_used):
+    def retrieve_all(org_id, inventory_type=None, only_used=False):
         """
         Retrieve all the columns for an organization. This method will query for all the columns in the
         database assigned to the organization. It will then go through and cleanup the names to ensure that
         there are no duplicates. The name column is used for uniquely labeling the columns for UI Grid purposes.
 
         :param org_id: Organization ID
-        :param inventory_type: Inventory Type (property|taxlot) from the requester. This sets the related columns correctly
+        :param inventory_type: Inventory Type (property|taxlot) from the requester. This sets the related columns if requested.
         :param only_used: View only the used columns that exist in the Column's table
 
         :return: dict
@@ -1159,10 +1159,12 @@ class Column(models.Model):
             new_c['name'] = '%s_%s' % (new_c['column_name'], new_c['id'])
 
             # Related fields
-            new_c['related'] = not (inventory_type.lower() in new_c['table_name'].lower())
-            if new_c['related']:
-                # if it is related then have the display name show the other table
-                new_c['display_name'] = new_c['display_name'] + ' (%s)' % INVENTORY_DISPLAY[new_c['table_name']]
+            new_c['related'] = False
+            if inventory_type:
+                new_c['related'] = not (inventory_type.lower() in new_c['table_name'].lower())
+                if new_c['related']:
+                    # if it is related then have the display name show the other table
+                    new_c['display_name'] = new_c['display_name'] + ' (%s)' % INVENTORY_DISPLAY[new_c['table_name']]
 
             # remove a bunch of fields that are not needed in the list of columns
             del new_c['import_file']
