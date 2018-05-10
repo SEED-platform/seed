@@ -5,6 +5,7 @@
 angular.module('BE.seed.controller.inventory_list', [])
   .controller('inventory_list_controller', [
     '$scope',
+    '$filter',
     '$window',
     '$uibModal',
     '$stateParams',
@@ -23,6 +24,7 @@ angular.module('BE.seed.controller.inventory_list', [])
     '$translate',
     'i18nService', // from ui-grid
     function ($scope,
+              $filter,
               $window,
               $uibModal,
               $stateParams,
@@ -358,7 +360,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           options.filter = inventory_service.combinedFilter();
           options.sortingAlgorithm = naturalSort;
         }
-        if (col.name === 'number_properties' && col.related) options.treeAggregationType = 'total';
+        if (col.column_name === 'number_properties' && col.related) options.treeAggregationType = 'total';
         else if (col.related || col.is_extra_data) options.treeAggregationType = 'uniqueList';
         return _.defaults(col, options, defaults);
       });
@@ -404,6 +406,10 @@ angular.module('BE.seed.controller.inventory_list', [])
         pinnedLeft: true,
         visible: true,
         width: 30
+      });
+
+      var findColumn = _.memoize(function (name) {
+        return _.find(all_columns, {name: name});
       });
 
       // Data
@@ -464,9 +470,23 @@ angular.module('BE.seed.controller.inventory_list', [])
           }
 
           aggregations = _.pickBy(_.mapValues(aggregations, function (values, key) {
-            var cleanedValues = _.uniq(_.without(values, undefined, null, ''));
-            if (key === 'number_properties') return _.sum(cleanedValues) || null;
-            else return _.join(_.uniq(cleanedValues).sort(naturalSort), '; ');
+            var col = findColumn(key);
+            var cleanedValues = _.without(values, undefined, null, '');
+
+            if (col.data_type === 'datetime') {
+              cleanedValues = _.map(cleanedValues, function (value) {
+                return $filter('date')(value, 'yyyy-MM-dd h:mm a');
+              });
+            }
+
+            if (cleanedValues.length > 1) cleanedValues = _.uniq(cleanedValues);
+
+            if (col.column_name === 'number_properties') {
+              return _.sum(_.map(cleanedValues, _.toNumber)) || null;
+            } else {
+              if (cleanedValues.length === 1) return cleanedValues[0];
+              return _.join(_.uniq(cleanedValues).sort(naturalSort), '; ');
+            }
           }), function (result) {
             return _.isNumber(result) || !_.isEmpty(result);
           });
