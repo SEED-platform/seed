@@ -269,6 +269,8 @@ angular.module('BE.seed.controller.inventory_list', [])
             columns: function () {
               return _.map(_.reject($scope.columns, function (column) {
                 return _.includes(['id', 'notes_count'], column.name)
+                  || _.includes(['created', 'updated'], column.column_name)
+                  || (column.table_name === 'PropertyState' && _.includes(['analysis_end_time', 'analysis_start_time', 'analysis_state', 'analysis_state_message', 'campus', 'lot_number'], column.column_name));
               }), function (column) {
                 return _.pick(column, ['column_name', 'displayName', 'id', 'is_extra_data', 'name', 'table_name']);
               });
