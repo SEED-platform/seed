@@ -46,6 +46,18 @@ angular.module('BE.seed.controller.inventory_detail', [])
         $scope.columns = _.reject(columns, 'is_extra_data');
       }
 
+      $scope.isDisabledField = function (name) {
+        return _.includes([
+          'analysis_end_time',
+          'analysis_start_time',
+          'analysis_state',
+          'analysis_state_message',
+          'campus',
+          'created',
+          'updated'
+        ], name);
+      };
+
       $scope.inventory = {
         view_id: $stateParams.view_id,
         related: $scope.inventory_type === 'properties' ? inventory_payload.taxlots : inventory_payload.properties

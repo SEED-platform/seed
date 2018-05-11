@@ -145,7 +145,7 @@ class Column(models.Model):
         ('TaxLotState', 'jurisdiction_tax_lot_id')
     ]
 
-    # These fileds are excluded from being returned to the front end via the API. Note that not all the endpoints
+    # These fields are excluded from being returned to the front end via the API. Note that not all the endpoints
     # are respecting this at the moment
     EXCLUDED_API_FIELDS = [
         'normalized_address',

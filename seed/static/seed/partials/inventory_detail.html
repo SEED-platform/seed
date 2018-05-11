@@ -114,13 +114,13 @@
                             <!-- Show input form to edit current field value -->
                             <td ng-if="edit_form_showing" ng-class="(!col.is_extra_data && changed_fields.extra_data_fields.indexOf(col.column_name)>=0) || changed_fields.regular_fields.indexOf(col.column_name)>=0 ? 'highlight' : ''">
                                 <div ng-if="::!col.is_extra_data && col.table_name.toLowerCase().includes('state')">
-                                    <input id="edit_attribute_id" class="form-control input-sm" type="text" ng-model="item_state[col.column_name]" ng-disabled="::_.includes(['campus', 'updated', 'created'], col.column_name)">
+                                    <input id="edit_attribute_id" class="form-control input-sm" type="text" ng-model="item_state[col.column_name]" ng-disabled="::isDisabledField(col.column_name)">
                                 </div>
                                 <div ng-if="::col.is_extra_data && col.table_name.toLowerCase().includes('state')">
                                     <input id="edit_property_attribute_id" class="form-control input-sm" type="text" ng-model="item_state.extra_data[col.column_name]">
                                 </div>
                                 <div ng-if="::!col.is_extra_data && !col.table_name.toLowerCase().includes('state')">
-                                    <input id="edit_attribute_id" class="form-control input-sm" type="text" ng-model="item_parent[col.column_name]" ng-disabled="::_.includes(['campus', 'updated', 'created'], col.column_name)">
+                                    <input id="edit_attribute_id" class="form-control input-sm" type="text" ng-model="item_parent[col.column_name]" ng-disabled="::isDisabledField(col.column_name)">
                                 </div>
                             </td>
 
