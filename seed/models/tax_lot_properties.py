@@ -186,7 +186,7 @@ class TaxLotProperty(models.Model):
                 related_dict[related_column_name_mapping['updated']] = related_view.property.updated
                 related_dict[related_column_name_mapping['created']] = related_view.property.created
                 # Replace the enumerations
-                related_dict['analysis_state'] = related_view.state.get_analysis_state_display()
+                related_dict[related_column_name_mapping['analysis_state']] = related_view.state.get_analysis_state_display()
             elif lookups['obj_class'] == 'PropertyView':
                 # Do not make these timestamps naive. They persist correctly.
                 related_dict[related_column_name_mapping['updated']] = related_view.taxlot.updated
@@ -286,7 +286,7 @@ class TaxLotProperty(models.Model):
                 # Do not make these timestamps naive. They persist correctly.
                 obj_dict[obj_column_name_mapping['created']] = obj.property.created
                 obj_dict[obj_column_name_mapping['updated']] = obj.property.updated
-                obj_dict['analysis_state'] = obj.state.get_analysis_state_display()
+                obj_dict[obj_column_name_mapping['analysis_state']] = obj.state.get_analysis_state_display()
             elif lookups['obj_class'] == 'TaxLotView':
                 # Do not make these timestamps naive. They persist correctly.
                 obj_dict[obj_column_name_mapping['updated']] = obj.taxlot.updated
