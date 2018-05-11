@@ -115,7 +115,7 @@ class TaxLotProperty(models.Model):
         here so that we can use this method to create the data for exporting to CSV on the backend.
 
         :param object_list: list
-        :param show_columns: list, columns (as defined by frontend), Pass None to default to all columns
+        :param show_columns: list, columns (as defined by backend), Pass None to default to all columns
         :param columns_from_database: list, columns from the database as list of dict
         :return: list
         """
