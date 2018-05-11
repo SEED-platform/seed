@@ -282,7 +282,7 @@ class TaxLotProperty(models.Model):
 
             # store the property / taxlot data to the object dictionary as well. This is hacky.
             if lookups['obj_class'] == 'PropertyView':
-                obj_dict['campus'] = obj.property.campus
+                obj_dict[obj_column_name_mapping['campus']] = obj.property.campus
                 # Do not make these timestamps naive. They persist correctly.
                 obj_dict[obj_column_name_mapping['created']] = obj.property.created
                 obj_dict[obj_column_name_mapping['updated']] = obj.property.updated
