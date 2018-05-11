@@ -1151,7 +1151,6 @@ class InventoryViewTests(DeleteModelsTestCase):
             else:
                 column_name_mappings[c['column_name']] = c['name']
 
-
         result = results[0]
         self.assertEquals(len(result['related']), 1)
         self.assertEquals(result[column_name_mappings['address_line_1']], taxlot_state_1.address_line_1)

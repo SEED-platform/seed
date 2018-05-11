@@ -145,8 +145,8 @@ class Column(models.Model):
         ('TaxLotState', 'jurisdiction_tax_lot_id')
     ]
 
-    # These fields are excluded from being returned to the front end via the API. Note that not all the endpoints
-    # are respecting this at the moment
+    # These fields are excluded from being returned to the front end via the API and the Column.retrieve_all method.
+    # Note that not all the endpoints are respecting this at the moment
     EXCLUDED_API_FIELDS = [
         'normalized_address',
 
@@ -1147,6 +1147,9 @@ class Column(models.Model):
             table_name=None).order_by('is_extra_data', 'column_name')
         columns = []
         for c in columns_db:
+            if c.column_name in Column.EXCLUDED_API_FIELDS:
+                continue
+
             # Eventually move this over to Column serializer directly
             new_c = model_to_dict(c)
 
