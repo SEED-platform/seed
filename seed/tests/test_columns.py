@@ -332,15 +332,24 @@ class TestColumnsByInventory(TestCase):
         )
         column.delete()
 
+    def test_column_name(self):
+        # verify that the column name is in the form of <column_name>_<id>.
+        # Note that most of the tests remove the name and id field from the column listings to make it easier,
+        # so this test is really important!
+        columns = Column.retrieve_all(self.fake_org.pk, 'property', False)
+        for c in columns:
+            if c['column_name'] == 'PropertyState':
+                self.assertEqual(c['name'], "%s_%s" % (c['column_name'], c['id']))
+
     def test_column_retrieve_all(self):
         columns = Column.retrieve_all(self.fake_org.pk, 'property', False)
         # go through and delete all the results.ids so that it is easy to do a compare
         for result in columns:
             del result['id']
+            del result['name']
 
         # Check for columns
         c = {
-            'name': 'Column A',
             'table_name': u'PropertyState',
             'column_name': u'Column A',
             'display_name': u'Column A',
@@ -353,7 +362,6 @@ class TestColumnsByInventory(TestCase):
 
         # Check that display_name doesn't capitalize after apostrophe
         c = {
-            'name': u"Apostrophe's Field",
             'table_name': u'PropertyState',
             'column_name': u"Apostrophe's Field",
             'display_name': u"Apostrophe's Field",
@@ -366,7 +374,6 @@ class TestColumnsByInventory(TestCase):
 
         # Check 'id' field if extra_data
         c = {
-            'name': 'id_extra',
             'table_name': 'PropertyState',
             'column_name': 'id',
             'display_name': 'Id',
@@ -379,7 +386,6 @@ class TestColumnsByInventory(TestCase):
 
         # check the 'pinIfNative' argument
         c = {
-            'name': 'pm_property_id',
             'table_name': 'PropertyState',
             'column_name': 'pm_property_id',
             'display_name': 'PM Property ID',
@@ -393,7 +399,6 @@ class TestColumnsByInventory(TestCase):
 
         # verity that the 'duplicateNameInOtherTable' is working
         c = {
-            'name': 'tax_state',
             'table_name': 'TaxLotState',
             'column_name': 'state',
             'display_name': 'State (Tax Lot)',
@@ -405,7 +410,6 @@ class TestColumnsByInventory(TestCase):
         self.assertIn(c, columns)
 
         c = {
-            "name": "tax_gross_floor_area",
             "table_name": "TaxLotState",
             "column_name": "gross_floor_area",
             "display_name": "Gross Floor Area (Tax Lot)",
@@ -417,16 +421,16 @@ class TestColumnsByInventory(TestCase):
         self.assertIn(c, columns)
 
         # TODO: 4/25/2018 Need to decide how to check for bad columns and not return them in the request
-        self.assertNotIn('not mapped data', [d['name'] for d in columns])
+        self.assertNotIn('not mapped data', [d['column_name'] for d in columns])
 
     def test_columns_extra_tag(self):
         columns = Column.retrieve_all(self.fake_org.pk, 'taxlot', False)
         # go through and delete all the results.ids so that it is easy to do a compare
         for result in columns:
             del result['id']
+            del result['name']
 
         c = {
-            "name": "gross_floor_area_extra",
             "table_name": "TaxLotState",
             "column_name": "gross_floor_area",
             "display_name": "Gross Floor Area",

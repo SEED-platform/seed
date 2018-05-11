@@ -78,7 +78,7 @@ class TaxLotProperty(models.Model):
                 continue
             if exclude and f.name in exclude:
                 continue
-            if f.name in Column.EXCLUDED_API_FIELDS:
+            if f.name in Column.EXCLUDED_COLUMN_RETURN_FIELDS:
                 continue
 
             # fix specific time stamps

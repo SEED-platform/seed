@@ -109,9 +109,9 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
         # remove the id columns to make checking existence easier
         for result in data:
             del result['id']
+            del result['name']  # name is hard to compare because it is name_{ID}
 
         expected = {
-            u'name': u'pm_property_id',
             u'table_name': u'PropertyState',
             u'column_name': u'pm_property_id',
             u'display_name': u'PM Property ID',
