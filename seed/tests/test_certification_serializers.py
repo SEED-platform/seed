@@ -10,17 +10,12 @@ All rights reserved
 Tests for serializers used by GreenAssessments/Energy Certifications
 """
 import datetime
-import mock
 from collections import OrderedDict
 
+import mock
 from django.core.exceptions import ValidationError
 
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.models import (
-    Organization,
-    OrganizationUser,
-)
-
 from seed.serializers.certification import (
     GreenAssessmentURLField,
     PropertyViewField,
@@ -28,14 +23,13 @@ from seed.serializers.certification import (
     GreenAssessmentSerializer,
     GreenAssessmentPropertySerializer
 )
-
 from seed.test_helpers.fake import (
     FakePropertyViewFactory,
     FakeGreenAssessmentFactory,
     FakeGreenAssessmentPropertyFactory
 )
-
 from seed.tests.util import DeleteModelsTestCase
+from seed.utils.organizations import create_organization
 from seed.utils.strings import titlecase
 
 
@@ -53,8 +47,7 @@ class TestFields(DeleteModelsTestCase):
         }
         self.user = User.objects.create_superuser(
             email='test_user@demo.com', **user_details)
-        self.org = Organization.objects.create()
-        OrganizationUser.objects.create(user=self.user, organization=self.org)
+        self.org, _, _ = create_organization(self.user)
         self.property_view_factory = FakePropertyViewFactory(
             organization=self.org, user=self.user
         )
@@ -138,8 +131,7 @@ class TestGreenAssessmentPropertySerializer(DeleteModelsTestCase):
         }
         self.user = User.objects.create_superuser(
             email='test_user@demo.com', **user_details)
-        self.org = Organization.objects.create()
-        OrganizationUser.objects.create(user=self.user, organization=self.org)
+        self.org, _, _ = create_organization(self.user)
         self.property_view_factory = FakePropertyViewFactory(
             organization=self.org, user=self.user
         )
@@ -285,8 +277,7 @@ class TestGreenAssessmentSerializer(DeleteModelsTestCase):
         }
         self.user = User.objects.create_superuser(
             email='test_user@demo.com', **user_details)
-        self.org = Organization.objects.create()
-        OrganizationUser.objects.create(user=self.user, organization=self.org)
+        self.org, _, _ = create_organization(self.user)
         self.ga_factory = FakeGreenAssessmentFactory(organization=self.org)
         assessment_data = {
             'name': 'Test',

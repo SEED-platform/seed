@@ -69,7 +69,7 @@ angular.module('BE.seed.controller.data_quality_modal', [])
         field.field_type = null;
         field.link = false;
         field.static = false;
-        field.type = 'string';
+        field.data_type = 'string';
       });
 
       $scope.sortData = function () {

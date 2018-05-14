@@ -9,9 +9,10 @@ All rights reserved.  # NOQA
 """
 
 import csv
-import re
+import datetime
 
 from django.http import JsonResponse, HttpResponse
+from quantityfield import ureg
 from rest_framework.decorators import list_route
 from rest_framework.renderers import JSONRenderer
 from rest_framework.viewsets import GenericViewSet
@@ -89,7 +90,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
         columns = request.data.get('columns', None)
         if columns is None:
             # default the columns for now if no columns are passed
-            columns = Column.retrieve_db_fields()
+            columns = Column.retrieve_db_fields(request.query_params['organization_id'])
 
         # get the class to operate on and the relationships
         view_klass_str = request.query_params.get('inventory_type', 'properties')
@@ -99,8 +100,17 @@ class TaxLotPropertyViewSet(GenericViewSet):
         col_inventory_type = 'property' if view_klass_str == 'properties' else 'taxlot'
         columns_db = Column.retrieve_all(request.query_params['organization_id'], col_inventory_type, False)
         column_lookup = {}
+        db_column_name_lookup = {}
+        column_related_lookup = {}
         for c in columns_db:
-            column_lookup[c['name']] = c['displayName']
+            column_lookup[c['name']] = c['display_name']
+            db_column_name_lookup[c['name']] = c['column_name']
+            column_related_lookup[c['name']] = c['related']
+
+        # add a couple of other Display Names
+        column_lookup['notes_count'] = 'Notes Count'
+        column_lookup['id'] = 'ID'
+
         # make the csv header
         header = []
         for c in columns:
@@ -138,7 +148,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
         writer = csv.writer(response)
 
         # get the data in a dict which includes the related data
-        data = TaxLotProperty.get_related(model_views, columns)
+        data = TaxLotProperty.get_related(model_views, db_column_name_lookup.values(), columns_db)
 
         # force the data into the same order as the IDs
         if ids:
@@ -152,38 +162,27 @@ class TaxLotPropertyViewSet(GenericViewSet):
         writer.writerow(header)
 
         # iterate over the results to preserve column order and write row.
-        # The front end returns columns with prepended tax_ and property_ columns for the
-        # related fields. This is an expensive operation and can cause issues with stripping
-        # off property_ from items such as property_name, property_notes, and property_type
-        # which are explicitly excluded below
         for datum in data:
             row = []
             for column in columns:
-                if column in ['property_name', 'property_notes', 'property_type', 'property_labels']:
-                    row.append(datum.get(column, None))
-                elif column.startswith('tax_'):
-                    # There are times when there are duplicate column names in tax/property
-                    if datum.get('related') and len(datum['related']) > 0:
-                        # Looks like related returns a list. Is this as expected?
-                        row.append(datum['related'][0].get(re.sub(r'^tax_', '', column), None))
-                    else:
-                        row.append(None)
-                elif column.startswith('property_'):
-                    # There are times when there are duplicate column names in tax/property
-                    if datum.get('related') and len(datum['related']) > 0:
-                        # Looks like related returns a list. Is this as expected?
-                        row.append(datum['related'][0].get(re.sub(r'^property_', '', column), None))
-                    else:
-                        row.append(None)
+                row_result = None
+
+                if column in column_related_lookup and column_related_lookup[column]:
+                    # this is a related column, grab out of the related section
+                    if datum.get('related'):
+                        row_result = datum['related'][0].get(column, None)
                 else:
-                    # check if the data is in the normal section of the result, if not, then try to grab it from
-                    # the related section. There shouldn't be any duplicates here because the former two
-                    # if methods will grab those instances.
-                    result = datum.get(column, None)
-                    if not result:
-                        if datum.get('related'):
-                            result = datum['related'][0].get(column, None)
-                    row.append(result)
+                    row_result = datum.get(column, None)
+
+                # Convert quantities (this is typically handled in the JSON Encoder, but that isn't here).
+                if isinstance(row_result, ureg.Quantity):
+                    row_result = row_result.magnitude
+                elif isinstance(row_result, datetime.datetime):
+                    row_result = row_result.strftime("%Y-%m-%d %H:%M:%S")
+                elif isinstance(row_result, datetime.date):
+                    row_result = row_result.strftime("%Y-%m-%d")
+                row.append(row_result)
+
             writer.writerow(row)
 
         return response

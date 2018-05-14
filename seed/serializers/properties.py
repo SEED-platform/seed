@@ -284,6 +284,8 @@ class PropertyViewListSerializer(serializers.ListSerializer):
                 representation = OrderedDict((
                     ('id', item.id),
                     ('property', item.property_id),
+                    ('created', item.property.created),
+                    ('updated', item.property.updated),
                     ('state', state),
                     ('cycle', cycle),
                 ))
@@ -318,13 +320,16 @@ class PropertyViewAsStateSerializer(serializers.ModelSerializer):
     source = serializers.SerializerMethodField(read_only=True)
     taxlots = serializers.SerializerMethodField(read_only=True)
 
+    created = serializers.SerializerMethodField(read_only=True)
+    updated = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = PropertyView
         validators = []
         fields = ('id', 'state', 'property', 'cycle',
                   'changed_fields', 'date_edited',
                   'certifications', 'filename', 'history',
-                  'org_id', 'source', 'taxlots')
+                  'org_id', 'source', 'taxlots', 'created', 'updated')
 
     def __init__(self, instance=None, data=empty, **kwargs):
         """Override __init__ to get audit logs if instance is passed"""
@@ -536,6 +541,14 @@ class PropertyViewAsStateSerializer(serializers.ModelSerializer):
         return [
             TaxLotViewSerializer(lot).data for lot in lot_views
         ] if lot_views else None
+
+    def get_created(self, obj):
+        """Return the Property creation as string"""
+        return obj.property.created
+
+    def get_updated(self, obj):
+        """Return the Property creation as string"""
+        return obj.property.updated
 
     def update_state_audit_log(self, new_state, **kwargs):
         state = kwargs.pop('state')

@@ -35,7 +35,6 @@ from seed.data_importer.models import (
 from seed.decorators import get_prog_key
 from seed.decorators import lock_and_track
 from seed.green_button import xml_importer
-from seed.lib.mappings.mapping_data import MappingData
 from seed.lib.mcm import cleaners, mapper, reader
 from seed.lib.mcm.mapper import expand_rows
 from seed.lib.mcm.utils import batch
@@ -221,8 +220,7 @@ def _build_cleaner(org):
     :returns: dict of dicts. {'types': {'col_name': 'type'},}
     """
     units = {'types': {}}
-    for column in Column.objects.filter(mapped_mappings__super_organization=org).select_related(
-            'unit'):
+    for column in Column.objects.filter(mapped_mappings__super_organization=org).select_related('unit'):
         column_type = 'string'
         if column.unit:
             column_type = _translate_unit_to_type(
@@ -313,6 +311,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
         _log.error('this code should not be running here...')
         debug_inferred_prop_state_mapping = table_mappings['']
         table_mappings['PropertyState'] = debug_inferred_prop_state_mapping
+        raise Exception("This code has been deprecated, but is being called. Need to review the column cleanup")
     # TODO: *END TOTAL TERRIBLE HACK**
 
     map_cleaner = _build_cleaner_2(org)
@@ -325,7 +324,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
         delimited_fields = {}
         if 'TaxLotState' in table_mappings.keys():
             tmp = table_mappings['TaxLotState'].keys()[table_mappings['TaxLotState'].values().index(
-                ('TaxLotState', 'jurisdiction_tax_lot_id'))]
+                ('TaxLotState', 'jurisdiction_tax_lot_id', 'Jurisdiction Tax Lot ID', False))]
             delimited_fields['jurisdiction_tax_lot_id'] = {
                 'from_field': tmp,
                 'to_table': 'TaxLotState',
@@ -345,13 +344,10 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
     if 'PropertyState' in table_mappings.keys():
         if delimited_fields and delimited_fields['jurisdiction_tax_lot_id']:
             table_mappings['PropertyState'][
-                delimited_fields['jurisdiction_tax_lot_id']['from_field']] = (
-                'PropertyState', 'lot_number')
+                delimited_fields['jurisdiction_tax_lot_id']['from_field']] = ('PropertyState', 'lot_number', 'Lot Number', False)
     # *** END BREAK OUT ***
 
     # yes, there are three cascading for loops here. sorry :(
-    md = MappingData()
-
     for table, mappings in table_mappings.items():
         if not table:
             continue
@@ -360,7 +356,8 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
         # mapper.map_row. apply_columns are extra_data columns (the raw column names)
         extra_data_fields = []
         for k, v in mappings.items():
-            if not md.find_column(v[0], v[1]):
+            # the 3rd element is the is_extra_data flag. Need to convert this to a dict and not a tuple.
+            if v[3]:
                 extra_data_fields.append(k)
         # _log.debug("extra data fields: {}".format(extra_data_fields))
 
@@ -388,7 +385,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
 
             # _log.debug("delimited_field_list is set to {}".format(delimited_field_list))
 
-            # Weeee... the data are in the extra_data column.
+            # The raw data upon import is in the extra_data column
             for row in expand_rows(original_row.extra_data, delimited_field_list, expand_row):
                 map_model_obj = mapper.map_row(
                     row,
@@ -416,13 +413,11 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
                 # sure that the object hasn't already been created.
                 # For example, in the test data the tax lot id is the same for many rows. Make sure
                 # to only create/save the object if it hasn't been created before.
-                if hash_state_object(
-                    map_model_obj,
-                    include_extra_data=False) == hash_state_object(
-                    STR_TO_CLASS[table](organization=map_model_obj.organization),
-                    include_extra_data=False
-                ):
+                if hash_state_object(map_model_obj, include_extra_data=False) == \
+                    hash_state_object(STR_TO_CLASS[table](organization=map_model_obj.organization),
+                                      include_extra_data=False):
                     # Skip this object as it has no data...
+                    _log.warn("Skipping building during mapping")
                     continue
 
                 try:
@@ -519,15 +514,17 @@ def _data_quality_check(property_state_ids, taxlot_state_ids, identifier):
     """
     # initialize the cache for the data_quality results using the data_quality static method
     tasks = []
-    id_chunks = [[obj for obj in chunk] for chunk in batch(property_state_ids, 100)]
-    increment = get_cache_increment_value(id_chunks)
-    for ids in id_chunks:
-        tasks.append(check_data_chunk.s("PropertyState", ids, identifier, increment))
+    if property_state_ids:
+        id_chunks = [[obj for obj in chunk] for chunk in batch(property_state_ids, 100)]
+        increment = get_cache_increment_value(id_chunks)
+        for ids in id_chunks:
+            tasks.append(check_data_chunk.s("PropertyState", ids, identifier, increment))
 
-    id_chunks_tl = [[obj for obj in chunk] for chunk in batch(taxlot_state_ids, 100)]
-    increment_tl = get_cache_increment_value(id_chunks_tl)
-    for ids in id_chunks_tl:
-        tasks.append(check_data_chunk.s("TaxLotState", ids, identifier, increment_tl))
+    if taxlot_state_ids:
+        id_chunks_tl = [[obj for obj in chunk] for chunk in batch(taxlot_state_ids, 100)]
+        increment_tl = get_cache_increment_value(id_chunks_tl)
+        for ids in id_chunks_tl:
+            tasks.append(check_data_chunk.s("TaxLotState", ids, identifier, increment_tl))
 
     if tasks:
         # specify the chord as an immutable with .si
@@ -904,17 +901,6 @@ def _find_matches(un_m_address, canonical_buildings_addresses):
     return match_list
 
 
-# TODO: CLEANUP - What are we doing here?
-md = MappingData()
-ALL_COMPARISON_FIELDS = sorted(list(set([field['name'] for field in md.data])))
-# Make sure that the import_file isn't part of the hash, as the import_file filename always has
-# random characters appended to it in the uploads directory
-try:
-    ALL_COMPARISON_FIELDS.remove('import_file')
-except ValueError:
-    pass
-
-
 def hash_state_object(obj, include_extra_data=True):
     def _get_field_from_obj(field_obj, field):
         if not hasattr(field_obj, field):
@@ -923,8 +909,7 @@ def hash_state_object(obj, include_extra_data=True):
             return getattr(field_obj, field)
 
     m = hashlib.md5()
-
-    for f in ALL_COMPARISON_FIELDS:
+    for f in Column.retrieve_db_field_name_for_hash_comparison():
         obj_val = _get_field_from_obj(obj, f)
         m.update(str(f))
         m.update(str(obj_val))
@@ -1350,8 +1335,7 @@ def _match_properties_and_taxlots(file_pk):
     duplicates_of_existing_taxlot_states = []
     if all_unmatched_properties:
         # Filter out the duplicates within the import file.
-        unmatched_properties, duplicate_property_states = filter_duplicated_states(
-            all_unmatched_properties)
+        unmatched_properties, duplicate_property_states = filter_duplicated_states(all_unmatched_properties)
 
         property_partitioner = EquivalencePartitioner.make_default_state_equivalence(PropertyState)
 
@@ -1359,7 +1343,8 @@ def _match_properties_and_taxlots(file_pk):
         # provided by the partitioner, while ignoring duplicates.
         unmatched_properties, property_equivalence_keys = match_and_merge_unmatched_objects(
             unmatched_properties,
-            property_partitioner)
+            property_partitioner
+        )
 
         # Take the final merged-on-import objects, and find Views that
         # correspond to it and merge those together.
@@ -1367,11 +1352,12 @@ def _match_properties_and_taxlots(file_pk):
             unmatched_properties,
             property_partitioner,
             org,
-            import_file)
+            import_file
+        )
 
         # Filter out the exact duplicates found in the previous step
-        duplicates_of_existing_property_states = [state for state in unmatched_properties
-                                                  if state.data_state == DATA_STATE_DELETE]
+        duplicates_of_existing_property_states = [state for state in unmatched_properties if
+                                                  state.data_state == DATA_STATE_DELETE]
         unmatched_properties = [state for state in unmatched_properties
                                 if state not in duplicates_of_existing_property_states]
     else:
@@ -1384,8 +1370,7 @@ def _match_properties_and_taxlots(file_pk):
     if all_unmatched_tax_lots:
         # Filter out the duplicates.  Do we actually want to delete them
         # here?  Mark their abandonment in the Audit Logs?
-        unmatched_tax_lots, duplicate_tax_lot_states = filter_duplicated_states(
-            all_unmatched_tax_lots)
+        unmatched_tax_lots, duplicate_tax_lot_states = filter_duplicated_states(all_unmatched_tax_lots)
 
         taxlot_partitioner = EquivalencePartitioner.make_default_state_equivalence(TaxLotState)
 
@@ -1393,7 +1378,8 @@ def _match_properties_and_taxlots(file_pk):
         # provided by the partitioner.
         unmatched_tax_lots, taxlot_equivalence_keys = match_and_merge_unmatched_objects(
             unmatched_tax_lots,
-            taxlot_partitioner)
+            taxlot_partitioner
+        )
 
         # Take the final merged-on-import objects, and find Views that
         # correspond to it and merge those together.
@@ -1401,13 +1387,14 @@ def _match_properties_and_taxlots(file_pk):
             unmatched_tax_lots,
             taxlot_partitioner,
             org,
-            import_file)
+            import_file
+        )
 
         # Filter out the exact duplicates found in the previous step
         duplicates_of_existing_taxlot_states = [state for state in unmatched_tax_lots
                                                 if state.data_state == DATA_STATE_DELETE]
-        unmatched_tax_lots = [state for state in unmatched_tax_lots
-                              if state not in duplicates_of_existing_taxlot_states]
+        unmatched_tax_lots = [state for state in unmatched_tax_lots if
+                              state not in duplicates_of_existing_taxlot_states]
     else:
         duplicate_tax_lot_states = []
         merged_taxlot_views = []

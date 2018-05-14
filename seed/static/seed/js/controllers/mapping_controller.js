@@ -52,7 +52,7 @@ angular.module('BE.seed.controller.mapping', [])
       var columns = suggested_mappings_payload.columns;
       var extra_data_columns = _.filter(columns, 'extra_data');
       var original_columns = _.map(columns, function f(n) {
-        return n.name;
+        return n.column_name;
       });
       // var original_columns = angular.copy(db_field_columns.concat(extra_data_columns));
       $scope.flippers = flippers; // make available in partials/ng-if
@@ -428,8 +428,12 @@ angular.module('BE.seed.controller.mapping', [])
             if (!_.includes(existing_property_keys, col.name) && !_.includes(existing_extra_property_keys, col.name)) {
               col.visible = false;
             } else {
-              if (col.type === 'date') options.filter = inventory_service.dateFilter();
-              else options.filter = inventory_service.combinedFilter();
+              if (col.data_type === 'datetime') {
+                options.cellFilter = 'date:\'yyyy-MM-dd h:mm a\'';
+                options.filter = inventory_service.dateFilter();
+              } else {
+                options.filter = inventory_service.combinedFilter();
+              }
             }
             return _.defaults(col, options, defaults);
           });
@@ -438,8 +442,12 @@ angular.module('BE.seed.controller.mapping', [])
             if (!_.includes(existing_taxlot_keys, col.name) && !_.includes(existing_extra_taxlot_keys, col.name)) {
               col.visible = false;
             } else {
-              if (col.type === 'date') options.filter = inventory_service.dateFilter();
-              else options.filter = inventory_service.combinedFilter();
+              if (col.data_type === 'datetime') {
+                options.cellFilter = 'date:\'yyyy-MM-dd h:mm a\'';
+                options.filter = inventory_service.dateFilter();
+              } else {
+                options.filter = inventory_service.combinedFilter();
+              }
             }
             return _.defaults(col, options, defaults);
           });
@@ -545,27 +553,6 @@ angular.module('BE.seed.controller.mapping', [])
           return tcm.suggestion === tcm.name && tcm.suggestion_table_name === 'PropertyState';
         });
       };
-
-      // As far as I can tell, this is never used.
-      // /**
-      //  * show_mapping_progress: shows the progress bar and kicks off the mapping,
-      //  *   after saving column mappings
-      //  */
-      // $scope.show_mapping_progress = function () {
-      //   $scope.import_file.progress = 0;
-      //   $scope.save_mappings = true;
-      //   mapping_service.save_mappings(
-      //     $scope.import_file.id,
-      //     $scope.get_mappings()
-      //   ).then(function (data) {
-      //       // start mapping
-      //       mapping_service.start_mapping($scope.import_file.id).then(function (data) {
-      //         // save maps start mapping data
-      //         check_mapping(data.progress_key);
-      //       });
-      //     });
-      // };
-
 
       /**
        * reverse titleCase mappings which were titleCase in the suggestion input

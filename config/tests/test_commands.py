@@ -25,22 +25,23 @@ class ManagementTests(TestCase):
             user__username='demo@seed.lbl.gov',
             organization__name='demo'
         ).exists())
+
         u = User.objects.get(username='demo@seed.lbl.gov')
         u.check_password('demo')
 
         # check custom user case
         call_command(
             'create_default_user',
-            username='bd@seed.lbl.gov',
+            username='demo_user_2@seed-platform.org',
             password='demo123',
-            organization='bd'
+            organization='demo_org_2'
         )
         self.assertTrue(User.objects.filter(
-            username='bd@seed.lbl.gov').exists())
-        self.assertTrue(Organization.objects.filter(name='bd').exists())
+            username='demo_user_2@seed-platform.org').exists())
+        self.assertTrue(Organization.objects.filter(name='demo_org_2').exists())
         self.assertTrue(OrganizationUser.objects.filter(
-            user__username='bd@seed.lbl.gov',
-            organization__name='bd'
+            user__username='demo_user_2@seed-platform.org',
+            organization__name='demo_org_2'
         ).exists())
-        u = User.objects.get(username='bd@seed.lbl.gov')
+        u = User.objects.get(username='demo_user_2@seed-platform.org')
         u.check_password('demo123')

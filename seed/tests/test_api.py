@@ -17,12 +17,12 @@ from django.utils import timezone
 
 from seed.factory import SEEDFactory
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
     CanonicalBuilding,
     Cycle,
 )
 from seed.utils.api import get_api_endpoints
+from seed.utils.organizations import create_organization
 
 
 class ApiAuthenticationTests(TestCase):
@@ -40,8 +40,7 @@ class ApiAuthenticationTests(TestCase):
         }
         self.user = User.objects.create_user(**user_details)
         self.user.generate_key()
-        self.org = Organization.objects.create()
-        OrganizationUser.objects.create(user=self.user, organization=self.org)
+        self.org, _, _ = create_organization(self.user)
 
         cb = CanonicalBuilding(active=True)
         cb.save()
@@ -81,6 +80,7 @@ class SchemaGenerationTests(TestCase):
                  '/api/v2/property_states',
                  '/api/v2/properties',
                  '/api/v2/labels',
+                 '/api/v2/column_list_settings',
                  '/api/v2/green_assessment',
                  '/api/v2/green_assessment_url',
                  '/api/v2/building_file',
@@ -122,9 +122,8 @@ class TestApi(TestCase):
         }
         self.user = User.objects.create_user(**user_details)
         self.user.generate_key()
-        self.org = Organization.objects.create()
+        self.org, _, _ = create_organization(self.user)
         self.default_cycle = Cycle.objects.filter(organization_id=self.org).first()
-        OrganizationUser.objects.create(user=self.user, organization=self.org)
         self.cycle, _ = Cycle.objects.get_or_create(
             name=u'Test Hack Cycle 2015',
             organization=self.org,

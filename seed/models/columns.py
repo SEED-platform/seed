@@ -11,30 +11,53 @@ import logging
 import os.path
 from collections import OrderedDict
 
+from django.apps import apps
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q
+from django.db.models.signals import pre_save
+from django.forms.models import model_to_dict
 from django.utils.translation import ugettext_lazy as _
 
 from seed.landing.models import SEEDUser as User
-from seed.lib.mappings.mapping_data import MappingData
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
 from seed.models.models import (
     Enum,
     Unit,
     SEED_DATA_SOURCES,
 )
-from seed.utils.constants import VIEW_COLUMNS_PROPERTY
 from seed.utils.strings import titlecase
 
 # This is the inverse mapping of the property and tax lots that are prepended to the fields
 # for the other table.
-INVENTORY_MAP_PREPEND = {
+INVENTORY_MAP_OPPOSITE_PREPEND = {
     'property': 'tax',
     'propertystate': 'tax',
     'taxlot': 'property',
     'taxlotstate': 'property',
 }
+
+COLUMN_OPPOSITE_TABLE = {
+    'PropertyState': 'TaxLotState',
+    'TaxLotState': 'PropertyState',
+}
+
+INVENTORY_DISPLAY = {
+    'PropertyState': 'Property',
+    'TaxLotState': 'Tax Lot',
+    'Property': 'Property',
+    'TaxLot': 'Tax Lot',
+}
 _log = logging.getLogger(__name__)
+
+
+def get_table_and_column_names(column_mapping, attr_name='column_raw'):
+    """Turns the Column.column_names into a serializable list of str."""
+    attr = getattr(column_mapping, attr_name, None)
+    if not attr:
+        return attr
+
+    return [t for t in attr.all().values_list('table_name', 'column_name')]
 
 
 def get_column_mapping(raw_column, organization, attr_name='column_mapped'):
@@ -49,8 +72,6 @@ def get_column_mapping(raw_column, organization, attr_name='column_mapped'):
     :returns: list of mapped items, float representation of confidence.
 
     """
-    from seed.utils.mapping import get_table_and_column_names
-
     if not isinstance(raw_column, list):
         column_raw = [raw_column]
     else:
@@ -78,7 +99,7 @@ def get_column_mapping(raw_column, organization, attr_name='column_mapped'):
         # the old matches are no longer valid.
         return None
     except ColumnMapping.DoesNotExist:
-        _log.debug("ColumnMapping.DoesNotExist")
+        # Mapping column does not exist
         return None
 
     column_names = get_table_and_column_names(previous_mapping, attr_name=attr_name)
@@ -119,12 +140,438 @@ class Column(models.Model):
         (SHARED_PUBLIC, 'Public')
     )
 
+    PINNED_COLUMNS = [
+        ('PropertyState', 'pm_property_id'),
+        ('TaxLotState', 'jurisdiction_tax_lot_id')
+    ]
+
+    # Do not return these columns to the front end -- when using the tax_lot_properties get_related method .
+    EXCLUDED_COLUMN_RETURN_FIELDS = [
+        'normalized_address',
+        # Records below are old and should not be used
+        'source_eui_modeled_orig',
+        'site_eui_orig',
+        'occupied_floor_area_orig',
+        'site_eui_weather_normalized_orig',
+        'site_eui_modeled_orig',
+        'source_eui_orig',
+        'gross_floor_area_orig',
+        'conditioned_floor_area_orig',
+        'source_eui_weather_normalized_orig',
+    ]
+
+    # These fields are excluded from being returned to the front end via the API and the Column.retrieve_all method.
+    # Note that not all the endpoints are respecting this at the moment.
+    EXCLUDED_API_FIELDS = [
+        'normalized_address',
+    ]
+
+    # These are the columns that are removed when looking to see if the records are the same
+    COLUMN_EXCLUDE_FIELDS = [
+        'id',
+        'source_type',
+        'data_state',
+        'import_file',
+        'merge_state',
+        'confidence',
+        'extra_data',
+    ] + EXCLUDED_COLUMN_RETURN_FIELDS
+
+    # These are fields that should not be mapped to
+    EXCLUDED_MAPPING_FIELDS = [
+        'extra_data',
+        'lot_number',
+        'normalized_address',
+    ]
+
+    INTERNAL_TYPE_TO_DATA_TYPE = {
+        'FloatField': 'double',  # yes, technically this is not the same, move along.
+        'IntegerField': 'integer',
+        'CharField': 'string',
+        'TextField': 'string',
+        'DateField': 'date',
+        'DateTimeField': 'datetime',
+        'BooleanField': 'boolean',
+        'JSONField': 'string',
+    }
+
+    # These are the default columns ( also known as the fields in the database)
+    DATABASE_COLUMNS = [
+        {
+            'column_name': 'pm_property_id',
+            'table_name': 'PropertyState',
+            'display_name': 'PM Property ID',
+            'data_type': 'string',
+        }, {
+            'column_name': 'pm_parent_property_id',
+            'table_name': 'PropertyState',
+            'display_name': 'PM Parent Property ID',
+            'data_type': 'string',
+        }, {
+            'column_name': 'jurisdiction_tax_lot_id',
+            'table_name': 'TaxLotState',
+            'display_name': 'Jurisdiction Tax Lot ID',
+            'data_type': 'string',
+        }, {
+            'column_name': 'jurisdiction_property_id',
+            'table_name': 'PropertyState',
+            'display_name': 'Jurisdiction Property ID',
+            'data_type': 'string',
+        }, {
+            'column_name': 'ubid',
+            'table_name': 'PropertyState',
+            'display_name': 'UBID',
+            'data_type': 'string',
+        }, {
+            'column_name': 'custom_id_1',
+            'table_name': 'PropertyState',
+            'display_name': 'Custom ID 1',
+            'data_type': 'string',
+        }, {
+            'column_name': 'custom_id_1',
+            'table_name': 'TaxLotState',
+            'display_name': 'Custom ID 1',
+            'data_type': 'string',
+        }, {
+            'column_name': 'address_line_1',
+            'table_name': 'PropertyState',
+            'display_name': 'Address Line 1',
+            'data_type': 'string',
+        }, {
+            'column_name': 'address_line_1',
+            'table_name': 'TaxLotState',
+            'display_name': 'Address Line 1',
+            'data_type': 'string',
+        }, {
+            'column_name': 'address_line_2',
+            'table_name': 'PropertyState',
+            'display_name': 'Address Line 2',
+            'data_type': 'string',
+        }, {
+            'column_name': 'address_line_2',
+            'table_name': 'TaxLotState',
+            'display_name': 'Address Line 2',
+            'data_type': 'string',
+        }, {
+            'column_name': 'city',
+            'table_name': 'PropertyState',
+            'display_name': 'City',
+            'data_type': 'string',
+        }, {
+            'column_name': 'city',
+            'table_name': 'TaxLotState',
+            'display_name': 'City',
+            'data_type': 'string',
+        }, {
+            'column_name': 'state',
+            'table_name': 'PropertyState',
+            'display_name': 'State',
+            'data_type': 'string',
+        }, {
+            'column_name': 'state',
+            'table_name': 'TaxLotState',
+            'display_name': 'State',
+            'data_type': 'string',
+        }, {
+            # This should never be mapped to!
+            'column_name': 'normalized_address',
+            'table_name': 'PropertyState',
+            'display_name': 'Normalized Address',
+            'data_type': 'string',
+        }, {
+            # This should never be mapped to!
+            'column_name': 'normalized_address',
+            'table_name': 'TaxLotState',
+            'display_name': 'Normalized Address',
+            'data_type': 'string',
+        }, {
+            'column_name': 'postal_code',
+            'table_name': 'PropertyState',
+            'display_name': 'Postal Code',
+            'data_type': 'string',
+        }, {
+            'column_name': 'postal_code',
+            'table_name': 'TaxLotState',
+            'display_name': 'Postal Code',
+            'data_type': 'string',
+        }, {
+            # This field should never be mapped to!
+            'column_name': 'lot_number',
+            'table_name': 'PropertyState',
+            'display_name': 'Associated Tax Lot ID',
+            'data_type': 'string',
+        }, {
+            'column_name': 'property_name',
+            'table_name': 'PropertyState',
+            'display_name': 'Property Name',
+            'data_type': 'string',
+        }, {
+            'column_name': 'latitude',
+            'table_name': 'PropertyState',
+            'display_name': 'Latitude',
+            'data_type': 'number',
+        }, {
+            'column_name': 'longitude',
+            'table_name': 'PropertyState',
+            'display_name': 'Longitude',
+            'data_type': 'number',
+        }, {
+            'column_name': 'campus',
+            'table_name': 'Property',
+            'display_name': 'Campus',
+            'data_type': 'boolean',
+            # 'type': 'boolean',
+        }, {
+            'column_name': 'updated',
+            'table_name': 'Property',
+            'display_name': 'Updated',
+            'data_type': 'datetime',
+            # 'type': 'date',
+            # 'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
+        }, {
+            'column_name': 'created',
+            'table_name': 'Property',
+            'display_name': 'Created',
+            'data_type': 'datetime',
+            # 'type': 'date',
+            # 'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
+        }, {
+            'column_name': 'updated',
+            'table_name': 'TaxLot',
+            'display_name': 'Updated',
+            'data_type': 'datetime',
+            # 'type': 'date',
+            # 'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
+        }, {
+            'column_name': 'created',
+            'table_name': 'TaxLot',
+            'display_name': 'Created',
+            'data_type': 'datetime',
+            # 'type': 'date',
+            # 'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
+        }, {
+            'column_name': 'gross_floor_area',
+            'table_name': 'PropertyState',
+            'display_name': 'Gross Floor Area',
+            'data_type': 'area',
+            # 'type': 'number',
+        }, {
+            'column_name': 'use_description',
+            'table_name': 'PropertyState',
+            'display_name': 'Use Description',
+            'data_type': 'string',
+        }, {
+            'column_name': 'energy_score',
+            'table_name': 'PropertyState',
+            'display_name': 'ENERGY STAR Score',
+            'data_type': 'integer',
+            # 'type': 'number',
+        }, {
+            'column_name': 'property_notes',
+            'table_name': 'PropertyState',
+            'display_name': 'Property Notes',
+            'data_type': 'string',
+        }, {
+            'column_name': 'property_type',
+            'table_name': 'PropertyState',
+            'display_name': 'Property Type',
+            'data_type': 'string',
+        }, {
+            'column_name': 'year_ending',
+            'table_name': 'PropertyState',
+            'display_name': 'Year Ending',
+            'data_type': 'date',
+        }, {
+            'column_name': 'owner',
+            'table_name': 'PropertyState',
+            'display_name': 'Owner',
+            'data_type': 'string',
+        }, {
+            'column_name': 'owner_email',
+            'table_name': 'PropertyState',
+            'display_name': 'Owner Email',
+            'data_type': 'string',
+        }, {
+            'column_name': 'owner_telephone',
+            'table_name': 'PropertyState',
+            'display_name': 'Owner Telephone',
+            'data_type': 'string',
+        }, {
+            'column_name': 'building_count',
+            'table_name': 'PropertyState',
+            'display_name': 'Building Count',
+            'data_type': 'integer',
+            # 'type': 'number',
+        }, {
+            'column_name': 'year_built',
+            'table_name': 'PropertyState',
+            'display_name': 'Year Built',
+            'data_type': 'integer',
+            # 'type': 'number',
+        }, {
+            'column_name': 'recent_sale_date',
+            'table_name': 'PropertyState',
+            'display_name': 'Recent Sale Date',
+            'data_type': 'datetime',
+            # 'type': 'date',
+            # 'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
+        }, {
+            'column_name': 'conditioned_floor_area',
+            'table_name': 'PropertyState',
+            'display_name': 'Conditioned Floor Area',
+            'data_type': 'area',
+            # 'type': 'number',
+            # 'dbField': True,
+        }, {
+            'column_name': 'occupied_floor_area',
+            'table_name': 'PropertyState',
+            'display_name': 'Occupied Floor Area',
+            'data_type': 'area',
+            # 'type': 'number',
+        }, {
+            'column_name': 'owner_address',
+            'table_name': 'PropertyState',
+            'display_name': 'Owner Address',
+            'data_type': 'string',
+        }, {
+            'column_name': 'owner_city_state',
+            'table_name': 'PropertyState',
+            'display_name': 'Owner City/State',
+            'data_type': 'string',
+        }, {
+            'column_name': 'owner_postal_code',
+            'table_name': 'PropertyState',
+            'display_name': 'Owner Postal Code',
+            'data_type': 'string',
+        }, {
+            'column_name': 'home_energy_score_id',
+            'table_name': 'PropertyState',
+            'display_name': 'Home Energy Score ID',
+            'data_type': 'string',
+        }, {
+            'column_name': 'generation_date',
+            'table_name': 'PropertyState',
+            'display_name': 'PM Generation Date',
+            'data_type': 'datetime',
+            # 'type': 'date',
+            # 'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
+        }, {
+            'column_name': 'release_date',
+            'table_name': 'PropertyState',
+            'display_name': 'PM Release Date',
+            'data_type': 'datetime',
+            # 'type': 'date',
+            # 'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
+        }, {
+            'column_name': 'site_eui',
+            'table_name': 'PropertyState',
+            'display_name': 'Site EUI',
+            'data_type': 'eui',
+            # 'type': 'number',
+        }, {
+            'column_name': 'site_eui_weather_normalized',
+            'table_name': 'PropertyState',
+            'display_name': 'Site EUI Weather Normalized',
+            'data_type': 'eui',
+            # 'type': 'number',
+        }, {
+            'column_name': 'site_eui_modeled',
+            'table_name': 'PropertyState',
+            'display_name': 'Site EUI Modeled',
+            'data_type': 'eui',
+            # 'type': 'number',
+        }, {
+            'column_name': 'source_eui',
+            'table_name': 'PropertyState',
+            'display_name': 'Source EUI',
+            'data_type': 'eui',
+            # 'type': 'number',
+        }, {
+            'column_name': 'source_eui_weather_normalized',
+            'table_name': 'PropertyState',
+            'display_name': 'Source EUI Weather Normalized',
+            'data_type': 'eui',
+            # 'type': 'number',
+        }, {
+            'column_name': 'source_eui_modeled',
+            'table_name': 'PropertyState',
+            'display_name': 'Source EUI Modeled',
+            'data_type': 'eui',
+            # 'type': 'number',
+        }, {
+            'column_name': 'energy_alerts',
+            'table_name': 'PropertyState',
+            'display_name': 'Energy Alerts',
+            'data_type': 'string',
+        }, {
+            'column_name': 'space_alerts',
+            'table_name': 'PropertyState',
+            'display_name': 'Space Alerts',
+            'data_type': 'string',
+        }, {
+            'column_name': 'building_certification',
+            'table_name': 'PropertyState',
+            'display_name': 'Building Certification',
+            'data_type': 'string',
+        }, {
+            'column_name': 'analysis_start_time',
+            'table_name': 'PropertyState',
+            'display_name': 'Analysis Start Time',
+            'data_type': 'datetime',
+            # 'type': 'date',
+            # 'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
+        }, {
+            'column_name': 'analysis_end_time',
+            'table_name': 'PropertyState',
+            'display_name': 'Analysis End Time',
+            'data_type': 'datetime',
+            # 'type': 'date',
+            # 'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
+        }, {
+            'column_name': 'analysis_state',
+            'table_name': 'PropertyState',
+            'display_name': 'Analysis State',
+            'data_type': 'string',
+        }, {
+            'column_name': 'analysis_state_message',
+            'table_name': 'PropertyState',
+            'display_name': 'Analysis State Message',
+            'data_type': 'string',
+        }, {
+            'column_name': 'number_properties',
+            'table_name': 'TaxLotState',
+            'display_name': 'Number Properties',
+            'data_type': 'integer',
+            # 'type': 'number',
+        }, {
+            'column_name': 'block_number',
+            'table_name': 'TaxLotState',
+            'display_name': 'Block Number',
+            'data_type': 'string',
+        }, {
+            'column_name': 'district',
+            'table_name': 'TaxLotState',
+            'display_name': 'District',
+            'data_type': 'string',
+        }
+    ]
     organization = models.ForeignKey(SuperOrganization, blank=True, null=True)
     column_name = models.CharField(max_length=512, db_index=True)
-
     # name of the table which the column name applies, if the column name
     # is a db field. Options now are only PropertyState and TaxLotState
-    table_name = models.CharField(max_length=512, blank=True, db_index=True, )
+    table_name = models.CharField(max_length=512, blank=True, db_index=True)
+
+    display_name = models.CharField(max_length=512, blank=True)
+    data_type = models.CharField(max_length=64, default='None')
+
+    # Add created/modified timestamps
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
+    # TODO: decide if we need this? I don't think I do.
+    # If exclude_from_mapping, then the column will not be used as mapping suggestions
+    # exclude_from_mapping = models.BooleanField(default=False)
+
     unit = models.ForeignKey(Unit, blank=True, null=True)
     enum = models.ForeignKey(Enum, blank=True, null=True)
     is_extra_data = models.BooleanField(default=False)
@@ -140,7 +587,22 @@ class Column(models.Model):
     #         'organization', 'column_name', 'is_extra_data', 'table_name', 'import_file')
 
     def __unicode__(self):
-        return u'{} - {}'.format(self.pk, self.column_name)
+        return u'{} - {}:{}'.format(self.pk, self.table_name, self.column_name)
+
+    def clean(self):
+        # Don't allow Columns that are not extra_data and not a field in the database
+        if (not self.is_extra_data) and self.table_name:
+            # if it isn't extra data and the table_name IS set, then it must be part of the database fields
+            found = False
+            for c in Column.DATABASE_COLUMNS:
+                if self.table_name == c['table_name'] and self.column_name == c['column_name']:
+                    found = True
+
+            if not found:
+                raise ValidationError(
+                    {'is_extra_data': _(
+                        'Column \'%s\':\'%s\' is not marked as extra data, but the field is not in the database') % (
+                        self.table_name, self.column_name)})
 
     @staticmethod
     def create_mappings_from_file(filename, organization, user, import_file_id=None):
@@ -352,18 +814,18 @@ class Column(models.Model):
                         )
                         return [obj]
 
-        md = MappingData()
-
         # Container to store the dicts with the Column object
         new_data = []
 
         for field in fields:
             new_field = field
 
-            # find the mapping data column (i.e. the database fields) that match, if it exists
-            # then set the extra data flag to true
-            db_field = md.find_column(field['to_table_name'], field['to_field'])
-            is_extra_data = False if db_field else True  # yes i am a db column, thus I am not extra_data
+            # Check if the extra_data field in the model object is a database column
+            is_extra_data = True
+            for c in Column.DATABASE_COLUMNS:
+                if field['to_table_name'] == c['table_name'] and field['to_field'] == c['column_name']:
+                    is_extra_data = False
+                    break
 
             try:
                 to_org_col, _ = Column.objects.get_or_create(
@@ -408,8 +870,7 @@ class Column(models.Model):
                                                      is_extra_data=is_extra_data).first()
                 _log.debug("Grabbing the first from_column")
 
-            new_field['to_column_object'] = select_col_obj(field['to_field'],
-                                                           field['to_table_name'], to_org_col)
+            new_field['to_column_object'] = select_col_obj(field['to_field'], field['to_table_name'], to_org_col)
             new_field['from_column_object'] = select_col_obj(field['from_field'], "", from_org_col)
             new_data.append(new_field)
 
@@ -424,16 +885,10 @@ class Column(models.Model):
 
         :param model_obj: model_obj instance (either PropertyState or TaxLotState).
         """
-
-        md = MappingData()
-
+        db_columns = Column.retrieve_db_field_table_and_names_from_db_tables()
         for key in model_obj.extra_data:
-            # Ascertain if our key is ``extra_data`` or not.
-
-            # This is doing way to much work to find if the fields are extra data, especially
-            # since that has been asked probably many times before.
-            db_field = md.find_column(model_obj.__class__.__name__, key)
-            is_extra_data = False if db_field else True  # yes i am a db column, thus I am not extra_data
+            # Check if the extra_data field in the model object is a database column
+            is_extra_data = (model_obj.__class__.__name__, key[:511]) not in db_columns
 
             # handle the special edge-case where an old organization may have duplicate columns
             # in the database. We should make this a migration in the future and put a validation
@@ -442,32 +897,31 @@ class Column(models.Model):
                 while True:
                     try:
                         Column.objects.get_or_create(
+                            table_name=model_obj.__class__.__name__,
                             column_name=key[:511],
                             is_extra_data=is_extra_data,
                             organization=model_obj.organization,
-                            table_name=model_obj.__class__.__name__
                         )
                     except Column.MultipleObjectsReturned:
                         _log.debug(
                             "Column.MultipleObjectsReturned for {} in save_column_names".format(
                                 key[:511]))
 
-                        columns = Column.objects.filter(column_name=key[:511],
+                        columns = Column.objects.filter(table_name=model_obj.__class__.__name__,
+                                                        column_name=key[:511],
                                                         is_extra_data=is_extra_data,
-                                                        organization=model_obj.organization,
-                                                        table_name=model_obj.__class__.__name__)
+                                                        organization=model_obj.organization)
                         for c in columns:
-                            if not ColumnMapping.objects.filter(
-                                    Q(column_raw=c) | Q(column_mapped=c)).exists():
+                            if not ColumnMapping.objects.filter(Q(column_raw=c) | Q(column_mapped=c)).exists():
                                 _log.debug("Deleting column object {}".format(c.column_name))
                                 c.delete()
 
                         # Check if there are more than one column still
                         if Column.objects.filter(
+                                table_name=model_obj.__class__.__name__,
                                 column_name=key[:511],
                                 is_extra_data=is_extra_data,
-                                organization=model_obj.organization,
-                                table_name=model_obj.__class__.__name__).count() > 1:
+                                organization=model_obj.organization).count() > 1:
                             raise Exception(
                                 "Could not fix duplicate columns for {}. Contact dev team").format(
                                 key)
@@ -482,14 +936,14 @@ class Column(models.Model):
 
         :return: dict
         """
-
         c = {
             'pk': self.id,
             'id': self.id,
             'organization_id': self.organization.id,
             'table_name': self.table_name,
             'column_name': self.column_name,
-            'is_extra_data': self.is_extra_data
+            'is_extra_data': self.is_extra_data,
+            'data_type': self.data_type,
         }
         if self.unit:
             c['unit_name'] = self.unit.unit_name
@@ -514,25 +968,6 @@ class Column(models.Model):
         return [c_count, cm_delete_count]
 
     @staticmethod
-    def _retrieve_db_columns():
-        """
-        Returns a predefined list of columns that can be in the database. This is a hardcoded list of all the
-        database fields along with additional information such as the display name.
-
-        :return: dict
-        """
-
-        # Grab the default columns and their details
-        hard_coded_columns = copy.deepcopy(VIEW_COLUMNS_PROPERTY)
-
-        md = MappingData()
-        for c in hard_coded_columns:
-            if not md.find_column(c['table'], c['name']):
-                print "Could not find column field in database for {}".format(c)
-
-        return hard_coded_columns
-
-    @staticmethod
     def retrieve_db_types():
         """
         return the data types for the database columns in the format of:
@@ -546,7 +981,7 @@ class Column(models.Model):
 
         :return: dict
         """
-        columns = Column._retrieve_db_columns()
+        columns = copy.deepcopy(Column.DATABASE_COLUMNS)
 
         MAP_TYPES = {
             'number': 'float',
@@ -563,148 +998,249 @@ class Column(models.Model):
         types = OrderedDict()
         for c in columns:
             try:
-                types[c['name']] = MAP_TYPES[c['dataType']]
+                types[c['column_name']] = MAP_TYPES[c['data_type']]
             except KeyError:
                 print "could not find data_type for %s" % c
-                types[c['name']] = ''
+                types[c['column_name']] = ''
 
         return {"types": types}
 
     @staticmethod
-    def retrieve_db_fields():
+    def retrieve_db_fields(org_id):
         """
-        return the fields in the database regardless of properties or taxlots
+        return the fields in the database regardless of properties or taxlots. For example, there is an address_line_1
+        in both the TaxLotState and the PropertyState. The command below will take the `set` to remove the duplicates.
 
         [ "address_line_1", "gross_floor_area", ... ]
+        :param org_id: int, Organization ID
         :return: list
         """
 
-        columns = Column._retrieve_db_columns()
+        result = list(
+            set(list(Column.objects.filter(organization_id=org_id, is_extra_data=False).order_by('column_name').exclude(
+                table_name='').exclude(table_name=None).values_list('column_name', flat=True))))
 
-        fields = set()
-        for c in columns:
-            if 'dbField' in c.keys() and c['dbField']:
-                fields.add(c['name'])
-
-        return list(fields)
+        return result
 
     @staticmethod
-    def retrieve_all(org_id, inventory_type, only_used):
+    def retrieve_db_field_table_and_names_from_db_tables():
         """
-        # Retrieve all the columns for an organization. First, grab the columns from the
-        # VIEW_COLUMNS_PROPERTY schema which defines the database columns with added data for
-        # various reasons. Then query the database for all extra data columns and add in the
-        # data as appropriate ensuring that duplicates that are taken care of (albeit crudely).
+        Similar to keys, except it returns a list of tuples of the columns that are in the database
 
-        # Note: this method should retrieve the columns from MappingData and then have a method
-        # to return for JavaScript (i.e. UI-Grid) or native (standard JSON)
+        .. code:
+            [
+              ('PropertyState', 'address_line_1'),
+              ('PropertyState', 'address_line_2'),
+              ('PropertyState', 'building_certification'),
+              ('PropertyState', 'building_count'),
+              ('TaxLotState', 'address_line_1'),
+              ('TaxLotState', 'address_line_2'),
+              ('TaxLotState', 'block_number'),
+              ('TaxLotState', 'city'),
+              ('TaxLotState', 'jurisdiction_tax_lot_id'),
+            ]
+
+        :return:list of tuples
+        """
+        result = set()
+        for d in Column.retrieve_db_fields_from_db_tables():
+            result.add((d['table_name'], d['column_name']))
+
+        return list(sorted(result))
+
+    @staticmethod
+    def retrieve_db_field_name_for_hash_comparison():
+        """
+        Names only of the columns in the database (fields only, not extra data), independent of inventory type.
+        These fields are used for generating an MD5 hash to quickly check if the data are the same across
+        multiple records. Note that this ignores extra_data. The result is a superset of all the fields that are used
+        in the database across all of the inventory types of interest.
+
+        :return: list, names of columns, independent of inventory type.
+        """
+        result = []
+        columns = Column.retrieve_db_fields_from_db_tables()
+        for c in columns:
+            result.append(c['column_name'])
+
+        return list(sorted(set(result)))
+
+    @staticmethod
+    def retrieve_db_fields_from_db_tables():
+        """
+        Return the list of database fields that are in the models. This is independent of what are in the
+        Columns table.
+
+        :return:
+        """
+        all_columns = []
+        for f in apps.get_model('seed', 'PropertyState')._meta.fields + \
+                apps.get_model('seed', 'TaxLotState')._meta.fields + \
+                apps.get_model('seed', 'Property')._meta.fields + \
+                apps.get_model('seed', 'TaxLot')._meta.fields:
+
+            # this remove import_file and others
+            if f.get_internal_type() == 'ForeignKey':
+                continue
+
+            if f.name not in Column.COLUMN_EXCLUDE_FIELDS:
+                dt = f.get_internal_type() if f.get_internal_type else 'string',
+                dt = Column.INTERNAL_TYPE_TO_DATA_TYPE[dt[0]]
+                all_columns.append(
+
+                    {
+                        'table_name': f.model.__name__,
+                        'column_name': f.name,
+                        'data_type': dt,
+                    }
+
+                )
+        return all_columns
+
+    @staticmethod
+    def retrieve_mapping_columns(org_id):
+        """
+        Retrieve all the columns that are for mapping for an organization in a dictionary.
+
+        :param org_id: org_id, Organization ID
+        :return: list, list of dict
+        """
+        columns_db = Column.objects.filter(organization_id=org_id).exclude(table_name='').exclude(table_name=None)
+        columns = []
+        for c in columns_db:
+            if c.column_name in Column.COLUMN_EXCLUDE_FIELDS or c.column_name in Column.EXCLUDED_MAPPING_FIELDS:
+                continue
+
+            # Eventually move this over to Column serializer directly
+            new_c = model_to_dict(c)
+
+            del new_c['shared_field_type']
+            new_c['sharedFieldType'] = c.get_shared_field_type_display()
+
+            if (new_c['table_name'], new_c['column_name']) in Column.PINNED_COLUMNS:
+                new_c['pinnedLeft'] = True
+
+            if not new_c['display_name']:
+                new_c['display_name'] = titlecase(new_c['column_name'])
+
+            del new_c['import_file']
+            del new_c['organization']
+            del new_c['enum']
+            del new_c['units_pint']
+            del new_c['unit']
+
+            columns.append(new_c)
+
+        return columns
+
+    @staticmethod
+    def retrieve_all(org_id, inventory_type=None, only_used=False):
+        """
+        Retrieve all the columns for an organization. This method will query for all the columns in the
+        database assigned to the organization. It will then go through and cleanup the names to ensure that
+        there are no duplicates. The name column is used for uniquely labeling the columns for UI Grid purposes.
 
         :param org_id: Organization ID
-        :param inventory_type: Inventory Type (property|taxlot)
+        :param inventory_type: Inventory Type (property|taxlot) from the requester. This sets the related columns if requested.
         :param only_used: View only the used columns that exist in the Column's table
 
         :return: dict
         """
+        # Grab all the columns out of the database for the organization that are assigned to a table_name
+        # Order extra_data last so that extra data duplicate-checking will happen after processing standard columns
+        columns_db = Column.objects.filter(organization_id=org_id).exclude(table_name='').exclude(
+            table_name=None).order_by('is_extra_data', 'column_name')
+        columns = []
+        for c in columns_db:
+            if c.column_name in Column.EXCLUDED_COLUMN_RETURN_FIELDS:
+                continue
 
-        # Grab the default columns and their details
-        columns = Column._retrieve_db_columns()
-        remove_columns = []
-        # Clean up the columns
-        for index, c in enumerate(columns):
-            # set the raw db name as well. Eventually we will want the table/db_name to be the unique id
-            c['dbName'] = c['name']
+            # Eventually move this over to Column serializer directly
+            new_c = model_to_dict(c)
 
-            # check if the column is in the database and if it is then add in the other information that
-            # is in the database
-            db_col = Column.objects.filter(organization_id=org_id, is_extra_data=False,
-                                           table_name=c['table'], column_name=c['name'])
-            if len(db_col) == 1:
-                db_col = db_col.first()
-                c['sharedFieldType'] = db_col.get_shared_field_type_display()
-            elif len(db_col) == 0:
-                if only_used:
-                    remove_columns.append(index)
-                else:
-                    c['sharedFieldType'] = 'None'
+            del new_c['shared_field_type']
+            new_c['sharedFieldType'] = c.get_shared_field_type_display()
 
-            if c['table'] and (inventory_type.lower() in c['table'].lower()):
-                c['related'] = False
-                if c.get('pinIfNative', False):
-                    c['pinnedLeft'] = True
+            if (new_c['table_name'], new_c['column_name']) in Column.PINNED_COLUMNS:
+                new_c['pinnedLeft'] = True
+
+            # Set a default display_name if there isn't already one in the database
+            if not new_c['display_name']:
+                new_c['display_name'] = titlecase(new_c['column_name'])
+
+            # set the name of the column which is a special field because it can take on a relationship
+            # with the table_name and have an _extra associated with it
+            new_c['name'] = '%s_%s' % (new_c['column_name'], new_c['id'])
+
+            # Related fields
+            new_c['related'] = False
+            if inventory_type:
+                new_c['related'] = not (inventory_type.lower() in new_c['table_name'].lower())
+                if new_c['related']:
+                    # if it is related then have the display name show the other table
+                    new_c['display_name'] = new_c['display_name'] + ' (%s)' % INVENTORY_DISPLAY[new_c['table_name']]
+
+            # remove a bunch of fields that are not needed in the list of columns
+            del new_c['import_file']
+            del new_c['organization']
+            del new_c['enum']
+            del new_c['units_pint']
+            del new_c['unit']
+
+            # only add the column if it is in a ColumnMapping object
+            if only_used:
+                if ColumnMapping.objects.filter(column_mapped=c).exists():
+                    columns.append(new_c)
             else:
-                c['related'] = True
-                # For now, a related field has a prepended value to make the columns unique.
-                if c.get('duplicateNameInOtherTable', False):
-                    c['name'] = "{}_{}".format(INVENTORY_MAP_PREPEND[inventory_type.lower()], c['name'])
+                columns.append(new_c)
 
-            # Remove some keys that are not needed for the API
-            try:
-                c.pop('pinIfNative')
-            except KeyError:
-                pass
-
-            try:
-                c.pop('duplicateNameInOtherTable')
-            except KeyError:
-                pass
-
-            try:
-                c.pop('dbField')
-            except KeyError:
-                pass
-
-        # reverse the remove_columns list and remove the indexes from the columns
-        for remove_column in remove_columns[::-1]:
-            del columns[remove_column]
-
-        # Add in all the extra columns
-        # don't return columns that have no table_name as these are the columns of the import files
-        extra_data_columns = Column.objects.filter(
-            organization_id=org_id, is_extra_data=True
-        ).exclude(table_name='').exclude(table_name=None)
-
-        for edc in extra_data_columns:
-            name = edc.column_name
-            table = edc.table_name
-            # set the raw db name as well. Eventually we will want the table/db_name to be the unique id
-            db_name = name
-
-            # Avoid name conflicts with protected front-end columns
-            if name in ['id', 'notes_count']:
-                name += '_extra'
-
-            # check if the column name is already defined in the list. For example, gross_floor_area
-            # is a core field, but can be an extra field in taxlot, meaning that the other one
-            # needs to be tagged something else.
-
-            # add _extra if the column is already in the list and it is not the one of
-            while any(col['name'] == name and col['table'] != table for col in columns):
-                name += '_extra'
-
-            # TODO: need to check if the column name is already in the list and if it is then overwrite the data
-
-            columns.append(
-                {
-                    'name': name,
-                    'dbName': db_name,
-                    'table': edc.table_name,
-                    'displayName': titlecase(edc.column_name),
-                    # 'dataType': 'string',  # TODO: how to check dataTypes on extra_data!
-                    'related': not (inventory_type.lower() in edc.table_name.lower()),
-                    'extraData': True,
-                    'sharedFieldType': edc.get_shared_field_type_display(),
-                }
-            )
+        # import json
+        # print json.dumps(columns, indent=2)
 
         # validate that the field 'name' is unique.
         uniq = set()
         for c in columns:
-            if (c['table'], c['name']) in uniq:
+            if (c['table_name'], c['column_name']) in uniq:
                 raise Exception("Duplicate name '{}' found in columns".format(c['name']))
             else:
-                uniq.add((c['table'], c['name']))
+                uniq.add((c['table_name'], c['column_name']))
 
         return columns
+
+    @staticmethod
+    def retrieve_all_by_tuple(org_id):
+        """
+        Return list of all columns for an organization as a tuple.
+
+        .. code:
+            [
+              ('PropertyState', 'address_line_1'),
+              ('PropertyState', 'address_line_2'),
+              ('PropertyState', 'building_certification'),
+              ('PropertyState', 'building_count'),
+              ('TaxLotState', 'address_line_1'),
+              ('TaxLotState', 'address_line_2'),
+              ('TaxLotState', 'block_number'),
+              ('TaxLotState', 'city'),
+              ('TaxLotState', 'jurisdiction_tax_lot_id'),
+            ]
+
+        :param org_id: int, Organization ID
+        :return: list of tuples
+        """
+        result = []
+        for col in Column.retrieve_all(org_id, 'PropertyState', False):
+            result.append((col['table_name'], col['column_name']))
+
+        return result
+
+
+def validate_model(sender, **kwargs):
+    if 'raw' in kwargs and not kwargs['raw']:
+        kwargs['instance'].full_clean()
+
+
+pre_save.connect(validate_model, sender=Column)
 
 
 class ColumnMapping(models.Model):
@@ -811,24 +1347,32 @@ class ColumnMapping(models.Model):
         Returns dict of all the column mappings for an Organization's given
         source type
 
-        :param organization: instance, Organization.
-        :returns: dict, list of dict.
-
         Use this when actually performing mapping between data sources, but only
         call it after all of the mappings have been saved to the ``ColumnMapping``
         table.
+
+        ..code:
+
+            {
+                u'Wookiee': (u'PropertyState', u'Dothraki', 'DisplayName', True),
+                u'Ewok': (u'TaxLotState', u'Hattin', 'DisplayName', True),
+                u'eui': (u'PropertyState', u'site_eui', 'DisplayName', True),
+                u'address': (u'TaxLotState', u'address', 'DisplayName', True)
+            }
+
+        :param organization: instance, Organization.
+        :returns: dict, list of dict.
         """
-        column_mappings = ColumnMapping.objects.filter(
-            super_organization=organization
-        )
+        column_mappings = ColumnMapping.objects.filter(super_organization=organization)
         mapping = {}
         for cm in column_mappings:
-            # What in the world is this doings? -- explanation please
+            # Iterate over the column_mappings. The column_mapping is a pointer to a raw column and a mapped column.
+            # See the method documentation to understand the result.
             if not cm.column_mapped.all().exists():
                 continue
 
-            key = cm.column_raw.all().values_list('table_name', 'column_name')
-            value = cm.column_mapped.all().values_list('table_name', 'column_name')
+            key = cm.column_raw.all().values_list('table_name', 'column_name', 'display_name', 'is_extra_data')
+            value = cm.column_mapped.all().values_list('table_name', 'column_name', 'display_name', 'is_extra_data')
 
             if len(key) != 1:
                 raise Exception("There is either none or more than one mapping raw column")
@@ -856,13 +1400,6 @@ class ColumnMapping(models.Model):
         """
 
         data, _ = ColumnMapping.get_column_mappings(organization)
-        # data will be in format
-        # {
-        #     u'Wookiee': (u'PropertyState', u'Dothraki'),
-        #     u'Ewok': (u'TaxLotState', u'Hattin'),
-        #     u'eui': (u'PropertyState', u'site_eui'),
-        #     u'address': (u'TaxLotState', u'address')
-        # }
 
         tables = set()
         for k, v in data.iteritems():

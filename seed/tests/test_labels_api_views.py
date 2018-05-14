@@ -11,7 +11,6 @@ from rest_framework import status
 from rest_framework.test import APIClient
 
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
     StatusLabel as Label,
 )
@@ -19,9 +18,7 @@ from seed.test_helpers.fake import (
     mock_queryset_factory,
 )
 from seed.tests.util import DeleteModelsTestCase
-from seed.utils.organizations import (
-    create_organization,
-)
+from seed.utils.organizations import create_organization
 from seed.views.labels import (
     UpdateInventoryLabelsAPIView,
 )
@@ -130,10 +127,7 @@ class TestUpdateInventoryLabelsAPIView(DeleteModelsTestCase):
             'email': 'test_user@demo.com'
         }
         self.user = User.objects.create_superuser(**self.user_details)
-        self.org = Organization.objects.create()
-        self.org_user = OrganizationUser.objects.create(
-            user=self.user, organization=self.org
-        )
+        self.org, _, _ = create_organization(self.user)
         self.status_label = Label.objects.create(
             name='test', super_organization=self.org
         )

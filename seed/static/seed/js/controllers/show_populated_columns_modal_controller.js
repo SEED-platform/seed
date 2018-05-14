@@ -9,12 +9,15 @@ angular.module('BE.seed.controller.show_populated_columns_modal', [])
     '$uibModalInstance',
     'Notification',
     'inventory_service',
+    'modified_service',
     'spinner_utility',
     'columns',
+    'currentProfile',
     'cycle_id',
     'inventory_type',
-    function ($scope, $window, $uibModalInstance, Notification, inventory_service, spinner_utility, columns, cycle_id, inventory_type) {
+    function ($scope, $window, $uibModalInstance, Notification, inventory_service, modified_service, spinner_utility, columns, currentProfile, cycle_id, inventory_type) {
       $scope.columns = columns;
+      $scope.currentProfile = currentProfile;
       $scope.cycle_id = cycle_id;
       $scope.inventory_type = inventory_type;
 
@@ -32,13 +35,12 @@ angular.module('BE.seed.controller.show_populated_columns_modal', [])
         $scope.status = 'Fetching Inventory';
 
         var promise;
-        var columnNames = _.map(inventory_service.loadSettings(null, columns), 'name');
         if ($scope.inventory_type === 'properties') {
-          promise = inventory_service.get_properties(1, undefined, cycle_id, columnNames).then(function (inv) {
+          promise = inventory_service.get_properties(1, undefined, cycle_id, []).then(function (inv) {
             return inv.results;
           });
         } else if ($scope.inventory_type === 'taxlots') {
-          promise = inventory_service.get_taxlots(1, undefined, cycle_id, columnNames).then(function (inv) {
+          promise = inventory_service.get_taxlots(1, undefined, cycle_id, []).then(function (inv) {
             return inv.results;
           });
         }
@@ -56,8 +58,8 @@ angular.module('BE.seed.controller.show_populated_columns_modal', [])
           _.forEach(inventory, function (record, index) {
             // console.log(cols.length + ' remaining cols to check');
             _.forEachRight(cols, function (col, colIndex) {
-              if (notEmpty(record[col.dbName])) {
-                // console.log('Removing ' + col.dbName + ' from cols');
+              if (notEmpty(record[col.name])) {
+                // console.log('Removing ' + col.name + ' from cols');
                 cols.splice(colIndex, 1);
               }
             });
@@ -65,8 +67,8 @@ angular.module('BE.seed.controller.show_populated_columns_modal', [])
             _.forEach(record.related, function (relatedRecord) {
               // console.log(relatedCols.length + ' remaining related cols to check');
               _.forEachRight(relatedCols, function (col, colIndex) {
-                if (notEmpty(relatedRecord[col.dbName])) {
-                  // console.log('Removing ' + col.dbName + ' from relatedCols');
+                if (notEmpty(relatedRecord[col.name])) {
+                  // console.log('Removing ' + col.name + ' from relatedCols');
                   relatedCols.splice(colIndex, 1);
                 }
               });
@@ -78,26 +80,39 @@ angular.module('BE.seed.controller.show_populated_columns_modal', [])
           // determine hidden columns
           var visible = _.reject($scope.columns, function (col) {
             if (!col.related) {
-              return _.find(cols, {dbName: col.dbName, table: col.table});
+              return _.find(cols, {id: col.id});
             }
-            return _.find(relatedCols, {dbName: col.dbName, table: col.table});
+            return _.find(relatedCols, {id: col.id});
           });
 
           var hidden = _.reject($scope.columns, function (col) {
-            return _.find(visible, {dbName: col.dbName, table: col.table});
+            return _.find(visible, {id: col.id});
           });
 
           _.forEach(hidden, function (col) {
             col.visible = false;
           });
 
-          // console.log(visible.concat(hidden));
+          var columns = [];
+          _.forEach(visible, function (col) {
+            columns.push({
+              column_name: col.column_name,
+              id: col.id,
+              order: columns.length + 1,
+              pinned: col.pinnedLeft,
+              table_name: col.table_name
+            });
+          });
 
-          inventory_service.saveSettings('grid.' + $scope.inventory_type, visible.concat(hidden));
-
-          $scope.progress = 100;
-          $scope.state = 'done';
-          $scope.status = 'Found ' + visible.length + ' populated columns';
+          var id = $scope.currentProfile.id;
+          var profile = _.omit($scope.currentProfile, 'id');
+          profile.columns = columns;
+          inventory_service.update_settings_profile(id, profile).then(function (updatedProfile) {
+            modified_service.resetModified();
+            $scope.progress = 100;
+            $scope.state = 'done';
+            $scope.status = 'Found ' + visible.length + ' populated columns';
+          });
         });
       };
 

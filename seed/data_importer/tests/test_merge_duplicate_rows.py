@@ -8,6 +8,7 @@ import logging
 import os.path as osp
 
 from django.core.files.uploadedfile import SimpleUploadedFile
+from quantityfield import ureg
 
 from seed.data_importer import tasks
 from seed.data_importer.tests.util import (
@@ -26,8 +27,6 @@ from seed.models import (
     DATA_STATE_MAPPING,
     ASSESSED_RAW,
 )
-
-from quantityfield import ureg
 
 logger = logging.getLogger(__name__)
 

@@ -7,18 +7,11 @@
 import logging
 from collections import defaultdict
 
-from seed.lib.mappings.mapping_data import MappingData
 from seed.models import (
+    Column,
     PropertyState,
     TaxLotState,
 )
-
-md = MappingData()
-property_state_fields = [x['name'] for x in sorted(md.property_state_data)]
-tax_lot_state_fields = [x['name'] for x in md.tax_lot_state_data]
-# TODO: Move these methods to the MappingData object and return from there
-PropertyState_to_PropertyState = tuple([(k, k) for k in sorted(property_state_fields)])
-TaxLotState_to_TaxLotState = tuple([(k, k) for k in tax_lot_state_fields])
 
 _log = logging.getLogger(__name__)
 
@@ -58,18 +51,30 @@ def get_attrs_with_mapping(data_set_buildings, mapping):
     return can_attrs
 
 
+def get_state_to_state_tuple(inventory):
+    """Return the list of the database fields based on the inventory type"""
+    columns = Column.retrieve_db_fields_from_db_tables()
+
+    fields = []
+    for c in columns:
+        if c['table_name'] == inventory:
+            fields.append(c['column_name'])
+
+    return tuple([(k, k) for k in sorted(fields)])
+
+
 def get_propertystate_attrs(data_set_buildings):
-    # Old school approach.
-    mapping = PropertyState_to_PropertyState
-    return get_attrs_with_mapping(data_set_buildings, mapping)
+    state_to_state = get_state_to_state_tuple('PropertyState')
+    return get_attrs_with_mapping(data_set_buildings, state_to_state)
 
 
 def get_taxlotstate_attrs(data_set_buildings):
-    mapping = TaxLotState_to_TaxLotState
-    return get_attrs_with_mapping(data_set_buildings, mapping)
+    state_to_state = get_state_to_state_tuple('TaxLotState')
+    return get_attrs_with_mapping(data_set_buildings, state_to_state)
 
 
 def get_state_attrs(state_list):
+    """Return a list of state attributes. This does not include any of the extra data columns"""
     if not state_list:
         return []
 

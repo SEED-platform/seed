@@ -203,7 +203,6 @@ class PropertyViewSet(GenericViewSet):
     serializer_class = PropertySerializer
 
     def _get_filtered_results(self, request, columns):
-
         page = request.query_params.get('page', 1)
         per_page = request.query_params.get('per_page', 1)
         org_id = request.query_params.get('organization_id', None)
@@ -231,7 +230,7 @@ class PropertyViewSet(GenericViewSet):
 
         property_views_list = PropertyView.objects.select_related('property', 'state', 'cycle') \
             .filter(property__organization_id=org_id, cycle=cycle) \
-            .order_by('id')
+            .order_by('id')  # TODO: test adding .only(*fields['PropertyState'])
 
         paginator = Paginator(property_views_list, per_page)
 
@@ -245,13 +244,15 @@ class PropertyViewSet(GenericViewSet):
             property_views = paginator.page(paginator.num_pages)
             page = paginator.num_pages
 
-        related_results = TaxLotProperty.get_related(property_views, columns)
+        org = Organization.objects.get(pk=org_id)
+
+        # Retrieve all the columns that are in the db for this organization
+        columns_from_database = Column.retrieve_all(org_id, 'property', False)
+        related_results = TaxLotProperty.get_related(property_views, columns, columns_from_database)
 
         # collapse units here so we're only doing the last page; we're already a
         # realized list by now and not a lazy queryset
-        org = Organization.objects.get(pk=org_id)
-        unit_collapsed_results = \
-            [apply_display_unit_preferences(org, x) for x in related_results]
+        unit_collapsed_results = [apply_display_unit_preferences(org, x) for x in related_results]
 
         response = {
             'pagination': {
@@ -323,7 +324,7 @@ class PropertyViewSet(GenericViewSet):
               required: false
               paramType: query
         """
-        return self._get_filtered_results(request, columns=[])
+        return self._get_filtered_results(request, columns=None)
 
     @api_endpoint_class
     @ajax_request_class
@@ -359,6 +360,9 @@ class PropertyViewSet(GenericViewSet):
             columns = dict(request.data.iterlists())['columns']
         except AttributeError:
             columns = request.data['columns']
+
+        # TODO: fix this
+        columns = None
         return self._get_filtered_results(request, columns=columns)
 
     @api_endpoint_class

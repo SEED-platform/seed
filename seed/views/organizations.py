@@ -14,6 +14,7 @@ from rest_framework import status
 from rest_framework import viewsets, serializers
 from rest_framework.decorators import detail_route
 
+from seed.utils.organizations import create_organization
 from seed import tasks
 from seed.decorators import ajax_request_class
 from seed.decorators import get_prog_key
@@ -29,7 +30,6 @@ from seed.lib.superperms.orgs.models import (
 )
 from seed.models import Cycle, PropertyView, TaxLotView, Column
 from seed.utils.api import api_endpoint_class
-from seed.utils.organizations import create_organization
 
 
 def _dict_org(request, organizations):
@@ -620,7 +620,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
             # for now just iterate over this to grab the new columns.
             for col in new_public_column_names:
-                new_col = Column.objects.filter(organization=org, table_name=col['table'], column_name=col['dbName'])
+                new_col = Column.objects.filter(organization=org, id=col['id'])
                 if len(new_col) == 1:
                     new_col = new_col.first()
                     new_col.shared_field_type = Column.SHARED_PUBLIC
@@ -689,10 +689,10 @@ class OrganizationViewSet(viewsets.ViewSet):
         for c in columns:
             if c['sharedFieldType'] == 'Public':
                 new_column = {
-                    'table': c['table'],
+                    'table_name': c['table_name'],
                     'name': c['name'],
-                    'db_name': c['dbName'],  # this is the field name in the database. The other name can have tax_
-                    'display_name': c['displayName']
+                    'column_name': c['column_name'],  # this is the field name in the db. The other name can have tax_
+                    'display_name': c['display_name']
                 }
                 result['public_fields'].append(new_column)
 
@@ -744,6 +744,8 @@ class OrganizationViewSet(viewsets.ViewSet):
                 'status': 'error',
                 'message': 'User with email address (%s) does not exist' % email
             }, status=status.HTTP_404_NOT_FOUND)
+
+        # Sub orgs do not get their own list of columns
         sub_org = Organization.objects.create(
             name=body['sub_org_name']
         )

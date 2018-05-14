@@ -484,11 +484,14 @@ class FakeStatusLabelFactory(BaseFake):
         label_value = self.fake.random_element(elements=self.label_values)
         statuslabel_details = {
             'super_organization': self._get_attr('organization', organization),
-            'color': label_value[0],
             'name': label_value[1]
         }
         statuslabel_details.update(kw)
-        label, _ = StatusLabel.objects.get_or_create(**statuslabel_details)
+        label, created = StatusLabel.objects.get_or_create(**statuslabel_details)
+        if created:
+            # If a new label, then assign a color.
+            label.color = label_value[0]
+
         return label
 
 

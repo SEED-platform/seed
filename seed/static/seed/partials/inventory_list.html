@@ -85,13 +85,22 @@
 
     </form>
 
-    <div class="form-group" style="padding-top: 20px;">
-        <label>{$:: 'Cycle' | translate $}:</label>
-        <div style="display: inline-block;">
-            <select class="form-control input-sm" ng-model="cycle.selected_cycle" ng-change="update_cycle(cycle.selected_cycle)"
-                    ng-options="option.name for option in ::cycle.cycles track by option.id">
-            </select>
-        </div>
+    <div class="form-group settings_profile" style="padding-top: 20px; display: flex; justify-content: space-between;">
+        <span>
+            <label>{$:: 'Cycle' | translate $}:</label>
+            <div style="display: inline-block;">
+                <select class="form-control input-sm" ng-model="cycle.selected_cycle" ng-change="update_cycle(cycle.selected_cycle)"
+                        ng-options="option.name for option in ::cycle.cycles track by option.id">
+                </select>
+            </div>
+        </span>
+
+        <span ng-show="profiles.length > 0">
+            <label>{$:: 'List Settings Profile' | translate $}:</label>
+            <div style="display: inline-block;">
+                <select class="form-control input-sm" ng-model="currentProfile" ng-options="option.name for option in profiles track by option.id"></select>
+            </div>
+        </span>
     </div>
 </div>
 

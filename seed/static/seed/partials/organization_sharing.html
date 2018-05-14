@@ -49,16 +49,16 @@
                             <th class="sub_head" style="width: 235px;">
                                 <input type="text"
                                      class="form-control input-sm"
-                                     ng-model="filter_params.table"
+                                     ng-model="filter_params.table_name"
                                      placeholder="{$:: 'Search table name' | translate $}"
-                                     ng-class="{active: filter_params.table.length > 0}">
+                                     ng-class="{active: filter_params.table_name.length > 0}">
                             </th>
                             <th class="sub_head">
                               <input type="text"
                                      class="form-control input-sm"
-                                     ng-model="filter_params.displayName"
+                                     ng-model="filter_params.display_name"
                                      placeholder="{$:: 'Search field name' | translate $}"
-                                     ng-class="{active: filter_params.displayName.length > 0}">
+                                     ng-class="{active: filter_params.display_name.length > 0}">
                             </th>
                         </tr>
                     </thead>
@@ -71,10 +71,10 @@
                                     <input type="checkbox" ng-model="field.public_checked">
                                 </td>
                                 <td style="width: 235px;">
-                                    <span>{$:: field.table | translate $}</span>
+                                    <span>{$:: field.table_name | translate $}</span>
                                 </td>
                                 <td>
-                                    <span>{$:: field.displayName | translate $}</span>
+                                    <span>{$:: field.display_name | translate $}</span>
                                 </td>
                             </tr>
                         </tbody>

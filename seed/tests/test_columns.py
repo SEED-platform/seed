@@ -7,16 +7,18 @@
 
 import os.path
 
+from django.core.exceptions import ValidationError
 from django.test import TestCase
 
 from seed import models as seed_models
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.models import Organization, OrganizationUser
+from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     PropertyState,
     Column,
     ColumnMapping,
 )
+from seed.utils.organizations import create_organization
 
 
 class TestColumns(TestCase):
@@ -24,14 +26,13 @@ class TestColumns(TestCase):
 
     def setUp(self):
         self.fake_user = User.objects.create(username='test')
-        self.fake_org = Organization.objects.create()
-        OrganizationUser.objects.create(
-            user=self.fake_user,
-            organization=self.fake_org
-        )
+        self.fake_org, _, _ = create_organization(self.fake_user)
 
     def test_get_column_mapping(self):
         """Honor organizational bounds, get mapping data."""
+
+        # Calling organization create like this will not generate the default
+        # columns, which is okay for this test.
         org1 = Organization.objects.create()
         org2 = Organization.objects.create()
 
@@ -90,9 +91,9 @@ class TestColumns(TestCase):
         Column.create_mappings(raw_data, self.fake_org, self.fake_user)
 
         expected = {
-            u'raw_data_0': (u'PropertyState', u'destination_0'),
-            u'raw_data_1': (u'PropertyState', u'destination_1'),
-            u'raw_data_2': (u'TaxLotState', u'destination_0'),
+            u'raw_data_0': (u'PropertyState', u'destination_0', u'', True),
+            u'raw_data_1': (u'PropertyState', u'destination_1', u'', True),
+            u'raw_data_2': (u'TaxLotState', u'destination_0', u'', True),
         }
 
         test_mapping, no_concat = ColumnMapping.get_column_mappings(self.fake_org)
@@ -135,11 +136,11 @@ class TestColumns(TestCase):
         seed_models.Column.create_mappings(test_map, self.fake_org, self.fake_user)
         test_mapping, _ = ColumnMapping.get_column_mappings(self.fake_org)
         expected = {
-            u'Wookiee': (u'PropertyState', u'Dothraki'),
-            u'address': (u'TaxLotState', u'address'),
-            u'eui': (u'PropertyState', u'site_eui'),
+            u'Wookiee': (u'PropertyState', u'Dothraki', u'', True),
+            u'address': (u'TaxLotState', u'address', u'', True),
+            u'eui': (u'PropertyState', u'site_eui', u'Site EUI', False),
             # u'Ewok': (u'TaxLotState', u'Merovingian'), # this does not show up because it was set before the last one
-            u'Ewok': (u'TaxLotState', u'Hattin'),
+            u'Ewok': (u'TaxLotState', u'Hattin', u'', True),
         }
         self.assertDictEqual(expected, test_mapping)
         self.assertTrue(test_mapping['Ewok'], 'Hattin')
@@ -165,12 +166,12 @@ class TestColumns(TestCase):
         test_mapping = ColumnMapping.get_column_mappings_by_table_name(self.fake_org)
         expected = {
             u'PropertyState': {
-                u'Wookiee': (u'PropertyState', u'Dothraki'),
-                u'eui': (u'PropertyState', u'site_eui'),
+                u'Wookiee': (u'PropertyState', u'Dothraki', u'', True),
+                u'eui': (u'PropertyState', u'site_eui', u'Site EUI', False),
             },
             u'TaxLotState': {
-                u'address': (u'TaxLotState', u'address'),
-                u'Ewok': (u'TaxLotState', u'Hattin'),
+                u'address': (u'TaxLotState', u'address', u'', True),
+                u'Ewok': (u'TaxLotState', u'Hattin', u'', True),
             }
         }
         self.assertDictEqual(test_mapping, expected)
@@ -251,21 +252,26 @@ class TestColumnMapping(TestCase):
 class TestColumnsByInventory(TestCase):
 
     def setUp(self):
-        self.maxDiff = None
         self.fake_user = User.objects.create(username='test')
-        self.fake_org = Organization.objects.create()
-        OrganizationUser.objects.create(
-            user=self.fake_user,
-            organization=self.fake_org
+        self.fake_org, _org_user, _user_created = create_organization(
+            self.fake_user, name='Existing Org'
         )
-
-        seed_models.Column.objects.create(
+        column_a = seed_models.Column.objects.create(
             column_name=u'Column A',
             table_name=u'PropertyState',
             organization=self.fake_org,
             is_extra_data=True,
             shared_field_type=Column.SHARED_PUBLIC,
         )
+        # field that is in the import, but not mapped to
+        raw_column = seed_models.Column.objects.create(
+            column_name=u'not mapped data',
+            organization=self.fake_org,
+        )
+        dm = seed_models.ColumnMapping.objects.create()
+        dm.column_raw.add(raw_column)
+        dm.column_mapped.add(column_a)
+        dm.save()
         seed_models.Column.objects.create(
             column_name=u"Apostrophe's Field",
             table_name=u'PropertyState',
@@ -278,29 +284,77 @@ class TestColumnsByInventory(TestCase):
             organization=self.fake_org,
             is_extra_data=True
         )
-        # This is an invalid column. It is not a db field but is not marked as extra data
         seed_models.Column.objects.create(
-            column_name=u'not extra data',
-            table_name=u'PropertyState',
+            column_name=u'tax_lot_id_not_used',
+            table_name=u'TaxLotState',
+            organization=self.fake_org,
+            is_extra_data=True
+        )
+        seed_models.Column.objects.create(
+            column_name=u'gross_floor_area',
+            table_name=u'TaxLotState',
+            organization=self.fake_org,
+            is_extra_data=True
+        )
+
+    def test_is_extra_data_validation(self):
+        # This is an invalid column. It is not a db field but is not marked as extra data
+        with self.assertRaises(ValidationError):
+            seed_models.Column.objects.create(
+                column_name=u'not extra data',
+                table_name=u'PropertyState',
+                organization=self.fake_org,
+                is_extra_data=False
+            )
+
+        # verify that creating columns from CSV's will not raise ValidationErrors
+        column = seed_models.Column.objects.create(
+            column_name=u'column from csv file',
+            # table_name=u'PropertyState',
+            organization=self.fake_org,
+            # is_extra_data=False
+        )
+        column.delete()
+
+        column = seed_models.Column.objects.create(
+            column_name=u'column from csv file empty table',
+            table_name='',
+            organization=self.fake_org,
+            # is_extra_data=False
+        )
+        column.delete()
+
+        column = seed_models.Column.objects.create(
+            column_name=u'column from csv file empty table false extra_data',
+            table_name='',
             organization=self.fake_org,
             is_extra_data=False
         )
-        # field that is in the import, but not mapped to
-        seed_models.Column.objects.create(
-            column_name=u'not mapped data',
-            organization=self.fake_org,
-        )
+        column.delete()
+
+    def test_column_name(self):
+        # verify that the column name is in the form of <column_name>_<id>.
+        # Note that most of the tests remove the name and id field from the column listings to make it easier,
+        # so this test is really important!
+        columns = Column.retrieve_all(self.fake_org.pk, 'property', False)
+        for c in columns:
+            if c['column_name'] == 'PropertyState':
+                self.assertEqual(c['name'], "%s_%s" % (c['column_name'], c['id']))
 
     def test_column_retrieve_all(self):
         columns = Column.retrieve_all(self.fake_org.pk, 'property', False)
+        # go through and delete all the results.ids so that it is easy to do a compare
+        for result in columns:
+            del result['id']
+            del result['name']
 
-        # Check for new column
+        # Check for columns
         c = {
-            'table': u'PropertyState',
-            'extraData': True,
-            'displayName': u'Column A',
-            'name': u'Column A',
-            'dbName': u'Column A',
+            'table_name': u'PropertyState',
+            'column_name': u'Column A',
+            'display_name': u'Column A',
+            'is_extra_data': True,
+            'data_type': 'None',
             'related': False,
             'sharedFieldType': 'Public',
         }
@@ -308,11 +362,11 @@ class TestColumnsByInventory(TestCase):
 
         # Check that display_name doesn't capitalize after apostrophe
         c = {
-            'table': u'PropertyState',
-            'extraData': True,
-            'displayName': u"Apostrophe's Field",
-            'name': u"Apostrophe's Field",
-            'dbName': u"Apostrophe's Field",
+            'table_name': u'PropertyState',
+            'column_name': u"Apostrophe's Field",
+            'display_name': u"Apostrophe's Field",
+            'is_extra_data': True,
+            'data_type': 'None',
             'related': False,
             'sharedFieldType': 'None',
         }
@@ -320,47 +374,76 @@ class TestColumnsByInventory(TestCase):
 
         # Check 'id' field if extra_data
         c = {
-            'table': 'PropertyState',
-            'extraData': True,
-            'displayName': 'Id',
-            'name': 'id_extra',
-            'dbName': 'id',
+            'table_name': 'PropertyState',
+            'column_name': 'id',
+            'display_name': 'Id',
+            'is_extra_data': True,
+            'data_type': 'None',
             'related': False,
             'sharedFieldType': 'None',
         }
         self.assertIn(c, columns)
 
         # check the 'pinIfNative' argument
-
         c = {
-            'name': 'pm_property_id',
-            'dbName': 'pm_property_id',
-            'related': False,
-            'table': 'PropertyState',
-            'displayName': 'PM Property ID',
-            'dataType': 'string',
+            'table_name': 'PropertyState',
+            'column_name': 'pm_property_id',
+            'display_name': 'PM Property ID',
+            'is_extra_data': False,
+            'data_type': 'string',
             'pinnedLeft': True,
+            'related': False,
             'sharedFieldType': 'None',
         }
         self.assertIn(c, columns)
 
         # verity that the 'duplicateNameInOtherTable' is working
         c = {
-            'related': True,
-            'table': 'TaxLotState',
-            'displayName': 'State (Tax Lot)',
-            'dataType': 'string',
-            'name': 'tax_state',
-            'dbName': 'state',
+            'table_name': 'TaxLotState',
+            'column_name': 'state',
+            'display_name': 'State (Tax Lot)',
+            'data_type': 'string',
+            'is_extra_data': False,
             'sharedFieldType': 'None',
+            'related': True,
         }
         self.assertIn(c, columns)
-        self.assertNotIn('not extra data', [d['name'] for d in columns])
-        self.assertNotIn('not mapped data', [d['name'] for d in columns])
+
+        c = {
+            "table_name": "TaxLotState",
+            "column_name": "gross_floor_area",
+            "display_name": "Gross Floor Area (Tax Lot)",
+            "data_type": "None",
+            "is_extra_data": True,
+            "sharedFieldType": "None",
+            "related": True,
+        }
+        self.assertIn(c, columns)
+
+        # TODO: 4/25/2018 Need to decide how to check for bad columns and not return them in the request
+        self.assertNotIn('not mapped data', [d['column_name'] for d in columns])
+
+    def test_columns_extra_tag(self):
+        columns = Column.retrieve_all(self.fake_org.pk, 'taxlot', False)
+        # go through and delete all the results.ids so that it is easy to do a compare
+        for result in columns:
+            del result['id']
+            del result['name']
+
+        c = {
+            "table_name": "TaxLotState",
+            "column_name": "gross_floor_area",
+            "display_name": "Gross Floor Area",
+            "data_type": "None",
+            "is_extra_data": True,
+            "sharedFieldType": "None",
+            "related": False,
+        }
+        self.assertIn(c, columns)
 
     def test_column_retrieve_only_used(self):
         columns = Column.retrieve_all(self.fake_org.pk, 'property', True)
-        self.assertEqual(len(columns), 3)
+        self.assertEqual(len(columns), 1)
         for c in columns:
             if c['name'] == 'Column A':
                 self.assertEqual(c['sharedFieldType'], 'Public')
@@ -404,6 +487,7 @@ class TestColumnsByInventory(TestCase):
                 "latitude": "float",
                 "longitude": "float",
                 "lot_number": "string",
+                "normalized_address": "string",
                 "number_properties": "integer",
                 "occupied_floor_area": "float",
                 "owner": "string",
@@ -440,17 +524,83 @@ class TestColumnsByInventory(TestCase):
         self.assertDictEqual(schema, columns)
 
     def test_column_retrieve_db_fields(self):
-        c = Column.retrieve_db_fields()
+        c = Column.retrieve_db_fields(self.fake_org.pk)
 
         data = ['address_line_1', 'address_line_2', 'analysis_end_time', 'analysis_start_time', 'analysis_state',
                 'analysis_state_message', 'block_number', 'building_certification', 'building_count', 'campus', 'city',
                 'conditioned_floor_area', 'created', 'custom_id_1', 'district', 'energy_alerts', 'energy_score',
                 'generation_date', 'gross_floor_area', 'home_energy_score_id', 'jurisdiction_property_id',
-                'jurisdiction_tax_lot_id', 'latitude', 'longitude', 'lot_number', 'number_properties',
-                'occupied_floor_area', 'owner', 'owner_address', 'owner_city_state', 'owner_email', 'owner_postal_code',
-                'owner_telephone', 'pm_parent_property_id', 'pm_property_id', 'postal_code', 'property_name',
-                'property_notes', 'property_type', 'recent_sale_date', 'release_date', 'site_eui', 'site_eui_modeled',
-                'site_eui_weather_normalized', 'source_eui', 'source_eui_modeled', 'source_eui_weather_normalized',
-                'space_alerts', 'state', 'ubid', 'updated', 'use_description', 'year_built', 'year_ending']
+                'jurisdiction_tax_lot_id', 'latitude', 'longitude', 'lot_number', 'normalized_address',
+                'number_properties', 'occupied_floor_area', 'owner', 'owner_address', 'owner_city_state', 'owner_email',
+                'owner_postal_code', 'owner_telephone', 'pm_parent_property_id', 'pm_property_id', 'postal_code',
+                'property_name', 'property_notes', 'property_type', 'recent_sale_date', 'release_date', 'site_eui',
+                'site_eui_modeled', 'site_eui_weather_normalized', 'source_eui', 'source_eui_modeled',
+                'source_eui_weather_normalized', 'space_alerts', 'state', 'ubid', 'updated', 'use_description',
+                'year_built', 'year_ending']
 
-        self.assertItemsEqual(data, c)
+        self.assertItemsEqual(c, data)
+
+    def test_retrieve_db_field_name_from_db_tables(self):
+        """These values are the fields that can be used for hashing a property to check if it is the same record."""
+        expected = ['address_line_1', 'address_line_2', 'analysis_end_time', 'analysis_start_time', 'analysis_state',
+                    'analysis_state_message', 'block_number', 'building_certification', 'building_count', 'campus',
+                    'city', 'conditioned_floor_area', 'created', 'custom_id_1', 'district', 'energy_alerts',
+                    'energy_score', 'generation_date', 'gross_floor_area', 'home_energy_score_id',
+                    'jurisdiction_property_id', 'jurisdiction_tax_lot_id', 'latitude', 'longitude', 'lot_number',
+                    'number_properties', 'occupied_floor_area', 'owner', 'owner_address', 'owner_city_state',
+                    'owner_email', 'owner_postal_code', 'owner_telephone', 'pm_parent_property_id', 'pm_property_id',
+                    'postal_code', 'property_name', 'property_notes', 'property_type', 'recent_sale_date',
+                    'release_date', 'site_eui', 'site_eui_modeled', 'site_eui_weather_normalized', 'source_eui',
+                    'source_eui_modeled', 'source_eui_weather_normalized', 'space_alerts', 'state', 'ubid', 'updated',
+                    'use_description', 'year_built', 'year_ending']
+
+        method_columns = Column.retrieve_db_field_name_for_hash_comparison()
+        self.assertListEqual(method_columns, expected)
+
+    def test_retrieve_db_field_table_and_names_from_db_tables(self):
+        names = Column.retrieve_db_field_table_and_names_from_db_tables()
+        self.assertIn(('Property', 'campus'), names)
+        self.assertIn(('PropertyState', 'gross_floor_area'), names)
+        self.assertIn(('TaxLotState', 'address_line_1'), names)
+        self.assertNotIn(('PropertyState', 'gross_floor_area_orig'), names)
+
+    def test_retrieve_all_as_tuple(self):
+        list_result = Column.retrieve_all_by_tuple(self.fake_org)
+        self.assertIn((u'PropertyState', u'site_eui_modeled'), list_result)
+        self.assertIn((u'TaxLotState', u'tax_lot_id_not_used'), list_result)
+        self.assertIn((u'PropertyState', u'gross_floor_area'),
+                      list_result)  # extra field in taxlot, but not in property
+        self.assertIn((u'TaxLotState', u'gross_floor_area'), list_result)  # extra field in taxlot, but not in property
+
+    def test_db_columns_in_default_columns(self):
+        """
+        This test ensures that all the columns in the database are defined in the Column.DEFAULT_COLUMNS
+
+        If a user add a new database column then this test will fail until the column is defined in
+        Column.DEFAULT_COLUMNS
+        """
+
+        all_columns = Column.retrieve_db_fields_from_db_tables()
+        # print json.dumps(all_columns, indent=2)
+
+        # {
+        #     "table_name": "PropertyState",
+        #     "data_type": "CharField",
+        #     "column_name": "jurisdiction_property_id"
+        # }
+        #
+        errors = []
+        for column in all_columns:
+            found = False
+            for def_column in Column.DATABASE_COLUMNS:
+                if column['table_name'] == def_column['table_name'] and \
+                        column['column_name'] == def_column['column_name']:
+                    found = True
+                    continue
+
+            if found:
+                continue
+            else:
+                errors.append('Could not find column_name/table_name/data_type in Column.DATABASE_COLUMNS: %s' % column)
+
+        self.assertEqual(errors, [])

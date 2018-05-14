@@ -74,9 +74,6 @@ class ColumnViewSet(OrgQuerySetMixin, viewsets.ViewSet):
 
         columns = Column.retrieve_all(organization_id, inventory_type, only_used)
 
-        # for c in Column.objects.filter(organization=org).order_by('table_name', 'column_name'):
-        #     columns.append(c.to_dict())
-
         return JsonResponse({
             'status': 'success',
             'columns': columns,
@@ -228,7 +225,9 @@ class ColumnViewSet(OrgQuerySetMixin, viewsets.ViewSet):
 
         columns = Column.objects.filter(
             organization=model_obj.organization,
-            table_name=model_obj.__class__.__name__
+            table_name=model_obj.__class__.__name__,
+            is_extra_data=True,
+
         )
         columns = ColumnSerializer(columns, many=True)
         return Response(columns.data, status=status.HTTP_200_OK)

@@ -4,14 +4,15 @@
 :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+from datetime import datetime
+
+import pytz
 from django.test import TestCase
+from django.utils.timezone import make_aware
 
 from seed.utils.generic import split_model_fields
-from seed.utils.time import convert_datestr
-import pytz
-from datetime import datetime
-from django.utils.timezone import make_aware
 from seed.utils.strings import titlecase
+from seed.utils.time import convert_datestr
 
 
 class DummyClass(object):

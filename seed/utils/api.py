@@ -293,7 +293,7 @@ class OrgCreateUpdateMixin(OrgCreateMixin, OrgUpdateMixin):
 
 class OrgValidateMixin(object):
     """
-    Mixin to provide a validate() method  organization to ensure users belongs
+    Mixin to provide a validate() method organization to ensure users belongs
     to the same org as the instance referenced by a foreign key..
 
     You must set org_validators on the Serializer that uses this Mixin.

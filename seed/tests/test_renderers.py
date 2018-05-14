@@ -15,13 +15,13 @@ import json
 
 # Imports from Third Party Modules
 import mock
-
 # Imports from Django
 from django.test import TestCase
 from django.views.generic import View
 
 # Local Imports
 from seed.renderers import SEEDJSONRenderer
+
 
 # Constants
 

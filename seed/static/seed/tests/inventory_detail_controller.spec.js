@@ -32,12 +32,11 @@ describe('controller: inventory_detail_controller', function () {
             status: 'success'
           });
         });
-    }
-    );
+    });
   });
 
   // this is outside the beforeEach so it can be configured by each unit test
-  function create_inventory_detail_controller () {
+  function create_inventory_detail_controller() {
     var fake_building = {
       id: 511,
       pk: 511,
@@ -166,6 +165,7 @@ describe('controller: inventory_detail_controller', function () {
       },
       inventory_payload: fake_payload,
       columns: fake_all_columns,
+      profiles: [],
       labels_payload: {
         audit_logs: []
       }
@@ -203,16 +203,16 @@ describe('controller: inventory_detail_controller', function () {
   });
 
   it('should restore the copy of building if a user clicks cancel', function () {
-      // arrange
+    // arrange
     create_inventory_detail_controller();
 
-      // act
+    // act
     inventory_detail_controller_scope.$digest();
     inventory_detail_controller_scope.on_edit();
     inventory_detail_controller_scope.item_state.gross_floor_area = 43214;
     inventory_detail_controller_scope.on_cancel();
 
-      // assertions
+    // assertions
     expect(inventory_detail_controller_scope.item_state.gross_floor_area).toBe(123456);
     expect(inventory_detail_controller_scope.edit_form_showing).toBe(false);
   });

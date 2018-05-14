@@ -13,20 +13,14 @@ import datetime
 from django.core.exceptions import ValidationError
 
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.models import (
-    Organization,
-    OrganizationUser,
-)
-
 from seed.models import GreenAssessment
-
 from seed.test_helpers.fake import (
     FakeGreenAssessmentFactory,
     FakeGreenAssessmentPropertyFactory,
     FakeGreenAssessmentURLFactory,
 )
-
 from seed.tests.util import DeleteModelsTestCase
+from seed.utils.organizations import create_organization
 
 
 class GreenAssessmentTests(DeleteModelsTestCase):
@@ -41,9 +35,7 @@ class GreenAssessmentTests(DeleteModelsTestCase):
         }
         self.user = User.objects.create_superuser(
             email='test_user@demo.com', **user_details)
-        self.org = Organization.objects.create()
-        OrganizationUser.objects.create(user=self.user, organization=self.org)
-
+        self.org, _, _ = create_organization(self.user)
         self.assessment_factory = FakeGreenAssessmentFactory(
             organization=self.org
         )
