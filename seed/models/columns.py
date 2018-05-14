@@ -1051,10 +1051,10 @@ class Column(models.Model):
     @staticmethod
     def retrieve_db_field_name_for_hash_comparison():
         """
-        Names only of the columns in the database (fields only, not extra data), indpendent of inventory type.
+        Names only of the columns in the database (fields only, not extra data), independent of inventory type.
         These fields are used for generating an MD5 hash to quickly check if the data are the same across
         multiple records. Note that this ignores extra_data. The result is a superset of all the fields that are used
-        in the database across all of the intentory types of interest.
+        in the database across all of the inventory types of interest.
 
         :return: list, names of columns, independent of inventory type.
         """

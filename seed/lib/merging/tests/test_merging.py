@@ -69,9 +69,8 @@ class StateFieldsTest(TestCase):
                     (u'gross_floor_area', u'gross_floor_area'), (u'home_energy_score_id', u'home_energy_score_id'),
                     (u'jurisdiction_property_id', u'jurisdiction_property_id'),
                     (u'latitude', u'latitude'), (u'longitude', u'longitude'), (u'lot_number', u'lot_number'),
-                    (u'normalized_address', u'normalized_address'), (u'occupied_floor_area', u'occupied_floor_area'),
-                    (u'owner', u'owner'), (u'owner_address', u'owner_address'),
-                    (u'owner_city_state', u'owner_city_state'),
+                    (u'occupied_floor_area', u'occupied_floor_area'), (u'owner', u'owner'),
+                    (u'owner_address', u'owner_address'), (u'owner_city_state', u'owner_city_state'),
                     (u'owner_email', u'owner_email'), (u'owner_postal_code', u'owner_postal_code'),
                     (u'owner_telephone', u'owner_telephone'), (u'pm_parent_property_id', u'pm_parent_property_id'),
                     (u'pm_property_id', u'pm_property_id'), (u'postal_code', u'postal_code'),
@@ -94,7 +93,6 @@ class StateFieldsTest(TestCase):
             (u'address_line_1', u'address_line_1'), (u'address_line_2', u'address_line_2'),
             (u'block_number', u'block_number'), (u'city', u'city'), (u'custom_id_1', u'custom_id_1'),
             (u'district', u'district'), (u'jurisdiction_tax_lot_id', u'jurisdiction_tax_lot_id'),
-            (u'normalized_address', u'normalized_address'), (u'number_properties', u'number_properties'),
-            (u'postal_code', u'postal_code'), (u'state', u'state'))
+            (u'number_properties', u'number_properties'), (u'postal_code', u'postal_code'), (u'state', u'state'))
         result = get_state_to_state_tuple(u'TaxLotState')
         self.assertSequenceEqual(expected, result)
