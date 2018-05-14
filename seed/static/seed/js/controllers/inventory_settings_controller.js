@@ -56,7 +56,10 @@ angular.module('BE.seed.controller.inventory_settings', [])
       var setColumnsForCurrentProfile = function () {
         var deselected_columns = all_columns.slice();
         if ($scope.currentProfile) {
-          $scope.data = _.map($scope.currentProfile.columns, function (col) {
+          var profileColumns = _.filter($scope.currentProfile.columns, function (col) {
+            return _.includes(all_columns, {id: col.id});
+          });
+          $scope.data = _.map(profileColumns, function (col) {
             var c = _.remove(deselected_columns, {id: col.id})[0];
             c.pinnedLeft = col.pinned;
             c.visible = true;

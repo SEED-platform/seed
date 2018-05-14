@@ -74,10 +74,13 @@ angular.module('BE.seed.controller.inventory_list', [])
       }
 
       if ($scope.currentProfile) {
-        $scope.columns = _.map($scope.currentProfile.columns, function (col) {
-          var c = _.find(all_columns, {id: col.id});
-          c.pinnedLeft = col.pinned;
-          return c;
+        $scope.columns = [];
+        _.forEach($scope.currentProfile.columns, function (col) {
+          var foundCol = _.find(all_columns, {id: col.id});
+          if (foundCol) {
+            foundCol.pinnedLeft = col.pinned;
+            $scope.columns.push(foundCol);
+          }
         });
       } else {
         // No profiles exist
