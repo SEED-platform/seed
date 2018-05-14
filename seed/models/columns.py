@@ -147,6 +147,7 @@ class Column(models.Model):
 
     # Do not return these columns to the front end -- when using the tax_lot_properties get_related method .
     EXCLUDED_COLUMN_RETURN_FIELDS = [
+        'normalized_address',
         # Records below are old and should not be used
         'source_eui_modeled_orig',
         'site_eui_orig',
