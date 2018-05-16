@@ -171,17 +171,17 @@
                                 </select>
                             </td>
                             <td>
-                                <select ng-model="tcm.from_units" ng-if="is_area_column(tcm.suggestion)">
-                                  <option value="ft**2" translate>square feet</option>
-                                  <option value="m**2" translate>square metres</option>
-                              </select>
-                              <select ng-model="tcm.from_units" ng-if="is_eui_column(tcm.suggestion)">
-                                  <option value="kBtu/ft**2/year" translate>kBtu/sq. ft./year</option>
-                                  <option value="kWh/m**2/year" translate>kWh/m²/year</option>
-                                  <option value="GJ/m**2/year" translate>GJ/m²/year</option>
-                                  <option value="MJ/m**2/year" translate>MJ/m²/year</option>
-                                  <option value="kBtu/m**2/year" translate>kBtu/m²/year</option>
-                              </select>
+                                <select ng-model="tcm.from_units" ng-if="is_area_column(tcm.suggestion, tcm.suggestion_table_name)">
+                                    <option value="ft**2" translate>square feet</option>
+                                    <option value="m**2" translate>square metres</option>
+                                </select>
+                                <select ng-model="tcm.from_units" ng-if="is_eui_column(tcm.suggestion, tcm.suggestion_table_name)">
+                                    <option value="kBtu/ft**2/year" translate>kBtu/sq. ft./year</option>
+                                    <option value="kWh/m**2/year" translate>kWh/m²/year</option>
+                                    <option value="GJ/m**2/year" translate>GJ/m²/year</option>
+                                    <option value="MJ/m**2/year" translate>MJ/m²/year</option>
+                                    <option value="kBtu/m**2/year" translate>kBtu/m²/year</option>
+                                </select>
                             </td>
                             <td ng-repeat="cell_value in ::tcm.raw_data track by $index" ng-class="{'danger': set_td_class(tcm, cell_value) === 'danger', 'warning': set_td_class(tcm, cell_value) === 'warning'}">
                                 {$:: cell_value $}

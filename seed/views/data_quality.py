@@ -6,6 +6,7 @@
 """
 
 import csv
+
 from celery.utils.log import get_task_logger
 from django.http import JsonResponse, HttpResponse
 from rest_framework import viewsets, serializers, status
@@ -125,12 +126,13 @@ class DataQualityViews(viewsets.ViewSet):
         body = request.data
         property_state_ids = body['property_state_ids']
         taxlot_state_ids = body['taxlot_state_ids']
+        org = request.query_params['organization_id']
 
         # step 1: validate the check IDs all exist
         # step 2: validate the check IDs all belong to this organization ID
         # step 3: validate the actual user belongs to the passed in org ID
         # step 4: kick off a background task
-        return_value = do_checks(property_state_ids, taxlot_state_ids)
+        return_value = do_checks(org, property_state_ids, taxlot_state_ids)
         # step 5: create a new model instance
         return JsonResponse({
             'num_properties': len(property_state_ids),

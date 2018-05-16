@@ -160,6 +160,18 @@ class Column(models.Model):
         'source_eui_weather_normalized_orig',
     ]
 
+    QUANTITY_UNIT_COLUMNS = [
+        ('PropertyState', 'gross_floor_area'),
+        ('PropertyState', 'occupied_floor_area'),
+        ('PropertyState', 'conditioned_floor_area'),
+        ('PropertyState', 'site_eui'),
+        ('PropertyState', 'site_eui_modeled'),
+        ('PropertyState', 'site_eui_weather_normalized'),
+        ('PropertyState', 'source_eui'),
+        ('PropertyState', 'source_eui_modeled'),
+        ('PropertyState', 'source_eui_weather_normalized'),
+    ]
+
     # These fields are excluded from being returned to the front end via the API and the Column.retrieve_all method.
     # Note that not all the endpoints are respecting this at the moment.
     EXCLUDED_API_FIELDS = [

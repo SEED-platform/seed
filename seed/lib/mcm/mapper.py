@@ -14,6 +14,7 @@ from datetime import datetime, date
 
 from cleaners import default_cleaner
 from seed.lib.mappings.mapping_columns import MappingColumns
+from django.apps import apps
 
 _log = logging.getLogger(__name__)
 
@@ -98,34 +99,17 @@ def apply_column_value(raw_column_name, column_value, model, mapping, is_extra_d
 
     :rtype: model inst
     """
-
-    def is_quantity_type_column(column_name):
-        """Test if the column_name is a QuantityField"""
-        # TODO rgm re-locate to someplace else, eg. Column
-        quantity_column_names = [
-            'gross_floor_area',
-            'occupied_floor_area',
-            'conditioned_floor_area',
-            'site_eui',
-            'site_eui_modeled',
-            'site_eui_weather_normalized',
-            'source_eui',
-            'source_eui_modeled',
-            'source_eui_weather_normalized',
-        ]
-        return (column_name in quantity_column_names)
-
     # If the item is the extra_data column, then make sure to save it to the
     # extra_data field of the database
     if raw_column_name in mapping:
         table_name, mapped_column_name, display_name, is_extra_data = mapping.get(raw_column_name)
-        # NL: 9/29/16 turn off all the debug logging because it was too verbose.
-        # _log.debug("item is in the mapping: %s -- %s" % (table_name, field_name))
 
         cleaned_value = None
         if cleaner:
-            if is_quantity_type_column(mapped_column_name):
-                # clean against the raw name with pint because that's the column
+            # Get the list of Quantity fields from the Column object in SEED. This is non-ideal, since the
+            # rest of the mapping code does not use SEED models. Perhaps make this an argument.
+            if (model.__class__.__name__, mapped_column_name) in apps.get_model('seed', 'Column').QUANTITY_UNIT_COLUMNS:
+                # clean against the raw name with pint (Quantity Units) because that's the column
                 # that holds the units needed to interpret the value correctly
                 cleaned_value = cleaner.clean_value(column_value, raw_column_name)
             else:
