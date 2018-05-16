@@ -159,7 +159,7 @@ angular.module('BE.seed.controller.inventory_settings', [])
               column_name: row.entity.column_name,
               id: row.entity.id,
               order: columns.length + 1,
-              pinned: row.entity.pinnedLeft,
+              pinned: Boolean(row.entity.pinnedLeft),
               table_name: row.entity.table_name
             });
           }
