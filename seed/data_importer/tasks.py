@@ -79,14 +79,6 @@ def get_cache_increment_value(chunk):
 
 @shared_task
 def check_data_chunk(model, ids, identifier, increment):
-    """
-
-    :param model: one of 'PropertyState' or 'TaxLotState'
-    :param ids: list of primary key ids to process
-    :param file_pk: import file primary key
-    :param increment: currently unused, but needed because of the special method that appends this onto the function  # NOQA
-    :return: None
-    """
     if model == 'PropertyState':
         qs = PropertyState.objects.filter(id__in=ids)
     elif model == 'TaxLotState':
@@ -122,10 +114,10 @@ def finish_checking(identifier):
 
 
 @shared_task
-def do_checks(propertystate_ids, taxlotstate_ids):
+def do_checks(organization_id, propertystate_ids, taxlotstate_ids):
     identifier = DataQualityCheck.initialize_cache()
     prog_key = get_prog_key('check_data', identifier)
-    trigger_data_quality_checks.delay(propertystate_ids, taxlotstate_ids, identifier)
+    trigger_data_quality_checks.delay(organization_id, propertystate_ids, taxlotstate_ids, identifier)
     return {
         'status': 'success',
         'progress': 100,
@@ -134,7 +126,7 @@ def do_checks(propertystate_ids, taxlotstate_ids):
 
 
 @shared_task
-def trigger_data_quality_checks(qs, tlqs, identifier):
+def trigger_data_quality_checks(org_id, qs, tlqs, identifier):
     prog_key = get_prog_key('map_data', identifier)
     result = {
         'status': 'success',
@@ -144,7 +136,7 @@ def trigger_data_quality_checks(qs, tlqs, identifier):
     set_cache(prog_key, result['status'], result)
 
     # now call data_quality
-    _data_quality_check(qs, tlqs, identifier)
+    _data_quality_check(org_id, qs, tlqs, identifier)
 
 
 @shared_task
@@ -191,7 +183,10 @@ def finish_mapping(import_file_id, mark_as_done):
 
     # now call data_quality - this uses the import_file_id which can cause issues if
     # the result cache is not flushed out. Flushing happens on the initialize_cache call.
-    _data_quality_check(property_state_ids, taxlot_state_ids, import_file.id)
+    _data_quality_check(import_file.import_record.super_organization.id,
+                        property_state_ids,
+                        taxlot_state_ids,
+                        import_file.id)
 
     # set the prog key for mapping now so that the dataquality key has time to start
     prog_key = get_prog_key('map_data', import_file.id)
@@ -344,7 +339,8 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
     if 'PropertyState' in table_mappings.keys():
         if delimited_fields and delimited_fields['jurisdiction_tax_lot_id']:
             table_mappings['PropertyState'][
-                delimited_fields['jurisdiction_tax_lot_id']['from_field']] = ('PropertyState', 'lot_number', 'Lot Number', False)
+                delimited_fields['jurisdiction_tax_lot_id']['from_field']] = (
+                'PropertyState', 'lot_number', 'Lot Number', False)
     # *** END BREAK OUT ***
 
     # yes, there are three cascading for loops here. sorry :(
@@ -502,8 +498,9 @@ def _map_data(import_file_id, mark_as_done):
 
 @shared_task
 @lock_and_track
-def _data_quality_check(property_state_ids, taxlot_state_ids, identifier):
+def _data_quality_check(organization_id, property_state_ids, taxlot_state_ids, identifier):
     """
+    Entry point into running data quality checks.
 
     Get the mapped data and run the data_quality class against it in chunks. The
     mapped data are pulled from the PropertyState(or Taxlot) table.
@@ -512,7 +509,11 @@ def _data_quality_check(property_state_ids, taxlot_state_ids, identifier):
 
     :param import_file_id: int, the id of the import_file we're working with.
     """
-    # initialize the cache for the data_quality results using the data_quality static method
+    # Initialize the data quality checks with the organizaiton ID here. It is important to do it here
+    # since the .retrieve method in the check_data_chunk method will result in a race condition if celery is
+    # running in parallel.
+    DataQualityCheck.retrieve(organization_id)
+
     tasks = []
     if property_state_ids:
         id_chunks = [[obj for obj in chunk] for chunk in batch(property_state_ids, 100)]
@@ -884,7 +885,10 @@ def _finish_matching(import_file, progress_key, data):
             'id').values_list('id', flat=True)
     )
 
-    _data_quality_check(property_state_ids, taxlot_state_ids, import_file.id)
+    _data_quality_check(import_file.import_record.super_organization.id,
+                        property_state_ids,
+                        taxlot_state_ids,
+                        import_file.id)
     set_cache(progress_key, result['status'], result)
     return result
 

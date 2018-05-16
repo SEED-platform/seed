@@ -495,14 +495,12 @@ class DataQualityCheck(models.Model):
 
         if DataQualityCheck.objects.filter(organization=organization).count() > 1:
             # Ensure that only one object is returned. For an unknown reason, the production
-            # database has multiple DataQualityCheck objects for an organizaiton, but there are no
+            # database has multiple DataQualityCheck objects for an organization, but there are no
             # calls to create a DataQualityCheck other than the .retrieve method.
             first = DataQualityCheck.objects.filter(organization=organization).first()
-            dqcs = DataQualityCheck.objects.filter(organization=organization).exclude(
-                id__in=[first.pk])
+            dqcs = DataQualityCheck.objects.filter(organization=organization).exclude(id__in=[first.pk])
             for dqc in dqcs:
-                _log.info(
-                    "More than one DataQualityCheck for organization. Deleting {}".format(dqc.name))
+                _log.info("More than one DataQualityCheck for organization. Deleting {}".format(dqc.name))
                 dqc.delete()
 
         dq, _ = DataQualityCheck.objects.get_or_create(organization=organization)
