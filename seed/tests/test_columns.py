@@ -547,12 +547,12 @@ class TestColumnsByInventory(TestCase):
                     'city', 'conditioned_floor_area', 'created', 'custom_id_1', 'district', 'energy_alerts',
                     'energy_score', 'generation_date', 'gross_floor_area', 'home_energy_score_id',
                     'jurisdiction_property_id', 'jurisdiction_tax_lot_id', 'latitude', 'longitude', 'lot_number',
-                    'normalized_address', 'number_properties', 'occupied_floor_area', 'owner', 'owner_address',
-                    'owner_city_state', 'owner_email', 'owner_postal_code', 'owner_telephone', 'pm_parent_property_id',
-                    'pm_property_id', 'postal_code', 'property_name', 'property_notes', 'property_type',
-                    'recent_sale_date', 'release_date', 'site_eui', 'site_eui_modeled', 'site_eui_weather_normalized',
-                    'source_eui', 'source_eui_modeled', 'source_eui_weather_normalized', 'space_alerts', 'state',
-                    'ubid', 'updated', 'use_description', 'year_built', 'year_ending']
+                    'number_properties', 'occupied_floor_area', 'owner', 'owner_address', 'owner_city_state',
+                    'owner_email', 'owner_postal_code', 'owner_telephone', 'pm_parent_property_id', 'pm_property_id',
+                    'postal_code', 'property_name', 'property_notes', 'property_type', 'recent_sale_date',
+                    'release_date', 'site_eui', 'site_eui_modeled', 'site_eui_weather_normalized', 'source_eui',
+                    'source_eui_modeled', 'source_eui_weather_normalized', 'space_alerts', 'state', 'ubid', 'updated',
+                    'use_description', 'year_built', 'year_ending']
 
         method_columns = Column.retrieve_db_field_name_for_hash_comparison()
         self.assertListEqual(method_columns, expected)
@@ -568,7 +568,8 @@ class TestColumnsByInventory(TestCase):
         list_result = Column.retrieve_all_by_tuple(self.fake_org)
         self.assertIn((u'PropertyState', u'site_eui_modeled'), list_result)
         self.assertIn((u'TaxLotState', u'tax_lot_id_not_used'), list_result)
-        self.assertIn((u'PropertyState', u'gross_floor_area'), list_result)  # extra field in taxlot, but not in property
+        self.assertIn((u'PropertyState', u'gross_floor_area'),
+                      list_result)  # extra field in taxlot, but not in property
         self.assertIn((u'TaxLotState', u'gross_floor_area'), list_result)  # extra field in taxlot, but not in property
 
     def test_db_columns_in_default_columns(self):
