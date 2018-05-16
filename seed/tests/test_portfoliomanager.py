@@ -151,7 +151,15 @@ class PortfolioManagerViewTests(TestCase):
     def test_report_invalid_credentials(self):
         resp = self.client.post(
             reverse_lazy('api:v2.1:portfolio_manager-report'),
-            json.dumps({'password': 'nothing', 'username': 'nothing', 'template': {'id': 1, 'name': 'template_name'}}),
+            json.dumps(
+                {
+                    'password': 'nothing',
+                    'username': 'nothing',
+                    'template': {
+                        'id': 1, 'name': 'template_name', 'z_seed_child_row': False
+                    }
+                }
+            ),
             content_type='application/json',
         )
         # resp should have status, message, and code = 400
