@@ -78,35 +78,35 @@ angular.module('BE.seed.controller.mapping', [])
       // casing/underscore->space function (eg. `site_eui` becomes "Site Eui"
       // not "Site EUI") so the most direct way to deal with them is straight
       // string comparison here.
-      $scope.is_eui_column = function (s) {
+      $scope.is_eui_column = function (suggestion, suggestion_table_name) {
+        // All of these are on the PropertyState table
         var eui_column_names = [
           'Site Eui',
-          'Site Eui Weather Normalized',
           'Site Eui Modeled',
+          'Site Eui Weather Normalized',
           'Source Eui',
-          'Source Eui Weather Normalized',
-          'Source Eui Modeled'
+          'Source Eui Modeled',
+          'Source Eui Weather Normalized'
         ];
-        var is_eui = eui_column_names.includes(s);
-        return is_eui;
+        return _.includes(eui_column_names, suggestion) && suggestion_table_name === 'PropertyState';
       };
 
-      $scope.is_area_column = function (s) {
+      $scope.is_area_column = function (suggestion, suggestion_table_name) {
+        // All of these are on the PropertyState table
         var area_column_names = [
+          'Conditioned Floor Area',
           'Gross Floor Area',
-          'Occupied Floor Area',
-          'Conditioned Floor Area'
+          'Occupied Floor Area'
         ];
-        var is_area = area_column_names.includes(s);
-        return is_area;
+        return _.includes(area_column_names, suggestion) && suggestion_table_name === 'PropertyState';
       };
 
-      var get_default_quantity_units = function (mapped_column_name) {
+      var get_default_quantity_units = function (mapped_column_name, table_name) {
         // use the NREL default case for now
         // TODO - hook up to org preferences / last mapping in DB
-        if ($scope.is_eui_column(mapped_column_name)) {
+        if ($scope.is_eui_column(mapped_column_name, table_name)) {
           return 'kBtu/ft**2/year';
-        } else if ($scope.is_area_column(mapped_column_name)) {
+        } else if ($scope.is_area_column(mapped_column_name, table_name)) {
           return 'ft**2';
         } else {
           return null;
@@ -248,7 +248,7 @@ angular.module('BE.seed.controller.mapping', [])
           );
 
           // tack on a plausible suggestion where needed
-          tcm.from_units = get_default_quantity_units(tcm.suggestion);
+          tcm.from_units = get_default_quantity_units(tcm.suggestion, tcm.suggestion_table_name);
           tcm.validity = $scope.get_validity(tcm);
         } else {
           tcm.validity = null;
