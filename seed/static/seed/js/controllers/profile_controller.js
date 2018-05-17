@@ -14,7 +14,7 @@ angular.module('BE.seed.controller.profile', [])
               auth_payload,
               user_profile_payload,
               user_service) {
-      $scope.auth = auth_payload.auth;
+      $scope.is_superuser = auth_payload.auth.requires_superuser;
       $scope.user = user_profile_payload;
       $scope.user_updated = false;
       var user_copy = angular.copy($scope.user);

@@ -602,6 +602,10 @@ class UserViewSet(viewsets.ViewSet):
         else:
             return content
 
+        # If the only action requested is 'requires_superuser' no need to check an org affiliation
+        if len(actions) == 1 and actions[0] == 'requires_superuser':
+            return JsonResponse({'status': 'success', 'auth': {'requires_superuser': user.is_superuser}})
+
         auth = self._try_parent_org_auth(user, org, actions)
         if auth:
             return JsonResponse({'status': 'success', 'auth': auth})

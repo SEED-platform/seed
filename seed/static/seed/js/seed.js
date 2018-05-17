@@ -355,7 +355,13 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         name: 'inventory_detail_notes',
         url: '/{inventory_type:properties|taxlots}/{view_id:int}/notes',
         templateUrl: static_url + 'seed/partials/inventory_detail_notes.html',
-        controller: 'inventory_detail_notes_controller'
+        controller: 'inventory_detail_notes_controller',
+        resolve: {
+          notes: ['$stateParams', 'note_service', 'user_service', function ($stateParams, note_service, user_service) {
+            var organization_id = user_service.get_organization().id;
+            return note_service.get_notes(organization_id, $stateParams.inventory_type, $stateParams.view_id);
+          }]
+        }
       })
       .state({
         name: 'mapping',

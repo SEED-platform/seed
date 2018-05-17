@@ -14,8 +14,9 @@ angular.module('BE.seed.controller.inventory_detail_notes', [])
     'note_service',
     '$translate',
     'i18nService', // from ui-grid
-    function ($scope, $window, $uibModal, $stateParams, urls, inventory_service, user_service, note_service, $translate, i18nService) {
-
+    'notes',
+    function ($scope, $window, $uibModal, $stateParams, urls, inventory_service, user_service, note_service, $translate, i18nService, notes) {
+      $scope.notes = notes;
       $scope.translations = {};
 
       var needed_translations = [
@@ -50,8 +51,6 @@ angular.module('BE.seed.controller.inventory_detail_notes', [])
           $scope.notes = data;
         });
       };
-
-      refreshNotes();
 
       /**
        * open_data_quality_modal: modal to present data data_quality warnings and errors

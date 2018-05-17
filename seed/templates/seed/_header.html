@@ -33,7 +33,7 @@
                 <li ng-if="!menu.user.organizations.length" style="text-align: center;">
                     <span class="glyphicon glyphicon-refresh spinning"></span> <span translate>Loading...</span>
                 </li>
-                <li ng-repeat="org in menu.user.organizations">
+                <li ng-repeat="org in menu.user.organizations" ng-class="{'pink-bg': !org.user_role}">
                     <a href ng-click="set_user_org(org)">{$ org.name $}
                         <i class="fa fa-check" ng-show="org.id == menu.user.organization.id"></i>
                     </a>
