@@ -69,6 +69,11 @@ describe('controller: admin_controller', function () {
   function create_admin_controller () {
     controller('admin_controller', {
       $scope: admin_controller_scope,
+      auth_payload: {
+        auth: {
+          requires_superuser: true
+        }
+      },
       organizations_payload: {
         organizations: [{
           is_parent: true,
