@@ -165,8 +165,8 @@ angular.module('BE.seed.controller.inventory_list', [])
             currentProfile: function () {
               return $scope.currentProfile;
             },
-            cycle_id: function () {
-              return $scope.cycle.selected_cycle.id;
+            cycle: function () {
+              return $scope.cycle.selected_cycle;
             },
             inventory_type: function () {
               return $stateParams.inventory_type;
