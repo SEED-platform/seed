@@ -247,11 +247,9 @@ class LocalUploaderViewSet(viewsets.ViewSet):
                 return {'success': False, 'message': 'Could not cast value to float: \"%s\"' % string_value}
             original_unit_string = pm_value['@uom']
             if original_unit_string == u'kBtu':
-                new_val = float_value * 1000  # convert to btu manually
-                pint_val = new_val * units.BTU
+                pint_val = float_value * units.kBTU
             elif original_unit_string == u'kBtu/ft²':
-                new_val = float_value * 1000  # convert to btu manually
-                pint_val = new_val * units.BTU / units.sq_ft
+                pint_val = float_value * units.kBTU / units.sq_ft
             elif original_unit_string == u'Metric Tons CO2e':
                 pint_val = float_value * units.metric_ton
             elif original_unit_string == u'kgCO2e/ft²':
