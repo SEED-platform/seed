@@ -489,7 +489,7 @@ class DataQualityCheck(models.Model):
 
         This is the preferred method to initialize a new object.
 
-        :param organization: int or instance of Organization
+        :param organization: instance of Organization
         :return: obj, DataQualityCheck
         """
 

@@ -126,13 +126,13 @@ class DataQualityViews(viewsets.ViewSet):
         body = request.data
         property_state_ids = body['property_state_ids']
         taxlot_state_ids = body['taxlot_state_ids']
-        org = request.query_params['organization_id']
+        organization = Organization.objects.get(pk=request.query_params['organization_id'])
 
         # step 1: validate the check IDs all exist
         # step 2: validate the check IDs all belong to this organization ID
         # step 3: validate the actual user belongs to the passed in org ID
         # step 4: kick off a background task
-        return_value = do_checks(org, property_state_ids, taxlot_state_ids)
+        return_value = do_checks(organization, property_state_ids, taxlot_state_ids)
         # step 5: create a new model instance
         return JsonResponse({
             'num_properties': len(property_state_ids),
@@ -207,7 +207,7 @@ class DataQualityViews(viewsets.ViewSet):
                 required: true
                 description: An object containing 'properties' and 'taxlots' arrays of rules
         """
-        org = Organization.objects.get(pk=request.query_params['organization_id'])
+        organization = Organization.objects.get(pk=request.query_params['organization_id'])
 
         result = {
             'status': 'success',
@@ -217,7 +217,7 @@ class DataQualityViews(viewsets.ViewSet):
             }
         }
 
-        dq = DataQualityCheck.retrieve(org)
+        dq = DataQualityCheck.retrieve(organization)
         rules = dq.rules.order_by('field', 'severity')
         for rule in rules:
             result['rules'][
@@ -270,9 +270,9 @@ class DataQualityViews(viewsets.ViewSet):
                 required: true
                 description: An array of fields to ignore missing values
         """
-        org = Organization.objects.get(pk=request.query_params['organization_id'])
+        organization = Organization.objects.get(pk=request.query_params['organization_id'])
 
-        dq = DataQualityCheck.retrieve(org)
+        dq = DataQualityCheck.retrieve(organization)
         dq.reset_all_rules()
         return self.data_quality_rules(request)
 
@@ -308,9 +308,9 @@ class DataQualityViews(viewsets.ViewSet):
                 required: true
                 description: An array of fields to ignore missing values
         """
-        org = Organization.objects.get(pk=request.query_params['organization_id'])
+        organization = Organization.objects.get(pk=request.query_params['organization_id'])
 
-        dq = DataQualityCheck.retrieve(org)
+        dq = DataQualityCheck.retrieve(organization)
         dq.reset_default_rules()
         return self.data_quality_rules(request)
 
@@ -346,7 +346,7 @@ class DataQualityViews(viewsets.ViewSet):
                 description: error message, if any
                 required: true
         """
-        org = Organization.objects.get(pk=request.query_params['organization_id'])
+        organization = Organization.objects.get(pk=request.query_params['organization_id'])
 
         body = request.data
         if body.get('data_quality_rules') is None:
@@ -395,7 +395,7 @@ class DataQualityViews(viewsets.ViewSet):
                 }
             )
 
-        dq = DataQualityCheck.retrieve(org)
+        dq = DataQualityCheck.retrieve(organization)
         dq.remove_all_rules()
         for rule in updated_rules:
             try:
