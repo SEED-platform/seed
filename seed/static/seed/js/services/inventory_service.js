@@ -31,7 +31,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         var validCycleIds = _.map(cycles.cycles, 'id');
 
         var lastCycleId = inventory_service.get_last_cycle();
-        if (cycle) {
+        if (_.has(cycle, 'id')) {
           params.cycle = cycle.id;
           inventory_service.save_last_cycle(cycle.id);
         } else if (_.includes(validCycleIds, lastCycleId)) {

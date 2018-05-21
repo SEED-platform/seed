@@ -13,12 +13,12 @@ angular.module('BE.seed.controller.show_populated_columns_modal', [])
     'spinner_utility',
     'columns',
     'currentProfile',
-    'cycle_id',
+    'cycle',
     'inventory_type',
-    function ($scope, $window, $uibModalInstance, Notification, inventory_service, modified_service, spinner_utility, columns, currentProfile, cycle_id, inventory_type) {
+    function ($scope, $window, $uibModalInstance, Notification, inventory_service, modified_service, spinner_utility, columns, currentProfile, cycle, inventory_type) {
       $scope.columns = columns;
       $scope.currentProfile = currentProfile;
-      $scope.cycle_id = cycle_id;
+      $scope.cycle = cycle;
       $scope.inventory_type = inventory_type;
 
       _.forEach($scope.columns, function (col) {
@@ -36,11 +36,11 @@ angular.module('BE.seed.controller.show_populated_columns_modal', [])
 
         var promise;
         if ($scope.inventory_type === 'properties') {
-          promise = inventory_service.get_properties(1, undefined, cycle_id, []).then(function (inv) {
+          promise = inventory_service.get_properties(1, undefined, $scope.cycle, []).then(function (inv) {
             return inv.results;
           });
         } else if ($scope.inventory_type === 'taxlots') {
-          promise = inventory_service.get_taxlots(1, undefined, cycle_id, []).then(function (inv) {
+          promise = inventory_service.get_taxlots(1, undefined, $scope.cycle, []).then(function (inv) {
             return inv.results;
           });
         }
