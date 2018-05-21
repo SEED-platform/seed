@@ -183,7 +183,7 @@ def finish_mapping(import_file_id, mark_as_done):
 
     # now call data_quality - this uses the import_file_id which can cause issues if
     # the result cache is not flushed out. Flushing happens on the initialize_cache call.
-    _data_quality_check(import_file.import_record.super_organization.id,
+    _data_quality_check(import_file.import_record.super_organization,
                         property_state_ids,
                         taxlot_state_ids,
                         import_file.id)
@@ -512,7 +512,7 @@ def _data_quality_check(organization, property_state_ids, taxlot_state_ids, iden
     :param taxlot_state_ids: list, list of tax lot state IDs to check
     :param identifier: str, for retrieving progress status
     """
-    # Initialize the data quality checks with the organizaiton ID here. It is important to do it here
+    # Initialize the data quality checks with the organization here. It is important to do it here
     # since the .retrieve method in the check_data_chunk method will result in a race condition if celery is
     # running in parallel.
     DataQualityCheck.retrieve(organization)
@@ -888,7 +888,7 @@ def _finish_matching(import_file, progress_key, data):
             'id').values_list('id', flat=True)
     )
 
-    _data_quality_check(import_file.import_record.super_organization.id,
+    _data_quality_check(import_file.import_record.super_organization,
                         property_state_ids,
                         taxlot_state_ids,
                         import_file.id)
