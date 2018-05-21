@@ -114,10 +114,10 @@ def finish_checking(identifier):
 
 
 @shared_task
-def do_checks(organization_id, propertystate_ids, taxlotstate_ids):
+def do_checks(organization, propertystate_ids, taxlotstate_ids):
     identifier = DataQualityCheck.initialize_cache()
     prog_key = get_prog_key('check_data', identifier)
-    trigger_data_quality_checks.delay(organization_id, propertystate_ids, taxlotstate_ids, identifier)
+    trigger_data_quality_checks.delay(organization, propertystate_ids, taxlotstate_ids, identifier)
     return {
         'status': 'success',
         'progress': 100,
@@ -126,7 +126,7 @@ def do_checks(organization_id, propertystate_ids, taxlotstate_ids):
 
 
 @shared_task
-def trigger_data_quality_checks(org_id, qs, tlqs, identifier):
+def trigger_data_quality_checks(organization, qs, tlqs, identifier):
     prog_key = get_prog_key('map_data', identifier)
     result = {
         'status': 'success',
@@ -136,7 +136,7 @@ def trigger_data_quality_checks(org_id, qs, tlqs, identifier):
     set_cache(prog_key, result['status'], result)
 
     # now call data_quality
-    _data_quality_check(org_id, qs, tlqs, identifier)
+    _data_quality_check(organization, qs, tlqs, identifier)
 
 
 @shared_task
@@ -498,7 +498,7 @@ def _map_data(import_file_id, mark_as_done):
 
 @shared_task
 @lock_and_track
-def _data_quality_check(organization_id, property_state_ids, taxlot_state_ids, identifier):
+def _data_quality_check(organization, property_state_ids, taxlot_state_ids, identifier):
     """
     Entry point into running data quality checks.
 
@@ -507,12 +507,15 @@ def _data_quality_check(organization_id, property_state_ids, taxlot_state_ids, i
 
     @lock_and_track returns a progress_key
 
-    :param import_file_id: int, the id of the import_file we're working with.
+    :param organization: object, Organization object
+    :param property_state_ids: list, list of property state IDs to check
+    :param taxlot_state_ids: list, list of tax lot state IDs to check
+    :param identifier: str, for retrieving progress status
     """
     # Initialize the data quality checks with the organizaiton ID here. It is important to do it here
     # since the .retrieve method in the check_data_chunk method will result in a race condition if celery is
     # running in parallel.
-    DataQualityCheck.retrieve(organization_id)
+    DataQualityCheck.retrieve(organization)
 
     tasks = []
     if property_state_ids:

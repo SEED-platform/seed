@@ -22,22 +22,22 @@ def create_organization(user=None, org_name='', *args, **kwargs):
 
     """
     from seed.models import StatusLabel as Label
-    org_user = None
+    organization_user = None
     user_added = False
 
-    org = Organization.objects.create(
+    organization = Organization.objects.create(
         name=org_name
     )
 
     if user:
-        org_user, user_added = OrganizationUser.objects.get_or_create(
-            user=user, organization=org
+        organization_user, user_added = OrganizationUser.objects.get_or_create(
+            user=user, organization=organization
         )
 
     for label in Label.DEFAULT_LABELS:
         Label.objects.get_or_create(
             name=label,
-            super_organization=org,
+            super_organization=organization,
             defaults={'color': 'blue'},
         )
 
@@ -45,12 +45,12 @@ def create_organization(user=None, org_name='', *args, **kwargs):
     # the default columns
     for column in Column.DATABASE_COLUMNS:
         details = {
-            'organization_id': org.id,
+            'organization_id': organization.id,
         }
         details.update(column)
         Column.objects.create(**details)
 
     # create the default rules for this organization
-    apps.get_model('seed', 'DataQualityCheck').retrieve(org)
+    apps.get_model('seed', 'DataQualityCheck').retrieve(organization)
 
-    return org, org_user, user_added
+    return organization, organization_user, user_added
