@@ -1550,17 +1550,21 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
     # Not sure what the below cycle code does.
     cycle = chain(merged_property_views, merged_taxlot_views).next().cycle
 
-    tax_cmp_fmt = [('jurisdiction_tax_lot_id', 'custom_id_1'),
-                   ('custom_id_1',),
-                   ('normalized_address',),
-                   ('custom_id_1',),
-                   ('custom_id_1',)]
+    tax_cmp_fmt = [
+        ('jurisdiction_tax_lot_id', 'custom_id_1'),
+        ('custom_id_1',),
+        ('normalized_address',),
+        ('custom_id_1',),
+    ]
 
-    prop_cmp_fmt = [('lot_number', 'custom_id_1'),
-                    ('custom_id_1',),
-                    ('normalized_address',),
-                    ('pm_property_id',),
-                    ('jurisdiction_property_id',)]
+    prop_cmp_fmt = [
+        ('lot_number', 'custom_id_1'),
+        ('ubid',),
+        ('custom_id_1',),
+        ('normalized_address',),
+        ('pm_property_id',),
+        ('jurisdiction_property_id',),
+    ]
 
     tax_comparison_fields = sorted(list(set(chain.from_iterable(tax_cmp_fmt))))
     prop_comparison_fields = sorted(list(set(chain.from_iterable(prop_cmp_fmt))))
@@ -1583,8 +1587,7 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
     global property_m2m_keygen
 
     taxlot_m2m_keygen = EquivalencePartitioner(tax_cmp_fmt, ["jurisdiction_tax_lot_id"])
-    property_m2m_keygen = EquivalencePartitioner(prop_cmp_fmt,
-                                                 ["pm_property_id", "jurisdiction_property_id"])
+    property_m2m_keygen = EquivalencePartitioner(prop_cmp_fmt, ["pm_property_id", "jurisdiction_property_id"])
 
     property_views = PropertyView.objects.filter(state__organization=org, cycle=cycle).values_list(
         *prop_comparison_field_names)
