@@ -597,6 +597,10 @@ class PropertyViewSet(GenericViewSet):
             state2.merge_state = MERGE_STATE_NEW
         else:
             state2.merge_state = MERGE_STATE_MERGED
+        # In most cases data_state will already be 3 (DATA_STATE_MATCHING), but if one of the parents was a
+        # de-duplicated record then data_state will be 0. This step ensures that the new states will be 3.
+        state1.data_state = DATA_STATE_MATCHING
+        state2.data_state = DATA_STATE_MATCHING
         state1.save()
         state2.save()
 

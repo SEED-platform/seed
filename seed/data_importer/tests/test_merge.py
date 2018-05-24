@@ -79,7 +79,7 @@ class PropertyViewTests(DeleteModelsTestCase):
         # list of properties and taxlots.
         #
         # This emulates importing the following
-        #   Address,                Juridiction Tax Lot
+        #   Address,                Jurisdiction Tax Lot
         #   742 Evergreen Terrace,  100;101;110;111
 
         lot_numbers = '100;101;110;111'
@@ -113,12 +113,12 @@ class PropertyViewTests(DeleteModelsTestCase):
         for pv in PropertyView.objects.filter(state__organization=self.org):
             print "%s -- %s" % (pv.state, pv.cycle)
 
-        # should only have 1 propertyview and 4 taxlot views
+        # should only have 1 PropertyView and 4 taxlot views
         self.assertEqual(PropertyView.objects.filter(state__organization=self.org).count(), 1)
         self.assertEqual(TaxLotView.objects.filter(state__organization=self.org).count(), 4)
         pv = PropertyView.objects.filter(state__organization=self.org).first()
 
-        # there should be 4 relationships in the taxlotproperty associated with view, one each for the taxlots defined
+        # there should be 4 relationships in the TaxLotProperty associated with view, one each for the taxlots defined
         self.assertEqual(TaxLotProperty.objects.filter(property_view_id=pv).count(), 4)
 
     def test_match_properties_and_taxlots_with_address_no_lot_number(self):
@@ -126,7 +126,7 @@ class PropertyViewTests(DeleteModelsTestCase):
         # list of properties and taxlots.
         #
         # This emulates importing the following
-        #   Address,                Juridiction Tax Lot
+        #   Address,                Jurisdiction Tax Lot
         #   742 Evergreen Terrace,  100
         #   742 Evergreen Terrace,  101
         #   742 Evergreen Terrace,  110
@@ -159,22 +159,20 @@ class PropertyViewTests(DeleteModelsTestCase):
         for pv in PropertyView.objects.filter(state__organization=self.org):
             print "%s -- %s" % (pv.state, pv.cycle)
 
-        # should only have 1 propertyview and 4 taxlot views
+        # should only have 1 PropertyView and 4 taxlot views
         self.assertEqual(PropertyView.objects.filter(state__organization=self.org).count(), 1)
         self.assertEqual(TaxLotView.objects.filter(state__organization=self.org).count(), 4)
         pv = PropertyView.objects.filter(state__organization=self.org).first()
 
-        # there should be 4 relationships in the taxlotproperty associated with view, one each for the taxlots defined
-        # note that this should be 4, but that is not how it works right now.... so coding this as
-        # expected behavior (see issue 1633)
-        self.assertEqual(TaxLotProperty.objects.filter(property_view_id=pv).count(), 1)
+        # there should be 4 relationships in the TaxLotProperty associated with view, one each for the taxlots defined
+        self.assertEqual(TaxLotProperty.objects.filter(property_view_id=pv).count(), 4)
 
     def test_match_properties_and_taxlots_with_ubid(self):
         # create an ImportFile for testing purposes. Seems like we would want to run this matching just on a
         # list of properties and taxlots.
         #
         # This emulates importing the following
-        #   UBID,    Juridiction Tax Lot
+        #   UBID,    Jurisdiction Tax Lot
         #   ubid_100,     lot_1
         #   ubid_101,     lot_1
         #   ubid_110,     lot_1
@@ -211,12 +209,12 @@ class PropertyViewTests(DeleteModelsTestCase):
         for pv in PropertyView.objects.filter(state__organization=self.org):
             print "%s -- %s" % (pv.state.ubid, pv.cycle)
 
-        # should only have 1 propertyview and 4 taxlot views
+        # should only have 1 PropertyView and 4 taxlot views
         self.assertEqual(PropertyView.objects.filter(state__organization=self.org).count(), 4)
         self.assertEqual(TaxLotView.objects.filter(state__organization=self.org).count(), 1)
         tlv = TaxLotView.objects.filter(state__organization=self.org).first()
 
-        # there should be 4 relationships in the taxlotproperty associated with view, one each for the taxlots defined
+        # there should be 4 relationships in the TaxLotProperty associated with view, one each for the taxlots defined
         self.assertEqual(TaxLotProperty.objects.filter(taxlot_view_id=tlv).count(), 4)
 
     def test_match_properties_and_taxlots_with_custom_id(self):
@@ -224,7 +222,7 @@ class PropertyViewTests(DeleteModelsTestCase):
         # list of properties and taxlots.
         #
         # This emulates importing the following
-        #   Custom ID 1,    Juridiction Tax Lot
+        #   Custom ID 1,    Jurisdiction Tax Lot
         #   custom_100,     lot_1
         #   custom_101,     lot_1
         #   custom_110,     lot_1
@@ -260,12 +258,12 @@ class PropertyViewTests(DeleteModelsTestCase):
         for pv in PropertyView.objects.filter(state__organization=self.org):
             print "%s -- %s" % (pv.state, pv.cycle)
 
-        # should only have 1 propertyview and 4 taxlot views
+        # should only have 1 PropertyView and 4 taxlot views
         self.assertEqual(PropertyView.objects.filter(state__organization=self.org).count(), 4)
         self.assertEqual(TaxLotView.objects.filter(state__organization=self.org).count(), 1)
         tlv = TaxLotView.objects.filter(state__organization=self.org).first()
 
-        # there should be 4 relationships in the taxlotproperty associated with view, one each for the taxlots defined
+        # there should be 4 relationships in the TaxLotProperty associated with view, one each for the taxlots defined
         self.assertEqual(TaxLotProperty.objects.filter(taxlot_view_id=tlv).count(), 4)
 
     def test_save_state_match(self):
