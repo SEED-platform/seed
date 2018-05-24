@@ -235,7 +235,12 @@ class FakePropertyStateFactory(BaseFake):
 
     def get_property_state(self, organization=None, **kw):
         """Return a property state populated with pseudo random data"""
-        property_details = self.get_details()
+        property_details = {}
+        if 'no_default_data' not in kw.keys():
+            property_details = self.get_details()
+        else:
+            del kw['no_default_data']
+
         property_details.update(kw)
         ps = PropertyState.objects.create(
             organization=self._get_attr('organization', self.organization),
@@ -595,9 +600,14 @@ class FakeTaxLotStateFactory(BaseFake):
 
     def get_taxlot_state(self, organization=None, **kw):
         """Return a taxlot state populated with pseudo random data"""
-        org = self._get_attr('organization', organization)
-        taxlot_details = self.get_details()
+        taxlot_details = {}
+        if 'no_default_data' not in kw.keys():
+            taxlot_details = self.get_details()
+        else:
+            del kw['no_default_data']
         taxlot_details.update(kw)
+
+        org = self._get_attr('organization', organization)
         tls = TaxLotState.objects.create(organization=org, **taxlot_details)
         TaxLotAuditLog.objects.create(
             organization=org, state=tls, record_type=AUDIT_IMPORT, name='Import Creation'

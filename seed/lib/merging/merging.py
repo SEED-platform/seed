@@ -135,7 +135,6 @@ def merge_state(merged_state, state1, state2, can_attrs, default=None):
     :return: inst(``merged_state``), updated.
     """
     default = default or state2
-    changes = []
     for attr in can_attrs:
         # Do we have any differences between these fields? - Check if not None instead of if value.
         attr_values = list(set([value for value in can_attrs[attr].values() if value is not None]))
@@ -169,4 +168,4 @@ def merge_state(merged_state, state1, state2, can_attrs, default=None):
     if isinstance(merged_state, PropertyState):
         PropertyState.merge_relationships(merged_state, state1, state2)
 
-    return merged_state, changes
+    return merged_state

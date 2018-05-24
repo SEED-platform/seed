@@ -263,11 +263,11 @@ class TaxLotViewSet(GenericViewSet):
             state2 = state.objects.get(id=state_ids[index])
 
             merged_state = state.objects.create(organization_id=organization_id)
-            merged_state, changes = merging.merge_state(merged_state,
-                                                        state1,
-                                                        state2,
-                                                        merging.get_state_attrs([state1, state2]),
-                                                        default=state2)
+            merged_state = merging.merge_state(merged_state,
+                                               state1,
+                                               state2,
+                                               merging.get_state_attrs([state1, state2]),
+                                               default=state2)
 
             state_1_audit_log = audit_log.objects.filter(state=state1).first()
             state_2_audit_log = audit_log.objects.filter(state=state2).first()
@@ -436,6 +436,10 @@ class TaxLotViewSet(GenericViewSet):
             state2.merge_state = MERGE_STATE_NEW
         else:
             state2.merge_state = MERGE_STATE_MERGED
+        # In most cases data_state will already be 3 (DATA_STATE_MATCHING), but if one of the parents was a
+        # de-duplicated record then data_state will be 0. This step ensures that the new states will be 3.
+        state1.data_state = DATA_STATE_MATCHING
+        state2.data_state = DATA_STATE_MATCHING
         state1.save()
         state2.save()
 
