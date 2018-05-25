@@ -68,7 +68,8 @@
         <div class="section_content">
             <div class="table_list_container mapping" ng-cloak>
                 <div class="alert warning file_error_messages" ng-show="has_mapping_error_messages()" ng-bind-html="mapping_error_messages"></div>
-                <div class="alert alert-danger" ng-show="!required_fields_present() && !import_file.matching_done" translate>At least one of the following is required: Address Line 1, Custom Id 1, Jurisdiction Tax Lot Id (with inventory type Tax Lot), UBID (with inventory type Property), or Pm Property Id (with inventory type Property).</div>
+                <div class="alert alert-danger" ng-show="!required_property_fields_present() && !import_file.matching_done" translate>At least one of the following Property fields is required: Address Line 1, Custom Id 1, UBID, or Pm Property Id.</div>
+                <div class="alert alert-danger" ng-show="!required_taxlot_fields_present() && !import_file.matching_done" translate>At least one of the following Tax Lot fields is required: Address Line 1, Custom Id 1, or Jurisdiction Tax Lot Id.</div>
                 <div class="alert alert-danger" ng-show="duplicates_present()" translate>Please review SEED headers.  Duplicate values are not allowed.</div>
                 <div class="alert alert-danger" ng-show="empty_fields_present()" translate>Please review SEED headers.  Empty values are not allowed.</div>
                 <table class="table table-striped" ng-hide="review_mappings">
