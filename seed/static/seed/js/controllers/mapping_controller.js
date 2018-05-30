@@ -643,28 +643,48 @@ angular.module('BE.seed.controller.mapping', [])
        * check_fields: called by ng-disabled for "Map Your Data" button.  Checks for duplicates and for required fields.
        */
       $scope.check_fields = function () {
-        return $scope.duplicates_present() || $scope.empty_fields_present() || !$scope.required_fields_present();
+        return $scope.duplicates_present() || $scope.empty_fields_present() || !$scope.required_property_fields_present() || !$scope.required_taxlot_fields_present();
       };
 
       /*
-       * required_fields_present: check for presence of at least one field used by SEED to match records
+       * required_property_fields_present: check for presence of at least one Property field used by SEED to match records
        */
-      $scope.required_fields_present = function () {
-        var required_fields = [
-          {header: 'Jurisdiction Tax Lot Id', inventory_type: 'TaxLotState'},
-          {header: 'Pm Property Id', inventory_type: 'PropertyState'},
-          {header: 'Ubid', inventory_type: 'PropertyState'},
-          {header: 'Custom Id 1', inventory_type: 'PropertyState'},
-          {header: 'Custom Id 1', inventory_type: 'TaxLotState'},
+      $scope.required_property_fields_present = function () {
+        var required_property_fields = [
           {header: 'Address Line 1', inventory_type: 'PropertyState'},
-          {header: 'Address Line 1', inventory_type: 'TaxLotState'}
+          {header: 'Custom Id 1', inventory_type: 'PropertyState'},
+          {header: 'Pm Property Id', inventory_type: 'PropertyState'},
+          {header: 'Ubid', inventory_type: 'PropertyState'}
         ];
 
-        function compare_fields(x, y) {
-          return x.header == y.suggestion && x.inventory_type == y.suggestion_table_name;
-        }
+        var property_mappings_found = _.find($scope.raw_columns, {suggestion_table_name: 'PropertyState'});
+        if (!property_mappings_found) return true;
 
-        return _.intersectionWith(required_fields, $scope.raw_columns, compare_fields).length > 0;
+        var intersections = _.intersectionWith(required_property_fields, $scope.raw_columns, function (required_field, raw_col) {
+          return required_field.header === raw_col.suggestion && required_field.inventory_type === raw_col.suggestion_table_name;
+        }).length;
+
+        return intersections > 0;
+      };
+
+      /*
+       * required_taxlot_fields_present: check for presence of at least one Tax Lot field used by SEED to match records
+       */
+      $scope.required_taxlot_fields_present = function () {
+        var required_taxlot_fields = [
+          {header: 'Address Line 1', inventory_type: 'TaxLotState'},
+          {header: 'Custom Id 1', inventory_type: 'TaxLotState'},
+          {header: 'Jurisdiction Tax Lot Id', inventory_type: 'TaxLotState'}
+        ];
+
+        var taxlot_mappings_found = _.find($scope.raw_columns, {suggestion_table_name: 'TaxLotState'});
+        if (!taxlot_mappings_found) return true;
+
+        var intersections = _.intersectionWith(required_taxlot_fields, $scope.raw_columns, function (required_field, raw_col) {
+          return required_field.header === raw_col.suggestion && required_field.inventory_type === raw_col.suggestion_table_name;
+        }).length;
+
+        return intersections > 0;
       };
 
       $scope.backToMapping = function () {
