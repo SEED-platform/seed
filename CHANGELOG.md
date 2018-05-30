@@ -105,6 +105,7 @@ Accepted Pull Requests: 30
 - Fixed [#1637]( https://github.com/SEED-platform/seed/pull/1637 ), Use kBtu during imports for PM
 - Fixed [#1638]( https://github.com/SEED-platform/seed/pull/1638 ), Fixed showing of default pairing columns
 - Fixed [#1650]( https://github.com/SEED-platform/seed/pull/1650 ), Allow import of multiple ubids, single taxlot in CSV
+- Fixed [#1651]( https://github.com/SEED-platform/seed/pull/1651 ), Ensure mapping to both TaxLot and PropertyState columns is enforced
 
 Accepted External Pull Requests: 5
 - Fixed [#1536]( https://github.com/SEED-platform/seed/pull/1536 ), Quantity (aka. Pint) fields to accommodate metric and US Customary energy/area data
