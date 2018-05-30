@@ -58,7 +58,7 @@ class GAPropertyFilterSet(FilterSet):
 
     class Meta:
         model = GreenAssessmentProperty
-        fields = ('year', 'assessment', 'rating')
+        fields = ('year', 'assessment', 'rating', 'view')
 
 
 class LabelFilterSet(FilterSet):
@@ -89,7 +89,7 @@ class CycleFilterSet(FilterSet):
         """
         max_time_diff = 26
         name = "{} Calendar Year".format(value)
-        cycles = queryset.filter(name__contains=name)
+        cycles = queryset.filter(name__icontains=name)
         if not cycles:
             start = make_aware(datetime(int(value), 1, 1), pytz.UTC)
             end = start + relativedelta(years=1) - relativedelta(seconds=1)
@@ -111,16 +111,56 @@ class PropertyViewFilterSet(FilterSet):
     """
     cycle_start = DateFilter(name='cycle__start', lookup_expr='lte')
     cycle_end = DateFilter(name='cycle__end', lookup_expr='gte')
+    address_line_1 = CharFilter(
+        name='state__address_line_1', lookup_expr='iexact'
+    )
+    address_line_2 = CharFilter(
+        name='state__address_line_2', lookup_expr='iexact'
+    )
+    city = CharFilter(
+        name='state__city', lookup_expr='iexact'
+    )
+    state = CharFilter(
+        name='state__state', lookup_expr='iexact'
+    )
+    postal_code = CharFilter(
+        name='state__postal_code', lookup_expr='iexact'
+    )
+    property_identifier = CharFilter(method='identifier_filter')
 
     class Meta:
         model = PropertyView
-        fields = ['cycle', 'property', 'cycle_start', 'cycle_end']
+        fields = [
+            'cycle', 'property',
+            'cycle_start', 'cycle_end',
+            'property_identifier'
+        ]
+
+    def identifier_filter(self, queryset, name, value):
+        """
+        Filter queryset for case-insensitive value matching
+        jurisdiction_property_id OR custom_id_1 OR pm_property_id
+        OR home_energy_score_id.
+        """
+        jurisdiction_property_id = Q(state__jurisdiction_property_id__iexact=value)
+        custom_id_1 = Q(state__custom_id_1__iexact=value)
+        pm_property_id = Q(state__pm_property_id=value)
+        ubid = Q(state__ubid__iexact=value)
+        home_energy_score_id = Q(state__home_energy_score_id=value)
+        query = (
+            jurisdiction_property_id
+            | custom_id_1
+            | pm_property_id
+            | home_energy_score_id
+            | ubid
+        )
+        return queryset.filter(query)
 
 
 class PropertyStateFilterSet(FilterSet):
     """Provide advanced filtering for PropertyState
 
-    Filter options for propertstate by energy_score (gte), city,
+    Filter options for propertystate by energy_score (gte), city,
     pm_parent_property_id, and property_identifier.
 
     The property_identifier filter provides a single query parameter key for

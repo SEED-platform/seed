@@ -38,7 +38,13 @@ from seed.models import (
     TaxLotView,
     TaxLot,
 )
-from seed.serializers.pint import PintJSONEncoder
+from seed.lib.superperms.orgs.models import (
+    Organization
+)
+from seed.serializers.pint import (
+    apply_display_unit_preferences,
+    add_pint_unit_suffix
+)
 from seed.serializers.properties import (
     PropertyViewSerializer
 )
@@ -92,7 +98,7 @@ class TaxLotViewSet(GenericViewSet):
                 })
 
         taxlot_views_list = TaxLotView.objects.select_related('taxlot', 'state', 'cycle') \
-            .filter(taxlot__organization_id=request.query_params['organization_id'], cycle=cycle) \
+            .filter(taxlot__organization_id=org_id, cycle=cycle) \
             .order_by('id')
 
         paginator = Paginator(taxlot_views_list, per_page)
@@ -107,6 +113,15 @@ class TaxLotViewSet(GenericViewSet):
             taxlot_views = paginator.page(paginator.num_pages)
             page = paginator.num_pages
 
+        columns_from_database = Column.retrieve_all(org_id, 'taxlot', False)
+        related_results = TaxLotProperty.get_related(taxlot_views, columns, columns_from_database)
+
+        # collapse units here so we're only doing the last page; we're already a
+        # realized list by now and not a lazy queryset
+        org = Organization.objects.get(pk=org_id)
+        unit_collapsed_results = \
+            [apply_display_unit_preferences(org, x) for x in related_results]
+
         response = {
             'pagination': {
                 'page': page,
@@ -118,10 +133,10 @@ class TaxLotViewSet(GenericViewSet):
                 'total': paginator.count
             },
             'cycle_id': cycle.id,
-            'results': TaxLotProperty.get_related(taxlot_views, columns)
+            'results': unit_collapsed_results
         }
 
-        return JsonResponse(response, encoder=PintJSONEncoder)
+        return JsonResponse(response)
 
     # @require_organization_id
     # @require_organization_membership
@@ -150,7 +165,7 @@ class TaxLotViewSet(GenericViewSet):
               required: false
               paramType: query
         """
-        return self._get_filtered_results(request, columns=[])
+        return self._get_filtered_results(request, columns=None)
 
     # @require_organization_id
     # @require_organization_membership
@@ -188,6 +203,9 @@ class TaxLotViewSet(GenericViewSet):
             columns = dict(request.data.iterlists())['columns']
         except AttributeError:
             columns = request.data['columns']
+
+        # TODO: fix this
+        columns = None
         return self._get_filtered_results(request, columns=columns)
 
     @api_endpoint_class
@@ -245,11 +263,11 @@ class TaxLotViewSet(GenericViewSet):
             state2 = state.objects.get(id=state_ids[index])
 
             merged_state = state.objects.create(organization_id=organization_id)
-            merged_state, changes = merging.merge_state(merged_state,
-                                                        state1,
-                                                        state2,
-                                                        merging.get_state_attrs([state1, state2]),
-                                                        default=state2)
+            merged_state = merging.merge_state(merged_state,
+                                               state1,
+                                               state2,
+                                               merging.get_state_attrs([state1, state2]),
+                                               default=state2)
 
             state_1_audit_log = audit_log.objects.filter(state=state1).first()
             state_2_audit_log = audit_log.objects.filter(state=state2).first()
@@ -418,6 +436,10 @@ class TaxLotViewSet(GenericViewSet):
             state2.merge_state = MERGE_STATE_NEW
         else:
             state2.merge_state = MERGE_STATE_MERGED
+        # In most cases data_state will already be 3 (DATA_STATE_MATCHING), but if one of the parents was a
+        # de-duplicated record then data_state will be 0. This step ensures that the new states will be 3.
+        state1.data_state = DATA_STATE_MATCHING
+        state2.data_state = DATA_STATE_MATCHING
         state1.save()
         state2.save()
 
@@ -542,10 +564,13 @@ class TaxLotViewSet(GenericViewSet):
               paramType: query
         """
         organization_id = int(request.query_params.get('organization_id'))
+        organization = Organization.objects.get(pk=organization_id)
+
         only_used = request.query_params.get('only_used', False)
         columns = Column.retrieve_all(organization_id, 'taxlot', only_used)
+        unitted_columns = [add_pint_unit_suffix(organization, x) for x in columns]
 
-        return JsonResponse({'status': 'success', 'columns': columns})
+        return JsonResponse({'status': 'success', 'columns': unitted_columns})
 
     @api_endpoint_class
     @ajax_request_class

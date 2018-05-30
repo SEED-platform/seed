@@ -17,6 +17,7 @@ parser_classes, authentication_classes, and pagination_classes attributes.
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+from oauth2_provider.ext.rest_framework import OAuth2Authentication
 
 # Local Imports
 from seed.authentication import SEEDAuthentication
@@ -30,7 +31,11 @@ from seed.utils.api import (
 )
 
 # Constants
-AUTHENTICATION_CLASSES = (SessionAuthentication, SEEDAuthentication)
+AUTHENTICATION_CLASSES = (
+    OAuth2Authentication,
+    SessionAuthentication,
+    SEEDAuthentication,
+)
 PARSER_CLASSES = (FormParser, MultiPartParser, JSONParser)
 RENDERER_CLASSES = (JSONRenderer,)
 PERMISSIONS_CLASSES = (SEEDOrgPermissions,)

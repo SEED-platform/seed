@@ -4,15 +4,15 @@
 :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-import csv
 import base64
+import csv
 import hashlib
 import hmac
 import json
 import logging
 import os
-import pint
 
+import pint
 from django.apps import apps
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -22,13 +22,10 @@ from django.core.files.storage import FileSystemStorage
 from django.core.urlresolvers import reverse
 from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
-from django.utils.timezone import make_naive
 from rest_framework import serializers, status, viewsets
-from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import api_view, detail_route, list_route, parser_classes, permission_classes
 from rest_framework.parsers import MultiPartParser, FormParser
 
-from seed.authentication import SEEDAuthentication
 from seed.data_importer.models import (
     ImportFile,
     ImportRecord
@@ -42,8 +39,6 @@ from seed.data_importer.tasks import (
 from seed.decorators import ajax_request, ajax_request_class
 from seed.decorators import get_prog_key
 from seed.lib.mappings import mapper as simple_mapper
-from seed.lib.mappings import mapping_data
-from seed.lib.mappings.mapping_data import MappingData
 from seed.lib.mcm import mapper
 from seed.lib.merging import merging
 from seed.lib.superperms.orgs.decorators import has_perm_class
@@ -252,11 +247,9 @@ class LocalUploaderViewSet(viewsets.ViewSet):
                 return {'success': False, 'message': 'Could not cast value to float: \"%s\"' % string_value}
             original_unit_string = pm_value['@uom']
             if original_unit_string == u'kBtu':
-                new_val = float_value * 1000  # convert to btu manually
-                pint_val = new_val * units.BTU
+                pint_val = float_value * units.kBTU
             elif original_unit_string == u'kBtu/ft²':
-                new_val = float_value * 1000  # convert to btu manually
-                pint_val = new_val * units.BTU / units.sq_ft
+                pint_val = float_value * units.kBTU / units.sq_ft
             elif original_unit_string == u'Metric Tons CO2e':
                 pint_val = float_value * units.metric_ton
             elif original_unit_string == u'kgCO2e/ft²':
@@ -529,7 +522,6 @@ class MappingResultsResponseSerializer(serializers.Serializer):
 
 class ImportFileViewSet(viewsets.ViewSet):
     raise_exception = True
-    authentication_classes = (SessionAuthentication, SEEDAuthentication)
     queryset = ImportFile.objects.all()
 
     @api_endpoint_class
@@ -710,241 +702,100 @@ class ImportFileViewSet(viewsets.ViewSet):
         response_serializer: MappingResultsResponseSerializer
         """
         import_file_id = pk
-
-        get_coparents = request.data.get('get_coparents', False)
-        get_state_id = request.data.get('state_id', False)
+        org_id = request.query_params.get('organization_id', False)
 
         # get the field names that were in the mapping
         import_file = ImportFile.objects.get(id=import_file_id)
+
+        # List of the only fields to show
         field_names = import_file.get_cached_mapped_columns
 
-        # get the columns in the db...
-        md = MappingData()
-        # _log.debug('md.keys_with_table_names are: {}'.format(md.keys_with_table_names))
-
-        raw_db_fields = []
-        for db_field in md.keys_with_table_names:
-            if db_field in field_names:
-                raw_db_fields.append(db_field)
-
-        # go through the list and find the ones that are properties
+        # set of fields
         fields = {
             'PropertyState': ['id', 'extra_data', 'lot_number'],
             'TaxLotState': ['id', 'extra_data']
         }
-        for f in raw_db_fields:
-            fields[f[0]].append(f[1])
+        columns_from_db = Column.retrieve_all(org_id)
+        property_column_name_mapping = {}
+        taxlot_column_name_mapping = {}
+        for field_name in field_names:
+            # find the field from the columns in the database
+            for column in columns_from_db:
+                if column['table_name'] == 'PropertyState' and \
+                        field_name[0] == 'PropertyState' and \
+                        field_name[1] == column['column_name']:
+                    property_column_name_mapping[column['column_name']] = column['name']
+                    if not column['is_extra_data']:
+                        fields['PropertyState'].append(field_name[1])  # save to the raw db fields
+                    continue
+                elif column['table_name'] == 'TaxLotState' and \
+                        field_name[0] == 'TaxLotState' and \
+                        field_name[1] == column['column_name']:
+                    taxlot_column_name_mapping[column['column_name']] = column['name']
+                    if not column['is_extra_data']:
+                        fields['TaxLotState'].append(field_name[1])  # save to the raw db fields
+                    continue
 
-        # _log.debug('Field names that will be returned are: {}'.format(fields))
+        inventory_type = request.data.get('inventory_type', 'all')
 
-        if get_state_id:
-            state_id = int(get_state_id)
-            inventory_type = request.data.get('inventory_type', 'properties')
-            result = {}
-            if inventory_type == 'properties':
-                state = PropertyState.objects.get(id=state_id)
-                for k in fields['PropertyState']:
-                    result[k] = getattr(state, k)
-            else:
-                state = TaxLotState.objects.get(id=state_id)
-                for k in fields['TaxLotState']:
-                    result[k] = getattr(state, k)
-
-            if get_coparents:
-                result['matched'] = False
-                coparent = self.has_coparent(state.id, inventory_type)
-
-                if coparent:
-                    result['matched'] = True
-                    result['coparent'] = coparent
-
-            return {
-                'status': 'success',
-                'state': result
-            }
-        else:
-            inventory_type = request.data.get('inventory_type', 'all')
-
-            result = {
-                'status': 'success'
-            }
-
-            if inventory_type == 'properties' or inventory_type == 'all':
-                properties = list(PropertyState.objects.filter(
-                    import_file_id=import_file_id,
-                    data_state__in=[DATA_STATE_MAPPING, DATA_STATE_MATCHING],
-                    merge_state__in=[MERGE_STATE_UNKNOWN, MERGE_STATE_NEW]
-                ).order_by('id').values(*fields['PropertyState']))
-
-                # If a record was manually edited then remove the edited version
-                properties_to_remove = list(
-                    PropertyAuditLog.objects.filter(state_id__in=[p['id'] for p in properties],
-                                                    name='Manual Edit').values_list('state_id',
-                                                                                    flat=True)
-                )
-                properties = [p for p in properties if p['id'] not in properties_to_remove]
-
-                if get_coparents:
-                    for state in properties:
-                        state['matched'] = False
-                        coparent = self.has_coparent(state['id'], 'properties',
-                                                     fields['PropertyState'])
-                        if coparent:
-                            state['matched'] = True
-                            state['coparent'] = coparent
-
-                _log.debug('Found {} properties'.format(len(properties)))
-
-                # if the data contain date/times, then cast them to local time per Djangos' TIME_ZONE
-                # configuration option. This should really be a serializer and be consistent with
-                # the property/taxlot serializer. Total hack right now.
-                for p in properties:
-                    if p.get('recent_sale_date'):
-                        p['recent_sale_date'] = make_naive(p['recent_sale_date']).isoformat()
-
-                    if p.get('release_date'):
-                        p['release_date'] = make_naive(p['release_date']).isoformat()
-
-                    if p.get('generation_date'):
-                        p['generation_date'] = make_naive(p['generation_date']).isoformat()
-
-                result['properties'] = properties
-
-            if inventory_type == 'taxlots' or inventory_type == 'all':
-                tax_lots = list(TaxLotState.objects.filter(
-                    import_file_id=import_file_id,
-                    data_state__in=[DATA_STATE_MAPPING, DATA_STATE_MATCHING],
-                    merge_state__in=[MERGE_STATE_UNKNOWN, MERGE_STATE_NEW]
-                ).order_by('id').values(*fields['TaxLotState']))
-
-                # If a record was manually edited then remove the edited version
-                taxlots_to_remove = list(
-                    TaxLotAuditLog.objects.filter(state_id__in=[t['id'] for t in tax_lots],
-                                                  name='Manual Edit').values_list('state_id',
-                                                                                  flat=True)
-                )
-                tax_lots = [t for t in tax_lots if t['id'] not in taxlots_to_remove]
-
-                if get_coparents:
-                    for state in tax_lots:
-                        state['matched'] = False
-                        coparent = self.has_coparent(state['id'], 'taxlots', fields['TaxLotState'])
-                        if coparent:
-                            state['matched'] = True
-                            state['coparent'] = coparent
-
-                _log.debug('Found {} tax lots'.format(len(tax_lots)))
-
-                result['tax_lots'] = tax_lots
-
-            return result
-
-    @api_endpoint_class
-    @ajax_request_class
-    @detail_route(methods=['POST'])
-    def available_matches(self, request, pk=None):
-        body = request.data
-
-        import_file_id = int(pk)
-        inventory_type = body.get('inventory_type', 'properties')
-        source_state_id = int(body.get('state_id', None))
-
-        import_file = ImportFile.objects.get(id=import_file_id)
-        field_names = import_file.get_cached_mapped_columns
-
-        # get the columns in the db...
-        md = MappingData()
-        _log.debug('md.keys_with_table_names are: {}'.format(md.keys_with_table_names))
-
-        raw_db_fields = []
-        for db_field in md.keys_with_table_names:
-            if db_field in field_names:
-                raw_db_fields.append(db_field)
-
-        # go through the list and find the ones that are properties
-        fields = {
-            'PropertyState': ['id', 'extra_data', 'lot_number'],
-            'TaxLotState': ['id', 'extra_data']
+        result = {
+            'status': 'success'
         }
-        for f in raw_db_fields:
-            fields[f[0]].append(f[1])
 
-        def state_to_dict(state):
-            result = {}
-            if inventory_type == 'properties':
-                for k in fields['PropertyState']:
-                    result[k] = getattr(state, k)
-            else:
-                for k in fields['TaxLotState']:
-                    result[k] = getattr(state, k)
-            return result
+        if inventory_type == 'properties' or inventory_type == 'all':
+            properties = PropertyState.objects.filter(
+                import_file_id=import_file_id,
+                data_state__in=[DATA_STATE_MAPPING, DATA_STATE_MATCHING],
+                merge_state__in=[MERGE_STATE_UNKNOWN, MERGE_STATE_NEW]
+            ).only(*fields['PropertyState']).order_by('id')
 
-        if inventory_type == 'properties':
-            views = PropertyView.objects.filter(cycle_id=import_file.cycle_id).select_related(
-                'state')
-        else:
-            views = TaxLotView.objects.filter(cycle_id=import_file.cycle_id).select_related('state')
+            property_results = []
+            for prop in properties:
+                prop_dict = TaxLotProperty.model_to_dict_with_mapping(
+                    prop,
+                    property_column_name_mapping,
+                    fields=fields['PropertyState'],
+                    exclude=['extra_data']
+                )
 
-        source_state = {'found': False}
-        states = []
-        for v in views:
-            if v.state_id == source_state_id:
-                source_state['found'] = True
-            else:
-                states.append(v.state)
+                prop_dict = dict(
+                    prop_dict.items() +
+                    TaxLotProperty.extra_data_to_dict_with_mapping(
+                        prop.extra_data,
+                        property_column_name_mapping
+                    ).items()
+                )
+                property_results.append(prop_dict)
 
-        results = []
-        if inventory_type == 'properties':
-            audit_log = PropertyAuditLog
-        else:
-            audit_log = TaxLotAuditLog
+            result['properties'] = property_results
 
-        # return true if initial state was inherited, or if the record was inherited from the same import file
-        def check_audit_merge_history(audit_entry):
-            if source_state['found']:
-                return True
+        if inventory_type == 'taxlots' or inventory_type == 'all':
+            tax_lots = TaxLotState.objects.filter(
+                import_file_id=import_file_id,
+                data_state__in=[DATA_STATE_MAPPING, DATA_STATE_MATCHING],
+                merge_state__in=[MERGE_STATE_UNKNOWN, MERGE_STATE_NEW]
+            ).only(*fields['TaxLotState']).order_by('id')
 
-            if audit_entry.parent1_id:
-                if audit_entry.parent_state1_id == source_state_id:
-                    source_state['found'] = True
-                    return True
-                else:
-                    result = check_audit_merge_history(audit_entry.parent1)
-                    if result:
-                        return True
+            tax_lot_results = []
+            for tax_lot in tax_lots:
+                tax_lot_dict = TaxLotProperty.model_to_dict_with_mapping(
+                    tax_lot,
+                    taxlot_column_name_mapping,
+                    fields=fields['TaxLotState'],
+                    exclude=['extra_data']
+                )
+                tax_lot_dict = dict(
+                    tax_lot_dict.items() +
+                    TaxLotProperty.extra_data_to_dict_with_mapping(
+                        tax_lot.extra_data,
+                        taxlot_column_name_mapping
+                    ).items()
+                )
+                tax_lot_results.append(tax_lot_dict)
 
-            if audit_entry.parent2_id:
-                if audit_entry.parent_state2_id == source_state_id:
-                    source_state['found'] = True
-                    return True
-                else:
-                    result = check_audit_merge_history(audit_entry.parent2)
-                    if result:
-                        return True
+            result['tax_lots'] = tax_lot_results
 
-            return False
-
-        for state in states:
-            if source_state['found']:
-                results.append(state_to_dict(state))
-            else:
-                if state.merge_state == 1:
-                    # state is a new record with no parents
-                    results.append(state_to_dict(state))
-                else:
-                    # Look through parents in the audit log to rule out the view that inherited from the initial state
-                    audit_merge = audit_log.objects.filter(
-                        state_id=state.id,
-                        name__in=['Manual Match', 'System Match']
-                    ).order_by('-id').first()
-
-                    if not check_audit_merge_history(audit_merge):
-                        results.append(state_to_dict(state))
-
-        return {
-            'status': 'success',
-            'states': results
-        }
+        return result
 
     @staticmethod
     def has_coparent(state_id, inventory_type, fields=None):
@@ -1284,11 +1135,11 @@ class ImportFileViewSet(viewsets.ViewSet):
         state2 = state.objects.get(id=source_state_id)
 
         merged_state = state.objects.create(organization_id=organization_id)
-        merged_state, changes = merging.merge_state(merged_state,
-                                                    state1,
-                                                    state2,
-                                                    merging.get_state_attrs([state1, state2]),
-                                                    default=state2)
+        merged_state = merging.merge_state(merged_state,
+                                           state1,
+                                           state2,
+                                           merging.get_state_attrs([state1, state2]),
+                                           default=state2)
 
         state_1_audit_log = audit_log.objects.filter(state=state1).first()
         state_2_audit_log = audit_log.objects.filter(state=state2).first()
@@ -1931,17 +1782,11 @@ class ImportFileViewSet(viewsets.ViewSet):
             import_record__super_organization_id=organization.pk
         )
 
-        # Get a list of the database fields in a list
-        md = mapping_data.MappingData()
+        # Get a list of the database fields in a list, these are the db columns and the extra_data columns
+        mapping_data = Column.retrieve_mapping_columns(organization_id)
 
-        # TODO: Move this to the MappingData class and remove calling add_extra_data
-        # Check if there are any DB columns that are not defined in the
-        # list of mapping data.
-        # NL 12/2/2016: Removed 'organization__isnull' Query because we only want the
-        # the ones belonging to the organization
-        columns = list(Column.objects.select_related('unit').filter(
-            mapped_mappings__super_organization_id=organization_id).exclude(column_name__in=md.keys))
-        md.add_extra_data(columns)
+        # I think we want column_name to be display_name, but need to change front end.
+        column_names = [c['column_name'] for c in mapping_data]
 
         # If this is a portfolio manager file, then load in the PM mappings and if the column_mappings
         # are not in the original mappings, default to PM
@@ -1949,7 +1794,7 @@ class ImportFileViewSet(viewsets.ViewSet):
             pm_mappings = simple_mapper.get_pm_mapping(import_file.first_row_columns, resolve_duplicates=True)
             suggested_mappings = mapper.build_column_mapping(
                 import_file.first_row_columns,
-                md.keys_with_table_names,
+                Column.retrieve_all_by_tuple(organization_id),
                 previous_mapping=get_column_mapping,
                 map_args=[organization],
                 default_mappings=pm_mappings,
@@ -1959,26 +1804,26 @@ class ImportFileViewSet(viewsets.ViewSet):
             # All other input types
             suggested_mappings = mapper.build_column_mapping(
                 import_file.first_row_columns,
-                md.keys_with_table_names,
+                Column.retrieve_all_by_tuple(organization_id),
                 previous_mapping=get_column_mapping,
                 map_args=[organization],
                 thresh=80  # percentage match that we require. 80% is random value for now.
             )
             # replace None with empty string for column names and PropertyState for tables
             for m in suggested_mappings:
-                table, field, conf = suggested_mappings[m]
-                if field is None:
+                table, destination_field, _confidence = suggested_mappings[m]
+                if destination_field is None:
                     suggested_mappings[m][1] = u''
 
         # Fix the table name, eventually move this to the build_column_mapping and build_pm_mapping
         for m in suggested_mappings:
-            table, dest, conf = suggested_mappings[m]
+            table, _destination_field, _confidence = suggested_mappings[m]
             if not table:
                 suggested_mappings[m][0] = 'PropertyState'
 
         result['suggested_column_mappings'] = suggested_mappings
-        result['column_names'] = md.building_columns
-        result['columns'] = md.data
+        result['column_names'] = column_names
+        result['columns'] = mapping_data
 
         return JsonResponse(result)
 

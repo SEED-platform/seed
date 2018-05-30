@@ -8,6 +8,7 @@ import logging
 import os.path as osp
 
 from django.core.files.uploadedfile import SimpleUploadedFile
+from quantityfield import ureg
 
 from seed.data_importer import tasks
 from seed.data_importer.tests.util import (
@@ -92,7 +93,7 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
 
         pv = PropertyView.objects.filter(state__pm_property_id='2264').first()
         self.assertEqual(pv.state.pm_property_id, '2264')
-        self.assertEqual(pv.state.gross_floor_area, 12555)
+        self.assertEqual(pv.state.gross_floor_area, 12555 * ureg.feet**2)
         self.assertEqual(pv.state.energy_score, 75)
 
         self.assertEqual(TaxLot.objects.count(), 0)

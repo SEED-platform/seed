@@ -9,27 +9,22 @@ All rights reserved.  # NOQA
 """
 # pylint:disable=no-name-in-module
 import datetime
+
 from django.core.exceptions import ValidationError
 
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.models import (
-    Organization,
-    OrganizationUser,
-)
-from seed.models import (
-    GreenAssessment,
-)
+from seed.models import GreenAssessment
 from seed.test_helpers.fake import (
     FakeGreenAssessmentFactory,
     FakeGreenAssessmentPropertyFactory,
     FakeGreenAssessmentURLFactory,
 )
 from seed.tests.util import DeleteModelsTestCase
+from seed.utils.organizations import create_organization
 
 
 class GreenAssessmentTests(DeleteModelsTestCase):
-    """Tests for certification/Green Assesment models and methods"""
-
+    """Tests for certification/Green Assessment models and methods"""
     # pylint: disable=too-many-instance-attributes
 
     def setUp(self):
@@ -40,9 +35,7 @@ class GreenAssessmentTests(DeleteModelsTestCase):
         }
         self.user = User.objects.create_superuser(
             email='test_user@demo.com', **user_details)
-        self.org = Organization.objects.create()
-        OrganizationUser.objects.create(user=self.user, organization=self.org)
-
+        self.org, _, _ = create_organization(self.user)
         self.assessment_factory = FakeGreenAssessmentFactory(
             organization=self.org
         )
@@ -165,6 +158,7 @@ class GreenAssessmentTests(DeleteModelsTestCase):
         expected = {
             u'GreenBuildingVerificationType': 'Green Test Score',
             u'GreenVerificationBody': 'Green TS Inc',
+            u'GreenVerificationDate': self.start_date,
             u'GreenVerificationSource': 'Assessor',
             u'GreenVerificationStatus': 'Pending',
             u'GreenVerificationMetric': 5,
@@ -180,6 +174,7 @@ class GreenAssessmentTests(DeleteModelsTestCase):
         expected = {
             u'GreenBuildingVerificationType': 'Green Test Score',
             u'GreenVerificationGreenTestScoreBody': 'Green TS Inc',
+            u'GreenVerificationGreenTestScoreDate': self.start_date,
             u'GreenVerificationGreenTestScoreSource': 'Assessor',
             u'GreenVerificationGreenTestScoreStatus': 'Pending',
             u'GreenVerificationGreenTestScoreMetric': 5,

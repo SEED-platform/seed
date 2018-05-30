@@ -9,12 +9,10 @@
 from django.http import JsonResponse
 from rest_framework import status
 from rest_framework import viewsets
-from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import list_route
 from rest_framework.parsers import JSONParser, FormParser
 from rest_framework.renderers import JSONRenderer
 
-from seed.authentication import SEEDAuthentication
 from seed.models import (
     Measure,
 )
@@ -30,7 +28,6 @@ class MeasureViewSet(viewsets.ReadOnlyModelViewSet):
     by BuildingSync enumeration.json file.
     """
     serializer_class = MeasureSerializer
-    authentication_classes = [SessionAuthentication, SEEDAuthentication]
     parser_classes = (JSONParser, FormParser,)
     renderer_classes = (JSONRenderer,)
     queryset = Measure.objects.all()

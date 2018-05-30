@@ -7,7 +7,7 @@ required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
 :author Paul Munday <paul@paulmunday.net>
 """
-from collections import OrderedDict, Sequence
+from collections import OrderedDict
 from datetime import timedelta
 
 from django.core.exceptions import ValidationError
@@ -130,8 +130,7 @@ class GreenAssessmentSerializer(serializers.ModelSerializer):
         return obj.get_recognition_type_display()
 
 
-class GreenAssessmentPropertySerializer(OrgValidateMixin,
-                                        serializers.ModelSerializer):
+class GreenAssessmentPropertySerializer(OrgValidateMixin, serializers.ModelSerializer):
     # use all for queryset as model ensures orgs match
     assessment = GreenAssessmentField(
         queryset=GreenAssessment.objects.all(), allow_null=True
@@ -144,6 +143,7 @@ class GreenAssessmentPropertySerializer(OrgValidateMixin,
     metric = serializers.FloatField(required=False, allow_null=True)
     rating = serializers.CharField(
         required=False, allow_null=True, max_length=100)
+    expiration_date = serializers.DateField()
     # ensure reuqest.users org matches that of view and assessment
     org_validators = [ASSESSMENT_VALIDATOR, PROPERTY_VIEW_VALIDATOR]
 
@@ -160,11 +160,11 @@ class GreenAssessmentPropertySerializer(OrgValidateMixin,
         fields = ('id', 'source', 'status', 'status_date', 'score',
                   'metric', 'rating', 'version', 'date', 'target_date',
                   'eligibility', 'expiration_date', 'is_valid', 'year',
-                  'urls', 'assessment', 'view')
+                  'urls', 'assessment', 'view', 'extra_data')
 
     def create(self, validated_data):
         """Override create to handle urls"""
-        urls = get_url_list(validated_data.pop('urls', []))
+        urls = set(validated_data.pop('urls', []))
         request = self.context.get('request', None)
         user = getattr(request, 'user', None)
         instance = super(GreenAssessmentPropertySerializer, self).create(
@@ -194,7 +194,7 @@ class GreenAssessmentPropertySerializer(OrgValidateMixin,
 
     def update(self, instance, validated_data):
         """Override create to handle urls"""
-        urls = get_url_list(validated_data.pop('urls', []))
+        urls = set(validated_data.pop('urls', []))
         request = self.context.get('request', None)
         user = getattr(request, 'user', None)
         instance = super(GreenAssessmentPropertySerializer, self).update(
@@ -213,7 +213,7 @@ class GreenAssessmentPropertySerializer(OrgValidateMixin,
                 property_assessment=instance
             )
             existing = all_urls.filter(url__in=urls).values_list(
-                'url', 'description',
+                'url'
             )
             # delete any not supplied
             to_delete = all_urls.exclude(url__in=urls)
@@ -225,7 +225,7 @@ class GreenAssessmentPropertySerializer(OrgValidateMixin,
                 [
                     GreenAssessmentURL(
                         property_assessment=instance,
-                        url=url[0], description=url[1]
+                        url=url
                     ) for url in urls
                 ]
             )
@@ -346,13 +346,8 @@ class GreenAssessmentPropertyReadOnlySerializer(serializers.BaseSerializer):
             ('year', obj.year),
             ('date', obj.date),
             ('urls', urls),
-            ('assessment', assessment)
+            ('assessment', assessment),
+            ('extra_data', obj.extra_data),
+            ('reso_dict', obj.to_reso_dict()),
+            ('bedes_dict', obj.to_bedes_dict())
         ))
-
-
-def get_url_list(url_list):
-    """Simple helper functions to allow urls supplied as string or seq"""
-    return set([
-        (url[0], url[1]) if isinstance(url, Sequence) else (url, None)
-        for url in url_list
-    ])

@@ -8,7 +8,6 @@
 from seed import models
 from seed import search
 from seed.models import ASSESSED_RAW, BuildingSnapshot
-from seed.utils.mapping import get_mappable_types
 
 
 def get_source_type(import_file, source_type=''):
@@ -37,7 +36,7 @@ def get_search_query(user, params):
     sort_reverse = params.get('sort_reverse', False)
     project_slug = other_search_params.get('project__slug', None)
 
-    mappable_types = get_mappable_types()
+    mappable_types = models.Column.retrieve_db_types()
 
     if project_slug:
         mappable_types['project__slug'] = 'string'

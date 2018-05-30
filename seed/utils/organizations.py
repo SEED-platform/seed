@@ -4,13 +4,16 @@
 :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+from django.apps import apps
+
 from seed.lib.superperms.orgs.models import (
-    Organization as SuperOrganization,
-    OrganizationUser as SuperOrganizationUser
+    Organization,
+    OrganizationUser,
 )
+from seed.models import Column
 
 
-def create_organization(user, org_name='', *args, **kwargs):
+def create_organization(user=None, org_name='', *args, **kwargs):
     """Helper script to create a user/org relationship from scratch.
 
     :param user: user inst.
@@ -19,18 +22,35 @@ def create_organization(user, org_name='', *args, **kwargs):
 
     """
     from seed.models import StatusLabel as Label
-    org = SuperOrganization.objects.create(
+    organization_user = None
+    user_added = False
+
+    organization = Organization.objects.create(
         name=org_name
     )
-    org_user, user_added = SuperOrganizationUser.objects.get_or_create(
-        user=user, organization=org
-    )
+
+    if user:
+        organization_user, user_added = OrganizationUser.objects.get_or_create(
+            user=user, organization=organization
+        )
 
     for label in Label.DEFAULT_LABELS:
         Label.objects.get_or_create(
             name=label,
-            super_organization=org,
+            super_organization=organization,
             defaults={'color': 'blue'},
         )
 
-    return org, org_user, user_added
+    # upon initializing a new organization (SuperOrganization), create
+    # the default columns
+    for column in Column.DATABASE_COLUMNS:
+        details = {
+            'organization_id': organization.id,
+        }
+        details.update(column)
+        Column.objects.create(**details)
+
+    # create the default rules for this organization
+    apps.get_model('seed', 'DataQualityCheck').retrieve(organization)
+
+    return organization, organization_user, user_added

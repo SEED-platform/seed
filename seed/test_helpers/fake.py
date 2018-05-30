@@ -224,6 +224,7 @@ class FakePropertyStateFactory(BaseFake):
             'postal_code': "970{}".format(self.fake.numerify(text='##')),
             'year_built': self.fake.random_int(min=1880, max=2015),
             'site_eui': self.fake.random_int(min=50, max=600),
+            'gross_floor_area': self.fake.random_number(digits=6),
             'owner': owner.name,
             'owner_email': owner.email,
             'owner_telephone': owner.telephone,
@@ -234,7 +235,12 @@ class FakePropertyStateFactory(BaseFake):
 
     def get_property_state(self, organization=None, **kw):
         """Return a property state populated with pseudo random data"""
-        property_details = self.get_details()
+        property_details = {}
+        if 'no_default_data' not in kw.keys():
+            property_details = self.get_details()
+        else:
+            del kw['no_default_data']
+
         property_details.update(kw)
         ps = PropertyState.objects.create(
             organization=self._get_attr('organization', self.organization),
@@ -483,11 +489,14 @@ class FakeStatusLabelFactory(BaseFake):
         label_value = self.fake.random_element(elements=self.label_values)
         statuslabel_details = {
             'super_organization': self._get_attr('organization', organization),
-            'color': label_value[0],
             'name': label_value[1]
         }
         statuslabel_details.update(kw)
-        label, _ = StatusLabel.objects.get_or_create(**statuslabel_details)
+        label, created = StatusLabel.objects.get_or_create(**statuslabel_details)
+        if created:
+            # If a new label, then assign a color.
+            label.color = label_value[0]
+
         return label
 
 
@@ -591,9 +600,14 @@ class FakeTaxLotStateFactory(BaseFake):
 
     def get_taxlot_state(self, organization=None, **kw):
         """Return a taxlot state populated with pseudo random data"""
-        org = self._get_attr('organization', organization)
-        taxlot_details = self.get_details()
+        taxlot_details = {}
+        if 'no_default_data' not in kw.keys():
+            taxlot_details = self.get_details()
+        else:
+            del kw['no_default_data']
         taxlot_details.update(kw)
+
+        org = self._get_attr('organization', organization)
         tls = TaxLotState.objects.create(organization=org, **taxlot_details)
         TaxLotAuditLog.objects.create(
             organization=org, state=tls, record_type=AUDIT_IMPORT, name='Import Creation'

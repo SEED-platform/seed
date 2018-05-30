@@ -21,6 +21,9 @@ from seed.decorators import ajax_request_class
 from seed.filtersets import PropertyViewFilterSet, PropertyStateFilterSet
 from seed.lib.merging import merging
 from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.models import (
+    Organization
+)
 from seed.models import (
     AUDIT_IMPORT,
     AUDIT_USER_EDIT,
@@ -44,6 +47,10 @@ from seed.models import (
 )
 from seed.models import Property as PropertyModel
 from seed.serializers.pint import PintJSONEncoder
+from seed.serializers.pint import (
+    apply_display_unit_preferences,
+    add_pint_unit_suffix
+)
 from seed.serializers.properties import (
     PropertySerializer,
     PropertyStateSerializer,
@@ -188,6 +195,7 @@ class PropertyViewViewSet(SEEDOrgModelViewSet):
     filter_class = PropertyViewFilterSet
     orgfilter = 'property__organization_id'
     data_name = "property_views"
+    queryset = PropertyView.objects.all().select_related('state')
 
 
 class PropertyViewSet(GenericViewSet):
@@ -195,7 +203,6 @@ class PropertyViewSet(GenericViewSet):
     serializer_class = PropertySerializer
 
     def _get_filtered_results(self, request, columns):
-
         page = request.query_params.get('page', 1)
         per_page = request.query_params.get('per_page', 1)
         org_id = request.query_params.get('organization_id', None)
@@ -222,8 +229,8 @@ class PropertyViewSet(GenericViewSet):
                 })
 
         property_views_list = PropertyView.objects.select_related('property', 'state', 'cycle') \
-            .filter(property__organization_id=request.query_params['organization_id'],
-                    cycle=cycle).order_by('id')
+            .filter(property__organization_id=org_id, cycle=cycle) \
+            .order_by('id')  # TODO: test adding .only(*fields['PropertyState'])
 
         paginator = Paginator(property_views_list, per_page)
 
@@ -237,6 +244,16 @@ class PropertyViewSet(GenericViewSet):
             property_views = paginator.page(paginator.num_pages)
             page = paginator.num_pages
 
+        org = Organization.objects.get(pk=org_id)
+
+        # Retrieve all the columns that are in the db for this organization
+        columns_from_database = Column.retrieve_all(org_id, 'property', False)
+        related_results = TaxLotProperty.get_related(property_views, columns, columns_from_database)
+
+        # collapse units here so we're only doing the last page; we're already a
+        # realized list by now and not a lazy queryset
+        unit_collapsed_results = [apply_display_unit_preferences(org, x) for x in related_results]
+
         response = {
             'pagination': {
                 'page': page,
@@ -248,10 +265,10 @@ class PropertyViewSet(GenericViewSet):
                 'total': paginator.count
             },
             'cycle_id': cycle.id,
-            'results': TaxLotProperty.get_related(property_views, columns)
+            'results': unit_collapsed_results
         }
 
-        return JsonResponse(response, encoder=PintJSONEncoder)
+        return JsonResponse(response)
 
     def _move_relationships(self, old_state, new_state):
         """
@@ -307,7 +324,7 @@ class PropertyViewSet(GenericViewSet):
               required: false
               paramType: query
         """
-        return self._get_filtered_results(request, columns=[])
+        return self._get_filtered_results(request, columns=None)
 
     @api_endpoint_class
     @ajax_request_class
@@ -343,6 +360,9 @@ class PropertyViewSet(GenericViewSet):
             columns = dict(request.data.iterlists())['columns']
         except AttributeError:
             columns = request.data['columns']
+
+        # TODO: fix this
+        columns = None
         return self._get_filtered_results(request, columns=columns)
 
     @api_endpoint_class
@@ -400,11 +420,11 @@ class PropertyViewSet(GenericViewSet):
             state2 = state.objects.get(id=state_ids[index])
 
             merged_state = state.objects.create(organization_id=organization_id)
-            merged_state, changes = merging.merge_state(merged_state,
-                                                        state1,
-                                                        state2,
-                                                        merging.get_state_attrs([state1, state2]),
-                                                        default=state2)
+            merged_state = merging.merge_state(merged_state,
+                                               state1,
+                                               state2,
+                                               merging.get_state_attrs([state1, state2]),
+                                               default=state2)
 
             state_1_audit_log = audit_log.objects.filter(state=state1).first()
             state_2_audit_log = audit_log.objects.filter(state=state2).first()
@@ -435,7 +455,8 @@ class PropertyViewSet(GenericViewSet):
 
             # Find unique notes
             notes = list(Note.objects.values(
-                'name', 'note_type', 'text', 'log_data', 'created', 'updated', 'organization_id', 'user_id'
+                'name', 'note_type', 'text', 'log_data', 'created', 'updated', 'organization_id',
+                'user_id'
             ).filter(property_view_id__in=view_ids).distinct())
 
             cycle_id = views.first().cycle_id
@@ -466,7 +487,8 @@ class PropertyViewSet(GenericViewSet):
                 n = Note(**note)
                 n.save()
                 # Correct the created and updated times to match the original note
-                Note.objects.filter(id=n.id).update(created=note['created'], updated=note['updated'])
+                Note.objects.filter(id=n.id).update(created=note['created'],
+                                                    updated=note['updated'])
 
             # Delete existing pairs and re-pair all to new view
             # Probably already deleted by cascade
@@ -563,16 +585,22 @@ class PropertyViewSet(GenericViewSet):
         merged_state.save()
 
         # Change the merge_state of the individual states
-        if log.parent1.name in ['Import Creation', 'Manual Edit'] and log.parent1.import_filename is not None:
+        if log.parent1.name in ['Import Creation',
+                                'Manual Edit'] and log.parent1.import_filename is not None:
             # State belongs to a new record
             state1.merge_state = MERGE_STATE_NEW
         else:
             state1.merge_state = MERGE_STATE_MERGED
-        if log.parent2.name in ['Import Creation', 'Manual Edit'] and log.parent2.import_filename is not None:
+        if log.parent2.name in ['Import Creation',
+                                'Manual Edit'] and log.parent2.import_filename is not None:
             # State belongs to a new record
             state2.merge_state = MERGE_STATE_NEW
         else:
             state2.merge_state = MERGE_STATE_MERGED
+        # In most cases data_state will already be 3 (DATA_STATE_MATCHING), but if one of the parents was a
+        # de-duplicated record then data_state will be 0. This step ensures that the new states will be 3.
+        state1.data_state = DATA_STATE_MATCHING
+        state2.data_state = DATA_STATE_MATCHING
         state1.save()
         state2.save()
 
@@ -696,8 +724,10 @@ class PropertyViewSet(GenericViewSet):
         organization_id = int(request.query_params.get('organization_id'))
         only_used = request.query_params.get('only_used', False)
         columns = Column.retrieve_all(organization_id, 'property', only_used)
+        organization = Organization.objects.get(pk=organization_id)
+        unitted_columns = [add_pint_unit_suffix(organization, x) for x in columns]
 
-        return JsonResponse({'status': 'success', 'columns': columns})
+        return JsonResponse({'status': 'success', 'columns': unitted_columns})
 
     @api_endpoint_class
     @ajax_request_class
@@ -835,7 +865,7 @@ class PropertyViewSet(GenericViewSet):
             result['taxlots'] = self._get_taxlots(property_view.pk)
             result['history'], master = self.get_history(property_view)
             result = update_result_with_master(result, master)
-            return JsonResponse(result, status=status.HTTP_200_OK)
+            return JsonResponse(result, encoder=PintJSONEncoder, status=status.HTTP_200_OK)
         else:
             return JsonResponse(result)
 
@@ -896,7 +926,8 @@ class PropertyViewSet(GenericViewSet):
                 ).order_by('-id').first()
 
                 if 'extra_data' in new_property_state_data.keys():
-                    property_state_data['extra_data'].update(new_property_state_data.pop('extra_data'))
+                    property_state_data['extra_data'].update(
+                        new_property_state_data.pop('extra_data'))
                 property_state_data.update(new_property_state_data)
 
                 if log.name == 'Import Creation':
@@ -932,15 +963,16 @@ class PropertyViewSet(GenericViewSet):
                         result.update(
                             {'state': new_property_state_serializer.data}
                         )
-                        return JsonResponse(result, status=status.HTTP_200_OK, encoder=PintJSONEncoder)
+                        return JsonResponse(result, encoder=PintJSONEncoder, status=status.HTTP_200_OK)
                     else:
                         result.update({
                             'status': 'error',
                             'message': 'Invalid update data with errors: {}'.format(
                                 new_property_state_serializer.errors)}
                         )
-                        return JsonResponse(result, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
-                elif log.name in ['Manual Edit', 'Manual Match', 'System Match', 'Merge current state in migration']:
+                        return JsonResponse(result, encoder=PintJSONEncoder, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+                elif log.name in ['Manual Edit', 'Manual Match', 'System Match',
+                                  'Merge current state in migration']:
                     # Convert this to using the serializer to save the data. This will override the previous values
                     # in the state object.
 
@@ -957,14 +989,14 @@ class PropertyViewSet(GenericViewSet):
                         result.update(
                             {'state': updated_property_state_serializer.data}
                         )
-                        return JsonResponse(result, status=status.HTTP_200_OK, encoder=PintJSONEncoder)
+                        return JsonResponse(result, encoder=PintJSONEncoder, status=status.HTTP_200_OK)
                     else:
                         result.update({
                             'status': 'error',
                             'message': 'Invalid update data with errors: {}'.format(
                                 updated_property_state_serializer.errors)}
                         )
-                        return JsonResponse(result, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+                        return JsonResponse(result, encoder=PintJSONEncoder, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
                 else:
                     result = {
                         'status': 'error',
@@ -976,9 +1008,9 @@ class PropertyViewSet(GenericViewSet):
             # Uhm, does this ever get called? There are a bunch of returns in the code above.
             property_view.save()
         else:
-            return JsonResponse(result, status=status.HTTP_404_NOT_FOUND, encoder=PintJSONEncoder)
+            return JsonResponse(result, status=status.HTTP_404_NOT_FOUND)
 
-        return JsonResponse(result, status=status.HTTP_404_NOT_FOUND, encoder=PintJSONEncoder)
+        return JsonResponse(result, status=status.HTTP_404_NOT_FOUND)
 
     @ajax_request_class
     @has_perm_class('can_modify_data')
@@ -1194,7 +1226,8 @@ class PropertyViewSet(GenericViewSet):
         if result.get('status', None) != 'error':
             pv = result.pop('property_view')
             property_state_id = pv.state.pk
-            join = PropertyMeasure.objects.filter(property_state_id=property_state_id).select_related(
+            join = PropertyMeasure.objects.filter(
+                property_state_id=property_state_id).select_related(
                 'measure')
             result = []
             for j in join:

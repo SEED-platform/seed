@@ -12,7 +12,6 @@ from django.db import models
 
 from seed.building_sync.building_sync import BuildingSync
 from seed.hpxml.hpxml import HPXML as HPXMLParser
-from seed.lib.mappings.mapping_data import MappingData
 from seed.lib.merging.merging import merge_state, get_state_attrs
 from seed.models import (
     PropertyState,
@@ -112,7 +111,7 @@ class BuildingFile(models.Model):
             return False, None, None, messages
 
         # sub-select the data that are needed to create the PropertyState object
-        md = MappingData()
+        db_columns = Column.retrieve_db_field_table_and_names_from_db_tables()
         create_data = {"organization_id": organization_id}
         extra_data = {}
         for k, v in data.items():
@@ -120,27 +119,20 @@ class BuildingFile(models.Model):
             if k in ['measures', 'reports', 'scenarios']:
                 continue
 
-            if md.find_column('PropertyState', k):
+            # Check if the column exists, if not, then create one.
+
+            if ('PropertyState', k) in db_columns:
                 create_data[k] = v
             else:
-                # TODO: break out columns in the extra data that should be part of the
-                # PropertyState and which ones should be added to some other class that
-                # doesn't exist yet.
                 extra_data[k] = v
-                # create columns, if needed, for the extra_data fields
-
-                Column.objects.get_or_create(
-                    organization_id=organization_id,
-                    column_name=k,
-                    table_name='PropertyState',
-                    is_extra_data=True,
-                )
 
         # always create the new object, then decide if we need to merge it.
         # create a new property_state for the object and promote to a new property_view
         property_state = PropertyState.objects.create(**create_data)
         property_state.extra_data = extra_data
         property_state.save()
+
+        Column.save_column_names(property_state)
 
         PropertyAuditLog.objects.create(
             organization_id=organization_id,
@@ -247,8 +239,10 @@ class BuildingFile(models.Model):
 
             # assume the same cycle id as the former state.
             # should merge_state also copy/move over the relationships?
-            merged_state, changed = merge_state(merged_state, property_view.state, property_state,
-                                                get_state_attrs([property_view.state, property_state]))
+            merged_state = merge_state(merged_state,
+                                       property_view.state,
+                                       property_state,
+                                       get_state_attrs([property_view.state, property_state]))
 
             # log the merge
             # Not a fan of the parent1/parent2 logic here, seems error prone, what this

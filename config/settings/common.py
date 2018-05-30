@@ -100,6 +100,9 @@ INSTALLED_APPS = (
     'django_filters',
     'rest_framework',
     'rest_framework_swagger',
+    'oauth2_provider',
+    'oauth2_jwt_provider',
+    'crispy_forms',  # needed to squash warnings around collectstatic with rest_framework
 )
 
 SEED_CORE_APPS = (
@@ -262,6 +265,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Django Rest Framework
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
+        'oauth2_provider.ext.rest_framework.OAuth2Authentication',
         'rest_framework.authentication.SessionAuthentication',
         'seed.authentication.SEEDAuthentication',
     ),
@@ -277,12 +281,14 @@ REST_FRAMEWORK = {
     'DATETIME_INPUT_FORMATS': (
         '%Y:%m:%d', 'iso-8601', '%Y-%m-%d'
     ),
-    'EXCEPTION_HANDLER': 'seed.exception_handler.custom_exception_handler'
+    'EXCEPTION_HANDLER': 'seed.exception_handler.custom_exception_handler',
+
 }
 
 SWAGGER_SETTINGS = {
     "exclude_namespaces": ["app"],  # List URL namespaces to ignore
-    'APIS_SORTER': 'alpha'
+    'APIS_SORTER': 'alpha',
+    'LOGOUT_URL': '/accounts/logout',
 }
 
 # Certification

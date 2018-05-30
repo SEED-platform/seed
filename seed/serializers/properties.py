@@ -17,6 +17,7 @@ from rest_framework import serializers
 from rest_framework.fields import empty
 
 from seed.models import (
+    AUDIT_USER_CREATE,
     AUDIT_USER_EDIT,
     GreenAssessmentProperty,
     PropertyAuditLog,
@@ -86,7 +87,7 @@ class PropertyAuditLogReadOnlySerializer(serializers.BaseSerializer):
             'source': obj.get_record_type_display(),
             'filename': obj.import_filename,
             'changed_fields': changed_fields,
-            'description': description
+            'description': str(description)
         }
 
 
@@ -147,13 +148,15 @@ class PropertyStateSerializer(serializers.ModelSerializer):
     analysis_state = ChoiceField(choices=PropertyState.ANALYSIS_STATE_TYPES)
 
     # support the pint objects
-    gross_floor_area_pint = PintQuantitySerializerField(allow_null=True)
-    conditioned_floor_area_pint = PintQuantitySerializerField(allow_null=True)
-    occupied_floor_area_pint = PintQuantitySerializerField(allow_null=True)
-    site_eui_pint = PintQuantitySerializerField(allow_null=True)
-    source_eui_weather_normalized_pint = PintQuantitySerializerField(allow_null=True)
-    site_eui_weather_normalized_pint = PintQuantitySerializerField(allow_null=True)
-    source_eui_pint = PintQuantitySerializerField(allow_null=True)
+    conditioned_floor_area = PintQuantitySerializerField(allow_null=True)
+    gross_floor_area = PintQuantitySerializerField(allow_null=True)
+    occupied_floor_area = PintQuantitySerializerField(allow_null=True)
+    site_eui = PintQuantitySerializerField(allow_null=True)
+    site_eui_modeled = PintQuantitySerializerField(allow_null=True)
+    source_eui_weather_normalized = PintQuantitySerializerField(allow_null=True)
+    source_eui = PintQuantitySerializerField(allow_null=True)
+    source_eui_modeled = PintQuantitySerializerField(allow_null=True)
+    site_eui_weather_normalized = PintQuantitySerializerField(allow_null=True)
 
     # to support the old state serializer method with the PROPERTY_STATE_FIELDS variables
     import_file_id = serializers.IntegerField(allow_null=True, read_only=True)
@@ -187,35 +190,35 @@ class PropertyStateSerializer(serializers.ModelSerializer):
 
         return result
 
-    # def create(self, validated_data):
-    #     """Need to update this method to add in the measures, scenarios, and files"""
-    #     return new_object
-
 
 class PropertyStateWritableSerializer(serializers.ModelSerializer):
     """
     Used by PropertyViewAsState as a nested serializer
 
-    Not sure why this is different than PropertyStateSerializer
+    This serializer is for use with the PropertyViewAsStateSerializer such that
+    PropertyState can be created and updated through a single call to the
+    associated PropertyViewViewSet.
     """
     extra_data = serializers.JSONField(required=False)
     measures = PropertyMeasureSerializer(source='propertymeasure_set', many=True, read_only=True)
     scenarios = ScenarioSerializer(many=True, read_only=True)
     files = BuildingFileSerializer(source='building_files', many=True, read_only=True)
-    analysis_state = ChoiceField(choices=PropertyState.ANALYSIS_STATE_TYPES)
+    analysis_state = ChoiceField(choices=PropertyState.ANALYSIS_STATE_TYPES, required=False)
 
     # to support the old state serializer method with the PROPERTY_STATE_FIELDS variables
     import_file_id = serializers.IntegerField(allow_null=True, read_only=True)
-    organization_id = serializers.IntegerField()
+    organization_id = serializers.IntegerField(read_only=True)
 
     # support the pint objects
-    gross_floor_area_pint = PintQuantitySerializerField(allow_null=True)
-    conditioned_floor_area_pint = PintQuantitySerializerField(allow_null=True)
-    occupied_floor_area_pint = PintQuantitySerializerField(allow_null=True)
-    site_eui_pint = PintQuantitySerializerField(allow_null=True)
-    source_eui_weather_normalized_pint = PintQuantitySerializerField(allow_null=True)
-    site_eui_weather_normalized_pint = PintQuantitySerializerField(allow_null=True)
-    source_eui_pint = PintQuantitySerializerField(allow_null=True)
+    conditioned_floor_area = PintQuantitySerializerField(allow_null=True, required=False)
+    gross_floor_area = PintQuantitySerializerField(allow_null=True, required=False)
+    occupied_floor_area = PintQuantitySerializerField(allow_null=True, required=False)
+    site_eui = PintQuantitySerializerField(allow_null=True, required=False)
+    site_eui_modeled = PintQuantitySerializerField(allow_null=True, required=False)
+    source_eui_weather_normalized = PintQuantitySerializerField(allow_null=True, required=False)
+    source_eui = PintQuantitySerializerField(allow_null=True, required=False)
+    source_eui_modeled = PintQuantitySerializerField(allow_null=True, required=False)
+    site_eui_weather_normalized = PintQuantitySerializerField(allow_null=True, required=False)
 
     class Meta:
         fields = '__all__'
@@ -280,7 +283,9 @@ class PropertyViewListSerializer(serializers.ListSerializer):
                 state = PropertyStateSerializer(item.state).data
                 representation = OrderedDict((
                     ('id', item.id),
-                    ('property_id', item.property_id),
+                    ('property', item.property_id),
+                    ('created', item.property.created),
+                    ('updated', item.property.updated),
                     ('state', state),
                     ('cycle', cycle),
                 ))
@@ -315,13 +320,16 @@ class PropertyViewAsStateSerializer(serializers.ModelSerializer):
     source = serializers.SerializerMethodField(read_only=True)
     taxlots = serializers.SerializerMethodField(read_only=True)
 
+    created = serializers.SerializerMethodField(read_only=True)
+    updated = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = PropertyView
         validators = []
         fields = ('id', 'state', 'property', 'cycle',
                   'changed_fields', 'date_edited',
                   'certifications', 'filename', 'history',
-                  'org_id', 'source', 'taxlots')
+                  'org_id', 'source', 'taxlots', 'created', 'updated')
 
     def __init__(self, instance=None, data=empty, **kwargs):
         """Override __init__ to get audit logs if instance is passed"""
@@ -351,9 +359,7 @@ class PropertyViewAsStateSerializer(serializers.ModelSerializer):
                 ).data
             except ValueError:
                 state = json.loads(state)
-            required = True if self.context['request'].method in [
-                'PUT', 'POST'
-            ] else False
+            required = True if self.context['request'].method in ['PUT', 'POST'] else False
             org = state.get('organization')
             org_id = org if org else org_id
             if not org_id and required:
@@ -438,10 +444,15 @@ class PropertyViewAsStateSerializer(serializers.ModelSerializer):
         cycle_id = conv_value(validated_data.pop('cycle'))
         validated_data['cycle_id'] = cycle_id
         new_property_state_serializer = PropertyStateWritableSerializer(data=state)
-        if new_property_state_serializer.is_valid():
+        if new_property_state_serializer.is_valid(raise_exception=True):
             new_state = new_property_state_serializer.save()
         instance = PropertyView.objects.create(
             state=new_state, **validated_data
+        )
+        PropertyAuditLog.objects.create(
+            organization_id=instance.property.organization_id,
+            state=instance.state, view=instance,
+            record_type=AUDIT_USER_CREATE, description='Initial audit log'
         )
         return instance
 
@@ -449,21 +460,30 @@ class PropertyViewAsStateSerializer(serializers.ModelSerializer):
         """Override update to add state"""
         state = validated_data.pop('state', None)
         if state:
+            audit_log = {
+                'state': instance.state,
+                'view': instance,
+                'organization_id': instance.property.organization_id
+            }
             # update exisiting state if PATCH
             if self.context['request'].method == 'PATCH':
                 property_state_serializer = PropertyStateWritableSerializer(
                     instance.state, data=state
                 )
-                # description = 'Updated via API PATCH call'
-                # record_type = AUDIT_USER_EDIT
+                description = 'Updated via API PATCH call'
+                record_type = AUDIT_USER_EDIT
             # otherwise create a new state
             else:
                 property_state_serializer = PropertyStateWritableSerializer(data=state)
-                # description = '["state"]'
-                # record_type = AUDIT_USER_CREATE
+                description = '["state"]'
+                record_type = AUDIT_USER_CREATE
             if property_state_serializer.is_valid():
                 new_state = property_state_serializer.save()
                 instance.state = new_state
+                audit_log.update(
+                    {'description': description, 'record_type': record_type}
+                )
+                self.update_state_audit_log(new_state, **audit_log)
         cycle_id = conv_value(validated_data.pop('cycle', None))
         if cycle_id:
             instance.cycle_id = cycle_id
@@ -521,6 +541,32 @@ class PropertyViewAsStateSerializer(serializers.ModelSerializer):
         return [
             TaxLotViewSerializer(lot).data for lot in lot_views
         ] if lot_views else None
+
+    def get_created(self, obj):
+        """Return the Property creation as string"""
+        return obj.property.created
+
+    def get_updated(self, obj):
+        """Return the Property creation as string"""
+        return obj.property.updated
+
+    def update_state_audit_log(self, new_state, **kwargs):
+        state = kwargs.pop('state')
+        view_audit_log = PropertyAuditLog.objects.filter(
+            state=state
+        ).first()
+        if not view_audit_log:
+            kwargs.update(
+                {'description': "Initial audit log added on update."}
+            )
+
+        audit_log = PropertyAuditLog.objects.create(
+            parent1=view_audit_log,
+            parent_state1=state,
+            state=new_state,
+            **kwargs
+        )
+        return audit_log
 
 
 def conv_value(val):

@@ -9,17 +9,13 @@ All rights reserved
 
 Tests for serializers used by GreenAssessments/Energy Certifications
 """
+import datetime
 from collections import OrderedDict
 
-import datetime
 import mock
 from django.core.exceptions import ValidationError
 
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.models import (
-    Organization,
-    OrganizationUser,
-)
 from seed.serializers.certification import (
     GreenAssessmentURLField,
     PropertyViewField,
@@ -33,6 +29,7 @@ from seed.test_helpers.fake import (
     FakeGreenAssessmentPropertyFactory
 )
 from seed.tests.util import DeleteModelsTestCase
+from seed.utils.organizations import create_organization
 from seed.utils.strings import titlecase
 
 
@@ -50,8 +47,7 @@ class TestFields(DeleteModelsTestCase):
         }
         self.user = User.objects.create_superuser(
             email='test_user@demo.com', **user_details)
-        self.org = Organization.objects.create()
-        OrganizationUser.objects.create(user=self.user, organization=self.org)
+        self.org, _, _ = create_organization(self.user)
         self.property_view_factory = FakePropertyViewFactory(
             organization=self.org, user=self.user
         )
@@ -135,8 +131,7 @@ class TestGreenAssessmentPropertySerializer(DeleteModelsTestCase):
         }
         self.user = User.objects.create_superuser(
             email='test_user@demo.com', **user_details)
-        self.org = Organization.objects.create()
-        OrganizationUser.objects.create(user=self.user, organization=self.org)
+        self.org, _, _ = create_organization(self.user)
         self.property_view_factory = FakePropertyViewFactory(
             organization=self.org, user=self.user
         )
@@ -157,10 +152,7 @@ class TestGreenAssessmentPropertySerializer(DeleteModelsTestCase):
             'assessment': self.assessment,
             'view': self.property_view,
         }
-        self.urls = [
-            ('http://example.com', 'example.com'),
-            ('http://example.org', 'example.org')
-        ]
+        self.urls = ['http://example.com', 'http://example.org']
 
     @mock.patch('seed.serializers.certification.GreenAssessmentURL')
     def test_create(self, mock_url_model):
@@ -192,8 +184,7 @@ class TestGreenAssessmentPropertySerializer(DeleteModelsTestCase):
             property_assessment=instance
         )
         mock_url_model.assert_called_with(
-            url='http://example.org', property_assessment=gap,
-            description='example.org'
+            url='http://example.org', property_assessment=gap
         )
 
     def test_validate(self):
@@ -286,8 +277,7 @@ class TestGreenAssessmentSerializer(DeleteModelsTestCase):
         }
         self.user = User.objects.create_superuser(
             email='test_user@demo.com', **user_details)
-        self.org = Organization.objects.create()
-        OrganizationUser.objects.create(user=self.user, organization=self.org)
+        self.org, _, _ = create_organization(self.user)
         self.ga_factory = FakeGreenAssessmentFactory(organization=self.org)
         assessment_data = {
             'name': 'Test',

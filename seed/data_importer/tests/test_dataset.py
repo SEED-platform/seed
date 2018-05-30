@@ -11,7 +11,7 @@ from django.core.urlresolvers import reverse
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tests.util import DataMappingBaseTestCase
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.models import Organization, OrganizationUser
+from seed.utils.organizations import create_organization
 
 
 class DeleteFileViewTests(DataMappingBaseTestCase):
@@ -26,12 +26,11 @@ class DeleteFileViewTests(DataMappingBaseTestCase):
             'email': 'test_user@demo.com'
         }
         self.user = User.objects.create_user(**user_details)
-        self.org = Organization.objects.create()
-        self.org_2 = org_2 = Organization.objects.create()
-        OrganizationUser.objects.create(user=self.user, organization=self.org)
+        self.org, _, _ = create_organization(self.user, "test-organization-a")
+        self.org_2, _, _ = create_organization()
 
         self.import_record = ImportRecord.objects.create(owner=self.user, super_organization=self.org)
-        self.import_record_2 = ImportRecord.objects.create(owner=self.user, super_organization=org_2)
+        self.import_record_2 = ImportRecord.objects.create(owner=self.user, super_organization=self.org_2)
         self.import_file_1 = ImportFile.objects.create(import_record=self.import_record)
         self.import_file_2 = ImportFile.objects.create(import_record=self.import_record_2)
 

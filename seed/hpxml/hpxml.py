@@ -8,6 +8,7 @@
 import logging
 import os
 import functools
+from quantityfield import ureg
 from copy import deepcopy
 
 try:
@@ -130,6 +131,10 @@ class HPXML(object):
                 el.getparent().remove(el)
             if value is None or el is None:
                 continue
+
+            # set the value to magnitude if it is a quantity
+            if isinstance(value, ureg.Quantity):
+                value = value.magnitude
             setattr(el.getparent(), el.tag[el.tag.index('}') + 1:],
                     unicode(value) if not isinstance(value, basestring) else value)
 

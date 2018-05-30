@@ -9,10 +9,10 @@ Search methods pertaining to buildings.
 """
 import json
 import logging
+import operator
 import re
 from functools import reduce
 
-import operator
 from django.db.models import Q
 from django.http.request import RawPostDataException
 
@@ -29,12 +29,10 @@ from .models import (
     Column,
 )
 from .utils import search as search_utils
-from .utils.mapping import get_mappable_types
 
 _log = logging.getLogger(__name__)
 
 
-# TODO: obsolete?
 def get_building_fieldnames():
     """returns a list of field names for the BuildingSnapshot class/model that
     will be searched against
@@ -467,7 +465,7 @@ def build_json_params(order_by, sort_reverse):
         order_by
     """
     extra_data_sort = False
-    db_columns = get_mappable_types()
+    db_columns = Column.retrieve_db_types()
     db_columns['project_building_snapshots__status_label__name'] = ''
     db_columns['project__slug'] = ''
     db_columns['canonical_building__labels'] = ''

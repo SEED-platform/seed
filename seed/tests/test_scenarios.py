@@ -5,14 +5,21 @@
 :author
 """
 
-from seed.models import Organization
+from seed.landing.models import SEEDUser as User
 from seed.test_helpers.fake import FakePropertyMeasureFactory
 from seed.tests.util import DeleteModelsTestCase
+from seed.utils.organizations import create_organization
 
 
 class TestMeasures(DeleteModelsTestCase):
     def setUp(self):
-        self.org = Organization.objects.create()
+        user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+            'email': 'test_user@demo.com'
+        }
+        self.user = User.objects.create_user(**user_details)
+        self.org, _, _ = create_organization(self.user)
 
     def test_scenario_meters(self):
         ps = FakePropertyMeasureFactory(self.org).get_property_state()

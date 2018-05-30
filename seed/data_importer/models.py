@@ -1084,8 +1084,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
             DATA_STATE_MAPPING
         )
 
-        assert kls in [PropertyState, TaxLotState], \
-            "Must be one of our State objects [PropertyState, TaxLotState]!"
+        assert kls in [PropertyState, TaxLotState], "Must be one of our State objects [PropertyState, TaxLotState]!"
 
         return kls.objects.filter(
             data_state__in=[DATA_STATE_MAPPING],
