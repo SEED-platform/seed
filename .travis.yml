@@ -46,7 +46,7 @@ env:
     - DOCKER_COMPOSE_VERSION=1.16.0
     - DJANGO_SETTINGS_MODULE=config.settings.travis
     - DISPLAY=:99.0
-    - COVERALLS_REPO_TOKEN=1l4RlmhWLZwqzwy9cQQjuOC3jzKfzLtnM
+    - COVERALLS_REPO_TOKEN=y8UqJm8Bri5ZP8hr3YZM3guBaUKpsfoCv
   matrix:
     - TOX_ENV=python
     - TOX_ENV=flake8
