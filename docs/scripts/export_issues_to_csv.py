@@ -17,8 +17,8 @@ repo = gh.repository('SEED-platform', 'seed')
 print(repo)
 
 # Initialize some data
-header = ["Order", "Title", "Category", "Priority", "Impact", "Estimate", "Weighted Priority", "Note", "Github ID",
-          "Type/Labels", "Github URL", "Pivotal URL"]
+header = ["Github URL", "Order", "Title", "Category", "Priority", "Impact", "Estimate", "Weighted Priority", "Note", "Github ID",
+          "Type/Labels", "Pivotal URL"]
 lines = []
 ids_added = []
 
@@ -30,6 +30,7 @@ def add_issue_to_csv(issue):
     labels = [l.name for l in issue.labels()]
     ids_added.append(issue.number)
     line = []
+    line.append(issue.number)  # Github ID
     line.append(len(lines))  # Order
     line.append(issue.title)  # Title
     line.append("")  # category
@@ -70,7 +71,6 @@ def add_issue_to_csv(issue):
     # line.append("") # lbnl impact
     line.append("")  # weighted impact
     line.append("")  # Notes
-    line.append(issue.number)  # Github ID
     line.append(",".join(labels))  # Type / Labels
     line.append(issue.html_url)  # Github URL
     line.append("")  # Pivotal URL
@@ -83,7 +83,7 @@ if args.csv:
 
     print("Finding P-1 Issues")
     for issue in repo.issues(state='open', labels='P-1'):
-        add_issue_to_csv(issue)
+       add_issue_to_csv(issue)
 
     print("Finding P-2 Issues")
     for issue in repo.issues(state='open', labels='P-2'):
@@ -95,9 +95,9 @@ if args.csv:
 
     print("Finding All Other Issues")
     for issue in repo.issues(state='open'):
-        if issue.number not in ids_added:
+        if issue.number not in ids_added and not issue.pull_request():
             add_issue_to_csv(issue)
-
+        
     # write out the lines
     with open('seed_issues.csv', 'w') as csv_file:
         writer = csv.writer(csv_file, delimiter=',')
