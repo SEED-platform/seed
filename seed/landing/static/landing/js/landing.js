@@ -8,7 +8,6 @@ BEHome.actions.vertically_center_page = function () {
   top_and_bottom_margin = (top_and_bottom_margin > 0) ? top_and_bottom_margin / 2 : 0;
   $('body').css({'padding-top': top_and_bottom_margin});
 };
-
 BEHome.actions.hide_choose_your_path = function () {
   $('.choose_your_path').hide();
 };
@@ -16,16 +15,12 @@ BEHome.actions.show_choose_your_path = function () {
   $('.choose_your_path').show();
 };
 BEHome.actions.hide_all_forms = function () {
-  $('#prefinery_iframe_inline').hide();
   $('.enter_invite_code_form').hide();
   $('.current_account_link').hide();
 };
-
-
 BEHome.actions.show_request_form = function () {
   BEHome.actions.hide_choose_your_path();
   BEHome.actions.hide_all_forms();
-  $('#prefinery_iframe_inline').show();
 };
 BEHome.actions.show_signup_form = function () {
   BEHome.actions.hide_choose_your_path();
@@ -50,8 +45,6 @@ BEHome.actions.show_unsupported_browser_message = function () {
 BEHome.actions.hide_login_form = function () {
   $('.form_title').hide();
 };
-
-
 BEHome.handlers.handle_signup_choice_button = function () {
   BEHome.actions.show_signup_form();
   return false;
@@ -70,7 +63,6 @@ BEHome.handlers.handle_cancel_button = function () {
   BEHome.actions.show_choose_your_path();
   return false;
 };
-
 BEHome.util.bind_all_handlers = function () {
   $(window).resize(BEHome.actions.vertically_center_page);
   $('.btn_landing_landing.invite').on('click', BEHome.handlers.handle_signup_choice_button);
@@ -79,7 +71,6 @@ BEHome.util.bind_all_handlers = function () {
   $('.already_signed_up').on('click', BEHome.handlers.handle_login_button);
   $('.cancel_btn').on('click', BEHome.handlers.handle_cancel_button);
 };
-
 $(function () {
   setTimeout(BEHome.actions.vertically_center_page, 200);
   BEHome.actions.hide_all_forms();

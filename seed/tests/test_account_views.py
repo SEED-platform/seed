@@ -5,8 +5,8 @@
 :author
 """
 import json
-
 from datetime import date
+
 from django.core.urlresolvers import reverse_lazy, NoReverseMatch
 from django.test import TestCase
 
@@ -24,6 +24,7 @@ from seed.models.cycles import Cycle
 from seed.models.properties import PropertyState
 from seed.models.tax_lots import TaxLotState
 from seed.tests.util import FakeRequest
+from seed.utils.organizations import create_organization
 from seed.views.main import _get_default_org
 from seed.views.organizations import _dict_org
 from seed.views.users import _get_js_role, _get_role_from_js
@@ -43,15 +44,14 @@ class AccountsViewTests(TestCase):
             'last_name': 'Energy',
         }
         self.user = User.objects.create_user(**user_details)
-        self.org = Organization.objects.create(name='my org')
+        self.org, _, _ = create_organization(self.user, "my org")
         self.cycle = Cycle.objects.filter(organization=self.org).first()
-        self.org.add_member(self.user)
         self.client.login(**user_details)
         self.fake_request = FakeRequest(user=self.user)
         self.maxDiff = None
 
         year = date.today().year - 1
-        self.cal_year_name = "{} Calendar Year".format(year)
+        self.cal_year_name = "{} Calendar Year".format(year).encode('utf-8')
 
     def test_dict_org(self):
         """_dict_org turns our org structure into a json payload."""
@@ -65,6 +65,9 @@ class AccountsViewTests(TestCase):
                 'id': self.user.pk}],
             'number_of_users': 1,
             'name': 'my org',
+            'display_significant_figures': 2,
+            'display_units_area': 'ft**2',
+            'display_units_eui': 'kBtu/ft**2/year',
             'user_role': 'owner',
             'is_parent': True,
             'parent_id': self.org.pk,
@@ -74,7 +77,7 @@ class AccountsViewTests(TestCase):
             'cycles': [{
                 'num_taxlots': 0,
                 'num_properties': 0,
-                'name': self.cal_year_name,
+                'name': str(self.cal_year_name),
                 'cycle_id': self.cycle.pk
             }],
             'created': self.org.created.strftime('%Y-%m-%d'),
@@ -109,10 +112,9 @@ class AccountsViewTests(TestCase):
     def test_dic_org_w_member_in_parent_and_child(self):
         """What happens when a user has a role in parent and child."""
 
-        new_org = Organization.objects.create(name="sub")
+        new_org, _, _ = create_organization(self.user, "sub")
         new_org.parent_org = self.org
         new_org.save()
-        new_org.add_member(self.user)
         new_cycle = Cycle.objects.filter(organization=new_org).first()
 
         expected_multiple_org_payload = {
@@ -124,17 +126,20 @@ class AccountsViewTests(TestCase):
                     'email': u'test_user@demo.com',
                     'id': self.user.pk}],
                 'number_of_users': 1,
-                'name': 'sub',
+                'name': u'sub',
                 'user_role': 'owner',
                 'is_parent': False,
                 'parent_id': self.org.pk,
                 'org_id': new_org.pk,
                 'id': new_org.pk,
                 'user_is_owner': True,
+                'display_units_area': u'ft**2',
+                'display_units_eui': u'kBtu/ft**2/year',
+                'display_significant_figures': 2,
                 'cycles': [{
                     'num_taxlots': 0,
                     'num_properties': 0,
-                    'name': self.cal_year_name,
+                    'name': str(self.cal_year_name),
                     'cycle_id': new_cycle.pk
                 }],
                 'created': self.org.created.strftime('%Y-%m-%d'),
@@ -145,17 +150,20 @@ class AccountsViewTests(TestCase):
                 'email': u'test_user@demo.com',
                 'id': self.user.pk}],
             'number_of_users': 1,
-            'name': 'my org',
+            'name': u'my org',
             'user_role': 'owner',
             'is_parent': True,
             'parent_id': self.org.pk,
             'org_id': self.org.pk,
             'id': self.org.pk,
             'user_is_owner': True,
+            'display_significant_figures': 2,
+            'display_units_area': u'ft**2',
+            'display_units_eui': u'kBtu/ft**2/year',
             'cycles': [{
                 'num_taxlots': 0,
                 'num_properties': 0,
-                'name': self.cal_year_name,
+                'name': str(self.cal_year_name),
                 'cycle_id': self.cycle.pk
             }],
             'created': self.org.created.strftime('%Y-%m-%d'),
@@ -218,12 +226,11 @@ class AccountsViewTests(TestCase):
 
     def test_get_organization_user_not_owner(self):
         """test for the case where a user does not have access"""
-        other_org = Organization.objects.create(name='not my org')
         other_user = User.objects.create(
             username='tester@be.com',
             email='tester@be.com',
         )
-        other_org.add_member(other_user)
+        other_org, _, _ = create_organization(other_user, "not my org")
 
         resp = self.client.get(
             reverse_lazy('api:v2:organizations-detail', args=[other_org.id]),
@@ -519,9 +526,12 @@ class AccountsViewTests(TestCase):
     def test_add_shared_fields(self):
         url = reverse_lazy('api:v2:organizations-save-settings', args=[self.org.pk])
 
-        # create a couple columns for use.
-        Column.objects.create(table_name='PropertyState', column_name='ubid', organization_id=self.org.pk)
-        Column.objects.create(table_name='PropertyState', column_name='address_line_1', organization_id=self.org.pk)
+        columns = list(Column.objects.filter(organization=self.org).values('id', 'table_name', 'column_name'))
+        ubid_id = [c for c in columns if c['table_name'] == 'PropertyState' and c['column_name'] == 'ubid'][0]['id']
+        address_line_1_id = [c for c in columns if c['table_name'] == 'PropertyState'
+                             and c['column_name'] == 'address_line_1'][0]['id']
+
+        # There are already several columns in the database due to the create_organization method
         payload = {
             u'organization_id': self.org.pk,
             u'organization': {
@@ -530,22 +540,24 @@ class AccountsViewTests(TestCase):
                 u'name': self.org.name,
                 u'public_fields': [
                     {
+                        "id": ubid_id,
                         "displayName": "UBID",
                         "name": "ubid",
                         "dataType": "string",
                         "related": False,
                         "sharedFieldType": "Public",
-                        "table": "PropertyState",
-                        "dbName": "ubid",
+                        "table_name": "PropertyState",
+                        "column_name": "ubid",
                         "public_checked": True
                     }, {
+                        "id": address_line_1_id,
                         "displayName": "Address Line 1 (Property)",
                         "name": "address_line_1",
                         "dataType": "string",
                         "related": False,
-                        "dbName": "address_line_1",
+                        "column_name": "address_line_1",
                         "sharedFieldType": "None",
-                        "table": "PropertyState",
+                        "table_name": "PropertyState",
                         "public_checked": True
                     }
                 ]
@@ -940,8 +952,7 @@ class AuthViewTests(TestCase):
             'last_name': 'Energy',
         }
         self.user = User.objects.create_user(**user_details)
-        self.org = Organization.objects.create(name='my org')
-        self.org.add_member(self.user)
+        self.org, _, _ = create_organization(self.user, "my org")
         self.client.login(**user_details)
 
     def test_is_authorized_base(self):
@@ -966,12 +977,11 @@ class AuthViewTests(TestCase):
             })
 
     def test_is_authorized_parent_org_owner(self):
-        other_org = Organization.objects.create(name='not my org')
         other_user = User.objects.create(
             username='tester@be.com',
             email='tester@be.com',
         )
-        other_org.add_member(other_user)
+        other_org, _, _ = create_organization(other_user, "not my org")
         other_org.parent_org = self.org
         other_org.save()
         resp = self.client.post(
@@ -993,12 +1003,11 @@ class AuthViewTests(TestCase):
             })
 
     def test_is_authorized_not_in_org(self):
-        other_org = Organization.objects.create(name='not my org')
         other_user = User.objects.create(
             username='tester@be.com',
             email='tester@be.com',
         )
-        other_org.add_member(other_user)
+        other_org, _, _ = create_organization(other_user, "not my org")
         resp = self.client.post(
             reverse_lazy("api:v2:users-is-authorized",
                          args=[self.user.pk]) + '?organization_id=' + str(other_org.id),

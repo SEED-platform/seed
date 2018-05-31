@@ -16,7 +16,7 @@ angular.module('BE.seed.controller.security', [])
       user_service,
       user_profile_payload
     ) {
-    $scope.auth = auth_payload.auth;
+    $scope.is_superuser = auth_payload.auth.requires_superuser;
     $scope.username = user_profile_payload.first_name + ' ' + user_profile_payload.last_name;
 
     /**

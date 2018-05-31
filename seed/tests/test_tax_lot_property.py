@@ -10,14 +10,11 @@ from django.core.urlresolvers import reverse_lazy
 from django.test import TestCase
 
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.models import (
-    Organization,
-    OrganizationUser,
-)
 from seed.models import (
     Cycle,
     PropertyView,
     TaxLotProperty,
+    Column,
 )
 from seed.test_helpers.fake import (
     FakePropertyFactory,
@@ -25,6 +22,7 @@ from seed.test_helpers.fake import (
     FakePropertyViewFactory,
     FakeStatusLabelFactory
 )
+from seed.utils.organizations import create_organization
 
 
 class TestTaxLotProperty(TestCase):
@@ -38,10 +36,9 @@ class TestTaxLotProperty(TestCase):
             'password': 'test_pass',
         }
         self.user = User.objects.create_superuser(email='test_user@demo.com', **user_details)
-        self.org = Organization.objects.create()
+        self.org, _, _ = create_organization(self.user)
         # create a default cycle
         self.cycle = Cycle.objects.filter(organization_id=self.org).first()
-        OrganizationUser.objects.create(user=self.user, organization=self.org)
         self.property_factory = FakePropertyFactory(
             organization=self.org
         )
@@ -76,7 +73,8 @@ class TestTaxLotProperty(TestCase):
             'pm_property_id', 'use_description', 'source_type', 'year_built', 'release_date',
             'gross_floor_area', 'owner_city_state', 'owner_telephone', 'recent_sale_date',
         ]
-        data = TaxLotProperty.get_related(qs, columns)
+        columns_from_database = Column.retrieve_all(self.org.id, 'property', False)
+        data = TaxLotProperty.get_related(qs, columns, columns_from_database)
 
         self.assertEqual(len(data), 50)
         self.assertEqual(len(data[0]['related']), 0)
@@ -87,15 +85,9 @@ class TestTaxLotProperty(TestCase):
             p = self.property_view_factory.get_property_view()
             self.properties.append(p.id)
 
-        columns = [
-            'address_line_1', 'generation_date', 'energy_alerts', 'space_alerts',
-            'building_count', 'owner', 'source_eui', 'jurisdiction_tax_lot_id',
-            'city', 'confidence', 'district', 'best_guess_confidence',
-            'site_eui', 'building_certification', 'modified', 'match_type',
-            'source_eui_weather_normalized', u'id', 'property_name', 'conditioned_floor_area',
-            'pm_property_id', 'use_description', 'source_type', 'year_built', 'release_date',
-            'gross_floor_area', 'owner_city_state', 'owner_telephone', 'recent_sale_date',
-        ]
+        columns = []
+        for c in Column.retrieve_all(self.org.id, 'property', False):
+            columns.append(c['name'])
 
         # call the API
         url = reverse_lazy('api:v2.1:tax_lot_properties-csv')
@@ -112,7 +104,8 @@ class TestTaxLotProperty(TestCase):
         # parse the content as array
         data = response.content.split('\n')
 
-        self.assertTrue('Address Line 1 (Property)' in data[0].split(','))
+        print data
+        self.assertTrue('Address Line 1' in data[0].split(','))
         self.assertTrue('Property Labels\r' in data[0].split(','))
 
         self.assertEqual(len(data), 53)

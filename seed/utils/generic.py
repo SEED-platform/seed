@@ -9,8 +9,8 @@ import logging
 import math
 from datetime import datetime
 
-from django.core import serializers
 from django.contrib.postgres.fields import JSONField
+from django.core import serializers
 
 
 class MarkdownPackageDebugFilter(logging.Filter):

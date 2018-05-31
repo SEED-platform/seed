@@ -12,11 +12,10 @@ from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from rest_framework import status
 from rest_framework import viewsets, serializers
-from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import detail_route
 
+from seed.utils.organizations import create_organization
 from seed import tasks
-from seed.authentication import SEEDAuthentication
 from seed.decorators import ajax_request_class
 from seed.decorators import get_prog_key
 from seed.landing.models import SEEDUser as User
@@ -31,7 +30,6 @@ from seed.lib.superperms.orgs.models import (
 )
 from seed.models import Cycle, PropertyView, TaxLotView, Column
 from seed.utils.api import api_endpoint_class
-from seed.utils.organizations import create_organization
 
 
 def _dict_org(request, organizations):
@@ -83,6 +81,9 @@ def _dict_org(request, organizations):
             'sub_orgs': _dict_org(request, o.child_orgs.all()),
             'is_parent': o.is_parent,
             'parent_id': o.parent_id,
+            'display_units_eui': o.display_units_eui,
+            'display_units_area': o.display_units_area,
+            'display_significant_figures': o.display_significant_figures,
             'cycles': cycles,
             'created': o.created.strftime('%Y-%m-%d') if o.created else '',
         }
@@ -202,7 +203,6 @@ class OrganizationUsersSerializer(serializers.Serializer):
 
 class OrganizationViewSet(viewsets.ViewSet):
     raise_exception = True
-    authentication_classes = (SessionAuthentication, SEEDAuthentication)
 
     @api_endpoint_class
     @ajax_request_class
@@ -573,6 +573,40 @@ class OrganizationViewSet(viewsets.ViewSet):
         desired_name = posted_org.get('name', None)
         if desired_name is not None:
             org.name = desired_name
+
+        def is_valid_pint_spec(choice_tuples, s):
+            """choice_tuples is std model ((value, label), ...)"""
+            return (s is not None) and (s in [choice[0] for choice in choice_tuples])
+
+        def warn_bad_pint_spec(kind, unit_string):
+            if unit_string is not None:
+                _log.warn("got bad {0} unit string {1} for org {2}".format(
+                    kind, unit_string, org.name))
+
+        def warn_bad_units(kind, unit_string):
+            _log.warn("got bad {0} unit string {1} for org {2}".format(
+                kind, unit_string, org.name))
+
+        desired_display_units_eui = posted_org.get('display_units_eui')
+        if is_valid_pint_spec(Organization.MEASUREMENT_CHOICES_EUI, desired_display_units_eui):
+            org.display_units_eui = desired_display_units_eui
+        else:
+            warn_bad_pint_spec('eui', desired_display_units_eui)
+
+        desired_display_units_area = posted_org.get('display_units_area')
+        if is_valid_pint_spec(Organization.MEASUREMENT_CHOICES_AREA, desired_display_units_area):
+            org.display_units_area = desired_display_units_area
+        else:
+            warn_bad_pint_spec('area', desired_display_units_area)
+
+        desired_display_significant_figures = posted_org.get('display_significant_figures')
+        if isinstance(desired_display_significant_figures, int) \
+                and desired_display_significant_figures >= 0:
+            org.display_significant_figures = desired_display_significant_figures
+        elif desired_display_significant_figures is not None:
+            _log.warn("got bad sig figs {0} for org {1}".format(
+                desired_display_significant_figures, org.name))
+
         org.save()
 
         # Update the selected exportable fields.
@@ -586,7 +620,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
             # for now just iterate over this to grab the new columns.
             for col in new_public_column_names:
-                new_col = Column.objects.filter(organization=org, table_name=col['table'], column_name=col['dbName'])
+                new_col = Column.objects.filter(organization=org, id=col['id'])
                 if len(new_col) == 1:
                     new_col = new_col.first()
                     new_col.shared_field_type = Column.SHARED_PUBLIC
@@ -655,10 +689,10 @@ class OrganizationViewSet(viewsets.ViewSet):
         for c in columns:
             if c['sharedFieldType'] == 'Public':
                 new_column = {
-                    'table': c['table'],
+                    'table_name': c['table_name'],
                     'name': c['name'],
-                    'db_name': c['dbName'],  # this is the field name in the database. The other name can have tax_
-                    'display_name': c['displayName']
+                    'column_name': c['column_name'],  # this is the field name in the db. The other name can have tax_
+                    'display_name': c['display_name']
                 }
                 result['public_fields'].append(new_column)
 
@@ -710,6 +744,8 @@ class OrganizationViewSet(viewsets.ViewSet):
                 'status': 'error',
                 'message': 'User with email address (%s) does not exist' % email
             }, status=status.HTTP_404_NOT_FOUND)
+
+        # Sub orgs do not get their own list of columns
         sub_org = Organization.objects.create(
             name=body['sub_org_name']
         )

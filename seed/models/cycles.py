@@ -39,7 +39,7 @@ class Cycle(models.Model):
                 name=cycle_name,
                 organization=organization,
                 start=datetime(year, 1, 1, tzinfo=timezone.get_current_timezone()),
-                end=datetime(year + 1, 12, 31, tzinfo=timezone.get_current_timezone())
+                end=datetime(year + 1, 1, 1, tzinfo=timezone.get_current_timezone())
             )
         else:
             return cycle

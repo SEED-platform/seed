@@ -20,6 +20,12 @@ from seed.models import (
     Cycle,
     PropertyView
 )
+from seed.lib.superperms.orgs.models import (
+    Organization
+)
+from seed.serializers.pint import (
+    apply_display_unit_preferences,
+)
 from seed.utils.api import drf_api_endpoint
 from seed.utils.generic import median, round_down_hundred_thousand
 
@@ -77,6 +83,7 @@ class Report(DecoratorMixin(drf_api_endpoint), ViewSet):
             property__organization_id=organization_id,
             cycle_id__in=cycles
         )
+        organization = Organization.objects.get(pk=organization_id)
         results = []
         for cycle in cycles:
             property_views = all_property_views.filter(cycle_id=cycle)
@@ -97,7 +104,8 @@ class Report(DecoratorMixin(drf_api_endpoint), ViewSet):
                     result = self.get_data(property_view, x_var, y_var)
                     if result:
                         result['yr_e'] = cycle.end.strftime('%Y')
-                        data.append(result)
+                        de_unitted_result = apply_display_unit_preferences(organization, result)
+                        data.append(de_unitted_result)
                         count_with_data.append(property_pk)
             result = {
                 "cycle_id": cycle.pk,

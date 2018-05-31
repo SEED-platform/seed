@@ -6,34 +6,18 @@ angular.module('BE.seed.controller.inventory_detail_settings', [])
   .controller('inventory_detail_settings_controller', [
     '$scope',
     '$window',
-    '$uibModalInstance',
     '$stateParams',
+    '$uibModal',
+    'Notification',
     'inventory_service',
+    'modified_service',
     'user_service',
+    'urls',
     'columns',
+    'profiles',
     '$translate',
     'i18nService', // from ui-grid
-    function ($scope, $window, $uibModalInstance, $stateParams, inventory_service, user_service, columns, $translate, i18nService) {
-
-      $scope.translations = {};
-
-      var needed_translations = [
-        'Reset Defaults'
-      ];
-
-      $translate(needed_translations).then(function succeeded (translations) {
-        $scope.translations = translations;
-      }, function failed (translationIds) {
-        $scope.translations = translationIds;
-      });
-
-      // let angular-translate be in charge ... need
-      // to feed the language-only part of its $translate setting into
-      // ui-grid's i18nService
-      var stripRegion = function (languageTag) {
-        return _.first(languageTag.split('_'));
-      };
-      i18nService.setCurrentLang(stripRegion($translate.proposedLanguage() || $translate.use()));
+    function ($scope, $window, $stateParams, $uibModal, Notification, inventory_service, modified_service, user_service, urls, columns, profiles, $translate, i18nService) {
 
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.inventory = {
@@ -43,31 +27,105 @@ angular.module('BE.seed.controller.inventory_detail_settings', [])
         id: $stateParams.cycle_id
       };
 
-      var localStorageKey = 'grid.' + $scope.inventory_type + '.detail';
+      $scope.profiles = profiles;
+      var validProfileIds = _.map(profiles, 'id');
+      var lastProfileId = inventory_service.get_last_detail_profile();
+      if (_.includes(validProfileIds, lastProfileId)) {
+        $scope.currentProfile = _.find($scope.profiles, {id: lastProfileId});
+      } else {
+        $scope.currentProfile = _.first($scope.profiles);
+        if ($scope.currentProfile) inventory_service.save_last_detail_profile($scope.currentProfile.id, $scope.inventory_type);
+      }
 
-      var restoreDefaults = function () {
-        inventory_service.removeSettings(localStorageKey);
-        $scope.data = inventory_service.loadSettings(localStorageKey, columns);
-        _.defer(function () {
-          // Set row selection
-          $scope.gridApi.selection.clearSelectedRows();
-          _.forEach($scope.gridApi.grid.rows, function (row) {
-            if (row.entity.visible === false) row.setSelected(false);
-            else row.setSelected(true);
+      var initializeRowSelections = function () {
+        if ($scope.gridApi) {
+          _.delay(function () {
+            $scope.$apply(function () {
+              _.forEach($scope.gridApi.grid.rows, function (row) {
+                if (row.entity.visible === false) row.setSelected(false);
+                else row.setSelected(true);
+              });
+            });
           });
-        });
+        }
       };
 
-      var saveSettings = function () {
-        $scope.data = inventory_service.reorderSettings($scope.data);
-        inventory_service.saveSettings(localStorageKey, $scope.data);
+      var setColumnsForCurrentProfile = function () {
+        var deselected_columns = columns.slice();
+        if ($scope.currentProfile) {
+          var profileColumns = _.filter($scope.currentProfile.columns, function (col) {
+            return _.find(columns, {id: col.id});
+          });
+          $scope.data = _.map(profileColumns, function (col) {
+            var c = _.remove(deselected_columns, {id: col.id})[0];
+            c.visible = true;
+            return c;
+          }).concat(_.map(deselected_columns, function (col) {
+            col.visible = false;
+            return col;
+          }));
+        } else {
+          // No profiles exist
+          $scope.data = _.map(deselected_columns, function (col) {
+            col.visible = !col.is_extra_data;
+            return col;
+          });
+          $scope.data = inventory_service.reorderSettings($scope.data);
+        }
+        initializeRowSelections();
       };
+      setColumnsForCurrentProfile();
+
+      var ignoreNextChange = true;
+      $scope.$watch('currentProfile', function (newProfile, oldProfile) {
+        if (ignoreNextChange) {
+          ignoreNextChange = false;
+          return;
+        }
+
+        if (!modified_service.isModified()) {
+          switchProfile(newProfile);
+        } else {
+          $uibModal.open({
+            template: '<div class="modal-header"><h3 class="modal-title" translate>You have unsaved changes</h3></div><div class="modal-body" translate>You will lose your unsaved changes if you switch profiles without saving. Would you like to continue?</div><div class="modal-footer"><button type="button" class="btn btn-warning" ng-click="$dismiss()" translate>Cancel</button><button type="button" class="btn btn-primary" ng-click="$close()" autofocus translate>Switch Profiles</button></div>'
+          }).result.then(function () {
+            modified_service.resetModified();
+            switchProfile(newProfile);
+          }).catch(function () {
+            ignoreNextChange = true;
+            $scope.currentProfile = oldProfile;
+          });
+        }
+      });
+
+      function switchProfile(newProfile) {
+        ignoreNextChange = true;
+        if (newProfile) {
+          $scope.currentProfile = _.find($scope.profiles, {id: newProfile.id});
+          inventory_service.save_last_detail_profile(newProfile.id, $scope.inventory_type);
+        } else {
+          $scope.currentProfile = undefined;
+        }
+
+        setColumnsForCurrentProfile();
+      }
+
+      // set up i18n
+      //
+      // let angular-translate be in charge ... need
+      // to feed the language-only part of its $translate setting into
+      // ui-grid's i18nService
+      var stripRegion = function (languageTag) {
+        return _.first(languageTag.split('_'));
+      };
+      i18nService.setCurrentLang(stripRegion($translate.proposedLanguage() || $translate.use()));
 
       var rowSelectionChanged = function () {
         _.forEach($scope.gridApi.grid.rows, function (row) {
           row.entity.visible = row.isSelected;
         });
-        saveSettings();
+        $scope.data = inventory_service.reorderSettings($scope.data);
+        modified_service.setModified();
       };
 
       $scope.updateHeight = function () {
@@ -81,7 +139,106 @@ angular.module('BE.seed.controller.inventory_detail_settings', [])
         $scope.gridApi.core.handleWindowResize();
       };
 
-      $scope.data = inventory_service.loadSettings(localStorageKey, columns);
+      var currentColumns = function () {
+        var columns = [];
+        _.forEach($scope.gridApi.grid.rows, function (row) {
+          if (row.isSelected) {
+            columns.push({
+              column_name: row.entity.column_name,
+              id: row.entity.id,
+              order: columns.length + 1,
+              pinned: false,
+              table_name: row.entity.table_name
+            });
+          }
+        });
+        return columns;
+      };
+
+      $scope.saveProfile = function () {
+        var id = $scope.currentProfile.id;
+        var profile = _.omit($scope.currentProfile, 'id');
+        profile.columns = currentColumns();
+        inventory_service.update_settings_profile(id, profile).then(function (updatedProfile) {
+          var index = _.findIndex($scope.profiles, {id: updatedProfile.id});
+          $scope.profiles[index] = updatedProfile;
+          modified_service.resetModified();
+          Notification.primary('Saved ' + $scope.currentProfile.name);
+        });
+      };
+
+      $scope.renameProfile = function () {
+        var oldProfile = angular.copy($scope.currentProfile);
+
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/settings_profile_modal.html',
+          controller: 'settings_profile_modal_controller',
+          resolve: {
+            action: _.constant('rename'),
+            data: _.constant($scope.currentProfile),
+            settings_location: _.constant('Detail View Settings'),
+            inventory_type: function () {
+              return $scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
+            }
+          }
+        });
+
+        modalInstance.result.then(function (newName) {
+          $scope.currentProfile.name = newName;
+          _.find($scope.profiles, {id: $scope.currentProfile.id}).name = newName;
+          Notification.primary('Renamed ' + oldProfile.name + ' to ' + newName);
+        });
+      };
+
+      $scope.removeProfile = function () {
+        var oldProfile = angular.copy($scope.currentProfile);
+
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/settings_profile_modal.html',
+          controller: 'settings_profile_modal_controller',
+          resolve: {
+            action: _.constant('remove'),
+            data: _.constant($scope.currentProfile),
+            settings_location: _.constant('Detail View Settings'),
+            inventory_type: function () {
+              return $scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
+            }
+          }
+        });
+
+        modalInstance.result.then(function () {
+          _.remove($scope.profiles, oldProfile);
+          modified_service.resetModified();
+          $scope.currentProfile = _.first($scope.profiles);
+          Notification.primary('Removed ' + oldProfile.name);
+        });
+      };
+
+      $scope.newProfile = function () {
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/settings_profile_modal.html',
+          controller: 'settings_profile_modal_controller',
+          resolve: {
+            action: _.constant('new'),
+            data: currentColumns,
+            settings_location: _.constant('Detail View Settings'),
+            inventory_type: function () {
+              return $scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
+            }
+          }
+        });
+
+        modalInstance.result.then(function (newProfile) {
+          $scope.profiles.push(newProfile);
+          modified_service.resetModified();
+          $scope.currentProfile = _.last($scope.profiles);
+          Notification.primary('Created ' + newProfile.name);
+        });
+      };
+
+      $scope.isModified = function () {
+        return modified_service.isModified();
+      };
 
       $scope.gridOptions = {
         data: 'data',
@@ -90,10 +247,6 @@ angular.module('BE.seed.controller.inventory_detail_settings', [])
         enableGridMenu: true,
         enableSorting: false,
         flatEntityAccess: true,
-        gridMenuCustomItems: [{
-          title: $scope.translations['Reset defaults'],
-          action: restoreDefaults
-        }],
         gridMenuShowHideColumns: false,
         minRowsToShow: 30,
         rowTemplate: '<div grid="grid" class="ui-grid-draggable-row" draggable="true"><div ng-repeat="(colRenderIndex, col) in colContainer.renderedColumns track by col.colDef.name" class="ui-grid-cell" ng-class="{ \'ui-grid-row-header-cell\': col.isRowHeader, \'custom\': true }" ui-grid-cell></div></div>',
@@ -102,22 +255,16 @@ angular.module('BE.seed.controller.inventory_detail_settings', [])
           displayName: 'Column Name',
           headerCellFilter: 'translate',
           cellFilter: 'translate',
-          cellTemplate: '<div class="ui-grid-cell-contents inventory-settings-cell" title="TOOLTIP" data-after-content="{$ row.entity.name $}">{$ COL_FIELD CUSTOM_FILTERS $}</div>',
+          cellTemplate: '<div class="ui-grid-cell-contents inventory-settings-cell" title="TOOLTIP" data-after-content="{$ row.entity.column_name $}">{$ COL_FIELD CUSTOM_FILTERS $}</div>',
           enableHiding: false
         }],
         onRegisterApi: function (gridApi) {
           $scope.gridApi = gridApi;
-          _.defer(function () {
-            // Set row selection
-            _.forEach($scope.gridApi.grid.rows, function (row) {
-              if (row.entity.visible === false) row.setSelected(false);
-              else row.setSelected(true);
-            });
-          });
+          initializeRowSelections();
 
           gridApi.selection.on.rowSelectionChanged($scope, rowSelectionChanged);
           gridApi.selection.on.rowSelectionChangedBatch($scope, rowSelectionChanged);
-          gridApi.draggableRows.on.rowDropped($scope, saveSettings);
+          gridApi.draggableRows.on.rowDropped($scope, modified_service.setModified);
 
           _.delay($scope.updateHeight, 150);
           var debouncedHeightUpdate = _.debounce($scope.updateHeight, 150);

@@ -140,10 +140,6 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         $uibModalInstance.close();
         $state.go('mapping', {importfile_id: $scope.dataset.import_file_id});
       };
-      /*$scope.goto_data_matching = function () {
-        $uibModalInstance.close();
-        $state.go('matching_list', {importfile_id: $scope.dataset.import_file_id, inventory_type: 'properties'});
-      };*/
       $scope.view_my_properties = function () {
         $uibModalInstance.close();
         $state.go('inventory_list', {inventory_type: 'properties'});

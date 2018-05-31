@@ -1,26 +1,196 @@
+# SEED Version 2.3.2
+
+Closed Issues: 80
+- Fixed [#28]( https://github.com/SEED-platform/seed/issues/28 ), Show source data file of unmatched records in Building Detail
+- Fixed [#60]( https://github.com/SEED-platform/seed/issues/60 ), In record list shown in matching, only show fields present in the data file
+- Fixed [#93]( https://github.com/SEED-platform/seed/issues/93 ), MAPPING: Add a "clear mapping" button
+- Fixed [#209]( https://github.com/SEED-platform/seed/issues/209 ), Checkboxes are too small
+- Fixed [#217]( https://github.com/SEED-platform/seed/issues/217 ), Add export to Matching screen
+- Fixed [#269]( https://github.com/SEED-platform/seed/issues/269 ), Add date of import to building detail list
+- Fixed [#270]( https://github.com/SEED-platform/seed/issues/270 ), Add Matching functionality to Building List
+- Fixed [#308]( https://github.com/SEED-platform/seed/issues/308 ), UI for Log Files for Duplicate Data
+- Fixed [#445]( https://github.com/SEED-platform/seed/issues/445 ), Normalize BE endpoint success responses
+- Fixed [#506]( https://github.com/SEED-platform/seed/issues/506 ), Data cleansing criteria additions and issues
+- Fixed [#527]( https://github.com/SEED-platform/seed/issues/527 ), Bugs related to recently implemented caching utilities
+- Fixed [#538]( https://github.com/SEED-platform/seed/issues/538 ), Updating master record with multiple PM files - auto vs hand matching
+- Fixed [#543]( https://github.com/SEED-platform/seed/issues/543 ), When should program overwrite existing data when matching records?
+- Fixed [#579]( https://github.com/SEED-platform/seed/issues/579 ), Add ability to view different fields on each side of matching screen
+- Fixed [#631]( https://github.com/SEED-platform/seed/issues/631 ), Investigate the options for automatically downloading Custom Reporting Template data from Portfolio Manager
+- Fixed [#636]( https://github.com/SEED-platform/seed/issues/636 ), Improvements to Matching Screen
+- Fixed [#639]( https://github.com/SEED-platform/seed/issues/639 ), Matching view still has 'active' filter inputs.
+- Fixed [#647]( https://github.com/SEED-platform/seed/issues/647 ), Add ability to delete unmatched records from the matching screen
+- Fixed [#677]( https://github.com/SEED-platform/seed/issues/677 ), Two Building records can't both match to one PM record
+- Fixed [#707]( https://github.com/SEED-platform/seed/issues/707 ), Can't map files
+- Fixed [#807]( https://github.com/SEED-platform/seed/issues/807 ), Review Mapped Data doesn't show all mapped fields
+- Fixed [#839]( https://github.com/SEED-platform/seed/issues/839 ), Server error searching by date fields on seed production but not seedtest
+- Fixed [#844]( https://github.com/SEED-platform/seed/issues/844 ), Thoughts about UI for Timeseries feature
+- Fixed [#845]( https://github.com/SEED-platform/seed/issues/845 ), Field is added to Master Building record even if it is unchecked in mapping
+- Fixed [#898]( https://github.com/SEED-platform/seed/issues/898 ), Don't automatically make unmatched records into new buildings
+- Fixed [#927]( https://github.com/SEED-platform/seed/issues/927 ), Change Read the Docs subdomain
+- Fixed [#937]( https://github.com/SEED-platform/seed/issues/937 ), DB Refactoring -- Audit Logs and Data Migration
+- Fixed [#962]( https://github.com/SEED-platform/seed/issues/962 ), Date filtering not working in Mozilla Firefox
+- Fixed [#1027]( https://github.com/SEED-platform/seed/issues/1027 ), Can't delete data in extra_data fields in Building Detail
+- Fixed [#1035]( https://github.com/SEED-platform/seed/issues/1035 ), Stay in the same place in the building list when coming back from building detail
+- Fixed [#1039]( https://github.com/SEED-platform/seed/issues/1039 ), Swagger is inelegant when user isn't logged in
+- Fixed [#1048]( https://github.com/SEED-platform/seed/issues/1048 ), Figure out what SEED is using prefinery.com for
+- Fixed [#1142]( https://github.com/SEED-platform/seed/issues/1142 ), Update rest framework swagger
+- Fixed [#1160]( https://github.com/SEED-platform/seed/issues/1160 ), Mapping Review screen is empty possibly when all fields are extra data
+- Fixed [#1191]( https://github.com/SEED-platform/seed/issues/1191 ), Return display names from the backend
+- Fixed [#1198]( https://github.com/SEED-platform/seed/issues/1198 ), Authentication is broken when using an api key
+- Fixed [#1229]( https://github.com/SEED-platform/seed/issues/1229 ), Issue with Mapping a second time
+- Fixed [#1235]( https://github.com/SEED-platform/seed/issues/1235 ), Add option to save display settings across org, so it isn't just for your account / browser
+- Fixed [#1260]( https://github.com/SEED-platform/seed/issues/1260 ), Default checked fields in List and Detail settings to fields that have been mapped?
+- Fixed [#1265]( https://github.com/SEED-platform/seed/issues/1265 ), Program is automatically mapping Energy score to ENERGY STAR Score but it doesn't display in mapping
+- Fixed [#1277]( https://github.com/SEED-platform/seed/issues/1277 ), Importing sample test files, many issues -- can break into smaller issues as needed
+- Fixed [#1297]( https://github.com/SEED-platform/seed/issues/1297 ), Data quality errors when typecasting data (TypeError Str -> Float)
+- Fixed [#1302]( https://github.com/SEED-platform/seed/issues/1302 ), Add number of records imported to Import "Successful" dialog box
+- Fixed [#1314]( https://github.com/SEED-platform/seed/issues/1314 ), Hand matching / unmatching for migrated data
+- Fixed [#1337]( https://github.com/SEED-platform/seed/issues/1337 ), SEED Header input box in Mapping -- need to be able to make column wide enough to see long field names
+- Fixed [#1340]( https://github.com/SEED-platform/seed/issues/1340 ), Can't Create new organization as superuser with existing email
+- Fixed [#1362]( https://github.com/SEED-platform/seed/issues/1362 ), DQ Check - Allow sorting by column in DQ results modal
+- Fixed [#1403]( https://github.com/SEED-platform/seed/issues/1403 ), List Settings are tedious to rework
+- Fixed [#1406]( https://github.com/SEED-platform/seed/issues/1406 ), List views - wrap text or show text in bubble
+- Fixed [#1423]( https://github.com/SEED-platform/seed/issues/1423 ), Spinner needs to display longer when program is working to display Matching Detail screen
+- Fixed [#1450]( https://github.com/SEED-platform/seed/issues/1450 ), Need spinner when changing cycles in Inventory list for large datasets
+- Fixed [#1464]( https://github.com/SEED-platform/seed/issues/1464 ), Field mapping -- Letter after number gets capitalized
+- Fixed [#1495]( https://github.com/SEED-platform/seed/issues/1495 ), Mapping / List Setting issues
+- Fixed [#1532]( https://github.com/SEED-platform/seed/issues/1532 ), Auto ESPM import doesn't add data to correct Cycle
+- Fixed [#1543]( https://github.com/SEED-platform/seed/issues/1543 ), Export not returning all data when exporting from taxlot view
+- Fixed [#1547]( https://github.com/SEED-platform/seed/issues/1547 ), Matching Review -- 0 tax lots when there should be 9
+- Fixed [#1549]( https://github.com/SEED-platform/seed/issues/1549 ), Add UBID to Mapping screen explanation for matching fields
+- Fixed [#1560]( https://github.com/SEED-platform/seed/issues/1560 ), Can't "deselect" the filter buttons AND/OR/EXCLUDE
+- Fixed [#1566]( https://github.com/SEED-platform/seed/issues/1566 ), Need to be able to save different List Setting configurations
+- Fixed [#1567]( https://github.com/SEED-platform/seed/issues/1567 ), Show labels in List view
+- Fixed [#1570]( https://github.com/SEED-platform/seed/issues/1570 ), Show records most recently imported from ESPM
+- Fixed [#1573]( https://github.com/SEED-platform/seed/issues/1573 ), Upload your data modal tweaks
+- Fixed [#1574]( https://github.com/SEED-platform/seed/issues/1574 ), Inventory List View -- Default List Settings should show mapped fields
+- Fixed [#1577]( https://github.com/SEED-platform/seed/issues/1577 ), Admin Function -- 403 error removing user
+- Fixed [#1578]( https://github.com/SEED-platform/seed/issues/1578 ), Admin Function -- Error adding existing user to existing organization
+- Fixed [#1583]( https://github.com/SEED-platform/seed/issues/1583 ), Unable to log into ESPM account from SEED
+- Fixed [#1586]( https://github.com/SEED-platform/seed/issues/1586 ), Cycle range for new orgs is incorrect
+- Fixed [#1588]( https://github.com/SEED-platform/seed/issues/1588 ), Columns with the same name in different tables should correctly differentiate the data
+- Fixed [#1596]( https://github.com/SEED-platform/seed/issues/1596 ), Add Lat/Long to PropertyState
+- Fixed [#1603]( https://github.com/SEED-platform/seed/issues/1603 ), Unable to view swagger page when not logged in
+- Fixed [#1606]( https://github.com/SEED-platform/seed/issues/1606 ), Save List Settings in List and Detail View
+- Fixed [#1613]( https://github.com/SEED-platform/seed/issues/1613 ), Associated tax lot ID in Mapping Review is confusing to users
+- Fixed [#1621]( https://github.com/SEED-platform/seed/issues/1621 ), PM Report Template list -- not all the reports are listed in SEED
+- Fixed [#1627]( https://github.com/SEED-platform/seed/issues/1627 ), Tax Lot list Settings Profile Saving -- internal server error
+- Fixed [#1632]( https://github.com/SEED-platform/seed/issues/1632 ), Units are off for Energy Use and EUI when using the ESPM Login from SEED to import data
+- Fixed [#1633]( https://github.com/SEED-platform/seed/issues/1633 ), Pairing between 1 Tax Lot ID and Multiple UBIDs does not seem to be working
+- Fixed [#1634]( https://github.com/SEED-platform/seed/issues/1634 ), Mapping hangs at 100% complete -- organization ID doesn't exist
+- Fixed [#1635]( https://github.com/SEED-platform/seed/issues/1635 ), ValueError: Cannot assign "269": "DataQualityCheck.organization" must be a "Organization" instance.
+- Fixed [#1639]( https://github.com/SEED-platform/seed/issues/1639 ), Unmerge only works once on a given property record
+- Fixed [#1649]( https://github.com/SEED-platform/seed/issues/1649 ), Importing Data with the Same Address on Multiple Rows do not track lot_numbers
+
+Accepted Pull Requests: 30
+- Fixed [#1581]( https://github.com/SEED-platform/seed/pull/1581 ), Improved error messages for admin.html
+- Fixed [#1597]( https://github.com/SEED-platform/seed/pull/1597 ), Allow the mapping columns to be resizable
+- Fixed [#1598]( https://github.com/SEED-platform/seed/pull/1598 ), Add export issues script
+- Fixed [#1599]( https://github.com/SEED-platform/seed/pull/1599 ), Show only populated columns
+- Fixed [#1602]( https://github.com/SEED-platform/seed/pull/1602 ), Updated translation files
+- Fixed [#1604]( https://github.com/SEED-platform/seed/pull/1604 ), Fix data quality typeerror
+- Fixed [#1605]( https://github.com/SEED-platform/seed/pull/1605 ), Fix swagger access
+- Fixed [#1610]( https://github.com/SEED-platform/seed/pull/1610 ), Add libffi-dev and libssl-dev to docker and documentation
+- Fixed [#1611]( https://github.com/SEED-platform/seed/pull/1611 ), Remove unneeded auth classes. Fix BuildingSync and HPXML API endpoints
+- Fixed [#1618]( https://github.com/SEED-platform/seed/pull/1618 ), Add Latitude and Longitude to Database Fields
+- Fixed [#1622]( https://github.com/SEED-platform/seed/pull/1622 ), Add column display names to the database
+- Fixed [#1623]( https://github.com/SEED-platform/seed/pull/1623 ), List Settings Profiles + Display Names Refactor
+- Fixed [#1624]( https://github.com/SEED-platform/seed/pull/1624 ), New Oganization Cycle Range
+- Fixed [#1625]( https://github.com/SEED-platform/seed/pull/1625 ), Fix portfolio manager child data request
+- Fixed [#1628]( https://github.com/SEED-platform/seed/pull/1628 ), Fixed missing pinned parameter when the value is undefined
+- Fixed [#1629]( https://github.com/SEED-platform/seed/pull/1629 ), Fix race condition on creating DataQualityCheck objects
+- Fixed [#1630]( https://github.com/SEED-platform/seed/pull/1630 ), Superuser improvements
+- Fixed [#1631]( https://github.com/SEED-platform/seed/pull/1631 ), Fix `Only Show Populated` to use the current cycle
+- Fixed [#1636]( https://github.com/SEED-platform/seed/pull/1636 ), Fix organization in DataQualityCheck
+- Fixed [#1637]( https://github.com/SEED-platform/seed/pull/1637 ), Use kBtu during imports for PM
+- Fixed [#1638]( https://github.com/SEED-platform/seed/pull/1638 ), Fixed showing of default pairing columns
+- Fixed [#1650]( https://github.com/SEED-platform/seed/pull/1650 ), Allow import of multiple ubids, single taxlot in CSV
+- Fixed [#1651]( https://github.com/SEED-platform/seed/pull/1651 ), Ensure mapping to both TaxLot and PropertyState columns is enforced
+
+Accepted External Pull Requests: 5
+- Fixed [#1536]( https://github.com/SEED-platform/seed/pull/1536 ), Quantity (aka. Pint) fields to accommodate metric and US Customary energy/area data
+- Fixed [#1609]( https://github.com/SEED-platform/seed/pull/1609 ), Added oauth, add_columns endpoint, and adjusted pint handling
+- Fixed [#1616]( https://github.com/SEED-platform/seed/pull/1616 ), filterset update to find PropertyView by various PropertyState building
+- Fixed [#1617]( https://github.com/SEED-platform/seed/pull/1617 ), Made PropertyStateWritableSerializer fields not required
+- Fixed [#1620]( https://github.com/SEED-platform/seed/pull/1620 ), Fix add_columns endpoint
+
+# SEED Version 2.3.1
+
+Closed Issues: 4
+- Fixed [#1289]( https://github.com/SEED-platform/seed/issues/1289 ), Filter on numeric fields
+- Fixed [#1321]( https://github.com/SEED-platform/seed/issues/1321 ), Hand Matching screen -- Fix field headers, add vertical scroll bar, other UI improvements
+- Fixed [#1524]( https://github.com/SEED-platform/seed/issues/1524 ), Editing record in inventory view corrupts the record
+- Fixed [#1576]( https://github.com/SEED-platform/seed/issues/1576 ), Rework Exporting from Hamburger view
+
+Accepted Pull Requests: 8
+- Fixed [#1551]( https://github.com/SEED-platform/seed/pull/1551 ), Added UBID to the mapping instructions
+- Fixed [#1552]( https://github.com/SEED-platform/seed/pull/1552 ), Fixed the count for the imported number of mapped tax lots
+- Fixed [#1556]( https://github.com/SEED-platform/seed/pull/1556 ), Add date to PM import filename
+- Fixed [#1557]( https://github.com/SEED-platform/seed/pull/1557 ), Release 2.3
+- Fixed [#1558]( https://github.com/SEED-platform/seed/pull/1558 ), Notes Improvements
+- Fixed [#1559]( https://github.com/SEED-platform/seed/pull/1559 ), Cleanup Travis
+- Fixed [#1562]( https://github.com/SEED-platform/seed/pull/1562 ), Added UBID to the mapping instructions
+- Fixed [#1564]( https://github.com/SEED-platform/seed/pull/1564 ), Temporarily hid the `Upload Green Button Data` button
+
 # SEED Version 2.3
 
-Closed Issues: 5
+Closed Issues: 21
 - Fixed [#148]( https://github.com/SEED-platform/seed/issues/148 ), For PM mapping, add feature to remember user defined mappings
+- Fixed [#179]( https://github.com/SEED-platform/seed/issues/179 ), Auto-connect to Portfolio Manager
+- Fixed [#1125]( https://github.com/SEED-platform/seed/issues/1125 ), Mapping suggestions are improved but could still be improved
+- Fixed [#1231]( https://github.com/SEED-platform/seed/issues/1231 ), Inventory Detail: Add Log & Notes back
 - Fixed [#1238]( https://github.com/SEED-platform/seed/issues/1238 ), Add option in mapping to map all fields to original file field names
 - Fixed [#1298]( https://github.com/SEED-platform/seed/issues/1298 ), Add Import Date as a viewable field in List and Detail view
+- Fixed [#1328]( https://github.com/SEED-platform/seed/issues/1328 ), Filter operators -- make them the same for numeric and strings
+- Fixed [#1385]( https://github.com/SEED-platform/seed/issues/1385 ), Hand Matching -- need to be able to match multiple records together (V 1.5 feature)
+- Fixed [#1396]( https://github.com/SEED-platform/seed/issues/1396 ), Add Unique Building ID as a matching field
 - Fixed [#1499]( https://github.com/SEED-platform/seed/issues/1499 ), Functionality different between two servers with same deployment
 - Fixed [#1501]( https://github.com/SEED-platform/seed/issues/1501 ), migrate django password reset to class based views
+- Fixed [#1509]( https://github.com/SEED-platform/seed/issues/1509 ), Mapped fields with underscore are transformed to a field name without underscore
+- Fixed [#1510]( https://github.com/SEED-platform/seed/issues/1510 ), Export all data as CSV file not working as expected
+- Fixed [#1512]( https://github.com/SEED-platform/seed/issues/1512 ), Export has (primarily) internal field names not SEED user mapped field names
+- Fixed [#1525]( https://github.com/SEED-platform/seed/issues/1525 ), merging code caused merging issue
+- Fixed [#1527]( https://github.com/SEED-platform/seed/issues/1527 ), non-deterministic test
+- Fixed [#1529]( https://github.com/SEED-platform/seed/issues/1529 ), requires_member when viewing organization
+- Fixed [#1549]( https://github.com/SEED-platform/seed/issues/1549 ), Add UBID to Mapping screen explanation for matching fields
+- Fixed [#1550]( https://github.com/SEED-platform/seed/issues/1550 ), UBID Upper/lower case field name in mapping
+- Fixed [#1554]( https://github.com/SEED-platform/seed/issues/1554 ), Add UBID to Pairing screen
+- Fixed [#1555]( https://github.com/SEED-platform/seed/issues/1555 ), Unmerging Tax Lots doesn't unpair the records paired when records were merged
 
-Accepted Pull Requests: 15
+Accepted Pull Requests: 25
 - Fixed [#1491]( https://github.com/SEED-platform/seed/pull/1491 ), BRICR Support - BuildingSync, Measures, Scenarios, etc.
 - Fixed [#1492]( https://github.com/SEED-platform/seed/pull/1492 ), OGBS - French (Canada) localization
 - Fixed [#1507]( https://github.com/SEED-platform/seed/pull/1507 ), removing instruction to python setup.py install
-- Fixed [#1514]( https://github.com/SEED-platform/seed/pull/1514 ), Simplify API auth docs
-- Fixed [#1515]( https://github.com/SEED-platform/seed/pull/1515 ), Import date field
-- Fixed [#1516]( https://github.com/SEED-platform/seed/pull/1516 ), HPXML Integration
+- Fixed [#1513]( https://github.com/SEED-platform/seed/pull/1513 ), Integration with Portfolio Manager
+- Fixed [#1515]( https://github.com/SEED-platform/seed/pull/1515 ), 1298 import date field
 - Fixed [#1517]( https://github.com/SEED-platform/seed/pull/1517 ), Bricr buildingsync upload
-- Fixed [#1518]( https://github.com/SEED-platform/seed/pull/1518 ), Tightens up check for whether celery's running in dev
 - Fixed [#1519]( https://github.com/SEED-platform/seed/pull/1519 ), save pm mapping changes to database.
 - Fixed [#1520]( https://github.com/SEED-platform/seed/pull/1520 ), Translation example
 - Fixed [#1521]( https://github.com/SEED-platform/seed/pull/1521 ), Add UBID
-- Fixed [#1522]( https://github.com/SEED-platform/seed/pull/1522 ), Fixes HTML error in sub-org submit button
 - Fixed [#1526]( https://github.com/SEED-platform/seed/pull/1526 ), Update ubid in example files
+- Fixed [#1528]( https://github.com/SEED-platform/seed/pull/1528 ), view history
+- Fixed [#1530]( https://github.com/SEED-platform/seed/pull/1530 ), Shared Field Settings Page
+- Fixed [#1531]( https://github.com/SEED-platform/seed/pull/1531 ), Add Queued State to Analysis State
+- Fixed [#1533]( https://github.com/SEED-platform/seed/pull/1533 ), Fixed the selected cycle for PM imports
+- Fixed [#1534]( https://github.com/SEED-platform/seed/pull/1534 ), Combined text/numeric filtering
+- Fixed [#1535]( https://github.com/SEED-platform/seed/pull/1535 ), display analysis state string instead of int
+- Fixed [#1537]( https://github.com/SEED-platform/seed/pull/1537 ), Re-sorts angular localization files
+- Fixed [#1538]( https://github.com/SEED-platform/seed/pull/1538 ), Updated copyrights
+- Fixed [#1539]( https://github.com/SEED-platform/seed/pull/1539 ), Add Notes Field
+- Fixed [#1540]( https://github.com/SEED-platform/seed/pull/1540 ), Hand-merge multiple records
+- Fixed [#1541]( https://github.com/SEED-platform/seed/pull/1541 ), upgrade some dependencies to the latest versions
+- Fixed [#1542]( https://github.com/SEED-platform/seed/pull/1542 ), fix serialization of quantity
+- Fixed [#1544]( https://github.com/SEED-platform/seed/pull/1544 ), CSV Export Header
+- Fixed [#1545]( https://github.com/SEED-platform/seed/pull/1545 ), remove unused view methods and remove bricr flipper
+- Fixed [#1546]( https://github.com/SEED-platform/seed/pull/1546 ), Add Sentry to Frontend
+
+Accepted External Pull Requests: 6
+- Fixed [#1492]( https://github.com/SEED-platform/seed/pull/1492 ), OGBS - French (Canada) localization
+- Fixed [#1514]( https://github.com/SEED-platform/seed/pull/1514 ), Simplify API auth docs
+- Fixed [#1516]( https://github.com/SEED-platform/seed/pull/1516 ), HPXML Integration
+- Fixed [#1518]( https://github.com/SEED-platform/seed/pull/1518 ), Tightens up check for whether celery's running in dev
+- Fixed [#1522]( https://github.com/SEED-platform/seed/pull/1522 ), Fixes HTML error in sub-org submit button
+- Fixed [#1537]( https://github.com/SEED-platform/seed/pull/1537 ), Re-sorts angular localization files
 
 # SEED Version 2.2.1
 

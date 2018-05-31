@@ -16,7 +16,6 @@ from django_filters import CharFilter, DateFilter
 from django_filters.rest_framework import FilterSet
 from rest_framework import status
 from rest_framework.decorators import detail_route
-
 from seed.building_sync.building_sync import BuildingSync
 from seed.hpxml.hpxml import HPXML
 from seed.lib.superperms.orgs.decorators import has_perm_class
@@ -25,8 +24,6 @@ from seed.models import (
     PropertyState,
     BuildingFile,
     Cycle,
-    # PropertyMeasure,
-    # Simulation,
 )
 from seed.serializers.properties import (
     PropertyViewAsStateSerializer,
@@ -125,6 +122,12 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
         return PropertyView.objects.filter(property__organization_id=org_id).order_by('-state__id')
 
     def _get_property_view(self, pk, cycle_pk):
+        """
+        Return a property view based on the property id and cycle
+        :param pk: ID of property (not property view)
+        :param cycle_pk: ID of the cycle
+        :return: dict, propety view and status
+        """
         try:
             property_view = PropertyView.objects.select_related(
                 'property', 'cycle', 'state'
@@ -164,31 +167,16 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
               type: integer
               required: true
               paramType: query
-            - name: cycle_id
-              type: integer
-              required: true
-              paramType: query
         """
-        # organization_id = request.data['organization_id']
-        cycle_id = request.query_params.get('cycle_id', None)
-
-        if not cycle_id:
-            return JsonResponse({
-                'success': False,
-                'message': "Cycle ID is not defined"
-            })
-        else:
-            cycle = Cycle.objects.get(pk=cycle_id)
-
         try:
             # TODO: not checking organization? Is that right?
             # TODO: this needs to call _get_property_view and use the property pk, not the property_view pk.
             #   or we need to state the v2.1 of API uses property views instead of property
-            property_view = PropertyView.objects.select_related('state').get(pk=pk, cycle=cycle)
+            property_view = PropertyView.objects.select_related('state').get(pk=pk)
         except PropertyView.DoesNotExist:
             return JsonResponse({
                 'success': False,
-                'message': 'Cannot match a PropertyView with pk=%s; cycle_id=%s' % (pk, cycle_id)
+                'message': 'Cannot match a PropertyView with pk=%s' % pk
             })
 
         bs = BuildingSync()
@@ -218,28 +206,14 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
               type: integer
               required: true
               paramType: query
-            - name: cycle_id
-              type: integer
-              required: true
-              paramType: query
         """
-        cycle_id = request.query_params.get('cycle_id', None)
-
-        if not cycle_id:
-            return JsonResponse({
-                'success': False,
-                'message': "Cycle ID is not defined"
-            })
-        else:
-            cycle = Cycle.objects.get(pk=cycle_id)
-
         # Organization is checked in the orgfilter of the ViewSet
         try:
-            property_view = PropertyView.objects.select_related('state').get(pk=pk, cycle=cycle)
+            property_view = PropertyView.objects.select_related('state').get(pk=pk)
         except PropertyView.DoesNotExist:
             return JsonResponse({
                 'success': False,
-                'message': 'Cannot match a PropertyView with pk=%s; cycle_id=%s' % (pk, cycle_id)
+                'message': 'Cannot match a PropertyView with pk=%s' % pk
             })
 
         hpxml = HPXML()

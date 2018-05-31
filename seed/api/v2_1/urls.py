@@ -8,10 +8,10 @@ from django.conf.urls import url, include
 from rest_framework_nested import routers
 
 from seed.api.v2_1.views import PropertyViewSetV21
+from seed.views.notes import NoteViewSet
 from seed.views.portfoliomanager import PortfolioManagerViewSet
 from seed.views.scenarios import ScenarioViewSet
 from seed.views.tax_lot_properties import TaxLotPropertyViewSet
-from seed.views.notes import NoteViewSet
 from seed.views.taxlots import TaxLotViewSet
 
 router = routers.SimpleRouter()
@@ -20,7 +20,6 @@ router.register(r'taxlots', TaxLotViewSet, base_name="taxlots")
 router.register(r'scenarios', ScenarioViewSet, base_name="scenarios")
 router.register(r'tax_lot_properties', TaxLotPropertyViewSet, base_name="tax_lot_properties")
 router.register(r'portfolio_manager', PortfolioManagerViewSet, base_name="portfolio_manager")
-
 
 properties_router = routers.NestedSimpleRouter(router, r'properties', lookup='properties')
 properties_router.register(r'notes', NoteViewSet, base_name='property-notes')

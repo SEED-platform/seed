@@ -12,19 +12,53 @@ angular.module('BE.seed.controller.inventory_detail', [])
     '$stateParams',
     '$anchorScroll',
     '$location',
+    '$window',
     'urls',
+    'spinner_utility',
     'label_service',
     'inventory_service',
     'matching_service',
     'pairing_service',
     'inventory_payload',
     'columns',
+    'profiles',
     'labels_payload',
-    'flippers',
-    function ($state, $scope, $uibModal, $log, $filter, $stateParams, $anchorScroll, $location,
-              urls, label_service, inventory_service, matching_service, pairing_service, inventory_payload,
-              columns, labels_payload, flippers) {
+    function ($state, $scope, $uibModal, $log, $filter, $stateParams, $anchorScroll, $location, $window, urls, spinner_utility, label_service, inventory_service, matching_service, pairing_service, inventory_payload, columns, profiles, labels_payload) {
       $scope.inventory_type = $stateParams.inventory_type;
+
+      // Detail Settings Profile
+      $scope.profiles = profiles;
+      var validProfileIds = _.map(profiles, 'id');
+      var lastProfileId = inventory_service.get_last_detail_profile($scope.inventory_type);
+      if (_.includes(validProfileIds, lastProfileId)) {
+        $scope.currentProfile = _.find($scope.profiles, {id: lastProfileId});
+      } else {
+        $scope.currentProfile = _.first($scope.profiles);
+        if ($scope.currentProfile) inventory_service.save_last_detail_profile($scope.currentProfile.id, $scope.inventory_type);
+      }
+
+      if ($scope.currentProfile) {
+        $scope.columns = [];
+        _.forEach($scope.currentProfile.columns, function (col) {
+          var foundCol = _.find(columns, {id: col.id});
+          if (foundCol) $scope.columns.push(foundCol);
+        });
+      } else {
+        // No profiles exist
+        $scope.columns = _.reject(columns, 'is_extra_data');
+      }
+
+      $scope.isDisabledField = function (name) {
+        return _.includes([
+          'analysis_end_time',
+          'analysis_start_time',
+          'analysis_state',
+          'analysis_state_message',
+          'campus',
+          'created',
+          'updated'
+        ], name);
+      };
 
       $scope.inventory = {
         view_id: $stateParams.view_id,
@@ -34,10 +68,6 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.labels = _.filter(labels_payload, function (label) {
         return !_.isEmpty(label.is_applied);
       });
-
-      var localStorageKey = 'grid.' + $scope.inventory_type + '.detail';
-
-      $scope.columns = inventory_service.loadSettings(localStorageKey, columns);
 
       /** See service for structure of returned payload */
       $scope.historical_items = inventory_payload.history;
@@ -74,6 +104,18 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.status = {
         isopen: false
       };
+
+      var ignoreNextChange = true;
+      $scope.$watch('currentProfile', function (newProfile, oldProfile) {
+        if (ignoreNextChange) {
+          ignoreNextChange = false;
+          return;
+        }
+
+        inventory_service.save_last_detail_profile(newProfile.id, $scope.inventory_type);
+        spinner_utility.show();
+        $window.location.reload();
+      });
 
       $scope.gotoMeasureAnchor = function(x) {
         $location.hash('measureAnchor' + x);

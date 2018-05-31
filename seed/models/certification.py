@@ -143,6 +143,7 @@ class GreenAssessmentProperty(models.Model):
         'year': ('GreenVerification{}Year', 'Assessment Year'),
         'target_date': (None, 'Assessment Recognition Target Date'),
         'eligibility': (None, 'Assessment Eligibility'),
+        'date': ('GreenVerification{}Date', None)
     }
 
     def __unicode__(self):

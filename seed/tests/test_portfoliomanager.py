@@ -13,7 +13,7 @@ from django.core.urlresolvers import reverse_lazy
 from django.test import TestCase
 
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.models import Organization
+from seed.utils.organizations import create_organization
 from seed.views.portfoliomanager import PortfolioManagerImport
 
 
@@ -45,8 +45,7 @@ class PortfolioManagerViewTests(TestCase):
             'last_name': 'Energy',
         }
         self.user = User.objects.create_user(**user_details)
-        self.org = Organization.objects.create(name='my org')
-        self.org.add_member(self.user)
+        self.org, self.org_user, _ = create_organization(self.user)
         self.client.login(**user_details)
 
     def tearDown(self):
@@ -152,7 +151,15 @@ class PortfolioManagerViewTests(TestCase):
     def test_report_invalid_credentials(self):
         resp = self.client.post(
             reverse_lazy('api:v2.1:portfolio_manager-report'),
-            json.dumps({'password': 'nothing', 'username': 'nothing', 'template': {'id': 1, 'name': 'template_name'}}),
+            json.dumps(
+                {
+                    'password': 'nothing',
+                    'username': 'nothing',
+                    'template': {
+                        'id': 1, 'name': 'template_name', 'z_seed_child_row': False
+                    }
+                }
+            ),
             content_type='application/json',
         )
         # resp should have status, message, and code = 400

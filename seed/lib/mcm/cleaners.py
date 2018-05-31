@@ -39,6 +39,9 @@ def default_cleaner(value, *args):
     if isinstance(value, unicode):
         if fuzzy_in_set(value.lower(), NONE_SYNONYMS):
             return None
+        # guard against `u''` coming in from an Excel empty cell
+        if (value == u''):
+            return None
     return value
 
 

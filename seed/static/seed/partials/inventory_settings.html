@@ -4,8 +4,8 @@
 
         </div>
         <div class="page_title">
-            <h1 ng-if="inventory_type === 'taxlots'" translate>Tax Lots List Settings<h1>
-            <h1 ng-if="inventory_type === 'properties'" translate>Properties List Settings<h1>
+            <h1 ng-if="::inventory_type === 'taxlots'" translate>Tax Lots List Settings</h1>
+            <h1 ng-if="::inventory_type === 'properties'" translate>Properties List Settings</h1>
         </div>
         <div class="right page_action_container page_action_btn"></div>
     </div>
@@ -17,8 +17,27 @@
 
 <div class="section_header_container">
     <div id="building-settings" class="section_header has_no_padding fixed_height_short">
-        <div class="section_action_container left_wide">
+        <div class="section_action_container left">
             <h2><i class="fa fa-cogs"></i><span translate>Column Order/Visibility</span></h2>
+        </div>
+        <div class="section_action_container right_wide settings_profile">
+            <div>
+                <span>List Settings Profile: </span>
+                <select class="form-control input-sm" ng-model="currentProfile" ng-options="option.name for option in profiles track by option.id"></select>
+
+                <button class="btn btn-success" type="button" ng-click="saveProfile()" ng-disabled="!currentProfile || !isModified()" tooltip-placement="bottom" uib-tooltip="Save">
+                    <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+                </button>
+                <button class="btn btn-primary" type="button" ng-click="renameProfile()" ng-disabled="!currentProfile" tooltip-placement="bottom" uib-tooltip="Rename">
+                    <span class="glyphicon glyphicon-erase" aria-hidden="true"></span>
+                </button>
+                <button class="btn btn-danger" type="button" ng-click="removeProfile()" ng-disabled="!currentProfile" tooltip-placement="bottom" uib-tooltip="Delete">
+                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                </button>
+                <button class="btn btn-info" type="button" ng-click="newProfile()" tooltip-placement="bottom" uib-tooltip="New">
+                    <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+                </button>
+            </div>
         </div>
     </div>
 </div>

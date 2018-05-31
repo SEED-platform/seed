@@ -55,10 +55,13 @@ describe('controller: data_quality_admin_controller', function () {
   // this is outside the beforeEach so it can be configured by each unit test
   function create_data_quality_admin_controller () {
     var col_payload = [{
-      dataType: 'string',
-      displayName: 'Address Line 1 (Property)',
+      data_type: 'string',
+      displayName: 'Address Line 1',
+      column_name: 'address_line_1',
+      is_extra_data: false,
       name: 'address_line_1',
-      table: 'PropertyState'
+      related: false,
+      table_name: 'PropertyState'
     }];
     controller('data_quality_admin_controller', {
       $scope: data_quality_admin_controller_scope,

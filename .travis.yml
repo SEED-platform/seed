@@ -1,5 +1,6 @@
 sudo: required
 dist: trusty
+group: deprecated-2017Q4
 cache:
   directories:
     - node_modules
@@ -45,8 +46,7 @@ env:
     - DOCKER_COMPOSE_VERSION=1.16.0
     - DJANGO_SETTINGS_MODULE=config.settings.travis
     - DISPLAY=:99.0
-    - secure: CpPzxEwVMmfQ7M1eMsrceOjFbjtQ4ZTKV/576UwskPdY1HXj+2tCvZxwWLS0TCmlEicNqpZ3ZOK8/2t654qUbkMNqyzqh5RNtXngBuD5QP4WIxdWJ9WkC801gIm27nmgBxooiVy/UAU+VDKMdw1honfSWou5FISFm+u5ep7DzCU=
-    - secure: JTArNnjh+Gir7ck4Kb+zUkfvZPHqi97FQg0YG06pqKoClmbPcFKaW/eiMeY8oJbbsM/R/diIpqskI1U8YpOG3SfILQfsG4bAs7m2x7a72Z2Z/jwWT8AWLc2qwlFNTByeoL3cOQt3sOyBRwC/XxGey4BqUDRkD0LJcRIoEiGGcKw=
+    - COVERALLS_REPO_TOKEN=y8UqJm8Bri5ZP8hr3YZM3guBaUKpsfoCv
   matrix:
     - TOX_ENV=python
     - TOX_ENV=flake8
@@ -58,5 +58,7 @@ script:
 jobs:
   include:
     - stage: publish
-      script: if ([ "$TRAVIS_BRANCH" == "develop" ] || [ "$TRAVIS_BRANCH" == "bricr" ] || [ "$TRAVIS_BRANCH" == "master" ]) && [ "$TRAVIS_PULL_REQUEST" == false ]; then docker/travis_build_docker.sh; else echo 0; fi
+      install: skip
+      before_script: skip
+      script: docker/travis_build_docker.sh
       env: DJANGO_SETTINGS_MODULE=config.settings.docker

@@ -8,11 +8,9 @@
 
 from django.http import JsonResponse
 from rest_framework import viewsets
-from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import detail_route
 from rest_framework.parsers import JSONParser, FormParser
 
-from seed.authentication import SEEDAuthentication
 from seed.decorators import require_organization_id_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (
@@ -25,7 +23,6 @@ from seed.utils.api import api_endpoint_class
 
 class MeterViewSet(viewsets.ViewSet):
     raise_exception = True
-    authentication_classes = (SessionAuthentication, SEEDAuthentication)
     parser_classes = (JSONParser, FormParser)
 
     @api_endpoint_class

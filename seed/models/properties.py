@@ -131,6 +131,10 @@ class PropertyState(models.Model):
     state = models.CharField(max_length=255, null=True, blank=True)
     postal_code = models.CharField(max_length=255, null=True, blank=True)
 
+    # New fields for latitude and longitude as native database objects
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
+
     # Only spot where it's 'building' in the app, b/c this is a PM field.
     building_count = models.IntegerField(null=True, blank=True)
 
@@ -141,11 +145,8 @@ class PropertyState(models.Model):
     # Tax IDs are often stuck here.
     use_description = models.CharField(max_length=255, null=True, blank=True)
 
-    gross_floor_area = models.FloatField(null=True, blank=True)
     year_built = models.IntegerField(null=True, blank=True)
     recent_sale_date = models.DateTimeField(null=True, blank=True)
-    conditioned_floor_area = models.FloatField(null=True, blank=True)
-    occupied_floor_area = models.FloatField(null=True, blank=True)
 
     # Normalize eventually on owner/address table
     owner = models.CharField(max_length=255, null=True, blank=True)
@@ -159,16 +160,6 @@ class PropertyState(models.Model):
     release_date = models.DateTimeField(null=True, blank=True)
 
     energy_score = models.IntegerField(null=True, blank=True)
-    # Need to add another field eventually to define the source of the EUI's and other
-    # reported fields. Ideally would have the ability to provide the same field from
-    # multiple data sources. For example, site EUI (portfolio manager), site EUI (calculated),
-    # site EUI (modeled 8/4/2017).
-    site_eui = models.FloatField(null=True, blank=True)
-    site_eui_weather_normalized = models.FloatField(null=True, blank=True)
-    site_eui_modeled = models.FloatField(null=True, blank=True)
-    source_eui = models.FloatField(null=True, blank=True)
-    source_eui_weather_normalized = models.FloatField(null=True, blank=True)
-    source_eui_modeled = models.FloatField(null=True, blank=True)
 
     energy_alerts = models.TextField(null=True, blank=True)
     space_alerts = models.TextField(null=True, blank=True)
@@ -181,19 +172,41 @@ class PropertyState(models.Model):
                                          null=True)
     analysis_state_message = models.TextField(null=True)
 
-    # extra columns for pint interpretation base units in database will
-    # continue to be imperial these will become the canonical columns in
-    # future, with the old ones above to be culled once OGBS merges the metric
-    # units work (scheduled for late 2017)
+    # Need to add another field eventually to define the source of the EUI's and other
+    # reported fields. Ideally would have the ability to provide the same field from
+    # multiple data sources. For example, site EUI (portfolio manager), site EUI (calculated),
+    # site EUI (modeled 8/4/2017).
+    #
+    # note: `*_orig` are all the unit-unaware original fields in the property
+    # state, which have been superceded by unit-aware Quantity fields. The old
+    # ones are left in place via the rename from eg. site_eui -> site_eui_orig
+    # with their original data intact until we're sure things are OK with the
+    # new columns. At that point (probably 2.4 release) these can be safely
+    # deleted and removed with a migration.
 
-    # TODO: eventually need to add these fields to the coparent SQL query below.
-    gross_floor_area_pint = QuantityField('ft**2', null=True, blank=True)
-    conditioned_floor_area_pint = QuantityField('ft**2', null=True, blank=True)
-    occupied_floor_area_pint = QuantityField('ft**2', null=True, blank=True)
-    site_eui_pint = QuantityField('kBtu/ft**2/year', null=True, blank=True)
-    source_eui_weather_normalized_pint = QuantityField('kBtu/ft**2/year', null=True, blank=True)
-    site_eui_weather_normalized_pint = QuantityField('kBtu/ft**2/year', null=True, blank=True)
-    source_eui_pint = QuantityField('kBtu/ft**2/year', null=True, blank=True)
+    # old pre-Quantity columns
+
+    gross_floor_area_orig = models.FloatField(null=True, blank=True)
+    conditioned_floor_area_orig = models.FloatField(null=True, blank=True)
+    occupied_floor_area_orig = models.FloatField(null=True, blank=True)
+    site_eui_orig = models.FloatField(null=True, blank=True)
+    site_eui_weather_normalized_orig = models.FloatField(null=True, blank=True)
+    site_eui_modeled_orig = models.FloatField(null=True, blank=True)
+    source_eui_orig = models.FloatField(null=True, blank=True)
+    source_eui_weather_normalized_orig = models.FloatField(null=True, blank=True)
+    source_eui_modeled_orig = models.FloatField(null=True, blank=True)
+
+    # new Quantity columns
+
+    gross_floor_area = QuantityField('ft**2', null=True, blank=True)
+    conditioned_floor_area = QuantityField('ft**2', null=True, blank=True)
+    occupied_floor_area = QuantityField('ft**2', null=True, blank=True)
+    site_eui = QuantityField('kBtu/ft**2/year', null=True, blank=True)
+    site_eui_weather_normalized = QuantityField('kBtu/ft**2/year', null=True, blank=True)
+    site_eui_modeled = QuantityField('kBtu/ft**2/year', null=True, blank=True)
+    source_eui = QuantityField('kBtu/ft**2/year', null=True, blank=True)
+    source_eui_weather_normalized = QuantityField('kBtu/ft**2/year', null=True, blank=True)
+    source_eui_modeled = QuantityField('kBtu/ft**2/year', null=True, blank=True)
 
     extra_data = JSONField(default=dict, blank=True)
     measures = models.ManyToManyField('Measure', through='PropertyMeasure')
@@ -480,6 +493,8 @@ class PropertyState(models.Model):
                     ps.city,
                     ps.state,
                     ps.postal_code,
+                    ps.longitude,
+                    ps.latitude,
                     ps.lot_number,
                     ps.gross_floor_area,
                     ps.use_description,
@@ -526,7 +541,7 @@ class PropertyState(models.Model):
         # important because the fields that were not queried will be deferred and require a new
         # query to retrieve.
         keep_fields = ['id', 'pm_property_id', 'pm_parent_property_id', 'custom_id_1', 'ubid',
-                       'address_line_1', 'address_line_2', 'city', 'state', 'postal_code',
+                       'address_line_1', 'address_line_2', 'city', 'state', 'postal_code', 'longitude', 'latitude',
                        'lot_number', 'gross_floor_area', 'use_description', 'energy_score',
                        'site_eui', 'site_eui_modeled', 'property_notes', 'property_type',
                        'year_ending', 'owner', 'owner_email', 'owner_telephone', 'building_count',

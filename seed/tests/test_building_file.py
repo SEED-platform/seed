@@ -11,9 +11,9 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 
 from config.settings.common import BASE_DIR
-from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import User
 from seed.models.building_file import BuildingFile
+from seed.utils.organizations import create_organization
 
 
 class TestBuildingFiles(TestCase):
@@ -24,8 +24,7 @@ class TestBuildingFiles(TestCase):
             'email': 'test_user@demo.com'
         }
         self.user = User.objects.create_superuser(**user_details)
-        self.org = Organization.objects.create()
-        OrganizationUser.objects.create(user=self.user, organization=self.org)
+        self.org, _, _ = create_organization(self.user)
 
     def test_file_type_lookup(self):
         self.assertEqual(BuildingFile.str_to_file_type(None), None)

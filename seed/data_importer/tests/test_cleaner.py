@@ -9,13 +9,14 @@ import logging
 from django.test import TestCase
 
 from seed.data_importer import tasks
-from seed.lib.superperms.orgs.models import Organization
+from seed.landing.models import SEEDUser as User
 from seed.models import (
     FLOAT,
     Column,
     ColumnMapping,
     Unit,
 )
+from seed.utils.organizations import create_organization
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +25,12 @@ class TestCleaner(TestCase):
     """Tests that our logic for constructing cleaners works."""
 
     def setUp(self):
-        self.org = Organization.objects.create()
+        self.user = User.objects.create_superuser(
+            email='test_user@demo.com',
+            username='test_user@demo.com',
+            password='secret',
+        )
+        self.org, _, _ = create_organization(self.user, "test-organization-a")
 
         unit = Unit.objects.create(
             unit_name='mapped_col unit',

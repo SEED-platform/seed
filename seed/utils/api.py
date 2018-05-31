@@ -236,6 +236,9 @@ class OrgMixin(object):
         :return: int representing a valid organization pk or
             organization object.
         """
+        if not request.user:
+            return None
+
         if not getattr(self, '_organization', None):
             org_id = get_org_id(request)
             org = None
@@ -290,7 +293,7 @@ class OrgCreateUpdateMixin(OrgCreateMixin, OrgUpdateMixin):
 
 class OrgValidateMixin(object):
     """
-    Mixin to provide a validate() method  organization to ensure users belongs
+    Mixin to provide a validate() method organization to ensure users belongs
     to the same org as the instance referenced by a foreign key..
 
     You must set org_validators on the Serializer that uses this Mixin.

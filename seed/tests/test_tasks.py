@@ -14,6 +14,7 @@ from seed import tasks
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
+from seed.utils.organizations import create_organization
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +24,7 @@ class TestTasks(TestCase):
 
     def setUp(self):
         self.fake_user = User.objects.create(username='test')
+        self.fake_org, _, _ = create_organization(self.fake_user)
         self.import_record = ImportRecord.objects.create(
             owner=self.fake_user, last_modified_by=self.fake_user
         )
@@ -69,11 +71,6 @@ class TestTasks(TestCase):
             u'Year Built': u'1803',
             u'Double Tester': 'Just a note from bob'
         }
-
-        self.fake_org = Organization.objects.create()
-        OrganizationUser.objects.create(
-            user=self.fake_user, organization=self.fake_org
-        )
 
         self.import_record.super_organization = self.fake_org
         self.import_record.save()

@@ -10,8 +10,9 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
   'user_service',
   'cycle_service',
   'spinner_utility',
+  'naturalSort',
   'flippers',
-  function ($http, $log, urls, user_service, cycle_service, spinner_utility, flippers) {
+  function ($http, $log, urls, user_service, cycle_service, spinner_utility, naturalSort, flippers) {
 
     var inventory_service = {
       total_properties_for_user: 0,
@@ -30,7 +31,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         var validCycleIds = _.map(cycles.cycles, 'id');
 
         var lastCycleId = inventory_service.get_last_cycle();
-        if (cycle) {
+        if (_.has(cycle, 'id')) {
           params.cycle = cycle.id;
           inventory_service.save_last_cycle(cycle.id);
         } else if (_.includes(validCycleIds, lastCycleId)) {
@@ -367,6 +368,30 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       localStorage.setItem('cycles', JSON.stringify(cycles));
     };
 
+    inventory_service.get_last_profile = function (key) {
+      var organization_id = user_service.get_organization().id;
+      return (JSON.parse(localStorage.getItem('profiles.' + key)) || {})[organization_id];
+    };
+
+    inventory_service.save_last_profile = function (pk, key) {
+      var organization_id = user_service.get_organization().id,
+        profiles = JSON.parse(localStorage.getItem('profiles.' + key)) || {};
+      profiles[organization_id] = _.toInteger(pk);
+      localStorage.setItem('profiles.' + key, JSON.stringify(profiles));
+    };
+
+    inventory_service.get_last_detail_profile = function (key) {
+      var organization_id = user_service.get_organization().id;
+      return (JSON.parse(localStorage.getItem('detailProfiles.' + key)) || {})[organization_id];
+    };
+
+    inventory_service.save_last_detail_profile = function (pk, key) {
+      var organization_id = user_service.get_organization().id,
+        profiles = JSON.parse(localStorage.getItem('detailProfiles.' + key)) || {};
+      profiles[organization_id] = _.toInteger(pk);
+      localStorage.setItem('detailProfiles.' + key, JSON.stringify(profiles));
+    };
+
 
     inventory_service.get_property_columns = function () {
       return $http.get('/api/v2/properties/columns/', {
@@ -379,11 +404,37 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           return !_.isEmpty(col.name);
         });
 
-        // Remove _pint columns
-        if (!flippers.is_active('release:use_pint')) {
-          _.remove(columns, function (col) {
-            return /_pint$/.test(col.name);
+        // Rename display_name to displayName (ui-grid compatibility)
+        columns = _.map(columns, function (col) {
+          return _.mapKeys(col, function(value, key) {
+            return key === 'display_name' ? 'displayName' : key;
           });
+        });
+
+        // Remove _orig columns
+        if (flippers.is_active('release:orig_columns')) {
+          _.remove(columns, function (col) {
+            return /_orig/.test(col.name);
+          });
+        }
+
+        // TEMP: fix some columns
+        _.forEach(columns, function (col) {
+          if (col.name === 'created' && col.table_name === 'TaxLot') {
+            col.name = 'tax_created';
+            col.displayName = 'Created (Tax Lot)';
+          } else if (col.name === 'updated' && col.table_name === 'TaxLot') {
+            col.name = 'tax_updated';
+            col.displayName = 'Updated (Tax Lot)';
+          }
+        });
+
+        // Check for problems
+        var duplicates = _.filter(_.map(columns, 'name'), function (value, index, iteratee) {
+          return _.includes(iteratee, value, index + 1);
+        });
+        if (duplicates.length) {
+          console.error('Duplicate property column names detected:', duplicates);
         }
 
         return columns;
@@ -402,11 +453,37 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           return !_.isEmpty(col.name);
         });
 
-        // Remove _pint columns
-        if (!flippers.is_active('release:use_pint')) {
-          _.remove(columns, function (col) {
-            return /_pint$/.test(col.name);
+        // Rename display_name to displayName (ui-grid compatibility)
+        columns = _.map(columns, function (col) {
+          return _.mapKeys(col, function(value, key) {
+            return key === 'display_name' ? 'displayName' : key;
           });
+        });
+
+        // Remove _orig columns
+        if (flippers.is_active('release:orig_columns')) {
+          _.remove(columns, function (col) {
+            return /_orig/.test(col.name);
+          });
+        }
+
+        // TEMP: fix some columns
+        _.forEach(columns, function (col) {
+          if (col.name === 'created' && col.table_name === 'Property') {
+            col.name = 'property_created';
+            col.displayName = 'Created (Property)';
+          } else if (col.name === 'updated' && col.table_name === 'Property') {
+            col.name = 'property_updated';
+            col.displayName = 'Updated (Property)';
+          }
+        });
+
+        // Check for problems
+        var duplicates = _.filter(_.map(columns, 'name'), function (value, index, iteratee) {
+          return _.includes(iteratee, value, index + 1);
+        });
+        if (duplicates.length) {
+          console.error('Duplicate tax lot column names detected:', duplicates);
         }
 
         return columns;
@@ -475,7 +552,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
                 }
                 return match;
               }
-            }  else {
+            } else {
               // Case-insensitive Contains
               regex = new RegExp(search, 'i');
               match = regex.test(cellValue);
@@ -611,47 +688,6 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       };
     };
 
-    inventory_service.saveSettings = function (key, columns) {
-      key += '.' + user_service.get_organization().id;
-      var toSave = inventory_service.reorderSettings(_.map(columns, function (col) {
-        return _.pick(col, ['name', 'table', 'visible', 'pinnedLeft']);
-      }));
-      localStorage.setItem(key, JSON.stringify(toSave));
-    };
-
-    inventory_service.loadSettings = function (key, columns) {
-      key += '.' + user_service.get_organization().id;
-      columns = angular.copy(columns);
-
-      // Hide extra data columns by default
-      _.forEach(columns, function (col) {
-        col.visible = !col.extraData;
-      });
-
-      var localColumns = localStorage.getItem(key);
-      if (!_.isNull(localColumns)) {
-        localColumns = JSON.parse(localColumns);
-
-        // Remove nonexistent columns
-        _.remove(localColumns, function (col) {
-          return !_.find(columns, {name: col.name, table: col.table});
-        });
-        // Use saved column settings with original data as defaults
-        localColumns = _.map(localColumns, function (col) {
-          return _.defaults(col, _.remove(columns, {name: col.name, table: col.table})[0]);
-        });
-        // If no columns are visible, reset visibility only
-        if (!_.find(localColumns, 'visible')) {
-          _.forEach(localColumns, function (col) {
-            col.visible = !col.extraData;
-          });
-        }
-        return inventory_service.reorderSettings(localColumns.concat(columns));
-      } else {
-        return inventory_service.reorderSettings(columns);
-      }
-    };
-
     inventory_service.saveSelectedLabels = function (key, ids) {
       key += '.' + user_service.get_organization().id;
       localStorage.setItem(key, JSON.stringify(ids));
@@ -671,11 +707,6 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     inventory_service.loadGridSettings = function (key) {
       key += '.' + user_service.get_organization().id;
       return localStorage.getItem(key);
-    };
-
-    inventory_service.removeSettings = function (key) {
-      key += '.' + user_service.get_organization().id;
-      localStorage.removeItem(key);
     };
 
     inventory_service.saveMatchesPerPage = function (matchesPerPage) {
@@ -730,8 +761,8 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       return pinned.concat(selected).concat(columns);
     };
 
-    inventory_service.search_matching_inventory = function (import_file_id, options) {
-      return $http.post('/api/v2/import_files/' + import_file_id + '/filtered_mapping_results/', options, {
+    inventory_service.search_matching_inventory = function (import_file_id) {
+      return $http.post('/api/v2/import_files/' + import_file_id + '/filtered_mapping_results/', undefined, {
         params: {
           organization_id: user_service.get_organization().id
         }
@@ -769,6 +800,55 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         }
       }).then(function (response) {
         return response.data;
+      });
+    };
+
+    inventory_service.get_settings_profiles = function (settings_location, inventory_type) {
+      return $http.get('/api/v2/column_list_settings/', {
+        params: {
+          organization_id: user_service.get_organization().id
+        }
+      }).then(function (response) {
+        var profiles = _.filter(response.data.data, {
+          settings_location: settings_location,
+          inventory_type: inventory_type
+        }).sort(function (a, b) {
+          return naturalSort(a.name, b.name);
+        });
+
+        _.forEach(profiles, function (profile) {
+          profile.columns = _.sortBy(profile.columns, ['order', 'column_name']);
+        });
+
+        return profiles;
+      });
+    };
+
+    inventory_service.new_settings_profile = function (data) {
+      return $http.post('/api/v2/column_list_settings/', data, {
+        params: {
+          organization_id: user_service.get_organization().id
+        }
+      }).then(function (response) {
+        return response.data.data;
+      });
+    };
+
+    inventory_service.update_settings_profile = function (id, data) {
+      return $http.put('/api/v2/column_list_settings/' + id + '/', data, {
+        params: {
+          organization_id: user_service.get_organization().id
+        }
+      }).then(function (response) {
+        return response.data.data;
+      });
+    };
+
+    inventory_service.remove_settings_profile = function (id) {
+      return $http.delete('/api/v2/column_list_settings/' + id + '/', {
+        params: {
+          organization_id: user_service.get_organization().id
+        }
       });
     };
 

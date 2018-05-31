@@ -77,7 +77,7 @@ angular.module('BE.seed.service.pairing', []).factory('pairing_service', [
 
       // Hide extra data columns by default
       _.forEach(columns, function (col) {
-        col.visible = !col.extraData;
+        col.visible = !col.is_extra_data;
       });
 
       var localColumns = localStorage.getItem(key);
@@ -95,15 +95,15 @@ angular.module('BE.seed.service.pairing', []).factory('pairing_service', [
         // If no columns are visible, reset visibility only
         if (!_.find(localColumns, 'visible')) {
           _.forEach(localColumns, function (col) {
-            col.visible = !col.extraData;
+            col.visible = !col.is_extra_data;
           });
         }
         return pairing_service.reorderSettings(localColumns.concat(columns));
       } else {
         var filteredColumns = [];
-        filteredColumns = filteredColumns.concat(_.remove(columns, {name: 'address_line_1'}));
-        filteredColumns = filteredColumns.concat(_.remove(columns, {name: 'pm_property_id'}));
-        filteredColumns = filteredColumns.concat(_.remove(columns, {name: 'custom_id_1'}));
+        filteredColumns = filteredColumns.concat(_.remove(columns, {column_name: 'address_line_1', table_name: 'PropertyState'}));
+        filteredColumns = filteredColumns.concat(_.remove(columns, {column_name: 'pm_property_id', table_name: 'PropertyState'}));
+        filteredColumns = filteredColumns.concat(_.remove(columns, {column_name: 'custom_id_1', table_name: 'PropertyState'}));
         _.forEach(columns, function (col) {
           col.visible = false;
         });
@@ -125,7 +125,7 @@ angular.module('BE.seed.service.pairing', []).factory('pairing_service', [
 
       // Hide extra data columns by default
       _.forEach(columns, function (col) {
-        col.visible = !col.extraData;
+        col.visible = !col.is_extra_data;
       });
 
       var localColumns = localStorage.getItem(key);
@@ -143,14 +143,14 @@ angular.module('BE.seed.service.pairing', []).factory('pairing_service', [
         // If no columns are visible, reset visibility only
         if (!_.find(localColumns, 'visible')) {
           _.forEach(localColumns, function (col) {
-            col.visible = !col.extraData;
+            col.visible = !col.is_extra_data;
           });
         }
         return pairing_service.reorderSettings(localColumns.concat(columns));
       } else {
         var filteredColumns = [];
-        filteredColumns = filteredColumns.concat(_.remove(columns, {name: 'address_line_1'}));
-        filteredColumns = filteredColumns.concat(_.remove(columns, {name: 'jurisdiction_tax_lot_id'}));
+        filteredColumns = filteredColumns.concat(_.remove(columns, {column_name: 'address_line_1', table_name: 'TaxLotState'}));
+        filteredColumns = filteredColumns.concat(_.remove(columns, {column_name: 'jurisdiction_tax_lot_id', table_name: 'TaxLotState'}));
         _.forEach(columns, function (col) {
           col.visible = false;
         });

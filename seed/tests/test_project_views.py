@@ -15,8 +15,7 @@ from seed.lib.superperms.orgs.models import (
     ROLE_OWNER,
     ROLE_MEMBER,
     ROLE_VIEWER,
-    OrganizationUser,
-    Organization
+    OrganizationUser
 )
 from seed.models import (
     Project, ProjectPropertyView,
@@ -24,6 +23,7 @@ from seed.models import (
 )
 from seed.test_helpers import fake
 from seed.tests.util import FakeRequest, DeleteModelsTestCase
+from seed.utils.organizations import create_organization
 
 DEFAULT_NAME = 'proj1'
 
@@ -44,11 +44,11 @@ class ProjectViewTests(DeleteModelsTestCase):
             'last_name': 'Energy',
         }
         self.user = User.objects.create_user(**user_details)
-        self.org = Organization.objects.create(name='my org')
-        self.org.add_member(self.user)
+        self.org, self.org_user, _ = create_organization(self.user)
+        self.client.login(**user_details)
+
         self.client.login(**user_details)
         self.fake_request = FakeRequest(user=self.user)
-        self.maxDiff = None
 
     def _create_project(self, name=DEFAULT_NAME, org_id=None, user=None,
                         via_http=False, **kwargs):
@@ -194,7 +194,7 @@ class ProjectViewTests(DeleteModelsTestCase):
     def test_get_projects(self):
         """tests get_projects"""
         self._create_project('proj1', self.org.pk)
-        other_org = Organization.objects.create(name='not my org')
+        other_org, _, _ = create_organization()
         # standard case, should only see proj1, not other_proj
         self._set_role_level(ROLE_VIEWER)
         resp = self.client.get(
@@ -254,12 +254,12 @@ class ProjectViewTests(DeleteModelsTestCase):
     def test_get_project(self):
         """tests get_project"""
         project = self._create_project('proj1', self.org.pk)
-        other_org = Organization.objects.create(name='not my org')
         other_user = User.objects.create(
             username="tester@example.org",
             email="tester@example.org",
         )
-        other_org.add_member(other_user)
+        other_org, self.org_user, _ = create_organization(other_user)
+
         self._create_project('otherproj', other_org.pk, other_user)
         # standard case, should only see proj1, not other_proj
         self._set_role_level(ROLE_VIEWER)
@@ -333,11 +333,11 @@ class ProjectViewTests(DeleteModelsTestCase):
             {'status': 'error', 'message': 'Permission denied'}
         )
         # only delete the project if you are a member of its org
-        other_org = Organization.objects.create(name='not my org')
         other_user = User.objects.create(
             username="tester@example.org",
             email="tester@example.org",
         )
+        other_org, _, _ = create_organization(other_user)
         project = self._create_project('proj2', other_org.pk, other_user)
         self._set_role_level(ROLE_MEMBER)
         url = "{}?organization_id={}".format(
@@ -658,7 +658,7 @@ class ProjectViewTests(DeleteModelsTestCase):
             }
         )
         # test case where user is not in org
-        other_org = Organization.objects.create(name='not my org')
+        other_org, _, _ = create_organization(None, 'not my org')
         resp = self.client.get(
             reverse_lazy("api:v2:projects-count") + '?organization_id=' + str(other_org.id),
             content_type='application/json',
@@ -679,19 +679,16 @@ class ProjectViewTests(DeleteModelsTestCase):
             super_organization=self.org,
             owner=self.user,
         )
-        other_org = Organization.objects.create(name='not my org')
         other_user = User.objects.create(
             username="tester@example.org",
             email="tester@example.org",
         )
-        other_org.add_member(other_user)
+        other_org, _, _ = create_organization(other_user, 'not my org')
         ImportRecord.objects.create(
             name="test_count",
             super_organization=other_org,
             owner=other_user,
         )
-
-        # test standard case
         resp = self.client.get(
             reverse_lazy("api:v2:datasets-count") + '?organization_id=' + str(self.org.id),
             content_type='application/json',

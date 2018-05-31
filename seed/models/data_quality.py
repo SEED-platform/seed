@@ -22,6 +22,7 @@ from seed.models import (
     StatusLabel,
     PropertyView, TaxLotView)
 from seed.models import obj_to_dict
+from seed.serializers.pint import pretty_units
 from seed.utils.cache import (
     set_cache_raw, get_cache_raw
 )
@@ -94,20 +95,20 @@ DEFAULT_RULES = [
     }, {
         'table_name': 'PropertyState',
         'field': 'conditioned_floor_area',
-        'data_type': TYPE_NUMBER,
+        'data_type': TYPE_AREA,
         'rule_type': RULE_TYPE_DEFAULT,
         'min': 0,
         'max': 7000000,
         'severity': SEVERITY_ERROR,
-        'units': 'square feet',
+        'units': 'ft**2',
     }, {
         'table_name': 'PropertyState',
         'field': 'conditioned_floor_area',
-        'data_type': TYPE_NUMBER,
+        'data_type': TYPE_AREA,
         'rule_type': RULE_TYPE_DEFAULT,
         'min': 100,
         'severity': SEVERITY_WARNING,
-        'units': 'square feet',
+        'units': 'ft**2',
     }, {
         'table_name': 'PropertyState',
         'field': 'energy_score',
@@ -139,7 +140,7 @@ DEFAULT_RULES = [
         'min': 100,
         'max': 7000000,
         'severity': SEVERITY_ERROR,
-        'units': 'square feet',
+        'units': 'ft**2',
     }, {
         'table_name': 'PropertyState',
         'field': 'occupied_floor_area',
@@ -148,7 +149,7 @@ DEFAULT_RULES = [
         'min': 100,
         'max': 7000000,
         'severity': SEVERITY_ERROR,
-        'units': 'square feet',
+        'units': 'ft**2',
     }, {
         'table_name': 'PropertyState',
         'field': 'recent_sale_date',
@@ -168,55 +169,55 @@ DEFAULT_RULES = [
     }, {
         'table_name': 'PropertyState',
         'field': 'site_eui',
-        'data_type': TYPE_NUMBER,
+        'data_type': TYPE_EUI,
         'rule_type': RULE_TYPE_DEFAULT,
         'min': 0,
         'max': 1000,
         'severity': SEVERITY_ERROR,
-        'units': 'kBtu/sq. ft./year',
+        'units': 'kBtu/ft**2/year',
     }, {
         'table_name': 'PropertyState',
         'field': 'site_eui',
-        'data_type': TYPE_NUMBER,
+        'data_type': TYPE_EUI,
         'rule_type': RULE_TYPE_DEFAULT,
         'min': 10,
         'severity': SEVERITY_WARNING,
-        'units': 'kBtu/sq. ft./year',
+        'units': 'kBtu/ft**2/year',
     }, {
         'table_name': 'PropertyState',
         'field': 'site_eui_weather_normalized',
-        'data_type': TYPE_NUMBER,
+        'data_type': TYPE_EUI,
         'rule_type': RULE_TYPE_DEFAULT,
         'min': 0,
         'max': 1000,
         'severity': SEVERITY_ERROR,
-        'units': 'kBtu/sq. ft./year',
+        'units': 'kBtu/ft**2/year',
     }, {
         'table_name': 'PropertyState',
         'field': 'source_eui',
-        'data_type': TYPE_NUMBER,
+        'data_type': TYPE_EUI,
         'rule_type': RULE_TYPE_DEFAULT,
         'min': 0,
         'max': 1000,
         'severity': SEVERITY_ERROR,
-        'units': 'kBtu/sq. ft./year',
+        'units': 'kBtu/ft**2/year',
     }, {
         'table_name': 'PropertyState',
         'field': 'source_eui',
-        'data_type': TYPE_NUMBER,
+        'data_type': TYPE_EUI,
         'rule_type': RULE_TYPE_DEFAULT,
         'min': 10,
         'severity': SEVERITY_WARNING,
-        'units': 'kBtu/sq. ft./year',
+        'units': 'kBtu/ft**2/year',
     }, {
         'table_name': 'PropertyState',
         'field': 'source_eui_weather_normalized',
-        'data_type': TYPE_NUMBER,
+        'data_type': TYPE_EUI,
         'rule_type': RULE_TYPE_DEFAULT,
         'min': 10,
         'max': 1000,
         'severity': SEVERITY_ERROR,
-        'units': 'kBtu/sq. ft./year',
+        'units': 'kBtu/ft**2/year',
     }, {
         'table_name': 'PropertyState',
         'field': 'year_built',
@@ -241,6 +242,10 @@ class ComparisonError(Exception):
     pass
 
 
+class DataQualityTypeCastError(Exception):
+    pass
+
+
 def format_pint_violation(rule, source_value):
     """
     Format a pint min, max violation for human readability.
@@ -249,13 +254,6 @@ def format_pint_violation(rule, source_value):
     :param source_value : Quantity - value to format into range
     :return (formatted_value, formatted_min, formatted_max) : (String, String, String)
     """
-
-    def pretty_units(q):
-        """
-        hack; can lose it when Pint gets something like a "{:~U}" format code
-        see https://github.com/hgrecco/pint/pull/231
-        """
-        return u"{:~P}".format(q).split(" ")[1]
 
     formatted_min = formatted_max = None
     incoming_data_units = source_value.units
@@ -271,7 +269,7 @@ def format_pint_violation(rule, source_value):
             rule_value.magnitude, pretty_rule_units,
         )
     else:
-        formatted_value = u"{:.1f} {}".format(source_value, pretty_rule_units)
+        formatted_value = u"{:.1f} {}".format(source_value.magnitude, pretty_rule_units)
     if rule.min is not None:
         formatted_min = u"{:.1f} {}".format(rule.min, pretty_rule_units)
     if rule.max is not None:
@@ -425,7 +423,7 @@ class Rule(models.Model):
                             if dt is not None:
                                 return dt.date()
             except ValueError as e:
-                raise TypeError("Error converting {} with {}".format(value, e))
+                raise DataQualityTypeCastError("Error converting {} with {}".format(value, e))
         else:
             return value
 
@@ -491,20 +489,18 @@ class DataQualityCheck(models.Model):
 
         This is the preferred method to initialize a new object.
 
-        :param organization: int or instance of Organization
+        :param organization: instance of Organization
         :return: obj, DataQualityCheck
         """
 
         if DataQualityCheck.objects.filter(organization=organization).count() > 1:
             # Ensure that only one object is returned. For an unknown reason, the production
-            # database has multiple DataQualityCheck objects for an organizaiton, but there are no
+            # database has multiple DataQualityCheck objects for an organization, but there are no
             # calls to create a DataQualityCheck other than the .retrieve method.
             first = DataQualityCheck.objects.filter(organization=organization).first()
-            dqcs = DataQualityCheck.objects.filter(organization=organization).exclude(
-                id__in=[first.pk])
+            dqcs = DataQualityCheck.objects.filter(organization=organization).exclude(id__in=[first.pk])
             for dqc in dqcs:
-                _log.info(
-                    "More than one DataQualityCheck for organization. Deleting {}".format(dqc.name))
+                _log.info("More than one DataQualityCheck for organization. Deleting {}".format(dqc.name))
                 dqc.delete()
 
         dq, _ = DataQualityCheck.objects.get_or_create(organization=organization)
@@ -560,16 +556,12 @@ class DataQualityCheck(models.Model):
         :return: None
         """
 
-        # grab the columns so we can grab the display names
-        columns = Column.retrieve_all(self.organization, record_type, False)
-
-        # create lookup tuple for the display name
-        for c in columns:
-            self.column_lookup[(c['table'], c['name'])] = c['displayName']
+        # grab the columns so we can grab the display names, create lookup tuple for display name
+        for c in Column.retrieve_all(self.organization, record_type, False):
+            self.column_lookup[(c['table_name'], c['column_name'])] = c['display_name']
 
         # grab all the rules once, save query time
-        rules = self.rules.filter(enabled=True, table_name=record_type).order_by('field',
-                                                                                 'severity')
+        rules = self.rules.filter(enabled=True, table_name=record_type).order_by('field', 'severity')
 
         # Get the list of the field names that will show in every result
         fields = self.get_fieldnames(record_type)
@@ -636,14 +628,18 @@ class DataQualityCheck(models.Model):
             if hasattr(row, rule.field) or rule.field in row.extra_data:
                 value = None
                 label_applied = False
+                display_name = rule.field
 
                 if hasattr(row, rule.field):
                     value = getattr(row, rule.field)
                 elif rule.field in row.extra_data:
                     value = row.extra_data[rule.field]
-                    value = rule.str_to_data_type(value)
+                    try:
+                        value = rule.str_to_data_type(value)
+                    except DataQualityTypeCastError:
+                        self.add_result_type_error(row.id, rule, display_name, value)
+                        continue
 
-                display_name = rule.field
                 if (rule.table_name, rule.field) in self.column_lookup:
                     display_name = self.column_lookup[(rule.table_name, rule.field)]
 
@@ -817,6 +813,19 @@ class DataQualityCheck(models.Model):
                 'table_name': rule.table_name,
                 'message': display_name + ' could not be compared numerically',
                 'detailed_message': display_name + ' [' + value + '] <> ' + rule_check,
+                'severity': rule.get_severity_display(),
+            }
+        )
+
+    def add_result_type_error(self, row_id, rule, display_name, value):
+        self.results[row_id]['data_quality_results'].append(
+            {
+                'field': rule.field,
+                'formatted_field': display_name,
+                'value': value,
+                'table_name': rule.table_name,
+                'message': display_name + ' could not be converted to numerical value',
+                'detailed_message': 'Value [' + value + '] could not be converted to number',
                 'severity': rule.get_severity_display(),
             }
         )

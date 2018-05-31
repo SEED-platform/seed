@@ -68,7 +68,8 @@
         <div class="section_content">
             <div class="table_list_container mapping" ng-cloak>
                 <div class="alert warning file_error_messages" ng-show="has_mapping_error_messages()" ng-bind-html="mapping_error_messages"></div>
-                <div class="alert alert-danger" ng-show="!required_fields_present() && !import_file.matching_done" translate>At least one of the following is required: Address Line 1, Custom Id 1, Jurisdiction Tax Lot Id (with inventory type Tax Lot), UBID (with inventory type Property), or Pm Property Id (with inventory type Property).</div>
+                <div class="alert alert-danger" ng-show="!required_property_fields_present() && !import_file.matching_done" translate>At least one of the following Property fields is required: Address Line 1, Custom Id 1, UBID, or Pm Property Id.</div>
+                <div class="alert alert-danger" ng-show="!required_taxlot_fields_present() && !import_file.matching_done" translate>At least one of the following Tax Lot fields is required: Address Line 1, Custom Id 1, or Jurisdiction Tax Lot Id.</div>
                 <div class="alert alert-danger" ng-show="duplicates_present()" translate>Please review SEED headers.  Duplicate values are not allowed.</div>
                 <div class="alert alert-danger" ng-show="empty_fields_present()" translate>Please review SEED headers.  Empty values are not allowed.</div>
                 <table class="table table-striped" ng-hide="review_mappings">
@@ -129,7 +130,7 @@
                             <td style="border-right: 0 none;">
                                 <select ng-model="setAllFields" ng-change="setAllInventoryTypes()" ng-options="item as (item.name | translate) for item in ::setAllFieldsOptions track by item.value" ng-hide="import_file.matching_done"></select>
                             </td>
-                            <td colspan="{$:: flippers.is_active('release:use_pint') ? 6 : 5 $}"></td>
+                            <td colspan="6"></td>
                         </tr>
                     </tbody>
                     <thead>
@@ -137,16 +138,16 @@
                             <th class="sub_head is_aligned_center hide">Map
                                 <a uib-popover="{$ MAP_copy $}" popover-placement="right"><i class="fa fa-info-circle" style="cursor: pointer;"></i></a>
                             </th>
-                            <th class="mapping_field" translate>SEED Header</th>
+                            <th class="mapping_field ellipsis-resizable" sd-resizable><translate>SEED Header</translate></th>
                             <!--th class="sub_head is_aligned_center">Duplicate <a uib-popover="{$VALIDATE_copy$}" popover-placement="right"><i class="fa fa-info-circle" style="cursor: pointer;"></i></a></th-->
-                            <th class="import_column_name" translate>Data File Header</th>
-                            <th translate>Inventory Type</th>
-                            <th ng-if="flippers.is_active('release:use_pint')" translate>Measurement Units</th>
-                            <th translate>Row 1</th>
-                            <th translate>Row 2</th>
-                            <th translate>Row 3</th>
-                            <th translate>Row 4</th>
-                            <th translate>Row 5</th>
+                            <th class="import_column_name ellipsis-resizable" sd-resizable><translate>Data File Header</translate></th>
+                            <th class="ellipsis-resizable" sd-resizable><translate>Inventory Type</translate></th>
+                            <th class="ellipsis-resizable" sd-resizable><translate>Measurement Units</translate></th>
+                            <th class="ellipsis-resizable" sd-resizable><translate>Row 1</translate></th>
+                            <th class="ellipsis-resizable" sd-resizable><translate>Row 2</translate></th>
+                            <th class="ellipsis-resizable" sd-resizable><translate>Row 3</translate></th>
+                            <th class="ellipsis-resizable" sd-resizable><translate>Row 4</translate></th>
+                            <th class="ellipsis-resizable" sd-resizable><translate>Row 5</translate></th>
                         </tr>
                     </thead>
                     <tbody id="mapped-table">
@@ -170,20 +171,18 @@
                                     <option value="TaxLotState" translate>Tax Lot</option>
                                 </select>
                             </td>
-                            <td ng-if="flippers.is_active('release:use_pint')">
-                              <select ng-model="tcm.from_units" ng-if="is_pint_column(tcm.suggestion)">
-                                <option value="" translate>None</option>
-                                <optgroup label="{$:: 'Area' | translate $}">
-                                  <option value="ft**2" translate>square feet</option>
-                                  <option value="m**2" translate>square metres</option>
-                                </optgroup>
-                                <optgroup label="{$:: 'EUI' | translate $}">
-                                  <!-- values are pint-parseable  -->
-                                  <option value="kBtu/ft**2/year" translate>kBtu/sq. ft./year</option>
-                                  <option value="kWh/m**2/year" translate>kWh/m²/year</option>
-                                  <option value="GJ/m**2/year" translate>GJ/m²/year</option>
-                                </optgroup>
-                              </select>
+                            <td>
+                                <select ng-model="tcm.from_units" ng-if="is_area_column(tcm.suggestion, tcm.suggestion_table_name)">
+                                    <option value="ft**2" translate>square feet</option>
+                                    <option value="m**2" translate>square metres</option>
+                                </select>
+                                <select ng-model="tcm.from_units" ng-if="is_eui_column(tcm.suggestion, tcm.suggestion_table_name)">
+                                    <option value="kBtu/ft**2/year" translate>kBtu/sq. ft./year</option>
+                                    <option value="kWh/m**2/year" translate>kWh/m²/year</option>
+                                    <option value="GJ/m**2/year" translate>GJ/m²/year</option>
+                                    <option value="MJ/m**2/year" translate>MJ/m²/year</option>
+                                    <option value="kBtu/m**2/year" translate>kBtu/m²/year</option>
+                                </select>
                             </td>
                             <td ng-repeat="cell_value in ::tcm.raw_data track by $index" ng-class="{'danger': set_td_class(tcm, cell_value) === 'danger', 'warning': set_td_class(tcm, cell_value) === 'warning'}">
                                 {$:: cell_value $}
@@ -249,7 +248,7 @@
     </div>
     <div class="inventory-list-tab-container" ng-if="show_mapped_buildings && mappedData.tax_lots.length" style="margin-top: 20px;">
         <div class="item-count">
-            <i class="fa fa-map-o"></i> <span translate="NUMBER_OF_TAXLOTS" translate-values="{ num: mappedData.properties.length }"></span>
+            <i class="fa fa-map-o"></i> <span translate="NUMBER_OF_TAXLOTS" translate-values="{ num: mappedData.tax_lots.length }"></span>
         </div>
         <ul class="nav nav-tabs" style="margin-bottom:1px;">
             <li heading="View by Tax Lot" class="active"><a translate>View by Tax Lot</a></li>

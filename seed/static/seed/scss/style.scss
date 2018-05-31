@@ -2922,7 +2922,6 @@ div.table_list_container.matching, div.table_list_container.matching_detail {
   display: none !important;
 }
 
-
 $pairingCellWidth: 200px;
 $pairedCellWidth: 60px;
 .pairing-container-2 {
@@ -3092,7 +3091,7 @@ $pairedCellWidth: 60px;
 }
 
 .pm_import {
-  [disabled]{
+  [disabled] {
     pointer-events: none;
   }
 
@@ -3103,4 +3102,49 @@ $pairedCellWidth: 60px;
   small {
     color: #999;
   }
+}
+
+.notes-button {
+  font-size: 9px;
+  text-decoration: none !important;
+
+  i.fa {
+    font-size: 13px;
+    padding-left: 3px;
+
+    &.text-muted {
+      color: #222;
+      opacity: 0.1;
+    }
+  }
+
+  div {
+    position: relative;
+    text-align: right;
+    top: -2px;
+    width: 20px;
+  }
+}
+
+.settings_profile {
+  padding-top: 10px !important;
+
+  select {
+    display: inline-block;
+    margin-left: 20px;
+    width: 200px;
+  }
+
+  button {
+    margin-top: -5px;
+    padding: 4px 7px;
+
+    &[disabled] {
+      opacity: 0.25;
+    }
+  }
+}
+
+.pink-bg {
+  background-color: rgba(255,0,0,0.07);
 }
