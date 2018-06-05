@@ -110,8 +110,12 @@ def forwards(apps, schema_editor):
                                 print dup_cm
                             dup_cms.delete()
                         else:
-                            # move the dup_cms to existing?
-                            raise Exception("    No existing mapping, not sure what to do")
+                            # if the column is not in any of the column mappings, then just delete it.
+                            if ColumnMapping.objects.filter(Q(column_raw=column) | Q(column_mapped=column)).count() == 0:
+                                print "    Column Mapping does not exist, marking column to be removed"
+                                cols_to_delete.append(column)
+                            else:
+                                raise Exception("    Column is mapped to a raw, but not a destination, not sure what to do")
 
         for c in cols_to_delete:
             print "  Deleting %s:%s" % (c.table_name, c.column_name)
