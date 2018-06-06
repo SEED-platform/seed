@@ -10,7 +10,7 @@ modeltranslation==0.25
 psycopg2==2.7.3.2
 
 # background process management
-celery==4.1.0
+celery==4.1.1
 django-redis-cache==1.7.1
 django_compressor==2.2
 django-extensions==1.9.6
