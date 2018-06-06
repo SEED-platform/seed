@@ -5,6 +5,7 @@
 :author
 """
 import base64
+import datetime
 import csv
 import hashlib
 import hmac
@@ -282,8 +283,12 @@ class LocalUploaderViewSet(viewsets.ViewSet):
                 'message': "Must pass pm_data in the request body."
             }, status=status.HTTP_400_BAD_REQUEST)
 
+        # base file name (will be appended with a random string to ensure uniqueness if multiple on the same day)
+        today_date = datetime.datetime.today().strftime('%Y-%m-%d')
+        file_name = "pm_import_%s.csv" % today_date
+
         # create a folder to keep pm_import files
-        path = os.path.join(settings.MEDIA_ROOT, "uploads", "pm_imports", "pm_import.csv")
+        path = os.path.join(settings.MEDIA_ROOT, "uploads", "pm_imports", file_name)
 
         # Get a unique filename using the get_available_name method in FileSystemStorage
         s = FileSystemStorage()
