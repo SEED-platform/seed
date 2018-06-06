@@ -11,55 +11,42 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: 
 msgid "(field must contain this text)"
 msgstr "(field must contain this text)"
 
-#: 
 msgid "(no address 1)"
 msgstr "(no address 1)"
 
-#: 
 msgid "(no labels applied)"
 msgstr "(no labels applied)"
 
-#: 
 msgid "(no maximum)"
 msgstr "(no maximum)"
 
-#: 
 msgid "(no minimum)"
 msgstr "(no minimum)"
 
-#: 
 msgid "# of Buildings"
 msgstr "# of Buildings"
 
-#: 
 msgid "# Of Files"
 msgstr "# Of Files"
 
-#: 
 msgid "# of Records"
 msgstr "# of Records"
 
-#: 
 msgid "A 'Remove' button is shown for tags that are already applied to one or more properties in the current selection"
 msgstr "A 'Remove' button is shown for tags that are already applied to one or more properties in the current selection"
 
-#: 
 msgid "A list of your imported headers."
 msgstr "A list of your imported headers."
 
-#: 
 msgid "A preview of your concatenated data will appear in the box below."
 msgstr "A preview of your concatenated data will appear in the box below."
 
-#: 
 msgid "About"
 msgstr "About"
 
-#: 
 msgid "About SEED Platform™"
 msgstr "About SEED Platform™"
 
@@ -71,7 +58,6 @@ msgstr "Accept"
 msgid "Accept Terms of Service?"
 msgstr "Accept Terms of Service?"
 
-#: 
 msgid "Actions"
 msgstr "Actions"
 
@@ -84,123 +70,93 @@ msgstr "active"
 msgid "Active"
 msgstr "Active"
 
-#: 
 msgid "Add"
 msgstr "Add"
 
-#: 
 msgid "Add a label"
 msgstr "Add a label"
 
-#: 
 msgid "Add another file"
 msgstr "Add another file"
 
-#: 
 msgid "Add compliance information"
 msgstr "Add compliance information"
 
-#: 
 msgid "Add compliance information."
 msgstr "Add compliance information."
 
-#: 
 msgid "Add Data Files"
 msgstr "Add Data Files"
 
-#: 
 msgid "Add files to"
 msgstr "Add files to"
 
-#: 
 msgid "Add Label"
 msgstr "Add Label"
 
-#: 
 msgid "Add more data files"
 msgstr "Add more data files"
 
-#: 
 msgid "Add Shared Properties"
 msgstr "Add Shared Properties"
 
-#: 
 msgid "Add Shared Tax Lots"
 msgstr "Add Shared Tax Lots"
 
-#: 
 msgid "Add user"
 msgstr "Add user"
 
-#: 
 msgid "Add user to organization"
 msgstr "Add user to organization"
 
-#: 
 msgid "Add user to organization:"
 msgstr "Add user to organization:"
 
-#: 
 msgid "ADD_FILES_TO"
 msgstr "Add files to {dataset_name}."
 
-#: 
 msgid "ADD_REMOVE_LABELS_FROM_PROPERTIES"
 msgstr "Add or remove labels from {num, plural, one{1 selected property} other{# selected properties}}"
 
-#: 
 msgid "ADD_REMOVE_LABELS_FROM_TAXLOTS"
 msgstr "Add or remove labels from {num, plural, one{1 selected tax lot} other{# selected tax lots}}"
 
-#: 
 msgid "Add/Remove a user to an organization"
 msgstr "Add/Remove a user to an organization"
 
-#: 
 msgid "Add/Remove Labels"
 msgstr "Add/Remove Labels"
 
-#: 
 msgid "Adding buildings to project"
 msgstr "Adding buildings to project"
 
-#: 
 msgid "Address Line 1"
 msgstr "Address Line 1"
 
-#: 
 msgid "Address Line 1 (Property)"
 msgstr "Address Line 1 (Property)"
 
-#: 
 msgid "Address Line 1 (Tax Lot)"
 msgstr "Address Line 1 (Tax Lot)"
 
-#: 
 msgid "Address Line 2 (Property)"
 msgstr "Address Line 2 (Property)"
 
-#: 
 msgid "Address Line 2 (Tax Lot)"
 msgstr "Address Line 2 (Tax Lot)"
 
-#: 
 msgid "Admin"
 msgstr "Admin"
 
-#: 
 msgid "An error occurred while processing the file. Please ensure that your file meets the required specifications."
 msgstr "An error occurred while processing the file. Please ensure that your file meets the required specifications."
 
-#: 
 msgid "AND"
 msgstr "AND"
 
-#: 
 msgid "and"
 msgstr "and"
 
-#: 
 msgid "API Documentation"
 msgstr "API Documentation"
 
@@ -208,7 +164,6 @@ msgstr "API Documentation"
 msgid "api key"
 msgstr "api key"
 
-#: 
 msgid "API Key"
 msgstr "API Key"
 
@@ -217,63 +172,52 @@ msgstr "API Key"
 msgid "approved_date"
 msgstr "approved_date"
 
-#: 
 msgid "Are you sure you want to delete"
 msgstr "Are you sure you want to delete"
 
-#: 
 msgid "Are you sure you want to delete the data file"
 msgstr "Are you sure you want to delete the data file"
 
-#: 
 msgid "Are you sure you want to delete the data set"
 msgstr "Are you sure you want to delete the data set"
 
-#: 
 msgid "Are you sure you want to unmerge these properties and then merge with the selected properties?"
 msgstr "Are you sure you want to unmerge these properties and then merge with the selected properties?"
 
-#: 
 msgid "Are you sure you want to unmerge these tax lots and then merge with the selected tax lots?"
 msgstr "Are you sure you want to unmerge these tax lots and then merge with the selected tax lots?"
 
-#: 
 msgid "Area"
 msgstr "Area"
 
-#: 
 msgid "As the admin of your SEED instance you can control what data is shared throughout your organization and between your sub-organizations as well as what data is shared externally with the public-at-large. The subset of data you choose to share with the public can be different than the subset shared between your sub-organizations."
 msgstr "As the admin of your SEED instance you can control what data is shared throughout your organization and between your sub-organizations as well as what data is shared externally with the public-at-large. The subset of data you choose to share with the public can be different than the subset shared between your sub-organizations."
 
-#: 
 msgid "Associated Building Tax Lot ID"
 msgstr "Associated Building Tax Lot ID"
 
-#: 
 msgid "Associated Tax Lot ID"
 msgstr "Associated Tax Lot ID"
 
-#: 
 msgid "Associated Tax Lot IDs"
 msgstr "Associated Tax Lot IDs"
 
-#: 
-msgid "At least one of the following is required: Address Line 1, Custom Id 1, Jurisdiction Tax Lot Id (with inventory type Tax Lot), or Pm Property Id (with inventory type Property)."
-msgstr "At least one of the following is required: Address Line 1, Custom Id 1, Jurisdiction Tax Lot Id (with inventory type Tax Lot), or Pm Property Id (with inventory type Property)."
+msgid "At least one of the following Property fields is required: Address Line 1, Custom ID 1, UBID, or PM Property ID."
+msgstr "At least one of the following Property fields is required: Address Line 1, Custom ID 1, UBID, or PM Property ID."
+
+msgid "At least one of the following Tax Lot fields is required: Address Line 1, Custom ID 1, or Jurisdiction Tax Lot ID."
+msgstr "At least one of the following Tax Lot fields is required: Address Line 1, Custom ID 1, or Jurisdiction Tax Lot ID."
 
 #: seed/models/models.py:136
 msgid "Auditing"
 msgstr "Auditing"
 
-#: 
 msgid "Auto Matching"
 msgstr "Auto Matching"
 
-#: 
 msgid "auto-mapping energy data"
 msgstr "auto-mapping energy data"
 
-#: 
 msgid "auto-matching energy data"
 msgstr "auto-matching energy data"
 
@@ -285,11 +229,9 @@ msgstr "Back"
 msgid "Back to Home"
 msgstr "Back to Home"
 
-#: 
 msgid "Back to List"
 msgstr "Back to List"
 
-#: 
 msgid "Back to Mapping"
 msgstr "Back to Mapping"
 
@@ -297,7 +239,6 @@ msgstr "Back to Mapping"
 msgid "Benchmarking"
 msgstr "Benchmarking"
 
-#: 
 msgid "Block Number"
 msgstr "Block Number"
 
@@ -305,31 +246,24 @@ msgstr "Block Number"
 msgid "blue"
 msgstr "blue"
 
-#: 
 msgid "Both"
 msgstr "Both"
 
-#: 
 msgid "Building Certification"
 msgstr "Building Certification"
 
-#: 
 msgid "Building Count"
 msgstr "Building Count"
 
-#: 
 msgid "BUILDING ENERGY DATA EXCHANGE SPECIFICATION (BEDES)"
 msgstr "BUILDING ENERGY DATA EXCHANGE SPECIFICATION (BEDES)"
 
-#: 
 msgid "Building Filters"
 msgstr "Building Filters"
 
-#: 
 msgid "Buildings"
 msgstr "Buildings"
 
-#: 
 msgid "Campus"
 msgstr "Campus"
 
@@ -339,7 +273,6 @@ msgstr "Campus"
 msgid "Cancel"
 msgstr "Cancel"
 
-#: 
 msgid "cancel"
 msgstr "cancel"
 
@@ -347,11 +280,9 @@ msgstr "cancel"
 msgid "Cannot delete protected objects while related objects still exist"
 msgstr "Cannot delete protected objects while related objects still exist"
 
-#: 
 msgid "Change Merged Property"
 msgstr "Change Merged Property"
 
-#: 
 msgid "Change Merged Tax Lot"
 msgstr "Change Merged Tax Lot"
 
@@ -359,7 +290,6 @@ msgstr "Change Merged Tax Lot"
 msgid "Change my password"
 msgstr "Change my password"
 
-#: 
 msgid "Change Password"
 msgstr "Change Password"
 
@@ -367,71 +297,51 @@ msgstr "Change Password"
 msgid "Change Your Password"
 msgstr "Change Your Password"
 
-#: 
 msgid "Changed By"
 msgstr "Changed By"
 
-#: 
-msgid "checkbox &mdash; effectively making a match between these records."
-msgstr "checkbox &mdash; effectively making a match between these records."
-
-#: 
 msgid "Choose Existing Organization:"
 msgstr "Choose Existing Organization:"
 
-#: 
 msgid "Choose the year ending month for report period."
 msgstr "Choose the year ending month for report period."
 
-#: 
 msgid "City (Property)"
 msgstr "City (Property)"
 
-#: 
 msgid "City (Tax Lot)"
 msgstr "City (Tax Lot)"
 
-#: 
 msgid "Classification Type"
 msgstr "Classification Type"
 
-#: 
 msgid "Clear Filters"
 msgstr "Clear Filters"
 
-#: 
 msgid "Clear Labels"
 msgstr "Clear Labels"
 
-#: 
 msgid "Close"
 msgstr "Close"
 
-#: 
 msgid "Collapse Tabs"
 msgstr "Collapse Tabs"
 
-#: 
 msgid "Column Name"
 msgstr "Column Name"
 
-#: 
 msgid "Column Order/Visibility"
 msgstr "Column Order/Visibility"
 
-#: 
 msgid "Commercial"
 msgstr "Commercial"
 
-#: 
 msgid "Complete"
 msgstr "Complete"
 
-#: 
 msgid "Compliance"
 msgstr "Compliance"
 
-#: 
 msgid "Compliance Information"
 msgstr "Compliance Information"
 
@@ -439,11 +349,9 @@ msgstr "Compliance Information"
 msgid "compliance_type"
 msgstr "compliance_type"
 
-#: 
 msgid "Concatenate Headers (Columns of Data)"
 msgstr "Concatenate Headers (Columns of Data)"
 
-#: 
 msgid "Conditioned Floor Area"
 msgstr "Conditioned Floor Area"
 
@@ -452,23 +360,18 @@ msgstr "Conditioned Floor Area"
 msgid "Confirm"
 msgstr "Confirm"
 
-#: 
 msgid "Confirm delete"
 msgstr "Confirm delete"
 
-#: 
 msgid "Confirm new password"
 msgstr "Confirm new password"
 
-#: 
 msgid "Confirm Save Mappings?"
 msgstr "Confirm Save Mappings?"
 
-#: 
 msgid "CONFIRM_AND_START_MATCHING"
 msgstr "Confirm mappings &amp; start matching"
 
-#: 
 msgid "Contact"
 msgstr "Contact"
 
@@ -476,71 +379,54 @@ msgstr "Contact"
 msgid "content"
 msgstr "content"
 
-#: 
 msgid "Continue to data mapping"
 msgstr "Continue to data mapping"
 
-#: 
 msgid "Continue to data matching"
 msgstr "Continue to data matching"
 
-#: 
 msgid "Copy Buildings"
 msgstr "Copy Buildings"
 
-#: 
 msgid "COULD_NOT_LOCATE_MATCHES"
 msgstr "<strong>SEED could not locate any existing matches</strong>. Would you like to add another file?"
 
-#: 
 msgid "Count #"
 msgstr "Count #"
 
-#: 
 msgid "Create"
 msgstr "Create"
 
-#: 
 msgid "Create a New Data Set."
 msgstr "Create a New Data Set."
 
-#: 
 msgid "Create a New Project"
 msgstr "Create a New Project"
 
-#: 
 msgid "Create a new rule"
 msgstr "Create a new rule"
 
-#: 
 msgid "Create a new sub-organization"
 msgstr "Create a new sub-organization"
 
-#: 
 msgid "Create a New Sub-Organization"
 msgstr "Create a New Sub-Organization"
 
-#: 
 msgid "Create a new..."
 msgstr "Create a new..."
 
-#: 
 msgid "Create a user"
 msgstr "Create a user"
 
-#: 
 msgid "Create an organization"
 msgstr "Create an organization"
 
-#: 
 msgid "Create Cycle"
 msgstr "Create Cycle"
 
-#: 
 msgid "Create Data Set"
 msgstr "Create Data Set"
 
-#: 
 msgid "Create label"
 msgstr "Create label"
 
@@ -548,27 +434,21 @@ msgstr "Create label"
 msgid "Create my account"
 msgstr "Create my account"
 
-#: 
 msgid "Create new cycle"
 msgstr "Create new cycle"
 
-#: 
 msgid "Create new data set"
 msgstr "Create new data set"
 
-#: 
 msgid "Create new label"
 msgstr "Create new label"
 
-#: 
 msgid "Create new sub-organization"
 msgstr "Create new sub-organization"
 
-#: 
 msgid "Create New Sub-Organization"
 msgstr "Create New Sub-Organization"
 
-#: 
 msgid "Create Project"
 msgstr "Create Project"
 
@@ -576,135 +456,102 @@ msgstr "Create Project"
 msgid "Create Your Account"
 msgstr "Create Your Account"
 
-#: 
 msgid "Created"
 msgstr "Created"
 
-#: 
 msgid "created"
 msgstr "created"
 
-#: 
 msgid "CREATED_LABEL_NAMED"
 msgstr "Created label {label_name}"
 
-#: 
 msgid "CREATED_NEW_CYCLE"
 msgstr "Created new Cycle {cycle_name}"
 
-#: 
 msgid "Current password"
 msgstr "Current password"
 
-#: 
 msgid "Custom ID 1"
 msgstr "Custom ID 1"
 
-#: 
 msgid "Custom ID 1 (Property)"
 msgstr "Custom ID 1 (Property)"
 
-#: 
 msgid "Custom ID 1 (Tax Lot)"
 msgstr "Custom ID 1 (Tax Lot)"
 
-#: 
 msgid "Cycle"
 msgstr "Cycle"
 
-#: 
 msgid "Cycle Name"
 msgstr "Cycle Name"
 
-#: 
 msgid "Cycle updated."
 msgstr "Cycle updated."
 
-#: 
 msgid "Cycle:"
 msgstr "Cycle:"
 
-#: 
 msgid "Cycles"
 msgstr "Cycles"
 
-#: 
 msgid "Data"
 msgstr "Data"
 
-#: 
 msgid "Data File Header"
 msgstr "Data File Header"
 
-#: 
 msgid "Data Files"
 msgstr "Data Files"
 
-#: 
 msgid "Data Load Error"
 msgstr "Data Load Error"
 
-#: 
 msgid "Data Mapping"
 msgstr "Data Mapping"
 
-#: 
 msgid "Data Mapping and Validation"
 msgstr "Data Mapping and Validation"
 
-#: 
 msgid "Data Matching"
 msgstr "Data Matching"
 
-#: 
 msgid "Data Pairing"
 msgstr "Data Pairing"
 
-#: 
 msgid "Data Quality"
 msgstr "Data Quality"
 
-#: 
 msgid "Data Quality Check"
 msgstr "Data Quality Check"
 
-#: 
 msgid "Data Quality Results"
 msgstr "Data Quality Results"
 
-#: 
 msgid "Data Set"
 msgstr "Data Set"
 
-#: 
 msgid "Data Set Name"
 msgstr "Data Set Name"
 
-#: 
 msgid "Data Sets"
 msgstr "Data Sets"
 
-#: 
 msgid "Data Type"
 msgstr "Data Type"
 
-#: 
 msgid "DATA_MAPPING_AND_VALIDATION"
 msgstr "Data Mapping and Validation ({filename})"
 
-#: 
 msgid "DATASET_FILENAME_UPLOADED_TO"
-msgstr "<strong>{dataset_filename}</strong> has been uploaded to <strong>{dataset_filename}</strong>."
+msgstr "<strong>{dataset_filename}</strong> has been uploaded to <strong>{dataset_name}</strong>."
 
-#: 
 msgid "DATASET_NAME_ALREADY_EXISTS"
 msgstr "The data set <strong>name \"{dataset_name}\" already exists</strong>. Please select a new one."
 
-#: 
 msgid "Date"
 msgstr "Date"
 
-#: 
 msgid "Date Imported"
 msgstr "Date Imported"
 
@@ -712,11 +559,9 @@ msgstr "Date Imported"
 msgid "date joined"
 msgstr "date joined"
 
-#: 
 msgid "Date Uploaded"
 msgstr "Date Uploaded"
 
-#: 
 msgid "Deadline"
 msgstr "Deadline"
 
@@ -724,39 +569,30 @@ msgstr "Deadline"
 msgid "deadline_date"
 msgstr "deadline_date"
 
-#: 
 msgid "Deadline:"
 msgstr "Deadline:"
 
-#: 
 msgid "Delete"
 msgstr "Delete"
 
-#: 
 msgid "Delete Organization"
 msgstr "Delete Organization"
 
-#: 
 msgid "Delete Selected"
 msgstr "Delete Selected"
 
-#: 
 msgid "Delete your Data File"
 msgstr "Delete your Data File"
 
-#: 
 msgid "Delete your Data Set"
 msgstr "Delete your Data Set"
 
-#: 
 msgid "Delete your Inventory"
 msgstr "Delete your Inventory"
 
-#: 
 msgid "DELETE_LABEL_AND_REMOVE"
 msgstr "Delete label '{label_name}' and remove it from all buildings it's been applied to?"
 
-#: 
 msgid "DELETED_LABEL_NAMED"
 msgstr "Deleted label {label_name}"
 
@@ -772,87 +608,66 @@ msgstr "Designates whether the user can log into this admin site."
 msgid "Designates whether this user should be treated as active. Unselect this instead of deleting accounts."
 msgstr "Designates whether this user should be treated as active. Unselect this instead of deleting accounts."
 
-#: 
 msgid "Determine Time Period from Field:"
 msgstr "Determine Time Period from Field:"
 
-#: 
 msgid "Developer"
 msgstr "Developer"
 
-#: 
 msgid "Development Team"
 msgstr "Development Team"
 
-#: 
 msgid "DID_YOU_REVIEW_YOUR_MAPPINGS"
 msgstr "Did you review your mappings? It's a good idea to double check your mappings. Once SEED matches your properties and tax lots you cannot undo or edit these mappings."
 
-#: 
 msgid "Dismiss"
 msgstr "Dismiss"
 
-#: 
 msgid "District"
 msgstr "District"
 
-#: 
 msgid "Done"
 msgstr "Done"
 
-#: 
 msgid "Download Sample Data"
 msgstr "Download Sample Data"
 
-#: 
 msgid "Drag from here"
 msgstr "Drag from here"
 
-#: 
 msgid "Drag headers from your list on the left into the area below to combine them."
 msgstr "Drag headers from your list on the left into the area below to combine them."
 
-#: 
 msgid "Drag Property here to pair with this Tax Lot"
 msgstr "Drag Property here to pair with this Tax Lot"
 
-#: 
 msgid "Drag Tax Lot here to pair with this Property"
 msgstr "Drag Tax Lot here to pair with this Property"
 
-#: 
 msgid "Drag the columns below to change the order that they appear in the table."
 msgstr "Drag the columns below to change the order that they appear in the table."
 
-#: 
 msgid "Drag the columns below to change the order that they appear in your Buildings List table."
 msgstr "Drag the columns below to change the order that they appear in your Buildings List table."
 
-#: 
 msgid "Drag to here"
 msgstr "Drag to here"
 
-#: 
 msgid "Duplicate"
 msgstr "Duplicate"
 
-#: 
 msgid "duplicate"
 msgstr "duplicate"
 
-#: 
 msgid "Duplicates"
 msgstr "Duplicates"
 
-#: 
 msgid "edit"
 msgstr "edit"
 
-#: 
 msgid "Edit"
 msgstr "Edit"
 
-#: 
 msgid "Edit Name"
 msgstr "Edit Name"
 
@@ -868,7 +683,6 @@ msgstr "email address"
 msgid "Email Address"
 msgstr "Email Address"
 
-#: 
 msgid "Email Address:"
 msgstr "Email Address:"
 
@@ -876,15 +690,12 @@ msgstr "Email Address:"
 msgid "end_date"
 msgstr "end_date"
 
-#: 
 msgid "Energy Alerts"
 msgstr "Energy Alerts"
 
-#: 
 msgid "Energy data file"
 msgstr "Energy data file"
 
-#: 
 msgid "ENERGY STAR Score"
 msgstr "ENERGY STAR Score"
 
@@ -892,47 +703,36 @@ msgstr "ENERGY STAR Score"
 msgid "English"
 msgstr "English"
 
-#: 
 msgid "Enter a valid email address."
 msgstr "Enter a valid email address."
 
-#: 
 msgid "Enter email address"
 msgstr "Enter email address"
 
-#: 
 msgid "Enter Email Address"
 msgstr "Enter Email Address"
 
-#: 
 msgid "Enter first name"
 msgstr "Enter first name"
 
-#: 
 msgid "Enter last name"
 msgstr "Enter last name"
 
-#: 
 msgid "Enter sub-organization name"
 msgstr "Enter sub-organization name"
 
-#: 
 msgid "Enter the minimum square footage for report period."
 msgstr "Enter the minimum square footage for report period."
 
-#: 
 msgid "Enter the minimum threshold count of buildings that can be returned in a shared query. The building count threshold is important for allowing other organizations to perform statistical analysis on your data without revealing information about individual buildings."
 msgstr "Enter the minimum threshold count of buildings that can be returned in a shared query. The building count threshold is important for allowing other organizations to perform statistical analysis on your data without revealing information about individual buildings."
 
-#: 
 msgid "Error"
 msgstr "Error"
 
-#: 
 msgid "Error Processing Data"
 msgstr "Error Processing Data"
 
-#: 
 msgid "EUI"
 msgstr "EUI"
 
@@ -940,91 +740,72 @@ msgstr "EUI"
 msgid "ex: joe@company.com"
 msgstr "ex: joe@company.com"
 
-#: 
 msgid "EXCLUDE"
 msgstr "EXCLUDE"
 
-#: 
 msgid "Existing Cycles"
 msgstr "Existing Cycles"
 
-#: 
 msgid "Existing Labels"
 msgstr "Existing Labels"
 
-#: 
 msgid "Existing Properties"
 msgstr "Existing Properties"
 
-#: 
 msgid "Existing Tax Lots"
 msgstr "Existing Tax Lots"
 
-#: 
 msgid "Export"
 msgstr "Export"
 
-#: 
 msgid "Export Buildings"
 msgstr "Export Buildings"
 
-#: 
 msgid "Export Name"
 msgstr "Export Name"
 
-#: 
 msgid "Export Selected"
 msgstr "Export Selected"
 
-#: 
 msgid "Export your Properties and Tax Lots"
 msgstr "Export your Properties and Tax Lots"
 
-#: 
 msgid "Failed to delete inventory"
 msgstr "Failed to delete inventory"
 
-#: 
 msgid "Field"
 msgstr "Field"
 
-#: 
 msgid "Field Name"
 msgstr "Field Name"
 
-#: 
 msgid "FIELD_NAMES_FOR_MATCHING_ADVICE"
-msgstr "<span class=\"label label-info\">Field names for matching:</span> The following fields are used by SEED to match records: <strong>Jurisdiction Tax Lot ID</strong>, <strong>PM Property ID</strong>, <strong>Custom ID 1</strong>, <strong>Address Line 1</strong>. If there are fields in a datafile mapped to these names, the program will attempt to match on those same names in existing records."
+msgstr "<span class=\"label label-info\">Field names for matching:</span> The following fields are used by SEED to match records: <strong>Jurisdiction Tax Lot ID</strong>, <strong>PM Property ID</strong>, <strong>Custom ID 1</strong>, <strong>Address Line 1</strong>, and <strong>UBID</strong>. If there are fields in a datafile mapped to these names, the program will attempt to match on those same names in existing records."
 
-#: 
 msgid "FIELDS NEEDED TO MAKE MATCHES:"
 msgstr "FIELDS NEEDED TO MAKE MATCHES:"
 
-#: 
 msgid "File Name"
 msgstr "File Name"
 
-#: 
 msgid "File Source:"
 msgstr "File Source:"
 
-#: 
 msgid "FILE_TYPES_SUPPORTED"
-msgstr "File types supported: <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, and <strong>.xml</strong>."
+msgstr "File types supported: <strong>.csv</strong>, <strong>.xls</strong>, and <strong>.xlsx</strong>."
 
-#: 
+msgid "Files (Master State Only)"
+msgstr "Files (Master State Only)"
+
 msgid "Filter by label"
 msgstr "Filter by label"
 
-#: 
 msgid "Filter by label:"
 msgstr "Filter by label:"
 
-#: 
 msgid "Finding inventory matches for"
 msgstr "Finding inventory matches for"
 
-#: 
 msgid "Finding inventory matches."
 msgstr "Finding inventory matches."
 
@@ -1032,31 +813,24 @@ msgstr "Finding inventory matches."
 msgid "first name"
 msgstr "first name"
 
-#: 
 msgid "First Name"
 msgstr "First Name"
 
-#: 
 msgid "First name is required."
 msgstr "First name is required."
 
-#: 
 msgid "First Name:"
 msgstr "First Name:"
 
-#: 
 msgid "For direct help on a specific problem, please email:"
 msgstr "For direct help on a specific problem, please email:"
 
-#: 
 msgid "For Portfolio Manager files, SEED has a default set of field names which can be used without extra user editing unless desired."
 msgstr "For Portfolio Manager files, SEED has a default set of field names which can be used without extra user editing unless desired."
 
-#: 
 msgid "For SEED-Platform Developers"
 msgstr "For SEED-Platform Developers"
 
-#: 
 msgid "For SEED-Platform Users"
 msgstr "For SEED-Platform Users"
 
@@ -1073,31 +847,24 @@ msgstr "Forgot password?"
 msgid "French (Canadian)"
 msgstr "French (Canadian)"
 
-#: 
 msgid "From date"
 msgstr "From date"
 
-#: 
 msgid "From Date"
 msgstr "From Date"
 
-#: 
 msgid "From first date of"
 msgstr "From first date of"
 
-#: 
 msgid "From the list below, select the fields that you want to: 1) share internally within your organization, and 2) share publicly with users outside your organization."
 msgstr "From the list below, select the fields that you want to: 1) share internally within your organization, and 2) share publicly with users outside your organization."
 
-#: 
 msgid "From the table below, select the rules that you want to: 1) enable/disable within your organization, 2) modify the minimum/maximum values to validate against on file upload, and 3) optionally assign or remove a label if the condition is not met."
 msgstr "From the table below, select the rules that you want to: 1) enable/disable within your organization, 2) modify the minimum/maximum values to validate against on file upload, and 3) optionally assign or remove a label if the condition is not met."
 
-#: 
 msgid "Funding from"
 msgstr "Funding from"
 
-#: 
 msgid "Get a New API Key"
 msgstr "Get a New API Key"
 
@@ -1105,15 +872,12 @@ msgstr "Get a New API Key"
 msgid "Get started using SEED Platform by uploading your buildings list (city tax assessor data) and then your EPA Portfolio Manager data."
 msgstr "Get started using SEED Platform by uploading your buildings list (city tax assessor data) and then your EPA Portfolio Manager data."
 
-#: 
 msgid "Getting Started"
 msgstr "Getting Started"
 
-#: 
 msgid "Getting Started Guide"
 msgstr "Getting Started Guide"
 
-#: 
 msgid "GJ/m²/year"
 msgstr "GJ/m²/year"
 
@@ -1125,15 +889,12 @@ msgstr "gray"
 msgid "green"
 msgstr "green"
 
-#: 
 msgid "Gross Floor Area"
 msgstr "Gross Floor Area"
 
-#: 
 msgid "has been uploaded to"
 msgstr "has been uploaded to"
 
-#: 
 msgid "header"
 msgstr "header"
 
@@ -1141,51 +902,39 @@ msgstr "header"
 msgid "Hello %(first_name)s, "
 msgstr "Hello %(first_name)s, "
 
-#: 
 msgid "Highlights of SEED Platform™"
 msgstr "Highlights of SEED Platform™"
 
-#: 
 msgid "Home Energy Score ID"
 msgstr "Home Energy Score ID"
 
-#: 
 msgid "HOW THE SYSTEM AUTO-MATCHES YOUR PROPERTIES AND TAX LOTS:"
 msgstr "HOW THE SYSTEM AUTO-MATCHES YOUR PROPERTIES AND TAX LOTS:"
 
-#: 
 msgid "HOW TO MANUALLY MATCH YOUR PROPERTIES AND TAX LOTS:"
 msgstr "HOW TO MANUALLY MATCH YOUR PROPERTIES AND TAX LOTS:"
 
-#: 
 msgid "HOW_SYSTEM_AUTO_MATCHES_EXPLANATION"
 msgstr "Your source data file(s) are presented in the table on the left. All properties/tax lots where a possible data match exists are presented in a table on the right. The system attempts to auto-match records using shared unique IDs like: PM Property ID, Jurisdiction Tax Lot ID, and Custom IDs as well as Address information. Where the system believes a match exists between a record in your source file and an existing record it will auto-check the 'match' <i class=\"fa fa-check-square-o\"></i> checkbox &mdash; effectively making a match between these records."
 
-#: 
 msgid "ID"
 msgstr "ID"
 
-#: 
 msgid "IF_MARKED_AS_DUPLICATE_ADVICE"
 msgstr "<label class=\"label label-danger\">Duplicate</label> -- if fields are marked as duplicates they need to be resolved to have different names."
 
-#: 
 msgid "Ignored duplicates of existing properties"
 msgstr "Ignored duplicates of existing properties"
 
-#: 
 msgid "Ignored duplicates of existing tax lots"
 msgstr "Ignored duplicates of existing tax lots"
 
-#: 
 msgid "Ignored property duplicates within the import file"
 msgstr "Ignored property duplicates within the import file"
 
-#: 
 msgid "Ignored tax lot duplicates within the import file"
 msgstr "Ignored tax lot duplicates within the import file"
 
-#: 
 msgid "In addition, you need to specify where the field should be associated with Tax Lot data or Property data. This will affect how the data is matched and merged, as well as how it is displayed in the Inventory view."
 msgstr "In addition, you need to specify where the field should be associated with Tax Lot data or Property data. This will affect how the data is matched and merged, as well as how it is displayed in the Inventory view."
 
@@ -1193,87 +942,69 @@ msgstr "In addition, you need to specify where the field should be associated wi
 msgid "Inactive"
 msgstr "Inactive"
 
-#: 
 msgid "INCLUDE_SHARED_PROPERTIES"
 msgstr "Include in your Properties List all properties shared with you."
 
-#: 
 msgid "INCLUDE_SHARED_TAXLOTS"
 msgstr "Include in your Tax Lot List all tax lots shared with you."
 
-#: 
 msgid "INTERNAL"
 msgstr "INTERNAL"
 
-#: 
 msgid "INVALID_EXTENSION_ALERT"
 msgstr "<strong>Sorry!</strong> SEED doesn't currently support that file format. Only <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, and <strong>.xml</strong> files are supported."
 
-#: 
 msgid "Inventory"
 msgstr "Inventory"
 
-#: 
 msgid "Inventory list file"
 msgstr "Inventory list file"
 
-#: 
 msgid "Inventory Reports"
 msgstr "Inventory Reports"
 
-#: 
 msgid "Inventory Type"
 msgstr "Inventory Type"
 
-#: 
 msgid "Invite a new member"
 msgstr "Invite a new member"
 
-#: 
 msgid "Invite a New Member"
 msgstr "Invite a New Member"
 
-#: 
 msgid "Invite an Owner"
 msgstr "Invite an Owner"
 
-#: 
 msgid "It is necessary to map your field names to SEED field names. You can select from the list that appears as you start to type, which is based on the Building Energy Data Exchange Specification (BEDES), or you can type in your own name, as well as typing in the field name from the original datafile."
 msgstr "It is necessary to map your field names to SEED field names. You can select from the list that appears as you start to type, which is based on the Building Energy Data Exchange Specification (BEDES), or you can type in your own name, as well as typing in the field name from the original datafile."
 
-#: 
 msgid "Jurisdiction Property ID"
 msgstr "Jurisdiction Property ID"
 
-#: 
 msgid "Jurisdiction Tax Lot ID"
 msgstr "Jurisdiction Tax Lot ID"
 
-#: 
+msgid "kBtu/m²/year"
+msgstr "kBtu/m²/year"
+
 msgid "kBtu/sq. ft./year"
 msgstr "kBtu/sq. ft./year"
 
-#: 
 msgid "kWh/m²/year"
 msgstr "kWh/m²/year"
 
-#: 
 msgid "Label"
 msgstr "Label"
 
-#: 
 msgid "Label Name"
 msgstr "Label Name"
 
-#: 
 msgid "Label updated."
 msgstr "Label updated"
 
-#: 
 msgid "Labels"
 msgstr "Labels"
 
-#: 
 msgid "Last Changed"
 msgstr "Last Changed"
 
@@ -1281,19 +1012,15 @@ msgstr "Last Changed"
 msgid "last name"
 msgstr "last name"
 
-#: 
 msgid "Last Name"
 msgstr "Last Name"
 
-#: 
 msgid "Last name is required."
 msgstr "Last name is required."
 
-#: 
 msgid "Last Name:"
 msgstr "Last Name:"
 
-#: 
 msgid "Left Half"
 msgstr "Left Half"
 
@@ -1301,35 +1028,27 @@ msgstr "Left Half"
 msgid "light blue"
 msgstr "light blue"
 
-#: 
 msgid "List Settings"
 msgstr "List Settings"
 
-#: 
 msgid "LIST_GUIDANCE_PROPERTIES"
 msgstr "Select columns from the list below to make them appear in your Property List table. Drag the rows to change the order in which they appear. Pin the rows for them to be left-pinned in the list view."
 
-#: 
 msgid "LIST_GUIDANCE_PROPERTIES_NO_PIN"
 msgstr "Select columns from the list below to make th  em appear in your Properties Detail table. Drag the rows to change the order in which they appear."
 
-#: 
 msgid "LIST_GUIDANCE_TAXLOTS"
 msgstr "Select columns from the list below to make them appear in your Tax Lot List table. Drag the rows to change the order in which they appear. Pin the rows for them to be left-pinned in the list view."
 
-#: 
 msgid "LIST_GUIDANCE_TAXLOTS_NO_PIN"
 msgstr "Select columns from the list below to make them appear in your Tax Lots Detail table. Drag the rows to change the order in which they appear."
 
-#: 
 msgid "Loading data..."
 msgstr "Loading data..."
 
-#: 
 msgid "Loading labels..."
 msgstr "Loading labels..."
 
-#: 
 msgid "Loading..."
 msgstr "Loading..."
 
@@ -1346,63 +1065,48 @@ msgstr "Log in"
 msgid "Log in to SEED Platform"
 msgstr "Log in to SEED Platform"
 
-#: 
 msgid "Logout"
 msgstr "Logout"
 
-#: 
 msgid "Make this a snapshot project."
 msgstr "Make this a snapshot project."
 
-#: 
 msgid "Manage available cycles."
 msgstr "Manage available cycles."
 
-#: 
 msgid "Manage compliance"
 msgstr "Manage compliance"
 
-#: 
 msgid "Manage Your API Key"
 msgstr "Manage Your API Key"
 
-#: 
 msgid "Managed by"
 msgstr "Managed by"
 
-#: 
 msgid "Manual Matching"
 msgstr "Manual Matching"
 
-#: 
 msgid "Map SEED fields to imported file fields"
 msgstr "Map SEED fields to imported file fields"
 
-#: 
 msgid "Map Your Data"
 msgstr "Map Your Data"
 
-#: 
 msgid "Mapped Fields"
 msgstr "Mapped Fields"
 
-#: 
 msgid "MAPPING YOUR DATA TO SEED"
 msgstr "MAPPING YOUR DATA TO SEED"
 
-#: 
 msgid "MAPPING_BUILDINGS_FOR"
 msgstr "Mapping buildings for <strong>{filename}</strong>"
 
-#: 
 msgid "MAPPING_STEP_2_ADVICE"
 msgstr "After you click the <span class=\"label label-primary\">Map Your Data</span> button, you will see a view with the mapped fields and your data in a grid, so that you can verify the mapping is what you want. If you need to change the mapping, click the <span class=\"label label-primary\">Back to Mapping</span> button and edit the field mapping. Make sure that the mappings are correct in this step. Once you have clicked on the <span class=\"label label-primary\">Save Mappings</span> button, you will not be able to change the field mappings."
 
-#: 
 msgid "MARKETING_BULLET_1"
 msgstr "Get started using SEED Platform™ by uploading your buildings list (city tax assessor data) and then your EPA Portfolio Manager data. Make sure these files are each in .csv, .xls, .xlsx, or .xml format. The SEED Platform will help you map and validate your data in the process of loading."
 
-#: 
 msgid "MARKETING_BULLET_2"
 msgstr "Match-up your buildings list with the Portfolio Manager dataset to tie building records together. SEED Platform will help you by auto-matching high confidence pairings and then provide you with tools to match the rest of your dataset."
 
@@ -1410,23 +1114,18 @@ msgstr "Match-up your buildings list with the Portfolio Manager dataset to tie b
 msgid "MARKETING_BULLET_3"
 msgstr "Use SEED Platform's flexible, easy-to-use labeling system and inventory groupings to track the status of data submission, review, and compliance."
 
-#: 
 msgid "Master"
 msgstr "Master"
 
-#: 
 msgid "Match"
 msgstr "Match"
 
-#: 
 msgid "Match Properties"
 msgstr "Match Properties"
 
-#: 
 msgid "Match Tax Lots"
 msgstr "Match Tax Lots"
 
-#: 
 msgid "Match your data"
 msgstr "Match your data"
 
@@ -1434,131 +1133,102 @@ msgstr "Match your data"
 msgid "Match-up your buildings list with the Portfolio Manager dataset to tie building records together."
 msgstr "Match-up your buildings list with the Portfolio Manager dataset to tie building records together."
 
-#: 
 msgid "Matched Properties"
 msgstr "Matched Properties"
 
-#: 
 msgid "Matched Tax Lots"
 msgstr "Matched Tax Lots"
 
-#: 
 msgid "Matched!"
 msgstr "Matched!"
 
-#: 
 msgid "Matching Detail"
 msgstr "Matching Detail"
 
-#: 
 msgid "Matching Detail Settings"
 msgstr "Matching Detail Settings"
 
-#: 
 msgid "Matching List"
 msgstr "Matching List"
 
-#: 
 msgid "Matching List Settings"
 msgstr "Matching List Settings"
 
-#: 
 msgid "Matching Results for file"
 msgstr "Matching Results for file"
 
-#: 
 msgid "MATCHING_RESULTS_FOR_FILE"
 msgstr "Matching Results for file {dataset_filename}"
 
-#: 
 msgid "Max"
 msgstr "Max"
 
-#: 
 msgid "Maximum"
 msgstr "Maximum"
 
-#: 
 msgid "Measurement Units"
 msgstr "Measurement Units"
 
-#: 
 msgid "Member"
 msgstr "Member"
 
-#: 
 msgid "Member Email"
 msgstr "Member Email"
 
-#: 
 msgid "member email"
 msgstr "member email"
 
-#: 
 msgid "Member Name"
 msgstr "Member Name"
 
-#: 
 msgid "member name"
 msgstr "member name"
 
-#: 
 msgid "Member Role"
 msgstr "Member Role"
 
-#: 
 msgid "member role"
 msgstr "member role"
 
-#: 
 msgid "Members"
 msgstr "Members"
 
-#: 
 msgid "Merged properties"
 msgstr "Merged properties"
 
-#: 
 msgid "Merged tax lots"
 msgstr "Merged tax lots"
 
-#: 
 msgid "Min"
 msgstr "Min"
 
-#: 
 msgid "Min Sq/Ft"
 msgstr "Min Sq/Ft"
 
-#: 
 msgid "Minimum"
 msgstr "Minimum"
 
-#: 
 msgid "Minimum Sq Ft"
 msgstr "Minimum Sq Ft"
 
-#: 
+msgid "MJ/m²/year"
+msgstr "MJ/m²/year"
+
 msgid "Modifying Data Quality Rules"
 msgstr "Modifying Data Quality Rules"
 
-#: 
 msgid "More details"
 msgstr "More details"
 
-#: 
 msgid "Move Buildings"
 msgstr "Move Buildings"
 
-#: 
 msgid "Move/copy buildings to another project"
 msgstr "Move/copy buildings to another project"
 
-#: 
 msgid "MULTI_FILE_EXCEL_NOT_SUPPORTED"
-msgstr "<strong>Note:</strong> multi-sheet Excel files are not currently supported</span>."
+msgstr "<strong>Note:</strong> only the first sheet of multi-sheet Excel files will be imported."
 
-#: 
 msgid "multi-sheet Excel files are not currently supported"
 msgstr "multi-sheet Excel files are not currently supported"
 
@@ -1566,15 +1236,12 @@ msgstr "multi-sheet Excel files are not currently supported"
 msgid "name"
 msgstr "name"
 
-#: 
 msgid "Name"
 msgstr "Name"
 
-#: 
 msgid "name already in use"
 msgstr "name already in use"
 
-#: 
 msgid "National Renewable Energy Laboratory"
 msgstr "National Renewable Energy Laboratory"
 
@@ -1583,63 +1250,48 @@ msgstr "National Renewable Energy Laboratory"
 msgid "New password"
 msgstr "New password"
 
-#: 
 msgid "New properties"
 msgstr "New properties"
 
-#: 
 msgid "New tax lots"
 msgstr "New tax lots"
 
-#: 
 msgid "Next"
 msgstr "Next"
 
-#: 
 msgid "No"
 msgstr "No"
 
-#: 
 msgid "No action was taken"
 msgstr "No action was taken"
 
-#: 
 msgid "No Data"
 msgstr "No Data"
 
-#: 
 msgid "No labels available. Add a label above to get started."
 msgstr "No labels available. Add a label above to get started."
 
-#: 
 msgid "No warnings/errors"
 msgstr "No warnings/errors"
 
-#: 
 msgid "None"
 msgstr "None"
 
-#: 
 msgid "Not all inventory items were successfully deleted"
 msgstr "Not all inventory items were successfully deleted"
 
-#: 
 msgid "not authorized"
 msgstr "not authorized"
 
-#: 
 msgid "Not Null"
 msgstr "Not Null"
 
-#: 
 msgid "Note 1: Sub-organizations cannot be deleted."
 msgstr "Note 1: Sub-organizations cannot be deleted."
 
-#: 
 msgid "Note 2: Parent organization members are not automatically made members of sub-organizations."
 msgstr "Note 2: Parent organization members are not automatically made members of sub-organizations."
 
-#: 
 msgid "Note:"
 msgstr "Note:"
 
@@ -1647,51 +1299,39 @@ msgstr "Note:"
 msgid "Note: Passwords must be 8 or more characters, and must contain at least 1 uppercase character, 1 lowercase character, and 1 digit."
 msgstr "Note: Passwords must be 8 or more characters, and must contain at least 1 uppercase character, 1 lowercase character, and 1 digit."
 
-#: 
 msgid "NUM_PROPERTIES_AND_TAXLOTS_DELETED"
 msgstr "{num_properties,plural,=0{no properties} one{<strong>1</strong> property} other{<strong>#</strong> properties}} and {num_taxlots,plural,=0{no tax lots} one{<strong>1</strong> tax lot} other{<strong>#</strong> tax lots}} have been deleted"
 
-#: 
 msgid "NUM_PROPERTY_TAXLOT_COLUMNS_AVAILABLE"
 msgstr "There are {num_property_columns} property columns and { num_taxlot_colums } tax lot columns of data available to you."
 
-#: 
 msgid "Number"
 msgstr "Number"
 
-#: 
 msgid "Number of Properties"
 msgstr "Number of Properties"
 
-#: 
 msgid "Number of Tax Lots"
 msgstr "Number of Tax Lots"
 
-#: 
 msgid "Number Properties"
 msgstr "Number Properties"
 
-#: 
 msgid "NUMBER_COLUMNS_AVAILABLE"
 msgstr "There are {count} columns of data available to you."
 
-#: 
 msgid "NUMBER_OF_DATASETS"
 msgstr "{num,plural,one{1 Data Set} other{# Data Sets}}"
 
-#: 
 msgid "NUMBER_OF_PROPERTIES"
 msgstr "{num, plural, one{1 property} other{# properties}}"
 
-#: 
 msgid "NUMBER_OF_TAXLOTS"
 msgstr "{num, plural, one{1 tax lot} other{# tax lots}}"
 
-#: 
 msgid "Occupied Floor Area"
 msgstr "Occupied Floor Area"
 
-#: 
 msgid "OK_TO_DELETE_NUM_PROPERTIES_AND_TAXLOTS"
 msgstr "Are you sure you want to delete {num_properties,plural, one{<strong>1</strong> property} other{<strong>#</strong> properties}} and {num_taxlots,plural,one{<strong>1</strong> tax lot} other{<strong>#</strong> tax lots}}?"
 
@@ -1699,11 +1339,9 @@ msgstr "Are you sure you want to delete {num_properties,plural, one{<strong>1</s
 msgid "Only one terms of service is allowed to be active"
 msgstr "Only one terms of service is allowed to be active"
 
-#: 
 msgid "OR"
 msgstr "OR"
 
-#: 
 msgid "Or Create New (With User as Head):"
 msgstr "Or Create New (With User as Head):"
 
@@ -1711,91 +1349,69 @@ msgstr "Or Create New (With User as Head):"
 msgid "orange"
 msgstr "orange"
 
-#: 
 msgid "Organization"
 msgstr "Organization"
 
-#: 
 msgid "Organization Name"
 msgstr "Organization Name"
 
-#: 
 msgid "Organization Name:"
 msgstr "Organization Name:"
 
-#: 
 msgid "Organization Owner(s)"
 msgstr "Organization Owner(s)"
 
-#: 
 msgid "Organizations"
 msgstr "Organizations"
 
-#: 
 msgid "Organizations I Belong To"
 msgstr "Organizations I Belong To"
 
-#: 
 msgid "Organizations I Manage"
 msgstr "Organizations I Manage"
 
-#: 
 msgid "Organizations:"
 msgstr "Organizations:"
 
-#: 
 msgid "Owner"
 msgstr "Owner"
 
-#: 
 msgid "owner"
 msgstr "owner"
 
-#: 
 msgid "Owner Address"
 msgstr "Owner Address"
 
-#: 
 msgid "Owner City/State"
 msgstr "Owner City/State"
 
-#: 
 msgid "Owner Email"
 msgstr "Owner Email"
 
-#: 
 msgid "Owner Name"
 msgstr "Owner Name"
 
-#: 
 msgid "Owner Postal Code"
 msgstr "Owner Postal Code"
 
-#: 
 msgid "Owner Telephone"
 msgstr "Owner Telephone"
 
-#: 
 msgid "Pair Properties to Tax Lots"
 msgstr "Pair Properties to Tax Lots"
 
-#: 
 msgid "Pair Tax Lots to Properties"
 msgstr "Pair Tax Lots to Properties"
 
-#: 
 msgid "Paired"
 msgstr "Paired"
 
-#: 
 msgid "Pairing"
 msgstr "Pairing"
 
-#: 
 msgid "Pairing Settings"
 msgstr "Pairing Settings"
 
-#: 
 msgid "Parent ID"
 msgstr "Parent ID"
 
@@ -1824,7 +1440,6 @@ msgstr "Password set"
 msgid "Password set unsuccessful"
 msgstr "Password set unsuccessful"
 
-#: 
 msgid "PERCENT_COMPLETE"
 msgstr "{progress}% Complete"
 
@@ -1840,75 +1455,57 @@ msgstr "Please go to the following page and choose a new password:"
 msgid "Please go to the following page and setup your account:"
 msgstr "Please go to the following page and setup your account:"
 
-#: 
 msgid "Please join the SEED-Platform Dev forum where you can connect with other developers."
 msgstr "Please join the SEED-Platform Dev forum where you can connect with other developers."
 
-#: 
 msgid "Please review SEED headers.  Duplicate values are not allowed."
 msgstr "Please review SEED headers.  Duplicate values are not allowed."
 
-#: 
 msgid "Please review SEED headers.  Empty values are not allowed."
 msgstr "Please review SEED headers.  Empty values are not allowed."
 
-#: 
 msgid "Please visit our User Support website for tutorials and documentation to help you learn how to use SEED-Platform."
 msgstr "Please visit our User Support website for tutorials and documentation to help you learn how to use SEED-Platform."
 
-#: 
 msgid "Please wait while your data is loaded..."
 msgstr "Please wait while your data is loaded..."
 
-#: 
 msgid "PM Generation Date"
 msgstr "PM Generation Date"
 
-#: 
 msgid "PM Parent Property ID"
 msgstr "PM Parent Property ID"
 
-#: 
 msgid "PM Property ID"
 msgstr "PM Property ID"
 
-#: 
 msgid "PM Release Date"
 msgstr "PM Release Date"
 
-#: 
 msgid "Postal Code (Property)"
 msgstr "Postal Code (Property)"
 
-#: 
 msgid "Postal Code (Tax Lot)"
 msgstr "Postal Code (Tax Lot)"
 
-#: 
 msgid "Potential Matches from Source"
 msgstr "Potential Matches from Source"
 
-#: 
 msgid "Preparing your inventory for deletion"
 msgstr "Preparing your inventory for deletion"
 
-#: 
 msgid "Previous"
 msgstr "Previous"
 
-#: 
 msgid "Primary Tax Lot ID"
 msgstr "Primary Tax Lot ID"
 
-#: 
 msgid "Primary/Secondary"
 msgstr "Primary/Secondary"
 
-#: 
 msgid "Profile Info"
 msgstr "Profile Info"
 
-#: 
 msgid "Profile Information"
 msgstr "Profile Information"
 
@@ -1916,7 +1513,6 @@ msgstr "Profile Information"
 msgid "Project"
 msgstr "Project"
 
-#: 
 msgid "Project Actions"
 msgstr "Project Actions"
 
@@ -1924,7 +1520,6 @@ msgstr "Project Actions"
 msgid "project building"
 msgstr "project building"
 
-#: 
 msgid "Project Building List Settings"
 msgstr "Project Building List Settings"
 
@@ -1932,15 +1527,12 @@ msgstr "Project Building List Settings"
 msgid "project buildings"
 msgstr "project buildings"
 
-#: 
 msgid "Project Buildings"
 msgstr "Project Buildings"
 
-#: 
 msgid "Project Information"
 msgstr "Project Information"
 
-#: 
 msgid "Project Name"
 msgstr "Project Name"
 
@@ -1960,87 +1552,66 @@ msgstr "project taxlot view"
 msgid "project taxlot views"
 msgstr "project taxlot views"
 
-#: 
 msgid "Projects"
 msgstr "Projects"
 
-#: 
 msgid "Properties"
 msgstr "Properties"
 
-#: 
 msgid "Properties List"
 msgstr "Properties List"
 
-#: 
 msgid "Properties List Settings"
 msgstr "Properties List Settings"
 
-#: 
 msgid "Properties with Data"
 msgstr "Properties with Data"
 
-#: 
 msgid "Property"
 msgstr "Property"
 
-#: 
 msgid "property"
 msgstr "property"
 
-#: 
 msgid "Property Classification"
 msgstr "Property Classification"
 
-#: 
 msgid "Property Count"
 msgstr "Property Count"
 
-#: 
 msgid "Property Detail"
 msgstr "Property Detail"
 
-#: 
 msgid "Property Detail Settings"
 msgstr "Property Detail Settings"
 
-#: 
 msgid "Property List Settings"
 msgstr "Property List Settings"
 
-#: 
 msgid "Property Name"
 msgstr "Property Name"
 
-#: 
 msgid "Property Notes"
 msgstr "Property Notes"
 
-#: 
 msgid "Property Reports"
 msgstr "Property Reports"
 
-#: 
 msgid "Property Type"
 msgstr "Property Type"
 
-#: 
 msgid "Property Visibility"
 msgstr "Property Visibility"
 
-#: 
 msgid "PUBLIC"
 msgstr "PUBLIC"
 
-#: 
 msgid "Read more here."
 msgstr "Read more here."
 
-#: 
 msgid "Recent Sale Date"
 msgstr "Recent Sale Date"
 
-#: 
 msgid "Record from Source"
 msgstr "Record from Source"
 
@@ -2052,75 +1623,57 @@ msgstr "red"
 msgid "Reject"
 msgstr "Reject"
 
-#: 
 msgid "Related Properties"
 msgstr "Related Properties"
 
-#: 
 msgid "Related Tax Lots"
 msgstr "Related Tax Lots"
 
-#: 
 msgid "Remove"
 msgstr "Remove"
 
-#: 
 msgid "Remove buildings from project"
 msgstr "Remove buildings from project"
 
-#: 
 msgid "Remove Column Mappings"
 msgstr "Remove Column Mappings"
 
-#: 
 msgid "Remove From Project"
 msgstr "Remove From Project"
 
-#: 
 msgid "Remove inventory and organizations"
 msgstr "Remove inventory and organizations"
 
-#: 
 msgid "Remove User"
 msgstr "Remove User"
 
-#: 
 msgid "Removing buildings from project"
 msgstr "Removing buildings from project"
 
-#: 
 msgid "Reorder Columns"
 msgstr "Reorder Columns"
 
-#: 
 msgid "Reporting Deadline"
 msgstr "Reporting Deadline"
 
-#: 
 msgid "Reports"
 msgstr "Reports"
 
-#: 
 msgid "Required"
 msgstr "Required"
 
-#: 
 msgid "Reset"
 msgstr "Reset"
 
-#: 
 msgid "Reset All Rules"
 msgstr "Reset All Rules"
 
-#: 
 msgid "Reset Defaults"
 msgstr "Reset Defaults"
 
-#: 
 msgid "Residential"
 msgstr "Residential"
 
-#: 
 msgid "Restore Default Rules"
 msgstr "Restore Default Rules"
 
@@ -2128,99 +1681,75 @@ msgstr "Restore Default Rules"
 msgid "Retro Commissioning"
 msgstr "Retro Commissioning"
 
-#: 
 msgid "Review Mapped Data"
 msgstr "Review Mapped Data"
 
-#: 
 msgid "Review matches"
 msgstr "Review matches"
 
-#: 
 msgid "REVIEW YOUR DATA MAPPINGS"
 msgstr "REVIEW YOUR DATA MAPPINGS"
 
-#: 
 msgid "Right Half"
 msgstr "Right Half"
 
-#: 
 msgid "Role:"
 msgstr "Role:"
 
-#: 
 msgid "Row 1"
 msgstr "Row 1"
 
-#: 
 msgid "Row 2"
 msgstr "Row 2"
 
-#: 
 msgid "Row 3"
 msgstr "Row 3"
 
-#: 
 msgid "Row 4"
 msgstr "Row 4"
 
-#: 
 msgid "Row 5"
 msgstr "Row 5"
 
-#: 
 msgid "save"
 msgstr "save"
 
-#: 
 msgid "Save"
 msgstr "Save"
 
-#: 
 msgid "Save Changes"
 msgstr "Save Changes"
 
-#: 
 msgid "Save Concatenation"
 msgstr "Save Concatenation"
 
-#: 
 msgid "Save Mappings"
 msgstr "Save Mappings"
 
-#: 
 msgid "Save Settings"
 msgstr "Save Settings"
 
-#: 
 msgid "saving complete"
 msgstr "saving complete"
 
-#: 
 msgid "saving data"
 msgstr "saving data"
 
-#: 
 msgid "saving energy data"
 msgstr "saving energy data"
 
-#: 
 msgid "Search column name"
 msgstr "Search column name"
 
-#: 
 msgid "Search field name"
 msgstr "Search field name"
 
-#: 
 msgid "Security"
 msgstr "Security"
 
-#: 
 msgid "SEED doesn't currently support that file format"
 msgstr "SEED doesn't currently support that file format"
 
-#: 
 msgid "SEED Header"
 msgstr "SEED Header"
 
@@ -2241,51 +1770,39 @@ msgstr "SEED Platform™"
 msgid "SeedOrg"
 msgstr "SeedOrg"
 
-#: 
 msgid "Select All Columns"
 msgstr "Select All Columns"
 
-#: 
 msgid "Select columns from the list below to make them appear in your Buildings List table."
 msgstr "Select columns from the list below to make them appear in your Buildings List table."
 
-#: 
 msgid "Select columns from the list below to make them appear in your Properties Detail table. Drag the rows to change the order in which they appear."
 msgstr "Select columns from the list below to make them appear in your Properties Detail table. Drag the rows to change the order in which they appear."
 
-#: 
 msgid "Select columns from the list below to make them appear in your Tax Lots Detail table. Drag the rows to change the order in which they appear."
 msgstr "Select columns from the list below to make them appear in your Tax Lots Detail table. Drag the rows to change the order in which they appear."
 
-#: 
 msgid "Select columns from the lists below to make them appear on the left or right halves of your Matching List table. Drag the rows to change the order in which they appear."
 msgstr "Select columns from the lists below to make them appear on the left or right halves of your Matching List table. Drag the rows to change the order in which they appear."
 
-#: 
 msgid "Select the type of file(s) you would like to add to"
 msgstr "Select the type of file(s) you would like to add to"
 
-#: 
 msgid "Select which columns to include in the list:"
 msgstr "Select which columns to include in the list:"
 
-#: 
 msgid "SELECT_THE_TYPE_OF_FILE_TO_ADD_TO_DATASET"
 msgstr "Select the type of file(s) you would like to add to {dataset_name}."
 
-#: 
 msgid "Selecting Fields to Share"
 msgstr "Selecting Fields to Share"
 
-#: 
 msgid "Send Invite"
 msgstr "Send Invite"
 
-#: 
 msgid "Set a Query Threshold"
 msgstr "Set a Query Threshold"
 
-#: 
 msgid "Set all fields to"
 msgstr "Set all fields to"
 
@@ -2297,79 +1814,60 @@ msgstr "Set password"
 msgid "Set your password"
 msgstr "Set your password"
 
-#: 
 msgid "Settings"
 msgstr "Settings"
 
-#: 
 msgid "Severity"
 msgstr "Severity"
 
-#: 
 msgid "SHARE DATA WITH"
 msgstr "SHARE DATA WITH"
 
-#: 
 msgid "Sharing"
 msgstr "Sharing"
 
-#: 
 msgid "Sharing Your Data"
 msgstr "Sharing Your Data"
 
-#: 
 msgid "Show All"
 msgstr "Show All"
 
-#: 
 msgid "Show Matched"
 msgstr "Show Matched"
 
-#: 
 msgid "Show only mapped fields"
 msgstr "Show only mapped fields"
 
-#: 
 msgid "Show Paired"
 msgstr "Show Paired"
 
-#: 
 msgid "Show Unmatched"
 msgstr "Show Unmatched"
 
-#: 
 msgid "Show Unpaired"
 msgstr "Show Unpaired"
 
-#: 
 msgid "Show/Hide Columns"
 msgstr "Show/Hide Columns"
 
-#: 
 msgid "SHOWING_AVAILABLE_MATCHES"
 msgstr "Showing {start} to {end} of {total} available matches"
 
-#: 
 msgid "SHOWING_FILTERED_PROPERTIES"
 msgstr "Showing {start} to {end} of {total} (filtered) properties"
 
-#: 
 msgid "SHOWING_FILTERED_TAXLOTS"
 msgstr "Showing {start} to {end} of {total} (filtered) tax lots"
 
-#: 
 msgid "SHOWING_PAIRED_UNPAIRED_PROPERTIES"
 msgstr "Showing {paired_count} {paired_count,plural,one{Property} other{Properties}} ({unpaired_count} unpaired)"
 
-#: 
 msgid "SHOWING_PAIRED_UNPAIRED_TAXLOTS"
 msgstr "Showing {paired_count} {paired_count,plural,one{Tax Lot} other{Tax Lots}} ({unpaired_count} unpaired)"
 
-#: 
 msgid "SHOWING_UNFILTERED_PROPERTIES"
 msgstr "Showing {start} to {end} of {total} properties"
 
-#: 
 msgid "SHOWING_UNFILTERED_TAXLOTS"
 msgstr "Showing {start} to {end} of {total} tax lots"
 
@@ -2377,15 +1875,12 @@ msgstr "Showing {start} to {end} of {total} tax lots"
 msgid "shows shared buildings within search results"
 msgstr "shows shared buildings within search results"
 
-#: 
 msgid "Site Energy Use Intensity"
 msgstr "Site Energy Use Intensity"
 
-#: 
 msgid "Site EUI"
 msgstr "Site EUI"
 
-#: 
 msgid "Site EUI Weather Normalized"
 msgstr "Site EUI Weather Normalized"
 
@@ -2393,43 +1888,33 @@ msgstr "Site EUI Weather Normalized"
 msgid "slug"
 msgstr "slug"
 
-#: 
 msgid "Snapshot projects are useful when you want to freeze the building data at a moment in time."
 msgstr "Snapshot projects are useful when you want to freeze the building data at a moment in time."
 
-#: 
 msgid "Snapshot Timestamp"
 msgstr "Snapshot Timestamp"
 
-#: 
 msgid "Sorry!"
 msgstr "Sorry!"
 
-#: 
 msgid "Source Energy Use Intensity"
 msgstr "Source Energy Use Intensity"
 
-#: 
 msgid "Source EUI"
 msgstr "Source EUI"
 
-#: 
 msgid "Source EUI Weather Normalized"
 msgstr "Source EUI Weather Normalized"
 
-#: 
 msgid "Space Alerts"
 msgstr "Space Alerts"
 
-#: 
 msgid "sq. ft."
 msgstr "sq. ft."
 
-#: 
 msgid "square feet"
 msgstr "square feet"
 
-#: 
 msgid "square metres"
 msgstr "square metres"
 
@@ -2441,11 +1926,9 @@ msgstr "staff status"
 msgid "start_date"
 msgstr "start_date"
 
-#: 
 msgid "State (Property)"
 msgstr "State (Property)"
 
-#: 
 msgid "State (Tax Lot)"
 msgstr "State (Tax Lot)"
 
@@ -2453,83 +1936,63 @@ msgstr "State (Tax Lot)"
 msgid "status"
 msgstr "status"
 
-#: 
 msgid "STEP 1: Map Your Data"
 msgstr "STEP 1: Map Your Data"
 
-#: 
 msgid "STEP 2: Review Your Data Mappings"
 msgstr "STEP 2: Review Your Data Mappings"
 
-#: 
 msgid "Sub-Org Name"
 msgstr "Sub-Org Name"
 
-#: 
 msgid "Sub-Org name is required."
 msgstr "Sub-Org name is required."
 
-#: 
 msgid "Sub-Organization Name"
 msgstr "Sub-Organization Name"
 
-#: 
 msgid "Sub-Organizations"
 msgstr "Sub-Organizations"
 
-#: 
 msgid "Submittal Type"
 msgstr "Submittal Type"
 
-#: 
 msgid "Success"
 msgstr "Success"
 
-#: 
 msgid "Success!"
 msgstr "Success!"
 
-#: 
 msgid "Successful upload!"
 msgstr "Successful upload!"
 
-#: 
 msgid "Tax Lot"
 msgstr "Tax Lot"
 
-#: 
 msgid "tax lot"
 msgstr "tax lot"
 
-#: 
 msgid "Tax Lot Count"
 msgstr "Tax Lot Count"
 
-#: 
 msgid "Tax Lot Detail"
 msgstr "Tax Lot Detail"
 
-#: 
 msgid "Tax Lot Detail Settings"
 msgstr "Tax Lot Detail Settings"
 
-#: 
 msgid "Tax Lot ID"
 msgstr "Tax Lot ID"
 
-#: 
 msgid "Tax Lot Visibility"
 msgstr "Tax Lot Visibility"
 
-#: 
 msgid "Tax Lots"
 msgstr "Tax Lots"
 
-#: 
 msgid "Tax Lots List"
 msgstr "Tax Lots List"
 
-#: 
 msgid "Tax Lots List Settings"
 msgstr "Tax Lots List Settings"
 
@@ -2543,7 +2006,6 @@ msgstr "Terms of Service"
 msgid "Terms of Service as of %(tos.created|date:\"SHORT_DATE_FORMAT\")s"
 msgstr "Terms of Service as of %(tos.created|date:\"SHORT_DATE_FORMAT\")s"
 
-#: 
 msgid "Text"
 msgstr "Text"
 
@@ -2563,15 +2025,12 @@ msgstr "Thank you for your interest in joining the Buildings Performance Databas
 msgid "Thank you!"
 msgstr "Thank you!"
 
-#: 
 msgid "The Building Energy Data Exchange Specification (BEDES, pronounced \"beads\" or /bi:ds/) is designed to support analysis of the measured energy performance of commercial, multifamily, and residential buildings, by providing a common data format, definitions, and an exchange protocol for building characteristics, efficiency measures, and energy use."
 msgstr "The Building Energy Data Exchange Specification (BEDES, pronounced \"beads\" or /bi:ds/) is designed to support analysis of the measured energy performance of commercial, multifamily, and residential buildings, by providing a common data format, definitions, and an exchange protocol for building characteristics, efficiency measures, and energy use."
 
-#: 
 msgid "The DOE developed the Standard Energy Efficiency Data (SEED) Platform™ as a free software tool that provides a standardized format for collecting, storing and analyzing building energy performance information about large portfolios. Upload your buildings list to get started."
 msgstr "The DOE developed the Standard Energy Efficiency Data (SEED) Platform™ as a free software tool that provides a standardized format for collecting, storing and analyzing building energy performance information about large portfolios. Upload your buildings list to get started."
 
-#: 
 msgid ""
 "The following is a list of the fields we use to match up properties/tax lots between different imported files. The more data you have in these four fields the better our"
 "                            system will auto-match your records."
@@ -2579,7 +2038,6 @@ msgstr ""
 "The following is a list of the fields we use to match up properties/tax lots between different imported files. The more data you have in these four fields the better our"
 "                            system will auto-match your records."
 
-#: 
 msgid "The following is a list of the fields we use to match up properties/tax lots between different imported files. The more data you have in these four fields the better our system will auto-match your records."
 msgstr "The following is a list of the fields we use to match up properties/tax lots between different imported files. The more data you have in these four fields the better our system will auto-match your records."
 
@@ -2587,7 +2045,6 @@ msgstr "The following is a list of the fields we use to match up properties/tax 
 msgid "The invite link was invalid, possibly because it has already been used.  Please request a new invitation."
 msgstr "The invite link was invalid, possibly because it has already been used.  Please request a new invitation."
 
-#: 
 msgid "The Open Source code is available on the Github organization SEED-Platform:"
 msgstr "The Open Source code is available on the Github organization SEED-Platform:"
 
@@ -2603,19 +2060,15 @@ msgstr "The SEED team"
 msgid "The SEED Team"
 msgstr "The SEED Team"
 
-#: 
 msgid "The Standard Energy Efficiency Data (SEED)™ Platform is a software application that helps organizations easily manage data on the energy performance of large groups of buildings. Users can combine data from multiple sources, clean and validate it, and share the information with others. The software application provides an easy, flexible, and cost-effective method to improve the quality and availability of data to help demonstrate the economic and environmental benefits of energy efficiency, to implement programs, and to target investment activity."
 msgstr "The Standard Energy Efficiency Data (SEED)™ Platform is a software application that helps organizations easily manage data on the energy performance of large groups of buildings. Users can combine data from multiple sources, clean and validate it, and share the information with others. The software application provides an easy, flexible, and cost-effective method to improve the quality and availability of data to help demonstrate the economic and environmental benefits of energy efficiency, to implement programs, and to target investment activity."
 
-#: 
 msgid "There is also a link to the SEED-Platform Users forum, where you can connect with other users."
 msgstr "There is also a link to the SEED-Platform Users forum, where you can connect with other users."
 
-#: 
 msgid "This cycle name is already taken."
 msgstr "This cycle name is already taken."
 
-#: 
 msgid "This label name is already taken."
 msgstr "This label name is already taken."
 
@@ -2623,7 +2076,6 @@ msgstr "This label name is already taken."
 msgid "This password must contain at least %(quantity)d %(type)s characters."
 msgstr "This password must contain at least %(quantity)d %(type)s characters."
 
-#: 
 msgid "Time Period"
 msgstr "Time Period"
 
@@ -2631,11 +2083,9 @@ msgstr "Time Period"
 msgid "To change your password, enter your requested password twice."
 msgstr "To change your password, enter your requested password twice."
 
-#: 
 msgid "To date"
 msgstr "To date"
 
-#: 
 msgid "To Date"
 msgstr "To Date"
 
@@ -2643,101 +2093,80 @@ msgstr "To Date"
 msgid "To set up your account, enter your password twice in the form below."
 msgstr "To set up your account, enter your password twice in the form below."
 
-#: 
 msgid "Toggle Dropdown"
 msgstr "Toggle Dropdown"
 
-#: 
 msgid "Total Properties"
 msgstr "Total Properties"
 
-#: 
 msgid "Total rows in the import file"
 msgstr "Total rows in the import file"
 
-#: 
+msgid "true"
+msgstr "true"
+
 msgid "Type of Submittal"
 msgstr "Type of Submittal"
 
-#: 
 msgid "Type of Submittal:"
 msgstr "Type of Submittal:"
 
-#: 
 msgid ""
 "U.S."
 "                        Department of Energy"
 msgstr "U.S. Department of Energy"
 
-#: 
 msgid "U.S. Department of Energy"
 msgstr "U.S. Department of Energy"
 
-#: 
 msgid "Units"
 msgstr "Units"
 
-#: 
 msgid "Until last date of"
 msgstr "Until last date of"
 
-#: 
 msgid "Update Charts"
 msgstr "Update Charts"
 
-#: 
 msgid "Update Filters"
 msgstr "Update Filters"
 
-#: 
 msgid "Upload a Spreadsheet"
 msgstr "Upload a Spreadsheet"
 
-#: 
 msgid "Upload another energy data file"
 msgstr "Upload another energy data file"
 
-#: 
 msgid "upload complete"
 msgstr "upload complete"
 
-#: 
 msgid "Upload Green Button Data"
 msgstr "Upload Green Button Data"
 
-#: 
 msgid "Upload Portfolio Manager Data"
 msgstr "Upload Portfolio Manager Data"
 
-#: 
 msgid "Upload your buildings list"
 msgstr "Upload your buildings list"
 
-#: 
 msgid "Upload your data"
 msgstr "Upload your data"
 
-#: 
 msgid "Upload your data."
 msgstr "Upload your data."
 
-#: 
 msgid "Upload your energy data file(s)"
 msgstr "Upload your energy data file(s)"
 
-#: 
 msgid "Upload your energy data."
 msgstr "Upload your energy data."
 
-#: 
 msgid "uploading file"
 msgstr "uploading file"
 
-#: 
 msgid "UPLOADING_PROGRESS"
 msgstr "Uploading <strong>{dataset_filename}</strong>"
 
-#: 
 msgid "Use Description"
 msgstr "Use Description"
 
@@ -2750,23 +2179,18 @@ msgstr "user"
 msgid "User"
 msgstr "User"
 
-#: 
 msgid "User Count"
 msgstr "User Count"
 
-#: 
 msgid "User E-mail:"
 msgstr "User E-mail:"
 
-#: 
 msgid "User Email"
 msgstr "User Email"
 
-#: 
 msgid "User First Name:"
 msgstr "User First Name:"
 
-#: 
 msgid "User Last Name:"
 msgstr "User Last Name:"
 
@@ -2774,7 +2198,6 @@ msgstr "User Last Name:"
 msgid "User's email address.  Used for auth as well."
 msgstr "User's email address.  Used for auth as well."
 
-#: 
 msgid "Username"
 msgstr "Username"
 
@@ -2790,31 +2213,24 @@ msgstr "users"
 msgid "Using your current browser will prevent you from accessing features on our website. Use the links below to download a new browser or upgrade your existing browser."
 msgstr "Using your current browser will prevent you from accessing features on our website. Use the links below to download a new browser or upgrade your existing browser."
 
-#: 
 msgid "Version"
 msgstr "Version"
 
-#: 
 msgid "View by Property"
 msgstr "View by Property"
 
-#: 
 msgid "View by Tax Lot"
 msgstr "View by Tax Lot"
 
-#: 
 msgid "View my properties"
 msgstr "View my properties"
 
-#: 
 msgid "View Project"
 msgstr "View Project"
 
-#: 
 msgid "Viewer"
 msgstr "Viewer"
 
-#: 
 msgid "Warning"
 msgstr "Warning"
 
@@ -2826,19 +2242,15 @@ msgstr "We've detected an outdated browser."
 msgid "We've e-mailed instructions for resetting your password."
 msgstr "We've e-mailed instructions for resetting your password."
 
-#: 
 msgid "Weather Norm. Site EUI"
 msgstr "Weather Norm. Site EUI"
 
-#: 
 msgid "Weather Norm. Source EUI"
 msgstr "Weather Norm. Source EUI"
 
-#: 
 msgid "Weather Normalized Site Energy Use Intensity"
 msgstr "Weather Normalized Site Energy Use Intensity"
 
-#: 
 msgid "Weather Normalized Source Energy Use Intensity"
 msgstr "Weather Normalized Source Energy Use Intensity"
 
@@ -2850,15 +2262,12 @@ msgstr "Welcome to SEED Platform™"
 msgid "Welcome to SEED!"
 msgstr "Welcome to SEED!"
 
-#: 
 msgid "What type of file would you like to upload?"
 msgstr "What type of file would you like to upload?"
 
-#: 
 msgid "WHEN_YOU_CLICK_MAP_YOUR_DATA"
 msgstr "When you click the <span class=\"label label-primary\">Map Your Data</span> button, the program will show a grid with the new field names as the column headings and your data in the rows. In that view, you can still come back to the initial mapping screen and change the field mapping."
 
-#: 
 msgid "Where would you like to move these buildings?"
 msgstr "Where would you like to move these buildings?"
 
@@ -2866,64 +2275,49 @@ msgstr "Where would you like to move these buildings?"
 msgid "white"
 msgstr "white"
 
-#: 
 msgid "X Axis"
 msgstr "X Axis"
 
-#: 
 msgid "X_VERSUS_Y"
 msgstr "{x_axis_label} vs. {y_axis_label}"
 
-#: 
 msgid "X_VERSUS_Y_AGGREGATED"
 msgstr "{x_axis_label} vs. {y_axis_label} (Aggregated)"
 
 #. Using this string to test if the translation machinery is escaping/sanitizing correctly.
-#: 
 msgid "XSS_TEST"
-msgstr "<span style=\"color:red\">this text should be <strong>red<strong>.</span><script>alert(\"XSS VULNERABILITY IN TRANSLATION STRING!!!\");</script>"
+msgstr "Accented téxt. <script>alert(\"XSS FAIL IN BASE TRANSLATION STRING\");</script>{injectedText}"
 
-#: 
 msgid "Y Axis"
 msgstr "Y Axis"
 
-#: 
 msgid "Year"
 msgstr "Year"
 
-#: 
 msgid "Year Built"
 msgstr "Year Built"
 
-#: 
 msgid "Year Ending"
 msgstr "Year Ending"
 
-#: 
 msgid "Year Ending Date"
 msgstr "Year Ending Date"
 
-#: 
 msgid "Year Ending:"
 msgstr "Year Ending:"
 
-#: 
 msgid "Yes"
 msgstr "Yes"
 
-#: 
 msgid "Yes, Delete Data File"
 msgstr "Yes, Delete Data File"
 
-#: 
 msgid "Yes, Delete Data Set"
 msgstr "Yes, Delete Data Set"
 
-#: 
 msgid "Yes, Delete Inventory"
 msgstr "Yes, Delete Inventory"
 
-#: 
 msgid "You can review and edit each individual match by clicking one of the linked IDs in the table. This will open a new table that shows the source data for the individual record you are attempting to match. Underneath this record is a searchable list of all potential existing matches. Use this table to explore all your records and to select single or multiple records to match your source data to."
 msgstr "You can review and edit each individual match by clicking one of the linked IDs in the table. This will open a new table that shows the source data for the individual record you are attempting to match. Underneath this record is a searchable list of all potential existing matches. Use this table to explore all your records and to select single or multiple records to match your source data to."
 
@@ -2939,7 +2333,6 @@ msgstr "You have successfully logged out. You may log in again below."
 msgid "You should be receiving it shortly."
 msgstr "You should be receiving it shortly."
 
-#: 
 msgid "You successfully created the project"
 msgstr "You successfully created the project"
 
@@ -2951,11 +2344,9 @@ msgstr "You're receiving this e-mail because you requested a password reset"
 msgid "You're receiving this e-mail because you've been registered for a SEED account."
 msgstr "You're receiving this e-mail because you've been registered for a SEED account."
 
-#: 
 msgid "your data set name"
 msgstr "your data set name"
 
-#: 
 msgid "Your page could not be located!"
 msgstr "Your page could not be located!"
 
@@ -2963,7 +2354,6 @@ msgstr "Your page could not be located!"
 msgid "Your password must contain at least %(quantity)d %(type)s characters."
 msgstr "Your password must contain at least %(quantity)d %(type)s characters."
 
-#: 
 msgid "Your Role"
 msgstr "Your Role"
 

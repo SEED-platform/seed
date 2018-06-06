@@ -156,7 +156,7 @@ describe('When I visit the data set page', function () {
     $('#mapped-row-input-box-0').clear();
     $('#mapped-row-input-box-0').sendKeys('Address Line 1');
     $('#mapped-row-input-box-0').clear();
-    $('#mapped-row-input-box-0').sendKeys('Jurisdiction Tax Lot Id');
+    $('#mapped-row-input-box-0').sendKeys('Jurisdiction Tax Lot ID');
     $$('[ng-click="remap_buildings()"]').first().click();
   });
 

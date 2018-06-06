@@ -43,7 +43,6 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.data_quality_modal',
   'BE.seed.controller.data_quality_labels_modal',
   'BE.seed.controller.cycle_admin',
-  'BE.seed.controller.concat_modal',
   'BE.seed.controller.create_sub_organization_modal',
   'BE.seed.controller.data_upload_modal',
   'BE.seed.controller.dataset',
@@ -120,8 +119,7 @@ angular.module('BE.seed.services', [
   'BE.seed.service.search',
   'BE.seed.service.simple_modal',
   'BE.seed.service.uploader',
-  'BE.seed.service.user',
-  'mappingValidatorService'
+  'BE.seed.service.user'
 ]);
 angular.module('BE.seed.utilities', [
   'BE.seed.utility.spinner'
@@ -175,11 +173,13 @@ SEED_app.run([
     // wraps some minor UI that we'll need until we migrate to delete the old
     // PropertyState columns for EUI and area. This flipper should be removed
     // for 2.4 when we remove the archived "_orig" area and EUI columns.
-    flippers.make_flipper('ryan@ryanmccuaig.net', '2018-05-31T00:00:00Z',
-      'release:orig_columns', 'boolean', true);
-
-    var make2 = _.partial(flippers.make_flipper, 'nicholas.long@nrel.gov', '2018-01-01T00:00:00Z');
-    make2('release:bricr', 'boolean', true);
+    //
+    //
+    // flippers.make_flipper('ryan@ryanmccuaig.net', '2018-05-31T00:00:00Z',
+    //   'release:orig_columns', 'boolean', true);
+    //
+    // var make2 = _.partial(flippers.make_flipper, 'nicholas.long@nrel.gov', '2018-01-01T00:00:00Z');
+    // make2('release:bricr', 'boolean', true);
   }
 ]);
 
@@ -375,27 +375,15 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           suggested_mappings_payload: ['mapping_service', '$stateParams', function (mapping_service, $stateParams) {
             var importfile_id = $stateParams.importfile_id;
-            return mapping_service.get_column_mapping_suggestions(
-              importfile_id
-            );
+            return mapping_service.get_column_mapping_suggestions(importfile_id);
           }],
           raw_columns_payload: ['mapping_service', '$stateParams', function (mapping_service, $stateParams) {
             var importfile_id = $stateParams.importfile_id;
-            return mapping_service.get_raw_columns(
-              importfile_id
-            );
+            return mapping_service.get_raw_columns(importfile_id);
           }],
           first_five_rows_payload: ['mapping_service', '$stateParams', function (mapping_service, $stateParams) {
             var importfile_id = $stateParams.importfile_id;
-            return mapping_service.get_first_five_rows(
-              importfile_id
-            );
-          }],
-          property_columns: ['inventory_service', function (inventory_service) {
-            return inventory_service.get_property_columns();
-          }],
-          taxlot_columns: ['inventory_service', function (inventory_service) {
-            return inventory_service.get_taxlot_columns();
+            return mapping_service.get_first_five_rows(importfile_id);
           }],
           cycles: ['cycle_service', function (cycle_service) {
             return cycle_service.get_cycles();

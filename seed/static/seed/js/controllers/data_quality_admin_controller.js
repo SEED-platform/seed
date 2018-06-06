@@ -70,13 +70,13 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
     $scope.columns = columns;
 
-    if (flippers.is_active('release:orig_columns')) {
-      // db may return _orig columns; don't suggest them in the select
-      var is_retired_pre_pint_column = function (o) {
-        return /_orig$/.test(o.name);
-      };
-      _.remove($scope.columns, is_retired_pre_pint_column);
-    }
+    // if (flippers.is_active('release:orig_columns')) {
+    //   // db may return _orig columns; don't suggest them in the select
+    //   var is_retired_pre_pint_column = function (o) {
+    //     return /_orig$/.test(o.name);
+    //   };
+    //   _.remove($scope.columns, is_retired_pre_pint_column);
+    // }
 
     $scope.all_labels = labels_payload;
     // console.log(labels_payload)

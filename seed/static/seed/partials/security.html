@@ -38,7 +38,7 @@
                             <input type="password" class="form-control" id="editConfirmNewPassword" ng-model="password_2">
                             <p ng-show="error_message !== 'current password is not valid'" class="help-block">{$ error_message | translate $}</p>
                         </div>
-                        <button type="submit" class="btn btn-primary" ng-click="change_password()">{$:: 'Change Password' | translate $} <i class="fa fa-check" ng-show="password_updated"></i></button>
+                        <button type="submit" class="btn btn-primary" ng-disabled="!current_password.length || !password_1.length || !password_1.length || password_1 !== password_2" ng-click="change_password()">{$:: 'Change Password' | translate $} <i class="fa fa-check" ng-show="password_updated"></i></button>
                     </form>
                 </div>
             </div>

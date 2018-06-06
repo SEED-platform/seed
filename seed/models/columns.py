@@ -196,6 +196,22 @@ class Column(models.Model):
         'normalized_address',
     ]
 
+    # These are columns that should not be offered as suggestions during mapping
+    UNMAPPABLE_PROPERTY_FIELDS = [
+        'analysis_end_time',
+        'analysis_start_time',
+        'analysis_state',
+        'analysis_state_message',
+        'campus',
+        'created',
+        'lot_number',
+        'updated'
+    ]
+    UNMAPPABLE_TAXLOT_FIELDS = [
+        'created',
+        'updated'
+    ]
+
     INTERNAL_TYPE_TO_DATA_TYPE = {
         'FloatField': 'double',  # yes, technically this is not the same, move along.
         'IntegerField': 'integer',
@@ -207,7 +223,7 @@ class Column(models.Model):
         'JSONField': 'string',
     }
 
-    # These are the default columns ( also known as the fields in the database)
+    # These are the default columns (also known as the fields in the database)
     DATABASE_COLUMNS = [
         {
             'column_name': 'pm_property_id',
@@ -683,14 +699,18 @@ class Column(models.Model):
 
                 mappings: [
                     {
-                        'from_field': 'eui',
+                        'from_field': 'eui',  # raw field in import file
+                        'from_units': 'kBtu/ft**2/year', # pint-parsable units, optional
                         'to_field': 'energy_use_intensity',
-                        'to_table_name': 'property',
+                        'to_field_display_name': 'Energy Use Intensity',
+                        'to_table_name': 'PropertyState',
                     },
                     {
-                        'from_field': 'eui',
-                        'to_field': 'energy_use_intensity',
-                        'to_table_name': 'property',
+                        'from_field': 'gfa',
+                        'from_units': 'ft**2', # pint-parsable units, optional
+                        'to_field': 'gross_floor_area',
+                        'to_field_display_name': 'Gross Floor Area',
+                        'to_table_name': 'PropertyState',
                     }
                 ]
         """
@@ -1110,14 +1130,16 @@ class Column(models.Model):
         return all_columns
 
     @staticmethod
-    def retrieve_mapping_columns(org_id):
+    def retrieve_mapping_columns(org_id, inventory_type=None):
         """
         Retrieve all the columns that are for mapping for an organization in a dictionary.
 
         :param org_id: org_id, Organization ID
+        :param inventory_type: Inventory Type (property|taxlot) from the requester. This sets the related columns if requested.
         :return: list, list of dict
         """
-        columns_db = Column.objects.filter(organization_id=org_id).exclude(table_name='').exclude(table_name=None)
+        columns_db = Column.objects.filter(organization_id=org_id).exclude(table_name='').exclude(
+            table_name=None).order_by('is_extra_data', 'column_name')
         columns = []
         for c in columns_db:
             if c.column_name in Column.COLUMN_EXCLUDE_FIELDS or c.column_name in Column.EXCLUDED_MAPPING_FIELDS:
@@ -1126,14 +1148,28 @@ class Column(models.Model):
             # Eventually move this over to Column serializer directly
             new_c = model_to_dict(c)
 
+            if inventory_type:
+                related = not (inventory_type.lower() in new_c['table_name'].lower())
+                if related:
+                    continue
+                if inventory_type == 'property' and c.column_name in Column.UNMAPPABLE_PROPERTY_FIELDS:
+                    continue
+                elif inventory_type == 'taxlot' and c.column_name in Column.UNMAPPABLE_TAXLOT_FIELDS:
+                    continue
+
             del new_c['shared_field_type']
             new_c['sharedFieldType'] = c.get_shared_field_type_display()
 
             if (new_c['table_name'], new_c['column_name']) in Column.PINNED_COLUMNS:
                 new_c['pinnedLeft'] = True
 
+            # If no display name, use the column name (this is the display name as it was typed during mapping)
             if not new_c['display_name']:
-                new_c['display_name'] = titlecase(new_c['column_name'])
+                new_c['display_name'] = new_c['column_name']
+
+            # set the name of the column which is a special field because it can take on a relationship
+            # with the table_name and have an _extra associated with it
+            new_c['name'] = '%s_%s' % (new_c['column_name'], new_c['id'])
 
             del new_c['import_file']
             del new_c['organization']
@@ -1176,9 +1212,9 @@ class Column(models.Model):
             if (new_c['table_name'], new_c['column_name']) in Column.PINNED_COLUMNS:
                 new_c['pinnedLeft'] = True
 
-            # Set a default display_name if there isn't already one in the database
+            # If no display name, use the column name (this is the display name as it was typed during mapping)
             if not new_c['display_name']:
-                new_c['display_name'] = titlecase(new_c['column_name'])
+                new_c['display_name'] = new_c['column_name']
 
             # set the name of the column which is a special field because it can take on a relationship
             # with the table_name and have an _extra associated with it
@@ -1241,7 +1277,7 @@ class Column(models.Model):
         :return: list of tuples
         """
         result = []
-        for col in Column.retrieve_all(org_id, 'PropertyState', False):
+        for col in Column.retrieve_all(org_id, None, False):
             result.append((col['table_name'], col['column_name']))
 
         return result

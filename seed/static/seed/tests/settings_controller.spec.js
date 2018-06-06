@@ -50,7 +50,7 @@ describe('controller: organization_settings_controller', function () {
       shared_fields_payload: {
         shared_fields: [
           {
-            title: 'PM Property Id',
+            title: 'PM Property ID',
             sort_column: 'pm_property_id'
           }
         ],
