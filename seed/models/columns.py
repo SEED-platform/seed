@@ -26,7 +26,6 @@ from seed.models.models import (
     Unit,
     SEED_DATA_SOURCES,
 )
-from seed.utils.strings import titlecase
 
 # This is the inverse mapping of the property and tax lots that are prepended to the fields
 # for the other table.
