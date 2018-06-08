@@ -74,7 +74,7 @@ class TaxLotProperty(models.Model):
         for f in chain(opts.concrete_fields, opts.private_fields, opts.many_to_many):
             if not getattr(f, 'editable', False):
                 continue
-            if fields and f.name not in fields:
+            if fields is not None and f.name not in fields:
                 continue
             if exclude and f.name in exclude:
                 continue
@@ -162,35 +162,52 @@ class TaxLotProperty(models.Model):
         related_views = apps.get_model('seed', lookups['related_class']).objects.select_related(
             lookups['select_related'], 'state', 'cycle').filter(pk__in=related_ids)
 
+        related_columns = []
         related_column_name_mapping = {}
+        obj_columns = []
         obj_column_name_mapping = {}
         for column in columns_from_database:
             if column['related']:
+                related_columns.append(column)
                 related_column_name_mapping[column['column_name']] = column['name']
             else:
+                obj_columns.append(column)
                 obj_column_name_mapping[column['column_name']] = column['name']
 
         related_map = {}
+
+        if show_columns is None:
+            filtered_fields = set([col['column_name'] for col in related_columns])
+        else:
+            filtered_fields = set([col['column_name'] for col in related_columns if col['id'] in show_columns])
+
         for related_view in related_views:
             related_dict = TaxLotProperty.model_to_dict_with_mapping(related_view.state,
                                                                      related_column_name_mapping,
-                                                                     fields=show_columns,
+                                                                     fields=filtered_fields,
                                                                      exclude=['extra_data'])
 
             related_dict[lookups['related_state_id']] = related_view.state.id
 
             # custom handling for when it is TaxLotView
             if lookups['obj_class'] == 'TaxLotView':
-                related_dict[related_column_name_mapping['campus']] = related_view.property.campus
+                if 'campus' in filtered_fields:
+                    related_dict[related_column_name_mapping['campus']] = related_view.property.campus
                 # Do not make these timestamps naive. They persist correctly.
-                related_dict[related_column_name_mapping['updated']] = related_view.property.updated
-                related_dict[related_column_name_mapping['created']] = related_view.property.created
+                if 'updated' in filtered_fields:
+                    related_dict[related_column_name_mapping['updated']] = related_view.property.updated
+                if 'created' in filtered_fields:
+                    related_dict[related_column_name_mapping['created']] = related_view.property.created
                 # Replace the enumerations
-                related_dict[related_column_name_mapping['analysis_state']] = related_view.state.get_analysis_state_display()
+                if 'analysis_state' in filtered_fields:
+                    related_dict[
+                        related_column_name_mapping['analysis_state']] = related_view.state.get_analysis_state_display()
             elif lookups['obj_class'] == 'PropertyView':
                 # Do not make these timestamps naive. They persist correctly.
-                related_dict[related_column_name_mapping['updated']] = related_view.taxlot.updated
-                related_dict[related_column_name_mapping['created']] = related_view.taxlot.created
+                if 'updated' in filtered_fields:
+                    related_dict[related_column_name_mapping['updated']] = related_view.taxlot.updated
+                if 'created' in filtered_fields:
+                    related_dict[related_column_name_mapping['created']] = related_view.taxlot.created
 
             related_dict = dict(
                 related_dict.items() +
@@ -257,11 +274,16 @@ class TaxLotProperty(models.Model):
             except KeyError:
                 join_map[getattr(join, lookups['obj_view_id'])] = [join_dict]
 
+        if show_columns is None:
+            filtered_fields = set([col['column_name'] for col in obj_columns])
+        else:
+            filtered_fields = set([col['column_name'] for col in obj_columns if col['id'] in show_columns])
+
         for obj in object_list:
             # Each object in the response is built from the state data, with related data added on.
             obj_dict = TaxLotProperty.model_to_dict_with_mapping(obj.state,
                                                                  obj_column_name_mapping,
-                                                                 fields=show_columns,
+                                                                 fields=filtered_fields,
                                                                  exclude=['extra_data'])
 
             obj_dict = dict(
@@ -282,15 +304,21 @@ class TaxLotProperty(models.Model):
 
             # store the property / taxlot data to the object dictionary as well. This is hacky.
             if lookups['obj_class'] == 'PropertyView':
-                obj_dict[obj_column_name_mapping['campus']] = obj.property.campus
+                if 'campus' in filtered_fields:
+                    obj_dict[obj_column_name_mapping['campus']] = obj.property.campus
                 # Do not make these timestamps naive. They persist correctly.
-                obj_dict[obj_column_name_mapping['created']] = obj.property.created
-                obj_dict[obj_column_name_mapping['updated']] = obj.property.updated
-                obj_dict[obj_column_name_mapping['analysis_state']] = obj.state.get_analysis_state_display()
+                if 'created' in filtered_fields:
+                    obj_dict[obj_column_name_mapping['created']] = obj.property.created
+                if 'updated' in filtered_fields:
+                    obj_dict[obj_column_name_mapping['updated']] = obj.property.updated
+                if 'analysis_state' in filtered_fields:
+                    obj_dict[obj_column_name_mapping['analysis_state']] = obj.state.get_analysis_state_display()
             elif lookups['obj_class'] == 'TaxLotView':
                 # Do not make these timestamps naive. They persist correctly.
-                obj_dict[obj_column_name_mapping['updated']] = obj.taxlot.updated
-                obj_dict[obj_column_name_mapping['created']] = obj.taxlot.created
+                if 'updated' in filtered_fields:
+                    obj_dict[obj_column_name_mapping['updated']] = obj.taxlot.updated
+                if 'created' in filtered_fields:
+                    obj_dict[obj_column_name_mapping['created']] = obj.taxlot.created
 
             # All the related tax lot states.
             obj_dict['related'] = join_map.get(obj.pk, [])

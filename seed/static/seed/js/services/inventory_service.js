@@ -19,7 +19,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       total_taxlots_for_user: 0
     };
 
-    inventory_service.get_properties = function (page, per_page, cycle, columns) {
+    inventory_service.get_properties = function (page, per_page, cycle, profile_id) {
 
       var params = {
         organization_id: user_service.get_organization().id,
@@ -39,8 +39,8 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         }
 
         return $http.post('/api/v2/properties/filter/', {
-          // Ensure that the required meta fields are included.
-          columns: _.uniq(columns.concat(['property_state_id', 'taxlot_state_id', 'property_view_id', 'taxlot_view_id']))
+          // Pass the current profile (if one exists) to limit the column data that is returned
+          profile_id: profile_id
         }, {
           params: params
         }).then(function (response) {
@@ -203,7 +203,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
 
-    inventory_service.get_taxlots = function (page, per_page, cycle, columns) {
+    inventory_service.get_taxlots = function (page, per_page, cycle, profile_id) {
       var params = {
         organization_id: user_service.get_organization().id,
         page: page,
@@ -222,8 +222,8 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         }
 
         return $http.post('/api/v2/taxlots/filter/', {
-          // Ensure that the required meta fields are included
-          columns: _.uniq(columns.concat(['property_state_id', 'taxlot_state_id', 'property_view_id', 'taxlot_view_id']))
+          // Pass the current profile (if one exists) to limit the column data that is returned
+          profile_id: profile_id
         }, {
           params: params
         }).then(function (response) {

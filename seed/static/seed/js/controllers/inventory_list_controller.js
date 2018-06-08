@@ -16,6 +16,7 @@ angular.module('BE.seed.controller.inventory_list', [])
     'inventory',
     'cycles',
     'profiles',
+    'current_profile',
     'labels',
     'all_columns',
     'urls',
@@ -35,6 +36,7 @@ angular.module('BE.seed.controller.inventory_list', [])
               inventory,
               cycles,
               profiles,
+              current_profile,
               labels,
               all_columns,
               urls,
@@ -64,14 +66,7 @@ angular.module('BE.seed.controller.inventory_list', [])
 
       // List Settings Profile
       $scope.profiles = profiles;
-      var validProfileIds = _.map(profiles, 'id');
-      var lastProfileId = inventory_service.get_last_profile($scope.inventory_type);
-      if (_.includes(validProfileIds, lastProfileId)) {
-        $scope.currentProfile = _.find($scope.profiles, {id: lastProfileId});
-      } else {
-        $scope.currentProfile = _.first($scope.profiles);
-        if ($scope.currentProfile) inventory_service.save_last_profile($scope.currentProfile.id, $scope.inventory_type);
-      }
+      $scope.currentProfile = current_profile;
 
       if ($scope.currentProfile) {
         $scope.columns = [];
@@ -508,14 +503,14 @@ angular.module('BE.seed.controller.inventory_list', [])
         spinner_utility.show();
         var visibleColumns = _.map(_.filter($scope.columns, 'visible'), 'name');
         if ($scope.inventory_type === 'properties') {
-          inventory_service.get_properties($scope.pagination.page, $scope.number_per_page, $scope.cycle.selected_cycle, visibleColumns).then(function (properties) {
+          inventory_service.get_properties($scope.pagination.page, $scope.number_per_page, $scope.cycle.selected_cycle, _.has($scope.currentProfile, 'id') ? $scope.currentProfile.id : undefined).then(function (properties) {
             $scope.data = properties.results;
             $scope.pagination = properties.pagination;
             processData();
             spinner_utility.hide();
           });
         } else if ($scope.inventory_type === 'taxlots') {
-          inventory_service.get_taxlots($scope.pagination.page, $scope.number_per_page, $scope.cycle.selected_cycle, visibleColumns).then(function (taxlots) {
+          inventory_service.get_taxlots($scope.pagination.page, $scope.number_per_page, $scope.cycle.selected_cycle, _.has($scope.currentProfile, 'id') ? $scope.currentProfile.id : undefined).then(function (taxlots) {
             $scope.data = taxlots.results;
             $scope.pagination = taxlots.pagination;
             processData();

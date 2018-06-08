@@ -32,7 +32,7 @@ angular.module('BE.seed.controller.inventory_settings', [])
 
       $scope.profiles = profiles;
       var validProfileIds = _.map(profiles, 'id');
-      var lastProfileId = inventory_service.get_last_profile();
+      var lastProfileId = inventory_service.get_last_profile($scope.inventory_type);
       if (_.includes(validProfileIds, lastProfileId)) {
         $scope.currentProfile = _.find($scope.profiles, {id: lastProfileId});
       } else {
