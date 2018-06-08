@@ -39,9 +39,9 @@ class MappingColumns(object):
         :param raw_columns: list of str. The column names we're trying to map.
         :param dest_columns: list of str. The columns we're mapping to.
         :param previous_mapping: Method that contains previous mapped columns
-        :param map_args: Arguments to pass into the previous_mapping method (e.g. Organzation ID)
+        :param map_args: Arguments to pass into the previous_mapping method (e.g. Organization ID)
         :param default_mappings: dict of mappings. Use these mappings if the column is not found in the previous mapping call
-        :param thresh: int, Minimum value of the matching confidence to allow for matching.
+        :param threshold: int, Minimum value of the matching confidence to allow for matching.
         """
         self.data = {}
         for raw in raw_columns:

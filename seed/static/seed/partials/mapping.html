@@ -1,3 +1,9 @@
+<script type="text/ng-template" id="typeahead.html">
+    <a ng-class="{'typeahead-native': !match.model.is_extra_data}">
+        <span ng-bind-html="match.label | uibTypeaheadHighlight:query"></span>
+    </a>
+</script>
+
 <div class="page_header_container">
     <div class="page_header">
         <div class="left page_action_container">
@@ -68,81 +74,34 @@
         <div class="section_content">
             <div class="table_list_container mapping" ng-cloak>
                 <div class="alert warning file_error_messages" ng-show="has_mapping_error_messages()" ng-bind-html="mapping_error_messages"></div>
-                <div class="alert alert-danger" ng-show="!required_property_fields_present() && !import_file.matching_done" translate>At least one of the following Property fields is required: Address Line 1, Custom Id 1, UBID, or Pm Property Id.</div>
-                <div class="alert alert-danger" ng-show="!required_taxlot_fields_present() && !import_file.matching_done" translate>At least one of the following Tax Lot fields is required: Address Line 1, Custom Id 1, or Jurisdiction Tax Lot Id.</div>
-                <div class="alert alert-danger" ng-show="duplicates_present()" translate>Please review SEED headers.  Duplicate values are not allowed.</div>
+                <div class="alert alert-danger" ng-show="!required_property_fields_present() && !import_file.matching_done" translate>At least one of the following Property fields is required: Address Line 1, Custom ID 1, UBID, or PM Property ID.</div>
+                <div class="alert alert-danger" ng-show="!required_taxlot_fields_present() && !import_file.matching_done" translate>At least one of the following Tax Lot fields is required: Address Line 1, Custom ID 1, or Jurisdiction Tax Lot ID.</div>
+                <div class="alert alert-danger" ng-show="duplicates_present" translate>Please review SEED headers.  Duplicate values are not allowed.</div>
                 <div class="alert alert-danger" ng-show="empty_fields_present()" translate>Please review SEED headers.  Empty values are not allowed.</div>
                 <table class="table table-striped" ng-hide="review_mappings">
                     <thead>
                         <tr>
-                            <th class="source_data blank hide"></th>
-                            <th class="source_data">SEED</th>
-                            <th colspan="99" class="source_data">{$:: import_file.uploaded_filename $}</th>
-                        </tr>
-                        <tr ng-show="duplicates.length">
-                            <th class="sub_head is_aligned_center hide">{$:: 'Map' | translate $}
-                                <a uib-popover="{$MAP_copy$}" popover-placement="right"><i class="fa fa-info-circle" style="cursor: pointer;"></i></a>
-                            </th>
-                            <th class="mapping_field" translate>header</th>
-                            <!--th class="sub_head is_aligned_center">BEDES <a uib-popover="{$BEDES_copy$}" popover-placement="right"><i class="fa fa-info-circle" style="cursor: pointer;"></i></a></th-->
-                            <th class="sub_head is_aligned_center">{$:: 'Duplicate' | translate $}
-                                <a uib-popover="{$VALIDATE_copy$}" popover-placement="right"><i class="fa fa-info-circle" style="cursor: pointer;"></i></a>
-                            </th>
-                            <th class="import_column_name" translate>header</th>
-                            <th translate>Row 1</th>
-                            <th translate>Row 2</th>
-                            <th translate>Row 3</th>
-                            <th translate>Row 4</th>
-                            <th translate>Row 5</th>
+                            <th colspan="3" class="source_data">SEED</th>
+                            <th colspan="6" class="source_data">{$:: import_file.uploaded_filename $}</th>
                         </tr>
                     </thead>
-                    <tbody ng-if="duplicates.length">
-                        <tr>
-                            <td></td>
-                            <td colspan="8"><h3 translate>Duplicates</h3></td>
-                        </tr>
-                    </tbody>
-                    <tbody ng-if="duplicates.length" id="duplicate-table">
-                        <tr ng-repeat="tcm in duplicates" ng-class="{'ignored_row': !tcm.mapped_row}">
-                            <td class="check is_aligned_center">
-                                <input type="checkbox" ng-model="tcm.mapped_row" ng-disabled="import_file.matching_done">
-                            </td>
-                            <td ng-class="{'danger': tcm.is_duplicate === true}" id="duplicate-row-input-{$:: $index $}">
-                                <input type="text" uib-typeahead="column for column in typeahead_columns | filter:$viewValue | limitTo:30" ng-model="tcm.suggestion" class="form-control input-sm tcm_field" ng-disabled="!tcm.mapped_row || import_file.matching_done" ng-change="change(tcm)" typeahead-on-select='change(tcm)' id="duplicate-row-input-box-{$ $index $}">
-                            </td>
-                            <td class="check is_aligned_center">
-                                <label class="label label-{$ tcm.label_status() $}" ng-if="tcm.is_duplicate" translate>duplicate</label>
-                                <label class="label label-{$ tcm.label_status() $}" ng-if="!tcm.is_duplicate">{$ tcm.validity | translate $}</label>
-                            </td>
-                            <td>
-                                <strong id="duplicate-header-{$:: $index $}">{$ tcm.name | translate $}</strong>
-                            </td>
-                            <td ng-repeat="cell_value in tcm.raw_data track by $index" ng-class="{'danger': set_td_class(tcm, cell_value) === 'danger', 'warning': set_td_class(tcm, cell_value) === 'warning'}">
-                                {$:: cell_value $}
-                            </td>
-                        </tr>
-                    </tbody>
                     <tbody>
                         <tr>
-                            <td class="hide"></td>
-                            <td style="border-right: 0 none;"><h3 translate>Mapped Fields</h3></td>
-                            <td style="border-right: 0 none; text-align: right;"><span ng-hide="import_file.matching_done">{$:: 'Set all fields to' | translate $}:</span></td>
-                            <td style="border-right: 0 none;">
+                            <td style="border-right: 0 none; max-width: 160px; width: 160px; text-align: right;">
+                                <span style="padding-right:5px;" ng-hide="import_file.matching_done">{$:: 'Set all fields to' | translate $}:</span>
                                 <select ng-model="setAllFields" ng-change="setAllInventoryTypes()" ng-options="item as (item.name | translate) for item in ::setAllFieldsOptions track by item.value" ng-hide="import_file.matching_done"></select>
                             </td>
+                            <td style="border-right: 0 none;"><h3 translate>Mapped Fields</h3></td>
+                            <td style="max-width: 128px; width: 128px;"></td>
                             <td colspan="6"></td>
                         </tr>
                     </tbody>
                     <thead>
                         <tr>
-                            <th class="sub_head is_aligned_center hide">Map
-                                <a uib-popover="{$ MAP_copy $}" popover-placement="right"><i class="fa fa-info-circle" style="cursor: pointer;"></i></a>
-                            </th>
+                            <th><translate>Inventory Type</translate></th>
                             <th class="mapping_field ellipsis-resizable" sd-resizable><translate>SEED Header</translate></th>
-                            <!--th class="sub_head is_aligned_center">Duplicate <a uib-popover="{$VALIDATE_copy$}" popover-placement="right"><i class="fa fa-info-circle" style="cursor: pointer;"></i></a></th-->
+                            <th><translate>Measurement Units</translate></th>
                             <th class="import_column_name ellipsis-resizable" sd-resizable><translate>Data File Header</translate></th>
-                            <th class="ellipsis-resizable" sd-resizable><translate>Inventory Type</translate></th>
-                            <th class="ellipsis-resizable" sd-resizable><translate>Measurement Units</translate></th>
                             <th class="ellipsis-resizable" sd-resizable><translate>Row 1</translate></th>
                             <th class="ellipsis-resizable" sd-resizable><translate>Row 2</translate></th>
                             <th class="ellipsis-resizable" sd-resizable><translate>Row 3</translate></th>
@@ -151,32 +110,22 @@
                         </tr>
                     </thead>
                     <tbody id="mapped-table">
-                        <tr ng-repeat="tcm in ::valids" ng-class="{'ignored_row': !tcm.mapped_row}">
-                            <td class="check is_aligned_center hide">
-                                <input type="checkbox" ng-model="tcm.mapped_row" ng-disabled="import_file.matching_done">
-                            </td>
-                            <td ng-class="{'danger': tcm.is_duplicate === true}" id="mapped-row-input-{$:: $index $}">
-                                <input type="text" uib-typeahead="column for column in ::typeahead_columns | filter:$viewValue | limitTo:20" ng-model="tcm.suggestion" class="form-control input-sm tcm_field" ng-disabled="!tcm.mapped_row || import_file.matching_done" ng-change="change(tcm)" typeahead-on-select='change(tcm)' id="mapped-row-input-box-{$ $index $}">
-                            </td>
-                            <!--td class="check is_aligned_center">
-                                <label class="label label-{$ tcm.label_status() $}" ng-if="tcm.is_duplicate">duplicate</label>
-                                <label class="label label-{$ tcm.label_status() $}" ng-if="!tcm.is_duplicate">{$ tcm.validity $}</label>
-                            </td-->
-                            <td>
-                                <strong id="mapped-header-{$:: $index $}">{$:: tcm.name $}</strong>
-                            </td>
-                            <td ng-class="{'danger': tcm.is_duplicate === true}" id="mapped-row-type-{$:: $index $}">
-                                <select ng-model="tcm.suggestion_table_name" ng-change="updateInventoryTypeDropdown(); change(tcm)" ng-disabled="!tcm.mapped_row || import_file.matching_done">
+                        <tr ng-repeat="col in mappings">
+                            <td style="text-align: right;" ng-class="{'danger': col.is_duplicate || col.suggestion === ''}" ng-attr-id="mapped-row-type-{$:: $index $}">
+                                <select ng-model="col.suggestion_table_name" ng-change="updateInventoryTypeDropdown(); change(col)" ng-disabled="import_file.matching_done">
                                     <option value="PropertyState" translate>Property</option>
                                     <option value="TaxLotState" translate>Tax Lot</option>
                                 </select>
                             </td>
+                            <td ng-class="{'danger': col.is_duplicate || col.suggestion === ''}" ng-attr-id="mapped-row-input-{$:: $index $}">
+                                <input type="text" uib-typeahead="column.display_name for column in (col.suggestion_table_name === 'PropertyState' ? mappable_property_columns : mappable_taxlot_columns) | filter:$viewValue | limitTo:20" typeahead-template-url="typeahead.html" ng-model="col.suggestion" class="form-control input-sm tcm_field" ng-disabled="import_file.matching_done" ng-change="change(col)" typeahead-on-select='change(col)' ng-attr-id="mapped-row-input-box-{$ $index $}">
+                            </td>
                             <td>
-                                <select ng-model="tcm.from_units" ng-if="is_area_column(tcm.suggestion, tcm.suggestion_table_name)">
+                                <select ng-model="col.from_units" ng-if="is_area_column(col)">
                                     <option value="ft**2" translate>square feet</option>
                                     <option value="m**2" translate>square metres</option>
                                 </select>
-                                <select ng-model="tcm.from_units" ng-if="is_eui_column(tcm.suggestion, tcm.suggestion_table_name)">
+                                <select ng-model="col.from_units" ng-if="is_eui_column(col)">
                                     <option value="kBtu/ft**2/year" translate>kBtu/sq. ft./year</option>
                                     <option value="kWh/m**2/year" translate>kWh/m²/year</option>
                                     <option value="GJ/m**2/year" translate>GJ/m²/year</option>
@@ -184,7 +133,10 @@
                                     <option value="kBtu/m**2/year" translate>kBtu/m²/year</option>
                                 </select>
                             </td>
-                            <td ng-repeat="cell_value in ::tcm.raw_data track by $index" ng-class="{'danger': set_td_class(tcm, cell_value) === 'danger', 'warning': set_td_class(tcm, cell_value) === 'warning'}">
+                            <td>
+                                <strong ng-attr-id="mapped-header-{$:: $index $}">{$:: col.name $}</strong>
+                            </td>
+                            <td ng-repeat="cell_value in ::col.raw_data track by $index">
                                 {$:: cell_value $}
                             </td>
                         </tr>
@@ -263,7 +215,6 @@
     </div>
     <div class="section_bottom_container row" style="margin: 16px auto;">
         <div class="col-sm-6">
-            <!--button type="button" class="btn btn-primary" ng-click="open_concat_modal(building_column_types, raw_columns)" ng-hide="show_mapped_buildings">Concatenate Headers</button-->
             <button type="button" class="btn btn-primary" ng-click="backToMapping()" ng-show="show_mapped_buildings">
                 <i class="fa fa-chevron-left"></i> {$:: 'Back to Mapping' | translate $}
             </button>

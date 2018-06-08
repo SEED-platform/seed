@@ -1409,12 +1409,12 @@ class InventoryViewTests(DeleteModelsTestCase):
 
     def test_get_property_columns(self):
         self.column_factory.get_column(
-            'property_extra_data_column',
+            'Property Extra Data Column',
             is_extra_data=True,
             table_name='PropertyState'
         )
         self.column_factory.get_column(
-            'taxlot_extra_data_column',
+            'Taxlot Extra Data Column',
             is_extra_data=True,
             table_name='TaxLotState'
         )
@@ -1447,7 +1447,7 @@ class InventoryViewTests(DeleteModelsTestCase):
 
         expected_property_extra_data_column = {
             'table_name': 'PropertyState',
-            'column_name': 'property_extra_data_column',
+            'column_name': 'Property Extra Data Column',
             'display_name': 'Property Extra Data Column',
             'is_extra_data': True,
             'data_type': 'None',
@@ -1458,7 +1458,7 @@ class InventoryViewTests(DeleteModelsTestCase):
 
         expected_taxlot_extra_data_column = {
             'table_name': 'TaxLotState',
-            'column_name': 'taxlot_extra_data_column',
+            'column_name': 'Taxlot Extra Data Column',
             'display_name': 'Taxlot Extra Data Column (Tax Lot)',
             'is_extra_data': True,
             'data_type': 'None',
@@ -1469,12 +1469,12 @@ class InventoryViewTests(DeleteModelsTestCase):
 
     def test_get_taxlot_columns(self):
         self.column_factory.get_column(
-            'property_extra_data_column',
+            'Property Extra Data Column',
             is_extra_data=True,
             table_name='PropertyState'
         )
         self.column_factory.get_column(
-            'taxlot_extra_data_column',
+            'Taxlot Extra Data Column',
             is_extra_data=True,
             table_name='TaxLotState'
         )
@@ -1509,7 +1509,7 @@ class InventoryViewTests(DeleteModelsTestCase):
 
         expected_property_extra_data_column = {
             'table_name': 'PropertyState',
-            'column_name': 'property_extra_data_column',
+            'column_name': 'Property Extra Data Column',
             'display_name': u'Property Extra Data Column (Property)',
             'is_extra_data': True,
             'data_type': 'None',
@@ -1520,7 +1520,7 @@ class InventoryViewTests(DeleteModelsTestCase):
 
         expected_taxlot_extra_data_column = {
             'table_name': 'TaxLotState',
-            'column_name': 'taxlot_extra_data_column',
+            'column_name': 'Taxlot Extra Data Column',
             'display_name': 'Taxlot Extra Data Column',
             'is_extra_data': True,
             'data_type': 'None',

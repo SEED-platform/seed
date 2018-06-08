@@ -291,7 +291,7 @@ class TestColumnsByInventory(TestCase):
             is_extra_data=True
         )
         seed_models.Column.objects.create(
-            column_name=u'gross_floor_area',
+            column_name=u'Gross Floor Area',
             table_name=u'TaxLotState',
             organization=self.fake_org,
             is_extra_data=True
@@ -376,7 +376,7 @@ class TestColumnsByInventory(TestCase):
         c = {
             'table_name': 'PropertyState',
             'column_name': 'id',
-            'display_name': 'Id',
+            'display_name': 'id',
             'is_extra_data': True,
             'data_type': 'None',
             'related': False,
@@ -411,7 +411,7 @@ class TestColumnsByInventory(TestCase):
 
         c = {
             "table_name": "TaxLotState",
-            "column_name": "gross_floor_area",
+            "column_name": "Gross Floor Area",
             "display_name": "Gross Floor Area (Tax Lot)",
             "data_type": "None",
             "is_extra_data": True,
@@ -432,7 +432,7 @@ class TestColumnsByInventory(TestCase):
 
         c = {
             "table_name": "TaxLotState",
-            "column_name": "gross_floor_area",
+            "column_name": "Gross Floor Area",
             "display_name": "Gross Floor Area",
             "data_type": "None",
             "is_extra_data": True,
@@ -570,7 +570,7 @@ class TestColumnsByInventory(TestCase):
         self.assertIn((u'TaxLotState', u'tax_lot_id_not_used'), list_result)
         self.assertIn((u'PropertyState', u'gross_floor_area'),
                       list_result)  # extra field in taxlot, but not in property
-        self.assertIn((u'TaxLotState', u'gross_floor_area'), list_result)  # extra field in taxlot, but not in property
+        self.assertIn((u'TaxLotState', u'Gross Floor Area'), list_result)  # extra field in taxlot, but not in property
 
     def test_db_columns_in_default_columns(self):
         """

@@ -1489,14 +1489,16 @@ class ImportFileViewSet(viewsets.ViewSet):
                 "mappings": [
                     {
                         'from_field': 'eui',  # raw field in import file
-                        'from_units': 'kBtu/ft**2/year', # pint-parseable units, optional
+                        'from_units': 'kBtu/ft**2/year', # pint-parsable units, optional
                         'to_field': 'energy_use_intensity',
+                        'to_field_display_name': 'Energy Use Intensity',
                         'to_table_name': 'PropertyState',
                     },
                     {
                         'from_field': 'gfa',
-                        'from_units': 'ft**2', # pint-parseable units, optional
+                        'from_units': 'ft**2', # pint-parsable units, optional
                         'to_field': 'gross_floor_area',
+                        'to_field_display_name': 'Gross Floor Area',
                         'to_table_name': 'PropertyState',
                     }
                 ]
@@ -1788,10 +1790,8 @@ class ImportFileViewSet(viewsets.ViewSet):
         )
 
         # Get a list of the database fields in a list, these are the db columns and the extra_data columns
-        mapping_data = Column.retrieve_mapping_columns(organization_id)
-
-        # I think we want column_name to be display_name, but need to change front end.
-        column_names = [c['column_name'] for c in mapping_data]
+        property_columns = Column.retrieve_mapping_columns(organization_id, 'property')
+        taxlot_columns = Column.retrieve_mapping_columns(organization_id, 'taxlot')
 
         # If this is a portfolio manager file, then load in the PM mappings and if the column_mappings
         # are not in the original mappings, default to PM
@@ -1827,8 +1827,8 @@ class ImportFileViewSet(viewsets.ViewSet):
                 suggested_mappings[m][0] = 'PropertyState'
 
         result['suggested_column_mappings'] = suggested_mappings
-        result['column_names'] = column_names
-        result['columns'] = mapping_data
+        result['property_columns'] = property_columns
+        result['taxlot_columns'] = taxlot_columns
 
         return JsonResponse(result)
 

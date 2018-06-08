@@ -3146,5 +3146,9 @@ $pairedCellWidth: 60px;
 }
 
 .pink-bg {
-  background-color: rgba(255,0,0,0.07);
+  background-color: rgba(255, 0, 0, 0.07);
+}
+
+:not(.active) .typeahead-native {
+  background-color: rgba(100, 255, 100, 0.15);
 }

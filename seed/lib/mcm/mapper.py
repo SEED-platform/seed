@@ -49,7 +49,7 @@ def build_column_mapping(raw_columns, dest_columns, previous_mapping=None, map_a
 
         map_args: Arguments to pass into the previous_mapping method
         default_mappings: dict of mappings. Use these mappings if the column is not found in the previous mapping call
-        thresh: threshold on which automaticlally suggested columns will be considered.
+        thresh: threshold on which automatically suggested columns will be considered.
 
     Returns:
         dict: {'raw_column': ('dest_column', score)
