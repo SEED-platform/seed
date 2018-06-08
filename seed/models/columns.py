@@ -1138,7 +1138,7 @@ class Column(models.Model):
         :return: list, list of dict
         """
         columns_db = Column.objects.filter(organization_id=org_id).exclude(table_name='').exclude(
-            table_name=None).order_by('is_extra_data', 'column_name')
+            table_name=None)
         columns = []
         for c in columns_db:
             if c.column_name in Column.COLUMN_EXCLUDE_FIELDS or c.column_name in Column.EXCLUDED_MAPPING_FIELDS:
@@ -1177,6 +1177,9 @@ class Column(models.Model):
             del new_c['unit']
 
             columns.append(new_c)
+
+        # Sort by display name
+        columns.sort(key=lambda col: col['display_name'].lower())
 
         return columns
 
