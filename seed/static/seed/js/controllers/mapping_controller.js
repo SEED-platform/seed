@@ -90,13 +90,13 @@ angular.module('BE.seed.controller.mapping', [])
       var eui_columns = _.filter($scope.mappable_property_columns, {data_type: 'eui'});
       $scope.is_eui_column = function (col) {
         // All of these are on the PropertyState table
-        return col && col.suggestion_table_name === 'PropertyState' && _.find(eui_columns, {column_name: col.suggestion_column_name});
+        return col.suggestion_table_name === 'PropertyState' && Boolean(_.find(eui_columns, {column_name: col.suggestion_column_name}));
       };
 
       var area_columns = _.filter($scope.mappable_property_columns, {data_type: 'area'});
       $scope.is_area_column = function (col) {
         // All of these are on the PropertyState table
-        return col && col.suggestion_table_name === 'PropertyState' && _.find(area_columns, {column_name: col.suggestion_column_name});
+        return col.suggestion_table_name === 'PropertyState' && Boolean(_.find(area_columns, {column_name: col.suggestion_column_name}));
       };
 
       var get_default_quantity_units = function (col) {
@@ -221,7 +221,7 @@ angular.module('BE.seed.controller.mapping', [])
             col.suggestion_column_name = null;
           }
 
-          col.from_units = get_default_quantity_units(match);
+          col.from_units = get_default_quantity_units(col);
 
           $scope.mappings.push(col);
         });
