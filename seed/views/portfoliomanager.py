@@ -57,6 +57,11 @@ class PortfolioManagerViewSet(GenericViewSet):
                 {'status': 'error', 'message': pme.message},
                 status=status.HTTP_400_BAD_REQUEST
             )
+        except Exception as e:
+            return JsonResponse(
+                {'status': 'error', 'exception': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
         return JsonResponse({'status': 'success', 'templates': possible_templates})
 
     @list_route(methods=['POST'])
