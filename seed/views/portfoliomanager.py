@@ -184,6 +184,8 @@ class PortfolioManagerImport(object):
         for t in templates:
             t['z_seed_child_row'] = False
             template_response.append(t)
+            if 'id' not in t or 'name' not in t:
+                raise PMExcept("Template from Portfolio Manager was missing id or name field")
             _log.debug("Found template,\n id=" + str(t["id"]) + "\n name=" + str(t["name"]))
             if 'hasChildrenRows' in t and t['hasChildrenRows']:
                 _log.debug("Template row has children data request rows, trying to get them now")
