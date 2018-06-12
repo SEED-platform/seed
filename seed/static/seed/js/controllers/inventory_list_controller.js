@@ -49,7 +49,6 @@ angular.module('BE.seed.controller.inventory_list', [])
       $scope.selectedParentCount = 0;
       $scope.selectedOrder = [];
 
-
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.data = inventory.results;
       $scope.pagination = inventory.pagination;
@@ -261,30 +260,48 @@ angular.module('BE.seed.controller.inventory_list', [])
       };
 
       $scope.open_merge_modal = function () {
+        spinner_utility.show();
         var modalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/merge_modal.html',
           controller: 'merge_modal_controller',
           windowClass: 'merge-modal',
           resolve: {
             columns: function () {
-              return _.map(_.reject($scope.columns, function (column) {
-                return _.includes(['id', 'notes_count'], column.name)
-                  || _.includes(['created', 'updated'], column.column_name)
-                  || (column.table_name === 'PropertyState' && _.includes(['analysis_end_time', 'analysis_start_time', 'analysis_state', 'analysis_state_message', 'campus', 'lot_number'], column.column_name));
-              }), function (column) {
-                return _.pick(column, ['column_name', 'displayName', 'id', 'is_extra_data', 'name', 'table_name']);
+              var func;
+              if ($stateParams.inventory_type === 'properties') func = inventory_service.get_mappable_property_columns;
+              else func = inventory_service.get_mappable_taxlot_columns;
+
+              return func().then(function (columns) {
+                return _.map(columns, function (column) {
+                  return _.pick(column, ['column_name', 'displayName', 'id', 'is_extra_data', 'name', 'table_name']);
+                });
               });
             },
             data: function () {
               var selectedOrder = $scope.selectedOrder.slice().reverse();
               var data = new Array($scope.selectedOrder.length);
-              _.forEach($scope.data, function (datum) {
-                if (datum.$$treeLevel === 0) {
-                  var index = _.indexOf(selectedOrder, datum.id);
-                  if (index !== -1) data[index] = datum;
-                }
-              });
-              return data;
+
+              if ($scope.inventory_type === 'properties') {
+                return inventory_service.get_properties(1, undefined, undefined, undefined).then(function (inventory_data) {
+                  _.forEach(selectedOrder, function (id, index) {
+                    var match = _.find(inventory_data.results, {id: id});
+                    if (match) {
+                      data[index] = match;
+                    }
+                  });
+                  return data;
+                });
+              } else if ($scope.inventory_type === 'taxlots') {
+                return inventory_service.get_taxlots(1, undefined, undefined, undefined).then(function (inventory_data) {
+                  _.forEach(selectedOrder, function (id, index) {
+                    var match = _.find(inventory_data.results, {id: id});
+                    if (match) {
+                      data[index] = match;
+                    }
+                  });
+                  return data;
+                });
+              }
             },
             inventory_type: function () {
               return $scope.inventory_type;
@@ -347,7 +364,6 @@ angular.module('BE.seed.controller.inventory_list', [])
         headerCellFilter: 'translate',
         minWidth: 75,
         width: 150
-        //type: 'string'
       };
       _.map($scope.columns, function (col) {
         var options = {};
@@ -415,9 +431,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         var visibleColumns = _.map($scope.columns, 'name')
           .concat(['$$treeLevel', 'notes_count', 'id', 'property_state_id', 'property_view_id', 'taxlot_state_id', 'taxlot_view_id']);
 
-        var columnsToAggregate = _.filter($scope.columns, function (col) {
-          return col.treeAggregationType && _.includes(visibleColumns, col.name);
-        }).reduce(function (obj, col) {
+        var columnsToAggregate = _.filter($scope.columns, 'treeAggregationType').reduce(function (obj, col) {
           obj[col.name] = col.treeAggregationType;
           return obj;
         }, {});
@@ -431,34 +445,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           var relatedIndex = trueIndex;
           var aggregations = {};
           for (var j = 0; j < related.length; ++j) {
-            // Rename nested keys
-            var map = {};
-            // list of fields that can be on both the PropertyState and TaxLotState
-            if ($scope.inventory_type === 'properties') {
-              map = {
-                address_line_1: 'tax_address_line_1',
-                address_line_2: 'tax_address_line_2',
-                city: 'tax_city',
-                state: 'tax_state',
-                postal_code: 'tax_postal_code',
-                custom_id_1: 'tax_custom_id_1',
-                updated: 'tax_updated',
-                created: 'tax_created'
-              };
-            } else if ($scope.inventory_type === 'taxlots') {
-              map = {
-                address_line_1: 'property_address_line_1',
-                address_line_2: 'property_address_line_2',
-                city: 'property_city',
-                state: 'property_state',
-                postal_code: 'property_postal_code',
-                custom_id_1: 'property_custom_id_1',
-                updated: 'property_updated',
-                created: 'property_created'
-              };
-            }
             var updated = _.reduce(related[j], function (result, value, key) {
-              key = map[key] || key;
               if (_.includes(columnNamesToAggregate, key)) aggregations[key] = (aggregations[key] || []).concat(_.split(value, '; '));
               result[key] = value;
               return result;
@@ -501,7 +488,6 @@ angular.module('BE.seed.controller.inventory_list', [])
 
       var refresh_objects = function () {
         spinner_utility.show();
-        var visibleColumns = _.map(_.filter($scope.columns, 'visible'), 'name');
         if ($scope.inventory_type === 'properties') {
           inventory_service.get_properties($scope.pagination.page, $scope.number_per_page, $scope.cycle.selected_cycle, _.has($scope.currentProfile, 'id') ? $scope.currentProfile.id : undefined).then(function (properties) {
             $scope.data = properties.results;

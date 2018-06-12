@@ -251,15 +251,15 @@ class TaxLotProperty(models.Model):
 
                 join_dict = related_map[getattr(join, lookups['related_view_id'])].copy()
                 join_dict.update({
-                    'primary': 'P' if join.primary else 'S',
-                    'calculated_taxlot_ids': '; '.join(jurisdiction_tax_lot_ids),
+                    # 'primary': 'P' if join.primary else 'S',
+                    # 'calculated_taxlot_ids': '; '.join(jurisdiction_tax_lot_ids),
                     lookups['related_view_id']: getattr(join, lookups['related_view_id'])
                 })
 
             else:
                 join_dict = related_map[getattr(join, lookups['related_view_id'])].copy()
                 join_dict.update({
-                    'primary': 'P' if join.primary else 'S',
+                    # 'primary': 'P' if join.primary else 'S',
                     lookups['related_view_id']: getattr(join, lookups['related_view_id'])
                 })
 

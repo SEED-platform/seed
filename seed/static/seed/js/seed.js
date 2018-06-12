@@ -316,6 +316,16 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             var inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
             return inventory_service.get_settings_profiles('List View Settings', inventory_type);
           }],
+          current_profile: ['$stateParams', 'inventory_service', 'profiles', function ($stateParams, inventory_service, profiles) {
+            var validProfileIds = _.map(profiles, 'id');
+            var lastProfileId = inventory_service.get_last_profile($stateParams.inventory_type);
+            if (_.includes(validProfileIds, lastProfileId)) {
+              return _.find(profiles, {id: lastProfileId});
+            }
+            var currentProfile = _.first(profiles);
+            if (currentProfile) inventory_service.save_last_profile(currentProfile.id, $stateParams.inventory_type);
+            return currentProfile;
+          }],
           shared_fields_payload: ['user_service', function (user_service) {
             return user_service.get_shared_buildings();
           }]
@@ -348,6 +358,16 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           profiles: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             var inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
             return inventory_service.get_settings_profiles('Detail View Settings', inventory_type);
+          }],
+          current_profile: ['$stateParams', 'inventory_service', 'profiles', function ($stateParams, inventory_service, profiles) {
+            var validProfileIds = _.map(profiles, 'id');
+            var lastProfileId = inventory_service.get_last_detail_profile($stateParams.inventory_type);
+            if (_.includes(validProfileIds, lastProfileId)) {
+              return _.find(profiles, {id: lastProfileId});
+            }
+            var currentProfile = _.first(profiles);
+            if (currentProfile) inventory_service.save_last_detail_profile(currentProfile.id, $stateParams.inventory_type);
+            return currentProfile;
           }]
         }
       })
@@ -901,6 +921,16 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           profiles: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             var inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
             return inventory_service.get_settings_profiles('Detail View Settings', inventory_type);
+          }],
+          current_profile: ['$stateParams', 'inventory_service', 'profiles', function ($stateParams, inventory_service, profiles) {
+            var validProfileIds = _.map(profiles, 'id');
+            var lastProfileId = inventory_service.get_last_detail_profile($stateParams.inventory_type);
+            if (_.includes(validProfileIds, lastProfileId)) {
+              return _.find(profiles, {id: lastProfileId});
+            }
+            var currentProfile = _.first(profiles);
+            if (currentProfile) inventory_service.save_last_detail_profile(currentProfile.id, $stateParams.inventory_type);
+            return currentProfile;
           }],
           labels_payload: ['$stateParams', 'label_service', 'inventory_payload', function ($stateParams, label_service, inventory_payload) {
             var inventory_id;

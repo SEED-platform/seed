@@ -22,20 +22,33 @@ angular.module('BE.seed.controller.inventory_detail', [])
     'inventory_payload',
     'columns',
     'profiles',
+    'current_profile',
     'labels_payload',
-    function ($state, $scope, $uibModal, $log, $filter, $stateParams, $anchorScroll, $location, $window, urls, spinner_utility, label_service, inventory_service, matching_service, pairing_service, inventory_payload, columns, profiles, labels_payload) {
+    function ($state,
+              $scope,
+              $uibModal,
+              $log,
+              $filter,
+              $stateParams,
+              $anchorScroll,
+              $location,
+              $window,
+              urls,
+              spinner_utility,
+              label_service,
+              inventory_service,
+              matching_service,
+              pairing_service,
+              inventory_payload,
+              columns,
+              profiles,
+              current_profile,
+              labels_payload) {
       $scope.inventory_type = $stateParams.inventory_type;
 
       // Detail Settings Profile
       $scope.profiles = profiles;
-      var validProfileIds = _.map(profiles, 'id');
-      var lastProfileId = inventory_service.get_last_detail_profile($scope.inventory_type);
-      if (_.includes(validProfileIds, lastProfileId)) {
-        $scope.currentProfile = _.find($scope.profiles, {id: lastProfileId});
-      } else {
-        $scope.currentProfile = _.first($scope.profiles);
-        if ($scope.currentProfile) inventory_service.save_last_detail_profile($scope.currentProfile.id, $scope.inventory_type);
-      }
+      $scope.currentProfile = current_profile;
 
       if ($scope.currentProfile) {
         $scope.columns = [];

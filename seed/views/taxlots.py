@@ -29,6 +29,8 @@ from seed.models import (
     MERGE_STATE_MERGED,
     MERGE_STATE_DELETE,
     Column,
+    ColumnListSetting,
+    ColumnListSettingColumn,
     Cycle,
     Note,
     PropertyView,
@@ -70,7 +72,7 @@ class TaxLotViewSet(GenericViewSet):
     renderer_classes = (JSONRenderer,)
     serializer_class = TaxLotSerializer
 
-    def _get_filtered_results(self, request, columns):
+    def _get_filtered_results(self, request, profile_id):
         page = request.query_params.get('page', 1)
         per_page = request.query_params.get('per_page', 1)
         org_id = request.query_params.get('organization_id', None)
@@ -113,12 +115,27 @@ class TaxLotViewSet(GenericViewSet):
             taxlot_views = paginator.page(paginator.num_pages)
             page = paginator.num_pages
 
+        org = Organization.objects.get(pk=org_id)
+
         columns_from_database = Column.retrieve_all(org_id, 'taxlot', False)
-        related_results = TaxLotProperty.get_related(taxlot_views, columns, columns_from_database)
+
+        try:
+            profile = ColumnListSetting.objects.get(
+                organization=org,
+                id=profile_id,
+                settings_location=ColumnListSetting.VIEW_LIST,
+                inventory_type=ColumnListSetting.VIEW_LIST_PROPERTY
+            )
+            show_columns = list(ColumnListSettingColumn.objects.filter(
+                column_list_setting_id=profile.id
+            ).values_list('column_id', flat=True))
+        except ColumnListSetting.DoesNotExist:
+            show_columns = None
+
+        related_results = TaxLotProperty.get_related(taxlot_views, show_columns, columns_from_database)
 
         # collapse units here so we're only doing the last page; we're already a
         # realized list by now and not a lazy queryset
-        org = Organization.objects.get(pk=org_id)
         unit_collapsed_results = \
             [apply_display_unit_preferences(org, x) for x in related_results]
 
@@ -194,19 +211,16 @@ class TaxLotViewSet(GenericViewSet):
               description: The number of items per page to return
               required: false
               paramType: query
-            - name: column filter data
-              description: Object containing columns to filter on, should be a JSON object with a single key "columns"
-                           whose value is a list of strings, each representing a column name
+            - name: profile_id
+              description: Either an id of a list settings profile, or undefined
               paramType: body
         """
-        try:
-            columns = dict(request.data.iterlists())['columns']
-        except AttributeError:
-            columns = request.data['columns']
+        if 'profile_id' not in request.data:
+            profile_id = None
+        else:
+            profile_id = request.data['profile_id']
 
-        # TODO: fix this
-        columns = None
-        return self._get_filtered_results(request, columns=columns)
+        return self._get_filtered_results(request, profile_id)
 
     @api_endpoint_class
     @ajax_request_class
@@ -571,6 +585,25 @@ class TaxLotViewSet(GenericViewSet):
         unitted_columns = [add_pint_unit_suffix(organization, x) for x in columns]
 
         return JsonResponse({'status': 'success', 'columns': unitted_columns})
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_viewer')
+    @list_route(methods=['GET'])
+    def mappable_columns(self, request):
+        """
+        List only taxlot columns that are mappable
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+        """
+        organization_id = int(request.query_params.get('organization_id'))
+        columns = Column.retrieve_mapping_columns(organization_id, 'taxlot')
+        organization = Organization.objects.get(pk=organization_id)
+
+        return JsonResponse({'status': 'success', 'columns': columns})
 
     @api_endpoint_class
     @ajax_request_class

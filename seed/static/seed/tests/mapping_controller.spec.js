@@ -193,8 +193,6 @@ describe('controller: mapping_controller', function () {
     var mappings = mapping_controller_scope.mappings;
     var first_column = mappings[0];
 
-    console.log('mappings', mappings);
-
     expect(first_column.suggestion).toBe('PM Property ID');
   });
 

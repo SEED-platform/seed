@@ -744,6 +744,25 @@ class PropertyViewSet(GenericViewSet):
 
     @api_endpoint_class
     @ajax_request_class
+    @has_perm_class('requires_viewer')
+    @list_route(methods=['GET'])
+    def mappable_columns(self, request):
+        """
+        List only property columns that are mappable
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+        """
+        organization_id = int(request.query_params.get('organization_id'))
+        columns = Column.retrieve_mapping_columns(organization_id, 'property')
+        organization = Organization.objects.get(pk=organization_id)
+
+        return JsonResponse({'status': 'success', 'columns': columns})
+
+    @api_endpoint_class
+    @ajax_request_class
     @has_perm_class('can_modify_data')
     @detail_route(methods=['DELETE'])
     def delete(self, request, pk=None):
