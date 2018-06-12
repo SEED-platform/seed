@@ -119,18 +119,21 @@ class TaxLotViewSet(GenericViewSet):
 
         columns_from_database = Column.retrieve_all(org_id, 'taxlot', False)
 
-        try:
-            profile = ColumnListSetting.objects.get(
-                organization=org,
-                id=profile_id,
-                settings_location=ColumnListSetting.VIEW_LIST,
-                inventory_type=ColumnListSetting.VIEW_LIST_PROPERTY
-            )
-            show_columns = list(ColumnListSettingColumn.objects.filter(
-                column_list_setting_id=profile.id
-            ).values_list('column_id', flat=True))
-        except ColumnListSetting.DoesNotExist:
+        if profile_id is None:
             show_columns = None
+        else:
+            try:
+                profile = ColumnListSetting.objects.get(
+                    organization=org,
+                    id=profile_id,
+                    settings_location=ColumnListSetting.VIEW_LIST,
+                    inventory_type=ColumnListSetting.VIEW_LIST_PROPERTY
+                )
+                show_columns = list(ColumnListSettingColumn.objects.filter(
+                    column_list_setting_id=profile.id
+                ).values_list('column_id', flat=True))
+            except ColumnListSetting.DoesNotExist:
+                show_columns = None
 
         related_results = TaxLotProperty.get_related(taxlot_views, show_columns, columns_from_database)
 
@@ -182,7 +185,7 @@ class TaxLotViewSet(GenericViewSet):
               required: false
               paramType: query
         """
-        return self._get_filtered_results(request, columns=None)
+        return self._get_filtered_results(request, profile_id=None)
 
     # @require_organization_id
     # @require_organization_membership
@@ -220,7 +223,7 @@ class TaxLotViewSet(GenericViewSet):
         else:
             profile_id = request.data['profile_id']
 
-        return self._get_filtered_results(request, profile_id)
+        return self._get_filtered_results(request, profile_id=profile_id)
 
     @api_endpoint_class
     @ajax_request_class
@@ -601,7 +604,6 @@ class TaxLotViewSet(GenericViewSet):
         """
         organization_id = int(request.query_params.get('organization_id'))
         columns = Column.retrieve_mapping_columns(organization_id, 'taxlot')
-        organization = Organization.objects.get(pk=organization_id)
 
         return JsonResponse({'status': 'success', 'columns': columns})
 

@@ -726,7 +726,7 @@ class InventoryViewTests(DeleteModelsTestCase):
             'organization_id', self.org.pk,
             'page', 1,
             'per_page', 999999999
-        ), data={'columns': COLUMNS_TO_SEND})
+        ), data={'profile_id': None})
 
         column_name_mappings_related = {}
         column_name_mappings = {}
@@ -777,7 +777,7 @@ class InventoryViewTests(DeleteModelsTestCase):
             'organization_id', self.org.pk,
             'page', 1,
             'per_page', 999999999
-        ), data={'columns': COLUMNS_TO_SEND})
+        ), data={'profile_id': None})
         result = json.loads(response.content)
 
         column_name_mappings_related = {}
@@ -806,7 +806,7 @@ class InventoryViewTests(DeleteModelsTestCase):
             'organization_id', self.org.pk,
             'page', 'one',
             'per_page', 999999999
-        ), data={'columns': COLUMNS_TO_SEND})
+        ), data={'profile_id': None})
         result = json.loads(response.content)
 
         self.assertEquals(len(result['results']), 1)
@@ -825,7 +825,7 @@ class InventoryViewTests(DeleteModelsTestCase):
             'page', 10,
             'per_page', 999999999
         )
-        response = self.client.post(filter_properties_url, data={'columns': COLUMNS_TO_SEND})
+        response = self.client.post(filter_properties_url, data={'profile_id': None})
         result = json.loads(response.content)
         self.assertEquals(len(result['results']), 0)
         pagination = result['pagination']
@@ -1017,7 +1017,7 @@ class InventoryViewTests(DeleteModelsTestCase):
             'page', 1,
             'per_page', 999999999,
             'cycle', self.cycle.pk
-        ), data={'columns': COLUMNS_TO_SEND})
+        ), data={'profile_id': None})
         results = json.loads(response.content)['results']
 
         column_name_mappings_related = {}
@@ -1062,11 +1062,12 @@ class InventoryViewTests(DeleteModelsTestCase):
             property_view=property_view, taxlot_view=taxlot_view,
             cycle=self.cycle
         )
-        url = '/api/v2/taxlots/filter/?{}={}&{}={}'.format(
+        url = '/api/v2/taxlots/filter/?{}={}&{}={}&{}={}'.format(
             'organization_id', self.org.pk,
-            'page', 1
+            'page', 1,
+            'per_page', 999999999,
         )
-        response = self.client.post(url, data={'columns': COLUMNS_TO_SEND})
+        response = self.client.post(url, data={'profile_id': None})
         results = json.loads(response.content)['results']
 
         self.assertEquals(len(results), 1)
@@ -1085,7 +1086,7 @@ class InventoryViewTests(DeleteModelsTestCase):
             'page', 1,
             'per_page', 999999999
         )
-        data = {'columns': COLUMNS_TO_SEND}
+        data = {'profile_id': None}
         response = self.client.post(url, data=data)
         result = json.loads(response.content)
 
@@ -1139,7 +1140,7 @@ class InventoryViewTests(DeleteModelsTestCase):
             'cycle', self.cycle.pk,
             'page', 1,
             'per_page', 999999999
-        ), data={'columns': COLUMNS_TO_SEND})
+        ), data={'profile_id': None})
         results = json.loads(response.content)['results']
         self.assertEquals(len(results), 2)
 
@@ -1201,11 +1202,12 @@ class InventoryViewTests(DeleteModelsTestCase):
             property_view=property_view, taxlot_view=taxlot_view,
             cycle=self.cycle
         )
-        response = self.client.post('/api/v2/taxlots/filter/?{}={}&{}={}&{}={}'.format(
+        response = self.client.post('/api/v2/taxlots/filter/?{}={}&{}={}&{}={}&{}={}'.format(
             'organization_id', self.org.pk,
             'cycle', self.cycle.pk,
-            'page', 1
-        ), data={'columns': COLUMNS_TO_SEND})
+            'page', 1,
+            'per_page', 999999999,
+        ), data={'profile_id': None})
         results = json.loads(response.content)['results']
 
         column_name_mappings_related = {}
@@ -1240,11 +1242,12 @@ class InventoryViewTests(DeleteModelsTestCase):
             property_view=property_view, taxlot_view=taxlot_view,
             cycle=self.cycle
         )
-        response = self.client.post('/api/v2/taxlots/filter/?{}={}&{}={}&{}={}'.format(
+        response = self.client.post('/api/v2/taxlots/filter/?{}={}&{}={}&{}={}&{}={}'.format(
             'organization_id', self.org.pk,
             'cycle', self.cycle.pk,
-            'page', 'bad'
-        ), data={'columns': COLUMNS_TO_SEND})
+            'page', 'bad',
+            'per_page', 999999999,
+        ), data={'profile_id': None})
         result = json.loads(response.content)
 
         self.assertEquals(len(result['results']), 1)
@@ -1274,11 +1277,12 @@ class InventoryViewTests(DeleteModelsTestCase):
             property_view=property_view, taxlot_view=taxlot_view,
             cycle=self.cycle
         )
-        response = self.client.post('/api/v2/taxlots/filter/?{}={}&{}={}&{}={}'.format(
+        response = self.client.post('/api/v2/taxlots/filter/?{}={}&{}={}&{}={}&{}={}'.format(
             'organization_id', self.org.pk,
             'cycle', self.cycle.pk,
-            'page', 'bad'
-        ), data={'columns': COLUMNS_TO_SEND})
+            'page', 1,
+            'per_page', 999999999,
+        ), data={'profile_id': None})
         result = json.loads(response.content)
 
         self.assertEquals(len(result['results']), 1)
@@ -1290,32 +1294,6 @@ class InventoryViewTests(DeleteModelsTestCase):
         self.assertEquals(pagination['has_next'], False)
         self.assertEquals(pagination['has_previous'], False)
         self.assertEquals(pagination['total'], 1)
-
-    def test_get_taxlots_missing_jurisdiction_tax_lot_id(self):
-        property_state = self.property_state_factory.get_property_state(extra_data={'extra_data_field': 'edfval'})
-        property_property = self.property_factory.get_property(self.org)
-        property_view = PropertyView.objects.create(
-            property=property_property, cycle=self.cycle, state=property_state
-        )
-        taxlot_state = self.taxlot_state_factory.get_taxlot_state(
-            postal_code=property_state.postal_code,
-            jurisdiction_tax_lot_id=None
-        )
-        taxlot = TaxLot.objects.create(organization=self.org)
-        taxlot_view = TaxLotView.objects.create(
-            taxlot=taxlot, state=taxlot_state, cycle=self.cycle
-        )
-        TaxLotProperty.objects.create(
-            property_view=property_view, taxlot_view=taxlot_view,
-            cycle=self.cycle
-        )
-        response = self.client.post('/api/v2/taxlots/filter/?{}={}&{}={}&{}={}'.format(
-            'organization_id', self.org.pk,
-            'cycle', self.cycle.pk,
-            'page', 'bad'
-        ), data={'columns': COLUMNS_TO_SEND})
-        related = json.loads(response.content)['results'][0]['related'][0]
-        # self.assertEqual(related['calculated_taxlot_ids'], 'Missing')
 
     def test_get_taxlot(self):
         taxlot_state = self.taxlot_state_factory.get_taxlot_state()
