@@ -377,7 +377,10 @@ class PropertyViewSet(GenericViewSet):
         if 'profile_id' not in request.data:
             profile_id = None
         else:
-            profile_id = request.data['profile_id']
+            if request.data['profile_id'] == 'None':
+                profile_id = None
+            else:
+                profile_id = request.data['profile_id']
 
         return self._get_filtered_results(request, profile_id=profile_id)
 

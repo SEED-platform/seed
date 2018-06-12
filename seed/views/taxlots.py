@@ -20,6 +20,9 @@ from seed.data_importer.views import ImportFileViewSet
 from seed.decorators import ajax_request_class
 from seed.lib.merging import merging
 from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.models import (
+    Organization
+)
 from seed.models import (
     AUDIT_IMPORT,
     AUDIT_USER_EDIT,
@@ -39,9 +42,6 @@ from seed.models import (
     TaxLotState,
     TaxLotView,
     TaxLot,
-)
-from seed.lib.superperms.orgs.models import (
-    Organization
 )
 from seed.serializers.pint import (
     apply_display_unit_preferences,
@@ -221,7 +221,10 @@ class TaxLotViewSet(GenericViewSet):
         if 'profile_id' not in request.data:
             profile_id = None
         else:
-            profile_id = request.data['profile_id']
+            if request.data['profile_id'] == 'None':
+                profile_id = None
+            else:
+                profile_id = request.data['profile_id']
 
         return self._get_filtered_results(request, profile_id=profile_id)
 
