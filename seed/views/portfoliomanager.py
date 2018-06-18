@@ -87,36 +87,39 @@ class PortfolioManagerViewSet(GenericViewSet):
         template = request.data['template']
         pm = PortfolioManagerImport(username, password)
         try:
-            if 'z_seed_child_row' not in template:
+            try:
+                if 'z_seed_child_row' not in template:
+                    return JsonResponse(
+                        {'status': 'error', 'message': 'Invalid template formulation during portfolio manager data import'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                if template['z_seed_child_row']:
+                    content = pm.generate_and_download_child_data_request_report(template)
+                else:
+                    content = pm.generate_and_download_template_report(template)
+            except PMExcept as pme:
                 return JsonResponse(
-                    {'status': 'error', 'message': 'Invalid template formulation during portfolio manager data import'},
+                    {'status': 'error', 'message': pme.message},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-            if template['z_seed_child_row']:
-                content = pm.generate_and_download_child_data_request_report(template)
-            else:
-                content = pm.generate_and_download_template_report(template)
-        except PMExcept as pme:
-            return JsonResponse(
-                {'status': 'error', 'message': pme.message},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        try:
-            content_object = xmltodict.parse(content)
-        except Exception:  # catch all because xmltodict doesn't specify a class of Exceptions (just ParsingInterrupted)
-            return JsonResponse({'status': 'error', 'message': 'Malformed XML from template download'}, status=500)
-        try:
-            properties = content_object['report']['informationAndMetrics']['row']
-        except KeyError:
-            return JsonResponse(
-                {
-                    'status': 'error', 'message':
-                    'Processed template successfully, but missing keys -- is the template empty on Portfolio Manager?'
-                },
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            try:
+                content_object = xmltodict.parse(content)
+            except Exception:  # catch all because xmltodict doesn't specify a class of Exceptions (just ParsingInterrupted)
+                return JsonResponse({'status': 'error', 'message': 'Malformed XML from template download'}, status=500)
+            try:
+                properties = content_object['report']['informationAndMetrics']['row']
+            except KeyError:
+                return JsonResponse(
+                    {
+                        'status': 'error', 'message':
+                        'Processed template successfully, but missing keys -- is the template empty on Portfolio Manager?'
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
-        return JsonResponse({'status': 'success', 'properties': properties})
+            return JsonResponse({'status': 'success', 'properties': properties})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'exception': e.message})
 
 
 class PortfolioManagerImport(object):
@@ -274,7 +277,11 @@ class PortfolioManagerImport(object):
         except requests.exceptions.SSLError:
             raise PMExcept("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
         if not response.status_code == status.HTTP_200_OK:
-            raise PMExcept("Unsuccessful response from GET trying to download generated report; aborting.")
+            error_message = "Unsuccessful response from GET trying to download generated report;"
+            error_message += " Generated report name: " + template_report_name + ";"
+            error_message += " Tried to download report from URL: " + download_url + ";"
+            error_message += " Returned with a status code = " + response.status_code + ";"
+            raise PMExcept(error_message)
         return response.content
 
     def generate_and_download_child_data_request_report(self, matched_data_request):
@@ -293,7 +300,8 @@ class PortfolioManagerImport(object):
         template_report_name = urllib.quote(template_report_name.encode('utf8'))
 
         # Generate the url to download this file
-        download_url = "https://portfoliomanager.energystar.gov/pm/reports/template/download/{0}/XML/false/{1}?testEnv=false".format(
+        url = "https://portfoliomanager.energystar.gov/pm/reports/template/download/{0}/XML/false/{1}?testEnv=false"
+        download_url = url.format(
             str(template_report_id), template_report_name
         )
         try:
