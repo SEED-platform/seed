@@ -19,7 +19,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       total_taxlots_for_user: 0
     };
 
-    inventory_service.get_properties = function (page, per_page, cycle, profile_id) {
+    inventory_service.get_properties = function (page, per_page, cycle, profile_id, inventory_ids) {
 
       var params = {
         organization_id: user_service.get_organization().id,
@@ -39,6 +39,8 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         }
 
         return $http.post('/api/v2/properties/filter/', {
+          // Pass the specific ids if they exist
+          inventory_ids: inventory_ids,
           // Pass the current profile (if one exists) to limit the column data that is returned
           profile_id: profile_id
         }, {
@@ -203,7 +205,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
 
-    inventory_service.get_taxlots = function (page, per_page, cycle, profile_id) {
+    inventory_service.get_taxlots = function (page, per_page, cycle, profile_id, inventory_ids) {
       var params = {
         organization_id: user_service.get_organization().id,
         page: page,
@@ -222,6 +224,8 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         }
 
         return $http.post('/api/v2/taxlots/filter/', {
+          // Pass the specific ids if they exist
+          inventory_ids: inventory_ids,
           // Pass the current profile (if one exists) to limit the column data that is returned
           profile_id: profile_id
         }, {

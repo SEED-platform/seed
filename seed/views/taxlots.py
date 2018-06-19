@@ -99,9 +99,15 @@ class TaxLotViewSet(GenericViewSet):
                     'results': []
                 })
 
-        taxlot_views_list = TaxLotView.objects.select_related('taxlot', 'state', 'cycle') \
-            .filter(taxlot__organization_id=org_id, cycle=cycle) \
-            .order_by('id')
+        # Return taxlot views limited to the 'inventory_ids' list.  Otherwise, if selected is empty, return all
+        if 'inventory_ids' in request.data and request.data['inventory_ids']:
+            taxlot_views_list = TaxLotView.objects.select_related('taxlot', 'state', 'cycle') \
+                .filter(taxlot_id__in=request.data['inventory_ids'], taxlot__organization_id=org_id, cycle=cycle) \
+                .order_by('id')
+        else:
+            taxlot_views_list = TaxLotView.objects.select_related('taxlot', 'state', 'cycle') \
+                .filter(taxlot__organization_id=org_id, cycle=cycle) \
+                .order_by('id')
 
         paginator = Paginator(taxlot_views_list, per_page)
 

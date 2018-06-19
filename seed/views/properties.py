@@ -230,9 +230,15 @@ class PropertyViewSet(GenericViewSet):
                     'results': []
                 })
 
-        property_views_list = PropertyView.objects.select_related('property', 'state', 'cycle') \
-            .filter(property__organization_id=org_id, cycle=cycle) \
-            .order_by('id')  # TODO: test adding .only(*fields['PropertyState'])
+        # Return property views limited to the 'inventory_ids' list.  Otherwise, if selected is empty, return all
+        if 'inventory_ids' in request.data and request.data['inventory_ids']:
+            property_views_list = PropertyView.objects.select_related('property', 'state', 'cycle') \
+                .filter(property_id__in=request.data['inventory_ids'], property__organization_id=org_id, cycle=cycle) \
+                .order_by('id')  # TODO: test adding .only(*fields['PropertyState'])
+        else:
+            property_views_list = PropertyView.objects.select_related('property', 'state', 'cycle') \
+                .filter(property__organization_id=org_id, cycle=cycle) \
+                .order_by('id')  # TODO: test adding .only(*fields['PropertyState'])
 
         paginator = Paginator(property_views_list, per_page)
 

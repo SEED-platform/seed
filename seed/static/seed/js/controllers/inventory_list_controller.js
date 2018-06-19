@@ -282,7 +282,7 @@ angular.module('BE.seed.controller.inventory_list', [])
               var data = new Array($scope.selectedOrder.length);
 
               if ($scope.inventory_type === 'properties') {
-                return inventory_service.get_properties(1, undefined, undefined, undefined).then(function (inventory_data) {
+                return inventory_service.get_properties(1, undefined, undefined, undefined, selectedOrder).then(function (inventory_data) {
                   _.forEach(selectedOrder, function (id, index) {
                     var match = _.find(inventory_data.results, {id: id});
                     if (match) {
@@ -292,7 +292,7 @@ angular.module('BE.seed.controller.inventory_list', [])
                   return data;
                 });
               } else if ($scope.inventory_type === 'taxlots') {
-                return inventory_service.get_taxlots(1, undefined, undefined, undefined).then(function (inventory_data) {
+                return inventory_service.get_taxlots(1, undefined, undefined, undefined, selectedOrder).then(function (inventory_data) {
                   _.forEach(selectedOrder, function (id, index) {
                     var match = _.find(inventory_data.results, {id: id});
                     if (match) {
