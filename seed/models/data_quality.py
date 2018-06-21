@@ -482,7 +482,7 @@ class DataQualityCheck(models.Model):
     name = models.CharField(max_length=255, default='Default Data Quality Check')
 
     @classmethod
-    def retrieve(cls, organization):
+    def retrieve(cls, organization_id):
         """
         DataQualityCheck was previously a simple object but has been migrated to a django model.
         This method ensures that the data quality model will be backwards compatible.
@@ -493,17 +493,17 @@ class DataQualityCheck(models.Model):
         :return: obj, DataQualityCheck
         """
 
-        if DataQualityCheck.objects.filter(organization=organization).count() > 1:
+        if DataQualityCheck.objects.filter(organization_id=organization_id).count() > 1:
             # Ensure that only one object is returned. For an unknown reason, the production
             # database has multiple DataQualityCheck objects for an organization, but there are no
             # calls to create a DataQualityCheck other than the .retrieve method.
-            first = DataQualityCheck.objects.filter(organization=organization).first()
-            dqcs = DataQualityCheck.objects.filter(organization=organization).exclude(id__in=[first.pk])
+            first = DataQualityCheck.objects.filter(organization_id=organization_id).first()
+            dqcs = DataQualityCheck.objects.filter(organization_id=organization_id).exclude(id__in=[first.pk])
             for dqc in dqcs:
                 _log.info("More than one DataQualityCheck for organization. Deleting {}".format(dqc.name))
                 dqc.delete()
 
-        dq, _ = DataQualityCheck.objects.get_or_create(organization=organization)
+        dq, _ = DataQualityCheck.objects.get_or_create(organization_id=organization_id)
 
         if dq.rules.count() == 0:
             # _log.debug("No rules found in DataQualityCheck, initializing default rules")

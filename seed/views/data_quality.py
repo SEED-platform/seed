@@ -132,7 +132,7 @@ class DataQualityViews(viewsets.ViewSet):
         # step 2: validate the check IDs all belong to this organization ID
         # step 3: validate the actual user belongs to the passed in org ID
         # step 4: kick off a background task
-        return_value = do_checks(organization, property_state_ids, taxlot_state_ids)
+        return_value = do_checks(organization.pk, property_state_ids, taxlot_state_ids)
         # step 5: create a new model instance
         return JsonResponse({
             'num_properties': len(property_state_ids),
