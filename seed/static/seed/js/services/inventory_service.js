@@ -19,7 +19,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       total_taxlots_for_user: 0
     };
 
-    inventory_service.get_properties = function (page, per_page, cycle, columns) {
+    inventory_service.get_properties = function (page, per_page, cycle, profile_id, inventory_ids) {
 
       var params = {
         organization_id: user_service.get_organization().id,
@@ -39,8 +39,10 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         }
 
         return $http.post('/api/v2/properties/filter/', {
-          // Ensure that the required meta fields are included.
-          columns: _.uniq(columns.concat(['property_state_id', 'taxlot_state_id', 'property_view_id', 'taxlot_view_id']))
+          // Pass the specific ids if they exist
+          inventory_ids: inventory_ids,
+          // Pass the current profile (if one exists) to limit the column data that is returned
+          profile_id: profile_id
         }, {
           params: params
         }).then(function (response) {
@@ -203,7 +205,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
 
-    inventory_service.get_taxlots = function (page, per_page, cycle, columns) {
+    inventory_service.get_taxlots = function (page, per_page, cycle, profile_id, inventory_ids) {
       var params = {
         organization_id: user_service.get_organization().id,
         page: page,
@@ -222,8 +224,10 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         }
 
         return $http.post('/api/v2/taxlots/filter/', {
-          // Ensure that the required meta fields are included
-          columns: _.uniq(columns.concat(['property_state_id', 'taxlot_state_id', 'property_view_id', 'taxlot_view_id']))
+          // Pass the specific ids if they exist
+          inventory_ids: inventory_ids,
+          // Pass the current profile (if one exists) to limit the column data that is returned
+          profile_id: profile_id
         }, {
           params: params
         }).then(function (response) {
@@ -418,17 +422,6 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         //   });
         // }
 
-        // TEMP: fix some columns
-        _.forEach(columns, function (col) {
-          if (col.name === 'created' && col.table_name === 'TaxLot') {
-            col.name = 'tax_created';
-            col.displayName = 'Created (Tax Lot)';
-          } else if (col.name === 'updated' && col.table_name === 'TaxLot') {
-            col.name = 'tax_updated';
-            col.displayName = 'Updated (Tax Lot)';
-          }
-        });
-
         // Check for problems
         var duplicates = _.filter(_.map(columns, 'name'), function (value, index, iteratee) {
           return _.includes(iteratee, value, index + 1);
@@ -441,6 +434,42 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       });
     };
 
+    inventory_service.get_mappable_property_columns = function () {
+      return $http.get('/api/v2/properties/mappable_columns/', {
+        params: {
+          organization_id: user_service.get_organization().id
+        }
+      }).then(function (response) {
+        // Remove empty columns
+        var columns = _.filter(response.data.columns, function (col) {
+          return !_.isEmpty(col.name);
+        });
+
+        // Rename display_name to displayName (ui-grid compatibility)
+        columns = _.map(columns, function (col) {
+          return _.mapKeys(col, function(value, key) {
+            return key === 'display_name' ? 'displayName' : key;
+          });
+        });
+
+        // Remove _orig columns
+        // if (flippers.is_active('release:orig_columns')) {
+        //   _.remove(columns, function (col) {
+        //     return /_orig/.test(col.name);
+        //   });
+        // }
+
+        // Check for problems
+        var duplicates = _.filter(_.map(columns, 'name'), function (value, index, iteratee) {
+          return _.includes(iteratee, value, index + 1);
+        });
+        if (duplicates.length) {
+          console.error('Duplicate property column names detected:', duplicates);
+        }
+
+        return columns;
+      });
+    };
 
     inventory_service.get_taxlot_columns = function () {
       return $http.get('/api/v2/taxlots/columns/', {
@@ -467,16 +496,42 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         //   });
         // }
 
-        // TEMP: fix some columns
-        _.forEach(columns, function (col) {
-          if (col.name === 'created' && col.table_name === 'Property') {
-            col.name = 'property_created';
-            col.displayName = 'Created (Property)';
-          } else if (col.name === 'updated' && col.table_name === 'Property') {
-            col.name = 'property_updated';
-            col.displayName = 'Updated (Property)';
-          }
+        // Check for problems
+        var duplicates = _.filter(_.map(columns, 'name'), function (value, index, iteratee) {
+          return _.includes(iteratee, value, index + 1);
         });
+        if (duplicates.length) {
+          console.error('Duplicate tax lot column names detected:', duplicates);
+        }
+
+        return columns;
+      });
+    };
+
+    inventory_service.get_mappable_taxlot_columns = function () {
+      return $http.get('/api/v2/taxlots/mappable_columns/', {
+        params: {
+          organization_id: user_service.get_organization().id
+        }
+      }).then(function (response) {
+        // Remove empty columns
+        var columns = _.filter(response.data.columns, function (col) {
+          return !_.isEmpty(col.name);
+        });
+
+        // Rename display_name to displayName (ui-grid compatibility)
+        columns = _.map(columns, function (col) {
+          return _.mapKeys(col, function(value, key) {
+            return key === 'display_name' ? 'displayName' : key;
+          });
+        });
+
+        // Remove _orig columns
+        // if (flippers.is_active('release:orig_columns')) {
+        //   _.remove(columns, function (col) {
+        //     return /_orig/.test(col.name);
+        //   });
+        // }
 
         // Check for problems
         var duplicates = _.filter(_.map(columns, 'name'), function (value, index, iteratee) {

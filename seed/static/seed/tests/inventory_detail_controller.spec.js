@@ -166,6 +166,7 @@ describe('controller: inventory_detail_controller', function () {
       inventory_payload: fake_payload,
       columns: fake_all_columns,
       profiles: [],
+      current_profile: undefined,
       labels_payload: {
         audit_logs: []
       }
