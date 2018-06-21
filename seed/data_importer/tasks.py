@@ -88,7 +88,7 @@ def check_data_chunk(model, ids, identifier, increment):
         qs = None
     super_org = qs.first().organization
 
-    d = DataQualityCheck.retrieve(super_org.get_parent())
+    d = DataQualityCheck.retrieve(super_org.get_parent().id)
     d.check_data(model, qs.iterator())
     d.save_to_cache(identifier)
 
