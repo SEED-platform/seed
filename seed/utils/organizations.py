@@ -51,6 +51,6 @@ def create_organization(user=None, org_name='', *args, **kwargs):
         Column.objects.create(**details)
 
     # create the default rules for this organization
-    apps.get_model('seed', 'DataQualityCheck').retrieve(organization)
+    apps.get_model('seed', 'DataQualityCheck').retrieve(organization.id)
 
     return organization, organization_user, user_added

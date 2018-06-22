@@ -15,9 +15,23 @@ angular.module('BE.seed.controller.inventory_detail_settings', [])
     'urls',
     'columns',
     'profiles',
+    'current_profile',
     '$translate',
     'i18nService', // from ui-grid
-    function ($scope, $window, $stateParams, $uibModal, Notification, inventory_service, modified_service, user_service, urls, columns, profiles, $translate, i18nService) {
+    function ($scope,
+              $window,
+              $stateParams,
+              $uibModal,
+              Notification,
+              inventory_service,
+              modified_service,
+              user_service,
+              urls,
+              columns,
+              profiles,
+              current_profile,
+              $translate,
+              i18nService) {
 
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.inventory = {
@@ -28,14 +42,7 @@ angular.module('BE.seed.controller.inventory_detail_settings', [])
       };
 
       $scope.profiles = profiles;
-      var validProfileIds = _.map(profiles, 'id');
-      var lastProfileId = inventory_service.get_last_detail_profile();
-      if (_.includes(validProfileIds, lastProfileId)) {
-        $scope.currentProfile = _.find($scope.profiles, {id: lastProfileId});
-      } else {
-        $scope.currentProfile = _.first($scope.profiles);
-        if ($scope.currentProfile) inventory_service.save_last_detail_profile($scope.currentProfile.id, $scope.inventory_type);
-      }
+      $scope.currentProfile = current_profile;
 
       var initializeRowSelections = function () {
         if ($scope.gridApi) {
