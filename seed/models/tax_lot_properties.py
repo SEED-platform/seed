@@ -182,6 +182,12 @@ class TaxLotProperty(models.Model):
         else:
             filtered_fields = set([col['column_name'] for col in related_columns if col['id'] in show_columns])
 
+        # get the list of extra data fields by name for use in TaxLotProperty.extra_data_to_dict_with_mapping
+        extra_data_fields = []
+        for col in obj_columns:
+            if col['is_extra_data'] and col['related']:
+                extra_data_fields.append(col['column_name'])
+
         for related_view in related_views:
             related_dict = TaxLotProperty.model_to_dict_with_mapping(
                 related_view.state,
@@ -216,7 +222,8 @@ class TaxLotProperty(models.Model):
                 related_dict.items() +
                 TaxLotProperty.extra_data_to_dict_with_mapping(
                     related_view.state.extra_data,
-                    related_column_name_mapping, fields=show_columns
+                    related_column_name_mapping,
+                    fields=extra_data_fields
                 ).items()
             )
             related_map[related_view.pk] = related_dict
@@ -282,6 +289,12 @@ class TaxLotProperty(models.Model):
         else:
             filtered_fields = set([col['column_name'] for col in obj_columns if col['id'] in show_columns])
 
+        # get the list of extra data fields by name for use in TaxLotProperty.extra_data_to_dict_with_mapping
+        extra_data_fields = []
+        for col in obj_columns:
+            if col['is_extra_data'] and not col['related']:
+                extra_data_fields.append(col['column_name'])
+
         for obj in object_list:
             # Each object in the response is built from the state data, with related data added on.
             obj_dict = TaxLotProperty.model_to_dict_with_mapping(obj.state,
@@ -294,7 +307,7 @@ class TaxLotProperty(models.Model):
                 TaxLotProperty.extra_data_to_dict_with_mapping(
                     obj.state.extra_data,
                     obj_column_name_mapping,
-                    fields=show_columns
+                    fields=extra_data_fields
                 ).items()
             )
 
