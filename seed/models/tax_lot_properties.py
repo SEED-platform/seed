@@ -13,6 +13,7 @@ from itertools import chain
 from django.apps import apps
 from django.db import models
 from django.utils.timezone import make_naive
+
 from seed.models.columns import Column
 
 logger = logging.getLogger(__name__)
@@ -182,10 +183,12 @@ class TaxLotProperty(models.Model):
             filtered_fields = set([col['column_name'] for col in related_columns if col['id'] in show_columns])
 
         for related_view in related_views:
-            related_dict = TaxLotProperty.model_to_dict_with_mapping(related_view.state,
-                                                                     related_column_name_mapping,
-                                                                     fields=filtered_fields,
-                                                                     exclude=['extra_data'])
+            related_dict = TaxLotProperty.model_to_dict_with_mapping(
+                related_view.state,
+                related_column_name_mapping,
+                fields=filtered_fields,
+                exclude=['extra_data']
+            )
 
             related_dict[lookups['related_state_id']] = related_view.state.id
 

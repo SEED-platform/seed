@@ -50,3 +50,41 @@ class TestColumnListSettings(TestCase):
         self.assertEqual(new_list_setting.columns.count(), 1)
         self.assertEqual(new_list_setting.columnlistsettingcolumn_set.count(), 1)
         self.assertEqual(new_list_setting.columnlistsettingcolumn_set.first().column.column_name, 'Second Column')
+
+    def test_returning_columns_no_profile(self):
+        # do not set up a profile and return the columns, should be all columns
+        ids, name_mappings, objs = ColumnListSetting.return_columns(self.fake_org, None)
+
+        # not the most robust tests, but they are least check for non-zero results
+        self.assertIsInstance(ids[0], int)
+        self.assertIsInstance(name_mappings.keys()[0], unicode)
+        self.assertIsInstance(name_mappings.values()[0], unicode)
+
+    def test_returning_columns_with_profile(self):
+        col1 = Column.objects.create(
+            column_name=u'New Column',
+            table_name=u'PropertyState',
+            organization=self.fake_org,
+            is_extra_data=True,
+        )
+        col2 = Column.objects.create(
+            column_name=u'Second Column',
+            table_name=u'PropertyState',
+            organization=self.fake_org,
+            is_extra_data=True,
+        )
+
+        new_list_setting = ColumnListSetting.objects.create(name='example list setting')
+        ColumnListSettingColumn.objects.create(column=col1, column_list_setting=new_list_setting, order=1, pinned=False)
+        ColumnListSettingColumn.objects.create(column=col2, column_list_setting=new_list_setting, order=2, pinned=True)
+
+        # do not set up a profile and return the columns, should be all columns
+        ids, name_mappings, objs = ColumnListSetting.return_columns(self.fake_org, new_list_setting.id)
+
+        # print ids
+        # print name_mappings
+
+        # not the most robust tests, but they are least check for non-zero results
+        self.assertIsInstance(ids[0], int)
+        self.assertIsInstance(name_mappings.keys()[0], unicode)
+        self.assertIsInstance(name_mappings.values()[0], unicode)

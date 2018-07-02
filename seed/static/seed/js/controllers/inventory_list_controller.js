@@ -635,6 +635,9 @@ angular.module('BE.seed.controller.inventory_list', [])
             },
             inventory_type: function () {
               return $scope.inventory_type;
+            },
+            profile_id: function () {
+              return $scope.currentProfile.id;
             }
 
           }
