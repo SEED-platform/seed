@@ -1,3 +1,37 @@
+# SEED Version 2.3.3
+
+Date Range: 05/31/18 - 07/02/18:
+
+New Issues: 10 (#1654, #1656, #1657, #1660, #1663, #1664, #1665, #1667, #1668, #1669)
+
+Closed Issues: 17
+- Fixed [#74]( https://github.com/SEED-platform/seed/issues/74 ), Update Projects when new data is added
+- Fixed [#127]( https://github.com/SEED-platform/seed/issues/127 ), Export unmatched records
+- Fixed [#258]( https://github.com/SEED-platform/seed/issues/258 ), Add Buildings to Projects from Project Screen
+- Fixed [#285]( https://github.com/SEED-platform/seed/issues/285 ), Incorrect event for delete project?
+- Fixed [#360]( https://github.com/SEED-platform/seed/issues/360 ), Duplicate Data -- Cleanup after importing files
+- Fixed [#590]( https://github.com/SEED-platform/seed/issues/590 ), deleting data sets does not delete buildings?
+- Fixed [#654]( https://github.com/SEED-platform/seed/issues/654 ), Design feature which allows bulk editing of data
+- Fixed [#829]( https://github.com/SEED-platform/seed/issues/829 ), Building project tab shouldn't have edit button
+- Fixed [#838]( https://github.com/SEED-platform/seed/issues/838 ), Edit project window doesn't pre-populate compliance fields
+- Fixed [#1282]( https://github.com/SEED-platform/seed/issues/1282 ), Add space to the left of the Settings grids
+- Fixed [#1292]( https://github.com/SEED-platform/seed/issues/1292 ), Blank record added to Tax Lot view
+- Fixed [#1344]( https://github.com/SEED-platform/seed/issues/1344 ), Error trying to display inventory list
+- Fixed [#1414]( https://github.com/SEED-platform/seed/issues/1414 ), get_api_request_user in seed/utils/api.py fails with UnboundLocalError when HTTP_AUTHORIZATION is not basic
+- Fixed [#1587]( https://github.com/SEED-platform/seed/issues/1587 ), Mapping: If columns are mapped to both Property and Taxlot tables, ensure that a matching field is present for each table
+- Fixed [#1656]( https://github.com/SEED-platform/seed/issues/1656 ), Update Version number to 2.3.2
+- Fixed [#1663]( https://github.com/SEED-platform/seed/issues/1663 ), Program hangs at 100% on mapping
+- Fixed [#1665]( https://github.com/SEED-platform/seed/issues/1665 ), DQ not working -- fields don't display in admin, 500 server error when running in inventory
+
+Accepted Pull Requests: 6
+- Fixed [#1653]( https://github.com/SEED-platform/seed/pull/1653 ), Generates PM Import file name based on date
+- Fixed [#1655]( https://github.com/SEED-platform/seed/pull/1655 ), Fixed the angular-sanitize semantic versioning
+- Fixed [#1658]( https://github.com/SEED-platform/seed/pull/1658 ), Fix Migration for Production Data
+- Fixed [#1659]( https://github.com/SEED-platform/seed/pull/1659 ), Mapping Improvements, require fields now table specific
+- Fixed [#1662]( https://github.com/SEED-platform/seed/pull/1662 ), Return inventory records with only the columns specified (performance improvements)
+- Fixed [#1666]( https://github.com/SEED-platform/seed/pull/1666 ), Data Quality Checks Returned 500
+
+
 # SEED Version 2.3.2
 
 Closed Issues: 80
