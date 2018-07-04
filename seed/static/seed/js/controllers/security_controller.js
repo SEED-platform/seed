@@ -23,13 +23,13 @@ angular.module('BE.seed.controller.security', [])
      * sets the user's password
      */
     $scope.change_password = function () {
-      user_service.set_password($scope.current_password, $scope.password_1, $scope.password_2)
-        .then(function () {
-          $scope.password_updated = true;
-          $scope.error_message = '';
-        }, function (data) {
-          $scope.error_message = data.message;
-        });
+      user_service.set_password($scope.current_password, $scope.password_1, $scope.password_2).then(function () {
+        $scope.password_updated = true;
+        $scope.error_message = '';
+      }, function (response) {
+        $scope.password_updated = false;
+        $scope.error_message = response.data.message;
+      });
     };
 
   }]);

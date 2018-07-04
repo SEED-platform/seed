@@ -70,13 +70,13 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
     $scope.columns = columns;
 
-    if (flippers.is_active('release:orig_columns')) {
-      // db may return _orig columns; don't suggest them in the select
-      var is_retired_pre_pint_column = function (o) {
-        return /_orig$/.test(o.name);
-      };
-      _.remove($scope.columns, is_retired_pre_pint_column);
-    }
+    // if (flippers.is_active('release:orig_columns')) {
+    //   // db may return _orig columns; don't suggest them in the select
+    //   var is_retired_pre_pint_column = function (o) {
+    //     return /_orig$/.test(o.name);
+    //   };
+    //   _.remove($scope.columns, is_retired_pre_pint_column);
+    // }
 
     $scope.all_labels = labels_payload;
     // console.log(labels_payload)
@@ -206,7 +206,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
     $scope.change_field = function (rule, oldField, index) {
       if (oldField === '') oldField = null;
       var original = rule.data_type;
-      var newDataType = _.find(columns, {name: rule.field}).data_type;
+      var newDataType = _.find(columns, {column_name: rule.field}).data_type;
 
       if (_.isNil(newDataType)) newDataType = null;
 
@@ -339,7 +339,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
     var displayNames = {};
     _.forEach($scope.columns, function (column) {
       // TRANSLATION_FIXME
-      displayNames[column.name] = column.displayName;
+      displayNames[column.column_name] = column.displayName;
     });
 
     $scope.sortedRuleGroups = function () {

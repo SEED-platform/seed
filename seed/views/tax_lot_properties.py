@@ -10,6 +10,7 @@ All rights reserved.  # NOQA
 
 import csv
 import datetime
+from collections import OrderedDict
 
 from django.http import JsonResponse, HttpResponse
 from quantityfield import ureg
@@ -20,10 +21,10 @@ from rest_framework.viewsets import GenericViewSet
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (
-    Column,
     PropertyView,
     TaxLotProperty,
     TaxLotView,
+    ColumnListSetting,
 )
 from seed.serializers.tax_lot_properties import (
     TaxLotPropertySerializer
@@ -80,65 +81,51 @@ class TaxLotPropertyViewSet(GenericViewSet):
               description: name of the file to create
               required: false
               paramType: body
-
-
+            - name: profile_id
+              description: Either an id of a list settings profile, or undefined
+              paramType: body
         """
         cycle_pk = request.query_params.get('cycle_id', None)
         if not cycle_pk:
             return JsonResponse(
                 {'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
-        columns = request.data.get('columns', None)
-        if columns is None:
-            # default the columns for now if no columns are passed
-            columns = Column.retrieve_db_fields(request.query_params['organization_id'])
+        org_id = request.query_params['organization_id']
+        if 'profile_id' not in request.data:
+            profile_id = None
+        else:
+            if request.data['profile_id'] == 'None':
+                profile_id = None
+            else:
+                profile_id = request.data['profile_id']
 
         # get the class to operate on and the relationships
         view_klass_str = request.query_params.get('inventory_type', 'properties')
         view_klass = INVENTORY_MODELS[view_klass_str]
 
-        # Grab all the columns and create a column name lookup
-        col_inventory_type = 'property' if view_klass_str == 'properties' else 'taxlot'
-        columns_db = Column.retrieve_all(request.query_params['organization_id'], col_inventory_type, False)
-        column_lookup = {}
-        db_column_name_lookup = {}
-        column_related_lookup = {}
-        for c in columns_db:
-            column_lookup[c['name']] = c['display_name']
-            db_column_name_lookup[c['name']] = c['column_name']
-            column_related_lookup[c['name']] = c['related']
-
-        # add a couple of other Display Names
-        column_lookup['notes_count'] = 'Notes Count'
-        column_lookup['id'] = 'ID'
-
-        # make the csv header
-        header = []
-        for c in columns:
-            if c in column_lookup:
-                header.append(column_lookup[c])
-            else:
-                header.append(c)
-
+        # Set the first column to be the ID
+        column_name_mappings = OrderedDict([('id', 'ID')])
+        column_ids, add_column_name_mappings, columns_from_database = ColumnListSetting.return_columns(org_id,
+                                                                                                       profile_id,
+                                                                                                       view_klass_str)
+        column_name_mappings.update(add_column_name_mappings)
         select_related = ['state', 'cycle']
         ids = request.data.get('ids', [])
         filter_str = {'cycle': cycle_pk}
         if hasattr(view_klass, 'property'):
             select_related.append('property')
-            filter_str = {'property__organization_id': request.query_params['organization_id']}
+            filter_str = {'property__organization_id': org_id}
             if ids:
                 filter_str['property__id__in'] = ids
             # always export the labels
-            columns += ['property_labels']
-            header.append('Property Labels')
+            column_name_mappings['property_labels'] = 'Property Labels'
 
         elif hasattr(view_klass, 'taxlot'):
             select_related.append('taxlot')
-            filter_str = {'taxlot__organization_id': request.query_params['organization_id']}
+            filter_str = {'taxlot__organization_id': org_id}
             if ids:
                 filter_str['taxlot__id__in'] = ids
             # always export the labels
-            columns += ['taxlot_labels']
-            header.append('Tax Lot Labels')
+            column_name_mappings['taxlot_labels'] = 'Tax Lot Labels'
 
         model_views = view_klass.objects.select_related(*select_related).filter(**filter_str).order_by('id')
 
@@ -148,31 +135,25 @@ class TaxLotPropertyViewSet(GenericViewSet):
         writer = csv.writer(response)
 
         # get the data in a dict which includes the related data
-        data = TaxLotProperty.get_related(model_views, db_column_name_lookup.values(), columns_db)
+        data = TaxLotProperty.get_related(model_views, column_ids, columns_from_database)
 
         # force the data into the same order as the IDs
         if ids:
             order_dict = {obj_id: index for index, obj_id in enumerate(ids)}
             data.sort(key=lambda x: order_dict[x['id']])  # x is the property/taxlot object
 
-        # note that the labels are in the property_labels column and are returned by the
-        # TaxLotProperty.get_related method.
-
         # header
-        writer.writerow(header)
+        writer.writerow(column_name_mappings.values())
 
         # iterate over the results to preserve column order and write row.
         for datum in data:
             row = []
-            for column in columns:
-                row_result = None
+            for column in column_name_mappings.keys():
+                row_result = datum.get(column, None)
 
-                if column in column_related_lookup and column_related_lookup[column]:
-                    # this is a related column, grab out of the related section
-                    if datum.get('related'):
-                        row_result = datum['related'][0].get(column, None)
-                else:
-                    row_result = datum.get(column, None)
+                # Try grabbing the value out of the related field if not found yet.
+                if row_result is None and datum.get('related'):
+                    row_result = datum['related'][0].get(column, None)
 
                 # Convert quantities (this is typically handled in the JSON Encoder, but that isn't here).
                 if isinstance(row_result, ureg.Quantity):

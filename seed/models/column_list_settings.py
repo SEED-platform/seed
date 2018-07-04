@@ -5,6 +5,9 @@
 :author
 """
 
+from collections import OrderedDict
+
+from django.apps import apps
 from django.db import models
 
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
@@ -35,4 +38,56 @@ class ColumnListSetting(models.Model):
     name = models.CharField(max_length=512, db_index=True)
     settings_location = models.IntegerField(choices=VIEW_LOCATION_TYPES, default=VIEW_LIST)
     inventory_type = models.IntegerField(choices=VIEW_LIST_INVENTORY_TYPE, default=VIEW_LIST_PROPERTY)
-    columns = models.ManyToManyField(Column, related_name='column_list_settings', through='seed.ColumnListSettingColumn')
+    columns = models.ManyToManyField(Column, related_name='column_list_settings',
+                                     through='seed.ColumnListSettingColumn')
+
+    PROFILE_TYPE = {'properties': VIEW_LIST_PROPERTY, 'taxlots': VIEW_LIST_TAXLOT}
+    COLUMN_TYPE = {'properties': 'property', 'taxlots': 'taxlot'}
+
+    @classmethod
+    def return_columns(cls, organization_id, profile_id, inventory_type='properties'):
+        '''
+        Return a list of columns based on the profile_id. If the profile ID doesn't exist, then it will return
+        the list of raw database fields for the organization (i.e. all the fields).
+
+        :param organization_id:
+        :param profile_id:
+        :param inventory_type:
+        :return:
+        '''
+        try:
+            profile = ColumnListSetting.objects.get(
+                organization=organization_id,
+                id=profile_id,
+                settings_location=ColumnListSetting.VIEW_LIST,
+                inventory_type=cls.PROFILE_TYPE[inventory_type]
+            )
+            profile_id = profile.id
+
+        except ColumnListSetting.DoesNotExist:
+            profile_id = False
+
+        column_ids = []
+        column_name_mappings = OrderedDict()
+        columns_from_database = Column.retrieve_all(organization_id, cls.COLUMN_TYPE[inventory_type], False)
+        selected_columns_from_database = []
+
+        if profile_id:
+            for c in apps.get_model('seed', 'ColumnListSettingColumn').objects.filter(
+                column_list_setting_id=profile_id
+            ).order_by('order'):
+                # find the items from the columns_from_database object and return only the ones that are in the
+                # selected profile
+                for c_db in columns_from_database:
+                    if "%s_%s" % (c.column.column_name, c.column.id) == c_db['name']:
+                        selected_columns_from_database.append(c_db)
+                        column_ids.append(c_db['id'])
+                        column_name_mappings[c_db['name']] = c_db['display_name']
+        else:
+            # return all the columns for the organization
+            for c in columns_from_database:
+                column_ids.append(c['id'])
+                column_name_mappings[c['name']] = c['display_name']
+                selected_columns_from_database.append(c)
+
+        return column_ids, column_name_mappings, selected_columns_from_database

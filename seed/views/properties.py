@@ -28,6 +28,8 @@ from seed.models import (
     AUDIT_IMPORT,
     AUDIT_USER_EDIT,
     Column,
+    ColumnListSetting,
+    ColumnListSettingColumn,
     Cycle,
     DATA_STATE_MATCHING,
     MERGE_STATE_DELETE,
@@ -202,7 +204,7 @@ class PropertyViewSet(GenericViewSet):
     renderer_classes = (JSONRenderer,)
     serializer_class = PropertySerializer
 
-    def _get_filtered_results(self, request, columns):
+    def _get_filtered_results(self, request, profile_id):
         page = request.query_params.get('page', 1)
         per_page = request.query_params.get('per_page', 1)
         org_id = request.query_params.get('organization_id', None)
@@ -228,9 +230,15 @@ class PropertyViewSet(GenericViewSet):
                     'results': []
                 })
 
-        property_views_list = PropertyView.objects.select_related('property', 'state', 'cycle') \
-            .filter(property__organization_id=org_id, cycle=cycle) \
-            .order_by('id')  # TODO: test adding .only(*fields['PropertyState'])
+        # Return property views limited to the 'inventory_ids' list.  Otherwise, if selected is empty, return all
+        if 'inventory_ids' in request.data and request.data['inventory_ids']:
+            property_views_list = PropertyView.objects.select_related('property', 'state', 'cycle') \
+                .filter(property_id__in=request.data['inventory_ids'], property__organization_id=org_id, cycle=cycle) \
+                .order_by('id')  # TODO: test adding .only(*fields['PropertyState'])
+        else:
+            property_views_list = PropertyView.objects.select_related('property', 'state', 'cycle') \
+                .filter(property__organization_id=org_id, cycle=cycle) \
+                .order_by('id')  # TODO: test adding .only(*fields['PropertyState'])
 
         paginator = Paginator(property_views_list, per_page)
 
@@ -248,7 +256,24 @@ class PropertyViewSet(GenericViewSet):
 
         # Retrieve all the columns that are in the db for this organization
         columns_from_database = Column.retrieve_all(org_id, 'property', False)
-        related_results = TaxLotProperty.get_related(property_views, columns, columns_from_database)
+
+        if profile_id is None:
+            show_columns = None
+        else:
+            try:
+                profile = ColumnListSetting.objects.get(
+                    organization=org,
+                    id=profile_id,
+                    settings_location=ColumnListSetting.VIEW_LIST,
+                    inventory_type=ColumnListSetting.VIEW_LIST_PROPERTY
+                )
+                show_columns = list(ColumnListSettingColumn.objects.filter(
+                    column_list_setting_id=profile.id
+                ).values_list('column_id', flat=True))
+            except ColumnListSetting.DoesNotExist:
+                show_columns = None
+
+        related_results = TaxLotProperty.get_related(property_views, show_columns, columns_from_database)
 
         # collapse units here so we're only doing the last page; we're already a
         # realized list by now and not a lazy queryset
@@ -324,7 +349,7 @@ class PropertyViewSet(GenericViewSet):
               required: false
               paramType: query
         """
-        return self._get_filtered_results(request, columns=None)
+        return self._get_filtered_results(request, profile_id=None)
 
     @api_endpoint_class
     @ajax_request_class
@@ -351,19 +376,19 @@ class PropertyViewSet(GenericViewSet):
               description: The number of items per page to return
               required: false
               paramType: query
-            - name: column filter data
-              description: Object containing columns to filter on, should be a JSON object with a single key "columns"
-                           whose value is a list of strings, each representing a column name
+            - name: profile_id
+              description: Either an id of a list settings profile, or undefined
               paramType: body
         """
-        try:
-            columns = dict(request.data.iterlists())['columns']
-        except AttributeError:
-            columns = request.data['columns']
+        if 'profile_id' not in request.data:
+            profile_id = None
+        else:
+            if request.data['profile_id'] == 'None':
+                profile_id = None
+            else:
+                profile_id = request.data['profile_id']
 
-        # TODO: fix this
-        columns = None
-        return self._get_filtered_results(request, columns=columns)
+        return self._get_filtered_results(request, profile_id=profile_id)
 
     @api_endpoint_class
     @ajax_request_class
@@ -728,6 +753,24 @@ class PropertyViewSet(GenericViewSet):
         unitted_columns = [add_pint_unit_suffix(organization, x) for x in columns]
 
         return JsonResponse({'status': 'success', 'columns': unitted_columns})
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_viewer')
+    @list_route(methods=['GET'])
+    def mappable_columns(self, request):
+        """
+        List only property columns that are mappable
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+        """
+        organization_id = int(request.query_params.get('organization_id'))
+        columns = Column.retrieve_mapping_columns(organization_id, 'property')
+
+        return JsonResponse({'status': 'success', 'columns': columns})
 
     @api_endpoint_class
     @ajax_request_class

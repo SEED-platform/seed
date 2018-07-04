@@ -4,13 +4,14 @@
 :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-from django.apps import apps
 
 from seed.lib.superperms.orgs.models import (
     Organization,
     OrganizationUser,
+
 )
 from seed.models import Column
+from seed.models.data_quality import DataQualityCheck
 
 
 def create_organization(user=None, org_name='', *args, **kwargs):
@@ -51,6 +52,6 @@ def create_organization(user=None, org_name='', *args, **kwargs):
         Column.objects.create(**details)
 
     # create the default rules for this organization
-    apps.get_model('seed', 'DataQualityCheck').retrieve(organization)
+    DataQualityCheck.retrieve(organization.id)
 
     return organization, organization_user, user_added
