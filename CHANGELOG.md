@@ -1,10 +1,8 @@
 # SEED Version 2.3.3
 
-Date Range: 05/31/18 - 07/02/18:
+Date Range: 05/31/18 - 07/04/18:
 
-New Issues: 10 (#1654, #1656, #1657, #1660, #1663, #1664, #1665, #1667, #1668, #1669)
-
-Closed Issues: 17
+Closed Issues: 18
 - Fixed [#74]( https://github.com/SEED-platform/seed/issues/74 ), Update Projects when new data is added
 - Fixed [#127]( https://github.com/SEED-platform/seed/issues/127 ), Export unmatched records
 - Fixed [#258]( https://github.com/SEED-platform/seed/issues/258 ), Add Buildings to Projects from Project Screen
@@ -22,15 +20,16 @@ Closed Issues: 17
 - Fixed [#1656]( https://github.com/SEED-platform/seed/issues/1656 ), Update Version number to 2.3.2
 - Fixed [#1663]( https://github.com/SEED-platform/seed/issues/1663 ), Program hangs at 100% on mapping
 - Fixed [#1665]( https://github.com/SEED-platform/seed/issues/1665 ), DQ not working -- fields don't display in admin, 500 server error when running in inventory
+- Fixed [#1669]( https://github.com/SEED-platform/seed/issues/1669 ), Export from Actions pulldown not working on dev1 branch
 
-Accepted Pull Requests: 6
+Accepted Pull Requests: 7
 - Fixed [#1653]( https://github.com/SEED-platform/seed/pull/1653 ), Generates PM Import file name based on date
 - Fixed [#1655]( https://github.com/SEED-platform/seed/pull/1655 ), Fixed the angular-sanitize semantic versioning
 - Fixed [#1658]( https://github.com/SEED-platform/seed/pull/1658 ), Fix Migration for Production Data
-- Fixed [#1659]( https://github.com/SEED-platform/seed/pull/1659 ), Mapping Improvements, require fields now table specific
-- Fixed [#1662]( https://github.com/SEED-platform/seed/pull/1662 ), Return inventory records with only the columns specified (performance improvements)
+- Fixed [#1659]( https://github.com/SEED-platform/seed/pull/1659 ), Major mapping improvements
+- Fixed [#1662]( https://github.com/SEED-platform/seed/pull/1662 ), Return inventory records with only the columns specified
 - Fixed [#1666]( https://github.com/SEED-platform/seed/pull/1666 ), Data Quality Checks Returned 500
-
+- Fixed [#1670]( https://github.com/SEED-platform/seed/pull/1670 ), Fix Inventory Export and Displaying of Extra Data Fields in Inventory
 
 # SEED Version 2.3.2
 
