@@ -53,8 +53,6 @@ class TestEquivalenceClassGenerator(DataMappingBaseTestCase):
         equivalence_classes = partitioner.calculate_equivalence_classes([p1, p4])
         self.assertEqual(len(equivalence_classes), 1)
 
-        return
-
     def test_a_dummy_class_basics(self):
         tls1 = TaxLotState(jurisdiction_tax_lot_id="1")
         tls2 = TaxLotState(jurisdiction_tax_lot_id="1", custom_id_1="100")
@@ -71,5 +69,3 @@ class TestEquivalenceClassGenerator(DataMappingBaseTestCase):
         self.assertEqual(tls3.jurisdiction_tax_lot_id, "1")
         self.assertEqual(tls3.custom_id_1, "100")
         self.assertEqual(tls3.normalized_address, "123 fake street")
-
-        return

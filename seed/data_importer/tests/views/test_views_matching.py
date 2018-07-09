@@ -36,7 +36,7 @@ class TestViewsMatching(DataMappingBaseTestCase):
         self.fake_mappings = copy.copy(FAKE_MAPPINGS['portfolio'])
         selfvars = self.set_up(ASSESSED_RAW)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
-        filepath = osp.join(osp.dirname(__file__), 'data', filename)
+        filepath = osp.join(osp.dirname(__file__), '..', 'data', filename)
         self.import_file.file = SimpleUploadedFile(
             name=filename,
             content=open(filepath, 'rb').read()
@@ -50,7 +50,7 @@ class TestViewsMatching(DataMappingBaseTestCase):
         # import second file that is currently the same, but should be slightly different
         filename_2 = getattr(self, 'filename', 'example-data-properties-small-changes.xlsx')
         _, self.import_file_2 = self.create_import_file(self.user, self.org, self.cycle)
-        filepath = osp.join(osp.dirname(__file__), 'data', filename_2)
+        filepath = osp.join(osp.dirname(__file__), '..', 'data', filename_2)
         self.import_file_2.file = SimpleUploadedFile(
             name=filename_2,
             content=open(filepath, 'rb').read()
