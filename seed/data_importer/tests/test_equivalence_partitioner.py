@@ -6,7 +6,7 @@
 """
 import logging
 
-from seed.data_importer.tasks import EquivalencePartitioner
+from seed.data_importer.equivalence_partitioner import EquivalencePartitioner
 from seed.data_importer.tests.util import DataMappingBaseTestCase
 
 logger = logging.getLogger(__name__)

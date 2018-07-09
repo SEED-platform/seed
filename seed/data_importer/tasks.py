@@ -27,6 +27,7 @@ from django.db.models import Q
 from django.utils import timezone
 from unidecode import unidecode
 
+from seed.data_importer.equivalence_partitioner import EquivalencePartitioner
 from seed.data_importer.models import (
     ImportFile,
     ImportRecord,
@@ -118,7 +119,8 @@ def finish_checking(identifier):
 def do_checks(organization_id, propertystate_ids, taxlotstate_ids):
     identifier = DataQualityCheck.initialize_cache()
     prog_key = get_prog_key('check_data', identifier)
-    trigger_data_quality_checks.delay(organization_id, propertystate_ids, taxlotstate_ids, identifier)
+    trigger_data_quality_checks.delay(organization_id, propertystate_ids, taxlotstate_ids,
+                                      identifier)
     return {
         'status': 'success',
         'progress': 100,
@@ -216,7 +218,8 @@ def _build_cleaner(org):
     :returns: dict of dicts. {'types': {'col_name': 'type'},}
     """
     units = {'types': {}}
-    for column in Column.objects.filter(mapped_mappings__super_organization=org).select_related('unit'):
+    for column in Column.objects.filter(mapped_mappings__super_organization=org).select_related(
+        'unit'):
         column_type = 'string'
         if column.unit:
             column_type = _translate_unit_to_type(
@@ -307,7 +310,8 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
         _log.error('this code should not be running here...')
         debug_inferred_prop_state_mapping = table_mappings['']
         table_mappings['PropertyState'] = debug_inferred_prop_state_mapping
-        raise Exception("This code has been deprecated, but is being called. Need to review the column cleanup")
+        raise Exception(
+            "This code has been deprecated, but is being called. Need to review the column cleanup")
     # TODO: *END TOTAL TERRIBLE HACK**
 
     map_cleaner = _build_cleaner_2(org)
@@ -960,215 +964,12 @@ def filter_duplicated_states(unmatched_states):
     for (ndx, hashval) in enumerate(hash_values):
         equality_classes[hashval].append(ndx)
 
-    canonical_states = [unmatched_states[equality_list[0]] for equality_list in equality_classes.values()]
+    canonical_states = [unmatched_states[equality_list[0]] for equality_list in
+                        equality_classes.values()]
     canonical_state_ids = set([s.pk for s in canonical_states])
     noncanonical_states = [u for u in unmatched_states if u.pk not in canonical_state_ids]
 
     return canonical_states, noncanonical_states
-
-
-class EquivalencePartitioner(object):
-    """Class for calculating equivalence classes on model States
-
-    The EquivalencePartitioner is configured with a list of rules
-    saying "two objects are equivalent if these two pieces of data are
-    identical" or "two objects are not equivalent if these two pieces
-    of data are different."  The partitioner then takes a group of
-    objects (typically PropertyState and TaxLotState objects) and
-    returns a partition of the objects (a collection of lists, where
-    each object is a member of exactly one of the lists), where each
-    list represents a "definitely distinct" element (i.e. two
-    PropertyState objects with no values for pm_property_id,
-    custom_id, etc may very well represent the same building, but we
-    can't say that for certain).
-
-    Some special cases that it handles based on SEED needs:
-
-    - special treatment for matching based on multiple fields
-
-    - Allowing one Field to hold "canonical" information (e.g. a
-      building_id) and others (e.g. a custom_id) to hold potential
-      information: when an alternate field (e.g. custom_id_1) is used,
-      the logic does not necessarily assume the custom_id_1 means the
-      portfolio manager id, unless p1.pm_property_id==p2.custom_id_1,
-      etc.
-
-    - equivalence/non-equivalence in both directions.  E.g. if
-      ps1.pm_property_id == ps2.pm_property_id then ps1 represents the
-      same object as ps2.  But if ps1.address_line_1 ==
-      ps2.address_line_1, then ps1 is related to ps2, unless
-      ps1.pm_property_id != ps2.pm_property_id, in which case ps1
-      definitely is not the same as ps2.
-
-    """
-
-    def __init__(self, equivalence_class_description, identity_fields):
-        """Constructor for class.
-
-        Takes a list of mappings/conditions for object equivalence, as
-        well as a list of identity fields (if these are not identical,
-        the two objects are definitely different object)
-        """
-
-        self.equiv_comparison_key_func = self.make_resolved_key_calculation_function(equivalence_class_description)
-        self.equiv_canonical_key_func = self.make_canonical_key_calculation_function(equivalence_class_description)
-        self.identity_key_func = self.make_canonical_key_calculation_function([(x,) for x in identity_fields])
-
-        return
-
-    @classmethod
-    def make_default_state_equivalence(kls, equivalence_type):
-        """
-        Class for dynamically constructing an EquivalencePartitioner
-        depending on the type of its parameter.
-        """
-        if equivalence_type == PropertyState:
-            return kls.make_propertystate_equivalence()
-        elif equivalence_type == TaxLotState:
-            return kls.make_taxlotstate_equivalence()
-        else:
-            err_msg = ("Type '{}' does not have a default "
-                       "EquivalencePartitioner set.".format(equivalence_type.__class__.__name__))
-            raise ValueError(err_msg)
-
-    @classmethod
-    def make_propertystate_equivalence(kls):
-        property_equivalence_fields = [
-            ("ubid",),
-            ("pm_property_id", "custom_id_1"),
-            ("custom_id_1",),
-            ("normalized_address",)
-        ]
-        property_noequivalence_fields = ["pm_property_id"]
-
-        return kls(property_equivalence_fields, property_noequivalence_fields)
-
-    @classmethod
-    def make_taxlotstate_equivalence(kls):
-        """Return default EquivalencePartitioner for TaxLotStates
-
-        Two tax lot states are identical if:
-
-        - Their jurisdiction_tax_lot_ids are the same, which can be
-          found in jurisdiction_tax_lot_ids or custom_id_1
-        - Their custom_id_1 fields match
-        - Their normalized addresses match
-
-        They definitely do not match if :
-
-        - Their jurisdiction_tax_lot_ids do not match.
-        """
-        tax_lot_equivalence_fields = [
-            ("jurisdiction_tax_lot_id", "custom_id_1"),
-            ("custom_id_1",),
-            ("normalized_address",)
-        ]
-        tax_lot_noequivalence_fields = ["jurisdiction_tax_lot_id"]
-        return kls(tax_lot_equivalence_fields, tax_lot_noequivalence_fields)
-
-    @staticmethod
-    def make_canonical_key_calculation_function(list_of_fieldlists):
-        """Create a function that returns the "canonical" key for the object -
-        where the official value for any position in the tuple can
-        only come from the first object.
-        """
-        # The official key can only come from the first field in the
-        # list.
-        canonical_fields = [fieldlist[0] for fieldlist in list_of_fieldlists]
-        return lambda obj: tuple([getattr(obj, field) for field in canonical_fields])
-
-    @classmethod
-    def make_resolved_key_calculation_function(kls, list_of_fieldlists):
-        # This "resolves" the object to the best potential value in
-        # each field.
-        return (
-            lambda obj: tuple(
-                [kls._get_resolved_value_from_object(obj, list_of_fields) for list_of_fields in list_of_fieldlists]
-            )
-        )
-
-    @staticmethod
-    def _get_resolved_value_from_object(obj, list_of_fields):
-        for f in list_of_fields:
-            val = getattr(obj, f)
-            if val:
-                return val
-        else:
-            return None
-
-    @staticmethod
-    def calculate_key_equivalence(key1, key2):
-        for key1_value, key2_value in zip(key1, key2):
-            if key1_value == key2_value and key1_value is not None:
-                return True
-        else:
-            return False
-
-    def calculate_comparison_key(self, obj):
-        return self.equiv_comparison_key_func(obj)
-
-    def calculate_canonical_key(self, obj):
-        return self.equiv_canonical_key_func(obj)
-
-    def calculate_identity_key(self, obj):
-        return self.identity_key_func(obj)
-
-    @staticmethod
-    def key_needs_merging(original_key, new_key):
-        return True in [not a and b for (a, b) in zip(original_key, new_key)]
-
-    @staticmethod
-    def merge_keys(key1, key2):
-        return [a if a else b for (a, b) in zip(key1, key2)]
-
-    @staticmethod
-    def identities_are_different(key1, key2):
-        for (x, y) in zip(key1, key2):
-            if x is None or y is None:
-                continue
-            if x != y:
-                return True
-        else:
-            return False
-
-    def calculate_equivalence_classes(self, list_of_obj):
-        """
-        There is some subtlety with whether we use "comparison" keys
-        or "canonical" keys.  This reflects the difference between
-        searching vs. deciding information is official.
-
-        For example, if we are trying to match on pm_property_id is,
-        we may look in either pm_property_id or custom_id_1.  But if
-        we are trying to ask what the pm_property_id of a State is
-        that has a blank pm_property, we would not want to say the
-        value in the custom_id must be the pm_property_id.
-
-        :param list_of_obj:
-        :return:
-        """
-        equivalence_classes = collections.defaultdict(list)
-        identities_for_equivalence = {}
-
-        for (ndx, obj) in enumerate(list_of_obj):
-            cmp_key = self.calculate_comparison_key(obj)
-            identity_key = self.calculate_identity_key(obj)
-
-            for class_key in equivalence_classes:
-                if self.calculate_key_equivalence(class_key, cmp_key) and not self.identities_are_different(
-                        identities_for_equivalence[class_key], identity_key):
-
-                    equivalence_classes[class_key].append(ndx)
-
-                    if self.key_needs_merging(class_key, cmp_key):
-                        merged_key = self.merge_keys(class_key, cmp_key)
-                        equivalence_classes[merged_key] = equivalence_classes.pop(class_key)
-                        identities_for_equivalence[merged_key] = identity_key
-                    break
-            else:
-                can_key = self.calculate_canonical_key(obj)
-                equivalence_classes[can_key].append(ndx)
-                identities_for_equivalence[can_key] = identity_key
-        return equivalence_classes
 
 
 def match_and_merge_unmatched_objects(unmatched_states, partitioner):
@@ -1338,7 +1139,8 @@ def _match_properties_and_taxlots(file_pk):
     duplicates_of_existing_taxlot_states = []
     if all_unmatched_properties:
         # Filter out the duplicates within the import file.
-        unmatched_properties, duplicate_property_states = filter_duplicated_states(all_unmatched_properties)
+        unmatched_properties, duplicate_property_states = filter_duplicated_states(
+            all_unmatched_properties)
 
         property_partitioner = EquivalencePartitioner.make_default_state_equivalence(PropertyState)
 
@@ -1373,7 +1175,8 @@ def _match_properties_and_taxlots(file_pk):
     if all_unmatched_tax_lots:
         # Filter out the duplicates.  Do we actually want to delete them
         # here?  Mark their abandonment in the Audit Logs?
-        unmatched_tax_lots, duplicate_tax_lot_states = filter_duplicated_states(all_unmatched_tax_lots)
+        unmatched_tax_lots, duplicate_tax_lot_states = filter_duplicated_states(
+            all_unmatched_tax_lots)
 
         taxlot_partitioner = EquivalencePartitioner.make_default_state_equivalence(TaxLotState)
 
@@ -1536,10 +1339,12 @@ def save_state_match(state1, state2):
     # state1.data_state = 2, state1.merge_state = 0 and state2.data_state = 2, state2.merge_state = 0
     # state1.data_state = 0, state1.merge_state = 2 and state2.data_state = 2, state2.merge_state = 0
     if state1.import_file_id == state2.import_file_id:
-        if ((state1.data_state == DATA_STATE_MAPPING and state1.merge_state == MERGE_STATE_UNKNOWN and
+        if ((
+            state1.data_state == DATA_STATE_MAPPING and state1.merge_state == MERGE_STATE_UNKNOWN and
             state2.data_state == DATA_STATE_MAPPING and state2.merge_state == MERGE_STATE_UNKNOWN) or
-            (state1.data_state == DATA_STATE_UNKNOWN and state1.merge_state == MERGE_STATE_MERGED and
-             state2.data_state == DATA_STATE_MAPPING and state2.merge_state == MERGE_STATE_UNKNOWN)):
+            (
+                state1.data_state == DATA_STATE_UNKNOWN and state1.merge_state == MERGE_STATE_MERGED and
+                state2.data_state == DATA_STATE_MAPPING and state2.merge_state == MERGE_STATE_UNKNOWN)):
             merged_state.import_file_id = state1.import_file_id
 
             if isinstance(merged_state, PropertyState):
@@ -1609,7 +1414,8 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
     global property_m2m_keygen
 
     taxlot_m2m_keygen = EquivalencePartitioner(tax_cmp_fmt, ["jurisdiction_tax_lot_id"])
-    property_m2m_keygen = EquivalencePartitioner(prop_cmp_fmt, ["pm_property_id", "jurisdiction_property_id"])
+    property_m2m_keygen = EquivalencePartitioner(prop_cmp_fmt,
+                                                 ["pm_property_id", "jurisdiction_property_id"])
 
     property_views = PropertyView.objects.filter(state__organization=org, cycle=cycle).values_list(
         *prop_comparison_field_names)
@@ -1650,7 +1456,8 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
         else:
             property_keys[k] = property_keys_orig[k]
 
-    taxlot_keys = dict([(taxlot_m2m_keygen.calculate_comparison_key(p), p.pk) for p in taxlot_objects])
+    taxlot_keys = dict(
+        [(taxlot_m2m_keygen.calculate_comparison_key(p), p.pk) for p in taxlot_objects])
 
     # property_comparison_keys = {property_m2m_keygen.calculate_comparison_key_key(p): p.pk for p in property_objects}
     # property_canonical_keys = {property_m2m_keygen.calculate_canonical_key(p): p.pk for p in property_objects}
