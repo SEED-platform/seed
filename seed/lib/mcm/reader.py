@@ -366,6 +366,8 @@ class MCMParser(object):
         return tmp
 
 # TODO #239: remove this main method and the subsequent FakeModel tests
+
+
 def main():
     """Just some contrived test code."""
     from seed.lib.mcm.mappings import espm

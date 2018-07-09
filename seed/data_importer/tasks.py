@@ -219,7 +219,7 @@ def _build_cleaner(org):
     """
     units = {'types': {}}
     for column in Column.objects.filter(mapped_mappings__super_organization=org).select_related(
-        'unit'):
+            'unit'):
         column_type = 'string'
         if column.unit:
             column_type = _translate_unit_to_type(
@@ -1139,6 +1139,8 @@ def _match_properties_and_taxlots(file_pk):
 
         # Take the final merged-on-import objects, and find Views that
         # correspond to it and merge those together.
+        # TODO #239: This is quite slow... fix this next
+        print("Starting merge_unmatched_into_views: %s" % datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         merged_property_views = merge_unmatched_into_views(
             unmatched_properties,
             property_partitioner,
@@ -1191,6 +1193,7 @@ def _match_properties_and_taxlots(file_pk):
         duplicate_tax_lot_states = []
         merged_taxlot_views = []
 
+    # TODO #239: This is the next slowest... fix me too.
     pair_new_states(merged_property_views, merged_taxlot_views)
 
     # Mark all the unmatched objects as done with matching and mapping

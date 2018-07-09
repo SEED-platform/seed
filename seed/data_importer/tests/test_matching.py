@@ -4,34 +4,29 @@
 :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-from datetime import datetime
-
-from django.utils import timezone
 
 from seed.data_importer.tasks import _match_properties_and_taxlots, save_state_match
-from seed.landing.models import SEEDUser as User
+from seed.data_importer.tests.util import (
+    DataMappingBaseTestCase,
+)
 from seed.models import (
     PropertyState,
     PropertyView,
     TaxLotState,
-    ImportFile,
-    ImportRecord,
     PropertyAuditLog,
+    ASSESSED_RAW,
     DATA_STATE_MAPPING,
     MERGE_STATE_MERGED,
     TaxLotProperty,
     TaxLotView,
 )
 from seed.test_helpers.fake import (
-    FakeCycleFactory,
     FakePropertyFactory,
     FakePropertyStateFactory,
     FakeTaxLotStateFactory,
     FakeTaxLotViewFactory,
     FakePropertyViewFactory,
 )
-from seed.tests.util import DeleteModelsTestCase
-from seed.utils.organizations import create_organization
 
 COLUMNS_TO_SEND = [
     'project_id',
@@ -47,32 +42,17 @@ COLUMNS_TO_SEND = [
 ]
 
 
-# These tests mostly use V2.1 API except for when writing back to the API for updates
-class PropertyViewTests(DeleteModelsTestCase):
+class TestMatching(DataMappingBaseTestCase):
     def setUp(self):
-        user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
-            'email': 'test_user@demo.com'
-        }
-        self.user = User.objects.create_superuser(**user_details)
-        self.org, self.org_user, _ = create_organization(self.user)
-        self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
-        self.cycle = self.cycle_factory.get_cycle(
-            start=datetime(2010, 10, 10, tzinfo=timezone.get_current_timezone())
-        )
+        selfvars = self.set_up(ASSESSED_RAW)
+        self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
+
         self.property_factory = FakePropertyFactory(organization=self.org)
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
-        self.property_view_factory = FakePropertyViewFactory(organization=self.org, cycle=self.cycle)
+        self.property_view_factory = FakePropertyViewFactory(organization=self.org,
+                                                             cycle=self.cycle)
         self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
         self.taxlot_view_factory = FakeTaxLotViewFactory(organization=self.org, cycle=self.cycle)
-
-        # create 10 addresses that are exactly the same
-        import_record = ImportRecord.objects.create(super_organization=self.org)
-        self.import_file = ImportFile.objects.create(
-            import_record=import_record,
-            cycle=self.cycle,
-        )
 
     def test_match_properties_and_taxlots_with_address(self):
         # create an ImportFile for testing purposes. Seems like we would want to run this matching just on a
@@ -101,8 +81,6 @@ class PropertyViewTests(DeleteModelsTestCase):
 
         for ps in PropertyState.objects.filter(organization=self.org):
             print "%s -- %s -- %s" % (ps.lot_number, ps.import_file_id, ps.address_line_1)
-            # pv = PropertyView.objects.get(state=ps, cycle=self.cycle)
-            # TaxLotProperty.objects.filter()
 
         for tl in TaxLotState.objects.filter(organization=self.org):
             print "%s -- %s" % (tl.import_file_id, tl.jurisdiction_tax_lot_id)
@@ -178,7 +156,8 @@ class PropertyViewTests(DeleteModelsTestCase):
         #   ubid_110,     lot_1
         #   ubid_111,     lot_1
 
-        ids = [('ubid_100', 'lot_1'), ('ubid_101', 'lot_1'), ('ubid_110', 'lot_1'), ('ubid_111', 'lot_1')]
+        ids = [('ubid_100', 'lot_1'), ('ubid_101', 'lot_1'), ('ubid_110', 'lot_1'),
+               ('ubid_111', 'lot_1')]
         for id in ids:
             self.property_state_factory.get_property_state(
                 no_default_data=True,
@@ -227,7 +206,8 @@ class PropertyViewTests(DeleteModelsTestCase):
         #   custom_101,     lot_1
         #   custom_110,     lot_1
         #   custom_111,     lot_1
-        ids = [('custom_100', 'lot_1'), ('custom_101', 'lot_1'), ('custom_110', 'lot_1'), ('custom_111', 'lot_1')]
+        ids = [('custom_100', 'lot_1'), ('custom_101', 'lot_1'), ('custom_110', 'lot_1'),
+               ('custom_111', 'lot_1')]
         for id in ids:
             self.property_state_factory.get_property_state(
                 no_default_data=True,
@@ -269,7 +249,8 @@ class PropertyViewTests(DeleteModelsTestCase):
     def test_save_state_match(self):
         # create a couple states to merge together
         ps_1 = self.property_state_factory.get_property_state(property_name="this should persist")
-        ps_2 = self.property_state_factory.get_property_state(extra_data={"extra_1": "this should exist too"})
+        ps_2 = self.property_state_factory.get_property_state(
+            extra_data={"extra_1": "this should exist too"})
 
         merged_state = save_state_match(ps_1, ps_2)
 

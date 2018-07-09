@@ -241,13 +241,14 @@ class DataMappingBaseTestCase(DeleteModelsTestCase):
             end=datetime.datetime(2015, 12, 31, tzinfo=timezone.get_current_timezone()),
         )
 
-        import_record, import_file = self.create_import_file(user, org, cycle,
-                                                             import_file_source_type,
-                                                             import_file_data_state)
+        import_record, import_file = self.create_import_file(
+            user, org, cycle, import_file_source_type, import_file_data_state
+        )
 
         return user, org, import_file, import_record, cycle
 
-    def create_import_file(self, user, org, cycle, source_type=ASSESSED_RAW, data_state=DATA_STATE_IMPORT):
+    def create_import_file(self, user, org, cycle, source_type=ASSESSED_RAW,
+                           data_state=DATA_STATE_IMPORT):
         import_record = ImportRecord.objects.create(
             owner=user, last_modified_by=user, super_organization=org
         )
