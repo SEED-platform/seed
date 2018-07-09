@@ -300,20 +300,6 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
             if not table_mappings[table]:
                 del table_mappings[table]
 
-    # TODO: **START TOTAL TERRIBLE HACK**
-    # For some reason the mappings that got created previously don't
-    # always have the table class in them.  To get this working for
-    # the demo this is an infix place, but is absolutely terrible and
-    # should be removed ASAP!!!!!
-    # NL: 4/12/2017, this should no longer be a problem after the column cleanup, remove and test post 2.0.2.
-    if 'PropertyState' not in table_mappings and 'TaxLotState' in table_mappings and '' in table_mappings:
-        _log.error('this code should not be running here...')
-        debug_inferred_prop_state_mapping = table_mappings['']
-        table_mappings['PropertyState'] = debug_inferred_prop_state_mapping
-        raise Exception(
-            "This code has been deprecated, but is being called. Need to review the column cleanup")
-    # TODO: *END TOTAL TERRIBLE HACK**
-
     map_cleaner = _build_cleaner_2(org)
 
     # *** BREAK OUT INTO SEPARATE METHOD ***
