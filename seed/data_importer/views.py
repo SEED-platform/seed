@@ -1815,6 +1815,7 @@ class ImportFileViewSet(viewsets.ViewSet):
                 thresh=80  # percentage match that we require. 80% is random value for now.
             )
             # replace None with empty string for column names and PropertyState for tables
+            # TODO #239: Move this fix to build_column_mapping
             for m in suggested_mappings:
                 table, destination_field, _confidence = suggested_mappings[m]
                 if destination_field is None:

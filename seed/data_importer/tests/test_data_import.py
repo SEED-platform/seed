@@ -41,7 +41,7 @@ from seed.models import (
 _log = logging.getLogger(__name__)
 
 
-class TestMappingPortfolioData(DataMappingBaseTestCase):
+class TestDataImport(DataMappingBaseTestCase):
     """Tests for dealing with SEED related tasks for mapping data."""
 
     def setUp(self):
