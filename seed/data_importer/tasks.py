@@ -584,7 +584,7 @@ def map_data(import_file_id, remap=False, mark_as_done=True):
     return {'status': 'success', 'progress': 100, 'progress_key': prog_key}
 
 
-@shared_task
+@shared_task(ignore_result=True)
 def _save_raw_data_chunk(chunk, file_pk, prog_key, increment):
     """
     Save the raw data to the database
@@ -635,11 +635,12 @@ def _save_raw_data_chunk(chunk, file_pk, prog_key, increment):
     return True
 
 
-@shared_task
-def finish_raw_save(file_pk):
+@shared_task(ignore_result=True)
+def finish_raw_save(results, file_pk):
     """
     Finish importing the raw file.
 
+    :param results: List of results from the parent task, not really used at the moment
     :param file_pk: ID of the file that was being imported
     :return: results: results from the other tasks before the chord ran
     """
@@ -713,7 +714,7 @@ def _save_raw_green_button_data(file_pk):
     }
 
 
-@shared_task
+@shared_task(ignore_result=True)
 @lock_and_track
 def _save_raw_data(file_pk, *args, **kwargs):
     """
@@ -754,8 +755,7 @@ def _save_raw_data(file_pk, *args, **kwargs):
             import_file.num_rows += len(batch_chunk)
             chunks.append(batch_chunk)
         increment = get_cache_increment_value(chunks)
-        tasks = [_save_raw_data_chunk.s(chunk, file_pk, prog_key, increment)
-                 for chunk in chunks]
+        tasks = [_save_raw_data_chunk.s(chunk, file_pk, prog_key, increment) for chunk in chunks]
 
         # _log.debug('Appended all tasks')
         import_file.save()
@@ -763,7 +763,7 @@ def _save_raw_data(file_pk, *args, **kwargs):
 
         if tasks:
             # _log.debug('Adding chord to queue')
-            chord(tasks, interval=15)(finish_raw_save.si(file_pk))
+            chord(tasks)(finish_raw_save.s(file_pk))
         else:
             # _log.debug('Skipped chord')
             finish_raw_save.s(file_pk)
@@ -793,9 +793,7 @@ def _save_raw_data(file_pk, *args, **kwargs):
     return result
 
 
-@shared_task
-@lock_and_track
-def save_raw_data(file_pk, *args, **kwargs):
+def save_raw_data(file_pk):
     """
     Save the raw data from an imported file. This is the entry point into saving the data.
 
@@ -810,7 +808,7 @@ def save_raw_data(file_pk, *args, **kwargs):
         'progress_key': prog_key
     }
     set_cache(prog_key, initializing_key['status'], initializing_key)
-    _save_raw_data.delay(file_pk)
+    _save_raw_data(file_pk)
 
     return get_cache(prog_key)
 
@@ -1140,7 +1138,6 @@ def _match_properties_and_taxlots(file_pk):
         # Take the final merged-on-import objects, and find Views that
         # correspond to it and merge those together.
         # TODO #239: This is quite slow... fix this next
-        print("Starting merge_unmatched_into_views: %s" % datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         merged_property_views = merge_unmatched_into_views(
             unmatched_properties,
             property_partitioner,
