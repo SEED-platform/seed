@@ -751,9 +751,8 @@ def match_buildings(file_pk):
     progress_data.total = 3
     progress_data.save()
 
-    data = chord(_match_properties_and_taxlots.s(file_pk, progress_data.key), interval=15)(
+    chord(_match_properties_and_taxlots.s(file_pk, progress_data.key), interval=15)(
         finish_matching.si(file_pk, progress_data.key))
-
 
     return progress_data.result()
 
