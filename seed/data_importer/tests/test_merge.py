@@ -40,8 +40,8 @@ COLUMNS_TO_SEND = [
     'state_province',
     'postal_code',
     'pm_parent_property_id',
-    'calculated_taxlot_ids',
-    'primary',
+    # 'calculated_taxlot_ids',
+    # 'primary',
     'extra_data_field',
     'jurisdiction_tax_lot_id'
 ]

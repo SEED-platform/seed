@@ -132,7 +132,7 @@ class DataQualityViews(viewsets.ViewSet):
         # step 2: validate the check IDs all belong to this organization ID
         # step 3: validate the actual user belongs to the passed in org ID
         # step 4: kick off a background task
-        return_value = do_checks(organization, property_state_ids, taxlot_state_ids)
+        return_value = do_checks(organization.id, property_state_ids, taxlot_state_ids)
         # step 5: create a new model instance
         return JsonResponse({
             'num_properties': len(property_state_ids),
@@ -217,7 +217,7 @@ class DataQualityViews(viewsets.ViewSet):
             }
         }
 
-        dq = DataQualityCheck.retrieve(organization)
+        dq = DataQualityCheck.retrieve(organization.id)
         rules = dq.rules.order_by('field', 'severity')
         for rule in rules:
             result['rules'][
@@ -272,7 +272,7 @@ class DataQualityViews(viewsets.ViewSet):
         """
         organization = Organization.objects.get(pk=request.query_params['organization_id'])
 
-        dq = DataQualityCheck.retrieve(organization)
+        dq = DataQualityCheck.retrieve(organization.id)
         dq.reset_all_rules()
         return self.data_quality_rules(request)
 
@@ -310,7 +310,7 @@ class DataQualityViews(viewsets.ViewSet):
         """
         organization = Organization.objects.get(pk=request.query_params['organization_id'])
 
-        dq = DataQualityCheck.retrieve(organization)
+        dq = DataQualityCheck.retrieve(organization.id)
         dq.reset_default_rules()
         return self.data_quality_rules(request)
 
@@ -395,7 +395,7 @@ class DataQualityViews(viewsets.ViewSet):
                 }
             )
 
-        dq = DataQualityCheck.retrieve(organization)
+        dq = DataQualityCheck.retrieve(organization.id)
         dq.remove_all_rules()
         for rule in updated_rules:
             try:
