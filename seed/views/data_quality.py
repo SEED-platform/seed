@@ -12,6 +12,7 @@ from django.http import JsonResponse, HttpResponse
 from rest_framework import viewsets, serializers, status
 from rest_framework.decorators import list_route, detail_route
 from unidecode import unidecode
+
 from seed.data_importer.tasks import do_checks
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
@@ -180,7 +181,8 @@ class DataQualityViews(viewsets.ViewSet):
                     row['jurisdiction_tax_lot_id'] if 'jurisdiction_tax_lot_id' in row else None,
                     row['custom_id_1'],
                     result['formatted_field'],
-                    unidecode(result['detailed_message']),  # this field can have units which has superscripts/subscripts, so unidecode it!
+                    # the detailed_message field can have units which has superscripts/subscripts, so unidecode it!
+                    unidecode(result['detailed_message']),
                     result['severity']
                 ])
 
