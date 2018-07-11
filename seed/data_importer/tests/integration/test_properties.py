@@ -12,7 +12,6 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 
 from seed.data_importer import tasks
 from seed.data_importer.tests.util import (
-    DataMappingBaseTestCase,
     FAKE_MAPPINGS,
 )
 from seed.models import (
@@ -24,6 +23,7 @@ from seed.models import (
     MERGE_STATE_NEW,
     MERGE_STATE_MERGED,
 )
+from seed.tests.util import DataMappingBaseTestCase
 
 
 class TestProperties(DataMappingBaseTestCase):

@@ -11,7 +11,6 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 
 from seed.data_importer import tasks
 from seed.data_importer.tests.util import (
-    DataMappingBaseTestCase,
     FAKE_EXTRA_DATA,
     FAKE_MAPPINGS,
     FAKE_ROW,
@@ -24,6 +23,7 @@ from seed.models import (
     DATA_STATE_MAPPING,
     ASSESSED_RAW,
 )
+from seed.tests.util import DataMappingBaseTestCase
 
 logger = logging.getLogger(__name__)
 

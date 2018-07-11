@@ -21,7 +21,6 @@ from seed.data_importer import tasks
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tasks import save_raw_data, map_data
 from seed.data_importer.tests.util import (
-    DataMappingBaseTestCase,
     FAKE_EXTRA_DATA,
     FAKE_MAPPINGS,
     FAKE_ROW,
@@ -37,6 +36,7 @@ from seed.models import (
     TaxLotState,
     Cycle,
 )
+from seed.tests.util import DataMappingBaseTestCase
 
 _log = logging.getLogger(__name__)
 

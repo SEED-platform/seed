@@ -6,9 +6,6 @@
 """
 
 from seed.data_importer.tasks import match_buildings, save_state_match
-from seed.data_importer.tests.util import (
-    DataMappingBaseTestCase,
-)
 from seed.models import (
     PropertyView,
     PropertyAuditLog,
@@ -25,6 +22,7 @@ from seed.test_helpers.fake import (
     FakeTaxLotViewFactory,
     FakePropertyViewFactory,
 )
+from seed.tests.util import DataMappingBaseTestCase
 
 COLUMNS_TO_SEND = [
     'project_id',

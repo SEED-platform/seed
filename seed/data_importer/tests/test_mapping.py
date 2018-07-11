@@ -7,9 +7,6 @@
 import logging
 
 from seed.data_importer import tasks
-from seed.data_importer.tests.util import (
-    DataMappingBaseTestCase,
-)
 from seed.lib.mcm import mapper
 from seed.models import (
     ASSESSED_RAW,
@@ -22,6 +19,7 @@ from seed.test_helpers.fake import (
     FakePropertyStateFactory,
     FakePropertyViewFactory,
 )
+from seed.tests.util import DataMappingBaseTestCase
 
 logger = logging.getLogger(__name__)
 

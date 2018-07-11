@@ -14,7 +14,6 @@ from django.utils import timezone
 from seed.data_importer import tasks
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tests.util import (
-    DataMappingBaseTestCase,
     FAKE_EXTRA_DATA,
     FAKE_MAPPINGS,
     FAKE_ROW,
@@ -33,6 +32,7 @@ from seed.models import (
     Cycle,
     PropertyState,
 )
+from seed.tests.util import DataMappingBaseTestCase
 from seed.utils.organizations import create_organization
 
 logger = logging.getLogger(__name__)

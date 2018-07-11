@@ -9,9 +9,9 @@ import json
 from django.core.urlresolvers import reverse_lazy
 
 from seed.data_importer.models import ImportFile, ImportRecord
-from seed.data_importer.tests.util import DataMappingBaseTestCase
 from seed.landing.models import SEEDUser as User
 from seed.lib.mcm.reader import ROW_DELIMITER
+from seed.tests.util import DataMappingBaseTestCase
 
 
 class DataImporterViewTests(DataMappingBaseTestCase):
