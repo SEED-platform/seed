@@ -5,8 +5,8 @@
 :author
 """
 import base64
-import datetime
 import csv
+import datetime
 import hashlib
 import hmac
 import json
@@ -24,7 +24,8 @@ from django.core.urlresolvers import reverse
 from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
 from rest_framework import serializers, status, viewsets
-from rest_framework.decorators import api_view, detail_route, list_route, parser_classes, permission_classes
+from rest_framework.decorators import api_view, detail_route, list_route, parser_classes, \
+    permission_classes
 from rest_framework.parsers import MultiPartParser, FormParser
 
 from seed.data_importer.models import (
@@ -32,9 +33,10 @@ from seed.data_importer.models import (
     ImportRecord
 )
 from seed.data_importer.models import ROW_DELIMITER
+from seed.data_importer.tasks import do_checks
 from seed.data_importer.tasks import (
     map_data,
-    match_buildings,
+    match_buildings as task_match_buildings,
     save_raw_data as task_save_raw
 )
 from seed.decorators import ajax_request, ajax_request_class
@@ -43,6 +45,9 @@ from seed.lib.mappings import mapper as simple_mapper
 from seed.lib.mcm import mapper
 from seed.lib.merging import merging
 from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.models import (
+    Organization,
+)
 from seed.lib.superperms.orgs.models import OrganizationUser
 from seed.lib.superperms.orgs.permissions import SEEDOrgPermissions
 from seed.models import (
@@ -71,9 +76,8 @@ from seed.models import (
     TaxLotProperty,
     SEED_DATA_SOURCES,
     PORTFOLIO_RAW)
-from seed.models.data_quality import DataQualityCheck
 from seed.utils.api import api_endpoint, api_endpoint_class
-from seed.utils.cache import get_cache_raw, get_cache
+from seed.utils.cache import get_cache
 
 _log = logging.getLogger(__name__)
 
@@ -209,7 +213,8 @@ class LocalUploaderViewSet(viewsets.ViewSet):
         # The s3 stuff needs to be redone someday... delete?
         if 'S3' in settings.DEFAULT_FILE_STORAGE:
             os.unlink(path)
-            raise ImproperlyConfigured("Local upload not supported")  # TODO: Is this wording correct?
+            raise ImproperlyConfigured(
+                "Local upload not supported")  # TODO: Is this wording correct?
 
         import_record_pk = request.POST.get('import_record', request.GET.get('import_record'))
         try:
@@ -245,7 +250,8 @@ class LocalUploaderViewSet(viewsets.ViewSet):
             try:
                 float_value = float(string_value)
             except ValueError:
-                return {'success': False, 'message': 'Could not cast value to float: \"%s\"' % string_value}
+                return {'success': False,
+                        'message': 'Could not cast value to float: \"%s\"' % string_value}
             original_unit_string = pm_value['@uom']
             if original_unit_string == u'kBtu':
                 pint_val = float_value * units.kBTU
@@ -256,7 +262,8 @@ class LocalUploaderViewSet(viewsets.ViewSet):
             elif original_unit_string == u'kgCO2e/ft²':
                 pint_val = float_value * units.kilogram / units.sq_ft
             else:
-                return {'success': False, 'message': 'Unsupported units string: \"%s\"' % original_unit_string}
+                return {'success': False,
+                        'message': 'Unsupported units string: \"%s\"' % original_unit_string}
             return {'success': True, 'pint_value': pint_val}
 
     @api_endpoint_class
@@ -365,10 +372,12 @@ class LocalUploaderViewSet(viewsets.ViewSet):
                     else:
 
                         # As long as it is a valid dictionary, try to get a meaningful value out of it
-                        if '#text' in this_pm_variable and this_pm_variable['#text'] != 'Not Available':
+                        if '#text' in this_pm_variable and this_pm_variable[
+                                '#text'] != 'Not Available':
 
                             # Coerce the value into a proper set of Pint units for us
-                            new_var = LocalUploaderViewSet._get_pint_var_from_pm_value_object(this_pm_variable)
+                            new_var = LocalUploaderViewSet._get_pint_var_from_pm_value_object(
+                                this_pm_variable)
                             if new_var['success']:
                                 pint_value = new_var['pint_value']
                                 this_row.append(pint_value.magnitude)
@@ -405,7 +414,8 @@ class LocalUploaderViewSet(viewsets.ViewSet):
                                       uploaded_filename='PortfolioManagerImport',
                                       file=path,
                                       source_type=SEED_DATA_SOURCES[PORTFOLIO_RAW],
-                                      **{'source_program': 'PortfolioManager', 'source_program_version': '1.0'})
+                                      **{'source_program': 'PortfolioManager',
+                                         'source_program_version': '1.0'})
 
         # Return the newly created import file ID
         return JsonResponse({'success': True, "import_file_id": f.pk})
@@ -1291,29 +1301,25 @@ class ImportFileViewSet(viewsets.ViewSet):
               required: true
               paramType: path
         """
-        return match_buildings(pk)
+        return task_match_buildings(pk)
 
     @api_endpoint_class
     @ajax_request_class
-    @detail_route(methods=['GET'], url_path='data_quality_results')
-    def get_data_quality_results(self, request, pk=None):
+    @has_perm_class('can_modify_data')
+    @detail_route(methods=['POST'])
+    def start_data_quality_checks(self, request, pk=None):
         """
-        Retrieve the details of the data quality check.
+        Starts a background task to attempt automatic matching between buildings
+        in an ImportFile with other existing buildings within the same org.
         ---
         type:
             status:
                 required: true
                 type: string
                 description: either success or error
-            message:
-                type: string
-                description: additional information, if any
-            progress:
+            progress_key:
                 type: integer
-                description: integer percent of completion
-            data:
-                type: JSON
-                description: object describing the results of the data quality check
+                description: ID of background job, for retrieving job progress
         parameter_strategy: replace
         parameters:
             - name: pk
@@ -1321,13 +1327,13 @@ class ImportFileViewSet(viewsets.ViewSet):
               required: true
               paramType: path
         """
-        import_file_id = pk
-        data_quality_results = get_cache_raw(DataQualityCheck.cache_key(import_file_id))
+        organization = Organization.objects.get(pk=request.query_params['organization_id'])
+
+        return_value = do_checks(organization.id, None, None, pk)
+        # step 5: create a new model instance
         return JsonResponse({
-            'status': 'success',
-            'message': 'data quality check complete',
-            'progress': 100,
-            'data': data_quality_results
+            'progress_key': return_value['progress_key'],
+            'progress': return_value,
         })
 
     @api_endpoint_class
@@ -1796,7 +1802,8 @@ class ImportFileViewSet(viewsets.ViewSet):
         # If this is a portfolio manager file, then load in the PM mappings and if the column_mappings
         # are not in the original mappings, default to PM
         if import_file.from_portfolio_manager:
-            pm_mappings = simple_mapper.get_pm_mapping(import_file.first_row_columns, resolve_duplicates=True)
+            pm_mappings = simple_mapper.get_pm_mapping(import_file.first_row_columns,
+                                                       resolve_duplicates=True)
             suggested_mappings = mapper.build_column_mapping(
                 import_file.first_row_columns,
                 Column.retrieve_all_by_tuple(organization_id),

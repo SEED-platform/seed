@@ -42,7 +42,7 @@ class TestViewsMatching(DataMappingBaseTestCase):
             content=open(filepath, 'rb').read()
         )
         self.import_file.save()
-        tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
+        tasks.save_raw_data(self.import_file.pk)
         Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.id)
         tasks.map_data(self.import_file.pk)
         tasks.match_buildings(self.import_file.id)
@@ -57,7 +57,7 @@ class TestViewsMatching(DataMappingBaseTestCase):
         )
         self.import_file_2.save()
 
-        tasks._save_raw_data(self.import_file_2.pk, 'fake_cache_key_2', 1)
+        tasks.save_raw_data(self.import_file_2.pk)
         Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file_2.id)
         tasks.map_data(self.import_file_2.pk)
         tasks.match_buildings(self.import_file_2.id)

@@ -110,7 +110,7 @@ class TestDemoV2(DataMappingBaseTestCase):
         self.import_file_property.save()
 
     def test_demo_v2(self):
-        tasks._save_raw_data(self.import_file_tax_lot.pk, 'fake_cache_key', 1)
+        tasks.save_raw_data(self.import_file_tax_lot.pk)
         Column.create_mappings(self.fake_taxlot_mappings, self.org, self.user)
         Column.create_mappings(self.fake_portfolio_mappings, self.org, self.user)
         tasks.map_data(self.import_file_tax_lot.pk)
@@ -142,7 +142,7 @@ class TestDemoV2(DataMappingBaseTestCase):
         self.assertEqual(TaxLotView.objects.count(), 9)
 
         # Import the property data
-        tasks._save_raw_data(self.import_file_property.pk, 'fake_cache_key', 1)
+        tasks.save_raw_data(self.import_file_property.pk)
         tasks.map_data(self.import_file_property.pk)
 
         ts = TaxLotState.objects.filter(

@@ -605,6 +605,7 @@ class ImportRecord(NotDeletableModel):
             print_exc()
             return {}
 
+    # TODO #239: This is not used. Should we enable it again, why?
     @property
     def worksheet_progress_json(self):
         progresses = []
@@ -1073,9 +1074,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     def find_unmatched_states(self, kls):
         """Get unmatched property states' id info from an import file.
 
-        :rtype: list of tuples, field values specified in BS_VALUES_LIST.
-
-        NJA: This function is a straight copy/update to find_unmatched_property_states
+        :return: QuerySet, list of model objects [either PropertyState or TaxLotState]
         """
 
         from seed.models import (
@@ -1094,9 +1093,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     def find_unmatched_property_states(self):
         """Get unmatched property states' id info from an import file.
 
-        # TODO - Fix Comment
-        :rtype: list of tuples, field values specified in BS_VALUES_LIST.
-
+        :return: QuerySet, list of PropertyState objects
         """
 
         from seed.models import PropertyState
@@ -1105,11 +1102,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     def find_unmatched_tax_lot_states(self):
         """Get unmatched property states' id info from an import file.
 
-        # TODO - Fix Comment
-        :rtype: list of tuples, field values specified in BS_VALUES_LIST.
-
-        NB: This does not return a queryset!
-
+        :return: QuerySet, list of TaxLotState objects
         """
 
         from seed.models import TaxLotState

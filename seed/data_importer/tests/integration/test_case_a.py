@@ -46,7 +46,7 @@ class TestCaseA(DataMappingBaseTestCase):
         self.import_file.save()
 
     def test_import_file(self):
-        tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
+        tasks.save_raw_data(self.import_file.pk)
         Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.pk)
         tasks.map_data(self.import_file.pk)
 
@@ -59,7 +59,7 @@ class TestCaseA(DataMappingBaseTestCase):
 
     def test_match_buildings(self):
         """ case A (one property <-> one tax lot) """
-        tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
+        tasks.save_raw_data(self.import_file.pk)
         Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.pk)
         tasks.map_data(self.import_file.pk)
 

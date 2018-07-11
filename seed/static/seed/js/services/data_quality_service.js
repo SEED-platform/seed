@@ -13,11 +13,12 @@ angular.module('BE.seed.service.data_quality', []).factory('data_quality_service
 
     /**
      * get_data_quality_results
-     * return data_quality results.
-     * @param import_file_id: int, represents file import id.
+     * return data_quality results from the ID of the storage.
+     * @param  {int} org_id the id of the organization
+     * @param  {int} data_quality_id, ID of the data quality results
      */
-    data_quality_factory.get_data_quality_results = function (import_file_id) {
-      return $http.get('/api/v2/import_files/' + import_file_id + '/data_quality_results/').then(function (response) {
+    data_quality_factory.get_data_quality_results = function (org_id, data_quality_id) {
+      return $http.get('/api/v2/data_quality_checks/results/?organization_id=' + org_id + '&data_quality_id=' + data_quality_id).then(function (response) {
         return response.data.data;
       });
     };
@@ -65,6 +66,12 @@ angular.module('BE.seed.service.data_quality', []).factory('data_quality_service
       });
     };
 
+    data_quality_factory.start_data_quality_checks_for_import_file = function (org_id, import_file_id) {
+      return $http.post('/api/v2/import_files/' + import_file_id + '/start_data_quality_checks/?organization_id=' + org_id).then(function (response) {
+        return response.data;
+      });
+    };
+
     data_quality_factory.start_data_quality_checks = function (property_state_ids, taxlot_state_ids) {
       return data_quality_factory.start_data_quality_checks_for_org(user_service.get_organization().id, property_state_ids, taxlot_state_ids);
     };
@@ -90,7 +97,7 @@ angular.module('BE.seed.service.data_quality', []).factory('data_quality_service
           if (response.data.progress < 100) {
             checkStatusLoop(deferred, progress_key);
           } else {
-            deferred.resolve(response.data.data);
+            deferred.resolve(response.data);
           }
         }, 750);
       }, function (error) {

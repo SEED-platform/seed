@@ -47,7 +47,7 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
         )
         self.import_file.save()
 
-        tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
+        tasks.save_raw_data(self.import_file.pk)
         Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.pk)
         tasks.map_data(self.import_file.pk)
 

@@ -64,7 +64,6 @@ class TestMapping(DataMappingBaseTestCase):
         mappings = []
         for raw_column, suggestion in suggested_mappings.items():
             # Single suggestion looks like:'lot_number': [u'PropertyState', u'lot_number', 100]
-            print suggestion
             mapping = {
                 "from_field": raw_column,
                 "from_units": None,

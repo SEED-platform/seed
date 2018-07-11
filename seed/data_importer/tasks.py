@@ -9,7 +9,7 @@ from __future__ import absolute_import
 
 import collections
 import copy
-import datetime
+import datetime as dt
 import hashlib
 import operator
 import traceback
@@ -18,8 +18,7 @@ from collections import namedtuple
 from functools import reduce
 from itertools import chain
 
-from celery import chord
-from celery import shared_task
+from celery import chord, shared_task
 from celery.utils.log import get_task_logger
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
@@ -33,13 +32,13 @@ from seed.data_importer.models import (
     ImportRecord,
     STATUS_READY_TO_MERGE,
 )
-from seed.decorators import get_prog_key
 from seed.decorators import lock_and_track
 from seed.green_button import xml_importer
 from seed.lib.mcm import cleaners, mapper, reader
 from seed.lib.mcm.mapper import expand_rows
 from seed.lib.mcm.utils import batch
 from seed.lib.merging import merging
+from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     ASSESSED_BS,
@@ -67,20 +66,14 @@ from seed.models import TaxLotProperty
 from seed.models.auditlog import AUDIT_IMPORT
 from seed.models.data_quality import DataQualityCheck
 from seed.utils.buildings import get_source_type
-from seed.utils.cache import set_cache, increment_cache, get_cache, delete_cache, get_cache_raw
 
 _log = get_task_logger(__name__)
 
 STR_TO_CLASS = {'TaxLotState': TaxLotState, 'PropertyState': PropertyState}
 
 
-def get_cache_increment_value(chunk):
-    denom = len(chunk) or 1
-    return 1.0 / denom * 100
-
-
-@shared_task
-def check_data_chunk(model, ids, identifier, increment):
+@shared_task(ignore_result=True)
+def check_data_chunk(model, ids, dq_id):
     if model == 'PropertyState':
         qs = PropertyState.objects.filter(id__in=ids)
     elif model == 'TaxLotState':
@@ -91,64 +84,83 @@ def check_data_chunk(model, ids, identifier, increment):
 
     d = DataQualityCheck.retrieve(super_org.get_parent().id)
     d.check_data(model, qs.iterator())
-    d.save_to_cache(identifier)
+    d.save_to_cache(dq_id)
 
 
-@shared_task
-def finish_checking(identifier):
+@shared_task(ignore_result=True)
+def finish_checking(progress_key):
     """
     Chord that is called after the data quality check is complete
 
     :param identifier: import file primary key
+    :return: dict, results from queue
+    """
+    progress_data = ProgressData.from_key(progress_key)
+    progress_data.finish_with_success()
+    return progress_data.result()
+
+
+def do_checks(org_id, propertystate_ids, taxlotstate_ids, import_file_id=None):
+    """
+    Run the dq checks on the data
+
+    :param org_id:
+    :param propertystate_ids:
+    :param taxlotstate_ids:
+    :param import_file_id: int, if present, find the data to check by the import file id
     :return:
     """
-    prog_key = get_prog_key('check_data', identifier)
-    data_quality_results = get_cache_raw(DataQualityCheck.cache_key(identifier))
-    result = {
-        'status': 'success',
-        'progress': 100,
-        'progress_key': prog_key,
-        'message': 'data quality check complete',
-        'data': data_quality_results
-    }
-    set_cache(prog_key, result['status'], result)
-    return result
+    # If import_file_id, then use that as the identifier, otherwise, initialize_cache will
+    # create a new random id
+    cache_key, dq_id = DataQualityCheck.initialize_cache(import_file_id)
+
+    progress_data = ProgressData(func_name='check_data', unique_id=dq_id)
+    progress_data.delete()
+
+    if import_file_id:
+        propertystate_ids = list(
+            PropertyState.objects.filter(import_file=import_file_id).exclude(
+                data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT,
+                                DATA_STATE_DELETE]).values_list('id', flat=True)
+        )
+        taxlotstate_ids = list(
+            TaxLotState.objects.filter(import_file=import_file_id).exclude(
+                data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT,
+                                DATA_STATE_DELETE]).values_list('id', flat=True)
+        )
+
+    tasks = _data_quality_check_create_tasks(
+        org_id, propertystate_ids, taxlotstate_ids, dq_id
+    )
+    progress_data.total = len(tasks)
+    progress_data.save()
+    if tasks:
+        # specify the chord as an immutable with .si
+        chord(tasks, interval=15)(finish_checking.si(progress_data.key))
+    else:
+        finish_checking.s(progress_data.key)
+
+    # always return something so that the code works with always eager
+    return progress_data.result()
 
 
-@shared_task
-def do_checks(organization_id, propertystate_ids, taxlotstate_ids):
-    identifier = DataQualityCheck.initialize_cache()
-    prog_key = get_prog_key('check_data', identifier)
-    trigger_data_quality_checks.delay(organization_id, propertystate_ids, taxlotstate_ids,
-                                      identifier)
-    return {
-        'status': 'success',
-        'progress': 100,
-        'progress_key': prog_key
-    }
+@shared_task(ignore_result=True)
+def finish_mapping(import_file_id, mark_as_done, progress_key):
+    import_file = ImportFile.objects.get(pk=import_file_id)
+    progress_data = ProgressData.from_key(progress_key)
 
+    # Do not set the mapping_done flag unless mark_as_done is set. This allows an actual
+    # user to review the mapping before it is saved and matching starts.
+    if mark_as_done:
+        import_file.mapping_done = True
+        import_file.save()
 
-@shared_task
-def trigger_data_quality_checks(organization_id, qs, tlqs, identifier):
-    prog_key = get_prog_key('map_data', identifier)
-    result = {
-        'status': 'success',
-        'progress': 100,
-        'progress_key': prog_key
-    }
-    set_cache(prog_key, result['status'], result)
-
-    # now call data_quality
-    _data_quality_check(organization_id, qs, tlqs, identifier)
-
-
-@shared_task
-def finish_import_record(import_record_pk):
-    """Set all statuses to Done, etc."""
+    # Set all statuses to Done, etc
     states = ('done', 'active', 'queued')
     actions = ('merge_analysis', 'premerge_analysis')
+
     # Really all these status attributes are tedious.
-    import_record = ImportRecord.objects.get(pk=import_record_pk)
+    import_record = ImportRecord.objects.get(pk=import_file.import_record.pk)
     for action in actions:
         for state in states:
             value = False
@@ -160,52 +172,7 @@ def finish_import_record(import_record_pk):
     import_record.status = STATUS_READY_TO_MERGE
     import_record.save()
 
-
-@shared_task
-def finish_mapping(import_file_id, mark_as_done):
-    import_file = ImportFile.objects.get(pk=import_file_id)
-
-    # Do not set the mapping_done flag unless mark_as_done is set. This allows an actual
-    # user to review the mapping before it is saved and matching starts.
-    if mark_as_done:
-        import_file.mapping_done = True
-        import_file.save()
-
-    finish_import_record(import_file.import_record.pk)
-
-    property_state_ids = list(
-        PropertyState.objects.filter(import_file=import_file).exclude(
-            data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT, DATA_STATE_DELETE]).values_list(
-            'id', flat=True)
-    )
-    taxlot_state_ids = list(
-        TaxLotState.objects.filter(import_file=import_file).exclude(
-            data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT, DATA_STATE_DELETE]).values_list(
-            'id', flat=True)
-    )
-
-    # now call data_quality - this uses the import_file_id which can cause issues if
-    # the result cache is not flushed out. Flushing happens on the initialize_cache call.
-    _data_quality_check(import_file.import_record.super_organization,
-                        property_state_ids,
-                        taxlot_state_ids,
-                        import_file.id)
-
-    # set the prog key for mapping now so that the dataquality key has time to start
-    prog_key = get_prog_key('map_data', import_file.id)
-    result = {
-        'status': 'success',
-        'progress': 100,
-        'progress_key': prog_key
-    }
-    set_cache(prog_key, result['status'], result)
-
-
-def _translate_unit_to_type(unit):
-    if unit is None or unit == 'String':
-        return 'string'
-
-    return unit.lower()
+    return progress_data.finish_with_success()
 
 
 def _build_cleaner(org):
@@ -217,6 +184,13 @@ def _build_cleaner(org):
     :param org: organization instance.
     :returns: dict of dicts. {'types': {'col_name': 'type'},}
     """
+
+    def _translate_unit_to_type(unit):
+        if unit is None or unit == 'String':
+            return 'string'
+
+        return unit.lower()
+
     units = {'types': {}}
     for column in Column.objects.filter(mapped_mappings__super_organization=org).select_related(
             'unit'):
@@ -265,8 +239,8 @@ def _build_cleaner_2(org):
     return cleaners.Cleaner(ontology)
 
 
-@shared_task
-def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
+@shared_task(ignore_result=True)
+def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
     """Does the work of matching a mapping to a source type and saving
 
     :param ids: list of PropertyState IDs to map.
@@ -275,6 +249,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
     :param prog_key: string, key of the progress key
     :param increment: double, value by which to increment progress key
     """
+    progress_data = ProgressData.from_key(prog_key)
     import_file = ImportFile.objects.get(pk=file_pk)
     save_type = PORTFOLIO_BS
     if source_type == ASSESSED_RAW:
@@ -404,7 +379,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
                     hash_state_object(STR_TO_CLASS[table](organization=map_model_obj.organization),
                                       include_extra_data=False):
                     # Skip this object as it has no data...
-                    _log.warn("Skipping building during mapping")
+                    _log.warn("Skipping property or taxlot during mapping")
                     continue
 
                 try:
@@ -432,12 +407,12 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
         if map_model_obj:
             Column.save_column_names(map_model_obj)
 
-    increment_cache(prog_key, increment)
+    progress_data.step()
+
+    return True
 
 
-@shared_task
-@lock_and_track
-def _map_data(import_file_id, mark_as_done):
+def _map_data_create_tasks(import_file_id, progress_key):
     """
     Get all of the raw data and process it using appropriate mapping.
     @lock_and_track returns a progress_key
@@ -446,8 +421,7 @@ def _map_data(import_file_id, mark_as_done):
     :param mark_as_done: bool, tell finish_mapping that import_file.mapping_done is True
     :return:
     """
-    # _log.debug("Starting to map the data")
-    prog_key = get_prog_key('map_data', import_file_id)
+    progress_data = ProgressData.from_key(progress_key)
     import_file = ImportFile.objects.get(pk=import_file_id)
 
     # If we haven't finished saving, we should not proceed with mapping
@@ -455,11 +429,7 @@ def _map_data(import_file_id, mark_as_done):
     if not import_file.raw_save_done:
         _log.debug("_map_data raw_save_done is false, queueing the task until raw_save finishes")
         map_data.apply_async(args=[import_file_id], countdown=60, expires=120)
-        return {
-            'status': 'error',
-            'message': 'waiting for raw data save.',
-            'progress_key': prog_key
-        }
+        return progress_data.finish_with_error('waiting for raw data save.')
 
     source_type_dict = {
         'Portfolio Raw': PORTFOLIO_RAW,
@@ -475,21 +445,17 @@ def _map_data(import_file_id, mark_as_done):
     ).only('id').iterator()
 
     id_chunks = [[obj.id for obj in chunk] for chunk in batch(qs, 100)]
-    increment = get_cache_increment_value(id_chunks)
-    tasks = [map_row_chunk.s(ids, import_file_id, source_type, prog_key, increment)
+
+    progress_data.total = len(id_chunks)
+    progress_data.save()
+
+    tasks = [map_row_chunk.si(ids, import_file_id, source_type, progress_data.key)
              for ids in id_chunks]
 
-    if tasks:
-        # specify the chord as an immutable with .si
-        chord(tasks, interval=15)(finish_mapping.si(import_file_id, mark_as_done))
-    else:
-        _log.debug("Not creating finish_mapping chord, calling directly")
-        finish_mapping.si(import_file_id, mark_as_done)
+    return tasks
 
 
-@shared_task
-@lock_and_track
-def _data_quality_check(organization_id, property_state_ids, taxlot_state_ids, identifier):
+def _data_quality_check_create_tasks(org_id, property_state_ids, taxlot_state_ids, dq_id):
     """
     Entry point into running data quality checks.
 
@@ -506,37 +472,28 @@ def _data_quality_check(organization_id, property_state_ids, taxlot_state_ids, i
     # Initialize the data quality checks with the organization here. It is important to do it here
     # since the .retrieve method in the check_data_chunk method will result in a race condition if celery is
     # running in parallel.
-    DataQualityCheck.retrieve(organization_id)
+    DataQualityCheck.retrieve(org_id)
 
     tasks = []
     if property_state_ids:
         id_chunks = [[obj for obj in chunk] for chunk in batch(property_state_ids, 100)]
-        increment = get_cache_increment_value(id_chunks)
         for ids in id_chunks:
-            tasks.append(check_data_chunk.s("PropertyState", ids, identifier, increment))
+            tasks.append(check_data_chunk.s("PropertyState", ids, dq_id))
 
     if taxlot_state_ids:
         id_chunks_tl = [[obj for obj in chunk] for chunk in batch(taxlot_state_ids, 100)]
-        increment_tl = get_cache_increment_value(id_chunks_tl)
         for ids in id_chunks_tl:
-            tasks.append(check_data_chunk.s("TaxLotState", ids, identifier, increment_tl))
+            tasks.append(check_data_chunk.s("TaxLotState", ids, dq_id))
 
-    if tasks:
-        # specify the chord as an immutable with .si
-        chord(tasks, interval=15)(finish_checking.si(identifier))
-    else:
-        finish_checking.s(identifier)
-
-    # always return something so that the code works with always eager
-    prog_key = get_prog_key('check_data', identifier)
-    return {
-        'status': 'success',
-        'progress': 100,
-        'progress_key': prog_key
-    }
+    return tasks
 
 
-@shared_task
+@shared_task(ignore_result=True)
+def junk_test(x, y):
+    print "now i am here"
+    return x * y
+
+
 def map_data(import_file_id, remap=False, mark_as_done=True):
     """
     Map data task. By default this method will run through the mapping and mark it as complete.
@@ -578,14 +535,21 @@ def map_data(import_file_id, remap=False, mark_as_done=True):
         import_file.save()
 
     # delete the prog key -- in case it exists
-    prog_key = get_prog_key('map_data', import_file_id)
-    delete_cache(prog_key)
-    _map_data.delay(import_file_id, mark_as_done)
-    return {'status': 'success', 'progress': 100, 'progress_key': prog_key}
+    progress_data = ProgressData(func_name='map_data', unique_id=import_file_id)
+    progress_data.delete()
+
+    tasks = _map_data_create_tasks(import_file_id, progress_data.key)
+    if tasks:
+        chord(tasks)(finish_mapping.si(import_file_id, mark_as_done, progress_data.key))
+    else:
+        _log.debug("Not creating finish_mapping chord, calling directly")
+        finish_mapping.si(import_file_id, mark_as_done, progress_data.key)
+
+    return progress_data.result()
 
 
 @shared_task(ignore_result=True)
-def _save_raw_data_chunk(chunk, file_pk, prog_key, increment):
+def _save_raw_data_chunk(chunk, file_pk, progress_key):
     """
     Save the raw data to the database
 
@@ -595,7 +559,6 @@ def _save_raw_data_chunk(chunk, file_pk, prog_key, increment):
     :param increment: Float, Value by which to increment the progress
     :return: Bool, Always true
     """
-
     import_file = ImportFile.objects.get(pk=file_pk)
 
     # Save our "column headers" and sample rows for F/E.
@@ -611,7 +574,7 @@ def _save_raw_data_chunk(chunk, file_pk, prog_key, increment):
             key = k.strip()
             if isinstance(v, unicode):
                 new_chunk[key] = unidecode(v)
-            elif isinstance(v, (datetime.datetime, datetime.date)):
+            elif isinstance(v, (dt.datetime, dt.date)):
                 raise TypeError("Datetime class not supported in Extra Data. Needs to be a string.")
             else:
                 new_chunk[key] = v
@@ -629,14 +592,14 @@ def _save_raw_data_chunk(chunk, file_pk, prog_key, increment):
         raw_property.save()
 
     # Indicate progress
-    increment_cache(prog_key, increment)
-    # _log.debug('Returning from _save_raw_data_chunk')
+    progress_data = ProgressData.from_key(progress_key)
+    progress_data.step()
 
     return True
 
 
 @shared_task(ignore_result=True)
-def finish_raw_save(results, file_pk):
+def finish_raw_save(results, file_pk, progress_key):
     """
     Finish importing the raw file.
 
@@ -644,17 +607,12 @@ def finish_raw_save(results, file_pk):
     :param file_pk: ID of the file that was being imported
     :return: results: results from the other tasks before the chord ran
     """
+    progress_data = ProgressData.from_key(progress_key)
     import_file = ImportFile.objects.get(pk=file_pk)
     import_file.raw_save_done = True
     import_file.save()
-    prog_key = get_prog_key('save_raw_data', file_pk)
-    result = {
-        'status': 'success',
-        'progress': 100,
-        'progress_key': prog_key
-    }
-    set_cache(prog_key, result['status'], result)
-    return result
+
+    return progress_data.finish_with_success()
 
 
 def cache_first_rows(import_file, parser):
@@ -677,14 +635,15 @@ def cache_first_rows(import_file, parser):
     import_file.save()
 
 
-@shared_task
+@shared_task(ignore_result=True)
 @lock_and_track
-def _save_raw_green_button_data(file_pk):
+def _save_raw_green_button_data(file_pk, progress_key):
     """
     Pulls identifying information out of the XML data, find_or_creates
     a building_snapshot for the data, parses and stores the time series
     meter data and associates it with the building snapshot.
     """
+    progress_data = ProgressData.from_key(progress_key)
 
     import_file = ImportFile.objects.get(pk=file_pk)
     import_file.raw_save_done = True
@@ -692,105 +651,47 @@ def _save_raw_green_button_data(file_pk):
 
     res = xml_importer.import_xml(import_file)
 
-    prog_key = get_prog_key('save_raw_data', file_pk)
-    result = {
-        'status': 'success',
-        'progress': 100,
-        'progress_key': prog_key
-    }
-    set_cache(prog_key, result['status'], result)
-
     if res:
-        return {
-            'status': 'success',
-            'progress': 100,
-            'progress_key': prog_key
-        }
-
-    return {
-        'status': 'error',
-        'message': 'data failed to import',
-        'progress_key': prog_key
-    }
+        return progress_data.finish_with_success()
+    else:
+        return progress_data.finish_with_error('data failed to import')
 
 
-@shared_task(ignore_result=True)
-@lock_and_track
-def _save_raw_data(file_pk, *args, **kwargs):
+def _save_raw_data_create_tasks(file_pk, progress_key):
     """
-    Worker method for saving raw data
+    Worker method for saving raw data. Chunk up the CSV or XLSX file and save the raw data
+    into the PropertyState table.
 
-    :param file_pk:
-    :return: Dict, result from Progress Cache
+    :param file_pk: int, ID of the file to import
+    :return: Dict, result from progress data / cache
     """
+    progress_data = ProgressData.from_key(progress_key)
 
-    """Chunk up the CSV or XLSX file and save the raw data into the DB PropertyState table."""
-    prog_key = get_prog_key('save_raw_data', file_pk)
-    current_cache = get_cache(prog_key)
-    # _log.debug("Cache state: {}".format(current_cache))
-    result = current_cache
+    # _log.debug('Attempting to access import_file')
+    import_file = ImportFile.objects.get(pk=file_pk)
+    if import_file.raw_save_done:
+        return progress_data.finish_with_warning('Raw data already saved')
 
-    try:
-        # _log.debug('Attempting to access import_file')
-        import_file = ImportFile.objects.get(pk=file_pk)
-        if import_file.raw_save_done:
-            result['status'] = 'warning'
-            result['message'] = 'Raw data already saved'
-            result['progress'] = 100
-            set_cache(prog_key, result['status'], result)
-            _log.debug('Returning with warn from _save_raw_data')
-            return result
+    if import_file.source_type == "Green Button Raw":
+        # TODO #239: Should remove green button from here until later.
+        return _save_raw_green_button_data(file_pk)
 
-        if import_file.source_type == "Green Button Raw":
-            return _save_raw_green_button_data(file_pk)
+    parser = reader.MCMParser(import_file.local_file)
+    cache_first_rows(import_file, parser)
+    rows = parser.next()
+    import_file.num_rows = 0
+    import_file.num_columns = parser.num_columns()
 
-        parser = reader.MCMParser(import_file.local_file)
-        cache_first_rows(import_file, parser)
-        rows = parser.next()
-        import_file.num_rows = 0
-        import_file.num_columns = parser.num_columns()
+    chunks = []
+    for batch_chunk in batch(rows, 100):
+        import_file.num_rows += len(batch_chunk)
+        chunks.append(batch_chunk)
+    import_file.save()
 
-        chunks = []
-        for batch_chunk in batch(rows, 100):
-            import_file.num_rows += len(batch_chunk)
-            chunks.append(batch_chunk)
-        increment = get_cache_increment_value(chunks)
-        tasks = [_save_raw_data_chunk.s(chunk, file_pk, prog_key, increment) for chunk in chunks]
+    progress_data.total = len(chunks)
+    progress_data.save()
 
-        # _log.debug('Appended all tasks')
-        import_file.save()
-        # _log.debug('Saved import_file')
-
-        if tasks:
-            # _log.debug('Adding chord to queue')
-            chord(tasks)(finish_raw_save.s(file_pk))
-        else:
-            # _log.debug('Skipped chord')
-            finish_raw_save.s(file_pk)
-
-        # _log.debug('Finished raw save tasks')
-        result = get_cache(prog_key)
-    except StopIteration:
-        result['status'] = 'error'
-        result['message'] = 'StopIteration Exception'
-        result['stacktrace'] = traceback.format_exc()
-    except Error as e:
-        result['status'] = 'error'
-        result['message'] = 'File Content Error: ' + e.message
-        result['stacktrace'] = traceback.format_exc()
-    except KeyError as e:
-        result['status'] = 'error'
-        result['message'] = 'Invalid Column Name: "' + e.message + '"'
-        result['stacktrace'] = traceback.format_exc()
-    except Exception as e:
-        result['status'] = 'error'
-        result['message'] = 'Unhandled Error: ' + str(e.message)
-        result['stacktrace'] = traceback.format_exc()
-
-    set_cache(prog_key, result['status'], result)
-    # _log.debug('Returning from end of _save_raw_data with state: {}'.format(result))
-
-    return result
+    return [_save_raw_data_chunk.s(chunk, file_pk, progress_data.key) for chunk in chunks]
 
 
 def save_raw_data(file_pk):
@@ -800,21 +701,28 @@ def save_raw_data(file_pk):
     :param file_pk: ImportFile Primary Key
     :return: Dict, from cache, containing the progress key to track
     """
+    progress_data = ProgressData(func_name='save_raw_data', unique_id=file_pk)
+    try:
+        # Go get the tasks that need to be created, then call them in the chord here.
+        tasks = _save_raw_data_create_tasks(file_pk, progress_data.key)
+        if tasks:
+            chord(tasks, interval=15)(finish_raw_save.s(file_pk, progress_data.key))
+        else:
+            finish_raw_save.s(file_pk, progress_data.key)
+    except StopIteration:
+        progress_data.finish_with_error('StopIteration Exception', traceback.format_exc())
+    except Error as e:
+        progress_data.finish_with_error('File Content Error: ' + e.message, traceback.format_exc())
+    except KeyError as e:
+        progress_data.finish_with_error('Invalid Column Name: "' + e.message + '"',
+                                        traceback.format_exc())
+    except Exception as e:
+        progress_data.finish_with_error('Unhandled Error: ' + str(e.message),
+                                        traceback.format_exc())
+    _log.debug(progress_data.result())
+    return progress_data.result()
 
-    prog_key = get_prog_key('save_raw_data', file_pk)
-    initializing_key = {
-        'status': 'not-started',
-        'progress': 0,
-        'progress_key': prog_key
-    }
-    set_cache(prog_key, initializing_key['status'], initializing_key)
-    _save_raw_data(file_pk)
 
-    return get_cache(prog_key)
-
-
-@shared_task
-@lock_and_track
 def match_buildings(file_pk):
     """
     kicks off system matching, returns progress key within the JSON response
@@ -823,79 +731,40 @@ def match_buildings(file_pk):
     :return:
     """
     import_file = ImportFile.objects.get(pk=file_pk)
-    prog_key = get_prog_key('match_buildings', file_pk)
-    delete_cache(prog_key)
+
+    progress_data = ProgressData(func_name='match_buildings', unique_id=file_pk)
+    progress_data.delete()
+
     if import_file.matching_done:
-        return {
-            'status': 'warning',
-            'message': 'matching already complete',
-            'progress_key': prog_key
-        }
+        _log.debug('Matching is already done')
+        return progress_data.finish_with_warning('matching already complete')
 
     if not import_file.mapping_done:
-        # Re-add to the queue, hopefully our mapping will be done by then.
-        match_buildings.apply_async(args=[file_pk], countdown=10, expires=20)
-        return {
-            'status': 'error',
-            'message': 'waiting for mapping to complete',
-            'progress_key': prog_key
-        }
+        _log.debug('Mapping is not done yet')
+        return progress_data.finish_with_error(
+            'Import file is not complete. Retry after mapping is complete', )
 
     if import_file.cycle is None:
         _log.warn("This should never happen in production")
 
-    _match_properties_and_taxlots.delay(file_pk)
+    data = chord(_match_properties_and_taxlots.s(file_pk, progress_data.key), interval=15)(
+        finish_matching.si(file_pk, progress_data.key))
 
-    return {
-        'status': 'success',
-        'progress': 100,
-        'progress_key': prog_key
-    }
+    _log.debug(data.get())
+
+    return progress_data.result()
 
 
-def _finish_matching(import_file, progress_key, data):
+@shared_task(ignore_result=True)
+def finish_matching(import_file_id, progress_key):
+    progress_data = ProgressData.from_key(progress_key)
+
+    import_file = ImportFile.objects.get(pk=import_file_id)
     import_file.matching_done = True
     import_file.mapping_completion = 100
     import_file.save()
 
-    data['import_file_records'] = import_file.num_rows
-
-    result = {
-        'status': 'success',
-        'progress': 100,
-        'progress_key': progress_key,
-        'data': data
-    }
-    property_state_ids = list(
-        PropertyState.objects.filter(import_file=import_file).exclude(
-            data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT, DATA_STATE_DELETE]).only(
-            'id').values_list('id', flat=True)
-    )
-    taxlot_state_ids = list(
-        TaxLotState.objects.filter(import_file=import_file).exclude(
-            data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT, DATA_STATE_DELETE]).only(
-            'id').values_list('id', flat=True)
-    )
-
-    # TODO: The organization should not come from the import_file. This makes testing tough
-    _data_quality_check(import_file.import_record.super_organization,
-                        property_state_ids,
-                        taxlot_state_ids,
-                        import_file.id)
-    set_cache(progress_key, result['status'], result)
-    return result
-
-
-def _find_matches(un_m_address, canonical_buildings_addresses):
-    match_list = []
-    if not un_m_address:
-        return match_list
-    for cb in canonical_buildings_addresses:
-        if cb is None:
-            continue
-        if un_m_address.lower() == cb.lower():  # this second lower may be obsolete now
-            match_list.append((un_m_address, 1))
-    return match_list
+    return progress_data.finish_with_success()
 
 
 def hash_state_object(obj, include_extra_data=True):
@@ -942,6 +811,7 @@ def filter_duplicated_states(unmatched_states):
     :return:
     """
 
+    # TODO #239: Should we save the hash in the database, wouldn't that be faster
     hash_values = map(hash_state_object, unmatched_states)
     equality_classes = collections.defaultdict(list)
 
@@ -1100,9 +970,9 @@ def merge_unmatched_into_views(unmatched_states, partitioner, org, import_file):
     return list(set(matched_views))
 
 
-@shared_task
+@shared_task(ignore_result=True)
 @lock_and_track
-def _match_properties_and_taxlots(file_pk):
+def _match_properties_and_taxlots(file_pk, progress_key):
     """
     Match the properties and taxlots
 
@@ -1110,7 +980,7 @@ def _match_properties_and_taxlots(file_pk):
     :return:
     """
     import_file = ImportFile.objects.get(pk=file_pk)
-    prog_key = get_prog_key('match_buildings', file_pk)
+    # progress_data = ProgressData.from_key(progress_key)
 
     # Don't query the org table here, just get the organization from the import_record
     org = import_file.import_record.super_organization
@@ -1123,27 +993,43 @@ def _match_properties_and_taxlots(file_pk):
     duplicates_of_existing_taxlot_states = []
     if all_unmatched_properties:
         # Filter out the duplicates within the import file.
+        _log.debug("Start filter_duplicated_states: %s" % dt.datetime.now().strftime(
+            "%Y-%m-%d %H:%M:%S"))
         unmatched_properties, duplicate_property_states = filter_duplicated_states(
             all_unmatched_properties)
+        _log.debug("End filter_duplicated_states: %s" % dt.datetime.now().strftime(
+            "%Y-%m-%d %H:%M:%S"))
 
+        _log.debug("Start make_default_state_equivalence: %s" % dt.datetime.now().strftime(
+            "%Y-%m-%d %H:%M:%S"))
         property_partitioner = EquivalencePartitioner.make_default_state_equivalence(PropertyState)
+        _log.debug("End make_default_state_equivalence: %s" % dt.datetime.now().strftime(
+            "%Y-%m-%d %H:%M:%S"))
 
         # Merge everything together based on the notion of equivalence
         # provided by the partitioner, while ignoring duplicates.
+        _log.debug("Start match_and_merge_unmatched_objects: %s" % dt.datetime.now().strftime(
+            "%Y-%m-%d %H:%M:%S"))
         unmatched_properties, property_equivalence_keys = match_and_merge_unmatched_objects(
             unmatched_properties,
             property_partitioner
         )
+        _log.debug("End match_and_merge_unmatched_objects: %s" % dt.datetime.now().strftime(
+            "%Y-%m-%d %H:%M:%S"))
 
         # Take the final merged-on-import objects, and find Views that
         # correspond to it and merge those together.
         # TODO #239: This is quite slow... fix this next
+        _log.debug("Start merge_unmatched_into_views: %s" % dt.datetime.now().strftime(
+            "%Y-%m-%d %H:%M:%S"))
         merged_property_views = merge_unmatched_into_views(
             unmatched_properties,
             property_partitioner,
             org,
             import_file
         )
+        _log.debug(
+            "End merge_unmatched_into_views: %s" % dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
         # Filter out the exact duplicates found in the previous step
         duplicates_of_existing_property_states = [state for state in unmatched_properties if
@@ -1174,12 +1060,16 @@ def _match_properties_and_taxlots(file_pk):
 
         # Take the final merged-on-import objects, and find Views that
         # correspond to it and merge those together.
+        _log.debug("Start merge_unmatched_into_views: %s" % dt.datetime.now().strftime(
+            "%Y-%m-%d %H:%M:%S"))
         merged_taxlot_views = merge_unmatched_into_views(
             unmatched_tax_lots,
             taxlot_partitioner,
             org,
             import_file
         )
+        _log.debug("End merge_unmatched_into_views: %s" % dt.datetime.now().strftime(
+            "%Y-%m-%d %H:%M:%S"))
 
         # Filter out the exact duplicates found in the previous step
         duplicates_of_existing_taxlot_states = [state for state in unmatched_tax_lots
@@ -1191,7 +1081,9 @@ def _match_properties_and_taxlots(file_pk):
         merged_taxlot_views = []
 
     # TODO #239: This is the next slowest... fix me too.
+    _log.debug("Start pair_new_states: %s" % dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     pair_new_states(merged_property_views, merged_taxlot_views)
+    _log.debug("End pair_new_states: %s" % dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
     # Mark all the unmatched objects as done with matching and mapping
     # There should be some kind of bulk-update/save thing we can do to
@@ -1224,7 +1116,7 @@ def _match_properties_and_taxlots(file_pk):
         'duplicates_of_existing_taxlot_states': len(duplicates_of_existing_taxlot_states)
     }
 
-    return _finish_matching(import_file, prog_key, data)
+    return data
 
 
 def list_canonical_property_states(org_id):

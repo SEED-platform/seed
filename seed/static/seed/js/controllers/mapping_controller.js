@@ -349,7 +349,7 @@ angular.module('BE.seed.controller.mapping', [])
           0, //starting prog bar percentage
           1.0,  // progress multiplier
           function () {
-            $scope.data_quality_checks();
+            $scope.get_mapped_buildings();
           }, function () {
             // Do nothing
           },
@@ -373,7 +373,7 @@ angular.module('BE.seed.controller.mapping', [])
           mapping_service.remap_buildings($scope.import_file.id).then(function (data) {
             if (data.status === 'error' || data.status === 'warning') {
               $scope.$emit('app_error', data);
-              $scope.data_quality_checks();
+              $scope.get_mapped_buildings();
             } else {
               // save maps start mapping data
               check_mapping(data.progress_key);
@@ -468,27 +468,25 @@ angular.module('BE.seed.controller.mapping', [])
         }).catch(function (response) {
           $log.error(response);
         }).finally(function () {
-          // Fetch data quality check results
-          $scope.data_quality_results_ready = false;
-          $scope.data_quality_results = data_quality_service.get_data_quality_results($scope.import_file.id);
-          $scope.data_quality_results.then(function (data) {
-            $scope.data_quality_results_ready = true;
-            $scope.data_quality_errors = 0;
-            $scope.data_quality_warnings = 0;
-            _.forEach(data, function (datum) {
-              _.forEach(datum.data_quality_results, function (result) {
-                if (result.severity === 'error') $scope.data_quality_errors++;
-                else if (result.severity === 'warning') $scope.data_quality_warnings++;
+          // Submit the data quality checks and wait for the results
+          data_quality_service.start_data_quality_checks_for_import_file(user_service.get_organization().id , $scope.import_file.id).then(function (response) {
+            data_quality_service.data_quality_checks_status(response.progress_key).then(function (check_result) {
+               // Fetch data quality check results
+              $scope.data_quality_results_ready = false;
+              $scope.data_quality_results = data_quality_service.get_data_quality_results(user_service.get_organization().id, check_result.unique_id);
+              $scope.data_quality_results.then(function (data) {
+                $scope.data_quality_results_ready = true;
+                $scope.data_quality_errors = 0;
+                $scope.data_quality_warnings = 0;
+                _.forEach(data, function (datum) {
+                  _.forEach(datum.data_quality_results, function (result) {
+                    if (result.severity === 'error') $scope.data_quality_errors++;
+                    else if (result.severity === 'warning') $scope.data_quality_warnings++;
+                  });
+                });
               });
             });
           });
-        });
-      };
-
-      /** wait for the result of the data quality results before presenting the mapped data **/
-      $scope.data_quality_checks = function () {
-        data_quality_service.data_quality_checks_status(':1:SEED:check_data:PROG:' + $scope.import_file.id).then(function (result) {
-          $scope.get_mapped_buildings();
         });
       };
 
