@@ -247,7 +247,7 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
         #     m.property_state = new_state
         #     m.save()
         #
-        # # Move the old building file to the new state to perserve the history
+        # # Move the old building file to the new state to preserve the history
         # for b in old_state.building_files.all():
         #     b.property_state = new_state
         #     b.save()

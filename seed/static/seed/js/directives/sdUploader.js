@@ -17,7 +17,7 @@
  *  importrecord - int or string - id of import record or dataset
  *
  */
-var UPLOADER_ALLOWED_EXTENSIONS = ['csv', 'xls', 'xlsx', 'xml'];
+var UPLOADER_ALLOWED_EXTENSIONS = ['csv', 'xls', 'xlsx'];
 
 var makeS3Uploader = function (scope, element) {
   var uploader = new qq.s3.FineUploader({
@@ -282,10 +282,131 @@ var makeFileSystemUploader = function (scope, element) {
   return uploader;
 };
 
+var makeBuildingSyncUploader = function (scope, element) {
+  var uploader = new qq.FineUploader({
+    element: element[0],
+    request: {
+      endpoint: '/api/v2/building_file/',
+      inputName: 'file',
+      paramsInBody: true,
+      forceMultipart: true,
+      customHeaders: {
+        'X-CSRFToken': BE.csrftoken
+      }
+    },
+    validation: {
+      allowedExtensions: ['xml']
+    },
+    /**
+     * showMessage: callback override for error messages, e.g.
+     * "upload failed", "file too large", etc. This checks to see if the
+     * invalid extension message is the message, and uses the directive's
+     * callback in place of `window.alert` (which in turn uses a bootstrap
+     * alert).
+     */
+    showMessage: function (message) {
+      var invalid_extension = 'invalid extension. Valid extension(s):';
+      if (_.includes(message, invalid_extension)) {
+        scope.eventfunc({message: 'invalid_extension'});
+      } else {
+        window.alert(message);
+      }
+    },
+    text: {
+      uploadButton: scope.buttontext
+    },
+    retry: {
+      enableAuto: true
+    },
+    iframeSupport: {
+      localBlankPathPage: '/success.html'
+    },
+    /**
+     * multiple: only allow one file to be uploaded at a time
+     */
+    multiple: false,
+    maxConnections: 20,
+    callbacks: {
+      /**
+       * onSubmitted: overloaded callback that calls the callback defined
+       * in the element attribute. Passes as arguments to the callback
+       * a message indicating upload has started, "upload_submitted", and
+       * the filename.
+       */
+      onSubmitted: function (id, fileName) {
+        angular.element('.qq-upload-button').hide();
+        scope.eventfunc(
+          {
+            message: 'upload_submitted',
+            file: {filename: fileName}
+          }
+        );
+        var params = {
+          csrf_token: BE.csrftoken,
+          csrf_name: 'csrfmiddlewaretoken',
+          csrf_xname: 'X-CSRFToken',
+          file_type: 1,
+          organization_id: scope.organizationId,
+          cycle_id: scope.cycleId
+        };
+
+        uploader.setParams(params); //wtf fineuploader
+      },
+      /**
+       * onComplete: overloaded callback that calls the callback defined
+       * in the element attribute unless the upload failed, which will
+       * fire a window alert. Passes as arguments to the callback
+       * a message indicating upload has completed, "upload_complete", and
+       * the filename.
+       */
+      onComplete: function (id, fileName, responseJSON) {
+        console.log('responseJSON', responseJSON);
+        if (responseJSON.status !== 'success') {
+          alert('Upload failed.');
+        } else {
+          // TODO
+          scope.eventfunc({
+            message: 'upload_complete',
+            file: {
+              filename: fileName,
+              file_id: responseJSON.import_file_id,
+              cycle_id: (scope.sourceprog === 'PortfolioManager' && scope.$parent.useField) ? 'year_ending' : scope.$parent.selectedCycle.id,
+              source_type: scope.sourcetype,
+              source_program: scope.sourceprog,
+              source_program_version: scope.sourcever
+            }
+          });
+        }
+      },
+      /**
+       * onProgress: overloaded callback that calls the callback defined
+       * in the element attribute. Passes as arguments to the callback
+       * a message indicating upload is in progress, "upload_in_progress",
+       * the filename, and a progress object with two keys: loaded - the
+       * bytes of the file loaded, and total - the total number of bytes
+       * for the file.
+       */
+      onProgress: function (id, fileName, loaded, total) {
+        scope.eventfunc({
+          message: 'upload_in_progress',
+          file: {filename: fileName},
+          progress: {
+            loaded: loaded,
+            total: total
+          }
+        });
+      }
+    }
+  });
+  return uploader;
+};
+
 var sdUploaderFineUploader = function (scope, element, attrs, filename) {
   var dest = window.BE.FILE_UPLOAD_DESTINATION;
   var uploader;
-  if (dest === 'S3') {
+  if (scope.sourcetype === 'BuildingSync') {
+    uploader = makeBuildingSyncUploader(scope, element, attrs, filename);
+  } else if (dest === 'S3') {
     uploader = makeS3Uploader(scope, element, attrs, filename);
   } else if (dest === 'filesystem') {
     uploader = makeFileSystemUploader(scope, element, attrs, filename);
@@ -300,10 +421,12 @@ angular.module('sdUploader', []).directive('sdUploader', function () {
   return {
     scope: {
       buttontext: '@',
-      sourcetype: '@',
+      cycleId: '=',
       eventfunc: '&',
       importrecord: '=',
+      organizationId: '=',
       sourceprog: '@',
+      sourcetype: '@',
       sourcever: '='
     },
     restrict: 'A',
