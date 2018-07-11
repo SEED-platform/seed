@@ -205,5 +205,3 @@ FAKE_MAPPINGS = {
         'year_built': u'Year Built'
     },
 }
-
-

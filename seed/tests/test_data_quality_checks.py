@@ -11,6 +11,7 @@ from seed.models.data_quality import (
     DataQualityCheck,
     Rule,
     TYPE_AREA,
+    TYPE_STRING,
     RULE_TYPE_DEFAULT,
     SEVERITY_ERROR,
 )
@@ -129,3 +130,27 @@ class DataQualityCheckTests(DataMappingBaseTestCase):
                     self.assertEqual(violation['detailed_message'], u'Site EUI [525600] > 1000')
 
         self.assertEqual(error_found, True)
+
+    def test_text_match(self):
+        dq = DataQualityCheck.retrieve(self.org.id)
+        dq.remove_all_rules()
+        new_rule = {
+            'table_name': 'PropertyState',
+            'field': 'address_line_1',
+            'data_type': TYPE_STRING,
+            'rule_type': RULE_TYPE_DEFAULT,
+            'severity': SEVERITY_ERROR,
+            'not_null': True,
+            'text_match': 742,
+        }
+        dq.add_rule(new_rule)
+        ps_data = {
+            'no_default_data': True,
+            'custom_id_1': 'abcd',
+            'address_line_1': '742 Evergreen Terrace',
+            'pm_property_id': 'PMID',
+            'site_eui': 525600,
+        }
+        ps = self.property_state_factory.get_property_state(None, **ps_data)
+        dq.check_data(ps.__class__.__name__, [ps])
+        self.assertEqual(dq.results, {})
