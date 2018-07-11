@@ -314,8 +314,6 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        */
       $scope.find_matches = function () {
         matching_service.start_system_matching($scope.dataset.import_file_id).then(function (data) {
-          console.log('start system matching');
-          console.dir(data);
           if (_.includes(['error', 'warning'], data.status)) {
             $scope.uploader.complete = true;
             $scope.uploader.in_progress = false;
@@ -325,15 +323,15 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             $scope.step_10_error_message = data.message;
             $scope.step_10_title = data.message;
           } else {
-            uploader_service.check_progress_loop(data.progress_key, 0, 1, function (progress_result) {
-              inventory_service.get_matching_results($scope.dataset.import_file_id).then(function (data) {
-                $scope.matched_properties = data.properties.matched;
-                $scope.unmatched_properties = data.properties.unmatched;
-                $scope.matched_taxlots = data.tax_lots.matched;
-                $scope.unmatched_taxlots = data.tax_lots.unmatched;
+            uploader_service.check_progress_loop(data.progress_key, data.progress, 1, function () {
+              inventory_service.get_matching_results($scope.dataset.import_file_id).then(function (result_data) {
+                $scope.matched_properties = result_data.properties.matched;
+                $scope.unmatched_properties = result_data.properties.unmatched;
+                $scope.matched_taxlots = result_data.tax_lots.matched;
+                $scope.unmatched_taxlots = result_data.tax_lots.unmatched;
                 $scope.uploader.complete = true;
                 $scope.uploader.in_progress = false;
-                $scope.uploader.progress = 0;
+                $scope.uploader.progress = 100;
                 if ($scope.matched_properties + $scope.matched_taxlots > 0) {
                   $scope.step.number = 8;
                 } else {
@@ -342,9 +340,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
               });
             }, function () {
               // Do nothing
-            },
-              $scope.uploader
-            );
+            }, $scope.uploader);
           }
         });
       };
