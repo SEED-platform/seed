@@ -369,6 +369,14 @@ angular.module('BE.seed.controller.inventory_detail', [])
         $state.reload();
       };
 
+      $scope.upload_building_sync = function () {
+        // var fi = this.fileInput.nativeElement;
+        var file = document.forms['building-sync-upload']['file'].files[0];
+        var input = new FormData();
+        input.append('file', file);
+        inventory_service.upload_building_sync($scope.inventory.view_id, input);
+      };
+
       /**
        *   init: sets default state of inventory detail page,
        *   sets the field arrays for each section, performs

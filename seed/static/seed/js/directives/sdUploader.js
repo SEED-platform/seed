@@ -335,12 +335,10 @@ var makeBuildingSyncUploader = function (scope, element) {
        */
       onSubmitted: function (id, fileName) {
         angular.element('.qq-upload-button').hide();
-        scope.eventfunc(
-          {
-            message: 'upload_submitted',
-            file: {filename: fileName}
-          }
-        );
+        scope.eventfunc({
+          message: 'upload_submitted',
+          file: {filename: fileName}
+        });
         var params = {
           csrf_token: BE.csrftoken,
           csrf_name: 'csrfmiddlewaretoken',
@@ -360,11 +358,11 @@ var makeBuildingSyncUploader = function (scope, element) {
        * the filename.
        */
       onComplete: function (id, fileName, responseJSON) {
-        console.log('responseJSON', responseJSON);
         if (responseJSON.status !== 'success') {
           alert('Upload failed.');
         } else {
           // TODO
+          console.error('calling eventfunc');
           scope.eventfunc({
             message: 'upload_complete',
             file: {

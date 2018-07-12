@@ -175,6 +175,10 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        *  modal, show the `invalid_extension` alert, and update the progress bar.
        */
       $scope.uploaderfunc = function (event_message, file, progress) {
+        console.error('inside $scope.uploaderfunc');
+        console.error('event_message', event_message);
+        console.error('file', file);
+        console.error('progress', progress);
         if (event_message === 'invalid_extension') {
           $scope.uploader.invalid_extension_alert = true;
         }

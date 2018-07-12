@@ -302,9 +302,9 @@
                 <div class="section_header_container" style="margin-top: 20px; border-bottom: 0;">
                     <div class="section_header fixed_height_short has_no_padding">
                         <div class="section_action_container left" style="width: 50%;">
-                        <span>
-                            <h2><i class="fa fa-sitemap"></i> Scenarios</h2>
-                        </span>
+                            <span>
+                                <h2><i class="fa fa-sitemap"></i> Scenarios</h2>
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -335,6 +335,20 @@
                         </table>
                     </div>
                 </div>
+            </div>
+            <div>
+                <h1>BuildingSync Upload</h1>
+                <form name="building-sync-upload">
+                    <input type="file" name="file">
+                    <button type="button" ng-click="upload_building_sync()">Upload</button>
+                </form>
+                <form method="post" action="/api/v2/building_file/" enctype="multipart/form-data">
+                    <input type="hidden" name="organization_id" value="19">
+                    <input type="hidden" name="cycle_id" value="22">
+                    <input type="hidden" name="file_type" value="1">
+                    <input type="file" name="file">
+                    <button type="submit">Upload</button>
+                </form>
             </div>
         </ng-hide>
     </div>
