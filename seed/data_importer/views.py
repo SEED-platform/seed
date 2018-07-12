@@ -411,7 +411,7 @@ class LocalUploaderViewSet(viewsets.ViewSet):
 
         # Create a new import file object in the database
         f = ImportFile.objects.create(import_record=record,
-                                      uploaded_filename='PortfolioManagerImport',
+                                      uploaded_filename=file_name,
                                       file=path,
                                       source_type=SEED_DATA_SOURCES[PORTFOLIO_RAW],
                                       **{'source_program': 'PortfolioManager',
