@@ -639,7 +639,12 @@ angular.module('BE.seed.controller.inventory_list', [])
               return $scope.inventory_type;
             },
             profile_id: function () {
-              return $scope.currentProfile.id;
+              // Check to see if the profile id is set
+              if ($scope.currentProfile) {
+                return $scope.currentProfile.id;
+              } else {
+                return null;
+              }
             }
           }
         });
