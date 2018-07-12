@@ -225,7 +225,7 @@
         <div class="row" style="padding-bottom:10px">
             <label class="control-label col-lg-4 col-sm-4" for="inputPMReportTemplateName">Report Template Name <small>{$ pm_templates.length ? '(' + pm_templates.length + ')' : '' $}</small></label>
             <div class="col-lg-8 col-sm-8">
-                <select ng-model="pm_template" ng-disabled="!pm_buttons_enabled" ng-options="x.name for x in pm_templates"></select>
+                <select ng-model="pm_template" ng-disabled="!pm_buttons_enabled" ng-options="x.display_name for x in pm_templates"></select>
             </div>
         </div>
         <div class="row" style="padding-bottom:10px">

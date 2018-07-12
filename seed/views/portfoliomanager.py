@@ -90,7 +90,10 @@ class PortfolioManagerViewSet(GenericViewSet):
             try:
                 if 'z_seed_child_row' not in template:
                     return JsonResponse(
-                        {'status': 'error', 'message': 'Invalid template formulation during portfolio manager data import'},
+                        {
+                            'status': 'error',
+                            'message': 'Invalid template formulation during portfolio manager data import'
+                        },
                         status=status.HTTP_400_BAD_REQUEST
                     )
                 if template['z_seed_child_row']:
@@ -104,15 +107,28 @@ class PortfolioManagerViewSet(GenericViewSet):
                 )
             try:
                 content_object = xmltodict.parse(content)
-            except Exception:  # catch all because xmltodict doesn't specify a class of Exceptions (just ParsingInterrupted)
-                return JsonResponse({'status': 'error', 'message': 'Malformed XML from template download'}, status=500)
+            except Exception:  # catch all because xmltodict doesn't specify a class of Exceptions
+                return JsonResponse(
+                    {'status': 'error', 'message': 'Malformed XML from template download'},
+                    status=status.HTTP_400_BAD_REQUEST)
             try:
-                properties = content_object['report']['informationAndMetrics']['row']
+                possible_properties = content_object['report']['informationAndMetrics']['row']
+                if isinstance(possible_properties, list):
+                    properties = possible_properties
+                else:  # OrderedDict, anything else
+                    return JsonResponse(
+                        {
+                            'status': 'error',
+                            'message': 'Property list was not a list...was a preview report template used on accident?'
+                        },
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
             except KeyError:
                 return JsonResponse(
                     {
                         'status': 'error', 'message':
-                        'Processed template successfully, but missing keys -- is the template empty on Portfolio Manager?'
+                        'Processed template successfully, but missing keys -- is the report empty on Portfolio Manager?'
                     },
                     status=status.HTTP_400_BAD_REQUEST
                 )
@@ -184,8 +200,10 @@ class PortfolioManagerImport(object):
             raise PMExcept("Could not find rows key in template response; aborting.")
         templates = template_object["rows"]
         template_response = []
-        for t in templates:
+        sorted_templates = sorted(templates, key=lambda x: x['name'])
+        for t in sorted_templates:
             t['z_seed_child_row'] = False
+            t['display_name'] = t['name']
             template_response.append(t)
             if 'id' not in t or 'name' not in t:
                 _log.debug("Template from Portfolio Manager was missing id or name field")
@@ -208,6 +226,7 @@ class PortfolioManagerImport(object):
                 _log.debug("Received the following child JSON return: " + json.dumps(child_object, indent=2))
                 for child_row in child_object:
                     child_row['z_seed_child_row'] = True
+                    child_row['display_name'] = "  -  %s" % child_row['name']
                     template_response.append(child_row)
         return template_response
 
@@ -269,8 +288,9 @@ class PortfolioManagerImport(object):
 
         # Finally we can download the generated report
         template_report_name = urllib.quote(matched_template["name"]) + ".xml"
-        download_url = "https://portfoliomanager.energystar.gov/pm/reports/template/download/%s/XML/false/%s" % (
-            str(template_report_id), template_report_name
+        sanitized_template_report_name = template_report_name.replace('/', '_')
+        download_url = "https://portfoliomanager.energystar.gov/pm/reports/template/download/%s/XML/false/%s?testEnv=false" % (
+            str(template_report_id), sanitized_template_report_name
         )
         try:
             response = requests.get(download_url, headers=self.authenticated_headers)
@@ -298,11 +318,12 @@ class PortfolioManagerImport(object):
         # Get the name of the report template, first read the name from the dictionary, then encode it and url quote it
         template_report_name = matched_data_request["name"] + u".xml"
         template_report_name = urllib.quote(template_report_name.encode('utf8'))
+        sanitized_template_report_name = template_report_name.replace('/', '_')
 
         # Generate the url to download this file
         url = "https://portfoliomanager.energystar.gov/pm/reports/template/download/{0}/XML/false/{1}?testEnv=false"
         download_url = url.format(
-            str(template_report_id), template_report_name
+            str(template_report_id), sanitized_template_report_name
         )
         try:
             response = requests.get(download_url, headers=self.authenticated_headers)
