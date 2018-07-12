@@ -11,10 +11,10 @@ from django.core.urlresolvers import reverse, reverse_lazy
 from django.test import TestCase
 from django.utils import timezone
 
-from seed import decorators
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
 from seed.lib.mcm.reader import ROW_DELIMITER
+from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.models import OrganizationUser
 from seed.models import (
     Column,
@@ -32,7 +32,6 @@ from seed.test_helpers.fake import (
     FakePropertyFactory, FakePropertyStateFactory,
     FakeTaxLotStateFactory
 )
-from seed.utils.cache import set_cache
 from seed.utils.organizations import create_organization
 
 DEFAULT_CUSTOM_COLUMNS = [
@@ -488,20 +487,18 @@ class TestMCMViews(TestCase):
 
     def test_progress(self):
         """Make sure we retrieve data from cache properly."""
-        progress_key = decorators.get_prog_key('fun_func', 23)
-        test_progress = {
-            'progress': 50.0,
-            'status': 'parsing',
-            'progress_key': progress_key
-        }
-        set_cache(progress_key, 'parsing', test_progress)
-        resp = self.client.get(reverse('api:v2:progress-detail', args=[progress_key]),
+        progress_data = ProgressData(func_name='fun_func', unique_id=23)
+        progress_data.total = 2
+        progress_data.save()
+        progress_data.step('Some Status Message')  # bump to 50%
+
+        resp = self.client.get(reverse('api:v2:progress-detail', args=[progress_data.key]),
                                content_type='application/json')
 
         self.assertEqual(resp.status_code, 200)
         body = json.loads(resp.content)
-        self.assertEqual(body.get('progress', 0), test_progress['progress'])
-        self.assertEqual(body.get('progress_key', ''), progress_key)
+        self.assertEqual(body.get('progress', None), 50)
+        self.assertEqual(body.get('status_message', None), progress_data.data['status_message'])
 
     def test_create_dataset(self):
         """tests the create_dataset view, allows duplicate dataset names"""
@@ -686,9 +683,9 @@ class InventoryViewTests(DeleteModelsTestCase):
 
         # test writing the field -- does not work for pint fields, but other fields should persist fine
         # /api/v2/properties/4/?cycle_id=4&organization_id=3
-        url = reverse('api:v2:properties-detail',
-                      args=[pv.id]) + '?cycle_id=%s&organization_id=%s' % (
-            self.cycle.id, self.org.id)
+        url = reverse(
+            'api:v2:properties-detail', args=[pv.id]
+        ) + '?cycle_id=%s&organization_id=%s' % (self.cycle.id, self.org.id)
         params = {
             'state': {
                 'gross_floor_area': 11235,

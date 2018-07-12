@@ -290,6 +290,7 @@ class ImportRecord(NotDeletableModel):
         else:
             return 100
 
+    # TODO #239: This code is definitley not sued anymore... should delete!
     @property
     def merge_progress_key(self):
         """
