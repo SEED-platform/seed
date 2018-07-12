@@ -34,6 +34,7 @@ class ProgressData(object):
         else:
             self.data = {}
             self.data['status'] = 'not-started'
+            self.data['status_message'] = ''
             self.data['progress'] = 0
             self.data['progress_key'] = self.key
             self.data['unique_id'] = self.unique_id
@@ -127,7 +128,7 @@ class ProgressData(object):
         if self.data['total']:
             self.total = self.data['total']
 
-    def step(self):
+    def step(self, status_message=''):
         "Step the function by increment_value and save back to the cache"
         # load the latest value out of the cache
         self.load()
@@ -140,6 +141,7 @@ class ProgressData(object):
 
         self.data['progress'] = value
         self.data['status'] = 'parsing'
+        self.data['status_message'] = status_message
 
         self.save()
 

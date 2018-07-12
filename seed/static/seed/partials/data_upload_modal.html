@@ -73,7 +73,7 @@
                  translate-values="{ dataset_filename: dataset.filename }"></div>
 
             <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
-            <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$ uploader.status_message | translate $}</div>
+            <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$ uploader.status_message ? ': ' + uploader.status_message : '' $}</div>
         </div>
         <div ng-hide="uploader.in_progress" style="margin-top: 30px;">
             <div>
@@ -102,7 +102,7 @@
                          translate-values="{ dataset_filename: dataset.filename }"></div>
 
                     <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
-                    <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$ uploader.status_message | translate$}</div>
+                    <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$ uploader.status_message ? ': ' + uploader.status_message : '' $}</div>
                 </div>
             </div>
         </div>
@@ -132,7 +132,7 @@
                     <div class="progress_bar_copy_top">{$:: 'Finding inventory matches for' | translate $}
                         <strong>{$ dataset.filename $}</strong></div>
                     <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
-                    <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $}</div>
+                    <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$ uploader.status_message ? ': ' + uploader.status_message : '' $}</div>
                 </div>
             </div>
         </div>

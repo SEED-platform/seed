@@ -469,7 +469,7 @@ angular.module('BE.seed.controller.mapping', [])
           $log.error(response);
         }).finally(function () {
           // Submit the data quality checks and wait for the results
-          data_quality_service.start_data_quality_checks_for_import_file(user_service.get_organization().id , $scope.import_file.id).then(function (response) {
+          data_quality_service.start_data_quality_checks_for_import_file(user_service.get_organization().id, $scope.import_file.id).then(function (response) {
             data_quality_service.data_quality_checks_status(response.progress_key).then(function (check_result) {
                // Fetch data quality check results
               $scope.data_quality_results_ready = false;

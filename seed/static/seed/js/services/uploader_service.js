@@ -85,6 +85,7 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
       uploader_factory.check_progress(progress_key).then(function (data) {
         $timeout(function () {
           progress_bar_obj.progress = (data.progress * multiplier) + offset;
+          progress_bar_obj.status_message = data.status_message;
           if (data.progress < 100) {
             uploader_factory.check_progress_loop(progress_key, offset, multiplier, success_fn, failure_fn, progress_bar_obj, debug);
           } else {

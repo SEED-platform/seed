@@ -987,11 +987,12 @@ def _match_properties_and_taxlots(file_pk, progress_key):
     # Don't query the org table here, just get the organization from the import_record
     org = import_file.import_record.super_organization
 
-    # Set the progress to started
-    progress_data.step()
-
     # Return a list of all the properties/tax lots based on the import file.
     all_unmatched_properties = import_file.find_unmatched_property_states()
+
+    # Set the progress to started - 33%
+    progress_data.step('Matching data')
+
     unmatched_properties = []
     unmatched_tax_lots = []
     duplicates_of_existing_property_states = []
@@ -1087,7 +1088,7 @@ def _match_properties_and_taxlots(file_pk, progress_key):
 
     # TODO #239: This is the next slowest... fix me too.
     _log.debug("Start pair_new_states: %s" % dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-    progress_data.step()
+    progress_data.step('Pairing data')
     pair_new_states(merged_property_views, merged_taxlot_views)
     _log.debug("End pair_new_states: %s" % dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
