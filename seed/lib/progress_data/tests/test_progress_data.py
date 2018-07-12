@@ -26,7 +26,7 @@ class TestProgressData(TestCase):
 
         data_eql = {
             'status': 'not-started',
-            'status': '',
+            'status_message': '',
             'stacktrace': None,
             'func_name': 'test_func',
             'progress_key': u':1:SEED:test_func:PROG:abc123',
@@ -66,3 +66,11 @@ class TestProgressData(TestCase):
         self.assertEqual(pd.result()['total'], 525600)
         self.assertEqual(pd.data['status'], 'doing-something')
         self.assertEqual(pd.delete()['total'], None)
+
+    def test_status_message(self):
+        pd = ProgressData(func_name='test_func_5', unique_id='plokij')
+        pd.total = 42
+        pd.step('Stepping')
+
+        self.assertEqual(pd.result()['total'], 42)
+        self.assertEqual(pd.result()['status_message'], 'Stepping')
