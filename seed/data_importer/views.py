@@ -1551,19 +1551,19 @@ class ImportFileViewSet(viewsets.ViewSet):
             }
 
         """
-        import_file_id = pk
+        import_file = ImportFile.objects.get(pk=pk)
 
         # property views associated with this imported file (including merges)
         properties_new = []
         properties_matched = list(PropertyState.objects.filter(
-            import_file__pk=import_file_id,
+            import_file__pk=import_file.pk,
             data_state=DATA_STATE_MATCHING,
             merge_state=MERGE_STATE_MERGED,
         ).values_list('id', flat=True))
 
         # Check audit log in case PropertyStates are listed as "new" but were merged into a different property
         properties = list(PropertyState.objects.filter(
-            import_file__pk=import_file_id,
+            import_file__pk=import_file.pk,
             data_state=DATA_STATE_MATCHING,
             merge_state=MERGE_STATE_NEW,
         ))
@@ -1583,14 +1583,14 @@ class ImportFileViewSet(viewsets.ViewSet):
 
         tax_lots_new = []
         tax_lots_matched = list(TaxLotState.objects.only('id').filter(
-            import_file__pk=import_file_id,
+            import_file__pk=import_file.pk,
             data_state=DATA_STATE_MATCHING,
             merge_state=MERGE_STATE_MERGED,
         ).values_list('id', flat=True))
 
         # Check audit log in case TaxLotStates are listed as "new" but were merged into a different tax lot
         taxlots = list(TaxLotState.objects.filter(
-            import_file__pk=import_file_id,
+            import_file__pk=import_file.pk,
             data_state=DATA_STATE_MATCHING,
             merge_state=MERGE_STATE_NEW,
         ))
@@ -1607,15 +1607,27 @@ class ImportFileViewSet(viewsets.ViewSet):
             else:
                 tax_lots_new.append(state.id)
 
+        # merge in any of the matching results from the JSON field
         return {
             'status': 'success',
+            'import_file_records': import_file.matching_results_data.get('import_file_records', None),
             'properties': {
                 'matched': len(properties_matched),
-                'unmatched': len(properties_new)
+                'unmatched': len(properties_new),
+                'all_unmatched': import_file.matching_results_data.get('property_all_unmatched', None),
+                'duplicates': import_file.matching_results_data.get('property_duplicates', None),
+                'duplicates_of_existing': import_file.matching_results_data.get(
+                    'property_duplicates_of_existing', None),
+                'unmatched_copy': import_file.matching_results_data.get('property_unmatched', None),
             },
             'tax_lots': {
                 'matched': len(tax_lots_matched),
-                'unmatched': len(tax_lots_new)
+                'unmatched': len(tax_lots_new),
+                'all_unmatched': import_file.matching_results_data.get('tax_lot_all_unmatched', None),
+                'duplicates': import_file.matching_results_data.get('tax_lot_duplicates', None),
+                'duplicates_of_existing': import_file.matching_results_data.get(
+                    'tax_lot_duplicates_of_existing', None),
+                'unmatched_copy': import_file.matching_results_data.get('tax_lot_unmatched', None),
             }
         }
 

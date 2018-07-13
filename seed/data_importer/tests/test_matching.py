@@ -370,7 +370,7 @@ class TestMatching(DataMappingBaseTestCase):
         self.property_state_factory.get_property_state(
             no_default_data=True,
             address_line_1='123 same address',
-            release_date=datetime.datetime(2010, 01, 01, 01, 01, tzinfo=tz.get_current_timezone()),
+            release_date=datetime.datetime(2010, 1, 1, 1, 1, tzinfo=tz.get_current_timezone()),
             site_eui=25,
             import_file_id=self.import_file.id,
             data_state=DATA_STATE_MAPPING,
@@ -379,7 +379,7 @@ class TestMatching(DataMappingBaseTestCase):
         self.property_state_factory.get_property_state(
             no_default_data=True,
             address_line_1='123 same address',
-            release_date=datetime.datetime(2015, 01, 01, 01, 01, tzinfo=tz.get_current_timezone()),
+            release_date=datetime.datetime(2015, 1, 1, 1, 1, tzinfo=tz.get_current_timezone()),
             site_eui=150,
             import_file_id=self.import_file.id,
             data_state=DATA_STATE_MAPPING,
@@ -388,7 +388,7 @@ class TestMatching(DataMappingBaseTestCase):
         self.property_state_factory.get_property_state(
             no_default_data=True,
             address_line_1='123 same address',
-            release_date=datetime.datetime(2005, 01, 01, 01, 01, tzinfo=tz.get_current_timezone()),
+            release_date=datetime.datetime(2005, 1, 1, 1, 1, tzinfo=tz.get_current_timezone()),
             site_eui=300,
             import_file_id=self.import_file.id,
             data_state=DATA_STATE_MAPPING,
