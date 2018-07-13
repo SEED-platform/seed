@@ -330,23 +330,25 @@ angular.module('BE.seed.controller.inventory_list', [])
 
         data_quality_service.start_data_quality_checks(property_states, taxlot_states).then(function (response) {
           data_quality_service.data_quality_checks_status(response.progress_key).then(function (result) {
-            var modalInstance = $uibModal.open({
-              templateUrl: urls.static_url + 'seed/partials/data_quality_modal.html',
-              controller: 'data_quality_modal_controller',
-              size: 'lg',
-              resolve: {
-                dataQualityResults: function () {
-                  return result;
-                },
-                name: _.constant(null),
-                uploaded: _.constant(null),
-                importFileId: _.constant(response.progress_key.split(':').pop()),
-                orgId: _.constant(user_service.get_organization().id)
-              }
-            });
-            modalInstance.result.then(function () {
-              //dialog was closed with 'Done' button.
-              get_labels();
+            data_quality_service.get_data_quality_results(user_service.get_organization().id, result.unique_id).then(function(dq_result) {
+              var modalInstance = $uibModal.open({
+                templateUrl: urls.static_url + 'seed/partials/data_quality_modal.html',
+                controller: 'data_quality_modal_controller',
+                size: 'lg',
+                resolve: {
+                  dataQualityResults: function () {
+                    return dq_result;
+                  },
+                  name: _.constant(null),
+                  uploaded: _.constant(null),
+                  importFileId: _.constant(result.unique_id),
+                  orgId: _.constant(user_service.get_organization().id)
+                }
+              });
+              modalInstance.result.then(function () {
+                //dialog was closed with 'Done' button.
+                get_labels();
+              });
             });
           }).finally(function () {
             spinner_utility.hide();

@@ -11,7 +11,6 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 
 from seed.data_importer import tasks
 from seed.data_importer.tests.util import (
-    DataMappingBaseTestCase,
     FAKE_EXTRA_DATA,
     FAKE_MAPPINGS,
     FAKE_ROW,
@@ -25,6 +24,7 @@ from seed.models import (
     DATA_STATE_MAPPING,
     ASSESSED_RAW,
 )
+from seed.tests.util import DataMappingBaseTestCase
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +38,7 @@ class TestCaseA(DataMappingBaseTestCase):
         self.fake_row = FAKE_ROW
         selfvars = self.set_up(import_file_source_type)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
-        filepath = osp.join(osp.dirname(__file__), 'data', filename)
+        filepath = osp.join(osp.dirname(__file__), '..', 'data', filename)
         self.import_file.file = SimpleUploadedFile(
             name=filename,
             content=open(filepath, 'rb').read()
@@ -46,7 +46,7 @@ class TestCaseA(DataMappingBaseTestCase):
         self.import_file.save()
 
     def test_import_file(self):
-        tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
+        tasks.save_raw_data(self.import_file.pk)
         Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.pk)
         tasks.map_data(self.import_file.pk)
 
@@ -59,7 +59,7 @@ class TestCaseA(DataMappingBaseTestCase):
 
     def test_match_buildings(self):
         """ case A (one property <-> one tax lot) """
-        tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
+        tasks.save_raw_data(self.import_file.pk)
         Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.pk)
         tasks.map_data(self.import_file.pk)
 
