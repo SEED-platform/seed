@@ -21,7 +21,7 @@ from django.db.models import Q
 from django.utils import timezone
 from django.utils.timesince import timesince
 from django_extensions.db.models import TimeStampedModel
-
+from django.contrib.postgres.fields import JSONField
 from config.utils import de_camel_case
 from seed.data_importer.managers import NotDeletedManager
 from seed.lib.mcm.reader import ROW_DELIMITER
@@ -671,6 +671,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     mapping_error_messages = models.TextField(blank=True, null=True)
     matching_completion = models.IntegerField(blank=True, null=True)
     matching_done = models.BooleanField(default=False)
+    matching_results_data = JSONField(default=dict, blank=True)
     num_coercion_errors = models.IntegerField(blank=True, null=True, default=0)
     num_coercions_total = models.IntegerField(blank=True, null=True, default=0)
     num_columns = models.IntegerField(blank=True, null=True)

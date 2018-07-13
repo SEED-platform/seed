@@ -325,6 +325,12 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           } else {
             uploader_service.check_progress_loop(data.progress_key, data.progress, 1, function () {
               inventory_service.get_matching_results($scope.dataset.import_file_id).then(function (result_data) {
+                $scope.duplicate_property_states = result_data.properties.duplicates;
+                $scope.duplicate_tax_lot_states = result_data.tax_lots.duplicates;
+                $scope.duplicates_of_existing_property_states = result_data.properties.duplicates_of_existing;
+                $scope.duplicates_of_existing_taxlot_states = result_data.tax_lots.duplicates_of_existing;
+                $scope.import_file_records = result_data.import_file_records;
+
                 $scope.matched_properties = result_data.properties.matched;
                 $scope.unmatched_properties = result_data.properties.unmatched;
                 $scope.matched_taxlots = result_data.tax_lots.matched;

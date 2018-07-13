@@ -752,18 +752,22 @@ def match_buildings(file_pk):
     progress_data.save()
 
     chord(_match_properties_and_taxlots.s(file_pk, progress_data.key), interval=15)(
-        finish_matching.si(file_pk, progress_data.key))
+        finish_matching.s(file_pk, progress_data.key))
 
     return progress_data.result()
 
 
 @shared_task(ignore_result=True)
-def finish_matching(import_file_id, progress_key):
+def finish_matching(result, import_file_id, progress_key):
     progress_data = ProgressData.from_key(progress_key)
 
     import_file = ImportFile.objects.get(pk=import_file_id)
     import_file.matching_done = True
     import_file.mapping_completion = 100
+    if isinstance(result, list) and len(result) == 1:
+        import_file.matching_results_data = result[0]
+    else:
+        raise Exception("there are more than one results for matching_results, need to merge")
     import_file.save()
 
     return progress_data.finish_with_success()
@@ -972,7 +976,7 @@ def merge_unmatched_into_views(unmatched_states, partitioner, org, import_file):
     return list(set(matched_views))
 
 
-@shared_task(ignore_result=True)
+@shared_task
 @lock_and_track
 def _match_properties_and_taxlots(file_pk, progress_key):
     """
@@ -1112,18 +1116,17 @@ def _match_properties_and_taxlots(file_pk, progress_key):
         # state.merge_state = MERGE_STATE_DUPLICATE
         state.save()
 
-    data = {
-        'all_unmatched_properties': len(all_unmatched_properties),
-        'all_unmatched_tax_lots': len(all_unmatched_tax_lots),
-        'unmatched_properties': len(unmatched_properties),
-        'unmatched_tax_lots': len(unmatched_tax_lots),
-        'duplicate_property_states': len(duplicate_property_states),
-        'duplicate_tax_lot_states': len(duplicate_tax_lot_states),
-        'duplicates_of_existing_property_states': len(duplicates_of_existing_property_states),
-        'duplicates_of_existing_taxlot_states': len(duplicates_of_existing_taxlot_states)
+    return {
+        'import_file_records': import_file.num_rows,
+        'property_all_unmatched': len(all_unmatched_properties),
+        'property_duplicates': len(duplicate_property_states),
+        'property_duplicates_of_existing': len(duplicates_of_existing_property_states),
+        'property_unmatched': len(unmatched_properties),
+        'tax_lot_all_unmatched': len(all_unmatched_tax_lots),
+        'tax_lot_duplicates': len(duplicate_tax_lot_states),
+        'tax_lot_duplicates_of_existing': len(duplicates_of_existing_taxlot_states),
+        'tax_lot_unmatched': len(unmatched_tax_lots),
     }
-
-    return data
 
 
 def list_canonical_property_states(org_id):
