@@ -5,7 +5,12 @@
 :author
 """
 
-from seed.data_importer.tasks import match_buildings, save_state_match
+from seed.data_importer.tasks import (
+    match_buildings,
+    save_state_match,
+    filter_duplicated_states,
+    match_and_merge_unmatched_objects,
+)
 from seed.models import (
     PropertyView,
     PropertyAuditLog,
@@ -14,6 +19,7 @@ from seed.models import (
     MERGE_STATE_MERGED,
     TaxLotProperty,
     TaxLotView,
+    PropertyState,
 )
 from seed.test_helpers.fake import (
     FakePropertyFactory,
@@ -23,6 +29,9 @@ from seed.test_helpers.fake import (
     FakePropertyViewFactory,
 )
 from seed.tests.util import DataMappingBaseTestCase
+from seed.data_importer.equivalence_partitioner import EquivalencePartitioner
+import datetime
+from django.utils import timezone as tz
 
 COLUMNS_TO_SEND = [
     'project_id',
@@ -36,6 +45,7 @@ COLUMNS_TO_SEND = [
     'extra_data_field',
     'jurisdiction_tax_lot_id'
 ]
+from seed.data_importer.tasks import merge_unmatched_into_views
 
 
 class TestMatching(DataMappingBaseTestCase):
@@ -269,3 +279,137 @@ class TestMatching(DataMappingBaseTestCase):
         self.assertEqual(pal.parent_state1, ps_1)
         self.assertEqual(pal.parent_state2, ps_2)
         self.assertEqual(pal.description, 'Automatic Merge')
+
+    def test_filter_duplicated_states(self):
+        for i in range(10):
+            self.property_state_factory.get_property_state(
+                no_default_data=True,
+                address_line_1='123 The Same Address',
+                # extra_data={"extra_1": "value_%s" % i},
+                import_file_id=self.import_file.id,
+                data_state=DATA_STATE_MAPPING,
+            )
+        for i in range(5):
+            self.property_state_factory.get_property_state(
+                import_file_id=self.import_file.id,
+                data_state=DATA_STATE_MAPPING,
+            )
+
+        props = self.import_file.find_unmatched_property_states()
+        uniq_states, dup_states = filter_duplicated_states(props)
+
+        # There should be 6 uniq states. 5 from the second call, and one of 'The Same Address'
+        self.assertEqual(len(uniq_states), 6)
+        self.assertEqual(len(dup_states), 9)
+
+    def test_match_and_merge_unmatched_objects_all_unique(self):
+        # create some objects to match and merge
+        partitioner = EquivalencePartitioner.make_default_state_equivalence(PropertyState)
+
+        for i in range(10):
+            self.property_state_factory.get_property_state(
+                import_file_id=self.import_file.id,
+                data_state=DATA_STATE_MAPPING,
+            )
+
+        props = self.import_file.find_unmatched_property_states()
+        uniq_states, dup_states = filter_duplicated_states(props)
+        merged, keys = match_and_merge_unmatched_objects(uniq_states, partitioner)
+
+        self.assertEqual(len(merged), 10)
+
+    def test_match_and_merge_unmatched_objects_with_duplicates(self):
+        # create some objects to match and merge
+        partitioner = EquivalencePartitioner.make_default_state_equivalence(PropertyState)
+
+        for i in range(8):
+            self.property_state_factory.get_property_state(
+                import_file_id=self.import_file.id,
+                data_state=DATA_STATE_MAPPING,
+            )
+
+        self.property_state_factory.get_property_state(
+            no_default_data=True,
+            extra_data={'moniker': '12345'},
+            address_line_1='123 same address',
+            site_eui=25,
+            import_file_id=self.import_file.id,
+            data_state=DATA_STATE_MAPPING,
+        )
+
+        self.property_state_factory.get_property_state(
+            no_default_data=True,
+            extra_data={'moniker': '12345'},
+            address_line_1='123 same address',
+            site_eui=150,
+            import_file_id=self.import_file.id,
+            data_state=DATA_STATE_MAPPING,
+        )
+
+        props = self.import_file.find_unmatched_property_states()
+        uniq_states, dup_states = filter_duplicated_states(props)
+        merged, keys = match_and_merge_unmatched_objects(uniq_states, partitioner)
+
+        self.assertEqual(len(merged), 9)
+        self.assertEqual(len(keys), 9)
+
+        # find the ps_cp_1 in the list of merged
+        found = False
+        for ps in merged:
+            if ps.extra_data.get('moniker', None) == '12345':
+                found = True
+                self.assertEqual(ps.site_eui.magnitude, 150)  # from the second record
+        self.assertEqual(found, True)
+
+    def test_match_and_merge_unmatched_objects_with_dates(self):
+        # Make sure that the dates sort correctly! (only testing release_date, but also sorts
+        # on generation_date, then pk
+
+        partitioner = EquivalencePartitioner.make_default_state_equivalence(PropertyState)
+
+        self.property_state_factory.get_property_state(
+            no_default_data=True,
+            address_line_1='123 same address',
+            release_date=datetime.datetime(2010, 01, 01, 01, 01, tzinfo=tz.get_current_timezone()),
+            site_eui=25,
+            import_file_id=self.import_file.id,
+            data_state=DATA_STATE_MAPPING,
+        )
+
+        self.property_state_factory.get_property_state(
+            no_default_data=True,
+            address_line_1='123 same address',
+            release_date=datetime.datetime(2015, 01, 01, 01, 01, tzinfo=tz.get_current_timezone()),
+            site_eui=150,
+            import_file_id=self.import_file.id,
+            data_state=DATA_STATE_MAPPING,
+        )
+
+        self.property_state_factory.get_property_state(
+            no_default_data=True,
+            address_line_1='123 same address',
+            release_date=datetime.datetime(2005, 01, 01, 01, 01, tzinfo=tz.get_current_timezone()),
+            site_eui=300,
+            import_file_id=self.import_file.id,
+            data_state=DATA_STATE_MAPPING,
+        )
+
+        props = self.import_file.find_unmatched_property_states()
+        uniq_states, dup_states = filter_duplicated_states(props)
+        merged, keys = match_and_merge_unmatched_objects(uniq_states, partitioner)
+
+        found = False
+        for ps in merged:
+            found = True
+            self.assertEqual(ps.site_eui.magnitude, 150)  # from the second record
+        self.assertEqual(found, True)
+
+    def test_merge_unmatched_into_views_no_matches(self):
+        """It is very unlikely that any of these states will match since it is using faker."""
+        for i in range(10):
+            self.property_state_factory.get_property_state(
+                import_file_id=self.import_file.id,
+                data_state=DATA_STATE_MAPPING,
+            )
+
+        # merge_unmatched_into_views(unmatched_states, partitioner, org, import_file):

@@ -193,7 +193,7 @@ def _build_cleaner(org):
 
     units = {'types': {}}
     for column in Column.objects.filter(mapped_mappings__super_organization=org).select_related(
-            'unit'):
+        'unit'):
         column_type = 'string'
         if column.unit:
             column_type = _translate_unit_to_type(
@@ -777,11 +777,11 @@ def hash_state_object(obj, include_extra_data=True):
             return getattr(field_obj, field)
 
     m = hashlib.md5()
+    # TODO #239: Column.retrieve_db_field_name_for_hash_comparison should be passed in. Seems slow
     for f in Column.retrieve_db_field_name_for_hash_comparison():
         obj_val = _get_field_from_obj(obj, f)
         m.update(str(f))
         m.update(str(obj_val))
-        # print "{}: {} -> {}".format(field, obj_val, m.hexdigest())
 
     if include_extra_data:
         add_dictionary_repr_to_hash(m, obj.extra_data)
@@ -837,8 +837,6 @@ def match_and_merge_unmatched_objects(unmatched_states, partitioner):
     :param partitioner: instance of EquivalencePartitioner
     :return: [list, list], merged_objects, equivalence_classes keys
     """
-    # _log.debug("Starting to map_and_merge_unmatched_objects")
-
     # Sort unmatched states/This should not be happening!
     unmatched_states.sort(key=lambda state: state.pk)
 
@@ -848,11 +846,13 @@ def match_and_merge_unmatched_objects(unmatched_states, partitioner):
         else:
             return default
 
-    # create lambda function to sort the properties/taxlots by release_data first, then generation_date, and finally
-    # the primary key
-    keyfunction = lambda ndx: (getattrdef(unmatched_states[ndx], "release_date", None),
-                               getattrdef(unmatched_states[ndx], "generation_date", None),
-                               getattrdef(unmatched_states[ndx], "pk", None))
+    # create lambda function to sort the properties/taxlots by release_data first, then generation_
+    # date, and finally the primary key
+    keyfunction = lambda ndx: (
+        getattrdef(unmatched_states[ndx], "release_date", None),
+        getattrdef(unmatched_states[ndx], "generation_date", None),
+        getattrdef(unmatched_states[ndx], "pk", None)
+    )
 
     # This removes any states that are duplicates,
     equivalence_classes = partitioner.calculate_equivalence_classes(unmatched_states)
@@ -862,31 +862,29 @@ def match_and_merge_unmatched_objects(unmatched_states, partitioner):
     merged_objects = []
 
     for (class_key, class_ndxs) in equivalence_classes.items():
-        class_ndxs.sort(key=keyfunction)
-
         if len(class_ndxs) == 1:
+            # If there is only one class_ndx, then just save the object to merged_objects and
+            # move on
             merged_objects.append(unmatched_states[class_ndxs[0]])
-            continue
+        else:
+            class_ndxs.sort(key=keyfunction)
+            unmatched_state_class = [unmatched_states[ndx] for ndx in class_ndxs]
+            merged_result = unmatched_state_class[0]
+            for unmatched in unmatched_state_class[1:]:
+                merged_result = save_state_match(merged_result, unmatched)
 
-        unmatched_state_class = [unmatched_states[ndx] for ndx in class_ndxs]
-        merged_result = unmatched_state_class[0]
-        for unmatched in unmatched_state_class[1:]:
-            merged_result = save_state_match(merged_result, unmatched)
+            merged_objects.append(merged_result)
 
-        # 5/22/18 - I think this needs to be always run, not only if there wasn't more than one unmatched.
-        # else:
-        merged_objects.append(merged_result)
-
-    # _log.debug("DONE with map_and_merge_unmatched_objects")
     return merged_objects, equivalence_classes.keys()
 
 
 def merge_unmatched_into_views(unmatched_states, partitioner, org, import_file):
     """
-    This is fairly inefficient, because we grab all the organization's entire PropertyViews at once.  Surely this can
-    be improved, but the logic is unusual/particularly dynamic here, so hopefully this can be refactored into a better,
-    purely database approach... Perhaps existing_view_states can wrap database calls. Still the abstractions are
-    subtly different (can I refactor the partitioner to use Query objects); it may require a bit of thinking.
+    This is fairly inefficient, because we grab all the organization's entire PropertyViews at once.
+    Surely this can be improved, but the logic is unusual/particularly dynamic here, so hopefully
+    this can be refactored into a better, purely database approach... Perhaps existing_view_states
+    can wrap database calls. Still the abstractions are subtly different (can I refactor the
+    partitioner to use Query objects); it may require a bit of thinking.
 
     :param unmatched_states:
     :param partitioner:
@@ -895,7 +893,8 @@ def merge_unmatched_into_views(unmatched_states, partitioner, org, import_file):
     :return:
     """
 
-    # Cycle coming from the import_file does not make sense here. Makes testing hard. Should be an argument.
+    # Cycle coming from the import_file does not make sense here.
+    # Makes testing hard. Should be an argument.
     current_match_cycle = import_file.cycle
 
     if isinstance(unmatched_states[0], PropertyState):
@@ -910,11 +909,15 @@ def merge_unmatched_into_views(unmatched_states, partitioner, org, import_file):
 
     class_views = ObjectViewClass.objects.filter(
         state__organization=org,
-        cycle_id=current_match_cycle).select_related('state')
+        cycle_id=current_match_cycle
+    ).select_related('state')
     existing_view_states = collections.defaultdict(dict)
     existing_view_state_hashes = set()
+
+    # TODO #239: this is an expensive calculation
     for view in class_views:
         equivalence_can_key = partitioner.calculate_canonical_key(view.state)
+        print equivalence_can_key
         existing_view_states[equivalence_can_key][view.cycle] = view
         existing_view_state_hashes.add(hash_state_object(view.state))
 
@@ -926,7 +929,6 @@ def merge_unmatched_into_views(unmatched_states, partitioner, org, import_file):
             # If an exact duplicate exists, delete the unmatched state
             unmatched.data_state = DATA_STATE_DELETE
             unmatched.save()
-
         else:
             # Look to see if there is a match among the property states of the object.
 
@@ -947,10 +949,10 @@ def merge_unmatched_into_views(unmatched_states, partitioner, org, import_file):
 
                         current_view.state = merged_state
                         current_view.save()
+
                         matched_views.append(current_view)
                     else:
-                        # Grab another view that has the same parent as
-                        # the one we belong to.
+                        # Grab another view that has the same parent as the one we belong to.
                         cousin_view = existing_view_states[key].values()[0]
                         view_parent = getattr(cousin_view, ParentAttrName)
                         new_view = type(cousin_view)()
@@ -998,18 +1000,15 @@ def _match_properties_and_taxlots(file_pk, progress_key):
     duplicates_of_existing_property_states = []
     duplicates_of_existing_taxlot_states = []
     if all_unmatched_properties:
+        property_partitioner = EquivalencePartitioner.make_default_state_equivalence(PropertyState)
+
         # Filter out the duplicates within the import file.
         _log.debug("Start filter_duplicated_states: %s" % dt.datetime.now().strftime(
             "%Y-%m-%d %H:%M:%S"))
         unmatched_properties, duplicate_property_states = filter_duplicated_states(
-            all_unmatched_properties)
+            all_unmatched_properties
+        )
         _log.debug("End filter_duplicated_states: %s" % dt.datetime.now().strftime(
-            "%Y-%m-%d %H:%M:%S"))
-
-        _log.debug("Start make_default_state_equivalence: %s" % dt.datetime.now().strftime(
-            "%Y-%m-%d %H:%M:%S"))
-        property_partitioner = EquivalencePartitioner.make_default_state_equivalence(PropertyState)
-        _log.debug("End make_default_state_equivalence: %s" % dt.datetime.now().strftime(
             "%Y-%m-%d %H:%M:%S"))
 
         # Merge everything together based on the notion of equivalence
@@ -1066,7 +1065,7 @@ def _match_properties_and_taxlots(file_pk, progress_key):
 
         # Take the final merged-on-import objects, and find Views that
         # correspond to it and merge those together.
-        _log.debug("Start merge_unmatched_into_views: %s" % dt.datetime.now().strftime(
+        _log.debug("Start tax_lot merge_unmatched_into_views: %s" % dt.datetime.now().strftime(
             "%Y-%m-%d %H:%M:%S"))
         merged_taxlot_views = merge_unmatched_into_views(
             unmatched_tax_lots,
@@ -1074,7 +1073,7 @@ def _match_properties_and_taxlots(file_pk, progress_key):
             org,
             import_file
         )
-        _log.debug("End merge_unmatched_into_views: %s" % dt.datetime.now().strftime(
+        _log.debug("End tax_lot merge_unmatched_into_views: %s" % dt.datetime.now().strftime(
             "%Y-%m-%d %H:%M:%S"))
 
         # Filter out the exact duplicates found in the previous step
