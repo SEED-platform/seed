@@ -25,22 +25,16 @@ FORMAT_TYPES = {
 
 def _get_cache_key(prefix, import_file_pk):
     """Makes a key like 'SEED:save_raw_data:LOCK:45'."""
-    return make_key(
-        '{0}:{1}'.format(prefix, import_file_pk)
-    )
+    return make_key('{0}:{1}'.format(prefix, import_file_pk))
 
 
 def _get_lock_key(func_name, import_file_pk):
-    return _get_cache_key(
-        LOCK_CACHE_PREFIX.format(func_name), import_file_pk
-    )
+    return _get_cache_key(LOCK_CACHE_PREFIX.format(func_name), import_file_pk)
 
 
 def get_prog_key(func_name, import_file_pk):
     """Return the progress key for the cache"""
-    return _get_cache_key(
-        PROGRESS_CACHE_PREFIX.format(func_name), import_file_pk
-    )
+    return _get_cache_key(PROGRESS_CACHE_PREFIX.format(func_name), import_file_pk)
 
 
 def lock_and_track(fn, *args, **kwargs):

@@ -17,7 +17,6 @@ from rest_framework.decorators import detail_route
 from seed.utils.organizations import create_organization
 from seed import tasks
 from seed.decorators import ajax_request_class
-from seed.decorators import get_prog_key
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.exceptions import TooManyNestedOrgs
@@ -259,17 +258,8 @@ class OrganizationViewSet(viewsets.ViewSet):
                 type: string
                 required: true
         """
-        org_id = pk
-        deleting_cache_key = get_prog_key(
-            'delete_organization_buildings',
-            org_id
-        )
-        tasks.delete_organization.delay(org_id, deleting_cache_key)
-        return JsonResponse({
-            'status': 'success',
-            'progress': 0,
-            'progress_key': deleting_cache_key
-        })
+
+        return JsonResponse(tasks.delete_organization(pk))
 
     @api_endpoint_class
     @ajax_request_class
