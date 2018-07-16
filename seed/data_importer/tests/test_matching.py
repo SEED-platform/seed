@@ -5,6 +5,11 @@
 :author
 """
 
+import datetime
+
+from django.utils import timezone as tz
+
+from seed.data_importer.equivalence_partitioner import EquivalencePartitioner
 from seed.data_importer.tasks import (
     match_buildings,
     save_state_match,
@@ -29,23 +34,9 @@ from seed.test_helpers.fake import (
     FakePropertyViewFactory,
 )
 from seed.tests.util import DataMappingBaseTestCase
-from seed.data_importer.equivalence_partitioner import EquivalencePartitioner
-import datetime
-from django.utils import timezone as tz
 
-COLUMNS_TO_SEND = [
-    'project_id',
-    'address_line_1',
-    'city',
-    'state_province',
-    'postal_code',
-    'pm_parent_property_id',
-    # 'calculated_taxlot_ids',
-    # 'primary',
-    'extra_data_field',
-    'jurisdiction_tax_lot_id'
-]
-from seed.data_importer.tasks import merge_unmatched_into_views
+
+# from seed.data_importer.tasks import merge_unmatched_into_views
 
 
 class TestMatching(DataMappingBaseTestCase):

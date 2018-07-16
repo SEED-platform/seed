@@ -89,7 +89,7 @@ def bool_cleaner(value, *args):
         return False
 
 
-def date_cleaner(value, *args):
+def date_time_cleaner(value, *args):
     """Try to clean value, coerce it into a python datetime."""
     if not value or value == '':
         return None
@@ -107,6 +107,15 @@ def date_cleaner(value, *args):
         return None
 
     return value
+
+
+def date_cleaner(value, *args):
+    """Try to clean value, coerce it into a python datetime, then call .date()"""
+    value = date_time_cleaner(value)
+    if value:
+        return value.date()
+    else:
+        return None
 
 
 def int_cleaner(value, *args):
@@ -158,7 +167,10 @@ class Cleaner(object):
             lambda x: self.schema[x] == u'float', self.schema
         )
         self.date_columns = filter(
-            lambda x: self.schema[x] == u'date' or self.schema[x] == u'datetime', self.schema
+            lambda x: self.schema[x] == u'date', self.schema
+        )
+        self.date_time_columns = filter(
+            lambda x: self.schema[x] == u'datetime', self.schema
         )
         self.string_columns = filter(
             lambda x: self.schema[x] == u'string', self.schema
@@ -198,6 +210,9 @@ class Cleaner(object):
         if value is not None:
             if column_name in self.float_columns:
                 return float_cleaner(value)
+
+            if column_name in self.date_time_columns:
+                return date_time_cleaner(value)
 
             if column_name in self.date_columns:
                 return date_cleaner(value)

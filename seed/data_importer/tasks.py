@@ -24,6 +24,7 @@ from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.db.models import Q
 from django.utils import timezone
+from django.utils.timezone import make_naive
 from unidecode import unidecode
 
 from seed.data_importer.equivalence_partitioner import EquivalencePartitioner
@@ -176,38 +177,6 @@ def finish_mapping(import_file_id, mark_as_done, progress_key):
 
 
 def _build_cleaner(org):
-    """Return a cleaner instance that knows about a mapping's unit types.
-
-    Basically, this just tells us how to try and cast types during cleaning
-    based on the Column definition in the database.
-
-    :param org: organization instance.
-    :returns: dict of dicts. {'types': {'col_name': 'type'},}
-    """
-
-    def _translate_unit_to_type(unit):
-        if unit is None or unit == 'String':
-            return 'string'
-
-        return unit.lower()
-
-    units = {'types': {}}
-    for column in Column.objects.filter(mapped_mappings__super_organization=org).select_related(
-            'unit'):
-        column_type = 'string'
-        if column.unit:
-            column_type = _translate_unit_to_type(
-                column.unit.get_unit_type_display()
-            )
-        units['types'][column.column_name] = column_type
-
-    # Update with our predefined types for our database column types.
-    units['types'].update(Column.retrieve_db_types()['types'])
-
-    return cleaners.Cleaner(units)
-
-
-def _build_cleaner_2(org):
     """Return a cleaner instance that knows about a mapping's unit types
 
     :param org: organization instance
@@ -228,6 +197,12 @@ def _build_cleaner_2(org):
     name.
     """
 
+    def _translate_unit_to_type(unit):
+        if unit is None or unit == 'String':
+            return 'string'
+
+        return unit.lower()
+
     # start with the predefined types
     ontology = {'types': Column.retrieve_db_types()['types']}
 
@@ -235,6 +210,13 @@ def _build_cleaner_2(org):
     for column in query_set:
         # add available pint types as a tuple type
         ontology['types'][column.column_name] = ('quantity', column.units_pint)
+
+    # find all the extra data columns and add them as well
+    for column in Column.objects.filter(organization=org,
+                                        is_extra_data=True).select_related('unit'):
+        if column.unit:
+            column_type = _translate_unit_to_type(column.unit.get_unit_type_display())
+            ontology['types'][column.column_name] = column_type
 
     return cleaners.Cleaner(ontology)
 
@@ -275,7 +257,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
             if not table_mappings[table]:
                 del table_mappings[table]
 
-    map_cleaner = _build_cleaner_2(org)
+    map_cleaner = _build_cleaner(org)
 
     # *** BREAK OUT INTO SEPARATE METHOD ***
     # figure out which import field is defined as the unique field that may have a delimiter of
@@ -379,7 +361,8 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                     hash_state_object(STR_TO_CLASS[table](organization=map_model_obj.organization),
                                       include_extra_data=False):
                     # Skip this object as it has no data...
-                    _log.warn("Skipping property or taxlot during mapping")
+                    _log.warn(
+                        "Skipping property or taxlot during mapping because it is identical to another row")
                     continue
 
                 try:
@@ -774,6 +757,17 @@ def finish_matching(result, import_file_id, progress_key):
 
 
 def hash_state_object(obj, include_extra_data=True):
+    def add_dictionary_repr_to_hash(hash_obj, dict_obj):
+        assert isinstance(dict_obj, dict)
+
+        for (key, value) in sorted(dict_obj.items(), key=lambda x_y: x_y[0]):
+            if isinstance(value, dict):
+                add_dictionary_repr_to_hash(hash_obj, value)
+            else:
+                hash_obj.update(str(key))
+                hash_obj.update(str(value))
+        return hash_obj
+
     def _get_field_from_obj(field_obj, field):
         if not hasattr(field_obj, field):
             return "FOO"  # Return a random value so we can distinguish between this and None.
@@ -781,28 +775,21 @@ def hash_state_object(obj, include_extra_data=True):
             return getattr(field_obj, field)
 
     m = hashlib.md5()
-    # TODO #239: Column.retrieve_db_field_name_for_hash_comparison should be passed in. Seems slow
     for f in Column.retrieve_db_field_name_for_hash_comparison():
         obj_val = _get_field_from_obj(obj, f)
         m.update(str(f))
-        m.update(str(obj_val))
+        if isinstance(obj_val, dt.datetime):
+            # if this is a datetime, then make sure to save the string as a naive datetime.
+            # Somehow, somewhere the data are being saved in mapping with a timezone,
+            # then in matching they are removed (but the time is updated correctly)
+            m.update(str(make_naive(obj_val).isoformat()))
+        else:
+            m.update(str(obj_val))
 
     if include_extra_data:
         add_dictionary_repr_to_hash(m, obj.extra_data)
 
     return m.hexdigest()
-
-
-def add_dictionary_repr_to_hash(hash_obj, dict_obj):
-    assert isinstance(dict_obj, dict)
-
-    for (key, value) in sorted(dict_obj.items(), key=lambda x_y: x_y[0]):
-        if isinstance(value, dict):
-            add_dictionary_repr_to_hash(hash_obj, value)
-        else:
-            hash_obj.update(str(key))
-            hash_obj.update(str(value))
-    return hash_obj
 
 
 def filter_duplicated_states(unmatched_states):

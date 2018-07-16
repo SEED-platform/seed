@@ -442,7 +442,6 @@ def update_taxlot_views(views, number_of_updates):
     for i in range(number_of_updates):
         for taxlot_view in views:
             state = taxlot_view.state
-            state.confidence = random()
             state.pk = None  # set state to None to get a new copy on save
             state.save()
             taxlot_view.update_state(state)

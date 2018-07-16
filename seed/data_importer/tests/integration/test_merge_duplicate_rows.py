@@ -9,6 +9,8 @@ import os.path as osp
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from quantityfield import ureg
+import datetime
+from django.utils import timezone as tz
 
 from seed.data_importer import tasks
 from seed.data_importer.tests.util import (
@@ -23,8 +25,12 @@ from seed.models import (
     Property,
     TaxLotState,
     TaxLot,
+    DATA_STATE_IMPORT,
     DATA_STATE_MAPPING,
+    DATA_STATE_MATCHING,
     ASSESSED_RAW,
+    ASSESSED_BS,
+    MERGE_STATE_MERGED,
 )
 from seed.tests.util import DataMappingBaseTestCase
 
@@ -65,6 +71,61 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
         ps5 = PropertyState(address_line_1='123 fake st')
 
         self.assertEqual(len(set(map(tasks.hash_state_object, [ps1, ps2, ps3, ps4, ps5]))), 5)
+
+        # large PropertyState objects -- make sure size is still 32 (why wouldn't it be?)
+        extra_data = {}
+        for i in range(1000):
+            extra_data["entry_%s" % i] = "Value as string %s" % i
+
+        ps6 = PropertyState(address_line_1='123 fake st', extra_data=extra_data)
+        hash_res = tasks.hash_state_object(ps6)
+        self.assertEqual(len(hash_res), 32)
+
+    def test_hash_various_states(self):
+        """The hashing should not affect the data_state, source, type and various other states"""
+        ps1 = PropertyState.objects.create(
+            organization=self.org,
+            address_line_1='123 fake st',
+            extra_data={"a": "result"},
+            data_state=DATA_STATE_IMPORT,
+            import_file_id=0,
+        )
+        print ps1.hash_object
+
+        ps2 = PropertyState.objects.create(
+            organization=self.org,
+            address_line_1='123 fake st',
+            data_state=DATA_STATE_MATCHING,
+            merge_state=MERGE_STATE_MERGED,
+            import_file_id=27,
+            source_type=ASSESSED_BS,
+            extra_data={"a": "result"},
+
+        )
+        print ps2.hash_object
+        self.assertEqual(ps1.hash_object, ps2.hash_object)
+
+    def test_hash_year_ending(self):
+        ps1 = PropertyState.objects.create(
+            organization=self.org,
+            address_line_1='123 fake st',
+            extra_data={"a": "result"},
+            year_ending=datetime.datetime(2010, 1, 1, 0, 0, tzinfo=tz.get_current_timezone()),
+            data_state=DATA_STATE_IMPORT,
+            import_file_id=0,
+        )
+        print ps1.hash_object
+
+        ps2 = PropertyState.objects.create(
+            organization=self.org,
+            address_line_1='123 fake st',
+            extra_data={"a": "result"},
+            year_ending=datetime.datetime(2010, 1, 1, tzinfo=tz.get_current_timezone()),
+            data_state=DATA_STATE_IMPORT,
+            import_file_id=0,
+        )
+        print ps1.hash_object
+        print ps2.hash_object
 
     def test_import_duplicates(self):
         # Check to make sure all the properties imported
