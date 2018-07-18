@@ -764,8 +764,11 @@ def hash_state_object(obj, include_extra_data=True):
             if isinstance(value, dict):
                 add_dictionary_repr_to_hash(hash_obj, value)
             else:
-                hash_obj.update(str(key))
-                hash_obj.update(str(value))
+                hash_obj.update(str(unidecode(key)))
+                if isinstance(value, basestring):
+                    hash_obj.update(unidecode(value))
+                else:
+                    hash_obj.update(str(value))
         return hash_obj
 
     def _get_field_from_obj(field_obj, field):

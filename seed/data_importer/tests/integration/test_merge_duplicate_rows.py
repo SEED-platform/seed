@@ -105,27 +105,52 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
         print ps2.hash_object
         self.assertEqual(ps1.hash_object, ps2.hash_object)
 
-    def test_hash_year_ending(self):
+    def test_hash_quantity_unicode(self):
+        """The hashing should not affect the data_state, source, type and various other states"""
+        ps1 = PropertyState.objects.create(
+            organization=self.org,
+            address_line_1='123 fake st',
+            extra_data={"a": "result", u"Site EUI²": 90.5, "Unicode in value": u"EUI²"},
+            data_state=DATA_STATE_IMPORT,
+            import_file_id=0,
+        )
+        ps2 = PropertyState.objects.create(
+            organization=self.org,
+            address_line_1='123 fake st',
+            extra_data={"a": "result", u"Site EUI2": 90.5, "Unicode in value": "EUI2"},
+            data_state=DATA_STATE_IMPORT,
+            import_file_id=0,
+        )
+        # print ps1.hash_object
+        self.assertEqual(ps1.hash_object, ps2.hash_object)
+
+    def test_hash_release_date(self):
+        """The hash_state_object method makes the timezones naive, so this should work because
+        the date times are equivalent, even through the database objects are not"""
         ps1 = PropertyState.objects.create(
             organization=self.org,
             address_line_1='123 fake st',
             extra_data={"a": "result"},
-            year_ending=datetime.datetime(2010, 1, 1, 0, 0, tzinfo=tz.get_current_timezone()),
+            release_date=datetime.datetime(2010, 1, 1, 0, 0,
+                                           tzinfo=pytz.timezone('America/Los_Angeles')),
             data_state=DATA_STATE_IMPORT,
             import_file_id=0,
         )
-        print ps1.hash_object
-
         ps2 = PropertyState.objects.create(
             organization=self.org,
             address_line_1='123 fake st',
             extra_data={"a": "result"},
-            year_ending=datetime.datetime(2010, 1, 1, tzinfo=tz.get_current_timezone()),
+            release_date=datetime.datetime(2010, 1, 1, 8, 0, tzinfo=tz.utc),
             data_state=DATA_STATE_IMPORT,
             import_file_id=0,
         )
-        print ps1.hash_object
-        print ps2.hash_object
+
+        # Strings of the date time will not be the same due to the timezone data
+        self.assertNotEqual(str(ps1.release_date), str(ps2.release_date))
+
+        # Hashes will be right though
+        self.assertEqual(ps1.hash_object, ps2.hash_object)
+
 
     def test_import_duplicates(self):
         # Check to make sure all the properties imported
