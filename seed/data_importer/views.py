@@ -341,8 +341,26 @@ class LocalUploaderViewSet(viewsets.ViewSet):
             this_row.append(csv_header)
         rows.append(this_row)
 
+        num_properties = len(request.data['properties'])
+        property_num = 0
+        last_time = datetime.datetime.now()
+
+        _log.debug("About to try to import %s properties from ESPM" % num_properties)
+        _log.debug("Starting at %s" % last_time)
+
         # Create a single row for each building
         for pm_property in request.data['properties']:
+
+            # temporarily stop at 10 properties, make this a background task with progress bar so we don't hit a timeout
+            if property_num > 10:
+                break
+
+            # report some helpful info
+            property_num += 1
+            if property_num / 10.0 == property_num / 10:
+                new_time = datetime.datetime.now()
+                _log.debug("On property number %s; current time: %s" % (property_num, new_time))
+
             this_row = []
 
             # Loop through all known PM variables
