@@ -8,6 +8,8 @@ All rights reserved.  # NOQA
 :author Paul Munday <paul@paulmunday.net>
 """
 import json
+import os
+from unittest import skipIf
 
 from django.core.urlresolvers import reverse_lazy
 from django.test import TestCase
@@ -35,7 +37,7 @@ class PortfolioManagerImportTest(TestCase):
             PortfolioManagerImport.get_template_by_name(template_set, 'missing')
 
 
-class PortfolioManagerViewTests(TestCase):
+class PortfolioManagerTemplateListViewTestsFailure(TestCase):
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -99,6 +101,25 @@ class PortfolioManagerViewTests(TestCase):
         self.assertIn('message', data)
         self.assertEqual('error', data['status'])
         self.assertIn('Check credentials.', data['message'])
+
+
+skip_pm_tests = skipIf(
+    os.environ.get('SEED_ESPM_UN', False) or os.environ.get('SEED_ESPM_PW', False),
+    'Cannot run expect-pass ESPM unit tests without SEED_ESPM_UN and SEED_ESPM_PW in environment'
+)
+
+
+class PortfolioManagerTemplateListViewTestsSuccess(TestCase):
+
+    def setUp(self):
+        pass
+
+    @skip_pm_tests
+    def test_a(self):
+        print("Running test_a")
+
+
+class PortfolioManagerReportGenerationViewTests(TestCase):
 
     def test_report_interface_no_username(self):
         resp = self.client.post(

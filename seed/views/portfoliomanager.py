@@ -115,7 +115,7 @@ class PortfolioManagerViewSet(GenericViewSet):
                 possible_properties = content_object['report']['informationAndMetrics']['row']
                 if isinstance(possible_properties, list):
                     properties = possible_properties
-                else:  # OrderedDict, anything else
+                else:  # OrderedDict hints that a 'preview' report was generated, anything else is an unhandled case
                     return JsonResponse(
                         {
                             'status': 'error',
@@ -123,7 +123,6 @@ class PortfolioManagerViewSet(GenericViewSet):
                         },
                         status=status.HTTP_400_BAD_REQUEST
                     )
-
             except KeyError:
                 return JsonResponse(
                     {
