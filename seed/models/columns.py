@@ -184,7 +184,6 @@ class Column(models.Model):
         'data_state',
         'import_file',
         'merge_state',
-        'confidence',
         'extra_data',
     ] + EXCLUDED_COLUMN_RETURN_FIELDS
 

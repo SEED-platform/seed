@@ -99,9 +99,6 @@ class PropertyState(models.Model):
     data_state = models.IntegerField(choices=DATA_STATE, default=DATA_STATE_UNKNOWN)
     merge_state = models.IntegerField(choices=MERGE_STATE, default=MERGE_STATE_UNKNOWN, null=True)
 
-    # Is this still being used during matching? Apparently so.
-    confidence = models.FloatField(default=0, null=True, blank=True)
-
     jurisdiction_property_id = models.CharField(max_length=255, null=True, blank=True)
 
     custom_id_1 = models.CharField(max_length=255, null=True, blank=True)

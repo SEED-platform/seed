@@ -55,8 +55,6 @@ class TaxLotState(models.Model):
     # because these are the most 'public' fields in terms of
     # communicating with the cities.
 
-    confidence = models.FloatField(default=0, null=True, blank=True)
-
     # Support finding the property by the import_file
     import_file = models.ForeignKey(ImportFile, null=True, blank=True)
 
