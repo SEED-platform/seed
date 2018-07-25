@@ -22,20 +22,20 @@ _log = logging.getLogger(__name__)
 
 class BuildingSync(object):
     ADDRESS_STRUCT = {
-        "root": "auc:Audits.auc:Audit.auc:Sites.auc:Site.auc:Address",
+        "root": "n1:Audits.n1:Audit.n1:Sites.n1:Site.n1:Address",
         "return": {
             "address_line_1": {
-                "path": "auc:StreetAddressDetail.auc:Simplified.auc:StreetAddress",
+                "path": "n1:StreetAddressDetail.n1:Simplified.n1:StreetAddress",
                 "required": True,
                 "type": "string",
             },
             "city": {
-                "path": "auc:City",
+                "path": "n1:City",
                 "required": True,
                 "type": "string",
             },
             "state": {
-                "path": "auc:State",
+                "path": "n1:State",
                 "required": True,
                 "type": "string",
             }
@@ -43,100 +43,90 @@ class BuildingSync(object):
     }
 
     BRICR_STRUCT = {
-        "root": "auc:Audits.auc:Audit",
+        "root": "n1:Audits.n1:Audit",
         "return": {
             "address_line_1": {
-                "path": "auc:Sites.auc:Site.auc:Address.auc:StreetAddressDetail.auc:Simplified.auc:StreetAddress",
+                "path": "n1:Sites.n1:Site.n1:Address.n1:StreetAddressDetail.n1:Simplified.n1:StreetAddress",
                 "required": True,
                 "type": "string",
             },
             "city": {
-                "path": "auc:Sites.auc:Site.auc:Address.auc:City",
+                "path": "n1:Sites.n1:Site.n1:Address.n1:City",
                 "required": True,
                 "type": "string",
             },
             "state": {
-                "path": "auc:Sites.auc:Site.auc:Address.auc:State",
+                "path": "n1:Sites.n1:Site.n1:Address.n1:State",
                 "required": True,
                 "type": "string",
             },
             "longitude": {
-                "path": "auc:Sites.auc:Site.auc:Longitude",
+                "path": "n1:Sites.n1:Site.n1:Longitude",
                 "required": True,
                 "type": "double"
             },
             "latitude": {
-                "path": "auc:Sites.auc:Site.auc:Latitude",
+                "path": "n1:Sites.n1:Site.n1:Latitude",
                 "required": True,
                 "type": "double",
             },
             "property_name": {
-                "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.@ID",
+                "path": "n1:Sites.n1:Site.n1:Facilities.n1:Facility.@ID",
                 "required": True,
                 "type": "string",
             },
             "year_built": {
-                "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:YearOfConstruction",
+                "path": "n1:Sites.n1:Site.n1:Facilities.n1:Facility.n1:YearOfConstruction",
                 "required": True,
                 "type": "integer",
             },
-            "property_type": {
-                "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:FacilityClassification",
-                "required": True,
-                "type": "string",
-            },
-            "occupancy_type": {
-                "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:OccupancyClassification",
-                "required": True,
-                "type": "string",
-            },
             "floors_above_grade": {
-                "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:FloorsAboveGrade",
+                "path": "n1:Sites.n1:Site.n1:Facilities.n1:Facility.n1:FloorsAboveGrade",
                 "required": True,
                 "type": "integer",
             },
             "floors_below_grade": {
-                "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:FloorsBelowGrade",
+                "path": "n1:Sites.n1:Site.n1:Facilities.n1:Facility.n1:FloorsBelowGrade",
                 "required": True,
                 "type": "integer",
             },
             "premise_identifier": {
-                "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:PremisesIdentifiers.auc:PremisesIdentifier",
-                "key_path_name": "auc:IdentifierLabel",
+                "path": "n1:Sites.n1:Site.n1:Facilities.n1:Facility.n1:PremisesIdentifiers.n1:PremisesIdentifier",
+                "key_path_name": "n1:IdentifierLabel",
                 "key_path_value": "Assessor parcel number",
-                "value_path_name": "auc:IdentifierValue",
+                "value_path_name": "n1:IdentifierValue",
                 "required": True,
                 "type": "string",
             },
             "custom_id_1": {
-                "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:PremisesIdentifiers.auc:PremisesIdentifier",
-                "key_path_name": "auc:IdentifierCustomName",
-                "key_path_value": "Custom ID",
-                "value_path_name": "auc:IdentifierValue",
+                "path": "n1:Sites.n1:Site.n1:Facilities.n1:Facility.n1:PremisesIdentifiers.n1:PremisesIdentifier",
+                "key_path_name": "n1:IdentifierCustomName",
+                "key_path_value": "BRICR Custom ID 1",
+                "value_path_name": "n1:IdentifierValue",
                 "required": True,
                 "type": "string",
             },
             "gross_floor_area": {
-                "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:FloorAreas.auc:FloorArea",
-                "key_path_name": "auc:FloorAreaType",
+                "path": "n1:Sites.n1:Site.n1:Facilities.n1:Facility.n1:FloorAreas.n1:FloorArea",
+                "key_path_name": "n1:FloorAreaType",
                 "key_path_value": "Gross",
-                "value_path_name": "auc:FloorAreaValue",
+                "value_path_name": "n1:FloorAreaValue",
                 "required": True,
                 "type": "double",
             },
             "net_floor_area": {
-                "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:FloorAreas.auc:FloorArea",
-                "key_path_name": "auc:FloorAreaType",
+                "path": "n1:Sites.n1:Site.n1:Facilities.n1:Facility.n1:FloorAreas.n1:FloorArea",
+                "key_path_name": "n1:FloorAreaType",
                 "key_path_value": "Net",
-                "value_path_name": "auc:FloorAreaValue",
+                "value_path_name": "n1:FloorAreaValue",
                 "required": False,
                 "type": "double",
             },
             "footprint_floor_area": {
-                "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:FloorAreas.auc:FloorArea",
-                "key_path_name": "auc:FloorAreaType",
+                "path": "n1:Sites.n1:Site.n1:Facilities.n1:Facility.n1:FloorAreas.n1:FloorArea",
+                "key_path_name": "n1:FloorAreaType",
                 "key_path_value": "Footprint",
-                "value_path_name": "auc:FloorAreaValue",
+                "value_path_name": "n1:FloorAreaValue",
                 "required": False,
                 "type": "double",
             },
@@ -165,7 +155,7 @@ class BuildingSync(object):
                     xmlfile.read(),
                     process_namespaces=True,
                     namespaces={
-                        'http://nrel.gov/schemas/bedes-auc/2014': 'auc',
+                        'http://nrel.gov/schemas/bedes-auc/2014': 'n1',
                         'http://www.w3.org/2001/XMLSchema-instance': 'xsi',
                     }
                 )
@@ -195,13 +185,13 @@ class BuildingSync(object):
             new_dict = OrderedDict(
                 [
                     (
-                        u'auc:Audits', OrderedDict(
+                        u'n1:Audits', OrderedDict(
                             [
                                 (u'@xsi:schemaLocation',
-                                 u'http://nrel.gov/schemas/bedes-auc/2014 file:///E:/buildingsync/BuildingSync.xsd'),
+                                 u'http://nrel.gov/schemas/bedes-auc/2014 https://github.com/BuildingSync/schema/releases/download/v0.3/BuildingSync.xsd'),
                                 ('@xmlns', OrderedDict(
                                     [
-                                        (u'auc', u'http://nrel.gov/schemas/bedes-auc/2014'),
+                                        (u'n1', u'http://nrel.gov/schemas/bedes-auc/2014'),
                                         (u'xsi', u'http://www.w3.org/2001/XMLSchema-instance')
                                     ]
                                 ))
@@ -293,16 +283,16 @@ class BuildingSync(object):
 
         .. code:
 
-            <auc:FloorAreas>
-                <auc:FloorArea>
-                    <auc:FloorAreaType>Gross</auc:FloorAreaType>
-                    <auc:FloorAreaValue>25000</auc:FloorAreaValue>
-                </auc:FloorArea>
-                <auc:FloorArea>
-                    <auc:FloorAreaType>Net</auc:FloorAreaType>
-                    <auc:FloorAreaValue>22500</auc:FloorAreaValue>
-                </auc:FloorArea>
-            </auc:FloorAreas>
+            <n1:FloorAreas>
+                <n1:FloorArea>
+                    <n1:FloorAreaType>Gross</n1:FloorAreaType>
+                    <n1:FloorAreaValue>25000</n1:FloorAreaValue>
+                </n1:FloorArea>
+                <n1:FloorArea>
+                    <n1:FloorAreaType>Net</n1:FloorAreaType>
+                    <n1:FloorAreaValue>22500</n1:FloorAreaValue>
+                </n1:FloorArea>
+            </n1:FloorAreas>
 
         :param list_path: String, path to where the list of items start in the dictionary
         :param data: Dict, data to act on
@@ -490,56 +480,56 @@ class BuildingSync(object):
 
         # manually add in parsing of measures and reports because they are a bit different than
         # a straight mapping
-        measures = self._get_node('auc:Audits.auc:Audit.auc:Measures.auc:Measure', data, [])
+        measures = self._get_node('n1:Audits.n1:Audit.n1:Measures.n1:Measure', data, [])
         for m in measures:
-            cat_w_namespace = m['auc:TechnologyCategories']['auc:TechnologyCategory'].keys()[0]
-            category = cat_w_namespace.replace('auc:', '')
+            cat_w_namespace = m['n1:TechnologyCategories']['n1:TechnologyCategory'].keys()[0]
+            category = cat_w_namespace.replace('n1:', '')
             new_data = {
                 'property_measure_name': m.get('@ID'),  # This will be the IDref from the scenarios
                 'category': _snake_case(category),
-                'name': m['auc:TechnologyCategories']['auc:TechnologyCategory'][cat_w_namespace][
-                    'auc:MeasureName']
+                'name': m['n1:TechnologyCategories']['n1:TechnologyCategory'][cat_w_namespace][
+                    'n1:MeasureName']
             }
             for k, v in m.items():
-                if k in ['@ID', 'auc:PremisesAffected', 'auc:TechnologyCategories']:
+                if k in ['@ID', 'n1:PremisesAffected', 'n1:TechnologyCategories']:
                     continue
-                new_data[_snake_case(k.replace('auc:', ''))] = v
+                new_data[_snake_case(k.replace('n1:', ''))] = v
 
             # fix the names of the measures for "easier" look up... doing in separate step to
             # fit in single line. Cleanup -- when?
             new_data['name'] = _snake_case(new_data['name'])
             res['measures'].append(new_data)
 
-        # <auc:Scenario>
-        #   <auc:ScenarioName>Lighting Only</auc:ScenarioName>
-        #   <auc:ScenarioType>
-        #     <auc:PackageOfMeasures>
-        #       <auc:ReferenceCase IDref="Baseline"/>
-        #       <auc:MeasureIDs>
-        #         <auc:MeasureID IDref="Measure1"/>
-        #       </auc:MeasureIDs>
-        #       <auc:AnnualSavingsSiteEnergy>162654.89601696888</auc:AnnualSavingsSiteEnergy>
-        #     </auc:PackageOfMeasures>
-        #   </auc:ScenarioType>
-        # </auc:Scenario>
-        scenarios = self._get_node('auc:Audits.auc:Audit.auc:Report.auc:Scenarios.auc:Scenario',
+        # <n1:Scenario>
+        #   <n1:ScenarioName>Lighting Only</n1:ScenarioName>
+        #   <n1:ScenarioType>
+        #     <n1:PackageOfMeasures>
+        #       <n1:ReferenceCase IDref="Baseline"/>
+        #       <n1:MeasureIDs>
+        #         <n1:MeasureID IDref="Measure1"/>
+        #       </n1:MeasureIDs>
+        #       <n1:AnnualSavingsSiteEnergy>162654.89601696888</n1:AnnualSavingsSiteEnergy>
+        #     </n1:PackageOfMeasures>
+        #   </n1:ScenarioType>
+        # </n1:Scenario>
+        scenarios = self._get_node('n1:Audits.n1:Audit.n1:Report.n1:Scenarios.n1:Scenario',
                                    data, [])
         for s in scenarios:
             new_data = {
                 'id': s.get('@ID'),
-                'name': s.get('auc:ScenarioName'),
+                'name': s.get('n1:ScenarioName'),
             }
 
-            if s.get('auc:ScenarioType'):
-                node = s['auc:ScenarioType'].get('auc:PackageOfMeasures')
+            if s.get('n1:ScenarioType'):
+                node = s['n1:ScenarioType'].get('n1:PackageOfMeasures')
                 if node:
-                    ref_case = self._get_node('auc:ReferenceCase', node, [])
+                    ref_case = self._get_node('n1:ReferenceCase', node, [])
                     if ref_case and ref_case.get('@IDref'):
                         new_data['reference_case'] = ref_case.get('@IDref')
-                    new_data['annual_savings_site_energy'] = node.get('auc:AnnualSavingsSiteEnergy')
+                    new_data['annual_savings_site_energy'] = node.get('n1:AnnualSavingsSiteEnergy')
 
                     new_data['measures'] = []
-                    measures = self._get_node('auc:MeasureIDs.auc:MeasureID', node, [])
+                    measures = self._get_node('n1:MeasureIDs.n1:MeasureID', node, [])
                     if isinstance(measures, list):
                         for measure in measures:
                             if measure.get('@IDref', None):
