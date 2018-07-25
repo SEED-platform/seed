@@ -733,7 +733,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             return JsonResponse({
                 'status': 'error',
                 'message': 'User with email address (%s) does not exist' % email
-            }, status=status.HTTP_404_NOT_FOUND)
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         # Sub orgs do not get their own list of columns
         sub_org = Organization.objects.create(

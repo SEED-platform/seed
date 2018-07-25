@@ -19,7 +19,8 @@ angular.module('BE.seed.controller.create_sub_organization_modal', [])
       organization_service.create_sub_org(organization, $scope.sub_org).then(function () {
         $uibModalInstance.close();
       }, function (data) {
-        $scope.error_message = data.message;
+        // error data are in the data object
+        $scope.error_message = data.data.message;
       });
     };
 
