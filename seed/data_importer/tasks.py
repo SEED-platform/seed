@@ -471,12 +471,6 @@ def _data_quality_check_create_tasks(org_id, property_state_ids, taxlot_state_id
     return tasks
 
 
-@shared_task(ignore_result=True)
-def junk_test(x, y):
-    print "now i am here"
-    return x * y
-
-
 def map_data(import_file_id, remap=False, mark_as_done=True):
     """
     Map data task. By default this method will run through the mapping and mark it as complete.
@@ -807,8 +801,9 @@ def filter_duplicated_states(unmatched_states):
     :return:
     """
 
-    # TODO #239: Should we save the hash in the database, wouldn't that be faster
-    hash_values = map(hash_state_object, unmatched_states)
+    hash_values = []
+    for unmatch in unmatched_states:
+        hash_values.append(unmatch.hash_object)
     equality_classes = collections.defaultdict(list)
 
     for (ndx, hashval) in enumerate(hash_values):
@@ -911,14 +906,13 @@ def merge_unmatched_into_views(unmatched_states, partitioner, org, import_file):
     # TODO #239: this is an expensive calculation
     for view in class_views:
         equivalence_can_key = partitioner.calculate_canonical_key(view.state)
-        print equivalence_can_key
         existing_view_states[equivalence_can_key][view.cycle] = view
-        existing_view_state_hashes.add(hash_state_object(view.state))
+        existing_view_state_hashes.add(view.state.hash_object)
 
     matched_views = []
 
     for unmatched in unmatched_states:
-        unmatched_state_hash = hash_state_object(unmatched)
+        unmatched_state_hash = unmatched.hash_object
         if unmatched_state_hash in existing_view_state_hashes:
             # If an exact duplicate exists, delete the unmatched state
             unmatched.data_state = DATA_STATE_DELETE

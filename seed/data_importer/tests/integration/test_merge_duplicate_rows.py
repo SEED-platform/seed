@@ -4,13 +4,14 @@
 :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+import datetime
 import logging
 import os.path as osp
 
+import pytz
 from django.core.files.uploadedfile import SimpleUploadedFile
-from quantityfield import ureg
-import datetime
 from django.utils import timezone as tz
+from quantityfield import ureg
 
 from seed.data_importer import tasks
 from seed.data_importer.tests.util import (
@@ -151,7 +152,6 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
         # Hashes will be right though
         self.assertEqual(ps1.hash_object, ps2.hash_object)
 
-
     def test_import_duplicates(self):
         # Check to make sure all the properties imported
         ps = PropertyState.objects.filter(
@@ -179,7 +179,7 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
 
         pv = PropertyView.objects.filter(state__pm_property_id='2264').first()
         self.assertEqual(pv.state.pm_property_id, '2264')
-        self.assertEqual(pv.state.gross_floor_area, 12555 * ureg.feet**2)
+        self.assertEqual(pv.state.gross_floor_area, 12555 * ureg.feet ** 2)
         self.assertEqual(pv.state.energy_score, 75)
 
         self.assertEqual(TaxLot.objects.count(), 0)
