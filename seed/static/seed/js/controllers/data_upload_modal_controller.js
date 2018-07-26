@@ -292,7 +292,8 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         $scope.uploader.status_message = 'saving data';
         $scope.uploader.progress = 0;
         uploader_service.save_raw_data(file_id, cycle_id).then(function (data) {
-          uploader_service.check_progress_loop(data.progress_key, data.progress, 1, function () {
+          var progress = _.clamp(data.progress, 0, 100);
+          uploader_service.check_progress_loop(data.progress_key, progress, 1 - (progress / 100), function () {
             $scope.uploader.status_message = 'saving complete';
             $scope.uploader.progress = 100;
             if (is_green_button) {
@@ -337,7 +338,8 @@ angular.module('BE.seed.controller.data_upload_modal', [])
                 $scope.unmatched_taxlots = result_data.tax_lots.unmatched;
                 $scope.uploader.complete = true;
                 $scope.uploader.in_progress = false;
-                $scope.uploader.progress = 100;
+                $scope.uploader.progress = 0;
+                $scope.uploader.status_message = '';
                 if ($scope.matched_properties + $scope.matched_taxlots > 0) {
                   $scope.step.number = 8;
                 } else {

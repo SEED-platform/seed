@@ -62,13 +62,6 @@ MERGE_STATE = (
     (MERGE_STATE_DELETE, 'Delete Record'),  # typically set after unmerging two records
 )
 
-SEARCH_CONFIDENCE_RANGES = {
-    'low': 0.4,
-    'medium': 0.75,
-    'high': 1.0,
-}
-
-
 # Used by compliance model but imported elsewhere
 BENCHMARK_COMPLIANCE_CHOICE = 'Benchmarking'
 AUDITING_COMPLIANCE_CHOICE = 'Auditing'
@@ -78,32 +71,6 @@ COMPLIANCE_CHOICES = (
     (AUDITING_COMPLIANCE_CHOICE, _('Auditing')),
     (RETRO_COMMISSIONING_COMPLIANCE_CHOICE, _('Retro Commissioning')),
 )
-
-
-# TO REMOVE
-def get_ancestors(building):
-    """gets all the non-raw, non-composite ancestors of a building
-
-    Recursive function to traverse the tree upward.
-
-    :param building: BuildingSnapshot inst.
-    :returns: list of BuildingSnapshot inst., ancestors of building
-
-    .. code-block:: python
-
-           source_type {
-               2: ASSESSED_BS,
-               3: PORTFOLIO_BS,
-               4: COMPOSITE_BS,
-               6: GREEN_BUTTON_BS
-           }
-    """
-    ancestors = []
-    parents = building.parents.filter(source_type__in=[2, 3, 4, 6])
-    ancestors.extend(parents.filter(source_type__in=[2, 3, 6]))
-    for p in parents:
-        ancestors.extend(get_ancestors(p))
-    return ancestors
 
 
 class StatusLabel(TimeStampedModel):
@@ -269,6 +236,7 @@ class AttributeOption(models.Model):
         blank=True,
         related_name='options'
     )
+
 
 # Deprecate
 
