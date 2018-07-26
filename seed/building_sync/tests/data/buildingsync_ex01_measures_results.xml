@@ -924,8 +924,32 @@
 					<n1:ScenarioType>
 						<n1:PackageOfMeasures>
 							<n1:ReferenceCase IDref="Baseline"/>
+							<n1:AnnualSavingsSiteEnergy>0.0</n1:AnnualSavingsSiteEnergy>
+							<n1:AnnualSavingsCost>0</n1:AnnualSavingsCost>
 						</n1:PackageOfMeasures>
 					</n1:ScenarioType>
+					<n1:UserDefinedFields>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioBaselineCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</n1:FieldName>
+							<n1:FieldValue>568.4154052230995</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualElectricity_kBtu</n1:FieldName>
+							<n1:FieldValue>417494.48515560996</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualNaturalGas_kBtu</n1:FieldName>
+							<n1:FieldValue>150920.9200674895</n1:FieldValue>
+						</n1:UserDefinedField>
+					</n1:UserDefinedFields>
 				</n1:Scenario>
 				<n1:Scenario>
 					<n1:ScenarioName>LED Only</n1:ScenarioName>
@@ -935,8 +959,32 @@
 							<n1:MeasureIDs>
 								<n1:MeasureID IDref="Measure1"/>
 							</n1:MeasureIDs>
+							<n1:AnnualSavingsSiteEnergy>34.02663461924806</n1:AnnualSavingsSiteEnergy>
+							<n1:AnnualSavingsCost>3725</n1:AnnualSavingsCost>
 						</n1:PackageOfMeasures>
 					</n1:ScenarioType>
+					<n1:UserDefinedFields>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioBaselineCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</n1:FieldName>
+							<n1:FieldValue>534.3887706038514</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualElectricity_kBtu</n1:FieldName>
+							<n1:FieldValue>372416.3029135086</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualNaturalGas_kBtu</n1:FieldName>
+							<n1:FieldValue>161972.46769034278</n1:FieldValue>
+						</n1:UserDefinedField>
+					</n1:UserDefinedFields>
 				</n1:Scenario>
 				<n1:Scenario>
 					<n1:ScenarioName>Electric_Appliance_30%_Reduction Only</n1:ScenarioName>
@@ -946,8 +994,32 @@
 							<n1:MeasureIDs>
 								<n1:MeasureID IDref="Measure2"/>
 							</n1:MeasureIDs>
+							<n1:AnnualSavingsSiteEnergy>95.6347474396137</n1:AnnualSavingsSiteEnergy>
+							<n1:AnnualSavingsCost>10492</n1:AnnualSavingsCost>
 						</n1:PackageOfMeasures>
 					</n1:ScenarioType>
+					<n1:UserDefinedFields>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioBaselineCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</n1:FieldName>
+							<n1:FieldValue>472.78065778348576</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualElectricity_kBtu</n1:FieldName>
+							<n1:FieldValue>293605.3093594563</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualNaturalGas_kBtu</n1:FieldName>
+							<n1:FieldValue>179184.82659523265</n1:FieldValue>
+						</n1:UserDefinedField>
+					</n1:UserDefinedFields>
 				</n1:Scenario>
 				<n1:Scenario>
 					<n1:ScenarioName>Air_Seal_Infiltration_30%_More_Airtight Only</n1:ScenarioName>
@@ -957,8 +1029,32 @@
 							<n1:MeasureIDs>
 								<n1:MeasureID IDref="Measure3"/>
 							</n1:MeasureIDs>
+							<n1:AnnualSavingsSiteEnergy>-11.061025794056377</n1:AnnualSavingsSiteEnergy>
+							<n1:AnnualSavingsCost>-64</n1:AnnualSavingsCost>
 						</n1:PackageOfMeasures>
 					</n1:ScenarioType>
+					<n1:UserDefinedFields>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioBaselineCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</n1:FieldName>
+							<n1:FieldValue>579.4764310171558</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualElectricity_kBtu</n1:FieldName>
+							<n1:FieldValue>416887.88219860947</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualNaturalGas_kBtu</n1:FieldName>
+							<n1:FieldValue>162588.54881854643</n1:FieldValue>
+						</n1:UserDefinedField>
+					</n1:UserDefinedFields>
 				</n1:Scenario>
 				<n1:Scenario>
 					<n1:ScenarioName>Cooling_System_SEER 14 Only</n1:ScenarioName>
@@ -968,8 +1064,32 @@
 							<n1:MeasureIDs>
 								<n1:MeasureID IDref="Measure4"/>
 							</n1:MeasureIDs>
+							<n1:AnnualSavingsSiteEnergy>0.0</n1:AnnualSavingsSiteEnergy>
+							<n1:AnnualSavingsCost>0</n1:AnnualSavingsCost>
 						</n1:PackageOfMeasures>
 					</n1:ScenarioType>
+					<n1:UserDefinedFields>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioBaselineCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</n1:FieldName>
+							<n1:FieldValue>568.4154052230995</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualElectricity_kBtu</n1:FieldName>
+							<n1:FieldValue>417494.48515560996</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualNaturalGas_kBtu</n1:FieldName>
+							<n1:FieldValue>150920.9200674895</n1:FieldValue>
+						</n1:UserDefinedField>
+					</n1:UserDefinedFields>
 				</n1:Scenario>
 				<n1:Scenario>
 					<n1:ScenarioName>Heating_System_Efficiency_0.93 Only</n1:ScenarioName>
@@ -979,8 +1099,32 @@
 							<n1:MeasureIDs>
 								<n1:MeasureID IDref="Measure5"/>
 							</n1:MeasureIDs>
+							<n1:AnnualSavingsSiteEnergy>0.0</n1:AnnualSavingsSiteEnergy>
+							<n1:AnnualSavingsCost>0</n1:AnnualSavingsCost>
 						</n1:PackageOfMeasures>
 					</n1:ScenarioType>
+					<n1:UserDefinedFields>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioBaselineCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</n1:FieldName>
+							<n1:FieldValue>568.4154052230995</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualElectricity_kBtu</n1:FieldName>
+							<n1:FieldValue>417494.48515560996</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualNaturalGas_kBtu</n1:FieldName>
+							<n1:FieldValue>150920.9200674895</n1:FieldValue>
+						</n1:UserDefinedField>
+					</n1:UserDefinedFields>
 				</n1:Scenario>
 				<n1:Scenario>
 					<n1:ScenarioName>Add daylight controls Only</n1:ScenarioName>
@@ -990,8 +1134,32 @@
 							<n1:MeasureIDs>
 								<n1:MeasureID IDref="Measure6"/>
 							</n1:MeasureIDs>
+							<n1:AnnualSavingsSiteEnergy>31.01257617665169</n1:AnnualSavingsSiteEnergy>
+							<n1:AnnualSavingsCost>3292</n1:AnnualSavingsCost>
 						</n1:PackageOfMeasures>
 					</n1:ScenarioType>
+					<n1:UserDefinedFields>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioBaselineCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</n1:FieldName>
+							<n1:FieldValue>537.4028290464478</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualElectricity_kBtu</n1:FieldName>
+							<n1:FieldValue>379392.23691901466</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualNaturalGas_kBtu</n1:FieldName>
+							<n1:FieldValue>158010.59212743313</n1:FieldValue>
+						</n1:UserDefinedField>
+					</n1:UserDefinedFields>
 				</n1:Scenario>
 				<n1:Scenario>
 					<n1:ScenarioName>Add occupancy sensors Only</n1:ScenarioName>
@@ -1001,8 +1169,32 @@
 							<n1:MeasureIDs>
 								<n1:MeasureID IDref="Measure7"/>
 							</n1:MeasureIDs>
+							<n1:AnnualSavingsSiteEnergy>5.9333351731613675</n1:AnnualSavingsSiteEnergy>
+							<n1:AnnualSavingsCost>642</n1:AnnualSavingsCost>
 						</n1:PackageOfMeasures>
 					</n1:ScenarioType>
+					<n1:UserDefinedFields>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioBaselineCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</n1:FieldName>
+							<n1:FieldValue>562.4820700499381</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualElectricity_kBtu</n1:FieldName>
+							<n1:FieldValue>409693.95025543135</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualNaturalGas_kBtu</n1:FieldName>
+							<n1:FieldValue>152788.11979450673</n1:FieldValue>
+						</n1:UserDefinedField>
+					</n1:UserDefinedFields>
 				</n1:Scenario>
 				<n1:Scenario>
 					<n1:ScenarioName>Install plug load controls Only</n1:ScenarioName>
@@ -1012,8 +1204,32 @@
 							<n1:MeasureIDs>
 								<n1:MeasureID IDref="Measure8"/>
 							</n1:MeasureIDs>
+							<n1:AnnualSavingsSiteEnergy>40.73717983106633</n1:AnnualSavingsSiteEnergy>
+							<n1:AnnualSavingsCost>4332</n1:AnnualSavingsCost>
 						</n1:PackageOfMeasures>
 					</n1:ScenarioType>
+					<n1:UserDefinedFields>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioBaselineCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</n1:FieldName>
+							<n1:FieldValue>527.6782253920331</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualElectricity_kBtu</n1:FieldName>
+							<n1:FieldValue>366246.0134602689</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualNaturalGas_kBtu</n1:FieldName>
+							<n1:FieldValue>161432.21193176418</n1:FieldValue>
+						</n1:UserDefinedField>
+					</n1:UserDefinedFields>
 				</n1:Scenario>
 				<n1:Scenario>
 					<n1:ScenarioName>Increase wall insulation Only</n1:ScenarioName>
@@ -1023,8 +1239,32 @@
 							<n1:MeasureIDs>
 								<n1:MeasureID IDref="Measure9"/>
 							</n1:MeasureIDs>
+							<n1:AnnualSavingsSiteEnergy>7.364539024834471</n1:AnnualSavingsSiteEnergy>
+							<n1:AnnualSavingsCost>290</n1:AnnualSavingsCost>
 						</n1:PackageOfMeasures>
 					</n1:ScenarioType>
+					<n1:UserDefinedFields>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioBaselineCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</n1:FieldName>
+							<n1:FieldValue>561.050866198265</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualElectricity_kBtu</n1:FieldName>
+							<n1:FieldValue>414433.035856998</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualNaturalGas_kBtu</n1:FieldName>
+							<n1:FieldValue>146617.83034126705</n1:FieldValue>
+						</n1:UserDefinedField>
+					</n1:UserDefinedFields>
 				</n1:Scenario>
 				<n1:Scenario>
 					<n1:ScenarioName>Insulate thermal bypasses Only</n1:ScenarioName>
@@ -1034,8 +1274,32 @@
 							<n1:MeasureIDs>
 								<n1:MeasureID IDref="Measure10"/>
 							</n1:MeasureIDs>
+							<n1:AnnualSavingsSiteEnergy>2.1041540070955307</n1:AnnualSavingsSiteEnergy>
+							<n1:AnnualSavingsCost>82</n1:AnnualSavingsCost>
 						</n1:PackageOfMeasures>
 					</n1:ScenarioType>
+					<n1:UserDefinedFields>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioBaselineCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</n1:FieldName>
+							<n1:FieldValue>566.3112512160039</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualElectricity_kBtu</n1:FieldName>
+							<n1:FieldValue>416631.97157612484</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualNaturalGas_kBtu</n1:FieldName>
+							<n1:FieldValue>149679.27963987904</n1:FieldValue>
+						</n1:UserDefinedField>
+					</n1:UserDefinedFields>
 				</n1:Scenario>
 				<n1:Scenario>
 					<n1:ScenarioName>Increase roof insulation Only</n1:ScenarioName>
@@ -1045,8 +1309,32 @@
 							<n1:MeasureIDs>
 								<n1:MeasureID IDref="Measure11"/>
 							</n1:MeasureIDs>
+							<n1:AnnualSavingsSiteEnergy>0.0</n1:AnnualSavingsSiteEnergy>
+							<n1:AnnualSavingsCost>0</n1:AnnualSavingsCost>
 						</n1:PackageOfMeasures>
 					</n1:ScenarioType>
+					<n1:UserDefinedFields>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioBaselineCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</n1:FieldName>
+							<n1:FieldValue>568.4154052230995</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualElectricity_kBtu</n1:FieldName>
+							<n1:FieldValue>417494.48515560996</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualNaturalGas_kBtu</n1:FieldName>
+							<n1:FieldValue>150920.9200674895</n1:FieldValue>
+						</n1:UserDefinedField>
+					</n1:UserDefinedFields>
 				</n1:Scenario>
 				<n1:Scenario>
 					<n1:ScenarioName>Increase ceiling insulation Only</n1:ScenarioName>
@@ -1056,8 +1344,32 @@
 							<n1:MeasureIDs>
 								<n1:MeasureID IDref="Measure12"/>
 							</n1:MeasureIDs>
+							<n1:AnnualSavingsSiteEnergy>0.0</n1:AnnualSavingsSiteEnergy>
+							<n1:AnnualSavingsCost>0</n1:AnnualSavingsCost>
 						</n1:PackageOfMeasures>
 					</n1:ScenarioType>
+					<n1:UserDefinedFields>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioBaselineCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</n1:FieldName>
+							<n1:FieldValue>568.4154052230995</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualElectricity_kBtu</n1:FieldName>
+							<n1:FieldValue>417494.48515560996</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualNaturalGas_kBtu</n1:FieldName>
+							<n1:FieldValue>150920.9200674895</n1:FieldValue>
+						</n1:UserDefinedField>
+					</n1:UserDefinedFields>
 				</n1:Scenario>
 				<n1:Scenario>
 					<n1:ScenarioName>Add window films Only</n1:ScenarioName>
@@ -1067,8 +1379,32 @@
 							<n1:MeasureIDs>
 								<n1:MeasureID IDref="Measure13"/>
 							</n1:MeasureIDs>
+							<n1:AnnualSavingsSiteEnergy>5.051865251269987</n1:AnnualSavingsSiteEnergy>
+							<n1:AnnualSavingsCost>605</n1:AnnualSavingsCost>
 						</n1:PackageOfMeasures>
 					</n1:ScenarioType>
+					<n1:UserDefinedFields>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioBaselineCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</n1:FieldName>
+							<n1:FieldValue>563.3635399718295</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualElectricity_kBtu</n1:FieldName>
+							<n1:FieldValue>409921.4263643066</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualNaturalGas_kBtu</n1:FieldName>
+							<n1:FieldValue>153442.11360752294</n1:FieldValue>
+						</n1:UserDefinedField>
+					</n1:UserDefinedFields>
 				</n1:Scenario>
 				<n1:Scenario>
 					<n1:ScenarioName>Upgrade operating protocols, calibration, and-or sequencing Only</n1:ScenarioName>
@@ -1078,8 +1414,32 @@
 							<n1:MeasureIDs>
 								<n1:MeasureID IDref="Measure14"/>
 							</n1:MeasureIDs>
+							<n1:AnnualSavingsSiteEnergy>0.0</n1:AnnualSavingsSiteEnergy>
+							<n1:AnnualSavingsCost>0</n1:AnnualSavingsCost>
 						</n1:PackageOfMeasures>
 					</n1:ScenarioType>
+					<n1:UserDefinedFields>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioBaselineCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</n1:FieldName>
+							<n1:FieldValue>568.4154052230995</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualElectricity_kBtu</n1:FieldName>
+							<n1:FieldValue>417494.48515560996</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualNaturalGas_kBtu</n1:FieldName>
+							<n1:FieldValue>150920.9200674895</n1:FieldValue>
+						</n1:UserDefinedField>
+					</n1:UserDefinedFields>
 				</n1:Scenario>
 				<n1:Scenario>
 					<n1:ScenarioName>Replace or upgrade water heater Only</n1:ScenarioName>
@@ -1089,8 +1449,32 @@
 							<n1:MeasureIDs>
 								<n1:MeasureID IDref="Measure15"/>
 							</n1:MeasureIDs>
+							<n1:AnnualSavingsSiteEnergy>9.468693031930002</n1:AnnualSavingsSiteEnergy>
+							<n1:AnnualSavingsCost>91</n1:AnnualSavingsCost>
 						</n1:PackageOfMeasures>
 					</n1:ScenarioType>
+					<n1:UserDefinedFields>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioBaselineCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</n1:FieldName>
+							<n1:FieldValue>558.9467121911695</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualElectricity_kBtu</n1:FieldName>
+							<n1:FieldValue>417494.48515560996</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualNaturalGas_kBtu</n1:FieldName>
+							<n1:FieldValue>141452.22703555948</n1:FieldValue>
+						</n1:UserDefinedField>
+					</n1:UserDefinedFields>
 				</n1:Scenario>
 				<n1:Scenario>
 					<n1:ScenarioName>Replace ice-refrigeration equipment with high efficiency units Only</n1:ScenarioName>
@@ -1100,8 +1484,32 @@
 							<n1:MeasureIDs>
 								<n1:MeasureID IDref="Measure16"/>
 							</n1:MeasureIDs>
+							<n1:AnnualSavingsSiteEnergy>0.0</n1:AnnualSavingsSiteEnergy>
+							<n1:AnnualSavingsCost>0</n1:AnnualSavingsCost>
 						</n1:PackageOfMeasures>
 					</n1:ScenarioType>
+					<n1:UserDefinedFields>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioBaselineCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</n1:FieldName>
+							<n1:FieldValue>568.4154052230995</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualElectricity_kBtu</n1:FieldName>
+							<n1:FieldValue>417494.48515560996</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualNaturalGas_kBtu</n1:FieldName>
+							<n1:FieldValue>150920.9200674895</n1:FieldValue>
+						</n1:UserDefinedField>
+					</n1:UserDefinedFields>
 				</n1:Scenario>
 				<n1:Scenario>
 					<n1:ScenarioName>Replace windows Only</n1:ScenarioName>
@@ -1111,8 +1519,32 @@
 							<n1:MeasureIDs>
 								<n1:MeasureID IDref="Measure17"/>
 							</n1:MeasureIDs>
+							<n1:AnnualSavingsSiteEnergy>17.553573068202695</n1:AnnualSavingsSiteEnergy>
+							<n1:AnnualSavingsCost>1233</n1:AnnualSavingsCost>
 						</n1:PackageOfMeasures>
 					</n1:ScenarioType>
+					<n1:UserDefinedFields>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioBaselineCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</n1:FieldName>
+							<n1:FieldValue>550.8618321548968</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualElectricity_kBtu</n1:FieldName>
+							<n1:FieldValue>402812.7979619567</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualNaturalGas_kBtu</n1:FieldName>
+							<n1:FieldValue>148058.51236414327</n1:FieldValue>
+						</n1:UserDefinedField>
+					</n1:UserDefinedFields>
 				</n1:Scenario>
 				<n1:Scenario>
 					<n1:ScenarioName>Replace boiler Only</n1:ScenarioName>
@@ -1122,8 +1554,32 @@
 							<n1:MeasureIDs>
 								<n1:MeasureID IDref="Measure18"/>
 							</n1:MeasureIDs>
+							<n1:AnnualSavingsSiteEnergy>0.0</n1:AnnualSavingsSiteEnergy>
+							<n1:AnnualSavingsCost>0</n1:AnnualSavingsCost>
 						</n1:PackageOfMeasures>
 					</n1:ScenarioType>
+					<n1:UserDefinedFields>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioBaselineCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</n1:FieldName>
+							<n1:FieldValue>568.4154052230995</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualElectricity_kBtu</n1:FieldName>
+							<n1:FieldValue>417494.48515560996</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualNaturalGas_kBtu</n1:FieldName>
+							<n1:FieldValue>150920.9200674895</n1:FieldValue>
+						</n1:UserDefinedField>
+					</n1:UserDefinedFields>
 				</n1:Scenario>
 				<n1:Scenario>
 					<n1:ScenarioName>Replace HVAC with GSHP and DOAS Only</n1:ScenarioName>
@@ -1133,8 +1589,32 @@
 							<n1:MeasureIDs>
 								<n1:MeasureID IDref="Measure19"/>
 							</n1:MeasureIDs>
+							<n1:AnnualSavingsSiteEnergy>13.68647921732429</n1:AnnualSavingsSiteEnergy>
+							<n1:AnnualSavingsCost>1681</n1:AnnualSavingsCost>
 						</n1:PackageOfMeasures>
 					</n1:ScenarioType>
+					<n1:UserDefinedFields>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioBaselineCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</n1:FieldName>
+							<n1:FieldValue>554.7289260057752</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualElectricity_kBtu</n1:FieldName>
+							<n1:FieldValue>391211.5164093217</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualNaturalGas_kBtu</n1:FieldName>
+							<n1:FieldValue>163517.40959645348</n1:FieldValue>
+						</n1:UserDefinedField>
+					</n1:UserDefinedFields>
 				</n1:Scenario>
 				<n1:Scenario>
 					<n1:ScenarioName>VRF with DOAS Only</n1:ScenarioName>
@@ -1144,8 +1624,32 @@
 							<n1:MeasureIDs>
 								<n1:MeasureID IDref="Measure20"/>
 							</n1:MeasureIDs>
+							<n1:AnnualSavingsSiteEnergy>-50.78404130638751</n1:AnnualSavingsSiteEnergy>
+							<n1:AnnualSavingsCost>-2614</n1:AnnualSavingsCost>
 						</n1:PackageOfMeasures>
 					</n1:ScenarioType>
+					<n1:UserDefinedFields>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioBaselineCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</n1:FieldName>
+							<n1:FieldValue>619.199446529487</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualElectricity_kBtu</n1:FieldName>
+							<n1:FieldValue>454336.1366221886</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualNaturalGas_kBtu</n1:FieldName>
+							<n1:FieldValue>164853.83173609528</n1:FieldValue>
+						</n1:UserDefinedField>
+					</n1:UserDefinedFields>
 				</n1:Scenario>
 				<n1:Scenario>
 					<n1:ScenarioName>Replace HVAC system type to PZHP Only</n1:ScenarioName>
@@ -1155,8 +1659,32 @@
 							<n1:MeasureIDs>
 								<n1:MeasureID IDref="Measure21"/>
 							</n1:MeasureIDs>
+							<n1:AnnualSavingsSiteEnergy>101.79555872165025</n1:AnnualSavingsSiteEnergy>
+							<n1:AnnualSavingsCost>559</n1:AnnualSavingsCost>
 						</n1:PackageOfMeasures>
 					</n1:ScenarioType>
+					<n1:UserDefinedFields>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioBaselineCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</n1:FieldName>
+							<n1:FieldValue>466.6198465014492</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualElectricity_kBtu</n1:FieldName>
+							<n1:FieldValue>450687.0407089824</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualNaturalGas_kBtu</n1:FieldName>
+							<n1:FieldValue>15932.805792466861</n1:FieldValue>
+						</n1:UserDefinedField>
+					</n1:UserDefinedFields>
 				</n1:Scenario>
 				<n1:Scenario>
 					<n1:ScenarioName>Replace with higher efficiency Only</n1:ScenarioName>
@@ -1166,8 +1694,32 @@
 							<n1:MeasureIDs>
 								<n1:MeasureID IDref="Measure22"/>
 							</n1:MeasureIDs>
+							<n1:AnnualSavingsSiteEnergy>13.26943968438627</n1:AnnualSavingsSiteEnergy>
+							<n1:AnnualSavingsCost>1580</n1:AnnualSavingsCost>
 						</n1:PackageOfMeasures>
 					</n1:ScenarioType>
+					<n1:UserDefinedFields>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioBaselineCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</n1:FieldName>
+							<n1:FieldValue>555.1459655387132</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualElectricity_kBtu</n1:FieldName>
+							<n1:FieldValue>396443.4669134512</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualNaturalGas_kBtu</n1:FieldName>
+							<n1:FieldValue>158702.49862526185</n1:FieldValue>
+						</n1:UserDefinedField>
+					</n1:UserDefinedFields>
 				</n1:Scenario>
 				<n1:Scenario>
 					<n1:ScenarioName>Improve ventilation fans Only</n1:ScenarioName>
@@ -1177,8 +1729,32 @@
 							<n1:MeasureIDs>
 								<n1:MeasureID IDref="Measure23"/>
 							</n1:MeasureIDs>
+							<n1:AnnualSavingsSiteEnergy>7.430886223256266</n1:AnnualSavingsSiteEnergy>
+							<n1:AnnualSavingsCost>879</n1:AnnualSavingsCost>
 						</n1:PackageOfMeasures>
 					</n1:ScenarioType>
+					<n1:UserDefinedFields>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioBaselineCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</n1:FieldName>
+							<n1:FieldValue>560.9845189998432</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualElectricity_kBtu</n1:FieldName>
+							<n1:FieldValue>405807.9000621468</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualNaturalGas_kBtu</n1:FieldName>
+							<n1:FieldValue>155176.6189376963</n1:FieldValue>
+						</n1:UserDefinedField>
+					</n1:UserDefinedFields>
 				</n1:Scenario>
 				<n1:Scenario>
 					<n1:ScenarioName>Install demand control ventilation Only</n1:ScenarioName>
@@ -1188,8 +1764,32 @@
 							<n1:MeasureIDs>
 								<n1:MeasureID IDref="Measure24"/>
 							</n1:MeasureIDs>
+							<n1:AnnualSavingsSiteEnergy>0.0</n1:AnnualSavingsSiteEnergy>
+							<n1:AnnualSavingsCost>0</n1:AnnualSavingsCost>
 						</n1:PackageOfMeasures>
 					</n1:ScenarioType>
+					<n1:UserDefinedFields>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioBaselineCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</n1:FieldName>
+							<n1:FieldValue>568.4154052230995</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualElectricity_kBtu</n1:FieldName>
+							<n1:FieldValue>417494.48515560996</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualNaturalGas_kBtu</n1:FieldName>
+							<n1:FieldValue>150920.9200674895</n1:FieldValue>
+						</n1:UserDefinedField>
+					</n1:UserDefinedFields>
 				</n1:Scenario>
 				<n1:Scenario>
 					<n1:ScenarioName>Add or repair economizer Only</n1:ScenarioName>
@@ -1199,8 +1799,32 @@
 							<n1:MeasureIDs>
 								<n1:MeasureID IDref="Measure25"/>
 							</n1:MeasureIDs>
+							<n1:AnnualSavingsSiteEnergy>1.791374357392101</n1:AnnualSavingsSiteEnergy>
+							<n1:AnnualSavingsCost>188</n1:AnnualSavingsCost>
 						</n1:PackageOfMeasures>
 					</n1:ScenarioType>
+					<n1:UserDefinedFields>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioBaselineCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</n1:FieldName>
+							<n1:FieldValue>566.6240308657074</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualElectricity_kBtu</n1:FieldName>
+							<n1:FieldValue>415267.1149228737</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualNaturalGas_kBtu</n1:FieldName>
+							<n1:FieldValue>151366.39411403678</n1:FieldValue>
+						</n1:UserDefinedField>
+					</n1:UserDefinedFields>
 				</n1:Scenario>
 				<n1:Scenario>
 					<n1:ScenarioName>Add energy recovery Only</n1:ScenarioName>
@@ -1210,8 +1834,32 @@
 							<n1:MeasureIDs>
 								<n1:MeasureID IDref="Measure26"/>
 							</n1:MeasureIDs>
+							<n1:AnnualSavingsSiteEnergy>-0.47390856015670124</n1:AnnualSavingsSiteEnergy>
+							<n1:AnnualSavingsCost>155</n1:AnnualSavingsCost>
 						</n1:PackageOfMeasures>
 					</n1:ScenarioType>
+					<n1:UserDefinedFields>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioBaselineCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</n1:FieldName>
+							<n1:FieldValue>568.8893137832562</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualElectricity_kBtu</n1:FieldName>
+							<n1:FieldValue>416556.14620649983</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualNaturalGas_kBtu</n1:FieldName>
+							<n1:FieldValue>152323.68940555322</n1:FieldValue>
+						</n1:UserDefinedField>
+					</n1:UserDefinedFields>
 				</n1:Scenario>
 				<n1:Scenario>
 					<n1:ScenarioName>Add pipe insulation Only</n1:ScenarioName>
@@ -1221,8 +1869,32 @@
 							<n1:MeasureIDs>
 								<n1:MeasureID IDref="Measure27"/>
 							</n1:MeasureIDs>
+							<n1:AnnualSavingsSiteEnergy>8.520875911616713</n1:AnnualSavingsSiteEnergy>
+							<n1:AnnualSavingsCost>82</n1:AnnualSavingsCost>
 						</n1:PackageOfMeasures>
 					</n1:ScenarioType>
+					<n1:UserDefinedFields>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioBaselineCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</n1:FieldName>
+							<n1:FieldValue>559.8945293114828</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualElectricity_kBtu</n1:FieldName>
+							<n1:FieldValue>417494.48515560996</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualNaturalGas_kBtu</n1:FieldName>
+							<n1:FieldValue>142400.0441558728</n1:FieldValue>
+						</n1:UserDefinedField>
+					</n1:UserDefinedFields>
 				</n1:Scenario>
 				<n1:Scenario>
 					<n1:ScenarioName>Add recirculating pumps Only</n1:ScenarioName>
@@ -1232,8 +1904,32 @@
 							<n1:MeasureIDs>
 								<n1:MeasureID IDref="Measure28"/>
 							</n1:MeasureIDs>
+							<n1:AnnualSavingsSiteEnergy>8.729395678085666</n1:AnnualSavingsSiteEnergy>
+							<n1:AnnualSavingsCost>84</n1:AnnualSavingsCost>
 						</n1:PackageOfMeasures>
 					</n1:ScenarioType>
+					<n1:UserDefinedFields>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioBaselineCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</n1:FieldName>
+							<n1:FieldValue>559.6860095450138</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualElectricity_kBtu</n1:FieldName>
+							<n1:FieldValue>417494.48515560996</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualNaturalGas_kBtu</n1:FieldName>
+							<n1:FieldValue>142182.0462182007</n1:FieldValue>
+						</n1:UserDefinedField>
+					</n1:UserDefinedFields>
 				</n1:Scenario>
 				<n1:Scenario>
 					<n1:ScenarioName>Install low-flow faucets and showerheads Only</n1:ScenarioName>
@@ -1243,8 +1939,32 @@
 							<n1:MeasureIDs>
 								<n1:MeasureID IDref="Measure29"/>
 							</n1:MeasureIDs>
+							<n1:AnnualSavingsSiteEnergy>0.0</n1:AnnualSavingsSiteEnergy>
+							<n1:AnnualSavingsCost>0</n1:AnnualSavingsCost>
 						</n1:PackageOfMeasures>
 					</n1:ScenarioType>
+					<n1:UserDefinedFields>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioBaselineCompletedStatus</n1:FieldName>
+							<n1:FieldValue>Success</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</n1:FieldName>
+							<n1:FieldValue>568.4154052230995</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualElectricity_kBtu</n1:FieldName>
+							<n1:FieldValue>417494.48515560996</n1:FieldValue>
+						</n1:UserDefinedField>
+						<n1:UserDefinedField>
+							<n1:FieldName>OpenStudioAnnualNaturalGas_kBtu</n1:FieldName>
+							<n1:FieldValue>150920.9200674895</n1:FieldValue>
+						</n1:UserDefinedField>
+					</n1:UserDefinedFields>
 				</n1:Scenario>
 			</n1:Scenarios>
 		</n1:Report>
