@@ -34,7 +34,6 @@ class ColumnListSettingSerializer(serializers.ModelSerializer):
     settings_location = ChoiceField(choices=ColumnListSetting.VIEW_LOCATION_TYPES)
     inventory_type = ChoiceField(choices=ColumnListSetting.VIEW_LIST_INVENTORY_TYPE)
 
-
     class Meta:
         model = ColumnListSetting
         fields = ('id', 'name', 'settings_location', 'inventory_type', 'columns')

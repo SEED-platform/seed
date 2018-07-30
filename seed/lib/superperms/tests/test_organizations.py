@@ -12,6 +12,7 @@ from django.test import TestCase
 
 from seed import models as seed_models
 from seed.landing.models import SEEDUser as User
+from seed.lib.superperms.orgs.models import ROLE_VIEWER
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     PropertyState,
@@ -44,12 +45,16 @@ class TestOrganizations(TestCase):
         }
         user2 = User.objects.create(**user_details_2)
 
-        created, suborg = create_suborganization(user2, self.fake_org, 'sub org name')
+        created, suborg, org_user = create_suborganization(
+            user2, self.fake_org, 'sub org name', ROLE_VIEWER
+        )
         self.assertTrue(created)
         self.assertEqual(suborg.name, 'sub org name')
         self.assertFalse(suborg.is_parent)
         self.assertTrue(suborg.is_member(user2))
         self.assertFalse(suborg.is_member(self.fake_user))
+
+        self.assertEqual(org_user.role_level, ROLE_VIEWER)
 
     def test_too_many_nested(self):
         user_details_2 = {
@@ -65,10 +70,10 @@ class TestOrganizations(TestCase):
             'email': 'test_user_3@demo.com'
         }
         user3 = User.objects.create(**user_details_3)
-        created, suborg = create_suborganization(user2, self.fake_org, 'sub org name')
+        created, suborg, org_user = create_suborganization(user2, self.fake_org, 'sub org name')
         self.assertTrue(created)
 
-        created, message = create_suborganization(user3, suborg, 'sub org of sub org')
+        created, message, org_user = create_suborganization(user3, suborg, 'sub org of sub org')
         self.assertFalse(created)
         self.assertEqual(message, 'Tried to create child of a child organization.')
 

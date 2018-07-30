@@ -9,7 +9,7 @@ from seed.lib.superperms.orgs.exceptions import TooManyNestedOrgs
 from seed.lib.superperms.orgs.models import (
     Organization,
     OrganizationUser,
-
+    ROLE_MEMBER
 )
 from seed.models import Column
 from seed.models.data_quality import DataQualityCheck
@@ -59,13 +59,18 @@ def create_organization(user=None, org_name='', *args, **kwargs):
     return organization, organization_user, user_added
 
 
-def create_suborganization(user, current_org, suborg_name=''):
+def create_suborganization(user, current_org, suborg_name='', user_role=ROLE_MEMBER):
     # Create the suborg manually to prevent the generation of the default columns, labels, and data
     # quality checks
-    sub_org = Organization.objects.create(
-        name=suborg_name
-    )
-    OrganizationUser.objects.get_or_create(user=user, organization=sub_org)
+
+    if Organization.objects.filter(name=suborg_name).exists():
+        sub_org = Organization.objects.filter(name=suborg_name).first()
+    else:
+        sub_org = Organization.objects.create(name=suborg_name)
+
+    ou, _ = OrganizationUser.objects.get_or_create(user=user, organization=sub_org)
+    ou.role_level = user_role
+    ou.save()
 
     sub_org.parent_org = current_org
 
@@ -75,4 +80,4 @@ def create_suborganization(user, current_org, suborg_name=''):
         sub_org.delete()
         return False, 'Tried to create child of a child organization.'
 
-    return True, sub_org
+    return True, sub_org, ou

@@ -590,7 +590,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         desired_display_significant_figures = posted_org.get('display_significant_figures')
         if isinstance(desired_display_significant_figures, int) \
-            and desired_display_significant_figures >= 0:
+                and desired_display_significant_figures >= 0:
             org.display_significant_figures = desired_display_significant_figures
         elif desired_display_significant_figures is not None:
             _log.warn("got bad sig figs {0} for org {1}".format(
@@ -682,7 +682,7 @@ class OrganizationViewSet(viewsets.ViewSet):
                     'table_name': c['table_name'],
                     'name': c['name'],
                     'column_name': c['column_name'],
-                # this is the field name in the db. The other name can have tax_
+                    # this is the field name in the db. The other name can have tax_
                     'display_name': c['display_name']
                 }
                 result['public_fields'].append(new_column)
@@ -736,7 +736,7 @@ class OrganizationViewSet(viewsets.ViewSet):
                 'message': 'User with email address (%s) does not exist' % email
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        created, mess_or_org = create_suborganization(user, org, body['sub_org_name'])
+        created, mess_or_org, _ = create_suborganization(user, org, body['sub_org_name'], ROLE_OWNER)
         if created:
             return JsonResponse({
                 'status': 'success',
