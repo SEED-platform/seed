@@ -59,7 +59,7 @@ class PortfolioManagerViewSet(GenericViewSet):
             )
         except Exception as e:
             return JsonResponse(
-                {'status': 'error', 'exception': str(e)},
+                {'status': 'error', 'message': e.message},
                 status=status.HTTP_400_BAD_REQUEST
             )
         return JsonResponse({'status': 'success', 'templates': possible_templates})
@@ -134,7 +134,8 @@ class PortfolioManagerViewSet(GenericViewSet):
 
             return JsonResponse({'status': 'success', 'properties': properties})
         except Exception as e:
-            return JsonResponse({'status': 'error', 'exception': e.message})
+            return JsonResponse({'status': 'error', 'message': e.message},
+                                status=status.HTTP_400_BAD_REQUEST)
 
 
 class PortfolioManagerImport(object):
