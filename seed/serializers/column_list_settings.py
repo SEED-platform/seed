@@ -70,7 +70,8 @@ class ColumnListSettingSerializer(serializers.ModelSerializer):
         # run some custom validation on the Columns data to make sure that the columns exist are are part of the org
         if "columns" in self.initial_data:
             request = self.context.get('request', None)
-            # get the org id from the user's default organization, hmmm....
+
+            # Org ID is in the request param
             org = Organization.objects.get(id=request.query_params['organization_id'])
             for column in self.initial_data.get("columns", []):
                 # note that the org is the user's existing org, not the parent org!

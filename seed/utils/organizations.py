@@ -91,6 +91,6 @@ def create_suborganization(user, current_org, suborg_name='', user_role=ROLE_MEM
         sub_org.save()
     except TooManyNestedOrgs:
         sub_org.delete()
-        return False, 'Tried to create child of a child organization.'
+        return False, 'Tried to create child of a child organization.', None
 
     return True, sub_org, ou
