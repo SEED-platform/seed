@@ -1801,7 +1801,11 @@ class ImportFileViewSet(viewsets.ViewSet):
         membership = OrganizationUser.objects.select_related('organization') \
             .get(organization_id=organization_id, user=request.user)
         organization = membership.organization
-        parent_org = organization.get_parent()
+
+        # For now, each organization holds their own mappings. This is non-ideal, but it is the
+        # way it is for now. In order to move to parent_org holding, then we need to be able to
+        # dynamically match columns based on the names and not the db id (or support many-to-many).
+        # parent_org = organization.get_parent()
 
         import_file = ImportFile.objects.get(
             pk=pk,
@@ -1809,8 +1813,8 @@ class ImportFileViewSet(viewsets.ViewSet):
         )
 
         # Get a list of the database fields in a list, these are the db columns and the extra_data columns
-        property_columns = Column.retrieve_mapping_columns(parent_org.pk, 'property')
-        taxlot_columns = Column.retrieve_mapping_columns(parent_org.pk, 'taxlot')
+        property_columns = Column.retrieve_mapping_columns(organization.pk, 'property')
+        taxlot_columns = Column.retrieve_mapping_columns(organization.pk, 'taxlot')
 
         # If this is a portfolio manager file, then load in the PM mappings and if the column_mappings
         # are not in the original mappings, default to PM
@@ -1821,7 +1825,7 @@ class ImportFileViewSet(viewsets.ViewSet):
                 import_file.first_row_columns,
                 Column.retrieve_all_by_tuple(organization_id),
                 previous_mapping=get_column_mapping,
-                map_args=[parent_org],
+                map_args=[organization],
                 default_mappings=pm_mappings,
                 thresh=80
             )
@@ -1829,9 +1833,9 @@ class ImportFileViewSet(viewsets.ViewSet):
             # All other input types
             suggested_mappings = mapper.build_column_mapping(
                 import_file.first_row_columns,
-                Column.retrieve_all_by_tuple(parent_org.pk),
+                Column.retrieve_all_by_tuple(organization.pk),
                 previous_mapping=get_column_mapping,
-                map_args=[parent_org],
+                map_args=[organization],
                 thresh=80  # percentage match that we require. 80% is random value for now.
             )
             # replace None with empty string for column names and PropertyState for tables

@@ -45,4 +45,5 @@ class ColumnListingViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
     serializer_class = ColumnListSettingSerializer
     model = ColumnListSetting
     pagination_class = NoPagination
-    force_parent = True
+    # force_parent = True  # Ideally the column list settings would inherit from the parent,
+    # but not yet.

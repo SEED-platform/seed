@@ -73,7 +73,8 @@ class ColumnListSettingSerializer(serializers.ModelSerializer):
             # get the org id from the user's default organization, hmmm....
             org = Organization.objects.get(id=request.query_params['organization_id'])
             for column in self.initial_data.get("columns", []):
-                if not Column.objects.filter(pk=column.get("id"), organization_id=org.get_parent().pk).exists():
+                # note that the org is the user's existing org, not the parent org!
+                if not Column.objects.filter(pk=column.get("id"), organization_id=org.pk).exists():
                     raise ValidationError('Column does not exist for organization, column id: %s' % column.get("id"))
 
         return super(ColumnListSettingSerializer, self).validate(data)
