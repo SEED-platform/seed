@@ -14,7 +14,6 @@ from django.utils import timezone
 from seed.data_importer import tasks
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tests.util import (
-    DataMappingBaseTestCase,
     FAKE_EXTRA_DATA,
     FAKE_MAPPINGS,
     FAKE_ROW,
@@ -33,6 +32,7 @@ from seed.models import (
     Cycle,
     PropertyState,
 )
+from seed.tests.util import DataMappingBaseTestCase
 from seed.utils.organizations import create_organization
 
 logger = logging.getLogger(__name__)
@@ -78,8 +78,7 @@ class TestDemoV2(DataMappingBaseTestCase):
         return user, org, import_file_1, import_record_1, import_file_2, import_record_2, cycle
 
     def setUp(self):
-        property_filename = getattr(self, 'filename',
-                                    'example-data-properties.xlsx')
+        property_filename = getattr(self, 'filename', 'example-data-properties.xlsx')
         tax_lot_filename = getattr(self, 'filename', 'example-data-taxlots.xlsx')
         import_file_source_type = ASSESSED_RAW
         self.fake_portfolio_mappings = FAKE_MAPPINGS['portfolio']
@@ -96,14 +95,14 @@ class TestDemoV2(DataMappingBaseTestCase):
          self.import_record_tax_lot,
          self.cycle) = selfvars
 
-        filepath = osp.join(osp.dirname(__file__), 'data', tax_lot_filename)
+        filepath = osp.join(osp.dirname(__file__), '..', 'data', tax_lot_filename)
         self.import_file_tax_lot.file = SimpleUploadedFile(
             name=tax_lot_filename,
             content=open(filepath, 'rb').read()
         )
         self.import_file_tax_lot.save()
 
-        filepath = osp.join(osp.dirname(__file__), 'data', property_filename)
+        filepath = osp.join(osp.dirname(__file__), '..', 'data', property_filename)
         self.import_file_property.file = SimpleUploadedFile(
             name=property_filename,
             content=open(filepath, 'rb').read()
@@ -111,7 +110,7 @@ class TestDemoV2(DataMappingBaseTestCase):
         self.import_file_property.save()
 
     def test_demo_v2(self):
-        tasks._save_raw_data(self.import_file_tax_lot.pk, 'fake_cache_key', 1)
+        tasks.save_raw_data(self.import_file_tax_lot.pk)
         Column.create_mappings(self.fake_taxlot_mappings, self.org, self.user)
         Column.create_mappings(self.fake_portfolio_mappings, self.org, self.user)
         tasks.map_data(self.import_file_tax_lot.pk)
@@ -143,7 +142,7 @@ class TestDemoV2(DataMappingBaseTestCase):
         self.assertEqual(TaxLotView.objects.count(), 9)
 
         # Import the property data
-        tasks._save_raw_data(self.import_file_property.pk, 'fake_cache_key', 1)
+        tasks.save_raw_data(self.import_file_property.pk)
         tasks.map_data(self.import_file_property.pk)
 
         ts = TaxLotState.objects.filter(

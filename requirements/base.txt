@@ -10,7 +10,7 @@ modeltranslation==0.25
 psycopg2==2.7.3.2
 
 # background process management
-celery==4.1.1
+celery==4.2.0
 django-redis-cache==1.7.1
 django_compressor==2.2
 django-extensions==1.9.6
@@ -54,7 +54,7 @@ lxml==4.1.1
 probablepeople==0.5.4
 
 enum34==1.1.6  # enum34 needs to be specified to support cryptography and oauth2
-jwt-oauth2>=0.1.0
+jwt-oauth2>=0.1.1
 django-oauth-toolkit==0.12.0
 django-braces>=1.11.0
 

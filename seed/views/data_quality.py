@@ -11,6 +11,7 @@ from celery.utils.log import get_task_logger
 from django.http import JsonResponse, HttpResponse
 from rest_framework import viewsets, serializers, status
 from rest_framework.decorators import list_route, detail_route
+from unidecode import unidecode
 
 from seed.data_importer.tasks import do_checks
 from seed.decorators import ajax_request_class
@@ -137,7 +138,10 @@ class DataQualityViews(viewsets.ViewSet):
         return JsonResponse({
             'num_properties': len(property_state_ids),
             'num_taxlots': len(taxlot_state_ids),
-            'progress_key': return_value['progress_key']})
+            # TODO #239: Deprecate progress_key from here and just use the 'progess.progress_key'
+            'progress_key': return_value['progress_key'],
+            'progress': return_value,
+        })
 
     @api_endpoint_class
     @ajax_request_class
@@ -177,7 +181,8 @@ class DataQualityViews(viewsets.ViewSet):
                     row['jurisdiction_tax_lot_id'] if 'jurisdiction_tax_lot_id' in row else None,
                     row['custom_id_1'],
                     result['formatted_field'],
-                    result['detailed_message'],
+                    # the detailed_message field can have units which has superscripts/subscripts, so unidecode it!
+                    unidecode(result['detailed_message']),
                     result['severity']
                 ])
 
@@ -407,3 +412,21 @@ class DataQualityViews(viewsets.ViewSet):
                 }, status=status.HTTP_400_BAD_REQUEST)
 
         return self.data_quality_rules(request)
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_parent_org_owner')
+    @list_route(methods=['GET'])
+    def results(self, request):
+        """
+        Return the result of the data quality based on the ID that was given during the
+        creation of the data quality task. Note that it is not related to the object in the
+        database, since the results are stored in redis!
+        """
+        Organization.objects.get(pk=request.query_params['organization_id'])
+
+        data_quality_id = request.query_params['data_quality_id']
+        data_quality_results = get_cache_raw(DataQualityCheck.cache_key(data_quality_id))
+        return JsonResponse({
+            'data': data_quality_results
+        })
