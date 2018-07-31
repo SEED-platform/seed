@@ -62,7 +62,7 @@ class InventoryViewTests(DeleteModelsTestCase):
         }
         url = reverse('api:v2.1:properties-building-sync', args=[pv.id])
         response = self.client.get(url, params)
-        self.assertIn('<auc:FloorAreaValue>%s.0</auc:FloorAreaValue>' % state.gross_floor_area, response.content)
+        self.assertIn('<n1:FloorAreaValue>%s.0</n1:FloorAreaValue>' % state.gross_floor_area, response.content)
 
     def test_get_hpxml(self):
         state = self.property_state_factory.get_property_state()
