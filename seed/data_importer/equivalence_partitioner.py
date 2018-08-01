@@ -48,8 +48,8 @@ class EquivalencePartitioner(object):
 
     - equivalence/non-equivalence in both directions.  E.g. if
       ps1.pm_property_id == ps2.pm_property_id then ps1 represents the
-      same object as ps2.  But if ps1.address_line_1 ==
-      ps2.address_line_1, then ps1 is related to ps2, unless
+      same object as ps2.  But if ps1.normalized_address ==
+      ps2.normalized_address, then ps1 is related to ps2, unless
       ps1.pm_property_id != ps2.pm_property_id, in which case ps1
       definitely is not the same as ps2.
 

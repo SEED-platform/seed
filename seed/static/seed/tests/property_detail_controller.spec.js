@@ -79,7 +79,6 @@ describe('controller: inventory_detail_controller', function () {
         building_portfolio_manager_identifier: '477198',
         city: 'EnergyTown',
         conditioned_floor_area: '',
-        confidence: '',
         energy_alerts: '',
         energy_score: 74,
         extra_data: {
