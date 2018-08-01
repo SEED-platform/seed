@@ -272,7 +272,12 @@ class PortfolioManagerImport(object):
             if not response.status_code == status.HTTP_200_OK:
                 raise PMExcept("Unsuccessful response from GET trying to check status on generated report; aborting.")
             template_objects = json.loads(response.text)["rows"]
-            this_matched_template = next((t for t in template_objects if t["id"] == matched_template["id"]), None)
+            for t in template_objects:
+                if 'id' in t and t['id'] == matched_template['id']:
+                    this_matched_template = t
+                    break
+            else:
+                this_matched_template = None
             if not this_matched_template:
                 raise PMExcept("Couldn't find a match for this report template id...odd at this point")
             if this_matched_template["pending"] == 1:
