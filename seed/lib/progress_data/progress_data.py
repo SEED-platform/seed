@@ -100,9 +100,7 @@ class ProgressData(object):
     def from_key(cls, key):
         data = get_cache(key)
         if 'func_name' in data.keys() and 'unique_id' in data.keys():
-            return ProgressData(
-                func_name=data['func_name'], unique_id=data['unique_id'], init_data=data
-            )
+            return cls(func_name=data['func_name'], unique_id=data['unique_id'], init_data=data)
         else:
             raise Exception("Could not find key %s in cache" % key)
 

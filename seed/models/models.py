@@ -174,14 +174,15 @@ class CustomBuildingHeaders(models.Model):
 
 
 STRING = 1
-DECIMAL = 2
+DECIMAL = 2  # This is not used anymore, use float
 FLOAT = 3
 DATE = 4
 DATETIME = 5
+INTEGER = 6
 
 UNIT_TYPES = (
     (STRING, 'String'),
-    (DECIMAL, 'Decimal'),
+    (INTEGER, 'Integer'),
     (FLOAT, 'Float'),
     (DATE, 'Date'),
     (DATETIME, 'Datetime'),

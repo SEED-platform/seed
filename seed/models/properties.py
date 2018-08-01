@@ -21,6 +21,7 @@ from django.dispatch import receiver
 from django.forms.models import model_to_dict
 from quantityfield.fields import QuantityField
 
+from seed.lib.mcm.cleaners import date_cleaner
 from auditlog import AUDIT_IMPORT
 from auditlog import DATA_UPDATE_TYPE
 from seed.data_importer.models import ImportFile
@@ -39,6 +40,7 @@ from seed.utils.address import normalize_address_str
 from seed.utils.generic import split_model_fields, obj_to_dict
 from seed.utils.time import convert_datestr
 from seed.utils.time import convert_to_js_timestamp
+
 
 _log = logging.getLogger(__name__)
 
@@ -206,10 +208,12 @@ class PropertyState(models.Model):
     source_eui_modeled = QuantityField('kBtu/ft**2/year', null=True, blank=True)
 
     extra_data = JSONField(default=dict, blank=True)
+    hash_object = models.CharField(max_length=32, null=True, blank=True, default=None)
     measures = models.ManyToManyField('Measure', through='PropertyMeasure')
 
     class Meta:
         index_together = [
+            ['hash_object'],
             ['import_file', 'data_state'],
             ['import_file', 'data_state', 'merge_state'],
             ['analysis_state', 'organization'],
@@ -287,7 +291,10 @@ class PropertyState(models.Model):
         for field in date_field_names:
             value = getattr(self, field)
             if value and isinstance(value, (str, unicode)):
-                setattr(self, field, convert_datestr(value))
+                print "Saving %s which is a date time" % field
+                print convert_datestr(value)
+                print date_cleaner(value)
+                # setattr(self, field, convert_datestr(value))
 
     def to_dict(self, fields=None, include_related_data=True):
         """
@@ -334,6 +341,10 @@ class PropertyState(models.Model):
         else:
             self.normalized_address = None
 
+        # save a hash of the object to the database for quick lookup
+        from seed.data_importer.tasks import hash_state_object
+        self.hash_object = hash_state_object(self)
+        # print "hash object is %s" % self.hash_object
         return super(PropertyState, self).save(*args, **kwargs)
 
     def history(self):
@@ -726,8 +737,8 @@ class PropertyView(models.Model):
 @receiver(post_save, sender=PropertyView)
 def post_save_property_view(sender, **kwargs):
     """
-    When changing/saving the PropertyView, go ahead and touch the Property (if linked) so that the record
-    receives an updated datetime
+    When changing/saving the PropertyView, go ahead and touch the Property (if linked) so that the
+    record receives an updated datetime
     """
     if kwargs['instance'].property:
         kwargs['instance'].property.save()

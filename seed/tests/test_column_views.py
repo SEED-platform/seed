@@ -24,11 +24,6 @@ DEFAULT_CUSTOM_COLUMNS = [
 
 from seed.tests.util import DeleteModelsTestCase
 
-COLUMNS_TO_SEND = DEFAULT_CUSTOM_COLUMNS + ['postal_code', 'pm_parent_property_id',
-                                            # 'calculated_taxlot_ids', 'primary',
-                                            'extra_data_field', 'jurisdiction_tax_lot_id', 'is secret lair',
-                                            'paint color', 'number of secret gadgets']
-
 
 class DefaultColumnsViewTests(DeleteModelsTestCase):
     """
@@ -45,7 +40,8 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
         self.org, _, _ = create_organization(self.user, "test-organization-a")
 
         Column.objects.create(column_name='test')
-        Column.objects.create(column_name='extra_data_test', table_name='PropertyState', is_extra_data=True)
+        Column.objects.create(column_name='extra_data_test', table_name='PropertyState',
+                              is_extra_data=True)
 
         self.client.login(**user_details)
 
