@@ -50,7 +50,7 @@ class TestBuildingFiles(TestCase):
 
         status, property_state, property_view, messages = bf.process(self.org.id, self.org.cycles.first())
         self.assertTrue(status)
-        self.assertEqual(property_state.address_line_1, '123 Main Street')
+        self.assertEqual(property_state.address_line_1, '123 Main St')
         self.assertEqual(messages, [])
 
     def test_hpxml_constructor(self):

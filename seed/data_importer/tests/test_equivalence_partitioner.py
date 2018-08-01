@@ -6,8 +6,8 @@
 """
 import logging
 
-from seed.data_importer.tasks import EquivalencePartitioner
-from seed.data_importer.tests.util import DataMappingBaseTestCase
+from seed.data_importer.equivalence_partitioner import EquivalencePartitioner
+from seed.tests.util import DataMappingBaseTestCase
 
 logger = logging.getLogger(__name__)
 
@@ -25,13 +25,15 @@ class EZState(object):
 class PropertyState(EZState):
 
     def __init__(self, **kwds):
-        super(PropertyState, self).__init__("ubid", "pm_property_id", "custom_id_1", "normalized_address", **kwds)
+        super(PropertyState, self).__init__("ubid", "pm_property_id", "custom_id_1",
+                                            "normalized_address", **kwds)
 
 
 class TaxLotState(EZState):
 
     def __init__(self, **kwds):
-        super(TaxLotState, self).__init__("jurisdiction_tax_lot_id", "custom_id_1", "normalized_address", **kwds)
+        super(TaxLotState, self).__init__("jurisdiction_tax_lot_id", "custom_id_1",
+                                          "normalized_address", **kwds)
 
 
 class TestEquivalenceClassGenerator(DataMappingBaseTestCase):
@@ -43,6 +45,9 @@ class TestEquivalenceClassGenerator(DataMappingBaseTestCase):
         p2 = PropertyState(pm_property_id=100)
         p3 = PropertyState(pm_property_id=200)
         p4 = PropertyState(custom_id_1=100)
+        p5 = PropertyState(ubid='abc+123')
+        p6 = PropertyState(ubid='100')
+        p7 = PropertyState(ubid='abc+123')
 
         equivalence_classes = partitioner.calculate_equivalence_classes([p1, p2])
         self.assertEqual(len(equivalence_classes), 1)
@@ -53,12 +58,20 @@ class TestEquivalenceClassGenerator(DataMappingBaseTestCase):
         equivalence_classes = partitioner.calculate_equivalence_classes([p1, p4])
         self.assertEqual(len(equivalence_classes), 1)
 
-        return
+        equivalence_classes = partitioner.calculate_equivalence_classes([p4, p6])
+        self.assertEqual(len(equivalence_classes), 2)
+
+        equivalence_classes = partitioner.calculate_equivalence_classes([p5, p6])
+        self.assertEqual(len(equivalence_classes), 2)
+
+        equivalence_classes = partitioner.calculate_equivalence_classes([p5, p7])
+        self.assertEqual(len(equivalence_classes), 1)
 
     def test_a_dummy_class_basics(self):
         tls1 = TaxLotState(jurisdiction_tax_lot_id="1")
         tls2 = TaxLotState(jurisdiction_tax_lot_id="1", custom_id_1="100")
-        tls3 = TaxLotState(jurisdiction_tax_lot_id="1", custom_id_1="100", normalized_address="123 fake street")
+        tls3 = TaxLotState(jurisdiction_tax_lot_id="1", custom_id_1="100",
+                           normalized_address="123 fake street")
 
         self.assertEqual(tls1.jurisdiction_tax_lot_id, "1")
         self.assertEqual(tls1.custom_id_1, None)
@@ -71,5 +84,3 @@ class TestEquivalenceClassGenerator(DataMappingBaseTestCase):
         self.assertEqual(tls3.jurisdiction_tax_lot_id, "1")
         self.assertEqual(tls3.custom_id_1, "100")
         self.assertEqual(tls3.normalized_address, "123 fake street")
-
-        return

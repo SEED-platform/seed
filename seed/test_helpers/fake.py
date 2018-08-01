@@ -13,12 +13,12 @@ method mutiple times will always return the same sequence of results
     Do not edit the seed unless you know what you are doing!
     .. codeauthor:: Paul Munday<paul@paulmunday.net>
 """
+import datetime
 import os
 import re
 import string
 from collections import namedtuple
 
-import datetime
 import mock
 from django.db.models.fields.files import FieldFile
 from django.utils import timezone
@@ -233,6 +233,41 @@ class FakePropertyStateFactory(BaseFake):
             'owner_postal_code': owner.postal_code,
         }
 
+    def get_property_state_as_extra_data(self, organization=None, **kw):
+        """Return the porperty state but only populated as extra_data (used for mapping)"""
+        property_details = {}
+        if 'no_default_data' not in kw.keys():
+            property_details = self.get_details()
+        else:
+            del kw['no_default_data']
+
+        import_file_id = None
+        if 'import_file_id' in kw:
+            import_file_id = kw['import_file_id']
+            del kw['import_file_id']
+
+        data_state = None
+        if 'data_state' in kw:
+            data_state = kw['data_state']
+            del kw['data_state']
+
+        source_type = None
+        if 'source_type' in kw:
+            source_type = kw['source_type']
+            del kw['source_type']
+
+        property_details.update(kw)
+        ps = PropertyState.objects.create(
+            organization=self._get_attr('organization', self.organization),
+            import_file_id=import_file_id,
+            data_state=data_state,
+            source_type=source_type,
+            extra_data=property_details,
+        )
+
+        # Note that there is no audit log in this state which is typically the DATA_STATE_IMPORT
+        return ps
+
     def get_property_state(self, organization=None, **kw):
         """Return a property state populated with pseudo random data"""
         property_details = {}
@@ -271,19 +306,23 @@ class FakePropertyViewFactory(BaseFake):
         self.cycle_factory = FakeCycleFactory(organization=organization, user=user)
         self.state_factory = FakePropertyStateFactory(organization=organization)
 
-    def get_property_view(self, prprty=None, cycle=None, state=None, organization=None, user=None, **kwargs):
+    def get_property_view(self, prprty=None, cycle=None, state=None, organization=None, user=None,
+                          **kwargs):
         # pylint:disable=too-many-arguments
         """Get property view instance."""
         organization = organization if organization else self.organization
         user = user if user else self.user
         if not prprty:
-            prprty = self.prprty if self.prprty else self.property_factory.get_property(organization=organization)
+            prprty = self.prprty if self.prprty else self.property_factory.get_property(
+                organization=organization)
         if not cycle:
-            cycle = self.cycle if self.cycle else self.cycle_factory.get_cycle(organization=organization)
+            cycle = self.cycle if self.cycle else self.cycle_factory.get_cycle(
+                organization=organization)
         property_view_details = {
             'property': prprty,
             'cycle': cycle,
-            'state': state if state else self.state_factory.get_property_state(organization=organization, **kwargs)
+            'state': state if state else self.state_factory.get_property_state(
+                organization=organization, **kwargs)
         }
         return PropertyView.objects.create(**property_view_details)
 
@@ -293,7 +332,8 @@ class FakePropertyMeasureFactory(BaseFake):
         self.organization = organization
 
         if not property_state:
-            self.property_state = FakePropertyStateFactory(organization=self.organization).get_property_state()
+            self.property_state = FakePropertyStateFactory(
+                organization=self.organization).get_property_state()
         else:
             self.property_state = property_state
         super(FakePropertyMeasureFactory, self).__init__()
@@ -407,7 +447,8 @@ class FakeGreenAssessmentPropertyFactory(BaseFake):
     def get_details(self, assessment, property_view, organization):
         """Get GreenAssessmentProperty details"""
         metric = self.fake.random_digit_not_null() if assessment.is_numeric_score else None
-        rating = None if assessment.is_numeric_score else u'{} stars'.format(self.fake.random.randint(1, 5))
+        rating = None if assessment.is_numeric_score else u'{} stars'.format(
+            self.fake.random.randint(1, 5))
         details = {
             'organization': organization,
             'view': property_view,
@@ -420,7 +461,8 @@ class FakeGreenAssessmentPropertyFactory(BaseFake):
             details['rating'] = rating
         return details
 
-    def get_green_assessment_property(self, assessment=None, property_view=None, organization=None, user=None,
+    def get_green_assessment_property(self, assessment=None, property_view=None, organization=None,
+                                      user=None,
                                       urls=None, with_url=None, **kw):
         """
         Get a GreenAssessmentProperty instance.
@@ -678,18 +720,22 @@ class FakeTaxLotViewFactory(BaseFake):
         self.cycle_factory = FakeCycleFactory(organization=organization, user=user)
         self.state_factory = FakeTaxLotStateFactory(organization=organization)
 
-    def get_taxlot_view(self, taxlot=None, cycle=None, state=None, organization=None, user=None, **kwargs):
+    def get_taxlot_view(self, taxlot=None, cycle=None, state=None, organization=None, user=None,
+                        **kwargs):
         """Get a fake taxlot view."""
         organization = organization if organization else self.organization
         user = user if user else self.user
         if not taxlot:
-            taxlot = self.taxlot if self.taxlot else self.taxlot_factory.get_taxlot(organization=organization)
+            taxlot = self.taxlot if self.taxlot else self.taxlot_factory.get_taxlot(
+                organization=organization)
         if not cycle:
-            cycle = self.cycle if self.cycle else self.cycle_factory.get_cycle(organization=organization)
+            cycle = self.cycle if self.cycle else self.cycle_factory.get_cycle(
+                organization=organization)
         property_view_details = {
             'taxlot': taxlot,
             'cycle': cycle,
-            'state': state if state else self.state_factory.get_taxlot_state(organization=organization, **kwargs)
+            'state': state if state else self.state_factory.get_taxlot_state(
+                organization=organization, **kwargs)
         }
         return TaxLotView.objects.create(**property_view_details)
 

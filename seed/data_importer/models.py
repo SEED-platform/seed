@@ -21,7 +21,7 @@ from django.db.models import Q
 from django.utils import timezone
 from django.utils.timesince import timesince
 from django_extensions.db.models import TimeStampedModel
-
+from django.contrib.postgres.fields import JSONField
 from config.utils import de_camel_case
 from seed.data_importer.managers import NotDeletedManager
 from seed.lib.mcm.reader import ROW_DELIMITER
@@ -290,6 +290,7 @@ class ImportRecord(NotDeletableModel):
         else:
             return 100
 
+    # TODO #239: This code is definitley not sued anymore... should delete!
     @property
     def merge_progress_key(self):
         """
@@ -605,6 +606,7 @@ class ImportRecord(NotDeletableModel):
             print_exc()
             return {}
 
+    # TODO #239: This is not used. Should we enable it again, why?
     @property
     def worksheet_progress_json(self):
         progresses = []
@@ -669,6 +671,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     mapping_error_messages = models.TextField(blank=True, null=True)
     matching_completion = models.IntegerField(blank=True, null=True)
     matching_done = models.BooleanField(default=False)
+    matching_results_data = JSONField(default=dict, blank=True)
     num_coercion_errors = models.IntegerField(blank=True, null=True, default=0)
     num_coercions_total = models.IntegerField(blank=True, null=True, default=0)
     num_columns = models.IntegerField(blank=True, null=True)
@@ -1073,9 +1076,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     def find_unmatched_states(self, kls):
         """Get unmatched property states' id info from an import file.
 
-        :rtype: list of tuples, field values specified in BS_VALUES_LIST.
-
-        NJA: This function is a straight copy/update to find_unmatched_property_states
+        :return: QuerySet, list of model objects [either PropertyState or TaxLotState]
         """
 
         from seed.models import (
@@ -1094,9 +1095,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     def find_unmatched_property_states(self):
         """Get unmatched property states' id info from an import file.
 
-        # TODO - Fix Comment
-        :rtype: list of tuples, field values specified in BS_VALUES_LIST.
-
+        :return: QuerySet, list of PropertyState objects
         """
 
         from seed.models import PropertyState
@@ -1105,11 +1104,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     def find_unmatched_tax_lot_states(self):
         """Get unmatched property states' id info from an import file.
 
-        # TODO - Fix Comment
-        :rtype: list of tuples, field values specified in BS_VALUES_LIST.
-
-        NB: This does not return a queryset!
-
+        :return: QuerySet, list of TaxLotState objects
         """
 
         from seed.models import TaxLotState

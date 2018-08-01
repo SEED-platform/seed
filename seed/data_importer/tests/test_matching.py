@@ -4,180 +4,268 @@
 :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-import logging
-import os.path as osp
 
-from django.core.files.uploadedfile import SimpleUploadedFile
-
-from seed.data_importer import tasks
-from seed.data_importer.models import ImportFile
-from seed.data_importer.tests.util import (
-    DataMappingBaseTestCase,
-    FAKE_EXTRA_DATA,
-    FAKE_MAPPINGS,
-    FAKE_ROW,
-)
+from seed.data_importer.tasks import match_buildings, save_state_match
 from seed.models import (
+    PropertyView,
+    PropertyAuditLog,
     ASSESSED_RAW,
-    ASSESSED_BS,
     DATA_STATE_MAPPING,
+    MERGE_STATE_MERGED,
+    TaxLotProperty,
+    TaxLotView,
 )
-from seed.models import (
-    Column,
-    PropertyState,
+from seed.test_helpers.fake import (
+    FakePropertyFactory,
+    FakePropertyStateFactory,
+    FakeTaxLotStateFactory,
+    FakeTaxLotViewFactory,
+    FakePropertyViewFactory,
 )
+from seed.tests.util import DataMappingBaseTestCase
 
-logger = logging.getLogger(__name__)
+COLUMNS_TO_SEND = [
+    'project_id',
+    'address_line_1',
+    'city',
+    'state_province',
+    'postal_code',
+    'pm_parent_property_id',
+    # 'calculated_taxlot_ids',
+    # 'primary',
+    'extra_data_field',
+    'jurisdiction_tax_lot_id'
+]
 
 
 class TestMatching(DataMappingBaseTestCase):
     def setUp(self):
-        filename = getattr(self, 'filename', 'example-data-properties.xlsx')
-        import_file_source_type = ASSESSED_RAW
-        self.fake_mappings = FAKE_MAPPINGS['portfolio']
-        self.fake_extra_data = FAKE_EXTRA_DATA
-        self.fake_row = FAKE_ROW
-        selfvars = self.set_up(import_file_source_type)
+        selfvars = self.set_up(ASSESSED_RAW)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
-        filepath = osp.join(osp.dirname(__file__), 'data', filename)
-        self.import_file.file = SimpleUploadedFile(
-            name=filename,
-            content=open(filepath, 'rb').read()
-        )
-        self.import_file.save()
 
-    def test_single_id_matches(self):
-        tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
-        Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.pk)
-        tasks.map_data(self.import_file.pk)
+        self.property_factory = FakePropertyFactory(organization=self.org)
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+        self.property_view_factory = FakePropertyViewFactory(organization=self.org,
+                                                             cycle=self.cycle)
+        self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
+        self.taxlot_view_factory = FakeTaxLotViewFactory(organization=self.org, cycle=self.cycle)
 
-        # verify that there are no properties listed as canonical
-        property_states = tasks.list_canonical_property_states(self.org)
-        self.assertEqual(len(property_states), 0)
-
-        # promote a properties
-        ps = PropertyState.objects.filter(pm_property_id='2264').first()
-        ps.promote(self.cycle)
-
-        property_states = tasks.list_canonical_property_states(self.org)
-        self.assertEqual(len(property_states), 1)
-
-        matches = tasks.query_property_matches(property_states, None, None, None)
-        self.assertEqual(len(matches), 0)
-        matches = tasks.query_property_matches(property_states, '2264', None, None)
-        self.assertEqual(len(matches), 1)
-        self.assertEqual(matches[0], ps)
-
-    def test_multiple_id_matches(self):
-        tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
-        Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.pk)
-        tasks.map_data(self.import_file.pk)
-
-        # verify that there are no properties listed as canonical
-        property_states = tasks.list_canonical_property_states(self.org)
-        self.assertEqual(len(property_states), 0)
-
-        # promote two properties
-        ps = PropertyState.objects.filter(custom_id_1='13').order_by('id')
-        ps_test = ps.first()
-        ps_test_2 = ps.last()
-        for p in ps:
-            p.promote(self.cycle)
-            # from seed.utils.generic import pp
-            # pp(p)
-
-        property_states = tasks.list_canonical_property_states(self.org)
-        self.assertEqual(len(property_states), 2)
-
-        # no arguments passed should return no results
-        matches = tasks.query_property_matches(property_states, None, None, None)
-        self.assertEqual(len(matches), 0)
-        # should return 2 properties
-        matches = tasks.query_property_matches(property_states, None, '13', None)
-        self.assertEqual(len(matches), 2)
-        self.assertEqual(matches[0], ps_test)
-        self.assertEqual(matches[1], ps_test_2)
-        # should return only the second property
-        matches = tasks.query_property_matches(property_states, '2342', None, None)
-        self.assertEqual(len(matches), 1)
-        self.assertEqual(matches[0], ps_test_2)
-        # should return both properties, the first one should be the pm match, i.e. the first prop
-        matches = tasks.query_property_matches(property_states, '481516', '13', None)
-        self.assertEqual(len(matches), 2)
-        self.assertEqual(matches[0], ps_test)
-        self.assertEqual(matches[1], ps_test_2)
-        # if passing in the second pm then it will not be the first
-        matches = tasks.query_property_matches(property_states, '2342', '13', None)
-        self.assertEqual(len(matches), 2)
-        self.assertEqual(matches[1], ps_test_2)
-        # pass the pm id into the custom id. it should still return the correct buildings.
-        # not sure that this is the right behavior, but this is what it does, so just testing.
-        matches = tasks.query_property_matches(property_states, None, '2342', None)
-        self.assertEqual(len(matches), 1)
-        self.assertEqual(matches[0], ps_test_2)
-        matches = tasks.query_property_matches(property_states, '13', None, None)
-        self.assertEqual(len(matches), 2)
-        self.assertEqual(matches[0], ps_test)
-        self.assertEqual(matches[1], ps_test_2)
-
-    def test_handle_id_matches_duplicate_data(self):
-        """
-        Test for handle_id_matches behavior when matching duplicate data
-        """
-        # TODO: Fix the PM, tax lot id, and custom ID fields in PropertyState
-        bs_data = {
-            'pm_property_id': "2360",
-            # 'tax_lot_id': '476/460',
-            'property_name': 'Garfield Complex',
-            'custom_id_1': "89",
-            'address_line_1': '12975 Database LN.',
-            'address_line_2': '',
-            'city': 'Cartoon City',
-            'postal_code': "54321",
-            'data_state': DATA_STATE_MAPPING,
-            'source_type': ASSESSED_BS,
-        }
-
-        # Setup mapped AS snapshot.
-        PropertyState.objects.create(
-            organization=self.org,
-            import_file=self.import_file,
-            **bs_data
-        )
-
-        # Different file, but same ImportRecord.
-        # Setup mapped PM snapshot.
-        # Should be an identical match.
-        new_import_file = ImportFile.objects.create(import_record=self.import_record,
-                                                    mapping_done=True)
-
-        tasks.match_buildings(new_import_file.pk)
-
-        duplicate_import_file = ImportFile.objects.create(
-            import_record=self.import_record,
-            mapping_done=True
-        )
-
-        PropertyState.objects.create(
-            organization=self.org,
-            import_file=duplicate_import_file,
-            **bs_data
-        )
-
-        # get a list of unhandled
-        # unmatched_properties = self.import_file.find_unmatched_property_states()
-        # unmatched_properties_2 = duplicate_import_file.find_unmatched_property_states()
-        # from seed.utils.generic import pp
-        # print unmatched_properties
-        # for p in unmatched_properties:
-        #     pp(p)
-        # print len(unmatched_properties)
+    def test_match_properties_and_taxlots_with_address(self):
+        # create an ImportFile for testing purposes. Seems like we would want to run this matching just on a
+        # list of properties and taxlots.
         #
-        # for p in unmatched_properties_2:
-        #     pp(p)
-        # print len(unmatched_properties_2)
+        # This emulates importing the following
+        #   Address,                Jurisdiction Tax Lot
+        #   742 Evergreen Terrace,  100;101;110;111
 
-        # TODO: figure out why this isn't working here
-        # self.assertRaises(tasks.DuplicateDataError, tasks.handle_id_matches,
-        #                   new_snapshot, duplicate_import_file,
-        #                   self.user.pk)
+        lot_numbers = '100;101;110;111'
+        for i in range(10):
+            self.property_state_factory.get_property_state(
+                address_line_1='742 Evergreen Terrace',
+                lot_number=lot_numbers,
+                import_file_id=self.import_file.id,
+                data_state=DATA_STATE_MAPPING,
+            )
+
+        for lot_number in lot_numbers.split(';'):
+            self.taxlot_state_factory.get_taxlot_state(
+                address_line_1=None,
+                jurisdiction_tax_lot_id=lot_number,
+                import_file_id=self.import_file.id,
+                data_state=DATA_STATE_MAPPING,
+            )
+
+        # for ps in PropertyState.objects.filter(organization=self.org):
+        #     print "%s -- %s -- %s" % (ps.lot_number, ps.import_file_id, ps.address_line_1)
+
+        # for tl in TaxLotState.objects.filter(organization=self.org):
+        #     print "%s -- %s" % (tl.import_file_id, tl.jurisdiction_tax_lot_id)
+
+        # set import_file mapping done so that matching can occur.
+        self.import_file.mapping_done = True
+        self.import_file.save()
+        match_buildings(self.import_file.id)
+
+        # for pv in PropertyView.objects.filter(state__organization=self.org):
+        #     print "%s -- %s" % (pv.state, pv.cycle)
+
+        # should only have 1 PropertyView and 4 taxlot views
+        self.assertEqual(PropertyView.objects.filter(state__organization=self.org).count(), 1)
+        self.assertEqual(TaxLotView.objects.filter(state__organization=self.org).count(), 4)
+        pv = PropertyView.objects.filter(state__organization=self.org).first()
+
+        # there should be 4 relationships in the TaxLotProperty associated with view, one each for the taxlots defined
+        self.assertEqual(TaxLotProperty.objects.filter(property_view_id=pv).count(), 4)
+
+    def test_match_properties_and_taxlots_with_address_no_lot_number(self):
+        # create an ImportFile for testing purposes. Seems like we would want to run this matching just on a
+        # list of properties and taxlots.
+        #
+        # This emulates importing the following
+        #   Address,                Jurisdiction Tax Lot
+        #   742 Evergreen Terrace,  100
+        #   742 Evergreen Terrace,  101
+        #   742 Evergreen Terrace,  110
+        #   742 Evergreen Terrace,  111
+
+        lot_numbers = '100;101;110;111'
+        for lot_number in lot_numbers.split(';'):
+            self.property_state_factory.get_property_state(
+                address_line_1='742 Evergreen Terrace',
+                lot_number=lot_number,
+                import_file_id=self.import_file.id,
+                data_state=DATA_STATE_MAPPING,
+            )
+
+            self.taxlot_state_factory.get_taxlot_state(
+                address_line_1=None,
+                jurisdiction_tax_lot_id=lot_number,
+                import_file_id=self.import_file.id,
+                data_state=DATA_STATE_MAPPING,
+            )
+
+        # for ps in PropertyState.objects.filter(organization=self.org):
+        #     print "%s -- %s -- %s" % (ps.lot_number, ps.import_file_id, ps.address_line_1)
+
+        # for tl in TaxLotState.objects.filter(organization=self.org):
+        #     print "%s -- %s" % (tl.import_file_id, tl.jurisdiction_tax_lot_id)
+
+        # set import_file mapping done so that matching can occur.
+        self.import_file.mapping_done = True
+        self.import_file.save()
+        match_buildings(self.import_file.id)
+
+        # for pv in PropertyView.objects.filter(state__organization=self.org):
+        #     print "%s -- %s" % (pv.state, pv.cycle)
+
+        # should only have 1 PropertyView and 4 taxlot views
+        self.assertEqual(PropertyView.objects.filter(state__organization=self.org).count(), 1)
+        self.assertEqual(TaxLotView.objects.filter(state__organization=self.org).count(), 4)
+        pv = PropertyView.objects.filter(state__organization=self.org).first()
+
+        # there should be 4 relationships in the TaxLotProperty associated with view, one each for the taxlots defined
+        self.assertEqual(TaxLotProperty.objects.filter(property_view_id=pv).count(), 4)
+
+    def test_match_properties_and_taxlots_with_ubid(self):
+        # create an ImportFile for testing purposes. Seems like we would want to run this matching just on a
+        # list of properties and taxlots.
+        #
+        # This emulates importing the following
+        #   UBID,    Jurisdiction Tax Lot
+        #   ubid_100,     lot_1
+        #   ubid_101,     lot_1
+        #   ubid_110,     lot_1
+        #   ubid_111,     lot_1
+
+        ids = [('ubid_100', 'lot_1'), ('ubid_101', 'lot_1'), ('ubid_110', 'lot_1'),
+               ('ubid_111', 'lot_1')]
+        for id in ids:
+            self.property_state_factory.get_property_state(
+                no_default_data=True,
+                ubid=id[0],
+                lot_number=id[1],
+                import_file_id=self.import_file.id,
+                data_state=DATA_STATE_MAPPING,
+            )
+
+        self.taxlot_state_factory.get_taxlot_state(
+            no_default_data=True,
+            jurisdiction_tax_lot_id=ids[0][1],
+            import_file_id=self.import_file.id,
+            data_state=DATA_STATE_MAPPING,
+        )
+
+        # for ps in PropertyState.objects.filter(organization=self.org):
+        #     print "%s -- %s -- %s" % (ps.lot_number, ps.import_file_id, ps.ubid)
+        # pv = PropertyView.objects.get(state=ps, cycle=self.cycle)
+        # TaxLotProperty.objects.filter()
+
+        # for tl in TaxLotState.objects.filter(organization=self.org):
+        #     print "%s -- %s" % (tl.import_file_id, tl.jurisdiction_tax_lot_id)
+
+        # set import_file mapping done so that matching can occur.
+        self.import_file.mapping_done = True
+        self.import_file.save()
+        match_buildings(self.import_file.id)
+
+        # for pv in PropertyView.objects.filter(state__organization=self.org):
+        #     print "%s -- %s" % (pv.state.ubid, pv.cycle)
+
+        # should only have 1 PropertyView and 4 taxlot views
+        self.assertEqual(PropertyView.objects.filter(state__organization=self.org).count(), 4)
+        self.assertEqual(TaxLotView.objects.filter(state__organization=self.org).count(), 1)
+        tlv = TaxLotView.objects.filter(state__organization=self.org).first()
+
+        # there should be 4 relationships in the TaxLotProperty associated with view, one each for the taxlots defined
+        self.assertEqual(TaxLotProperty.objects.filter(taxlot_view_id=tlv).count(), 4)
+
+    def test_match_properties_and_taxlots_with_custom_id(self):
+        # create an ImportFile for testing purposes. Seems like we would want to run this matching just on a
+        # list of properties and taxlots.
+        #
+        # This emulates importing the following
+        #   Custom ID 1,    Jurisdiction Tax Lot
+        #   custom_100,     lot_1
+        #   custom_101,     lot_1
+        #   custom_110,     lot_1
+        #   custom_111,     lot_1
+        ids = [('custom_100', 'lot_1'), ('custom_101', 'lot_1'), ('custom_110', 'lot_1'),
+               ('custom_111', 'lot_1')]
+        for id in ids:
+            self.property_state_factory.get_property_state(
+                no_default_data=True,
+                custom_id_1=id[0],
+                lot_number=id[1],
+                import_file_id=self.import_file.id,
+                data_state=DATA_STATE_MAPPING,
+            )
+
+        self.taxlot_state_factory.get_taxlot_state(
+            no_default_data=True,
+            jurisdiction_tax_lot_id=ids[0][1],
+            import_file_id=self.import_file.id,
+            data_state=DATA_STATE_MAPPING,
+        )
+
+        # for ps in PropertyState.objects.filter(organization=self.org):
+        #     print "%s -- %s -- %s" % (ps.lot_number, ps.import_file_id, ps.custom_id_1)
+        # pv = PropertyView.objects.get(state=ps, cycle=self.cycle)
+        # TaxLotProperty.objects.filter()
+
+        # for tl in TaxLotState.objects.filter(organization=self.org):
+        #     print "%s -- %s" % (tl.import_file_id, tl.jurisdiction_tax_lot_id)
+
+        # set import_file mapping done so that matching can occur.
+        self.import_file.mapping_done = True
+        self.import_file.save()
+        match_buildings(self.import_file.id)
+
+        # for pv in PropertyView.objects.filter(state__organization=self.org):
+        #     print "%s -- %s" % (pv.state, pv.cycle)
+
+        # should only have 1 PropertyView and 4 taxlot views
+        self.assertEqual(PropertyView.objects.filter(state__organization=self.org).count(), 4)
+        self.assertEqual(TaxLotView.objects.filter(state__organization=self.org).count(), 1)
+        tlv = TaxLotView.objects.filter(state__organization=self.org).first()
+
+        # there should be 4 relationships in the TaxLotProperty associated with view, one each for the taxlots defined
+        self.assertEqual(TaxLotProperty.objects.filter(taxlot_view_id=tlv).count(), 4)
+
+    def test_save_state_match(self):
+        # create a couple states to merge together
+        ps_1 = self.property_state_factory.get_property_state(property_name="this should persist")
+        ps_2 = self.property_state_factory.get_property_state(
+            extra_data={"extra_1": "this should exist too"})
+
+        merged_state = save_state_match(ps_1, ps_2)
+
+        self.assertEqual(merged_state.merge_state, MERGE_STATE_MERGED)
+        self.assertEqual(merged_state.property_name, ps_1.property_name)
+        self.assertEqual(merged_state.extra_data['extra_1'], "this should exist too")
+
+        # verify that the audit log is correct.
+        pal = PropertyAuditLog.objects.get(organization=self.org, state=merged_state)
+        self.assertEqual(pal.name, 'System Match')
+        self.assertEqual(pal.parent_state1, ps_1)
+        self.assertEqual(pal.parent_state2, ps_2)
+        self.assertEqual(pal.description, 'Automatic Merge')

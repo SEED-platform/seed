@@ -21,7 +21,6 @@ from seed.data_importer import tasks
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tasks import save_raw_data, map_data
 from seed.data_importer.tests.util import (
-    DataMappingBaseTestCase,
     FAKE_EXTRA_DATA,
     FAKE_MAPPINGS,
     FAKE_ROW,
@@ -37,11 +36,12 @@ from seed.models import (
     TaxLotState,
     Cycle,
 )
+from seed.tests.util import DataMappingBaseTestCase
 
 _log = logging.getLogger(__name__)
 
 
-class TestMappingPortfolioData(DataMappingBaseTestCase):
+class TestDataImport(DataMappingBaseTestCase):
     """Tests for dealing with SEED related tasks for mapping data."""
 
     def setUp(self):
@@ -56,7 +56,7 @@ class TestMappingPortfolioData(DataMappingBaseTestCase):
         self.fake_row = FAKE_ROW
         selfvars = self.set_up(import_file_source_type)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
-        filepath = osp.join(osp.dirname(__file__), '..', '..', 'tests', 'data', filename)
+        filepath = osp.join(osp.dirname(__file__), '..', '..', '..', 'tests', 'data', filename)
         self.import_file.file = SimpleUploadedFile(
             name=filename,
             content=open(filepath, 'rb').read()
@@ -67,7 +67,7 @@ class TestMappingPortfolioData(DataMappingBaseTestCase):
         """Tests to make sure the first row is saved in the correct order.
         It should be the order of the headers in the original file."""
         with patch.object(ImportFile, 'cache_first_rows', return_value=None):
-            tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
+            tasks.save_raw_data(self.import_file.pk)
 
         expected_first_row = u"Property Id|#*#|Property Name|#*#|Year Ending|#*#|Property Floor Area (Buildings and Parking) (ft2)|#*#|Address 1|#*#|Address 2|#*#|City|#*#|State/Province|#*#|Postal Code|#*#|Year Built|#*#|ENERGY STAR Score|#*#|Site EUI (kBtu/ft2)|#*#|Total GHG Emissions (MtCO2e)|#*#|Weather Normalized Site EUI (kBtu/ft2)|#*#|National Median Site EUI (kBtu/ft2)|#*#|Source EUI (kBtu/ft2)|#*#|Weather Normalized Source EUI (kBtu/ft2)|#*#|National Median Source EUI (kBtu/ft2)|#*#|Parking - Gross Floor Area (ft2)|#*#|Organization|#*#|Generation Date|#*#|Release Date"  # NOQA
 
@@ -78,8 +78,9 @@ class TestMappingPortfolioData(DataMappingBaseTestCase):
     def test_save_raw_data(self):
         """Save information in extra_data, set other attrs."""
         with patch.object(ImportFile, 'cache_first_rows', return_value=None):
-            tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
+            tasks.save_raw_data(self.import_file.pk)
 
+        self.assertEqual(PropertyState.objects.filter(import_file=self.import_file).count(), 512)
         raw_saved = PropertyState.objects.filter(
             import_file=self.import_file,
         ).latest('id')
@@ -152,7 +153,7 @@ class TestMappingExampleData(DataMappingBaseTestCase):
         self.fake_row = FAKE_ROW
         selfvars = self.set_up(import_file_source_type)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
-        filepath = osp.join(osp.dirname(__file__), 'data', filename)
+        filepath = osp.join(osp.dirname(__file__), '..', 'data', filename)
         self.import_file.file = SimpleUploadedFile(
             name=filename,
             content=open(filepath, 'rb').read()
@@ -160,7 +161,7 @@ class TestMappingExampleData(DataMappingBaseTestCase):
         self.import_file.save()
 
     def test_mapping(self):
-        tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
+        tasks.save_raw_data(self.import_file.pk)
         Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.pk)
         tasks.map_data(self.import_file.pk)
 
@@ -182,7 +183,7 @@ class TestMappingExampleData(DataMappingBaseTestCase):
 
     def test_promote_properties(self):
         """Test if the promoting of a property works as expected"""
-        tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
+        tasks.save_raw_data(self.import_file.pk)
         Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.pk)
         tasks.map_data(self.import_file.pk)
 
@@ -225,7 +226,7 @@ class TestMappingPropertiesOnly(DataMappingBaseTestCase):
         self.fake_row = FAKE_ROW
         selfvars = self.set_up(import_file_source_type)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
-        filepath = osp.join(osp.dirname(__file__), 'data', filename)
+        filepath = osp.join(osp.dirname(__file__), '..', 'data', filename)
         self.import_file.file = SimpleUploadedFile(
             name=filename,
             content=open(filepath, 'rb').read()
@@ -241,7 +242,7 @@ class TestMappingPropertiesOnly(DataMappingBaseTestCase):
             if m["to_table_name"] == 'TaxLotState':
                 m["to_table_name"] = 'PropertyState'
 
-        tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
+        tasks.save_raw_data(self.import_file.pk)
         Column.create_mappings(new_mappings, self.org, self.user, self.import_file.pk)
         tasks.map_data(self.import_file.pk)
 
@@ -264,7 +265,7 @@ class TestMappingTaxLotsOnly(DataMappingBaseTestCase):
         self.fake_row = FAKE_ROW
         selfvars = self.set_up(import_file_source_type)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
-        filepath = osp.join(osp.dirname(__file__), 'data', filename)
+        filepath = osp.join(osp.dirname(__file__), '..', 'data', filename)
         self.import_file.file = SimpleUploadedFile(
             name=filename,
             content=open(filepath, 'rb').read()
@@ -278,7 +279,7 @@ class TestMappingTaxLotsOnly(DataMappingBaseTestCase):
             if m["to_table_name"] == 'PropertyState':
                 m["to_table_name"] = 'TaxLotState'
 
-        tasks._save_raw_data(self.import_file.pk, 'fake_cache_key', 1)
+        tasks.save_raw_data(self.import_file.pk)
         Column.create_mappings(new_mappings, self.org, self.user, self.import_file.pk)
         tasks.map_data(self.import_file.pk)
 

@@ -161,35 +161,32 @@ def check_status(result_out, part_msg, log, piid_flag=None):
     failed = '\033[1;31m...failed\033[1;0m'
 
     if result_out.status_code in [200, 201, 403, 401]:
-        if piid_flag == 'data_quality':
-            msg = pprint.pformat(result_out.json(), indent=2, width=70)
-        else:
-            try:
-                if 'status' in result_out.json().keys() and result_out.json()['status'] == 'error':
-                    msg = result_out.json()['message']
-                    log.error(part_msg + failed)
-                    log.debug(msg)
-                    raise RuntimeError
-                elif 'success' in result_out.json().keys() and not result_out.json()['success']:
-                    msg = result_out.json()
-                    log.error(part_msg + failed)
-                    log.debug(msg)
-                    raise RuntimeError
-                else:
-                    if piid_flag == 'organizations':
-                        msg = 'Number of organizations:\t' + str(
-                            len(result_out.json()['organizations'][0]))
-                    elif piid_flag == 'users':
-                        msg = 'Number of users:\t' + str(len(result_out.json()['users'][0]))
-                    elif piid_flag == 'mappings':
-                        msg = pprint.pformat(result_out.json()['suggested_column_mappings'],
-                                             indent=2, width=70)
-                    else:
-                        msg = pprint.pformat(result_out.json(), indent=2, width=70)
-            except BaseException:
+        try:
+            if 'status' in result_out.json().keys() and result_out.json()['status'] == 'error':
+                msg = result_out.json()['message']
                 log.error(part_msg + failed)
-                log.debug('Unknown error during request results recovery')
+                log.debug(msg)
                 raise RuntimeError
+            elif 'success' in result_out.json().keys() and not result_out.json()['success']:
+                msg = result_out.json()
+                log.error(part_msg + failed)
+                log.debug(msg)
+                raise RuntimeError
+            else:
+                if piid_flag == 'organizations':
+                    msg = 'Number of organizations:\t' + str(
+                        len(result_out.json()['organizations'][0]))
+                elif piid_flag == 'users':
+                    msg = 'Number of users:\t' + str(len(result_out.json()['users'][0]))
+                elif piid_flag == 'mappings':
+                    msg = pprint.pformat(result_out.json()['suggested_column_mappings'],
+                                         indent=2, width=70)
+                else:
+                    msg = pprint.pformat(result_out.json(), indent=2, width=70)
+        except BaseException:
+            log.error(part_msg + failed)
+            log.debug('Unknown error during request results recovery')
+            raise RuntimeError
 
         log.info(part_msg + passed)
         log.debug(msg)

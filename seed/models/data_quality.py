@@ -528,14 +528,18 @@ class DataQualityCheck(models.Model):
         Initialize the cache for storing the results. This is called before the
         celery tasks are chunked up.
 
+        The cache_key is different than the indentifier. The cache_key is where all the results are
+        to be stored for the data quality checks, the identifier, is the random number (or specified
+        value that is used to identifier both the progress and the data storage
+
         :param identifier: Identifier for cache, if None, then creates a random one
-        :return: string, cache key
+        :return: list, [cache_key and the identifier]
         """
         if identifier is None:
             identifier = randint(100, 100000)
         cache_key = DataQualityCheck.cache_key(identifier)
         set_cache_raw(cache_key, [])
-        return cache_key
+        return cache_key, identifier
 
     @staticmethod
     def cache_key(identifier):
