@@ -5,10 +5,11 @@
 angular.module('BE.seed.controller.create_sub_organization_modal', [])
 .controller('create_sub_organization_modal_controller', [
   '$scope',
+  '$rootScope',
   '$uibModalInstance',
   'organization_service',
   'organization',
-  function ($scope, $uibModalInstance, organization_service, organization) {
+  function ($scope, $rootScope, $uibModalInstance, organization_service, organization) {
     $scope.sub_org = {};
     $scope.error_message = '';
 
@@ -17,6 +18,7 @@ angular.module('BE.seed.controller.create_sub_organization_modal', [])
      */
     $scope.submit_form = function () {
       organization_service.create_sub_org(organization, $scope.sub_org).then(function () {
+        $rootScope.$broadcast('organization_list_updated');
         $uibModalInstance.close();
       }, function (data) {
         // error data are in the data object
