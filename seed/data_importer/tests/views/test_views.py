@@ -29,9 +29,7 @@ from seed.tests.util import DataMappingBaseTestCase
 
 def first_five_rows_helper(headers, raw_data):
     save_format = '\n'.join([ROW_DELIMITER.join(row) for row in raw_data])
-    expected = [
-        dict(zip(headers, row)) for row in raw_data
-    ]
+    expected = [dict(zip(headers, row)) for row in raw_data]
     return save_format, expected
 
 
@@ -192,6 +190,9 @@ class DataImporterViewTests(DataMappingBaseTestCase):
         save_format, expected = first_five_rows_helper(header, raw_data)
         converted = convert_first_five_rows_to_list(header, save_format)
         print "Converted: %s" % converted
+
+        # This test fails on purpose becasue the format of the first five rows will not
+        # support this use case.
         self.assertNotEqual(converted, expected)
 
 
