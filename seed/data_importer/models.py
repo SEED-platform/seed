@@ -875,43 +875,6 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     def num_cells(self):
         return self.num_rows * self.num_columns
 
-    # TODO: 2/8/17 Verify that this can be removed
-    # @property
-    # def tcm_json(self):
-    #     # JSON used to render the mapping interface.
-    #     tcms = []
-    #     try:
-    #         row_number = 0
-    #         for tcm in self.tablecolumnmappings:
-    #             row_number += 1
-    #             error_message_text = ""
-    #             if tcm.error_message_text:
-    #                 error_message_text = tcm.error_message_text.replace("\n", "<br>")
-    #
-    #             first_rows = ["", "", "", "", ""]
-    #             if tcm.first_five_rows:
-    #                 first_rows = ["%s" % r for r in tcm.first_five_rows]
-    #             tcms.append({
-    #                 'row_number': row_number,
-    #                 'pk': tcm.pk,
-    #                 'destination_model': tcm.destination_model,
-    #                 'destination_field': tcm.destination_field,
-    #                 'order': tcm.order,
-    #                 'ignored': tcm.ignored,
-    #                 'confidence': tcm.confidence,
-    #                 'was_a_human_decision': tcm.was_a_human_decision,
-    #                 'error_message_text': error_message_text,
-    #                 'active': tcm.active,
-    #                 'is_mapped': tcm.is_mapped,
-    #                 'header_row': tcm.first_row,
-    #                 'first_rows': first_rows,
-    #             })
-    #     except:
-    #         from traceback import print_exc
-    #         print_exc()
-    #
-    #     return json.dumps(tcms)
-
     @property
     def tcm_errors_json(self):
         # JSON used to render the mapping interface.
