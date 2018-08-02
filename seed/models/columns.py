@@ -147,6 +147,7 @@ class Column(models.Model):
     # Do not return these columns to the front end -- when using the tax_lot_properties get_related method .
     EXCLUDED_COLUMN_RETURN_FIELDS = [
         'normalized_address',
+        'hash_object',
         # Records below are old and should not be used
         'source_eui_modeled_orig',
         'site_eui_orig',
@@ -181,11 +182,12 @@ class Column(models.Model):
     COLUMN_EXCLUDE_FIELDS = [
         'id',
         'source_type',
-        'data_state',
         'import_file',
+        'analysis_state',
+        'data_state',
         'merge_state',
-        'confidence',
         'extra_data',
+        'source_type',
     ] + EXCLUDED_COLUMN_RETURN_FIELDS
 
     # These are fields that should not be mapped to
@@ -854,7 +856,8 @@ class Column(models.Model):
             # Check if the extra_data field in the model object is a database column
             is_extra_data = True
             for c in Column.DATABASE_COLUMNS:
-                if field['to_table_name'] == c['table_name'] and field['to_field'] == c['column_name']:
+                if field['to_table_name'] == c['table_name'] and field['to_field'] == c[
+                        'column_name']:
                     is_extra_data = False
                     break
 
@@ -897,11 +900,13 @@ class Column(models.Model):
                 from_org_col = Column.objects.filter(organization=organization,
                                                      table_name__in=[None, ''],
                                                      column_name=field['from_field'],
-                                                     units_pint=field.get('from_units'),  # might be None
+                                                     units_pint=field.get('from_units'),
+                                                     # might be None
                                                      is_extra_data=is_extra_data).first()
                 _log.debug("Grabbing the first from_column")
 
-            new_field['to_column_object'] = select_col_obj(field['to_field'], field['to_table_name'], to_org_col)
+            new_field['to_column_object'] = select_col_obj(field['to_field'],
+                                                           field['to_table_name'], to_org_col)
             new_field['from_column_object'] = select_col_obj(field['from_field'], "", from_org_col)
             new_data.append(new_field)
 
@@ -943,7 +948,8 @@ class Column(models.Model):
                                                         is_extra_data=is_extra_data,
                                                         organization=model_obj.organization)
                         for c in columns:
-                            if not ColumnMapping.objects.filter(Q(column_raw=c) | Q(column_mapped=c)).exists():
+                            if not ColumnMapping.objects.filter(
+                                    Q(column_raw=c) | Q(column_mapped=c)).exists():
                                 _log.debug("Deleting column object {}".format(c.column_name))
                                 c.delete()
 
@@ -1048,7 +1054,8 @@ class Column(models.Model):
         """
 
         result = list(
-            set(list(Column.objects.filter(organization_id=org_id, is_extra_data=False).order_by('column_name').exclude(
+            set(list(Column.objects.filter(organization_id=org_id, is_extra_data=False).order_by(
+                'column_name').exclude(
                 table_name='').exclude(table_name=None).values_list('column_name', flat=True))))
 
         return result
@@ -1118,13 +1125,11 @@ class Column(models.Model):
                 dt = f.get_internal_type() if f.get_internal_type else 'string',
                 dt = Column.INTERNAL_TYPE_TO_DATA_TYPE[dt[0]]
                 all_columns.append(
-
                     {
                         'table_name': f.model.__name__,
                         'column_name': f.name,
                         'data_type': dt,
                     }
-
                 )
         return all_columns
 
@@ -1228,7 +1233,8 @@ class Column(models.Model):
                 new_c['related'] = not (inventory_type.lower() in new_c['table_name'].lower())
                 if new_c['related']:
                     # if it is related then have the display name show the other table
-                    new_c['display_name'] = new_c['display_name'] + ' (%s)' % INVENTORY_DISPLAY[new_c['table_name']]
+                    new_c['display_name'] = new_c['display_name'] + ' (%s)' % INVENTORY_DISPLAY[
+                        new_c['table_name']]
 
             # remove a bunch of fields that are not needed in the list of columns
             del new_c['import_file']
@@ -1421,8 +1427,10 @@ class ColumnMapping(models.Model):
             if not cm.column_mapped.all().exists():
                 continue
 
-            key = cm.column_raw.all().values_list('table_name', 'column_name', 'display_name', 'is_extra_data')
-            value = cm.column_mapped.all().values_list('table_name', 'column_name', 'display_name', 'is_extra_data')
+            key = cm.column_raw.all().values_list('table_name', 'column_name', 'display_name',
+                                                  'is_extra_data')
+            value = cm.column_mapped.all().values_list('table_name', 'column_name', 'display_name',
+                                                       'is_extra_data')
 
             if len(key) != 1:
                 raise Exception("There is either none or more than one mapping raw column")

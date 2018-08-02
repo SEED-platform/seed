@@ -4,10 +4,13 @@
 :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+import datetime
 import logging
 import os.path as osp
 
+import pytz
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.utils import timezone as tz
 from quantityfield import ureg
 
 from seed.data_importer import tasks
@@ -23,8 +26,12 @@ from seed.models import (
     Property,
     TaxLotState,
     TaxLot,
+    DATA_STATE_IMPORT,
     DATA_STATE_MAPPING,
+    DATA_STATE_MATCHING,
     ASSESSED_RAW,
+    ASSESSED_BS,
+    MERGE_STATE_MERGED,
 )
 from seed.tests.util import DataMappingBaseTestCase
 
@@ -66,6 +73,85 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
 
         self.assertEqual(len(set(map(tasks.hash_state_object, [ps1, ps2, ps3, ps4, ps5]))), 5)
 
+        # large PropertyState objects -- make sure size is still 32 (why wouldn't it be?)
+        extra_data = {}
+        for i in range(1000):
+            extra_data["entry_%s" % i] = "Value as string %s" % i
+
+        ps6 = PropertyState(address_line_1='123 fake st', extra_data=extra_data)
+        hash_res = tasks.hash_state_object(ps6)
+        self.assertEqual(len(hash_res), 32)
+
+    def test_hash_various_states(self):
+        """The hashing should not affect the data_state, source, type and various other states"""
+        ps1 = PropertyState.objects.create(
+            organization=self.org,
+            address_line_1='123 fake st',
+            extra_data={"a": "result"},
+            data_state=DATA_STATE_IMPORT,
+            import_file_id=0,
+        )
+        print ps1.hash_object
+
+        ps2 = PropertyState.objects.create(
+            organization=self.org,
+            address_line_1='123 fake st',
+            data_state=DATA_STATE_MATCHING,
+            merge_state=MERGE_STATE_MERGED,
+            import_file_id=27,
+            source_type=ASSESSED_BS,
+            extra_data={"a": "result"},
+
+        )
+        print ps2.hash_object
+        self.assertEqual(ps1.hash_object, ps2.hash_object)
+
+    def test_hash_quantity_unicode(self):
+        """The hashing should not affect the data_state, source, type and various other states"""
+        ps1 = PropertyState.objects.create(
+            organization=self.org,
+            address_line_1='123 fake st',
+            extra_data={"a": "result", u"Site EUI²": 90.5, "Unicode in value": u"EUI²"},
+            data_state=DATA_STATE_IMPORT,
+            import_file_id=0,
+        )
+        ps2 = PropertyState.objects.create(
+            organization=self.org,
+            address_line_1='123 fake st',
+            extra_data={"a": "result", u"Site EUI2": 90.5, "Unicode in value": "EUI2"},
+            data_state=DATA_STATE_IMPORT,
+            import_file_id=0,
+        )
+        # print ps1.hash_object
+        self.assertEqual(ps1.hash_object, ps2.hash_object)
+
+    def test_hash_release_date(self):
+        """The hash_state_object method makes the timezones naive, so this should work because
+        the date times are equivalent, even through the database objects are not"""
+        ps1 = PropertyState.objects.create(
+            organization=self.org,
+            address_line_1='123 fake st',
+            extra_data={"a": "result"},
+            release_date=datetime.datetime(2010, 1, 1, 0, 0,
+                                           tzinfo=pytz.timezone('America/Los_Angeles')),
+            data_state=DATA_STATE_IMPORT,
+            import_file_id=0,
+        )
+        ps2 = PropertyState.objects.create(
+            organization=self.org,
+            address_line_1='123 fake st',
+            extra_data={"a": "result"},
+            release_date=datetime.datetime(2010, 1, 1, 8, 0, tzinfo=tz.utc),
+            data_state=DATA_STATE_IMPORT,
+            import_file_id=0,
+        )
+
+        # Strings of the date time will not be the same due to the timezone data
+        self.assertNotEqual(str(ps1.release_date), str(ps2.release_date))
+
+        # Hashes will be right though
+        self.assertEqual(ps1.hash_object, ps2.hash_object)
+
     def test_import_duplicates(self):
         # Check to make sure all the properties imported
         ps = PropertyState.objects.filter(
@@ -93,7 +179,7 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
 
         pv = PropertyView.objects.filter(state__pm_property_id='2264').first()
         self.assertEqual(pv.state.pm_property_id, '2264')
-        self.assertEqual(pv.state.gross_floor_area, 12555 * ureg.feet**2)
+        self.assertEqual(pv.state.gross_floor_area, 12555 * ureg.feet ** 2)
         self.assertEqual(pv.state.energy_score, 75)
 
         self.assertEqual(TaxLot.objects.count(), 0)
