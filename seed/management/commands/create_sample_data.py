@@ -308,14 +308,12 @@ def update_taxlot_noise(taxlot):
     :param taxlot: SampleDataRecord with taxlot data.
     :return: The same taxlot with the confidence updated to a random number
     """
-    # FIXME  This is a hack to get the multi-year data working.
     # The issue is that nothing is changing in the non-extra_data fields
     # in the TaxLotState between years so when the code creates the second
     # year from the same input as the first it finds the first instead of
     # creating a new one.  Correct solution is probably to rework the
     # create_cases function but this is much faster and should work
     # just fine for creating sample data
-    taxlot.data["confidence"] = random()
     return taxlot
 
 
@@ -442,7 +440,6 @@ def update_taxlot_views(views, number_of_updates):
     for i in range(number_of_updates):
         for taxlot_view in views:
             state = taxlot_view.state
-            state.confidence = random()
             state.pk = None  # set state to None to get a new copy on save
             state.save()
             taxlot_view.update_state(state)

@@ -12,7 +12,7 @@ from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django_extensions.db.models import TimeStampedModel
 
-from seed.audit_logs.models import AuditLog, LOG
+from seed.audit_logs.models import AuditLog
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
@@ -20,14 +20,6 @@ from seed.managers.json import JsonManager
 from seed.models import SEED_DATA_SOURCES
 from seed.utils.generic import split_model_fields, obj_to_dict
 from seed.utils.time import convert_datestr
-
-BS_VALUES_LIST = [
-    'pk',  # needed for matching not to blow up
-    # 'tax_lot_id', # no longer on the propertystate
-    'pm_property_id',
-    'custom_id_1',
-    'address_line_1',
-]
 
 SYSTEM_MATCH = 1
 USER_MATCH = 2
@@ -38,256 +30,6 @@ SEED_MATCH_TYPES = (
     (USER_MATCH, 'User Match'),
     (POSSIBLE_MATCH, 'Possible Match'),
 )
-
-
-def find_canonical_building_values(org):
-    """Get all canonical building snapshots' id info for an organization.
-
-    :param org: Organization inst.
-
-    :rtype: list of tuples, field values specified in BS_VALUES_LIST
-        for all canonical buildings related to an organization.
-
-    NB: This does not return a queryset!
-
-    """
-    users = org.users.all()
-    return BuildingSnapshot.objects.filter(
-        pk__in=CanonicalBuilding.objects.filter(
-            canonical_snapshot__import_file__import_record__owner__in=users
-        ).values_list('canonical_snapshot_id')
-    ).distinct().values_list(*BS_VALUES_LIST)
-
-
-def get_or_create_canonical(b1, b2=None):
-    """Gets most trusted Canonical Building.
-
-    :param b1: BuildingSnapshot model type.
-    :param b2: BuildingSnapshot model type.
-    :rtype: CanonicalBuilding inst. Will contain PK.
-
-    NB: preference is given to existing snapshots' Canonical link.
-
-    """
-    canon = b1.canonical_building
-    if not canon and b2:
-        canon = b2.canonical_building
-    if not canon:
-        canon = CanonicalBuilding.objects.create()
-
-    return canon
-
-
-def initialize_canonical_building(snapshot, user_pk):
-    """Called to create a CanonicalBuilding from a single snapshot.
-
-    :param snapshot: BuildingSnapshot inst.
-    :param user_pk: The user id of the user initiating the CanonicalBuilding
-
-    """
-    canon = get_or_create_canonical(snapshot)
-    snapshot.canonical_building = canon
-    snapshot.save()
-    canon.canonical_snapshot = snapshot
-    canon.save()
-    # log the new building
-    AuditLog.objects.create(
-        user_id=user_pk,
-        organization=snapshot.super_organization,
-        action='create_building',
-        action_note='Created building',
-        content_object=canon,
-        audit_type=LOG,
-    )
-
-
-def clean_canonicals(b1, b2, new_snapshot):
-    """Make sure that we don't leave dead limbs in our tree.
-
-    :param b1: BuildingSnapshot, parent 1
-    :param b2: BuildingSnapshot, parent 2
-    :param new_snapshot: BuildingSnapshot, child.
-
-    """
-    latest_canon = new_snapshot.canonical_building
-    for p in [b1, b2]:
-        canon = p.canonical_building
-        if canon and latest_canon and canon.pk != latest_canon.pk:
-            canon.active = False
-            canon.save()
-
-# def get_building_attrs(data_set_buildings):
-#     mapping = seed_mappings.BuildingSnapshot_to_BuildingSnapshot
-#     return get_attrs_with_mapping(data_set_buildings, mapping)
-#
-#
-# def save_snapshot_match(b1_pk, b2_pk, confidence=None, user=None,
-#                         match_type=None, default_pk=None):
-#     """Saves a match between two models as a new snapshot; updates Canonical.
-#
-#     :param b1_pk: int, id for building snapshot.
-#     :param b2_pk: int, id for building snapshot.
-#     :param confidence: (optional) float, likelihood that two models are linked.
-#     :param user: (optional) User inst, last_modified_by for BuildingSnapshot.
-#     :rtype: BuildingSnapshot instance, post save.
-#
-#     Determines which Canonical link should be used. If ``canonical`` is
-#     specified,
-#     we're probably changing a building's Canonical link, so use that Canonical
-#     Building. Otherwise, use the model we match against. If none exists,
-#     create it.
-#
-#     Update mapped fields in the new snapshot, update canonical links.
-#
-#     """
-#     from seed.mappings import mapper as seed_mapper
-#
-#     # No point in linking the same building together.
-#     if b1_pk == b2_pk:
-#         return
-#
-#     default_pk = default_pk or b1_pk
-#
-#     b1 = BuildingSnapshot.objects.get(pk=b1_pk)
-#     b2 = BuildingSnapshot.objects.get(pk=b2_pk)
-#
-#     # we don't want to match in the middle of the tree, so get the tip
-#     b1 = b1.tip
-#     b2 = b2.tip
-#
-#     default_building = b1 if default_pk == b1_pk else b2
-#
-#     new_snapshot = BuildingSnapshot.objects.create()
-#     new_snapshot, changes = seed_mapper.merge_building(
-#         new_snapshot,
-#         b1,
-#         b2,
-#         seed_mapper.get_building_attrs([b1, b2]),
-#         conf=confidence,
-#         default=default_building,
-#         match_type=match_type
-#     )
-#
-#     clean_canonicals(b1, b2, new_snapshot)
-#
-#     new_snapshot.last_modified_by = user
-#
-#     new_snapshot.meters.add(*b1.meters.all())
-#     new_snapshot.meters.add(*b2.meters.all())
-#     new_snapshot.super_organization = b1.super_organization
-#     new_snapshot.super_organization = b2.super_organization
-#
-#     new_snapshot.save()
-#
-#     return new_snapshot, changes
-
-
-def unmatch_snapshot_tree(building_pk):
-    """May or may not obviate ``unmatch_snapshot``. Experimental.
-
-    :param building_pk: int - Primary Key for a BuildingSnapshot.
-
-    .. warning::
-
-        ``unmatch_snapshot_tree`` potentially modifies *years* of
-        merged data. Anything descended from the ``building_pk`` will
-        be deleted. The intent is to completely separate ``building_pk``'s
-        influence on the resultant canonical_snapshot. The user is saying
-        that these are separate entities after all, yes?
-
-    Basically, this function works by getting a merge order list of
-    children from the perspective of ``building_pk`` and a list of parents
-    from the perspective of leaf node in the child tree. We take the difference
-    between these lists and call that the ``remaining_ancestors`` from which
-    we reconstruct the merge tree for our CanonicalBuilding.
-
-    ``building_pk`` either gets a reactivated CanonicalBuilding, or a new one.
-
-    """
-    root_coparent = BuildingSnapshot.objects.get(pk=building_pk)
-    root = root_coparent.co_parent
-
-    node = root
-    children_to_murder = []
-    coparents_to_keep = []
-
-    if not root.canonical_building:
-        new_canon = CanonicalBuilding.objects.create(
-            canonical_snapshot=root
-        )
-        root.canonical_building = new_canon
-        root.save()
-
-    # create CanonicalBuilding for coparent that is about to be
-    # unmatched
-    if (
-        not root_coparent.canonical_building or
-        root_coparent.canonical_building is root.canonical_building
-    ):
-        new_canon = CanonicalBuilding.objects.create(
-            canonical_snapshot=root_coparent
-        )
-        root_coparent.canonical_building = new_canon
-        root_coparent.save()
-
-        unmatched_canon = root_coparent.canonical_building
-        unmatched_canon.active = True
-        unmatched_canon.save()
-    elif not root_coparent.canonical_building.active:
-        unmatched_canon = root_coparent.canonical_building
-        unmatched_canon.active = True
-        unmatched_canon.canonical_snapshot = root_coparent
-        unmatched_canon.save()
-
-    # orphan sub-children from the unmatched snapshot and keep track
-    # of which parents to merge back in to create new snapshots
-    # without data from the unmatched snapshot; also keep track of the
-    # snapshots we are orphaning so we can delete them later.
-    while node.children.first():
-        child = node.children.first()
-
-        if node.co_parent:
-            parent = node.co_parent
-            if not (parent.pk == root_coparent.pk):
-                coparents_to_keep.append(parent)
-            for parent in child.parents.all():
-                parent.children.remove(child)
-
-        children_to_murder.append(child)
-        node = child
-
-    # delete all sub-children of the unmatched snapshot
-    for child in children_to_murder:
-        # If the child we're about to delete is set as the canonical snapshop,
-        # we should update the canonical_building to point at a different node
-        # if possible.
-        canons_to_update = CanonicalBuilding.objects.filter(
-            canonical_snapshot=child,
-        )
-        for cb in canons_to_update:
-            sibling = cb.buildingsnapshot_set.exclude(
-                pk=child.pk,
-            ).first()
-            if sibling:
-                cb.canonical_snapshot = sibling.tip
-                cb.save()
-        child.delete()
-
-    # re-merge parents whose children have been taken from them
-    # bachelor = root
-    newborn_child = None
-    # for bereaved_parent in coparents_to_keep:
-    # newborn_child, _ = save_snapshot_match(
-    #     bachelor.pk, bereaved_parent.pk, default_pk=bereaved_parent.pk,
-    # )
-    # bachelor = newborn_child
-
-    # set canonical_snapshot for root's canonical building
-    tip = newborn_child or root
-    canon = root.canonical_building
-    canon.canonical_snapshot = tip
-    canon.active = True
-    canon.save()
 
 
 class CanonicalManager(models.Manager):
@@ -317,6 +59,7 @@ class CanonicalBuilding(models.Model):
     raw_objects = models.Manager()
 
     labels = models.ManyToManyField('StatusLabel')
+
     # ManyToManyField(StatusLabel)
 
     def __unicode__(self):
@@ -616,56 +359,42 @@ class BuildingSnapshot(TimeStampedModel):
     def save(self, *args, **kwargs):
         if self.tax_lot_id and isinstance(self.tax_lot_id, types.StringTypes):
             self.tax_lot_id = self.tax_lot_id[:128]
-        if self.pm_property_id and isinstance(
-                self.pm_property_id, types.StringTypes):
+        if self.pm_property_id and isinstance(self.pm_property_id, types.StringTypes):
             self.pm_property_id = self.pm_property_id[:128]
-        if self.custom_id_1 and isinstance(
-                self.custom_id_1, types.StringTypes):
+        if self.custom_id_1 and isinstance(self.custom_id_1, types.StringTypes):
             self.custom_id_1 = self.custom_id_1[:128]
         if self.lot_number and isinstance(self.lot_number, types.StringTypes):
             self.lot_number = self.lot_number[:128]
-        if self.block_number and isinstance(
-                self.block_number, types.StringTypes):
+        if self.block_number and isinstance(self.block_number, types.StringTypes):
             self.block_number = self.block_number[:128]
         if self.district and isinstance(self.district, types.StringTypes):
             self.district = self.district[:128]
         if self.owner and isinstance(self.owner, types.StringTypes):
             self.owner = self.owner[:128]
-        if self.owner_email and isinstance(
-                self.owner_email, types.StringTypes):
+        if self.owner_email and isinstance(self.owner_email, types.StringTypes):
             self.owner_email = self.owner_email[:128]
-        if self.owner_telephone and isinstance(
-                self.owner_telephone, types.StringTypes):
+        if self.owner_telephone and isinstance(self.owner_telephone, types.StringTypes):
             self.owner_telephone = self.owner_telephone[:128]
-        if self.owner_address and isinstance(
-                self.owner_address, types.StringTypes):
+        if self.owner_address and isinstance(self.owner_address, types.StringTypes):
             self.owner_address = self.owner_address[:128]
-        if self.owner_city_state and isinstance(
-                self.owner_city_state, types.StringTypes):
+        if self.owner_city_state and isinstance(self.owner_city_state, types.StringTypes):
             self.owner_city_state = self.owner_city_state[:128]
-        if self.owner_postal_code and isinstance(
-                self.owner_postal_code, types.StringTypes):
+        if self.owner_postal_code and isinstance(self.owner_postal_code, types.StringTypes):
             self.owner_postal_code = self.owner_postal_code[:128]
-
-        if self.property_name and isinstance(
-                self.property_name, types.StringTypes):
+        if self.property_name and isinstance(self.property_name, types.StringTypes):
             self.property_name = self.property_name[:255]
-        if self.address_line_1 and isinstance(
-                self.address_line_1, types.StringTypes):
+        if self.address_line_1 and isinstance(self.address_line_1, types.StringTypes):
             self.address_line_1 = self.address_line_1[:255]
-        if self.address_line_2 and isinstance(
-                self.address_line_2, types.StringTypes):
+        if self.address_line_2 and isinstance(self.address_line_2, types.StringTypes):
             self.address_line_2 = self.address_line_2[:255]
         if self.city and isinstance(self.city, types.StringTypes):
             self.city = self.city[:255]
-        if self.postal_code and isinstance(
-                self.postal_code, types.StringTypes):
+        if self.postal_code and isinstance(self.postal_code, types.StringTypes):
             self.postal_code = self.postal_code[:255]
-        if self.state_province and isinstance(
-                self.state_province, types.StringTypes):
+        if self.state_province and isinstance(self.state_province, types.StringTypes):
             self.state_province = self.state_province[:255]
         if self.building_certification and isinstance(
-                self.building_certification, types.StringTypes):  # NOQA
+            self.building_certification, types.StringTypes):  # NOQA
             self.building_certification = self.building_certification[:255]
 
         super(BuildingSnapshot, self).save(*args, **kwargs)
