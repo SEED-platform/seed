@@ -10,19 +10,17 @@ All rights reserved.  # NOQA
 from seed.models import (
     ColumnListSetting
 )
-
 from seed.pagination import NoPagination
-
 from seed.serializers.column_list_settings import (
     ColumnListSettingSerializer,
 )
-
+from seed.utils.api import OrgValidateMixin
 from seed.utils.viewsets import (
     SEEDOrgCreateUpdateModelViewSet
 )
 
 
-class ColumnListingViewSet(SEEDOrgCreateUpdateModelViewSet):
+class ColumnListingViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
     """
     API endpoint for returning Column List Settings
 
@@ -47,3 +45,5 @@ class ColumnListingViewSet(SEEDOrgCreateUpdateModelViewSet):
     serializer_class = ColumnListSettingSerializer
     model = ColumnListSetting
     pagination_class = NoPagination
+    # force_parent = True  # Ideally the column list settings would inherit from the parent,
+    # but not yet.
