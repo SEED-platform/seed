@@ -55,8 +55,6 @@ class TaxLotState(models.Model):
     # because these are the most 'public' fields in terms of
     # communicating with the cities.
 
-    confidence = models.FloatField(default=0, null=True, blank=True)
-
     # Support finding the property by the import_file
     import_file = models.ForeignKey(ImportFile, null=True, blank=True)
 
@@ -80,9 +78,11 @@ class TaxLotState(models.Model):
     number_properties = models.IntegerField(null=True, blank=True)
 
     extra_data = JSONField(default=dict, blank=True)
+    hash_object = models.CharField(max_length=32, null=True, blank=True, default=None)
 
     class Meta:
         index_together = [
+            ['hash_object'],
             ['import_file', 'data_state'],
             ['import_file', 'data_state', 'merge_state']
         ]
@@ -185,6 +185,9 @@ class TaxLotState(models.Model):
         else:
             self.normalized_address = None
 
+        # save a hash of the object to the database for quick lookup
+        from seed.data_importer.tasks import hash_state_object
+        self.hash_object = hash_state_object(self)
         return super(TaxLotState, self).save(*args, **kwargs)
 
     def history(self):

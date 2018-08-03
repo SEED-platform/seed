@@ -14,12 +14,10 @@ from rest_framework import status
 from rest_framework import viewsets, serializers
 from rest_framework.decorators import detail_route
 
-from seed.utils.organizations import create_organization
 from seed import tasks
 from seed.decorators import ajax_request_class
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.lib.superperms.orgs.exceptions import TooManyNestedOrgs
 from seed.lib.superperms.orgs.models import (
     ROLE_OWNER,
     ROLE_MEMBER,
@@ -29,6 +27,7 @@ from seed.lib.superperms.orgs.models import (
 )
 from seed.models import Cycle, PropertyView, TaxLotView, Column
 from seed.utils.api import api_endpoint_class
+from seed.utils.organizations import create_organization, create_suborganization
 
 
 def _dict_org(request, organizations):
@@ -602,7 +601,8 @@ class OrganizationViewSet(viewsets.ViewSet):
         # Update the selected exportable fields.
         new_public_column_names = posted_org.get('public_fields', None)
         if new_public_column_names is not None:
-            old_public_columns = Column.objects.filter(organization=org, shared_field_type=Column.SHARED_PUBLIC)
+            old_public_columns = Column.objects.filter(organization=org,
+                                                       shared_field_type=Column.SHARED_PUBLIC)
             # turn off sharing in the old_pub_fields
             for col in old_public_columns:
                 col.shared_field_type = Column.SHARED_NONE
@@ -681,7 +681,8 @@ class OrganizationViewSet(viewsets.ViewSet):
                 new_column = {
                     'table_name': c['table_name'],
                     'name': c['name'],
-                    'column_name': c['column_name'],  # this is the field name in the db. The other name can have tax_
+                    'column_name': c['column_name'],
+                    # this is the field name in the db. The other name can have tax_
                     'display_name': c['display_name']
                 }
                 result['public_fields'].append(new_column)
@@ -733,25 +734,16 @@ class OrganizationViewSet(viewsets.ViewSet):
             return JsonResponse({
                 'status': 'error',
                 'message': 'User with email address (%s) does not exist' % email
-            }, status=status.HTTP_404_NOT_FOUND)
+            }, status=status.HTTP_400_BAD_REQUEST)
 
-        # Sub orgs do not get their own list of columns
-        sub_org = Organization.objects.create(
-            name=body['sub_org_name']
-        )
-
-        OrganizationUser.objects.get_or_create(user=user, organization=sub_org)
-
-        sub_org.parent_org = org
-
-        try:
-            sub_org.save()
-        except TooManyNestedOrgs:
-            sub_org.delete()
+        created, mess_or_org, _ = create_suborganization(user, org, body['sub_org_name'], ROLE_OWNER)
+        if created:
+            return JsonResponse({
+                'status': 'success',
+                'organization_id': mess_or_org.pk
+            })
+        else:
             return JsonResponse({
                 'status': 'error',
-                'message': 'Tried to create child of a child organization.'
+                'message': mess_or_org
             }, status=status.HTTP_409_CONFLICT)
-
-        return JsonResponse({'status': 'success',
-                             'organization_id': sub_org.pk})

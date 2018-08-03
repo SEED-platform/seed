@@ -535,6 +535,61 @@ class MappingResultsResponseSerializer(serializers.Serializer):
     tax_lots = MappingResultsTaxLotSerializer(many=True)
 
 
+def convert_first_five_rows_to_list(header, first_five_rows):
+    """
+    Return the first five rows. This is a complicated method because it handles converting the
+    persisted format of the first five rows into a list of dictionaries. It handles some basic
+    logic if there are crlf in the fields. Note that this method does not cover all the use cases
+    and cannot due to the custom delimeter. See the tests in
+    test_views.py:test_get_first_five_rows_newline_should_work to see the limitation
+
+    :param header: list, ordered list of headers as strings
+    :param first_five_rows: string, long string with |#*#| delimeter.
+    :return: list
+    """
+    row_data = []
+    rows = []
+    number_of_columns = len(header)
+    split_cells = first_five_rows.split(ROW_DELIMITER)
+    number_cells = len(split_cells)
+    # catch the case where there is only one column, therefore no ROW_DELIMITERs
+    if number_of_columns == 1:
+        # Note that this does not support having a single column with carriage returns!
+        rows = first_five_rows.splitlines()
+    else:
+        for idx, l in enumerate(split_cells):
+            crlf_count = l.count('\n')
+
+            if crlf_count == 0:
+                row_data.append(l)
+            elif crlf_count >= 1:
+                # if add this element to row_data equals number_of_columns, then it is a new row
+                if len(row_data) == number_of_columns - 1:
+                    # check if this is the last columns, if so, then just store the value and move on
+                    if idx == number_cells - 1:
+                        row_data.append(l)
+                        rows.append(row_data)
+                        continue
+                    else:
+                        # split the cell_data. The last cell becomes the beginning of the new
+                        # row, and the other cells stay joined with \n.
+                        cell_data = l.splitlines()
+                        row_data.append('\n'.join(cell_data[:crlf_count]))
+                        rows.append(row_data)
+
+                        # initialize the next row_data with the remainder
+                        row_data = [cell_data[-1]]
+                        continue
+                else:
+                    # this is not the end, so it must be a carriage return in the cell, just save data
+                    row_data.append(l)
+
+            if len(row_data) == number_of_columns:
+                rows.append(row_data)
+
+    return [dict(zip(header, row)) for row in rows]
+
+
 class ImportFileViewSet(viewsets.ViewSet):
     raise_exception = True
     queryset = ImportFile.objects.all()
@@ -651,25 +706,11 @@ class ImportFileViewSet(viewsets.ViewSet):
         so the following is to handle newlines in the fields.
         In the case of only one data column there will be no ROW_DELIMITER.
         '''
-        lines = []
-        number_of_columns = len(import_file.cached_first_row.split(ROW_DELIMITER))
-        for l in import_file.cached_second_to_fifth_row.splitlines():
-            if ROW_DELIMITER in l or number_of_columns == 1:
-                lines.append(l)
-            else:
-                # Line caused by newline in data, concat it to previous line.
-                index = len(lines) - 1
-                lines[index] = lines[index] + '\n' + l
-
-        rows = [r.split(ROW_DELIMITER) for r in lines]
-
+        header = import_file.cached_first_row.split(ROW_DELIMITER)
+        data = import_file.cached_second_to_fifth_row
         return JsonResponse({
             'status': 'success',
-            'first_five_rows': [
-                dict(
-                    zip(import_file.first_row_columns, row)
-                ) for row in rows
-            ]
+            'first_five_rows': convert_first_five_rows_to_list(header, data)
         })
 
     @api_endpoint_class
@@ -1610,11 +1651,13 @@ class ImportFileViewSet(viewsets.ViewSet):
         # merge in any of the matching results from the JSON field
         return {
             'status': 'success',
-            'import_file_records': import_file.matching_results_data.get('import_file_records', None),
+            'import_file_records': import_file.matching_results_data.get('import_file_records',
+                                                                         None),
             'properties': {
                 'matched': len(properties_matched),
                 'unmatched': len(properties_new),
-                'all_unmatched': import_file.matching_results_data.get('property_all_unmatched', None),
+                'all_unmatched': import_file.matching_results_data.get('property_all_unmatched',
+                                                                       None),
                 'duplicates': import_file.matching_results_data.get('property_duplicates', None),
                 'duplicates_of_existing': import_file.matching_results_data.get(
                     'property_duplicates_of_existing', None),
@@ -1623,7 +1666,8 @@ class ImportFileViewSet(viewsets.ViewSet):
             'tax_lots': {
                 'matched': len(tax_lots_matched),
                 'unmatched': len(tax_lots_new),
-                'all_unmatched': import_file.matching_results_data.get('tax_lot_all_unmatched', None),
+                'all_unmatched': import_file.matching_results_data.get('tax_lot_all_unmatched',
+                                                                       None),
                 'duplicates': import_file.matching_results_data.get('tax_lot_duplicates', None),
                 'duplicates_of_existing': import_file.matching_results_data.get(
                     'tax_lot_duplicates_of_existing', None),
@@ -1802,14 +1846,19 @@ class ImportFileViewSet(viewsets.ViewSet):
             .get(organization_id=organization_id, user=request.user)
         organization = membership.organization
 
+        # For now, each organization holds their own mappings. This is non-ideal, but it is the
+        # way it is for now. In order to move to parent_org holding, then we need to be able to
+        # dynamically match columns based on the names and not the db id (or support many-to-many).
+        # parent_org = organization.get_parent()
+
         import_file = ImportFile.objects.get(
             pk=pk,
             import_record__super_organization_id=organization.pk
         )
 
         # Get a list of the database fields in a list, these are the db columns and the extra_data columns
-        property_columns = Column.retrieve_mapping_columns(organization_id, 'property')
-        taxlot_columns = Column.retrieve_mapping_columns(organization_id, 'taxlot')
+        property_columns = Column.retrieve_mapping_columns(organization.pk, 'property')
+        taxlot_columns = Column.retrieve_mapping_columns(organization.pk, 'taxlot')
 
         # If this is a portfolio manager file, then load in the PM mappings and if the column_mappings
         # are not in the original mappings, default to PM
@@ -1828,7 +1877,7 @@ class ImportFileViewSet(viewsets.ViewSet):
             # All other input types
             suggested_mappings = mapper.build_column_mapping(
                 import_file.first_row_columns,
-                Column.retrieve_all_by_tuple(organization_id),
+                Column.retrieve_all_by_tuple(organization.pk),
                 previous_mapping=get_column_mapping,
                 map_args=[organization],
                 thresh=80  # percentage match that we require. 80% is random value for now.

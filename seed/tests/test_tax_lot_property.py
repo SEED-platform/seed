@@ -67,8 +67,7 @@ class TestTaxLotProperty(TestCase):
         columns = [
             'address_line_1', 'generation_date', 'energy_alerts', 'space_alerts',
             'building_count', 'owner', 'source_eui', 'jurisdiction_tax_lot_id',
-            'city', 'confidence', 'district', 'best_guess_confidence',
-            'site_eui', 'building_certification', 'modified', 'match_type',
+            'city', 'district', 'site_eui', 'building_certification', 'modified', 'match_type',
             'source_eui_weather_normalized', u'id', 'property_name', 'conditioned_floor_area',
             'pm_property_id', 'use_description', 'source_type', 'year_built', 'release_date',
             'gross_floor_area', 'owner_city_state', 'owner_telephone', 'recent_sale_date',
@@ -104,7 +103,6 @@ class TestTaxLotProperty(TestCase):
         # parse the content as array
         data = response.content.split('\n')
 
-        print data
         self.assertTrue('Address Line 1' in data[0].split(','))
         self.assertTrue('Property Labels\r' in data[0].split(','))
 
