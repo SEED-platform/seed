@@ -323,7 +323,8 @@ class MCMParser(object):
     @property
     def first_five_rows(self):
         """
-        Return the first five rows of the file.
+        Return the first five rows of the file. This handles items with carriage returns in the
+        field.
 
         :return: list of rows with ROW_DELIMITER
         """

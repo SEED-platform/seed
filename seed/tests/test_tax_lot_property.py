@@ -103,7 +103,6 @@ class TestTaxLotProperty(TestCase):
         # parse the content as array
         data = response.content.split('\n')
 
-        print data
         self.assertTrue('Address Line 1' in data[0].split(','))
         self.assertTrue('Property Labels\r' in data[0].split(','))
 
