@@ -73,8 +73,8 @@ def create_suborganization(user, current_org, suborg_name='', user_role=ROLE_MEM
     # Create the suborg manually to prevent the generation of the default columns, labels, and data
     # quality checks
 
-    if Organization.objects.filter(name=suborg_name).exists():
-        sub_org = Organization.objects.filter(name=suborg_name).first()
+    if Organization.objects.filter(name=suborg_name, parent_org=current_org).exists():
+        sub_org = Organization.objects.filter(name=suborg_name, parent_org=current_org).first()
     else:
         sub_org = Organization.objects.create(name=suborg_name)
 
