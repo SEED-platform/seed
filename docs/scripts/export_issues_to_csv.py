@@ -95,9 +95,12 @@ if args.csv:
 
     print("Finding All Other Issues")
     for issue in repo.issues(state='open'):
-        if issue.number not in ids_added and not issue.pull_request():
-            add_issue_to_csv(issue)
-        
+        try:
+            if issue.number not in ids_added and not issue.pull_request():
+                add_issue_to_csv(issue)
+        except:
+            pass
+
     # write out the lines
     with open('seed_issues.csv', 'w') as csv_file:
         writer = csv.writer(csv_file, delimiter=',')
