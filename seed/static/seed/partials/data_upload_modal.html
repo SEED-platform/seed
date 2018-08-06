@@ -12,6 +12,7 @@
     <h4 class="modal-title" ng-switch-when="11" translate>Confirm Save Mappings?</h4>
     <h4 class="modal-title" ng-switch-when="12" translate>Error Processing Data</h4>
     <h4 class="modal-title" ng-switch-when="13" translate>Portfolio Manager Import</h4>
+    <h4 class="modal-title" ng-switch-when="14" translate>Successful upload!</h4>
 </div>
 <div class="modal-body no_bottom_padding" ng-switch on="step.number">
     <!-- Step 1 -->
@@ -29,6 +30,7 @@
     <!-- Step 2: Choose upload type -->
     <div class="data_upload_steps container-fluid" ng-switch-when="2">
         <div class="alert alert-danger" ng-show="uploader.invalid_extension_alert" translate="INVALID_EXTENSION_ALERT"></div>
+        <div class="alert alert-danger" ng-show="uploader.invalid_xml_extension_alert" translate="INVALID_XML_EXTENSION_ALERT"></div>
         <div class="row">
             <div class="col-sm-10 col-sm-offset-1" ng-hide="uploader.in_progress">
                 <div class="row">
@@ -65,7 +67,7 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-sm-8 col-sm-offset-2 green_button" sd-uploader sourcetype="BuildingSync" sourceprog="" sourcever="" importrecord="dataset.id" organization-id="organization.id" cycle-id="selectedCycle.id" buttontext="{$:: 'Upload BuildingSync Data' | translate $}" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" style="padding-top: 10px;"></div>
+            <div class="col-sm-8 col-sm-offset-2" sd-uploader sourcetype="BuildingSync" sourceprog="" sourcever="" importrecord="dataset.id" organization-id="organization.id" cycle-id="selectedCycle.id" buttontext="{$:: 'Upload BuildingSync Data' | translate $}" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" style="padding-top: 10px;"></div>
         </div>
         <!--<div class="row">
             <div class="col-sm-8 col-sm-offset-2 green_button" sd-uploader sourcetype="Green Button Raw" sourceprog="" sourcever="" importrecord="dataset.id" buttontext="{$:: 'Upload Green Button Data' | translate $}" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" ng-disabled="true" style="padding-top: 10px;"></div>
@@ -238,6 +240,14 @@
             </div>
         </div>
     </div>
+    <!-- Step 14: Successful BuildingSync upload -->
+    <div class="data_upload_steps" ng-switch-when="14">
+        <div class="row">
+            <div class="alert alert-success"
+            translate="DATASET_FILENAME_UPLOADED_TO"
+            translate-values="{ dataset_name: dataset.name , dataset_filename: dataset.filename }"></div>
+        </div>
+    </div>
 </div>
 
 <div class="modal-footer container-fluid" ng-switch on="step.number">
@@ -259,9 +269,6 @@
         <div class="row text-center">
             <button type="button" class="btn btn-default col-sm-6" center-block ng-click="goto_step(4)" translate>Upload another energy data file</button>
         </div>
-        <!--<div class="row text-center">
-            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="goto_data_matching()" translate>Continue to data matching</button>
-        </div>-->
     </div>
     <div ng-switch-when="7"></div>
     <div ng-switch-when="8">
@@ -271,9 +278,6 @@
         <div class="row text-center">
             <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="view_my_properties()" translate>View my properties</button>
         </div>
-        <!--<div class="row text-center">
-            <button id="review-mapping" type="button" class="btn btn-primary col-sm-6 center-block" ng-click="goto_data_matching()" translate>Review matches</button>
-        </div>-->
     </div>
     <div ng-switch-when="9">
         <div class="row text-center">
@@ -291,6 +295,14 @@
     <div ng-switch-when="11">
         <div class="row text-center">
             <button type="button" id="confirm-mapping" class="btn btn-primary col-sm-6 center-block" ng-click="save_mappings()" translate>CONFIRM_AND_START_MATCHING</button>
+        </div>
+    </div>
+    <div ng-switch-when="14">
+        <div class="row text-center">
+            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="goto_step(2)" translate>Add another file</button>
+        </div>
+        <div class="row text-center">
+            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="view_my_properties()" translate>View my properties</button>
         </div>
     </div>
     <div class="row text-center">

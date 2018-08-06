@@ -10,7 +10,7 @@
  *                        the server to store the linked file
  *   eventfunc: callback function with three arguments: `message`, `filename`, `progress`
  *              `message` - string - options: "upload_submitted",
- *              "upload_in_progress", "upload_complete", and "invalid_extension"
+ *              "upload_in_progress", "upload_complete", "upload_error", and "invalid_extension"
  *              `filename` - string name of the file uploaded
  *              `progress` - JS object with keys `loaded` and `total` where
  *                           `loaded` / `total` * 100.0 is the percent uploaded
@@ -104,7 +104,10 @@ var makeS3Uploader = function (scope, element) {
         scope.eventfunc(
           {
             message: 'upload_submitted',
-            file: {filename: fileName}
+            file: {
+              filename: fileName,
+              source_type: scope.sourcetype
+            }
           }
         );
       },
@@ -143,7 +146,10 @@ var makeS3Uploader = function (scope, element) {
         scope.eventfunc(
           {
             message: 'upload_in_progress',
-            file: {filename: fileName},
+            file: {
+              filename: fileName,
+              source_type: scope.sourcetype
+            },
             progress: {
               loaded: loaded,
               total: total
@@ -219,7 +225,10 @@ var makeFileSystemUploader = function (scope, element) {
         scope.eventfunc(
           {
             message: 'upload_submitted',
-            file: {filename: fileName}
+            file: {
+              filename: fileName,
+              source_type: scope.sourcetype
+            }
           }
         );
         var params = {
@@ -270,7 +279,10 @@ var makeFileSystemUploader = function (scope, element) {
       onProgress: function (id, fileName, loaded, total) {
         scope.eventfunc({
           message: 'upload_in_progress',
-          file: {filename: fileName},
+          file: {
+            filename: fileName,
+            source_type: scope.sourcetype
+          },
           progress: {
             loaded: loaded,
             total: total
@@ -307,7 +319,7 @@ var makeBuildingSyncUploader = function (scope, element) {
     showMessage: function (message) {
       var invalid_extension = 'invalid extension. Valid extension(s):';
       if (_.includes(message, invalid_extension)) {
-        scope.eventfunc({message: 'invalid_extension'});
+        scope.eventfunc({message: 'invalid_xml_extension'});
       } else {
         window.alert(message);
       }
@@ -316,7 +328,7 @@ var makeBuildingSyncUploader = function (scope, element) {
       uploadButton: scope.buttontext
     },
     retry: {
-      enableAuto: true
+      enableAuto: false
     },
     iframeSupport: {
       localBlankPathPage: '/success.html'
@@ -337,7 +349,10 @@ var makeBuildingSyncUploader = function (scope, element) {
         angular.element('.qq-upload-button').hide();
         scope.eventfunc({
           message: 'upload_submitted',
-          file: {filename: fileName}
+          file: {
+            filename: fileName,
+            source_type: scope.sourcetype
+          }
         });
         var params = {
           csrf_token: BE.csrftoken,
@@ -358,20 +373,15 @@ var makeBuildingSyncUploader = function (scope, element) {
        * the filename.
        */
       onComplete: function (id, fileName, responseJSON) {
-        if (responseJSON.status !== 'success') {
-          alert('Upload failed.');
-        } else {
-          // TODO
-          console.error('calling eventfunc');
+        // Only handle success because error transition is in onError event handler
+        if (responseJSON.status === 'success') {
           scope.eventfunc({
             message: 'upload_complete',
             file: {
               filename: fileName,
-              file_id: responseJSON.import_file_id,
+              view_id: _.get(responseJSON, 'data.property_view.id'),
               cycle_id: (scope.sourceprog === 'PortfolioManager' && scope.$parent.useField) ? 'year_ending' : scope.$parent.selectedCycle.id,
-              source_type: scope.sourcetype,
-              source_program: scope.sourceprog,
-              source_program_version: scope.sourcever
+              source_type: scope.sourcetype
             }
           });
         }
@@ -387,10 +397,39 @@ var makeBuildingSyncUploader = function (scope, element) {
       onProgress: function (id, fileName, loaded, total) {
         scope.eventfunc({
           message: 'upload_in_progress',
-          file: {filename: fileName},
+          file: {
+            filename: fileName,
+            source_type: scope.sourcetype
+          },
           progress: {
             loaded: loaded,
             total: total
+          }
+        });
+      },
+      /**
+       * onError: overloaded callback that calls the callback defined
+       * in the element attribute. Primarily for non-conforming files
+       * that return 400 from the backend.
+       */
+      onError: function (id, fileName, errorReason, xhr) {
+        // Ignore this error handler if the network request hasn't taken place yet (e.g. invalid file extension)
+        if (!xhr) return;
+
+        var error = errorReason;
+        try {
+          var json = JSON.parse(xhr.responseText);
+          if (_.has(json, 'message')) {
+            error = json.message;
+          }
+        } catch (e) {}
+
+        scope.eventfunc({
+          message: 'upload_error',
+          file: {
+            filename: fileName,
+            source_type: scope.sourcetype,
+            error: error
           }
         });
       }
