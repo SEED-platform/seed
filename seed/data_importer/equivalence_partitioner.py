@@ -188,8 +188,6 @@ class EquivalencePartitioner(object):
         else:
             return False
 
-#     from seed.utils.cprofile import cprofile
-#     @cprofile()
     def calculate_equivalence_classes(self, list_of_obj):
         """
         There is some subtlety with whether we use "comparison" keys

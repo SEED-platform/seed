@@ -185,7 +185,7 @@ FAKE_MAPPINGS = {
             'from_field': 'UBID',  # raw field in import file
             'to_field': 'ubid',
             'to_table_name': 'PropertyState',
-        },{
+        }, {
             'from_field': 'State',  # raw field in import file
             'to_field': 'state_province',
             'to_table_name': 'PropertyState',
