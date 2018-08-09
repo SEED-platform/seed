@@ -20,7 +20,7 @@ from itertools import chain
 
 from celery import chord, shared_task
 from celery.utils.log import get_task_logger
-from django.db import IntegrityError
+from django.db import IntegrityError, DataError
 from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
@@ -67,6 +67,7 @@ from seed.models import TaxLotProperty
 from seed.models.auditlog import AUDIT_IMPORT
 from seed.models.data_quality import DataQualityCheck
 from seed.utils.buildings import get_source_type
+
 # from seed.utils.cprofile import cprofile
 
 _log = get_task_logger(__name__)
@@ -394,6 +395,9 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                     Column.save_column_names(map_model_obj)
     except IntegrityError as e:
         raise IntegrityError("Could not map_row_chunk with error: %s" % e.message)
+    except DataError as e:
+        _log.error(traceback.format_exc())
+        raise DataError("Invalid data found: %s" % e.message)
 
     progress_data.step()
 
@@ -822,6 +826,7 @@ def filter_duplicated_states(unmatched_states):
     return canonical_states, noncanonical_states
 
 
+# from seed.utils.cprofile import cprofile
 # @cprofile()
 def match_and_merge_unmatched_objects(unmatched_states, partitioner):
     """

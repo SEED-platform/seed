@@ -11,9 +11,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 
 from seed.data_importer import tasks
 from seed.data_importer.tests.util import (
-    FAKE_EXTRA_DATA,
     FAKE_MAPPINGS,
-    FAKE_ROW,
 )
 from seed.models import (
     Column,
@@ -34,8 +32,6 @@ class TestCaseA(DataMappingBaseTestCase):
         filename = getattr(self, 'filename', 'example-data-properties.xlsx')
         import_file_source_type = ASSESSED_RAW
         self.fake_mappings = FAKE_MAPPINGS['portfolio']
-        self.fake_extra_data = FAKE_EXTRA_DATA
-        self.fake_row = FAKE_ROW
         selfvars = self.set_up(import_file_source_type)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
         filepath = osp.join(osp.dirname(__file__), '..', 'data', filename)

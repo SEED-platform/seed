@@ -109,9 +109,12 @@ def apply_column_value(raw_column_name, column_value, model, mapping, is_extra_d
             # Get the list of Quantity fields from the Column object in SEED. This is non-ideal, since the
             # rest of the mapping code does not use SEED models. Perhaps make this an argument.
             if (model.__class__.__name__, mapped_column_name) in apps.get_model('seed', 'Column').QUANTITY_UNIT_COLUMNS:
-                # clean against the raw name with pint (Quantity Units) because that's the column
+                # clean against the database type first
+                cleaned_value = cleaner.clean_value(column_value, mapped_column_name)
+
+                # now clean against the raw name with pint (Quantity Units) because that's the column
                 # that holds the units needed to interpret the value correctly
-                cleaned_value = cleaner.clean_value(column_value, raw_column_name)
+                cleaned_value = cleaner.clean_value(cleaned_value, raw_column_name)
             else:
                 cleaned_value = cleaner.clean_value(column_value, mapped_column_name)
         else:
