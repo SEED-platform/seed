@@ -285,36 +285,10 @@ def map_row(row, mapping, model_class, extra_data_fields=[], cleaner=None, **kwa
     # concat = _set_default_concat_config(concat)
 
     for raw_field, value in row.items():
-        # Look through any of our concatenation configs to see if this row
-        # needs to be set aside for merging with others at the end of the map.
-        #
-        # concat is not used as of 2016-09-14
-        # for concat_column in concat:
-        #     if item in concat_column['concat_columns']:
-        #         concat_column['concat_values'][item] = value
-        #         continue
-
-        # If our item is a column which requires that we apply the function
-        # then, send_apply_func will reference this function and be sent
-        # to the ``apply_column_value`` function.
         is_extra_data = True if raw_field in extra_data_fields else False
 
         # Save the value if is is not None, keep empty fields.
         if value is not None:
             model = apply_column_value(raw_field, value, model, mapping, is_extra_data, cleaner)
-
-    # concat is not used as of 2016-09-14
-    # if concat and [c['concat_values'] for c in concat]:
-    #     # We've skipped mapping any columns which we're going to concat.
-    #     # Now we concatenate them all and save to their designated target.
-    #     for c in concat:
-    #         mapping[c['target']] = c['target']
-    #         concated_vals = _concat_values(
-    #             c['concat_columns'],
-    #             c['concat_values'],
-    #             c['delimiter']
-    #         )
-    #         model = apply_column_value(c['target'], concated_vals, model, mapping, apply_columns,
-    #                                    cleaner, apply_func=apply_func)
 
     return model
