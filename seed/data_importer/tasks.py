@@ -20,8 +20,8 @@ from itertools import chain
 
 from celery import chord, shared_task
 from celery.utils.log import get_task_logger
-from django.core.exceptions import ValidationError
 from django.db import IntegrityError
+from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
 from django.utils.timezone import make_naive
@@ -67,6 +67,7 @@ from seed.models import TaxLotProperty
 from seed.models.auditlog import AUDIT_IMPORT
 from seed.models.data_quality import DataQualityCheck
 from seed.utils.buildings import get_source_type
+# from seed.utils.cprofile import cprofile
 
 _log = get_task_logger(__name__)
 
@@ -291,104 +292,108 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                 'PropertyState', 'lot_number', 'Lot Number', False)
     # *** END BREAK OUT ***
 
-    # yes, there are three cascading for loops here. sorry :(
-    for table, mappings in table_mappings.items():
-        if not table:
-            continue
-
-        # This may be historic, but we need to pull out the extra_data_fields here to pass into
-        # mapper.map_row. apply_columns are extra_data columns (the raw column names)
-        extra_data_fields = []
-        for k, v in mappings.items():
-            # the 3rd element is the is_extra_data flag. Need to convert this to a dict and not a tuple.
-            if v[3]:
-                extra_data_fields.append(k)
-        # _log.debug("extra data fields: {}".format(extra_data_fields))
-
-        # All the data live in the PropertyState.extra_data field when the data are imported
-        data = PropertyState.objects.filter(id__in=ids).only('extra_data').iterator()
-
-        # Since we are importing CSV, then each extra_data field will have the same fields. So
-        # save the map_model_obj outside of for loop to pass into the `save_column_names` methods
-        map_model_obj = None
-
-        # Loop over all the rows
-        for original_row in data:
-
-            # expand the row into multiple rows if needed with the delimited_field replaced with a
-            # single value. This minimizes the need to rewrite the downstream code.
-            expand_row = False
-            for k, d in delimited_fields.items():
-                if d['to_table'] == table:
-                    expand_row = True
-            # _log.debug("Expand row is set to {}".format(expand_row))
-
-            delimited_field_list = []
-            for _, v in delimited_fields.items():
-                delimited_field_list.append(v['from_field'])
-
-            # _log.debug("delimited_field_list is set to {}".format(delimited_field_list))
-
-            # The raw data upon import is in the extra_data column
-            for row in expand_rows(original_row.extra_data, delimited_field_list, expand_row):
-                map_model_obj = mapper.map_row(
-                    row,
-                    mappings,
-                    STR_TO_CLASS[table],
-                    extra_data_fields,
-                    cleaner=map_cleaner,
-                    **kwargs
-                )
-
-                # save cross related data, that is data that needs to go into the other model's
-                # collection as well.
-
-                # Assign some other arguments here
-                map_model_obj.import_file = import_file
-                map_model_obj.source_type = save_type
-                map_model_obj.organization = import_file.import_record.super_organization
-                if hasattr(map_model_obj, 'data_state'):
-                    map_model_obj.data_state = DATA_STATE_MAPPING
-                if hasattr(map_model_obj, 'clean'):
-                    map_model_obj.clean()
-
-                # There is a potential thread safe issue here:
-                # This method is called in parallel on production systems, so we need to make
-                # sure that the object hasn't already been created.
-                # For example, in the test data the tax lot id is the same for many rows. Make sure
-                # to only create/save the object if it hasn't been created before.
-                if hash_state_object(map_model_obj, include_extra_data=False) == \
-                    hash_state_object(STR_TO_CLASS[table](organization=map_model_obj.organization),
-                                      include_extra_data=False):
-                    # Skip this object as it has no data...
-                    _log.warn(
-                        "Skipping property or taxlot during mapping because it is identical to another row")
+    try:
+        with transaction.atomic():
+            # yes, there are three cascading for loops here. sorry :(
+            for table, mappings in table_mappings.items():
+                if not table:
                     continue
 
-                try:
-                    # There was an error with a field being too long [> 255 chars].
-                    map_model_obj.save()
+                # This may be historic, but we need to pull out the extra_data_fields here to pass
+                # into mapper.map_row. apply_columns are extra_data columns (the raw column names)
+                extra_data_fields = []
+                for k, v in mappings.items():
+                    # the 3rd element is the is_extra_data flag.
+                    # Need to convert this to a dict and not a tuple.
+                    if v[3]:
+                        extra_data_fields.append(k)
+                # _log.debug("extra data fields: {}".format(extra_data_fields))
 
-                    # Create an audit log record for the new map_model_obj that was created.
+                # All the data live in the PropertyState.extra_data field when the data are imported
+                data = PropertyState.objects.filter(id__in=ids).only('extra_data').iterator()
 
-                    AuditLogClass = PropertyAuditLog if isinstance(
-                        map_model_obj, PropertyState) else TaxLotAuditLog
-                    AuditLogClass.objects.create(organization=org,
-                                                 state=map_model_obj,
-                                                 name='Import Creation',
-                                                 description='Creation from Import file.',
-                                                 import_filename=import_file,
-                                                 record_type=AUDIT_IMPORT)
+                # Since we are importing CSV, then each extra_data field will have the same fields.
+                # So save the map_model_obj outside of for loop to pass into the `save_column_names`
+                # methods
+                map_model_obj = None
 
-                except ValidationError as e:
-                    # Could not save the record for some reason, raise an exception
-                    raise Exception(
-                        "Unable to save row the model with row {}:{}".format(type(e),
-                                                                             e.message))
+                # Loop over all the rows
+                for original_row in data:
+                    # expand the row into multiple rows if needed with the delimited_field replaced
+                    # with a single value. This minimizes the need to rewrite the downstream code.
+                    expand_row = False
+                    for k, d in delimited_fields.items():
+                        if d['to_table'] == table:
+                            expand_row = True
+                    # _log.debug("Expand row is set to {}".format(expand_row))
 
-        # Make sure that we've saved all of the extra_data column names from the first item in list
-        if map_model_obj:
-            Column.save_column_names(map_model_obj)
+                    delimited_field_list = []
+                    for _, v in delimited_fields.items():
+                        delimited_field_list.append(v['from_field'])
+
+                    # _log.debug("delimited_field_list is set to {}".format(delimited_field_list))
+
+                    # The raw data upon import is in the extra_data column
+                    for row in expand_rows(
+                        original_row.extra_data, delimited_field_list, expand_row
+                    ):
+                        map_model_obj = mapper.map_row(
+                            row,
+                            mappings,
+                            STR_TO_CLASS[table],
+                            extra_data_fields,
+                            cleaner=map_cleaner,
+                            **kwargs
+                        )
+
+                        # save cross related data, that is data that needs to go into the other
+                        # model's collection as well.
+
+                        # Assign some other arguments here
+                        map_model_obj.import_file = import_file
+                        map_model_obj.source_type = save_type
+                        map_model_obj.organization = import_file.import_record.super_organization
+                        if hasattr(map_model_obj, 'data_state'):
+                            map_model_obj.data_state = DATA_STATE_MAPPING
+                        if hasattr(map_model_obj, 'clean'):
+                            map_model_obj.clean()
+
+                        # There is a potential thread safe issue here:
+                        # This method is called in parallel on production systems, so we need to
+                        # make sure that the object hasn't already been created. For example, in
+                        # the test data the tax lot id is the same for many rows. Make sure
+                        # to only create/save the object if it hasn't been created before.
+                        if hash_state_object(map_model_obj, include_extra_data=False) == \
+                            hash_state_object(
+                                STR_TO_CLASS[table](organization=map_model_obj.organization),
+                                include_extra_data=False):
+                            # Skip this object as it has no data...
+                            _log.warn(
+                                "Skipping property or taxlot during mapping because it is identical to another row")
+                            continue
+
+                        # There was an error with a field being too long [> 255 chars].
+                        map_model_obj.save()
+
+                        # Create an audit log record for the new map_model_obj that was created.
+
+                        AuditLogClass = PropertyAuditLog if isinstance(
+                            map_model_obj, PropertyState) else TaxLotAuditLog
+                        AuditLogClass.objects.create(
+                            organization=org,
+                            state=map_model_obj,
+                            name='Import Creation',
+                            description='Creation from Import file.',
+                            import_filename=import_file,
+                            record_type=AUDIT_IMPORT
+                        )
+
+                # Make sure that we've saved all of the extra_data column names from the first item
+                # in list
+                if map_model_obj:
+                    Column.save_column_names(map_model_obj)
+    except IntegrityError as e:
+        raise IntegrityError("Could not map_row_chunk with error: %s" % e.message)
 
     progress_data.step()
 
@@ -540,33 +545,32 @@ def _save_raw_data_chunk(chunk, file_pk, progress_key):
 
     # Save our "column headers" and sample rows for F/E.
     source_type = get_source_type(import_file)
-    for c in chunk:
-        raw_property = PropertyState(organization=import_file.import_record.super_organization)
-        raw_property.import_file = import_file
+    try:
+        with transaction.atomic():
+            for c in chunk:
+                raw_property = PropertyState(
+                    organization=import_file.import_record.super_organization)
+                raw_property.import_file = import_file
 
-        # sanitize c and remove any diacritics
-        new_chunk = {}
-        for k, v in c.iteritems():
-            # remove extra spaces surrounding keys.
-            key = k.strip()
-            if isinstance(v, unicode):
-                new_chunk[key] = unidecode(v)
-            elif isinstance(v, (dt.datetime, dt.date)):
-                raise TypeError("Datetime class not supported in Extra Data. Needs to be a string.")
-            else:
-                new_chunk[key] = v
-        raw_property.extra_data = new_chunk
-        raw_property.source_type = source_type
-        raw_property.data_state = DATA_STATE_IMPORT
-
-        # We require a save to get our PK
-        # We save here to set our initial source PKs.
-        raw_property.save()
-
-        super_org = import_file.import_record.super_organization
-        raw_property.organization = super_org
-
-        raw_property.save()
+                # sanitize c and remove any diacritics
+                new_chunk = {}
+                for k, v in c.iteritems():
+                    # remove extra spaces surrounding keys.
+                    key = k.strip()
+                    if isinstance(v, unicode):
+                        new_chunk[key] = unidecode(v)
+                    elif isinstance(v, (dt.datetime, dt.date)):
+                        raise TypeError(
+                            "Datetime class not supported in Extra Data. Needs to be a string.")
+                    else:
+                        new_chunk[key] = v
+                raw_property.extra_data = new_chunk
+                raw_property.source_type = source_type
+                raw_property.data_state = DATA_STATE_IMPORT
+                raw_property.organization = import_file.import_record.super_organization
+                raw_property.save()
+    except IntegrityError as e:
+        raise IntegrityError("Could not save_raw_data_chunk with error: %s" % e.message)
 
     # Indicate progress
     progress_data = ProgressData.from_key(progress_key)
@@ -700,6 +704,7 @@ def save_raw_data(file_pk):
     return progress_data.result()
 
 
+# @cprofile()
 def match_buildings(file_pk):
     """
     kicks off system matching, returns progress key within the JSON response
@@ -817,6 +822,7 @@ def filter_duplicated_states(unmatched_states):
     return canonical_states, noncanonical_states
 
 
+# @cprofile()
 def match_and_merge_unmatched_objects(unmatched_states, partitioner):
     """
     Take a list of unmatched_property_states or unmatched_tax_lot_states and returns a set of
@@ -867,6 +873,7 @@ def match_and_merge_unmatched_objects(unmatched_states, partitioner):
     return merged_objects, equivalence_classes.keys()
 
 
+# @cprofile(n=50)
 def merge_unmatched_into_views(unmatched_states, partitioner, org, import_file):
     """
     This is fairly inefficient, because we grab all the organization's entire PropertyViews at once.
@@ -911,9 +918,10 @@ def merge_unmatched_into_views(unmatched_states, partitioner, org, import_file):
 
     matched_views = []
 
+    merge_data = []
+    promote_data = []
     for unmatched in unmatched_states:
-        unmatched_state_hash = unmatched.hash_object
-        if unmatched_state_hash in existing_view_state_hashes:
+        if unmatched.hash_object in existing_view_state_hashes:
             # If an exact duplicate exists, delete the unmatched state
             unmatched.data_state = DATA_STATE_DELETE
             unmatched.save()
@@ -923,7 +931,6 @@ def merge_unmatched_into_views(unmatched_states, partitioner, org, import_file):
             # equiv_key = False
             # equiv_can_key = partitioner.calculate_canonical_key(unmatched)
             equiv_cmp_key = partitioner.calculate_comparison_key(unmatched)
-
             for key in existing_view_states:
                 if partitioner.calculate_key_equivalence(key, equiv_cmp_key):
                     if current_match_cycle in existing_view_states[key]:
@@ -931,14 +938,7 @@ def merge_unmatched_into_views(unmatched_states, partitioner, org, import_file):
                         # Merge the new state in with the existing one and update the view,
                         # audit log.
                         current_view = existing_view_states[key][current_match_cycle]
-                        current_state = current_view.state
-
-                        merged_state = save_state_match(current_state, unmatched)
-
-                        current_view.state = merged_state
-                        current_view.save()
-
-                        matched_views.append(current_view)
+                        merge_data.append((current_view, unmatched))
                     else:
                         # Grab another view that has the same parent as the one we belong to.
                         cousin_view = existing_view_states[key].values()[0]
@@ -956,14 +956,30 @@ def merge_unmatched_into_views(unmatched_states, partitioner, org, import_file):
                     break
             else:
                 # Create a new object/view for the current object.
-                created_view = unmatched.promote(current_match_cycle)
+                promote_data.append((unmatched, current_match_cycle))
+
+    # create the data atomically to speed it up
+    _log.debug("There are %s merge_data and %s promote_data" % (len(merge_data), len(promote_data)))
+    try:
+        with transaction.atomic():
+            for merge_datum in merge_data:
+                merge_datum[0].state = save_state_match(merge_datum[0].state, merge_datum[1])
+                merge_datum[0].save()
+
+                matched_views.append(merge_datum[0])
+
+            for promote_datum in promote_data:
+                created_view = promote_datum[0].promote(promote_datum[1])
                 matched_views.append(created_view)
+    except IntegrityError as e:
+        raise IntegrityError("Could not merge results with error: %s" % e.message)
 
     return list(set(matched_views))
 
 
 @shared_task
 @lock_and_track
+# @cprofile()
 def _match_properties_and_taxlots(file_pk, progress_key):
     """
     Match the properties and taxlots
