@@ -182,6 +182,10 @@ FAKE_MAPPINGS = {
             'to_field': 'jurisdiction_tax_lot_id',
             'to_table_name': 'TaxLotState',
         }, {
+            'from_field': 'UBID',  # raw field in import file
+            'to_field': 'ubid',
+            'to_table_name': 'PropertyState',
+        },{
             'from_field': 'State',  # raw field in import file
             'to_field': 'state_province',
             'to_table_name': 'PropertyState',
