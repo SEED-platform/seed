@@ -19,6 +19,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
     'inventory_service',
     'matching_service',
     'pairing_service',
+    'user_service',
     'inventory_payload',
     'columns',
     'profiles',
@@ -39,12 +40,14 @@ angular.module('BE.seed.controller.inventory_detail', [])
               inventory_service,
               matching_service,
               pairing_service,
+              user_service,
               inventory_payload,
               columns,
               profiles,
               current_profile,
               labels_payload) {
       $scope.inventory_type = $stateParams.inventory_type;
+      $scope.organization = user_service.get_organization();
 
       // Detail Settings Profile
       $scope.profiles = profiles;
@@ -369,12 +372,44 @@ angular.module('BE.seed.controller.inventory_detail', [])
         $state.reload();
       };
 
-      $scope.upload_building_sync = function () {
-        // var fi = this.fileInput.nativeElement;
-        var file = document.forms['building-sync-upload']['file'].files[0];
-        var input = new FormData();
-        input.append('file', file);
-        inventory_service.upload_building_sync($scope.inventory.view_id, input);
+      $scope.uploader = {
+        invalid_xml_extension_alert: false,
+        in_progress: false,
+        progress: 0,
+        complete: false,
+        status_message: ''
+      };
+
+      $scope.uploaderfunc = function (event_message, file, progress) {
+        switch (event_message) {
+          case 'invalid_xml_extension':
+            $scope.uploader.invalid_extension_alert = false;
+            $scope.uploader.invalid_xml_extension_alert = true;
+            break;
+
+          case 'upload_submitted':
+            $scope.dataset.filename = file.filename;
+            $scope.uploader.in_progress = true;
+            $scope.uploader.status_message = 'uploading file';
+            break;
+
+          case 'upload_error':
+            // TODO
+            break;
+
+          case 'upload_in_progress':
+            $scope.uploader.in_progress = true;
+            $scope.uploader.progress = 100 * progress.loaded / progress.total;
+            break;
+
+          case 'upload_complete':
+            $scope.uploader.status_message = 'upload complete';
+            $scope.dataset.filename = file.filename;
+            $scope.uploader.complete = true;
+            $scope.uploader.in_progress = false;
+            $scope.uploader.progress = 100;
+            break;
+        }
       };
 
       /**

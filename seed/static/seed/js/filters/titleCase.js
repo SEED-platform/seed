@@ -3,7 +3,7 @@
  * :author
  */
 /**
- * TileCase
+ * TitleCase
  * For when you want to capitalize each word, remove underscores.
  */
 angular.module('titleCase', []).filter('titleCase', function () {
@@ -15,7 +15,7 @@ angular.module('titleCase', []).filter('titleCase', function () {
     input = input.toString();
     input = input.replace(/_/g, ' ');
     input = input.replace(/(?:^|\s)\S/g, function (a) {
-      return angular.uppercase(a);
+      return a.toUpperCase();
     });
 
     return input;

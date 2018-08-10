@@ -47,27 +47,24 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-sm-8 col-sm-offset-2" sd-uploader sourcetype="Assessed Raw" sourceprog="" sourcever="" importrecord="dataset.id" buttontext="{$:: 'Upload a Spreadsheet' | translate $}" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" ng-disabled="!selectedCycle" style="padding-top: 20px;"></div>
-        </div>
-        <div class="row">
-            <div class="col-sm-8 col-sm-offset-2" sd-uploader sourcetype="Assessed Raw" sourceprog="PortfolioManager" sourcever="1.0" importrecord="dataset.id" buttontext="{$:: 'Upload Portfolio Manager Data' | translate $}" eventfunc="uploaderfunc(message, file, progress)" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress"></div>
-        </div>
-        <div class="row">
-            <div class="col-sm-8 col-sm-offset-2" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress">
-                <div class="btn btn-primary" style="display: block; font-weight: bold;" ng-click="goto_step(13)">Import Portfolio Manager Data</div>
+            <div class="col-sm-8 col-sm-offset-2" style="padding-top: 20px; padding-bottom: 10px;" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress">
+                <div class="btn btn-primary upload-btn" sd-uploader sourcetype="Assessed Raw" sourceprog="" sourcever="" importrecord="dataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" ng-disabled="!selectedCycle">{$:: 'Upload a Spreadsheet' | translate $}</div>
             </div>
         </div>
         <div class="row">
-            <div class="col-sm-9 col-sm-offset-2" ng-hide="uploader.in_progress">
-                <!--<div class="row">-->
-                    <!--<span class="col-xs-1"><input type="checkbox" id="use-field-option" name="pm-cycle-option" ng-model="useField" ng-init="useField = true" value="field"></span>-->
-                    <!--<label class="col-sm-7 control-label" for="use-field-option" translate>Determine Time Period from Field:</label>-->
-                    <!--<span class="col-sm-4" translate>Year Ending</span>-->
-                <!--</div>-->
+            <div class="col-sm-8 col-sm-offset-2" style="padding-bottom: 10px;" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress">
+                <div class="btn btn-primary upload-btn" sd-uploader sourcetype="Assessed Raw" sourceprog="PortfolioManager" sourcever="1.0" importrecord="dataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress">{$:: 'Upload Portfolio Manager Data' | translate $}</div>
             </div>
         </div>
         <div class="row">
-            <div class="col-sm-8 col-sm-offset-2" sd-uploader sourcetype="BuildingSync" sourceprog="" sourcever="" importrecord="dataset.id" organization-id="organization.id" cycle-id="selectedCycle.id" buttontext="{$:: 'Upload BuildingSync Data' | translate $}" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" style="padding-top: 10px;"></div>
+            <div class="col-sm-8 col-sm-offset-2" style="padding-bottom: 10px;" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress">
+                <div class="btn btn-primary upload-btn" ng-click="goto_step(13)">{$:: 'Import Portfolio Manager Data' | translate $}</div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-8 col-sm-offset-2" style="padding-bottom: 10px;" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress">
+                <div class="btn btn-primary upload-btn" sd-uploader sourcetype="BuildingSync" sourceprog="" sourcever="" importrecord="dataset.id" organization-id="organization.id" cycle-id="selectedCycle.id" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress">{$:: 'Upload BuildingSync Data' | translate $}</div>
+            </div>
         </div>
         <!--<div class="row">
             <div class="col-sm-8 col-sm-offset-2 green_button" sd-uploader sourcetype="Green Button Raw" sourceprog="" sourcever="" importrecord="dataset.id" buttontext="{$:: 'Upload Green Button Data' | translate $}" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" ng-disabled="true" style="padding-top: 10px;"></div>

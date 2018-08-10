@@ -338,17 +338,8 @@
             </div>
             <div>
                 <h1>BuildingSync Upload</h1>
-                <form name="building-sync-upload">
-                    <input type="file" name="file">
-                    <button type="button" ng-click="upload_building_sync()">Upload</button>
-                </form>
-                <form method="post" action="/api/v2/building_file/" enctype="multipart/form-data">
-                    <input type="hidden" name="organization_id" value="19">
-                    <input type="hidden" name="cycle_id" value="22">
-                    <input type="hidden" name="file_type" value="1">
-                    <input type="file" name="file">
-                    <button type="submit">Upload</button>
-                </form>
+                <div class="alert alert-danger" ng-show="uploader.invalid_xml_extension_alert" translate="INVALID_EXTENSION_ALERT"></div>
+                <div sd-uploader sourcetype="BuildingSyncUpdate" sourceprog="" sourcever="" importrecord="inventory.view_id" organization-id="organization.id" cycle-id="cycle.id" buttontext="{$:: 'Upload BuildingSync Data' | translate $}" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" style="padding-top: 10px;"></div>
             </div>
         </ng-hide>
     </div>
