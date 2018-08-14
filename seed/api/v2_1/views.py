@@ -329,18 +329,19 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
             self._merge_relationships(previous_state, new_pv_state)
 
         else:
-            messages = ['Cannot match a PropertyView with pk=%s; cycle_id=%s' % (pk, cycle_pk)]
+            messages = ['Cannot match a PropertyView with property_id=%s; cycle_id=%s' % (pk, cycle_pk)]
 
         if p_status and new_pv_state:
             return JsonResponse({
-                "status": "success",
-                "message": "successfully imported file",
-                "data": {
-                    "property_view": PropertyViewAsStateSerializer(new_pv_view).data,
+                'success': True,
+                'status': 'success',
+                'message': 'successfully imported file',
+                'data': {
+                    'property_view': PropertyViewAsStateSerializer(new_pv_view).data,
                 },
             })
         else:
             return JsonResponse({
-                "status": "error",
-                "message": "Could not process building file with messages {}".format(messages)
+                'status': 'error',
+                'message': "Could not process building file with messages {}".format(messages)
             }, status=status.HTTP_400_BAD_REQUEST)

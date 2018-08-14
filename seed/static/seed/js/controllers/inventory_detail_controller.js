@@ -383,18 +383,22 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.uploaderfunc = function (event_message, file, progress) {
         switch (event_message) {
           case 'invalid_xml_extension':
-            $scope.uploader.invalid_extension_alert = false;
             $scope.uploader.invalid_xml_extension_alert = true;
             break;
 
           case 'upload_submitted':
-            $scope.dataset.filename = file.filename;
+            $scope.uploader.filename = file.filename;
+            $scope.uploader.invalid_xml_extension_alert = false;
             $scope.uploader.in_progress = true;
             $scope.uploader.status_message = 'uploading file';
             break;
 
           case 'upload_error':
-            // TODO
+            $scope.uploader.status_message = 'upload failed';
+            $scope.uploader.complete = false;
+            $scope.uploader.in_progress = false;
+            $scope.uploader.progress = 0;
+            alert(file.error);
             break;
 
           case 'upload_in_progress':
@@ -404,12 +408,16 @@ angular.module('BE.seed.controller.inventory_detail', [])
 
           case 'upload_complete':
             $scope.uploader.status_message = 'upload complete';
-            $scope.dataset.filename = file.filename;
             $scope.uploader.complete = true;
             $scope.uploader.in_progress = false;
             $scope.uploader.progress = 100;
+            $state.reload();
             break;
         }
+
+        _.defer(function () {
+          $scope.$apply();
+        });
       };
 
       /**

@@ -430,7 +430,7 @@ var makeBuildingSyncUploader = function (scope, element) {
        */
       onError: function (id, fileName, errorReason, xhr) {
         if (_.includes(errorReason, ' has an invalid extension.')) {
-          scope.eventfunc({message: 'invalid_extension'});
+          scope.eventfunc({message: 'invalid_xml_extension'});
           return;
         }
 
@@ -465,14 +465,17 @@ var makeBuildingSyncUploader = function (scope, element) {
 var makeBuildingSyncUpdater = function (scope, element) {
   var uploader = new qq.FineUploaderBasic({
     button: element[0],
-    method: 'PUT',
     request: {
-      endpoint: '/api/v2.1/properties/' + scope.importrecord + '/update_with_building_sync/',
+      method: 'PUT',
+      endpoint: '/api/v2.1/properties/' + scope.importrecord + '/update_with_building_sync/?cycle_id=' + scope.cycleId + '&organization_id=' + scope.organizationId,
       inputName: 'file',
       paramsInBody: true,
       forceMultipart: true,
       customHeaders: {
         'X-CSRFToken': BE.csrftoken
+      },
+      params: {
+        file_type: 1
       }
     },
     validation: {
@@ -533,7 +536,6 @@ var makeBuildingSyncUpdater = function (scope, element) {
             file: {
               filename: fileName,
               view_id: _.get(responseJSON, 'data.property_view.id'),
-              cycle_id: (scope.sourceprog === 'PortfolioManager' && scope.$parent.useField) ? 'year_ending' : scope.$parent.selectedCycle.id,
               source_type: scope.sourcetype
             }
           });
@@ -567,7 +569,7 @@ var makeBuildingSyncUpdater = function (scope, element) {
        */
       onError: function (id, fileName, errorReason, xhr) {
         if (_.includes(errorReason, ' has an invalid extension.')) {
-          scope.eventfunc({message: 'invalid_extension'});
+          scope.eventfunc({message: 'invalid_xml_extension'});
           return;
         }
 
