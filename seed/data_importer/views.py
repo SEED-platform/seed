@@ -272,7 +272,13 @@ class LocalUploaderViewSet(viewsets.ViewSet):
     def create_from_pm_import(self, request):
         """
         Create an import_record from a PM import request.
+        TODO: The properties key here is going to be an enormous amount of XML data at times, need to change this
         This allows the PM import workflow to be treated essentially the same as a standard file upload
+        The process comprises the following steps:
+
+        * Get a unique file name for this portfolio manager import
+        *
+
         ---
         parameters:
             - name: import_record
@@ -284,10 +290,13 @@ class LocalUploaderViewSet(viewsets.ViewSet):
               required: true
               paramType: body
         """
+
+        doing_pint = False
+
         if 'properties' not in request.data:
             return JsonResponse({
                 'success': False,
-                'message': "Must pass pm_data in the request body."
+                'message': "Must pass properties in the request body."
             }, status=status.HTTP_400_BAD_REQUEST)
 
         # base file name (will be appended with a random string to ensure uniqueness if multiple on the same day)
@@ -351,13 +360,9 @@ class LocalUploaderViewSet(viewsets.ViewSet):
         # Create a single row for each building
         for pm_property in request.data['properties']:
 
-            # temporarily stop at 10 properties, make this a background task with progress bar so we don't hit a timeout
-            if property_num > 10:
-                break
-
             # report some helpful info
             property_num += 1
-            if property_num / 10.0 == property_num / 10:
+            if property_num / 20.0 == property_num / 20:
                 new_time = datetime.datetime.now()
                 _log.debug("On property number %s; current time: %s" % (property_num, new_time))
 
@@ -390,17 +395,19 @@ class LocalUploaderViewSet(viewsets.ViewSet):
                     else:
 
                         # As long as it is a valid dictionary, try to get a meaningful value out of it
-                        if '#text' in this_pm_variable and this_pm_variable[
-                                '#text'] != 'Not Available':
+                        if this_pm_variable and '#text' in this_pm_variable and this_pm_variable['#text'] != 'Not Available':
 
                             # Coerce the value into a proper set of Pint units for us
-                            new_var = LocalUploaderViewSet._get_pint_var_from_pm_value_object(
-                                this_pm_variable)
-                            if new_var['success']:
-                                pint_value = new_var['pint_value']
-                                this_row.append(pint_value.magnitude)
+                            if doing_pint:
+                                new_var = LocalUploaderViewSet._get_pint_var_from_pm_value_object(this_pm_variable)
+                                if new_var['success']:
+                                    pint_value = new_var['pint_value']
+                                    this_row.append(pint_value.magnitude)
+                                    added = True
+                                    # TODO: What to do with the pint_value.units here?
+                            else:
+                                this_row.append(float(this_pm_variable['#text']))
                                 added = True
-                                # TODO: What to do with the pint_value.units here?
 
                 # And finally, if we haven't set the added flag, give the csv column a blank value
                 if not added:
@@ -410,10 +417,17 @@ class LocalUploaderViewSet(viewsets.ViewSet):
             rows.append(this_row)
 
         # Then write the actual data out as csv
+        # Note that the Python 2.x csv module doesn't allow easily specifying an encoding, and it is failing on a few
+        # rows here and there with a large test dataset.  I need to check if there is a better way to do that encoding
+        # already with precedent inside SEED.
         with open(path, 'wb') as csv_file:
             pm_csv_writer = csv.writer(csv_file)
-            for row in rows:
-                pm_csv_writer.writerow(row)
+            for row_num, row in enumerate(rows):
+                try:
+                    pm_csv_writer.writerow(row)
+                except UnicodeEncodeError:
+                    print('Couldnt encode a character on row # %s, skipping this line' % row_num)
+                    print('Line skipped: ' + str(row))
 
         # Look up the import record (data set)
         import_record_pk = request.data['import_record_id']

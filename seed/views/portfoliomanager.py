@@ -32,11 +32,22 @@ class PortfolioManagerSerializer(serializers.Serializer):
 
 
 class PortfolioManagerViewSet(GenericViewSet):
+    """
+    This viewset contains two API views: /template_list/ and /report/ that are used to interface SEED with ESPM
+    """
     serializer_class = PortfolioManagerSerializer
 
     @list_route(methods=['POST'])
     def template_list(self, request):
+        """
+        This API view makes a request to ESPM for the list of available report templates, including root templates and
+        child data requests.
 
+        :param request: A request with a POST body containing the ESPM credentials (username and password)
+        :return: This API responds with a JSON object with two keys: status, which will be a string -
+        either error or success.  If successful, a second key, templates, will hold the list of templates from ESPM. If
+        not successful, a second key, message, will include an error description that can be presented on the UI.
+        """
         if 'username' not in request.data:
             return JsonResponse(
                 {'status': 'error', 'message': 'Invalid call to PM worker: missing username for PM account'},
@@ -66,7 +77,16 @@ class PortfolioManagerViewSet(GenericViewSet):
 
     @list_route(methods=['POST'])
     def report(self, request):
+        """
+        This API view makes a request to ESPM to generate and download a report based on a specific template.
 
+        :param request: A request with a POST body containing the ESPM credentials (username and password) as well as
+        a template key that contains one of the template objects retrieved using the /template_list/ endpoint
+        :return: This API responds with a JSON object with two keys: status, which will be a string -
+        either error or success.  If successful, a second key, properties, will hold the list of properties found in
+        this generated report.  If not successful, a second key, message, will include an error description that can be
+        presented on the UI.
+        """
         if 'username' not in request.data:
             return JsonResponse(
                 {'status': 'error', 'message': 'Invalid call to PM worker: missing username for PM account'},
@@ -106,7 +126,7 @@ class PortfolioManagerViewSet(GenericViewSet):
                     status=status.HTTP_400_BAD_REQUEST
                 )
             try:
-                content_object = xmltodict.parse(content)
+                content_object = xmltodict.parse(content, dict_constructor=dict)
             except Exception:  # catch all because xmltodict doesn't specify a class of Exceptions
                 return JsonResponse(
                     {'status': 'error', 'message': 'Malformed XML from template download'},
@@ -139,7 +159,18 @@ class PortfolioManagerViewSet(GenericViewSet):
 
 
 class PortfolioManagerImport(object):
+    """
+    This class is essentially a wrapper around the ESPM login/template/report operations
+    """
+
     def __init__(self, m_username, m_password):
+        """
+        To instantiate this class, provide ESPM username and password.  Currently, this constructor doesn't do anything
+        except store the credentials.
+
+        :param m_username: The ESPM username
+        :param m_password: The ESPM password
+        """
 
         # store the original, unmodified versions -- DO NOT ENCODE THESE
         self.username = m_username
@@ -148,6 +179,12 @@ class PortfolioManagerImport(object):
         _log.debug("Created PortfolioManagerManager for username: %s" % self.username)
 
     def login_and_set_cookie_header(self):
+        """
+        This method calls out to ESPM to perform a login operation and get a session authentication token.  This token
+        is then stored in the proper form to allow authenticated calls into ESPM.
+
+        :return: None
+        """
 
         # First we need to log in to Portfolio Manager
         login_url = "https://portfoliomanager.energystar.gov/pm/j_spring_security_check"
@@ -176,6 +213,14 @@ class PortfolioManagerImport(object):
         }
 
     def get_list_of_report_templates(self):
+        """
+        This method calls out to the ESPM API to get the full list of template rows.  For each row, it checks to see if
+        it has children rows, and if so, it calls out to the API for the child rows and retrieves IDs and names for
+        those as well.
+
+        :return: Returns a list of template objects.  All rows will have a z_seed_child_row key that is False for main
+        rows and True for child rows
+        """
 
         # login if needed
         if not self.authenticated_headers:
@@ -232,6 +277,13 @@ class PortfolioManagerImport(object):
 
     @staticmethod
     def get_template_by_name(templates, template_name):
+        """
+        This method searches through a list of templates for a template that matches the specific template name
+
+        :param templates: A list of template objects, each of which will have a name key
+        :param template_name: A string name to match in the list of templates
+        :return: Returns a single template object that matches the name, raises a PMExcept if no match
+        """
 
         # Then we need to pick a single report template by name, eventually this is defined by the PM user
         matched_template = next((t for t in templates if t["name"] == template_name), None)
@@ -241,6 +293,19 @@ class PortfolioManagerImport(object):
         return matched_template
 
     def generate_and_download_template_report(self, matched_template):
+        """
+        This method calls out to ESPM to trigger generation of a report for the supplied template.  The process requires
+        calling out to the generateData/ endpoint on ESPM, followed by a waiting period for the template status to be
+        updated to complete.  Once complete, a download URL allows download of the report in XML format.
+
+        This response content can be enormous, so ...
+        TODO: Evaluate whether we should just download this XML to file here.  It would require re-reading the file
+        TODO: afterwards, but it would 1) be downloaded and available for inspection/debugging, and 2) reduce the size
+        TODO: of data coming through in memory during these calls, which seems to have been problematic at times
+
+        :param matched_template: A template object down-selected from the full list found using the /template_list/ API
+        :return: Full XML data report from ESPM report generation and download process
+        """
 
         # login if needed
         if not self.authenticated_headers:
@@ -294,24 +359,32 @@ class PortfolioManagerImport(object):
         # Finally we can download the generated report
         template_report_name = urllib.quote(matched_template["name"]) + ".xml"
         sanitized_template_report_name = template_report_name.replace('/', '_')
-        download_url = "https://portfoliomanager.energystar.gov/pm/reports/template/download/%s/XML/false/%s?testEnv=false" % (
+        d_url = "https://portfoliomanager.energystar.gov/pm/reports/template/download/%s/XML/false/%s?testEnv=false" % (
             str(template_report_id), sanitized_template_report_name
         )
         try:
-            response = requests.get(download_url, headers=self.authenticated_headers)
+            response = requests.get(d_url, headers=self.authenticated_headers)
         except requests.exceptions.SSLError:
             raise PMExcept("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
         if not response.status_code == status.HTTP_200_OK:
             error_message = "Unsuccessful response from GET trying to download generated report;"
             error_message += " Generated report name: " + template_report_name + ";"
-            error_message += " Tried to download report from URL: " + download_url + ";"
+            error_message += " Tried to download report from URL: " + d_url + ";"
             error_message += " Returned with a status code = " + response.status_code + ";"
             raise PMExcept(error_message)
         return response.content
 
     def generate_and_download_child_data_request_report(self, matched_data_request):
+        """
+        This method calls out to ESPM to get the report data for a child template (a data request).  For child
+        templates, the process simply requires calling out the download URL and getting the data in XML format.
 
-        # For child data requests, we can just download the report directly, no need to force a generation
+        This response content can be enormous, so the same message applies here as with the main report download method
+        where we should consider downloading the file itself instead of passing the XML data around in memory.
+
+        :param matched_data_request: A child template object (template where z_seed_child_row is True)
+        :return: Full XML data report from ESPM report generation and download process
+        """
 
         # login if needed
         if not self.authenticated_headers:
