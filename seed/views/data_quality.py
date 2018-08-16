@@ -415,7 +415,7 @@ class DataQualityViews(viewsets.ViewSet):
 
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_parent_org_owner')
+    @has_perm_class('requires_member')
     @list_route(methods=['GET'])
     def results(self, request):
         """

@@ -31,7 +31,6 @@ install:
   - pip install tox==2.7.0
   - node --version
   - npm --version
-  - npm install npm@latest -g
   - nvm install stable
 before_script:
   - export DISPLAY=:99.0
