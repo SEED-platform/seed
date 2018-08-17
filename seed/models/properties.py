@@ -216,6 +216,7 @@ class PropertyState(models.Model):
             ['hash_object'],
             ['import_file', 'data_state'],
             ['import_file', 'data_state', 'merge_state'],
+            ['import_file', 'data_state', 'source_type'],
             ['analysis_state', 'organization'],
         ]
 
