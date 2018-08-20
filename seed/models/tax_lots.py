@@ -115,9 +115,7 @@ class TaxLotState(models.Model):
             if self.organization is None:
                 _log.error("organization is None")
 
-            taxlot = TaxLot.objects.create(
-                organization=self.organization
-            )
+            taxlot = TaxLot.objects.create(organization=self.organization)
 
             tlv = TaxLotView.objects.create(taxlot=taxlot, cycle=cycle, state=self)
 
@@ -249,7 +247,8 @@ class TaxLotState(models.Model):
 
                 while not done_searching:
                     # if there is no parents, then break out immediately
-                    if (log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
+                    if (
+                            log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
                         break
 
                     # initalize the tree to None everytime. If not new tree is found, then we will not iterate
