@@ -8,7 +8,6 @@ from __future__ import unicode_literals
 
 import copy
 import logging
-import pdb
 import re
 from os import path
 
@@ -21,6 +20,7 @@ from django.dispatch import receiver
 from django.forms.models import model_to_dict
 from quantityfield.fields import QuantityField
 
+# from seed.utils.cprofile import cprofile
 from seed.lib.mcm.cleaners import date_cleaner
 from auditlog import AUDIT_IMPORT
 from auditlog import DATA_UPDATE_TYPE
@@ -216,6 +216,7 @@ class PropertyState(models.Model):
             ['hash_object'],
             ['import_file', 'data_state'],
             ['import_file', 'data_state', 'merge_state'],
+            ['import_file', 'data_state', 'source_type'],
             ['analysis_state', 'organization'],
         ]
 
@@ -246,9 +247,6 @@ class PropertyState(models.Model):
             # Need to create a property for this state
             if self.organization is None:
                 _log.warn("organization is None")
-
-            if not self.organization:
-                pdb.set_trace()
 
             if property_id:
                 try:
