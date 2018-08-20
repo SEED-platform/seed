@@ -161,7 +161,8 @@ def merge_state(merged_state, state1, state2, can_attrs, default=None):
         else:
             setattr(merged_state, attr, attr_value)
 
-    merged_extra_data, merged_extra_data_sources = _merge_extra_data(state1, state2, default=default)
+    merged_extra_data, merged_extra_data_sources = _merge_extra_data(state1, state2,
+                                                                     default=default)
     merged_state.extra_data = merged_extra_data
 
     # merge measures, scenarios, simulations

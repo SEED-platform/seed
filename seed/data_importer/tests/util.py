@@ -160,6 +160,52 @@ FAKE_ROW = {
 FAKE_MAPPINGS = {
     'portfolio': PROPERTIES_MAPPING,
     'taxlot': TAXLOT_MAPPING,
+    'covered_building': [
+        {
+            'from_field': 'City',  # raw field in import file
+            'to_field': 'city',
+            'to_table_name': 'PropertyState',
+        }, {
+            'from_field': 'Zip',  # raw field in import file
+            'to_field': 'postal_code',
+            'to_table_name': 'PropertyState',
+        }, {
+            'from_field': 'GBA',  # raw field in import file
+            'to_field': 'gross_floor_area',
+            'to_table_name': 'PropertyState',
+        }, {
+            'from_field': 'BLDGS',  # raw field in import file
+            'to_field': 'building_count',
+            'to_table_name': 'PropertyState',
+        }, {
+            'from_field': 'UBI',  # raw field in import file
+            'to_field': 'jurisdiction_tax_lot_id',
+            'to_table_name': 'TaxLotState',
+        }, {
+            'from_field': 'UBID',  # raw field in import file
+            'to_field': 'ubid',
+            'to_table_name': 'PropertyState',
+        }, {
+            'from_field': 'State',  # raw field in import file
+            'to_field': 'state_province',
+            'to_table_name': 'PropertyState',
+        }, {
+            'from_field': 'Address',  # raw field in import file
+            'to_field': 'address_line_1',
+            'to_table_name': 'PropertyState',
+        }, {
+            'from_field': 'Owner',  # raw field in import file
+            'to_field': 'owner',
+            'to_table_name': 'PropertyState',
+        }, {
+            'from_field': 'Property Type',  # raw field in import file
+            'to_field': 'use_description',
+            'to_table_name': 'PropertyState',
+        }, {
+            'from_field': 'AYB_YearBuilt',  # raw field in import file
+            'to_field': 'year_built',
+            'to_table_name': 'PropertyState',
+        }],
     'full': [
         {
             "from_field": u'Name',
