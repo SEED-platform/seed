@@ -101,7 +101,7 @@ class BuildingSync(object):
             "custom_id_1": {
                 "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:PremisesIdentifiers.auc:PremisesIdentifier",
                 "key_path_name": "auc:IdentifierCustomName",
-                "key_path_value": "BRICR Custom ID 1",
+                "key_path_value": "Custom ID 1",
                 "value_path_name": "auc:IdentifierValue",
                 "required": True,
                 "type": "string",
