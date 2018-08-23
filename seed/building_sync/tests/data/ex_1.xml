@@ -1,107 +1,107 @@
 <!-- edited with XMLSpy v2016 rel. 2 sp1 (x64) (http://www.altova.com) by Dan Macumber (NREL) -->
-<n1:Audits xmlns:n1="http://nrel.gov/schemas/bedes-auc/2014" xsi:schemaLocation="http://nrel.gov/schemas/bedes-auc/2014 https://github.com/BuildingSync/schema/releases/download/v0.3/BuildingSync.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-	<n1:Audit>
-		<n1:Sites>
-			<n1:Site>
-				<n1:Address>
-					<n1:StreetAddressDetail>
-						<n1:Simplified>
-							<n1:StreetAddress>123 Main St</n1:StreetAddress>
-						</n1:Simplified>
-					</n1:StreetAddressDetail>
-					<n1:City>San Francisco</n1:City>
-					<n1:State>CA</n1:State>
-					<n1:PostalCode>94111</n1:PostalCode>
-				</n1:Address>
-				<n1:ClimateZoneType>
-					<n1:ASHRAE>
-						<n1:ClimateZone>3C</n1:ClimateZone>
-					</n1:ASHRAE>
-					<n1:CaliforniaTitle24>
-						<n1:ClimateZone>Climate Zone 3</n1:ClimateZone>
-					</n1:CaliforniaTitle24>
-				</n1:ClimateZoneType>
-				<n1:WeatherDataStationID>724940</n1:WeatherDataStationID>
-				<n1:WeatherStationName>USA_CA_San.Francisco.Intl.AP</n1:WeatherStationName>
-				<n1:Longitude>-122.39937597219404</n1:Longitude>
-				<n1:Latitude>37.79526286826323</n1:Latitude>
-				<n1:Ownership>Unknown</n1:Ownership>
-				<n1:Facilities>
-					<n1:Facility ID="Building223">
-						<n1:PremisesName>Building 223</n1:PremisesName>
-						<n1:PremisesNotes/>
-						<n1:PremisesIdentifiers>
-							<n1:PremisesIdentifier>
-								<n1:IdentifierLabel>Assessor parcel number</n1:IdentifierLabel>
-								<n1:IdentifierValue>PN 123</n1:IdentifierValue>
-							</n1:PremisesIdentifier>
-							<n1:PremisesIdentifier>
-								<n1:IdentifierLabel>Custom</n1:IdentifierLabel>
-								<n1:IdentifierCustomName>Custom ID</n1:IdentifierCustomName>
-								<n1:IdentifierValue>223</n1:IdentifierValue>
-							</n1:PremisesIdentifier>
-							<n1:PremisesIdentifier>
-								<n1:IdentifierLabel>Custom</n1:IdentifierLabel>
-								<n1:IdentifierCustomName>BRICR Custom ID 1</n1:IdentifierCustomName>
-								<n1:IdentifierValue>223</n1:IdentifierValue>
-							</n1:PremisesIdentifier>
-							<n1:PremisesIdentifier>
-								<n1:IdentifierLabel>Custom</n1:IdentifierLabel>
-								<n1:IdentifierCustomName>City Custom Building ID</n1:IdentifierCustomName>
-								<n1:IdentifierValue>223</n1:IdentifierValue>
-							</n1:PremisesIdentifier>
-						</n1:PremisesIdentifiers>
-						<n1:FloorsAboveGrade>1</n1:FloorsAboveGrade>
-						<n1:FloorsBelowGrade>0</n1:FloorsBelowGrade>
-						<n1:FloorAreas>
-							<n1:FloorArea>
-								<n1:FloorAreaType>Gross</n1:FloorAreaType>
-								<n1:FloorAreaValue>16775</n1:FloorAreaValue>
-							</n1:FloorArea>
-							<n1:FloorArea>
-								<n1:FloorAreaType>Heated and Cooled</n1:FloorAreaType>
-								<n1:FloorAreaValue>16775</n1:FloorAreaValue>
-							</n1:FloorArea>
-							<n1:FloorArea>
-								<n1:FloorAreaType>Footprint</n1:FloorAreaType>
-								<n1:FloorAreaValue>59911.867399999996</n1:FloorAreaValue>
-							</n1:FloorArea>
-						</n1:FloorAreas>
-						<n1:Perimeter>977</n1:Perimeter>
-						<n1:YearOfConstruction>1967</n1:YearOfConstruction>
-						<n1:YearOfLastMajorRemodel>2009</n1:YearOfLastMajorRemodel>
-						<n1:Subsections>
-							<n1:Subsection ID="Default_Subsection">
-								<n1:OccupancyClassification>Office</n1:OccupancyClassification>
-								<n1:TypicalOccupantUsages>
-									<n1:TypicalOccupantUsage>
-										<n1:TypicalOccupantUsageValue>40.0</n1:TypicalOccupantUsageValue>
-										<n1:TypicalOccupantUsageUnits>Hours per week</n1:TypicalOccupantUsageUnits>
-									</n1:TypicalOccupantUsage>
-									<n1:TypicalOccupantUsage>
-										<n1:TypicalOccupantUsageValue>50.0</n1:TypicalOccupantUsageValue>
-										<n1:TypicalOccupantUsageUnits>Weeks per year</n1:TypicalOccupantUsageUnits>
-									</n1:TypicalOccupantUsage>
-								</n1:TypicalOccupantUsages>
-								<n1:FloorAreas>
-									<n1:FloorArea>
-										<n1:FloorAreaType>Gross</n1:FloorAreaType>
-										<n1:FloorAreaValue>16775</n1:FloorAreaValue>
-									</n1:FloorArea>
-									<n1:FloorArea>
-										<n1:FloorAreaType>Tenant</n1:FloorAreaType>
-										<n1:FloorAreaValue>16775</n1:FloorAreaValue>
-									</n1:FloorArea>
-									<n1:FloorArea>
-										<n1:FloorAreaType>Common</n1:FloorAreaType>
-										<n1:FloorAreaValue>0.0</n1:FloorAreaValue>
-									</n1:FloorArea>
-								</n1:FloorAreas>
-							</n1:Subsection>
-						</n1:Subsections>
-					</n1:Facility>
-				</n1:Facilities>
-			</n1:Site>
-		</n1:Sites>
-	</n1:Audit>
-</n1:Audits>
+<auc:Audits xmlns:auc="http://nrel.gov/schemas/bedes-auc/2014" xsi:schemaLocation="http://nrel.gov/schemas/bedes-auc/2014 https://github.com/BuildingSync/schema/releases/download/v0.3/BuildingSync.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<auc:Audit>
+		<auc:Sites>
+			<auc:Site>
+				<auc:Address>
+					<auc:StreetAddressDetail>
+						<auc:Simplified>
+							<auc:StreetAddress>123 Main St</auc:StreetAddress>
+						</auc:Simplified>
+					</auc:StreetAddressDetail>
+					<auc:City>San Francisco</auc:City>
+					<auc:State>CA</auc:State>
+					<auc:PostalCode>94111</auc:PostalCode>
+				</auc:Address>
+				<auc:ClimateZoneType>
+					<auc:ASHRAE>
+						<auc:ClimateZone>3C</auc:ClimateZone>
+					</auc:ASHRAE>
+					<auc:CaliforniaTitle24>
+						<auc:ClimateZone>Climate Zone 3</auc:ClimateZone>
+					</auc:CaliforniaTitle24>
+				</auc:ClimateZoneType>
+				<auc:WeatherDataStationID>724940</auc:WeatherDataStationID>
+				<auc:WeatherStationName>USA_CA_San.Francisco.Intl.AP</auc:WeatherStationName>
+				<auc:Longitude>-122.39937597219404</auc:Longitude>
+				<auc:Latitude>37.79526286826323</auc:Latitude>
+				<auc:Ownership>Unknown</auc:Ownership>
+				<auc:Facilities>
+					<auc:Facility ID="Building223">
+						<auc:PremisesName>Building 223</auc:PremisesName>
+						<auc:PremisesNotes/>
+						<auc:PremisesIdentifiers>
+							<auc:PremisesIdentifier>
+								<auc:IdentifierLabel>Assessor parcel number</auc:IdentifierLabel>
+								<auc:IdentifierValue>PN 123</auc:IdentifierValue>
+							</auc:PremisesIdentifier>
+							<auc:PremisesIdentifier>
+								<auc:IdentifierLabel>Custom</auc:IdentifierLabel>
+								<auc:IdentifierCustomName>Custom ID</auc:IdentifierCustomName>
+								<auc:IdentifierValue>223</auc:IdentifierValue>
+							</auc:PremisesIdentifier>
+							<auc:PremisesIdentifier>
+								<auc:IdentifierLabel>Custom</auc:IdentifierLabel>
+								<auc:IdentifierCustomName>BRICR Custom ID 1</auc:IdentifierCustomName>
+								<auc:IdentifierValue>223</auc:IdentifierValue>
+							</auc:PremisesIdentifier>
+							<auc:PremisesIdentifier>
+								<auc:IdentifierLabel>Custom</auc:IdentifierLabel>
+								<auc:IdentifierCustomName>City Custom Building ID</auc:IdentifierCustomName>
+								<auc:IdentifierValue>223</auc:IdentifierValue>
+							</auc:PremisesIdentifier>
+						</auc:PremisesIdentifiers>
+						<auc:FloorsAboveGrade>1</auc:FloorsAboveGrade>
+						<auc:FloorsBelowGrade>0</auc:FloorsBelowGrade>
+						<auc:FloorAreas>
+							<auc:FloorArea>
+								<auc:FloorAreaType>Gross</auc:FloorAreaType>
+								<auc:FloorAreaValue>16775</auc:FloorAreaValue>
+							</auc:FloorArea>
+							<auc:FloorArea>
+								<auc:FloorAreaType>Heated and Cooled</auc:FloorAreaType>
+								<auc:FloorAreaValue>16775</auc:FloorAreaValue>
+							</auc:FloorArea>
+							<auc:FloorArea>
+								<auc:FloorAreaType>Footprint</auc:FloorAreaType>
+								<auc:FloorAreaValue>59911.867399999996</auc:FloorAreaValue>
+							</auc:FloorArea>
+						</auc:FloorAreas>
+						<auc:Perimeter>977</auc:Perimeter>
+						<auc:YearOfConstruction>1967</auc:YearOfConstruction>
+						<auc:YearOfLastMajorRemodel>2009</auc:YearOfLastMajorRemodel>
+						<auc:Subsections>
+							<auc:Subsection ID="Default_Subsection">
+								<auc:OccupancyClassification>Office</auc:OccupancyClassification>
+								<auc:TypicalOccupantUsages>
+									<auc:TypicalOccupantUsage>
+										<auc:TypicalOccupantUsageValue>40.0</auc:TypicalOccupantUsageValue>
+										<auc:TypicalOccupantUsageUnits>Hours per week</auc:TypicalOccupantUsageUnits>
+									</auc:TypicalOccupantUsage>
+									<auc:TypicalOccupantUsage>
+										<auc:TypicalOccupantUsageValue>50.0</auc:TypicalOccupantUsageValue>
+										<auc:TypicalOccupantUsageUnits>Weeks per year</auc:TypicalOccupantUsageUnits>
+									</auc:TypicalOccupantUsage>
+								</auc:TypicalOccupantUsages>
+								<auc:FloorAreas>
+									<auc:FloorArea>
+										<auc:FloorAreaType>Gross</auc:FloorAreaType>
+										<auc:FloorAreaValue>16775</auc:FloorAreaValue>
+									</auc:FloorArea>
+									<auc:FloorArea>
+										<auc:FloorAreaType>Tenant</auc:FloorAreaType>
+										<auc:FloorAreaValue>16775</auc:FloorAreaValue>
+									</auc:FloorArea>
+									<auc:FloorArea>
+										<auc:FloorAreaType>Common</auc:FloorAreaType>
+										<auc:FloorAreaValue>0.0</auc:FloorAreaValue>
+									</auc:FloorArea>
+								</auc:FloorAreas>
+							</auc:Subsection>
+						</auc:Subsections>
+					</auc:Facility>
+				</auc:Facilities>
+			</auc:Site>
+		</auc:Sites>
+	</auc:Audit>
+</auc:Audits>
