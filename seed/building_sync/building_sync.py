@@ -9,11 +9,11 @@ import copy
 import json
 import logging
 import os
-from quantityfield import ureg
 from collections import OrderedDict
 
 import xmltodict
 from django.db.models import FieldDoesNotExist
+from quantityfield import ureg
 
 from seed.models.measures import _snake_case
 
@@ -80,16 +80,6 @@ class BuildingSync(object):
                 "required": True,
                 "type": "integer",
             },
-            "property_type": {
-                "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:FacilityClassification",
-                "required": True,
-                "type": "string",
-            },
-            "occupancy_type": {
-                "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:OccupancyClassification",
-                "required": True,
-                "type": "string",
-            },
             "floors_above_grade": {
                 "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:FloorsAboveGrade",
                 "required": True,
@@ -111,7 +101,7 @@ class BuildingSync(object):
             "custom_id_1": {
                 "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:PremisesIdentifiers.auc:PremisesIdentifier",
                 "key_path_name": "auc:IdentifierCustomName",
-                "key_path_value": "Custom ID",
+                "key_path_value": "Custom ID 1",
                 "value_path_name": "auc:IdentifierValue",
                 "required": True,
                 "type": "string",
@@ -198,7 +188,7 @@ class BuildingSync(object):
                         u'auc:Audits', OrderedDict(
                             [
                                 (u'@xsi:schemaLocation',
-                                 u'http://nrel.gov/schemas/bedes-auc/2014 file:///E:/buildingsync/BuildingSync.xsd'),
+                                 u'http://nrel.gov/schemas/bedes-auc/2014 https://github.com/BuildingSync/schema/releases/download/v0.3/BuildingSync.xsd'),
                                 ('@xmlns', OrderedDict(
                                     [
                                         (u'auc', u'http://nrel.gov/schemas/bedes-auc/2014'),
@@ -226,7 +216,8 @@ class BuildingSync(object):
             if value:
                 full_path = "{}.{}".format(process_struct['root'], v['path'])
 
-                if v.get('key_path_name', None) and v.get('value_path_name', None) and v.get('key_path_value', None):
+                if v.get('key_path_name', None) and v.get('value_path_name', None) and v.get(
+                        'key_path_value', None):
                     # iterate over the paths and find the correct node to set
                     self._set_compound_node(
                         full_path,
@@ -323,7 +314,10 @@ class BuildingSync(object):
                 if data.get(p):
                     if isinstance(data[p], dict):
                         if data[p].get(key_path_name) == key_path_value:
-                            data[p][value_path_name] = value
+                            if isinstance(value, ureg.Quantity):
+                                data[p][value_path_name] = value.magniture
+                            else:
+                                data[p][value_path_name] = value
                         else:
                             # need to convert the dict to a list and then add the new one.
                             data[p] = [data[p]]
@@ -332,11 +326,24 @@ class BuildingSync(object):
                     elif isinstance(data[p], list):
                         for sub in data[p]:
                             if sub.get(key_path_name, None) == key_path_value:
-                                sub[value_path_name] = value
+                                if isinstance(value, ureg.Quantity):
+                                    sub[value_path_name] = value.magnitude
+                                else:
+                                    sub[value_path_name] = value
+
                                 break
                         else:
                             # Not found, create a new one
-                            new_sub_item = {key_path_name: key_path_value, value_path_name: value}
+                            if isinstance(value, ureg.Quantity):
+                                new_sub_item = {
+                                    key_path_name: key_path_value,
+                                    value_path_name: value.magnitude
+                                }
+                            else:
+                                new_sub_item = {
+                                    key_path_name: key_path_value,
+                                    value_path_name: value
+                                }
                             data[p].append(new_sub_item)
                 else:
                     if isinstance(value, ureg.Quantity):

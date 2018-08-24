@@ -49,7 +49,7 @@ class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
         if len(request.FILES) == 0:
             return JsonResponse({
                 'success': False,
-                'message': "Must pass file in as a Multipart/Form post"
+                'message': 'Must pass file in as a Multipart/Form post'
             })
 
         the_file = request.data['file']
@@ -60,7 +60,7 @@ class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
         if not cycle:
             return JsonResponse({
                 'success': False,
-                'message': "Cycle ID is not defined"
+                'message': 'Cycle ID is not defined'
             })
         else:
             cycle = Cycle.objects.get(pk=cycle)
@@ -74,15 +74,17 @@ class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
         p_status, property_state, property_view, messages = building_file.process(organization_id, cycle)
         if p_status and property_state:
             return JsonResponse({
-                "status": "success",
-                "message": "successfully imported file",
-                "data": {
-                    "property_view": PropertyViewAsStateSerializer(property_view).data,
-                    # "property_state": PropertyStateWritableSerializer(property_state).data,
+                'success': True,
+                'status': 'success',
+                'message': 'successfully imported file',
+                'data': {
+                    'property_view': PropertyViewAsStateSerializer(property_view).data,
+                    # 'property_state': PropertyStateWritableSerializer(property_state).data,
                 },
             })
         else:
             return JsonResponse({
-                "status": "error",
-                "message": "Could not process building file with messages {}".format(messages)
+                'success': False,
+                'status': 'error',
+                'message': "Could not process building file with messages {}".format(messages)
             }, status=status.HTTP_400_BAD_REQUEST)

@@ -16,12 +16,12 @@
  * ng-switch-when="6" == What type of .csv file would you like to upload?
  * ng-switch-when="7" == Finding building matches.
  * ng-switch-when="8" == 450 building matches found.
- * ng-switch-when="8" == Add files to your Data Set.
  * ng-switch-when="9" == Add files to {$ dataset.name $}
  * ng-switch-when="10" == No matches found
  * ng-switch-when="11" == Confirm Save Mappings?
  * ng-switch-when="12" == Error Processing Data
  * ng-switch-when="13" == Portfolio Manager Import
+ * ng-switch-when="14" == Successful upload! [BuildingSync]
  */
 angular.module('BE.seed.controller.data_upload_modal', [])
   .controller('data_upload_modal_controller', [
@@ -88,7 +88,8 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       };
       /**
        * uploader: hold the state of the upload.
-       * invalid_extension_alert: bool - hides or shows the bootstrap alert
+       * invalid_extension_alert: bool - hides or shows the bootstrap alert for csv/xls/xlsx files
+       * invalid_xml_extension_alert: bool - hides or shows the bootstrap alert for xml files
        * in_progress: bool - when true: shows the progress bar and hides the
        *  upload button. when false: hides the progress bar and shows the upload
        *  button.
@@ -97,6 +98,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        */
       $scope.uploader = {
         invalid_extension_alert: false,
+        invalid_xml_extension_alert: false,
         in_progress: false,
         progress: 0,
         complete: false,
@@ -175,41 +177,69 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        *  modal, show the `invalid_extension` alert, and update the progress bar.
        */
       $scope.uploaderfunc = function (event_message, file, progress) {
-        if (event_message === 'invalid_extension') {
-          $scope.uploader.invalid_extension_alert = true;
-        }
-        if (event_message === 'upload_submitted') {
-          $scope.dataset.filename = file.filename;
-          $scope.uploader.in_progress = true;
-          $scope.uploader.status_message = 'uploading file';
-        }
-        if (event_message === 'upload_complete') {
-          var current_step = $scope.step.number;
+        switch (event_message) {
+          case 'invalid_extension':
+            $scope.uploader.invalid_extension_alert = true;
+            $scope.uploader.invalid_xml_extension_alert = false;
+            break;
 
-          $scope.uploader.status_message = 'upload complete';
-          $scope.dataset.filename = file.filename;
-          $scope.dataset.import_file_id = file.file_id;
-          // Assessed Data; upload is step 2; PM import is currently treated as such, and is step 13
-          if (current_step === 2 || current_step === 13) {
-            var is_green_button = (file.source_type === 'Green Button Raw');
-            save_raw_assessed_data(file.file_id, file.cycle_id, is_green_button);
-          }
-          // Portfolio Data
-          if (current_step === 4) {
-            save_map_match_PM_data(file.file_id, file.cycle_id);
-          }
+          case 'invalid_xml_extension':
+            $scope.uploader.invalid_extension_alert = false;
+            $scope.uploader.invalid_xml_extension_alert = true;
+            break;
 
+          case 'upload_submitted':
+            $scope.dataset.filename = file.filename;
+            $scope.uploader.in_progress = true;
+            $scope.uploader.status_message = 'uploading file';
+            break;
+
+          case 'upload_error':
+            $scope.step_12_error_message = file.error;
+            $scope.step.number = 12;
+            break;
+
+          case 'upload_in_progress':
+            $scope.uploader.in_progress = true;
+            if (file.source_type === 'BuildingSync') {
+              $scope.uploader.progress = 100 * progress.loaded / progress.total;
+            } else {
+              $scope.uploader.progress = 25 * progress.loaded / progress.total;
+            }
+            break;
+
+          case 'upload_complete':
+            var current_step = $scope.step.number;
+            $scope.uploader.status_message = 'upload complete';
+            $scope.dataset.filename = file.filename;
+            if (file.source_type === 'BuildingSync') {
+              $scope.uploader.complete = true;
+              $scope.uploader.in_progress = false;
+              $scope.uploader.progress = 100;
+              $scope.step.number = 14;
+            } else {
+              $scope.dataset.import_file_id = file.file_id;
+
+              // Assessed Data; upload is step 2; PM import is currently treated as such, and is step 13
+              if (current_step === 2 || current_step === 13) {
+                var is_green_button = (file.source_type === 'Green Button Raw');
+                save_raw_assessed_data(file.file_id, file.cycle_id, is_green_button);
+              }
+              // Portfolio Data
+              if (current_step === 4) {
+                save_map_match_PM_data(file.file_id, file.cycle_id);
+              }
+            }
+            break;
         }
-        if (event_message === 'upload_in_progress') {
-          $scope.uploader.in_progress = true;
-          $scope.uploader.progress = 25.0 * progress.loaded / progress.total;
-        }
+
+
         // $apply() or $digest() needed maybe because of this:
         // https://github.com/angular-ui/bootstrap/issues/1798
         // otherwise alert doesn't show unless modal is interacted with
-        if (!$scope.$$phase) {
+        _.defer(function () {
           $scope.$apply();
-        }
+        });
       };
 
       /**
