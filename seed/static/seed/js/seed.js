@@ -164,9 +164,9 @@ SEED_app.run([
   }
 ]);
 
-// /**
-//  * Initialize release flippers
-//  */
+/**
+ * Initialize release flippers
+ */
 SEED_app.run([
   'flippers',
   function (flippers) {

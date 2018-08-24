@@ -6,6 +6,8 @@ if [ "${TRAVIS_BRANCH}" == "develop" ]; then
 elif [ "${TRAVIS_BRANCH}" == "master" ]; then
     # Retrieve the version number from package.json
     IMAGETAG=$( sed -n 's/.*"version": "\(.*\)",/\1/p' package.json )
+elif [ "${TRAVIS_BRANCH}" == "buildingsync-upload" ]; then
+    IMAGETAG=bricr
 fi
 
 if [ "${IMAGETAG}" != "skip" ] && [ "${TRAVIS_PULL_REQUEST}" == "false" ]; then

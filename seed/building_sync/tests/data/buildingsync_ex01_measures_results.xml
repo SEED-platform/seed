@@ -924,8 +924,32 @@
 					<auc:ScenarioType>
 						<auc:PackageOfMeasures>
 							<auc:ReferenceCase IDref="Baseline"/>
+							<auc:AnnualSavingsSiteEnergy>0.0</auc:AnnualSavingsSiteEnergy>
+							<auc:AnnualSavingsCost>0</auc:AnnualSavingsCost>
 						</auc:PackageOfMeasures>
 					</auc:ScenarioType>
+					<auc:UserDefinedFields>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioBaselineCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</auc:FieldName>
+							<auc:FieldValue>568.4154052230995</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualElectricity_kBtu</auc:FieldName>
+							<auc:FieldValue>417494.48515560996</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualNaturalGas_kBtu</auc:FieldName>
+							<auc:FieldValue>150920.9200674895</auc:FieldValue>
+						</auc:UserDefinedField>
+					</auc:UserDefinedFields>
 				</auc:Scenario>
 				<auc:Scenario>
 					<auc:ScenarioName>LED Only</auc:ScenarioName>
@@ -935,8 +959,32 @@
 							<auc:MeasureIDs>
 								<auc:MeasureID IDref="Measure1"/>
 							</auc:MeasureIDs>
+							<auc:AnnualSavingsSiteEnergy>34.02663461924806</auc:AnnualSavingsSiteEnergy>
+							<auc:AnnualSavingsCost>3725</auc:AnnualSavingsCost>
 						</auc:PackageOfMeasures>
 					</auc:ScenarioType>
+					<auc:UserDefinedFields>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioBaselineCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</auc:FieldName>
+							<auc:FieldValue>534.3887706038514</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualElectricity_kBtu</auc:FieldName>
+							<auc:FieldValue>372416.3029135086</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualNaturalGas_kBtu</auc:FieldName>
+							<auc:FieldValue>161972.46769034278</auc:FieldValue>
+						</auc:UserDefinedField>
+					</auc:UserDefinedFields>
 				</auc:Scenario>
 				<auc:Scenario>
 					<auc:ScenarioName>Electric_Appliance_30%_Reduction Only</auc:ScenarioName>
@@ -946,8 +994,32 @@
 							<auc:MeasureIDs>
 								<auc:MeasureID IDref="Measure2"/>
 							</auc:MeasureIDs>
+							<auc:AnnualSavingsSiteEnergy>95.6347474396137</auc:AnnualSavingsSiteEnergy>
+							<auc:AnnualSavingsCost>10492</auc:AnnualSavingsCost>
 						</auc:PackageOfMeasures>
 					</auc:ScenarioType>
+					<auc:UserDefinedFields>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioBaselineCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</auc:FieldName>
+							<auc:FieldValue>472.78065778348576</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualElectricity_kBtu</auc:FieldName>
+							<auc:FieldValue>293605.3093594563</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualNaturalGas_kBtu</auc:FieldName>
+							<auc:FieldValue>179184.82659523265</auc:FieldValue>
+						</auc:UserDefinedField>
+					</auc:UserDefinedFields>
 				</auc:Scenario>
 				<auc:Scenario>
 					<auc:ScenarioName>Air_Seal_Infiltration_30%_More_Airtight Only</auc:ScenarioName>
@@ -957,8 +1029,32 @@
 							<auc:MeasureIDs>
 								<auc:MeasureID IDref="Measure3"/>
 							</auc:MeasureIDs>
+							<auc:AnnualSavingsSiteEnergy>-11.061025794056377</auc:AnnualSavingsSiteEnergy>
+							<auc:AnnualSavingsCost>-64</auc:AnnualSavingsCost>
 						</auc:PackageOfMeasures>
 					</auc:ScenarioType>
+					<auc:UserDefinedFields>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioBaselineCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</auc:FieldName>
+							<auc:FieldValue>579.4764310171558</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualElectricity_kBtu</auc:FieldName>
+							<auc:FieldValue>416887.88219860947</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualNaturalGas_kBtu</auc:FieldName>
+							<auc:FieldValue>162588.54881854643</auc:FieldValue>
+						</auc:UserDefinedField>
+					</auc:UserDefinedFields>
 				</auc:Scenario>
 				<auc:Scenario>
 					<auc:ScenarioName>Cooling_System_SEER 14 Only</auc:ScenarioName>
@@ -968,8 +1064,32 @@
 							<auc:MeasureIDs>
 								<auc:MeasureID IDref="Measure4"/>
 							</auc:MeasureIDs>
+							<auc:AnnualSavingsSiteEnergy>0.0</auc:AnnualSavingsSiteEnergy>
+							<auc:AnnualSavingsCost>0</auc:AnnualSavingsCost>
 						</auc:PackageOfMeasures>
 					</auc:ScenarioType>
+					<auc:UserDefinedFields>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioBaselineCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</auc:FieldName>
+							<auc:FieldValue>568.4154052230995</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualElectricity_kBtu</auc:FieldName>
+							<auc:FieldValue>417494.48515560996</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualNaturalGas_kBtu</auc:FieldName>
+							<auc:FieldValue>150920.9200674895</auc:FieldValue>
+						</auc:UserDefinedField>
+					</auc:UserDefinedFields>
 				</auc:Scenario>
 				<auc:Scenario>
 					<auc:ScenarioName>Heating_System_Efficiency_0.93 Only</auc:ScenarioName>
@@ -979,8 +1099,32 @@
 							<auc:MeasureIDs>
 								<auc:MeasureID IDref="Measure5"/>
 							</auc:MeasureIDs>
+							<auc:AnnualSavingsSiteEnergy>0.0</auc:AnnualSavingsSiteEnergy>
+							<auc:AnnualSavingsCost>0</auc:AnnualSavingsCost>
 						</auc:PackageOfMeasures>
 					</auc:ScenarioType>
+					<auc:UserDefinedFields>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioBaselineCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</auc:FieldName>
+							<auc:FieldValue>568.4154052230995</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualElectricity_kBtu</auc:FieldName>
+							<auc:FieldValue>417494.48515560996</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualNaturalGas_kBtu</auc:FieldName>
+							<auc:FieldValue>150920.9200674895</auc:FieldValue>
+						</auc:UserDefinedField>
+					</auc:UserDefinedFields>
 				</auc:Scenario>
 				<auc:Scenario>
 					<auc:ScenarioName>Add daylight controls Only</auc:ScenarioName>
@@ -990,8 +1134,32 @@
 							<auc:MeasureIDs>
 								<auc:MeasureID IDref="Measure6"/>
 							</auc:MeasureIDs>
+							<auc:AnnualSavingsSiteEnergy>31.01257617665169</auc:AnnualSavingsSiteEnergy>
+							<auc:AnnualSavingsCost>3292</auc:AnnualSavingsCost>
 						</auc:PackageOfMeasures>
 					</auc:ScenarioType>
+					<auc:UserDefinedFields>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioBaselineCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</auc:FieldName>
+							<auc:FieldValue>537.4028290464478</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualElectricity_kBtu</auc:FieldName>
+							<auc:FieldValue>379392.23691901466</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualNaturalGas_kBtu</auc:FieldName>
+							<auc:FieldValue>158010.59212743313</auc:FieldValue>
+						</auc:UserDefinedField>
+					</auc:UserDefinedFields>
 				</auc:Scenario>
 				<auc:Scenario>
 					<auc:ScenarioName>Add occupancy sensors Only</auc:ScenarioName>
@@ -1001,8 +1169,32 @@
 							<auc:MeasureIDs>
 								<auc:MeasureID IDref="Measure7"/>
 							</auc:MeasureIDs>
+							<auc:AnnualSavingsSiteEnergy>5.9333351731613675</auc:AnnualSavingsSiteEnergy>
+							<auc:AnnualSavingsCost>642</auc:AnnualSavingsCost>
 						</auc:PackageOfMeasures>
 					</auc:ScenarioType>
+					<auc:UserDefinedFields>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioBaselineCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</auc:FieldName>
+							<auc:FieldValue>562.4820700499381</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualElectricity_kBtu</auc:FieldName>
+							<auc:FieldValue>409693.95025543135</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualNaturalGas_kBtu</auc:FieldName>
+							<auc:FieldValue>152788.11979450673</auc:FieldValue>
+						</auc:UserDefinedField>
+					</auc:UserDefinedFields>
 				</auc:Scenario>
 				<auc:Scenario>
 					<auc:ScenarioName>Install plug load controls Only</auc:ScenarioName>
@@ -1012,8 +1204,32 @@
 							<auc:MeasureIDs>
 								<auc:MeasureID IDref="Measure8"/>
 							</auc:MeasureIDs>
+							<auc:AnnualSavingsSiteEnergy>40.73717983106633</auc:AnnualSavingsSiteEnergy>
+							<auc:AnnualSavingsCost>4332</auc:AnnualSavingsCost>
 						</auc:PackageOfMeasures>
 					</auc:ScenarioType>
+					<auc:UserDefinedFields>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioBaselineCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</auc:FieldName>
+							<auc:FieldValue>527.6782253920331</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualElectricity_kBtu</auc:FieldName>
+							<auc:FieldValue>366246.0134602689</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualNaturalGas_kBtu</auc:FieldName>
+							<auc:FieldValue>161432.21193176418</auc:FieldValue>
+						</auc:UserDefinedField>
+					</auc:UserDefinedFields>
 				</auc:Scenario>
 				<auc:Scenario>
 					<auc:ScenarioName>Increase wall insulation Only</auc:ScenarioName>
@@ -1023,8 +1239,32 @@
 							<auc:MeasureIDs>
 								<auc:MeasureID IDref="Measure9"/>
 							</auc:MeasureIDs>
+							<auc:AnnualSavingsSiteEnergy>7.364539024834471</auc:AnnualSavingsSiteEnergy>
+							<auc:AnnualSavingsCost>290</auc:AnnualSavingsCost>
 						</auc:PackageOfMeasures>
 					</auc:ScenarioType>
+					<auc:UserDefinedFields>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioBaselineCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</auc:FieldName>
+							<auc:FieldValue>561.050866198265</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualElectricity_kBtu</auc:FieldName>
+							<auc:FieldValue>414433.035856998</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualNaturalGas_kBtu</auc:FieldName>
+							<auc:FieldValue>146617.83034126705</auc:FieldValue>
+						</auc:UserDefinedField>
+					</auc:UserDefinedFields>
 				</auc:Scenario>
 				<auc:Scenario>
 					<auc:ScenarioName>Insulate thermal bypasses Only</auc:ScenarioName>
@@ -1034,8 +1274,32 @@
 							<auc:MeasureIDs>
 								<auc:MeasureID IDref="Measure10"/>
 							</auc:MeasureIDs>
+							<auc:AnnualSavingsSiteEnergy>2.1041540070955307</auc:AnnualSavingsSiteEnergy>
+							<auc:AnnualSavingsCost>82</auc:AnnualSavingsCost>
 						</auc:PackageOfMeasures>
 					</auc:ScenarioType>
+					<auc:UserDefinedFields>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioBaselineCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</auc:FieldName>
+							<auc:FieldValue>566.3112512160039</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualElectricity_kBtu</auc:FieldName>
+							<auc:FieldValue>416631.97157612484</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualNaturalGas_kBtu</auc:FieldName>
+							<auc:FieldValue>149679.27963987904</auc:FieldValue>
+						</auc:UserDefinedField>
+					</auc:UserDefinedFields>
 				</auc:Scenario>
 				<auc:Scenario>
 					<auc:ScenarioName>Increase roof insulation Only</auc:ScenarioName>
@@ -1045,8 +1309,32 @@
 							<auc:MeasureIDs>
 								<auc:MeasureID IDref="Measure11"/>
 							</auc:MeasureIDs>
+							<auc:AnnualSavingsSiteEnergy>0.0</auc:AnnualSavingsSiteEnergy>
+							<auc:AnnualSavingsCost>0</auc:AnnualSavingsCost>
 						</auc:PackageOfMeasures>
 					</auc:ScenarioType>
+					<auc:UserDefinedFields>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioBaselineCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</auc:FieldName>
+							<auc:FieldValue>568.4154052230995</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualElectricity_kBtu</auc:FieldName>
+							<auc:FieldValue>417494.48515560996</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualNaturalGas_kBtu</auc:FieldName>
+							<auc:FieldValue>150920.9200674895</auc:FieldValue>
+						</auc:UserDefinedField>
+					</auc:UserDefinedFields>
 				</auc:Scenario>
 				<auc:Scenario>
 					<auc:ScenarioName>Increase ceiling insulation Only</auc:ScenarioName>
@@ -1056,8 +1344,32 @@
 							<auc:MeasureIDs>
 								<auc:MeasureID IDref="Measure12"/>
 							</auc:MeasureIDs>
+							<auc:AnnualSavingsSiteEnergy>0.0</auc:AnnualSavingsSiteEnergy>
+							<auc:AnnualSavingsCost>0</auc:AnnualSavingsCost>
 						</auc:PackageOfMeasures>
 					</auc:ScenarioType>
+					<auc:UserDefinedFields>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioBaselineCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</auc:FieldName>
+							<auc:FieldValue>568.4154052230995</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualElectricity_kBtu</auc:FieldName>
+							<auc:FieldValue>417494.48515560996</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualNaturalGas_kBtu</auc:FieldName>
+							<auc:FieldValue>150920.9200674895</auc:FieldValue>
+						</auc:UserDefinedField>
+					</auc:UserDefinedFields>
 				</auc:Scenario>
 				<auc:Scenario>
 					<auc:ScenarioName>Add window films Only</auc:ScenarioName>
@@ -1067,8 +1379,32 @@
 							<auc:MeasureIDs>
 								<auc:MeasureID IDref="Measure13"/>
 							</auc:MeasureIDs>
+							<auc:AnnualSavingsSiteEnergy>5.051865251269987</auc:AnnualSavingsSiteEnergy>
+							<auc:AnnualSavingsCost>605</auc:AnnualSavingsCost>
 						</auc:PackageOfMeasures>
 					</auc:ScenarioType>
+					<auc:UserDefinedFields>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioBaselineCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</auc:FieldName>
+							<auc:FieldValue>563.3635399718295</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualElectricity_kBtu</auc:FieldName>
+							<auc:FieldValue>409921.4263643066</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualNaturalGas_kBtu</auc:FieldName>
+							<auc:FieldValue>153442.11360752294</auc:FieldValue>
+						</auc:UserDefinedField>
+					</auc:UserDefinedFields>
 				</auc:Scenario>
 				<auc:Scenario>
 					<auc:ScenarioName>Upgrade operating protocols, calibration, and-or sequencing Only</auc:ScenarioName>
@@ -1078,8 +1414,32 @@
 							<auc:MeasureIDs>
 								<auc:MeasureID IDref="Measure14"/>
 							</auc:MeasureIDs>
+							<auc:AnnualSavingsSiteEnergy>0.0</auc:AnnualSavingsSiteEnergy>
+							<auc:AnnualSavingsCost>0</auc:AnnualSavingsCost>
 						</auc:PackageOfMeasures>
 					</auc:ScenarioType>
+					<auc:UserDefinedFields>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioBaselineCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</auc:FieldName>
+							<auc:FieldValue>568.4154052230995</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualElectricity_kBtu</auc:FieldName>
+							<auc:FieldValue>417494.48515560996</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualNaturalGas_kBtu</auc:FieldName>
+							<auc:FieldValue>150920.9200674895</auc:FieldValue>
+						</auc:UserDefinedField>
+					</auc:UserDefinedFields>
 				</auc:Scenario>
 				<auc:Scenario>
 					<auc:ScenarioName>Replace or upgrade water heater Only</auc:ScenarioName>
@@ -1089,8 +1449,32 @@
 							<auc:MeasureIDs>
 								<auc:MeasureID IDref="Measure15"/>
 							</auc:MeasureIDs>
+							<auc:AnnualSavingsSiteEnergy>9.468693031930002</auc:AnnualSavingsSiteEnergy>
+							<auc:AnnualSavingsCost>91</auc:AnnualSavingsCost>
 						</auc:PackageOfMeasures>
 					</auc:ScenarioType>
+					<auc:UserDefinedFields>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioBaselineCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</auc:FieldName>
+							<auc:FieldValue>558.9467121911695</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualElectricity_kBtu</auc:FieldName>
+							<auc:FieldValue>417494.48515560996</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualNaturalGas_kBtu</auc:FieldName>
+							<auc:FieldValue>141452.22703555948</auc:FieldValue>
+						</auc:UserDefinedField>
+					</auc:UserDefinedFields>
 				</auc:Scenario>
 				<auc:Scenario>
 					<auc:ScenarioName>Replace ice-refrigeration equipment with high efficiency units Only</auc:ScenarioName>
@@ -1100,8 +1484,32 @@
 							<auc:MeasureIDs>
 								<auc:MeasureID IDref="Measure16"/>
 							</auc:MeasureIDs>
+							<auc:AnnualSavingsSiteEnergy>0.0</auc:AnnualSavingsSiteEnergy>
+							<auc:AnnualSavingsCost>0</auc:AnnualSavingsCost>
 						</auc:PackageOfMeasures>
 					</auc:ScenarioType>
+					<auc:UserDefinedFields>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioBaselineCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</auc:FieldName>
+							<auc:FieldValue>568.4154052230995</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualElectricity_kBtu</auc:FieldName>
+							<auc:FieldValue>417494.48515560996</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualNaturalGas_kBtu</auc:FieldName>
+							<auc:FieldValue>150920.9200674895</auc:FieldValue>
+						</auc:UserDefinedField>
+					</auc:UserDefinedFields>
 				</auc:Scenario>
 				<auc:Scenario>
 					<auc:ScenarioName>Replace windows Only</auc:ScenarioName>
@@ -1111,8 +1519,32 @@
 							<auc:MeasureIDs>
 								<auc:MeasureID IDref="Measure17"/>
 							</auc:MeasureIDs>
+							<auc:AnnualSavingsSiteEnergy>17.553573068202695</auc:AnnualSavingsSiteEnergy>
+							<auc:AnnualSavingsCost>1233</auc:AnnualSavingsCost>
 						</auc:PackageOfMeasures>
 					</auc:ScenarioType>
+					<auc:UserDefinedFields>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioBaselineCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</auc:FieldName>
+							<auc:FieldValue>550.8618321548968</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualElectricity_kBtu</auc:FieldName>
+							<auc:FieldValue>402812.7979619567</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualNaturalGas_kBtu</auc:FieldName>
+							<auc:FieldValue>148058.51236414327</auc:FieldValue>
+						</auc:UserDefinedField>
+					</auc:UserDefinedFields>
 				</auc:Scenario>
 				<auc:Scenario>
 					<auc:ScenarioName>Replace boiler Only</auc:ScenarioName>
@@ -1122,8 +1554,32 @@
 							<auc:MeasureIDs>
 								<auc:MeasureID IDref="Measure18"/>
 							</auc:MeasureIDs>
+							<auc:AnnualSavingsSiteEnergy>0.0</auc:AnnualSavingsSiteEnergy>
+							<auc:AnnualSavingsCost>0</auc:AnnualSavingsCost>
 						</auc:PackageOfMeasures>
 					</auc:ScenarioType>
+					<auc:UserDefinedFields>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioBaselineCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</auc:FieldName>
+							<auc:FieldValue>568.4154052230995</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualElectricity_kBtu</auc:FieldName>
+							<auc:FieldValue>417494.48515560996</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualNaturalGas_kBtu</auc:FieldName>
+							<auc:FieldValue>150920.9200674895</auc:FieldValue>
+						</auc:UserDefinedField>
+					</auc:UserDefinedFields>
 				</auc:Scenario>
 				<auc:Scenario>
 					<auc:ScenarioName>Replace HVAC with GSHP and DOAS Only</auc:ScenarioName>
@@ -1133,8 +1589,32 @@
 							<auc:MeasureIDs>
 								<auc:MeasureID IDref="Measure19"/>
 							</auc:MeasureIDs>
+							<auc:AnnualSavingsSiteEnergy>13.68647921732429</auc:AnnualSavingsSiteEnergy>
+							<auc:AnnualSavingsCost>1681</auc:AnnualSavingsCost>
 						</auc:PackageOfMeasures>
 					</auc:ScenarioType>
+					<auc:UserDefinedFields>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioBaselineCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</auc:FieldName>
+							<auc:FieldValue>554.7289260057752</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualElectricity_kBtu</auc:FieldName>
+							<auc:FieldValue>391211.5164093217</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualNaturalGas_kBtu</auc:FieldName>
+							<auc:FieldValue>163517.40959645348</auc:FieldValue>
+						</auc:UserDefinedField>
+					</auc:UserDefinedFields>
 				</auc:Scenario>
 				<auc:Scenario>
 					<auc:ScenarioName>VRF with DOAS Only</auc:ScenarioName>
@@ -1144,8 +1624,32 @@
 							<auc:MeasureIDs>
 								<auc:MeasureID IDref="Measure20"/>
 							</auc:MeasureIDs>
+							<auc:AnnualSavingsSiteEnergy>-50.78404130638751</auc:AnnualSavingsSiteEnergy>
+							<auc:AnnualSavingsCost>-2614</auc:AnnualSavingsCost>
 						</auc:PackageOfMeasures>
 					</auc:ScenarioType>
+					<auc:UserDefinedFields>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioBaselineCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</auc:FieldName>
+							<auc:FieldValue>619.199446529487</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualElectricity_kBtu</auc:FieldName>
+							<auc:FieldValue>454336.1366221886</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualNaturalGas_kBtu</auc:FieldName>
+							<auc:FieldValue>164853.83173609528</auc:FieldValue>
+						</auc:UserDefinedField>
+					</auc:UserDefinedFields>
 				</auc:Scenario>
 				<auc:Scenario>
 					<auc:ScenarioName>Replace HVAC system type to PZHP Only</auc:ScenarioName>
@@ -1155,8 +1659,32 @@
 							<auc:MeasureIDs>
 								<auc:MeasureID IDref="Measure21"/>
 							</auc:MeasureIDs>
+							<auc:AnnualSavingsSiteEnergy>101.79555872165025</auc:AnnualSavingsSiteEnergy>
+							<auc:AnnualSavingsCost>559</auc:AnnualSavingsCost>
 						</auc:PackageOfMeasures>
 					</auc:ScenarioType>
+					<auc:UserDefinedFields>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioBaselineCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</auc:FieldName>
+							<auc:FieldValue>466.6198465014492</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualElectricity_kBtu</auc:FieldName>
+							<auc:FieldValue>450687.0407089824</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualNaturalGas_kBtu</auc:FieldName>
+							<auc:FieldValue>15932.805792466861</auc:FieldValue>
+						</auc:UserDefinedField>
+					</auc:UserDefinedFields>
 				</auc:Scenario>
 				<auc:Scenario>
 					<auc:ScenarioName>Replace with higher efficiency Only</auc:ScenarioName>
@@ -1166,8 +1694,32 @@
 							<auc:MeasureIDs>
 								<auc:MeasureID IDref="Measure22"/>
 							</auc:MeasureIDs>
+							<auc:AnnualSavingsSiteEnergy>13.26943968438627</auc:AnnualSavingsSiteEnergy>
+							<auc:AnnualSavingsCost>1580</auc:AnnualSavingsCost>
 						</auc:PackageOfMeasures>
 					</auc:ScenarioType>
+					<auc:UserDefinedFields>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioBaselineCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</auc:FieldName>
+							<auc:FieldValue>555.1459655387132</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualElectricity_kBtu</auc:FieldName>
+							<auc:FieldValue>396443.4669134512</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualNaturalGas_kBtu</auc:FieldName>
+							<auc:FieldValue>158702.49862526185</auc:FieldValue>
+						</auc:UserDefinedField>
+					</auc:UserDefinedFields>
 				</auc:Scenario>
 				<auc:Scenario>
 					<auc:ScenarioName>Improve ventilation fans Only</auc:ScenarioName>
@@ -1177,8 +1729,32 @@
 							<auc:MeasureIDs>
 								<auc:MeasureID IDref="Measure23"/>
 							</auc:MeasureIDs>
+							<auc:AnnualSavingsSiteEnergy>7.430886223256266</auc:AnnualSavingsSiteEnergy>
+							<auc:AnnualSavingsCost>879</auc:AnnualSavingsCost>
 						</auc:PackageOfMeasures>
 					</auc:ScenarioType>
+					<auc:UserDefinedFields>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioBaselineCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</auc:FieldName>
+							<auc:FieldValue>560.9845189998432</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualElectricity_kBtu</auc:FieldName>
+							<auc:FieldValue>405807.9000621468</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualNaturalGas_kBtu</auc:FieldName>
+							<auc:FieldValue>155176.6189376963</auc:FieldValue>
+						</auc:UserDefinedField>
+					</auc:UserDefinedFields>
 				</auc:Scenario>
 				<auc:Scenario>
 					<auc:ScenarioName>Install demand control ventilation Only</auc:ScenarioName>
@@ -1188,8 +1764,32 @@
 							<auc:MeasureIDs>
 								<auc:MeasureID IDref="Measure24"/>
 							</auc:MeasureIDs>
+							<auc:AnnualSavingsSiteEnergy>0.0</auc:AnnualSavingsSiteEnergy>
+							<auc:AnnualSavingsCost>0</auc:AnnualSavingsCost>
 						</auc:PackageOfMeasures>
 					</auc:ScenarioType>
+					<auc:UserDefinedFields>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioBaselineCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</auc:FieldName>
+							<auc:FieldValue>568.4154052230995</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualElectricity_kBtu</auc:FieldName>
+							<auc:FieldValue>417494.48515560996</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualNaturalGas_kBtu</auc:FieldName>
+							<auc:FieldValue>150920.9200674895</auc:FieldValue>
+						</auc:UserDefinedField>
+					</auc:UserDefinedFields>
 				</auc:Scenario>
 				<auc:Scenario>
 					<auc:ScenarioName>Add or repair economizer Only</auc:ScenarioName>
@@ -1199,8 +1799,32 @@
 							<auc:MeasureIDs>
 								<auc:MeasureID IDref="Measure25"/>
 							</auc:MeasureIDs>
+							<auc:AnnualSavingsSiteEnergy>1.791374357392101</auc:AnnualSavingsSiteEnergy>
+							<auc:AnnualSavingsCost>188</auc:AnnualSavingsCost>
 						</auc:PackageOfMeasures>
 					</auc:ScenarioType>
+					<auc:UserDefinedFields>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioBaselineCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</auc:FieldName>
+							<auc:FieldValue>566.6240308657074</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualElectricity_kBtu</auc:FieldName>
+							<auc:FieldValue>415267.1149228737</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualNaturalGas_kBtu</auc:FieldName>
+							<auc:FieldValue>151366.39411403678</auc:FieldValue>
+						</auc:UserDefinedField>
+					</auc:UserDefinedFields>
 				</auc:Scenario>
 				<auc:Scenario>
 					<auc:ScenarioName>Add energy recovery Only</auc:ScenarioName>
@@ -1210,8 +1834,32 @@
 							<auc:MeasureIDs>
 								<auc:MeasureID IDref="Measure26"/>
 							</auc:MeasureIDs>
+							<auc:AnnualSavingsSiteEnergy>-0.47390856015670124</auc:AnnualSavingsSiteEnergy>
+							<auc:AnnualSavingsCost>155</auc:AnnualSavingsCost>
 						</auc:PackageOfMeasures>
 					</auc:ScenarioType>
+					<auc:UserDefinedFields>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioBaselineCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</auc:FieldName>
+							<auc:FieldValue>568.8893137832562</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualElectricity_kBtu</auc:FieldName>
+							<auc:FieldValue>416556.14620649983</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualNaturalGas_kBtu</auc:FieldName>
+							<auc:FieldValue>152323.68940555322</auc:FieldValue>
+						</auc:UserDefinedField>
+					</auc:UserDefinedFields>
 				</auc:Scenario>
 				<auc:Scenario>
 					<auc:ScenarioName>Add pipe insulation Only</auc:ScenarioName>
@@ -1221,8 +1869,32 @@
 							<auc:MeasureIDs>
 								<auc:MeasureID IDref="Measure27"/>
 							</auc:MeasureIDs>
+							<auc:AnnualSavingsSiteEnergy>8.520875911616713</auc:AnnualSavingsSiteEnergy>
+							<auc:AnnualSavingsCost>82</auc:AnnualSavingsCost>
 						</auc:PackageOfMeasures>
 					</auc:ScenarioType>
+					<auc:UserDefinedFields>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioBaselineCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</auc:FieldName>
+							<auc:FieldValue>559.8945293114828</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualElectricity_kBtu</auc:FieldName>
+							<auc:FieldValue>417494.48515560996</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualNaturalGas_kBtu</auc:FieldName>
+							<auc:FieldValue>142400.0441558728</auc:FieldValue>
+						</auc:UserDefinedField>
+					</auc:UserDefinedFields>
 				</auc:Scenario>
 				<auc:Scenario>
 					<auc:ScenarioName>Add recirculating pumps Only</auc:ScenarioName>
@@ -1232,8 +1904,32 @@
 							<auc:MeasureIDs>
 								<auc:MeasureID IDref="Measure28"/>
 							</auc:MeasureIDs>
+							<auc:AnnualSavingsSiteEnergy>8.729395678085666</auc:AnnualSavingsSiteEnergy>
+							<auc:AnnualSavingsCost>84</auc:AnnualSavingsCost>
 						</auc:PackageOfMeasures>
 					</auc:ScenarioType>
+					<auc:UserDefinedFields>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioBaselineCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</auc:FieldName>
+							<auc:FieldValue>559.6860095450138</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualElectricity_kBtu</auc:FieldName>
+							<auc:FieldValue>417494.48515560996</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualNaturalGas_kBtu</auc:FieldName>
+							<auc:FieldValue>142182.0462182007</auc:FieldValue>
+						</auc:UserDefinedField>
+					</auc:UserDefinedFields>
 				</auc:Scenario>
 				<auc:Scenario>
 					<auc:ScenarioName>Install low-flow faucets and showerheads Only</auc:ScenarioName>
@@ -1243,8 +1939,32 @@
 							<auc:MeasureIDs>
 								<auc:MeasureID IDref="Measure29"/>
 							</auc:MeasureIDs>
+							<auc:AnnualSavingsSiteEnergy>0.0</auc:AnnualSavingsSiteEnergy>
+							<auc:AnnualSavingsCost>0</auc:AnnualSavingsCost>
 						</auc:PackageOfMeasures>
 					</auc:ScenarioType>
+					<auc:UserDefinedFields>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioBaselineCompletedStatus</auc:FieldName>
+							<auc:FieldValue>Success</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</auc:FieldName>
+							<auc:FieldValue>568.4154052230995</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualElectricity_kBtu</auc:FieldName>
+							<auc:FieldValue>417494.48515560996</auc:FieldValue>
+						</auc:UserDefinedField>
+						<auc:UserDefinedField>
+							<auc:FieldName>OpenStudioAnnualNaturalGas_kBtu</auc:FieldName>
+							<auc:FieldValue>150920.9200674895</auc:FieldValue>
+						</auc:UserDefinedField>
+					</auc:UserDefinedFields>
 				</auc:Scenario>
 			</auc:Scenarios>
 		</auc:Report>

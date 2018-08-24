@@ -907,6 +907,20 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       });
     };
 
+    inventory_service.upload_building_sync = function (view_id, data) {
+      return $http.put('/api/v2.1/properties/' + view_id + '/update_with_building_sync/', data, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        },
+        params: {
+          organization_id: user_service.get_organization().id
+        }
+      }).then(function (response) {
+        console.log(angular.copy(response));
+        return response.data.data;
+      });
+    };
+
     return inventory_service;
 
   }]);

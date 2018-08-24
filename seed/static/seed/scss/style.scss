@@ -2538,8 +2538,7 @@ gs-input .tags .tag-item .remove-button {
 }
 
 .ui-grid-row-header-link {
-  background-color: #f0f0ee;
-  border-bottom: solid 1px #d4d4d4;
+  //background-color: #f0f0ee;
   height: 30px;
   width: 30px;
   > a {
@@ -2547,9 +2546,13 @@ gs-input .tags .tag-item .remove-button {
   }
 }
 
-.ui-grid-row.ui-grid-row-selected > [ui-grid-row] > .ui-grid-cell > .ui-grid-row-header-link {
-  background-color: #c9dde1;
+.ui-grid-row:not(:last-child) .ui-grid-row-header-link {
+  border-bottom: solid 1px #d4d4d4;
 }
+
+//.ui-grid-row.ui-grid-row-selected > [ui-grid-row] > .ui-grid-cell > .ui-grid-row-header-link {
+//  background-color: #c9dde1;
+//}
 
 .ui-grid-cell-contents {
   font-weight: normal;
@@ -2566,6 +2569,25 @@ gs-input .tags .tag-item .remove-button {
 
 .ui-grid-row:nth-child(even) .ui-grid-cell .inventory-settings-cell::after {
   color: #cbcbcb;
+}
+
+.ui-grid-row:nth-child(odd) .ui-grid-cell {
+  background-color: #fdfdfd;
+}
+.ui-grid-row:nth-child(even) .ui-grid-cell {
+  background-color: #f3f3f3;
+}
+.ui-grid-row:nth-child(odd):hover .ui-grid-cell {
+  background-color: #fdfdfd;
+}
+.ui-grid-row:nth-child(even):hover .ui-grid-cell {
+  background-color: #f3f3f3;
+}
+.ui-grid-row.ui-grid-row-selected:nth-child(odd) > [ui-grid-row] > .ui-grid-cell {
+  background-color: #fdfdfd;
+}
+.ui-grid-row.ui-grid-row-selected:nth-child(even) > [ui-grid-row] > .ui-grid-cell {
+  background-color: #f3f3f3;
 }
 
 .inventory-settings-cell {
@@ -3151,4 +3173,9 @@ $pairedCellWidth: 60px;
 
 :not(.active) .typeahead-native {
   background-color: rgba(100, 255, 100, 0.15);
+}
+
+.upload-btn {
+  display: block;
+  font-weight: bold;
 }

@@ -48,7 +48,7 @@ bower_components/
 
 package-lock.json
 dump.rdb
-log
+log/*.log
 *.log
 .tox
 Vagrantfile
