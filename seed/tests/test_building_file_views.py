@@ -4,11 +4,14 @@
 :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+import json
 from datetime import datetime
+from os import path
 
 from django.core.urlresolvers import reverse
 from django.utils import timezone
 
+from config.settings.common import BASE_DIR
 from seed.landing.models import SEEDUser as User
 from seed.models import (
     PropertyView,
@@ -62,7 +65,60 @@ class InventoryViewTests(DeleteModelsTestCase):
         }
         url = reverse('api:v2.1:properties-building-sync', args=[pv.id])
         response = self.client.get(url, params)
-        self.assertIn('<auc:FloorAreaValue>%s.0</auc:FloorAreaValue>' % state.gross_floor_area, response.content)
+        self.assertIn('<auc:FloorAreaValue>%s.0</auc:FloorAreaValue>' % state.gross_floor_area,
+                      response.content)
+
+    def test_upload_and_get_building_sync(self):
+        # import_record =
+        filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'ex_1.xml')
+
+        url = reverse('api:v2:building_file-list')
+        fsysparams = {
+            'file': open(filename, 'rb'),
+            'file_type': 'BuildingSync',
+            'organization_id': self.org.id,
+            'cycle_id': self.cycle.id
+        }
+
+        response = self.client.post(url, fsysparams)
+        self.assertEqual(response.status_code, 200)
+        result = json.loads(response.content)
+        self.assertEqual(result['status'], 'success')
+        self.assertEqual(result['message'], 'successfully imported file')
+        self.assertEqual(result['data']['property_view']['state']['year_built'], 1967)
+
+        # now get the building sync that was just uploaded
+        property_id = result['data']['property_view']['id']
+        url = reverse('api:v2.1:properties-building-sync', args=[property_id])
+        response = self.client.get(url)
+        self.assertIn('<auc:YearOfConstruction>1967</auc:YearOfConstruction>', response.content)
+
+    def test_upload_and_get_building_sync_diff_ns(self):
+        # import_record =
+        filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data',
+                             'ex_1_different_namespace.xml')
+
+        url = reverse('api:v2:building_file-list')
+
+        fsysparams = {
+            'file': open(filename, 'rb'),
+            'file_type': 'BuildingSync',
+            'organization_id': self.org.id,
+            'cycle_id': self.cycle.id
+        }
+
+        response = self.client.post(url, fsysparams)
+        self.assertEqual(response.status_code, 200)
+        result = json.loads(response.content)
+        self.assertEqual(result['status'], 'success')
+        self.assertEqual(result['message'], 'successfully imported file')
+        self.assertEqual(result['data']['property_view']['state']['year_built'], 1889)
+
+        # now get the building sync that was just uploaded
+        property_id = result['data']['property_view']['id']
+        url = reverse('api:v2.1:properties-building-sync', args=[property_id])
+        response = self.client.get(url)
+        self.assertIn('<auc:YearOfConstruction>1889</auc:YearOfConstruction>', response.content)
 
     def test_get_hpxml(self):
         state = self.property_state_factory.get_property_state()
@@ -77,4 +133,5 @@ class InventoryViewTests(DeleteModelsTestCase):
         }
         url = reverse('api:v2.1:properties-hpxml', args=[pv.id])
         response = self.client.get(url, params)
-        self.assertIn('<GrossFloorArea>%s.0</GrossFloorArea>' % state.gross_floor_area, response.content)
+        self.assertIn('<GrossFloorArea>%s.0</GrossFloorArea>' % state.gross_floor_area,
+                      response.content)
