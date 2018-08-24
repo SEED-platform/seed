@@ -17,17 +17,23 @@ from rest_framework.response import Response
 from seed.decorators import ajax_request_class, require_organization_id_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
-from seed.models.columns import Column, ColumnMapping
-from seed.utils.api import api_endpoint_class, OrgQuerySetMixin
-from seed.serializers.columns import ColumnSerializer
 from seed.models import PropertyState, TaxLotState
+from seed.models.columns import Column, ColumnMapping
+from seed.pagination import NoPagination
 from seed.renderers import SEEDJSONRenderer
+from seed.serializers.columns import ColumnSerializer
+from seed.utils.api import OrgValidateMixin
+from seed.utils.api import api_endpoint_class
+from seed.utils.viewsets import SEEDOrgCreateUpdateModelViewSet
 
 _log = logging.getLogger(__name__)
 
 
-class ColumnViewSet(OrgQuerySetMixin, viewsets.ViewSet):
+class ColumnViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
     raise_exception = True
+    serializer_class = ColumnSerializer
+    model = Column
+    pagination_class = NoPagination
 
     @require_organization_id_class
     @api_endpoint_class

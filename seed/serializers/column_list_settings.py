@@ -45,8 +45,9 @@ class ColumnListSettingSerializer(serializers.ModelSerializer):
             column_id = column.get("id")
             order = column.get("order")
             pinned = column.get("pinned")
-            ColumnListSettingColumn(column_list_setting=instance, column_id=column_id, pinned=pinned,
-                                    order=order).save()
+            ColumnListSettingColumn(
+                column_list_setting=instance, column_id=column_id, pinned=pinned, order=order
+            ).save()
 
         instance.__dict__.update(**validated_data)
         instance.save()
@@ -61,7 +62,9 @@ class ColumnListSettingSerializer(serializers.ModelSerializer):
                 column_id = column.get("id")
                 order = column.get("order")
                 pinned = column.get("pinned")
-                ColumnListSettingColumn(column_list_setting=cls, column_id=column_id, pinned=pinned, order=order).save()
+                ColumnListSettingColumn(
+                    column_list_setting=cls, column_id=column_id, pinned=pinned, order=order
+                ).save()
         cls.save()
 
         return cls

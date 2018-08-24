@@ -120,3 +120,14 @@ class StateFieldsTest(TestCase):
             (u'state', u'state'))
         result = get_state_to_state_tuple(u'TaxLotState')
         self.assertSequenceEqual(expected, result)
+
+    def test_merge_state(self):
+        pv1 = self.property_view_factory.get_property_view(
+            address_line_1='original_address', extra_data={"field_1": "orig_value"}
+        )
+        pv2 = self.property_view_factory.get_property_view(
+            address_line_2='new_address', extra_data={"field_1": "new_value"}
+        )
+
+        print(pv1)
+        print(pv2)

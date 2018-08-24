@@ -172,6 +172,13 @@ class Column(models.Model):
         ('PropertyState', 'source_eui_weather_normalized'),
     ]
 
+    COLUMN_MERGE_FAVOR_NEW = 0
+    COLUMN_MERGE_FAVOR_EXISTING = 1
+    COLUMN_MERGE_PROTECTION = [
+        (COLUMN_MERGE_FAVOR_NEW, 'Favor New'),
+        (COLUMN_MERGE_FAVOR_EXISTING, 'Favor Existing')
+    ]
+
     # These fields are excluded from being returned to the front end via the API and the Column.retrieve_all method.
     # Note that not all the endpoints are respecting this at the moment.
     EXCLUDED_API_FIELDS = [
@@ -597,10 +604,6 @@ class Column(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
-    # TODO: decide if we need this? I don't think I do.
-    # If exclude_from_mapping, then the column will not be used as mapping suggestions
-    # exclude_from_mapping = models.BooleanField(default=False)
-
     unit = models.ForeignKey(Unit, blank=True, null=True)
     enum = models.ForeignKey(Enum, blank=True, null=True)
     is_extra_data = models.BooleanField(default=False)
@@ -609,11 +612,10 @@ class Column(models.Model):
 
     shared_field_type = models.IntegerField(choices=SHARED_FIELD_TYPES, default=SHARED_NONE)
 
-    # Do not enable this until running through the database and merging the columns down.
-    # BUT first, make sure to add an import file ID into the column class.
-    # class Meta:
-    #     unique_together = (
-    #         'organization', 'column_name', 'is_extra_data', 'table_name', 'import_file')
+    # By default, when two records are merge the new data will take precedence over the existing
+    # data, however, the user can override this on a column-by-column basis.
+    merge_protection = models.IntegerField(choices=COLUMN_MERGE_PROTECTION,
+                                           default=COLUMN_MERGE_FAVOR_NEW)
 
     def __unicode__(self):
         return u'{} - {}:{}'.format(self.pk, self.table_name, self.column_name)
@@ -980,6 +982,7 @@ class Column(models.Model):
             'table_name': self.table_name,
             'column_name': self.column_name,
             'is_extra_data': self.is_extra_data,
+            'merge_protection': self.merge_protection,
             'data_type': self.data_type,
         }
         if self.unit:

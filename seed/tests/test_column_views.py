@@ -112,6 +112,7 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
             u'column_name': u'pm_property_id',
             u'display_name': u'PM Property ID',
             u'is_extra_data': False,
+            u'merge_protection': 0,
             u'data_type': u'string',
             u'related': False,
             u'sharedFieldType': u'None',
@@ -120,3 +121,6 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
 
         # randomly check a column
         self.assertIn(expected, data)
+
+    def test_set_column_merge(self):
+        pass

@@ -14,6 +14,9 @@ from config.views import robots_txt
 from seed.api.base.urls import urlpatterns as api
 from seed.views.main import angular_js_tests
 
+from rest_framework.schemas import get_schema_view
+schema_view = get_schema_view(title='SEED API Schema')
+
 urlpatterns = [
     # Application
     url(r'^', include('seed.landing.urls', namespace="landing", app_name="landing")),
@@ -26,6 +29,7 @@ urlpatterns = [
     url(r'^robots\.txt', robots_txt, name='robots_txt'),
 
     # API
+    url(r'^api/schema/$', schema_view),
     url(r'^api/swagger/', get_swagger_view(title='SEED API'), name='swagger'),
     url(r'^api/', include(api, namespace='api')),
     url(r'^oauth/', include('oauth2_jwt_provider.urls', namespace='oauth2_provider'))

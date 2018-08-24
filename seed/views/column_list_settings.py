@@ -15,9 +15,7 @@ from seed.serializers.column_list_settings import (
     ColumnListSettingSerializer,
 )
 from seed.utils.api import OrgValidateMixin
-from seed.utils.viewsets import (
-    SEEDOrgCreateUpdateModelViewSet
-)
+from seed.utils.viewsets import SEEDOrgCreateUpdateModelViewSet
 
 
 class ColumnListingViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
