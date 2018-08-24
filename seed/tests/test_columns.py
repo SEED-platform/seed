@@ -415,13 +415,14 @@ class TestColumnsByInventory(TestCase):
         self.assertIn(c, columns)
 
         c = {
-            "table_name": "TaxLotState",
-            "column_name": "Gross Floor Area",
-            "display_name": "Gross Floor Area (Tax Lot)",
-            "data_type": "None",
-            "is_extra_data": True,
-            "sharedFieldType": "None",
-            "related": True,
+            'table_name': 'TaxLotState',
+            'column_name': 'Gross Floor Area',
+            'display_name': 'Gross Floor Area (Tax Lot)',
+            'data_type': 'None',
+            'is_extra_data': True,
+            'merge_protection': 0,
+            'sharedFieldType': 'None',
+            'related': True,
         }
         self.assertIn(c, columns)
 
@@ -436,13 +437,14 @@ class TestColumnsByInventory(TestCase):
             del result['name']
 
         c = {
-            "table_name": "TaxLotState",
-            "column_name": "Gross Floor Area",
-            "display_name": "Gross Floor Area",
-            "data_type": "None",
-            "is_extra_data": True,
-            "sharedFieldType": "None",
-            "related": False,
+            'table_name': 'TaxLotState',
+            'column_name': 'Gross Floor Area',
+            'display_name': 'Gross Floor Area',
+            'data_type': 'None',
+            'is_extra_data': True,
+            'merge_protection': 0,
+            'sharedFieldType': 'None',
+            'related': False,
         }
         self.assertIn(c, columns)
 

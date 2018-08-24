@@ -102,7 +102,8 @@ class TaxLotViewSet(GenericViewSet):
         # Return taxlot views limited to the 'inventory_ids' list.  Otherwise, if selected is empty, return all
         if 'inventory_ids' in request.data and request.data['inventory_ids']:
             taxlot_views_list = TaxLotView.objects.select_related('taxlot', 'state', 'cycle') \
-                .filter(taxlot_id__in=request.data['inventory_ids'], taxlot__organization_id=org_id, cycle=cycle) \
+                .filter(taxlot_id__in=request.data['inventory_ids'], taxlot__organization_id=org_id,
+                        cycle=cycle) \
                 .order_by('id')
         else:
             taxlot_views_list = TaxLotView.objects.select_related('taxlot', 'state', 'cycle') \
@@ -141,7 +142,8 @@ class TaxLotViewSet(GenericViewSet):
             except ColumnListSetting.DoesNotExist:
                 show_columns = None
 
-        related_results = TaxLotProperty.get_related(taxlot_views, show_columns, columns_from_database)
+        related_results = TaxLotProperty.get_related(taxlot_views, show_columns,
+                                                     columns_from_database)
 
         # collapse units here so we're only doing the last page; we're already a
         # realized list by now and not a lazy queryset
@@ -289,11 +291,7 @@ class TaxLotViewSet(GenericViewSet):
             state2 = state.objects.get(id=state_ids[index])
 
             merged_state = state.objects.create(organization_id=organization_id)
-            merged_state = merging.merge_state(merged_state,
-                                               state1,
-                                               state2,
-                                               merging.get_state_attrs([state1, state2]),
-                                               default=state2)
+            merged_state = merging.merge_state(merged_state, state1, state2)
 
             state_1_audit_log = audit_log.objects.filter(state=state1).first()
             state_2_audit_log = audit_log.objects.filter(state=state2).first()
@@ -324,7 +322,8 @@ class TaxLotViewSet(GenericViewSet):
 
             # Find unique notes
             notes = list(Note.objects.values(
-                'name', 'note_type', 'text', 'log_data', 'created', 'updated', 'organization_id', 'user_id'
+                'name', 'note_type', 'text', 'log_data', 'created', 'updated', 'organization_id',
+                'user_id'
             ).filter(taxlot_view_id__in=view_ids).distinct())
 
             cycle_id = views.first().cycle_id
@@ -355,7 +354,8 @@ class TaxLotViewSet(GenericViewSet):
                 n = Note(**note)
                 n.save()
                 # Correct the created and updated times to match the original note
-                Note.objects.filter(id=n.id).update(created=note['created'], updated=note['updated'])
+                Note.objects.filter(id=n.id).update(created=note['created'],
+                                                    updated=note['updated'])
 
             # Delete existing pairs and re-pair all to new view
             # Probably already deleted by cascade
@@ -452,12 +452,14 @@ class TaxLotViewSet(GenericViewSet):
         merged_state.save()
 
         # Change the merge_state of the individual states
-        if log.parent1.name in ['Import Creation', 'Manual Edit'] and log.parent1.import_filename is not None:
+        if log.parent1.name in ['Import Creation',
+                                'Manual Edit'] and log.parent1.import_filename is not None:
             # State belongs to a new record
             state1.merge_state = MERGE_STATE_NEW
         else:
             state1.merge_state = MERGE_STATE_MERGED
-        if log.parent2.name in ['Import Creation', 'Manual Edit'] and log.parent2.import_filename is not None:
+        if log.parent2.name in ['Import Creation',
+                                'Manual Edit'] and log.parent2.import_filename is not None:
             # State belongs to a new record
             state2.merge_state = MERGE_STATE_NEW
         else:
@@ -474,7 +476,8 @@ class TaxLotViewSet(GenericViewSet):
 
         # Duplicate pairing
         paired_view_ids = list(TaxLotProperty.objects.filter(taxlot_view_id=old_view.id)
-                               .order_by('property_view_id').values_list('property_view_id', flat=True))
+                               .order_by('property_view_id').values_list('property_view_id',
+                                                                         flat=True))
 
         old_view.delete()
         new_view1.save()
@@ -808,7 +811,8 @@ class TaxLotViewSet(GenericViewSet):
                                 new_taxlot_state_serializer.errors)}
                         )
                         return JsonResponse(result, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
-                elif log.name in ['Manual Edit', 'Manual Match', 'System Match', 'Merge current state in migration']:
+                elif log.name in ['Manual Edit', 'Manual Match', 'System Match',
+                                  'Merge current state in migration']:
                     # Convert this to using the serializer to save the data. This will override the previous values
                     # in the state object.
 

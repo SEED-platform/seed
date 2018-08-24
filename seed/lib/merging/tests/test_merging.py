@@ -9,6 +9,7 @@ import logging
 from django.test import TestCase
 
 from seed.landing.models import SEEDUser as User
+from seed.lib.merging import merging
 from seed.lib.merging.merging import get_state_attrs, get_state_to_state_tuple
 from seed.models.columns import Column
 from seed.test_helpers.fake import (
@@ -121,13 +122,40 @@ class StateFieldsTest(TestCase):
         result = get_state_to_state_tuple(u'TaxLotState')
         self.assertSequenceEqual(expected, result)
 
+    from seed.utils.cprofile import cprofile
+
+    @cprofile()
     def test_merge_state(self):
         pv1 = self.property_view_factory.get_property_view(
-            address_line_1='original_address', extra_data={"field_1": "orig_value"}
+            address_line_1='original_address', extra_data={'field_1': 'orig_value'}
         )
         pv2 = self.property_view_factory.get_property_view(
-            address_line_2='new_address', extra_data={"field_1": "new_value"}
+            address_line_1='new_address', extra_data={'field_1': 'new_value'}
         )
 
         print(pv1)
         print(pv2)
+        print(pv1.state.address_line_1)
+        print(pv2.state.address_line_1)
+        print(pv1.state.extra_data['field_1'])
+        print(pv2.state.extra_data['field_1'])
+
+        result = merging.merge_state(pv1.state, pv1.state, pv2.state)
+        print(result)
+        print(result.address_line_1)
+        print(result.extra_data['field_1'])
+        self.assertEqual(result.address_line_1, 'new_address')
+        self.assertEqual(result.extra_data['field_1'], 'new_value')
+
+    def test_merge_extra_data(self):
+        ed1 = {'field_1': 'orig_value_1', 'field_2': 'orig_value_1', 'field_3': 'only_in_ed1'}
+        ed2 = {'field_1': 'new_value_1', 'field_2': 'new_value_2', 'field_4': 'only_in_ed2'}
+
+        result = merging._merge_extra_data(ed1, ed2)
+        expected = {
+            'field_1': 'new_value_1',
+            'field_2': 'new_value_2',
+            'field_3': 'only_in_ed1',
+            'field_4': 'only_in_ed2'
+        }
+        self.assertDictEqual(result, expected)

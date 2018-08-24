@@ -1199,11 +1199,7 @@ def save_state_match(state1, state2):
     """
     merged_state = type(state1).objects.create(organization=state1.organization)
 
-    merged_state = merging.merge_state(merged_state,
-                                       state1,
-                                       state2,
-                                       merging.get_state_attrs([state1, state2]),
-                                       default=state2)
+    merged_state = merging.merge_state(merged_state, state1, state2)
 
     AuditLogClass = PropertyAuditLog if isinstance(merged_state, PropertyState) else TaxLotAuditLog
 

@@ -12,7 +12,7 @@ from django.db import models
 
 from seed.building_sync.building_sync import BuildingSync
 from seed.hpxml.hpxml import HPXML as HPXMLParser
-from seed.lib.merging.merging import merge_state, get_state_attrs
+from seed.lib.merging.merging import merge_state
 from seed.models import (
     PropertyState,
     Column,
@@ -163,7 +163,8 @@ class BuildingFile(models.Model):
             join, _ = PropertyMeasure.objects.get_or_create(
                 property_state_id=self.property_state_id,
                 measure_id=measure.pk,
-                implementation_status=PropertyMeasure.str_to_impl_status(m['implementation_status']),
+                implementation_status=PropertyMeasure.str_to_impl_status(
+                    m['implementation_status']),
                 application_scale=PropertyMeasure.str_to_application_scale(
                     m.get('application_scale_of_application',
                           PropertyMeasure.SCALE_ENTIRE_FACILITY)
@@ -239,10 +240,7 @@ class BuildingFile(models.Model):
 
             # assume the same cycle id as the former state.
             # should merge_state also copy/move over the relationships?
-            merged_state = merge_state(merged_state,
-                                       property_view.state,
-                                       property_state,
-                                       get_state_attrs([property_view.state, property_state]))
+            merged_state = merge_state(merged_state, property_view.state, property_state)
 
             # log the merge
             # Not a fan of the parent1/parent2 logic here, seems error prone, what this

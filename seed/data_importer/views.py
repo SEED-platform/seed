@@ -1191,11 +1191,7 @@ class ImportFileViewSet(viewsets.ViewSet):
         state2 = state.objects.get(id=source_state_id)
 
         merged_state = state.objects.create(organization_id=organization_id)
-        merged_state = merging.merge_state(merged_state,
-                                           state1,
-                                           state2,
-                                           merging.get_state_attrs([state1, state2]),
-                                           default=state2)
+        merged_state = merging.merge_state(merged_state, state1, state2)
 
         state_1_audit_log = audit_log.objects.filter(state=state1).first()
         state_2_audit_log = audit_log.objects.filter(state=state2).first()
