@@ -240,7 +240,10 @@ class BuildingFile(models.Model):
 
             # assume the same cycle id as the former state.
             # should merge_state also copy/move over the relationships?
-            merged_state = merge_state(merged_state, property_view.state, property_state)
+            priorities = Column.retrieve_priorities(organization_id)
+            merged_state = merge_state(
+                merged_state, property_view.state, property_state, priorities['PropertyState']
+            )
 
             # log the merge
             # Not a fan of the parent1/parent2 logic here, seems error prone, what this

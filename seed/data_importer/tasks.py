@@ -857,6 +857,12 @@ def match_and_merge_unmatched_objects(unmatched_states, partitioner):
     # This removes any states that are duplicates,
     equivalence_classes = partitioner.calculate_equivalence_classes(unmatched_states)
 
+    # get the priorities of the columns from the database
+    if len(equivalence_classes) > 0:
+        priorities = Column.retrieve_priorities(unmatched_states[0].organization)
+    else:
+        priorities = None
+
     # For each of the equivalence classes, merge them down to a single
     # object of that type.
     merged_objects = []
@@ -871,7 +877,7 @@ def match_and_merge_unmatched_objects(unmatched_states, partitioner):
             unmatched_state_class = [unmatched_states[ndx] for ndx in class_ndxs]
             merged_result = unmatched_state_class[0]
             for unmatched in unmatched_state_class[1:]:
-                merged_result = save_state_match(merged_result, unmatched)
+                merged_result = save_state_match(merged_result, unmatched, priorities)
 
             merged_objects.append(merged_result)
 
@@ -965,10 +971,13 @@ def merge_unmatched_into_views(unmatched_states, partitioner, org, import_file):
 
     # create the data atomically to speed it up
     _log.debug("There are %s merge_data and %s promote_data" % (len(merge_data), len(promote_data)))
+    priorities = Column.retrieve_priorities(org.pk)
     try:
         with transaction.atomic():
             for merge_datum in merge_data:
-                merge_datum[0].state = save_state_match(merge_datum[0].state, merge_datum[1])
+                merge_datum[0].state = save_state_match(
+                    merge_datum[0].state, merge_datum[1], priorities
+                )
                 merge_datum[0].save()
 
                 matched_views.append(merge_datum[0])
@@ -1189,17 +1198,21 @@ def query_property_matches(properties, pm_id, custom_id, ubid):
     return properties.filter(reduce(operator.or_, params)).order_by('id')
 
 
-def save_state_match(state1, state2):
+def save_state_match(state1, state2, priorities):
     """
     Merge the contents of state2 into state1
 
     :param state1: PropertyState or TaxLotState
     :param state2: PropertyState or TaxLotState
+    :param priorities: dict, column names and the priorities of the merging of data. This includes
+    all of the priorites for the columns, not just the priorities for the selected taxlotstate.
     :return: state1, after merge
     """
     merged_state = type(state1).objects.create(organization=state1.organization)
 
-    merged_state = merging.merge_state(merged_state, state1, state2)
+    merged_state = merging.merge_state(
+        merged_state, state1, state2, priorities[merged_state.__class__.__name__]
+    )
 
     AuditLogClass = PropertyAuditLog if isinstance(merged_state, PropertyState) else TaxLotAuditLog
 

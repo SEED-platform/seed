@@ -617,3 +617,10 @@ class TestColumnsByInventory(TestCase):
                     'Could not find column_name/table_name/data_type in Column.DATABASE_COLUMNS: %s' % column)
 
         self.assertEqual(errors, [])
+
+    def test_get_priorities(self):
+        priors = Column.retrieve_priorities(self.fake_org.id)
+        self.assertEqual(priors['PropertyState']['lot_number'], 'Favor New')
+        self.assertEqual(priors['PropertyState']['extra_data']["Apostrophe's Field"], 'Favor New')
+        self.assertEqual(priors['TaxLotState']['custom_id_1'], 'Favor New')
+        self.assertEqual(priors['TaxLotState']['extra_data']['Gross Floor Area'], 'Favor New')

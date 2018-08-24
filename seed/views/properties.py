@@ -446,8 +446,11 @@ class PropertyViewSet(GenericViewSet):
                 state1 = merged_state
             state2 = state.objects.get(id=state_ids[index])
 
+            priorities = Column.retrieve_priorities(organization_id)
             merged_state = state.objects.create(organization_id=organization_id)
-            merged_state = merging.merge_state(merged_state, state1, state2)
+            merged_state = merging.merge_state(
+                merged_state, state1, state2, priorities['PropertyState']
+            )
 
             state_1_audit_log = audit_log.objects.filter(state=state1).first()
             state_2_audit_log = audit_log.objects.filter(state=state2).first()

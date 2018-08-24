@@ -1267,6 +1267,50 @@ class Column(models.Model):
         return columns
 
     @staticmethod
+    def retrieve_priorities(org_id):
+        """
+        Return the list of priorties for the columns
+
+        Result will be in the form of:
+
+        {
+            'PropertyState': {
+                u'lot_number': 'Favor New',
+                u'owner_address': 'Favor New',
+                u'extra_data': {
+                    u'data_007': 'Favor New'
+                }
+            'TaxLotState': {
+                u'custom_id_1': 'Favor New',
+                u'block_number': 'Favor New',
+                u'extra_data': {
+                    u'data_008': 'Favor New'
+                }
+        }
+
+        :param org_id: organization with the columns
+        :return: dict
+        """
+        lu = {0: 'Favor New', 1: 'Favor Existing'}
+        columns = Column.retrieve_all(org_id, 'property', False)
+        # The TaxLot and Property are not used in merging, they are just here to prevent errors
+        priorities = {
+            'PropertyState': {'extra_data': {}},
+            'TaxLotState': {'extra_data': {}},
+            'Property': {},
+            'TaxLot': {}
+        }
+        for column in columns:
+            tn = column['table_name']
+            cn = column['column_name']
+            if column['is_extra_data']:
+                priorities[tn]['extra_data'][cn] = lu[column.get('merge_protection', 0)]
+            else:
+                priorities[tn][cn] = lu[column.get('merge_protection', 0)]
+
+        return priorities
+
+    @staticmethod
     def retrieve_all_by_tuple(org_id):
         """
         Return list of all columns for an organization as a tuple.

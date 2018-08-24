@@ -122,38 +122,36 @@ class StateFieldsTest(TestCase):
         result = get_state_to_state_tuple(u'TaxLotState')
         self.assertSequenceEqual(expected, result)
 
-    from seed.utils.cprofile import cprofile
-
-    @cprofile()
-    def test_merge_state(self):
+    def test_merge_state_favor_existing(self):
         pv1 = self.property_view_factory.get_property_view(
-            address_line_1='original_address', extra_data={'field_1': 'orig_value'}
+            address_line_1='original_address', address_line_2='orig',
+            extra_data={'field_1': 'orig_value'}
         )
         pv2 = self.property_view_factory.get_property_view(
-            address_line_1='new_address', extra_data={'field_1': 'new_value'}
+            address_line_1='new_address', address_line_2='new',
+            extra_data={'field_1': 'new_value'}
         )
 
-        print(pv1)
-        print(pv2)
-        print(pv1.state.address_line_1)
-        print(pv2.state.address_line_1)
-        print(pv1.state.extra_data['field_1'])
-        print(pv2.state.extra_data['field_1'])
+        # Do not set priority for address_line_2 to make sure that it chooses t
+        column_priorities = {
+            'address_line_1': 'Favor Existing', 'extra_data': {'field_1': 'Favor Existing'}
+        }
 
-        result = merging.merge_state(pv1.state, pv1.state, pv2.state)
-        print(result)
-        print(result.address_line_1)
-        print(result.extra_data['field_1'])
-        self.assertEqual(result.address_line_1, 'new_address')
-        self.assertEqual(result.extra_data['field_1'], 'new_value')
+        result = merging.merge_state(pv1.state, pv1.state, pv2.state, column_priorities)
+        self.assertEqual(result.address_line_1, 'original_address')
+        self.assertEqual(result.address_line_2, 'new')
+        self.assertEqual(result.extra_data['field_1'], 'orig_value')
 
     def test_merge_extra_data(self):
         ed1 = {'field_1': 'orig_value_1', 'field_2': 'orig_value_1', 'field_3': 'only_in_ed1'}
         ed2 = {'field_1': 'new_value_1', 'field_2': 'new_value_2', 'field_4': 'only_in_ed2'}
 
-        result = merging._merge_extra_data(ed1, ed2)
+        # this also tests a priority on the new field but with an existing value that doesn't exist
+        # in the new data.
+        priorities = {'field_1': 'Favor Existing', 'field_3': 'Favor New'}
+        result = merging._merge_extra_data(ed1, ed2, priorities)
         expected = {
-            'field_1': 'new_value_1',
+            'field_1': 'orig_value_1',
             'field_2': 'new_value_2',
             'field_3': 'only_in_ed1',
             'field_4': 'only_in_ed2'

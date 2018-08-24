@@ -17,14 +17,15 @@ from seed.data_importer.tasks import (
     match_and_merge_unmatched_objects,
 )
 from seed.models import (
-    PropertyView,
-    PropertyAuditLog,
     ASSESSED_RAW,
     DATA_STATE_MAPPING,
     MERGE_STATE_MERGED,
+    Column,
+    PropertyAuditLog,
+    PropertyState,
+    PropertyView,
     TaxLotProperty,
     TaxLotView,
-    PropertyState,
 )
 from seed.test_helpers.fake import (
     FakePropertyFactory,
@@ -258,7 +259,8 @@ class TestMatching(DataMappingBaseTestCase):
         ps_2 = self.property_state_factory.get_property_state(
             extra_data={"extra_1": "this should exist too"})
 
-        merged_state = save_state_match(ps_1, ps_2)
+        priorities = Column.retrieve_priorities(self.org.pk)
+        merged_state = save_state_match(ps_1, ps_2, priorities)
 
         self.assertEqual(merged_state.merge_state, MERGE_STATE_MERGED)
         self.assertEqual(merged_state.property_name, ps_1.property_name)
