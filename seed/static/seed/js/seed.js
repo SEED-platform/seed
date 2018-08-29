@@ -144,11 +144,18 @@ var SEED_app = angular.module('BE.seed', [
  * Adds the Django CSRF token to all $http requests
  */
 SEED_app.run([
-  '$http',
-  '$cookies',
   '$rootScope',
+  '$cookies',
+  '$http',
+  '$log',
+  '$q',
+  '$state',
+  '$transitions',
+  '$translate',
   'editableOptions',
-  function ($http, $cookies, $rootScope, editableOptions) {
+  'modified_service',
+  'spinner_utility',
+  function ($rootScope, $cookies, $http, $log, $q, $state, $transitions, $translate, editableOptions, modified_service, spinner_utility) {
     var csrftoken = $cookies.get('csrftoken');
     BE.csrftoken = csrftoken;
     $http.defaults.headers.common['X-CSRFToken'] = csrftoken;
@@ -161,6 +168,46 @@ SEED_app.run([
 
     // Use lodash in views
     $rootScope._ = window._;
+
+    // ui-router transition actions
+    $transitions.onStart({}, function (transition) {
+      if (modified_service.isModified()) {
+        return modified_service.showModifiedDialog().then(function () {
+          modified_service.resetModified();
+        }).catch(function () {
+          return $q.reject('acknowledged modified');
+        });
+      } else {
+        spinner_utility.show();
+      }
+    });
+
+    $transitions.onSuccess({}, function(transition) {
+      $rootScope.route_load_error = false;
+      spinner_utility.hide();
+    });
+
+    $transitions.onError({}, function(transition) {
+      spinner_utility.hide();
+      if (transition.error().message === 'The transition was ignored') return;
+
+      var error = transition.error().detail;
+
+      if (error !== 'acknowledged modified') {
+        $rootScope.route_load_error = true;
+
+        if (error === 'not authorized' || error === 'Your page could not be located!') {
+          $rootScope.load_error_message = $translate.instant(error);
+        } else {
+          $rootScope.load_error_message = '' || error;
+        }
+      }
+    });
+
+    $state.defaultErrorHandler(function(error) {
+      $log.log(error);
+    });
+
   }
 ]);
 
