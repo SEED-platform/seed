@@ -12,6 +12,7 @@ from itertools import chain
 
 from django.apps import apps
 from django.db import models
+from django.db.models import Count
 from django.utils.timezone import make_naive
 
 from seed.models.columns import Column
@@ -116,7 +117,8 @@ class TaxLotProperty(models.Model):
         here so that we can use this method to create the data for exporting to CSV on the backend.
 
         :param object_list: list
-        :param show_columns: list, columns (as defined by backend), Pass None to default to all columns
+        :param show_columns: list, columns (as defined by backend), Pass None to default to all columns excluding extra
+                             data
         :param columns_from_database: list, columns from the database as list of dict
         :return: list
         """
@@ -124,6 +126,8 @@ class TaxLotProperty(models.Model):
 
         if len(object_list) == 0:
             return results
+
+        Note = apps.get_model('seed', 'Note')
 
         if object_list[0].__class__.__name__ == 'PropertyView':
             lookups = {
@@ -133,6 +137,7 @@ class TaxLotProperty(models.Model):
                 'obj_view_id': 'property_view_id',
                 'obj_id': 'property_id',
                 'related_class': 'TaxLotView',
+                'related_query_in': 'taxlot_view_id__in',
                 'select_related': 'taxlot',
                 'related_view': 'taxlot_view',
                 'related_view_id': 'taxlot_view_id',
@@ -146,17 +151,18 @@ class TaxLotProperty(models.Model):
                 'obj_view_id': 'taxlot_view_id',
                 'obj_id': 'taxlot_id',
                 'related_class': 'PropertyView',
+                'related_query_in': 'property_view_id__in',
                 'select_related': 'property',
                 'related_view': 'property_view',
                 'related_view_id': 'property_view_id',
                 'related_state_id': 'property_state_id',
             }
 
-        # Ids of propertyviews to look up in m2m
+        # Ids of views to look up in m2m
         ids = [obj.pk for obj in object_list]
         joins = TaxLotProperty.objects.filter(**{lookups['obj_query_in']: ids}).select_related(lookups['related_view'])
 
-        # Get all ids of tax lots on these joins
+        # Get all ids of related views on these joins
         related_ids = [getattr(j, lookups['related_view_id']) for j in joins]
 
         # Get all related views from the related_class
@@ -178,7 +184,7 @@ class TaxLotProperty(models.Model):
         related_map = {}
 
         if show_columns is None:
-            filtered_fields = set([col['column_name'] for col in related_columns])
+            filtered_fields = set([col['column_name'] for col in related_columns if not col['is_extra_data']])
         else:
             filtered_fields = set([col['column_name'] for col in related_columns if col['id'] in show_columns])
 
@@ -245,6 +251,9 @@ class TaxLotProperty(models.Model):
             for name, pth in tuple_prop_to_jurisdiction_tl:
                 prop_to_jurisdiction_tl[name].append(pth)
 
+        join_note_counts = {x[0]: x[1] for x in Note.objects.filter(**{lookups['related_query_in']: related_ids})
+                            .values_list(lookups['related_view_id']).order_by().annotate(Count(lookups['related_view_id']))}
+
         # A mapping of object's view pk to a list of related state info for a related view
         join_map = {}
         for join in joins:
@@ -273,7 +282,7 @@ class TaxLotProperty(models.Model):
                     lookups['related_view_id']: getattr(join, lookups['related_view_id'])
                 })
 
-            join_dict['notes_count'] = getattr(join, lookups['related_view']).notes.count()
+            join_dict['notes_count'] = join_note_counts.get(obj.id, 0)
 
             # remove the measures from this view for now
             if join_dict.get('measures'):
@@ -285,7 +294,7 @@ class TaxLotProperty(models.Model):
                 join_map[getattr(join, lookups['obj_view_id'])] = [join_dict]
 
         if show_columns is None:
-            filtered_fields = set([col['column_name'] for col in obj_columns])
+            filtered_fields = set([col['column_name'] for col in obj_columns if not col['is_extra_data']])
         else:
             filtered_fields = set([col['column_name'] for col in obj_columns if col['id'] in show_columns])
 
@@ -294,6 +303,9 @@ class TaxLotProperty(models.Model):
         for col in obj_columns:
             if col['is_extra_data'] and not col['related']:
                 extra_data_fields.append(col['column_name'])
+
+        obj_note_counts = {x[0]: x[1] for x in Note.objects.filter(**{lookups['obj_query_in']: ids})
+                           .values_list(lookups['obj_view_id']).order_by().annotate(Count(lookups['obj_view_id']))}
 
         for obj in object_list:
             # Each object in the response is built from the state data, with related data added on.
@@ -313,7 +325,7 @@ class TaxLotProperty(models.Model):
 
             # Use property_id instead of default (state_id)
             obj_dict['id'] = getattr(obj, lookups['obj_id'])
-            obj_dict['notes_count'] = obj.notes.count()
+            obj_dict['notes_count'] = obj_note_counts.get(obj.id, 0)
 
             obj_dict[lookups['obj_state_id']] = obj.state.id
             obj_dict[lookups['obj_view_id']] = obj.id
@@ -343,16 +355,18 @@ class TaxLotProperty(models.Model):
             if obj_dict.get('measures'):
                 del obj_dict['measures']
 
-            label_string = []
-            if hasattr(obj, 'property'):
-                for label in obj.property.labels.all().order_by('name'):
-                    label_string.append(label.name)
-                obj_dict['property_labels'] = ','.join(label_string)
-
-            elif hasattr(obj, 'taxlot'):
-                for label in obj.taxlot.labels.all().order_by('name'):
-                    label_string.append(label.name)
-                obj_dict['taxlot_labels'] = ','.join(label_string)
+            # # This isn't currently used, but if we ever re-enable it we need to prefetch all of the label data using a
+            # # single query for performance.  This code causes one query with a join for every record
+            # label_string = []
+            # if hasattr(obj, 'property'):
+            #     for label in obj.property.labels.all().order_by('name'):
+            #         label_string.append(label.name)
+            #     obj_dict['property_labels'] = ','.join(label_string)
+            #
+            # elif hasattr(obj, 'taxlot'):
+            #     for label in obj.taxlot.labels.all().order_by('name'):
+            #         label_string.append(label.name)
+            #     obj_dict['taxlot_labels'] = ','.join(label_string)
 
             results.append(obj_dict)
 

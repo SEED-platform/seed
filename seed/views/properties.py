@@ -480,8 +480,7 @@ class PropertyViewSet(GenericViewSet):
 
             # Find unique notes
             notes = list(Note.objects.values(
-                'name', 'note_type', 'text', 'log_data', 'created', 'updated', 'organization_id',
-                'user_id'
+                'name', 'note_type', 'text', 'log_data', 'created', 'updated', 'organization_id', 'user_id'
             ).filter(property_view_id__in=view_ids).distinct())
 
             cycle_id = views.first().cycle_id
