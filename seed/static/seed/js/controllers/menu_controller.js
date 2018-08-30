@@ -48,46 +48,16 @@ angular.module('BE.seed.controller.menu', [])
       $scope.search_input = '';
       $scope.organizations_count = 0;
       $scope.menu = {
-        loading: false,
-        route_load_error: false,
         user: {}
       };
       $scope.saving_indicator = false;
       $scope.is_initial_state = $scope.expanded_controller === $scope.collapsed_controller;
 
-      $rootScope.$on('$stateChangeError', function (event, toState, toParams, fromState, fromParams, error) {
-        $scope.menu.loading = false;
-        $scope.menu.route_load_error = true;
-        $log.error(error);
-        if (error === 'not authorized' || error === 'Your page could not be located!') {
-          $scope.menu.error_message = $translate.instant(error);
-        }
-        spinner_utility.hide();
-      });
-      $rootScope.$on('$stateChangeStart', function (event, toState, toParams) {
-        if (modified_service.isModified()) {
-          event.preventDefault();
-
-          modified_service.showModifiedDialog().then(function () {
-            modified_service.resetModified();
-            $state.go(toState, toParams);
-          });
-
-        } else {
-          $scope.menu.loading = toState.controller === 'mapping_controller';
-          spinner_utility.show();
-        }
-      });
-      $rootScope.$on('$stateChangeSuccess', function () {
-        $scope.menu.loading = false;
-        $scope.menu.route_load_error = false;
-        spinner_utility.hide();
-      });
-      $rootScope.$on('$stateNotFound', function (event, unfoundState) {
-        $log.error('State not found:', unfoundState.to);
-      });
+      $scope.hide_load_error = function () {
+        $rootScope.route_load_error = false;
+      };
       $scope.$on('app_error', function (event, data) {
-        $scope.menu.route_load_error = true;
+        $rootScope.route_load_error = true;
         $scope.menu.error_message = data.message;
       });
       $scope.$on('show_saving', function () {
