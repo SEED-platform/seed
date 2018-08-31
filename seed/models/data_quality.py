@@ -311,7 +311,7 @@ class Rule(models.Model):
         :return: bool, True is valid, False if the value does not match
         """
 
-        if self.data_type == TYPE_STRING and isinstance(value, (str, unicode)):
+        if self.data_type == self.TYPE_STRING and isinstance(value, (str, unicode)):
             if self.text_match is None or self.text_match == '':
                 return True
 

@@ -44,12 +44,12 @@ class DataQualityCheckTests(DataMappingBaseTestCase):
             'rule_type': Rule.RULE_TYPE_DEFAULT,
             'min': 0,
             'max': 7000000,
-            'severity': SEVERITY_ERROR,
+            'severity': Rule.SEVERITY_ERROR,
             'units': 'ft**2',
         }
 
         rule = Rule.objects.filter(
-            table_name='PropertyState', field='conditioned_floor_area', severity=SEVERITY_ERROR
+            table_name='PropertyState', field='conditioned_floor_area', severity=Rule.SEVERITY_ERROR
         )
         self.assertDictContainsSubset(ex_rule, model_to_dict(rule.first()))
 
