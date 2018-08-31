@@ -33,7 +33,7 @@
                         <div class="form-group">
                             <label class="col-sm-2 control-label" for="user_emails" translate>User E-mail:</label>
                             <div class="col-sm-4">
-                                <select class="form-control" name="user_emails" id="user_emails" ng-options="u as u.email for u in org.users" ng-model="org.email"> </select>
+                                <select class="form-control" name="user_emails" id="user_emails" ng-options="u as u.email for u in org.users | orderBy:'email'" ng-model="org.email"> </select>
                             </div>
                         </div>
                         <div class="form-group">
