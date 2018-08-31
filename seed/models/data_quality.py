@@ -20,7 +20,9 @@ from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     Column,
     StatusLabel,
-    PropertyView, TaxLotView)
+    PropertyView,
+    TaxLotView
+)
 from seed.models import obj_to_dict
 from seed.serializers.pint import pretty_units
 from seed.utils.cache import (
@@ -29,213 +31,6 @@ from seed.utils.cache import (
 from seed.utils.time import convert_datestr
 
 _log = logging.getLogger(__name__)
-
-RULE_TYPE_DEFAULT = 0
-RULE_TYPE_CUSTOM = 1
-RULE_TYPE = [
-    (RULE_TYPE_DEFAULT, 'default'),
-    (RULE_TYPE_CUSTOM, 'custom'),
-]
-
-TYPE_NUMBER = 0
-TYPE_STRING = 1
-TYPE_DATE = 2
-TYPE_YEAR = 3
-TYPE_AREA = 4
-TYPE_EUI = 5
-DATA_TYPES = [
-    (TYPE_NUMBER, 'number'),
-    (TYPE_STRING, 'string'),
-    (TYPE_DATE, 'date'),
-    (TYPE_YEAR, 'year'),
-    (TYPE_AREA, 'area'),
-    (TYPE_EUI, 'eui')
-]
-
-SEVERITY_ERROR = 0
-SEVERITY_WARNING = 1
-SEVERITY = [
-    (SEVERITY_ERROR, 'error'),
-    (SEVERITY_WARNING, 'warning')
-]
-
-DEFAULT_RULES = [
-    {
-        'table_name': 'PropertyState',
-        'field': 'address_line_1',
-        'data_type': TYPE_STRING,
-        'not_null': True,
-        'rule_type': RULE_TYPE_DEFAULT,
-        'severity': SEVERITY_ERROR,
-    }, {
-        'table_name': 'PropertyState',
-        'field': 'pm_property_id',
-        'data_type': TYPE_STRING,
-        'not_null': True,
-        'rule_type': RULE_TYPE_DEFAULT,
-        'severity': SEVERITY_ERROR,
-    }, {
-        'table_name': 'PropertyState',
-        'field': 'custom_id_1',
-        'not_null': True,
-        'rule_type': RULE_TYPE_DEFAULT,
-        'severity': SEVERITY_ERROR,
-    }, {
-        'table_name': 'TaxLotState',
-        'field': 'jurisdiction_tax_lot_id',
-        'not_null': True,
-        'rule_type': RULE_TYPE_DEFAULT,
-        'severity': SEVERITY_ERROR,
-    }, {
-        'table_name': 'TaxLotState',
-        'field': 'address_line_1',
-        'not_null': True,
-        'rule_type': RULE_TYPE_DEFAULT,
-        'severity': SEVERITY_ERROR,
-    }, {
-        'table_name': 'PropertyState',
-        'field': 'conditioned_floor_area',
-        'data_type': TYPE_AREA,
-        'rule_type': RULE_TYPE_DEFAULT,
-        'min': 0,
-        'max': 7000000,
-        'severity': SEVERITY_ERROR,
-        'units': 'ft**2',
-    }, {
-        'table_name': 'PropertyState',
-        'field': 'conditioned_floor_area',
-        'data_type': TYPE_AREA,
-        'rule_type': RULE_TYPE_DEFAULT,
-        'min': 100,
-        'severity': SEVERITY_WARNING,
-        'units': 'ft**2',
-    }, {
-        'table_name': 'PropertyState',
-        'field': 'energy_score',
-        'data_type': TYPE_NUMBER,
-        'rule_type': RULE_TYPE_DEFAULT,
-        'min': 0,
-        'max': 100,
-        'severity': SEVERITY_ERROR,
-    }, {
-        'table_name': 'PropertyState',
-        'field': 'energy_score',
-        'data_type': TYPE_NUMBER,
-        'rule_type': RULE_TYPE_DEFAULT,
-        'min': 10,
-        'severity': SEVERITY_WARNING,
-    }, {
-        'table_name': 'PropertyState',
-        'field': 'generation_date',
-        'data_type': TYPE_DATE,
-        'rule_type': RULE_TYPE_DEFAULT,
-        'min': 18890101,
-        'max': 20201231,
-        'severity': SEVERITY_ERROR,
-    }, {
-        'table_name': 'PropertyState',
-        'field': 'gross_floor_area',
-        'data_type': TYPE_NUMBER,
-        'rule_type': RULE_TYPE_DEFAULT,
-        'min': 100,
-        'max': 7000000,
-        'severity': SEVERITY_ERROR,
-        'units': 'ft**2',
-    }, {
-        'table_name': 'PropertyState',
-        'field': 'occupied_floor_area',
-        'data_type': TYPE_NUMBER,
-        'rule_type': RULE_TYPE_DEFAULT,
-        'min': 100,
-        'max': 7000000,
-        'severity': SEVERITY_ERROR,
-        'units': 'ft**2',
-    }, {
-        'table_name': 'PropertyState',
-        'field': 'recent_sale_date',
-        'data_type': TYPE_DATE,
-        'rule_type': RULE_TYPE_DEFAULT,
-        'min': 18890101,
-        'max': 20201231,
-        'severity': SEVERITY_ERROR,
-    }, {
-        'table_name': 'PropertyState',
-        'field': 'release_date',
-        'data_type': TYPE_DATE,
-        'rule_type': RULE_TYPE_DEFAULT,
-        'min': 18890101,
-        'max': 20201231,
-        'severity': SEVERITY_ERROR,
-    }, {
-        'table_name': 'PropertyState',
-        'field': 'site_eui',
-        'data_type': TYPE_EUI,
-        'rule_type': RULE_TYPE_DEFAULT,
-        'min': 0,
-        'max': 1000,
-        'severity': SEVERITY_ERROR,
-        'units': 'kBtu/ft**2/year',
-    }, {
-        'table_name': 'PropertyState',
-        'field': 'site_eui',
-        'data_type': TYPE_EUI,
-        'rule_type': RULE_TYPE_DEFAULT,
-        'min': 10,
-        'severity': SEVERITY_WARNING,
-        'units': 'kBtu/ft**2/year',
-    }, {
-        'table_name': 'PropertyState',
-        'field': 'site_eui_weather_normalized',
-        'data_type': TYPE_EUI,
-        'rule_type': RULE_TYPE_DEFAULT,
-        'min': 0,
-        'max': 1000,
-        'severity': SEVERITY_ERROR,
-        'units': 'kBtu/ft**2/year',
-    }, {
-        'table_name': 'PropertyState',
-        'field': 'source_eui',
-        'data_type': TYPE_EUI,
-        'rule_type': RULE_TYPE_DEFAULT,
-        'min': 0,
-        'max': 1000,
-        'severity': SEVERITY_ERROR,
-        'units': 'kBtu/ft**2/year',
-    }, {
-        'table_name': 'PropertyState',
-        'field': 'source_eui',
-        'data_type': TYPE_EUI,
-        'rule_type': RULE_TYPE_DEFAULT,
-        'min': 10,
-        'severity': SEVERITY_WARNING,
-        'units': 'kBtu/ft**2/year',
-    }, {
-        'table_name': 'PropertyState',
-        'field': 'source_eui_weather_normalized',
-        'data_type': TYPE_EUI,
-        'rule_type': RULE_TYPE_DEFAULT,
-        'min': 10,
-        'max': 1000,
-        'severity': SEVERITY_ERROR,
-        'units': 'kBtu/ft**2/year',
-    }, {
-        'table_name': 'PropertyState',
-        'field': 'year_built',
-        'data_type': TYPE_YEAR,
-        'rule_type': RULE_TYPE_DEFAULT,
-        'min': 1700,
-        'max': 2019,
-        'severity': SEVERITY_ERROR,
-    }, {
-        'table_name': 'PropertyState',
-        'field': 'year_ending',
-        'data_type': TYPE_DATE,
-        'rule_type': RULE_TYPE_DEFAULT,
-        'min': 18890101,
-        'max': 20201231,
-        'severity': SEVERITY_ERROR,
-    }
-]
 
 
 class ComparisonError(Exception):
@@ -281,6 +76,212 @@ class Rule(models.Model):
     """
     Rules for DataQualityCheck
     """
+    TYPE_NUMBER = 0
+    TYPE_STRING = 1
+    TYPE_DATE = 2
+    TYPE_YEAR = 3
+    TYPE_AREA = 4
+    TYPE_EUI = 5
+    DATA_TYPES = [
+        (TYPE_NUMBER, 'number'),
+        (TYPE_STRING, 'string'),
+        (TYPE_DATE, 'date'),
+        (TYPE_YEAR, 'year'),
+        (TYPE_AREA, 'area'),
+        (TYPE_EUI, 'eui')
+    ]
+
+    RULE_TYPE_DEFAULT = 0
+    RULE_TYPE_CUSTOM = 1
+    RULE_TYPE = [
+        (RULE_TYPE_DEFAULT, 'default'),
+        (RULE_TYPE_CUSTOM, 'custom'),
+    ]
+
+    SEVERITY_ERROR = 0
+    SEVERITY_WARNING = 1
+    SEVERITY = [
+        (SEVERITY_ERROR, 'error'),
+        (SEVERITY_WARNING, 'warning')
+    ]
+
+    DEFAULT_RULES = [
+        {
+            'table_name': 'PropertyState',
+            'field': 'address_line_1',
+            'data_type': TYPE_STRING,
+            'not_null': True,
+            'rule_type': RULE_TYPE_DEFAULT,
+            'severity': SEVERITY_ERROR,
+        }, {
+            'table_name': 'PropertyState',
+            'field': 'pm_property_id',
+            'data_type': TYPE_STRING,
+            'not_null': True,
+            'rule_type': RULE_TYPE_DEFAULT,
+            'severity': SEVERITY_ERROR,
+        }, {
+            'table_name': 'PropertyState',
+            'field': 'custom_id_1',
+            'not_null': True,
+            'rule_type': RULE_TYPE_DEFAULT,
+            'severity': SEVERITY_ERROR,
+        }, {
+            'table_name': 'TaxLotState',
+            'field': 'jurisdiction_tax_lot_id',
+            'not_null': True,
+            'rule_type': RULE_TYPE_DEFAULT,
+            'severity': SEVERITY_ERROR,
+        }, {
+            'table_name': 'TaxLotState',
+            'field': 'address_line_1',
+            'not_null': True,
+            'rule_type': RULE_TYPE_DEFAULT,
+            'severity': SEVERITY_ERROR,
+        }, {
+            'table_name': 'PropertyState',
+            'field': 'conditioned_floor_area',
+            'data_type': TYPE_AREA,
+            'rule_type': RULE_TYPE_DEFAULT,
+            'min': 0,
+            'max': 7000000,
+            'severity': SEVERITY_ERROR,
+            'units': 'ft**2',
+        }, {
+            'table_name': 'PropertyState',
+            'field': 'conditioned_floor_area',
+            'data_type': TYPE_AREA,
+            'rule_type': RULE_TYPE_DEFAULT,
+            'min': 100,
+            'severity': SEVERITY_WARNING,
+            'units': 'ft**2',
+        }, {
+            'table_name': 'PropertyState',
+            'field': 'energy_score',
+            'data_type': TYPE_NUMBER,
+            'rule_type': RULE_TYPE_DEFAULT,
+            'min': 0,
+            'max': 100,
+            'severity': SEVERITY_ERROR,
+        }, {
+            'table_name': 'PropertyState',
+            'field': 'energy_score',
+            'data_type': TYPE_NUMBER,
+            'rule_type': RULE_TYPE_DEFAULT,
+            'min': 10,
+            'severity': SEVERITY_WARNING,
+        }, {
+            'table_name': 'PropertyState',
+            'field': 'generation_date',
+            'data_type': TYPE_DATE,
+            'rule_type': RULE_TYPE_DEFAULT,
+            'min': 18890101,
+            'max': 20201231,
+            'severity': SEVERITY_ERROR,
+        }, {
+            'table_name': 'PropertyState',
+            'field': 'gross_floor_area',
+            'data_type': TYPE_NUMBER,
+            'rule_type': RULE_TYPE_DEFAULT,
+            'min': 100,
+            'max': 7000000,
+            'severity': SEVERITY_ERROR,
+            'units': 'ft**2',
+        }, {
+            'table_name': 'PropertyState',
+            'field': 'occupied_floor_area',
+            'data_type': TYPE_NUMBER,
+            'rule_type': RULE_TYPE_DEFAULT,
+            'min': 100,
+            'max': 7000000,
+            'severity': SEVERITY_ERROR,
+            'units': 'ft**2',
+        }, {
+            'table_name': 'PropertyState',
+            'field': 'recent_sale_date',
+            'data_type': TYPE_DATE,
+            'rule_type': RULE_TYPE_DEFAULT,
+            'min': 18890101,
+            'max': 20201231,
+            'severity': SEVERITY_ERROR,
+        }, {
+            'table_name': 'PropertyState',
+            'field': 'release_date',
+            'data_type': TYPE_DATE,
+            'rule_type': RULE_TYPE_DEFAULT,
+            'min': 18890101,
+            'max': 20201231,
+            'severity': SEVERITY_ERROR,
+        }, {
+            'table_name': 'PropertyState',
+            'field': 'site_eui',
+            'data_type': TYPE_EUI,
+            'rule_type': RULE_TYPE_DEFAULT,
+            'min': 0,
+            'max': 1000,
+            'severity': SEVERITY_ERROR,
+            'units': 'kBtu/ft**2/year',
+        }, {
+            'table_name': 'PropertyState',
+            'field': 'site_eui',
+            'data_type': TYPE_EUI,
+            'rule_type': RULE_TYPE_DEFAULT,
+            'min': 10,
+            'severity': SEVERITY_WARNING,
+            'units': 'kBtu/ft**2/year',
+        }, {
+            'table_name': 'PropertyState',
+            'field': 'site_eui_weather_normalized',
+            'data_type': TYPE_EUI,
+            'rule_type': RULE_TYPE_DEFAULT,
+            'min': 0,
+            'max': 1000,
+            'severity': SEVERITY_ERROR,
+            'units': 'kBtu/ft**2/year',
+        }, {
+            'table_name': 'PropertyState',
+            'field': 'source_eui',
+            'data_type': TYPE_EUI,
+            'rule_type': RULE_TYPE_DEFAULT,
+            'min': 0,
+            'max': 1000,
+            'severity': SEVERITY_ERROR,
+            'units': 'kBtu/ft**2/year',
+        }, {
+            'table_name': 'PropertyState',
+            'field': 'source_eui',
+            'data_type': TYPE_EUI,
+            'rule_type': RULE_TYPE_DEFAULT,
+            'min': 10,
+            'severity': SEVERITY_WARNING,
+            'units': 'kBtu/ft**2/year',
+        }, {
+            'table_name': 'PropertyState',
+            'field': 'source_eui_weather_normalized',
+            'data_type': TYPE_EUI,
+            'rule_type': RULE_TYPE_DEFAULT,
+            'min': 10,
+            'max': 1000,
+            'severity': SEVERITY_ERROR,
+            'units': 'kBtu/ft**2/year',
+        }, {
+            'table_name': 'PropertyState',
+            'field': 'year_built',
+            'data_type': TYPE_YEAR,
+            'rule_type': RULE_TYPE_DEFAULT,
+            'min': 1700,
+            'max': 2019,
+            'severity': SEVERITY_ERROR,
+        }, {
+            'table_name': 'PropertyState',
+            'field': 'year_ending',
+            'data_type': TYPE_DATE,
+            'rule_type': RULE_TYPE_DEFAULT,
+            'min': 18890101,
+            'max': 20201231,
+            'severity': SEVERITY_ERROR,
+        }
+    ]
     name = models.CharField(max_length=255, blank=True)
     description = models.CharField(max_length=1000, blank=True)
     data_quality_check = models.ForeignKey('DataQualityCheck', related_name='rules',
@@ -401,27 +402,27 @@ class Rule(models.Model):
         if isinstance(value, (str, unicode)):
             # check if we can type cast the value
             try:
-                # since we already checked for data type, does this mean it isn't None, ever?
-                if value is not None:
-                    if self.data_type == TYPE_NUMBER:
-                        if value == '':
-                            return None
-                        else:
-                            return float(value)
-                    elif self.data_type == TYPE_STRING:
-                        return str(value)
-                    elif self.data_type == TYPE_DATE:
-                        if value == '':
-                            return None
-                        else:
-                            return convert_datestr(value, True)
-                    elif self.data_type == TYPE_YEAR:
-                        if value == '':
-                            return None
-                        else:
-                            dt = convert_datestr(value, True)
-                            if dt is not None:
-                                return dt.date()
+                # strip the string of any leading/trailing spaces
+                value = value.strip()
+                if self.data_type == self.TYPE_NUMBER:
+                    if value == '':
+                        return None
+                    else:
+                        return float(value)
+                elif self.data_type == self.TYPE_STRING:
+                    return str(value)
+                elif self.data_type == self.TYPE_DATE:
+                    if value == '':
+                        return None
+                    else:
+                        return convert_datestr(value, True)
+                elif self.data_type == self.TYPE_YEAR:
+                    if value == '':
+                        return None
+                    else:
+                        dt = convert_datestr(value, True)
+                        if dt is not None:
+                            return dt.date()
             except ValueError as e:
                 raise DataQualityTypeCastError("Error converting {} with {}".format(value, e))
         else:
@@ -498,9 +499,11 @@ class DataQualityCheck(models.Model):
             # database has multiple DataQualityCheck objects for an organization, but there are no
             # calls to create a DataQualityCheck other than the .retrieve method.
             first = DataQualityCheck.objects.filter(organization_id=organization_id).first()
-            dqcs = DataQualityCheck.objects.filter(organization_id=organization_id).exclude(id__in=[first.pk])
+            dqcs = DataQualityCheck.objects.filter(organization_id=organization_id).exclude(
+                id__in=[first.pk])
             for dqc in dqcs:
-                _log.info("More than one DataQualityCheck for organization. Deleting {}".format(dqc.name))
+                _log.info(
+                    "More than one DataQualityCheck for organization. Deleting {}".format(dqc.name))
                 dqc.delete()
 
         dq, _ = DataQualityCheck.objects.get_or_create(organization_id=organization_id)
@@ -565,7 +568,8 @@ class DataQualityCheck(models.Model):
             self.column_lookup[(c['table_name'], c['column_name'])] = c['display_name']
 
         # grab all the rules once, save query time
-        rules = self.rules.filter(enabled=True, table_name=record_type).order_by('field', 'severity')
+        rules = self.rules.filter(enabled=True, table_name=record_type).order_by('field',
+                                                                                 'severity')
 
         # Get the list of the field names that will show in every result
         fields = self.get_fieldnames(record_type)
@@ -626,7 +630,6 @@ class DataQualityCheck(models.Model):
                 # _log.debug("TaxLot {} has {} labels".format(model_labels['linked_id'],
                 #                                             len(model_labels['label_ids'])))
 
-        # rename the propertystate_id and taxlot_id to be model_id
         for rule in rules:
             # check if the field exists
             if hasattr(row, rule.field) or rule.field in row.extra_data:
@@ -721,7 +724,7 @@ class DataQualityCheck(models.Model):
 
         :return: None
         """
-        for rule in DEFAULT_RULES:
+        for rule in Rule.DEFAULT_RULES:
             self.rules.add(Rule.objects.create(**rule))
 
     def remove_all_rules(self):
@@ -741,7 +744,7 @@ class DataQualityCheck(models.Model):
 
         :return:
         """
-        for rule in DEFAULT_RULES:
+        for rule in Rule.DEFAULT_RULES:
             self.rules.filter(field=rule['field'], table_name=rule['table_name']).delete()
         self.initialize_rules()
 

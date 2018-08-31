@@ -10,10 +10,7 @@ from django.forms.models import model_to_dict
 from seed.models.data_quality import (
     DataQualityCheck,
     Rule,
-    TYPE_AREA,
-    TYPE_STRING,
-    RULE_TYPE_DEFAULT,
-    SEVERITY_ERROR,
+    DataQualityTypeCastError,
 )
 from seed.models.models import ASSESSED_RAW
 from seed.test_helpers.fake import (
@@ -43,8 +40,8 @@ class DataQualityCheckTests(DataMappingBaseTestCase):
         ex_rule = {
             'table_name': 'PropertyState',
             'field': 'conditioned_floor_area',
-            'data_type': TYPE_AREA,
-            'rule_type': RULE_TYPE_DEFAULT,
+            'data_type': Rule.TYPE_AREA,
+            'rule_type': Rule.RULE_TYPE_DEFAULT,
             'min': 0,
             'max': 7000000,
             'severity': SEVERITY_ERROR,
@@ -69,11 +66,11 @@ class DataQualityCheckTests(DataMappingBaseTestCase):
         ex_rule = {
             'table_name': 'PropertyState',
             'field': 'some_floor_area',
-            'data_type': TYPE_AREA,
-            'rule_type': RULE_TYPE_DEFAULT,
+            'data_type': Rule.TYPE_AREA,
+            'rule_type': Rule.RULE_TYPE_DEFAULT,
             'min': 8760,
             'max': 525600,
-            'severity': SEVERITY_ERROR,
+            'severity': Rule.SEVERITY_ERROR,
             'units': 'm**2',
         }
 
@@ -137,9 +134,9 @@ class DataQualityCheckTests(DataMappingBaseTestCase):
         new_rule = {
             'table_name': 'PropertyState',
             'field': 'address_line_1',
-            'data_type': TYPE_STRING,
-            'rule_type': RULE_TYPE_DEFAULT,
-            'severity': SEVERITY_ERROR,
+            'data_type': Rule.TYPE_STRING,
+            'rule_type': Rule.RULE_TYPE_DEFAULT,
+            'severity': Rule.SEVERITY_ERROR,
             'not_null': True,
             'text_match': 742,
         }
@@ -154,3 +151,31 @@ class DataQualityCheckTests(DataMappingBaseTestCase):
         ps = self.property_state_factory.get_property_state(None, **ps_data)
         dq.check_data(ps.__class__.__name__, [ps])
         self.assertEqual(dq.results, {})
+
+    def test_str_to_data_type_string(self):
+        rule = Rule.objects.create(name='str_rule', data_type=Rule.TYPE_STRING)
+        self.assertEqual(rule.str_to_data_type(' '), '')
+        self.assertEqual(rule.str_to_data_type(None), None)
+        self.assertEqual(rule.str_to_data_type(27.5), 27.5)
+
+    def test_str_to_data_type_float(self):
+        rule = Rule.objects.create(name='flt_rule', data_type=Rule.TYPE_NUMBER)
+        self.assertEqual(rule.str_to_data_type('   '), None)
+        self.assertEqual(rule.str_to_data_type(None), None)
+        self.assertEqual(rule.str_to_data_type(27.5), 27.5)
+        with self.assertRaises(DataQualityTypeCastError):
+            self.assertEqual(rule.str_to_data_type('not-a-number'), '')
+
+    def test_str_to_data_type_date(self):
+        rule = Rule.objects.create(name='date_rule', data_type=Rule.TYPE_DATE)
+        d = rule.str_to_data_type('07/04/2000 08:55:30')
+        self.assertEqual(d.strftime("%Y-%m-%d %H  %M  %S"), '2000-07-04 08  55  30')
+        self.assertEqual(rule.str_to_data_type(None), None)
+        self.assertEqual(rule.str_to_data_type(27.5), 27.5)  # floats should return float
+
+    def test_str_to_data_type_datetime(self):
+        rule = Rule.objects.create(name='year_rule', data_type=Rule.TYPE_YEAR)
+        d = rule.str_to_data_type('07/04/2000')
+        self.assertEqual(d.strftime("%Y-%m-%d"), '2000-07-04')
+        self.assertEqual(rule.str_to_data_type(None), None)
+        self.assertEqual(rule.str_to_data_type(27.5), 27.5)  # floats should return float

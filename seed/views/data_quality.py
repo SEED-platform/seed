@@ -20,8 +20,7 @@ from seed.lib.superperms.orgs.models import (
     Organization,
 )
 from seed.models.data_quality import (
-    DATA_TYPES as DATA_QUALITY_DATA_TYPES,
-    SEVERITY as DATA_QUALITY_SEVERITY,
+    Rule,
     DataQualityCheck,
 )
 from seed.utils.api import api_endpoint_class
@@ -61,7 +60,7 @@ def _get_js_rule_type(data_type):
     :param data_type: data data_quality rule data type as defined in data_quality.models
     :returns: (string) JS data type name
     """
-    return dict(DATA_QUALITY_DATA_TYPES).get(data_type)
+    return dict(Rule.DATA_TYPES).get(data_type)
 
 
 def _get_js_rule_severity(severity):
@@ -70,7 +69,7 @@ def _get_js_rule_severity(severity):
     :param severity: data data_quality rule severity as defined in data_quality.models
     :returns: (string) JS severity name
     """
-    return dict(DATA_QUALITY_SEVERITY).get(severity)
+    return dict(Rule.SEVERITY).get(severity)
 
 
 def _get_rule_type_from_js(data_type):
@@ -79,7 +78,7 @@ def _get_rule_type_from_js(data_type):
     :param data_type: 'string', 'number', 'date', or 'year'
     :returns: int data type as defined in data_quality.models
     """
-    d = {v: k for k, v in dict(DATA_QUALITY_DATA_TYPES).items()}
+    d = {v: k for k, v in dict(Rule.DATA_TYPES).items()}
     return d.get(data_type)
 
 
@@ -89,7 +88,7 @@ def _get_severity_from_js(severity):
     :param severity: 'error', or 'warning'
     :returns: int severity as defined in data_quality.models
     """
-    d = {v: k for k, v in dict(DATA_QUALITY_SEVERITY).items()}
+    d = {v: k for k, v in dict(Rule.SEVERITY).items()}
     return d.get(severity)
 
 
