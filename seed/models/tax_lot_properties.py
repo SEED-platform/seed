@@ -186,13 +186,10 @@ class TaxLotProperty(models.Model):
         if show_columns is None:
             filtered_fields = set([col['column_name'] for col in related_columns if not col['is_extra_data']])
         else:
-            filtered_fields = set([col['column_name'] for col in related_columns if col['id'] in show_columns])
-
-        # get the list of extra data fields by name for use in TaxLotProperty.extra_data_to_dict_with_mapping
-        extra_data_fields = []
-        for col in obj_columns:
-            if col['is_extra_data'] and col['related']:
-                extra_data_fields.append(col['column_name'])
+            filtered_fields = set([col['column_name'] for col in related_columns if not col['is_extra_data']
+                                  and col['id'] in show_columns])
+            filtered_extra_data_fields = set([col['column_name'] for col in related_columns if col['is_extra_data']
+                                              and col['id'] in show_columns])
 
         for related_view in related_views:
             related_dict = TaxLotProperty.model_to_dict_with_mapping(
@@ -224,14 +221,16 @@ class TaxLotProperty(models.Model):
                 if 'created' in filtered_fields:
                     related_dict[related_column_name_mapping['created']] = related_view.taxlot.created
 
-            related_dict = dict(
-                related_dict.items() +
-                TaxLotProperty.extra_data_to_dict_with_mapping(
-                    related_view.state.extra_data,
-                    related_column_name_mapping,
-                    fields=extra_data_fields
-                ).items()
-            )
+            # Only add extra data columns if a settings profile was used
+            if show_columns is not None:
+                related_dict = dict(
+                    related_dict.items() +
+                    TaxLotProperty.extra_data_to_dict_with_mapping(
+                        related_view.state.extra_data,
+                        related_column_name_mapping,
+                        fields=filtered_extra_data_fields
+                    ).items()
+                )
             related_map[related_view.pk] = related_dict
 
             # Replace taxlot_view id with taxlot id
@@ -296,13 +295,10 @@ class TaxLotProperty(models.Model):
         if show_columns is None:
             filtered_fields = set([col['column_name'] for col in obj_columns if not col['is_extra_data']])
         else:
-            filtered_fields = set([col['column_name'] for col in obj_columns if col['id'] in show_columns])
-
-        # get the list of extra data fields by name for use in TaxLotProperty.extra_data_to_dict_with_mapping
-        extra_data_fields = []
-        for col in obj_columns:
-            if col['is_extra_data'] and not col['related']:
-                extra_data_fields.append(col['column_name'])
+            filtered_fields = set([col['column_name'] for col in obj_columns if not col['is_extra_data']
+                                   and col['id'] in show_columns])
+            filtered_extra_data_fields = set([col['column_name'] for col in obj_columns if col['is_extra_data']
+                                              and col['id'] in show_columns])
 
         obj_note_counts = {x[0]: x[1] for x in Note.objects.filter(**{lookups['obj_query_in']: ids})
                            .values_list(lookups['obj_view_id']).order_by().annotate(Count(lookups['obj_view_id']))}
@@ -314,14 +310,16 @@ class TaxLotProperty(models.Model):
                                                                  fields=filtered_fields,
                                                                  exclude=['extra_data'])
 
-            obj_dict = dict(
-                obj_dict.items() +
-                TaxLotProperty.extra_data_to_dict_with_mapping(
-                    obj.state.extra_data,
-                    obj_column_name_mapping,
-                    fields=extra_data_fields
-                ).items()
-            )
+            # Only add extra data columns if a settings profile was used
+            if show_columns is not None:
+                obj_dict = dict(
+                    obj_dict.items() +
+                    TaxLotProperty.extra_data_to_dict_with_mapping(
+                        obj.state.extra_data,
+                        obj_column_name_mapping,
+                        fields=filtered_extra_data_fields
+                    ).items()
+                )
 
             # Use property_id instead of default (state_id)
             obj_dict['id'] = getattr(obj, lookups['obj_id'])
