@@ -13,7 +13,7 @@ DEBUG = True
 COMPRESS_ENABLED = False
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
-DATA_UPLOAD_MAX_MEMORY_SIZE = None
+
 # override this in local_untracked.py
 DATABASES = {
     'default': {
