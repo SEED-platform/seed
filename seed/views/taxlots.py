@@ -169,35 +169,6 @@ class TaxLotViewSet(GenericViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
-    def list(self, request):
-        """
-        List all the properties
-        ---
-        parameters:
-            - name: organization_id
-              description: The organization_id for this user's organization
-              required: true
-              paramType: query
-            - name: cycle
-              description: The ID of the cycle to get taxlots
-              required: true
-              paramType: query
-            - name: page
-              description: The current page of taxlots to return
-              required: false
-              paramType: query
-            - name: per_page
-              description: The number of items per page to return
-              required: false
-              paramType: query
-        """
-        return self._get_filtered_results(request, profile_id=None)
-
-    # @require_organization_id
-    # @require_organization_membership
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class('requires_viewer')
     @list_route(methods=['POST'])
     def filter(self, request):
         """

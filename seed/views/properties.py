@@ -327,33 +327,6 @@ class PropertyViewSet(GenericViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
-    def list(self, request):
-        """
-        List all the properties
-        ---
-        parameters:
-            - name: organization_id
-              description: The organization_id for this user's organization
-              required: true
-              paramType: query
-            - name: cycle
-              description: The ID of the cycle to get properties
-              required: true
-              paramType: query
-            - name: page
-              description: The current page of properties to return
-              required: false
-              paramType: query
-            - name: per_page
-              description: The number of items per page to return
-              required: false
-              paramType: query
-        """
-        return self._get_filtered_results(request, profile_id=None)
-
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class('requires_viewer')
     @list_route(methods=['POST'])
     def filter(self, request):
         """
@@ -480,8 +453,7 @@ class PropertyViewSet(GenericViewSet):
 
             # Find unique notes
             notes = list(Note.objects.values(
-                'name', 'note_type', 'text', 'log_data', 'created', 'updated', 'organization_id',
-                'user_id'
+                'name', 'note_type', 'text', 'log_data', 'created', 'updated', 'organization_id', 'user_id'
             ).filter(property_view_id__in=view_ids).distinct())
 
             cycle_id = views.first().cycle_id
