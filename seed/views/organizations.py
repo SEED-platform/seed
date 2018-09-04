@@ -432,6 +432,14 @@ class OrganizationViewSet(viewsets.ViewSet):
         ou = OrganizationUser.objects.get(user=user, organization=org)
         ou.delete()
 
+        # check the user and make sure they still have a valid organization to belong to
+        if request.user.default_organization == org:
+            # find the first org and set it to that
+            first_org_user = OrganizationUser.objects.filter(user=user).order_by('id').first()
+            # it is okay if first_org is none. It means the user has no allowed organizations
+            request.user.default_organization = first_org_user.organization
+            request.user.save()
+
         return JsonResponse({'status': 'success'})
 
     @api_endpoint_class
