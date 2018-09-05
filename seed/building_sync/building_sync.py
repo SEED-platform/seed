@@ -497,25 +497,46 @@ class BuildingSync(object):
 
         # manually add in parsing of measures and reports because they are a bit different than
         # a straight mapping
+        # <auc:Measure ID="Measure-70165601915860">
+        #   <auc:SystemCategoryAffected>Plug Load</auc:SystemCategoryAffected>
+        #   <auc:TechnologyCategories>
+        #     <auc:TechnologyCategory>
+        #       <auc:PlugLoadReductions>
+        #         <auc:MeasureName>Replace with ENERGY STAR rated</auc:MeasureName>
+        #       </auc:PlugLoadReductions>
+        #     </auc:TechnologyCategory>
+        #   </auc:TechnologyCategories>
+        #   <auc:LongDescription>Replace with ENERGY STAR rated</auc:LongDescription>
+        #   <auc:MVCost>0.0</auc:MVCost>
+        #   <auc:UsefulLife>20.0</auc:UsefulLife>
+        #   <auc:MeasureTotalFirstCost>5499.0</auc:MeasureTotalFirstCost>
+        #   <auc:MeasureInstallationCost>0.0</auc:MeasureInstallationCost>
+        #   <auc:MeasureMaterialCost>0.0</auc:MeasureMaterialCost>
+        # </auc:Measure>
         measures = self._get_node('auc:Audits.auc:Audit.auc:Measures.auc:Measure', data, [])
         for m in measures:
-            cat_w_namespace = m['auc:TechnologyCategories']['auc:TechnologyCategory'].keys()[0]
-            category = cat_w_namespace.replace('auc:', '')
-            new_data = {
-                'property_measure_name': m.get('@ID'),  # This will be the IDref from the scenarios
-                'category': _snake_case(category),
-                'name': m['auc:TechnologyCategories']['auc:TechnologyCategory'][cat_w_namespace][
-                    'auc:MeasureName']
-            }
-            for k, v in m.items():
-                if k in ['@ID', 'auc:PremisesAffected', 'auc:TechnologyCategories']:
-                    continue
-                new_data[_snake_case(k.replace('auc:', ''))] = v
+            if m.get('auc:TechnologyCategories', None):
+                cat_w_namespace = m['auc:TechnologyCategories']['auc:TechnologyCategory'].keys()[0]
+                category = cat_w_namespace.replace('auc:', '')
+                new_data = {
+                    'property_measure_name': m.get('@ID'),  # This will be the IDref from the scenarios
+                    'category': _snake_case(category),
+                    'name': m['auc:TechnologyCategories']['auc:TechnologyCategory'][cat_w_namespace][
+                        'auc:MeasureName']
+                }
+                for k, v in m.items():
+                    if k in ['@ID', 'auc:PremisesAffected', 'auc:TechnologyCategories']:
+                        continue
+                    new_data[_snake_case(k.replace('auc:', ''))] = v
 
-            # fix the names of the measures for "easier" look up... doing in separate step to
-            # fit in single line. Cleanup -- when?
-            new_data['name'] = _snake_case(new_data['name'])
-            res['measures'].append(new_data)
+                # fix the names of the measures for "easier" look up... doing in separate step to
+                # fit in single line. Cleanup -- when?
+                new_data['name'] = _snake_case(new_data['name'])
+                res['measures'].append(new_data)
+            else:
+                message = "Skipping measure %s due to missing TechnologyCategory" % m.get("@ID")
+                messages.append(message)
+                errors = True
 
         # <auc:Scenario>
         #   <auc:ScenarioName>Lighting Only</auc:ScenarioName>
