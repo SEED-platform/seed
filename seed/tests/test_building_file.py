@@ -51,7 +51,7 @@ class TestBuildingFiles(TestCase):
         status, property_state, property_view, messages = bf.process(self.org.id, self.org.cycles.first())
         self.assertTrue(status)
         self.assertEqual(property_state.address_line_1, '123 Main St')
-        self.assertEqual(messages, [])
+        self.assertEqual(messages, {'errors': [], 'warnings': []})
 
     def test_buildingsync_constructor_diff_ns(self):
         filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'ex_1_different_namespace.xml')
@@ -67,7 +67,7 @@ class TestBuildingFiles(TestCase):
         status, property_state, property_view, messages = bf.process(self.org.id, self.org.cycles.first())
         self.assertTrue(status)
         self.assertEqual(property_state.address_line_1, '1215 - 18th St')
-        self.assertEqual(messages, [])
+        self.assertEqual(messages, {'errors': [], 'warnings': []})
 
     def test_hpxml_constructor(self):
         filename = path.join(BASE_DIR, 'seed', 'hpxml', 'tests', 'data', 'audit.xml')
@@ -84,7 +84,7 @@ class TestBuildingFiles(TestCase):
         self.assertTrue(status)
         self.assertEqual(property_state.owner, 'Jane Customer')
         self.assertEqual(property_state.energy_score, 8)
-        self.assertEqual(messages, [])
+        self.assertEqual(messages, {'errors': [], 'warnings': []})
 
     def test_geojson_error(self):
         filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'ex_1.xml')

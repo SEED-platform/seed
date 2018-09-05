@@ -95,7 +95,7 @@ class BuildingSync(object):
                 "key_path_name": "auc:IdentifierLabel",
                 "key_path_value": "Assessor parcel number",
                 "value_path_name": "auc:IdentifierValue",
-                "required": True,
+                "required": False,  # temporarily make this False until AT can handle it correctly.
                 "type": "string",
             },
             "custom_id_1": {
@@ -439,8 +439,7 @@ class BuildingSync(object):
                         return v
 
         res = {'measures': [], 'scenarios': []}
-        messages = []
-        errors = False
+        messages = {'errors': [], 'warnings': []}
         for k, v in struct['return'].items():
             path = ".".join([struct['root'], v['path']])
             value = self._get_node(path, data, [])
@@ -458,10 +457,9 @@ class BuildingSync(object):
                     # check if the value is not defined and if it is required
                     if not value:
                         if v.get('required'):
-                            messages.append(
+                            messages['errors'].append(
                                 "Could not find required value for sub-lookup of {}:{}".format(
                                     v.get('key_path_name'), v.get('key_path_value')))
-                            errors = True
                             continue
                         else:
                             continue
@@ -469,8 +467,9 @@ class BuildingSync(object):
                 if value:
                     # catch some errors
                     if isinstance(value, list):
-                        messages.append("Could not find single entry for '{}'".format(path))
-                        errors = True
+                        messages['errors'].append(
+                            "Could not find single entry for '{}'".format(path)
+                        )
                         continue
 
                     # type cast the value
@@ -483,17 +482,19 @@ class BuildingSync(object):
                     elif v['type'] == 'string':
                         value = str(value)
                     else:
-                        messages.append("Unknown cast type of {} for '{}'".format(v['type'], path))
+                        messages['errors'].append(
+                            "Unknown cast type of {} for '{}'".format(v['type'], path)
+                        )
 
                     res[k] = value
                 else:
                     if v['required']:
-                        messages.append("Could not find required value for '{}'".format(path))
-                        errors = True
+                        messages['errors'].append(
+                            "Could not find required value for '{}'".format(path)
+                        )
             except Exception as err:
                 message = "Error processing {}:{} with error: {}".format(k, v, err)
-                messages.append(message)
-                errors = True
+                messages['errors'].append(message)
 
         # manually add in parsing of measures and reports because they are a bit different than
         # a straight mapping
@@ -535,8 +536,7 @@ class BuildingSync(object):
                 res['measures'].append(new_data)
             else:
                 message = "Skipping measure %s due to missing TechnologyCategory" % m.get("@ID")
-                messages.append(message)
-                errors = True
+                messages['warnings'].append(message)
 
         # <auc:Scenario>
         #   <auc:ScenarioName>Lighting Only</auc:ScenarioName>
@@ -582,13 +582,13 @@ class BuildingSync(object):
 
             res['scenarios'].append(new_data)
 
-        return res, errors, messages
+        return res, messages
 
     def process(self, process_struct=ADDRESS_STRUCT):
         """Process the BuildingSync file based ont he process structure.
 
         :param process_struct: dict, structure on how to extract data from file and save into dict
-        :return: list, [dict, list, list], [results, list of errors, list of messages]
+        :return: list, [dict, dict], [results, dict of errors and warnings]
         """
         # API call to BuildingSync Selection Tool on other server for appropriate use case
         # prcess_struct = new_use_case (from Building Selection Tool)
