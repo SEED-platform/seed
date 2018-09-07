@@ -345,10 +345,10 @@ class LocalUploaderViewSet(viewsets.ViewSet):
 
         # Create the header row of the csv file first
         rows = []
-        this_row = []
+        header_row = []
         for _, csv_header in pm_key_to_column_heading_map.iteritems():
-            this_row.append(csv_header)
-        rows.append(this_row)
+            header_row.append(csv_header)
+        rows.append(header_row)
 
         num_properties = len(request.data['properties'])
         property_num = 0
@@ -417,17 +417,21 @@ class LocalUploaderViewSet(viewsets.ViewSet):
             rows.append(this_row)
 
         # Then write the actual data out as csv
-        # Note that the Python 2.x csv module doesn't allow easily specifying an encoding, and it is failing on a few
-        # rows here and there with a large test dataset.  I need to check if there is a better way to do that encoding
-        # already with precedent inside SEED.
+        # Note that the Python 2.x csv module doesn't allow easily specifying an encoding, and it was failing on a few
+        # rows here and there with a large test dataset.  This local function allows converting to utf8 before writing
+        def py2_unicode_to_str(u):
+            if isinstance(u, unicode):
+                return u.encode('utf-8')
+            else:
+                return u
         with open(path, 'wb') as csv_file:
             pm_csv_writer = csv.writer(csv_file)
             for row_num, row in enumerate(rows):
                 try:
                     pm_csv_writer.writerow(row)
                 except UnicodeEncodeError:
-                    print('Couldnt encode a character on row # %s, skipping this line' % row_num)
-                    print('Line skipped: ' + str(row))
+                    cleaned_row_data = [py2_unicode_to_str(datum) for datum in row]
+                    pm_csv_writer.writerow(cleaned_row_data)
 
         # Look up the import record (data set)
         import_record_pk = request.data['import_record_id']
