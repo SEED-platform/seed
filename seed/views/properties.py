@@ -213,6 +213,7 @@ class PropertyViewSet(GenericViewSet):
             return JsonResponse(
                 {'status': 'error', 'message': 'Need to pass organization_id as query parameter'},
                 status=status.HTTP_400_BAD_REQUEST)
+
         if cycle_id:
             cycle = Cycle.objects.get(organization_id=org_id, pk=cycle_id)
         else:
@@ -259,6 +260,10 @@ class PropertyViewSet(GenericViewSet):
 
         if profile_id is None:
             show_columns = None
+        elif profile_id == -1:
+            show_columns = list(Column.objects.filter(
+                organization_id=org_id
+            ).values_list('id', flat=True))
         else:
             try:
                 profile = ColumnListSetting.objects.get(
@@ -323,6 +328,33 @@ class PropertyViewSet(GenericViewSet):
             s.save()
 
         return new_state
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_viewer')
+    def list(self, request):
+        """
+        List all the properties	with all columns
+        ---
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+            - name: cycle
+              description: The ID of the cycle to get properties
+              required: true
+              paramType: query
+            - name: page
+              description: The current page of properties to return
+              required: false
+              paramType: query
+            - name: per_page
+              description: The number of items per page to return
+              required: false
+              paramType: query
+        """
+        return self._get_filtered_results(request, profile_id=-1)
 
     @api_endpoint_class
     @ajax_request_class
