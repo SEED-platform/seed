@@ -123,17 +123,22 @@ class TaxLotViewSet(GenericViewSet):
 
         org = Organization.objects.get(pk=org_id)
 
+        # Retrieve all the columns that are in the db for this organization
         columns_from_database = Column.retrieve_all(org_id, 'taxlot', False)
 
         if profile_id is None:
             show_columns = None
+        elif profile_id == -1:
+            show_columns = list(Column.objects.filter(
+                organization_id=org_id
+            ).values_list('id', flat=True))
         else:
             try:
                 profile = ColumnListSetting.objects.get(
                     organization=org,
                     id=profile_id,
                     settings_location=ColumnListSetting.VIEW_LIST,
-                    inventory_type=ColumnListSetting.VIEW_LIST_PROPERTY
+                    inventory_type=ColumnListSetting.VIEW_LIST_TAXLOT
                 )
                 show_columns = list(ColumnListSettingColumn.objects.filter(
                     column_list_setting_id=profile.id
@@ -145,8 +150,7 @@ class TaxLotViewSet(GenericViewSet):
 
         # collapse units here so we're only doing the last page; we're already a
         # realized list by now and not a lazy queryset
-        unit_collapsed_results = \
-            [apply_display_unit_preferences(org, x) for x in related_results]
+        unit_collapsed_results = [apply_display_unit_preferences(org, x) for x in related_results]
 
         response = {
             'pagination': {
@@ -163,6 +167,35 @@ class TaxLotViewSet(GenericViewSet):
         }
 
         return JsonResponse(response)
+
+    # @require_organization_id
+    # @require_organization_membership
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_viewer')
+    def list(self, request):
+        """
+        List all the properties
+        ---
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+            - name: cycle
+              description: The ID of the cycle to get taxlots
+              required: true
+              paramType: query
+            - name: page
+              description: The current page of taxlots to return
+              required: false
+              paramType: query
+            - name: per_page
+              description: The number of items per page to return
+              required: false
+              paramType: query
+        """
+        return self._get_filtered_results(request, profile_id=-1)
 
     # @require_organization_id
     # @require_organization_membership
