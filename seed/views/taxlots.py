@@ -124,17 +124,22 @@ class TaxLotViewSet(GenericViewSet):
 
         org = Organization.objects.get(pk=org_id)
 
+        # Retrieve all the columns that are in the db for this organization
         columns_from_database = Column.retrieve_all(org_id, 'taxlot', False)
 
         if profile_id is None:
             show_columns = None
+        elif profile_id == -1:
+            show_columns = list(Column.objects.filter(
+                organization_id=org_id
+            ).values_list('id', flat=True))
         else:
             try:
                 profile = ColumnListSetting.objects.get(
                     organization=org,
                     id=profile_id,
                     settings_location=ColumnListSetting.VIEW_LIST,
-                    inventory_type=ColumnListSetting.VIEW_LIST_PROPERTY
+                    inventory_type=ColumnListSetting.VIEW_LIST_TAXLOT
                 )
                 show_columns = list(ColumnListSettingColumn.objects.filter(
                     column_list_setting_id=profile.id
@@ -147,8 +152,7 @@ class TaxLotViewSet(GenericViewSet):
 
         # collapse units here so we're only doing the last page; we're already a
         # realized list by now and not a lazy queryset
-        unit_collapsed_results = \
-            [apply_display_unit_preferences(org, x) for x in related_results]
+        unit_collapsed_results = [apply_display_unit_preferences(org, x) for x in related_results]
 
         response = {
             'pagination': {
@@ -193,7 +197,7 @@ class TaxLotViewSet(GenericViewSet):
               required: false
               paramType: query
         """
-        return self._get_filtered_results(request, profile_id=None)
+        return self._get_filtered_results(request, profile_id=-1)
 
     # @require_organization_id
     # @require_organization_membership

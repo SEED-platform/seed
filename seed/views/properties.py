@@ -213,6 +213,7 @@ class PropertyViewSet(GenericViewSet):
             return JsonResponse(
                 {'status': 'error', 'message': 'Need to pass organization_id as query parameter'},
                 status=status.HTTP_400_BAD_REQUEST)
+
         if cycle_id:
             cycle = Cycle.objects.get(organization_id=org_id, pk=cycle_id)
         else:
@@ -260,6 +261,10 @@ class PropertyViewSet(GenericViewSet):
 
         if profile_id is None:
             show_columns = None
+        elif profile_id == -1:
+            show_columns = list(Column.objects.filter(
+                organization_id=org_id
+            ).values_list('id', flat=True))
         else:
             try:
                 profile = ColumnListSetting.objects.get(
@@ -331,7 +336,7 @@ class PropertyViewSet(GenericViewSet):
     @has_perm_class('requires_viewer')
     def list(self, request):
         """
-        List all the properties
+        List all the properties	with all columns
         ---
         parameters:
             - name: organization_id
@@ -351,7 +356,7 @@ class PropertyViewSet(GenericViewSet):
               required: false
               paramType: query
         """
-        return self._get_filtered_results(request, profile_id=None)
+        return self._get_filtered_results(request, profile_id=-1)
 
     @api_endpoint_class
     @ajax_request_class
@@ -481,8 +486,7 @@ class PropertyViewSet(GenericViewSet):
 
             # Find unique notes
             notes = list(Note.objects.values(
-                'name', 'note_type', 'text', 'log_data', 'created', 'updated', 'organization_id',
-                'user_id'
+                'name', 'note_type', 'text', 'log_data', 'created', 'updated', 'organization_id', 'user_id'
             ).filter(property_view_id__in=view_ids).distinct())
 
             cycle_id = views.first().cycle_id
