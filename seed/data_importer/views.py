@@ -316,17 +316,21 @@ class LocalUploaderViewSet(viewsets.ViewSet):
 
         # This list should cover the core keys coming from PM, ensuring that they map easily
         # We will also look for keys not in this list and just map them to themselves
-        pm_key_to_column_heading_map = {
-            u'address_1': u'Address',
-            u'city': u'City',
-            u'state_province': u'State',
-            u'postal_code': u'Zip',
-            u'county': u'County',
-            u'country': u'Country',
-            u'property_name': u'Property Name',
-            u'property_id': u'Property ID',
-            u'year_built': u'Year Built',
-        }
+        # pm_key_to_column_heading_map = {
+        #     u'address_1': u'Address',
+        #     u'city': u'City',
+        #     u'state_province': u'State',
+        #     u'postal_code': u'Zip',
+        #     u'county': u'County',
+        #     u'country': u'Country',
+        #     u'property_name': u'Property Name',
+        #     u'property_id': u'Property ID',
+        #     u'year_built': u'Year Built',
+        # }
+        # so now it looks like we *don't* need to override these, but instead we should leave all the headers as-is
+        # I'm going to leave this in here for right now, but if it turns out that we don't need it after testing,
+        # then I'll remove it entirely
+        pm_key_to_column_heading_map = {}
 
         # We will also create a list of values that are used in PM export to indicate a value wasn't available
         # When we import them into SEED here we will be sure to not write those values
