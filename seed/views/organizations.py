@@ -225,13 +225,31 @@ class OrganizationViewSet(viewsets.ViewSet):
                 qs = Organization.objects.only('id', 'name')
             else:
                 qs = request.user.orgs.only('id', 'name')
-            return JsonResponse({'organizations': _dict_org_brief(request, qs)})
+
+            orgs = _dict_org_brief(request, qs)
+            if len(orgs) == 0:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Your SEED account is not associated with any organizations. '
+                               'Please contact a SEED administrator.'
+                }, status=status.HTTP_401_UNAUTHORIZED)
+            else:
+                return JsonResponse({'organizations': orgs})
         else:
             if request.user.is_superuser:
                 qs = Organization.objects.all()
             else:
                 qs = request.user.orgs.all()
-            return JsonResponse({'organizations': _dict_org(request, qs)})
+
+            orgs = _dict_org(request, qs)
+            if len(orgs) == 0:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Your SEED account is not associated with any organizations. '
+                               'Please contact a SEED administrator.'
+                }, status=status.HTTP_401_UNAUTHORIZED)
+            else:
+                return JsonResponse({'organizations': orgs})
 
     @method_decorator(permission_required('seed.can_access_admin'))
     @api_endpoint_class
