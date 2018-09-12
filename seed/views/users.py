@@ -597,7 +597,10 @@ class UserViewSet(viewsets.ViewSet):
         """
         actions, org, error, message = self._parse_is_authenticated_params(request)
         if error:
-            return JsonResponse({'status': 'error', 'message': message})
+            return JsonResponse({
+                'status': 'error',
+                'message': message
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         ok, content = self.validate_request_user(pk, request)
         if ok:
