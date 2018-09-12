@@ -23,7 +23,8 @@ from seed.views.certification import (
     GreenAssessmentPropertyViewSet,
     GreenAssessmentURLViewSet
 )
-from seed.views.columns import ColumnViewSet, ColumnMappingViewSet
+from seed.views.columns import ColumnViewSet
+from seed.views.column_mappings import ColumnMappingViewSet
 from seed.views.column_list_settings import ColumnListingViewSet
 from seed.views.cycles import CycleViewSet
 from seed.views.data_quality import DataQualityViews
