@@ -25,7 +25,7 @@ DEFAULT_CUSTOM_COLUMNS = [
 from seed.tests.util import DeleteModelsTestCase
 
 
-class DefaultColumnsViewTests(DeleteModelsTestCase):
+class TestColumnMappingViews(DeleteModelsTestCase):
     """
     Tests of the SEED default custom saved columns
     """
