@@ -6,29 +6,20 @@
 """
 
 import copy
+import itertools
 import logging
 import re
-
-import itertools
 from datetime import datetime, date
+
+from django.apps import apps
 
 from cleaners import default_cleaner
 from seed.lib.mappings.mapping_columns import MappingColumns
-from django.apps import apps
 
 _log = logging.getLogger(__name__)
 
 
-def build_pm_mapping():
-    """
-    Build the Portfolio Manager mappings.
-
-    :return:
-    """
-
-    return True
-
-
+# TODO: Remove this method in favor of calling MappingColumns directly
 def build_column_mapping(raw_columns, dest_columns, previous_mapping=None, map_args=None,
                          default_mappings=None, thresh=0):
     """
@@ -57,7 +48,8 @@ def build_column_mapping(raw_columns, dest_columns, previous_mapping=None, map_a
     """
 
     return MappingColumns(raw_columns, dest_columns, previous_mapping=previous_mapping,
-                          map_args=map_args, default_mappings=default_mappings, threshold=thresh).final_mappings
+                          map_args=map_args, default_mappings=default_mappings,
+                          threshold=thresh).final_mappings
 
 
 def apply_initial_data(model, initial_data):
@@ -108,7 +100,8 @@ def apply_column_value(raw_column_name, column_value, model, mapping, is_extra_d
         if cleaner:
             # Get the list of Quantity fields from the Column object in SEED. This is non-ideal, since the
             # rest of the mapping code does not use SEED models. Perhaps make this an argument.
-            if (model.__class__.__name__, mapped_column_name) in apps.get_model('seed', 'Column').QUANTITY_UNIT_COLUMNS:
+            if (model.__class__.__name__, mapped_column_name) in apps.get_model('seed',
+                                                                                'Column').QUANTITY_UNIT_COLUMNS:
                 # clean against the database type first
                 cleaned_value = cleaner.clean_value(column_value, mapped_column_name)
 
