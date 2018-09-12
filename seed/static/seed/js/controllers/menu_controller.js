@@ -18,8 +18,6 @@ angular.module('BE.seed.controller.menu', [])
     '$timeout',
     '$state',
     '$cookies',
-    'spinner_utility',
-    '$translate',
     function ($rootScope,
               $scope,
               $location,
@@ -33,9 +31,7 @@ angular.module('BE.seed.controller.menu', [])
               modified_service,
               $timeout,
               $state,
-              $cookies,
-              spinner_utility,
-              $translate) {
+              $cookies) {
 
       // initial state of css classes for menu and sidebar
       $scope.expanded_controller = false;
@@ -57,8 +53,11 @@ angular.module('BE.seed.controller.menu', [])
         $rootScope.route_load_error = false;
       };
       $scope.$on('app_error', function (event, data) {
-        $rootScope.route_load_error = true;
-        $scope.menu.error_message = data.message;
+        // Keep the first error
+        if (!$rootScope.route_load_error) {
+          $rootScope.route_load_error = true;
+          $scope.menu.error_message = data.message;
+        }
       });
       $scope.$on('show_saving', function () {
         $scope.saving_indicator = true;
@@ -236,6 +235,9 @@ angular.module('BE.seed.controller.menu', [])
 
           // get the default org for the user
           $scope.menu.user.organization = _.find(data.organizations, {id: _.toInteger(user_service.get_organization().id)});
+        }).catch(function (error) {
+          $rootScope.route_load_error = true;
+          $rootScope.load_error_message = error.data.message;
         });
 
         dataset_service.get_datasets_count().then(function (data) {

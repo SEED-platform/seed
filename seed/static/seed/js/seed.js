@@ -183,6 +183,11 @@ SEED_app.run([
     });
 
     $transitions.onSuccess({}, function(transition) {
+      if ($rootScope.route_load_error && $rootScope.load_error_message === 'Your SEED account is not associated with any organizations. Please contact a SEED administrator.') {
+        $state.go('home');
+        return;
+      }
+
       $rootScope.route_load_error = false;
       spinner_utility.hide();
     });
@@ -191,15 +196,25 @@ SEED_app.run([
       spinner_utility.hide();
       if (transition.error().message === 'The transition was ignored') return;
 
+      // route_load_error already set (User has no associated orgs)
+      if ($rootScope.route_load_error && $rootScope.load_error_message === 'Your SEED account is not associated with any organizations. Please contact a SEED administrator.') {
+        $state.go('home');
+        return;
+      }
+
       var error = transition.error().detail;
 
       if (error !== 'acknowledged modified') {
         $rootScope.route_load_error = true;
 
+        var message;
+        if (_.isString(_.get(error, 'data.message'))) message = _.get(error, 'data.message');
+        else if (_.isString(_.get(error, 'data'))) message = _.get(error, 'data');
+
         if (error === 'not authorized' || error === 'Your page could not be located!') {
           $rootScope.load_error_message = $translate.instant(error);
         } else {
-          $rootScope.load_error_message = '' || error;
+          $rootScope.load_error_message = '' || message || error;
         }
       }
     });
