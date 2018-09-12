@@ -7,11 +7,13 @@
 
 import logging
 
+import coreapi
 from django.http import JsonResponse
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.decorators import list_route, detail_route
 from rest_framework.exceptions import NotFound, ParseError
+from rest_framework.filters import BaseFilterBackend
 from rest_framework.response import Response
 
 from seed.decorators import ajax_request_class, require_organization_id_class
@@ -29,69 +31,85 @@ from seed.utils.viewsets import SEEDOrgCreateUpdateModelViewSet
 _log = logging.getLogger(__name__)
 
 
+class ColumnViewSetFilterBackend(BaseFilterBackend):
+    """
+    Specify the schema for the column view set
+    """
+
+    def get_schema_fields(self, view):
+        return [
+            coreapi.Field('organization_id', location='query', required=True, type='integer'),
+            coreapi.Field('inventory_type', location='query', required=False, type='string'),
+            coreapi.Field('only_used', location='query', required=False, type='boolean'),
+        ]
+
+    def filter_queryset(self, request, queryset, view):
+        return queryset
+
+
 class ColumnViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
     raise_exception = True
     serializer_class = ColumnSerializer
     model = Column
     pagination_class = NoPagination
+    filter_backends = (ColumnViewSetFilterBackend,)
 
-    @require_organization_id_class
-    @api_endpoint_class
+    def get_queryset(self):
+        # check if the request is properties or taxlots
+        org_id = self.get_organization(self.request)
+        return Column.objects.filter(organization_id=org_id)
+
     @ajax_request_class
     def list(self, request):
         """
-        Retrieves all columns for the user's organization including the raw database columns. Will return all
-        the columns across both the Property and Tax Lot tables. The related field will be true if the column came
-        from the other table that is not the "inventory_type" (which defaults to Property)
+        Retrieves all columns for the user's organization including the raw database columns. Will
+        return all the columns across both the Property and Tax Lot tables. The related field will
+        be true if the column came from the other table that is not the "inventory_type" (which
+        defaults to Property)
 
-        Note that this is the same results as calling /api/v2/<inventory_type>/columns/?organization_id={}
+            This is the same results as calling /api/v2/<inventory_type>/columns/?organization_id={}
 
-        Example:
-            /api/v2/columns/?inventory_type=(property|taxlot)&organization_id={}
-        ---
-        type:
-            status:
-                required: true
-                type: string
-                description: Either success or error
-            columns:
-                required: true
-                type: array[column]
-                description: Returns an array where each item is a full column structure.
-        parameters:
-            - name: organization_id
-              description: The organization_id for this user's organization
-              required: true
-              paramType: query
-            - name: inventory_type
-              description: Which inventory type is being matched (for related fields and naming).
-                property or taxlot
-              required: true
-              paramType: query
-            - name: used_only
-              description: Determine whether or not to show only the used fields. Ones that have been mapped
-              type: boolean
-              required: false
-              paramType: query
+            Example: /api/v2/columns/?inventory_type=(property|taxlot)\&organization_id={}
+
+            type:
+                status:
+                    required: true
+                    type: string
+                    description: Either success or error
+                columns:
+                    required: true
+                    type: array[column]
+                    description: Returns an array where each item is a full column structure.
+            parameters:
+                - name: organization_id
+                  description: The organization_id for this user's organization
+                  required: true
+                  paramType: query
+                - name: inventory_type
+                  description: Which inventory type is being matched (for related fields and naming).
+                    property or taxlot
+                  required: true
+                  paramType: query
+                - name: used_only
+                  description: Determine whether or not to show only the used fields (i.e. only columns that have been mapped)
+                  type: boolean
+                  required: false
+                  paramType: query
         """
-        organization_id = request.query_params.get('organization_id', None)
+        organization_id = self.get_organization(self.request)
         inventory_type = request.query_params.get('inventory_type', 'property')
         only_used = request.query_params.get('only_used', False)
-
         columns = Column.retrieve_all(organization_id, inventory_type, only_used)
-
         return JsonResponse({
             'status': 'success',
             'columns': columns,
         })
 
-    @require_organization_id_class
-    @api_endpoint_class
     @ajax_request_class
     def retrieve(self, request, pk=None):
         """
-            Retrieves a column (Column)
-            ---
+        Retrieves a column (Column)
+
             type:
                 status:
                     required: true
@@ -109,15 +127,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
                   required: true
                   paramType: query
         """
-        organization_id = request.query_params.get('organization_id', None)
-        valid_orgs = OrganizationUser.objects.filter(
-            user_id=request.user.id
-        ).values_list('organization_id', flat=True).order_by('organization_id')
-        if organization_id not in valid_orgs:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'Cannot access columns for this organization id',
-            }, status=status.HTTP_403_FORBIDDEN)
+        organization_id = self.get_organization(self.request)
 
         # check if column exists for the organization
         try:
@@ -139,10 +149,8 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
             'column': c.to_dict(),
         })
 
-    @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @require_organization_id_class
     @list_route(methods=['POST'])
     def delete_all(self, request):
         """
@@ -192,7 +200,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
     def add_column_names(self, request):
         """
         Allow columns to be added based on an existing record.
-        This my be necessary to make column selections available when
+        This may be necessary to make column selections available when
         records are upload through API endpoint rather than the frontend.
         """
         model_obj = None

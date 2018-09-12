@@ -244,7 +244,7 @@ class OrgMixin(object):
             org = None
             if not org_id:
                 org = get_user_org(request.user)
-                org_id = getattr(org, 'pk')
+                org_id = int(getattr(org, 'pk'))
             if return_obj and not org:
                 try:
                     org = request.user.orgs.get(pk=org_id)

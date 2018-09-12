@@ -632,7 +632,7 @@ class Column(models.Model):
             if not found:
                 raise ValidationError(
                     {'is_extra_data': _(
-                        'Column \'%s\':\'%s\' is not marked as extra data, but the field is not in the database') % (
+                        'Column \'%s\':\'%s\' is not a field in the database and not marked as extra data. Mark as extra data to save column.') % (
                         self.table_name, self.column_name)})
 
     @staticmethod

@@ -49,6 +49,9 @@ def get_org_or_id(dictlike):
     for org_str in org_query_strings:
         org_id = dictlike.get(org_str)
         if org_id:
+            # Type case the organization_id as a integer
+            if '_id' in org_str:
+                org_id = int(org_id)
             break
     return org_id
 
