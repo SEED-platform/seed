@@ -122,5 +122,3 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
         # randomly check a column
         self.assertIn(expected, data)
 
-    def test_set_column_merge(self):
-        pass

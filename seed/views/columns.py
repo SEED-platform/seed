@@ -10,7 +10,7 @@ import logging
 from django.http import JsonResponse
 from rest_framework import status
 from rest_framework import viewsets
-from rest_framework.decorators import list_route
+from rest_framework.decorators import list_route, detail_route
 from rest_framework.exceptions import NotFound, ParseError
 from rest_framework.response import Response
 
@@ -333,6 +333,43 @@ class ColumnMappingViewSet(viewsets.ViewSet):
             'column_mapping': cm.to_dict(),
         })
 
+    @require_organization_id_class
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('can_modify_data')
+    @detail_route(methods=['DELETE'])
+    def delete(self, request, pk=None):
+        """
+        Delete a column mapping
+        ---
+        parameters:
+            - name: pk
+              description: Primary key to delete
+              require: true
+        """
+        organization_id = request.query_params.get('organization_id')
+
+        try:
+            org = Organization.objects.get(pk=organization_id)
+            delete_count, _ = ColumnMapping.objects.filter(
+                super_organization=org, pk=int(pk)
+            ).delete()
+            if delete_count > 0:
+                return JsonResponse({
+                    'status': 'success',
+                    'message': 'Column mapping deleted'
+                })
+            else:
+                return JsonResponse({
+                    'status': 'success',
+                    'message': 'Column mapping with id and organization did not exist, nothing removed'
+                })
+        except Organization.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'organization with id %s does not exist' % organization_id
+            }, status=status.HTTP_404_NOT_FOUND)
+
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
@@ -371,5 +408,5 @@ class ColumnMappingViewSet(viewsets.ViewSet):
         except Organization.DoesNotExist:
             return JsonResponse({
                 'status': 'error',
-                'message': 'organization with with id {} does not exist'.format(organization_id)
+                'message': 'organization with id %s does not exist' % organization_id
             }, status=status.HTTP_404_NOT_FOUND)
