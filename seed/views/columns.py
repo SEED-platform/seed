@@ -14,6 +14,8 @@ from rest_framework import viewsets
 from rest_framework.decorators import list_route, detail_route
 from rest_framework.exceptions import NotFound, ParseError
 from rest_framework.filters import BaseFilterBackend
+from rest_framework.parsers import JSONParser, FormParser
+from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 
 from seed.decorators import ajax_request_class, require_organization_id_class
@@ -33,7 +35,8 @@ _log = logging.getLogger(__name__)
 
 class ColumnViewSetFilterBackend(BaseFilterBackend):
     """
-    Specify the schema for the column view set
+    Specify the schema for the column view set. This allows the user to see the other
+    required columns in Swagger.
     """
 
     def get_schema_fields(self, view):
@@ -50,8 +53,11 @@ class ColumnViewSetFilterBackend(BaseFilterBackend):
 class ColumnViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
     raise_exception = True
     serializer_class = ColumnSerializer
+    renderer_classes = (JSONRenderer,)
     model = Column
     pagination_class = NoPagination
+    parser_classes = (JSONParser, FormParser)
+    # pagination_class = NoPagination
     filter_backends = (ColumnViewSetFilterBackend,)
 
     def get_queryset(self):
@@ -146,7 +152,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
 
         return JsonResponse({
             'status': 'success',
-            'column': c.to_dict(),
+            'column': ColumnSerializer(c).data
         })
 
     @ajax_request_class

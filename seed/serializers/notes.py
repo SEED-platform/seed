@@ -5,6 +5,7 @@
 :author
 """
 from rest_framework import serializers
+
 from seed.models import Note
 from seed.serializers.base import ChoiceField
 
