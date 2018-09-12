@@ -54,7 +54,7 @@ class TestColumnMappingViews(DeleteModelsTestCase):
         self.cm2.column_mapped.add(baz_col)
 
     def test_delete_mapping(self):
-        url = reverse_lazy('api:v2:column_mappings-delete', args=[self.cm1.id])
+        url = reverse_lazy('api:v2:column_mappings-detail', args=[self.cm1.id])
         url = url + '?organization_id=%s' % self.org.id
         response = self.client.delete(url, content_type='application/json')
 
@@ -63,7 +63,7 @@ class TestColumnMappingViews(DeleteModelsTestCase):
         self.assertEqual(data['message'], 'Column mapping deleted')
 
     def test_deleting_non_existent_mapping(self):
-        url = reverse_lazy('api:v2:column_mappings-delete', args=[999999999999])
+        url = reverse_lazy('api:v2:column_mappings-detail', args=[999999999999])
         url = url + '?organization_id=%s' % self.org.id
         response = self.client.delete(url, content_type='application/json')
 

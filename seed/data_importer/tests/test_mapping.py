@@ -13,7 +13,7 @@ from seed.models import (
     DATA_STATE_IMPORT,
     Column,
 )
-from seed.models.columns import get_column_mapping
+from seed.models.column_mappings import get_column_mapping
 from seed.test_helpers.fake import (
     FakePropertyFactory,
     FakePropertyStateFactory,
