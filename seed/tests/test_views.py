@@ -1400,6 +1400,7 @@ class InventoryViewTests(DeleteModelsTestCase):
         for result in results:
             del result['id']
             del result['name']
+            del result['organization_id']
 
         pm_property_id_col = {
             'table_name': 'PropertyState',
@@ -1407,10 +1408,12 @@ class InventoryViewTests(DeleteModelsTestCase):
             'display_name': 'PM Property ID',
             'data_type': 'string',
             'is_extra_data': False,
-            'merge_protection': 0,
+            'merge_protection': 'Favor New',
             'sharedFieldType': 'None',
             'pinnedLeft': True,
             'related': False,
+            'unit_name': None,
+            'unit_type': None,
         }
         self.assertIn(pm_property_id_col, results)
 
@@ -1419,10 +1422,12 @@ class InventoryViewTests(DeleteModelsTestCase):
             'column_name': 'Property Extra Data Column',
             'display_name': 'Property Extra Data Column',
             'is_extra_data': True,
-            'merge_protection': 0,
+            'merge_protection': 'Favor New',
             'data_type': 'None',
             'sharedFieldType': 'None',
             'related': False,
+            'unit_name': None,
+            'unit_type': None,
         }
         self.assertIn(expected_property_extra_data_column, results)
 
@@ -1431,10 +1436,12 @@ class InventoryViewTests(DeleteModelsTestCase):
             'column_name': 'Taxlot Extra Data Column',
             'display_name': 'Taxlot Extra Data Column (Tax Lot)',
             'is_extra_data': True,
-            'merge_protection': 0,
+            'merge_protection': 'Favor New',
             'data_type': 'None',
             'sharedFieldType': 'None',
             'related': True,
+            'unit_name': None,
+            'unit_type': None,
         }
         self.assertIn(expected_taxlot_extra_data_column, results)
 
@@ -1463,6 +1470,7 @@ class InventoryViewTests(DeleteModelsTestCase):
         for result in results:
             del result['id']
             del result['name']
+            del result['organization_id']
 
         # print json.dumps(results, indent=2)
 
@@ -1471,11 +1479,13 @@ class InventoryViewTests(DeleteModelsTestCase):
             'column_name': 'jurisdiction_tax_lot_id',
             'display_name': 'Jurisdiction Tax Lot ID',
             'is_extra_data': False,
-            'merge_protection': 0,
+            'merge_protection': 'Favor New',
             'data_type': 'string',
             'sharedFieldType': 'None',
             'related': False,
             'pinnedLeft': True,
+            'unit_name': None,
+            'unit_type': None,
         }
         self.assertIn(jurisdiction_tax_lot_id_col, results)
 
@@ -1484,10 +1494,12 @@ class InventoryViewTests(DeleteModelsTestCase):
             'column_name': 'Property Extra Data Column',
             'display_name': u'Property Extra Data Column (Property)',
             'is_extra_data': True,
-            'merge_protection': 0,
+            'merge_protection': 'Favor New',
             'data_type': 'None',
             'sharedFieldType': 'None',
             'related': True,
+            'unit_name': None,
+            'unit_type': None,
         }
         self.assertIn(expected_property_extra_data_column, results)
 
@@ -1496,9 +1508,11 @@ class InventoryViewTests(DeleteModelsTestCase):
             'column_name': 'Taxlot Extra Data Column',
             'display_name': 'Taxlot Extra Data Column',
             'is_extra_data': True,
-            'merge_protection': 0,
+            'merge_protection': 'Favor New',
             'data_type': 'None',
             'sharedFieldType': 'None',
             'related': False,
+            'unit_name': None,
+            'unit_type': None,
         }
         self.assertIn(expected_taxlot_extra_data_column, results)

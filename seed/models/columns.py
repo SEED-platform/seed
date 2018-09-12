@@ -16,7 +16,6 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q
 from django.db.models.signals import pre_save
-from django.forms.models import model_to_dict
 from django.utils.translation import ugettext_lazy as _
 
 from seed.landing.models import SEEDUser as User
@@ -1145,6 +1144,8 @@ class Column(models.Model):
         :param inventory_type: Inventory Type (property|taxlot) from the requester. This sets the related columns if requested.
         :return: list, list of dict
         """
+        from seed.serializers.columns import ColumnSerializer
+
         columns_db = Column.objects.filter(organization_id=org_id).exclude(table_name='').exclude(
             table_name=None)
         columns = []
@@ -1153,7 +1154,7 @@ class Column(models.Model):
                 continue
 
             # Eventually move this over to Column serializer directly
-            new_c = model_to_dict(c)
+            new_c = ColumnSerializer(c).data
 
             if inventory_type:
                 related = not (inventory_type.lower() in new_c['table_name'].lower())
@@ -1164,25 +1165,20 @@ class Column(models.Model):
                 elif inventory_type == 'taxlot' and c.column_name in Column.UNMAPPABLE_TAXLOT_FIELDS:
                     continue
 
+            new_c['sharedFieldType'] = new_c['shared_field_type']
             del new_c['shared_field_type']
-            new_c['sharedFieldType'] = c.get_shared_field_type_display()
 
             if (new_c['table_name'], new_c['column_name']) in Column.PINNED_COLUMNS:
                 new_c['pinnedLeft'] = True
 
-            # If no display name, use the column name (this is the display name as it was typed during mapping)
+            # If no display name, use the column name (this is the display name as it was typed
+            # during mapping)
             if not new_c['display_name']:
                 new_c['display_name'] = new_c['column_name']
 
-            # set the name of the column which is a special field because it can take on a relationship
-            # with the table_name and have an _extra associated with it
+            # set the name of the column which is a special field because it can take on a
+            # relationship with the table_name and have an _extra associated with it
             new_c['name'] = '%s_%s' % (new_c['column_name'], new_c['id'])
-
-            del new_c['import_file']
-            del new_c['organization']
-            del new_c['enum']
-            del new_c['units_pint']
-            del new_c['unit']
 
             columns.append(new_c)
 
@@ -1204,8 +1200,11 @@ class Column(models.Model):
 
         :return: dict
         """
-        # Grab all the columns out of the database for the organization that are assigned to a table_name
-        # Order extra_data last so that extra data duplicate-checking will happen after processing standard columns
+        from seed.serializers.columns import ColumnSerializer
+
+        # Grab all the columns out of the database for the organization that are assigned to a
+        # table_name. Order extra_data last so that extra data duplicate-checking will happen after
+        # processing standard columns
         columns_db = Column.objects.filter(organization_id=org_id).exclude(table_name='').exclude(
             table_name=None).order_by('is_extra_data', 'column_name')
         columns = []
@@ -1214,20 +1213,21 @@ class Column(models.Model):
                 continue
 
             # Eventually move this over to Column serializer directly
-            new_c = model_to_dict(c)
+            new_c = ColumnSerializer(c).data
 
+            new_c['sharedFieldType'] = new_c['shared_field_type']
             del new_c['shared_field_type']
-            new_c['sharedFieldType'] = c.get_shared_field_type_display()
 
             if (new_c['table_name'], new_c['column_name']) in Column.PINNED_COLUMNS:
                 new_c['pinnedLeft'] = True
 
-            # If no display name, use the column name (this is the display name as it was typed during mapping)
+            # If no display name, use the column name (this is the display name as it was typed
+            # during mapping)
             if not new_c['display_name']:
                 new_c['display_name'] = new_c['column_name']
 
-            # set the name of the column which is a special field because it can take on a relationship
-            # with the table_name and have an _extra associated with it
+            # set the name of the column which is a special field because it can take on a
+            # relationship with the table_name and have an _extra associated with it
             new_c['name'] = '%s_%s' % (new_c['column_name'], new_c['id'])
 
             # Related fields
@@ -1238,13 +1238,6 @@ class Column(models.Model):
                     # if it is related then have the display name show the other table
                     new_c['display_name'] = new_c['display_name'] + ' (%s)' % INVENTORY_DISPLAY[
                         new_c['table_name']]
-
-            # remove a bunch of fields that are not needed in the list of columns
-            del new_c['import_file']
-            del new_c['organization']
-            del new_c['enum']
-            del new_c['units_pint']
-            del new_c['unit']
 
             # only add the column if it is in a ColumnMapping object
             if only_used:
@@ -1291,7 +1284,6 @@ class Column(models.Model):
         :param org_id: organization with the columns
         :return: dict
         """
-        lu = {0: 'Favor New', 1: 'Favor Existing'}
         columns = Column.retrieve_all(org_id, 'property', False)
         # The TaxLot and Property are not used in merging, they are just here to prevent errors
         priorities = {
@@ -1304,9 +1296,9 @@ class Column(models.Model):
             tn = column['table_name']
             cn = column['column_name']
             if column['is_extra_data']:
-                priorities[tn]['extra_data'][cn] = lu[column.get('merge_protection', 0)]
+                priorities[tn]['extra_data'][cn] = column.get('merge_protection', 'Favor New')
             else:
-                priorities[tn][cn] = lu[column.get('merge_protection', 0)]
+                priorities[tn][cn] = column.get('merge_protection', 'Favor New')
 
         return priorities
 

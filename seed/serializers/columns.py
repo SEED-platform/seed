@@ -21,10 +21,11 @@ class ColumnSerializer(serializers.ModelSerializer):
     unit_type = serializers.SlugRelatedField(source='unit', slug_field='unit_type', read_only=True)
 
     merge_protection = ChoiceField(choices=Column.COLUMN_MERGE_PROTECTION, default='Favor New')
+    shared_field_type = ChoiceField(choices=Column.SHARED_FIELD_TYPES)
 
     class Meta:
         model = Column
         fields = (
-            'id', 'organization_id', 'table_name', 'merge_protection',
-            'column_name', 'is_extra_data', 'unit_name', 'unit_type'
+            'id', 'organization_id', 'table_name', 'merge_protection', 'shared_field_type',
+            'column_name', 'is_extra_data', 'unit_name', 'unit_type', 'display_name', 'data_type',
         )

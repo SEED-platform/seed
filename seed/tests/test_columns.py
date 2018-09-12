@@ -347,6 +347,7 @@ class TestColumnsByInventory(TestCase):
         for result in columns:
             del result['id']
             del result['name']
+            del result['organization_id']  # org changes based on test
 
         # Check for columns
         c = {
@@ -354,10 +355,12 @@ class TestColumnsByInventory(TestCase):
             'column_name': u'Column A',
             'display_name': u'Column A',
             'is_extra_data': True,
-            'merge_protection': 0,
+            'merge_protection': 'Favor New',
             'data_type': 'None',
             'related': False,
             'sharedFieldType': 'Public',
+            'unit_name': None,
+            'unit_type': None,
         }
         self.assertIn(c, columns)
 
@@ -367,10 +370,12 @@ class TestColumnsByInventory(TestCase):
             'column_name': u"Apostrophe's Field",
             'display_name': u"Apostrophe's Field",
             'is_extra_data': True,
-            'merge_protection': 0,
+            'merge_protection': 'Favor New',
             'data_type': 'None',
             'related': False,
             'sharedFieldType': 'None',
+            'unit_name': None,
+            'unit_type': None,
         }
         self.assertIn(c, columns)
 
@@ -380,10 +385,12 @@ class TestColumnsByInventory(TestCase):
             'column_name': 'id',
             'display_name': 'id',
             'is_extra_data': True,
-            'merge_protection': 0,
+            'merge_protection': 'Favor New',
             'data_type': 'None',
             'related': False,
             'sharedFieldType': 'None',
+            'unit_name': None,
+            'unit_type': None,
         }
         self.assertIn(c, columns)
 
@@ -393,11 +400,13 @@ class TestColumnsByInventory(TestCase):
             'column_name': 'pm_property_id',
             'display_name': 'PM Property ID',
             'is_extra_data': False,
-            'merge_protection': 0,
+            'merge_protection': 'Favor New',
             'data_type': 'string',
             'pinnedLeft': True,
             'related': False,
             'sharedFieldType': 'None',
+            'unit_name': None,
+            'unit_type': None,
         }
         self.assertIn(c, columns)
 
@@ -408,9 +417,11 @@ class TestColumnsByInventory(TestCase):
             'display_name': 'State (Tax Lot)',
             'data_type': 'string',
             'is_extra_data': False,
-            'merge_protection': 0,
+            'merge_protection': 'Favor New',
             'sharedFieldType': 'None',
             'related': True,
+            'unit_name': None,
+            'unit_type': None,
         }
         self.assertIn(c, columns)
 
@@ -420,9 +431,11 @@ class TestColumnsByInventory(TestCase):
             'display_name': 'Gross Floor Area (Tax Lot)',
             'data_type': 'None',
             'is_extra_data': True,
-            'merge_protection': 0,
+            'merge_protection': 'Favor New',
             'sharedFieldType': 'None',
             'related': True,
+            'unit_name': None,
+            'unit_type': None,
         }
         self.assertIn(c, columns)
 
@@ -435,6 +448,7 @@ class TestColumnsByInventory(TestCase):
         for result in columns:
             del result['id']
             del result['name']
+            del result['organization_id']
 
         c = {
             'table_name': 'TaxLotState',
@@ -442,9 +456,11 @@ class TestColumnsByInventory(TestCase):
             'display_name': 'Gross Floor Area',
             'data_type': 'None',
             'is_extra_data': True,
-            'merge_protection': 0,
+            'merge_protection': 'Favor New',
             'sharedFieldType': 'None',
             'related': False,
+            'unit_name': None,
+            'unit_type': None,
         }
         self.assertIn(c, columns)
 
