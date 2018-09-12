@@ -1889,7 +1889,7 @@ class ImportFileViewSet(viewsets.ViewSet):
                 if destination_field is None:
                     suggested_mappings[m][1] = u''
 
-        # Fix the table name, eventually move this to the build_column_mapping and build_pm_mapping
+        # Fix the table name, eventually move this to the build_column_mapping
         for m in suggested_mappings:
             table, _destination_field, _confidence = suggested_mappings[m]
             if not table:
