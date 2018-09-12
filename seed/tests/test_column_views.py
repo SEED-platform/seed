@@ -121,4 +121,3 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
 
         # randomly check a column
         self.assertIn(expected, data)
-
