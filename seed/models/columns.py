@@ -888,32 +888,6 @@ class Column(models.Model):
 
                     break
 
-    # # TODO: Remove this method. use the ColumnMappingSerializer
-    # def to_dict(self):
-    #     """
-    #     Convert the column object to a dictionary
-    #
-    #     :return: dict
-    #     """
-    #     c = {
-    #         'pk': self.id,
-    #         'id': self.id,
-    #         'organization_id': self.organization.id,
-    #         'table_name': self.table_name,
-    #         'column_name': self.column_name,
-    #         'is_extra_data': self.is_extra_data,
-    #         'merge_protection': self.merge_protection,
-    #         'data_type': self.data_type,
-    #     }
-    #     if self.unit:
-    #         c['unit_name'] = self.unit.unit_name
-    #         c['unit_type'] = self.unit.unit_type
-    #     else:
-    #         c['unit_name'] = None
-    #         c['unit_type'] = None
-    #
-    #     return c
-
     @staticmethod
     def delete_all(organization):
         """

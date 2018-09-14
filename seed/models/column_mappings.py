@@ -156,36 +156,6 @@ class ColumnMapping(models.Model):
             }
         ).exclude(pk=self.pk).delete()
 
-    # # TODO: Remove this method. use the ColumnMappingSerializer
-    # def to_dict(self):
-    #     """
-    #     Convert the ColumnMapping object to a dictionary
-    #
-    #     :return: dict
-    #     """
-    #
-    #     c = {
-    #         'pk': self.id,
-    #         'id': self.id
-    #     }
-    #     if self.user:
-    #         c['user_id'] = self.user.id
-    #     else:
-    #         c['user_id'] = None
-    #     c['source_type'] = self.source_type
-    #     c['organization_id'] = self.super_organization.id
-    #     if self.column_raw and self.column_raw.first():
-    #         c['from_column'] = self.column_raw.first().to_dict()
-    #     else:
-    #         c['from_column'] = None
-    #
-    #     if self.column_mapped and self.column_mapped.first():
-    #         c['to_column'] = self.column_mapped.first().to_dict()
-    #     else:
-    #         c['to_column'] = None
-    #
-    #     return c
-
     def save(self, *args, **kwargs):
         """
         Overrides default model save to eliminate duplicate mappings.
