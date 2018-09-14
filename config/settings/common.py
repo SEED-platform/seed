@@ -20,6 +20,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 
 SESSION_COOKIE_DOMAIN = None
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+DATA_UPLOAD_MAX_MEMORY_SIZE = None
 
 # TODO: remove managers, admins in config files.
 ADMINS = (
