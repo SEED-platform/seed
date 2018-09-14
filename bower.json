@@ -46,6 +46,7 @@
   },
   "resolutions": {
     "angular": "~1.6.10",
-    "angular-ui-router": "~1.0.20"
+    "angular-ui-router": "~1.0.20",
+    "angular-translate": "~2.17.0"
   }
 }
