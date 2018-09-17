@@ -14,6 +14,7 @@ _log = logging.getLogger(__name__)
 def sort_duplicates(a, b):
     """
     Custom sort for the duplicate hash to decide which raw column will get the mapping suggestion
+    based on the confidence.
     """
     if a['confidence'] > b['confidence']:
         return -1
@@ -33,15 +34,25 @@ class MappingColumns(object):
     """
 
     # TODO: convert dest_columns to mapping_data class instance
-    def __init__(self, raw_columns, dest_columns, previous_mapping=None, map_args=None, default_mappings=None,
+    def __init__(self, raw_columns, dest_columns, previous_mapping=None, map_args=None,
+                 default_mappings=None,
                  threshold=0):
         """
         :param raw_columns: list of str. The column names we're trying to map.
         :param dest_columns: list of str. The columns we're mapping to.
         :param previous_mapping: Method that contains previous mapped columns
+
+            .. code:
+
+                The expectation is that our callable always gets passed a raw key. If
+                it finds a match, it returns the raw_column and score.
+                previous_mapping('example field', *map_args) ->
+                    ('field_1', 0.93)
+
         :param map_args: Arguments to pass into the previous_mapping method (e.g. Organization ID)
         :param default_mappings: dict of mappings. Use these mappings if the column is not found in the previous mapping call
         :param threshold: int, Minimum value of the matching confidence to allow for matching.
+        :return dict: {'raw_column': ('dest_column', score), 'raw_column_2': ('dest_column_2',...)}
         """
         self.data = {}
         for raw in raw_columns:
@@ -87,7 +98,7 @@ class MappingColumns(object):
         index = 0
         while self.duplicates and index < 10:
             index += 1
-            _log.debug("Index: {} with duplicates: {}".format(index, self.duplicates))
+            _log.debug("Index: %s with duplicates: %s" % (index, self.duplicates))
             for k, v in self.duplicates.iteritems():
                 self.resolve_duplicate(k, v)
 
@@ -135,14 +146,14 @@ class MappingColumns(object):
             return self.data[raw_column]['mappings'][0]
         else:
             _log.debug(
-                "There are no suggested mappings for the column {}, setting to field name".format(
-                    raw_column))
+                "There are no suggested mappings for the column %s, setting to field name" % raw_column)
             return ('PropertyState', raw_column, 100)
 
     @property
     def duplicates(self):
         """
-        Check for duplicate initial mapping results.
+        Check for duplicate initial mapping results. Duplicates exist if the first suggested mapping
+        for two different raw_columns are the same. The example below would be one of those cases.
 
         .. example:
 
@@ -151,7 +162,7 @@ class MappingColumns(object):
                     {'raw_column': 'extra_data_1', 'confidence': 69},
                     {'raw_column': 'extra_data_2', 'confidence': 69}],
                 'PropertyState.building_count': [
-                    {'raw_column': 'BLDGS', 'confidence': 69},
+                    {'raw_column': 'extra_data_1', 'confidence': 69},
                     {'raw_column': 'UBI', 'confidence': 62}
                 ]
             }
@@ -163,21 +174,21 @@ class MappingColumns(object):
         duplicates = set()
         result = {}
 
-        for k, v in self.data.iteritems():
+        for raw_column, v in self.data.items():
             if v['initial_mapping_cmp'] in uniques:
                 duplicates.add(v['initial_mapping_cmp'])
             uniques.add(v['initial_mapping_cmp'])
 
         # now go through and populate the dict with the duplicate keys
         for item in duplicates:
-            for k, v in self.data.iteritems():
+            for raw_column, v in self.data.items():
                 if v['initial_mapping_cmp'] == item:
                     if item not in result.keys():
                         result[item] = []
                     result[item].append(
                         {
-                            'raw_column': k,
-                            'confidence': self.first_suggested_mapping(k)[2]
+                            'raw_column': raw_column,
+                            'confidence': self.first_suggested_mapping(raw_column)[2]
                         }
                     )
 
@@ -185,13 +196,16 @@ class MappingColumns(object):
 
     def resolve_duplicate(self, dup_map_field, raw_columns):
         """
+        If there are duplicates, that is two raw_columns are trying to map to the same suggested
+        column, then select the next available one on the duplicate column. The one with the highest
+        confidence will 'win' the duplicate battle.
 
         :param dup_map_field: String, name of the field that is a duplicate
         :param columns: list, raw columns that mapped to the same result
         :return: None
 
         """
-        _log.debug("resolving duplicate field for {}".format(dup_map_field))
+        _log.debug("resolving duplicate field for %s" % dup_map_field)
 
         # decide which raw_column should "win"
         raw_columns = sorted(raw_columns, cmp=sort_duplicates)
@@ -206,7 +220,8 @@ class MappingColumns(object):
     def set_initial_mapping_cmp(self, raw_column):
         """
         Set the initial_mapping_cmp helper item in the self.data hash. This is used to detect
-        if there are any duplicates.
+        if there are any duplicates. The initial mapping cmp will be the first match in the list
+        (i.e. the one with the highest confidence).
 
         :param raw_column: String, name of the raw column to set the initial_mapping_cmp
         :return: None
@@ -217,7 +232,8 @@ class MappingColumns(object):
             # update the compare string for detecting duplicates -- make method?
             new_map = self.data[raw_column]['mappings'][0]
             # If anyone can figure out why new_map[1] could be a list then I will buy you a burrito
-            if new_map[0] is not None and new_map[1] is not None and not isinstance(new_map[1], list):
+            if new_map[0] is not None and new_map[1] is not None and not isinstance(new_map[1],
+                                                                                    list):
                 self.data[raw_column]['initial_mapping_cmp'] = '.'.join([new_map[0], new_map[1]])
             else:
                 _log.info("The mappings have a None table or column name")

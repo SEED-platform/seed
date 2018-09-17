@@ -211,6 +211,10 @@ a:not([href]) {
     margin: 0;
     position: relative;
 
+    #sidebar-profile {
+      text-overflow: ellipsis;
+    }
+
     .item {
       position: relative;
       overflow: hidden;
