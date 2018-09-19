@@ -105,9 +105,9 @@ class BuildingFile(models.Model):
         parser_kwargs = {}
         if self.file_type == self.BUILDINGSYNC:
             parser_args.append(BuildingSync.BRICR_STRUCT)
-        data, errors, messages = parser.process(*parser_args, **parser_kwargs)
+        data, messages = parser.process(*parser_args, **parser_kwargs)
 
-        if errors or not data:
+        if len(messages['errors']) > 0 or not data:
             return False, None, None, messages
 
         # sub-select the data that are needed to create the PropertyState object
@@ -163,7 +163,9 @@ class BuildingFile(models.Model):
             join, _ = PropertyMeasure.objects.get_or_create(
                 property_state_id=self.property_state_id,
                 measure_id=measure.pk,
-                implementation_status=PropertyMeasure.str_to_impl_status(m['implementation_status']),
+                implementation_status=PropertyMeasure.str_to_impl_status(
+                    m.get('implementation_status', 'Proposed')
+                ),
                 application_scale=PropertyMeasure.str_to_application_scale(
                     m.get('application_scale_of_application',
                           PropertyMeasure.SCALE_ENTIRE_FACILITY)
