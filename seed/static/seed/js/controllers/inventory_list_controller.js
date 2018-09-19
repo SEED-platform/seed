@@ -273,7 +273,7 @@ angular.module('BE.seed.controller.inventory_list', [])
 
               return func().then(function (columns) {
                 return _.map(columns, function (column) {
-                  return _.pick(column, ['column_name', 'displayName', 'id', 'is_extra_data', 'name', 'table_name']);
+                  return _.pick(column, ['column_name', 'displayName', 'id', 'is_extra_data', 'name', 'table_name', 'merge_protection']);
                 });
               });
             },

@@ -19,7 +19,12 @@ angular.module('BE.seed.service.column_mappings', []).factory('column_mappings_s
           organization_id: org_id
         }
       }).then(function (response) {
-        return response.data;
+        return _.map(response.data, function (mapping) {
+          if (_.isEmpty(mapping.column_mapped.display_name)) {
+            mapping.column_mapped.display_name = mapping.column_mapped.column_name;
+          }
+          return mapping;
+        });
       });
     };
 

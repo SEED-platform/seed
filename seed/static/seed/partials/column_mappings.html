@@ -48,9 +48,33 @@
                             <th translate>Mapped Column Display Name</th>
                             <th style="min-width: 54px; width: 54px;" translate>Delete</th>
                         </tr>
+                        <tr class="sub_head">
+                            <th class="sub_head">
+                                <input type="text"
+                                     class="form-control input-sm"
+                                     ng-model="filter_params.column_raw.column_name"
+                                     placeholder="{$:: 'Search originating column' | translate $}"
+                                     ng-class="{active: filter_params.column_raw.column_name.length > 0}">
+                            </th>
+                            <th class="sub_head">
+                                <input type="text"
+                                     class="form-control input-sm"
+                                     ng-model="filter_params.column_mapped.column_name"
+                                     placeholder="{$:: 'Search mapped column' | translate $}"
+                                     ng-class="{active: filter_params.column_mapped.column_name.length > 0}">
+                            </th>
+                            <th class="sub_head">
+                                <input type="text"
+                                     class="form-control input-sm"
+                                     ng-model="filter_params.column_mapped.display_name"
+                                     placeholder="{$:: 'Search mapped column display name' | translate $}"
+                                     ng-class="{active: filter_params.column_mapped.display_name.length > 0}">
+                            </th>
+                            <th class="sub_head"></th>
+                        </tr>
                     </thead>
                     <tbody>
-                        <tr ng-repeat="mapping in column_mappings">
+                        <tr ng-repeat="mapping in column_mappings | filter:filter_params:strict">
                             <td>
                                 {$ mapping.column_raw.column_name $}
                             </td>
@@ -58,7 +82,7 @@
                                 {$ mapping.column_mapped.column_name $}
                             </td>
                             <td>
-                                {$ mapping.column_mapped.display_name || mapping.column_mapped.column_name $}
+                                {$ mapping.column_mapped.display_name $}
                             </td>
                             <td class="check is_aligned_center">
                                 <button class="btn btn-xs btn-danger btn-rowform" ng-click="delete_mapping(mapping.id)">

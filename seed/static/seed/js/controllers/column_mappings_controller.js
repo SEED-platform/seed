@@ -31,6 +31,8 @@ angular.module('BE.seed.controller.column_mappings', [])
 
       $scope.state = $state.current;
 
+      $scope.filter_params = {};
+
       $scope.property_count = column_mappings.property_count;
       $scope.taxlot_count = column_mappings.taxlot_count;
       $scope.column_mappings = column_mappings.column_mappings;
