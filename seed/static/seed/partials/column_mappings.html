@@ -1,0 +1,74 @@
+<div class="page_header_container">
+    <div class="page_header">
+        <div class="left page_action_container">
+            <a ui-sref="organizations" class="page_action"><i class="fa fa-chevron-left"></i> {$:: 'Organizations' | translate $}</a>
+        </div>
+        <div class="page_title">
+            <h1>{$:: org.name $}</h1>
+        </div>
+        <div class="right page_action_container"></div>
+    </div>
+</div>
+<div class="section_nav_container">
+    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/accounts_nav.html'"></div>
+</div>
+<div class="section">
+    <div class="section_header_container">
+        <div class="section_header has_no_padding fixed_height_short">
+            <div class="section_action_container left_40">
+                <h2><i class="fa fa-sitemap"></i> <span translate>Column Mappings</span></h2>
+            </div>
+            <div class="section_action_container right_40 section_action_btn pull-right">
+                <button type="button" class="btn btn-danger" ng-click="delete_all_mappings()" ng-disabled="!column_mappings.length">{$:: 'Delete All Mappings' | translate $}
+                    <i class="fa fa-check" ng-show="mappings_deleted"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="section_content_container">
+        <div class="section_content with_padding" style="margin-bottom:15px;">
+            <h3 translate>Deleting Column Mappings</h3>
+            <p translate>From the table below, you may delete individual or all column mappings. These mappings are automatically created during file import and used to determine which SEED column to map the imported columns to.</p>
+            <div class="data-quality-tab-container">
+                <ul class="nav nav-tabs" style="margin-bottom:1px;">
+                    <li ui-sref-active="active">
+                        <a ui-sref="organization_column_mappings(::{organization_id: org.id, inventory_type: 'properties'})">{$:: 'View by Property' | translate $} ({$ property_count $})</a>
+                    </li>
+                    <li ui-sref-active="active">
+                        <a ui-sref="organization_column_mappings(::{organization_id: org.id, inventory_type: 'taxlots'})">{$:: 'View by Tax Lot' | translate $} ({$ taxlot_count $})</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="table_list_container has_borders">
+                <table id="column-table" class="table has_no_btm_margin">
+                    <thead>
+                        <tr>
+                            <th translate>Originating Column</th>
+                            <th translate>Mapped Column</th>
+                            <th translate>Mapped Column Display Name</th>
+                            <th style="min-width: 54px; width: 54px;" translate>Delete</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="mapping in column_mappings">
+                            <td>
+                                {$ mapping.column_raw.column_name $}
+                            </td>
+                            <td>
+                                {$ mapping.column_mapped.column_name $}
+                            </td>
+                            <td>
+                                {$ mapping.column_mapped.display_name || mapping.column_mapped.column_name $}
+                            </td>
+                            <td class="check is_aligned_center">
+                                <button class="btn btn-xs btn-danger btn-rowform" ng-click="delete_mapping(mapping.id)">
+                                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

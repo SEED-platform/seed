@@ -39,11 +39,13 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.accounts',
   'BE.seed.controller.admin',
   'BE.seed.controller.api',
+  'BE.seed.controller.column_mappings',
+  'BE.seed.controller.column_settings',
+  'BE.seed.controller.create_sub_organization_modal',
+  'BE.seed.controller.cycle_admin',
   'BE.seed.controller.data_quality_admin',
   'BE.seed.controller.data_quality_modal',
   'BE.seed.controller.data_quality_labels_modal',
-  'BE.seed.controller.cycle_admin',
-  'BE.seed.controller.create_sub_organization_modal',
   'BE.seed.controller.data_upload_modal',
   'BE.seed.controller.dataset',
   'BE.seed.controller.dataset_detail',
@@ -102,6 +104,7 @@ angular.module('BE.seed.services', [
   'BE.seed.service.auth',
   'BE.seed.service.data_quality',
   'BE.seed.service.column_mappings',
+  'BE.seed.service.columns',
   'BE.seed.service.cycle',
   'BE.seed.service.dataset',
   'BE.seed.service.flippers',
@@ -182,7 +185,7 @@ SEED_app.run([
       }
     });
 
-    $transitions.onSuccess({}, function(transition) {
+    $transitions.onSuccess({}, function (transition) {
       if ($rootScope.route_load_error && $rootScope.load_error_message === 'Your SEED account is not associated with any organizations. Please contact a SEED administrator.') {
         $state.go('home');
         return;
@@ -192,7 +195,7 @@ SEED_app.run([
       spinner_utility.hide();
     });
 
-    $transitions.onError({}, function(transition) {
+    $transitions.onError({}, function (transition) {
       spinner_utility.hide();
       if (transition.error().message === 'The transition was ignored') return;
 
@@ -219,7 +222,7 @@ SEED_app.run([
       }
     });
 
-    $state.defaultErrorHandler(function(error) {
+    $state.defaultErrorHandler(function (error) {
       $log.log(error);
     });
 
@@ -695,6 +698,115 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           shared_fields_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
             var organization_id = $stateParams.organization_id;
             return organization_service.get_shared_fields(organization_id);
+          }],
+          auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
+            var organization_id = $stateParams.organization_id;
+            return auth_service.is_authorized(organization_id, ['requires_owner'])
+              .then(function (data) {
+                if (data.auth.requires_owner) {
+                  return data;
+                } else {
+                  return $q.reject('not authorized');
+                }
+              }, function (data) {
+                return $q.reject(data.message);
+              });
+          }]
+        }
+      })
+      .state({
+        name: 'organization_column_settings',
+        url: '/accounts/{organization_id:int}/column_settings/{inventory_type:properties|taxlots}',
+        templateUrl: static_url + 'seed/partials/column_settings.html',
+        controller: 'column_settings_controller',
+        resolve: {
+          columns: ['$stateParams', 'inventory_service', 'naturalSort', function ($stateParams, inventory_service, naturalSort) {
+            var organization_id = $stateParams.organization_id;
+
+            if ($stateParams.inventory_type === 'properties') {
+              return inventory_service.get_property_columns_for_org(organization_id).then(function (columns) {
+                columns = _.reject(columns, 'related');
+                columns = _.map(columns, function (col) {
+                  return _.omit(col, ['pinnedLeft', 'related']);
+                });
+                columns.sort(function (a, b) {
+                  return naturalSort(a.displayName, b.displayName);
+                });
+                return columns;
+              });
+            } else if ($stateParams.inventory_type === 'taxlots') {
+              return inventory_service.get_taxlot_columns_for_org(organization_id).then(function (columns) {
+                columns = _.reject(columns, 'related');
+                columns = _.map(columns, function (col) {
+                  return _.omit(col, ['pinnedLeft', 'related']);
+                });
+                columns.sort(function (a, b) {
+                  return naturalSort(a.displayName, b.displayName);
+                });
+                return columns;
+              });
+            }
+          }],
+          organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
+            var organization_id = $stateParams.organization_id;
+            return organization_service.get_organization(organization_id);
+          }],
+          auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
+            var organization_id = $stateParams.organization_id;
+            return auth_service.is_authorized(organization_id, ['requires_owner'])
+              .then(function (data) {
+                if (data.auth.requires_owner) {
+                  return data;
+                } else {
+                  return $q.reject('not authorized');
+                }
+              }, function (data) {
+                return $q.reject(data.message);
+              });
+          }]
+        }
+      })
+      .state({
+        name: 'organization_column_mappings',
+        url: '/accounts/{organization_id:int}/column_mappings/{inventory_type:properties|taxlots}',
+        templateUrl: static_url + 'seed/partials/column_mappings.html',
+        controller: 'column_mappings_controller',
+        resolve: {
+          column_mappings: ['column_mappings_service', '$stateParams', 'naturalSort', function (column_mappings_service, $stateParams, naturalSort) {
+            var organization_id = $stateParams.organization_id;
+
+            return column_mappings_service.get_column_mappings_for_org(organization_id).then(function (data) {
+              var propertyMappings = _.filter(data, function (datum) {
+                return _.startsWith(datum.column_mapped.table_name, 'Property');
+              });
+              propertyMappings.sort(function (a, b) {
+                return naturalSort(a.column_raw.column_name, b.column_raw.column_name);
+              });
+              var taxlotMappings = _.filter(data, function (datum) {
+                return _.startsWith(datum.column_mapped.table_name, 'TaxLot');
+              });
+              taxlotMappings.sort(function (a, b) {
+                return naturalSort(a.column_raw.column_name, b.column_raw.column_name);
+              });
+
+              if ($stateParams.inventory_type === 'properties') {
+                return {
+                  property_count: propertyMappings.length,
+                  taxlot_count: taxlotMappings.length,
+                  column_mappings: propertyMappings
+                };
+              } else if ($stateParams.inventory_type === 'taxlots') {
+                return {
+                  property_count: propertyMappings.length,
+                  taxlot_count: taxlotMappings.length,
+                  column_mappings: taxlotMappings
+                };
+              }
+            });
+          }],
+          organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
+            var organization_id = $stateParams.organization_id;
+            return organization_service.get_organization(organization_id);
           }],
           auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
             var organization_id = $stateParams.organization_id;

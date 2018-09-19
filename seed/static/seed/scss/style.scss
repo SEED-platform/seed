@@ -69,6 +69,10 @@ $grayDark: lighten($gray_dark, 10%);
 
 $pairingCellWidth: 200px;
 
+* {
+  outline: none !important;
+}
+
 .red {
   color: $red;
 }
@@ -2863,6 +2867,12 @@ div.table_list_container.matching, div.table_list_container.matching_detail {
 #data-quality-admin-table {
   tr.disabled {
     opacity: 0.4;
+  }
+}
+
+#column-table {
+  input.ng-invalid-required {
+    border-color: #dd2c00;
   }
 }
 

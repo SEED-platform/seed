@@ -112,6 +112,7 @@ def _dict_org_brief(request, organizations):
         org = {
             'name': o.name,
             'org_id': o.id,
+            'parent_id': o.parent_org_id,
             'id': o.id,
             'user_role': user_role
         }
@@ -222,9 +223,9 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         if brief:
             if request.user.is_superuser:
-                qs = Organization.objects.only('id', 'name')
+                qs = Organization.objects.only('id', 'name', 'parent_org_id')
             else:
-                qs = request.user.orgs.only('id', 'name')
+                qs = request.user.orgs.only('id', 'name', 'parent_org_id')
 
             orgs = _dict_org_brief(request, qs)
             if len(orgs) == 0:

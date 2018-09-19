@@ -398,9 +398,13 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
 
     inventory_service.get_property_columns = function () {
+      return inventory_service.get_property_columns_for_org(user_service.get_organization().id);
+    };
+
+    inventory_service.get_property_columns_for_org = function (org_id) {
       return $http.get('/api/v2/properties/columns/', {
         params: {
-          organization_id: user_service.get_organization().id
+          organization_id: org_id
         }
       }).then(function (response) {
         // Remove empty columns
@@ -472,9 +476,13 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
     inventory_service.get_taxlot_columns = function () {
+      return inventory_service.get_taxlot_columns_for_org(user_service.get_organization().id);
+    };
+
+    inventory_service.get_taxlot_columns_for_org = function (org_id) {
       return $http.get('/api/v2/taxlots/columns/', {
         params: {
-          organization_id: user_service.get_organization().id
+          organization_id: org_id
         }
       }).then(function (response) {
         // Remove empty columns
