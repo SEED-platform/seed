@@ -1,0 +1,98 @@
+<div class="page_header_container">
+    <div class="page_header">
+        <div class="left page_action_container">
+            <a ui-sref="organizations" class="page_action"><i class="fa fa-chevron-left"></i> {$:: 'Organizations' | translate $}</a>
+        </div>
+        <div class="page_title">
+            <h1>{$:: org.name $}</h1>
+        </div>
+        <div class="right page_action_container"></div>
+    </div>
+</div>
+<div class="section_nav_container">
+    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/accounts_nav.html'"></div>
+</div>
+<div class="section">
+    <div class="section_header_container">
+        <div class="section_header has_no_padding fixed_height_short">
+            <div class="section_action_container left_40">
+                <h2><i class="fa fa-sliders"></i> <span translate>Column Settings</span></h2>
+            </div>
+            <div class="section_action_container right_40 section_action_btn pull-right">
+                <button type="button" class="btn btn-primary" ng-click="save_settings()" ng-disabled="!isModified()">{$:: 'Save Changes' | translate $}
+                    <i class="fa fa-check" ng-show="columns_updated"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="section_content_container">
+        <div class="section_content with_padding" style="margin-bottom:15px;">
+            <h3 translate>Modifying Column Settings</h3>
+            <p translate>From the table below, you may modify the columns in the following ways: 1) change the display name of a column, 2) specify the data type of extra data columns, and 3) enable merge protection for specific columns. Normally when an imported record is merged into another record the newest value overwrites an older one. Merge protection prevents this, and is particularly useful for columns where you have manually edited values that you want to persist even after importing and merging new data.</p>
+            <div class="data-quality-tab-container">
+                <ul class="nav nav-tabs" style="margin-bottom:1px;">
+                    <li ui-sref-active="active" heading="{$:: 'View by Property' | translate $}">
+                        <a ui-sref="organization_column_settings(::{organization_id: org.id, inventory_type: 'properties'})" translate>View by Property</a>
+                    </li>
+                    <li ui-sref-active="active" heading="{$:: 'View by Tax Lot' | translate $}">
+                        <a ui-sref="organization_column_settings(::{organization_id: org.id, inventory_type: 'taxlots'})" translate>View by Tax Lot</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="table_list_container has_borders">
+                <table id="column-table" class="table has_no_btm_margin">
+                    <thead>
+                        <tr>
+                            <th translate>Display Name</th>
+                            <th translate>Column Name</th>
+                            <th style="min-width: 130px; width: 130px;" translate>Data Type</th>
+                            <th style="min-width: 120px; width: 120px;" translate>Merge Protection</th>
+                        </tr>
+                        <tr class="sub_head">
+                            <th class="sub_head">
+                                <input type="text"
+                                     class="form-control input-sm"
+                                     ng-model="filter_params.displayName"
+                                     placeholder="{$:: 'Search display name' | translate $}"
+                                     ng-class="{active: filter_params.displayName.length > 0}">
+                            </th>
+                            <th class="sub_head">
+                                <input type="text"
+                                     class="form-control input-sm"
+                                     ng-model="filter_params.column_name"
+                                     placeholder="{$:: 'Search column name' | translate $}"
+                                     ng-class="{active: filter_params.column_name.length > 0}">
+                            </th>
+                            <th class="sub_head"></th>
+                            <th class="sub_head"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="column in columns | filter:filter_params:strict">
+                            <td>
+                                <input type="text" class="form-control" ng-model="column.displayName" ng-change="setModified()" ng-model-options="{debounce: 125}" required>
+                            </td>
+                            <td>
+                                {$:: column.column_name $}
+                                <span ng-if="column.is_extra_data" class="badge" style="margin-left: 10px;">extra data</span>
+                            </td>
+                            <td>
+                                <select class="form-control input-sm" ng-model="column.data_type" ng-options="type.id as type.label for type in ::data_types" ng-change="setModified()" ng-disabled="!column.is_extra_data"></select>
+                            </td>
+                            <td ng-click="change_merge_protection(column)" class="text-center">
+                                <input type="checkbox" ng-checked="column.merge_protection === 'Favor Existing'" class="no-click">
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="section_content_container">
+            <div class="section_content with_padding pull-right" style="padding-bottom: 15px;">
+                <button type="button" class="btn btn-primary" ng-click="save_settings()" ng-disabled="!isModified()">{$:: 'Save Changes' | translate $}
+                    <i class="fa fa-check" ng-show="columns_updated"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

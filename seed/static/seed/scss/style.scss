@@ -69,6 +69,10 @@ $grayDark: lighten($gray_dark, 10%);
 
 $pairingCellWidth: 200px;
 
+* {
+  outline: none !important;
+}
+
 .red {
   color: $red;
 }
@@ -2866,6 +2870,12 @@ div.table_list_container.matching, div.table_list_container.matching_detail {
   }
 }
 
+#column-table {
+  input.ng-invalid-required {
+    border-color: #dd2c00;
+  }
+}
+
 .no-click {
   pointer-events: none;
 }
@@ -3182,4 +3192,9 @@ $pairedCellWidth: 60px;
 .upload-btn {
   display: block;
   font-weight: bold;
+}
+
+.lock {
+  color: #444;
+  padding-left: 6px;
 }

@@ -187,7 +187,7 @@ class TaxLotProperty(models.Model):
             filtered_fields = set([col['column_name'] for col in related_columns if not col['is_extra_data']])
         else:
             filtered_fields = set([col['column_name'] for col in related_columns if not col['is_extra_data']
-                                  and col['id'] in show_columns])
+                                   and col['id'] in show_columns])
             filtered_extra_data_fields = set([col['column_name'] for col in related_columns if col['is_extra_data']
                                               and col['id'] in show_columns])
 

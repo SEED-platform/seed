@@ -45,8 +45,9 @@ class ColumnListSettingSerializer(serializers.ModelSerializer):
             column_id = column.get("id")
             order = column.get("order")
             pinned = column.get("pinned")
-            ColumnListSettingColumn(column_list_setting=instance, column_id=column_id, pinned=pinned,
-                                    order=order).save()
+            ColumnListSettingColumn(
+                column_list_setting=instance, column_id=column_id, pinned=pinned, order=order
+            ).save()
 
         instance.__dict__.update(**validated_data)
         instance.save()
@@ -57,17 +58,21 @@ class ColumnListSettingSerializer(serializers.ModelSerializer):
         cls = ColumnListSetting.objects.create(**validated_data)
         if "columns" in self.initial_data:
             for column in self.initial_data.get("columns", []):
-                # At this point the column will exist for the organization based on the validation step
+                # At this point the column will exist for the organization based on the validation
+                # step
                 column_id = column.get("id")
                 order = column.get("order")
                 pinned = column.get("pinned")
-                ColumnListSettingColumn(column_list_setting=cls, column_id=column_id, pinned=pinned, order=order).save()
+                ColumnListSettingColumn(
+                    column_list_setting=cls, column_id=column_id, pinned=pinned, order=order
+                ).save()
         cls.save()
 
         return cls
 
     def validate(self, data):
-        # run some custom validation on the Columns data to make sure that the columns exist are are part of the org
+        # run some custom validation on the Columns data to make sure that the columns exist are
+        # part of the org
         if "columns" in self.initial_data:
             request = self.context.get('request', None)
 

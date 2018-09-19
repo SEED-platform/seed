@@ -12,7 +12,7 @@ from django.db import models
 
 from seed.building_sync.building_sync import BuildingSync
 from seed.hpxml.hpxml import HPXML as HPXMLParser
-from seed.lib.merging.merging import merge_state, get_state_attrs
+from seed.lib.merging.merging import merge_state
 from seed.models import (
     PropertyState,
     Column,
@@ -241,10 +241,10 @@ class BuildingFile(models.Model):
 
             # assume the same cycle id as the former state.
             # should merge_state also copy/move over the relationships?
-            merged_state = merge_state(merged_state,
-                                       property_view.state,
-                                       property_state,
-                                       get_state_attrs([property_view.state, property_state]))
+            priorities = Column.retrieve_priorities(organization_id)
+            merged_state = merge_state(
+                merged_state, property_view.state, property_state, priorities['PropertyState']
+            )
 
             # log the merge
             # Not a fan of the parent1/parent2 logic here, seems error prone, what this
