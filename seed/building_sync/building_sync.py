@@ -60,6 +60,11 @@ class BuildingSync(object):
                 "required": True,
                 "type": "string",
             },
+            "postal_code": {
+                "path": "auc:Sites.auc:Site.auc:Address.auc:PostalCode",
+                "required": True,
+                "type": "string",
+            },
             "longitude": {
                 "path": "auc:Sites.auc:Site.auc:Longitude",
                 "required": True,

@@ -86,6 +86,7 @@ class InventoryViewTests(DeleteModelsTestCase):
         self.assertEqual(result['status'], 'success')
         self.assertEqual(result['message'], 'successfully imported file')
         self.assertEqual(result['data']['property_view']['state']['year_built'], 1967)
+        self.assertEqual(result['data']['property_view']['state']['postal_code'], '94111')
 
         # now get the building sync that was just uploaded
         property_id = result['data']['property_view']['id']
