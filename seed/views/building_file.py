@@ -73,18 +73,29 @@ class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
 
         p_status, property_state, property_view, messages = building_file.process(organization_id, cycle)
         if p_status and property_state:
-            return JsonResponse({
-                'success': True,
-                'status': 'success',
-                'message': 'successfully imported file',
-                'data': {
-                    'property_view': PropertyViewAsStateSerializer(property_view).data,
-                    # 'property_state': PropertyStateWritableSerializer(property_state).data,
-                },
-            })
+            if len(messages['warnings']) > 0:
+                return JsonResponse({
+                    'success': True,
+                    'status': 'success',
+                    'message': 'successfully imported file with warnings %s' % messages['warnings'],
+                    'data': {
+                        'property_view': PropertyViewAsStateSerializer(property_view).data,
+                        # 'property_state': PropertyStateWritableSerializer(property_state).data,
+                    },
+                })
+            else:
+                return JsonResponse({
+                    'success': True,
+                    'status': 'success',
+                    'message': 'successfully imported file',
+                    'data': {
+                        'property_view': PropertyViewAsStateSerializer(property_view).data,
+                        # 'property_state': PropertyStateWritableSerializer(property_state).data,
+                    },
+                })
         else:
             return JsonResponse({
                 'success': False,
                 'status': 'error',
-                'message': "Could not process building file with messages {}".format(messages)
+                'message': "Could not process building file with messages %s" % messages
             }, status=status.HTTP_400_BAD_REQUEST)
