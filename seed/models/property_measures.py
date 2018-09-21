@@ -139,7 +139,7 @@ class PropertyMeasure(models.Model):
     category_affected = models.IntegerField(choices=CATEGORY_AFFECTED_TYPE, default=CATEGORY_OTHER)
 
     class Meta:
-        unique_together = ('property_state', 'measure', 'application_scale', 'implementation_status')
+        unique_together = ('property_measure_name', 'property_state', 'measure', 'application_scale', 'implementation_status')
         index_together = [
             ['property_measure_name', 'property_state'],
         ]

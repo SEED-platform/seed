@@ -94,6 +94,45 @@ class InventoryViewTests(DeleteModelsTestCase):
         response = self.client.get(url)
         self.assertIn('<auc:YearOfConstruction>1967</auc:YearOfConstruction>', response.content)
 
+    def test_upload_with_measure_duplicates(self):
+        # import_record =
+        filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'buildingsync_ex01_measures.xml')
+
+        url = reverse('api:v2:building_file-list')
+        fsysparams = {
+            'file': open(filename, 'rb'),
+            'file_type': 'BuildingSync',
+            'organization_id': self.org.id,
+            'cycle_id': self.cycle.id
+        }
+        response = self.client.post(url, fsysparams)
+        self.assertEqual(response.status_code, 200)
+        result = json.loads(response.content)
+        # print result
+        self.assertEqual(result['status'], 'success')
+        expected_message = "successfully imported file with warnings [u'Measure category and name is not valid other_electric_motors_and_drives:replace_with_higher_efficiency', u'Measure category and name is not valid other_hvac:install_demand_control_ventilation', u'Measure associated with scenario not found. Scenario: Replace with higher efficiency Only, Measure name: Measure22', u'Measure associated with scenario not found. Scenario: Install demand control ventilation Only, Measure name: Measure24']"
+        self.assertEqual(result['message'], expected_message)
+        self.assertEqual(len(result['data']['property_view']['state']['measures']), 28)
+        self.assertEqual(len(result['data']['property_view']['state']['scenarios']), 31)
+        self.assertEqual(result['data']['property_view']['state']['year_built'], 1967)
+        self.assertEqual(result['data']['property_view']['state']['postal_code'], '94111')
+
+        # upload the same file again
+        url = reverse('api:v2:building_file-list')
+        fsysparams = {
+            'file': open(filename, 'rb'),
+            'file_type': 'BuildingSync',
+            'organization_id': self.org.id,
+            'cycle_id': self.cycle.id
+        }
+        response = self.client.post(url, fsysparams)
+        self.assertEqual(response.status_code, 200)
+        result = json.loads(response.content)
+
+        # print result
+        self.assertEqual(len(result['data']['property_view']['state']['measures']), 28)
+        self.assertEqual(len(result['data']['property_view']['state']['scenarios']), 31)
+
     def test_upload_and_get_building_sync_diff_ns(self):
         # import_record =
         filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data',
