@@ -243,7 +243,7 @@
                                     console.dir(item_state.files)
                                     <td> {$ file.file_type $}</td>
                                     <td><a href='{$ file.file $}'>{$ file.filename $}</a></td>
-                                    <td>{$ file.modified | date: 'yyyy-MM-dd h:mm a' $}</a></td>
+                                    <td>{$ file.created | date: 'yyyy-MM-dd h:mm a' $}</a></td>
                                 </tr>
                             </tbody>
                         </table>

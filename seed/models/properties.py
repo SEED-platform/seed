@@ -587,8 +587,15 @@ class PropertyState(models.Model):
             merged_state.scenarios.add(new_s)
 
         for new_bf in building_files:
+            # save the created and modified data from the original file
+            orig_created = new_bf.created
+            orig_modified = new_bf.modified
             new_bf.pk = None
             new_bf.save()
+            new_bf.created = orig_created
+            new_bf.modified = orig_modified
+            new_bf.save()
+
             merged_state.building_files.add(new_bf)
 
         for new_sim in simulations:
@@ -617,6 +624,7 @@ class PropertyState(models.Model):
                 else:
                     try:
                         new_measure = copy.deepcopy(measure)
+                        # copy the created and modifed time
                         new_measure.pk = None
                         new_measure.property_state = merged_state
                         new_measure.save()
