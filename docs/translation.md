@@ -1,5 +1,19 @@
 # Translating SEED
 
+1. Update translations on [lokalise](https://lokalise.co/project/3537487659ca9b1dce98a7.36378626/?view=multi).
+1. Copy lokalise.cfg.example to lokalise.cfg. Update API token.
+1. Run scripts
+    
+    ```bash
+    scripts/get_python_translations
+    script/get_angular_translations
+    ```
+1. Verify and commit changes
+
+**Note: The lokalize website is the canonical source of data. If you change the locale files locally, then you need to push them to lokalize.** 
+
+TL;DR
+
 SEED is localized for more than just English, so a little more care is needed
 as we add new UI. All translatable strings are held in either per-language `.json` files
 (for Angular-controlled strings, which are the majority), or `.mo` files (for
