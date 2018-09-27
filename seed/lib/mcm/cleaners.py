@@ -7,10 +7,11 @@
 import re
 import string
 from datetime import datetime, date
-
+from quantityfield import ureg
 import dateutil
 import dateutil.parser
 from django.utils import timezone
+
 
 from seed.lib.mcm.matchers import fuzzy_in_set
 
@@ -56,6 +57,10 @@ def float_cleaner(value, *args):
         float_cleaner(Decimal('30.1'))  # 30.1
         float_cleaner(my_date)          # raises TypeError
     """
+    # If this is a unit field, then just return it as is
+    if isinstance(value, ureg.Quantity):
+        return value
+
     # API breakage if None does not return None
     if value is None:
         return None
