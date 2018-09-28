@@ -7,17 +7,15 @@
 import re
 import string
 from datetime import datetime, date
-from quantityfield import ureg
+
 import dateutil
 import dateutil.parser
 from django.utils import timezone
-
-
-from seed.lib.mcm.matchers import fuzzy_in_set
-
 # django orm gets confused unless we specifically use `ureg` from quantityfield
 # ie. don't try `import pint; ureg = pint.UnitRegistry()`
 from quantityfield import ureg
+
+from seed.lib.mcm.matchers import fuzzy_in_set
 
 NONE_SYNONYMS = (
     (u'_', u'not available'),
