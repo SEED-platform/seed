@@ -12,11 +12,13 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 def find_property_associated_with_portfolio_manager_id(pm_lot_id):
-    if pm_lot_id is None: return False
+    if pm_lot_id is None:
+        return False
 
     result = PropertyView.objects.filter(state__pm_property_id=pm_lot_id) \
         .first()
-    if result is None: return False
+    if result is None:
+        return False
 
     return result.property
 
@@ -60,7 +62,10 @@ class Command(BaseCommand):
 
                 # What is the difference between these two fields?
                 if pm_parent_property_id == state.pm_property_id:
-                    logging_info("Auto reference: site id={}/pm_property_id={} is it's own campus (pm_parent_property_id={})".format(pv.property.id, state.pm_property_id, state.pm_parent_property_id))
+                    logging_info(
+                        "Auto reference: site id={}/pm_property_id={} is it's own campus (pm_parent_property_id={})".format(pv.property.id,
+                                                                                                                            state.pm_property_id,
+                                                                                                                            state.pm_parent_property_id))
                     prop = pv.property
                     prop.campus = True
                     prop.save()
@@ -68,7 +73,8 @@ class Command(BaseCommand):
 
                 parent_property = find_property_associated_with_portfolio_manager_id(pm_parent_property_id)
                 if not parent_property:
-                    logging_info("Could not find parent property with pm_property_id={}. Creating new Property/View/State for it.".format(pm_parent_property_id))
+                    logging_info("Could not find parent property with pm_property_id={}. Creating new Property/View/State for it.".format(
+                        pm_parent_property_id))
                     parent_property = Property(organization_id=org_id)
                     parent_property.campus = True
                     parent_property.save()
@@ -89,7 +95,6 @@ class Command(BaseCommand):
                     child_property = pv.property
                     child_property = child_property.parent_property = parent_property
                     child_property.save()
-
 
                 else:
                     logging_info("Found property matching pm_parent_property_id={}".format(pm_parent_property_id))

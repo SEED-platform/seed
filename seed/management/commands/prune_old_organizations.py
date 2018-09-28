@@ -5,14 +5,16 @@ See code for organization list and source documentation.
 
 from __future__ import unicode_literals
 
-from django.core.management.base import BaseCommand
-from IPython import embed
 import logging
-import seed.tasks
+
+from django.core.management.base import BaseCommand
+
 import seed.models
+import seed.tasks
 from _localtools import get_core_organizations
 
 logging.basicConfig(level=logging.DEBUG)
+
 
 def getOrganizationsToDelete():
     """Get all organizations that are not in the global white list."""

@@ -1,13 +1,14 @@
-from destroy_bluesky_data import Command as DestroyDataCommand
-from migrate_organization import Command as MigrateOrganizationCommand
+from django.core.management.base import BaseCommand
+
 from create_campus_relationships_organization import Command as CreateCampusCommand
 from create_m2m_relationships_organization import Command as CreateM2MCommand
 from create_primarysecondary_taxlots import Command as CreatePrimarySecondaryCommand
+from destroy_bluesky_data import Command as DestroyDataCommand
 from migrate_extradata_columns import Command as MigrateColumnsCommand
 from migrate_labels import Command as MigrateLabelsCommand
-from single_org_commands import Command as SingleOrgCommand
-from django.core.management.base import BaseCommand
+from migrate_organization import Command as MigrateOrganizationCommand
 from seed.models import CanonicalBuilding
+from single_org_commands import Command as SingleOrgCommand
 
 
 class Command(BaseCommand):
@@ -37,13 +38,13 @@ class Command(BaseCommand):
 
         # Column migration arguments
         parser.add_argument('--no-update-columns', dest='update_columns', default=True, action="store_false")
-        parser.add_argument('--update-columns',    dest='update_columns', default=True, action="store_true")
+        parser.add_argument('--update-columns', dest='update_columns', default=True, action="store_true")
 
         parser.add_argument('--no-add-unmapped-columns', dest='add_unmapped_columns', default=True, action="store_false")
-        parser.add_argument('--add-unmapped-columns',    dest='add_unmapped_columns', default=True, action="store_true")
+        parser.add_argument('--add-unmapped-columns', dest='add_unmapped_columns', default=True, action="store_true")
 
         parser.add_argument('--no-create-missing-columns', dest='create_missing_columns', default=True, action="store_false")
-        parser.add_argument('--create-missing-columns',    dest='create_missing_columns', default=True, action="store_true")
+        parser.add_argument('--create-missing-columns', dest='create_missing_columns', default=True, action="store_true")
 
         # Labels arguments
 
@@ -61,13 +62,9 @@ class Command(BaseCommand):
         parser.add_argument('--labels-no-add-taxlot-labels', dest='add_taxlot_labels', default=True, action="store_false",
                             help="Do not create labels on TaxLotView objects")
 
-
         return
 
-
     def handle(self, *args, **options):
-
-
 
         if options['pm']:
             pm_property_ids = options['pm']
@@ -110,7 +107,6 @@ class Command(BaseCommand):
         if migrate_columns:
             migrate_columns_command = MigrateColumnsCommand()
             migrate_columns_command.handle(*args, **options)
-
 
         if migrate_labels:
             migrate_labels_command = MigrateLabelsCommand()

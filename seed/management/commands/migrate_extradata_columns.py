@@ -5,24 +5,15 @@ from __future__ import unicode_literals
 import itertools
 
 from django.core.management.base import BaseCommand
-from seed.lib.superperms.orgs.models import Organization
-from _localtools import get_static_extradata_mapping_file
 
-from _localtools import get_taxlot_columns
-from _localtools import get_property_columns
 from _localtools import get_core_organizations
+from _localtools import get_property_columns
+from _localtools import get_taxlot_columns
 from _localtools import logging_info
-from _localtools import logging_debug
-
-from IPython import embed
-from seed.models import BuildingSnapshot
+from seed.lib.superperms.orgs.models import Organization
 from seed.models import Column
-from seed.models import ColumnMapping
-from seed.models import PropertyView
 from seed.models import PropertyState
-from seed.models import TaxLotView
 from seed.models import TaxLotState
-import pdb
 
 
 class Command(BaseCommand):
@@ -31,13 +22,13 @@ class Command(BaseCommand):
         parser.add_argument('--org', dest='organization', default=False)
 
         parser.add_argument('--no-update-columns', dest='update_columns', default=True, action="store_false")
-        parser.add_argument('--update-columns',    dest='update_columns', default=True, action="store_true")
+        parser.add_argument('--update-columns', dest='update_columns', default=True, action="store_true")
 
         parser.add_argument('--no-add-unmapped-columns', dest='add_unmapped_columns', default=True, action="store_false")
-        parser.add_argument('--add-unmapped-columns',    dest='add_unmapped_columns', default=True, action="store_true")
+        parser.add_argument('--add-unmapped-columns', dest='add_unmapped_columns', default=True, action="store_true")
 
         parser.add_argument('--no-create-missing-columns', dest='create_missing_columns', default=True, action="store_false")
-        parser.add_argument('--create-missing-columns',    dest='create_missing_columns', default=True, action="store_true")
+        parser.add_argument('--create-missing-columns', dest='create_missing_columns', default=True, action="store_true")
         return
 
     def handle(self, *args, **options):

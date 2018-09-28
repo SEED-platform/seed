@@ -1,73 +1,84 @@
-import os
-import pdb
-import itertools
-import csv
 import StringIO
 import collections
+import csv
+import os
 import re
-from IPython import embed
+
 import seed.models
-from seed.models import TaxLotView
+
 
 # For large migrations it is much easier to just dump everything to a file and look at that.
 # Especially when trying to figure out the difference between two migrated BuildingSnapshots.
 # But the resulting file can get fairly large (NYC is ~25 mb).  Leaving this here for the future
 # where "pass" can be replaced with writing to whatever file is most convenient.
+
+
 def write_to_file(msg):
     pass
+
 
 def logging_info(msg):
     s = "INFO: {}".format(msg)
     print s
     write_to_file(s)
 
+
 def logging_debug(msg):
-    s =  "DEBUG: {}".format(msg)
+    s = "DEBUG: {}".format(msg)
     print s
     write_to_file(s)
+
 
 def logging_warn(msg):
     s = "WARN: {}".format(msg)
     print s
     write_to_file(s)
 
+
 def logging_error(msg):
     s = "ERROR: {}".format(msg)
     print s
     write_to_file(s)
 
-def removeCommasToType(typ):
 
+def removeCommasToType(typ):
     def removeCommas(val_string):
-        if val_string is None: return None
+        if val_string is None:
+            return None
         try:
             return typ(str(val_string).replace(',', ''))
         except ValueError:
             print "Could not convert {} to {}".format(val_string, typ)
             return None
+
     return removeCommas
 
+
 def removeCommasToInteger(val_string):
-    if val_string is None: return None
+    if val_string is None:
+        return None
     try:
         return int(float(str(val_string).replace(',', '')))
     except ValueError:
         print "Could not convert {} to {}".format(val_string, typ)
         return None
 
+
 def removeNoneStrings(val_string):
-    if val_string is None: return None
+    if val_string is None:
+        return None
 
     if not isinstance(val_string, str):
         val_string = str(val_string)
 
-    if val_string.lower() == 'none': return None
+    if val_string.lower() == 'none':
+        return None
     return val_string
 
 
 # For converting between string and 'type' where the conversions are
 # more than the default.
-TYPE_MAPPER = collections.defaultdict(lambda : str)
+TYPE_MAPPER = collections.defaultdict(lambda: str)
 TYPE_MAPPER['CharField'] = removeNoneStrings
 TYPE_MAPPER['FloatField'] = removeCommasToType(float)
 TYPE_MAPPER['IntegerField'] = removeCommasToInteger
@@ -75,9 +86,8 @@ TYPE_MAPPER['DateField'] = removeNoneStrings
 TYPE_MAPPER['DateTimeField'] = removeNoneStrings
 
 
-
 class TaxLotIDValueError(ValueError):
-    def __init__(self, original_string, field = None):
+    def __init__(self, original_string, field=None):
         super(TaxLotIDValueError, self).__init__("Invalid id string found: {}".format(original_string))
         self.invalid_field = field
         self.original_string = original_string
@@ -96,22 +106,27 @@ def get_core_organizations():
 
 def projection_onto_index(n):
     """Return function that returns the nth value for a vector."""
+
     def projection_func(vect): return vect[n]
+
     return projection_func
+
 
 def get_static_extradata_mapping_file():
     management_file_directory = os.path.split(__file__)[0]
     extradata_file = os.path.join(management_file_directory, "extradata.csv")
     return extradata_file
 
+
 def get_static_building_snapshot_tree_file():
     management_file_directory = os.path.split(__file__)[0]
     tree_file = os.path.join(management_file_directory, "tree_file.csv")
     return tree_file
 
+
 def read_building_snapshot_tree_structure(input_file):
     with open(input_file) as tree_file:
-        l = tree_file.readline() # Header
+        l = tree_file.readline()  # Header
         assert l.startswith("id")
 
         z = lambda line: map(int, line.split(',')[1:])
@@ -119,13 +134,12 @@ def read_building_snapshot_tree_structure(input_file):
     return m2m
 
 
-
 def find_matching_values_linear(array, val):
     results = []
     for (ndx, array_val) in enumerate(array):
-        if array_val == val: results.append(ndx)
+        if array_val == val:
+            results.append(ndx)
     return set(results)
-
 
 
 def get_node_sinks(tree_label, labelarray, parent_adj_dict, child_adj_dict):
@@ -142,18 +156,17 @@ def get_node_sinks(tree_label, labelarray, parent_adj_dict, child_adj_dict):
 
 
 def find_or_create_bluesky_taxlot_associated_with_building_snapshot(bs, org):
-
     # HOHO-TODO: Trace and document this logic.
     desired_field_mapping = load_organization_taxlot_field_mapping(org)
-    reverse_mapping = {y:x for x,y in desired_field_mapping.items()}
+    reverse_mapping = {y: x for x, y in desired_field_mapping.items()}
 
     resolution_list = []
-    if "jurisdiction_tax_lot_id" in reverse_mapping: resolution_list.append(reverse_mapping["jurisdiction_tax_lot_id"])
+    if "jurisdiction_tax_lot_id" in reverse_mapping:
+        resolution_list.append(reverse_mapping["jurisdiction_tax_lot_id"])
     resolution_list.append("tax_lot_id")
 
     bs_taxlot_val = aggregate_value_from_state(bs, (USE_FIRST_VALUE, resolution_list))
-    ### HOHO: END OF TODO CHANGES.
-
+    # HOHO: END OF TODO CHANGES.
 
     if bs_taxlot_val is None:
         tax_lot = seed.models.TaxLot(organization=org)
@@ -173,6 +186,7 @@ def find_or_create_bluesky_taxlot_associated_with_building_snapshot(bs, org):
         tax_lot.save()
         return tax_lot, True
 
+
 def find_or_create_bluesky_property_associated_with_building_snapshot(bs, org):
     mapping_field = 'pm_property_id'
 
@@ -180,11 +194,11 @@ def find_or_create_bluesky_property_associated_with_building_snapshot(bs, org):
     # FIX ME - This needs to be updated to simply search on the field and be given a rule.
 
     desired_field_mapping = load_organization_property_field_mapping(org)
-    reverse_mapping = {y:x for x,y in desired_field_mapping.items()}
-
+    reverse_mapping = {y: x for x, y in desired_field_mapping.items()}
 
     resolution_list = []
-    if mapping_field in reverse_mapping: resolution_list.append(reverse_mapping[mapping_field])
+    if mapping_field in reverse_mapping:
+        resolution_list.append(reverse_mapping[mapping_field])
     resolution_list.append("pm_property_id")
 
     bs_property_id = aggregate_value_from_state(bs, (USE_FIRST_VALUE, resolution_list))
@@ -203,6 +217,7 @@ def find_or_create_bluesky_property_associated_with_building_snapshot(bs, org):
         property = seed.models.Property(organization=org)
         property.save()
         return property, True
+
 
 def load_organization_field_mapping_for_type_exclusions(org, type):
     assert type in ["Tax", "Property"]
@@ -224,6 +239,7 @@ def load_organization_field_mapping_for_type_exclusions(org, type):
     remove_from_extra_data_mapping = filter(lambda x: x != "custom_id_1", remove_from_extra_data_mapping)
     return remove_from_extra_data_mapping
 
+
 def load_organization_field_mapping_for_type(org_id, type):
     """This returns a list of keys -> (table, attr) to map the key into."""
 
@@ -235,11 +251,12 @@ def load_organization_field_mapping_for_type(org_id, type):
     fl = filter(lambda x: x.startswith(org_mapping_line), fl)
     reader = csv.reader(StringIO.StringIO("".join(fl)))
 
-    field_mapping = collections.defaultdict(lambda : collections.defaultdict(lambda : False))
+    field_mapping = collections.defaultdict(lambda: collections.defaultdict(lambda: False))
 
     for r in reader:
         org_str, is_explicit_field, key_name, table, field = r[1:6]
-        if table != type: continue
+        if table != type:
+            continue
 
         from_field = key_name if is_explicit_field else "extra_data/{}".format(key_name)
 
@@ -253,11 +270,14 @@ def load_organization_field_mapping_for_type(org_id, type):
 def load_organization_property_extra_data_mapping_exclusions(org):
     return load_organization_field_mapping_for_type_exclusions(org.pk, "Property")
 
+
 def load_organization_taxlot_extra_data_mapping_exclusions(org):
     return load_organization_field_mapping_for_type_exclusions(org.pk, "Tax")
 
+
 def load_organization_property_field_mapping(org):
     return load_organization_field_mapping_for_type(org.pk, "Property")
+
 
 def load_organization_taxlot_field_mapping(org):
     return load_organization_field_mapping_for_type(org.pk, "Tax")
@@ -267,16 +287,17 @@ def get_organization_map_custom():
     _, org_map_custom = _load_raw_mapping_data()
     return org_map_custom
 
+
 def _load_raw_mapping_data():
     # pdb.set_trace()
     fl = open(get_static_extradata_mapping_file()).readlines()
 
     fl = filter(lambda x: x.startswith("1,"), fl)
 
-    d = collections.defaultdict(lambda : {})
+    d = collections.defaultdict(lambda: {})
     reader = csv.reader(StringIO.StringIO("".join(fl)))
 
-    org_map_custom_id = collections.defaultdict(lambda : False)
+    org_map_custom_id = collections.defaultdict(lambda: False)
 
     for r in reader:
         org_str, is_explicit_field, key_name, table, field = r[1:6]
@@ -291,17 +312,18 @@ def _load_raw_mapping_data():
 
 
 def valid_id(s):
-    #pattern = r"[\w\-\s]+$"
+    # pattern = r"[\w\-\s]+$"
     if len(s) == 1:
-        #trying to do the case where the string is only one character was too complicated
-        #so just do it separate for now
+        # trying to do the case where the string is only one character was too complicated
+        # so just do it separate for now
         pattern = r"\w"
     else:
-        #Rules for individual field:
-        #Must start and end with alphanumeric (\w)
-        #May have any combination of whitespace, hyphens ("-"), periods or alphanumerics in the middle
+        # Rules for individual field:
+        # Must start and end with alphanumeric (\w)
+        # May have any combination of whitespace, hyphens ("-"), periods or alphanumerics in the middle
         pattern = r"\w[\w\-\s\.]*\w$"
     return re.match(pattern, s)
+
 
 def sanitize_delimiters(s, delimiter_to_use, other_delimiters):
     """Replace all delimiters with preferred delimiter"""
@@ -309,9 +331,11 @@ def sanitize_delimiters(s, delimiter_to_use, other_delimiters):
         s = s.replace(d, delimiter_to_use)
     return s
 
+
 def check_delimiter_sanity(check_str, delimiters):
     """Ensure that only one kind of delimiter is used."""
     return map(lambda delim: delim in check_str, delimiters).count(True) <= 1
+
 
 def get_id_fields(parse_string):
     """Parse a string into a list of taxlots.
@@ -319,11 +343,12 @@ def get_id_fields(parse_string):
     Raises an exception if string does not match
     """
 
-    logging_info("get_id_fields called with {id}".format(id = parse_string))
-    if parse_string is None: return []
+    logging_info("get_id_fields called with {id}".format(id=parse_string))
+    if parse_string is None:
+        return []
 
-    #The id field can use any of several delimiters so reduce it to just one
-    #delimiter first to make things easier
+    # The id field can use any of several delimiters so reduce it to just one
+    # delimiter first to make things easier
     delimiter_to_use = ","
     other_delimiters = [";", ":", "/"]
 
@@ -334,22 +359,22 @@ def get_id_fields(parse_string):
     while cleaned_str.strip().endswith(delimiter_to_use):
         cleaned_str = cleaned_str.strip()[:-1].strip()
 
-    #If there is nothing in the string return an empty list
+    # If there is nothing in the string return an empty list
     if not len(cleaned_str.strip()):
         logging_info("No ids found, returning")
         return []
 
     fields = cleaned_str.split(delimiter_to_use)
-    #leading and trailing whitespace is part of the delimiter and not the ids
-    #so remove it here before additional processing
+    # leading and trailing whitespace is part of the delimiter and not the ids
+    # so remove it here before additional processing
     fields = [f.strip() for f in fields]
 
     for field in fields:
         if not valid_id(field):
-            logging_info("Invalid id: {id}".format(id = field))
+            logging_info("Invalid id: {id}".format(id=field))
             raise TaxLotIDValueError(parse_string, field)
 
-    logging_info("Returning {f}".format(f = fields))
+    logging_info("Returning {f}".format(f=fields))
     return fields
 
 
@@ -375,15 +400,18 @@ def get_value_for_key(state, field_string):
             return None
         else:
             value = state.extra_data[key]
-            if value is None: return None
+            if value is None:
+                return None
 
             # FIXME: Gross.
             if isinstance(value, unicode):
                 value = str(value.encode('ascii', 'ignore')).strip()
-                if not value: return None
+                if not value:
+                    return None
             elif isinstance(value, str):
                 value = value.strip()
-                if not value: return None
+                if not value:
+                    return None
 
             return value
     else:
@@ -397,6 +425,7 @@ USE_FIRST_VALUE = 1
 JOIN_STRINGS = 2
 UNIQUE_LIST = 3
 
+
 def aggregate_value_from_state(state, collapse_rules):
     aggregation_type, collapse_fields = collapse_rules
 
@@ -409,10 +438,12 @@ def aggregate_value_from_state(state, collapse_rules):
     else:
         raise ValueError("Unknown aggregation type: {}".format(aggregation_type))
 
+
 def aggregate_value_from_state_usefirstvalue(state, use_first_fields):
     for source_string in use_first_fields:
         val = get_value_for_key(state, source_string)
-        if val is not None and val != "": return val
+        if val is not None and val != "":
+            return val
     else:
         return None
 
@@ -422,54 +453,63 @@ def aggregate_value_from_state_uniquelist(state, list_fields):
 
     for source_string in list_fields:
         val = get_value_for_key(state, source_string)
-        if val: list_of_values.extend(get_id_fields(val))
+        if val:
+            list_of_values.extend(get_id_fields(val))
     else:
         return set(list_of_values)
+
 
 def aggregate_value_from_state_joinstrings(state, string_fields):
     values = []
 
     for source_string in string_fields:
         val = get_value_for_key(state, source_string)
-        if val: values.append(val)
+        if val:
+            values.append(val)
     else:
         return ";".join(values)
 
 
+taxlot_by_byorg = collections.defaultdict(lambda: set())
 
-taxlot_by_byorg = collections.defaultdict(lambda : set())
+
 def get_taxlot_columns(org):
     # HOHO TODO - Verify these functions and relocate to _localtools
     org_id = str(org.pk)
     global taxlot_by_byorg
 
-    if not org_id in taxlot_by_byorg:
+    if org_id not in taxlot_by_byorg:
         fl = open(get_static_extradata_mapping_file()).readlines()
         fl = filter(lambda x: x.startswith("1,{}".format(org_id)), fl)
         reader = csv.reader(StringIO.StringIO("".join(fl)))
 
         for r in reader:
             org_str, is_explicit_field, key_name, table, field = r[1:6]
-            if table != "Tax": continue
+            if table != "Tax":
+                continue
             taxlot_by_byorg[org_id].add(key_name)
 
-    return  taxlot_by_byorg[org_id]
+    return taxlot_by_byorg[org_id]
 
-property_by_byorg = collections.defaultdict(lambda : set())
+
+property_by_byorg = collections.defaultdict(lambda: set())
+
+
 def get_property_columns(org):
     # TODO - Verify these functions and relocate to _localtools
     org_id = str(org.pk)
 
     global property_by_byorg
 
-    if not org in property_by_byorg:
+    if org not in property_by_byorg:
         fl = open(get_static_extradata_mapping_file()).readlines()
         fl = filter(lambda x: x.startswith("1,{}".format(org_id)), fl)
         reader = csv.reader(StringIO.StringIO("".join(fl)))
 
         for r in reader:
             org_str, is_explicit_field, key_name, table, field = r[1:6]
-            if table != "Property": continue
+            if table != "Property":
+                continue
             property_by_byorg[org_id].add(key_name)
 
     return property_by_byorg[org_id]

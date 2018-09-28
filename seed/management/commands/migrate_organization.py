@@ -4,8 +4,6 @@ from __future__ import unicode_literals
 new tables.
 """
 
-import pdb
-from IPython import embed
 from django.core.management.base import BaseCommand
 from seed.lib.superperms.orgs.models import Organization
 import subprocess
@@ -31,7 +29,6 @@ from _localtools import _load_raw_mapping_data
 from _localtools import get_value_for_key
 from _localtools import set_state_value
 from _localtools import logging_info
-from _localtools import logging_debug
 
 from _localtools import get_taxlot_columns
 from _localtools import get_property_columns
@@ -74,18 +71,18 @@ def node_has_associated_import_name(node):
             return True
         else:
             return False
-    except:
+    except BaseException:
         return False
 
 
 def get_organization_cycle_date(org, node):
-    mappings = collections.defaultdict(lambda: collections.defaultdict(lambda : False))
+    mappings = collections.defaultdict(lambda: collections.defaultdict(lambda: False))
     mappings[69][u'data_imports/BEUDO%20Masterlist%202016_5.16.16.xlsx.1469546768'] = datetime.datetime(2016, 5, 1)
     mappings[69][u'data_imports/PM%20Reports%202015_5.16.16.xlsx.1463604454'] = datetime.datetime(2015, 5, 1)
     mappings[69][u'data_imports/PM%20Reports%202016_8.11.16.xlsx.1471284203'] = datetime.datetime(2016, 5, 1)
     mappings[69][u'data_imports/BEUDO%20Masterlist%202015_5.16.16.xlsx.1463605948'] = datetime.datetime(2015, 5, 1)
     mappings[69][u'data_imports/BEUDO%20Masterlist%202015_5.16.16.xlsx.1463603666'] = datetime.datetime(2015, 5, 1)
-    mappings[69][u'data_imports/MIT%20PM%20Reports%202016_9.6.16.xlsx.1473186628']  = datetime.datetime(2016, 5, 1)
+    mappings[69][u'data_imports/MIT%20PM%20Reports%202016_9.6.16.xlsx.1473186628'] = datetime.datetime(2016, 5, 1)
 
     return mappings[org.pk][get_possible_import_filename(node)]
 
@@ -93,14 +90,14 @@ def get_organization_cycle_date(org, node):
 def get_possible_import_filename(node):
     try:
         return str(node.import_file.file.name)
-    except:
+    except BaseException:
         return ''
 
 
 def get_possible_import_notes(node):
     try:
         return str(node.import_file.import_record.notes)
-    except:
+    except BaseException:
         return ''
     return
 
@@ -108,14 +105,14 @@ def get_possible_import_notes(node):
 def get_possible_import_user_email(node):
     try:
         return str(node.import_file.import_record.owner.email)
-    except:
+    except BaseException:
         return ''
 
 
 def get_possible_import_time(node):
     try:
         return str(node.import_file.import_record.start_time.strftime("%m-%d-%Y"))
-    except:
+    except BaseException:
         return ''
 
 
@@ -184,7 +181,7 @@ def create_property_state_for_node(node, org, cb):
                                                city=node.city,
                                                state=node.state_province,
                                                postal_code=node.postal_code,
-                                               #building_count=node.building_count,
+                                               # building_count=node.building_count,
                                                property_notes=node.property_notes,
                                                use_description=node.use_description,
                                                gross_floor_area=node.gross_floor_area,
@@ -268,7 +265,7 @@ def create_tax_lot_state_for_node(node, org, cb):
 
     try:
         filename = node.import_file.file.name
-    except:
+    except BaseException:
         filename = "NO FILENAME"
 
     print filename
@@ -288,7 +285,6 @@ def create_tax_lot_state_for_node(node, org, cb):
         taxlotstate.extra_data["Assessors City"] = taxlotstate.city
         taxlotstate.extra_data["Assessors State"] = taxlotstate.state
         taxlotstate.extra_data["Assessors Zip"] = taxlotstate.postal_code
-
 
     for (field_origin, field_dest) in mapping.items():
         value = get_value_for_key(node, field_origin)
@@ -411,14 +407,13 @@ def load_cycle(org, node, year_ending=True, fallback=True):
             if berkeley_datestr is not None:
                 time = datetime.datetime.strptime(berkeley_datestr, "%Y-%m-%d")
         except ValueError:
-            pass # Bad value in extra_data; skip it and use the default.
-
+            pass  # Bad value in extra_data; skip it and use the default.
 
     cycle_start = time.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
     cycle_end = cycle_start.replace(year=cycle_start.year + 1) - datetime.timedelta(seconds=1)
 
     if org.pk in [69, 20]:
-        cycle_name = "{} Compliance Year".format(cycle_start.year+1)
+        cycle_name = "{} Compliance Year".format(cycle_start.year + 1)
     else:
         cycle_name = "{} Calendar Year".format(cycle_start.year)
 
@@ -493,7 +488,8 @@ class Command(BaseCommand):
         _, labelarray = connected_components(adj_matrix)
 
         counts = collections.Counter()
-        for label in labelarray: counts[label] += 1
+        for label in labelarray:
+            counts[label] += 1
 
         logging_info("Migration organization: {}".format(",".join(map(str, core_organization))))
 
@@ -519,7 +515,8 @@ class Command(BaseCommand):
                 try:
                     canonical_index = max(starting_from_canonical, starting_on_canonical_following)
                     canonical_index = org_canonical_ids.index(canonical_index)
-                    if starting_on_canonical_following: canonical_index += 1
+                    if starting_on_canonical_following:
+                        canonical_index += 1
 
                     org_canonical_buildings = list(org_canonical_buildings)[canonical_index:]
                     org_canonical_snapshots = list(org_canonical_snapshots)[canonical_index:]
@@ -530,8 +527,6 @@ class Command(BaseCommand):
                         "Restricting to canonical starting ndx={} (id={}), was {} now {}.".format(
                             canonical_index, len(org_canonical_ids), len(org_canonical_ids),
                             len(org_canonical_buildings)))
-
-
 
                 except ValueError:
                     raise RuntimeError(
@@ -575,9 +570,9 @@ class Command(BaseCommand):
 
             tree_sizes = [counts[labelarray[bs.id]] for bs in org_canonical_snapshots]
 
-            ## For each of those trees find the tip
-            ## For each of those trees find the import records
-            ## For each of those trees find the cycles associated with it
+            # For each of those trees find the tip
+            # For each of those trees find the import records
+            # For each of those trees find the cycles associated with it
             for ndx, (cb, bs) in enumerate(zip(org_canonical_buildings, org_canonical_snapshots)):
                 if limit and (ndx + 1) > limit:
                     logging_info("Migrated limit={} buildings.".format(limit))
@@ -628,7 +623,8 @@ def is_descendant_of(node_1_id, node_2_id, child_dictionary):
     while node_2_id:
         node_2_id = child_dictionary[node_2_id]
         node_2_id = next(iter(node_2_id)) if node_2_id else node_2_id
-        if node_2_id == node_1_id: return True
+        if node_2_id == node_1_id:
+            return True
 
     return False
 
@@ -639,7 +635,8 @@ def calculate_generation(node_id, child_dictionary):
     while node_id:
         generation += 1
         node_id = child_dictionary[node_id]
-        if node_id: node_id = next(iter(node_id))
+        if node_id:
+            node_id = next(iter(node_id))
 
     return generation
 
@@ -694,13 +691,12 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
     logging_info("Creating Property/TaxLot from {} nodes".format(
         sum(map(len, ([leaf_building], other_buildingsnapshots, import_buildingsnapshots)))))
 
-
     tax_lot = None
     property_obj = None
 
     leaf_node_type = classify_node(leaf_building, org)
 
-    #if node_has_tax_lot_info(leaf_building, org):
+    # if node_has_tax_lot_info(leaf_building, org):
     if leaf_node_type in [TAX_IMPORT, COMBO_IMPORT, MERGE]:
         tax_lot, created = find_or_create_bluesky_taxlot_associated_with_building_snapshot(
             leaf_building, org)
@@ -739,7 +735,8 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
         if node_type == TAX_IMPORT or node_type == COMBO_IMPORT or node_type == MERGE:
             # Get the cycle associated with the node
             import_cycle = load_cycle(org, node)
-            if import_cycle.start.year == 2015: x = import_cycle
+            if import_cycle.start.year == 2015:
+                x = import_cycle
 
             # print "Node {} cycle is {} with address {}, {}".format(node, import_cycle, node.extra_data['Building Address'] if 'Building Address' in node.extra_data.keys() else "NONE", node.gross_floor_area)
             tax_lot_state = create_tax_lot_state_for_node(node, org, cb)
@@ -802,7 +799,6 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
 
                     # assert m2m_cycle == last_taxlot_view.cycle == last_property_view.cycle, "Why are not all these equal?!"
 
-
                     tlp, created = seed.models.TaxLotProperty.objects.get_or_create(
                         property_view=last_property_view[m2m_cycle],
                         taxlot_view=last_taxlot_view[m2m_cycle],
@@ -857,6 +853,7 @@ def create_associated_bluesky_taxlots_properties(org, import_buildingsnapshots, 
             property_state_created,
             m2m_created))
     return
+
 
 # FIXME: Remove this global variable
 organization_extra_data_mapping, _ = _load_raw_mapping_data()

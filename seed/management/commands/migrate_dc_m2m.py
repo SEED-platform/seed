@@ -3,26 +3,24 @@
 
 from __future__ import unicode_literals
 
-from _localtools import logging_info
-from _localtools import logging_debug
-
-from django.core.management.base import BaseCommand
-from seed.lib.superperms.orgs.models import Organization
-from django.core.exceptions import ObjectDoesNotExist
-from seed.models import Cycle
-from seed.models import PropertyView
-from seed.models import TaxLotView
-from seed.models import TaxLotProperty
 import csv
 import os
 import re
-import pdb
-from IPython import embed
+
+from django.core.management.base import BaseCommand
+
+from _localtools import logging_info
+from seed.lib.superperms.orgs.models import Organization
+from seed.models import Cycle
+from seed.models import PropertyView
+from seed.models import TaxLotProperty
+from seed.models import TaxLotView
 
 base_m2m_fn = "dc_junction_table.csv"
 current_directory = os.path.split(__file__)[0]
 DC_M2M_FN = os.path.join(current_directory, base_m2m_fn)
-DC_ORG_PK=184
+DC_ORG_PK = 184
+
 
 def processLinks(all_links):
     all_broken_links = set()
@@ -31,6 +29,7 @@ def processLinks(all_links):
         for tl_id in filter(lambda x: x, map(lambda x: x.strip(), re.split("[,;]", tl_list_id))):
             all_broken_links.add((pm_id, tl_id))
     return all_broken_links
+
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
@@ -49,16 +48,16 @@ class Command(BaseCommand):
         TaxLotProperty.objects.filter(property_view__property__organization=dc_org).delete()
 
         reader = csv.reader(open(DC_M2M_FN, 'rU'))
-        reader.next() # Throw away header
+        reader.next()  # Throw away header
 
-        pmids_taxlotids_m2m = [(y,z) for (x,y,z) in reader]
+        pmids_taxlotids_m2m = [(y, z) for (x, y, z) in reader]
 
         all_links = set(pmids_taxlotids_m2m)
 
         all_links = processLinks(all_links)
 
-        all_properties = set(map(lambda (x,y): x, all_links))
-        all_taxlots = set(map(lambda (x,y): y, all_links))
+        all_properties = set(map(lambda x_y: x_y[0], all_links))
+        all_taxlots = set(map(lambda x_y1: x_y1[1], all_links))
 
         # print "-" * 30
         # print "Taxlots with len != 8"
@@ -84,8 +83,10 @@ class Command(BaseCommand):
                                                 state__jurisdiction_tax_lot_id=tl_id,
                                                 cycle=cycle)
 
-                if len(pv): found_properties.add(pm_id)
-                if len(tlv): found_taxlots.add(tl_id)
+                if len(pv):
+                    found_properties.add(pm_id)
+                if len(tlv):
+                    found_taxlots.add(tl_id)
 
                 if len(pv) and len(tlv):
                     TaxLotProperty.objects.create(property_view=pv.first(),
@@ -93,13 +94,11 @@ class Command(BaseCommand):
                                                   cycle=cycle)
                     found_links.add((pm_id, tl_id))
 
-
         else:
             # pdb.set_trace()
             print "Found {}% of Properties - {} found, {} unfound".format(100.0 * len(found_properties) / len(all_properties), len(found_properties), len(all_properties) - len(found_properties))
             print "Found {}% of TaxLots - {} found, {} unfound".format(100.0 * len(found_taxlots) / len(all_taxlots), len(found_taxlots), len(all_taxlots) - len(found_taxlots))
             print "Found {}% of Links - {} found, {} unfound".format(100.0 * len(found_links) / len(all_links), len(found_links), len(all_links) - len(found_links))
-
 
             print "Unmatched Properties:"
             for p in sorted(all_properties - found_properties):
@@ -109,12 +108,6 @@ class Command(BaseCommand):
             print "Unmatched TaxLots:"
             for p in sorted(all_taxlots - found_taxlots):
                 print p
-
-
-
-
-
-
 
         logging_info("END migrate_dc_m2m")
         return

@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 
-from django.core.management.base import BaseCommand
 from django.apps import apps
+from django.core.management.base import BaseCommand
 
 
 def delete_based_on_org(apps, org):

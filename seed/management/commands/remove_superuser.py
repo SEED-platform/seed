@@ -30,7 +30,7 @@ class Command(BaseCommand):
         if options['user_id']:
             try:
                 user = User.objects.get(pk=options['user_id'])
-            except AttributeError, xcpt:
+            except AttributeError as xcpt:
                 print "No user with id={} was found.  Run with --stats to display all the users.".format(
                     options['user_id'])
                 return
