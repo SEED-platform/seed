@@ -105,9 +105,14 @@ def apply_column_value(raw_column_name, column_value, model, mapping, is_extra_d
                 # clean against the database type first
                 cleaned_value = cleaner.clean_value(column_value, mapped_column_name)
 
-                # now clean against the raw name with pint (Quantity Units) because that's the column
-                # that holds the units needed to interpret the value correctly
-                cleaned_value = cleaner.clean_value(cleaned_value, raw_column_name)
+                # This is a temporary fix for when the raw_column_name and the mapped_column_name
+                # are the same. It causes the units to be cast twice since the cleaner look up finds
+                # the same column twice. The cleaner needs to be cleaned up quite a bit to handle
+                # this error correctly.
+                if mapped_column_name != raw_column_name:
+                    # now clean against the raw name with pint (Quantity Units) because that's the column
+                    # that holds the units needed to interpret the value correctly
+                    cleaned_value = cleaner.clean_value(cleaned_value, raw_column_name)
             else:
                 cleaned_value = cleaner.clean_value(column_value, mapped_column_name)
         else:

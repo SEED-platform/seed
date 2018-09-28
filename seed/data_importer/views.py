@@ -391,6 +391,10 @@ class LocalUploaderViewSet(viewsets.ViewSet):
                         if pm_variable == u'property_name':
                             this_row.append(this_pm_variable)
                             added = True
+                        elif pm_variable == u'property_notes':
+                            sanitized_string = this_pm_variable.replace('\n', ' ')
+                            this_row.append(sanitized_string)
+                            added = True
                         elif this_pm_variable not in pm_flagged_bad_string_values:
                             this_row.append(this_pm_variable)
                             added = True
