@@ -41,6 +41,7 @@ services:
       - POSTGRES_PASSWORD=super-secret-password
       - SECRET_KEY=ARQV8qGuJKH8sGnBf6ZeEdJQRKLTUhsvEcp8qG9X9sCPXvGLhdxqnNXpZcy6HEyf
       - DJANGO_SETTINGS_MODULE=config.settings.docker
+      - NUMBER_OF_WORKERS
     depends_on:
       - db-redis
       - db-postgres
