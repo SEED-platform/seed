@@ -235,12 +235,15 @@
                                 <tr>
                                     <th sd-resizable>File Type</th>
                                     <th sd-resizable class="ellipsis-resizable">File Name</th>
+                                    <th sd-resizable class="ellipsis-resizable">Created</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr ng-repeat="file in item_state.files">
+                                    console.dir(item_state.files)
                                     <td> {$ file.file_type $}</td>
                                     <td><a href='{$ file.file $}'>{$ file.filename $}</a></td>
+                                    <td>{$ file.created | date: 'yyyy-MM-dd h:mm a' $}</a></td>
                                 </tr>
                             </tbody>
                         </table>
