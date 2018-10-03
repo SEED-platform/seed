@@ -155,7 +155,7 @@ class BuildingFile(models.Model):
                     category=m['category'], name=m['name'], organization_id=organization_id,
                 )
             except Measure.DoesNotExist:
-                # TODO: Deal with it
+                messages['warnings'].append('Measure category and name is not valid %s:%s' % (m['category'], m['name']))
                 continue
 
             # Add the measure to the join table.
@@ -163,6 +163,7 @@ class BuildingFile(models.Model):
             join, _ = PropertyMeasure.objects.get_or_create(
                 property_state_id=self.property_state_id,
                 measure_id=measure.pk,
+                property_measure_name=m.get('property_measure_name'),
                 implementation_status=PropertyMeasure.str_to_impl_status(
                     m.get('implementation_status', 'Proposed')
                 ),
@@ -176,7 +177,6 @@ class BuildingFile(models.Model):
                 recommended=m.get('recommended', 'false') == 'true',
             )
             join.description = m.get('description')
-            join.property_measure_name = m.get('property_measure_name')
             join.cost_mv = m.get('mv_cost')
             join.cost_total_first = m.get('measure_total_first_cost')
             join.cost_installation = m.get('measure_installation_cost')
@@ -229,6 +229,7 @@ class BuildingFile(models.Model):
                     )
                 except PropertyMeasure.DoesNotExist:
                     # PropertyMeasure is not in database, skipping silently
+                    messages['warnings'].append('Measure associated with scenario not found. Scenario: %s, Measure name: %s' % (s.get('name'), measure_name))
                     continue
 
                 scenario.measures.add(measure)
