@@ -792,7 +792,7 @@ msgid "File Source:"
 msgstr "File Source:"
 
 msgid "FILE_TYPES_SUPPORTED"
-msgstr "File types supported: <strong>.csv</strong>, <strong>.xls</strong>, and <strong>.xlsx</strong>."
+msgstr "File types supported: <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, and <strong>.xml</strong>."
 
 msgid "Files (Master State Only)"
 msgstr "Files (Master State Only)"
@@ -953,6 +953,9 @@ msgstr "INTERNAL"
 
 msgid "INVALID_EXTENSION_ALERT"
 msgstr "<strong>Sorry!</strong> SEED doesn't currently support that file format. Only <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, and <strong>.xml</strong> files are supported."
+
+msgid "INVALID_XML_EXTENSION_ALERT"
+msgstr "<strong>Sorry!</strong> SEED doesn't currently support that file format. Only <strong>.xml</strong> files are supported."
 
 msgid "Inventory"
 msgstr "Inventory"
@@ -2137,6 +2140,9 @@ msgstr "Upload a Spreadsheet"
 msgid "Upload another energy data file"
 msgstr "Upload another energy data file"
 
+msgid "Upload BuildingSync Data"
+msgstr "Upload BuildingSync Data"
+
 msgid "upload complete"
 msgstr "upload complete"
 
@@ -2356,6 +2362,9 @@ msgstr "Your password must contain at least %(quantity)d %(type)s characters."
 
 msgid "Your Role"
 msgstr "Your Role"
+
+msgid "Your SEED account is not associated with any organizations.  Please contact a SEED administrator."
+msgstr "Your SEED account is not associated with any organizations. Please contact a SEED administrator."
 
 #: seed/landing/templates/landing/password_reset_email.html:9
 msgid "Your username, in case you've forgotten:"

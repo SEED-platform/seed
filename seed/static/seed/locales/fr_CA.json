@@ -297,7 +297,7 @@
     "INCLUDE_SHARED_PROPERTIES": "Inclure dans vos Liste de Propriétés toutes les propriétés partagées avec vous.",
     "INCLUDE_SHARED_TAXLOTS": "Inclure dans votre Liste de Lots d'Impôt tous les lots d'impôt partagé avec vous.",
     "INTERNAL": "INTERNE",
-    "INVALID_EXTENSION_ALERT": "<strong>Désolée!<\/strong> SEED ne supporte actuellement pas ce format de fichier. Seuls les fichiers <strong>.csv<\/strong>, <strong>.xls<\/strong>, et <strong>.xlsx<\/strong> sont pris en charge.",
+    "INVALID_EXTENSION_ALERT": "<strong>Désolée!<\/strong> SEED ne supporte actuellement pas ce format de fichier. Seuls les fichiers <strong>.csv<\/strong>, <strong>.xls<\/strong>, <strong>.xlsx<\/strong>, et <strong>.xml<\/strong> sont pris en charge.",
     "INVALID_XML_EXTENSION_ALERT": "<strong>Désolée!<\/strong> SEED ne supporte actuellement pas ce format de fichier. Seuls les fichiers <strong>.xml<\/strong> sont pris en charge.",
     "Inventory": "Inventaire",
     "Inventory list file": "Fichier de liste d'inventaire",
@@ -739,5 +739,6 @@
     "Your page could not be located!": "Votre page n'a pas pu être trouvé!",
     "Your password must contain at least %(quantity)d %(type)s characters.": "Votre mot de passe doit contenir au moins% (quantité) d% (type) s caractères.",
     "Your Role": "Votre Rôle",
+    "Your SEED account is not associated with any organizations.  Please contact a SEED administrator.": "Votre compte SEED n'est associé à aucune organisation. Veuillez contacter un administrateur SEED.",
     "Your username, in case you've forgotten:": "Votre nom d'utilisateur, au cas où vous avez oublié:"
 }
