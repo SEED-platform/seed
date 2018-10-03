@@ -47,6 +47,7 @@ services:
       - POSTGRES_PASSWORD
       - SECRET_KEY
       - DJANGO_SETTINGS_MODULE=config.settings.docker
+      - NUMBER_OF_WORKERS
     depends_on:
       - db-redis
       - db-postgres
