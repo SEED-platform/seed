@@ -207,7 +207,7 @@ class Cleaner(object):
 
         return pint_column_map
 
-    def clean_value(self, value, column_name):
+    def clean_value(self, value, column_name, is_extra_data=True):
         """Clean the value, based on characteristics of its column_name."""
         value = default_cleaner(value)
         if value is not None:
@@ -226,8 +226,11 @@ class Cleaner(object):
             if column_name in self.int_columns:
                 return int_cleaner(value)
 
-            if column_name in self.pint_column_map.keys():
-                units = self.pint_column_map[column_name]
-                return pint_cleaner(value, units)
+            if not is_extra_data:
+                # If the object is not extra data, then check if the data are in the
+                # pint_column_map. This needs to be cleaned up significantly.
+                if column_name in self.pint_column_map.keys():
+                    units = self.pint_column_map[column_name]
+                    return pint_cleaner(value, units)
 
         return value

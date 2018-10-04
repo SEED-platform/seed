@@ -916,6 +916,34 @@
 					</auc:UserDefinedField>
 				</auc:UserDefinedFields>
 			</auc:Measure>
+            <auc:Measure ID="Measure29-Duplicate">
+				<auc:SystemCategoryAffected>Water Use</auc:SystemCategoryAffected>
+				<auc:PremisesAffected>
+					<auc:PremiseAffected IDref="Building223"/>
+				</auc:PremisesAffected>
+				<auc:TechnologyCategories>
+					<auc:TechnologyCategory>
+						<auc:WaterAndSewerConservationSystems>
+							<auc:MeasureName>Install low-flow faucets and showerheads</auc:MeasureName>
+						</auc:WaterAndSewerConservationSystems>
+					</auc:TechnologyCategory>
+				</auc:TechnologyCategories>
+				<auc:MeasureScaleOfApplication>Entire facility</auc:MeasureScaleOfApplication>
+				<auc:LongDescription>Install low-flow faucets and showerheads</auc:LongDescription>
+				<auc:MVCost>0</auc:MVCost>
+				<auc:UsefulLife>10</auc:UsefulLife>
+				<auc:MeasureTotalFirstCost>16775</auc:MeasureTotalFirstCost>
+				<auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+				<auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+				<auc:Recommended>true</auc:Recommended>
+				<auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+				<auc:UserDefinedFields>
+					<auc:UserDefinedField>
+						<auc:FieldName>OpenStudioMeasureName</auc:FieldName>
+						<auc:FieldValue>TBD</auc:FieldValue>
+					</auc:UserDefinedField>
+				</auc:UserDefinedFields>
+			</auc:Measure>
 		</auc:Measures>
 		<auc:Report>
 			<auc:Scenarios>
@@ -1242,6 +1270,17 @@
 							<auc:ReferenceCase IDref="Baseline"/>
 							<auc:MeasureIDs>
 								<auc:MeasureID IDref="Measure29"/>
+							</auc:MeasureIDs>
+						</auc:PackageOfMeasures>
+					</auc:ScenarioType>
+				</auc:Scenario>
+                <auc:Scenario>
+					<auc:ScenarioName>Use the duplicated measure</auc:ScenarioName>
+					<auc:ScenarioType>
+						<auc:PackageOfMeasures>
+							<auc:ReferenceCase IDref="Baseline"/>
+							<auc:MeasureIDs>
+								<auc:MeasureID IDref="Measure29-Duplicate"/>
 							</auc:MeasureIDs>
 						</auc:PackageOfMeasures>
 					</auc:ScenarioType>

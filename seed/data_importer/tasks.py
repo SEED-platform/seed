@@ -394,10 +394,16 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                 if map_model_obj:
                     Column.save_column_names(map_model_obj)
     except IntegrityError as e:
+        progress_data.finish_with_error('Could not map_row_chunk with error', e.message)
         raise IntegrityError("Could not map_row_chunk with error: %s" % e.message)
     except DataError as e:
         _log.error(traceback.format_exc())
+        progress_data.finish_with_error('Invalid data found', e.message)
         raise DataError("Invalid data found: %s" % e.message)
+    except TypeError as e:
+        _log.error('Error mapping data with error: %s' % e.message)
+        progress_data.finish_with_error('Invalid type found while mapping data', e.message)
+        raise DataError("Invalid type found while mapping data: %s" % e.message)
 
     progress_data.step()
 
@@ -681,12 +687,14 @@ def _save_raw_data_create_tasks(file_pk, progress_key):
 
 def save_raw_data(file_pk):
     """
-    Save the raw data from an imported file. This is the entry point into saving the data.
+    Simply report to the user that we have queued up the save_run_data to run. This is the entry
+    point into saving the data.
 
     :param file_pk: ImportFile Primary Key
     :return: Dict, from cache, containing the progress key to track
     """
     progress_data = ProgressData(func_name='save_raw_data', unique_id=file_pk)
+    # save_raw_data_run.s(file_pk, progress_data.key)
     try:
         # Go get the tasks that need to be created, then call them in the chord here.
         tasks = _save_raw_data_create_tasks(file_pk, progress_data.key)
@@ -707,6 +715,17 @@ def save_raw_data(file_pk):
     _log.debug(progress_data.result())
     return progress_data.result()
 
+
+# def save_raw_data_run(file_pk, progress_key):
+#     """
+#     Run the save_raw_data command. This adds more information to the progress_key that is given.
+#     Save the raw data from an imported file.
+#
+#     :param file_pk:
+#     :param progress_key:
+#     :return:
+#     """
+#     pass
 
 # @cprofile()
 def match_buildings(file_pk):
