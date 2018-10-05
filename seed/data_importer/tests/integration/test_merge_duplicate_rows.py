@@ -91,8 +91,6 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
             data_state=DATA_STATE_IMPORT,
             import_file_id=0,
         )
-        print ps1.hash_object
-
         ps2 = PropertyState.objects.create(
             organization=self.org,
             address_line_1='123 fake st',
@@ -101,9 +99,7 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
             import_file_id=27,
             source_type=ASSESSED_BS,
             extra_data={"a": "result"},
-
         )
-        print ps2.hash_object
         self.assertEqual(ps1.hash_object, ps2.hash_object)
 
     def test_hash_quantity_unicode(self):
@@ -122,7 +118,6 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
             data_state=DATA_STATE_IMPORT,
             import_file_id=0,
         )
-        # print ps1.hash_object
         self.assertEqual(ps1.hash_object, ps2.hash_object)
 
     def test_hash_release_date(self):
