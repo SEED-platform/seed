@@ -84,57 +84,47 @@ def get_state_attrs(state_list):
         return get_taxlotstate_attrs(state_list)
 
 
-def _merge_extra_data(b1, b2, default=None):
-    """Merge extra_data field between two BuildingSnapshots, return result.
-
-    :param b1: BuildingSnapshot inst.
-    :param b2: BuildingSnapshot inst.
-    :param default: BuildingSnapshot inst.
-    :returns tuple of dict:
-
-    .. code-block::python
-
-        # first dict contains values, second the source pks.
-        ({'data': 'value'}, {'data': 23},)
-
+def _merge_extra_data(ed1, ed2, priorities):
     """
-    default = default or b1
-    non_default = b2
-    if default != b1:
-        non_default = b1
+    Merge extra_data field between two extra data dictionaries, return result.
 
-    extra_data_sources = {}
-    default_extra_data = getattr(default, 'extra_data', {})
-    non_default_extra_data = getattr(non_default, 'extra_data', {})
-
-    all_keys = set(default_extra_data.keys() + non_default_extra_data.keys())
-    extra_data = {
-        key: default_extra_data.get(key) or non_default_extra_data.get(key) for key in all_keys
-    }
-
-    for item in extra_data:
-        if item in default_extra_data and default_extra_data[item]:
-            extra_data_sources[item] = default.pk
-        elif item in non_default_extra_data and non_default_extra_data[item]:
-            extra_data_sources[item] = non_default.pk
+    :param ed1: dict, left extra data
+    :param ed2: dict, right extra data
+    :param priorities: dict, column names with favor new or existing
+    :return dict, merged result
+    """
+    all_keys = set(ed1.keys() + ed2.keys())
+    extra_data = {}
+    for key in all_keys:
+        val1 = ed1.get(key, None)
+        val2 = ed2.get(key, None)
+        if val1 and val2:
+            # decide based on the priority which one to use
+            col_prior = priorities.get(key, 'Favor New')
+            if col_prior == 'Favor New':
+                extra_data[key] = val2
+            else:  # favor the existing field
+                extra_data[key] = val1
         else:
-            extra_data_sources[item] = default.pk
+            extra_data[key] = val1 or val2
 
-    return extra_data, extra_data_sources
+    return extra_data
 
 
-def merge_state(merged_state, state1, state2, can_attrs, default=None):
+def merge_state(merged_state, state1, state2, priorities):
     """
     Set attributes on our Canonical model, saving differences.
 
     :param merged_state: PropertyState/TaxLotState model inst.
     :param state1: PropertyState/TaxLotState model inst. Left parent.
     :param state2: PropertyState/TaxLotState model inst. Right parent.
-    :param can_attrs:  dict of dicts, {'attr_name': {'dataset1': 'value'...}}.
-    :param default: (optional), which dataset's value to default to.
+    :param priorities: dict, column names with favor new or existing
     :return: inst(``merged_state``), updated.
     """
-    default = default or state2
+    # Calculate the difference between the two states and save into a dictionary
+    can_attrs = get_state_attrs([state1, state2])
+
+    default = state2
     for attr in can_attrs:
         # Do we have any differences between these fields? - Check if not None instead of if value.
         attr_values = list(set([value for value in can_attrs[attr].values() if value is not None]))
@@ -143,9 +133,12 @@ def merge_state(merged_state, state1, state2, can_attrs, default=None):
         attr_value = None
         # Two, differing values are set.
         if len(attr_values) > 1:
-            # If we have more than one value for this field, save each of the field options in the DB,
-            # but opt for the default when there is a difference.
-            attr_value = can_attrs[attr][default]
+            # If we have more than one value for this field, choose based on the column priority
+            col_prior = priorities.get(attr, 'Favor New')
+            if col_prior == 'Favor New':
+                attr_value = can_attrs[attr][state2]
+            else:  # favor the existing field
+                attr_value = can_attrs[attr][state1]
 
         # No values are set
         elif len(attr_values) < 1:
@@ -161,8 +154,7 @@ def merge_state(merged_state, state1, state2, can_attrs, default=None):
         else:
             setattr(merged_state, attr, attr_value)
 
-    merged_extra_data, merged_extra_data_sources = _merge_extra_data(state1, state2, default=default)
-    merged_state.extra_data = merged_extra_data
+    merged_state.extra_data = _merge_extra_data(state1.extra_data, state2.extra_data, priorities['extra_data'])
 
     # merge measures, scenarios, simulations
     if isinstance(merged_state, PropertyState):

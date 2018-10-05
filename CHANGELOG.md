@@ -1,3 +1,68 @@
+# SEED Version 2.4.0
+
+Date Range: 07/04/18 - 10/05/18:
+
+Closed Issues: 32
+- Fixed [#239]( https://github.com/SEED-platform/seed/issues/239 ), Rearchitect the progress API interactions
+- Fixed [#711]( https://github.com/SEED-platform/seed/issues/711 ), Associating and disassociating orgs causes account to become disfuctional
+- Fixed [#873]( https://github.com/SEED-platform/seed/issues/873 ), "NoneType object is not iterable" in _match_buildings
+- Fixed [#876]( https://github.com/SEED-platform/seed/issues/876 ), Upgrade fine-uploader
+- Fixed [#1172]( https://github.com/SEED-platform/seed/issues/1172 ), Mapping Review Screen - field name case and punctuation
+- Fixed [#1200]( https://github.com/SEED-platform/seed/issues/1200 ), allow for user to manage column mappings
+- Fixed [#1408]( https://github.com/SEED-platform/seed/issues/1408 ), DQ checking not working for specific case
+- Fixed [#1497]( https://github.com/SEED-platform/seed/issues/1497 ), File hangs on matching
+- Fixed [#1548]( https://github.com/SEED-platform/seed/issues/1548 ), ESPM Auto Import -- Import file name
+- Fixed [#1565]( https://github.com/SEED-platform/seed/issues/1565 ), Error importing large ESPM file
+- Fixed [#1582]( https://github.com/SEED-platform/seed/issues/1582 ), Reports not displaying data
+- Fixed [#1585]( https://github.com/SEED-platform/seed/issues/1585 ), Error 400 when unmerging record
+- Fixed [#1601]( https://github.com/SEED-platform/seed/issues/1601 ), Performance is quite slow moving between different views (Detail to List, etc)
+- Fixed [#1608]( https://github.com/SEED-platform/seed/issues/1608 ), Improve Matching Performance
+- Fixed [#1646]( https://github.com/SEED-platform/seed/issues/1646 ), Value edited in Detail view is overwritten when old data is again imported into SEED
+- Fixed [#1654]( https://github.com/SEED-platform/seed/issues/1654 ), 500 Error when logging into ESPM from SEED
+- Fixed [#1660]( https://github.com/SEED-platform/seed/issues/1660 ), Fields are not being displayed in the Detail view for either Property or Tax Lot
+- Fixed [#1667]( https://github.com/SEED-platform/seed/issues/1667 ), DQ Export not working from Inventory List -- server failed error
+- Fixed [#1668]( https://github.com/SEED-platform/seed/issues/1668 ), New Mapping Page layout makes it hard to compare the file header with the SEED header
+- Fixed [#1672]( https://github.com/SEED-platform/seed/issues/1672 ), Inventory export -- Excel puts up error message, but then opens it
+- Fixed [#1681]( https://github.com/SEED-platform/seed/issues/1681 ), Suborganization error message unclear
+- Fixed [#1682]( https://github.com/SEED-platform/seed/issues/1682 ), Suborganization error uploading data
+- Fixed [#1683]( https://github.com/SEED-platform/seed/issues/1683 ), SEED shouldn't allow suborgs of suborgs
+- Fixed [#1685]( https://github.com/SEED-platform/seed/issues/1685 ), Import Building Sync file from Audit Report Template
+- Fixed [#1686]( https://github.com/SEED-platform/seed/issues/1686 ), Suborganization list settings don't work
+- Fixed [#1689]( https://github.com/SEED-platform/seed/issues/1689 ), Importing file with crlf and blank line returns causes errors
+- Fixed [#1692]( https://github.com/SEED-platform/seed/issues/1692 ), Error clicking "i" Nav Button
+- Fixed [#1694]( https://github.com/SEED-platform/seed/issues/1694 ), Settings profile field list is reversed on save when saving the first Settings Profile
+- Fixed [#1696]( https://github.com/SEED-platform/seed/issues/1696 ), 502 error displaying inventory in org with large number of records
+- Fixed [#1698]( https://github.com/SEED-platform/seed/issues/1698 ), Add the ability to not overwrite the data by column on merge
+- Fixed [#1702]( https://github.com/SEED-platform/seed/issues/1702 ), Test the spinner visibility during routing transitions
+- Fixed [#1707]( https://github.com/SEED-platform/seed/issues/1707 ), Site EUI (kBtu/ft²) & Source EUI (kBtu/ft²) fields are not imported with autoimport from ESPM
+
+Accepted Pull Requests: 25
+- Fixed [#1661]( https://github.com/SEED-platform/seed/pull/1661 ), Address PM Import Error
+- Fixed [#1674]( https://github.com/SEED-platform/seed/pull/1674 ), Report proper filename for uploaded_filename during PM import
+- Fixed [#1676]( https://github.com/SEED-platform/seed/pull/1676 ), Improve progress bar functionality
+- Fixed [#1677]( https://github.com/SEED-platform/seed/pull/1677 ), ID in CSV causing Excel to throw warnings
+- Fixed [#1680]( https://github.com/SEED-platform/seed/pull/1680 ), Remove unused classes and cleanup deprecated code
+- Fixed [#1684]( https://github.com/SEED-platform/seed/pull/1684 ), Hash object upon save
+- Fixed [#1687]( https://github.com/SEED-platform/seed/pull/1687 ), Fix and cleanup suborganizations
+- Fixed [#1688]( https://github.com/SEED-platform/seed/pull/1688 ), Buildingsync upload merge develop
+- Fixed [#1690]( https://github.com/SEED-platform/seed/pull/1690 ), Fix first_five_rows method to be more flexible
+- Fixed [#1691]( https://github.com/SEED-platform/seed/pull/1691 ), Fix privilege escalation bug
+- Fixed [#1695]( https://github.com/SEED-platform/seed/pull/1695 ), Add transactions
+- Fixed [#1697]( https://github.com/SEED-platform/seed/pull/1697 ), BuildingSync Upload
+- Fixed [#1699]( https://github.com/SEED-platform/seed/pull/1699 ), Field by field merging preferences
+- Fixed [#1700]( https://github.com/SEED-platform/seed/pull/1700 ), Fixed the spinner visibility during routing transitions
+- Fixed [#1701]( https://github.com/SEED-platform/seed/pull/1701 ), Inventory Performance
+- Fixed [#1703]( https://github.com/SEED-platform/seed/pull/1703 ), Strip spaces around value before typecasting
+- Fixed [#1704]( https://github.com/SEED-platform/seed/pull/1704 ), Change default org to user first org available
+- Fixed [#1705]( https://github.com/SEED-platform/seed/pull/1705 ), Inventory View Fixes
+- Fixed [#1706]( https://github.com/SEED-platform/seed/pull/1706 ), Create default columns managed task, fix unicode error in mapping
+- Fixed [#1708]( https://github.com/SEED-platform/seed/pull/1708 ), Update BuildingSync Upload
+- Fixed [#1709]( https://github.com/SEED-platform/seed/pull/1709 ), Fix the reversed column order when saving a new settings profile
+- Fixed [#1710]( https://github.com/SEED-platform/seed/pull/1710 ), Fix csv import
+- Fixed [#1714]( https://github.com/SEED-platform/seed/pull/1714 ), Docker timeouts
+- Fixed [#1720]( https://github.com/SEED-platform/seed/pull/1720 ), Fix pint cleaner and mapping error
+- Fixed [#1721]( https://github.com/SEED-platform/seed/pull/1721 ), Handle Duplicate Measure IDs in BuildingSync Uploads
+
 # SEED Version 2.3.3
 
 Date Range: 05/31/18 - 07/04/18:

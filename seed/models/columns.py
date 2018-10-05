@@ -16,30 +16,14 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q
 from django.db.models.signals import pre_save
-from django.forms.models import model_to_dict
 from django.utils.translation import ugettext_lazy as _
 
-from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
+from seed.models.column_mappings import ColumnMapping
 from seed.models.models import (
     Enum,
     Unit,
-    SEED_DATA_SOURCES,
 )
-
-# This is the inverse mapping of the property and tax lots that are prepended to the fields
-# for the other table.
-INVENTORY_MAP_OPPOSITE_PREPEND = {
-    'property': 'tax',
-    'propertystate': 'tax',
-    'taxlot': 'property',
-    'taxlotstate': 'property',
-}
-
-COLUMN_OPPOSITE_TABLE = {
-    'PropertyState': 'TaxLotState',
-    'TaxLotState': 'PropertyState',
-}
 
 INVENTORY_DISPLAY = {
     'PropertyState': 'Property',
@@ -48,71 +32,6 @@ INVENTORY_DISPLAY = {
     'TaxLot': 'Tax Lot',
 }
 _log = logging.getLogger(__name__)
-
-
-def get_table_and_column_names(column_mapping, attr_name='column_raw'):
-    """Turns the Column.column_names into a serializable list of str."""
-    attr = getattr(column_mapping, attr_name, None)
-    if not attr:
-        return attr
-
-    return [t for t in attr.all().values_list('table_name', 'column_name')]
-
-
-def get_column_mapping(raw_column, organization, attr_name='column_mapped'):
-    """Find the ColumnMapping objects that exist in the database from a raw_column
-
-    :param raw_column: str, the column name of the raw data.
-    :param organization: Organization inst.
-    :param attr_name: str, name of attribute on ColumnMapping to pull out.
-        whether we're looking at a mapping from the perspective of
-        a raw_column (like we do when creating a mapping), or mapped_column,
-        (like when we're applying that mapping).
-    :returns: list of mapped items, float representation of confidence.
-
-    """
-    if not isinstance(raw_column, list):
-        column_raw = [raw_column]
-    else:
-        # NL 12/6/2016 - We should never get here, if we see this then find out why and remove the
-        # list. Eventually delete this code.
-        raise Exception("I am a LIST! Which makes no sense!")
-
-    # Should only return one column
-    cols = Column.objects.filter(
-        organization=organization, column_name__in=column_raw
-    )
-
-    try:
-        previous_mapping = ColumnMapping.objects.get(
-            super_organization=organization,
-            column_raw__in=cols,
-        )
-    except ColumnMapping.MultipleObjectsReturned:
-        _log.debug("ColumnMapping.MultipleObjectsReturned in get_column_mapping")
-        # handle the special edge-case where remove dupes does not get
-        # called by ``get_or_create``
-        ColumnMapping.objects.filter(super_organization=organization, column_raw__in=cols).delete()
-
-        # Need to delete and then just allow for the system to re-attempt the match because
-        # the old matches are no longer valid.
-        return None
-    except ColumnMapping.DoesNotExist:
-        # Mapping column does not exist
-        return None
-
-    column_names = get_table_and_column_names(previous_mapping, attr_name=attr_name)
-
-    # Check if the mapping is a one-to-one mapping, that is, there is only one mapping available.
-    # As far as I know, this should always be the case because of the MultipleObjectsReturned
-    # from above.
-    if previous_mapping.is_direct():
-        column_names = column_names[0]
-    else:
-        # NL 12/2/2016 - Adding this here for now as a catch. If we get here, then we have problems.
-        raise Exception("The mapping returned with not direct!")
-
-    return column_names[0], column_names[1], 100
 
 
 class Column(models.Model):
@@ -147,6 +66,7 @@ class Column(models.Model):
     # Do not return these columns to the front end -- when using the tax_lot_properties get_related method .
     EXCLUDED_COLUMN_RETURN_FIELDS = [
         'normalized_address',
+        'hash_object',
         # Records below are old and should not be used
         'source_eui_modeled_orig',
         'site_eui_orig',
@@ -171,6 +91,13 @@ class Column(models.Model):
         ('PropertyState', 'source_eui_weather_normalized'),
     ]
 
+    COLUMN_MERGE_FAVOR_NEW = 0
+    COLUMN_MERGE_FAVOR_EXISTING = 1
+    COLUMN_MERGE_PROTECTION = [
+        (COLUMN_MERGE_FAVOR_NEW, 'Favor New'),
+        (COLUMN_MERGE_FAVOR_EXISTING, 'Favor Existing')
+    ]
+
     # These fields are excluded from being returned to the front end via the API and the Column.retrieve_all method.
     # Note that not all the endpoints are respecting this at the moment.
     EXCLUDED_API_FIELDS = [
@@ -181,11 +108,12 @@ class Column(models.Model):
     COLUMN_EXCLUDE_FIELDS = [
         'id',
         'source_type',
-        'data_state',
         'import_file',
+        'analysis_state',
+        'data_state',
         'merge_state',
-        'confidence',
         'extra_data',
+        'source_type',
     ] + EXCLUDED_COLUMN_RETURN_FIELDS
 
     # These are fields that should not be mapped to
@@ -595,10 +523,6 @@ class Column(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
-    # TODO: decide if we need this? I don't think I do.
-    # If exclude_from_mapping, then the column will not be used as mapping suggestions
-    # exclude_from_mapping = models.BooleanField(default=False)
-
     unit = models.ForeignKey(Unit, blank=True, null=True)
     enum = models.ForeignKey(Enum, blank=True, null=True)
     is_extra_data = models.BooleanField(default=False)
@@ -607,11 +531,10 @@ class Column(models.Model):
 
     shared_field_type = models.IntegerField(choices=SHARED_FIELD_TYPES, default=SHARED_NONE)
 
-    # Do not enable this until running through the database and merging the columns down.
-    # BUT first, make sure to add an import file ID into the column class.
-    # class Meta:
-    #     unique_together = (
-    #         'organization', 'column_name', 'is_extra_data', 'table_name', 'import_file')
+    # By default, when two records are merge the new data will take precedence over the existing
+    # data, however, the user can override this on a column-by-column basis.
+    merge_protection = models.IntegerField(choices=COLUMN_MERGE_PROTECTION,
+                                           default=COLUMN_MERGE_FAVOR_NEW)
 
     def __unicode__(self):
         return u'{} - {}:{}'.format(self.pk, self.table_name, self.column_name)
@@ -628,7 +551,7 @@ class Column(models.Model):
             if not found:
                 raise ValidationError(
                     {'is_extra_data': _(
-                        'Column \'%s\':\'%s\' is not marked as extra data, but the field is not in the database') % (
+                        'Column \'%s\':\'%s\' is not a field in the database and not marked as extra data. Mark as extra data to save column.') % (
                         self.table_name, self.column_name)})
 
     @staticmethod
@@ -854,7 +777,8 @@ class Column(models.Model):
             # Check if the extra_data field in the model object is a database column
             is_extra_data = True
             for c in Column.DATABASE_COLUMNS:
-                if field['to_table_name'] == c['table_name'] and field['to_field'] == c['column_name']:
+                if field['to_table_name'] == c['table_name'] and field['to_field'] == c[
+                        'column_name']:
                     is_extra_data = False
                     break
 
@@ -897,11 +821,13 @@ class Column(models.Model):
                 from_org_col = Column.objects.filter(organization=organization,
                                                      table_name__in=[None, ''],
                                                      column_name=field['from_field'],
-                                                     units_pint=field.get('from_units'),  # might be None
+                                                     units_pint=field.get('from_units'),
+                                                     # might be None
                                                      is_extra_data=is_extra_data).first()
                 _log.debug("Grabbing the first from_column")
 
-            new_field['to_column_object'] = select_col_obj(field['to_field'], field['to_table_name'], to_org_col)
+            new_field['to_column_object'] = select_col_obj(field['to_field'],
+                                                           field['to_table_name'], to_org_col)
             new_field['from_column_object'] = select_col_obj(field['from_field'], "", from_org_col)
             new_data.append(new_field)
 
@@ -943,7 +869,8 @@ class Column(models.Model):
                                                         is_extra_data=is_extra_data,
                                                         organization=model_obj.organization)
                         for c in columns:
-                            if not ColumnMapping.objects.filter(Q(column_raw=c) | Q(column_mapped=c)).exists():
+                            if not ColumnMapping.objects.filter(
+                                    Q(column_raw=c) | Q(column_mapped=c)).exists():
                                 _log.debug("Deleting column object {}".format(c.column_name))
                                 c.delete()
 
@@ -960,30 +887,6 @@ class Column(models.Model):
                         continue
 
                     break
-
-    def to_dict(self):
-        """
-        Convert the column object to a dictionary
-
-        :return: dict
-        """
-        c = {
-            'pk': self.id,
-            'id': self.id,
-            'organization_id': self.organization.id,
-            'table_name': self.table_name,
-            'column_name': self.column_name,
-            'is_extra_data': self.is_extra_data,
-            'data_type': self.data_type,
-        }
-        if self.unit:
-            c['unit_name'] = self.unit.unit_name
-            c['unit_type'] = self.unit.unit_type
-        else:
-            c['unit_name'] = None
-            c['unit_type'] = None
-
-        return c
 
     @staticmethod
     def delete_all(organization):
@@ -1048,7 +951,8 @@ class Column(models.Model):
         """
 
         result = list(
-            set(list(Column.objects.filter(organization_id=org_id, is_extra_data=False).order_by('column_name').exclude(
+            set(list(Column.objects.filter(organization_id=org_id, is_extra_data=False).order_by(
+                'column_name').exclude(
                 table_name='').exclude(table_name=None).values_list('column_name', flat=True))))
 
         return result
@@ -1118,13 +1022,11 @@ class Column(models.Model):
                 dt = f.get_internal_type() if f.get_internal_type else 'string',
                 dt = Column.INTERNAL_TYPE_TO_DATA_TYPE[dt[0]]
                 all_columns.append(
-
                     {
                         'table_name': f.model.__name__,
                         'column_name': f.name,
                         'data_type': dt,
                     }
-
                 )
         return all_columns
 
@@ -1137,6 +1039,8 @@ class Column(models.Model):
         :param inventory_type: Inventory Type (property|taxlot) from the requester. This sets the related columns if requested.
         :return: list, list of dict
         """
+        from seed.serializers.columns import ColumnSerializer
+
         columns_db = Column.objects.filter(organization_id=org_id).exclude(table_name='').exclude(
             table_name=None)
         columns = []
@@ -1145,7 +1049,7 @@ class Column(models.Model):
                 continue
 
             # Eventually move this over to Column serializer directly
-            new_c = model_to_dict(c)
+            new_c = ColumnSerializer(c).data
 
             if inventory_type:
                 related = not (inventory_type.lower() in new_c['table_name'].lower())
@@ -1156,25 +1060,16 @@ class Column(models.Model):
                 elif inventory_type == 'taxlot' and c.column_name in Column.UNMAPPABLE_TAXLOT_FIELDS:
                     continue
 
+            new_c['sharedFieldType'] = new_c['shared_field_type']
             del new_c['shared_field_type']
-            new_c['sharedFieldType'] = c.get_shared_field_type_display()
 
             if (new_c['table_name'], new_c['column_name']) in Column.PINNED_COLUMNS:
                 new_c['pinnedLeft'] = True
 
-            # If no display name, use the column name (this is the display name as it was typed during mapping)
+            # If no display name, use the column name (this is the display name as it was typed
+            # during mapping)
             if not new_c['display_name']:
                 new_c['display_name'] = new_c['column_name']
-
-            # set the name of the column which is a special field because it can take on a relationship
-            # with the table_name and have an _extra associated with it
-            new_c['name'] = '%s_%s' % (new_c['column_name'], new_c['id'])
-
-            del new_c['import_file']
-            del new_c['organization']
-            del new_c['enum']
-            del new_c['units_pint']
-            del new_c['unit']
 
             columns.append(new_c)
 
@@ -1196,8 +1091,11 @@ class Column(models.Model):
 
         :return: dict
         """
-        # Grab all the columns out of the database for the organization that are assigned to a table_name
-        # Order extra_data last so that extra data duplicate-checking will happen after processing standard columns
+        from seed.serializers.columns import ColumnSerializer
+
+        # Grab all the columns out of the database for the organization that are assigned to a
+        # table_name. Order extra_data last so that extra data duplicate-checking will happen after
+        # processing standard columns
         columns_db = Column.objects.filter(organization_id=org_id).exclude(table_name='').exclude(
             table_name=None).order_by('is_extra_data', 'column_name')
         columns = []
@@ -1206,21 +1104,18 @@ class Column(models.Model):
                 continue
 
             # Eventually move this over to Column serializer directly
-            new_c = model_to_dict(c)
+            new_c = ColumnSerializer(c).data
 
+            new_c['sharedFieldType'] = new_c['shared_field_type']
             del new_c['shared_field_type']
-            new_c['sharedFieldType'] = c.get_shared_field_type_display()
 
             if (new_c['table_name'], new_c['column_name']) in Column.PINNED_COLUMNS:
                 new_c['pinnedLeft'] = True
 
-            # If no display name, use the column name (this is the display name as it was typed during mapping)
+            # If no display name, use the column name (this is the display name as it was typed
+            # during mapping)
             if not new_c['display_name']:
                 new_c['display_name'] = new_c['column_name']
-
-            # set the name of the column which is a special field because it can take on a relationship
-            # with the table_name and have an _extra associated with it
-            new_c['name'] = '%s_%s' % (new_c['column_name'], new_c['id'])
 
             # Related fields
             new_c['related'] = False
@@ -1228,14 +1123,8 @@ class Column(models.Model):
                 new_c['related'] = not (inventory_type.lower() in new_c['table_name'].lower())
                 if new_c['related']:
                     # if it is related then have the display name show the other table
-                    new_c['display_name'] = new_c['display_name'] + ' (%s)' % INVENTORY_DISPLAY[new_c['table_name']]
-
-            # remove a bunch of fields that are not needed in the list of columns
-            del new_c['import_file']
-            del new_c['organization']
-            del new_c['enum']
-            del new_c['units_pint']
-            del new_c['unit']
+                    new_c['display_name'] = new_c['display_name'] + ' (%s)' % INVENTORY_DISPLAY[
+                        new_c['table_name']]
 
             # only add the column if it is in a ColumnMapping object
             if only_used:
@@ -1256,6 +1145,49 @@ class Column(models.Model):
                 uniq.add((c['table_name'], c['column_name']))
 
         return columns
+
+    @staticmethod
+    def retrieve_priorities(org_id):
+        """
+        Return the list of priorties for the columns
+
+        Result will be in the form of:
+
+        {
+            'PropertyState': {
+                u'lot_number': 'Favor New',
+                u'owner_address': 'Favor New',
+                u'extra_data': {
+                    u'data_007': 'Favor New'
+                }
+            'TaxLotState': {
+                u'custom_id_1': 'Favor New',
+                u'block_number': 'Favor New',
+                u'extra_data': {
+                    u'data_008': 'Favor New'
+                }
+        }
+
+        :param org_id: organization with the columns
+        :return: dict
+        """
+        columns = Column.retrieve_all(org_id, 'property', False)
+        # The TaxLot and Property are not used in merging, they are just here to prevent errors
+        priorities = {
+            'PropertyState': {'extra_data': {}},
+            'TaxLotState': {'extra_data': {}},
+            'Property': {},
+            'TaxLot': {}
+        }
+        for column in columns:
+            tn = column['table_name']
+            cn = column['column_name']
+            if column['is_extra_data']:
+                priorities[tn]['extra_data'][cn] = column.get('merge_protection', 'Favor New')
+            else:
+                priorities[tn][cn] = column.get('merge_protection', 'Favor New')
+
+        return priorities
 
     @staticmethod
     def retrieve_all_by_tuple(org_id):
@@ -1291,202 +1223,3 @@ def validate_model(sender, **kwargs):
 
 
 pre_save.connect(validate_model, sender=Column)
-
-
-class ColumnMapping(models.Model):
-    """Stores previous user-defined column mapping.
-
-    We'll pull from this when pulling from varied, dynamic
-    source data to present the user with previous choices for that
-    same field in subsequent data loads.
-
-    """
-    user = models.ForeignKey(User, blank=True, null=True)
-    source_type = models.IntegerField(choices=SEED_DATA_SOURCES, null=True, blank=True)
-    super_organization = models.ForeignKey(SuperOrganization, verbose_name=_('SeedOrg'),
-                                           blank=True, null=True, related_name='column_mappings')
-    column_raw = models.ManyToManyField('Column', related_name='raw_mappings', blank=True, )
-    column_mapped = models.ManyToManyField('Column', related_name='mapped_mappings', blank=True, )
-
-    def is_direct(self):
-        """
-        Returns True if the ColumnMapping is a direct mapping from imported
-        column name to either a BEDES column or a previously imported column.
-        Returns False if the ColumnMapping represents a concatenation.
-        """
-        return (
-            (self.column_raw.count() == 1) and
-            (self.column_mapped.count() == 1)
-        )
-
-    def is_concatenated(self):
-        """
-        Returns True if the ColumnMapping represents the concatenation of
-        imported column names; else returns False.
-        """
-        return not self.is_direct()
-
-    def remove_duplicates(self, qs, m2m_type='column_raw'):
-        """
-        Remove any other Column Mappings that use these columns.
-
-        :param qs: queryset of ``Column``. These are the Columns in a M2M with
-            this instance.
-        :param m2m_type: str, the name of the field we're comparing against.
-            Defaults to 'column_raw'.
-
-        """
-        ColumnMapping.objects.filter(
-            **{
-                '{0}__in'.format(m2m_type): qs,
-                'super_organization': self.super_organization
-            }
-        ).exclude(pk=self.pk).delete()
-
-    def to_dict(self):
-        """
-        Convert the ColumnMapping object to a dictionary
-
-        :return: dict
-        """
-
-        c = {
-            'pk': self.id,
-            'id': self.id
-        }
-        if self.user:
-            c['user_id'] = self.user.id
-        else:
-            c['user_id'] = None
-        c['source_type'] = self.source_type
-        c['organization_id'] = self.super_organization.id
-        if self.column_raw and self.column_raw.first():
-            c['from_column'] = self.column_raw.first().to_dict()
-        else:
-            c['from_column'] = None
-
-        if self.column_mapped and self.column_mapped.first():
-            c['to_column'] = self.column_mapped.first().to_dict()
-        else:
-            c['to_column'] = None
-
-        return c
-
-    def save(self, *args, **kwargs):
-        """
-        Overrides default model save to eliminate duplicate mappings.
-
-        .. warning ::
-            Other column mappings which have the same raw_columns in them
-            will be removed!
-
-        """
-        super(ColumnMapping, self).save(*args, **kwargs)
-        # Because we need to have saved our ColumnMapping in order to have M2M,
-        # We must create it before we prune older references.
-        self.remove_duplicates(self.column_raw.all())
-
-    def __unicode__(self):
-        return u'{0}: {1} - {2}'.format(
-            self.pk, self.column_raw.all(), self.column_mapped.all()
-        )
-
-    @staticmethod
-    def get_column_mappings(organization):
-        """
-        Returns dict of all the column mappings for an Organization's given
-        source type
-
-        Use this when actually performing mapping between data sources, but only
-        call it after all of the mappings have been saved to the ``ColumnMapping``
-        table.
-
-        ..code:
-
-            {
-                u'Wookiee': (u'PropertyState', u'Dothraki', 'DisplayName', True),
-                u'Ewok': (u'TaxLotState', u'Hattin', 'DisplayName', True),
-                u'eui': (u'PropertyState', u'site_eui', 'DisplayName', True),
-                u'address': (u'TaxLotState', u'address', 'DisplayName', True)
-            }
-
-        :param organization: instance, Organization.
-        :returns: dict, list of dict.
-        """
-        column_mappings = ColumnMapping.objects.filter(super_organization=organization)
-        mapping = {}
-        for cm in column_mappings:
-            # Iterate over the column_mappings. The column_mapping is a pointer to a raw column and a mapped column.
-            # See the method documentation to understand the result.
-            if not cm.column_mapped.all().exists():
-                continue
-
-            key = cm.column_raw.all().values_list('table_name', 'column_name', 'display_name', 'is_extra_data')
-            value = cm.column_mapped.all().values_list('table_name', 'column_name', 'display_name', 'is_extra_data')
-
-            if len(key) != 1:
-                raise Exception("There is either none or more than one mapping raw column")
-
-            if len(value) != 1:
-                raise Exception("There is either none or more than one mapping dest column")
-
-            key = key[0]
-            value = value[0]
-
-            # These should be lists of one element each.
-            mapping[key[1]] = value
-
-        # _log.debug("Mappings from get_column_mappings is: {}".format(mapping))
-        return mapping, []
-
-    @staticmethod
-    def get_column_mappings_by_table_name(organization):
-        """
-        Breaks up the get_column_mappings into another layer to provide access by the table
-        name as a key.
-
-        :param organization: instance, Organization
-        :return: dict
-        """
-
-        data, _ = ColumnMapping.get_column_mappings(organization)
-
-        tables = set()
-        for k, v in data.iteritems():
-            tables.add(v[0])
-
-        # initialize the new container to store the results
-        # (there has to be a better way of doing this... not enough time)
-        container = {}
-        for t in tables:
-            container[t] = {}
-
-        for k, v in data.iteritems():
-            container[v[0]][k] = v
-
-        # Container will be in the format:
-        #
-        # container = {
-        #     u'PropertyState': {
-        #         u'Wookiee': (u'PropertyState', u'Dothraki'),
-        #         u'eui': (u'PropertyState', u'site_eui'),
-        #     },
-        #     u'TaxLotState': {
-        #         u'address': (u'TaxLotState', u'address'),
-        #         u'Ewok': (u'TaxLotState', u'Hattin'),
-        #     }
-        # }
-        return container
-
-    @staticmethod
-    def delete_mappings(organization):
-        """
-        Delete all the mappings for an organization. Note that this will erase all the mappings
-        so if a user views an existing Data Mapping the mappings will not show up as the actual
-        mapping, rather, it will show up as new suggested mappings
-
-        :param organization: instance, Organization
-        :return: int, Number of records that were deleted
-        """
-        count, _ = ColumnMapping.objects.filter(super_organization=organization).delete()
-        return count

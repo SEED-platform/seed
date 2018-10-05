@@ -25,7 +25,7 @@ def getOrganizationsToDelete():
 def destroyOrganization(org):
     """Delete an organization using the Celery information."""
     logging.info("Deleting organization {}".format(org))
-    seed.tasks.delete_organization(org.pk, "")
+    seed.tasks.delete_organization(org.pk)
     return
 
 

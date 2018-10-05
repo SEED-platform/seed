@@ -37,7 +37,6 @@ describe('When I visit the data set page', function () {
     // selectDropdownbyText(element, browser.params.testOrg.cycle);
     expect(element(by.cssContainingText('option', browser.params.testOrg.cycle)).isPresent()).toBe(true);
     element(by.cssContainingText('option', browser.params.testOrg.cycle)).click();
-    // $('[buttontext="Upload a Spreadsheet"]').$('.qq-uploader').click();
   });
 
   // manually
@@ -118,7 +117,6 @@ describe('When I visit the data set page', function () {
   it('should be able to add tax lots file too', function () {
 
     element(by.cssContainingText('option', browser.params.testOrg.cycle)).click();
-    // $('[buttontext="Upload a Spreadsheet"]').$('.qq-uploader').click();
 
     // for remote travis ci to grab the files
     browser.setFileDetector(new remote.FileDetector());

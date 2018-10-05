@@ -5,9 +5,11 @@
 :author
 """
 
+import datetime
 import json
 
 from django.test import TestCase
+from django.utils import timezone
 
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
@@ -32,7 +34,12 @@ from seed.models import (
     GreenAssessmentProperty,
     GreenAssessmentURL,
 )
+from seed.models import (
+    DATA_STATE_IMPORT,
+    ASSESSED_RAW,
+)
 from seed.models.data_quality import DataQualityCheck
+from seed.utils.organizations import create_organization
 
 
 class DeleteModelsTestCase(TestCase):
@@ -72,6 +79,46 @@ class DeleteModelsTestCase(TestCase):
 
     def tearDown(self):
         self._delete_models()
+
+
+class DataMappingBaseTestCase(DeleteModelsTestCase):
+    """Base Test Case Class to handle data import"""
+
+    def set_up(self, import_file_source_type):
+        # default_values
+        import_file_data_state = getattr(self, 'import_file_data_state', DATA_STATE_IMPORT)
+
+        if not User.objects.filter(username='test_user@demo.com').exists():
+            user = User.objects.create_user('test_user@demo.com', password='test_pass')
+        else:
+            user = User.objects.get(username='test_user@demo.com')
+
+        org, _, _ = create_organization(user, "test-organization-a")
+
+        cycle, _ = Cycle.objects.get_or_create(
+            name=u'Test Hack Cycle 2015',
+            organization=org,
+            start=datetime.datetime(2015, 1, 1, tzinfo=timezone.get_current_timezone()),
+            end=datetime.datetime(2015, 12, 31, tzinfo=timezone.get_current_timezone()),
+        )
+
+        import_record, import_file = self.create_import_file(
+            user, org, cycle, import_file_source_type, import_file_data_state
+        )
+
+        return user, org, import_file, import_record, cycle
+
+    def create_import_file(self, user, org, cycle, source_type=ASSESSED_RAW,
+                           data_state=DATA_STATE_IMPORT):
+        import_record = ImportRecord.objects.create(
+            owner=user, last_modified_by=user, super_organization=org
+        )
+        import_file = ImportFile.objects.create(import_record=import_record, cycle=cycle)
+        import_file.source_type = source_type
+        import_file.data_state = data_state
+        import_file.save()
+
+        return import_record, import_file
 
 
 class FakeRequest(object):

@@ -7,85 +7,112 @@
 
 import logging
 
+import coreapi
 from django.http import JsonResponse
 from rest_framework import status
-from rest_framework import viewsets
 from rest_framework.decorators import list_route
 from rest_framework.exceptions import NotFound, ParseError
+from rest_framework.filters import BaseFilterBackend
+from rest_framework.parsers import JSONParser, FormParser
+from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 
-from seed.decorators import ajax_request_class, require_organization_id_class
+from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.lib.superperms.orgs.models import Organization, OrganizationUser
-from seed.models.columns import Column, ColumnMapping
-from seed.utils.api import api_endpoint_class, OrgQuerySetMixin
-from seed.serializers.columns import ColumnSerializer
+from seed.lib.superperms.orgs.models import Organization
 from seed.models import PropertyState, TaxLotState
+from seed.models.columns import Column
+from seed.pagination import NoPagination
 from seed.renderers import SEEDJSONRenderer
+from seed.serializers.columns import ColumnSerializer
+from seed.utils.api import OrgValidateMixin
+from seed.utils.viewsets import SEEDOrgCreateUpdateModelViewSet
 
 _log = logging.getLogger(__name__)
 
 
-class ColumnViewSet(OrgQuerySetMixin, viewsets.ViewSet):
-    raise_exception = True
+class ColumnViewSetFilterBackend(BaseFilterBackend):
+    """
+    Specify the schema for the column view set. This allows the user to see the other
+    required columns in Swagger.
+    """
 
-    @require_organization_id_class
-    @api_endpoint_class
+    def get_schema_fields(self, view):
+        return [
+            coreapi.Field('organization_id', location='query', required=True, type='integer'),
+            coreapi.Field('inventory_type', location='query', required=False, type='string'),
+            coreapi.Field('only_used', location='query', required=False, type='boolean'),
+        ]
+
+    def filter_queryset(self, request, queryset, view):
+        return queryset
+
+
+class ColumnViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
+    raise_exception = True
+    serializer_class = ColumnSerializer
+    renderer_classes = (JSONRenderer,)
+    model = Column
+    pagination_class = NoPagination
+    parser_classes = (JSONParser, FormParser)
+    filter_backends = (ColumnViewSetFilterBackend,)
+
+    def get_queryset(self):
+        # check if the request is properties or taxlots
+        org_id = self.get_organization(self.request)
+        return Column.objects.filter(organization_id=org_id)
+
     @ajax_request_class
     def list(self, request):
         """
-        Retrieves all columns for the user's organization including the raw database columns. Will return all
-        the columns across both the Property and Tax Lot tables. The related field will be true if the column came
-        from the other table that is not the "inventory_type" (which defaults to Property)
+        Retrieves all columns for the user's organization including the raw database columns. Will
+        return all the columns across both the Property and Tax Lot tables. The related field will
+        be true if the column came from the other table that is not the "inventory_type" (which
+        defaults to Property)
 
-        Note that this is the same results as calling /api/v2/<inventory_type>/columns/?organization_id={}
+            This is the same results as calling /api/v2/<inventory_type>/columns/?organization_id={}
 
-        Example:
-            /api/v2/columns/?inventory_type=(property|taxlot)&organization_id={}
-        ---
-        type:
-            status:
-                required: true
-                type: string
-                description: Either success or error
-            columns:
-                required: true
-                type: array[column]
-                description: Returns an array where each item is a full column structure.
-        parameters:
-            - name: organization_id
-              description: The organization_id for this user's organization
-              required: true
-              paramType: query
-            - name: inventory_type
-              description: Which inventory type is being matched (for related fields and naming).
-                property or taxlot
-              required: true
-              paramType: query
-            - name: used_only
-              description: Determine whether or not to show only the used fields. Ones that have been mapped
-              type: boolean
-              required: false
-              paramType: query
+            Example: /api/v2/columns/?inventory_type=(property|taxlot)\&organization_id={}
+
+            type:
+                status:
+                    required: true
+                    type: string
+                    description: Either success or error
+                columns:
+                    required: true
+                    type: array[column]
+                    description: Returns an array where each item is a full column structure.
+            parameters:
+                - name: organization_id
+                  description: The organization_id for this user's organization
+                  required: true
+                  paramType: query
+                - name: inventory_type
+                  description: Which inventory type is being matched (for related fields and naming).
+                    property or taxlot
+                  required: true
+                  paramType: query
+                - name: used_only
+                  description: Determine whether or not to show only the used fields (i.e. only columns that have been mapped)
+                  type: boolean
+                  required: false
+                  paramType: query
         """
-        organization_id = request.query_params.get('organization_id', None)
+        organization_id = self.get_organization(self.request)
         inventory_type = request.query_params.get('inventory_type', 'property')
         only_used = request.query_params.get('only_used', False)
-
         columns = Column.retrieve_all(organization_id, inventory_type, only_used)
-
         return JsonResponse({
             'status': 'success',
             'columns': columns,
         })
 
-    @require_organization_id_class
-    @api_endpoint_class
     @ajax_request_class
     def retrieve(self, request, pk=None):
         """
-            Retrieves a column (Column)
-            ---
+        Retrieves a column (Column)
+
             type:
                 status:
                     required: true
@@ -103,15 +130,7 @@ class ColumnViewSet(OrgQuerySetMixin, viewsets.ViewSet):
                   required: true
                   paramType: query
         """
-        organization_id = request.query_params.get('organization_id', None)
-        valid_orgs = OrganizationUser.objects.filter(
-            user_id=request.user.id
-        ).values_list('organization_id', flat=True).order_by('organization_id')
-        if organization_id not in valid_orgs:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'Cannot access columns for this organization id',
-            }, status=status.HTTP_403_FORBIDDEN)
+        organization_id = self.get_organization(self.request)
 
         # check if column exists for the organization
         try:
@@ -130,13 +149,11 @@ class ColumnViewSet(OrgQuerySetMixin, viewsets.ViewSet):
 
         return JsonResponse({
             'status': 'success',
-            'column': c.to_dict(),
+            'column': ColumnSerializer(c).data
         })
 
-    @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @require_organization_id_class
     @list_route(methods=['POST'])
     def delete_all(self, request):
         """
@@ -186,7 +203,7 @@ class ColumnViewSet(OrgQuerySetMixin, viewsets.ViewSet):
     def add_column_names(self, request):
         """
         Allow columns to be added based on an existing record.
-        This my be necessary to make column selections available when
+        This may be necessary to make column selections available when
         records are upload through API endpoint rather than the frontend.
         """
         model_obj = None
@@ -231,139 +248,3 @@ class ColumnViewSet(OrgQuerySetMixin, viewsets.ViewSet):
         )
         columns = ColumnSerializer(columns, many=True)
         return Response(columns.data, status=status.HTTP_200_OK)
-
-
-class ColumnMappingViewSet(viewsets.ViewSet):
-    raise_exception = True
-
-    @require_organization_id_class
-    @api_endpoint_class
-    @ajax_request_class
-    def list(self, request):
-        """
-        Retrieves all column mappings for the user's organization.
-        ---
-        type:
-            status:
-                required: true
-                type: string
-                description: Either success or error
-            column_mappings:
-                required: true
-                type: array[column]
-                description: Returns an array where each item is a full column_mapping structure,
-                             including keys ''name'', ''id'', ''raw column'', ''mapped column''
-
-        parameters:
-            - name: organization_id
-              description: The organization_id for this user's organization
-              required: true
-              paramType: query
-        """
-
-        organization_id = request.query_params.get('organization_id', None)
-        org = Organization.objects.get(pk=organization_id)
-        column_mappings = []
-        for cm in ColumnMapping.objects.filter(super_organization=org):
-            # find the raw and mapped column
-            column_mappings.append(cm.to_dict())
-
-        return JsonResponse({
-            'status': 'success',
-            'column_mappings': column_mappings,
-        })
-
-    @require_organization_id_class
-    @api_endpoint_class
-    @ajax_request_class
-    def retrieve(self, request, pk=None):
-        """
-            Retrieves a column_mapping (ColumnMapping)
-            ---
-            type:
-                status:
-                    required: true
-                    type: string
-                    description: Either success or error
-                column:
-                    required: true
-                    type: dictionary
-                    description: Returns a dictionary of a column_mapping structure,
-                                 keys ''name'', ''id'', ''is_extra_data'', ''column_name'',
-                                 ''table_name'',...
-            parameters:
-                - name: organization_id
-                  description: The organization_id for this user's organization
-                  required: true
-                  paramType: query
-        """
-        organization_id = request.query_params.get('organization_id', None)
-        valid_orgs = OrganizationUser.objects.filter(
-            user_id=request.user.id
-        ).values_list('organization_id', flat=True).order_by('organization_id')
-        if organization_id not in valid_orgs:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'Cannot access column_mappings for this organization id',
-            }, status=status.HTTP_403_FORBIDDEN)
-
-        # check if column exists for the organization
-        try:
-            cm = ColumnMapping.objects.get(pk=pk)
-        except ColumnMapping.DoesNotExist:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'column_mapping with id {} does not exist'.format(pk)
-            }, status=status.HTTP_404_NOT_FOUND)
-
-        if cm.super_organization.id != organization_id:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'Organization ID mismatch between column_mappings and organization'
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-        return JsonResponse({
-            'status': 'success',
-            'column_mapping': cm.to_dict(),
-        })
-
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class('can_modify_data')
-    @require_organization_id_class
-    @list_route(methods=['POST'])
-    def delete_all(self, request):
-        """
-        Delete all column mappings for an organization
-        ---
-        parameters:
-            - name: organization_id
-              description: The organization_id
-              required: true
-              paramType: query
-        type:
-            status:
-                description: success or error
-                type: string
-                required: true
-            delete_count:
-                description: Number of column_mappings that were deleted
-                type: integer
-                required: true
-        """
-        organization_id = request.query_params.get('organization_id')
-
-        try:
-            org = Organization.objects.get(pk=organization_id)
-            delete_count = ColumnMapping.delete_mappings(org)
-            return JsonResponse(
-                {
-                    'status': 'success',
-                    'delete_count': delete_count,
-                }
-            )
-        except Organization.DoesNotExist:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'organization with with id {} does not exist'.format(organization_id)
-            }, status=status.HTTP_404_NOT_FOUND)

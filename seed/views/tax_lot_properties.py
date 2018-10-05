@@ -142,8 +142,12 @@ class TaxLotPropertyViewSet(GenericViewSet):
             order_dict = {obj_id: index for index, obj_id in enumerate(ids)}
             data.sort(key=lambda x: order_dict[x['id']])  # x is the property/taxlot object
 
-        # header
-        writer.writerow(column_name_mappings.values())
+        # check the first item in the header and make sure that it isn't ID (it can be id, or iD).
+        # excel doesn't like the first item to be ID in a CSV
+        header = column_name_mappings.values()
+        if header[0] == 'ID':
+            header[0] = 'id'
+        writer.writerow(header)
 
         # iterate over the results to preserve column order and write row.
         for datum in data:

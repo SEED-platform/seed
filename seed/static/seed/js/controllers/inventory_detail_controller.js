@@ -19,6 +19,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
     'inventory_service',
     'matching_service',
     'pairing_service',
+    'user_service',
     'inventory_payload',
     'columns',
     'profiles',
@@ -39,12 +40,14 @@ angular.module('BE.seed.controller.inventory_detail', [])
               inventory_service,
               matching_service,
               pairing_service,
+              user_service,
               inventory_payload,
               columns,
               profiles,
               current_profile,
               labels_payload) {
       $scope.inventory_type = $stateParams.inventory_type;
+      $scope.organization = user_service.get_organization();
 
       // Detail Settings Profile
       $scope.profiles = profiles;
@@ -367,6 +370,54 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.unpair_taxlot_from_property = function (taxlot_id) {
         pairing_service.unpair_taxlot_from_property($scope.inventory.view_id, taxlot_id);
         $state.reload();
+      };
+
+      $scope.uploader = {
+        invalid_xml_extension_alert: false,
+        in_progress: false,
+        progress: 0,
+        complete: false,
+        status_message: ''
+      };
+
+      $scope.uploaderfunc = function (event_message, file, progress) {
+        switch (event_message) {
+          case 'invalid_xml_extension':
+            $scope.uploader.invalid_xml_extension_alert = true;
+            break;
+
+          case 'upload_submitted':
+            $scope.uploader.filename = file.filename;
+            $scope.uploader.invalid_xml_extension_alert = false;
+            $scope.uploader.in_progress = true;
+            $scope.uploader.status_message = 'uploading file';
+            break;
+
+          case 'upload_error':
+            $scope.uploader.status_message = 'upload failed';
+            $scope.uploader.complete = false;
+            $scope.uploader.in_progress = false;
+            $scope.uploader.progress = 0;
+            alert(file.error);
+            break;
+
+          case 'upload_in_progress':
+            $scope.uploader.in_progress = true;
+            $scope.uploader.progress = 100 * progress.loaded / progress.total;
+            break;
+
+          case 'upload_complete':
+            $scope.uploader.status_message = 'upload complete';
+            $scope.uploader.complete = true;
+            $scope.uploader.in_progress = false;
+            $scope.uploader.progress = 100;
+            $state.reload();
+            break;
+        }
+
+        _.defer(function () {
+          $scope.$apply();
+        });
       };
 
       /**

@@ -12,7 +12,6 @@ elsewhere.
 """
 import mmap
 import operator
-import sys
 
 from unicodecsv import DictReader, Sniffer
 from unidecode import unidecode
@@ -324,7 +323,8 @@ class MCMParser(object):
     @property
     def first_five_rows(self):
         """
-        Return the first five rows of the file.
+        Return the first five rows of the file. This handles items with carriage returns in the
+        field.
 
         :return: list of rows with ROW_DELIMITER
         """
@@ -364,23 +364,3 @@ class MCMParser(object):
         self.seek_to_beginning()
 
         return tmp
-
-
-def main():
-    """Just some contrived test code."""
-    from seed.lib.mcm.mappings import espm
-    from seed.lib.mcm.tests.utils import FakeModel
-
-    if len(sys.argv) < 2:
-        sys.exit('You need to specify a CSV file path.')
-
-    with open(sys.argv[1], 'rb') as f:
-        parser = MCMParser(f)
-        mapping = espm.MAP
-        model_class = FakeModel
-        for m in parser.map_rows(mapping, model_class):
-            m.save()
-
-
-if __name__ == '__main__':
-    main()

@@ -39,19 +39,7 @@ describe('The sdUploader directive', function () {
     $rootScope.$digest();
 
     // assert
-    expect(element.html()).toContain('qq-uploader');
-    expect(element.html()).toContain('qq-upload-button');
-  });
-
-  it('Contains the buttontext specified', function () {
-    // arrange
-    var element = $compile(uploader_html)($rootScope);
-
-    // act
-    $rootScope.$digest();
-
-    // assert
-    expect(element.html()).toContain('Upload your building list .csv file');
+    expect(element.html()).toContain('qq-button-id');
   });
 
   it('Only allows one file to be uploaded at a time', function () {
@@ -66,50 +54,36 @@ describe('The sdUploader directive', function () {
     expect(func._options.multiple).toBe(false);
   });
 
-  it('Uses the callback function for invalid file types', function () {
-    // arrange
-    var element = $compile(uploader_html)($rootScope);
-    var func = sdUploaderFineUploader($rootScope, element, '', 'test_file.jpeg');
-
-    // act
-    $rootScope.$digest();
-    func._options.showMessage('there was an invalid extension. Valid extension(s): .csv');
-
-
-    // assert
-    expect(g_message).toBe('invalid_extension');
-  });
-
   it('Uses the callback function to share its state: upload started', function () {
-      // arrange
+    // arrange
     var element = $compile(uploader_html)($rootScope);
     var func = sdUploaderFineUploader($rootScope, element, '', 'test_file.csv');
     var filename = 'test_file.csv';
 
-      // act
+    // act
     $rootScope.$digest();
     func._options.callbacks.onSubmitted(1, filename);
 
 
-      // assert
+    // assert
     expect(g_message).toBe('upload_submitted');
     expect(g_file.filename).toBe(filename);
   });
 
   it('Uses the callback function to share its state: in progress', function () {
-      // arrange
+    // arrange
     var element = $compile(uploader_html)($rootScope);
     var func = sdUploaderFineUploader($rootScope, element, '', 'test_file.csv');
     var filename = 'test_file.csv';
     var loaded = 10;
     var total = 100;
 
-      // act
+    // act
     $rootScope.$digest();
     func._options.callbacks.onProgress(1, filename, loaded, total);
 
 
-      // assert
+    // assert
     expect(g_message).toBe('upload_in_progress');
     expect(g_file.filename).toBe(filename);
     expect(g_progress.loaded).toBe(loaded);
@@ -117,18 +91,18 @@ describe('The sdUploader directive', function () {
   });
 
   it('Uses the callback function to share its state: complete', function () {
-      // arrange
+    // arrange
     var element = $compile(uploader_html)($rootScope);
     var func = sdUploaderFineUploader($rootScope, element, '', 'test_file.csv');
     var filename = 'test_file.csv';
 
 
-      // act
+    // act
     $rootScope.$digest();
     func._options.callbacks.onComplete(1, filename, {success: true});
 
 
-      // assert
+    // assert
     expect(g_message).toBe('upload_complete');
     expect(g_file.filename).toBe(filename);
   });

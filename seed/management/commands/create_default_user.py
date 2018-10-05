@@ -32,6 +32,12 @@ class Command(BaseCommand):
                             action='store',
                             dest='organization')
 
+        parser.add_argument('--type',
+                            default='superuser',
+                            help='Type of user to create, defaults to superuser',
+                            action='store',
+                            dest='usertype')
+
     def handle(self, *args, **options):
         if User.objects.filter(username=options['username']).exists():
             self.stdout.write(
@@ -43,11 +49,20 @@ class Command(BaseCommand):
             self.stdout.write(
                 'Creating user <%s>, password <hidden> ...' % (options['username']), ending=' '
             )
-            u = User.objects.create_superuser(
-                options['username'],
-                options['username'],
-                options['password']
-            )
+
+            if options['usertype'] == 'superuser':
+                u = User.objects.create_superuser(
+                    options['username'],
+                    options['username'],
+                    options['password']
+                )
+            else:
+                u = User.objects.create_user(
+                    options['username'],
+                    options['username'],
+                    options['password']
+                )
+
             self.stdout.write('Creating API Key', ending='\n')
             u.generate_key()
 

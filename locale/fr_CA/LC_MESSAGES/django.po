@@ -796,7 +796,7 @@ msgid "File Source:"
 msgstr "Source du fichier:"
 
 msgid "FILE_TYPES_SUPPORTED"
-msgstr "Types de fichiers pris en charge: <strong>.csv</strong>, <strong>.xls</strong>, et <strong>.xlsx</strong>."
+msgstr "Types de fichiers pris en charge: <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, et <strong>.xml</strong>."
 
 msgid "Files (Master State Only)"
 msgstr "Fichiers (état principal uniquement)"
@@ -956,7 +956,10 @@ msgid "INTERNAL"
 msgstr "INTERNE"
 
 msgid "INVALID_EXTENSION_ALERT"
-msgstr "<strong>Désolée!</strong> SEED ne supporte actuellement pas ce format de fichier. Seuls les fichiers <strong>.csv</strong> , <strong>.xls</strong> , <strong>.xlsx</strong> et <strong>.xml</strong> sont pris en charge."
+msgstr "<strong>Désolée!</strong> SEED ne supporte actuellement pas ce format de fichier. Seuls les fichiers <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, et <strong>.xml</strong> sont pris en charge."
+
+msgid "INVALID_XML_EXTENSION_ALERT"
+msgstr "<strong>Désolée!</strong> SEED ne supporte actuellement pas ce format de fichier. Seuls les fichiers <strong>.xml</strong> sont pris en charge."
 
 msgid "Inventory"
 msgstr "Inventaire"
@@ -2142,6 +2145,10 @@ msgstr "Télécharger une feuille de calcul"
 msgid "Upload another energy data file"
 msgstr "Télécharger un autre fichier de données d'énergie"
 
+#, fuzzy
+msgid "Upload BuildingSync Data"
+msgstr "Télécharger les données du BuildingSync"
+
 msgid "upload complete"
 msgstr "téléchargement complet"
 
@@ -2361,6 +2368,9 @@ msgstr "Votre mot de passe doit contenir au moins% (quantité) d% (type) s carac
 
 msgid "Your Role"
 msgstr "Votre Rôle"
+
+msgid "Your SEED account is not associated with any organizations.  Please contact a SEED administrator."
+msgstr "Votre compte SEED n'est associé à aucune organisation. Veuillez contacter un administrateur SEED."
 
 #: seed/landing/templates/landing/password_reset_email.html:9
 msgid "Your username, in case you've forgotten:"

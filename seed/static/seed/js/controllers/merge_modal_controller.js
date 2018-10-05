@@ -24,8 +24,10 @@ angular.module('BE.seed.controller.merge_modal', [])
 
       // Columns
       $scope.columns = columns;
+      $scope.protectedColumns = _.map(_.filter(columns, {merge_protection: 'Favor Existing'}), 'name');
       var defaults = {
         headerCellFilter: 'translate',
+        headerCellTemplate: 'ui-grid/seedMergeHeader',
         minWidth: 75,
         width: 150
       };
@@ -42,6 +44,11 @@ angular.module('BE.seed.controller.merge_modal', [])
           return _.pickBy(datum, notEmpty);
         });
         $scope.result[0] = _.defaults.apply(null, cleanedData);
+
+        // Handle Merge Protection columns
+        _.forEach($scope.protectedColumns, function (col) {
+          $scope.result[0][col] = _.last($scope.data)[col];
+        });
 
         // Concatenate Jurisdiction Tax Lot IDs if inventory_type is property
         if ($scope.inventory_type === 'properties') {

@@ -5,8 +5,8 @@
 :author
 """
 import base64
-import datetime
 import csv
+import datetime
 import hashlib
 import hmac
 import json
@@ -24,7 +24,8 @@ from django.core.urlresolvers import reverse
 from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
 from rest_framework import serializers, status, viewsets
-from rest_framework.decorators import api_view, detail_route, list_route, parser_classes, permission_classes
+from rest_framework.decorators import api_view, detail_route, list_route, parser_classes, \
+    permission_classes
 from rest_framework.parsers import MultiPartParser, FormParser
 
 from seed.data_importer.models import (
@@ -32,9 +33,10 @@ from seed.data_importer.models import (
     ImportRecord
 )
 from seed.data_importer.models import ROW_DELIMITER
+from seed.data_importer.tasks import do_checks
 from seed.data_importer.tasks import (
     map_data,
-    match_buildings,
+    match_buildings as task_match_buildings,
     save_raw_data as task_save_raw
 )
 from seed.decorators import ajax_request, ajax_request_class
@@ -43,6 +45,9 @@ from seed.lib.mappings import mapper as simple_mapper
 from seed.lib.mcm import mapper
 from seed.lib.merging import merging
 from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.models import (
+    Organization,
+)
 from seed.lib.superperms.orgs.models import OrganizationUser
 from seed.lib.superperms.orgs.permissions import SEEDOrgPermissions
 from seed.models import (
@@ -71,9 +76,8 @@ from seed.models import (
     TaxLotProperty,
     SEED_DATA_SOURCES,
     PORTFOLIO_RAW)
-from seed.models.data_quality import DataQualityCheck
 from seed.utils.api import api_endpoint, api_endpoint_class
-from seed.utils.cache import get_cache_raw, get_cache
+from seed.utils.cache import get_cache
 
 _log = logging.getLogger(__name__)
 
@@ -209,7 +213,8 @@ class LocalUploaderViewSet(viewsets.ViewSet):
         # The s3 stuff needs to be redone someday... delete?
         if 'S3' in settings.DEFAULT_FILE_STORAGE:
             os.unlink(path)
-            raise ImproperlyConfigured("Local upload not supported")  # TODO: Is this wording correct?
+            raise ImproperlyConfigured(
+                "Local upload not supported")  # TODO: Is this wording correct?
 
         import_record_pk = request.POST.get('import_record', request.GET.get('import_record'))
         try:
@@ -245,7 +250,8 @@ class LocalUploaderViewSet(viewsets.ViewSet):
             try:
                 float_value = float(string_value)
             except ValueError:
-                return {'success': False, 'message': 'Could not cast value to float: \"%s\"' % string_value}
+                return {'success': False,
+                        'message': 'Could not cast value to float: \"%s\"' % string_value}
             original_unit_string = pm_value['@uom']
             if original_unit_string == u'kBtu':
                 pint_val = float_value * units.kBTU
@@ -256,7 +262,8 @@ class LocalUploaderViewSet(viewsets.ViewSet):
             elif original_unit_string == u'kgCO2e/ft²':
                 pint_val = float_value * units.kilogram / units.sq_ft
             else:
-                return {'success': False, 'message': 'Unsupported units string: \"%s\"' % original_unit_string}
+                return {'success': False,
+                        'message': 'Unsupported units string: \"%s\"' % original_unit_string}
             return {'success': True, 'pint_value': pint_val}
 
     @api_endpoint_class
@@ -265,7 +272,13 @@ class LocalUploaderViewSet(viewsets.ViewSet):
     def create_from_pm_import(self, request):
         """
         Create an import_record from a PM import request.
+        TODO: The properties key here is going to be an enormous amount of XML data at times, need to change this
         This allows the PM import workflow to be treated essentially the same as a standard file upload
+        The process comprises the following steps:
+
+        * Get a unique file name for this portfolio manager import
+        *
+
         ---
         parameters:
             - name: import_record
@@ -277,10 +290,13 @@ class LocalUploaderViewSet(viewsets.ViewSet):
               required: true
               paramType: body
         """
+
+        doing_pint = False
+
         if 'properties' not in request.data:
             return JsonResponse({
                 'success': False,
-                'message': "Must pass pm_data in the request body."
+                'message': "Must pass properties in the request body."
             }, status=status.HTTP_400_BAD_REQUEST)
 
         # base file name (will be appended with a random string to ensure uniqueness if multiple on the same day)
@@ -300,17 +316,21 @@ class LocalUploaderViewSet(viewsets.ViewSet):
 
         # This list should cover the core keys coming from PM, ensuring that they map easily
         # We will also look for keys not in this list and just map them to themselves
-        pm_key_to_column_heading_map = {
-            u'address_1': u'Address',
-            u'city': u'City',
-            u'state_province': u'State',
-            u'postal_code': u'Zip',
-            u'county': u'County',
-            u'country': u'Country',
-            u'property_name': u'Property Name',
-            u'property_id': u'Property ID',
-            u'year_built': u'Year Built',
-        }
+        # pm_key_to_column_heading_map = {
+        #     u'address_1': u'Address',
+        #     u'city': u'City',
+        #     u'state_province': u'State',
+        #     u'postal_code': u'Zip',
+        #     u'county': u'County',
+        #     u'country': u'Country',
+        #     u'property_name': u'Property Name',
+        #     u'property_id': u'Property ID',
+        #     u'year_built': u'Year Built',
+        # }
+        # so now it looks like we *don't* need to override these, but instead we should leave all the headers as-is
+        # I'm going to leave this in here for right now, but if it turns out that we don't need it after testing,
+        # then I'll remove it entirely
+        pm_key_to_column_heading_map = {}
 
         # We will also create a list of values that are used in PM export to indicate a value wasn't available
         # When we import them into SEED here we will be sure to not write those values
@@ -329,13 +349,27 @@ class LocalUploaderViewSet(viewsets.ViewSet):
 
         # Create the header row of the csv file first
         rows = []
-        this_row = []
+        header_row = []
         for _, csv_header in pm_key_to_column_heading_map.iteritems():
-            this_row.append(csv_header)
-        rows.append(this_row)
+            header_row.append(csv_header)
+        rows.append(header_row)
+
+        num_properties = len(request.data['properties'])
+        property_num = 0
+        last_time = datetime.datetime.now()
+
+        _log.debug("About to try to import %s properties from ESPM" % num_properties)
+        _log.debug("Starting at %s" % last_time)
 
         # Create a single row for each building
         for pm_property in request.data['properties']:
+
+            # report some helpful info
+            property_num += 1
+            if property_num / 20.0 == property_num / 20:
+                new_time = datetime.datetime.now()
+                _log.debug("On property number %s; current time: %s" % (property_num, new_time))
+
             this_row = []
 
             # Loop through all known PM variables
@@ -357,6 +391,10 @@ class LocalUploaderViewSet(viewsets.ViewSet):
                         if pm_variable == u'property_name':
                             this_row.append(this_pm_variable)
                             added = True
+                        elif pm_variable == u'property_notes':
+                            sanitized_string = this_pm_variable.replace('\n', ' ')
+                            this_row.append(sanitized_string)
+                            added = True
                         elif this_pm_variable not in pm_flagged_bad_string_values:
                             this_row.append(this_pm_variable)
                             added = True
@@ -365,15 +403,19 @@ class LocalUploaderViewSet(viewsets.ViewSet):
                     else:
 
                         # As long as it is a valid dictionary, try to get a meaningful value out of it
-                        if '#text' in this_pm_variable and this_pm_variable['#text'] != 'Not Available':
+                        if this_pm_variable and '#text' in this_pm_variable and this_pm_variable['#text'] != 'Not Available':
 
                             # Coerce the value into a proper set of Pint units for us
-                            new_var = LocalUploaderViewSet._get_pint_var_from_pm_value_object(this_pm_variable)
-                            if new_var['success']:
-                                pint_value = new_var['pint_value']
-                                this_row.append(pint_value.magnitude)
+                            if doing_pint:
+                                new_var = LocalUploaderViewSet._get_pint_var_from_pm_value_object(this_pm_variable)
+                                if new_var['success']:
+                                    pint_value = new_var['pint_value']
+                                    this_row.append(pint_value.magnitude)
+                                    added = True
+                                    # TODO: What to do with the pint_value.units here?
+                            else:
+                                this_row.append(float(this_pm_variable['#text']))
                                 added = True
-                                # TODO: What to do with the pint_value.units here?
 
                 # And finally, if we haven't set the added flag, give the csv column a blank value
                 if not added:
@@ -383,10 +425,21 @@ class LocalUploaderViewSet(viewsets.ViewSet):
             rows.append(this_row)
 
         # Then write the actual data out as csv
+        # Note that the Python 2.x csv module doesn't allow easily specifying an encoding, and it was failing on a few
+        # rows here and there with a large test dataset.  This local function allows converting to utf8 before writing
+        def py2_unicode_to_str(u):
+            if isinstance(u, unicode):
+                return u.encode('utf-8')
+            else:
+                return u
         with open(path, 'wb') as csv_file:
             pm_csv_writer = csv.writer(csv_file)
-            for row in rows:
-                pm_csv_writer.writerow(row)
+            for row_num, row in enumerate(rows):
+                try:
+                    pm_csv_writer.writerow(row)
+                except UnicodeEncodeError:
+                    cleaned_row_data = [py2_unicode_to_str(datum) for datum in row]
+                    pm_csv_writer.writerow(cleaned_row_data)
 
         # Look up the import record (data set)
         import_record_pk = request.data['import_record_id']
@@ -402,10 +455,11 @@ class LocalUploaderViewSet(viewsets.ViewSet):
 
         # Create a new import file object in the database
         f = ImportFile.objects.create(import_record=record,
-                                      uploaded_filename='PortfolioManagerImport',
+                                      uploaded_filename=file_name,
                                       file=path,
                                       source_type=SEED_DATA_SOURCES[PORTFOLIO_RAW],
-                                      **{'source_program': 'PortfolioManager', 'source_program_version': '1.0'})
+                                      **{'source_program': 'PortfolioManager',
+                                         'source_program_version': '1.0'})
 
         # Return the newly created import file ID
         return JsonResponse({'success': True, "import_file_id": f.pk})
@@ -525,6 +579,61 @@ class MappingResultsResponseSerializer(serializers.Serializer):
     tax_lots = MappingResultsTaxLotSerializer(many=True)
 
 
+def convert_first_five_rows_to_list(header, first_five_rows):
+    """
+    Return the first five rows. This is a complicated method because it handles converting the
+    persisted format of the first five rows into a list of dictionaries. It handles some basic
+    logic if there are crlf in the fields. Note that this method does not cover all the use cases
+    and cannot due to the custom delimeter. See the tests in
+    test_views.py:test_get_first_five_rows_newline_should_work to see the limitation
+
+    :param header: list, ordered list of headers as strings
+    :param first_five_rows: string, long string with |#*#| delimeter.
+    :return: list
+    """
+    row_data = []
+    rows = []
+    number_of_columns = len(header)
+    split_cells = first_five_rows.split(ROW_DELIMITER)
+    number_cells = len(split_cells)
+    # catch the case where there is only one column, therefore no ROW_DELIMITERs
+    if number_of_columns == 1:
+        # Note that this does not support having a single column with carriage returns!
+        rows = first_five_rows.splitlines()
+    else:
+        for idx, l in enumerate(split_cells):
+            crlf_count = l.count('\n')
+
+            if crlf_count == 0:
+                row_data.append(l)
+            elif crlf_count >= 1:
+                # if add this element to row_data equals number_of_columns, then it is a new row
+                if len(row_data) == number_of_columns - 1:
+                    # check if this is the last columns, if so, then just store the value and move on
+                    if idx == number_cells - 1:
+                        row_data.append(l)
+                        rows.append(row_data)
+                        continue
+                    else:
+                        # split the cell_data. The last cell becomes the beginning of the new
+                        # row, and the other cells stay joined with \n.
+                        cell_data = l.splitlines()
+                        row_data.append('\n'.join(cell_data[:crlf_count]))
+                        rows.append(row_data)
+
+                        # initialize the next row_data with the remainder
+                        row_data = [cell_data[-1]]
+                        continue
+                else:
+                    # this is not the end, so it must be a carriage return in the cell, just save data
+                    row_data.append(l)
+
+            if len(row_data) == number_of_columns:
+                rows.append(row_data)
+
+    return [dict(zip(header, row)) for row in rows]
+
+
 class ImportFileViewSet(viewsets.ViewSet):
     raise_exception = True
     queryset = ImportFile.objects.all()
@@ -641,25 +750,11 @@ class ImportFileViewSet(viewsets.ViewSet):
         so the following is to handle newlines in the fields.
         In the case of only one data column there will be no ROW_DELIMITER.
         '''
-        lines = []
-        number_of_columns = len(import_file.cached_first_row.split(ROW_DELIMITER))
-        for l in import_file.cached_second_to_fifth_row.splitlines():
-            if ROW_DELIMITER in l or number_of_columns == 1:
-                lines.append(l)
-            else:
-                # Line caused by newline in data, concat it to previous line.
-                index = len(lines) - 1
-                lines[index] = lines[index] + '\n' + l
-
-        rows = [r.split(ROW_DELIMITER) for r in lines]
-
+        header = import_file.cached_first_row.split(ROW_DELIMITER)
+        data = import_file.cached_second_to_fifth_row
         return JsonResponse({
             'status': 'success',
-            'first_five_rows': [
-                dict(
-                    zip(import_file.first_row_columns, row)
-                ) for row in rows
-            ]
+            'first_five_rows': convert_first_five_rows_to_list(header, data)
         })
 
     @api_endpoint_class
@@ -1139,12 +1234,11 @@ class ImportFileViewSet(viewsets.ViewSet):
         state1 = state.objects.get(id=matching_state_id)
         state2 = state.objects.get(id=source_state_id)
 
+        priorities = Column.retrieve_priorities(organization_id)
         merged_state = state.objects.create(organization_id=organization_id)
-        merged_state = merging.merge_state(merged_state,
-                                           state1,
-                                           state2,
-                                           merging.get_state_attrs([state1, state2]),
-                                           default=state2)
+        merged_state = merging.merge_state(
+            merged_state, state1, state2, priorities[PropertyState.__name__]
+        )
 
         state_1_audit_log = audit_log.objects.filter(state=state1).first()
         state_2_audit_log = audit_log.objects.filter(state=state2).first()
@@ -1291,29 +1385,25 @@ class ImportFileViewSet(viewsets.ViewSet):
               required: true
               paramType: path
         """
-        return match_buildings(pk)
+        return task_match_buildings(pk)
 
     @api_endpoint_class
     @ajax_request_class
-    @detail_route(methods=['GET'], url_path='data_quality_results')
-    def get_data_quality_results(self, request, pk=None):
+    @has_perm_class('can_modify_data')
+    @detail_route(methods=['POST'])
+    def start_data_quality_checks(self, request, pk=None):
         """
-        Retrieve the details of the data quality check.
+        Starts a background task to attempt automatic matching between buildings
+        in an ImportFile with other existing buildings within the same org.
         ---
         type:
             status:
                 required: true
                 type: string
                 description: either success or error
-            message:
-                type: string
-                description: additional information, if any
-            progress:
+            progress_key:
                 type: integer
-                description: integer percent of completion
-            data:
-                type: JSON
-                description: object describing the results of the data quality check
+                description: ID of background job, for retrieving job progress
         parameter_strategy: replace
         parameters:
             - name: pk
@@ -1321,13 +1411,13 @@ class ImportFileViewSet(viewsets.ViewSet):
               required: true
               paramType: path
         """
-        import_file_id = pk
-        data_quality_results = get_cache_raw(DataQualityCheck.cache_key(import_file_id))
+        organization = Organization.objects.get(pk=request.query_params['organization_id'])
+
+        return_value = do_checks(organization.id, None, None, pk)
+        # step 5: create a new model instance
         return JsonResponse({
-            'status': 'success',
-            'message': 'data quality check complete',
-            'progress': 100,
-            'data': data_quality_results
+            'progress_key': return_value['progress_key'],
+            'progress': return_value,
         })
 
     @api_endpoint_class
@@ -1545,19 +1635,19 @@ class ImportFileViewSet(viewsets.ViewSet):
             }
 
         """
-        import_file_id = pk
+        import_file = ImportFile.objects.get(pk=pk)
 
         # property views associated with this imported file (including merges)
         properties_new = []
         properties_matched = list(PropertyState.objects.filter(
-            import_file__pk=import_file_id,
+            import_file__pk=import_file.pk,
             data_state=DATA_STATE_MATCHING,
             merge_state=MERGE_STATE_MERGED,
         ).values_list('id', flat=True))
 
         # Check audit log in case PropertyStates are listed as "new" but were merged into a different property
         properties = list(PropertyState.objects.filter(
-            import_file__pk=import_file_id,
+            import_file__pk=import_file.pk,
             data_state=DATA_STATE_MATCHING,
             merge_state=MERGE_STATE_NEW,
         ))
@@ -1577,14 +1667,14 @@ class ImportFileViewSet(viewsets.ViewSet):
 
         tax_lots_new = []
         tax_lots_matched = list(TaxLotState.objects.only('id').filter(
-            import_file__pk=import_file_id,
+            import_file__pk=import_file.pk,
             data_state=DATA_STATE_MATCHING,
             merge_state=MERGE_STATE_MERGED,
         ).values_list('id', flat=True))
 
         # Check audit log in case TaxLotStates are listed as "new" but were merged into a different tax lot
         taxlots = list(TaxLotState.objects.filter(
-            import_file__pk=import_file_id,
+            import_file__pk=import_file.pk,
             data_state=DATA_STATE_MATCHING,
             merge_state=MERGE_STATE_NEW,
         ))
@@ -1601,15 +1691,30 @@ class ImportFileViewSet(viewsets.ViewSet):
             else:
                 tax_lots_new.append(state.id)
 
+        # merge in any of the matching results from the JSON field
         return {
             'status': 'success',
+            'import_file_records': import_file.matching_results_data.get('import_file_records',
+                                                                         None),
             'properties': {
                 'matched': len(properties_matched),
-                'unmatched': len(properties_new)
+                'unmatched': len(properties_new),
+                'all_unmatched': import_file.matching_results_data.get('property_all_unmatched',
+                                                                       None),
+                'duplicates': import_file.matching_results_data.get('property_duplicates', None),
+                'duplicates_of_existing': import_file.matching_results_data.get(
+                    'property_duplicates_of_existing', None),
+                'unmatched_copy': import_file.matching_results_data.get('property_unmatched', None),
             },
             'tax_lots': {
                 'matched': len(tax_lots_matched),
-                'unmatched': len(tax_lots_new)
+                'unmatched': len(tax_lots_new),
+                'all_unmatched': import_file.matching_results_data.get('tax_lot_all_unmatched',
+                                                                       None),
+                'duplicates': import_file.matching_results_data.get('tax_lot_duplicates', None),
+                'duplicates_of_existing': import_file.matching_results_data.get(
+                    'tax_lot_duplicates_of_existing', None),
+                'unmatched_copy': import_file.matching_results_data.get('tax_lot_unmatched', None),
             }
         }
 
@@ -1784,19 +1889,25 @@ class ImportFileViewSet(viewsets.ViewSet):
             .get(organization_id=organization_id, user=request.user)
         organization = membership.organization
 
+        # For now, each organization holds their own mappings. This is non-ideal, but it is the
+        # way it is for now. In order to move to parent_org holding, then we need to be able to
+        # dynamically match columns based on the names and not the db id (or support many-to-many).
+        # parent_org = organization.get_parent()
+
         import_file = ImportFile.objects.get(
             pk=pk,
             import_record__super_organization_id=organization.pk
         )
 
         # Get a list of the database fields in a list, these are the db columns and the extra_data columns
-        property_columns = Column.retrieve_mapping_columns(organization_id, 'property')
-        taxlot_columns = Column.retrieve_mapping_columns(organization_id, 'taxlot')
+        property_columns = Column.retrieve_mapping_columns(organization.pk, 'property')
+        taxlot_columns = Column.retrieve_mapping_columns(organization.pk, 'taxlot')
 
         # If this is a portfolio manager file, then load in the PM mappings and if the column_mappings
         # are not in the original mappings, default to PM
         if import_file.from_portfolio_manager:
-            pm_mappings = simple_mapper.get_pm_mapping(import_file.first_row_columns, resolve_duplicates=True)
+            pm_mappings = simple_mapper.get_pm_mapping(import_file.first_row_columns,
+                                                       resolve_duplicates=True)
             suggested_mappings = mapper.build_column_mapping(
                 import_file.first_row_columns,
                 Column.retrieve_all_by_tuple(organization_id),
@@ -1809,18 +1920,19 @@ class ImportFileViewSet(viewsets.ViewSet):
             # All other input types
             suggested_mappings = mapper.build_column_mapping(
                 import_file.first_row_columns,
-                Column.retrieve_all_by_tuple(organization_id),
+                Column.retrieve_all_by_tuple(organization.pk),
                 previous_mapping=get_column_mapping,
                 map_args=[organization],
                 thresh=80  # percentage match that we require. 80% is random value for now.
             )
             # replace None with empty string for column names and PropertyState for tables
+            # TODO #239: Move this fix to build_column_mapping
             for m in suggested_mappings:
                 table, destination_field, _confidence = suggested_mappings[m]
                 if destination_field is None:
                     suggested_mappings[m][1] = u''
 
-        # Fix the table name, eventually move this to the build_column_mapping and build_pm_mapping
+        # Fix the table name, eventually move this to the build_column_mapping
         for m in suggested_mappings:
             table, _destination_field, _confidence = suggested_mappings[m]
             if not table:

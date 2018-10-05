@@ -5,6 +5,9 @@ from seed.decorators import ajax_request_class
 from seed.utils.api import api_endpoint_class
 from seed.utils.cache import get_cache
 
+import logging
+_log = logging.getLogger(__name__)
+
 
 class ProgressViewSetV2(viewsets.ViewSet):
     raise_exception = True
@@ -21,8 +24,6 @@ class ProgressViewSetV2(viewsets.ViewSet):
                 'progress': Percent completion
             }
         """
-        # progress_key = request.data.get('progress_key')
-
         progress_key = pk
         if get_cache(progress_key):
             return JsonResponse(get_cache(progress_key))

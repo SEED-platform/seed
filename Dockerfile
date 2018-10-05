@@ -28,8 +28,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         enchant \
         vim \
         curl \
-    && pip install --upgrade pip==9.0.3 \
     && pip install setuptools \
+    && pip install --upgrade pip==18.0 \
     && groupadd --gid 1000 uwsgi \
     && useradd -g uwsgi -M -u 1000 -r uwsgi \
     && rm -rf /var/lib/apt/lists/* \

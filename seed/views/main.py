@@ -19,9 +19,7 @@ from rest_framework.decorators import api_view
 
 from seed import tasks
 from seed.data_importer.models import ImportFile, ImportRecord
-from seed.decorators import (
-    ajax_request, get_prog_key
-)
+from seed.decorators import ajax_request
 from seed.lib.superperms.orgs.decorators import has_perm
 from seed.utils.api import api_endpoint
 from seed.views.users import _get_js_role
@@ -360,13 +358,4 @@ def delete_organization_inventory(request):
         }
     """
     org_id = request.query_params.get('organization_id', None)
-    deleting_cache_key = get_prog_key(
-        'delete_organization_inventory',
-        org_id
-    )
-    tasks.delete_organization_inventory.delay(org_id, deleting_cache_key)
-    return JsonResponse({
-        'status': 'success',
-        'progress': 0,
-        'progress_key': deleting_cache_key
-    })
+    return JsonResponse(tasks.delete_organization_inventory(org_id))

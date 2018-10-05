@@ -21,12 +21,12 @@ from django.utils.http import urlsafe_base64_encode
 from seed.decorators import lock_and_track
 from seed.landing.models import SEEDUser as User
 from seed.lib.mcm.utils import batch
+from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
     Property, PropertyState,
     TaxLot, TaxLotState
 )
-from seed.utils.cache import set_cache, increment_cache
 
 logger = get_task_logger(__name__)
 
@@ -70,21 +70,17 @@ def invite_to_seed(domain, email_address, token, user_pk, first_name):
         pass
 
 
-@shared_task
-@lock_and_track
-def delete_organization(org_pk, deleting_cache_key, chunk_size=100, *args, **kwargs):
-    result = {
-        'status': 'success',
-        'progress': 0,
-        'progress_key': deleting_cache_key
-    }
-    set_cache(deleting_cache_key, result['status'], result)
+def delete_organization(org_pk):
+    """delete_organization_buildings"""
+    progress_data = ProgressData(func_name='delete_organization', unique_id=org_pk)
 
     chain(
-        delete_organization_inventory.si(org_pk, deleting_cache_key),
-        _delete_organization_related_data.si(org_pk, deleting_cache_key),
-        _finish_delete.si(None, org_pk, deleting_cache_key)
+        delete_organization_inventory.si(org_pk, progress_data.key),
+        _delete_organization_related_data.si(org_pk, progress_data.key),
+        _finish_delete.si(None, org_pk, progress_data.key)
     )()
+
+    return progress_data.result()
 
 
 @shared_task
@@ -104,38 +100,26 @@ def _delete_organization_related_data(org_pk, prog_key):
         if not OrganizationUser.objects.filter(user_id=user.pk).exists():
             user.delete()
 
-    result = {
-        'status': 'success',
-        'progress': 100,
-        'progress_key': prog_key
-    }
-    set_cache(prog_key, result['status'], result)
+    progress_data = ProgressData.from_key(prog_key)
+    return progress_data.result()
 
 
 @shared_task
 def _finish_delete(results, org_pk, prog_key):
-    result = {
-        'status': 'success',
-        'progress': 100,
-        'progress_key': prog_key
-    }
-
-    # set recursion limits back to 1000
     sys.setrecursionlimit(1000)
-    set_cache(prog_key, result['status'], result)
+
+    progress_data = ProgressData.from_key(prog_key)
+    return progress_data.finish_with_success()
 
 
 @shared_task
 @lock_and_track
-def delete_organization_inventory(org_pk, deleting_cache_key, chunk_size=100, *args, **kwargs):
+def delete_organization_inventory(org_pk, prog_key=None, chunk_size=100, *args, **kwargs):
     """Deletes all properties & taxlots within an organization."""
     sys.setrecursionlimit(5000)  # default is 1000
 
-    result = {
-        'status': 'success',
-        'progress_key': deleting_cache_key,
-        'progress': 0
-    }
+    progress_data = ProgressData.from_key(prog_key) if prog_key else ProgressData(
+        func_name='delete_organization_inventory', unique_id=org_pk)
 
     property_ids = list(
         Property.objects.filter(organization_id=org_pk).values_list('id', flat=True)
@@ -153,68 +137,71 @@ def delete_organization_inventory(org_pk, deleting_cache_key, chunk_size=100, *a
     total = len(property_ids) + len(property_state_ids) + len(taxlot_ids) + len(taxlot_state_ids)
 
     if total == 0:
-        result['progress'] = 100
+        return progress_data.finish_with_success('No inventory data to remove for organization')
 
-    set_cache(deleting_cache_key, result['status'], result)
+    # total steps is the total number of properties divided by the chunk size
+    progress_data.total = total / float(chunk_size)
+    progress_data.save()
 
-    if total == 0:
-        return
-
-    step = float(chunk_size) / total
     tasks = []
     # we could also use .s instead of .subtask and not wrap the *args
     for del_ids in batch(property_ids, chunk_size):
         tasks.append(
             _delete_organization_property_chunk.subtask(
-                (del_ids, deleting_cache_key, step, org_pk)
+                (del_ids, progress_data.key, org_pk)
             )
         )
     for del_ids in batch(property_state_ids, chunk_size):
         tasks.append(
             _delete_organization_property_state_chunk.subtask(
-                (del_ids, deleting_cache_key, step, org_pk)
+                (del_ids, progress_data.key, org_pk)
             )
         )
     for del_ids in batch(taxlot_ids, chunk_size):
         tasks.append(
             _delete_organization_taxlot_chunk.subtask(
-                (del_ids, deleting_cache_key, step, org_pk)
+                (del_ids, progress_data.key, org_pk)
             )
         )
     for del_ids in batch(taxlot_state_ids, chunk_size):
         tasks.append(
             _delete_organization_taxlot_state_chunk.subtask(
-                (del_ids, deleting_cache_key, step, org_pk)
+                (del_ids, progress_data.key, org_pk)
             )
         )
-    chord(tasks, interval=15)(
-        _finish_delete.subtask([org_pk, deleting_cache_key]))
+    chord(tasks, interval=15)(_finish_delete.subtask([org_pk, progress_data.key]))
+
+    return progress_data.result()
 
 
 @shared_task
-def _delete_organization_property_chunk(del_ids, prog_key, increment, org_pk, *args, **kwargs):
+def _delete_organization_property_chunk(del_ids, prog_key, org_pk, *args, **kwargs):
     """deletes a list of ``del_ids`` and increments the cache"""
     Property.objects.filter(organization_id=org_pk, pk__in=del_ids).delete()
-    increment_cache(prog_key, increment * 100)
+    progress_data = ProgressData.from_key(prog_key)
+    progress_data.step()
 
 
 @shared_task
-def _delete_organization_property_state_chunk(del_ids, prog_key, increment, org_pk, *args,
+def _delete_organization_property_state_chunk(del_ids, prog_key, org_pk, *args,
                                               **kwargs):
     """deletes a list of ``del_ids`` and increments the cache"""
     PropertyState.objects.filter(pk__in=del_ids).delete()
-    increment_cache(prog_key, increment * 100)
+    progress_data = ProgressData.from_key(prog_key)
+    progress_data.step()
 
 
 @shared_task
-def _delete_organization_taxlot_chunk(del_ids, prog_key, increment, org_pk, *args, **kwargs):
+def _delete_organization_taxlot_chunk(del_ids, prog_key, org_pk, *args, **kwargs):
     """deletes a list of ``del_ids`` and increments the cache"""
     TaxLot.objects.filter(organization_id=org_pk, pk__in=del_ids).delete()
-    increment_cache(prog_key, increment * 100)
+    progress_data = ProgressData.from_key(prog_key)
+    progress_data.step()
 
 
 @shared_task
-def _delete_organization_taxlot_state_chunk(del_ids, prog_key, increment, org_pk, *args, **kwargs):
+def _delete_organization_taxlot_state_chunk(del_ids, prog_key, org_pk, *args, **kwargs):
     """deletes a list of ``del_ids`` and increments the cache"""
     TaxLotState.objects.filter(organization_id=org_pk, pk__in=del_ids).delete()
-    increment_cache(prog_key, increment * 100)
+    progress_data = ProgressData.from_key(prog_key)
+    progress_data.step()

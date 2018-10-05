@@ -11,6 +11,7 @@ from celery.utils.log import get_task_logger
 from django.http import JsonResponse, HttpResponse
 from rest_framework import viewsets, serializers, status
 from rest_framework.decorators import list_route, detail_route
+from unidecode import unidecode
 
 from seed.data_importer.tasks import do_checks
 from seed.decorators import ajax_request_class
@@ -19,8 +20,7 @@ from seed.lib.superperms.orgs.models import (
     Organization,
 )
 from seed.models.data_quality import (
-    DATA_TYPES as DATA_QUALITY_DATA_TYPES,
-    SEVERITY as DATA_QUALITY_SEVERITY,
+    Rule,
     DataQualityCheck,
 )
 from seed.utils.api import api_endpoint_class
@@ -60,7 +60,7 @@ def _get_js_rule_type(data_type):
     :param data_type: data data_quality rule data type as defined in data_quality.models
     :returns: (string) JS data type name
     """
-    return dict(DATA_QUALITY_DATA_TYPES).get(data_type)
+    return dict(Rule.DATA_TYPES).get(data_type)
 
 
 def _get_js_rule_severity(severity):
@@ -69,7 +69,7 @@ def _get_js_rule_severity(severity):
     :param severity: data data_quality rule severity as defined in data_quality.models
     :returns: (string) JS severity name
     """
-    return dict(DATA_QUALITY_SEVERITY).get(severity)
+    return dict(Rule.SEVERITY).get(severity)
 
 
 def _get_rule_type_from_js(data_type):
@@ -78,7 +78,7 @@ def _get_rule_type_from_js(data_type):
     :param data_type: 'string', 'number', 'date', or 'year'
     :returns: int data type as defined in data_quality.models
     """
-    d = {v: k for k, v in dict(DATA_QUALITY_DATA_TYPES).items()}
+    d = {v: k for k, v in dict(Rule.DATA_TYPES).items()}
     return d.get(data_type)
 
 
@@ -88,7 +88,7 @@ def _get_severity_from_js(severity):
     :param severity: 'error', or 'warning'
     :returns: int severity as defined in data_quality.models
     """
-    d = {v: k for k, v in dict(DATA_QUALITY_SEVERITY).items()}
+    d = {v: k for k, v in dict(Rule.SEVERITY).items()}
     return d.get(severity)
 
 
@@ -137,7 +137,10 @@ class DataQualityViews(viewsets.ViewSet):
         return JsonResponse({
             'num_properties': len(property_state_ids),
             'num_taxlots': len(taxlot_state_ids),
-            'progress_key': return_value['progress_key']})
+            # TODO #239: Deprecate progress_key from here and just use the 'progess.progress_key'
+            'progress_key': return_value['progress_key'],
+            'progress': return_value,
+        })
 
     @api_endpoint_class
     @ajax_request_class
@@ -177,7 +180,8 @@ class DataQualityViews(viewsets.ViewSet):
                     row['jurisdiction_tax_lot_id'] if 'jurisdiction_tax_lot_id' in row else None,
                     row['custom_id_1'],
                     result['formatted_field'],
-                    result['detailed_message'],
+                    # the detailed_message field can have units which has superscripts/subscripts, so unidecode it!
+                    unidecode(result['detailed_message']),
                     result['severity']
                 ])
 
@@ -407,3 +411,21 @@ class DataQualityViews(viewsets.ViewSet):
                 }, status=status.HTTP_400_BAD_REQUEST)
 
         return self.data_quality_rules(request)
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_member')
+    @list_route(methods=['GET'])
+    def results(self, request):
+        """
+        Return the result of the data quality based on the ID that was given during the
+        creation of the data quality task. Note that it is not related to the object in the
+        database, since the results are stored in redis!
+        """
+        Organization.objects.get(pk=request.query_params['organization_id'])
+
+        data_quality_id = request.query_params['data_quality_id']
+        data_quality_results = get_cache_raw(DataQualityCheck.cache_key(data_quality_id))
+        return JsonResponse({
+            'data': data_quality_results
+        })

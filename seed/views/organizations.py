@@ -14,13 +14,10 @@ from rest_framework import status
 from rest_framework import viewsets, serializers
 from rest_framework.decorators import detail_route
 
-from seed.utils.organizations import create_organization
 from seed import tasks
 from seed.decorators import ajax_request_class
-from seed.decorators import get_prog_key
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.lib.superperms.orgs.exceptions import TooManyNestedOrgs
 from seed.lib.superperms.orgs.models import (
     ROLE_OWNER,
     ROLE_MEMBER,
@@ -30,6 +27,7 @@ from seed.lib.superperms.orgs.models import (
 )
 from seed.models import Cycle, PropertyView, TaxLotView, Column
 from seed.utils.api import api_endpoint_class
+from seed.utils.organizations import create_organization, create_suborganization
 
 
 def _dict_org(request, organizations):
@@ -114,6 +112,7 @@ def _dict_org_brief(request, organizations):
         org = {
             'name': o.name,
             'org_id': o.id,
+            'parent_id': o.parent_org_id,
             'id': o.id,
             'user_role': user_role
         }
@@ -224,16 +223,34 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         if brief:
             if request.user.is_superuser:
-                qs = Organization.objects.only('id', 'name')
+                qs = Organization.objects.only('id', 'name', 'parent_org_id')
             else:
-                qs = request.user.orgs.only('id', 'name')
-            return JsonResponse({'organizations': _dict_org_brief(request, qs)})
+                qs = request.user.orgs.only('id', 'name', 'parent_org_id')
+
+            orgs = _dict_org_brief(request, qs)
+            if len(orgs) == 0:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Your SEED account is not associated with any organizations. '
+                               'Please contact a SEED administrator.'
+                }, status=status.HTTP_401_UNAUTHORIZED)
+            else:
+                return JsonResponse({'organizations': orgs})
         else:
             if request.user.is_superuser:
                 qs = Organization.objects.all()
             else:
                 qs = request.user.orgs.all()
-            return JsonResponse({'organizations': _dict_org(request, qs)})
+
+            orgs = _dict_org(request, qs)
+            if len(orgs) == 0:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Your SEED account is not associated with any organizations. '
+                               'Please contact a SEED administrator.'
+                }, status=status.HTTP_401_UNAUTHORIZED)
+            else:
+                return JsonResponse({'organizations': orgs})
 
     @method_decorator(permission_required('seed.can_access_admin'))
     @api_endpoint_class
@@ -259,17 +276,8 @@ class OrganizationViewSet(viewsets.ViewSet):
                 type: string
                 required: true
         """
-        org_id = pk
-        deleting_cache_key = get_prog_key(
-            'delete_organization_buildings',
-            org_id
-        )
-        tasks.delete_organization.delay(org_id, deleting_cache_key)
-        return JsonResponse({
-            'status': 'success',
-            'progress': 0,
-            'progress_key': deleting_cache_key
-        })
+
+        return JsonResponse(tasks.delete_organization(pk))
 
     @api_endpoint_class
     @ajax_request_class
@@ -443,6 +451,14 @@ class OrganizationViewSet(viewsets.ViewSet):
         ou = OrganizationUser.objects.get(user=user, organization=org)
         ou.delete()
 
+        # check the user and make sure they still have a valid organization to belong to
+        if request.user.default_organization == org:
+            # find the first org and set it to that
+            first_org_user = OrganizationUser.objects.filter(user=user).order_by('id').first()
+            # it is okay if first_org is none. It means the user has no allowed organizations
+            request.user.default_organization = first_org_user.organization
+            request.user.save()
+
         return JsonResponse({'status': 'success'})
 
     @api_endpoint_class
@@ -612,7 +628,8 @@ class OrganizationViewSet(viewsets.ViewSet):
         # Update the selected exportable fields.
         new_public_column_names = posted_org.get('public_fields', None)
         if new_public_column_names is not None:
-            old_public_columns = Column.objects.filter(organization=org, shared_field_type=Column.SHARED_PUBLIC)
+            old_public_columns = Column.objects.filter(organization=org,
+                                                       shared_field_type=Column.SHARED_PUBLIC)
             # turn off sharing in the old_pub_fields
             for col in old_public_columns:
                 col.shared_field_type = Column.SHARED_NONE
@@ -691,7 +708,8 @@ class OrganizationViewSet(viewsets.ViewSet):
                 new_column = {
                     'table_name': c['table_name'],
                     'name': c['name'],
-                    'column_name': c['column_name'],  # this is the field name in the db. The other name can have tax_
+                    'column_name': c['column_name'],
+                    # this is the field name in the db. The other name can have tax_
                     'display_name': c['display_name']
                 }
                 result['public_fields'].append(new_column)
@@ -743,25 +761,16 @@ class OrganizationViewSet(viewsets.ViewSet):
             return JsonResponse({
                 'status': 'error',
                 'message': 'User with email address (%s) does not exist' % email
-            }, status=status.HTTP_404_NOT_FOUND)
+            }, status=status.HTTP_400_BAD_REQUEST)
 
-        # Sub orgs do not get their own list of columns
-        sub_org = Organization.objects.create(
-            name=body['sub_org_name']
-        )
-
-        OrganizationUser.objects.get_or_create(user=user, organization=sub_org)
-
-        sub_org.parent_org = org
-
-        try:
-            sub_org.save()
-        except TooManyNestedOrgs:
-            sub_org.delete()
+        created, mess_or_org, _ = create_suborganization(user, org, body['sub_org_name'], ROLE_OWNER)
+        if created:
+            return JsonResponse({
+                'status': 'success',
+                'organization_id': mess_or_org.pk
+            })
+        else:
             return JsonResponse({
                 'status': 'error',
-                'message': 'Tried to create child of a child organization.'
+                'message': mess_or_org
             }, status=status.HTTP_409_CONFLICT)
-
-        return JsonResponse({'status': 'success',
-                             'organization_id': sub_org.pk})

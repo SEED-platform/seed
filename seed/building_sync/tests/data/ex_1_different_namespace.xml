@@ -1,0 +1,99 @@
+<other_ns:Audits xmlns:other_ns="http://nrel.gov/schemas/bedes-auc/2014" xsi:schemaLocation="http://nrel.gov/schemas/bedes-auc/2014 https://github.com/BuildingSync/schema/releases/download/v0.3/BuildingSync.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <other_ns:Audit>
+		<other_ns:Sites>
+			<other_ns:Site>
+				<other_ns:Address>
+					<other_ns:StreetAddressDetail>
+						<other_ns:Simplified>
+							<other_ns:StreetAddress>1215 - 18th St</other_ns:StreetAddress>
+						</other_ns:Simplified>
+                    </other_ns:StreetAddressDetail>
+					<other_ns:City>Denver</other_ns:City>
+					<other_ns:State>CO</other_ns:State>
+					<other_ns:PostalCode>80202</other_ns:PostalCode>
+				</other_ns:Address>
+				<other_ns:ClimateZoneType>
+					<other_ns:ASHRAE>
+						<other_ns:ClimateZone>5B</other_ns:ClimateZone>
+					</other_ns:ASHRAE>
+				</other_ns:ClimateZoneType>
+				<other_ns:WeatherDataStationID>724666</other_ns:WeatherDataStationID>
+				<other_ns:WeatherStationName>USA_CO_Golden-NREL.724666</other_ns:WeatherStationName>
+				<other_ns:Longitude>-105.18</other_ns:Longitude>
+				<other_ns:Latitude>39.74</other_ns:Latitude>
+				<other_ns:Ownership>Unknown</other_ns:Ownership>
+				<other_ns:Facilities>
+					<other_ns:Facility ID="Building223">
+						<other_ns:PremisesName>The Old Spaghetti Factory</other_ns:PremisesName>
+						<other_ns:PremisesNotes/>
+						<other_ns:PremisesIdentifiers>
+							<other_ns:PremisesIdentifier>
+								<other_ns:IdentifierLabel>Assessor parcel number</other_ns:IdentifierLabel>
+								<other_ns:IdentifierValue>PN 123</other_ns:IdentifierValue>
+							</other_ns:PremisesIdentifier>
+							<other_ns:PremisesIdentifier>
+								<other_ns:IdentifierLabel>Custom</other_ns:IdentifierLabel>
+								<other_ns:IdentifierCustomName>Custom ID</other_ns:IdentifierCustomName>
+								<other_ns:IdentifierValue>223</other_ns:IdentifierValue>
+							</other_ns:PremisesIdentifier>
+							<other_ns:PremisesIdentifier>
+								<other_ns:IdentifierLabel>Custom</other_ns:IdentifierLabel>
+								<other_ns:IdentifierCustomName>Custom ID 1</other_ns:IdentifierCustomName>
+								<other_ns:IdentifierValue>223</other_ns:IdentifierValue>
+							</other_ns:PremisesIdentifier>
+							<other_ns:PremisesIdentifier>
+								<other_ns:IdentifierLabel>Custom</other_ns:IdentifierLabel>
+								<other_ns:IdentifierCustomName>City Custom Building ID</other_ns:IdentifierCustomName>
+								<other_ns:IdentifierValue>223</other_ns:IdentifierValue>
+							</other_ns:PremisesIdentifier>
+						</other_ns:PremisesIdentifiers>
+						<other_ns:FloorsAboveGrade>1</other_ns:FloorsAboveGrade>
+						<other_ns:FloorsBelowGrade>0</other_ns:FloorsBelowGrade>
+						<other_ns:FloorAreas>
+							<other_ns:FloorArea>
+								<other_ns:FloorAreaType>Gross</other_ns:FloorAreaType>
+								<other_ns:FloorAreaValue>16775</other_ns:FloorAreaValue>
+							</other_ns:FloorArea>
+							<other_ns:FloorArea>
+								<other_ns:FloorAreaType>Heated and Cooled</other_ns:FloorAreaType>
+								<other_ns:FloorAreaValue>16775</other_ns:FloorAreaValue>
+							</other_ns:FloorArea>
+							<other_ns:FloorArea>
+								<other_ns:FloorAreaType>Footprint</other_ns:FloorAreaType>
+								<other_ns:FloorAreaValue>59911.867399999996</other_ns:FloorAreaValue>
+							</other_ns:FloorArea>
+						</other_ns:FloorAreas>
+						<other_ns:Perimeter>977</other_ns:Perimeter>
+						<other_ns:YearOfConstruction>1889</other_ns:YearOfConstruction>
+						<other_ns:YearOfLastMajorRemodel>2018</other_ns:YearOfLastMajorRemodel>
+						<other_ns:Subsections>
+							<other_ns:Subsection ID="Default_Subsection">
+								<other_ns:OccupancyClassification>Restaurant</other_ns:OccupancyClassification>
+								<other_ns:TypicalOccupantUsages>
+									<other_ns:TypicalOccupantUsage>
+										<other_ns:TypicalOccupantUsageValue>80.0</other_ns:TypicalOccupantUsageValue>
+										<other_ns:TypicalOccupantUsageUnits>Hours per week</other_ns:TypicalOccupantUsageUnits>
+									</other_ns:TypicalOccupantUsage>
+									<other_ns:TypicalOccupantUsage>
+										<other_ns:TypicalOccupantUsageValue>52.0</other_ns:TypicalOccupantUsageValue>
+										<other_ns:TypicalOccupantUsageUnits>Weeks per year</other_ns:TypicalOccupantUsageUnits>
+									</other_ns:TypicalOccupantUsage>
+								</other_ns:TypicalOccupantUsages>
+								<other_ns:FloorAreas>
+									<other_ns:FloorArea>
+										<other_ns:FloorAreaType>Gross</other_ns:FloorAreaType>
+										<other_ns:FloorAreaValue>55000</other_ns:FloorAreaValue>
+									</other_ns:FloorArea>
+									<other_ns:FloorArea>
+										<other_ns:FloorAreaType>Tenant</other_ns:FloorAreaType>
+										<other_ns:FloorAreaValue>55000</other_ns:FloorAreaValue>
+									</other_ns:FloorArea>
+								</other_ns:FloorAreas>
+							</other_ns:Subsection>
+						</other_ns:Subsections>
+					</other_ns:Facility>
+				</other_ns:Facilities>
+			</other_ns:Site>
+		</other_ns:Sites>
+	</other_ns:Audit>
+</other_ns:Audits>

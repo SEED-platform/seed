@@ -13,6 +13,7 @@ from django.utils.timezone import make_aware
 from seed.utils.generic import split_model_fields
 from seed.utils.strings import titlecase
 from seed.utils.time import convert_datestr
+from seed.lib.mcm.cleaners import date_cleaner
 
 
 class DummyClass(object):
@@ -54,11 +55,15 @@ class TestGenericUtils(TestCase):
 class TestTime(TestCase):
 
     def test_date_conversion(self):
-        dt = datetime(2016, 0o7, 15, 12, 30)
+        date = datetime(2016, 7, 15).date()
+        self.assertEqual(date_cleaner(date.strftime("%Y-%m-%d")), date)
+        # self.assertEqual(convert_datestr(date.strftime("%Y-%m-%d")), date)
+
+        dt = datetime(2016, 7, 15, 12, 30)
         self.assertEqual(convert_datestr(dt.strftime("%Y-%m-%d %H:%M")), dt)
 
         # with TZ info
-        dt = make_aware(datetime(2016, 0o7, 15, 12, 30), pytz.UTC)
+        dt = make_aware(datetime(2016, 7, 15, 12, 30), pytz.UTC)
         self.assertEqual(convert_datestr(dt.strftime("%Y-%m-%d %H:%M"), True), dt)
 
 

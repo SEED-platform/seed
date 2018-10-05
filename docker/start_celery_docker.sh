@@ -11,7 +11,13 @@ echo "Waiting for redis to start"
 echo "Waiting for web to start"
 /usr/local/wait-for-it.sh --strict -t 0 web:80
 
-export WORKERS=$(($(nproc) * 2))
-export WORKERS=$(($WORKERS>1?$WORKERS:1))
-echo "Number of workers will be set to: $WORKERS"
-celery -A seed worker -l info -c $WORKERS --maxtasksperchild 1000 --events
+# check if the number of workers is set in the env
+if [ -z ${NUMBER_OF_WORKERS} ]; then
+    echo "var is unset"
+    # Set the number of workers to half the number of cores on the machine
+    export NUMBER_OF_WORKERS=$(($(nproc) / 2))
+    export NUMBER_OF_WORKERS=$(($NUMBER_OF_WORKERS>1?$NUMBER_OF_WORKERS:1))
+fi
+
+echo "Number of workers will be set to: $NUMBER_OF_WORKERS"
+celery -A seed worker -l info -c $NUMBER_OF_WORKERS --maxtasksperchild 1000 --events

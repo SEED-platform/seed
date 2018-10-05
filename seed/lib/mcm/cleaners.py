@@ -11,12 +11,11 @@ from datetime import datetime, date
 import dateutil
 import dateutil.parser
 from django.utils import timezone
-
-from seed.lib.mcm.matchers import fuzzy_in_set
-
 # django orm gets confused unless we specifically use `ureg` from quantityfield
 # ie. don't try `import pint; ureg = pint.UnitRegistry()`
 from quantityfield import ureg
+
+from seed.lib.mcm.matchers import fuzzy_in_set
 
 NONE_SYNONYMS = (
     (u'_', u'not available'),
@@ -56,6 +55,10 @@ def float_cleaner(value, *args):
         float_cleaner(Decimal('30.1'))  # 30.1
         float_cleaner(my_date)          # raises TypeError
     """
+    # If this is a unit field, then just return it as is
+    if isinstance(value, ureg.Quantity):
+        return value
+
     # API breakage if None does not return None
     if value is None:
         return None
@@ -89,7 +92,7 @@ def bool_cleaner(value, *args):
         return False
 
 
-def date_cleaner(value, *args):
+def date_time_cleaner(value, *args):
     """Try to clean value, coerce it into a python datetime."""
     if not value or value == '':
         return None
@@ -107,6 +110,15 @@ def date_cleaner(value, *args):
         return None
 
     return value
+
+
+def date_cleaner(value, *args):
+    """Try to clean value, coerce it into a python datetime, then call .date()"""
+    value = date_time_cleaner(value)
+    if value:
+        return value.date()
+    else:
+        return None
 
 
 def int_cleaner(value, *args):
@@ -158,7 +170,10 @@ class Cleaner(object):
             lambda x: self.schema[x] == u'float', self.schema
         )
         self.date_columns = filter(
-            lambda x: self.schema[x] == u'date' or self.schema[x] == u'datetime', self.schema
+            lambda x: self.schema[x] == u'date', self.schema
+        )
+        self.date_time_columns = filter(
+            lambda x: self.schema[x] == u'datetime', self.schema
         )
         self.string_columns = filter(
             lambda x: self.schema[x] == u'string', self.schema
@@ -192,12 +207,15 @@ class Cleaner(object):
 
         return pint_column_map
 
-    def clean_value(self, value, column_name):
+    def clean_value(self, value, column_name, is_extra_data=True):
         """Clean the value, based on characteristics of its column_name."""
         value = default_cleaner(value)
         if value is not None:
             if column_name in self.float_columns:
                 return float_cleaner(value)
+
+            if column_name in self.date_time_columns:
+                return date_time_cleaner(value)
 
             if column_name in self.date_columns:
                 return date_cleaner(value)
@@ -208,8 +226,11 @@ class Cleaner(object):
             if column_name in self.int_columns:
                 return int_cleaner(value)
 
-            if column_name in self.pint_column_map.keys():
-                units = self.pint_column_map[column_name]
-                return pint_cleaner(value, units)
+            if not is_extra_data:
+                # If the object is not extra data, then check if the data are in the
+                # pint_column_map. This needs to be cleaned up significantly.
+                if column_name in self.pint_column_map.keys():
+                    units = self.pint_column_map[column_name]
+                    return pint_cleaner(value, units)
 
         return value

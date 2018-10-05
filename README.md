@@ -72,5 +72,5 @@ reserved.
 [read-the-docs-latest-img]: https://readthedocs.io/projects/seed-platform/badge/?version=latest
 [travis-img]: https://travis-ci.org/SEED-platform/seed.svg?branch=develop
 [travis-url]: https://travis-ci.org/SEED-platform/seed
-[coveralls-img]: https://coveralls.io/repos/SEED-platform/seed/badge.svg
-[coveralls-url]: https://coveralls.io/github/SEED-platform/seed
+[coveralls-img]: https://coveralls.io/repos/github/SEED-platform/seed/badge.svg?branch=HEAD
+[coveralls-url]: https://coveralls.io/github/SEED-platform/seed?branch=HEAD

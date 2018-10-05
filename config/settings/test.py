@@ -5,6 +5,7 @@
 from __future__ import absolute_import
 import os
 import sys
+import logging
 
 from celery.utils import LOG_LEVELS
 
@@ -55,7 +56,7 @@ DATABASES = {
 CELERY_BROKER_BACKEND = 'memory'
 CELERY_TASK_ALWAYS_EAGER = True
 CELERY_TASK_EAGER_PROPAGATES = True
-CELERY_LOG_LEVEL = LOG_LEVELS['DEBUG']
+CELERY_LOG_LEVEL = LOG_LEVELS['WARNING']
 
 # Testing
 INSTALLED_APPS += (
@@ -97,3 +98,8 @@ if 'local_untracked_exists' in locals():
     from config.settings.local_untracked import *  # noqa
 else:
     print >> sys.stderr, "Unable to find the local_untracked module in config/settings/local_untracked.py"
+
+
+# suppress some logging -- only show warnings or greater
+logging.getLogger('faker.factory').setLevel(logging.ERROR)
+logging.disable(logging.WARNING)

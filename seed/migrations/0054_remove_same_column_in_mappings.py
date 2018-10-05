@@ -4,8 +4,6 @@ from __future__ import unicode_literals
 
 from django.db import migrations
 
-from seed.models.columns import Column, ColumnMapping
-
 
 def duplicate_column(apps, column):
     Column = apps.get_model("seed", "Column")

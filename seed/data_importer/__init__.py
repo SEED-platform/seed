@@ -10,4 +10,3 @@ import sys
 if sys.version_info[:3] == (2, 7, 3):
     import threading
     threading._DummyThread._Thread__stop = lambda x: 42
-#####

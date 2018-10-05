@@ -83,10 +83,19 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, f
     print ('API Function: data_quality\n'),
     partmsg = 'data_quality'
 
+    result = requests.post(
+        main_url + '/api/v2/import_files/{}/start_data_quality_checks/'.format(import_id),
+        params={"organization_id": organization_id},
+        headers=header
+    )
+    print result.json()
+    check_progress(main_url, header, result.json()['progress_key'])
+    check_status(result, partmsg, log)
+
     result = requests.get(
-        main_url + '/api/v2/import_files/{}/data_quality_results/'.format(import_id),
+        main_url + '/api/v2/data_quality_checks/results/',
         headers=header,
-        params={"organization_id": organization_id}
+        params={"organization_id": organization_id, "data_quality_id": import_id}
     )
     check_status(result, partmsg, log, piid_flag='data_quality')
 

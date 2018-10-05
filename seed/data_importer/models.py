@@ -13,8 +13,7 @@ import tempfile
 from urllib import unquote
 
 from django.contrib.auth.models import User
-from django.contrib.contenttypes.fields import GenericForeignKey
-from django.contrib.contenttypes.models import ContentType
+from django.contrib.postgres.fields import JSONField
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models import Q
@@ -290,6 +289,7 @@ class ImportRecord(NotDeletableModel):
         else:
             return 100
 
+    # TODO #239: This code is definitley not sued anymore... should delete!
     @property
     def merge_progress_key(self):
         """
@@ -605,6 +605,7 @@ class ImportRecord(NotDeletableModel):
             print_exc()
             return {}
 
+    # TODO #239: This is not used. Should we enable it again, why?
     @property
     def worksheet_progress_json(self):
         progresses = []
@@ -669,6 +670,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     mapping_error_messages = models.TextField(blank=True, null=True)
     matching_completion = models.IntegerField(blank=True, null=True)
     matching_done = models.BooleanField(default=False)
+    matching_results_data = JSONField(default=dict, blank=True)
     num_coercion_errors = models.IntegerField(blank=True, null=True, default=0)
     num_coercions_total = models.IntegerField(blank=True, null=True, default=0)
     num_columns = models.IntegerField(blank=True, null=True)
@@ -872,43 +874,6 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     def num_cells(self):
         return self.num_rows * self.num_columns
 
-    # TODO: 2/8/17 Verify that this can be removed
-    # @property
-    # def tcm_json(self):
-    #     # JSON used to render the mapping interface.
-    #     tcms = []
-    #     try:
-    #         row_number = 0
-    #         for tcm in self.tablecolumnmappings:
-    #             row_number += 1
-    #             error_message_text = ""
-    #             if tcm.error_message_text:
-    #                 error_message_text = tcm.error_message_text.replace("\n", "<br>")
-    #
-    #             first_rows = ["", "", "", "", ""]
-    #             if tcm.first_five_rows:
-    #                 first_rows = ["%s" % r for r in tcm.first_five_rows]
-    #             tcms.append({
-    #                 'row_number': row_number,
-    #                 'pk': tcm.pk,
-    #                 'destination_model': tcm.destination_model,
-    #                 'destination_field': tcm.destination_field,
-    #                 'order': tcm.order,
-    #                 'ignored': tcm.ignored,
-    #                 'confidence': tcm.confidence,
-    #                 'was_a_human_decision': tcm.was_a_human_decision,
-    #                 'error_message_text': error_message_text,
-    #                 'active': tcm.active,
-    #                 'is_mapped': tcm.is_mapped,
-    #                 'header_row': tcm.first_row,
-    #                 'first_rows': first_rows,
-    #             })
-    #     except:
-    #         from traceback import print_exc
-    #         print_exc()
-    #
-    #     return json.dumps(tcms)
-
     @property
     def tcm_errors_json(self):
         # JSON used to render the mapping interface.
@@ -1073,9 +1038,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     def find_unmatched_states(self, kls):
         """Get unmatched property states' id info from an import file.
 
-        :rtype: list of tuples, field values specified in BS_VALUES_LIST.
-
-        NJA: This function is a straight copy/update to find_unmatched_property_states
+        :return: QuerySet, list of model objects [either PropertyState or TaxLotState]
         """
 
         from seed.models import (
@@ -1094,9 +1057,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     def find_unmatched_property_states(self):
         """Get unmatched property states' id info from an import file.
 
-        # TODO - Fix Comment
-        :rtype: list of tuples, field values specified in BS_VALUES_LIST.
-
+        :return: QuerySet, list of PropertyState objects
         """
 
         from seed.models import PropertyState
@@ -1105,11 +1066,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     def find_unmatched_tax_lot_states(self):
         """Get unmatched property states' id info from an import file.
 
-        # TODO - Fix Comment
-        :rtype: list of tuples, field values specified in BS_VALUES_LIST.
-
-        NB: This does not return a queryset!
-
+        :return: QuerySet, list of TaxLotState objects
         """
 
         from seed.models import TaxLotState
@@ -1239,75 +1196,3 @@ class TableColumnMapping(models.Model):
     def is_mapped(self):
         return self.ignored or (
             self.destination_field is not None and self.destination_model is not None and self.destination_field != "" and self.destination_model != "")
-
-
-class DataCoercionMapping(models.Model):
-    table_column_mapping = models.ForeignKey(TableColumnMapping)
-    source_string = models.TextField()
-    source_type = models.CharField(max_length=50)
-    destination_value = models.CharField(max_length=255, blank=True, null=True)
-    destination_type = models.CharField(max_length=255, blank=True, null=True)
-    is_mapped = models.BooleanField(default=False)
-    confidence = models.FloatField(default=0)
-    was_a_human_decision = models.BooleanField(default=False)
-    valid_destination_value = models.BooleanField(default=False)
-    active = models.BooleanField(default=True)
-
-    def __unicode__(self, *args, **kwargs):
-        return "%s (%s) -> %s (%s)" % (
-            self.source_string, self.source_type, self.destination_value, self.destination_type,)
-
-    def save(self, *args, **kwargs):
-        try:
-            assert self.destination_value is not None
-            field = self.table_column_mapping.destination_django_field
-            field.to_python(self.destination_value)
-            if hasattr(field, "choices") and field.choices != []:
-                assert self.destination_value in [f[0] for f in field.choices] or \
-                    "%s" % self.destination_value in [f[0] for f in field.choices]
-            self.valid_destination_value = True
-        except BaseException:
-            self.valid_destination_value = False
-        self.is_mapped = (
-            self.confidence > 0.6 or self.was_a_human_decision) and self.valid_destination_value
-        super(DataCoercionMapping, self).save(*args, **kwargs)
-
-    @property
-    def source_string_sha(self):
-        if not hasattr(self, "_source_string_sha"):
-            m = hashlib.md5()
-            m.update(self.source_string)
-            self._source_string_sha = m.hexdigest()
-        return self._source_string_sha
-
-
-class ValidationRule(models.Model):
-    table_column_mapping = models.ForeignKey(TableColumnMapping)
-    passes = models.BooleanField(default=False)
-
-
-class RangeValidationRule(ValidationRule):
-    max_value = models.FloatField(blank=True, null=True)
-    min_value = models.FloatField(blank=True, null=True)
-    limit_min = models.BooleanField(default=False)
-    limit_max = models.BooleanField(default=False)
-
-    def __unicode__(self, *args, **kwargs):
-        return "%s<x<%s" % (self.min_value, self.max_value,)
-
-
-class ValidationOutlier(models.Model):
-    rule = models.ForeignKey(ValidationRule)
-    value = models.TextField(blank=True, null=True)
-
-
-class BuildingImportRecord(models.Model):
-    import_record = models.ForeignKey(ImportRecord)
-    building_model_content_type = models.ForeignKey(ContentType, blank=True, null=True)
-    building_pk = models.CharField(max_length=SOURCE_FACILITY_ID_MAX_LEN, blank=True, null=True)
-    building_record = GenericForeignKey('building_model_content_type', 'building_pk')
-    was_in_database = models.BooleanField(default=False)
-    is_missing_from_import = models.BooleanField(default=False)
-
-    def __unicode__(self, *args, **kwargs):
-        return "%s" % self.building_record

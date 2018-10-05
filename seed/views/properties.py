@@ -213,6 +213,7 @@ class PropertyViewSet(GenericViewSet):
             return JsonResponse(
                 {'status': 'error', 'message': 'Need to pass organization_id as query parameter'},
                 status=status.HTTP_400_BAD_REQUEST)
+
         if cycle_id:
             cycle = Cycle.objects.get(organization_id=org_id, pk=cycle_id)
         else:
@@ -233,7 +234,8 @@ class PropertyViewSet(GenericViewSet):
         # Return property views limited to the 'inventory_ids' list.  Otherwise, if selected is empty, return all
         if 'inventory_ids' in request.data and request.data['inventory_ids']:
             property_views_list = PropertyView.objects.select_related('property', 'state', 'cycle') \
-                .filter(property_id__in=request.data['inventory_ids'], property__organization_id=org_id, cycle=cycle) \
+                .filter(property_id__in=request.data['inventory_ids'],
+                        property__organization_id=org_id, cycle=cycle) \
                 .order_by('id')  # TODO: test adding .only(*fields['PropertyState'])
         else:
             property_views_list = PropertyView.objects.select_related('property', 'state', 'cycle') \
@@ -259,6 +261,10 @@ class PropertyViewSet(GenericViewSet):
 
         if profile_id is None:
             show_columns = None
+        elif profile_id == -1:
+            show_columns = list(Column.objects.filter(
+                organization_id=org_id
+            ).values_list('id', flat=True))
         else:
             try:
                 profile = ColumnListSetting.objects.get(
@@ -273,7 +279,8 @@ class PropertyViewSet(GenericViewSet):
             except ColumnListSetting.DoesNotExist:
                 show_columns = None
 
-        related_results = TaxLotProperty.get_related(property_views, show_columns, columns_from_database)
+        related_results = TaxLotProperty.get_related(property_views, show_columns,
+                                                     columns_from_database)
 
         # collapse units here so we're only doing the last page; we're already a
         # realized list by now and not a lazy queryset
@@ -329,7 +336,7 @@ class PropertyViewSet(GenericViewSet):
     @has_perm_class('requires_viewer')
     def list(self, request):
         """
-        List all the properties
+        List all the properties	with all columns
         ---
         parameters:
             - name: organization_id
@@ -349,7 +356,7 @@ class PropertyViewSet(GenericViewSet):
               required: false
               paramType: query
         """
-        return self._get_filtered_results(request, profile_id=None)
+        return self._get_filtered_results(request, profile_id=-1)
 
     @api_endpoint_class
     @ajax_request_class
@@ -444,12 +451,11 @@ class PropertyViewSet(GenericViewSet):
                 state1 = merged_state
             state2 = state.objects.get(id=state_ids[index])
 
+            priorities = Column.retrieve_priorities(organization_id)
             merged_state = state.objects.create(organization_id=organization_id)
-            merged_state = merging.merge_state(merged_state,
-                                               state1,
-                                               state2,
-                                               merging.get_state_attrs([state1, state2]),
-                                               default=state2)
+            merged_state = merging.merge_state(
+                merged_state, state1, state2, priorities['PropertyState']
+            )
 
             state_1_audit_log = audit_log.objects.filter(state=state1).first()
             state_2_audit_log = audit_log.objects.filter(state=state2).first()
@@ -480,8 +486,7 @@ class PropertyViewSet(GenericViewSet):
 
             # Find unique notes
             notes = list(Note.objects.values(
-                'name', 'note_type', 'text', 'log_data', 'created', 'updated', 'organization_id',
-                'user_id'
+                'name', 'note_type', 'text', 'log_data', 'created', 'updated', 'organization_id', 'user_id'
             ).filter(property_view_id__in=view_ids).distinct())
 
             cycle_id = views.first().cycle_id
@@ -1006,14 +1011,16 @@ class PropertyViewSet(GenericViewSet):
                         result.update(
                             {'state': new_property_state_serializer.data}
                         )
-                        return JsonResponse(result, encoder=PintJSONEncoder, status=status.HTTP_200_OK)
+                        return JsonResponse(result, encoder=PintJSONEncoder,
+                                            status=status.HTTP_200_OK)
                     else:
                         result.update({
                             'status': 'error',
                             'message': 'Invalid update data with errors: {}'.format(
                                 new_property_state_serializer.errors)}
                         )
-                        return JsonResponse(result, encoder=PintJSONEncoder, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+                        return JsonResponse(result, encoder=PintJSONEncoder,
+                                            status=status.HTTP_422_UNPROCESSABLE_ENTITY)
                 elif log.name in ['Manual Edit', 'Manual Match', 'System Match',
                                   'Merge current state in migration']:
                     # Convert this to using the serializer to save the data. This will override the previous values
@@ -1032,14 +1039,16 @@ class PropertyViewSet(GenericViewSet):
                         result.update(
                             {'state': updated_property_state_serializer.data}
                         )
-                        return JsonResponse(result, encoder=PintJSONEncoder, status=status.HTTP_200_OK)
+                        return JsonResponse(result, encoder=PintJSONEncoder,
+                                            status=status.HTTP_200_OK)
                     else:
                         result.update({
                             'status': 'error',
                             'message': 'Invalid update data with errors: {}'.format(
                                 updated_property_state_serializer.errors)}
                         )
-                        return JsonResponse(result, encoder=PintJSONEncoder, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+                        return JsonResponse(result, encoder=PintJSONEncoder,
+                                            status=status.HTTP_422_UNPROCESSABLE_ENTITY)
                 else:
                     result = {
                         'status': 'error',

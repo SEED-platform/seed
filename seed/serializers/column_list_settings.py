@@ -15,10 +15,8 @@ from seed.models import (
     ColumnListSetting,
     ColumnListSettingColumn,
 )
+from seed.lib.superperms.orgs.models import Organization
 from seed.serializers.base import ChoiceField
-from seed.utils.api import OrgValidator, OrgValidateMixin, OrgMixin
-
-COLUMN_VALIDATOR = OrgValidator('column', 'organization_id')
 
 
 class ColumnListSettingColumnSerializer(serializers.HyperlinkedModelSerializer):
@@ -31,11 +29,10 @@ class ColumnListSettingColumnSerializer(serializers.HyperlinkedModelSerializer):
         fields = ('id', 'pinned', 'order', 'column_name', 'table_name',)
 
 
-class ColumnListSettingSerializer(OrgMixin, OrgValidateMixin, serializers.ModelSerializer):
+class ColumnListSettingSerializer(serializers.ModelSerializer):
     columns = ColumnListSettingColumnSerializer(source="columnlistsettingcolumn_set", read_only=True, many=True)
     settings_location = ChoiceField(choices=ColumnListSetting.VIEW_LOCATION_TYPES)
     inventory_type = ChoiceField(choices=ColumnListSetting.VIEW_LIST_INVENTORY_TYPE)
-    org_validators = [COLUMN_VALIDATOR]
 
     class Meta:
         model = ColumnListSetting
@@ -48,8 +45,9 @@ class ColumnListSettingSerializer(OrgMixin, OrgValidateMixin, serializers.ModelS
             column_id = column.get("id")
             order = column.get("order")
             pinned = column.get("pinned")
-            ColumnListSettingColumn(column_list_setting=instance, column_id=column_id, pinned=pinned,
-                                    order=order).save()
+            ColumnListSettingColumn(
+                column_list_setting=instance, column_id=column_id, pinned=pinned, order=order
+            ).save()
 
         instance.__dict__.update(**validated_data)
         instance.save()
@@ -60,22 +58,29 @@ class ColumnListSettingSerializer(OrgMixin, OrgValidateMixin, serializers.ModelS
         cls = ColumnListSetting.objects.create(**validated_data)
         if "columns" in self.initial_data:
             for column in self.initial_data.get("columns", []):
-                # At this point the column will exist for the organization based on the validation step
+                # At this point the column will exist for the organization based on the validation
+                # step
                 column_id = column.get("id")
                 order = column.get("order")
                 pinned = column.get("pinned")
-                ColumnListSettingColumn(column_list_setting=cls, column_id=column_id, pinned=pinned, order=order).save()
+                ColumnListSettingColumn(
+                    column_list_setting=cls, column_id=column_id, pinned=pinned, order=order
+                ).save()
         cls.save()
 
         return cls
 
     def validate(self, data):
-        # run some custom validation on the Columns data to make sure that the columns exist are are part of the org
+        # run some custom validation on the Columns data to make sure that the columns exist are
+        # part of the org
         if "columns" in self.initial_data:
             request = self.context.get('request', None)
-            org_id = self.get_organization(request)
+
+            # Org ID is in the request param
+            org = Organization.objects.get(id=request.query_params['organization_id'])
             for column in self.initial_data.get("columns", []):
-                if not Column.objects.filter(pk=column.get("id"), organization_id=org_id).exists():
+                # note that the org is the user's existing org, not the parent org!
+                if not Column.objects.filter(pk=column.get("id"), organization_id=org.pk).exists():
                     raise ValidationError('Column does not exist for organization, column id: %s' % column.get("id"))
 
         return super(ColumnListSettingSerializer, self).validate(data)

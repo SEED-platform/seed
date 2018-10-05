@@ -8,7 +8,6 @@ from __future__ import unicode_literals
 
 import copy
 import logging
-import pdb
 import re
 from os import path
 
@@ -21,6 +20,8 @@ from django.dispatch import receiver
 from django.forms.models import model_to_dict
 from quantityfield.fields import QuantityField
 
+# from seed.utils.cprofile import cprofile
+from seed.lib.mcm.cleaners import date_cleaner
 from auditlog import AUDIT_IMPORT
 from auditlog import DATA_UPDATE_TYPE
 from seed.data_importer.models import ImportFile
@@ -39,6 +40,7 @@ from seed.utils.address import normalize_address_str
 from seed.utils.generic import split_model_fields, obj_to_dict
 from seed.utils.time import convert_datestr
 from seed.utils.time import convert_to_js_timestamp
+
 
 _log = logging.getLogger(__name__)
 
@@ -98,9 +100,6 @@ class PropertyState(models.Model):
     organization = models.ForeignKey(Organization)
     data_state = models.IntegerField(choices=DATA_STATE, default=DATA_STATE_UNKNOWN)
     merge_state = models.IntegerField(choices=MERGE_STATE, default=MERGE_STATE_UNKNOWN, null=True)
-
-    # Is this still being used during matching? Apparently so.
-    confidence = models.FloatField(default=0, null=True, blank=True)
 
     jurisdiction_property_id = models.CharField(max_length=255, null=True, blank=True)
 
@@ -209,12 +208,15 @@ class PropertyState(models.Model):
     source_eui_modeled = QuantityField('kBtu/ft**2/year', null=True, blank=True)
 
     extra_data = JSONField(default=dict, blank=True)
+    hash_object = models.CharField(max_length=32, null=True, blank=True, default=None)
     measures = models.ManyToManyField('Measure', through='PropertyMeasure')
 
     class Meta:
         index_together = [
+            ['hash_object'],
             ['import_file', 'data_state'],
             ['import_file', 'data_state', 'merge_state'],
+            ['import_file', 'data_state', 'source_type'],
             ['analysis_state', 'organization'],
         ]
 
@@ -245,9 +247,6 @@ class PropertyState(models.Model):
             # Need to create a property for this state
             if self.organization is None:
                 _log.warn("organization is None")
-
-            if not self.organization:
-                pdb.set_trace()
 
             if property_id:
                 try:
@@ -290,7 +289,10 @@ class PropertyState(models.Model):
         for field in date_field_names:
             value = getattr(self, field)
             if value and isinstance(value, (str, unicode)):
-                setattr(self, field, convert_datestr(value))
+                print "Saving %s which is a date time" % field
+                print convert_datestr(value)
+                print date_cleaner(value)
+                # setattr(self, field, convert_datestr(value))
 
     def to_dict(self, fields=None, include_related_data=True):
         """
@@ -336,6 +338,10 @@ class PropertyState(models.Model):
             self.normalized_address = normalize_address_str(self.address_line_1)
         else:
             self.normalized_address = None
+
+        # save a hash of the object to the database for quick lookup
+        from seed.data_importer.tasks import hash_state_object
+        self.hash_object = hash_state_object(self)
 
         return super(PropertyState, self).save(*args, **kwargs)
 
@@ -581,8 +587,15 @@ class PropertyState(models.Model):
             merged_state.scenarios.add(new_s)
 
         for new_bf in building_files:
+            # save the created and modified data from the original file
+            orig_created = new_bf.created
+            orig_modified = new_bf.modified
             new_bf.pk = None
             new_bf.save()
+            new_bf.created = orig_created
+            new_bf.modified = orig_modified
+            new_bf.save()
+
             merged_state.building_files.add(new_bf)
 
         for new_sim in simulations:
@@ -611,6 +624,7 @@ class PropertyState(models.Model):
                 else:
                     try:
                         new_measure = copy.deepcopy(measure)
+                        # copy the created and modifed time
                         new_measure.pk = None
                         new_measure.property_state = merged_state
                         new_measure.save()
@@ -729,8 +743,8 @@ class PropertyView(models.Model):
 @receiver(post_save, sender=PropertyView)
 def post_save_property_view(sender, **kwargs):
     """
-    When changing/saving the PropertyView, go ahead and touch the Property (if linked) so that the record
-    receives an updated datetime
+    When changing/saving the PropertyView, go ahead and touch the Property (if linked) so that the
+    record receives an updated datetime
     """
     if kwargs['instance'].property:
         kwargs['instance'].property.save()

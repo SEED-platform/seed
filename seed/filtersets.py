@@ -95,7 +95,7 @@ class CycleFilterSet(FilterSet):
             end = start + relativedelta(years=1) - relativedelta(seconds=1)
 
             # to eliminate the question of timezone saved in vs timezone
-            # queried from, start and end dates are nudged in by the max
+            # queried from, start and end dates are nudge1d in by the max
             # possible time difference between 2 servers
             start = start + relativedelta(hours=max_time_diff)
             end = end - relativedelta(hours=max_time_diff)

@@ -30,7 +30,7 @@ angular.module('BE.seed.controller.export_inventory_modal', []).controller('expo
         params: {
           organization_id: user_service.get_organization().id,
           cycle_id: cycle_id,
-          inventory_type: inventory_type,
+          inventory_type: inventory_type
         }
       }).then(function (response) {
         var blob = new Blob([response.data], {type: 'text/csv'});

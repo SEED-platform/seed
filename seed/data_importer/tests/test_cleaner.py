@@ -12,6 +12,7 @@ from seed.data_importer import tasks
 from seed.landing.models import SEEDUser as User
 from seed.models import (
     FLOAT,
+    STRING,
     Column,
     ColumnMapping,
     Unit,
@@ -32,28 +33,51 @@ class TestCleaner(TestCase):
         )
         self.org, _, _ = create_organization(self.user, "test-organization-a")
 
-        unit = Unit.objects.create(
+        # Float
+        float_unit = Unit.objects.create(
             unit_name='mapped_col unit',
             unit_type=FLOAT,
         )
-
-        raw = Column.objects.create(
-            column_name='raw_col',
+        float_raw = Column.objects.create(
+            column_name='float_raw_col',
             organization=self.org,
         )
-
-        self.mapped_col = 'mapped_col'
-        mapped = Column.objects.create(
-            column_name=self.mapped_col,
-            unit=unit,
+        self.float_col = 'float_mapped_col'
+        float_mapped = Column.objects.create(
+            table_name='PropertyState',
+            column_name=self.float_col,
+            unit=float_unit,
             organization=self.org,
+            is_extra_data=True,
         )
-
         mapping = ColumnMapping.objects.create(
             super_organization=self.org
         )
-        mapping.column_raw.add(raw)
-        mapping.column_mapped.add(mapped)
+        mapping.column_raw.add(float_raw)
+        mapping.column_mapped.add(float_mapped)
+
+        # Integer
+        str_unit = Unit.objects.create(
+            unit_name='mapped_col unit',
+            unit_type=STRING,
+        )
+        str_raw = Column.objects.create(
+            column_name='string_raw_col',
+            organization=self.org,
+        )
+        self.string_col = 'string_mapped_col'
+        str_mapped = Column.objects.create(
+            table_name='PropertyState',
+            column_name=self.string_col,
+            unit=str_unit,
+            organization=self.org,
+            is_extra_data=True,
+        )
+        mapping = ColumnMapping.objects.create(
+            super_organization=self.org
+        )
+        mapping.column_raw.add(str_raw)
+        mapping.column_mapped.add(str_mapped)
 
     def test_clean_value(self):
         cleaner = tasks._build_cleaner(self.org)
@@ -66,10 +90,20 @@ class TestCleaner(TestCase):
             123456
         )
 
-        # data is cleaned correctly for mapped fields that have unit
-        # type information
+        # data are cleaned correctly for mapped fields that have float unit
         self.assertEqual(
-            cleaner.clean_value('123,456', self.mapped_col),
+            cleaner.clean_value('123,456', self.float_col),
+            123456
+        )
+
+        # String test
+        self.assertEqual(
+            cleaner.clean_value('123,456 Nothingness', self.string_col),
+            '123,456 Nothingness'
+        )
+
+        self.assertEqual(
+            cleaner.clean_value('123,456', self.float_col),
             123456
         )
 

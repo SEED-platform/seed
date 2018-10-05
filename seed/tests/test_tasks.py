@@ -90,7 +90,7 @@ class TestTasks(TestCase):
         self.assertTrue(
             ImportFile.objects.filter(pk=self.import_file.pk).exists())
 
-        tasks.delete_organization(self.fake_org.pk, 'fake-progress-key')
+        tasks.delete_organization(self.fake_org.pk)
 
         self.assertFalse(User.objects.filter(pk=self.fake_user.pk).exists())
         self.assertFalse(
@@ -109,6 +109,6 @@ class TestTasks(TestCase):
 
         self.assertTrue(User.objects.filter(pk=self.fake_user.pk).exists())
 
-        tasks.delete_organization(self.fake_org.pk, 'fake-progress-key')
+        tasks.delete_organization(self.fake_org.pk)
 
         self.assertTrue(User.objects.filter(pk=self.fake_user.pk).exists())

@@ -14,10 +14,6 @@ from django.http import JsonResponse
 from rest_framework import viewsets, status, serializers
 from rest_framework.decorators import list_route, detail_route
 
-from seed.models.data_quality import (
-    DATA_TYPES as DATA_QUALITY_DATA_TYPES,
-    SEVERITY as DATA_QUALITY_SEVERITY,
-)
 from seed.decorators import ajax_request_class
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.decorators import PERMS
@@ -29,6 +25,7 @@ from seed.lib.superperms.orgs.models import (
     Organization,
     OrganizationUser,
 )
+from seed.models.data_quality import Rule
 from seed.tasks import (
     invite_to_seed,
 )
@@ -71,7 +68,7 @@ def _get_js_rule_type(data_type):
     :param data_type: data data_quality rule data type as defined in data_quality.models
     :returns: (string) JS data type name
     """
-    return dict(DATA_QUALITY_DATA_TYPES).get(data_type)
+    return dict(Rule.DATA_TYPES).get(data_type)
 
 
 def _get_rule_type_from_js(data_type):
@@ -80,7 +77,7 @@ def _get_rule_type_from_js(data_type):
     :param data_type: 'string', 'number', 'date', or 'year'
     :returns: int data type as defined in data_quality.models
     """
-    d = {v: k for k, v in dict(DATA_QUALITY_DATA_TYPES).items()}
+    d = {v: k for k, v in dict(Rule.DATA_TYPES).items()}
     return d.get(data_type)
 
 
@@ -90,7 +87,7 @@ def _get_js_rule_severity(severity):
     :param severity: data data_quality rule severity as defined in data_quality.models
     :returns: (string) JS severity name
     """
-    return dict(DATA_QUALITY_SEVERITY).get(severity)
+    return dict(Rule.SEVERITY).get(severity)
 
 
 def _get_severity_from_js(severity):
@@ -99,7 +96,7 @@ def _get_severity_from_js(severity):
     :param severity: 'error', or 'warning'
     :returns: int severity as defined in data_quality.models
     """
-    d = {v: k for k, v in dict(DATA_QUALITY_SEVERITY).items()}
+    d = {v: k for k, v in dict(Rule.SEVERITY).items()}
     return d.get(severity)
 
 
@@ -231,17 +228,23 @@ class UserViewSet(viewsets.ViewSet):
             user.first_name = first_name
             user.last_name = last_name
         user.save()
+
         try:
             domain = request.get_host()
         except Exception:
             domain = 'seed-platform.org'
-        invite_to_seed(domain, user.email,
-                       default_token_generator.make_token(user), user.pk,
-                       first_name)
+        invite_to_seed(
+            domain, user.email, default_token_generator.make_token(user), user.pk, first_name
+        )
 
-        return JsonResponse({'status': 'success', 'message': user.email, 'org': org.name,
-                             'org_created': org_created, 'username': user.username,
-                             'user_id': user.id})
+        return JsonResponse({
+            'status': 'success',
+            'message': user.email,
+            'org': org.name,
+            'org_created': org_created,
+            'username': user.username,
+            'user_id': user.id
+        })
 
     @ajax_request_class
     @has_perm_class('requires_superuser')
@@ -594,7 +597,10 @@ class UserViewSet(viewsets.ViewSet):
         """
         actions, org, error, message = self._parse_is_authenticated_params(request)
         if error:
-            return JsonResponse({'status': 'error', 'message': message})
+            return JsonResponse({
+                'status': 'error',
+                'message': message
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         ok, content = self.validate_request_user(pk, request)
         if ok:
@@ -604,7 +610,8 @@ class UserViewSet(viewsets.ViewSet):
 
         # If the only action requested is 'requires_superuser' no need to check an org affiliation
         if len(actions) == 1 and actions[0] == 'requires_superuser':
-            return JsonResponse({'status': 'success', 'auth': {'requires_superuser': user.is_superuser}})
+            return JsonResponse(
+                {'status': 'success', 'auth': {'requires_superuser': user.is_superuser}})
 
         auth = self._try_parent_org_auth(user, org, actions)
         if auth:

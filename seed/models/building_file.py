@@ -12,7 +12,7 @@ from django.db import models
 
 from seed.building_sync.building_sync import BuildingSync
 from seed.hpxml.hpxml import HPXML as HPXMLParser
-from seed.lib.merging.merging import merge_state, get_state_attrs
+from seed.lib.merging.merging import merge_state
 from seed.models import (
     PropertyState,
     Column,
@@ -105,9 +105,9 @@ class BuildingFile(models.Model):
         parser_kwargs = {}
         if self.file_type == self.BUILDINGSYNC:
             parser_args.append(BuildingSync.BRICR_STRUCT)
-        data, errors, messages = parser.process(*parser_args, **parser_kwargs)
+        data, messages = parser.process(*parser_args, **parser_kwargs)
 
-        if errors or not data:
+        if len(messages['errors']) > 0 or not data:
             return False, None, None, messages
 
         # sub-select the data that are needed to create the PropertyState object
@@ -155,7 +155,7 @@ class BuildingFile(models.Model):
                     category=m['category'], name=m['name'], organization_id=organization_id,
                 )
             except Measure.DoesNotExist:
-                # TODO: Deal with it
+                messages['warnings'].append('Measure category and name is not valid %s:%s' % (m['category'], m['name']))
                 continue
 
             # Add the measure to the join table.
@@ -163,7 +163,10 @@ class BuildingFile(models.Model):
             join, _ = PropertyMeasure.objects.get_or_create(
                 property_state_id=self.property_state_id,
                 measure_id=measure.pk,
-                implementation_status=PropertyMeasure.str_to_impl_status(m['implementation_status']),
+                property_measure_name=m.get('property_measure_name'),
+                implementation_status=PropertyMeasure.str_to_impl_status(
+                    m.get('implementation_status', 'Proposed')
+                ),
                 application_scale=PropertyMeasure.str_to_application_scale(
                     m.get('application_scale_of_application',
                           PropertyMeasure.SCALE_ENTIRE_FACILITY)
@@ -174,7 +177,6 @@ class BuildingFile(models.Model):
                 recommended=m.get('recommended', 'false') == 'true',
             )
             join.description = m.get('description')
-            join.property_measure_name = m.get('property_measure_name')
             join.cost_mv = m.get('mv_cost')
             join.cost_total_first = m.get('measure_total_first_cost')
             join.cost_installation = m.get('measure_installation_cost')
@@ -227,6 +229,7 @@ class BuildingFile(models.Model):
                     )
                 except PropertyMeasure.DoesNotExist:
                     # PropertyMeasure is not in database, skipping silently
+                    messages['warnings'].append('Measure associated with scenario not found. Scenario: %s, Measure name: %s' % (s.get('name'), measure_name))
                     continue
 
                 scenario.measures.add(measure)
@@ -239,10 +242,10 @@ class BuildingFile(models.Model):
 
             # assume the same cycle id as the former state.
             # should merge_state also copy/move over the relationships?
-            merged_state = merge_state(merged_state,
-                                       property_view.state,
-                                       property_state,
-                                       get_state_attrs([property_view.state, property_state]))
+            priorities = Column.retrieve_priorities(organization_id)
+            merged_state = merge_state(
+                merged_state, property_view.state, property_state, priorities['PropertyState']
+            )
 
             # log the merge
             # Not a fan of the parent1/parent2 logic here, seems error prone, what this

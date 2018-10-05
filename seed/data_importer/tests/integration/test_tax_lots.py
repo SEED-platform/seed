@@ -12,7 +12,6 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 
 from seed.data_importer import tasks
 from seed.data_importer.tests.util import (
-    DataMappingBaseTestCase,
     FAKE_MAPPINGS,
 )
 from seed.models import (
@@ -24,6 +23,7 @@ from seed.models import (
     MERGE_STATE_NEW,
     MERGE_STATE_MERGED,
 )
+from seed.tests.util import DataMappingBaseTestCase
 
 
 class TestProperties(DataMappingBaseTestCase):
@@ -33,14 +33,14 @@ class TestProperties(DataMappingBaseTestCase):
         self.fake_mappings = copy.copy(FAKE_MAPPINGS['portfolio'])
         selfvars = self.set_up(ASSESSED_RAW)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
-        filepath = osp.join(osp.dirname(__file__), 'data', filename)
+        filepath = osp.join(osp.dirname(__file__), '..', 'data', filename)
         self.import_file.file = SimpleUploadedFile(
             name=filename,
             content=open(filepath, 'rb').read()
         )
         self.import_file.save()
 
-        tasks._save_raw_data(self.import_file.pk, 'fake_cache_key_1', 1)
+        tasks.save_raw_data(self.import_file.pk)
         Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.id)
         tasks.map_data(self.import_file.pk)
         tasks.match_buildings(self.import_file.id)
@@ -49,14 +49,14 @@ class TestProperties(DataMappingBaseTestCase):
         filename_2 = getattr(self, 'filename', 'example-data-taxlots.xlsx')
         self.fake_mappings = copy.copy(FAKE_MAPPINGS['taxlot'])
         _, self.import_file_2 = self.create_import_file(self.user, self.org, self.cycle)
-        filepath = osp.join(osp.dirname(__file__), 'data', filename_2)
+        filepath = osp.join(osp.dirname(__file__), '..', 'data', filename_2)
         self.import_file_2.file = SimpleUploadedFile(
             name=filename_2,
             content=open(filepath, 'rb').read()
         )
         self.import_file_2.save()
 
-        tasks._save_raw_data(self.import_file_2.pk, 'fake_cache_key_2', 1)
+        tasks.save_raw_data(self.import_file_2.pk)
         Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.id)
         tasks.map_data(self.import_file_2.pk)
         tasks.match_buildings(self.import_file_2.id)
@@ -72,7 +72,7 @@ class TestProperties(DataMappingBaseTestCase):
         # )
         # self.import_file_3.save()
         #
-        # tasks._save_raw_data(self.import_file_3.pk, 'fake_cache_key_3', 1)
+        # tasks.save_raw_data(self.import_file_3.pk')
         # tasks.map_data(self.import_file_3.pk)
         # tasks.match_buildings(self.import_file_3.id)
 

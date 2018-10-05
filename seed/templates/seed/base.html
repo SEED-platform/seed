@@ -133,11 +133,7 @@
         <script src="/static/vendors/bower_components/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat.min.js"></script>
         <script src="/static/vendors/bower_components/angular-sanitize/angular-sanitize.min.js"></script>
 
-            {% ifequal FILE_UPLOAD_DESTINATION 'S3' %}
-        <script src="/static/vendors/bower_components/fine-uploader/_build/s3.fineuploader.js"></script>
-            {% else %}
-        <script src="/static/vendors/bower_components/fine-uploader/_build/fineuploader.js"></script>
-            {% endifequal %}
+        <script src="/static/vendors/bower_components/fine-uploader/all.fine-uploader.core.min.js"></script>
         {% endcompress %}
 
 

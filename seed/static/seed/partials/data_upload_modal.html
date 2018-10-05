@@ -12,6 +12,7 @@
     <h4 class="modal-title" ng-switch-when="11" translate>Confirm Save Mappings?</h4>
     <h4 class="modal-title" ng-switch-when="12" translate>Error Processing Data</h4>
     <h4 class="modal-title" ng-switch-when="13" translate>Portfolio Manager Import</h4>
+    <h4 class="modal-title" ng-switch-when="14" translate>Successful upload!</h4>
 </div>
 <div class="modal-body no_bottom_padding" ng-switch on="step.number">
     <!-- Step 1 -->
@@ -29,6 +30,7 @@
     <!-- Step 2: Choose upload type -->
     <div class="data_upload_steps container-fluid" ng-switch-when="2">
         <div class="alert alert-danger" ng-show="uploader.invalid_extension_alert" translate="INVALID_EXTENSION_ALERT"></div>
+        <div class="alert alert-danger" ng-show="uploader.invalid_xml_extension_alert" translate="INVALID_XML_EXTENSION_ALERT"></div>
         <div class="row">
             <div class="col-sm-10 col-sm-offset-1" ng-hide="uploader.in_progress">
                 <div class="row">
@@ -45,23 +47,23 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-sm-8 col-sm-offset-2" sd-uploader sourcetype="Assessed Raw" sourceprog="" sourcever="" importrecord="dataset.id" buttontext="{$:: 'Upload a Spreadsheet' | translate $}" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" ng-disabled="!selectedCycle" style="padding-top: 20px;"></div>
-        </div>
-        <div class="row">
-            <div class="col-sm-8 col-sm-offset-2" sd-uploader sourcetype="Assessed Raw" sourceprog="PortfolioManager" sourcever="1.0" importrecord="dataset.id" buttontext="{$:: 'Upload Portfolio Manager Data' | translate $}" eventfunc="uploaderfunc(message, file, progress)" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress"></div>
-        </div>
-        <div class="row">
-            <div class="col-sm-8 col-sm-offset-2" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress">
-                <div class="btn btn-primary" style="display: block; font-weight: bold;" ng-click="goto_step(13)">Import Portfolio Manager Data</div>
+            <div class="col-sm-8 col-sm-offset-2" style="padding-top: 20px; padding-bottom: 10px;" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress">
+                <div class="btn btn-primary upload-btn" sd-uploader sourcetype="Assessed Raw" sourceprog="" sourcever="" importrecord="dataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" ng-disabled="!selectedCycle">{$:: 'Upload a Spreadsheet' | translate $}</div>
             </div>
         </div>
         <div class="row">
-            <div class="col-sm-9 col-sm-offset-2" ng-hide="uploader.in_progress">
-                <!--<div class="row">-->
-                    <!--<span class="col-xs-1"><input type="checkbox" id="use-field-option" name="pm-cycle-option" ng-model="useField" ng-init="useField = true" value="field"></span>-->
-                    <!--<label class="col-sm-7 control-label" for="use-field-option" translate>Determine Time Period from Field:</label>-->
-                    <!--<span class="col-sm-4" translate>Year Ending</span>-->
-                <!--</div>-->
+            <div class="col-sm-8 col-sm-offset-2" style="padding-bottom: 10px;" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress">
+                <div class="btn btn-primary upload-btn" sd-uploader sourcetype="Assessed Raw" sourceprog="PortfolioManager" sourcever="1.0" importrecord="dataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress">{$:: 'Upload Portfolio Manager Data' | translate $}</div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-8 col-sm-offset-2" style="padding-bottom: 10px;" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress">
+                <div class="btn btn-primary upload-btn" ng-click="goto_step(13)">{$:: 'Import Portfolio Manager Data' | translate $}</div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-8 col-sm-offset-2" style="padding-bottom: 10px;" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress">
+                <div class="btn btn-primary upload-btn" sd-uploader sourcetype="BuildingSync" sourceprog="" sourcever="" importrecord="dataset.id" organization-id="organization.id" cycle-id="selectedCycle.id" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress">{$:: 'Upload BuildingSync Data' | translate $}</div>
             </div>
         </div>
         <!--<div class="row">
@@ -73,7 +75,7 @@
                  translate-values="{ dataset_filename: dataset.filename }"></div>
 
             <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
-            <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$ uploader.status_message | translate $}</div>
+            <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$ uploader.status_message ? ': ' + uploader.status_message : '' $}</div>
         </div>
         <div ng-hide="uploader.in_progress" style="margin-top: 30px;">
             <div>
@@ -102,7 +104,7 @@
                          translate-values="{ dataset_filename: dataset.filename }"></div>
 
                     <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
-                    <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$ uploader.status_message | translate$}</div>
+                    <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$ uploader.status_message ? ': ' + uploader.status_message : '' $}</div>
                 </div>
             </div>
         </div>
@@ -132,7 +134,7 @@
                     <div class="progress_bar_copy_top">{$:: 'Finding inventory matches for' | translate $}
                         <strong>{$ dataset.filename $}</strong></div>
                     <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
-                    <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $}</div>
+                    <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$ uploader.status_message ? ': ' + uploader.status_message : '' $}</div>
                 </div>
             </div>
         </div>
@@ -196,7 +198,7 @@
             <div class="col-sm-12">
                 <div>
                     <p translate>An error occurred while processing the file. Please ensure that your file meets the required specifications.</p>
-                    <pre ng-class="{'pre-scrollable': step_12_error_message.length >= 300}" ng-show="step_12_error_message">{$ step_12_error_message | translate $}</pre>
+                    <pre ng-class="{'pre-scrollable': step_12_error_message.length >= 300}" ng-show="step_12_error_message">{$ step_12_error_message $}</pre>
                 </div>
             </div>
         </div>
@@ -225,7 +227,7 @@
         <div class="row" style="padding-bottom:10px">
             <label class="control-label col-lg-4 col-sm-4" for="inputPMReportTemplateName">Report Template Name <small>{$ pm_templates.length ? '(' + pm_templates.length + ')' : '' $}</small></label>
             <div class="col-lg-8 col-sm-8">
-                <select ng-model="pm_template" ng-disabled="!pm_buttons_enabled" ng-options="x.name for x in pm_templates"></select>
+                <select ng-model="pm_template" ng-disabled="!pm_buttons_enabled" ng-options="x.display_name for x in pm_templates"></select>
             </div>
         </div>
         <div class="row" style="padding-bottom:10px">
@@ -233,6 +235,14 @@
             <div class="col-lg-8 col-sm-8">
                 <div class="btn btn-primary" style="display: block; font-weight: bold;" ng-disabled="!pm_buttons_enabled || !pm_template" ng-click="get_pm_report(pm_username, pm_password, pm_template);">Submit</div>
             </div>
+        </div>
+    </div>
+    <!-- Step 14: Successful BuildingSync upload -->
+    <div class="data_upload_steps" ng-switch-when="14">
+        <div class="row">
+            <div class="alert alert-success"
+            translate="DATASET_FILENAME_UPLOADED_TO"
+            translate-values="{ dataset_name: dataset.name , dataset_filename: dataset.filename }"></div>
         </div>
     </div>
 </div>
@@ -256,9 +266,6 @@
         <div class="row text-center">
             <button type="button" class="btn btn-default col-sm-6" center-block ng-click="goto_step(4)" translate>Upload another energy data file</button>
         </div>
-        <!--<div class="row text-center">
-            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="goto_data_matching()" translate>Continue to data matching</button>
-        </div>-->
     </div>
     <div ng-switch-when="7"></div>
     <div ng-switch-when="8">
@@ -268,9 +275,6 @@
         <div class="row text-center">
             <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="view_my_properties()" translate>View my properties</button>
         </div>
-        <!--<div class="row text-center">
-            <button id="review-mapping" type="button" class="btn btn-primary col-sm-6 center-block" ng-click="goto_data_matching()" translate>Review matches</button>
-        </div>-->
     </div>
     <div ng-switch-when="9">
         <div class="row text-center">
@@ -288,6 +292,14 @@
     <div ng-switch-when="11">
         <div class="row text-center">
             <button type="button" id="confirm-mapping" class="btn btn-primary col-sm-6 center-block" ng-click="save_mappings()" translate>CONFIRM_AND_START_MATCHING</button>
+        </div>
+    </div>
+    <div ng-switch-when="14">
+        <div class="row text-center">
+            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="goto_step(2)" translate>Add another file</button>
+        </div>
+        <div class="row text-center">
+            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="view_my_properties()" translate>View my properties</button>
         </div>
     </div>
     <div class="row text-center">

@@ -33,11 +33,11 @@ class ColumnListSettingsView(DeleteModelsTestCase):
 
         self.column_1 = Column.objects.get(organization=self.org, table_name='PropertyState',
                                            column_name='address_line_1')
-        self.column_2 = Column.objects.get(organization=self.org, table_name='PropertyState', column_name='city')
+        self.column_2 = Column.objects.get(organization=self.org, table_name='PropertyState',
+                                           column_name='city')
         self.column_3 = Column.objects.create(organization=self.org, table_name='PropertyState',
                                               column_name='extra data 1', is_extra_data=True)
         self.payload_data = {
-            "organization_id": self.org.id,
             "name": "Test Column List Setting",
             "settings_location": "List View Settings",
             "inventory_type": "Property",
@@ -51,7 +51,7 @@ class ColumnListSettingsView(DeleteModelsTestCase):
 
     def test_create_column_settings(self):
         response = self.client.post(
-            reverse('api:v2:column_list_settings-list'),
+            reverse('api:v2:column_list_settings-list') + '?organization_id=' + str(self.org.id),
             data=json.dumps(self.payload_data),
             content_type='application/json'
         )
@@ -63,54 +63,75 @@ class ColumnListSettingsView(DeleteModelsTestCase):
 
     def test_get_column_settings(self):
         # Create two list settings
-        self.client.post(reverse('api:v2:column_list_settings-list'), data=json.dumps(self.payload_data),
-                         content_type='application/json')
-        self.client.post(reverse('api:v2:column_list_settings-list'), data=json.dumps(self.payload_data),
-                         content_type='application/json')
+        self.client.post(
+            reverse('api:v2:column_list_settings-list') + '?organization_id=' + str(self.org.id),
+            data=json.dumps(self.payload_data),
+            content_type='application/json'
+        )
+        self.client.post(
+            reverse('api:v2:column_list_settings-list') + '?organization_id=' + str(self.org.id),
+            data=json.dumps(self.payload_data),
+            content_type='application/json'
+        )
 
-        response = self.client.get(reverse('api:v2:column_list_settings-list'), {
-            'organization_id': self.org.id
-        })
+        response = self.client.get(
+            reverse('api:v2:column_list_settings-list') + '?organization_id=' + str(self.org.id)
+        )
         data = json.loads(response.content)
         self.assertEqual(len(data['data']), 2)
 
         # test getting a single one
         id = data['data'][0]['id']
-        response = self.client.get(reverse('api:v2:column_list_settings-detail', args=[id]), {
-            'organization_id': self.org.id
-        })
+        response = self.client.get(
+            reverse('api:v2:column_list_settings-detail', args=[id]) + '?organization_id=' + str(
+                self.org.id)
+        )
         data = json.loads(response.content)
         self.assertEqual(data['data']['id'], id)
         self.assertEqual(len(data['data']['columns']), 3)
 
     def test_delete_column_settings(self):
         # Create two list settings
-        to_delete = self.client.post(reverse('api:v2:column_list_settings-list'), data=json.dumps(self.payload_data),
-                                     content_type='application/json')
-        self.client.post(reverse('api:v2:column_list_settings-list'), data=json.dumps(self.payload_data),
-                         content_type='application/json')
+        to_delete = self.client.post(
+            reverse('api:v2:column_list_settings-list') + '?organization_id=' + str(self.org.id),
+            data=json.dumps(self.payload_data),
+            content_type='application/json'
+        )
+        self.client.post(
+            reverse('api:v2:column_list_settings-list') + '?organization_id=' + str(self.org.id),
+            data=json.dumps(self.payload_data),
+            content_type='application/json'
+        )
 
         id_to_delete = json.loads(to_delete.content)['data']['id']
-        response = self.client.delete(reverse('api:v2:column_list_settings-detail', args=[id_to_delete]))
+        response = self.client.delete(
+            reverse('api:v2:column_list_settings-detail',
+                    args=[id_to_delete]) + '?organization_id=' + str(self.org.id)
+        )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
         # check to make sure that it isn't in the column list setting list.
-        response = self.client.get(reverse('api:v2:column_list_settings-list'), {
-            'organization_id': self.org.id
-        })
+        response = self.client.get(
+            reverse('api:v2:column_list_settings-list') + '?organization_id=' + str(self.org.id)
+        )
         data = json.loads(response.content)
         self.assertEqual(len(data['data']), 1)
         self.assertNotEqual(data['data'][0]['id'], id_to_delete)
 
     def test_update_column_settings(self):
-        cls = self.client.post(reverse('api:v2:column_list_settings-list'), data=json.dumps(self.payload_data),
-                               content_type='application/json')
+        cls = self.client.post(
+            reverse('api:v2:column_list_settings-list') + '?organization_id=' + str(self.org.id),
+            data=json.dumps(self.payload_data),
+            content_type='application/json'
+        )
         payload = {
             "name": "New Name",
             "inventory_type": "Tax Lot",
             "settings_location": "List View Settings",
         }
-        url = reverse('api:v2:column_list_settings-detail', args=[json.loads(cls.content)['data']['id']])
+        url = reverse('api:v2:column_list_settings-detail',
+                      args=[json.loads(cls.content)['data']['id']]) + '?organization_id=' + str(
+            self.org.id)
 
         response = self.client.put(url, data=json.dumps(payload), content_type='application/json')
         result = json.loads(response.content)
