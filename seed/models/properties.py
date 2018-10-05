@@ -342,7 +342,7 @@ class PropertyState(models.Model):
         # save a hash of the object to the database for quick lookup
         from seed.data_importer.tasks import hash_state_object
         self.hash_object = hash_state_object(self)
-        # print "hash object is %s" % self.hash_object
+
         return super(PropertyState, self).save(*args, **kwargs)
 
     def history(self):
