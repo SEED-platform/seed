@@ -74,7 +74,7 @@ def forwards(apps, schema_editor):
         # Ordering here is important, the object that have extra_data are first, so the duplicates are
         # later in the iteration
         for column in Column.objects.filter(organization=org).exclude(table_name='').exclude(table_name=None).order_by(
-            'column_name', '-is_extra_data'):
+                'column_name', '-is_extra_data'):
             print "%s %s %s %s" % (column.id, column.table_name, column.column_name, column.is_extra_data)
             if column in cols_to_delete:
                 print "  Column is tagged to be deleted, continuing..."

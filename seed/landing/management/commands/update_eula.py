@@ -28,7 +28,7 @@ class Command(BaseCommand):
         except IOError:
             self.stdout.write("File not found")
 
-        #late import saves time during ./manage.py help
+        # late import saves time during ./manage.py help
         from tos.models import TermsOfService
 
         content = fh.read()

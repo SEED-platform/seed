@@ -1,9 +1,14 @@
+# -*- coding: utf-8 -*-
+"""
+:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
+"""
 from __future__ import unicode_literals
 
 import datetime
 import itertools
 import logging
-from random import randint, random
+from random import randint
 
 from django.core.management.base import BaseCommand
 
@@ -342,7 +347,7 @@ def create_cases(org, cycle, tax_lots, properties):
         def del_datetimes(d):
             res = {}
             for k, v in d.iteritems():
-                if type(v) is datetime.date or type(v) is datetime.datetime:
+                if isinstance(v, datetime.date) or isinstance(v, datetime.datetime):
                     continue
                 res[k] = str(v)
             return res
@@ -366,7 +371,7 @@ def create_cases(org, cycle, tax_lots, properties):
         def _create_state(view_model, state_model, org, state_def):
             state, created = state_model.objects.get_or_create(**state_def)
             if not created and not view_model.objects.filter(state=state).filter(
-                cycle__organization=org).exists():
+                    cycle__organization=org).exists():
                 state = state_model.objects.create(**state_def)
                 created = True
             return state, created
@@ -671,7 +676,7 @@ def update_taxlot_year(taxlot, year):
 
     # change something else in extra_data aside from the year:
     taxlot.extra_data["taxlot_extra_data_field_1"] = taxlot.extra_data[
-                                                         "taxlot_extra_data_field_1"] + u"_" + unicode(
+        "taxlot_extra_data_field_1"] + u"_" + unicode(
         year)
 
     # update the noise
@@ -705,7 +710,7 @@ def update_property_year(property, year):
 
     # change something in extra_data so something there changes too
     property.extra_data["property_extra_data_field_1"] = property.extra_data[
-                                                             "property_extra_data_field_1"] + u"_" + unicode(
+        "property_extra_data_field_1"] + u"_" + unicode(
         year)
 
     property = update_property_noise(property)

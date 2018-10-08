@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.db import models, migrations
 import django.contrib.postgres.fields.jsonb
+from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('audit_logs', '0002_auditlog_user'),
     ]

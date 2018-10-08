@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+"""
+:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
+"""
 from __future__ import unicode_literals
 
 from django.core.management.base import BaseCommand
@@ -30,7 +35,7 @@ class Command(BaseCommand):
         if options['user_id']:
             try:
                 user = User.objects.get(pk=options['user_id'])
-            except AttributeError, xcpt:
+            except AttributeError:
                 print "No user with id={} was found.  Run with --stats to display all the users.".format(
                     options['user_id'])
                 return

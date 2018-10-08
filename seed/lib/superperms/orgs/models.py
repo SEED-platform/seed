@@ -62,7 +62,7 @@ class OrganizationUser(models.Model):
                 organization=self.organization,
             ).exclude(pk=self.pk)
             if (all_org_users.exists() and all_org_users.filter(
-                role_level=ROLE_OWNER).count() == 0):
+                    role_level=ROLE_OWNER).count() == 0):
                 # Make next most high ranking person the owner.
                 other_user = all_org_users.order_by('-role_level', '-pk')[0]
                 if other_user.role_level > ROLE_VIEWER:
