@@ -737,7 +737,7 @@ def create_additional_years(org, years, pairs_taxlots_and_properties, case,
     # will look like [[taxlot_1], [property_1]].  An entry in one property to many taxlots
     # might look like [[propert_1], [taxlot_1, taxlot_2, taxlot_3]], etc...
     for year in years:
-        print "Creating additional year for case {c}:\t{y}".format(c=case, y=year)
+        print("Creating additional year for case {c}:\t{y}".format(c=case, y=year))
         cycle = get_cycle(org, year)
 
         update_taxlot_f = lambda x: update_taxlot_year(x, year)
@@ -746,7 +746,7 @@ def create_additional_years(org, years, pairs_taxlots_and_properties, case,
         for idx, [taxlots, properties] in enumerate(pairs_taxlots_and_properties):
             taxlots = map(update_taxlot_f, taxlots)
             properties = map(update_property_f, properties)
-            print "Creating {i}".format(i=idx)
+            print("Creating {i}".format(i=idx))
             taxlots, properties = create_cases_with_multi_records_per_cycle(org, cycle, taxlots,
                                                                             properties,
                                                                             number_records_per_cycle_per_state)
@@ -766,7 +766,7 @@ def create_additional_years_D(org, years, tuples_taxlots_properties_campus,
         taxlots and 5 properties.  Will error with less and unknown behavior with more.
     """
     for year in years:
-        print "Creating additional year for case D:\t{y}".format(y=year)
+        print("Creating additional year for case D:\t{y}".format(y=year))
         cycle = get_cycle(org, year)
 
         update_taxlot_f = lambda x: update_taxlot_year(x, year)
@@ -777,7 +777,7 @@ def create_additional_years_D(org, years, tuples_taxlots_properties_campus,
                 taxlots = map(update_taxlot_f, taxlots)
                 properties = map(update_property_f, properties)
                 campus = update_property_f(campus)
-                print "Creating {i}".format(i=idx)
+                print("Creating {i}".format(i=idx))
                 _create_case_D(org, cycle, taxlots, properties, campus)
 
 
@@ -809,7 +809,7 @@ def create_sample_data(years, a_ct=0, b_ct=0, c_ct=0, d_ct=0, number_records_per
     tuples_taxlots_properties_campus_D = []
 
     for i in range(a_ct):
-        print "Creating Case A {i}".format(i=i)
+        print("Creating Case A {i}".format(i=i))
         pairs_taxlots_and_properties_A.append(
             create_case_A(org, cycle, taxlot_factory, property_factory,
                           number_records_per_cycle_per_state))
@@ -818,7 +818,7 @@ def create_sample_data(years, a_ct=0, b_ct=0, c_ct=0, d_ct=0, number_records_per
                             number_records_per_cycle_per_state)
 
     for i in range(b_ct):
-        print "Creating Case B {i}".format(i=i)
+        print("Creating Case B {i}".format(i=i))
         property_factory.case_description = "Case B-1: Multiple (3) Properties, 1 Tax Lot"
         pairs_taxlots_and_properties_B.append(
             create_case_B(org, cycle, taxlot_factory, property_factory,
@@ -828,7 +828,7 @@ def create_sample_data(years, a_ct=0, b_ct=0, c_ct=0, d_ct=0, number_records_per
                             number_records_per_cycle_per_state)
 
     for i in range(c_ct):
-        print "Creating Case C {i}".format(i=i)
+        print("Creating Case C {i}".format(i=i))
         property_factory.case_description = "Case C: 1 Property, Multiple (3) Tax Lots"
         pairs_taxlots_and_properties_C.append(
             create_case_C(org, cycle, taxlot_factory, property_factory,
@@ -838,7 +838,7 @@ def create_sample_data(years, a_ct=0, b_ct=0, c_ct=0, d_ct=0, number_records_per
                             number_records_per_cycle_per_state)
 
     for i in range(d_ct):
-        print "Creating Case D {i}".format(i=i)
+        print("Creating Case D {i}".format(i=i))
         property_factory.case_description = "Case D: Campus with Multiple associated buildings"
         tuples_taxlots_properties_campus_D.append(
             create_case_D(org, cycle, taxlot_factory, property_factory,

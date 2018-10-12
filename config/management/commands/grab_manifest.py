@@ -50,12 +50,12 @@ class Command(BaseCommand):
 
         try:
             open(join(cache_root, MANIFEST_FILENAME))
-            print "Manifest already exists locally."
+            print("Manifest already exists locally.")
         except IOError:
             do_download = True
 
         if do_download:
-            print "Downloading manifest..."
+            print("Downloading manifest...")
             u = urllib2.urlopen("%s%s/%s" % (settings.STATIC_URL, CACHE_DIR, MANIFEST_FILENAME))
             manifest_path = join(cache_root, MANIFEST_FILENAME)
             try:
@@ -64,5 +64,5 @@ class Command(BaseCommand):
                 pass
             localFile = open(manifest_path, 'w+')
             localFile.write(u.read())
-            print "Done."
+            print("Done.")
             localFile.close()

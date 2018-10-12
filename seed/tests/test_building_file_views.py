@@ -108,7 +108,6 @@ class InventoryViewTests(DeleteModelsTestCase):
         response = self.client.post(url, fsysparams)
         self.assertEqual(response.status_code, 200)
         result = json.loads(response.content)
-        # print result
         self.assertEqual(result['status'], 'success')
         expected_message = "successfully imported file with warnings [u'Measure category and name is not valid other_electric_motors_and_drives:replace_with_higher_efficiency', u'Measure category and name is not valid other_hvac:install_demand_control_ventilation', u'Measure associated with scenario not found. Scenario: Replace with higher efficiency Only, Measure name: Measure22', u'Measure associated with scenario not found. Scenario: Install demand control ventilation Only, Measure name: Measure24']"
         self.assertEqual(result['message'], expected_message)
@@ -129,7 +128,6 @@ class InventoryViewTests(DeleteModelsTestCase):
         self.assertEqual(response.status_code, 200)
         result = json.loads(response.content)
 
-        # print result
         self.assertEqual(len(result['data']['property_view']['state']['measures']), 28)
         self.assertEqual(len(result['data']['property_view']['state']['scenarios']), 31)
 

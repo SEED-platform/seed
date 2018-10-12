@@ -13,7 +13,7 @@ def write_to_file(msg):
 
 def logging_info(msg):
     s = "INFO: {}".format(msg)
-    print s
+    print(s)
     write_to_file(s)
 
 

@@ -89,7 +89,7 @@ def pp(model_obj):
     data = serializers.serialize('json', [model_obj, ])
     # from django.forms.models import model_to_dict
     # j = model_to_dict(model_obj)
-    print json.dumps(json.loads(data), indent=2)
+    print(json.dumps(json.loads(data), indent=2))
 
 
 def json_serializer(obj):

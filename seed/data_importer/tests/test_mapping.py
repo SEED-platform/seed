@@ -72,7 +72,7 @@ class TestMapping(DataMappingBaseTestCase):
             mappings.append(mapping)
 
         # Now save the mappings
-        # print mappings
+        # print(mappings)
         Column.create_mappings(mappings, self.org, self.user, self.import_file.id)
         # END TODO
 

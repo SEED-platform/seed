@@ -240,7 +240,7 @@ class MappingColumns(object):
                 self.data[raw_column]['initial_mapping_cmp'] = None
         else:
             # if there are no mappings left, then the mapping suggestion will look like extra data
-            # print "Setting set_initial_mapping to None for {}".format(raw_column)
+            # print("Setting set_initial_mapping to None for {}".format(raw_column))
             self.data[raw_column]['initial_mapping_cmp'] = None
 
     def apply_threshold(self, threshold):

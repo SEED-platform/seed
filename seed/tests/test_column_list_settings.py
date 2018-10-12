@@ -81,9 +81,6 @@ class TestColumnListSettings(TestCase):
         # do not set up a profile and return the columns, should be all columns
         ids, name_mappings, objs = ColumnListSetting.return_columns(self.fake_org, new_list_setting.id)
 
-        # print ids
-        # print name_mappings
-
         # not the most robust tests, but they are least check for non-zero results
         self.assertIsInstance(ids[0], int)
         self.assertIsInstance(name_mappings.keys()[0], unicode)

@@ -289,10 +289,9 @@ class PropertyState(models.Model):
         for field in date_field_names:
             value = getattr(self, field)
             if value and isinstance(value, (str, unicode)):
-                print "Saving %s which is a date time" % field
-                print convert_datestr(value)
-                print date_cleaner(value)
-                # setattr(self, field, convert_datestr(value))
+                _log.info("Saving %s which is a date time" % field)
+                _log.info(convert_datestr(value))
+                _log.info(date_cleaner(value))
 
     def to_dict(self, fields=None, include_related_data=True):
         """

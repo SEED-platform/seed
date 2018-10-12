@@ -127,15 +127,15 @@ pm_map_file = os.path.relpath(os.path.join(location, '..', 'data', 'portfolio-ma
 assert (os.path.isfile(pm_map_file)), 'Missing file ' + pm_map_file
 
 # -- Accounts
-print ('\n|-------Accounts-------|\n')
+print('\n|-------Accounts-------|\n')
 organization_id = account(header, main_url, username, log)
 
 # -- Cycles
-print ('\n\n|-------Cycles-------|')
+print('\n\n|-------Cycles-------|')
 cycle_id = cycles(header, main_url, organization_id, log)
 
 # Create a dataset
-print ('\n\n|-------Create Dateset-------|')
+print('\n\n|-------Create Dateset-------|')
 partmsg = 'create_dataset'
 payload = {'name': 'API Test'}
 result = requests.post(main_url + '/api/v2/datasets/?organization_id=%s' % organization_id,
@@ -147,13 +147,13 @@ check_status(result, partmsg, log)
 dataset_id = result.json()['id']
 
 # Upload and test the raw building file
-print ('\n|---Covered Building File---|\n')
+print('\n|---Covered Building File---|\n')
 upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, raw_building_file,
                   'Assessed Raw',
                   raw_map_file, log)
 
 # Upload and test the portfolio manager file
-print ('\n|---Portfolio Manager File---|\n')
+print('\n|---Portfolio Manager File---|\n')
 # upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, pm_building_file, 'Portfolio Raw',
 #                   pm_map_file, log)
 

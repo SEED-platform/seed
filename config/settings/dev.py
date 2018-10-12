@@ -100,4 +100,4 @@ except:
 if 'local_untracked_exists' in locals():
     from config.settings.local_untracked import *  # noqa
 else:
-    print >> sys.stderr, "Unable to find the local_untracked module in config/settings/local_untracked.py"
+    raise Exception("Unable to find the local_untracked in config/settings/local_untracked.py")

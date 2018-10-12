@@ -934,7 +934,7 @@ class Column(models.Model):
             try:
                 types[c['column_name']] = MAP_TYPES[c['data_type']]
             except KeyError:
-                print "could not find data_type for %s" % c
+                _log.error("could not find data_type for %s" % c)
                 types[c['column_name']] = ''
 
         return {"types": types}
@@ -1134,7 +1134,7 @@ class Column(models.Model):
                 columns.append(new_c)
 
         # import json
-        # print json.dumps(columns, indent=2)
+        # print(json.dumps(columns, indent=2))
 
         # validate that the field 'name' is unique.
         uniq = set()

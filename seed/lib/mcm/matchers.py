@@ -50,7 +50,7 @@ def best_match(s, categories, top_n=5):
 
     """
 
-    # print 'starting match on {}'.format(s)
+    # print('starting match on {}'.format(s))
     scores = []
     for cat in categories:
         # verify that the category has two elements, if not, then just
@@ -77,13 +77,13 @@ def best_match(s, categories, top_n=5):
 
         # sort first by the ones
 
-    # print 'all scores for {} are {}'.format(s, scores)
+    # print('all scores for {} are {}'.format(s, scores))
     scores = sorted(scores, cmp=sort_scores)
     # take the top n number of matches
     scores = scores[:top_n]
     # convert to hundreds
     scores = [(score[0], score[1], int(score[2] * 100)) for score in scores]
-    # print 'ending all categories match of {} with scores {}'.format(s, scores)
+    # print('ending all categories match of {} with scores {}'.format(s, scores))
 
     return scores
 

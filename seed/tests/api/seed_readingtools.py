@@ -201,13 +201,13 @@ def check_status(result_out, part_msg, log, piid_flag=None):
 
 def check_progress(main_url, header, progress_key):
     """Delays the sequence until progress is at 100 percent."""
-    print "checking progress {}".format(progress_key)
+    print("checking progress {}".format(progress_key))
     time.sleep(1)
     progress_result = requests.get(
         main_url + '/api/v2/progress/{}'.format(progress_key),
         headers=header
     )
-    print "... {} ...".format(progress_result.json()['progress'])
+    print("... {} ...".format(progress_result.json()['progress']))
 
     if progress_result.json()['progress'] == 100:
         return progress_result
@@ -271,4 +271,4 @@ def write_out_django_debug(partmsg, result):
         filename = '{}_fail.html'.format(partmsg)
         with open(filename, 'w') as fail:
             fail.writelines(result.text)
-        print 'Wrote debug -> {}'.format(filename)
+        print('Wrote debug -> {}'.format(filename))

@@ -1472,8 +1472,6 @@ class InventoryViewTests(DeleteModelsTestCase):
             del result['name']
             del result['organization_id']
 
-        # print json.dumps(results, indent=2)
-
         jurisdiction_tax_lot_id_col = {
             'table_name': 'TaxLotState',
             'column_name': 'jurisdiction_tax_lot_id',

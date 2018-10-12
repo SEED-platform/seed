@@ -47,27 +47,27 @@ def forwards(apps, schema_editor):
         cm_raw = ColumnMapping.objects.filter(column_raw=c)
         cm_mapped = ColumnMapping.objects.filter(column_mapped=c)
 
-        print "Column {}: {}.{}".format(c.id, c.table_name, c.column_name)
+        print("Column {}: {}.{}".format(c.id, c.table_name, c.column_name))
 
         if cm_raw.count() > 1 or cm_mapped.count() > 1:
-            print "from_count: {}     to_count: {}".format(cm_raw.count(), cm_mapped.count())
+            print("from_count: {}     to_count: {}".format(cm_raw.count(), cm_mapped.count()))
 
             # go through the ones that are zeroed and is not extra data in the.
             # Also, split the mappings only if the mapped column is extra data.
             if cm_raw.count() == 0 and cm_mapped.count() > 1 and c.is_extra_data:
                 for idx, mapping in enumerate(cm_mapped):
-                    print "        Duplicating columns for {}".format(idx)
+                    print("        Duplicating columns for {}".format(idx))
                     new_m, _new_c = duplicate_mapping(apps, mapping, c, 'mapped')
-                    print "            new mapping created {}".format(new_m)
+                    print("            new mapping created {}".format(new_m))
 
                 for m in cm_mapped:
                     m.delete()
 
             if cm_raw.count() > 1 and cm_mapped.count() == 0:
                 for idx, mapping in enumerate(cm_raw):
-                    print "        Duplicating columns for {}".format(idx)
+                    print("        Duplicating columns for {}".format(idx))
                     new_m, _new_c = duplicate_mapping(apps, mapping, c, 'raw')
-                    print "            new mapping created {}".format(new_m)
+                    print("            new mapping created {}".format(new_m))
 
                 for m in cm_raw:
                     m.delete()
@@ -76,11 +76,6 @@ def forwards(apps, schema_editor):
             # if there are any of the many raw to many mapped, handle those
             # someday... if you see it now, then raise and exception
             raise Exception("this is bad, very bad... talk to @nllong")
-
-        # print ""
-        # print ""
-        # print "-------------------------------------------------------------------"
-        # print "Total Columns: {}".format(Column.objects.all().count())
 
 
 class Migration(migrations.Migration):

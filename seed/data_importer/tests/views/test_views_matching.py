@@ -89,7 +89,7 @@ class TestViewsMatching(DataMappingBaseTestCase):
     #     #             u'Multistorys', u'Pizza House', u'Residence', u'Residence', u'Residence',
     #     #             u'Swimming Pool']
     #
-    #     # print sorted([p.use_description for p in property_states])
+    #     # print(sorted([p.use_description for p in property_states]))
     #     results = sorted([p.use_description for p in property_states])
     #     self.assertTrue('Bar' in results)
     #     self.assertTrue('Building' in results)

@@ -26,7 +26,7 @@ class SEEDFactory(DjangoFunctionalFactory):
                 ab = SEEDFactory.assessed_building()
                 cb = ab.canonical_building
                 b_snapshot = cb.canonical_snapshot
-                print ab.year_built == b_snapshot.year_built  # True
+                ab.year_built == b_snapshot.year_built  # True
 
                 # or loop through to create a whole bunch:
                 for i in range(10):

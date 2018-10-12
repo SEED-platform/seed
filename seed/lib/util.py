@@ -75,9 +75,9 @@ def apply_map(map_path, data_path, out_file):
     matched, nomatch = mapping.apply(input_fields)
     for field, m in matched.iteritems():
         d[field] = m.as_json()
-        print "Mapped {} => {}".format(field, m.field)
+        print("Mapped {} => {}".format(field, m.field))
     for field in nomatch:
-        print "* No mapping found for input field: {}".format(field)
+        print("* No mapping found for input field: {}".format(field))
         d[field] = mapper.MapItem(field, None).as_json()
     # write mapping as a JSON
     try:
@@ -86,8 +86,7 @@ def apply_map(map_path, data_path, out_file):
         # print("** Error: While writing:\n{}".format(d))
         pass
     # write stats
-    print "Mapped {} fields: {} OK and {} did not match".format(
-        len(input_fields), len(matched), len(nomatch))
+    print("Mapped {} fields: {} OK and {} did not match".format(len(input_fields), len(matched), len(nomatch)))
 
 
 def find_duplicates(map_path, data_path, out_file):
@@ -121,7 +120,7 @@ def find_duplicates(map_path, data_path, out_file):
                 dup[dst] = [seen_key, src]
         else:
             seen_values[dst] = src
-    # print results
+
     for value, keys in dup.items():
         keylist = ' | '.join(keys)
         out_file.write(

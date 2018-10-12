@@ -40,5 +40,6 @@ class Command(BaseCommand):
             expires = expires.strftime("%a, %d %b %Y %H:%M:%S GMT")
             metadata = {'Expires': expires, 'Content-Type': content_type}
             if verbosity > 2:
-                print key.name, metadata
+                print(key.name)
+                print(metadata)
             key.copy(settings.AWS_STORAGE_BUCKET_NAME, key, metadata=metadata, preserve_acl=True)
