@@ -69,8 +69,8 @@ def best_match(s, categories, top_n=5):
                 table_name,
                 category,
                 jellyfish.jaro_winkler(
-                    unicode(s.encode('ascii', 'replace').lower()),
-                    unicode(category.encode('ascii', 'replace').lower())
+                    str(s.encode('ascii', 'replace').lower()),
+                    str(category.encode('ascii', 'replace').lower())
                 )
             )
         )

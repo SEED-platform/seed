@@ -460,7 +460,7 @@ def update_property_views(views, number_of_updates):
     for i in range(number_of_updates):
         for property_view in views:
             state = property_view.state
-            state.site_eui = unicode(float(randint(0, 1000)) + float(randint(0, 9)) / 10)
+            state.site_eui = str(float(randint(0, 1000)) + float(randint(0, 9)) / 10)
             state.pk = None  # set state to None to get a new copy on save
             state.save()
             property_view.update_state(state)
@@ -676,8 +676,7 @@ def update_taxlot_year(taxlot, year):
 
     # change something else in extra_data aside from the year:
     taxlot.extra_data["taxlot_extra_data_field_1"] = taxlot.extra_data[
-        "taxlot_extra_data_field_1"] + u"_" + unicode(
-        year)
+        "taxlot_extra_data_field_1"] + u"_" + str(year)
 
     # update the noise
     taxlot = update_taxlot_noise(taxlot)
@@ -693,7 +692,7 @@ def update_property_noise(property):
     :return: The same property with the site_eui updated to a random number
     """
     # randomize "site_eui"
-    property.data["site_eui"] = unicode(float(randint(0, 1000)) + float(randint(0, 9)) / 10)
+    property.data["site_eui"] = str(float(randint(0, 1000)) + float(randint(0, 9)) / 10)
     return property
 
 
@@ -710,8 +709,7 @@ def update_property_year(property, year):
 
     # change something in extra_data so something there changes too
     property.extra_data["property_extra_data_field_1"] = property.extra_data[
-        "property_extra_data_field_1"] + u"_" + unicode(
-        year)
+        "property_extra_data_field_1"] + u"_" + str(year)
 
     property = update_property_noise(property)
 

@@ -53,12 +53,12 @@ COMPLIANCE_KEYS = ['compliance_type', 'end_date', 'deadline_date']
 PROJECT_KEYS = ['name', 'description', 'status', 'is_compliance']
 
 COMPLIANCE_LOOKUP = {
-    unicode(choice[1]).lower(): choice[0]
+    str(choice[1]).lower(): choice[0]
     for choice in COMPLIANCE_CHOICES
 }
 
 STATUS_LOOKUP = {
-    unicode(choice[1]).lower(): choice[0] for choice in Project.STATUS_CHOICES
+    str(choice[1]).lower(): choice[0] for choice in Project.STATUS_CHOICES
 }
 
 PLURALS = {'property': 'properties', 'taxlot': 'taxlots'}
@@ -784,7 +784,7 @@ class ProjectViewSet(DecoratorMixin(drf_api_endpoint), viewsets.ModelViewSet):
                 view_type, params=params, user=request.user
             )
             if request.data.get('selected', None) \
-                    and isinstance(request.data.get('selected'), list):
+                and isinstance(request.data.get('selected'), list):
                 inventory = qs.filter(pk__in=request.data.get('selected'))
             # TODO is this still relevant
             elif request.data.get('select_all_checkbox', None):

@@ -5,11 +5,12 @@
 :author noel.merket@nrel.gov
 """
 
+import functools
 import logging
 import os
-import functools
-from quantityfield import ureg
 from copy import deepcopy
+
+from quantityfield import ureg
 
 try:
     from cStringIO import StringIO
@@ -19,11 +20,13 @@ except ImportError:
 from lxml import etree, objectify
 import probablepeople as pp
 import usaddress as usadd
+from past.builtins import basestring
 
 _log = logging.getLogger(__name__)
 
 here = os.path.dirname(os.path.abspath(__file__))
-hpxml_parser = objectify.makeparser(schema=etree.XMLSchema(etree.parse(os.path.join(here, 'schemas', 'HPXML.xsd'))))
+hpxml_parser = objectify.makeparser(
+    schema=etree.XMLSchema(etree.parse(os.path.join(here, 'schemas', 'HPXML.xsd'))))
 
 
 class HPXMLError(Exception):
@@ -120,7 +123,8 @@ class HPXML(object):
         else:
             root = deepcopy(self.root)
 
-        bldg = self._get_building(property_state.extra_data.get('hpxml_building_id'), start_from=root)
+        bldg = self._get_building(property_state.extra_data.get('hpxml_building_id'),
+                                  start_from=root)
 
         for pskey, xml_loc in self.HPXML_STRUCT.items():
             value = getattr(property_state, pskey)
@@ -136,7 +140,7 @@ class HPXML(object):
             if isinstance(value, ureg.Quantity):
                 value = value.magnitude
             setattr(el.getparent(), el.tag[el.tag.index('}') + 1:],
-                    unicode(value) if not isinstance(value, basestring) else value)
+                    str(value) if not isinstance(value, basestring) else value)
 
         E = objectify.ElementMaker(annotate=False, namespace=self.NS, nsmap={None: self.NS})
 
@@ -172,7 +176,8 @@ class HPXML(object):
                     if 'PrefixMarital' in owner_name or 'PrefixOther' in owner_name:
                         owner.Name.append(
                             E.PrefixName(
-                                ' '.join([owner_name.get('Prefix' + x, '') for x in ('Marital', 'Other')]).strip()
+                                ' '.join([owner_name.get('Prefix' + x, '') for x in
+                                          ('Marital', 'Other')]).strip()
                             )
                         )
                     if 'GivenName' in owner_name:
@@ -194,13 +199,15 @@ class HPXML(object):
                     if 'SuffixGenerational' in owner_name or 'SuffixOther' in owner_name:
                         owner.Name.append(
                             E.SuffixName(
-                                ' '.join([owner_name.get('Suffix' + x, '') for x in ('Generational', 'Other')]).strip()
+                                ' '.join([owner_name.get('Suffix' + x, '') for x in
+                                          ('Generational', 'Other')]).strip()
                             )
                         )
 
         # Owner Email
         if property_state.owner_email is not None:
-            new_email = E.Email(E.EmailAddress(property_state.owner_email), E.PreferredContactMethod(True))
+            new_email = E.Email(E.EmailAddress(property_state.owner_email),
+                                E.PreferredContactMethod(True))
             if hasattr(owner, 'Email'):
                 if property_state.owner_email not in owner.Email:
                     owner.append(new_email)
@@ -274,8 +281,10 @@ class HPXML(object):
             try:
                 root.Project.ProjectDetails.ProgramCertificate
             except AttributeError:
-                for elname in ('YearCertified', 'CertifyingOrganizationURL', 'CertifyingOrganization', 'ProgramSponsor',
-                               'ContractorSystemIdentifiers', 'ProgramName', 'ProjectSystemIdentifiers'):
+                for elname in (
+                'YearCertified', 'CertifyingOrganizationURL', 'CertifyingOrganization',
+                'ProgramSponsor',
+                'ContractorSystemIdentifiers', 'ProgramName', 'ProjectSystemIdentifiers'):
                     if hasattr(root.Project.ProjectDetails, elname):
                         getattr(root.Project.ProjectDetails, elname).addnext(
                             new_prog_cert
@@ -296,7 +305,8 @@ class HPXML(object):
             try:
                 found_energy_score = False
                 for energy_score_el in bldg_const.EnergyScore:
-                    if energy_score_type in (energy_score_el.ScoreType, getattr(energy_score_el, 'OtherScoreType', None)):
+                    if energy_score_type in (
+                    energy_score_el.ScoreType, getattr(energy_score_el, 'OtherScoreType', None)):
                         found_energy_score = True
                         break
                 if not found_energy_score:
@@ -324,7 +334,8 @@ class HPXML(object):
 
     def _get_building(self, building_id=None, **kw):
         if building_id is not None:
-            bldg = self.xpath('//h:Building[h:BuildingID/@id=$bldg_id]', bldg_id=building_id, **kw)[0]
+            bldg = self.xpath('//h:Building[h:BuildingID/@id=$bldg_id]', bldg_id=building_id, **kw)[
+                0]
         else:
             event_type_precedence = [
                 'job completion testing/final inspection',
@@ -334,7 +345,8 @@ class HPXML(object):
             ]
             bldg = None
             for event_type in event_type_precedence:
-                bldgs = self.xpath('//h:Building[h:ProjectStatus/h:EventType=$event_type]', event_type=event_type, **kw)
+                bldgs = self.xpath('//h:Building[h:ProjectStatus/h:EventType=$event_type]',
+                                   event_type=event_type, **kw)
                 if len(bldgs) > 0:
                     bldg = bldgs[0]
                     break
@@ -389,7 +401,8 @@ class HPXML(object):
             if not res['owner_address']:
                 del res['owner_address']
             res['owner_city_state'] = ', '.join(self.xpath(
-                '|'.join(['h:MailingAddress/h:{}/text()'.format(i) for i in ('CityMunicipality', 'StateCode')]),
+                '|'.join(['h:MailingAddress/h:{}/text()'.format(i) for i in
+                          ('CityMunicipality', 'StateCode')]),
                 start_from=owner.getparent(),
             ))
             if not res['owner_city_state']:

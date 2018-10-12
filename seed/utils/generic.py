@@ -13,7 +13,6 @@ from django.contrib.postgres.fields import JSONField
 from django.core import serializers
 from past.builtins import basestring
 
-
 class MarkdownPackageDebugFilter(logging.Filter):
     def filter(self, record):
         if 'markdown.extensions.headerid' in record.msg:
@@ -79,7 +78,7 @@ def obj_to_dict(obj, include_m2m=True):
             # PostgreSQL < 9.3 support -- this should never be run
             while isinstance(e, basestring):
                 e = json.loads(e)
-            response[unicode(f.name)] = e
+            response[str(f.name)] = e
     return response
 
 

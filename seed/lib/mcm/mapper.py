@@ -12,6 +12,7 @@ import re
 from datetime import datetime, date
 
 from django.apps import apps
+from past.builtins import basestring
 
 from cleaners import default_cleaner
 from seed.lib.mappings.mapping_columns import MappingColumns

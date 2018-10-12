@@ -67,7 +67,7 @@ if '--noinput' in sys.argv:
         username = j_data['username']
         api_key = j_data['api_key']
 else:
-    defaultchoice = raw_input('Use "api_test_user.json" credentials? [Y]es or Press Any Key ')
+    defaultchoice = input('Use "api_test_user.json" credentials? [Y]es or Press Any Key ')
 
     if defaultchoice.upper() == 'Y':
         with open(os.path.join(location, 'api_test_user.json')) as f:
@@ -77,14 +77,14 @@ else:
             username = j_data['username']
             api_key = j_data['api_key']
     else:
-        hostname = raw_input('Hostname (default: "localhost"): \t')
+        hostname = input('Hostname (default: "localhost"): \t')
         if hostname == '':
             hostname = 'localhost'
-        main_url = raw_input('Host URL (default: "http://localhost:8080": \t')
+        main_url = input('Host URL (default: "http://localhost:8080": \t')
         if main_url == '':
             main_url = 'http://localhost:8000'
-        username = raw_input('Username: \t')
-        api_key = raw_input('APIKEY: \t')
+        username = input('Username: \t')
+        api_key = input('APIKEY: \t')
 
 
 # API is now used basic auth with base64 encoding.

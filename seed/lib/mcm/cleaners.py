@@ -64,7 +64,7 @@ def float_cleaner(value, *args):
     if value is None:
         return None
 
-    if isinstance(value, (str, unicode)):
+    if isinstance(value, basestring):
         value = PUNCT_REGEX.sub('', value)
 
     try:
@@ -128,7 +128,7 @@ def int_cleaner(value, *args):
     if value is None:
         return None
 
-    if isinstance(value, (str, unicode)):
+    if isinstance(value, basestring):
         value = PUNCT_REGEX.sub('', value)
 
     try:

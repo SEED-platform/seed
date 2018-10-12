@@ -58,7 +58,7 @@ class TestColumnListSettings(TestCase):
         # not the most robust tests, but they are least check for non-zero results
         self.assertIsInstance(ids[0], int)
         self.assertIsInstance(name_mappings.keys()[0], basestring)
-        self.assertIsInstance(name_mappings.values()[0], unicode)
+        self.assertIsInstance(name_mappings.values()[0], basestring)
 
     def test_returning_columns_with_profile(self):
         col1 = Column.objects.create(

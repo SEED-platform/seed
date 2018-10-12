@@ -56,7 +56,7 @@ class Command(BaseCommand):
             print("Add user {} to organizations?".format(user))
             for (ndx, org) in enumerate(organizations):
                 print("   {}: {}".format(ndx, org))
-            if not raw_input("Continue? [y/N]").lower().startswith("y"):
+            if not input("Continue? [y/N]").lower().startswith("y"):
                 print("Quitting.")
                 return
 

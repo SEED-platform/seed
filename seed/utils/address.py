@@ -88,7 +88,7 @@ def normalize_address_str(address_val):
     if not address_val:
         return None
 
-    address_val = unicode(address_val).encode('utf-8')
+    address_val = str(address_val).encode('utf-8')
 
     # Do some string replacements to remove odd characters that we come across
     replacements = {

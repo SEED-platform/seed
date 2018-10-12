@@ -25,6 +25,7 @@ from seed.utils.organizations import create_organization
 
 class GreenAssessmentTests(DeleteModelsTestCase):
     """Tests for certification/Green Assessment models and methods"""
+
     # pylint: disable=too-many-instance-attributes
 
     def setUp(self):
@@ -63,10 +64,10 @@ class GreenAssessmentTests(DeleteModelsTestCase):
     def test_unicode_magic_methods(self):
         """Test unicode repr methods"""
         expected = u'Green TS Inc, Green Test Score, Score'
-        self.assertEqual(expected, unicode(self.green_assessment))
+        self.assertEqual(expected, str(self.green_assessment))
 
         expected = u'Green TS Inc, Green Test Score: 5'
-        self.assertEqual(expected, unicode(self.gap))
+        self.assertEqual(expected, str(self.gap))
 
     def test_gap_properties(self):
         """Test properties on GreenAssessmentProperty."""
