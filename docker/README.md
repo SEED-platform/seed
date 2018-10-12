@@ -4,6 +4,7 @@ Resetting the containers can be accomplished by running:
 ```
 docker-compose rm -f
 docker volume rm seed_pgdata
+docker volume rm seed_media
 docker volume create --name=seed_pgdata
 docker volume create --name=seed_media
 docker-compose up

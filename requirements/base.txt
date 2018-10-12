@@ -7,7 +7,7 @@ django-crispy-forms==1.7.2
 modeltranslation==0.25
 
 # Persistence stores
-psycopg2==2.7.5
+psycopg2-binary==2.7.5
 
 # background process management
 celery==4.2.1
