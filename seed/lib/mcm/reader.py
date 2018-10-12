@@ -104,7 +104,7 @@ class ExcelParser(object):
             else:
                 return item.value
 
-        if isinstance(item.value, unicode):
+        if isinstance(item.value, basestring):
             return unidecode(item.value)
 
         return item.value
@@ -353,7 +353,7 @@ class MCMParser(object):
             row_arr = []
             for x in first_row:
                 row_field = r[x]
-                if isinstance(row_field, unicode):
+                if isinstance(row_field, basestring):
                     row_field = unidecode(r[x])
                 else:
                     row_field = str(r[x])

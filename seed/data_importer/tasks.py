@@ -33,6 +33,7 @@ from seed.data_importer.models import (
     ImportRecord,
     STATUS_READY_TO_MERGE,
 )
+from past.builtins import basestring
 from seed.decorators import lock_and_track
 from seed.green_button import xml_importer
 from seed.lib.mcm import cleaners, mapper, reader
@@ -567,7 +568,7 @@ def _save_raw_data_chunk(chunk, file_pk, progress_key):
                 for k, v in c.iteritems():
                     # remove extra spaces surrounding keys.
                     key = k.strip()
-                    if isinstance(v, unicode):
+                    if isinstance(v, basestring):
                         new_chunk[key] = unidecode(v)
                     elif isinstance(v, (dt.datetime, dt.date)):
                         raise TypeError(

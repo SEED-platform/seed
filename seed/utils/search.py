@@ -4,12 +4,12 @@
 :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author 'Piper Merriam <pmerriam@quickleft.com'
 """
-import re
 import operator
-
-from django.db.models import Q
+import re
 from functools import reduce
 
+from django.db.models import Q
+from past.builtins import basestring
 
 SUFFIXES = ['__lt', '__gt', '__lte', '__gte', '__isnull']
 DATE_FIELDS = ['year_ending']
@@ -88,11 +88,11 @@ def is_exact_exclude_filter(q):
 
 
 NUMERIC_EXPRESSION_REGEX = re.compile((
-    r'('                                     # open expression grp
+    r'('  # open expression grp
     r'(?P<operator>==|=|>|>=|<|<=|<>|!|!=)'  # operator
-    r'\s*'                                   # whitespace
-    r'(?P<value>(?:-?[0-9]+)|(?:null))\s*(?:,|$)'      # numeric value or the string null
-    r')'                                     # close expression grp
+    r'\s*'  # whitespace
+    r'(?P<value>(?:-?[0-9]+)|(?:null))\s*(?:,|$)'  # numeric value or the string null
+    r')'  # close expression grp
 ))
 
 
@@ -108,11 +108,11 @@ def is_numeric_expression(q):
 
 
 STRING_EXPRESSION_REGEX = re.compile((
-    r'('                                     # open expression grp
-    r'(?P<operator>==|(?<!<|>)=|<>|!|!=)'            # operator
-    r'\s*'                                   # whitespace
-    r'(?P<value>\'\'|""|null|[a-zA-Z0-9\s]+)\s*(?:,|$)'        # open value grp
-    r')'                                     # close expression grp
+    r'('  # open expression grp
+    r'(?P<operator>==|(?<!<|>)=|<>|!|!=)'  # operator
+    r'\s*'  # whitespace
+    r'(?P<value>\'\'|""|null|[a-zA-Z0-9\s]+)\s*(?:,|$)'  # open value grp
+    r')'  # close expression grp
 ))
 
 

@@ -11,6 +11,8 @@ import re
 from collections import OrderedDict
 from os.path import realpath, join, dirname
 
+from past.builtins import basestring
+
 from unidecode import unidecode
 
 LINEAR_UNITS = set([u'ft', u'm', u'in'])
@@ -29,7 +31,8 @@ def _sanitize_and_convert_keys_to_regex(key):
     """
 
     # force unicode
-    if isinstance(key, unicode):
+    # TODO: python3 check if this to run in python3
+    if isinstance(key, basestring):
         key = unidecode(key)
 
     # fix superscripts - copied from old code

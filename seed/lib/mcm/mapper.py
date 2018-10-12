@@ -198,7 +198,7 @@ def expand_and_normalize_field(field, return_list=False):
     :return: list of individual values after after delimiting
     """
 
-    if isinstance(field, str) or isinstance(field, unicode):
+    if isinstance(field, basestring):
         field = field.rstrip(';:,')
         data = [_normalize_expanded_field(r) for r in re.split(",|;|:", field)]
         if return_list:

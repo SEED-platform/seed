@@ -14,7 +14,7 @@ from seed.models import (
     ColumnListSettingColumn,
 )
 from seed.utils.organizations import create_organization
-
+from past.builtins import basestring
 
 class TestColumnListSettings(TestCase):
     """Test the clean methods on BuildingSnapshotModel."""
@@ -57,7 +57,7 @@ class TestColumnListSettings(TestCase):
 
         # not the most robust tests, but they are least check for non-zero results
         self.assertIsInstance(ids[0], int)
-        self.assertIsInstance(name_mappings.keys()[0], unicode)
+        self.assertIsInstance(name_mappings.keys()[0], basestring)
         self.assertIsInstance(name_mappings.values()[0], unicode)
 
     def test_returning_columns_with_profile(self):
@@ -83,5 +83,5 @@ class TestColumnListSettings(TestCase):
 
         # not the most robust tests, but they are least check for non-zero results
         self.assertIsInstance(ids[0], int)
-        self.assertIsInstance(name_mappings.keys()[0], unicode)
-        self.assertIsInstance(name_mappings.values()[0], unicode)
+        self.assertIsInstance(name_mappings.keys()[0], basestring)
+        self.assertIsInstance(name_mappings.values()[0], basestring)

@@ -9,7 +9,7 @@ All rights reserved.  # NOQA
 """
 from collections import OrderedDict
 from datetime import timedelta
-
+from past.builtins import basestring
 from django.core.exceptions import ValidationError
 from rest_framework import serializers
 

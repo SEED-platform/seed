@@ -15,6 +15,7 @@ from functools import reduce
 
 from django.db.models import Q
 from django.http.request import RawPostDataException
+from past.builtins import basestring
 
 from seed.lib.superperms.orgs.models import Organization
 from .models import (
@@ -270,7 +271,8 @@ def filter_other_params(queryset, other_params, db_columns):
                   '__gte' in k):
 
                 # Check if this is ISO8601 from a input date. Shorten to YYYY-MM-DD
-                if search_utils.is_date_field(k) and re.match(r'^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}.\d{3}\w$', v):
+                if search_utils.is_date_field(k) and re.match(
+                    r'^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}.\d{3}\w$', v):
                     v = re.search(r'^\d{4}-\d{2}-\d{2}', v).group()
 
                 query_filters &= Q(**{"%s" % k: v})
@@ -315,7 +317,8 @@ def filter_other_params(queryset, other_params, db_columns):
                 # Only return records that have the key in extra_data, but the
                 # value is not empty.
                 queryset = queryset.filter(
-                    Q(**{'extra_data__at_%s__isnull' % k: False}) & ~Q(**{'extra_data__at_%s' % k: ''})
+                    Q(**{'extra_data__at_%s__isnull' % k: False}) & ~Q(
+                        **{'extra_data__at_%s' % k: ''})
                 )
             elif exclude_filter:
                 # Exclude this value

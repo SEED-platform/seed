@@ -11,6 +11,7 @@ from datetime import datetime
 
 from django.contrib.postgres.fields import JSONField
 from django.core import serializers
+from past.builtins import basestring
 
 
 class MarkdownPackageDebugFilter(logging.Filter):
@@ -45,7 +46,8 @@ def median(lst):
     if not lst:
         return
     index = (len(lst) - 1) // 2
-    if (len(lst) % 2):
+    if len(lst) % 2:
+        #
         return sorted(lst)[index]
     return (sorted(lst)[index] + sorted(lst)[index + 1]) / 2.0
 
@@ -68,14 +70,14 @@ def obj_to_dict(obj, include_m2m=True):
 
     struct = json.loads(data)[0]
     response = struct['fields']
-    response[u'id'] = response[u'pk'] = struct['pk']
-    response[u'model'] = struct['model']
+    response[u'id'] = response[u'pk'] = struct[u'pk']
+    response[u'model'] = struct[u'model']
     # JSONField does not get serialized by `serialize`
     for f in obj._meta.fields:
         if isinstance(f, JSONField):
             e = getattr(obj, f.name)
             # PostgreSQL < 9.3 support -- this should never be run
-            while isinstance(e, unicode):
+            while isinstance(e, basestring):
                 e = json.loads(e)
             response[unicode(f.name)] = e
     return response

@@ -13,6 +13,7 @@ import json
 import logging
 import os
 
+from past.builtins import basestring
 import pint
 from django.apps import apps
 from django.conf import settings
@@ -366,6 +367,7 @@ class LocalUploaderViewSet(viewsets.ViewSet):
 
             # report some helpful info
             property_num += 1
+            # TODO: PYTHON3 check division
             if property_num / 20.0 == property_num / 20:
                 new_time = datetime.datetime.now()
                 _log.debug("On property number %s; current time: %s" % (property_num, new_time))
@@ -428,7 +430,8 @@ class LocalUploaderViewSet(viewsets.ViewSet):
         # Note that the Python 2.x csv module doesn't allow easily specifying an encoding, and it was failing on a few
         # rows here and there with a large test dataset.  This local function allows converting to utf8 before writing
         def py2_unicode_to_str(u):
-            if isinstance(u, unicode):
+            # TODO: PYTHON3 check unicode check
+            if isinstance(u, basestring):
                 return u.encode('utf-8')
             else:
                 return u

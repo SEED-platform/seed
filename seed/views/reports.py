@@ -7,6 +7,7 @@
 from collections import defaultdict
 
 import dateutil
+from past.builtins import basestring
 from rest_framework import status
 from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
@@ -16,12 +17,12 @@ from rest_framework.viewsets import ViewSet
 from seed.decorators import (
     DecoratorMixin,
 )
+from seed.lib.superperms.orgs.models import (
+    Organization
+)
 from seed.models import (
     Cycle,
     PropertyView
-)
-from seed.lib.superperms.orgs.models import (
-    Organization
 )
 from seed.serializers.pint import (
     apply_display_unit_preferences,
@@ -48,7 +49,7 @@ class Report(DecoratorMixin(drf_api_endpoint), ViewSet):
                 start_datetime = dateutil.parser.parse(start)
                 end_datetime = dateutil.parser.parse(end)
             else:
-                raise error
+                raise Exception('Date is not a string')
         # get date times from cycles
         if isinstance(start, int):
             cycle = Cycle.objects.get(pk=start, organization_id=organization_id)

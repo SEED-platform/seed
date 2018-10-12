@@ -8,6 +8,7 @@ import re
 import string
 from datetime import datetime, date
 
+from past.builtins import basestring
 import dateutil
 import dateutil.parser
 from django.utils import timezone
@@ -35,7 +36,7 @@ PUNCT_REGEX = re.compile('[{0}]'.format(
 
 def default_cleaner(value, *args):
     """Pass-through validation for strings we don't know about."""
-    if isinstance(value, unicode):
+    if isinstance(value, basestring):
         if fuzzy_in_set(value.lower(), NONE_SYNONYMS):
             return None
         # guard against `u''` coming in from an Excel empty cell
@@ -101,7 +102,7 @@ def date_time_cleaner(value, *args):
 
     try:
         # the dateutil parser only parses strings, make sure to return None if not a string
-        if isinstance(value, (str, unicode)):
+        if isinstance(value, basestring):
             value = dateutil.parser.parse(value)
             value = timezone.make_aware(value, timezone.get_current_timezone())
         else:

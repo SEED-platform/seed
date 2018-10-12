@@ -13,6 +13,7 @@ from collections import OrderedDict
 
 import xmltodict
 from django.db.models import FieldDoesNotExist
+from past.builtins import basestring
 from quantityfield import ureg
 
 from seed.models.measures import _snake_case
@@ -222,7 +223,7 @@ class BuildingSync(object):
                 full_path = "{}.{}".format(process_struct['root'], v['path'])
 
                 if v.get('key_path_name', None) and v.get('value_path_name', None) and v.get(
-                        'key_path_value', None):
+                    'key_path_value', None):
                     # iterate over the paths and find the correct node to set
                     self._set_compound_node(
                         full_path,
@@ -451,7 +452,7 @@ class BuildingSync(object):
 
             try:
                 if v.get('key_path_name', None) and v.get('value_path_name', None) and v.get(
-                        'key_path_value', None):
+                    'key_path_value', None):
                     value = _lookup_sub(
                         value,
                         v.get('key_path_name'),
@@ -525,10 +526,12 @@ class BuildingSync(object):
                 cat_w_namespace = m['auc:TechnologyCategories']['auc:TechnologyCategory'].keys()[0]
                 category = cat_w_namespace.replace('auc:', '')
                 new_data = {
-                    'property_measure_name': m.get('@ID'),  # This will be the IDref from the scenarios
+                    'property_measure_name': m.get('@ID'),
+                    # This will be the IDref from the scenarios
                     'category': _snake_case(category),
-                    'name': m['auc:TechnologyCategories']['auc:TechnologyCategory'][cat_w_namespace][
-                        'auc:MeasureName']
+                    'name':
+                        m['auc:TechnologyCategories']['auc:TechnologyCategory'][cat_w_namespace][
+                            'auc:MeasureName']
                 }
                 for k, v in m.items():
                     if k in ['@ID', 'auc:PremisesAffected', 'auc:TechnologyCategories']:
@@ -578,7 +581,7 @@ class BuildingSync(object):
                             if measure.get('@IDref', None):
                                 new_data['measures'].append(measure.get('@IDref'))
                     else:
-                        if isinstance(measures, (str, unicode)):
+                        if isinstance(measures, basestring):
                             # the measure is there, but it does not have an idref
                             continue
                         else:

@@ -11,6 +11,7 @@ from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django_extensions.db.models import TimeStampedModel
+from past.builtins import basestring
 
 from seed.audit_logs.models import AuditLog
 from seed.data_importer.models import ImportFile, ImportRecord
@@ -412,7 +413,8 @@ class BuildingSnapshot(TimeStampedModel):
             'recent_sale_date'
         )
         custom_id_1 = getattr(self, 'custom_id_1')
-        if isinstance(custom_id_1, unicode):
+        # TODO: PYTHON3 Check if unicode???
+        if isinstance(custom_id_1, basestring):
             custom_id_1 = unicodedata.normalize('NFKD', custom_id_1).encode(
                 'ascii', 'ignore'
             )

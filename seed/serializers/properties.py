@@ -13,6 +13,7 @@ from collections import OrderedDict
 from django.apps import apps
 from django.db import models
 from django.utils.timezone import make_naive
+from past.builtins import basestring
 from rest_framework import serializers
 from rest_framework.fields import empty
 

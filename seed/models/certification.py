@@ -17,6 +17,7 @@ from django.db import models
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.contrib.postgres.fields import JSONField
+from past.builtins import basestring
 
 from seed.lib.superperms.orgs.models import Organization
 from seed.models.auditlog import (

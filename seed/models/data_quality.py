@@ -14,6 +14,7 @@ import pytz
 from django.apps import apps
 from django.db import models
 from django.utils.timezone import get_current_timezone, make_aware, make_naive
+from past.builtins import basestring
 from quantityfield import ureg
 
 from seed.lib.superperms.orgs.models import Organization
@@ -311,7 +312,7 @@ class Rule(models.Model):
         :return: bool, True is valid, False if the value does not match
         """
 
-        if self.data_type == self.TYPE_STRING and isinstance(value, (str, unicode)):
+        if self.data_type == self.TYPE_STRING and isinstance(value, basestring):
             if self.text_match is None or self.text_match == '':
                 return True
 
@@ -342,7 +343,7 @@ class Rule(models.Model):
                 rule_min = int(rule_min)
             elif isinstance(value, ureg.Quantity):
                 rule_min = rule_min * ureg(self.units)
-            elif not isinstance(value, (str, unicode)):
+            elif not isinstance(value, basestring):
                 # must be a float...
                 value = float(value)
 
@@ -377,7 +378,7 @@ class Rule(models.Model):
                 rule_max = int(rule_max)
             elif isinstance(value, ureg.Quantity):
                 rule_max = rule_max * ureg(self.units)
-            elif not isinstance(value, (str, unicode)):
+            elif not isinstance(value, basestring):
                 # must be a float...
                 value = float(value)
 
@@ -399,7 +400,7 @@ class Rule(models.Model):
         :return: typed value
         """
 
-        if isinstance(value, (str, unicode)):
+        if isinstance(value, basestring):
             # check if we can type cast the value
             try:
                 # strip the string of any leading/trailing spaces
@@ -460,7 +461,7 @@ class Rule(models.Model):
                 f_max = str(self.max)
         elif isinstance(value, ureg.Quantity):
             f_value, f_min, f_max = format_pint_violation(self, value)
-        elif isinstance(value, (str, unicode)):
+        elif isinstance(value, basestring):
             f_value = str(value)
             f_min = str(self.min)
             f_max = str(self.max)
