@@ -343,7 +343,7 @@ class FakePropertyMeasureFactory(BaseFake):
         self.property_state.measures.all().delete()
 
         # assign a random number of measures to the PropertyState
-        for n in xrange(number_of_measures):
+        for n in range(number_of_measures):
             measure = Measure.objects.all().order_by('?')[0]
             property_measure_details = {
                 'measure_id': measure.id,
