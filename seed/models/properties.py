@@ -403,7 +403,7 @@ class PropertyState(models.Model):
                 while not done_searching:
                     # if there is no parents, then break out immediately
                     if (
-                        log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
+                            log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
                         break
 
                     # initalize the tree to None everytime. If not new tree is found, then we will not iterate
@@ -416,7 +416,7 @@ class PropertyState(models.Model):
                             record = record_dict(log.parent2)
                             history.append(record)
                         elif log.parent2.name == 'System Match' and log.parent2.parent1.name == 'Import Creation' and \
-                            log.parent2.parent2.name == 'Import Creation':
+                                log.parent2.parent2.name == 'Import Creation':
                             # Handle case where an import file matches within itself, and proceeds to match with
                             # existing records
                             record = record_dict(log.parent2.parent2)
@@ -431,7 +431,7 @@ class PropertyState(models.Model):
                             record = record_dict(log.parent1)
                             history.append(record)
                         elif log.parent1.name == 'System Match' and log.parent1.parent1.name == 'Import Creation' and \
-                            log.parent1.parent2.name == 'Import Creation':
+                                log.parent1.parent2.name == 'Import Creation':
                             # Handle case where an import file matches within itself, and proceeds to match with
                             # existing records
                             record = record_dict(log.parent1.parent2)
@@ -713,8 +713,8 @@ class PropertyView(models.Model):
         # get the related taxlot_view.state as well to save time if needed.
         result = []
         for tlp in TaxLotProperty.objects.filter(
-            cycle=self.cycle,
-            property_view=self).select_related('taxlot_view', 'taxlot_view__state'):
+                cycle=self.cycle,
+                property_view=self).select_related('taxlot_view', 'taxlot_view__state'):
             result.append(tlp.taxlot_view)
 
         return result

@@ -40,5 +40,6 @@ def get_cache_endpoint():
         ['CacheClusters'][0]['CacheNodes'][0]['Endpoint']
     )
 
+
 if __name__ == '__main__':
     print(get_cache_endpoint()['Address'])

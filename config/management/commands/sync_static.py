@@ -90,7 +90,7 @@ class Command(BaseCommand):
 
         # Check for AWS keys in settings
         if not hasattr(settings, 'AWS_ACCESS_KEY_ID') or \
-            not hasattr(settings, 'AWS_SECRET_ACCESS_KEY'):
+                not hasattr(settings, 'AWS_SECRET_ACCESS_KEY'):
             raise CommandError('Missing AWS keys from settings file.  Please' +
                                'supply both AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.')
         else:
@@ -141,7 +141,8 @@ class Command(BaseCommand):
 
     def compress_string(self, s):
         """Gzip a given string."""
-        import cStringIO, gzip
+        import cStringIO
+        import gzip
         zbuf = cStringIO.StringIO()
         zfile = gzip.GzipFile(mode='wb', compresslevel=6, fileobj=zbuf)
         zfile.write(s)
@@ -233,9 +234,9 @@ class Command(BaseCommand):
                 key.name = file_key
                 key.set_contents_from_string(filedata, headers, replace=True)
                 key.make_public()
-            except boto.s3.connection.S3CreateError, e:
+            except boto.s3.connection.S3CreateError as e:
                 print("Failed: %s" % e)
-            except Exception, e:
+            except Exception as e:
                 print(e)
                 raise
             else:

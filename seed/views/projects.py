@@ -784,7 +784,7 @@ class ProjectViewSet(DecoratorMixin(drf_api_endpoint), viewsets.ModelViewSet):
                 view_type, params=params, user=request.user
             )
             if request.data.get('selected', None) \
-                and isinstance(request.data.get('selected'), list):
+                    and isinstance(request.data.get('selected'), list):
                 inventory = qs.filter(pk__in=request.data.get('selected'))
             # TODO is this still relevant
             elif request.data.get('select_all_checkbox', None):

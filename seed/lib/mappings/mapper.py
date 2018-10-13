@@ -57,7 +57,7 @@ def _sanitize_and_convert_keys_to_regex(key):
     # convert underscores to white space
     key = key.replace('_', ' ').replace('  ', ' ')
     # collapse whitespace
-    key = re.sub('\s+', ' ', key).strip()
+    key = re.sub(r'\s+', ' ', key).strip()
 
     # convert white space to regex for space or underscore (repeated)
     key = key.replace(' ', '( |_)+')

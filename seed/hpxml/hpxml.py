@@ -281,10 +281,7 @@ class HPXML(object):
             try:
                 root.Project.ProjectDetails.ProgramCertificate
             except AttributeError:
-                for elname in (
-                'YearCertified', 'CertifyingOrganizationURL', 'CertifyingOrganization',
-                'ProgramSponsor',
-                'ContractorSystemIdentifiers', 'ProgramName', 'ProjectSystemIdentifiers'):
+                for elname in ('YearCertified', 'CertifyingOrganizationURL', 'CertifyingOrganization', 'ProgramSponsor', 'ContractorSystemIdentifiers', 'ProgramName', 'ProjectSystemIdentifiers'):
                     if hasattr(root.Project.ProjectDetails, elname):
                         getattr(root.Project.ProjectDetails, elname).addnext(
                             new_prog_cert
@@ -305,8 +302,7 @@ class HPXML(object):
             try:
                 found_energy_score = False
                 for energy_score_el in bldg_const.EnergyScore:
-                    if energy_score_type in (
-                    energy_score_el.ScoreType, getattr(energy_score_el, 'OtherScoreType', None)):
+                    if energy_score_type in (energy_score_el.ScoreType, getattr(energy_score_el, 'OtherScoreType', None)):
                         found_energy_score = True
                         break
                 if not found_energy_score:

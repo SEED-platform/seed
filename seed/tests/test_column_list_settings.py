@@ -16,6 +16,7 @@ from seed.models import (
 from seed.utils.organizations import create_organization
 from past.builtins import basestring
 
+
 class TestColumnListSettings(TestCase):
     """Test the clean methods on BuildingSnapshotModel."""
 

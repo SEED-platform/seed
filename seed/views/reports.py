@@ -43,7 +43,7 @@ class Report(DecoratorMixin(drf_api_endpoint), ViewSet):
         try:
             start = int(start)
             end = int(end)
-        except ValueError as error:
+        except ValueError as error:  # noqa
             # assume string is JS date
             if isinstance(start, basestring):
                 start_datetime = dateutil.parser.parse(start)

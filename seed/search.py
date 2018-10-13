@@ -271,8 +271,7 @@ def filter_other_params(queryset, other_params, db_columns):
                   '__gte' in k):
 
                 # Check if this is ISO8601 from a input date. Shorten to YYYY-MM-DD
-                if search_utils.is_date_field(k) and re.match(
-                    r'^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}.\d{3}\w$', v):
+                if search_utils.is_date_field(k) and re.match(r'^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}.\d{3}\w$', v):
                     v = re.search(r'^\d{4}-\d{2}-\d{2}', v).group()
 
                 query_filters &= Q(**{"%s" % k: v})

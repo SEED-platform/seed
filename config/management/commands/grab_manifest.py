@@ -28,8 +28,8 @@ class Command(BaseCommand):
 
         # Check for AWS keys in settings
         if not hasattr(settings, 'AWS_ACCESS_KEY_ID') or \
-            not hasattr(settings, 'AWS_SECRET_ACCESS_KEY'):
-            raise CommandError('Missing AWS keys from settings file.  Please' + \
+                not hasattr(settings, 'AWS_SECRET_ACCESS_KEY'):
+            raise CommandError('Missing AWS keys from settings file.  Please' +
                                'supply both AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.')
         else:
             self.AWS_ACCESS_KEY_ID = settings.AWS_ACCESS_KEY_ID
@@ -60,7 +60,7 @@ class Command(BaseCommand):
             manifest_path = join(cache_root, MANIFEST_FILENAME)
             try:
                 remove(manifest_path)
-            except:
+            except BaseException:
                 pass
             localFile = open(manifest_path, 'w+')
             localFile.write(u.read())

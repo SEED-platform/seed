@@ -91,7 +91,7 @@ try:
     local_untracked_exists = imp.find_module(
         'local_untracked', config.settings.__path__
     )
-except:
+except BaseException:
     pass
 
 if 'local_untracked_exists' in locals():
