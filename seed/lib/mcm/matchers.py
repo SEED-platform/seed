@@ -5,7 +5,7 @@
 :author
 """
 import jellyfish
-
+from builtins import str
 
 def sort_scores(a, b):
     """

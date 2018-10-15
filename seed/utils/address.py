@@ -8,6 +8,7 @@
 import re
 
 import usaddress
+from past.builtins import basestring
 from streetaddress import StreetAddressFormatter
 
 
@@ -88,7 +89,11 @@ def normalize_address_str(address_val):
     if not address_val:
         return None
 
-    address_val = str(address_val).encode('utf-8')
+    # encode the string as utf-8
+    if not isinstance(address_val, basestring):
+        address_val = str(address_val)
+    else:
+        address_val = str(address_val.encode('utf-8'))
 
     # Do some string replacements to remove odd characters that we come across
     replacements = {

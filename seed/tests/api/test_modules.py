@@ -10,6 +10,7 @@ import pprint
 import time
 
 import requests
+from builtins import str
 
 from seed_readingtools import (
     check_status,

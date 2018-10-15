@@ -7,6 +7,7 @@ that's where the display preference lives.
 
 import re
 
+from builtins import str
 from django.core.serializers.json import DjangoJSONEncoder
 from quantityfield import ureg
 from rest_framework import serializers

@@ -11,6 +11,7 @@ from datetime import date, datetime
 from random import randint
 
 import pytz
+from builtins import str
 from django.apps import apps
 from django.db import models
 from django.utils.timezone import get_current_timezone, make_aware, make_naive

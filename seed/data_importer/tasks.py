@@ -18,6 +18,7 @@ from collections import namedtuple
 from functools import reduce
 from itertools import chain
 
+from builtins import str
 from celery import chord, shared_task
 from celery.utils.log import get_task_logger
 from django.db import IntegrityError, DataError
@@ -25,6 +26,7 @@ from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
 from django.utils.timezone import make_naive
+from past.builtins import basestring
 from unidecode import unidecode
 
 from seed.data_importer.equivalence_partitioner import EquivalencePartitioner
@@ -33,7 +35,6 @@ from seed.data_importer.models import (
     ImportRecord,
     STATUS_READY_TO_MERGE,
 )
-from past.builtins import basestring
 from seed.decorators import lock_and_track
 from seed.green_button import xml_importer
 from seed.lib.mcm import cleaners, mapper, reader

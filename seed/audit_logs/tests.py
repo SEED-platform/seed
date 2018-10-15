@@ -65,14 +65,8 @@ class AuditLogModelTests(TestCase):
 
     def test_model___unicode__(self):
         """tests the AuditLog inst. str or unicode"""
-        self.assertEqual(
-            'Log <%s> (%s)' % (self.user, self.audit_log.pk),
-            str(self.audit_log)
-        )
-        self.assertEqual(
-            'Note <%s> (%s)' % (self.user, self.note.pk),
-            str(self.note)
-        )
+        self.assertEqual('Log <%s> (%s)' % (self.user, self.audit_log.pk), str(self.audit_log))
+        self.assertEqual('Note <%s> (%s)' % (self.user, self.note.pk), str(self.note))
 
     def test_note(self):
         """tests note save"""

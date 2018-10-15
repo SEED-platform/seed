@@ -13,11 +13,12 @@ elsewhere.
 import mmap
 import operator
 
+from builtins import str
+from past.builtins import basestring
 from unicodecsv import DictReader, Sniffer
 from unidecode import unidecode
 from xlrd import xldate, XLRDError, open_workbook, empty_cell
 from xlrd.xldate import XLDateAmbiguous
-from past.builtins import basestring
 
 from seed.lib.mcm import mapper, utils
 

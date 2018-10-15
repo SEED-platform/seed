@@ -12,6 +12,7 @@ import os
 from collections import OrderedDict
 
 import xmltodict
+from builtins import str
 from django.db.models import FieldDoesNotExist
 from past.builtins import basestring
 from quantityfield import ureg
@@ -223,7 +224,7 @@ class BuildingSync(object):
                 full_path = "{}.{}".format(process_struct['root'], v['path'])
 
                 if v.get('key_path_name', None) and v.get('value_path_name', None) and v.get(
-                        'key_path_value', None):
+                    'key_path_value', None):
                     # iterate over the paths and find the correct node to set
                     self._set_compound_node(
                         full_path,
@@ -452,7 +453,7 @@ class BuildingSync(object):
 
             try:
                 if v.get('key_path_name', None) and v.get('value_path_name', None) and v.get(
-                        'key_path_value', None):
+                    'key_path_value', None):
                     value = _lookup_sub(
                         value,
                         v.get('key_path_name'),

@@ -8,10 +8,11 @@ import re
 import string
 from datetime import datetime, date
 
-from past.builtins import basestring
 import dateutil
 import dateutil.parser
+from builtins import str
 from django.utils import timezone
+from past.builtins import basestring
 # django orm gets confused unless we specifically use `ureg` from quantityfield
 # ie. don't try `import pint; ureg = pint.UnitRegistry()`
 from quantityfield import ureg
