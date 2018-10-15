@@ -10,7 +10,6 @@ from datetime import datetime, date
 
 import dateutil
 import dateutil.parser
-from builtins import str
 from django.utils import timezone
 from past.builtins import basestring
 # django orm gets confused unless we specifically use `ureg` from quantityfield
