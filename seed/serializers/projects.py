@@ -9,7 +9,7 @@ from rest_framework import serializers
 from seed.models import (
     Project, ProjectPropertyView, ProjectTaxLotView
 )
-from past.builtins import str
+
 STATUS_LOOKUP = {
     choice[0]: str(choice[1]).lower() for choice in Project.STATUS_CHOICES
 }

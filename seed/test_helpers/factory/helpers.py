@@ -10,7 +10,6 @@ import random
 from decimal import getcontext, Decimal
 
 getcontext().prec = 7
-from seed.test_helpers.factory.lib.chomsky import generate_chomsky
 
 
 class DjangoFunctionalFactory:
@@ -101,10 +100,6 @@ class DjangoFunctionalFactory:
             return cls.valid_test_cc_number()
         else:
             return cls.invalid_test_cc_number()
-
-    @classmethod
-    def random_conversation(cls, paragraphs=3):
-        return generate_chomsky(paragraphs)
 
 
 RANDOM_NAME_SOURCE = [

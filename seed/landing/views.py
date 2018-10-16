@@ -15,12 +15,8 @@ from django.forms.forms import NON_FIELD_ERRORS
 from django.forms.utils import ErrorList
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
-# from django.template.context import RequestContext
-# from tos.models import (
-#     has_user_agreed_latest_tos, TermsOfService, NoActiveTermsOfService
-# )
 
-from forms import LoginForm
+from .forms import LoginForm
 
 logger = logging.getLogger(__name__)
 

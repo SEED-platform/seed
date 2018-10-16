@@ -10,7 +10,6 @@ import json
 from django.core.urlresolvers import reverse_lazy
 from django.test import TestCase
 
-from seed.factory import SEEDFactory
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import (
     Organization,
@@ -18,7 +17,6 @@ from seed.lib.superperms.orgs.models import (
     ROLE_MEMBER
 )
 from seed.models import (
-    CanonicalBuilding,
     BuildingSnapshot
 )
 
@@ -59,7 +57,7 @@ class SharingViewTests(TestCase):
                                                    name='Designers')
         self.des_org.add_member(self.des_user, ROLE_MEMBER)
 
-        self._create_buildings()
+        # self._create_buildings()
 
     def _search_buildings(self, is_public=False):
         """
@@ -86,43 +84,6 @@ class SharingViewTests(TestCase):
         )
         json_string = response.content
         return json.loads(json_string)
-
-    def _create_buildings(self):
-        """
-        Create 10 buildings in each child org.
-
-        Also set one shared and one unshared field to a known value.
-        """
-        for _ in range(10):
-            cb = CanonicalBuilding(active=True)
-            cb.save()
-            b = SEEDFactory.building_snapshot(canonical_building=cb,
-                                              property_name='ADMIN BUILDING',
-                                              address_line_1='100 Admin St')
-            cb.canonical_snapshot = b
-            cb.save()
-            b.super_organization = self.parent_org
-            b.save()
-        for _ in range(10):
-            cb = CanonicalBuilding(active=True)
-            cb.save()
-            b = SEEDFactory.building_snapshot(canonical_building=cb,
-                                              property_name='ENG BUILDING',
-                                              address_line_1='100 Eng St')
-            cb.canonical_snapshot = b
-            cb.save()
-            b.super_organization = self.eng_org
-            b.save()
-        for _ in range(10):
-            cb = CanonicalBuilding(active=True)
-            cb.save()
-            b = SEEDFactory.building_snapshot(canonical_building=cb,
-                                              property_name='DES BUILDING',
-                                              address_line_1='100 Des St')
-            cb.canonical_snapshot = b
-            cb.save()
-            b.super_organization = self.des_org
-            b.save()
 
     def test_scenario(self):
         """

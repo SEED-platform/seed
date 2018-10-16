@@ -117,7 +117,7 @@ class ProgressData(object):
         """Read in the data from the cache"""
 
         # Merge the existing data with items from the cache, favor cache items
-        self.data = dict(self.data.items() + get_cache(self.key).items())
+        self.data = dict(list(self.data.items()) + list(get_cache(self.key).items()))
 
         # set some member variables
         if self.data['progress_key']:

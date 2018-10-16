@@ -5,6 +5,7 @@
 :author
 """
 import json
+from unittest import skip
 
 from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse_lazy
@@ -18,6 +19,7 @@ from seed.tests.util import FakeRequest
 from seed.utils.organizations import create_organization
 
 
+@skip('Need to remove these tests and the AuditLog Module')
 class AuditLogModelTests(TestCase):
 
     def setUp(self):
@@ -154,7 +156,7 @@ class AuditLogModelTests(TestCase):
         audit_logs = AuditLog.objects.filter(organization=self.org)
         self.assertEqual(audit_logs.count(), 2)
 
-
+@skip('Need to remove these tests and the AuditLog Module')
 class AuditLogViewTests(TestCase):
 
     def setUp(self):

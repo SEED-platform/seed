@@ -426,10 +426,10 @@ def _map_data_create_tasks(import_file_id, progress_key):
 
     # If we haven't finished saving, we should not proceed with mapping
     # Re-queue this task.
-    if not import_file.raw_save_done:
-        _log.debug("_map_data raw_save_done is false, queueing the task until raw_save finishes")
-        map_data.apply_async(args=[import_file_id], countdown=60, expires=120)
-        return progress_data.finish_with_error('waiting for raw data save.')
+    # if not import_file.raw_save_done:
+    #     _log.debug("_map_data raw_save_done is false, queueing the task until raw_save finishes")
+    #     map_data.apply_async(args=[import_file_id], countdown=60, expires=120)
+    #     return progress_data.finish_with_error('waiting for raw data save.')
 
     source_type_dict = {
         'Portfolio Raw': PORTFOLIO_RAW,
@@ -711,6 +711,8 @@ def save_raw_data(file_pk):
     except KeyError as e:
         progress_data.finish_with_error('Invalid Column Name: "' + e.message + '"',
                                         traceback.format_exc())
+    except TypeError:
+        progress_data.finish_with_error('TypeError Exception', traceback.format_exc())
     except Exception as e:
         progress_data.finish_with_error('Unhandled Error: ' + str(e.message),
                                         traceback.format_exc())
@@ -804,14 +806,14 @@ def hash_state_object(obj, include_extra_data=True):
     m = hashlib.md5()
     for f in Column.retrieve_db_field_name_for_hash_comparison():
         obj_val = _get_field_from_obj(obj, f)
-        m.update(str(f))
+        m.update(f.encode('utf-8'))
         if isinstance(obj_val, dt.datetime):
             # if this is a datetime, then make sure to save the string as a naive datetime.
             # Somehow, somewhere the data are being saved in mapping with a timezone,
             # then in matching they are removed (but the time is updated correctly)
             m.update(str(make_naive(obj_val).isoformat()))
         else:
-            m.update(str(obj_val))
+            m.update(str(obj_val).encode('utf-8'))
 
     if include_extra_data:
         add_dictionary_repr_to_hash(m, obj.extra_data)

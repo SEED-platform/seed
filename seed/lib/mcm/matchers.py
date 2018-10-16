@@ -4,8 +4,10 @@
 :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-import jellyfish
 from builtins import str
+
+import jellyfish
+
 
 def sort_scores(a, b):
     """
@@ -16,7 +18,8 @@ def sort_scores(a, b):
     if a[2] > b[2]:
         return -1
     elif a[2] == b[2]:  # Sort by the strings if they match up
-        com_a = '.'.join(a[0:2])  # so, 0:2 returns the first 2 elements, okay python, you win this time.
+        com_a = '.'.join(
+            a[0:2])  # so, 0:2 returns the first 2 elements, okay python, you win this time.
         com_b = '.'.join(b[0:2])
         if com_a > com_b:
             return 1

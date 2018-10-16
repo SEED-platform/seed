@@ -5,16 +5,18 @@
 :author
 """
 
+from __future__ import absolute_import
+
 import copy
 import itertools
 import logging
 import re
 from datetime import datetime, date
 
+from .cleaners import default_cleaner
 from django.apps import apps
 from past.builtins import basestring
 
-from cleaners import default_cleaner
 from seed.lib.mappings.mapping_columns import MappingColumns
 
 _log = logging.getLogger(__name__)
@@ -113,7 +115,8 @@ def apply_column_value(raw_column_name, column_value, model, mapping, is_extra_d
                 if mapped_column_name != raw_column_name:
                     # now clean against the raw name with pint (Quantity Units) because that's the column
                     # that holds the units needed to interpret the value correctly
-                    cleaned_value = cleaner.clean_value(cleaned_value, raw_column_name, is_extra_data)
+                    cleaned_value = cleaner.clean_value(cleaned_value, raw_column_name,
+                                                        is_extra_data)
             else:
                 cleaned_value = cleaner.clean_value(column_value, mapped_column_name, is_extra_data)
         else:

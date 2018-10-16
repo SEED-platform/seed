@@ -10,7 +10,7 @@ import json
 import logging
 import math
 import tempfile
-from urllib import unquote
+from urllib.request import unquote
 
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField

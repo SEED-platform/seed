@@ -8,20 +8,15 @@
 import functools
 import logging
 import os
-from copy import deepcopy
-
 from builtins import str
-from quantityfield import ureg
+from copy import deepcopy
+from io import StringIO
 
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
-
-from lxml import etree, objectify
 import probablepeople as pp
 import usaddress as usadd
+from lxml import etree, objectify
 from past.builtins import basestring
+from quantityfield import ureg
 
 _log = logging.getLogger(__name__)
 
@@ -283,9 +278,9 @@ class HPXML(object):
                 root.Project.ProjectDetails.ProgramCertificate
             except AttributeError:
                 for elname in (
-                'YearCertified', 'CertifyingOrganizationURL', 'CertifyingOrganization',
-                'ProgramSponsor', 'ContractorSystemIdentifiers', 'ProgramName',
-                'ProjectSystemIdentifiers'):
+                    'YearCertified', 'CertifyingOrganizationURL', 'CertifyingOrganization',
+                    'ProgramSponsor', 'ContractorSystemIdentifiers', 'ProgramName',
+                    'ProjectSystemIdentifiers'):
                     if hasattr(root.Project.ProjectDetails, elname):
                         getattr(root.Project.ProjectDetails, elname).addnext(
                             new_prog_cert
@@ -307,7 +302,8 @@ class HPXML(object):
                 found_energy_score = False
                 for energy_score_el in bldg_const.EnergyScore:
                     if energy_score_type in (
-                    energy_score_el.ScoreType, getattr(energy_score_el, 'OtherScoreType', None)):
+                        energy_score_el.ScoreType,
+                        getattr(energy_score_el, 'OtherScoreType', None)):
                         found_energy_score = True
                         break
                 if not found_energy_score:

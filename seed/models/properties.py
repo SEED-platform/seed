@@ -5,6 +5,7 @@
 :author
 """
 from __future__ import unicode_literals
+from __future__ import absolute_import
 
 import copy
 import logging
@@ -20,8 +21,8 @@ from django.dispatch import receiver
 from django.forms.models import model_to_dict
 from quantityfield.fields import QuantityField
 
-from auditlog import AUDIT_IMPORT
-from auditlog import DATA_UPDATE_TYPE
+from .auditlog import AUDIT_IMPORT
+from .auditlog import DATA_UPDATE_TYPE
 from seed.data_importer.models import ImportFile
 # from seed.utils.cprofile import cprofile
 from seed.lib.mcm.cleaners import date_cleaner

@@ -4,19 +4,20 @@
 :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+from __future__ import absolute_import
 from __future__ import unicode_literals
 
 import logging
 import re
 from os import path
 
+from .auditlog import AUDIT_IMPORT
+from .auditlog import DATA_UPDATE_TYPE
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from auditlog import AUDIT_IMPORT
-from auditlog import DATA_UPDATE_TYPE
 from seed.data_importer.models import ImportFile
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
@@ -248,7 +249,7 @@ class TaxLotState(models.Model):
                 while not done_searching:
                     # if there is no parents, then break out immediately
                     if (
-                            log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
+                        log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
                         break
 
                     # initalize the tree to None everytime. If not new tree is found, then we will not iterate
@@ -261,7 +262,7 @@ class TaxLotState(models.Model):
                             record = record_dict(log.parent2)
                             history.append(record)
                         elif log.parent2.name == 'System Match' and log.parent2.parent1.name == 'Import Creation' and \
-                                log.parent2.parent2.name == 'Import Creation':
+                            log.parent2.parent2.name == 'Import Creation':
                             # Handle case where an import file matches within itself, and proceeds to match with
                             # existing records
                             record = record_dict(log.parent2.parent2)
@@ -276,7 +277,7 @@ class TaxLotState(models.Model):
                             record = record_dict(log.parent1)
                             history.append(record)
                         elif log.parent1.name == 'System Match' and log.parent1.parent1.name == 'Import Creation' and \
-                                log.parent1.parent2.name == 'Import Creation':
+                            log.parent1.parent2.name == 'Import Creation':
                             # Handle case where an import file matches within itself, and proceeds to match with
                             # existing records
                             record = record_dict(log.parent1.parent2)
@@ -408,8 +409,8 @@ class TaxLotView(models.Model):
         # get the related property_view__state as well to save time, if needed.
         result = []
         for tlp in TaxLotProperty.objects.filter(
-                cycle=self.cycle,
-                taxlot_view=self).select_related('property_view', 'property_view__state'):
+            cycle=self.cycle,
+            taxlot_view=self).select_related('property_view', 'property_view__state'):
             if tlp.taxlot_view:
                 result.append(tlp.property_view)
 
