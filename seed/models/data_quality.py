@@ -302,7 +302,7 @@ class Rule(models.Model):
     severity = models.IntegerField(choices=SEVERITY, default=SEVERITY_ERROR)
     units = models.CharField(max_length=100, blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return json.dumps(obj_to_dict(self))
 
     def valid_text(self, value):
@@ -588,7 +588,7 @@ class DataQualityCheck(models.Model):
             self._check(rules, row)
 
         # Prune the results will remove any entries that have zero data_quality_results
-        for k, v in self.results.items():
+        for k, v in self.results.copy().items():
             if not v['data_quality_results']:
                 del self.results[k]
 
@@ -940,6 +940,6 @@ class DataQualityCheck(models.Model):
             raise RuntimeError(
                 "More than 1 data quality results for tax lot id '{}'".format(tax_lot_id))
 
-    def __unicode__(self):
+    def __str__(self):
         return u'DataQuality ({}:{}) - Rule Count: {}'.format(self.pk, self.name,
                                                               self.rules.count())

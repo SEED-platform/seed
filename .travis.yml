@@ -10,7 +10,6 @@ cache:
     - ".tox"
 language: python
 python:
-  - 2.7
   - 3.6
 addons:
   postgresql: '9.6'

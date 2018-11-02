@@ -1394,7 +1394,7 @@ class InventoryViewTests(DeleteModelsTestCase):
         response = self.client.get('/api/v2/properties/columns/', params)
         results = json.loads(response.content)['columns']
 
-        self.assertTrue('id' in results[0].keys())
+        self.assertTrue('id' in results[0])
 
         # go through and delete all the results.ids so that it is easy to do a compare
         for result in results:
@@ -1464,7 +1464,7 @@ class InventoryViewTests(DeleteModelsTestCase):
         response = self.client.get('/api/v2/taxlots/columns/', params)
         results = json.loads(response.content)['columns']
 
-        self.assertTrue('id' in results[0].keys())
+        self.assertTrue('id' in results[0])
 
         # go through and delete all the results.ids so that it is easy to do a compare
         for result in results:

@@ -91,10 +91,10 @@ class TestApi(TestCase):
             start=datetime.datetime(2015, 1, 1, tzinfo=timezone.get_current_timezone()),
             end=datetime.datetime(2015, 12, 31, tzinfo=timezone.get_current_timezone()),
         )
-        auth_string = base64.urlsafe_b64encode(
-            '{}:{}'.format(self.user.username, self.user.api_key)
-        )
-        self.auth_string = 'Basic {}'.format(auth_string)
+        auth_string = base64.urlsafe_b64encode(bytes(
+            '{}:{}'.format(self.user.username, self.user.api_key), 'utf-8'
+        ))
+        self.auth_string = 'Basic {}'.format(auth_string.decode('utf-8'))
         self.headers = {'Authorization': self.auth_string}
 
     def get_org_id(self, dict, username):

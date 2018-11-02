@@ -121,6 +121,9 @@ class ColumnMapping(models.Model):
     column_raw = models.ManyToManyField('Column', related_name='raw_mappings', blank=True, )
     column_mapped = models.ManyToManyField('Column', related_name='mapped_mappings', blank=True, )
 
+    # This field is the database column which allows checks for delimited values (e.g. a;b;c;d)
+    DELIMITED_FIELD = ('TaxLotState', 'jurisdiction_tax_lot_id', 'Jurisdiction Tax Lot ID', False)
+
     def is_direct(self):
         """
         Returns True if the ColumnMapping is a direct mapping from imported
@@ -170,7 +173,7 @@ class ColumnMapping(models.Model):
         # We must create it before we prune older references.
         self.remove_duplicates(self.column_raw.all())
 
-    def __unicode__(self):
+    def __str__(self):
         return u'{0}: {1} - {2}'.format(
             self.pk, self.column_raw.all(), self.column_mapped.all()
         )
@@ -238,7 +241,7 @@ class ColumnMapping(models.Model):
         data, _ = ColumnMapping.get_column_mappings(organization)
 
         tables = set()
-        for k, v in data.iteritems():
+        for k, v in data.items():
             tables.add(v[0])
 
         # initialize the new container to store the results
@@ -247,7 +250,7 @@ class ColumnMapping(models.Model):
         for t in tables:
             container[t] = {}
 
-        for k, v in data.iteritems():
+        for k, v in data.items():
             container[v[0]][k] = v
 
         # Container will be in the format:

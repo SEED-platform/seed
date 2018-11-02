@@ -236,7 +236,7 @@ class FakePropertyStateFactory(BaseFake):
     def get_property_state_as_extra_data(self, organization=None, **kw):
         """Return the porperty state but only populated as extra_data (used for mapping)"""
         property_details = {}
-        if 'no_default_data' not in kw.keys():
+        if 'no_default_data' not in kw:
             property_details = self.get_details()
         else:
             del kw['no_default_data']
@@ -271,7 +271,7 @@ class FakePropertyStateFactory(BaseFake):
     def get_property_state(self, organization=None, **kw):
         """Return a property state populated with pseudo random data"""
         property_details = {}
-        if 'no_default_data' not in kw.keys():
+        if 'no_default_data' not in kw:
             property_details = self.get_details()
         else:
             del kw['no_default_data']
@@ -524,7 +524,7 @@ class FakeStatusLabelFactory(BaseFake):
         self.organization = organization
         self.colors = [color[0] for color in StatusLabel.COLOR_CHOICES]
         self.label_names = StatusLabel.DEFAULT_LABELS
-        self.label_values = zip(self.colors, self.label_names)
+        self.label_values = list(zip(self.colors, self.label_names))
 
     def get_statuslabel(self, organization=None, **kw):
         """Get statuslabel instance."""
@@ -643,7 +643,7 @@ class FakeTaxLotStateFactory(BaseFake):
     def get_taxlot_state(self, organization=None, **kw):
         """Return a taxlot state populated with pseudo random data"""
         taxlot_details = {}
-        if 'no_default_data' not in kw.keys():
+        if 'no_default_data' not in kw:
             taxlot_details = self.get_details()
         else:
             del kw['no_default_data']

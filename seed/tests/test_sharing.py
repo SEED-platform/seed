@@ -109,7 +109,7 @@ class SharingViewTests(TestCase):
     #     fields = []
 
     #     for f in results['buildings']:
-    #         fields.extend(f.keys())
+    #         fields.extend(list(f.keys()))
 
     #     fields = list(set(fields))
 

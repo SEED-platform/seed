@@ -60,9 +60,12 @@ def get_org_id(request):
     """Get org id from request"""
     org_id = get_org_or_id(request.query_params)
     if not org_id:
-        if hasattr(request, 'data'):
-            data = request.data
-            org_id = get_org_or_id(data)
+        try:
+            if hasattr(request, 'data'):
+                data = request.data
+                org_id = get_org_or_id(data)
+        except ValueError:
+            org_id = None
     return org_id
 
 
@@ -152,20 +155,23 @@ class SEEDOrgPermissions(BasePermission):
         """Determines if user has correct permissions, called by DRF."""
         # Workaround to ensure this is not applied
         # to the root view when using DefaultRouter.
-        if hasattr(view, 'get_queryset'):
-            queryset = view.get_queryset()
-        else:
-            queryset = getattr(view, 'queryset', None)
+        value_error = False
+        try:
+            if hasattr(view, 'get_queryset'):
+                queryset = view.get_queryset()
+            else:
+                queryset = getattr(view, 'queryset', None)
+        except ValueError:
+            value_error = True
 
-        assert queryset is not None, (
-            'Cannot apply {} on a view that does not set `.queryset`'
-            ' or have a `.get_queryset()` method.'.format(view.__class__)
-        )
+        if value_error:
+            raise AssertionError('Cannot apply {} on a view that does not set `.queryset`'
+                ' or have a `.get_queryset()` method.'.format(view.__class__))
+
         return (
             request.user and
             (
-                is_authenticated(request.user)
-                or not self.authenticated_users_only
+                is_authenticated(request.user) or not self.authenticated_users_only
             )
             and self.has_perm(request)
         )

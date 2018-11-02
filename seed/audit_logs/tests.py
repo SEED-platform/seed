@@ -111,7 +111,7 @@ class AuditLogModelTests(TestCase):
 
         # assert
         self.assertEqual(
-            error.exception.message,
+            str(error.exception),
             'AuditLogs cannot be edited, only notes'
         )
         audit_log = AuditLog.objects.get(pk=self.audit_log.pk)
@@ -155,6 +155,7 @@ class AuditLogModelTests(TestCase):
         """gets all audit logs for an org"""
         audit_logs = AuditLog.objects.filter(organization=self.org)
         self.assertEqual(audit_logs.count(), 2)
+
 
 @skip('Need to remove these tests and the AuditLog Module')
 class AuditLogViewTests(TestCase):

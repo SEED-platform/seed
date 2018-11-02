@@ -94,7 +94,7 @@ class AuditLog(TimeStampedModel):
 
     objects = AuditLogManager()
 
-    def __unicode__(self):
+    def __str__(self):
         return u'{0} <{1}> ({2})'.format(
             self.get_audit_type_display(), self.user, self.pk
         )

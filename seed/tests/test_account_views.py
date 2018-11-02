@@ -51,7 +51,7 @@ class AccountsViewTests(TestCase):
         self.maxDiff = None
 
         year = date.today().year - 1
-        self.cal_year_name = "{} Calendar Year".format(year).encode('utf-8')
+        self.cal_year_name = "{} Calendar Year".format(year)
 
     def test_dict_org(self):
         """_dict_org turns our org structure into a json payload."""

@@ -55,7 +55,7 @@ class StateFieldsTest(TestCase):
         self.assertEqual(res['custom_id_1'], {tlv2.state: None, tlv1.state: None})
         self.assertEqual(res['postal_code'],
                          {tlv2.state: tlv2.state.postal_code, tlv1.state: tlv1.state.postal_code})
-        self.assertTrue('data_1' not in res.keys())
+        self.assertTrue('data_1' not in res)
 
     def test_property_state(self):
         self.property_view_factory.get_property_view()

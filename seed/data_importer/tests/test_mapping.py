@@ -51,7 +51,7 @@ class TestMapping(DataMappingBaseTestCase):
         # Create mappings from the new states
         # TODO #239: Convert this to a single helper method to suggest and save
         suggested_mappings = mapper.build_column_mapping(
-            state.extra_data.keys(),
+            list(state.extra_data.keys()),
             Column.retrieve_all_by_tuple(self.org),
             previous_mapping=get_column_mapping,
             map_args=[self.org],

@@ -166,11 +166,11 @@ def get_pm_mapping(raw_columns, mapping_data=None, resolve_duplicates=True):
 
         # get the set of mappings
         mappings = []
-        for v in final_mappings.itervalues():
+        for v in final_mappings.values():
             mappings.append(v)
 
         unique_mappings = set()
-        for k, v in final_mappings.iteritems():
+        for k, v in final_mappings.items():
             if v not in unique_mappings:
                 unique_mappings.add(v)
             else:

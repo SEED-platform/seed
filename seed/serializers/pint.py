@@ -60,7 +60,7 @@ def apply_display_unit_preferences(org, pt_dict):
     API and collapse any Quantity objects present down to a straight float, per
     the organization preferences.
     """
-    converted_dict = {k: collapse_unit(org, v) for k, v in pt_dict.iteritems()}
+    converted_dict = {k: collapse_unit(org, v) for k, v in pt_dict.items()}
 
     return converted_dict
 

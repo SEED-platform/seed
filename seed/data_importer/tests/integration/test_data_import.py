@@ -188,7 +188,7 @@ class TestMappingExampleData(DataMappingBaseTestCase):
         tasks.map_data(self.import_file.pk)
 
         cycle2, _ = Cycle.objects.get_or_create(
-            name=u'Hack Cycle 2016',
+            name='Hack Cycle 2016',
             organization=self.org,
             start=datetime.datetime(2016, 1, 1, tzinfo=timezone.get_current_timezone()),
             end=datetime.datetime(2016, 12, 31, tzinfo=timezone.get_current_timezone()),
@@ -332,7 +332,7 @@ class TestPromotingProperties(DataMappingBaseTestCase):
             keys = reader.fieldnames
             for row in reader:
                 ed = json.loads(row.pop('extra_data'))
-                for k, v in ed.iteritems():
+                for k, v in ed.items():
                     new_keys.add(k)
                     row[k] = v
                 data.append(row)

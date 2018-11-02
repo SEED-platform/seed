@@ -162,12 +162,12 @@ def check_status(result_out, part_msg, log, piid_flag=None):
 
     if result_out.status_code in [200, 201, 403, 401]:
         try:
-            if 'status' in result_out.json().keys() and result_out.json()['status'] == 'error':
+            if 'status' in result_out.json() and result_out.json()['status'] == 'error':
                 msg = result_out.json()['message']
                 log.error(part_msg + failed)
                 log.debug(msg)
                 raise RuntimeError
-            elif 'success' in result_out.json().keys() and not result_out.json()['success']:
+            elif 'success' in result_out.json() and not result_out.json()['success']:
                 msg = result_out.json()
                 log.error(part_msg + failed)
                 log.debug(msg)
@@ -223,7 +223,7 @@ def read_map_file(mapfile_path):
     assert (os.path.isfile(mapfile_path)), "Cannot find file:\t" + mapfile_path
 
     map_reader = csv.reader(open(mapfile_path, 'r'))
-    map_reader.next()  # Skip the header
+    map_reader.__next__()  # Skip the header
 
     # Open the mapping file and fill list
     maplist = list()

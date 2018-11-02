@@ -301,7 +301,7 @@ class Report(DecoratorMixin(drf_api_endpoint), ViewSet):
             900000: '900-999k',
             1000000: 'over 1,000k',
         }
-        max_bin = max(y_display_map.keys())
+        max_bin = max(y_display_map)
 
         # Group buildings in this year_ending group into ranges
         grouped_ranges = defaultdict(list)

@@ -343,7 +343,7 @@ class LocalUploaderViewSet(viewsets.ViewSet):
 
         # We will make a pass through the first property to get the list of unexpected keys
         for pm_property in request.data['properties']:
-            for pm_key_name, _ in pm_property.iteritems():
+            for pm_key_name, _ in pm_property.items():
                 if pm_key_name not in pm_key_to_column_heading_map:
                     pm_key_to_column_heading_map[pm_key_name] = pm_key_name
             break
@@ -351,7 +351,7 @@ class LocalUploaderViewSet(viewsets.ViewSet):
         # Create the header row of the csv file first
         rows = []
         header_row = []
-        for _, csv_header in pm_key_to_column_heading_map.iteritems():
+        for _, csv_header in pm_key_to_column_heading_map.items():
             header_row.append(csv_header)
         rows.append(header_row)
 
@@ -375,7 +375,7 @@ class LocalUploaderViewSet(viewsets.ViewSet):
             this_row = []
 
             # Loop through all known PM variables
-            for pm_variable, _ in pm_key_to_column_heading_map.iteritems():
+            for pm_variable, _ in pm_key_to_column_heading_map.items():
 
                 # Initialize this to False for each pm_variable we will search through
                 added = False
@@ -861,8 +861,7 @@ class ImportFileViewSet(viewsets.ViewSet):
                     exclude=['extra_data']
                 )
 
-                prop_dict = dict(
-                    prop_dict.items() +
+                prop_dict.update(
                     TaxLotProperty.extra_data_to_dict_with_mapping(
                         prop.extra_data,
                         property_column_name_mapping
@@ -887,8 +886,7 @@ class ImportFileViewSet(viewsets.ViewSet):
                     fields=fields['TaxLotState'],
                     exclude=['extra_data']
                 )
-                tax_lot_dict = dict(
-                    tax_lot_dict.items() +
+                tax_lot_dict.update(
                     TaxLotProperty.extra_data_to_dict_with_mapping(
                         tax_lot.extra_data,
                         taxlot_column_name_mapping

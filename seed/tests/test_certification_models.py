@@ -63,10 +63,10 @@ class GreenAssessmentTests(DeleteModelsTestCase):
 
     def test_unicode_magic_methods(self):
         """Test unicode repr methods"""
-        expected = u'Green TS Inc, Green Test Score, Score'
+        expected = 'Green TS Inc, Green Test Score, Score'
         self.assertEqual(expected, str(self.green_assessment))
 
-        expected = u'Green TS Inc, Green Test Score: 5'
+        expected = 'Green TS Inc, Green Test Score: 5'
         self.assertEqual(expected, str(self.gap))
 
     def test_gap_properties(self):
@@ -103,7 +103,7 @@ class GreenAssessmentTests(DeleteModelsTestCase):
             self.gap.rating = '5 stars'
         exception = conm.exception
         self.assertEqual(
-            "[u'Green Test Score uses a metric (numeric score)']",
+            "['Green Test Score uses a metric (numeric score)']",
             str(exception)
         )
         self.gap.assessment.is_numeric_score = False
@@ -115,7 +115,7 @@ class GreenAssessmentTests(DeleteModelsTestCase):
             self.gap.metric = 5
         exception = conm.exception
         self.assertEqual(
-            "[u'Green Test Score uses a rating (non numeric score)']",
+            "['Green Test Score uses a rating (non numeric score)']",
             str(exception)
         )
 

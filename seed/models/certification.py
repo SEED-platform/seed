@@ -70,7 +70,7 @@ class GreenAssessment(models.Model):
     # efficient, that a renewable energy system can offset all or most of its
     # annual energy consumption.
 
-    def __unicode__(self):
+    def __str__(self):
         # pylint:disable=no-member
         return u"{}, {}, {}".format(
             self.award_body, self.name,
@@ -147,7 +147,7 @@ class GreenAssessmentProperty(models.Model):
         'date': ('GreenVerification{}Date', None)
     }
 
-    def __unicode__(self):
+    def __str__(self):
         return u"{}, {}: {}".format(
             self.body, self.name, self.metric if self.metric else self.rating
         )
@@ -316,7 +316,7 @@ class GreenAssessmentProperty(models.Model):
         Return a dict where keys are BEDES compatible names.
         """
         bedes_dict = {}
-        for key, val in self.MAPPING.iteritems():
+        for key, val in self.MAPPING.items():
             field = val[1]
             if field:
                 bedes_dict[field] = getattr(self, key)
@@ -341,7 +341,7 @@ class GreenAssessmentProperty(models.Model):
             sub = ''
         url_field = 'GreenVerification{}URL'.format(sub)
         reso_dict = {}
-        for key, val in self.MAPPING.iteritems():
+        for key, val in self.MAPPING.items():
             field = val[0]
             if field == 'GreenBuildingVerificationType':
                 reso_dict[field] = self.name

@@ -20,9 +20,9 @@ class TestMappingColumns(TestCase):
         results = MappingColumns(raw_columns, dest_columns)
 
         expected = {
-            'foot': ['_', 'big foot', 45],
-            'ankle': ['_', 'crankle', 90],
-            'stomach': ['_', u'est\xf3mago', 69]
+            'foot': ['_', 'big foot', 90],
+            'ankle': ['_', 'crankle', 94],
+            'stomach': ['_', u'est\xf3mago', 82]
         }
         self.assertDictEqual(expected, results.final_mappings)
 
@@ -32,9 +32,9 @@ class TestMappingColumns(TestCase):
         results = MappingColumns(raw_columns, dest_columns)
 
         expected = {
-            'crankle': ['_', 'ankle', 90],
-            'big foot': ['_', 'foot', 45],
-            u'est\xf3mago': ['_', u'estooomago', 83]
+            'crankle': ['_', 'ankle', 94],
+            'big foot': ['_', 'foot', 90],
+            u'est\xf3mago': ['_', u'estooomago', 89]
         }
         self.assertDictEqual(expected, results.final_mappings)
 
@@ -45,7 +45,7 @@ class TestMappingColumns(TestCase):
 
         # Note that the stomach will resolve as 'PropertyState' by default.
         expected = {
-            'estomago': ['_', u'est\xf3mago', 94],
+            'estomago': ['_', u'est\xf3mago', 92],
             'stomach': ['PropertyState', 'stomach', 100]
         }
         self.assertDictEqual(expected, results.final_mappings)

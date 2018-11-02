@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
         #     pv.property.pk: pv.labels.all() for pv in pvs if pv.labels.all()
         # }
         # new_labels = []
-        # for pk, label_set in pvls.iteritems():
+        # for pk, label_set in pvls.items():
         #     for label in label_set:
         #         new_labels.append(
         #             PropertyLabels(property_id=pk, statuslabel_id=label.pk)
@@ -31,7 +31,7 @@ class Migration(migrations.Migration):
         #     tv.taxlot.pk: tv.labels.all() for tv in tvs if tv.labels.all()
         # }
         # new_labels = []
-        # for pk, label_set in tvls.iteritems():
+        # for pk, label_set in tvls.items():
         #     for label in label_set:
         #         new_labels.append(
         #             TaxLotLabels(taxlot_id=pk, statuslabel_id=label.pk)

@@ -231,7 +231,7 @@ def filter_other_params(queryset, other_params, db_columns):
 
     # Build query as Q objects so we can AND and OR.
     query_filters = Q()
-    for k, v in other_params.iteritems():
+    for k, v in other_params.items():
         in_columns = search_utils.is_column(k, db_columns)
         if in_columns and k != 'q' and v is not None and v != '' and v != []:
             exact_match = search_utils.is_exact_match(v)
@@ -295,7 +295,7 @@ def filter_other_params(queryset, other_params, db_columns):
         queryset = queryset.none()
 
     # handle extra_data with json_query
-    for k, v in other_params.iteritems():
+    for k, v in other_params.items():
         if (not search_utils.is_column(k, db_columns)) and k != 'q' and v:
 
             exact_match = search_utils.is_exact_match(v)

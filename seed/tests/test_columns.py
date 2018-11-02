@@ -218,7 +218,7 @@ class TestColumns(TestCase):
         }
 
         test_mapping, _ = ColumnMapping.get_column_mappings(self.fake_org)
-        self.assertItemsEqual(expected, test_mapping)
+        self.assertCountEqual(expected, test_mapping)
 
 
 class TestColumnMapping(TestCase):
@@ -563,7 +563,7 @@ class TestColumnsByInventory(TestCase):
                 'source_eui', 'source_eui_modeled', 'source_eui_weather_normalized', 'space_alerts',
                 'state', 'ubid', 'updated', 'use_description', 'year_built', 'year_ending']
 
-        self.assertItemsEqual(c, data)
+        self.assertCountEqual(c, data)
 
     def test_retrieve_db_field_name_from_db_tables(self):
         """These values are the fields that can be used for hashing a property to check if it is the same record."""

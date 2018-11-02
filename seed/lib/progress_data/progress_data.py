@@ -45,10 +45,10 @@ class ProgressData(object):
             self.increment_by = None
 
         # set some member variables
-        if 'progress_key' in self.data.keys():
+        if 'progress_key' in self.data:
             self.key = self.data['progress_key']
 
-        if 'total' in self.data.keys():
+        if 'total' in self.data:
             self.total = self.data['total']
 
         return self.save()
@@ -99,7 +99,7 @@ class ProgressData(object):
     @classmethod
     def from_key(cls, key):
         data = get_cache(key)
-        if 'func_name' in data.keys() and 'unique_id' in data.keys():
+        if 'func_name' in data and 'unique_id' in data:
             return cls(func_name=data['func_name'], unique_id=data['unique_id'], init_data=data)
         else:
             raise Exception("Could not find key %s in cache" % key)

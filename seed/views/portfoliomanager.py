@@ -65,12 +65,12 @@ class PortfolioManagerViewSet(GenericViewSet):
             possible_templates = pm.get_list_of_report_templates()
         except PMExcept as pme:
             return JsonResponse(
-                {'status': 'error', 'message': pme.message},
+                {'status': 'error', 'message': str(pme)},
                 status=status.HTTP_400_BAD_REQUEST
             )
         except Exception as e:
             return JsonResponse(
-                {'status': 'error', 'message': e.message},
+                {'status': 'error', 'message': e},
                 status=status.HTTP_400_BAD_REQUEST
             )
         return JsonResponse({'status': 'success', 'templates': possible_templates})
@@ -122,7 +122,7 @@ class PortfolioManagerViewSet(GenericViewSet):
                     content = pm.generate_and_download_template_report(template)
             except PMExcept as pme:
                 return JsonResponse(
-                    {'status': 'error', 'message': pme.message},
+                    {'status': 'error', 'message': str(pme)},
                     status=status.HTTP_400_BAD_REQUEST
                 )
             try:
@@ -154,7 +154,7 @@ class PortfolioManagerViewSet(GenericViewSet):
 
             return JsonResponse({'status': 'success', 'properties': properties})
         except Exception as e:
-            return JsonResponse({'status': 'error', 'message': e.message},
+            return JsonResponse({'status': 'error', 'message': e},
                                 status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -195,21 +195,21 @@ class PortfolioManagerImport(object):
             raise PMExcept("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
 
         # This returns a 200 even if the credentials are bad, so I'm having to check some text in the response
-        if 'The username and/or password you entered is not correct. Please try again.' in response.content:
-            raise PMExcept("Unsuccessful response from login attempt; aborting.  Check credentials.")
+        if 'The username and/or password you entered is not correct. Please try again.' in response.content.decode('utf-8'):
+            raise PMExcept('Unsuccessful response from login attempt; aborting.  Check credentials.')
 
         # Upon successful logging in, we should have received a cookie header that we can reuse later
         if 'Cookie' not in response.request.headers:
-            raise PMExcept("Could not find Cookie key in response headers; aborting.")
+            raise PMExcept('Could not find Cookie key in response headers; aborting.')
         cookie_header = response.request.headers['Cookie']
         if '=' not in cookie_header:
-            raise PMExcept("Malformed Cookie key in response headers; aborting.")
+            raise PMExcept('Malformed Cookie key in response headers; aborting.')
         cookie = cookie_header.split('=')[1]
-        _log.debug("Logged in and received cookie: " + cookie)
+        _log.debug('Logged in and received cookie: ' + cookie)
 
         # Prepare the fully authenticated headers
         self.authenticated_headers = {
-            "Cookie": "JSESSIONID=" + cookie + "; org.springframework.web.servlet.i18n.CookieLocaleResolver.LOCALE=en"
+            'Cookie': 'JSESSIONID=' + cookie + '; org.springframework.web.servlet.i18n.CookieLocaleResolver.LOCALE=en'
         }
 
     def get_list_of_report_templates(self):

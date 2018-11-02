@@ -25,7 +25,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         logging_info("RUN  org_specific_commands with args={},kwds={}".format(args, options))
         if options['organization']:
-            core_organization = map(int, options['organization'].split(","))
+            core_organization = list(map(int, options['organization'].split(",")))
         else:
             core_organization = [20, 69]
 

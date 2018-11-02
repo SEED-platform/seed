@@ -5,6 +5,7 @@
 :author
 """
 from builtins import str
+from functools import cmp_to_key
 
 import jellyfish
 
@@ -81,7 +82,8 @@ def best_match(s, categories, top_n=5):
         # sort first by the ones
 
     # print('all scores for {} are {}'.format(s, scores))
-    scores = sorted(scores, cmp=sort_scores)
+    scores.sort()
+    scores = sorted(scores, key=cmp_to_key(sort_scores))
     # take the top n number of matches
     scores = scores[:top_n]
     # convert to hundreds

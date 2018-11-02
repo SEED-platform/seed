@@ -30,7 +30,7 @@ class TaxLotProperty(models.Model):
     # User controlled flag.
     primary = models.BooleanField(default=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'M2M Property View %s / TaxLot View %s' % (
             self.property_view_id, self.taxlot_view_id)
 
@@ -223,8 +223,7 @@ class TaxLotProperty(models.Model):
 
             # Only add extra data columns if a settings profile was used
             if show_columns is not None:
-                related_dict = dict(
-                    related_dict.items() +
+                related_dict.update(
                     TaxLotProperty.extra_data_to_dict_with_mapping(
                         related_view.state.extra_data,
                         related_column_name_mapping,
@@ -262,7 +261,7 @@ class TaxLotProperty(models.Model):
 
                 # Filter out associated tax lots that are present but which do not have preferred
                 none_in_jurisdiction_tax_lot_ids = None in jurisdiction_tax_lot_ids
-                jurisdiction_tax_lot_ids = filter(lambda x: x is not None, jurisdiction_tax_lot_ids)
+                jurisdiction_tax_lot_ids = list(filter(lambda x: x is not None, jurisdiction_tax_lot_ids))
 
                 if none_in_jurisdiction_tax_lot_ids:
                     jurisdiction_tax_lot_ids.append('Missing')
@@ -312,8 +311,7 @@ class TaxLotProperty(models.Model):
 
             # Only add extra data columns if a settings profile was used
             if show_columns is not None:
-                obj_dict = dict(
-                    obj_dict.items() +
+                obj_dict.update(
                     TaxLotProperty.extra_data_to_dict_with_mapping(
                         obj.state.extra_data,
                         obj_column_name_mapping,

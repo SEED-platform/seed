@@ -128,7 +128,7 @@ class StatusLabel(TimeStampedModel):
         unique_together = ('name', 'super_organization')
         ordering = ['-name']
 
-    def __unicode__(self):
+    def __str__(self):
         return u"{0} - {1}".format(self.name, self.color)
 
     def to_dict(self):
@@ -147,7 +147,7 @@ class Compliance(TimeStampedModel):
     deadline_date = models.DateField(_("deadline_date"), null=True, blank=True)
     project = models.ForeignKey(Project, verbose_name=_('Project'), )
 
-    def __unicode__(self):
+    def __str__(self):
         return u"Compliance %s for project %s" % (
             self.compliance_type, self.project
         )
@@ -194,7 +194,7 @@ class Unit(models.Model):
     unit_name = models.CharField(max_length=255)
     unit_type = models.IntegerField(choices=UNIT_TYPES, default=STRING)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'{0} Format: {1}'.format(self.unit_name, self.unit_type)
 
 
@@ -202,7 +202,7 @@ class EnumValue(models.Model):
     """Individual Enumerated Type values."""
     value_name = models.CharField(max_length=255)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'{0}'.format(self.value_name)
 
 
@@ -213,7 +213,7 @@ class Enum(models.Model):
         EnumValue, blank=True, related_name='values'
     )
 
-    def __unicode__(self):
+    def __str__(self):
         """Just grab the first couple and the last enum_values to display."""
         enums = list(self.enum_values.all()[0:3])
         enums_string = ', '.join(enums)

@@ -157,17 +157,6 @@ class SEEDOrgPermissionsTests(TestCase):
         mock_request.user = self.user
         mock_view = mock.MagicMock()
 
-        # assert raises error if no queryset
-        mock_value_error = mock.PropertyMock(side_effect=ValueError)
-        type(mock_view).get_queryset = mock_value_error
-        mock_view.queryset = None
-        self.assertRaises(
-            AssertionError,
-            permissions.has_permission,
-            mock_request,
-            mock_view
-        )
-
         # queryset its not used, but needs to be checked as work around
         mock_view.queryset = True
 
@@ -197,6 +186,17 @@ class SEEDOrgPermissionsTests(TestCase):
         type(mock_view).get_queryset = mock_get_queryset
         permissions.has_permission(mock_request, mock_view)
         self.assertTrue(mock_get_queryset.called)
+
+        # assert raises error if no queryset
+        mock_value_error = mock.PropertyMock(side_effect=ValueError)
+        type(mock_view).get_queryset = mock_value_error
+        mock_view.queryset = None
+        self.assertRaises(
+            AssertionError,
+            permissions.has_permission,
+            mock_request,
+            mock_view
+        )
 
 
 class SEEDPublicPermissionsTests(TestCase):

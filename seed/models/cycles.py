@@ -22,7 +22,7 @@ class Cycle(models.Model):
     end = models.DateTimeField()
     created = models.DateTimeField(auto_now_add=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'Cycle - %s' % self.name
 
     class Meta:

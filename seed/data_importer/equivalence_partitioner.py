@@ -155,7 +155,7 @@ class EquivalencePartitioner(object):
 
     @staticmethod
     def calculate_key_equivalence(key1, key2):
-        for key1_value, key2_value in zip(key1, key2):
+        for key1_value, key2_value in list(zip(key1, key2)):
             if key1_value == key2_value and key1_value is not None:
                 return True
         else:
@@ -172,15 +172,15 @@ class EquivalencePartitioner(object):
 
     @staticmethod
     def key_needs_merging(original_key, new_key):
-        return True in [not a and b for (a, b) in zip(original_key, new_key)]
+        return True in [not a and b for (a, b) in list(zip(original_key, new_key))]
 
     @staticmethod
     def merge_keys(key1, key2):
-        return [a if a else b for (a, b) in zip(key1, key2)]
+        return [a if a else b for (a, b) in list(zip(key1, key2))]
 
     @staticmethod
     def identities_are_different(key1, key2):
-        for (x, y) in zip(key1, key2):
+        for (x, y) in list(zip(key1, key2)):
             if x is None or y is None:
                 continue
             if x != y:

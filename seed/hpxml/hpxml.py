@@ -10,7 +10,7 @@ import logging
 import os
 from builtins import str
 from copy import deepcopy
-from io import StringIO
+from io import BytesIO
 
 import probablepeople as pp
 import usaddress as usadd
@@ -277,10 +277,10 @@ class HPXML(object):
             try:
                 root.Project.ProjectDetails.ProgramCertificate
             except AttributeError:
-                for elname in (
-                    'YearCertified', 'CertifyingOrganizationURL', 'CertifyingOrganization',
-                    'ProgramSponsor', 'ContractorSystemIdentifiers', 'ProgramName',
-                    'ProjectSystemIdentifiers'):
+                for elname in ('YearCertified', 'CertifyingOrganizationURL',
+                               'CertifyingOrganization', 'ProgramSponsor',
+                               'ContractorSystemIdentifiers', 'ProgramName',
+                               'ProjectSystemIdentifiers'):
                     if hasattr(root.Project.ProjectDetails, elname):
                         getattr(root.Project.ProjectDetails, elname).addnext(
                             new_prog_cert
@@ -301,9 +301,8 @@ class HPXML(object):
             try:
                 found_energy_score = False
                 for energy_score_el in bldg_const.EnergyScore:
-                    if energy_score_type in (
-                        energy_score_el.ScoreType,
-                        getattr(energy_score_el, 'OtherScoreType', None)):
+                    if energy_score_type in (energy_score_el.ScoreType,
+                                             getattr(energy_score_el, 'OtherScoreType', None)):
                         found_energy_score = True
                         break
                 if not found_energy_score:
@@ -325,7 +324,7 @@ class HPXML(object):
         # Serialize
         tree = etree.ElementTree(root)
         objectify.deannotate(tree, cleanup_namespaces=True)
-        f = StringIO()
+        f = BytesIO()
         tree.write(f, encoding='utf-8', pretty_print=True, xml_declaration=True)
         return f.getvalue()
 

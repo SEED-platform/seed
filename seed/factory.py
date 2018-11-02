@@ -16,7 +16,6 @@ from seed.test_helpers.factory.helpers import DjangoFunctionalFactory
 class SEEDFactory(DjangoFunctionalFactory):
     """model factory for SEED"""
 
-
     @classmethod
     def building_snapshot(cls, canonical_building=None, *args, **kwargs):
         """creates an BuildingSnapshot inst.

@@ -167,21 +167,21 @@ class Cleaner(object):
 
         self.ontology = ontology
         self.schema = self.ontology.get(u'types', {})
-        self.float_columns = filter(
+        self.float_columns = list(filter(
             lambda x: self.schema[x] == u'float', self.schema
-        )
-        self.date_columns = filter(
+        ))
+        self.date_columns = list(filter(
             lambda x: self.schema[x] == u'date', self.schema
-        )
-        self.date_time_columns = filter(
+        ))
+        self.date_time_columns = list(filter(
             lambda x: self.schema[x] == u'datetime', self.schema
-        )
-        self.string_columns = filter(
+        ))
+        self.string_columns = list(filter(
             lambda x: self.schema[x] == u'string', self.schema
-        )
-        self.int_columns = filter(
+        ))
+        self.int_columns = list(filter(
             lambda x: self.schema[x] == u'integer', self.schema
-        )
+        ))
         self.pint_column_map = self._build_pint_column_map()
 
     def _build_pint_column_map(self):
@@ -202,7 +202,7 @@ class Cleaner(object):
         }
         """
         pint_column_map = {raw_col: pint_spec[1]
-                           for (raw_col, pint_spec) in self.schema.iteritems()
+                           for (raw_col, pint_spec) in self.schema.items()
                            if isinstance(pint_spec, tuple)
                            and pint_spec[0] == 'quantity'}
 
@@ -230,7 +230,7 @@ class Cleaner(object):
             if not is_extra_data:
                 # If the object is not extra data, then check if the data are in the
                 # pint_column_map. This needs to be cleaned up significantly.
-                if column_name in self.pint_column_map.keys():
+                if column_name in self.pint_column_map:
                     units = self.pint_column_map[column_name]
                     return pint_cleaner(value, units)
 

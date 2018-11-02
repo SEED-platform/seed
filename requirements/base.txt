@@ -17,10 +17,7 @@ django-extensions==1.9.6
 redis==2.10.6
 
 # Time zones support
-# Do NOT upgrade pytz. Newer versions will not create allow user to construct a datetime with
-# a timezone other than UTC (https://stackoverflow.com/questions/24856643/unexpected-results-converting-timezones-in-python/24856805)
-# If we upgrade, then we must update the code to work in UTC, not local datetime.
-pytz==2012h
+pytz==2018.7
 
 # Metric/imperial units support
 django-pint==0.4

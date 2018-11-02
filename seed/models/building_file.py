@@ -95,7 +95,7 @@ class BuildingFile(models.Model):
         Parser = self.BUILDING_FILE_PARSERS.get(self.file_type, None)
         if not Parser:
             acceptable_file_types = ', '.join(
-                map(dict(self.BUILDING_FILE_TYPES).get, self.BUILDING_FILE_PARSERS.keys())
+                map(dict(self.BUILDING_FILE_TYPES).get, list(self.BUILDING_FILE_PARSERS.keys()))
             )
             return False, None, None, "File format was not one of: {}".format(acceptable_file_types)
 

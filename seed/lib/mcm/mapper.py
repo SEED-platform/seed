@@ -239,7 +239,7 @@ def expand_rows(row, delimited_fields, expand_row):
         new_values = []
         for d in delimited_fields:
             fields = []
-            if d in copy_row.keys():
+            if d in copy_row:
                 for value in expand_and_normalize_field(copy_row[d], True):
                     fields.append({d: value})
                 new_values.append(fields)
@@ -252,7 +252,7 @@ def expand_rows(row, delimited_fields, expand_row):
             new_row = copy.deepcopy(copy_row)
             # c is a tuple because of the .product command
             for item in c:
-                for k, v in item.iteritems():
+                for k, v in item.items():
                     new_row[k] = v
             new_rows.append(new_row)
 

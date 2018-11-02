@@ -122,13 +122,15 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
 
     def test_hash_release_date(self):
         """The hash_state_object method makes the timezones naive, so this should work because
-        the date times are equivalent, even through the database objects are not"""
+        the date times are equivalent, even though the database objects are not"""
+        ps1_dt = datetime.datetime(2010, 1, 1, 8, 0, tzinfo=tz.utc).astimezone(pytz.timezone('America/Los_Angeles'))
         ps1 = PropertyState.objects.create(
             organization=self.org,
             address_line_1='123 fake st',
             extra_data={"a": "result"},
-            release_date=datetime.datetime(2010, 1, 1, 0, 0,
-                                           tzinfo=pytz.timezone('America/Los_Angeles')),
+            # release_date=datetime.datetime(2010, 1, 1, 0, 0,
+            #                                tzinfo=pytz.timezone('America/Los_Angeles')),
+            release_date=ps1_dt,
             data_state=DATA_STATE_IMPORT,
             import_file_id=0,
         )
@@ -136,7 +138,7 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
             organization=self.org,
             address_line_1='123 fake st',
             extra_data={"a": "result"},
-            release_date=datetime.datetime(2010, 1, 1, 8, 0, tzinfo=tz.utc),
+            release_date=datetime.datetime(2010, 1, 1, 0, 0, tzinfo=tz.utc),
             data_state=DATA_STATE_IMPORT,
             import_file_id=0,
         )
@@ -158,7 +160,7 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
         self.assertEqual(len(ps), 9)
         self.assertEqual(PropertyState.objects.filter(pm_property_id='2264').count(), 7)
 
-        hashes = map(tasks.hash_state_object, ps)
+        hashes = list(map(tasks.hash_state_object, ps))
         self.assertEqual(len(hashes), 9)
         self.assertEqual(len(set(hashes)), 4)
 

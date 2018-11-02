@@ -9,10 +9,10 @@ import copy
 import json
 import logging
 import os
+from builtins import str
 from collections import OrderedDict
 
 import xmltodict
-from builtins import str
 from django.db.models import FieldDoesNotExist
 from past.builtins import basestring
 from quantityfield import ureg
@@ -223,8 +223,7 @@ class BuildingSync(object):
             if value:
                 full_path = "{}.{}".format(process_struct['root'], v['path'])
 
-                if v.get('key_path_name', None) and v.get('value_path_name', None) and v.get(
-                    'key_path_value', None):
+                if v.get('key_path_name', None) and v.get('value_path_name', None) and v.get('key_path_value', None):
                     # iterate over the paths and find the correct node to set
                     self._set_compound_node(
                         full_path,
@@ -452,8 +451,7 @@ class BuildingSync(object):
             value = self._get_node(path, data, [])
 
             try:
-                if v.get('key_path_name', None) and v.get('value_path_name', None) and v.get(
-                    'key_path_value', None):
+                if v.get('key_path_name', None) and v.get('value_path_name', None) and v.get('key_path_value', None):
                     value = _lookup_sub(
                         value,
                         v.get('key_path_name'),
@@ -524,7 +522,7 @@ class BuildingSync(object):
         measures = self._get_node('auc:Audits.auc:Audit.auc:Measures.auc:Measure', data, [])
         for m in measures:
             if m.get('auc:TechnologyCategories', None):
-                cat_w_namespace = m['auc:TechnologyCategories']['auc:TechnologyCategory'].keys()[0]
+                cat_w_namespace = list(m['auc:TechnologyCategories']['auc:TechnologyCategory'].keys())[0]
                 category = cat_w_namespace.replace('auc:', '')
                 new_data = {
                     'property_measure_name': m.get('@ID'),

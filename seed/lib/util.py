@@ -73,7 +73,7 @@ def apply_map(map_path, data_path, out_file):
     d = {}
     input_fields = data_csv.next()
     matched, nomatch = mapping.apply(input_fields)
-    for field, m in matched.iteritems():
+    for field, m in matched.items():
         d[field] = m.as_json()
         print("Mapped {} => {}".format(field, m.field))
     for field in nomatch:

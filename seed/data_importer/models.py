@@ -10,7 +10,11 @@ import json
 import logging
 import math
 import tempfile
-from urllib.request import unquote
+
+try:
+    from urllib import unquote  # python2.x
+except ImportError:
+    from urllib.parse import unquote  # python3.x
 
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField
@@ -121,7 +125,7 @@ class ImportRecord(NotDeletableModel):
     # destination_taxonomy = models.ForeignKey('lin.Taxonomy', blank=True, null=True)
     # source_taxonomy = models.ForeignKey('lin.Taxonomy', blank=True, null=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return "ImportRecord %s: %s, started at %s" % (self.pk, self.name, self.start_time)
 
     class Meta:
@@ -689,7 +693,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     # program version is in format "x.y[.z]"
     source_program_version = models.CharField(blank=True, max_length=40)  # don't think this is used
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s" % self.file.name
 
     def save(self, in_validation=False, *args, **kwargs):
@@ -716,7 +720,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     @property
     def local_file(self):
         if not hasattr(self, "_local_file"):
-            temp_file = tempfile.NamedTemporaryFile(mode='w+b', bufsize=1024, delete=False)
+            temp_file = tempfile.NamedTemporaryFile(mode='w+b', delete=False)
             for chunk in self.file.chunks(1024):
                 temp_file.write(chunk)
             temp_file.flush()
@@ -1047,7 +1051,8 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
             DATA_STATE_MAPPING
         )
 
-        assert kls in [PropertyState, TaxLotState], "Must be one of our State objects [PropertyState, TaxLotState]!"
+        assert kls in [PropertyState,
+                       TaxLotState], "Must be one of our State objects [PropertyState, TaxLotState]!"
 
         return kls.objects.filter(
             data_state__in=[DATA_STATE_MAPPING],
@@ -1091,7 +1096,7 @@ class TableColumnMapping(models.Model):
     class Meta:
         ordering = ("order",)
 
-    def __unicode__(self, *args, **kwargs):
+    def __str__(self, *args, **kwargs):
         return "%s from %s -> %s (%s)" % (
             self.source_string, self.import_file, self.destination_model, self.destination_field,)
 

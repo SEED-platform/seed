@@ -71,7 +71,7 @@ class Property(models.Model):
     class Meta:
         verbose_name_plural = 'properties'
 
-    def __unicode__(self):
+    def __str__(self):
         return u'Property - %s' % (self.pk)
 
 
@@ -276,7 +276,7 @@ class PropertyState(models.Model):
 
             return None
 
-    def __unicode__(self):
+    def __str__(self):
         return u'Property State - %s' % self.pk
 
     def clean(self):
@@ -301,7 +301,7 @@ class PropertyState(models.Model):
         if fields:
             model_fields, ed_fields = split_model_fields(self, fields)
             extra_data = self.extra_data
-            ed_fields = filter(lambda f: f in extra_data, ed_fields)
+            ed_fields = list(filter(lambda f: f in extra_data, ed_fields))
 
             result = {
                 field: getattr(self, field) for field in model_fields
@@ -314,8 +314,8 @@ class PropertyState(models.Model):
             result['id'] = result['pk'] = self.pk
 
             # should probably also return children, parents, and coparent
-            # result['children'] = map(lambda c: c.id, self.children.all())
-            # result['parents'] = map(lambda p: p.id, self.parents.all())
+            # result['children'] = list(map(lambda c: c.id, self.children.all()))
+            # result['parents'] = list(map(lambda p: p.id, self.parents.all()))
             # result['co_parent'] = (self.co_parent and self.co_parent.pk)
             # result['coparent'] = (self.co_parent and {
             #     field: self.co_parent.pk for field in ['pk', 'id']
@@ -635,7 +635,7 @@ class PropertyState(models.Model):
 
                         # grab the scenario that is attached to the orig measure and create a new connection
                         for scenario in measure.scenario_set.all():
-                            if scenario.pk not in scenario_measure_map.keys():
+                            if scenario.pk not in scenario_measure_map:
                                 scenario_measure_map[scenario.pk] = []
                             scenario_measure_map[scenario.pk].append(new_measure.pk)
 
@@ -684,7 +684,7 @@ class PropertyView(models.Model):
 
     # notes has a relationship here -- PropertyViews have notes, not the state, and not the property.
 
-    def __unicode__(self):
+    def __str__(self):
         return u'Property View - %s' % self.pk
 
     class Meta:
