@@ -20,10 +20,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
 from seed.models.column_mappings import ColumnMapping
-from seed.models.models import (
-    Enum,
-    Unit,
-)
+from seed.models.models import Unit
 
 INVENTORY_DISPLAY = {
     'PropertyState': 'Property',
@@ -524,7 +521,6 @@ class Column(models.Model):
     modified = models.DateTimeField(auto_now=True)
 
     unit = models.ForeignKey(Unit, blank=True, null=True)
-    enum = models.ForeignKey(Enum, blank=True, null=True)
     is_extra_data = models.BooleanField(default=False)
     import_file = models.ForeignKey('data_importer.ImportFile', blank=True, null=True)
     units_pint = models.CharField(max_length=64, blank=True, null=True)

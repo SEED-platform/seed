@@ -11,8 +11,6 @@ from django.test import TestCase
 from seed.data_importer import tasks
 from seed.landing.models import SEEDUser as User
 from seed.models import (
-    FLOAT,
-    STRING,
     Column,
     ColumnMapping,
     Unit,
@@ -36,7 +34,7 @@ class TestCleaner(TestCase):
         # Float
         float_unit = Unit.objects.create(
             unit_name='mapped_col unit',
-            unit_type=FLOAT,
+            unit_type=Unit.FLOAT,
         )
         float_raw = Column.objects.create(
             column_name='float_raw_col',
@@ -59,7 +57,7 @@ class TestCleaner(TestCase):
         # Integer
         str_unit = Unit.objects.create(
             unit_name='mapped_col unit',
-            unit_type=STRING,
+            unit_type=Unit.STRING,
         )
         str_raw = Column.objects.create(
             column_name='string_raw_col',

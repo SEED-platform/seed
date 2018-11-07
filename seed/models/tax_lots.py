@@ -156,24 +156,12 @@ class TaxLotState(models.Model):
                 field: extra_data[field] for field in ed_fields
             }
 
-            # always return id's and canonical_building id's
+            # always return id's
             result['id'] = result['pk'] = self.pk
-
-            # should probably also return children, parents, and coparent
-            # result['children'] = map(lambda c: c.id, self.children.all())
-            # result['parents'] = map(lambda p: p.id, self.parents.all())
-            # result['co_parent'] = (self.co_parent and self.co_parent.pk)
-            # result['coparent'] = (self.co_parent and {
-            #     field: self.co_parent.pk for field in ['pk', 'id']
-            #     })
 
             return result
 
         d = obj_to_dict(self, include_m2m=include_related_data)
-
-        # if include_related_data:
-        # d['parents'] = list(self.parents.values_list('id', flat=True))
-        # d['co_parent'] = self.co_parent.pk if self.co_parent else None
 
         return d
 

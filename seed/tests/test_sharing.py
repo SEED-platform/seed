@@ -5,9 +5,7 @@
 :author
 Tests related to sharing of data between users, orgs, suborgs, etc.
 """
-import json
 
-from django.core.urlresolvers import reverse_lazy
 from django.test import TestCase
 
 from seed.landing.models import SEEDUser as User
@@ -15,9 +13,6 @@ from seed.lib.superperms.orgs.models import (
     Organization,
     ROLE_OWNER,
     ROLE_MEMBER
-)
-from seed.models import (
-    BuildingSnapshot
 )
 
 
@@ -56,34 +51,6 @@ class SharingViewTests(TestCase):
         self.des_org = Organization.objects.create(parent_org=self.parent_org,
                                                    name='Designers')
         self.des_org.add_member(self.des_user, ROLE_MEMBER)
-
-        # self._create_buildings()
-
-    def _search_buildings(self, is_public=False):
-        """
-        Make a request of the search_buildings view and return the
-        json-decoded body.
-        """
-        url = reverse_lazy("api:v1:search_buildings")
-        if is_public:
-            url = reverse_lazy("api:v1:public_search")
-        post_data = {
-            'filter_params': {},
-            'number_per_page': BuildingSnapshot.objects.count(),
-            'order_by': '',
-            'page': 1,
-            'q': '',
-            'sort_reverse': False,
-            'project_id': None,
-        }
-
-        response = self.client.post(
-            url,
-            content_type='application/json',
-            data=json.dumps(post_data)
-        )
-        json_string = response.content
-        return json.loads(json_string)
 
     def test_scenario(self):
         """

@@ -13,7 +13,7 @@ from seed.utils.organizations import create_organization, create_suborganization
 
 
 class TestOrganizations(TestCase):
-    """Test the clean methods on BuildingSnapshotModel."""
+    """Test the clean methods on the organization."""
 
     def setUp(self):
         user_details = {

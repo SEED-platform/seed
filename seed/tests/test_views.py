@@ -19,7 +19,6 @@ from seed.lib.superperms.orgs.models import OrganizationUser
 from seed.models import (
     Column,
     ColumnMapping,
-    FLOAT,
     PropertyView,
     StatusLabel,
     TaxLot,
@@ -310,7 +309,7 @@ class TestMCMViews(TestCase):
 
         # create a National Median Site Energy use
         float_unit = Unit.objects.create(unit_name='test energy use intensity',
-                                         unit_type=FLOAT)
+                                         unit_type=Unit.FLOAT)
         Column.objects.create(
             organization=self.org,
             table_name='PropertyState',
@@ -353,7 +352,7 @@ class TestMCMViews(TestCase):
         eu_col = energy_use_columns.first()
         self.assertTrue(eu_col.unit is not None)
         self.assertEqual(eu_col.unit.unit_name, 'test energy use intensity')
-        self.assertEqual(eu_col.unit.unit_type, FLOAT)
+        self.assertEqual(eu_col.unit.unit_type, Unit.FLOAT)
 
     def test_save_column_mappings_idempotent(self):
         """We need to make successive calls to save_column_mappings."""

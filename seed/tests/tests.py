@@ -9,9 +9,8 @@ from django.test import TestCase
 
 from seed.landing.models import SEEDUser as User
 from seed.models import (
-    Compliance, BuildingSnapshot, CanonicalBuilding, Project
+    Compliance, Project
 )
-from seed.utils.buildings import get_buildings_for_user_count
 from seed.utils.organizations import create_organization
 
 
@@ -57,38 +56,3 @@ class ComplianceTestCase(TestCase):
         self.assertEqual('Compliance Benchmarking for project Project test project', str(c))
         p.delete()
         c.delete()
-
-
-class UtilsTests(TestCase):
-
-    def setUp(self):
-        self.user = User.objects.create(
-            username='test',
-            first_name='t',
-            last_name='est'
-        )
-        self.user_2 = User.objects.create(
-            username='test2',
-            first_name='t',
-            last_name='est'
-        )
-        self.org, user_role, _user_created = create_organization(
-            self.user, 'Test Organization',
-        )
-        for i in range(10):
-            bs = BuildingSnapshot.objects.create()
-            bs.super_organization = self.org
-            bs.save()
-
-    def test_get_buildings_count_for_user(self):
-        # make 5 canonical buildings
-        for b in BuildingSnapshot.objects.all()[:5]:
-            c = CanonicalBuilding.objects.create()
-            b.canonical_building = c
-            c.canonical_snapshot = b
-            b.save()
-            c.save()
-        # make a couple extra buildings
-        BuildingSnapshot.objects.create()
-        BuildingSnapshot.objects.create()
-        self.assertEqual(get_buildings_for_user_count(self.user), 5)
