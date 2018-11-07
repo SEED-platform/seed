@@ -6,7 +6,7 @@
 FROM alpine:3.8
 
 RUN apk add --no-cache python \
-        python-dev \
+        python3-dev \
         postgresql-dev \
         alpine-sdk \
         pcre \
@@ -18,8 +18,10 @@ RUN apk add --no-cache python \
         bash-completion \
         npm \
         nginx && \
+    ln -sf /usr/bin/python3 /usr/bin/python && \
     python -m ensurepip && \
     rm -r /usr/lib/python*/ensurepip && \
+    ln -sf /usr/bin/pip3 /usr/bin/pip && \
     pip install --upgrade pip setuptools && \
     pip install git+https://github.com/Supervisor/supervisor@837c159ae51f3 && \
     mkdir -p /var/log/supervisord/ && \
@@ -36,12 +38,6 @@ RUN apk add --no-cache python \
 ##   - pip install --upgrade pip overwrites the pip so it is no longer a symlink
 ##   - install supervisor that works with Python3.
 ##   - enchant, python-gdbm, libssl-dev, libxml2-dev are no longer explicitly installed
-
-## Python 3 commands to use once we upgrade.
-#        python3 \
-#        python3-dev \
-#    ln -sf /usr/bin/python3 /usr/bin/python && \
-#    ln -sf /usr/bin/pip3 /usr/bin/pip && \
 
 ### Install python requirements
 WORKDIR /seed
@@ -66,6 +62,7 @@ COPY ./docker/wait-for-it.sh /usr/local/wait-for-it.sh
 # nginx configurations - alpine doesn't use the sites-available directory. Put seed
 # configuration file into the /etc/nginx/conf.d/ folder.
 COPY /docker/nginx-seed.conf /etc/nginx/conf.d/seed.conf
+
 # Supervisor looks in /etc/supervisor for the configuration file.
 COPY /docker/supervisor-seed.conf /etc/supervisor/supervisord.conf
 
