@@ -276,15 +276,15 @@ class ImportFileViewsTests(TestCase):
 
 class TestMCMViews(TestCase):
     expected_mappings = {
-        u'address': [u'owner_address', 70],
-        u'building id': [u'Building air leakage', 64],
-        u'name': [u'Name of Audit Certification Holder', 47],
-        u'year built': [u'year_built', 50]
+        'address': ['owner_address', 70],
+        'building id': ['Building air leakage', 64],
+        'name': ['Name of Audit Certification Holder', 47],
+        'year built': ['year_built', 50]
     }
 
     raw_columns_expected = {
-        u'status': u'success',
-        u'raw_columns': [u'name', u'address', u'year built', u'building id']
+        'status': 'success',
+        'raw_columns': ['name', 'address', 'year built', 'building id']
     }
 
     def assert_expected_mappings(self, actual, expected):
@@ -323,7 +323,7 @@ class TestMCMViews(TestCase):
         self.import_file = ImportFile.objects.create(
             import_record=self.import_record,
             cached_first_row=ROW_DELIMITER.join(
-                [u'name', u'address', u'year built', u'building id']
+                ['name', 'address', 'year built', 'building id']
             )
         )
 
@@ -1490,7 +1490,7 @@ class InventoryViewTests(DeleteModelsTestCase):
         expected_property_extra_data_column = {
             'table_name': 'PropertyState',
             'column_name': 'Property Extra Data Column',
-            'display_name': u'Property Extra Data Column (Property)',
+            'display_name': 'Property Extra Data Column (Property)',
             'is_extra_data': True,
             'merge_protection': 'Favor New',
             'data_type': 'None',

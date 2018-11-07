@@ -19,15 +19,15 @@ from quantityfield import ureg
 from seed.lib.mcm.matchers import fuzzy_in_set
 
 NONE_SYNONYMS = (
-    (u'_', u'not available'),
-    (u'_', u'not applicable'),
-    (u'_', u'n/a'),
+    ('_', 'not available'),
+    ('_', 'not applicable'),
+    ('_', 'n/a'),
 )
 BOOL_SYNONYMS = (
-    (u'_', u'true'),
-    (u'_', u'yes'),
-    (u'_', u'y'),
-    (u'_', u'1'),
+    ('_', 'true'),
+    ('_', 'yes'),
+    ('_', 'y'),
+    ('_', '1'),
 )
 PUNCT_REGEX = re.compile('[{0}]'.format(
     re.escape(string.punctuation.replace('.', '').replace('-', '')))
@@ -39,8 +39,8 @@ def default_cleaner(value, *args):
     if isinstance(value, basestring):
         if fuzzy_in_set(value.lower(), NONE_SYNONYMS):
             return None
-        # guard against `u''` coming in from an Excel empty cell
-        if (value == u''):
+        # guard against `''` coming in from an Excel empty cell
+        if (value == ''):
             return None
     return value
 
@@ -166,21 +166,21 @@ class Cleaner(object):
     def __init__(self, ontology):
 
         self.ontology = ontology
-        self.schema = self.ontology.get(u'types', {})
+        self.schema = self.ontology.get('types', {})
         self.float_columns = list(filter(
-            lambda x: self.schema[x] == u'float', self.schema
+            lambda x: self.schema[x] == 'float', self.schema
         ))
         self.date_columns = list(filter(
-            lambda x: self.schema[x] == u'date', self.schema
+            lambda x: self.schema[x] == 'date', self.schema
         ))
         self.date_time_columns = list(filter(
-            lambda x: self.schema[x] == u'datetime', self.schema
+            lambda x: self.schema[x] == 'datetime', self.schema
         ))
         self.string_columns = list(filter(
-            lambda x: self.schema[x] == u'string', self.schema
+            lambda x: self.schema[x] == 'string', self.schema
         ))
         self.int_columns = list(filter(
-            lambda x: self.schema[x] == u'integer', self.schema
+            lambda x: self.schema[x] == 'integer', self.schema
         ))
         self.pint_column_map = self._build_pint_column_map()
 
@@ -193,12 +193,12 @@ class Cleaner(object):
         use with `pint_cleaner(value, UNIT_STRING)`
 
         example input: {
-            u'pm_parent_property_id': 'string',
-            u'Weather Normalized Site EUI (GJ/m2)': ('quantity', u'GJ/m**2/year')
+            'pm_parent_property_id': 'string',
+            'Weather Normalized Site EUI (GJ/m2)': ('quantity', 'GJ/m**2/year')
         }
 
         example output: {
-            u'Weather Normalized Site EUI (GJ/m2)': u'GJ/m**2/year'
+            'Weather Normalized Site EUI (GJ/m2)': 'GJ/m**2/year'
         }
         """
         pint_column_map = {raw_col: pint_spec[1]

@@ -15,7 +15,7 @@ from past.builtins import basestring
 
 from unidecode import unidecode
 
-LINEAR_UNITS = set([u'ft', u'm', u'in'])
+LINEAR_UNITS = set(['ft', 'm', 'in'])
 MAPPING_DATA_DIR = join(dirname(realpath(__file__)), 'data')
 
 _log = logging.getLogger(__name__)
@@ -121,19 +121,19 @@ def get_pm_mapping(raw_columns, mapping_data=None, resolve_duplicates=True):
         # Without duplicates
 
         {
-            'Address 1': (u'PropertyState', u'address_line_1', 100),
-            'Property ID': (u'PropertyState', u'pm_property_id', 100),
-            'Portfolio Manager Property ID': (u'PropertyState', u'Portfolio Manager Property ID', 100),
-            'Address_1': (u'PropertyState', u'Address_1', 100)
+            'Address 1': ('PropertyState', 'address_line_1', 100),
+            'Property ID': ('PropertyState', 'pm_property_id', 100),
+            'Portfolio Manager Property ID': ('PropertyState', 'Portfolio Manager Property ID', 100),
+            'Address_1': ('PropertyState', 'Address_1', 100)
         }
 
         # With duplicates
 
         {
-            'Address 1': (u'PropertyState', u'address_line_1', 100),
-            'Property ID': (u'PropertyState', u'pm_property_id', 100),
-            'Portfolio Manager Property ID': (u'PropertyState', u'pm_property_id', 100),
-            'Address_1': (u'PropertyState', u'address_line_1', 100)
+            'Address 1': ('PropertyState', 'address_line_1', 100),
+            'Property ID': ('PropertyState', 'pm_property_id', 100),
+            'Portfolio Manager Property ID': ('PropertyState', 'pm_property_id', 100),
+            'Address_1': ('PropertyState', 'address_line_1', 100)
         }
 
 

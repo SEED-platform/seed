@@ -466,7 +466,7 @@ class BuildingSnapshot(TimeStampedModel):
         return d
 
     def __str__(self):
-        u_repr = u'id: {0}, pm_property_id: {1}, tax_lot_id: {2},' + \
+        u_repr = 'id: {0}, pm_property_id: {1}, tax_lot_id: {2},' + \
                  ' confidence: {3}'
         return u_repr.format(
             self.pk, self.pm_property_id, self.tax_lot_id, self.confidence

@@ -16,36 +16,36 @@ logger = logging.getLogger(__name__)
 class TestMappingColumns(TestCase):
     def test_unicode_in_destination(self):
         raw_columns = ['foot', 'ankle', 'stomach']
-        dest_columns = ['big foot', 'crankle', u'estómago']
+        dest_columns = ['big foot', 'crankle', 'estómago']
         results = MappingColumns(raw_columns, dest_columns)
 
         expected = {
             'foot': ['_', 'big foot', 90],
             'ankle': ['_', 'crankle', 94],
-            'stomach': ['_', u'est\xf3mago', 82]
+            'stomach': ['_', 'est\xf3mago', 82]
         }
         self.assertDictEqual(expected, results.final_mappings)
 
     def test_unicode_in_raw(self):
-        raw_columns = ['big foot', 'crankle', u'estómago']
-        dest_columns = ['foot', 'ankle', 'stomach', u'estooomago']
+        raw_columns = ['big foot', 'crankle', 'estómago']
+        dest_columns = ['foot', 'ankle', 'stomach', 'estooomago']
         results = MappingColumns(raw_columns, dest_columns)
 
         expected = {
             'crankle': ['_', 'ankle', 94],
             'big foot': ['_', 'foot', 90],
-            u'est\xf3mago': ['_', u'estooomago', 89]
+            'est\xf3mago': ['_', 'estooomago', 89]
         }
         self.assertDictEqual(expected, results.final_mappings)
 
     def test_resolve_duplicate(self):
         raw_columns = ['estomago', 'stomach']
-        dest_columns = [u'estómago']
+        dest_columns = ['estómago']
         results = MappingColumns(raw_columns, dest_columns)
 
         # Note that the stomach will resolve as 'PropertyState' by default.
         expected = {
-            'estomago': ['_', u'est\xf3mago', 92],
+            'estomago': ['_', 'est\xf3mago', 92],
             'stomach': ['PropertyState', 'stomach', 100]
         }
         self.assertDictEqual(expected, results.final_mappings)

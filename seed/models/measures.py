@@ -53,7 +53,7 @@ class Measure(models.Model):
     modified = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return u'Measure - %s.%s' % (self.category, self.name)
+        return 'Measure - %s.%s' % (self.category, self.name)
 
     class Meta:
         ordering = ['-created']

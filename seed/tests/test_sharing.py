@@ -113,7 +113,7 @@ class SharingViewTests(TestCase):
 
     #     fields = list(set(fields))
 
-    #     self.assertListEqual(fields, [u'postal_code'])
+    #     self.assertListEqual(fields, ['postal_code'])
 
         # @skip("Fix for new data model")
         # def test_parent_viewer(self):

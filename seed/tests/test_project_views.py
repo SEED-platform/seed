@@ -112,26 +112,26 @@ class ProjectViewTests(DeleteModelsTestCase):
     def _expected_project(self, modified, pk, has_views, name=DEFAULT_NAME,
                           **kwargs):
         expected = {
-            u'compliance_type': None,
-            u'deadline_date': None,
-            u'description': u'',
-            u'end_date': None,
-            u'id': pk,
-            u'is_compliance': False,
-            u'modified': modified,
-            u'last_modified_by': {u'email': u'test_user@demo.com',
-                                  u'first_name': u'Johnny',
-                                  u'last_name': u'Energy'},
-            u'name': name,
-            u'property_count': 0,
-            u'slug': slugify(name),
-            u'taxlot_count': 0,
-            u'status': u'active',
+            'compliance_type': None,
+            'deadline_date': None,
+            'description': '',
+            'end_date': None,
+            'id': pk,
+            'is_compliance': False,
+            'modified': modified,
+            'last_modified_by': {'email': 'test_user@demo.com',
+                                 'first_name': 'Johnny',
+                                 'last_name': 'Energy'},
+            'name': name,
+            'property_count': 0,
+            'slug': slugify(name),
+            'taxlot_count': 0,
+            'status': 'active',
         }
         if has_views:
             expected.update({
-                u'property_views': [],
-                u'taxlot_views': [],
+                'property_views': [],
+                'taxlot_views': [],
             })
         expected.update(kwargs)
         return expected
@@ -144,20 +144,20 @@ class ProjectViewTests(DeleteModelsTestCase):
         # standard case
         ou.role_level = ROLE_MEMBER
         ou.save()
-        resp = self._create_project(u'proj1', via_http=True)
+        resp = self._create_project('proj1', via_http=True)
         result = json.loads(resp.content)
         expected = {
-            u'status': u'success',
-            u'project': self._expected_project(
+            'status': 'success',
+            'project': self._expected_project(
                 result['project']['modified'],
                 result['project']['id'],
                 False
             )
         }
         expected['project']['last_modified_by'] = {
-            u'email': None,
-            u'first_name': None,
-            u'last_name': None
+            'email': None,
+            'first_name': None,
+            'last_name': None
         }
         self.assertDictEqual(expected, result)
         # test that owner is good too
@@ -166,17 +166,17 @@ class ProjectViewTests(DeleteModelsTestCase):
         resp = self._create_project('Proj2', via_http=True)
         result = json.loads(resp.content)
         expected = {
-            u'status': u'success',
-            u'project': self._expected_project(
+            'status': 'success',
+            'project': self._expected_project(
                 result['project']['modified'],
                 result['project']['id'],
-                False, name=u'Proj2'
+                False, name='Proj2'
             )
         }
         expected['project']['last_modified_by'] = {
-            u'email': None,
-            u'first_name': None,
-            u'last_name': None
+            'email': None,
+            'first_name': None,
+            'last_name': None
         }
         self.assertDictEqual(expected, result)
         # test that viewer cannot create a project
@@ -204,12 +204,12 @@ class ProjectViewTests(DeleteModelsTestCase):
         )
         projects = json.loads(resp.content)['projects']
         std_output = {
-            u'projects': [
+            'projects': [
                 self._expected_project(
                     projects[0]['modified'], projects[0]['id'], False
                 ),
             ],
-            u'status': u'success'
+            'status': 'success'
         }
         self.assertDictEqual(
             json.loads(resp.content),
@@ -270,8 +270,8 @@ class ProjectViewTests(DeleteModelsTestCase):
         )
         result = json.loads(resp.content)
         expected = {
-            u'status': u'success',
-            u'project': self._expected_project(
+            'status': 'success',
+            'project': self._expected_project(
                 result['project']['modified'],
                 result['project']['id'],
                 True
@@ -348,8 +348,8 @@ class ProjectViewTests(DeleteModelsTestCase):
         self.assertDictEqual(
             json.loads(resp.content),
             {
-                u'message': u'Could not find project with slug: proj2',
-                u'status': u'error'
+                'message': 'Could not find project with slug: proj2',
+                'status': 'error'
             }
         )
 

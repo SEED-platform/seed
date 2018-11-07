@@ -68,7 +68,7 @@ class TestTaxLotProperty(TestCase):
             'address_line_1', 'generation_date', 'energy_alerts', 'space_alerts',
             'building_count', 'owner', 'source_eui', 'jurisdiction_tax_lot_id',
             'city', 'district', 'site_eui', 'building_certification', 'modified', 'match_type',
-            'source_eui_weather_normalized', u'id', 'property_name', 'conditioned_floor_area',
+            'source_eui_weather_normalized', 'id', 'property_name', 'conditioned_floor_area',
             'pm_property_id', 'use_description', 'source_type', 'year_built', 'release_date',
             'gross_floor_area', 'owner_city_state', 'owner_telephone', 'recent_sale_date',
         ]

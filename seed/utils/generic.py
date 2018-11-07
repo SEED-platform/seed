@@ -70,8 +70,8 @@ def obj_to_dict(obj, include_m2m=True):
 
     struct = json.loads(data)[0]
     response = struct['fields']
-    response[u'id'] = response[u'pk'] = struct[u'pk']
-    response[u'model'] = struct[u'model']
+    response['id'] = response['pk'] = struct['pk']
+    response['model'] = struct['model']
     # JSONField does not get serialized by `serialize`
     for f in obj._meta.fields:
         if isinstance(f, JSONField):

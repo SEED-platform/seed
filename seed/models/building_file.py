@@ -189,8 +189,8 @@ class BuildingFile(models.Model):
         for s in data.get('scenarios', []):
             # measures = models.ManyToManyField(PropertyMeasure)
 
-            # {'reference_case': u'Baseline', 'annual_savings_site_energy': None,
-            #  'measures': [], 'id': u'Baseline', 'name': u'Baseline'}
+            # {'reference_case': 'Baseline', 'annual_savings_site_energy': None,
+            #  'measures': [], 'id': 'Baseline', 'name': 'Baseline'}
 
             scenario, _ = Scenario.objects.get_or_create(
                 name=s.get('name'),

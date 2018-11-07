@@ -129,7 +129,7 @@ def search_and_project(header, main_url, organization_id, log):
     # Search CanonicalBuildings
     print('API Function: search_buildings\n'),
     partmsg = 'search_buildings'
-    search_payload = {'filter_params': {u'address_line_1': u'94734 SE Honeylocust Street'}}
+    search_payload = {'filter_params': {'address_line_1': '94734 SE Honeylocust Street'}}
 
     result = requests.get(main_url + '/api/v1/search_buildings/',
                           headers=header,

@@ -86,7 +86,7 @@ class TestApi(TestCase):
         self.org, _, _ = create_organization(self.user)
         self.default_cycle = Cycle.objects.filter(organization_id=self.org).first()
         self.cycle, _ = Cycle.objects.get_or_create(
-            name=u'Test Hack Cycle 2015',
+            name='Test Hack Cycle 2015',
             organization=self.org,
             start=datetime.datetime(2015, 1, 1, tzinfo=timezone.get_current_timezone()),
             end=datetime.datetime(2015, 12, 31, tzinfo=timezone.get_current_timezone()),
@@ -169,15 +169,15 @@ class TestApi(TestCase):
         self.assertEqual(r['organizations'][0]['owners'][0]['first_name'], 'Jaqen')
         self.assertEqual(r['organizations'][0]['cycles'], [
             {
-                u'name': u'2017 Calendar Year',
-                u'num_properties': 0,
-                u'num_taxlots': 0,
-                u'cycle_id': self.default_cycle.pk,
+                'name': '2017 Calendar Year',
+                'num_properties': 0,
+                'num_taxlots': 0,
+                'cycle_id': self.default_cycle.pk,
             }, {
-                u'name': u'Test Hack Cycle 2015',
-                u'num_properties': 0,
-                u'num_taxlots': 0,
-                u'cycle_id': self.cycle.pk,
+                'name': 'Test Hack Cycle 2015',
+                'num_properties': 0,
+                'num_taxlots': 0,
+                'cycle_id': self.cycle.pk,
             }])
 
     def test_organization_details(self):

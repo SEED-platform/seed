@@ -174,7 +174,7 @@ class ColumnMapping(models.Model):
         self.remove_duplicates(self.column_raw.all())
 
     def __str__(self):
-        return u'{0}: {1} - {2}'.format(
+        return '{0}: {1} - {2}'.format(
             self.pk, self.column_raw.all(), self.column_mapped.all()
         )
 
@@ -191,10 +191,10 @@ class ColumnMapping(models.Model):
         ..code:
 
             {
-                u'Wookiee': (u'PropertyState', u'Dothraki', 'DisplayName', True),
-                u'Ewok': (u'TaxLotState', u'Hattin', 'DisplayName', True),
-                u'eui': (u'PropertyState', u'site_eui', 'DisplayName', True),
-                u'address': (u'TaxLotState', u'address', 'DisplayName', True)
+                'Wookiee': ('PropertyState', 'Dothraki', 'DisplayName', True),
+                'Ewok': ('TaxLotState', 'Hattin', 'DisplayName', True),
+                'eui': ('PropertyState', 'site_eui', 'DisplayName', True),
+                'address': ('TaxLotState', 'address', 'DisplayName', True)
             }
 
         :param organization: instance, Organization.
@@ -256,13 +256,13 @@ class ColumnMapping(models.Model):
         # Container will be in the format:
         #
         # container = {
-        #     u'PropertyState': {
-        #         u'Wookiee': (u'PropertyState', u'Dothraki'),
-        #         u'eui': (u'PropertyState', u'site_eui'),
+        #     'PropertyState': {
+        #         'Wookiee': ('PropertyState', 'Dothraki'),
+        #         'eui': ('PropertyState', 'site_eui'),
         #     },
-        #     u'TaxLotState': {
-        #         u'address': (u'TaxLotState', u'address'),
-        #         u'Ewok': (u'TaxLotState', u'Hattin'),
+        #     'TaxLotState': {
+        #         'address': ('TaxLotState', 'address'),
+        #         'Ewok': ('TaxLotState', 'Hattin'),
         #     }
         # }
         return container

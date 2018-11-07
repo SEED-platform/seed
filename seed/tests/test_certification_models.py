@@ -139,49 +139,49 @@ class GreenAssessmentTests(DeleteModelsTestCase):
     def test_to_bedes(self):
         """Test to_bedes_dict method."""
         expected = {
-            u'Assessment Program': 'Green Test Score',
-            u'Assessment Program Organization': 'Green TS Inc',
-            u'Assessment Recognition Type': u'Score',
-            u'Assessment Recognition Status': 'Pending',
-            u'Assessment Recognition Status Date': self.status_date,
-            u'Assessment Recognition Target Date': None,
-            u'Assessment Value': 5,
-            u'Assessment Version': '1',
-            u'Assessment Year': self.start_date.year,
-            u'Assessment Eligibility': True,
-            u'Assessment Level': None,
-            u'Assessment Program URL': self.urls,
+            'Assessment Program': 'Green Test Score',
+            'Assessment Program Organization': 'Green TS Inc',
+            'Assessment Recognition Type': 'Score',
+            'Assessment Recognition Status': 'Pending',
+            'Assessment Recognition Status Date': self.status_date,
+            'Assessment Recognition Target Date': None,
+            'Assessment Value': 5,
+            'Assessment Version': '1',
+            'Assessment Year': self.start_date.year,
+            'Assessment Eligibility': True,
+            'Assessment Level': None,
+            'Assessment Program URL': self.urls,
         }
         self.assertDictEqual(expected, self.gap.to_bedes_dict())
 
     def test_to_reso(self):
         """Test to_reso_dict method."""
         expected = {
-            u'GreenBuildingVerificationType': 'Green Test Score',
-            u'GreenVerificationBody': 'Green TS Inc',
-            u'GreenVerificationDate': self.start_date,
-            u'GreenVerificationSource': 'Assessor',
-            u'GreenVerificationStatus': 'Pending',
-            u'GreenVerificationMetric': 5,
-            u'GreenVerificationRating': None,
-            u'GreenVerificationVersion': '1',
-            u'GreenVerificationYear': self.start_date.year,
-            u'GreenVerificationURL': self.urls,
+            'GreenBuildingVerificationType': 'Green Test Score',
+            'GreenVerificationBody': 'Green TS Inc',
+            'GreenVerificationDate': self.start_date,
+            'GreenVerificationSource': 'Assessor',
+            'GreenVerificationStatus': 'Pending',
+            'GreenVerificationMetric': 5,
+            'GreenVerificationRating': None,
+            'GreenVerificationVersion': '1',
+            'GreenVerificationYear': self.start_date.year,
+            'GreenVerificationURL': self.urls,
         }
         self.assertDictEqual(expected, self.gap.to_reso_dict())
 
     def test_to_reso_sub_name(self):
         """Test to_reso_dict method with substitution."""
         expected = {
-            u'GreenBuildingVerificationType': 'Green Test Score',
-            u'GreenVerificationGreenTestScoreBody': 'Green TS Inc',
-            u'GreenVerificationGreenTestScoreDate': self.start_date,
-            u'GreenVerificationGreenTestScoreSource': 'Assessor',
-            u'GreenVerificationGreenTestScoreStatus': 'Pending',
-            u'GreenVerificationGreenTestScoreMetric': 5,
-            u'GreenVerificationGreenTestScoreRating': None,
-            u'GreenVerificationGreenTestScoreVersion': '1',
-            u'GreenVerificationGreenTestScoreYear': self.start_date.year,
-            u'GreenVerificationGreenTestScoreURL': self.urls,
+            'GreenBuildingVerificationType': 'Green Test Score',
+            'GreenVerificationGreenTestScoreBody': 'Green TS Inc',
+            'GreenVerificationGreenTestScoreDate': self.start_date,
+            'GreenVerificationGreenTestScoreSource': 'Assessor',
+            'GreenVerificationGreenTestScoreStatus': 'Pending',
+            'GreenVerificationGreenTestScoreMetric': 5,
+            'GreenVerificationGreenTestScoreRating': None,
+            'GreenVerificationGreenTestScoreVersion': '1',
+            'GreenVerificationGreenTestScoreYear': self.start_date.year,
+            'GreenVerificationGreenTestScoreURL': self.urls,
         }
         self.assertDictEqual(expected, self.gap.to_reso_dict(sub_name=True))

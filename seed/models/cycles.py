@@ -23,7 +23,7 @@ class Cycle(models.Model):
     created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return u'Cycle - %s' % self.name
+        return 'Cycle - %s' % self.name
 
     class Meta:
         ordering = ['-created']

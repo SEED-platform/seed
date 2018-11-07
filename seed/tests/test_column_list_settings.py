@@ -28,14 +28,14 @@ class TestColumnListSettings(TestCase):
         """These are simple tests which really only test the m2m part. If these don't work, then django has
         some issues."""
         col1 = Column.objects.create(
-            column_name=u'New Column',
-            table_name=u'PropertyState',
+            column_name='New Column',
+            table_name='PropertyState',
             organization=self.fake_org,
             is_extra_data=True,
         )
         col2 = Column.objects.create(
-            column_name=u'Second Column',
-            table_name=u'PropertyState',
+            column_name='Second Column',
+            table_name='PropertyState',
             organization=self.fake_org,
             is_extra_data=True,
         )
@@ -63,14 +63,14 @@ class TestColumnListSettings(TestCase):
 
     def test_returning_columns_with_profile(self):
         col1 = Column.objects.create(
-            column_name=u'New Column',
-            table_name=u'PropertyState',
+            column_name='New Column',
+            table_name='PropertyState',
             organization=self.fake_org,
             is_extra_data=True,
         )
         col2 = Column.objects.create(
-            column_name=u'Second Column',
-            table_name=u'PropertyState',
+            column_name='Second Column',
+            table_name='PropertyState',
             organization=self.fake_org,
             is_extra_data=True,
         )

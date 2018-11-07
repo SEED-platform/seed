@@ -192,14 +192,14 @@ class BuildingSync(object):
             new_dict = OrderedDict(
                 [
                     (
-                        u'auc:Audits', OrderedDict(
+                        'auc:Audits', OrderedDict(
                             [
-                                (u'@xsi:schemaLocation',
-                                 u'http://nrel.gov/schemas/bedes-auc/2014 https://github.com/BuildingSync/schema/releases/download/v0.3/BuildingSync.xsd'),
+                                ('@xsi:schemaLocation',
+                                 'http://nrel.gov/schemas/bedes-auc/2014 https://github.com/BuildingSync/schema/releases/download/v0.3/BuildingSync.xsd'),
                                 ('@xmlns', OrderedDict(
                                     [
-                                        (u'auc', u'http://nrel.gov/schemas/bedes-auc/2014'),
-                                        (u'xsi', u'http://www.w3.org/2001/XMLSchema-instance')
+                                        ('auc', 'http://nrel.gov/schemas/bedes-auc/2014'),
+                                        ('xsi', 'http://www.w3.org/2001/XMLSchema-instance')
                                     ]
                                 ))
                             ]

@@ -38,12 +38,12 @@ class TestColumns(TestCase):
 
         # Raw columns don't have a table name!
         raw_column = seed_models.Column.objects.create(
-            column_name=u'Some Weird City ID',
+            column_name='Some Weird City ID',
             organization=org2
         )
         mapped_column = seed_models.Column.objects.create(
-            table_name=u'PropertyState',
-            column_name=u'custom_id_1',
+            table_name='PropertyState',
+            column_name='custom_id_1',
             organization=org2
         )
         column_mapping1 = seed_models.ColumnMapping.objects.create(
@@ -67,7 +67,7 @@ class TestColumns(TestCase):
         # Fully correct example
         self.assertEqual(
             seed_models.get_column_mapping(raw_column.column_name, org2, 'column_mapped'),
-            (u'PropertyState', u'custom_id_1', 100)
+            ('PropertyState', 'custom_id_1', 100)
         )
 
     def test_get_column_mappings(self):
@@ -91,9 +91,9 @@ class TestColumns(TestCase):
         Column.create_mappings(raw_data, self.fake_org, self.fake_user)
 
         expected = {
-            u'raw_data_0': (u'PropertyState', u'destination_0', u'', True),
-            u'raw_data_1': (u'PropertyState', u'destination_1', u'', True),
-            u'raw_data_2': (u'TaxLotState', u'destination_0', u'', True),
+            'raw_data_0': ('PropertyState', 'destination_0', '', True),
+            'raw_data_1': ('PropertyState', 'destination_1', '', True),
+            'raw_data_2': ('TaxLotState', 'destination_0', '', True),
         }
 
         test_mapping, no_concat = ColumnMapping.get_column_mappings(self.fake_org)
@@ -136,11 +136,11 @@ class TestColumns(TestCase):
         seed_models.Column.create_mappings(test_map, self.fake_org, self.fake_user)
         test_mapping, _ = ColumnMapping.get_column_mappings(self.fake_org)
         expected = {
-            u'Wookiee': (u'PropertyState', u'Dothraki', u'', True),
-            u'address': (u'TaxLotState', u'address', u'', True),
-            u'eui': (u'PropertyState', u'site_eui', u'Site EUI', False),
-            # u'Ewok': (u'TaxLotState', u'Merovingian'), # this does not show up because it was set before the last one
-            u'Ewok': (u'TaxLotState', u'Hattin', u'', True),
+            'Wookiee': ('PropertyState', 'Dothraki', '', True),
+            'address': ('TaxLotState', 'address', '', True),
+            'eui': ('PropertyState', 'site_eui', 'Site EUI', False),
+            # 'Ewok': ('TaxLotState', 'Merovingian'), # this does not show up because it was set before the last one
+            'Ewok': ('TaxLotState', 'Hattin', '', True),
         }
         self.assertDictEqual(expected, test_mapping)
         self.assertTrue(test_mapping['Ewok'], 'Hattin')
@@ -165,13 +165,13 @@ class TestColumns(TestCase):
         # test by table name sorting
         test_mapping = ColumnMapping.get_column_mappings_by_table_name(self.fake_org)
         expected = {
-            u'PropertyState': {
-                u'Wookiee': (u'PropertyState', u'Dothraki', u'', True),
-                u'eui': (u'PropertyState', u'site_eui', u'Site EUI', False),
+            'PropertyState': {
+                'Wookiee': ('PropertyState', 'Dothraki', '', True),
+                'eui': ('PropertyState', 'site_eui', 'Site EUI', False),
             },
-            u'TaxLotState': {
-                u'address': (u'TaxLotState', u'address', u'', True),
-                u'Ewok': (u'TaxLotState', u'Hattin', u'', True),
+            'TaxLotState': {
+                'address': ('TaxLotState', 'address', '', True),
+                'Ewok': ('TaxLotState', 'Hattin', '', True),
             }
         }
         self.assertDictEqual(test_mapping, expected)
@@ -202,19 +202,19 @@ class TestColumns(TestCase):
         Column.create_mappings_from_file(self.mapping_import_file, self.fake_org, self.fake_user)
 
         expected = {
-            u'City': (u'PropertyState', u'city'),
-            u'Custom ID': (u'PropertyState', u'custom_id_1'),
-            u'Zip': (u'PropertyState', u'postal_code'),
-            u'GBA': (u'PropertyState', u'gross_floor_area'),
-            u'PM Property ID': (u'PropertyState', u'pm_property_id'),
-            u'BLDGS': (u'PropertyState', u'building_count'),
-            u'AYB_YearBuilt': (u'PropertyState', u'year_build'),
-            u'State': (u'PropertyState', u'state'),
-            u'Address': (u'PropertyState', u'address_line_1'),
-            u'Owner': (u'PropertyState', u'owner'),
-            u'Raw Column': (u'Table Name', u'Field Name'),
-            u'Property Type': (u'PropertyState', u'property_type'),
-            u'UBI': (u'TaxLotState', u'jurisdiction_tax_lot_id')
+            'City': ('PropertyState', 'city'),
+            'Custom ID': ('PropertyState', 'custom_id_1'),
+            'Zip': ('PropertyState', 'postal_code'),
+            'GBA': ('PropertyState', 'gross_floor_area'),
+            'PM Property ID': ('PropertyState', 'pm_property_id'),
+            'BLDGS': ('PropertyState', 'building_count'),
+            'AYB_YearBuilt': ('PropertyState', 'year_build'),
+            'State': ('PropertyState', 'state'),
+            'Address': ('PropertyState', 'address_line_1'),
+            'Owner': ('PropertyState', 'owner'),
+            'Raw Column': ('Table Name', 'Field Name'),
+            'Property Type': ('PropertyState', 'property_type'),
+            'UBI': ('TaxLotState', 'jurisdiction_tax_lot_id')
         }
 
         test_mapping, _ = ColumnMapping.get_column_mappings(self.fake_org)
@@ -257,15 +257,15 @@ class TestColumnsByInventory(TestCase):
             self.fake_user, name='Existing Org'
         )
         column_a = seed_models.Column.objects.create(
-            column_name=u'Column A',
-            table_name=u'PropertyState',
+            column_name='Column A',
+            table_name='PropertyState',
             organization=self.fake_org,
             is_extra_data=True,
             shared_field_type=Column.SHARED_PUBLIC,
         )
         # field that is in the import, but not mapped to
         raw_column = seed_models.Column.objects.create(
-            column_name=u'not mapped data',
+            column_name='not mapped data',
             organization=self.fake_org,
         )
         dm = seed_models.ColumnMapping.objects.create()
@@ -274,25 +274,25 @@ class TestColumnsByInventory(TestCase):
         dm.save()
         seed_models.Column.objects.create(
             column_name=u"Apostrophe's Field",
-            table_name=u'PropertyState',
+            table_name='PropertyState',
             organization=self.fake_org,
             is_extra_data=True
         )
         seed_models.Column.objects.create(
-            column_name=u'id',
-            table_name=u'PropertyState',
+            column_name='id',
+            table_name='PropertyState',
             organization=self.fake_org,
             is_extra_data=True
         )
         seed_models.Column.objects.create(
-            column_name=u'tax_lot_id_not_used',
-            table_name=u'TaxLotState',
+            column_name='tax_lot_id_not_used',
+            table_name='TaxLotState',
             organization=self.fake_org,
             is_extra_data=True
         )
         seed_models.Column.objects.create(
-            column_name=u'Gross Floor Area',
-            table_name=u'TaxLotState',
+            column_name='Gross Floor Area',
+            table_name='TaxLotState',
             organization=self.fake_org,
             is_extra_data=True
         )
@@ -301,23 +301,23 @@ class TestColumnsByInventory(TestCase):
         # This is an invalid column. It is not a db field but is not marked as extra data
         with self.assertRaises(ValidationError):
             seed_models.Column.objects.create(
-                column_name=u'not extra data',
-                table_name=u'PropertyState',
+                column_name='not extra data',
+                table_name='PropertyState',
                 organization=self.fake_org,
                 is_extra_data=False
             )
 
         # verify that creating columns from CSV's will not raise ValidationErrors
         column = seed_models.Column.objects.create(
-            column_name=u'column from csv file',
-            # table_name=u'PropertyState',
+            column_name='column from csv file',
+            # table_name='PropertyState',
             organization=self.fake_org,
             # is_extra_data=False
         )
         column.delete()
 
         column = seed_models.Column.objects.create(
-            column_name=u'column from csv file empty table',
+            column_name='column from csv file empty table',
             table_name='',
             organization=self.fake_org,
             # is_extra_data=False
@@ -325,7 +325,7 @@ class TestColumnsByInventory(TestCase):
         column.delete()
 
         column = seed_models.Column.objects.create(
-            column_name=u'column from csv file empty table false extra_data',
+            column_name='column from csv file empty table false extra_data',
             table_name='',
             organization=self.fake_org,
             is_extra_data=False
@@ -351,9 +351,9 @@ class TestColumnsByInventory(TestCase):
 
         # Check for columns
         c = {
-            'table_name': u'PropertyState',
-            'column_name': u'Column A',
-            'display_name': u'Column A',
+            'table_name': 'PropertyState',
+            'column_name': 'Column A',
+            'display_name': 'Column A',
             'is_extra_data': True,
             'merge_protection': 'Favor New',
             'data_type': 'None',
@@ -366,7 +366,7 @@ class TestColumnsByInventory(TestCase):
 
         # Check that display_name doesn't capitalize after apostrophe
         c = {
-            'table_name': u'PropertyState',
+            'table_name': 'PropertyState',
             'column_name': u"Apostrophe's Field",
             'display_name': u"Apostrophe's Field",
             'is_extra_data': True,
@@ -473,8 +473,8 @@ class TestColumnsByInventory(TestCase):
 
     def test_column_retrieve_all_duplicate_error(self):
         seed_models.Column.objects.create(
-            column_name=u'custom_id_1',
-            table_name=u'PropertyState',
+            column_name='custom_id_1',
+            table_name='PropertyState',
             organization=self.fake_org,
             is_extra_data=True
         )
@@ -593,11 +593,11 @@ class TestColumnsByInventory(TestCase):
 
     def test_retrieve_all_as_tuple(self):
         list_result = Column.retrieve_all_by_tuple(self.fake_org)
-        self.assertIn((u'PropertyState', u'site_eui_modeled'), list_result)
-        self.assertIn((u'TaxLotState', u'tax_lot_id_not_used'), list_result)
-        self.assertIn((u'PropertyState', u'gross_floor_area'),
+        self.assertIn(('PropertyState', 'site_eui_modeled'), list_result)
+        self.assertIn(('TaxLotState', 'tax_lot_id_not_used'), list_result)
+        self.assertIn(('PropertyState', 'gross_floor_area'),
                       list_result)  # extra field in taxlot, but not in property
-        self.assertIn((u'TaxLotState', u'Gross Floor Area'),
+        self.assertIn(('TaxLotState', 'Gross Floor Area'),
                       list_result)  # extra field in taxlot, but not in property
 
     def test_db_columns_in_default_columns(self):

@@ -48,7 +48,7 @@ class TaxLot(models.Model):
     updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return u'TaxLot - %s' % self.pk
+        return 'TaxLot - %s' % self.pk
 
 
 class TaxLotState(models.Model):
@@ -89,7 +89,7 @@ class TaxLotState(models.Model):
         ]
 
     def __str__(self):
-        return u'TaxLot State - %s' % self.pk
+        return 'TaxLot State - %s' % self.pk
 
     def promote(self, cycle):
         """
@@ -376,7 +376,7 @@ class TaxLotView(models.Model):
     # labels = models.ManyToManyField(StatusLabel)
 
     def __str__(self):
-        return u'TaxLot View - %s' % self.pk
+        return 'TaxLot View - %s' % self.pk
 
     class Meta:
         unique_together = ('taxlot', 'cycle',)

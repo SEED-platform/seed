@@ -447,7 +447,7 @@ class FakeGreenAssessmentPropertyFactory(BaseFake):
     def get_details(self, assessment, property_view, organization):
         """Get GreenAssessmentProperty details"""
         metric = self.fake.random_digit_not_null() if assessment.is_numeric_score else None
-        rating = None if assessment.is_numeric_score else u'{} stars'.format(
+        rating = None if assessment.is_numeric_score else '{} stars'.format(
             self.fake.random.randint(1, 5))
         details = {
             'organization': organization,

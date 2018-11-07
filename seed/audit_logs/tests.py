@@ -221,51 +221,51 @@ class AuditLogViewTests(TestCase):
         self.assertEqual(len(data['audit_logs']), 2)
         self.assertEqual(data['audit_logs'], [
             {
-                u'action': u'create_note',
-                u'action_note': u'The building has a wonderfully low EUI',
-                u'action_response': {u'status': u'success'},
-                u'audit_type': 'Note',
-                u'content_type': 'canonicalbuilding',
-                u'created': data['audit_logs'][0]['created'],
-                u'id': data['audit_logs'][0]['id'],
-                u'model': u'audit_logs.auditlog',
-                u'modified': data['audit_logs'][0]['modified'],
-                u'object_id': data['audit_logs'][0]['object_id'],
-                u'organization': {
+                'action': 'create_note',
+                'action_note': 'The building has a wonderfully low EUI',
+                'action_response': {'status': 'success'},
+                'audit_type': 'Note',
+                'content_type': 'canonicalbuilding',
+                'created': data['audit_logs'][0]['created'],
+                'id': data['audit_logs'][0]['id'],
+                'model': 'audit_logs.auditlog',
+                'modified': data['audit_logs'][0]['modified'],
+                'object_id': data['audit_logs'][0]['object_id'],
+                'organization': {
                     'id': self.org.pk,
                     'name': self.org.name,
                 },
-                u'pk': data['audit_logs'][0]['pk'],
-                u'user': {
-                    u'id': self.user.id,
-                    u'first_name': self.user.first_name,
-                    u'last_name': self.user.last_name,
-                    u'email': self.user.email,
+                'pk': data['audit_logs'][0]['pk'],
+                'user': {
+                    'id': self.user.id,
+                    'first_name': self.user.first_name,
+                    'last_name': self.user.last_name,
+                    'email': self.user.email,
                 }
             },
             {
-                u'action': u'create_building',
-                u'action_note': u'user created a building',
-                u'action_response': {
-                    u'building_id': self.cb.pk, u'status': u'success'
+                'action': 'create_building',
+                'action_note': 'user created a building',
+                'action_response': {
+                    'building_id': self.cb.pk, 'status': 'success'
                 },
-                u'audit_type': 'Log',
-                u'content_type': 'canonicalbuilding',
-                u'created': data['audit_logs'][1]['created'],
-                u'id': data['audit_logs'][1]['id'],
-                u'model': u'audit_logs.auditlog',
-                u'modified': data['audit_logs'][1]['modified'],
-                u'object_id': data['audit_logs'][1]['object_id'],
-                u'organization': {
+                'audit_type': 'Log',
+                'content_type': 'canonicalbuilding',
+                'created': data['audit_logs'][1]['created'],
+                'id': data['audit_logs'][1]['id'],
+                'model': 'audit_logs.auditlog',
+                'modified': data['audit_logs'][1]['modified'],
+                'object_id': data['audit_logs'][1]['object_id'],
+                'organization': {
                     'id': self.org.pk,
                     'name': self.org.name,
                 },
-                u'pk': data['audit_logs'][1]['pk'],
-                u'user': {
-                    u'id': self.user.id,
-                    u'first_name': self.user.first_name,
-                    u'last_name': self.user.last_name,
-                    u'email': self.user.email,
+                'pk': data['audit_logs'][1]['pk'],
+                'user': {
+                    'id': self.user.id,
+                    'first_name': self.user.first_name,
+                    'last_name': self.user.last_name,
+                    'email': self.user.email,
                 }
             }
         ])

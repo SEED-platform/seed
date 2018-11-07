@@ -195,7 +195,7 @@ class Unit(models.Model):
     unit_type = models.IntegerField(choices=UNIT_TYPES, default=STRING)
 
     def __str__(self):
-        return u'{0} Format: {1}'.format(self.unit_name, self.unit_type)
+        return '{0} Format: {1}'.format(self.unit_name, self.unit_type)
 
 
 class EnumValue(models.Model):
@@ -203,7 +203,7 @@ class EnumValue(models.Model):
     value_name = models.CharField(max_length=255)
 
     def __str__(self):
-        return u'{0}'.format(self.value_name)
+        return '{0}'.format(self.value_name)
 
 
 class Enum(models.Model):
@@ -220,7 +220,7 @@ class Enum(models.Model):
         if self.enum_values.count() > len(enums):
             enums_string.append(' ... {0}'.format(self.enum_values.last()))
 
-        return u'Enum: {0}: Values {1}'.format(
+        return 'Enum: {0}: Values {1}'.format(
             self.enum_name, enums_string
         )
 

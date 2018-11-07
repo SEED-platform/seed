@@ -64,11 +64,11 @@ class NoteViewTests(TestCase):
 
         # most recent log is displayed first
         expected_log_data = {
-            u'property_state': [
+            'property_state': [
                 {
-                    u'field': u'address_line_1',
-                    u'previous_value': u'123 Main Street',
-                    u'new_value': u'742 Evergreen Terrace'
+                    'field': 'address_line_1',
+                    'previous_value': '123 Main Street',
+                    'new_value': '742 Evergreen Terrace'
                 }
             ]
         }

@@ -941,5 +941,5 @@ class DataQualityCheck(models.Model):
                 "More than 1 data quality results for tax lot id '{}'".format(tax_lot_id))
 
     def __str__(self):
-        return u'DataQuality ({}:{}) - Rule Count: {}'.format(self.pk, self.name,
-                                                              self.rules.count())
+        return 'DataQuality ({}:{}) - Rule Count: {}'.format(self.pk, self.name,
+                                                             self.rules.count())

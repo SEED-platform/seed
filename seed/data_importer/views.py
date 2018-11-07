@@ -254,13 +254,13 @@ class LocalUploaderViewSet(viewsets.ViewSet):
                 return {'success': False,
                         'message': 'Could not cast value to float: \"%s\"' % string_value}
             original_unit_string = pm_value['@uom']
-            if original_unit_string == u'kBtu':
+            if original_unit_string == 'kBtu':
                 pint_val = float_value * units.kBTU
-            elif original_unit_string == u'kBtu/ft²':
+            elif original_unit_string == 'kBtu/ft²':
                 pint_val = float_value * units.kBTU / units.sq_ft
-            elif original_unit_string == u'Metric Tons CO2e':
+            elif original_unit_string == 'Metric Tons CO2e':
                 pint_val = float_value * units.metric_ton
-            elif original_unit_string == u'kgCO2e/ft²':
+            elif original_unit_string == 'kgCO2e/ft²':
                 pint_val = float_value * units.kilogram / units.sq_ft
             else:
                 return {'success': False,
@@ -318,15 +318,15 @@ class LocalUploaderViewSet(viewsets.ViewSet):
         # This list should cover the core keys coming from PM, ensuring that they map easily
         # We will also look for keys not in this list and just map them to themselves
         # pm_key_to_column_heading_map = {
-        #     u'address_1': u'Address',
-        #     u'city': u'City',
-        #     u'state_province': u'State',
-        #     u'postal_code': u'Zip',
-        #     u'county': u'County',
-        #     u'country': u'Country',
-        #     u'property_name': u'Property Name',
-        #     u'property_id': u'Property ID',
-        #     u'year_built': u'Year Built',
+        #     'address_1': 'Address',
+        #     'city': 'City',
+        #     'state_province': 'State',
+        #     'postal_code': 'Zip',
+        #     'county': 'County',
+        #     'country': 'Country',
+        #     'property_name': 'Property Name',
+        #     'property_id': 'Property ID',
+        #     'year_built': 'Year Built',
         # }
         # so now it looks like we *don't* need to override these, but instead we should leave all the headers as-is
         # I'm going to leave this in here for right now, but if it turns out that we don't need it after testing,
@@ -336,9 +336,9 @@ class LocalUploaderViewSet(viewsets.ViewSet):
         # We will also create a list of values that are used in PM export to indicate a value wasn't available
         # When we import them into SEED here we will be sure to not write those values
         pm_flagged_bad_string_values = [
-            u'Not Available',
-            u'Unable to Check (not enough data)',
-            u'No Current Year Ending Date',
+            'Not Available',
+            'Unable to Check (not enough data)',
+            'No Current Year Ending Date',
         ]
 
         # We will make a pass through the first property to get the list of unexpected keys
@@ -390,10 +390,10 @@ class LocalUploaderViewSet(viewsets.ViewSet):
                     # However, we need to be sure to not add the flagged bad strings.
                     # However, a flagged value *could* be a value property name, and we would want to allow that
                     if isinstance(this_pm_variable, basestring):
-                        if pm_variable == u'property_name':
+                        if pm_variable == 'property_name':
                             this_row.append(this_pm_variable)
                             added = True
-                        elif pm_variable == u'property_notes':
+                        elif pm_variable == 'property_notes':
                             sanitized_string = this_pm_variable.replace('\n', ' ')
                             this_row.append(sanitized_string)
                             added = True
@@ -421,7 +421,7 @@ class LocalUploaderViewSet(viewsets.ViewSet):
 
                 # And finally, if we haven't set the added flag, give the csv column a blank value
                 if not added:
-                    this_row.append(u'')
+                    this_row.append('')
 
             # Then add this property row of data
             rows.append(this_row)
@@ -1931,7 +1931,7 @@ class ImportFileViewSet(viewsets.ViewSet):
             for m in suggested_mappings:
                 table, destination_field, _confidence = suggested_mappings[m]
                 if destination_field is None:
-                    suggested_mappings[m][1] = u''
+                    suggested_mappings[m][1] = ''
 
         # Fix the table name, eventually move this to the build_column_mapping
         for m in suggested_mappings:

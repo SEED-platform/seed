@@ -31,7 +31,7 @@ class TaxLotProperty(models.Model):
     primary = models.BooleanField(default=True)
 
     def __str__(self):
-        return u'M2M Property View %s / TaxLot View %s' % (
+        return 'M2M Property View %s / TaxLot View %s' % (
             self.property_view_id, self.taxlot_view_id)
 
     class Meta:

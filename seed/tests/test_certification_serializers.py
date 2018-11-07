@@ -296,11 +296,11 @@ class TestGreenAssessmentSerializer(DeleteModelsTestCase):
         """Test object serialization."""
         expected = {
             'id': self.assessment.id,
-            'name': u'Test',
-            'award_body': u'Test Inc',
-            'recognition_type': u'AWD',
-            'recognition_description': u'Award',
-            'description': u'Test Award',
+            'name': 'Test',
+            'award_body': 'Test Inc',
+            'recognition_type': 'AWD',
+            'recognition_description': 'Award',
+            'description': 'Test Award',
             'is_numeric_score': True,
             'is_integer_score': True,
             'validity_duration': 365

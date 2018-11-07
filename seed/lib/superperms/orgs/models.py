@@ -73,7 +73,7 @@ class OrganizationUser(models.Model):
         super(OrganizationUser, self).delete(*args, **kwargs)
 
     def __str__(self):
-        return u'OrganizationUser: {0} <{1}> ({2})'.format(
+        return 'OrganizationUser: {0} <{1}> ({2})'.format(
             self.user.username, self.organization.name, self.pk
         )
 
@@ -202,7 +202,7 @@ class Organization(models.Model):
         return self.parent_org.id
 
     def __str__(self):
-        return u'Organization: {0}({1})'.format(self.name, self.pk)
+        return 'Organization: {0}({1})'.format(self.name, self.pk)
 
 
 def organization_pre_delete(sender, instance, **kwargs):

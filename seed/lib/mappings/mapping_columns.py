@@ -61,7 +61,7 @@ class MappingColumns(object):
             # We want previous mappings to be at the top of the list.
             if previous_mapping and callable(previous_mapping):
                 args = map_args or []
-                # Mapping will look something like this -- [u'table', u'field', 100]
+                # Mapping will look something like this -- ['table', 'field', 100]
                 mapping = previous_mapping(raw, *args)
                 if mapping:
                     self.add_mappings(raw, [mapping], True)

@@ -72,7 +72,7 @@ class Property(models.Model):
         verbose_name_plural = 'properties'
 
     def __str__(self):
-        return u'Property - %s' % (self.pk)
+        return 'Property - %s' % (self.pk)
 
 
 class PropertyState(models.Model):
@@ -277,7 +277,7 @@ class PropertyState(models.Model):
             return None
 
     def __str__(self):
-        return u'Property State - %s' % self.pk
+        return 'Property State - %s' % self.pk
 
     def clean(self):
         date_field_names = (
@@ -685,7 +685,7 @@ class PropertyView(models.Model):
     # notes has a relationship here -- PropertyViews have notes, not the state, and not the property.
 
     def __str__(self):
-        return u'Property View - %s' % self.pk
+        return 'Property View - %s' % self.pk
 
     class Meta:
         unique_together = ('property', 'cycle',)

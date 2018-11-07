@@ -537,7 +537,7 @@ class Column(models.Model):
                                            default=COLUMN_MERGE_FAVOR_NEW)
 
     def __str__(self):
-        return u'{} - {}:{}'.format(self.pk, self.table_name, self.column_name)
+        return '{} - {}:{}'.format(self.pk, self.table_name, self.column_name)
 
     def clean(self):
         # Don't allow Columns that are not extra_data and not a field in the database
@@ -1155,16 +1155,16 @@ class Column(models.Model):
 
         {
             'PropertyState': {
-                u'lot_number': 'Favor New',
-                u'owner_address': 'Favor New',
-                u'extra_data': {
-                    u'data_007': 'Favor New'
+                'lot_number': 'Favor New',
+                'owner_address': 'Favor New',
+                'extra_data': {
+                    'data_007': 'Favor New'
                 }
             'TaxLotState': {
-                u'custom_id_1': 'Favor New',
-                u'block_number': 'Favor New',
-                u'extra_data': {
-                    u'data_008': 'Favor New'
+                'custom_id_1': 'Favor New',
+                'block_number': 'Favor New',
+                'extra_data': {
+                    'data_008': 'Favor New'
                 }
         }
 
