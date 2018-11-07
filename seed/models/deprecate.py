@@ -6,13 +6,11 @@
 """
 import unicodedata
 
-from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django_extensions.db.models import TimeStampedModel
 from past.builtins import basestring
 
-from seed.audit_logs.models import AuditLog
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
@@ -52,8 +50,6 @@ class CanonicalBuilding(models.Model):
         "BuildingSnapshot", blank=True, null=True, on_delete=models.SET_NULL
     )
     active = models.BooleanField(default=True)
-    # Django API: relation to AuditLogs GFK, e.g. canon.audit_logs.all()
-    audit_logs = GenericRelation(AuditLog)
 
     objects = CanonicalManager()
     raw_objects = models.Manager()

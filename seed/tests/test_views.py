@@ -196,84 +196,6 @@ class ImportFileViewsTests(TestCase):
         self.assertEqual('success', json.loads(response.content)['status'])
 
 
-# @skip('Fix for new data model')
-# class ReportViewsTests(TestCase):
-#
-#     def setUp(self):
-#         user_details = {
-#             'username': 'test_user@demo.com',
-#             'password': 'test_pass',
-#             'email': 'test_user@demo.com'
-#         }
-#         self.user = User.objects.create_superuser(**user_details)
-#         self.org, _, _ = create_organization(self.user)
-#
-#         self.import_record = ImportRecord.objects.create(owner=self.user)
-#         self.import_record.super_organization = self.org
-#         self.import_record.save()
-#         self.import_file = ImportFile.objects.create(
-#             import_record=self.import_record,
-#             cached_first_row='Name|#*#|Address'
-#         )
-#
-#         BuildingSnapshot.objects.create(super_organization=self.org,
-#                                         import_file=self.import_file)
-#
-#         self.client.login(**user_details)
-#
-#     def test_get_building_summary_report_data(self):
-#         params = {
-#             'start_date': (datetime.now() - timedelta(days=30)).strftime(
-#                 '%Y-%m-%d'),
-#             'end_date': datetime.now().strftime('%Y-%m-%d'),
-#             'organization_id': self.org.pk
-#         }
-#
-#         response = self.client.get(
-#             reverse('seed:get_building_summary_report_data'), params)
-#         self.assertEqual('success', json.loads(response.content)['status'])
-#
-#     # TODO replace with test for inventory report
-#     @skip('Fix for new data model')
-#     def test_get_building_report_data(self):
-#         params = {
-#             'start_date': (datetime.now() - timedelta(days=30)).strftime(
-#                 '%Y-%m-%d'),
-#             'end_date': datetime.now().strftime('%Y-%m-%d'),
-#             'x_var': 'use_description',
-#             'y_var': 'year_built',
-#             'organization_id': self.org.pk
-#         }
-#
-#         response = self.client.get(reverse('seed:get_building_report_data'),
-#                                    params)
-#         self.assertEqual('success', json.loads(response.content)['status'])
-#
-#     @skip('Fix for new data model')
-#     def test_get_inventory_report_data(self):
-#         pass  # TODO
-#
-#     # TODO replace with test for inventory report
-#     @skip('Fix for new data model')
-#     def test_get_aggregated_building_report_data(self):
-#         params = {
-#             'start_date': (datetime.now() - timedelta(days=30)).strftime(
-#                 '%Y-%m-%d'),
-#             'end_date': datetime.now().strftime('%Y-%m-%d'),
-#             'x_var': 'energy_score',
-#             'y_var': 'year_built',
-#             'organization_id': self.org.pk
-#         }
-#
-#         response = self.client.get(
-#             reverse('seed:get_aggregated_building_report_data'), params)
-#         self.assertEqual('success', json.loads(response.content)['status'])
-#
-#     @skip('Fix for new data model')
-#     def test_get_aggregated_inventory_report_data(self):
-#         pass  # TODO
-
-
 class TestMCMViews(TestCase):
     expected_mappings = {
         'address': ['owner_address', 70],
@@ -1020,11 +942,13 @@ class InventoryViewTests(DeleteModelsTestCase):
 
         result = results[0]
         self.assertEquals(len(result['related']), 1)
-        self.assertEquals(result[column_name_mappings['address_line_1']], taxlot_state.address_line_1)
+        self.assertEquals(result[column_name_mappings['address_line_1']],
+                          taxlot_state.address_line_1)
         self.assertEquals(result[column_name_mappings['block_number']], taxlot_state.block_number)
 
         related = result['related'][0]
-        self.assertEquals(related[column_name_mappings_related['address_line_1']], property_state.address_line_1)
+        self.assertEquals(related[column_name_mappings_related['address_line_1']],
+                          property_state.address_line_1)
         self.assertEquals(related[column_name_mappings_related['pm_parent_property_id']],
                           property_state.pm_parent_property_id)
         # self.assertEquals(related['calculated_taxlot_ids'], taxlot_state.jurisdiction_tax_lot_id)
@@ -1144,11 +1068,13 @@ class InventoryViewTests(DeleteModelsTestCase):
 
         result = results[0]
         self.assertEquals(len(result['related']), 1)
-        self.assertEquals(result[column_name_mappings['address_line_1']], taxlot_state_1.address_line_1)
+        self.assertEquals(result[column_name_mappings['address_line_1']],
+                          taxlot_state_1.address_line_1)
         self.assertEquals(result[column_name_mappings['block_number']], taxlot_state_1.block_number)
 
         related = result['related'][0]
-        self.assertEquals(related[column_name_mappings_related['address_line_1']], property_state.address_line_1)
+        self.assertEquals(related[column_name_mappings_related['address_line_1']],
+                          property_state.address_line_1)
         self.assertEquals(related[column_name_mappings_related['pm_parent_property_id']],
                           property_state.pm_parent_property_id)
         # calculated_taxlot_ids = related['calculated_taxlot_ids'].split('; ')
@@ -1159,11 +1085,13 @@ class InventoryViewTests(DeleteModelsTestCase):
 
         result = results[1]
         self.assertEquals(len(result['related']), 1)
-        self.assertEquals(result[column_name_mappings['address_line_1']], taxlot_state_2.address_line_1)
+        self.assertEquals(result[column_name_mappings['address_line_1']],
+                          taxlot_state_2.address_line_1)
         self.assertEquals(result[column_name_mappings['block_number']], taxlot_state_2.block_number)
 
         related = result['related'][0]
-        self.assertEquals(related[column_name_mappings_related['address_line_1']], property_state.address_line_1)
+        self.assertEquals(related[column_name_mappings_related['address_line_1']],
+                          property_state.address_line_1)
         self.assertEquals(related[column_name_mappings_related['pm_parent_property_id']],
                           property_state.pm_parent_property_id)
 

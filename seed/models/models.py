@@ -223,37 +223,3 @@ class Enum(models.Model):
         return 'Enum: {0}: Values {1}'.format(
             self.enum_name, enums_string
         )
-
-
-# Deprecate
-class AttributeOption(models.Model):
-    """Holds a single conflicting value for a BuildingSnapshot attribute."""
-    value = models.TextField()
-    value_source = models.IntegerField(choices=SEED_DATA_SOURCES)
-    building_variant = models.ForeignKey(
-        'BuildingAttributeVariant',
-        null=True,
-        blank=True,
-        related_name='options'
-    )
-
-
-# Deprecate
-
-
-class BuildingAttributeVariant(models.Model):
-    """Place to keep the options of BuildingSnapshot attribute variants.
-
-    When we want to select which source's values should sit in the Canonical
-    Building's position, we need to draw from a set of options determined
-    during the matching phase. We should only have one 'Variant' container
-    per field_name, per snapshot.
-
-    """
-    field_name = models.CharField(max_length=255)
-    building_snapshot = models.ForeignKey(
-        'BuildingSnapshot', related_name='variants', null=True, blank=True
-    )
-
-    class Meta:
-        unique_together = ('field_name', 'building_snapshot')
