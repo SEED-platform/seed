@@ -21,7 +21,7 @@ DATABASES = {
         'NAME': 'seed',
         'USER': 'postgres',
         'PASSWORD': 'postgres',
-        'HOST': "127.0.0.1",
+        'HOST': '127.0.0.1',
         'PORT': '',
     },
 }
