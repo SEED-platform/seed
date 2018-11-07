@@ -273,7 +273,7 @@ class TestColumnsByInventory(TestCase):
         dm.column_mapped.add(column_a)
         dm.save()
         seed_models.Column.objects.create(
-            column_name=u"Apostrophe's Field",
+            column_name="Apostrophe's Field",
             table_name='PropertyState',
             organization=self.fake_org,
             is_extra_data=True
@@ -367,8 +367,8 @@ class TestColumnsByInventory(TestCase):
         # Check that display_name doesn't capitalize after apostrophe
         c = {
             'table_name': 'PropertyState',
-            'column_name': u"Apostrophe's Field",
-            'display_name': u"Apostrophe's Field",
+            'column_name': "Apostrophe's Field",
+            'display_name': "Apostrophe's Field",
             'is_extra_data': True,
             'merge_protection': 'Favor New',
             'data_type': 'None',

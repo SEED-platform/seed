@@ -108,20 +108,20 @@ class StatusLabel(TimeStampedModel):
     )
 
     DEFAULT_LABELS = [
-        "Residential",
-        "Non-Residential",
-        "Violation",
-        "Compliant",
-        "Missing Data",
-        "Questionable Report",
-        "Update Bldg Info",
-        "Call",
-        "Email",
-        "High EUI",
-        "Low EUI",
-        "Exempted",
-        "Extension",
-        "Change of Ownership",
+        'Residential',
+        'Non-Residential',
+        'Violation',
+        'Compliant',
+        'Missing Data',
+        'Questionable Report',
+        'Update Bldg Info',
+        'Call',
+        'Email',
+        'High EUI',
+        'Low EUI',
+        'Exempted',
+        'Extension',
+        'Change of Ownership',
     ]
 
     class Meta:
@@ -129,7 +129,7 @@ class StatusLabel(TimeStampedModel):
         ordering = ['-name']
 
     def __str__(self):
-        return u"{0} - {1}".format(self.name, self.color)
+        return '{0} - {1}'.format(self.name, self.color)
 
     def to_dict(self):
         return obj_to_dict(self)
@@ -142,13 +142,13 @@ class Compliance(TimeStampedModel):
         choices=COMPLIANCE_CHOICES,
         default=BENCHMARK_COMPLIANCE_CHOICE
     )
-    start_date = models.DateField(_("start_date"), null=True, blank=True)
-    end_date = models.DateField(_("end_date"), null=True, blank=True)
-    deadline_date = models.DateField(_("deadline_date"), null=True, blank=True)
+    start_date = models.DateField(_('start_date'), null=True, blank=True)
+    end_date = models.DateField(_('end_date'), null=True, blank=True)
+    deadline_date = models.DateField(_('deadline_date'), null=True, blank=True)
     project = models.ForeignKey(Project, verbose_name=_('Project'), )
 
     def __str__(self):
-        return u"Compliance %s for project %s" % (
+        return 'Compliance %s for project %s' % (
             self.compliance_type, self.project
         )
 

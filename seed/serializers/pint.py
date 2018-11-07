@@ -70,7 +70,7 @@ def pretty_units(quantity):
     hack; can lose it when Pint gets something like a "{:~U}" format code
     see https://github.com/hgrecco/pint/pull/231
     """
-    return u"{:~P}".format(quantity).split(" ")[1]
+    return '{:~P}'.format(quantity).split(' ')[1]
 
 
 def pretty_units_from_spec(unit_spec):
@@ -91,13 +91,13 @@ def add_pint_unit_suffix(organization, column):
         # the columns. The mere presence of a unit suffix will tell us in the UI
         # that this is a Pint-aware column
         stripped_name = re.sub(r' \(pint\)$', '', column_name, flags=re.IGNORECASE)
-        return stripped_name + u" ({})".format(display_units)
+        return stripped_name + ' ({})'.format(display_units)
 
     try:
-        if column['dataType'] == "area":
+        if column['dataType'] == 'area':
             column['displayName'] = format_column_name(
                 column['displayName'], organization.display_units_area)
-        elif column['dataType'] == "eui":
+        elif column['dataType'] == 'eui':
             column['displayName'] = format_column_name(
                 column['displayName'], organization.display_units_eui)
     except KeyError:

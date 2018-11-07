@@ -50,21 +50,21 @@ class GreenAssessment(models.Model):
     recognition_type    n/a                     Assessment Recognition Type
     description n/a                             n/a
     """
-    AWARD = "AWD"
-    CERTIFICATION = "CRT"
-    LABEL = "LBL"
-    PARTICIPANT = "PRT"
-    RATING = "RAT"
-    SCORE = "SCR"
-    ZERO = "ZER"
+    AWARD = 'AWD'
+    CERTIFICATION = 'CRT'
+    LABEL = 'LBL'
+    PARTICIPANT = 'PRT'
+    RATING = 'RAT'
+    SCORE = 'SCR'
+    ZERO = 'ZER'
     RECOGNITION_TYPE_CHOICES = (
-        (AWARD, "Award"),
-        (CERTIFICATION, "Certification"),
-        (LABEL, "Label"),
-        (PARTICIPANT, "Participant"),
-        (RATING, "Rating"),
-        (SCORE, "Score"),
-        (ZERO, "Zero Energy Ready Home")
+        (AWARD, 'Award'),
+        (CERTIFICATION, 'Certification'),
+        (LABEL, 'Label'),
+        (PARTICIPANT, 'Participant'),
+        (RATING, 'Rating'),
+        (SCORE, 'Score'),
+        (ZERO, 'Zero Energy Ready Home')
     )
     # A DOE Zero Energy Ready Home is a high performance home which is so energy
     # efficient, that a renewable energy system can offset all or most of its
@@ -72,7 +72,7 @@ class GreenAssessment(models.Model):
 
     def __str__(self):
         # pylint:disable=no-member
-        return u"{}, {}, {}".format(
+        return '{}, {}, {}'.format(
             self.award_body, self.name,
             self.get_recognition_type_display()
         )
@@ -98,7 +98,7 @@ class GreenAssessment(models.Model):
     )
 
     class Meta:
-        unique_together = ("organization", "name", "award_body")
+        unique_together = ('organization', 'name', 'award_body')
 
 
 class GreenAssessmentProperty(models.Model):
@@ -148,7 +148,7 @@ class GreenAssessmentProperty(models.Model):
     }
 
     def __str__(self):
-        return u"{}, {}: {}".format(
+        return '{}, {}: {}'.format(
             self.body, self.name, self.metric if self.metric else self.rating
         )
 

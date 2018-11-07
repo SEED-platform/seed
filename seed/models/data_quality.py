@@ -61,16 +61,16 @@ def format_pint_violation(rule, source_value):
     pretty_rule_units = pretty_units(rule_value)
 
     if incoming_data_units != rule_units:
-        formatted_value = u"{:.1f} {} → {:.1f} {}".format(
+        formatted_value = '{:.1f} {} → {:.1f} {}'.format(
             source_value.magnitude, pretty_source_units,
             rule_value.magnitude, pretty_rule_units,
         )
     else:
-        formatted_value = u"{:.1f} {}".format(source_value.magnitude, pretty_rule_units)
+        formatted_value = '{:.1f} {}'.format(source_value.magnitude, pretty_rule_units)
     if rule.min is not None:
-        formatted_min = u"{:.1f} {}".format(rule.min, pretty_rule_units)
+        formatted_min = '{:.1f} {}'.format(rule.min, pretty_rule_units)
     if rule.max is not None:
-        formatted_max = u"{:.1f} {}".format(rule.max, pretty_rule_units)
+        formatted_max = '{:.1f} {}'.format(rule.max, pretty_rule_units)
     return (formatted_value, formatted_min, formatted_max)
 
 

@@ -26,7 +26,7 @@ def create_map(path_in, path_out):
     :return: None
     """
     bedes_flag = mapper.Mapping.META_BEDES
-    infile = csv.reader(open(path_in, "rU"))
+    infile = csv.reader(open(path_in, 'rU'))
     header = infile.next()
     assert len(header) >= 5
     map = {}
@@ -51,7 +51,7 @@ def create_map(path_in, path_out):
     if path_out == '-':
         outfile = sys.stdout
     else:
-        outfile = open(path_out, "w")
+        outfile = open(path_out, 'w')
     json.dump(map, outfile, encoding='latin_1')
 
 
@@ -65,9 +65,9 @@ def apply_map(map_path, data_path, out_file):
     Return:
       None
     """
-    map_file = open(map_path, "r")
+    map_file = open(map_path, 'r')
     mapping = mapper.Mapping(map_file, encoding='latin_1')
-    data_file = open(data_path, "rU")
+    data_file = open(data_path, 'rU')
     data_csv = csv.reader(data_file)
     # map each field
     d = {}
@@ -75,18 +75,18 @@ def apply_map(map_path, data_path, out_file):
     matched, nomatch = mapping.apply(input_fields)
     for field, m in matched.items():
         d[field] = m.as_json()
-        print("Mapped {} => {}".format(field, m.field))
+        print('Mapped {} => {}'.format(field, m.field))
     for field in nomatch:
-        print("* No mapping found for input field: {}".format(field))
+        print('* No mapping found for input field: {}'.format(field))
         d[field] = mapper.MapItem(field, None).as_json()
     # write mapping as a JSON
     try:
         json.dump(d, out_file, ensure_ascii=True)
     except BaseException:
-        # print("** Error: While writing:\n{}".format(d))
+        # print('** Error: While writing:\n{}'.format(d))
         pass
     # write stats
-    print("Mapped {} fields: {} OK and {} did not match".format(len(input_fields), len(matched), len(nomatch)))
+    print('Mapped {} fields: {} OK and {} did not match'.format(len(input_fields), len(matched), len(nomatch)))
 
 
 def find_duplicates(map_path, data_path, out_file):
@@ -99,9 +99,9 @@ def find_duplicates(map_path, data_path, out_file):
     Return:
       None
     """
-    map_file = open(map_path, "r")
+    map_file = open(map_path, 'r')
     mapping = mapper.Mapping(map_file, encoding='latin-1')
-    data_file = open(data_path, "rU")
+    data_file = open(data_path, 'rU')
     data_csv = csv.reader(data_file)
     hdr = data_csv.next()
     seen_values, dup = {}, {}
@@ -124,7 +124,7 @@ def find_duplicates(map_path, data_path, out_file):
     for value, keys in dup.items():
         keylist = ' | '.join(keys)
         out_file.write(
-            "({n:d}) {v}: {kl}\n".format(
+            '({n:d}) {v}: {kl}\n'.format(
                 n=len(keys),
                 v=value,
                 kl=keylist,

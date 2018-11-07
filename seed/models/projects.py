@@ -79,7 +79,7 @@ class Project(TimeStampedModel):
         return self.super_organization
 
     def __str__(self):
-        return u"Project %s" % (self.name,)
+        return "Project %s" % (self.name,)
 
     def get_compliance(self):
         if self.has_compliance:
@@ -134,8 +134,8 @@ class ProjectTaxLotView(TimeStampedModel):
     class Meta:
         ordering = ['project', 'taxlot_view']
         unique_together = ('taxlot_view', 'project')
-        verbose_name = _("project taxlot view")
-        verbose_name_plural = _("project taxlot views")
+        verbose_name = _('project taxlot view')
+        verbose_name_plural = _('project taxlot views')
 
     def __str__(self):
-        return u"{0} - {1}".format(self.taxlot_view, self.project.name)
+        return '{0} - {1}'.format(self.taxlot_view, self.project.name)

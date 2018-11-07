@@ -107,14 +107,14 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
         ps1 = PropertyState.objects.create(
             organization=self.org,
             address_line_1='123 fake st',
-            extra_data={"a": "result", u"Site EUI²": 90.5, "Unicode in value": u"EUI²"},
+            extra_data={'a': 'result', 'Site EUI²': 90.5, 'Unicode in value': 'EUI²'},
             data_state=DATA_STATE_IMPORT,
             import_file_id=0,
         )
         ps2 = PropertyState.objects.create(
             organization=self.org,
             address_line_1='123 fake st',
-            extra_data={"a": "result", u"Site EUI2": 90.5, "Unicode in value": "EUI2"},
+            extra_data={'a': 'result', 'Site EUI2': 90.5, 'Unicode in value': 'EUI2'},
             data_state=DATA_STATE_IMPORT,
             import_file_id=0,
         )
@@ -127,7 +127,7 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
         ps1 = PropertyState.objects.create(
             organization=self.org,
             address_line_1='123 fake st',
-            extra_data={"a": "result"},
+            extra_data={'a': 'result'},
             release_date=ps1_dt,
             data_state=DATA_STATE_IMPORT,
             import_file_id=0,
@@ -135,7 +135,7 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
         ps2 = PropertyState.objects.create(
             organization=self.org,
             address_line_1='123 fake st',
-            extra_data={"a": "result"},
+            extra_data={'a': 'result'},
             release_date=datetime.datetime(2010, 1, 1, 0, 0, tzinfo=tz.utc),
             data_state=DATA_STATE_IMPORT,
             import_file_id=0,

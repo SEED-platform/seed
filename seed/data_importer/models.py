@@ -76,22 +76,22 @@ class NotDeletableModel(models.Model):
 class ImportRecord(NotDeletableModel):
     # TODO: use these instead of the others defined in models.py
     IMPORT_STATUSES = [
-        (STATUS_UPLOADING, "Uploading"),
-        (STATUS_MACHINE_MAPPING, "Machine Mapping"),
-        (STATUS_MAPPING, "Needs Mapping"),
-        (STATUS_MACHINE_CLEANING, "Machine Cleaning"),
-        (STATUS_CLEANING, "Needs Cleaning"),
-        (STATUS_READY_TO_PRE_MERGE, "Ready to Merge"),
-        (STATUS_PRE_MERGING, "Merging"),
-        (STATUS_READY_TO_MERGE, "Merge Complete"),
-        (STATUS_MERGING, "Importing"),
-        (STATUS_LIVE, "Live"),
-        (STATUS_UNKNOWN, "Unknown"),
-        (STATUS_MATCHING, "Matching")
+        (STATUS_UPLOADING, 'Uploading'),
+        (STATUS_MACHINE_MAPPING, 'Machine Mapping'),
+        (STATUS_MAPPING, 'Needs Mapping'),
+        (STATUS_MACHINE_CLEANING, 'Machine Cleaning'),
+        (STATUS_CLEANING, 'Needs Cleaning'),
+        (STATUS_READY_TO_PRE_MERGE, 'Ready to Merge'),
+        (STATUS_PRE_MERGING, 'Merging'),
+        (STATUS_READY_TO_MERGE, 'Merge Complete'),
+        (STATUS_MERGING, 'Importing'),
+        (STATUS_LIVE, 'Live'),
+        (STATUS_UNKNOWN, 'Unknown'),
+        (STATUS_MATCHING, 'Matching')
     ]
 
-    name = models.CharField(max_length=255, blank=True, null=True, verbose_name="Name Your Dataset",
-                            default="Unnamed Dataset")
+    name = models.CharField(max_length=255, blank=True, null=True, verbose_name='Name Your Dataset',
+                            default='Unnamed Dataset')
     app = models.CharField(max_length=64, blank=False, null=False, verbose_name='Destination App',
                            help_text='The application (e.g. BPD or SEED) for this dataset',
                            default='seed')
@@ -100,7 +100,7 @@ class ImportRecord(NotDeletableModel):
     finish_time = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(blank=True, null=True)
     updated_at = models.DateTimeField(blank=True, null=True, auto_now=True)
-    last_modified_by = models.ForeignKey('landing.SEEDUser', related_name="modified_import_records",
+    last_modified_by = models.ForeignKey('landing.SEEDUser', related_name='modified_import_records',
                                          blank=True,
                                          null=True)
     notes = models.TextField(blank=True, null=True)
@@ -126,10 +126,10 @@ class ImportRecord(NotDeletableModel):
     # source_taxonomy = models.ForeignKey('lin.Taxonomy', blank=True, null=True)
 
     def __str__(self):
-        return "ImportRecord %s: %s, started at %s" % (self.pk, self.name, self.start_time)
+        return 'ImportRecord %s: %s, started at %s' % (self.pk, self.name, self.start_time)
 
     class Meta:
-        ordering = ("-updated_at",)
+        ordering = ('-updated_at',)
 
     def delete(self, *args, **kwargs):
         super(ImportRecord, self).delete(*args, **kwargs)
@@ -138,11 +138,11 @@ class ImportRecord(NotDeletableModel):
 
     @property
     def files(self):
-        return self.importfile_set.all().order_by("file")
+        return self.importfile_set.all().order_by('file')
 
     @property
     def num_files(self):
-        if not hasattr(self, "_num_files"):
+        if not hasattr(self, '_num_files'):
             self._num_files = self.importfile_set.count()
         return self._num_files
 
@@ -190,7 +190,7 @@ class ImportRecord(NotDeletableModel):
 
     @property
     def num_ready_for_import(self):
-        if not hasattr(self, "_num_ready_for_import"):
+        if not hasattr(self, '_num_ready_for_import'):
             completed = 0
             for f in self.files:
                 if f.ready_to_import:
@@ -217,7 +217,7 @@ class ImportRecord(NotDeletableModel):
 
     @property
     def percent_ready_for_import(self):
-        if not hasattr(self, "_percent_ready_for_import"):
+        if not hasattr(self, '_percent_ready_for_import'):
             total = 0
             completed = 0
             for f in self.files:
@@ -232,7 +232,7 @@ class ImportRecord(NotDeletableModel):
 
     @property
     def num_failed_tablecolumnmappings(self):
-        if not hasattr(self, "_num_failed_tablecolumnmappings"):
+        if not hasattr(self, '_num_failed_tablecolumnmappings'):
             total = 0
             for f in self.files:
                 total += f.num_failed_tablecolumnmappings
@@ -241,7 +241,7 @@ class ImportRecord(NotDeletableModel):
 
     @property
     def num_coercion_errors(self):
-        if not hasattr(self, "_num_failed_num_coercion_errors"):
+        if not hasattr(self, '_num_failed_num_coercion_errors'):
             total = 0
             for f in self.files:
                 total += f.num_coercion_errors
@@ -251,7 +251,7 @@ class ImportRecord(NotDeletableModel):
 
     @property
     def num_validation_errors(self):
-        if not hasattr(self, "_num_failed_validation_errors"):
+        if not hasattr(self, '_num_failed_validation_errors'):
             total = 0
             for f in self.files:
                 total += f.num_validation_errors
@@ -260,7 +260,7 @@ class ImportRecord(NotDeletableModel):
 
     @property
     def num_rows(self):
-        if not hasattr(self, "_num_rows"):
+        if not hasattr(self, '_num_rows'):
             total = 0
             for f in self.files:
                 total += f.num_rows
@@ -269,7 +269,7 @@ class ImportRecord(NotDeletableModel):
 
     @property
     def num_columns(self):
-        if not hasattr(self, "_num_columns"):
+        if not hasattr(self, '_num_columns'):
             total = 0
             for f in self.files:
                 total += f.num_columns
@@ -278,7 +278,7 @@ class ImportRecord(NotDeletableModel):
 
     @property
     def total_file_size(self):
-        if not hasattr(self, "_total_file_size"):
+        if not hasattr(self, '_total_file_size'):
             total = 0
             for f in self.files:
                 total += f.file_size_in_bytes
@@ -299,21 +299,21 @@ class ImportRecord(NotDeletableModel):
         """
         Cache key used to track percentage completion for merge task.
         """
-        return "merge_progress_pct_%s" % self.pk
+        return 'merge_progress_pct_%s' % self.pk
 
     @property
     def match_progress_key(self):
         """
         Cache key used to track percentage completion for merge task.
         """
-        return "match_progress_pct_%s" % self.pk
+        return 'match_progress_pct_%s' % self.pk
 
     @property
     def merge_status_key(self):
         """
         Cache key used to set/get status messages for merge task.
         """
-        return "merge_import_record_status_%s" % self.pk
+        return 'merge_import_record_status_%s' % self.pk
 
     @property
     def pct_merge_complete(self):
@@ -321,11 +321,11 @@ class ImportRecord(NotDeletableModel):
 
     @property
     def merge_seconds_remaining_key(self):
-        return "merge_seconds_remaining_%s" % self.pk
+        return 'merge_seconds_remaining_%s' % self.pk
 
     @property
     def premerge_progress_key(self):
-        return "premerge_progress_pct_%s" % self.pk
+        return 'premerge_progress_pct_%s' % self.pk
 
     @property
     def pct_premerge_complete(self):
@@ -333,15 +333,15 @@ class ImportRecord(NotDeletableModel):
 
     @property
     def premerge_seconds_remaining_key(self):
-        return "premerge_seconds_remaining_%s" % self.pk
+        return 'premerge_seconds_remaining_%s' % self.pk
 
     @property
     def MAPPING_ACTIVE_KEY(self):
-        return "IR_MAPPING_ACTIVE%s" % self.pk
+        return 'IR_MAPPING_ACTIVE%s' % self.pk
 
     @property
     def MAPPING_QUEUED_KEY(self):
-        return "IR_MAPPING_QUEUED%s" % self.pk
+        return 'IR_MAPPING_QUEUED%s' % self.pk
 
     @property
     def estimated_seconds_remaining(self):
@@ -431,15 +431,15 @@ class ImportRecord(NotDeletableModel):
 
     @property
     def pre_merge_url(self):
-        return reverse("%s:start_pre_merge" % self.app_namespace, args=(self.pk,))
+        return reverse('%s:start_pre_merge' % self.app_namespace, args=(self.pk,))
 
     @property
     def worksheet_url(self):
-        return reverse("%s:worksheet" % self.app_namespace, args=(self.pk,))
+        return reverse('%s:worksheet' % self.app_namespace, args=(self.pk,))
 
     @property
     def add_files_url(self):
-        return reverse("%s:new_import" % self.app_namespace, args=(self.pk,))
+        return reverse('%s:new_import' % self.app_namespace, args=(self.pk,))
 
     @property
     def status_url(self):
@@ -460,35 +460,35 @@ class ImportRecord(NotDeletableModel):
 
     @property
     def premerge_progress_url(self):
-        return reverse("data_importer:pre_merge", args=(self.pk,))
+        return reverse('data_importer:pre_merge', args=(self.pk,))
 
     @property
     def merge_progress_url(self):
-        return reverse("data_importer:merge_progress", args=(self.pk,))
+        return reverse('data_importer:merge_progress', args=(self.pk,))
 
     @property
     def start_merge_url(self):
-        return reverse("%s:merge" % self.app_namespace, args=(self.pk,))
+        return reverse('%s:merge' % self.app_namespace, args=(self.pk,))
 
     @property
     def merge_url(self):
-        return reverse("%s:merge" % self.app_namespace, args=(self.pk,))
+        return reverse('%s:merge' % self.app_namespace, args=(self.pk,))
 
     @property
     def dashboard_url(self):
-        return reverse("%s:dashboard" % self.app_namespace, args=(self.pk,))
+        return reverse('%s:dashboard' % self.app_namespace, args=(self.pk,))
 
     @property
     def search_url(self):
-        return reverse("data_importer:search", args=(self.pk,))
+        return reverse('data_importer:search', args=(self.pk,))
 
     @property
     def delete_url(self):
-        return reverse("%s:delete" % self.app_namespace, args=(self.pk,))
+        return reverse('%s:delete' % self.app_namespace, args=(self.pk,))
 
     @property
     def save_import_meta_url(self):
-        return reverse("data_importer:save_import_meta", args=(self.pk,))
+        return reverse('data_importer:save_import_meta', args=(self.pk,))
 
     @property
     def display_as_in_progress(self):
@@ -532,11 +532,11 @@ class ImportRecord(NotDeletableModel):
 
     @classmethod
     def SUMMARY_ANALYSIS_ACTIVE_KEY(cls, pk):
-        return "SUMMARY_ANALYSIS_ACTIVE%s" % pk
+        return 'SUMMARY_ANALYSIS_ACTIVE%s' % pk
 
     @classmethod
     def SUMMARY_ANALYSIS_QUEUED_KEY(cls, pk):
-        return "SUMMARY_ANALYSIS_QUEUED%s" % pk
+        return 'SUMMARY_ANALYSIS_QUEUED%s' % pk
 
     @property
     def form(self, data=None):
@@ -546,7 +546,7 @@ class ImportRecord(NotDeletableModel):
     def prefixed_pk(self, pk, max_len_before_prefix=(SOURCE_FACILITY_ID_MAX_LEN - len('IMP1234-'))):
         """This is a total hack to support prefixing until source_facility_id
         is turned into a proper pk.  Prefixes a given pk with the import_record"""
-        if len("%s" % pk) > max_len_before_prefix:
+        if len('%s' % pk) > max_len_before_prefix:
             m = hashlib.md5()
             m.update(pk)
             digest = m.hexdigest()
@@ -556,21 +556,21 @@ class ImportRecord(NotDeletableModel):
             transformed_pk = digest
         else:
             transformed_pk = pk
-        return "IMP%s-%s" % (self.pk, transformed_pk)
+        return 'IMP%s-%s' % (self.pk, transformed_pk)
 
     @property
     def to_json(self):
         try:
-            last_modified_by = ""
+            last_modified_by = ''
             try:
                 if self.last_modified_by:
-                    last_modified_by = self.last_modified_by.email or ""
+                    last_modified_by = self.last_modified_by.email or ''
             except User.DoesNotExist:
                 pass
             return json.dumps({
                 'name': self.name,
                 'app': self.app,
-                'last_modified_time_ago': timesince(self.updated_at).split(",")[0],
+                'last_modified_time_ago': timesince(self.updated_at).split(',')[0],
                 'last_modified_seconds_ago': -1 * (
                     self.updated_at - timezone.now()).total_seconds(),
                 'last_modified_by': last_modified_by,
@@ -619,10 +619,10 @@ class ImportRecord(NotDeletableModel):
                 progresses.append({
                     'pk': f.pk,
                     'filename': f.filename_only,
-                    'delete_url': reverse("%s:delete_file" % self.app_namespace, args=(f.pk,)),
-                    'mapping_url': reverse("%s:mapping" % self.app_namespace, args=(f.pk,)),
-                    'cleaning_url': reverse("%s:cleaning" % self.app_namespace, args=(f.pk,)),
-                    'matching_url': reverse("%s:matching" % self.app_namespace, args=(f.pk,)),
+                    'delete_url': reverse('%s:delete_file' % self.app_namespace, args=(f.pk,)),
+                    'mapping_url': reverse('%s:mapping' % self.app_namespace, args=(f.pk,)),
+                    'cleaning_url': reverse('%s:cleaning' % self.app_namespace, args=(f.pk,)),
+                    'matching_url': reverse('%s:matching' % self.app_namespace, args=(f.pk,)),
                     'num_columns': f.num_columns,
                     'num_rows': f.num_rows,
                     'num_mapping_complete': f.num_mapping_complete,
@@ -654,14 +654,14 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     import_record = models.ForeignKey(ImportRecord)
     cycle = models.ForeignKey('seed.Cycle', blank=True, null=True)
     file = models.FileField(
-        upload_to="data_imports", max_length=500, blank=True, null=True
+        upload_to='data_imports', max_length=500, blank=True, null=True
     )
     # Save the name of the raw file that was uploaded before it was saved to disk with the unique
     # extension.
     uploaded_filename = models.CharField(blank=True, max_length=255)
     file_size_in_bytes = models.IntegerField(blank=True, null=True)
     export_file = models.FileField(
-        upload_to="data_imports/exports", blank=True, null=True
+        upload_to='data_imports/exports', blank=True, null=True
     )
     cached_first_row = models.TextField(blank=True, null=True)
     # Save a list of the final column mapping names that were used for this file.
@@ -690,11 +690,11 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     source_type = models.CharField(null=True, blank=True, max_length=63)
     # program names should match a value in common.mapper.Programs
     source_program = models.CharField(blank=True, max_length=80)  # don't think that this is used
-    # program version is in format "x.y[.z]"
+    # program version is in format 'x.y[.z]'
     source_program_version = models.CharField(blank=True, max_length=40)  # don't think this is used
 
     def __str__(self):
-        return "%s" % self.file.name
+        return '%s' % self.file.name
 
     def save(self, in_validation=False, *args, **kwargs):
         super(ImportFile, self).save(*args, **kwargs)
@@ -719,7 +719,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
 
     @property
     def local_file(self):
-        if not hasattr(self, "_local_file"):
+        if not hasattr(self, '_local_file'):
             temp_file = tempfile.NamedTemporaryFile(mode='w+b', delete=False)
             for chunk in self.file.chunks(1024):
                 temp_file.write(chunk)
@@ -744,7 +744,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
         for row in self.data_rows:
             cleaned_row = []
             for tcm in self.tablecolumnmappings:
-                val = u"%s" % row[tcm.order - 1]
+                val = '%s' % row[tcm.order - 1]
                 try:
                     if tcm.datacoercions.all().filter(source_string=val).count() > 0:
                         cleaned_row.append(
@@ -752,7 +752,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
                     else:
                         cleaned_row.append(val)
                 except BaseException:
-                    _log.error("problem with val: {}".format(val))
+                    _log.error('problem with val: {}'.format(val))
                     from traceback import print_exc
                     print_exc()
             yield cleaned_row
@@ -768,9 +768,9 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
             if counter <= NUM_LINES_TO_CAPTURE:
                 if counter == 1:
                     self.cached_first_row = ROW_DELIMITER.join(row)
-                    self.cached_second_to_fifth_row = ""
+                    self.cached_second_to_fifth_row = ''
                 else:
-                    self.cached_second_to_fifth_row += "%s\n" % ROW_DELIMITER.join(row)
+                    self.cached_second_to_fifth_row += '%s\n' % ROW_DELIMITER.join(row)
 
         self.num_rows = counter
         if self.has_header_row:
@@ -779,7 +779,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
 
     @property
     def first_row_columns(self):
-        if not hasattr(self, "_first_row_columns"):
+        if not hasattr(self, '_first_row_columns'):
             if self.cached_first_row:
                 self._first_row_columns = self.cached_first_row.split(ROW_DELIMITER)
             else:
@@ -802,8 +802,8 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
 
     @property
     def second_to_fifth_rows(self):
-        if not hasattr(self, "_second_to_fifth_row"):
-            if self.cached_second_to_fifth_row == "":
+        if not hasattr(self, '_second_to_fifth_row'):
+            if self.cached_second_to_fifth_row == '':
                 self._second_to_fifth_row = []
             else:
                 self._second_to_fifth_row = [r.split(ROW_DELIMITER) for r in
@@ -813,12 +813,12 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
 
     @property
     def tablecolumnmappings(self):
-        return self.tablecolumnmapping_set.all().filter(active=True).order_by("order", ).distinct()
+        return self.tablecolumnmapping_set.all().filter(active=True).order_by('order', ).distinct()
 
     @property
     def tablecolumnmappings_failed(self):
         return self.tablecolumnmappings.filter(
-            Q(destination_field="") | Q(destination_field=None) | Q(destination_model="") | Q(
+            Q(destination_field='') | Q(destination_field=None) | Q(destination_model='') | Q(
                 destination_model=None)).exclude(ignored=True).filter(active=True).distinct()
 
     @property
@@ -863,12 +863,12 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     @property
     def filename_only(self):
         name = unquote(self.file.name)
-        return name[name.rfind("/") + 1:name.rfind(".")]
+        return name[name.rfind('/') + 1:name.rfind('.')]
 
     @property
     def filename(self):
         name = unquote(self.file.name)
-        return name[name.rfind("/") + 1:len(name)]
+        return name[name.rfind('/') + 1:len(name)]
 
     @property
     def ready_to_import(self):
@@ -886,9 +886,9 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
             row_number = 0
             for tcm in self.tablecolumnmappings:
                 row_number += 1
-                error_message_text = ""
+                error_message_text = ''
                 if tcm.error_message_text:
-                    error_message_text = tcm.error_message_text.replace("\n", "<br>")
+                    error_message_text = tcm.error_message_text.replace('\n', '<br>')
 
                 tcms.append({
                     'row_number': row_number,
@@ -910,15 +910,15 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
 
     @property
     def QUEUED_TCM_SAVE_COUNTER_KEY(self):
-        return "QUEUED_TCM_SAVE_%s" % self.pk
+        return 'QUEUED_TCM_SAVE_%s' % self.pk
 
     @property
     def QUEUED_TCM_DATA_KEY(self):
-        return "QUEUED_TCM_DATA_KEY%s" % self.pk
+        return 'QUEUED_TCM_DATA_KEY%s' % self.pk
 
     @property
     def UPDATING_TCMS_KEY(self):
-        return "UPDATING_TCMS_KEY%s" % self.pk
+        return 'UPDATING_TCMS_KEY%s' % self.pk
 
     def update_tcms_from_save(self, json_data, save_counter):
         # Check save_counter vs queued_save_counters.
@@ -928,9 +928,9 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
                 set_cache_state(self.UPDATING_TCMS_KEY, True)
                 for d in json.loads(json_data):
 
-                    tcm = TableColumnMapping.objects.get(pk=d["pk"])
+                    tcm = TableColumnMapping.objects.get(pk=d['pk'])
                     for field_name in TableColumnMapping.fields_to_save:
-                        if not field_name == "pk":
+                        if not field_name == 'pk':
                             setattr(tcm, field_name, d[field_name])
                     tcm.was_a_human_decision = True
                     tcm.save()
@@ -955,7 +955,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
 
     @property
     def CLEANING_PROGRESS_KEY(self):
-        return "CLEANING_PROGRESS_KEY%s" % self.pk
+        return 'CLEANING_PROGRESS_KEY%s' % self.pk
 
     @property
     def cleaning_progress_pct(self):
@@ -970,7 +970,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
 
     @classmethod
     def CLEANING_QUEUED_CACHE_KEY_GENERATOR(cls, pk):
-        return "CLEANING_QUEUED_CACHE_KEY%s" % pk
+        return 'CLEANING_QUEUED_CACHE_KEY%s' % pk
 
     @property
     def CLEANING_QUEUED_CACHE_KEY(self):
@@ -978,7 +978,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
 
     @classmethod
     def CLEANING_ACTIVE_CACHE_KEY_GENERATOR(cls, pk):
-        return "CLEANING_ACTIVE_CACHE_KEY%s" % pk
+        return 'CLEANING_ACTIVE_CACHE_KEY%s' % pk
 
     @property
     def CLEANING_ACTIVE_CACHE_KEY(self):
@@ -994,24 +994,24 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
 
     @property
     def SAVE_COUNTER_CACHE_KEY(self):
-        return "SAVE_COUNTER_KEY%s" % self.pk
+        return 'SAVE_COUNTER_KEY%s' % self.pk
 
     @property
     def EXPORT_READY_CACHE_KEY(self):
-        return "EXPORT_READY%s" % self.pk
+        return 'EXPORT_READY%s' % self.pk
 
     @property
     def EXPORT_PCT_COMPLETE_CACHE_KEY(self):
-        return "EXPORT_PCT_COMPLETE%s" % self.pk
+        return 'EXPORT_PCT_COMPLETE%s' % self.pk
 
     @property
     def EXPORT_QUEUED_CACHE_KEY(self):
-        return "EXPORT_QUEUED%s" % self.pk
+        return 'EXPORT_QUEUED%s' % self.pk
 
     @property
     def export_ready(self):
         return get_cache_state(self.EXPORT_READY_CACHE_KEY,
-                               True) and self.export_file is not None and self.export_file != ""
+                               True) and self.export_file is not None and self.export_file != ''
 
     @property
     def export_generation_pct_complete(self):
@@ -1020,24 +1020,24 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     @property
     def export_url(self):
         ns = self.import_record.app_namespace
-        return reverse("%s:download_export" % ns, args=(self.pk,))
+        return reverse('%s:download_export' % ns, args=(self.pk,))
 
     @property
     def generate_url(self):
         ns = self.import_record.app_namespace
-        return reverse("%s:prepare_export" % ns, args=(self.pk,))
+        return reverse('%s:prepare_export' % ns, args=(self.pk,))
 
     @property
     def merge_progress_url(self):
-        return reverse("data_importer:merge_progress", args=(self.pk,))
+        return reverse('data_importer:merge_progress', args=(self.pk,))
 
     @property
     def premerge_progress_url(self):
-        return reverse("data_importer:pre_merge_progress", args=(self.pk,))
+        return reverse('data_importer:pre_merge_progress', args=(self.pk,))
 
     @property
     def force_restart_cleaning_url(self):
-        return reverse("data_importer:force_restart_cleaning", args=(self.pk,))
+        return reverse('data_importer:force_restart_cleaning', args=(self.pk,))
 
     def find_unmatched_states(self, kls):
         """Get unmatched property states' id info from an import file.
@@ -1052,7 +1052,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
         )
 
         assert kls in [PropertyState,
-                       TaxLotState], "Must be one of our State objects [PropertyState, TaxLotState]!"
+                       TaxLotState], 'Must be one of our State objects [PropertyState, TaxLotState]!'
 
         return kls.objects.filter(
             data_state__in=[DATA_STATE_MAPPING],
@@ -1091,25 +1091,25 @@ class TableColumnMapping(models.Model):
     error_message_text = models.TextField(blank=True, null=True)
     active = models.BooleanField(default=True)
 
-    fields_to_save = ["pk", "destination_model", "destination_field", "ignored"]
+    fields_to_save = ['pk', 'destination_model', 'destination_field', 'ignored']
 
     class Meta:
-        ordering = ("order",)
+        ordering = ('order',)
 
     def __str__(self, *args, **kwargs):
-        return "%s from %s -> %s (%s)" % (
+        return '%s from %s -> %s (%s)' % (
             self.source_string, self.import_file, self.destination_model, self.destination_field,)
 
     def save(self, *args, **kwargs):
         if not self.app:
             self.app = self.import_file.import_record.app
         if self.ignored or not self.is_mapped:
-            self.error_message_text = ""
+            self.error_message_text = ''
         super(TableColumnMapping, self).save(*args, **kwargs)
 
     @property
     def source_string_sha(self):
-        if not hasattr(self, "_source_string_sha"):
+        if not hasattr(self, '_source_string_sha'):
             m = hashlib.md5()
             m.update(self.source_string)
             self._source_string_sha = m.hexdigest()
@@ -1117,23 +1117,23 @@ class TableColumnMapping(models.Model):
 
     @property
     def combined_model_and_field(self):
-        return "%s.%s" % (self.destination_model, self.destination_field)
+        return '%s.%s' % (self.destination_model, self.destination_field)
 
     @property
     def friendly_destination_model(self):
-        return "%s" % (de_camel_case(self.destination_model),)
+        return '%s' % (de_camel_case(self.destination_model),)
 
     @property
     def friendly_destination_field(self):
-        return "%s" % (self.destination_field.replace("_", " ").replace("-", "").capitalize(),)
+        return '%s' % (self.destination_field.replace('_', ' ').replace('-', '').capitalize(),)
 
     @property
     def friendly_destination_model_and_field(self):
         if self.ignored:
-            return "Ignored"
+            return 'Ignored'
         elif self.destination_field and self.destination_model:
-            return "%s: %s" % (self.friendly_destination_model, self.friendly_destination_field,)
-        return "Unmapped"
+            return '%s: %s' % (self.friendly_destination_model, self.friendly_destination_field,)
+        return 'Unmapped'
 
     @property
     def datacoercions(self):
@@ -1145,7 +1145,7 @@ class TableColumnMapping(models.Model):
 
     @property
     def first_row(self):
-        if not hasattr(self, "_first_row"):
+        if not hasattr(self, '_first_row'):
             first_row = None
             try:
                 first_row = self.import_file.first_row_columns[self.order - 1]
@@ -1154,25 +1154,6 @@ class TableColumnMapping(models.Model):
 
             self._first_row = first_row
         return self._first_row
-
-    # TODO: Verify that this can be removed
-    # @property
-    # def first_five_rows(self):
-    #     if not hasattr(self, "_first_five_rows"):
-    #         first_rows = []
-    #         for r in self.import_file.second_to_fifth_rows:
-    #             try:
-    #                 if r[self.order - 1]:
-    #                     first_rows.append(r[self.order - 1])
-    #                 else:
-    #                     first_rows.append('')
-    #             except:
-    #                 first_rows.append('')
-    #                 pass
-    #
-    #         self._first_five_rows = first_rows
-    #
-    #     return self._first_five_rows
 
     @property
     def destination_django_field(self):
@@ -1200,4 +1181,4 @@ class TableColumnMapping(models.Model):
     @property
     def is_mapped(self):
         return self.ignored or (
-            self.destination_field is not None and self.destination_model is not None and self.destination_field != "" and self.destination_model != "")
+            self.destination_field is not None and self.destination_model is not None and self.destination_field != '' and self.destination_model != '')

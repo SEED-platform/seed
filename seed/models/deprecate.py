@@ -63,11 +63,11 @@ class CanonicalBuilding(models.Model):
     # ManyToManyField(StatusLabel)
 
     def __str__(self):
-        snapshot_pk = "None"
+        snapshot_pk = 'None'
         if self.canonical_snapshot:
             snapshot_pk = self.canonical_snapshot.pk
 
-        return u"pk: {0} - snapshot: {1} - active: {2}".format(
+        return 'pk: {0} - snapshot: {1} - active: {2}'.format(
             self.pk,
             snapshot_pk,
             self.active

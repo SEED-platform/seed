@@ -672,11 +672,11 @@ def update_taxlot_year(taxlot, year):
     :return: SampleDataRecord with the applicable fields changed.
     """
 
-    taxlot.extra_data["Tax Year"] = str(year)
+    taxlot.extra_data['Tax Year'] = str(year)
 
     # change something else in extra_data aside from the year:
-    taxlot.extra_data["taxlot_extra_data_field_1"] = taxlot.extra_data[
-        "taxlot_extra_data_field_1"] + u"_" + str(year)
+    taxlot.extra_data['taxlot_extra_data_field_1'] = taxlot.extra_data[
+        'taxlot_extra_data_field_1'] + '_' + str(year)
 
     # update the noise
     taxlot = update_taxlot_noise(taxlot)
@@ -705,11 +705,11 @@ def update_property_year(property, year):
     :return: SampleDataRecord with the applicable fields changed.
     """
 
-    property.data["year_ending"] = property.data["year_ending"].replace(year=year)
+    property.data['year_ending'] = property.data['year_ending'].replace(year=year)
 
     # change something in extra_data so something there changes too
-    property.extra_data["property_extra_data_field_1"] = property.extra_data[
-        "property_extra_data_field_1"] + u"_" + str(year)
+    property.extra_data['property_extra_data_field_1'] = property.extra_data[
+        'property_extra_data_field_1'] + '_' + str(year)
 
     property = update_property_noise(property)
 
@@ -735,7 +735,7 @@ def create_additional_years(org, years, pairs_taxlots_and_properties, case,
     # will look like [[taxlot_1], [property_1]].  An entry in one property to many taxlots
     # might look like [[propert_1], [taxlot_1, taxlot_2, taxlot_3]], etc...
     for year in years:
-        print("Creating additional year for case {c}:\t{y}".format(c=case, y=year))
+        print('Creating additional year for case {c}:\t{y}'.format(c=case, y=year))
         cycle = get_cycle(org, year)
 
         update_taxlot_f = lambda x: update_taxlot_year(x, year)
@@ -744,7 +744,7 @@ def create_additional_years(org, years, pairs_taxlots_and_properties, case,
         for idx, [taxlots, properties] in enumerate(pairs_taxlots_and_properties):
             taxlots = list(map(update_taxlot_f, taxlots))
             properties = list(map(update_property_f, properties))
-            print("Creating {i}".format(i=idx))
+            print('Creating {i}'.format(i=idx))
             taxlots, properties = create_cases_with_multi_records_per_cycle(org, cycle, taxlots,
                                                                             properties,
                                                                             number_records_per_cycle_per_state)
@@ -854,27 +854,27 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('--A', dest='case_A_count', default=10,
-                            help="Number of A (1 building, 1 taxlot) cases.")
+                            help='Number of A (1 building, 1 taxlot) cases.')
         parser.add_argument('--B', dest='case_B_count', default=1,
-                            help="Number of B (many buildings, 1 taxlot) cases.")
+                            help='Number of B (many buildings, 1 taxlot) cases.')
         parser.add_argument('--C', dest='case_C_count', default=1,
-                            help="Number of C (1 building, many taxlots) cases.")
+                            help='Number of C (1 building, many taxlots) cases.')
         parser.add_argument('--D', dest='case_D_count', default=1,
-                            help="Number of D (1 campus, many buildings, many taxlots) cases.")
-        parser.add_argument('--Y', dest='years', default="2015,2016",
-                            help="comma separated list of years to create data for.")
-        parser.add_argument("--audit-depth", dest="number_records_per_cycle_per_state", default=1,
-                            help="number of records to create within each year for audit history.  Same as the number of records created per state per cycle.")
+                            help='Number of D (1 campus, many buildings, many taxlots) cases.')
+        parser.add_argument('--Y', dest='years', default='2015,2016',
+                            help='comma separated list of years to create data for.')
+        parser.add_argument('--audit-depth', dest='number_records_per_cycle_per_state', default=1,
+                            help='number of records to create within each year for audit history.  Same as the number of records created per state per cycle.')
         return
 
     def handle(self, *args, **options):
-        years = options.get("years", "2015")
-        years = years.split(",")
+        years = options.get('years', '2015')
+        years = years.split(',')
         years = [int(x) for x in years]
         create_sample_data(years,
-                           int(options.get("case_A_count", 0)),
-                           int(options.get("case_B_count", 0)),
-                           int(options.get("case_C_count", 0)),
-                           int(options.get("case_D_count", 0)),
-                           int(options.get("number_records_per_cycle_per_state", 0)))
+                           int(options.get('case_A_count', 0)),
+                           int(options.get('case_B_count', 0)),
+                           int(options.get('case_C_count', 0)),
+                           int(options.get('case_D_count', 0)),
+                           int(options.get('number_records_per_cycle_per_state', 0)))
         return
