@@ -109,7 +109,7 @@ class HPXML(object):
         :return: string, as XML
         """
         if not property_state:
-            f = StringIO()
+            f = BytesIO()
             self.tree.write(f, encoding='utf-8', pretty_print=True, xml_declaration=True)
             return f.getvalue()
 

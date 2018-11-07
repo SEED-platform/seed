@@ -12,15 +12,13 @@ elsewhere.
 """
 import mmap
 import operator
-
 from builtins import str
-from past.builtins import basestring
 from csv import DictReader, Sniffer
+
+from past.builtins import basestring
 from unidecode import unidecode
 from xlrd import xldate, XLRDError, open_workbook, empty_cell
 from xlrd.xldate import XLDateAmbiguous
-
-from seed.lib.mcm import mapper, utils
 
 (
     XL_CELL_EMPTY,
@@ -252,7 +250,6 @@ class MCMParser(object):
     def __init__(self, import_file, *args, **kwargs):
         self.reader = self._get_reader(import_file)
         self.seek_to_beginning()
-
 
         self.import_file = import_file
         if 'matching_func' not in kwargs:

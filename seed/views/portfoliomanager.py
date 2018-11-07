@@ -11,7 +11,6 @@ All rights reserved.  # NOQA
 import json
 import logging
 import time
-import urllib
 
 import requests
 import xmltodict
@@ -19,6 +18,11 @@ from django.http import JsonResponse
 from rest_framework import serializers, status
 from rest_framework.decorators import list_route
 from rest_framework.viewsets import GenericViewSet
+
+try:
+    from urllib import quote  # python2.x
+except ImportError:
+    from urllib.parse import quote  # python3.x
 
 _log = logging.getLogger(__name__)
 
@@ -357,7 +361,7 @@ class PortfolioManagerImport(object):
             raise PMExcept("Template report not generated successfully; aborting.")
 
         # Finally we can download the generated report
-        template_report_name = urllib.quote(matched_template["name"]) + ".xml"
+        template_report_name = quote(matched_template["name"]) + ".xml"
         sanitized_template_report_name = template_report_name.replace('/', '_')
         d_url = "https://portfoliomanager.energystar.gov/pm/reports/template/download/%s/XML/false/%s?testEnv=false" % (
             str(template_report_id), sanitized_template_report_name
@@ -395,7 +399,7 @@ class PortfolioManagerImport(object):
 
         # Get the name of the report template, first read the name from the dictionary, then encode it and url quote it
         template_report_name = matched_data_request["name"] + u".xml"
-        template_report_name = urllib.quote(template_report_name.encode('utf8'))
+        template_report_name = quote(template_report_name.encode('utf8'))
         sanitized_template_report_name = template_report_name.replace('/', '_')
 
         # Generate the url to download this file

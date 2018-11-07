@@ -90,7 +90,7 @@ def add_pint_unit_suffix(organization, column):
         # strip the suffix; shouldn't have to do this when we've swapped over
         # the columns. The mere presence of a unit suffix will tell us in the UI
         # that this is a Pint-aware column
-        stripped_name = re.sub(' \(pint\)$', '', column_name, flags=re.IGNORECASE)
+        stripped_name = re.sub(r' \(pint\)$', '', column_name, flags=re.IGNORECASE)
         return stripped_name + u" ({})".format(display_units)
 
     try:

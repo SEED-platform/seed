@@ -140,8 +140,6 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
             data_state=DATA_STATE_IMPORT,
             import_file_id=0,
         )
-        print(ps1.release_date)
-        print(ps2.release_date)
 
         # Strings of the date time will not be the same due to the timezone data
         self.assertNotEqual(str(ps1.release_date), str(ps2.release_date))

@@ -182,6 +182,7 @@ class SEEDOrgPermissionsTests(TestCase):
 
         # test get_queryset called
         # pylint: disable=redefined-variable-type
+        mock_view.queryset = None
         mock_get_queryset = mock.MagicMock()
         type(mock_view).get_queryset = mock_get_queryset
         permissions.has_permission(mock_request, mock_view)

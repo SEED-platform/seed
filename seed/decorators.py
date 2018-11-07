@@ -71,7 +71,7 @@ def lock_and_track(fn, *args, **kwargs):
 def ajax_request(func):
     """
     Copied from django-annoying, with a small modification. Now we also check for 'status' or
-    'success' keys and \ return correct status codes
+    'success' keys and slash return correct status codes
 
     If view returned serializable dict, returns response in a format requested
     by HTTP_ACCEPT header. Defaults to JSON if none requested or match.
@@ -86,7 +86,6 @@ def ajax_request(func):
             news_titles = [entry.title for entry in news]
             return { 'news_titles': news_titles }
     """
-
     @wraps(func)
     def wrapper(request, *args, **kwargs):
         for accepted_type in request.META.get('HTTP_ACCEPT', '').split(','):

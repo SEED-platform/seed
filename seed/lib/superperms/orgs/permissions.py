@@ -11,11 +11,9 @@ Provides permissions classes for use in DRF views and viewsets to control
 access based on Organization and OrganizationUser.role_level.
 """
 from django import VERSION as DJANGO_VERSION
-
 from django.conf import settings
-
-from rest_framework.permissions import BasePermission
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.permissions import BasePermission
 
 from seed.lib.superperms.orgs.models import (
     ROLE_OWNER,
@@ -153,8 +151,7 @@ class SEEDOrgPermissions(BasePermission):
 
     def has_permission(self, request, view):
         """Determines if user has correct permissions, called by DRF."""
-        # Workaround to ensure this is not applied
-        # to the root view when using DefaultRouter.
+        # Workaround to ensure this is not applied to the root view when using DefaultRouter.
         value_error = False
         try:
             if hasattr(view, 'get_queryset'):
@@ -162,11 +159,14 @@ class SEEDOrgPermissions(BasePermission):
             else:
                 queryset = getattr(view, 'queryset', None)
         except ValueError:
-            value_error = True
+            if not getattr(view, 'queryset', None):
+                value_error = True
+            else:
+                value_error = False
 
-        if value_error:
+        if value_error or queryset is None:
             raise AssertionError('Cannot apply {} on a view that does not set `.queryset`'
-                ' or have a `.get_queryset()` method.'.format(view.__class__))
+                                 ' or have a `.get_queryset()` method.'.format(view.__class__))
 
         return (
             request.user and
