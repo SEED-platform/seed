@@ -58,8 +58,8 @@ class LabelSerializer(serializers.ModelSerializer):
 
             # Limit results to ones attached to view
             if self.inventory.model is Property:
-                filtered_result = PropertyView.objects.filter(property_id__in=result).values_list('pk', flat=True)
+                filtered_result = PropertyView.objects.filter(property_id__in=result).values_list('property_id', flat=True)
             elif self.inventory.model is TaxLot:
-                filtered_result = TaxLotView.objects.filter(taxlot_id__in=result).values_list('pk', flat=True)
+                filtered_result = TaxLotView.objects.filter(taxlot_id__in=result).values_list('taxlot_id', flat=True)
 
         return filtered_result
