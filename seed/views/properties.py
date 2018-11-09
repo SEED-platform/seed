@@ -1011,6 +1011,10 @@ class PropertyViewSet(GenericViewSet):
                         result.update(
                             {'state': new_property_state_serializer.data}
                         )
+
+                        # save the property view so that the datetime gets updated on the property.
+                        property_view.save()
+
                         return JsonResponse(result, encoder=PintJSONEncoder,
                                             status=status.HTTP_200_OK)
                     else:
@@ -1033,12 +1037,16 @@ class PropertyViewSet(GenericViewSet):
                         data=property_state_data
                     )
                     if updated_property_state_serializer.is_valid():
-                        # create the new property state, and perform an initial save / moving relationships
+                        # create the new property state, and perform an initial save / moving
+                        # relationships
                         updated_property_state_serializer.save()
 
                         result.update(
                             {'state': updated_property_state_serializer.data}
                         )
+
+                        # save the property view so that the datetime gets updated on the property.
+                        property_view.save()
                         return JsonResponse(result, encoder=PintJSONEncoder,
                                             status=status.HTTP_200_OK)
                     else:
@@ -1055,14 +1063,8 @@ class PropertyViewSet(GenericViewSet):
                         'message': 'Unrecognized audit log name: ' + log.name
                     }
                     return JsonResponse(result, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
-
-            # save the property view, even if it hasn't changed so that the datetime gets updated on the property.
-            # Uhm, does this ever get called? There are a bunch of returns in the code above.
-            property_view.save()
         else:
             return JsonResponse(result, status=status.HTTP_404_NOT_FOUND)
-
-        return JsonResponse(result, status=status.HTTP_404_NOT_FOUND)
 
     @ajax_request_class
     @has_perm_class('can_modify_data')
