@@ -25,7 +25,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         logging_info("RUN  org_specific_commands with args={},kwds={}".format(args, options))
         if options['organization']:
-            core_organization = map(int, options['organization'].split(","))
+            core_organization = list(map(int, options['organization'].split(",")))
         else:
             core_organization = [20, 69]
 
@@ -48,7 +48,7 @@ def process_org(org):
 
 
 def do_process_org_69():
-    print "Single Commands for org=69"
+    print("Single Commands for org=69")
     org_pk = 69
 
     tax_attrs_to_clear = ["address_line_1", "city", "state", "postal_code"]
@@ -67,10 +67,10 @@ def do_process_org_69():
 
 
 def do_process_org_20():
-    print "Single Commands for org=20"
+    print("Single Commands for org=20")
     count = PropertyState.objects.filter(organization_id=20).count()
     for ndx, prop in enumerate(PropertyState.objects.filter(organization_id=20).all()):
-        print "Processing {}/{}".format(ndx + 1, count)
+        print("Processing {}/{}".format(ndx + 1, count))
 
         if prop.address_line_1:
             prop.extra_data["Address 1"] = prop.address_line_1

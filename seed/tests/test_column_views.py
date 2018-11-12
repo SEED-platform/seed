@@ -109,17 +109,17 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
             del result['organization_id']  # org changes based on test
 
         expected = {
-            u'table_name': u'PropertyState',
-            u'column_name': u'pm_property_id',
-            u'display_name': u'PM Property ID',
-            u'is_extra_data': False,
-            u'merge_protection': u'Favor New',
-            u'data_type': u'string',
-            u'related': False,
-            u'sharedFieldType': u'None',
-            u'pinnedLeft': True,
-            u'unit_name': None,
-            u'unit_type': None,
+            'table_name': 'PropertyState',
+            'column_name': 'pm_property_id',
+            'display_name': 'PM Property ID',
+            'is_extra_data': False,
+            'merge_protection': 'Favor New',
+            'data_type': 'string',
+            'related': False,
+            'sharedFieldType': 'None',
+            'pinnedLeft': True,
+            'unit_name': None,
+            'unit_type': None,
         }
 
         # randomly check a column

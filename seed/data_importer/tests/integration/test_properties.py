@@ -113,6 +113,9 @@ class TestProperties(DataMappingBaseTestCase):
 
         # there is a weird non-deterministic issue with this test. So for now
         # just test when the property_state is not None, which seems to be about 50% of the time.
+
+        # TODO: Python3 I assume the address normalization cleanup is causing this to merge strange
+        # which makes me think that something else is really going on. Look for the 125,000 ft2.
         if property_state:
             history, master = property_state.history()
 

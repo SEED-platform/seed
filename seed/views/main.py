@@ -14,6 +14,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.http import JsonResponse
 from django.shortcuts import render
+from past.builtins import basestring
 from rest_framework import status
 from rest_framework.decorators import api_view
 
@@ -103,7 +104,7 @@ def version(request):
 
     return JsonResponse({
         'version': manifest['version'],
-        'sha': sha
+        'sha': sha.decode('utf-8')
     })
 
 
@@ -250,7 +251,7 @@ def get_default_building_detail_columns(request):
     if columns == '{}' or isinstance(columns, dict):
         # Return empty result, telling the FE to show all.
         columns = []
-    if isinstance(columns, unicode):
+    if isinstance(columns, basestring):
         # PostgreSQL 9.1 stores JSONField as unicode
         columns = json.loads(columns)
 

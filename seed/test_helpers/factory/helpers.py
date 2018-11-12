@@ -10,7 +10,6 @@ import random
 from decimal import getcontext, Decimal
 
 getcontext().prec = 7
-from seed.test_helpers.factory.lib.chomsky import generate_chomsky
 
 
 class DjangoFunctionalFactory:
@@ -29,7 +28,7 @@ class DjangoFunctionalFactory:
             length = cls.rand_int(end=10)
         nbits = length * 6 + 1
         bits = random.getrandbits(nbits)
-        uc = u"%0x" % bits
+        uc = '%0x' % bits
         newlen = int(len(uc) / 2) * 2
         ba = bytearray.fromhex(uc[:newlen])
         return base64.urlsafe_b64encode(str(ba))[:length]
@@ -39,16 +38,16 @@ class DjangoFunctionalFactory:
         area = cls.rand_int(start=100, end=999)
         first = cls.rand_int(start=100, end=999)
         last = cls.rand_int(start=1000, end=9999)
-        return "%s-%s-%s" % (area, first, last)
+        return '%s-%s-%s' % (area, first, last)
 
     @classmethod
     def rand_street_address(cls):
-        s = "%s %s %s" % (cls.rand_int(end=10000), cls.rand_plant_name(), cls.rand_street_suffix())
+        s = '%s %s %s' % (cls.rand_int(end=10000), cls.rand_plant_name(), cls.rand_street_suffix())
         return s[:63]
 
     @classmethod
     def rand_city(cls):
-        return "%s%s" % (cls.rand_plant_name(), cls.rand_city_suffix())
+        return '%s%s' % (cls.rand_plant_name(), cls.rand_city_suffix())
 
     @classmethod
     def rand_bool(cls):
@@ -81,7 +80,7 @@ class DjangoFunctionalFactory:
 
     @classmethod
     def rand_email(cls):
-        return "%s@%s" % (cls.rand_name().lower(), cls.rand_domain())
+        return '%s@%s' % (cls.rand_name().lower(), cls.rand_domain())
 
     @classmethod
     def rand_domain(cls):
@@ -89,11 +88,11 @@ class DjangoFunctionalFactory:
 
     @classmethod
     def valid_test_cc_number(cls):
-        return "4242424242424242"
+        return '4242424242424242'
 
     @classmethod
     def invalid_test_cc_number(cls):
-        return "4242424242424241"
+        return '4242424242424241'
 
     @classmethod
     def test_cc_number(cls, valid=True):
@@ -101,10 +100,6 @@ class DjangoFunctionalFactory:
             return cls.valid_test_cc_number()
         else:
             return cls.invalid_test_cc_number()
-
-    @classmethod
-    def random_conversation(cls, paragraphs=3):
-        return generate_chomsky(paragraphs)
 
 
 RANDOM_NAME_SOURCE = [
@@ -352,10 +347,10 @@ RANDOM_PLANT_NAME_SOURCE = [
     "Yasminah", "Yew", "Zara"
 ]
 
-RANDOM_STREET_SUFFIX_SOURCE = ["St.", "Ave.", "Blvd.", "Ln.", "Ct.", "Pl.", "Way"]
+RANDOM_STREET_SUFFIX_SOURCE = ['St.', 'Ave.', 'Blvd.', 'Ln.', 'Ct.', 'Pl.', 'Way']
 
-RANDOM_EMAIL_DOMAINS = ["example.com", "example.net", "example.org"]
-# "gmail.com", "yahoo.com", "hotmail.com", "live.com",
-# "comcast.net", "qwest.com",
+RANDOM_EMAIL_DOMAINS = ['example.com', 'example.net', 'example.org']
+# 'gmail.com', 'yahoo.com', 'hotmail.com', 'live.com',
+# 'comcast.net', 'qwest.com',
 
-RANDOM_CITY_SUFFIX_SOURCE = ["ville", "berg", "ton", "y", "", "land"]
+RANDOM_CITY_SUFFIX_SOURCE = ['ville', 'berg', 'ton', 'y', '', 'land']

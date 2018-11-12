@@ -140,7 +140,7 @@ class PropertyViewTests(DeleteModelsTestCase):
         # print out the result of this when there are more than two in an attempt to catch the
         # non-deterministic part of this test
         if len(results) > 2:
-            print results
+            print(results)
 
         self.assertEqual(len(results), 2)
 

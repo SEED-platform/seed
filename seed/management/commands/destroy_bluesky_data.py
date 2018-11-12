@@ -61,11 +61,11 @@ class Command(BaseCommand):
             orgs_to_delete = [int(x) for x in orgs_to_delete]
 
             for org in orgs_to_delete:
-                print "Destroying SEED migrated data for organization {}".format(org)
+                print("Destroying SEED migrated data for organization {}".format(org))
                 delete_based_on_org(apps, org)
 
         else:
-            print "Destroying all SEED migrated data"
+            print("Destroying all SEED migrated data")
             apps.get_model("seed", "Cycle").objects.all().delete()
             apps.get_model("seed", "PropertyState").objects.all().delete()
             apps.get_model("seed", "PropertyView").objects.all().delete()

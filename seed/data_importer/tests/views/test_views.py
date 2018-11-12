@@ -143,9 +143,6 @@ class DataImporterViewTests(DataMappingBaseTestCase):
         ]
         save_format, expected = first_five_rows_helper(header, raw_data)
         converted = convert_first_five_rows_to_list(header, save_format)
-        # print "Expected: %s" % expected
-        # print "Save Format: %s" % save_format
-        # print "Converted: %s" % converted
         self.assertEqual(converted, expected)
 
     def test_get_first_five_rows_newline_should_work(self):
@@ -162,9 +159,6 @@ class DataImporterViewTests(DataMappingBaseTestCase):
         ]
         save_format, expected = first_five_rows_helper(header, raw_data)
         converted = convert_first_five_rows_to_list(header, save_format)
-        # print "Expected: %s" % expected
-        # print "Save Format: %s" % save_format
-        # print "Converted: %s" % converted
 
         # This test passes as it is the expected behavior, even though it is wrong.
         # the ID of row 2 should be 2\nThisBreaksMe, but the convert_first_five_to_list does
@@ -189,7 +183,6 @@ class DataImporterViewTests(DataMappingBaseTestCase):
         ]
         save_format, expected = first_five_rows_helper(header, raw_data)
         converted = convert_first_five_rows_to_list(header, save_format)
-        # print "Converted: %s" % converted
 
         # This test fails on purpose becasue the format of the first five rows will not
         # support this use case.

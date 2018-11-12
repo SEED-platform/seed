@@ -206,7 +206,7 @@ class ClassDecoratorTests(TestCase):
         self.assertEqual(result.status_code, 400)
         self.assertEqual(
             result.content,
-            'Valid organization_id is required in the query parameters.'
+            b'Valid organization_id is required in the query parameters.'
         )
 
     def test_require_organization_id_class_org_id_not_int(self):
@@ -221,7 +221,7 @@ class ClassDecoratorTests(TestCase):
         self.assertEqual(result.status_code, 400)
         self.assertEqual(
             result.content,
-            'Invalid organization_id in the query parameters, must be integer'
+            b'Invalid organization_id in the query parameters, must be integer'
         )
 
     def test_ajax_request_class_format_type(self):

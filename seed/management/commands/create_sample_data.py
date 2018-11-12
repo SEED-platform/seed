@@ -229,7 +229,7 @@ class FakeTaxLotExtraDataFactory(BaseFake):
               "taxlot_extra_data_field_1": "taxlot_extra_data_field_" + str(id),
               "City Code": self.fake.numerify(text='####-###')}
 
-        tl = {k: str(v) for k, v in tl.iteritems()}
+        tl = {k: str(v) for k, v in tl.items()}
 
         return tl
 
@@ -346,7 +346,7 @@ def create_cases(org, cycle, tax_lots, properties):
 
         def del_datetimes(d):
             res = {}
-            for k, v in d.iteritems():
+            for k, v in d.items():
                 if isinstance(v, datetime.date) or isinstance(v, datetime.datetime):
                     continue
                 res[k] = str(v)
@@ -460,7 +460,7 @@ def update_property_views(views, number_of_updates):
     for i in range(number_of_updates):
         for property_view in views:
             state = property_view.state
-            state.site_eui = unicode(float(randint(0, 1000)) + float(randint(0, 9)) / 10)
+            state.site_eui = str(float(randint(0, 1000)) + float(randint(0, 9)) / 10)
             state.pk = None  # set state to None to get a new copy on save
             state.save()
             property_view.update_state(state)
@@ -582,8 +582,8 @@ def _create_case_D(org, cycle, taxlots, properties, campus, number_records_per_c
             states.append(state)
         return states
 
-    taxlots = map(update_taxlot_noise, taxlots)
-    properties = map(update_property_noise, properties)
+    taxlots = list(map(update_taxlot_noise, taxlots))
+    properties = list(map(update_property_noise, properties))
     campus = update_property_noise(campus)
 
     campus_property = seed.models.Property.objects.create(organization=org, campus=True)
@@ -598,12 +598,12 @@ def _create_case_D(org, cycle, taxlots, properties, campus, number_records_per_c
                                                      [campus] + properties)
     property_views = [seed.models.PropertyView.objects.get_or_create(property=property, cycle=cycle,
                                                                      state=prop_state)[0] for
-                      (property, prop_state) in zip(property_objs, property_states)]
+                      (property, prop_state) in list(zip(property_objs, property_states))]
 
     taxlot_states = _create_states_with_extra_data(seed.models.TaxLotState, taxlots)
     taxlot_views = [seed.models.TaxLotView.objects.get_or_create(taxlot=taxlot, cycle=cycle,
                                                                  state=taxlot_state)[0] for
-                    (taxlot, taxlot_state) in zip(taxlot_objs, taxlot_states)]
+                    (taxlot, taxlot_state) in list(zip(taxlot_objs, taxlot_states))]
 
     seed.models.TaxLotProperty.objects.get_or_create(property_view=property_views[0],
                                                      taxlot_view=taxlot_views[0], cycle=cycle)
@@ -672,12 +672,11 @@ def update_taxlot_year(taxlot, year):
     :return: SampleDataRecord with the applicable fields changed.
     """
 
-    taxlot.extra_data["Tax Year"] = str(year)
+    taxlot.extra_data['Tax Year'] = str(year)
 
     # change something else in extra_data aside from the year:
-    taxlot.extra_data["taxlot_extra_data_field_1"] = taxlot.extra_data[
-        "taxlot_extra_data_field_1"] + u"_" + unicode(
-        year)
+    taxlot.extra_data['taxlot_extra_data_field_1'] = taxlot.extra_data[
+        'taxlot_extra_data_field_1'] + '_' + str(year)
 
     # update the noise
     taxlot = update_taxlot_noise(taxlot)
@@ -693,7 +692,7 @@ def update_property_noise(property):
     :return: The same property with the site_eui updated to a random number
     """
     # randomize "site_eui"
-    property.data["site_eui"] = unicode(float(randint(0, 1000)) + float(randint(0, 9)) / 10)
+    property.data["site_eui"] = str(float(randint(0, 1000)) + float(randint(0, 9)) / 10)
     return property
 
 
@@ -706,12 +705,11 @@ def update_property_year(property, year):
     :return: SampleDataRecord with the applicable fields changed.
     """
 
-    property.data["year_ending"] = property.data["year_ending"].replace(year=year)
+    property.data['year_ending'] = property.data['year_ending'].replace(year=year)
 
     # change something in extra_data so something there changes too
-    property.extra_data["property_extra_data_field_1"] = property.extra_data[
-        "property_extra_data_field_1"] + u"_" + unicode(
-        year)
+    property.extra_data['property_extra_data_field_1'] = property.extra_data[
+        'property_extra_data_field_1'] + '_' + str(year)
 
     property = update_property_noise(property)
 
@@ -737,16 +735,16 @@ def create_additional_years(org, years, pairs_taxlots_and_properties, case,
     # will look like [[taxlot_1], [property_1]].  An entry in one property to many taxlots
     # might look like [[propert_1], [taxlot_1, taxlot_2, taxlot_3]], etc...
     for year in years:
-        print "Creating additional year for case {c}:\t{y}".format(c=case, y=year)
+        print('Creating additional year for case {c}:\t{y}'.format(c=case, y=year))
         cycle = get_cycle(org, year)
 
         update_taxlot_f = lambda x: update_taxlot_year(x, year)
         update_property_f = lambda x: update_property_year(x, year)
 
         for idx, [taxlots, properties] in enumerate(pairs_taxlots_and_properties):
-            taxlots = map(update_taxlot_f, taxlots)
-            properties = map(update_property_f, properties)
-            print "Creating {i}".format(i=idx)
+            taxlots = list(map(update_taxlot_f, taxlots))
+            properties = list(map(update_property_f, properties))
+            print('Creating {i}'.format(i=idx))
             taxlots, properties = create_cases_with_multi_records_per_cycle(org, cycle, taxlots,
                                                                             properties,
                                                                             number_records_per_cycle_per_state)
@@ -766,7 +764,7 @@ def create_additional_years_D(org, years, tuples_taxlots_properties_campus,
         taxlots and 5 properties.  Will error with less and unknown behavior with more.
     """
     for year in years:
-        print "Creating additional year for case D:\t{y}".format(y=year)
+        print("Creating additional year for case D:\t{y}".format(y=year))
         cycle = get_cycle(org, year)
 
         update_taxlot_f = lambda x: update_taxlot_year(x, year)
@@ -774,10 +772,10 @@ def create_additional_years_D(org, years, tuples_taxlots_properties_campus,
 
         for i in range(number_records_per_cycle_per_state):
             for idx, [taxlots, properties, campus] in enumerate(tuples_taxlots_properties_campus):
-                taxlots = map(update_taxlot_f, taxlots)
-                properties = map(update_property_f, properties)
+                taxlots = list(map(update_taxlot_f, taxlots))
+                properties = list(map(update_property_f, properties))
                 campus = update_property_f(campus)
-                print "Creating {i}".format(i=idx)
+                print("Creating {i}".format(i=idx))
                 _create_case_D(org, cycle, taxlots, properties, campus)
 
 
@@ -809,7 +807,7 @@ def create_sample_data(years, a_ct=0, b_ct=0, c_ct=0, d_ct=0, number_records_per
     tuples_taxlots_properties_campus_D = []
 
     for i in range(a_ct):
-        print "Creating Case A {i}".format(i=i)
+        print("Creating Case A {i}".format(i=i))
         pairs_taxlots_and_properties_A.append(
             create_case_A(org, cycle, taxlot_factory, property_factory,
                           number_records_per_cycle_per_state))
@@ -818,7 +816,7 @@ def create_sample_data(years, a_ct=0, b_ct=0, c_ct=0, d_ct=0, number_records_per
                             number_records_per_cycle_per_state)
 
     for i in range(b_ct):
-        print "Creating Case B {i}".format(i=i)
+        print("Creating Case B {i}".format(i=i))
         property_factory.case_description = "Case B-1: Multiple (3) Properties, 1 Tax Lot"
         pairs_taxlots_and_properties_B.append(
             create_case_B(org, cycle, taxlot_factory, property_factory,
@@ -828,7 +826,7 @@ def create_sample_data(years, a_ct=0, b_ct=0, c_ct=0, d_ct=0, number_records_per
                             number_records_per_cycle_per_state)
 
     for i in range(c_ct):
-        print "Creating Case C {i}".format(i=i)
+        print("Creating Case C {i}".format(i=i))
         property_factory.case_description = "Case C: 1 Property, Multiple (3) Tax Lots"
         pairs_taxlots_and_properties_C.append(
             create_case_C(org, cycle, taxlot_factory, property_factory,
@@ -838,7 +836,7 @@ def create_sample_data(years, a_ct=0, b_ct=0, c_ct=0, d_ct=0, number_records_per
                             number_records_per_cycle_per_state)
 
     for i in range(d_ct):
-        print "Creating Case D {i}".format(i=i)
+        print("Creating Case D {i}".format(i=i))
         property_factory.case_description = "Case D: Campus with Multiple associated buildings"
         tuples_taxlots_properties_campus_D.append(
             create_case_D(org, cycle, taxlot_factory, property_factory,
@@ -856,27 +854,27 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('--A', dest='case_A_count', default=10,
-                            help="Number of A (1 building, 1 taxlot) cases.")
+                            help='Number of A (1 building, 1 taxlot) cases.')
         parser.add_argument('--B', dest='case_B_count', default=1,
-                            help="Number of B (many buildings, 1 taxlot) cases.")
+                            help='Number of B (many buildings, 1 taxlot) cases.')
         parser.add_argument('--C', dest='case_C_count', default=1,
-                            help="Number of C (1 building, many taxlots) cases.")
+                            help='Number of C (1 building, many taxlots) cases.')
         parser.add_argument('--D', dest='case_D_count', default=1,
-                            help="Number of D (1 campus, many buildings, many taxlots) cases.")
-        parser.add_argument('--Y', dest='years', default="2015,2016",
-                            help="comma separated list of years to create data for.")
-        parser.add_argument("--audit-depth", dest="number_records_per_cycle_per_state", default=1,
-                            help="number of records to create within each year for audit history.  Same as the number of records created per state per cycle.")
+                            help='Number of D (1 campus, many buildings, many taxlots) cases.')
+        parser.add_argument('--Y', dest='years', default='2015,2016',
+                            help='comma separated list of years to create data for.')
+        parser.add_argument('--audit-depth', dest='number_records_per_cycle_per_state', default=1,
+                            help='number of records to create within each year for audit history.  Same as the number of records created per state per cycle.')
         return
 
     def handle(self, *args, **options):
-        years = options.get("years", "2015")
-        years = years.split(",")
+        years = options.get('years', '2015')
+        years = years.split(',')
         years = [int(x) for x in years]
         create_sample_data(years,
-                           int(options.get("case_A_count", 0)),
-                           int(options.get("case_B_count", 0)),
-                           int(options.get("case_C_count", 0)),
-                           int(options.get("case_D_count", 0)),
-                           int(options.get("number_records_per_cycle_per_state", 0)))
+                           int(options.get('case_A_count', 0)),
+                           int(options.get('case_B_count', 0)),
+                           int(options.get('case_C_count', 0)),
+                           int(options.get('case_D_count', 0)),
+                           int(options.get('number_records_per_cycle_per_state', 0)))
         return

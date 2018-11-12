@@ -9,6 +9,7 @@ from datetime import datetime
 
 import xmltodict
 from django.utils import timezone
+from past.builtins import basestring
 
 from seed.lib.mcm.reader import ROW_DELIMITER
 from seed.models import (
@@ -95,7 +96,7 @@ def as_collection(val):
     :param val: any value
     :returns: list containing val or val if it is Iterable and not a string.
     """
-    is_atomic = (isinstance(val, (str, unicode)) or
+    is_atomic = (isinstance(val, basestring) or
                  isinstance(val, dict) or
                  (not isinstance(val, Iterable)))
 

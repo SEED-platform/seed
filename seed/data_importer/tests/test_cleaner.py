@@ -86,14 +86,14 @@ class TestCleaner(TestCase):
         # model
         bs_field = 'gross_floor_area'
         self.assertEqual(
-            cleaner.clean_value('123,456', bs_field),
-            123456
+            cleaner.clean_value('1,456', bs_field),
+            1456
         )
 
         # data are cleaned correctly for mapped fields that have float unit
         self.assertEqual(
-            cleaner.clean_value('123,456', self.float_col),
-            123456
+            cleaner.clean_value('2,456', self.float_col),
+            2456
         )
 
         # String test
@@ -103,8 +103,8 @@ class TestCleaner(TestCase):
         )
 
         self.assertEqual(
-            cleaner.clean_value('123,456', self.float_col),
-            123456
+            cleaner.clean_value('3,456', self.float_col),
+            3456
         )
 
         # other fields are just strings

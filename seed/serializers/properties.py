@@ -13,6 +13,7 @@ from collections import OrderedDict
 from django.apps import apps
 from django.db import models
 from django.utils.timezone import make_naive
+from past.builtins import basestring
 from rest_framework import serializers
 from rest_framework.fields import empty
 
@@ -595,11 +596,10 @@ def unflatten_values(vdict, fkeys):
     :param fkeys: field names for foreign key (e.g. state for state__city)
     :type fkeys: list
     """
-    assert set(vdict.keys()).isdisjoint(set(fkeys)), \
-        "unflatten_values: {} has fields named in {}".format(vdict, fkeys)
+    assert set(list(vdict.keys())).isdisjoint(set(fkeys)), "unflatten_values: {} has fields named in {}".format(vdict, fkeys)
     idents = tuple(["{}__".format(fkey) for fkey in fkeys])
     newdict = vdict.copy()
-    for key, val in vdict.iteritems():
+    for key, val in vdict.items():
         if key.startswith(idents):
             fkey, new_key = key.split('__', 1)
             subdict = newdict.setdefault(fkey, {})

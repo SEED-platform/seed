@@ -19,22 +19,27 @@ if DEBUG:
 else:
     _log.setLevel(logging.WARN)
 
+
 def error(msg):
     _log.error(msg)
     if DEBUG:
         import traceback
         traceback.print_exc()
 
+
 def create_map(args):
     util.create_map(args.input, args.output)
+
 
 def apply_map(args):
     out_fp = sys.stdout if args.output == '-' else open(args.output, "w")
     util.apply_map(args.mapping, args.data, out_fp)
 
+
 def find_duplicates(args):
     out_fp = sys.stdout
     util.find_duplicates(args.mapping, args.data, out_fp)
+
 
 def main():
     p = argparse.ArgumentParser()
@@ -60,7 +65,7 @@ def main():
     result = 0
     try:
         args.func(args)
-    except Exception, err:
+    except Exception as err:
         error("In '{}': {}".format(args.func.__name__, err))
         result = -1
     return result

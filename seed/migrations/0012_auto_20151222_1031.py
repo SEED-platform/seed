@@ -17,7 +17,7 @@ def merge_extra_data(b1, b2, default=None):
     default_extra_data = getattr(default, 'extra_data', {})
     non_default_extra_data = getattr(non_default, 'extra_data', {})
 
-    all_keys = set(default_extra_data.keys() + non_default_extra_data.keys())
+    all_keys = set(list(default_extra_data.keys()) + list(non_default_extra_data.keys()))
     extra_data = {
         k: default_extra_data.get(k) or non_default_extra_data.get(k)
         for k in all_keys

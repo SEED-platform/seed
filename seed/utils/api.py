@@ -18,6 +18,7 @@ from django.core.exceptions import (
     PermissionDenied,
     ValidationError
 )
+from past.builtins import basestring
 
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.permissions import get_org_id, get_user_org

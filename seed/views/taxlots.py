@@ -760,7 +760,7 @@ class TaxLotViewSet(GenericViewSet):
             new_taxlot_state_data = data['state']
 
             # set empty strings to None
-            for key, val in new_taxlot_state_data.iteritems():
+            for key, val in new_taxlot_state_data.items():
                 if val == '':
                     new_taxlot_state_data[key] = None
 
@@ -777,7 +777,7 @@ class TaxLotViewSet(GenericViewSet):
                     state=taxlot_view.state
                 ).order_by('-id').first()
 
-                if 'extra_data' in new_taxlot_state_data.keys():
+                if 'extra_data' in new_taxlot_state_data:
                     taxlot_state_data['extra_data'].update(new_taxlot_state_data.pop('extra_data'))
                 taxlot_state_data.update(new_taxlot_state_data)
 

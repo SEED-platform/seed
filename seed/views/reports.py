@@ -7,6 +7,7 @@
 from collections import defaultdict
 
 import dateutil
+from past.builtins import basestring
 from rest_framework import status
 from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
@@ -16,12 +17,12 @@ from rest_framework.viewsets import ViewSet
 from seed.decorators import (
     DecoratorMixin,
 )
+from seed.lib.superperms.orgs.models import (
+    Organization
+)
 from seed.models import (
     Cycle,
     PropertyView
-)
-from seed.lib.superperms.orgs.models import (
-    Organization
 )
 from seed.serializers.pint import (
     apply_display_unit_preferences,
@@ -42,13 +43,13 @@ class Report(DecoratorMixin(drf_api_endpoint), ViewSet):
         try:
             start = int(start)
             end = int(end)
-        except ValueError as error:
+        except ValueError as error:  # noqa
             # assume string is JS date
             if isinstance(start, basestring):
                 start_datetime = dateutil.parser.parse(start)
                 end_datetime = dateutil.parser.parse(end)
             else:
-                raise error
+                raise Exception('Date is not a string')
         # get date times from cycles
         if isinstance(start, int):
             cycle = Cycle.objects.get(pk=start, organization_id=organization_id)
@@ -300,7 +301,7 @@ class Report(DecoratorMixin(drf_api_endpoint), ViewSet):
             900000: '900-999k',
             1000000: 'over 1,000k',
         }
-        max_bin = max(y_display_map.keys())
+        max_bin = max(y_display_map)
 
         # Group buildings in this year_ending group into ranges
         grouped_ranges = defaultdict(list)
