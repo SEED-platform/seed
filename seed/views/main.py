@@ -103,7 +103,7 @@ def version(request):
 
     return JsonResponse({
         'version': manifest['version'],
-        'sha': sha
+        'sha': sha.decode('utf-8')
     })
 
 

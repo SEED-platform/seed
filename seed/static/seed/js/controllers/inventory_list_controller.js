@@ -182,7 +182,12 @@ angular.module('BE.seed.controller.inventory_list', [])
       };
 
       function updateApplicableLabels() {
-        var inventoryIds = _.map($scope.data, 'id').sort();
+        var inventoryIds;
+        if ($scope.inventory_type === 'properties') {
+          inventoryIds = _.map($scope.data, 'property_view_id').sort();
+        } else {
+          inventoryIds = _.map($scope.data, 'taxlot_view_id').sort();
+        }
         $scope.labels = _.filter(labels, function (label) {
           return _.some(label.is_applied, function (id) {
             return _.includes(inventoryIds, id);
@@ -210,11 +215,17 @@ angular.module('BE.seed.controller.inventory_list', [])
 
         if ($scope.selected_labels.length) {
           _.forEach($scope.gridApi.grid.rows, function (row) {
+            var view_id;
+            if ($scope.inventory_type === 'properties') {
+              view_id = row.entity.property_view_id;
+            } else {
+              view_id = row.entity.taxlot_view_id;
+            }
             if ($scope.labelLogic === 'exclude') {
-              if ((_.includes(ids, row.entity.id) && row.treeLevel === 0) || !_.has(row, 'treeLevel')) $scope.gridApi.core.setRowInvisible(row);
+              if ((_.includes(ids, view_id) && row.treeLevel === 0) || !_.has(row, 'treeLevel')) $scope.gridApi.core.setRowInvisible(row);
               else $scope.gridApi.core.clearRowInvisible(row);
             } else {
-              if ((!_.includes(ids, row.entity.id) && row.treeLevel === 0) || !_.has(row, 'treeLevel')) $scope.gridApi.core.setRowInvisible(row);
+              if ((!_.includes(ids, view_id) && row.treeLevel === 0) || !_.has(row, 'treeLevel')) $scope.gridApi.core.setRowInvisible(row);
               else $scope.gridApi.core.clearRowInvisible(row);
             }
           });

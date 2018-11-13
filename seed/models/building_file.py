@@ -218,8 +218,8 @@ class BuildingFile(models.Model):
                 if len(ref_case) == 1:
                     scenario.reference_case = ref_case.first()
 
-            # set the list of measures
-            for measure_name in s['measures']:
+            # set the list of measures. Note that this can be empty (e.g. baseline has no measures)
+            for measure_name in s.get('measures', []):
                 # find the join measure in the database
                 measure = None
                 try:
