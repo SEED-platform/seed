@@ -7,3 +7,5 @@ node_modules
 seed/static/vendors
 config/settings/local_untracked.py
 config/settings/local_untracked.py.dist
+/deploy.sh
+/docker-*.yml
