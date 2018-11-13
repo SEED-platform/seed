@@ -18,15 +18,14 @@ from past.builtins import basestring
 
 
 class TestColumnListSettings(TestCase):
-    """Test the clean methods on BuildingSnapshotModel."""
 
     def setUp(self):
         self.fake_user = User.objects.create(username='test')
         self.fake_org, _, _ = create_organization(self.fake_user)
 
     def test_adding_columns(self):
-        """These are simple tests which really only test the m2m part. If these don't work, then django has
-        some issues."""
+        """These are simple tests which really only test the m2m part. If these don't work,
+        then django has some issues."""
         col1 = Column.objects.create(
             column_name='New Column',
             table_name='PropertyState',

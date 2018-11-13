@@ -22,7 +22,6 @@ from seed.utils.organizations import create_organization
 
 
 class TestColumns(TestCase):
-    """Test the clean methods on BuildingSnapshotModel."""
 
     def setUp(self):
         self.fake_user = User.objects.create(username='test')

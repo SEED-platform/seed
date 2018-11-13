@@ -386,7 +386,7 @@ class TestApi(TestCase):
         import_file_id = r['import_file_id']
         self.assertNotEqual(import_file_id, None)
 
-        # Save the data to BuildingSnapshots
+        # Save the data to the Property / TaxLots
         payload = {
             'organization_id': organization_id,
             'cycle_id': self.cycle.id,

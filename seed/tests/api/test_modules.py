@@ -32,7 +32,7 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, f
     # Get import ID
     import_id = result.json()['import_file_id']
 
-    # Save the data to BuildingSnapshots
+    # Save the data
     print('API Function: save_raw_data\n'),
     partmsg = 'save_raw_data'
     payload = {
@@ -114,7 +114,7 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, f
     result = check_progress(main_url, header, result.json()['progress_key'])
     check_status(result, partmsg, log)
 
-    # Check number of matched and unmatched BuildingSnapshots
+    # Check number of matched and unmatched records
     print('API Function: matching_results\n'),
     partmsg = 'matching_results'
 
