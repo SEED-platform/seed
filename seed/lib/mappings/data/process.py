@@ -19,7 +19,7 @@ def strip_units(str):
 
 
 new_data = []
-for key, d in data.iteritems():
+for key, d in data.items():
     updated_key, units = strip_units(key)
     a = {}
     a['from_field'] = key

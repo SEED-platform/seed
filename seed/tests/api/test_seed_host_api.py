@@ -67,7 +67,7 @@ if '--noinput' in sys.argv:
         username = j_data['username']
         api_key = j_data['api_key']
 else:
-    defaultchoice = raw_input('Use "api_test_user.json" credentials? [Y]es or Press Any Key ')
+    defaultchoice = input('Use "api_test_user.json" credentials? [Y]es or Press Any Key ')
 
     if defaultchoice.upper() == 'Y':
         with open(os.path.join(location, 'api_test_user.json')) as f:
@@ -77,22 +77,22 @@ else:
             username = j_data['username']
             api_key = j_data['api_key']
     else:
-        hostname = raw_input('Hostname (default: "localhost"): \t')
+        hostname = input('Hostname (default: "localhost"): \t')
         if hostname == '':
             hostname = 'localhost'
-        main_url = raw_input('Host URL (default: "http://localhost:8080": \t')
+        main_url = input('Host URL (default: "http://localhost:8080": \t')
         if main_url == '':
             main_url = 'http://localhost:8000'
-        username = raw_input('Username: \t')
-        api_key = raw_input('APIKEY: \t')
+        username = input('Username: \t')
+        api_key = input('APIKEY: \t')
 
 
 # API is now used basic auth with base64 encoding.
 # NOTE: The header only accepts lower case usernames.
-auth_string = base64.urlsafe_b64encode(
-    '{}:{}'.format(username.lower(), api_key)
-)
-auth_string = 'Basic {}'.format(auth_string)
+auth_string = base64.urlsafe_b64encode(bytes(
+    '{}:{}'.format(username.lower(), api_key), 'utf-8'
+))
+auth_string = 'Basic {}'.format(auth_string.decode('utf-8'))
 header = {
     'Authorization': auth_string,
     # "Content-Type": "application/json"
@@ -127,15 +127,15 @@ pm_map_file = os.path.relpath(os.path.join(location, '..', 'data', 'portfolio-ma
 assert (os.path.isfile(pm_map_file)), 'Missing file ' + pm_map_file
 
 # -- Accounts
-print ('\n|-------Accounts-------|\n')
+print('\n|-------Accounts-------|\n')
 organization_id = account(header, main_url, username, log)
 
 # -- Cycles
-print ('\n\n|-------Cycles-------|')
+print('\n\n|-------Cycles-------|')
 cycle_id = cycles(header, main_url, organization_id, log)
 
 # Create a dataset
-print ('\n\n|-------Create Dateset-------|')
+print('\n\n|-------Create Dateset-------|')
 partmsg = 'create_dataset'
 payload = {'name': 'API Test'}
 result = requests.post(main_url + '/api/v2/datasets/?organization_id=%s' % organization_id,
@@ -147,13 +147,13 @@ check_status(result, partmsg, log)
 dataset_id = result.json()['id']
 
 # Upload and test the raw building file
-print ('\n|---Covered Building File---|\n')
+print('\n|---Covered Building File---|\n')
 upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, raw_building_file,
                   'Assessed Raw',
                   raw_map_file, log)
 
 # Upload and test the portfolio manager file
-print ('\n|---Portfolio Manager File---|\n')
+print('\n|---Portfolio Manager File---|\n')
 # upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, pm_building_file, 'Portfolio Raw',
 #                   pm_map_file, log)
 

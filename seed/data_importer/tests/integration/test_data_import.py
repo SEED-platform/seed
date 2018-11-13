@@ -69,7 +69,7 @@ class TestDataImport(DataMappingBaseTestCase):
         with patch.object(ImportFile, 'cache_first_rows', return_value=None):
             tasks.save_raw_data(self.import_file.pk)
 
-        expected_first_row = u"Property Id|#*#|Property Name|#*#|Year Ending|#*#|Property Floor Area (Buildings and Parking) (ft2)|#*#|Address 1|#*#|Address 2|#*#|City|#*#|State/Province|#*#|Postal Code|#*#|Year Built|#*#|ENERGY STAR Score|#*#|Site EUI (kBtu/ft2)|#*#|Total GHG Emissions (MtCO2e)|#*#|Weather Normalized Site EUI (kBtu/ft2)|#*#|National Median Site EUI (kBtu/ft2)|#*#|Source EUI (kBtu/ft2)|#*#|Weather Normalized Source EUI (kBtu/ft2)|#*#|National Median Source EUI (kBtu/ft2)|#*#|Parking - Gross Floor Area (ft2)|#*#|Organization|#*#|Generation Date|#*#|Release Date"  # NOQA
+        expected_first_row = 'Property Id|#*#|Property Name|#*#|Year Ending|#*#|Property Floor Area (Buildings and Parking) (ft2)|#*#|Address 1|#*#|Address 2|#*#|City|#*#|State/Province|#*#|Postal Code|#*#|Year Built|#*#|ENERGY STAR Score|#*#|Site EUI (kBtu/ft2)|#*#|Total GHG Emissions (MtCO2e)|#*#|Weather Normalized Site EUI (kBtu/ft2)|#*#|National Median Site EUI (kBtu/ft2)|#*#|Source EUI (kBtu/ft2)|#*#|Weather Normalized Source EUI (kBtu/ft2)|#*#|National Median Source EUI (kBtu/ft2)|#*#|Parking - Gross Floor Area (ft2)|#*#|Organization|#*#|Generation Date|#*#|Release Date'  # NOQA
 
         import_file = ImportFile.objects.get(pk=self.import_file.pk)
         first_row = import_file.cached_first_row
@@ -188,7 +188,7 @@ class TestMappingExampleData(DataMappingBaseTestCase):
         tasks.map_data(self.import_file.pk)
 
         cycle2, _ = Cycle.objects.get_or_create(
-            name=u'Hack Cycle 2016',
+            name='Hack Cycle 2016',
             organization=self.org,
             start=datetime.datetime(2016, 1, 1, tzinfo=timezone.get_current_timezone()),
             end=datetime.datetime(2016, 12, 31, tzinfo=timezone.get_current_timezone()),
@@ -332,7 +332,7 @@ class TestPromotingProperties(DataMappingBaseTestCase):
             keys = reader.fieldnames
             for row in reader:
                 ed = json.loads(row.pop('extra_data'))
-                for k, v in ed.iteritems():
+                for k, v in ed.items():
                     new_keys.add(k)
                     row[k] = v
                 data.append(row)

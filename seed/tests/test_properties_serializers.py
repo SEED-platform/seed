@@ -292,7 +292,7 @@ class TestPropertyViewAsStateSerializers(DeleteModelsTestCase):
 
     def test_get_changed_fields(self):
         """Test get_changed_fields"""
-        expected = [u'a', u'b']
+        expected = ['a', 'b']
         self.assertEqual(
             self.serializer.get_changed_fields(None), expected
         )

@@ -7,6 +7,7 @@
 import logging
 
 from seed.lib.mcm import matchers
+from functools import cmp_to_key
 
 _log = logging.getLogger(__name__)
 
@@ -60,11 +61,11 @@ class MappingColumns(object):
             # We want previous mappings to be at the top of the list.
             if previous_mapping and callable(previous_mapping):
                 args = map_args or []
-                # Mapping will look something like this -- [u'table', u'field', 100]
+                # Mapping will look something like this -- ['table', 'field', 100]
                 mapping = previous_mapping(raw, *args)
                 if mapping:
                     self.add_mappings(raw, [mapping], True)
-                elif default_mappings and raw in default_mappings.keys():
+                elif default_mappings and raw in default_mappings:
                     self.add_mappings(raw, [default_mappings[raw]], True)
                 else:
                     attempt_best_match = True
@@ -99,7 +100,7 @@ class MappingColumns(object):
         while self.duplicates and index < 10:
             index += 1
             _log.debug("Index: %s with duplicates: %s" % (index, self.duplicates))
-            for k, v in self.duplicates.iteritems():
+            for k, v in self.duplicates.items():
                 self.resolve_duplicate(k, v)
 
         if threshold > 0:
@@ -116,7 +117,7 @@ class MappingColumns(object):
         """
 
         # verify that the raw_column_name does not yet exist, if it does, then return false
-        if raw_column in self.data.keys():
+        if raw_column in self.data:
             # _log.warn('raw column mapping already exists for {}'.format(raw_column))
             return False
 
@@ -183,7 +184,7 @@ class MappingColumns(object):
         for item in duplicates:
             for raw_column, v in self.data.items():
                 if v['initial_mapping_cmp'] == item:
-                    if item not in result.keys():
+                    if item not in result:
                         result[item] = []
                     result[item].append(
                         {
@@ -208,7 +209,7 @@ class MappingColumns(object):
         _log.debug("resolving duplicate field for %s" % dup_map_field)
 
         # decide which raw_column should "win"
-        raw_columns = sorted(raw_columns, cmp=sort_duplicates)
+        raw_columns = sorted(raw_columns, key=cmp_to_key(sort_duplicates))
 
         # go through all but the first result and remove the first mapping suggestion. There
         # should always be two because it was found as a duplicate.
@@ -240,7 +241,7 @@ class MappingColumns(object):
                 self.data[raw_column]['initial_mapping_cmp'] = None
         else:
             # if there are no mappings left, then the mapping suggestion will look like extra data
-            # print "Setting set_initial_mapping to None for {}".format(raw_column)
+            # print("Setting set_initial_mapping to None for {}".format(raw_column))
             self.data[raw_column]['initial_mapping_cmp'] = None
 
     def apply_threshold(self, threshold):
@@ -253,7 +254,7 @@ class MappingColumns(object):
         :param threshold: int, min value to be greater than or equal to.
         :return: None
         """
-        for k in self.data.keys():
+        for k in self.data:
             # anyone want to convert this to a list comprehension?
             new_mappings = []
             for m in self.data[k]['mappings']:
@@ -274,7 +275,7 @@ class MappingColumns(object):
 
         """
         result = {}
-        for k, v in self.data.iteritems():
+        for k, v in self.data.items():
             result[k] = list(self.first_suggested_mapping(k))
 
         return result

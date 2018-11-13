@@ -956,7 +956,7 @@ class PropertyViewSet(GenericViewSet):
             new_property_state_data = data['state']
 
             # set empty strings to None
-            for key, val in new_property_state_data.iteritems():
+            for key, val in new_property_state_data.items():
                 if val == '':
                     new_property_state_data[key] = None
 
@@ -973,7 +973,7 @@ class PropertyViewSet(GenericViewSet):
                     state=property_view.state
                 ).order_by('-id').first()
 
-                if 'extra_data' in new_property_state_data.keys():
+                if 'extra_data' in new_property_state_data:
                     property_state_data['extra_data'].update(
                         new_property_state_data.pop('extra_data'))
                 property_state_data.update(new_property_state_data)
@@ -1310,7 +1310,7 @@ def diffupdate(old, new):
     """Returns lists of fields changed"""
     changed_fields = []
     changed_extra_data = []
-    for k, v in new.iteritems():
+    for k, v in new.items():
         if old.get(k, None) != v or k not in old:
             changed_fields.append(k)
     if 'extra_data' in changed_fields:

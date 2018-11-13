@@ -87,8 +87,8 @@ class TestCaseA(DataMappingBaseTestCase):
         ps = ps.first()
         self.assertEqual(ps.pm_property_id, '2264')
         self.assertEqual(ps.address_line_1, '50 Willow Ave SE')
-        self.assertEqual('data_007' in ps.extra_data.keys(), True)
-        self.assertEqual('data_008' in ps.extra_data.keys(), False)
+        self.assertEqual('data_007' in ps.extra_data, True)
+        self.assertEqual('data_008' in ps.extra_data, False)
         self.assertEqual(ps.extra_data["data_007"], 'a')
 
         # verify that the lot_number has the tax_lot information. For this case it is one-to-one

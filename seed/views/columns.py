@@ -67,37 +67,37 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
         """
         Retrieves all columns for the user's organization including the raw database columns. Will
         return all the columns across both the Property and Tax Lot tables. The related field will
-        be true if the column came from the other table that is not the "inventory_type" (which
+        be true if the column came from the other table that is not the 'inventory_type' (which
         defaults to Property)
 
-            This is the same results as calling /api/v2/<inventory_type>/columns/?organization_id={}
+        This is the same results as calling /api/v2/<inventory_type>/columns/?organization_id={}
 
-            Example: /api/v2/columns/?inventory_type=(property|taxlot)\&organization_id={}
+        Example: /api/v2/columns/?inventory_type=(property|taxlot)/&organization_id={}
 
-            type:
-                status:
-                    required: true
-                    type: string
-                    description: Either success or error
-                columns:
-                    required: true
-                    type: array[column]
-                    description: Returns an array where each item is a full column structure.
-            parameters:
-                - name: organization_id
-                  description: The organization_id for this user's organization
-                  required: true
-                  paramType: query
-                - name: inventory_type
-                  description: Which inventory type is being matched (for related fields and naming).
-                    property or taxlot
-                  required: true
-                  paramType: query
-                - name: used_only
-                  description: Determine whether or not to show only the used fields (i.e. only columns that have been mapped)
-                  type: boolean
-                  required: false
-                  paramType: query
+        type:
+           status:
+               required: true
+               type: string
+               description: Either success or error
+           columns:
+               required: true
+               type: array[column]
+               description: Returns an array where each item is a full column structure.
+        parameters:
+           - name: organization_id
+             description: The organization_id for this user's organization
+             required: true
+             paramType: query
+           - name: inventory_type
+             description: Which inventory type is being matched (for related fields and naming).
+               property or taxlot
+             required: true
+             paramType: query
+           - name: used_only
+             description: Determine whether or not to show only the used fields (i.e. only columns that have been mapped)
+             type: boolean
+             required: false
+             paramType: query
         """
         organization_id = self.get_organization(self.request)
         inventory_type = request.query_params.get('inventory_type', 'property')

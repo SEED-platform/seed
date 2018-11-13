@@ -42,43 +42,43 @@ class TestTasks(TestCase):
 
         # Mimic the representation in the PM file. #ThanksAaron
         self.fake_extra_data = {
-            u'City': u'EnergyTown',
-            u'ENERGY STAR Score': u'',
-            u'State/Province': u'Illinois',
-            u'Site EUI (kBtu/ft2)': u'',
-            u'Year Ending': u'',
-            u'Weather Normalized Source EUI (kBtu/ft2)': u'',
-            u'Parking - Gross Floor Area (ft2)': u'',
-            u'Address 1': u'000015581 SW Sycamore Court',
-            u'Property Id': u'101125',
-            u'Address 2': u'Not Available',
-            u'Source EUI (kBtu/ft2)': u'',
-            u'Release Date': u'',
-            u'National Median Source EUI (kBtu/ft2)': u'',
-            u'Weather Normalized Site EUI (kBtu/ft2)': u'',
-            u'National Median Site EUI (kBtu/ft2)': u'',
-            u'Year Built': u'',
-            u'Postal Code': u'10108-9812',
-            u'Organization': u'Occidental Management',
-            u'Property Name': u'Not Available',
-            u'Property Floor Area (Buildings and Parking) (ft2)': u'',
-            u'Total GHG Emissions (MtCO2e)': u'',
-            u'Generation Date': u'',
+            'City': 'EnergyTown',
+            'ENERGY STAR Score': '',
+            'State/Province': 'Illinois',
+            'Site EUI (kBtu/ft2)': '',
+            'Year Ending': '',
+            'Weather Normalized Source EUI (kBtu/ft2)': '',
+            'Parking - Gross Floor Area (ft2)': '',
+            'Address 1': '000015581 SW Sycamore Court',
+            'Property Id': '101125',
+            'Address 2': 'Not Available',
+            'Source EUI (kBtu/ft2)': '',
+            'Release Date': '',
+            'National Median Source EUI (kBtu/ft2)': '',
+            'Weather Normalized Site EUI (kBtu/ft2)': '',
+            'National Median Site EUI (kBtu/ft2)': '',
+            'Year Built': '',
+            'Postal Code': '10108-9812',
+            'Organization': 'Occidental Management',
+            'Property Name': 'Not Available',
+            'Property Floor Area (Buildings and Parking) (ft2)': '',
+            'Total GHG Emissions (MtCO2e)': '',
+            'Generation Date': '',
         }
         self.fake_row = {
-            u'Name': u'The Whitehouse',
-            u'Address Line 1': u'1600 Pennsylvania Ave.',
-            u'Year Built': u'1803',
-            u'Double Tester': 'Just a note from bob'
+            'Name': 'The Whitehouse',
+            'Address Line 1': '1600 Pennsylvania Ave.',
+            'Year Built': '1803',
+            'Double Tester': 'Just a note from bob'
         }
 
         self.import_record.super_organization = self.fake_org
         self.import_record.save()
 
         self.fake_mappings = {
-            'property_name': u'Name',
-            'address_line_1': u'Address Line 1',
-            'year_built': u'Year Built'
+            'property_name': 'Name',
+            'address_line_1': 'Address Line 1',
+            'year_built': 'Year Built'
         }
 
     def test_delete_organization(self):

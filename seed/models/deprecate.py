@@ -4,13 +4,13 @@
 :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-import types
 import unicodedata
 
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django_extensions.db.models import TimeStampedModel
+from past.builtins import basestring
 
 from seed.audit_logs.models import AuditLog
 from seed.data_importer.models import ImportFile, ImportRecord
@@ -62,12 +62,12 @@ class CanonicalBuilding(models.Model):
 
     # ManyToManyField(StatusLabel)
 
-    def __unicode__(self):
-        snapshot_pk = "None"
+    def __str__(self):
+        snapshot_pk = 'None'
         if self.canonical_snapshot:
             snapshot_pk = self.canonical_snapshot.pk
 
-        return u"pk: {0} - snapshot: {1} - active: {2}".format(
+        return 'pk: {0} - snapshot: {1} - active: {2}'.format(
             self.pk,
             snapshot_pk,
             self.active
@@ -357,44 +357,44 @@ class BuildingSnapshot(TimeStampedModel):
     objects = JsonManager()
 
     def save(self, *args, **kwargs):
-        if self.tax_lot_id and isinstance(self.tax_lot_id, types.StringTypes):
+        if self.tax_lot_id and isinstance(self.tax_lot_id, basestring):
             self.tax_lot_id = self.tax_lot_id[:128]
-        if self.pm_property_id and isinstance(self.pm_property_id, types.StringTypes):
+        if self.pm_property_id and isinstance(self.pm_property_id, basestring):
             self.pm_property_id = self.pm_property_id[:128]
-        if self.custom_id_1 and isinstance(self.custom_id_1, types.StringTypes):
+        if self.custom_id_1 and isinstance(self.custom_id_1, basestring):
             self.custom_id_1 = self.custom_id_1[:128]
-        if self.lot_number and isinstance(self.lot_number, types.StringTypes):
+        if self.lot_number and isinstance(self.lot_number, basestring):
             self.lot_number = self.lot_number[:128]
-        if self.block_number and isinstance(self.block_number, types.StringTypes):
+        if self.block_number and isinstance(self.block_number, basestring):
             self.block_number = self.block_number[:128]
-        if self.district and isinstance(self.district, types.StringTypes):
+        if self.district and isinstance(self.district, basestring):
             self.district = self.district[:128]
-        if self.owner and isinstance(self.owner, types.StringTypes):
+        if self.owner and isinstance(self.owner, basestring):
             self.owner = self.owner[:128]
-        if self.owner_email and isinstance(self.owner_email, types.StringTypes):
+        if self.owner_email and isinstance(self.owner_email, basestring):
             self.owner_email = self.owner_email[:128]
-        if self.owner_telephone and isinstance(self.owner_telephone, types.StringTypes):
+        if self.owner_telephone and isinstance(self.owner_telephone, basestring):
             self.owner_telephone = self.owner_telephone[:128]
-        if self.owner_address and isinstance(self.owner_address, types.StringTypes):
+        if self.owner_address and isinstance(self.owner_address, basestring):
             self.owner_address = self.owner_address[:128]
-        if self.owner_city_state and isinstance(self.owner_city_state, types.StringTypes):
+        if self.owner_city_state and isinstance(self.owner_city_state, basestring):
             self.owner_city_state = self.owner_city_state[:128]
-        if self.owner_postal_code and isinstance(self.owner_postal_code, types.StringTypes):
+        if self.owner_postal_code and isinstance(self.owner_postal_code, basestring):
             self.owner_postal_code = self.owner_postal_code[:128]
-        if self.property_name and isinstance(self.property_name, types.StringTypes):
+        if self.property_name and isinstance(self.property_name, basestring):
             self.property_name = self.property_name[:255]
-        if self.address_line_1 and isinstance(self.address_line_1, types.StringTypes):
+        if self.address_line_1 and isinstance(self.address_line_1, basestring):
             self.address_line_1 = self.address_line_1[:255]
-        if self.address_line_2 and isinstance(self.address_line_2, types.StringTypes):
+        if self.address_line_2 and isinstance(self.address_line_2, basestring):
             self.address_line_2 = self.address_line_2[:255]
-        if self.city and isinstance(self.city, types.StringTypes):
+        if self.city and isinstance(self.city, basestring):
             self.city = self.city[:255]
-        if self.postal_code and isinstance(self.postal_code, types.StringTypes):
+        if self.postal_code and isinstance(self.postal_code, basestring):
             self.postal_code = self.postal_code[:255]
-        if self.state_province and isinstance(self.state_province, types.StringTypes):
+        if self.state_province and isinstance(self.state_province, basestring):
             self.state_province = self.state_province[:255]
         if self.building_certification and isinstance(
-            self.building_certification, types.StringTypes):  # NOQA
+            self.building_certification, basestring):  # NOQA
             self.building_certification = self.building_certification[:255]
 
         super(BuildingSnapshot, self).save(*args, **kwargs)
@@ -412,7 +412,8 @@ class BuildingSnapshot(TimeStampedModel):
             'recent_sale_date'
         )
         custom_id_1 = getattr(self, 'custom_id_1')
-        if isinstance(custom_id_1, unicode):
+        # TODO: PYTHON3 Check if unicode???
+        if isinstance(custom_id_1, basestring):
             custom_id_1 = unicodedata.normalize('NFKD', custom_id_1).encode(
                 'ascii', 'ignore'
             )
@@ -431,7 +432,7 @@ class BuildingSnapshot(TimeStampedModel):
         if fields:
             model_fields, ed_fields = split_model_fields(self, fields)
             extra_data = self.extra_data
-            ed_fields = filter(lambda f: f in extra_data, ed_fields)
+            ed_fields = list(filter(lambda f: f in extra_data, ed_fields))
 
             result = {
                 field: getattr(self, field) for field in model_fields
@@ -447,8 +448,8 @@ class BuildingSnapshot(TimeStampedModel):
             )
 
             # should probably also return children, parents, and coparent
-            result['children'] = map(lambda c: c.id, self.children.all())
-            result['parents'] = map(lambda p: p.id, self.parents.all())
+            result['children'] = list(map(lambda c: c.id, self.children.all()))
+            result['parents'] = list(map(lambda p: p.id, self.parents.all()))
             result['co_parent'] = (self.co_parent and self.co_parent.pk)
             result['coparent'] = (self.co_parent and {
                 field: self.co_parent.pk for field in ['pk', 'id']
@@ -464,8 +465,8 @@ class BuildingSnapshot(TimeStampedModel):
 
         return d
 
-    def __unicode__(self):
-        u_repr = u'id: {0}, pm_property_id: {1}, tax_lot_id: {2},' + \
+    def __str__(self):
+        u_repr = 'id: {0}, pm_property_id: {1}, tax_lot_id: {2},' + \
                  ' confidence: {3}'
         return u_repr.format(
             self.pk, self.pm_property_id, self.tax_lot_id, self.confidence

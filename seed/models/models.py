@@ -108,28 +108,28 @@ class StatusLabel(TimeStampedModel):
     )
 
     DEFAULT_LABELS = [
-        "Residential",
-        "Non-Residential",
-        "Violation",
-        "Compliant",
-        "Missing Data",
-        "Questionable Report",
-        "Update Bldg Info",
-        "Call",
-        "Email",
-        "High EUI",
-        "Low EUI",
-        "Exempted",
-        "Extension",
-        "Change of Ownership",
+        'Residential',
+        'Non-Residential',
+        'Violation',
+        'Compliant',
+        'Missing Data',
+        'Questionable Report',
+        'Update Bldg Info',
+        'Call',
+        'Email',
+        'High EUI',
+        'Low EUI',
+        'Exempted',
+        'Extension',
+        'Change of Ownership',
     ]
 
     class Meta:
         unique_together = ('name', 'super_organization')
         ordering = ['-name']
 
-    def __unicode__(self):
-        return u"{0} - {1}".format(self.name, self.color)
+    def __str__(self):
+        return '{0} - {1}'.format(self.name, self.color)
 
     def to_dict(self):
         return obj_to_dict(self)
@@ -142,13 +142,13 @@ class Compliance(TimeStampedModel):
         choices=COMPLIANCE_CHOICES,
         default=BENCHMARK_COMPLIANCE_CHOICE
     )
-    start_date = models.DateField(_("start_date"), null=True, blank=True)
-    end_date = models.DateField(_("end_date"), null=True, blank=True)
-    deadline_date = models.DateField(_("deadline_date"), null=True, blank=True)
+    start_date = models.DateField(_('start_date'), null=True, blank=True)
+    end_date = models.DateField(_('end_date'), null=True, blank=True)
+    deadline_date = models.DateField(_('deadline_date'), null=True, blank=True)
     project = models.ForeignKey(Project, verbose_name=_('Project'), )
 
-    def __unicode__(self):
-        return u"Compliance %s for project %s" % (
+    def __str__(self):
+        return 'Compliance %s for project %s' % (
             self.compliance_type, self.project
         )
 
@@ -194,16 +194,16 @@ class Unit(models.Model):
     unit_name = models.CharField(max_length=255)
     unit_type = models.IntegerField(choices=UNIT_TYPES, default=STRING)
 
-    def __unicode__(self):
-        return u'{0} Format: {1}'.format(self.unit_name, self.unit_type)
+    def __str__(self):
+        return '{0} Format: {1}'.format(self.unit_name, self.unit_type)
 
 
 class EnumValue(models.Model):
     """Individual Enumerated Type values."""
     value_name = models.CharField(max_length=255)
 
-    def __unicode__(self):
-        return u'{0}'.format(self.value_name)
+    def __str__(self):
+        return '{0}'.format(self.value_name)
 
 
 class Enum(models.Model):
@@ -213,14 +213,14 @@ class Enum(models.Model):
         EnumValue, blank=True, related_name='values'
     )
 
-    def __unicode__(self):
+    def __str__(self):
         """Just grab the first couple and the last enum_values to display."""
         enums = list(self.enum_values.all()[0:3])
         enums_string = ', '.join(enums)
         if self.enum_values.count() > len(enums):
             enums_string.append(' ... {0}'.format(self.enum_values.last()))
 
-        return u'Enum: {0}: Values {1}'.format(
+        return 'Enum: {0}: Values {1}'.format(
             self.enum_name, enums_string
         )
 

@@ -112,7 +112,7 @@ class DataQualityCheckTests(DataMappingBaseTestCase):
         #           'address_line_1': '742 Evergreen Terrace',
         #           'data_quality_results': [
         #               {
-        #                  'severity': u'error', 'value': '525600', 'field': u'site_eui', 'table_name': u'PropertyState', 'message': u'Site EUI out of range', 'detailed_message': u'Site EUI [525600] > 1000', 'formatted_field': u'Site EUI'
+        #                  'severity': 'error', 'value': '525600', 'field': 'site_eui', 'table_name': 'PropertyState', 'message': 'Site EUI out of range', 'detailed_message': 'Site EUI [525600] > 1000', 'formatted_field': 'Site EUI'
         #               }
         #           ]
         #       }
@@ -122,9 +122,9 @@ class DataQualityCheckTests(DataMappingBaseTestCase):
             self.assertEqual(row['pm_property_id'], 'PMID')
             self.assertEqual(row['address_line_1'], '742 Evergreen Terrace')
             for violation in row['data_quality_results']:
-                if violation['message'] == u'Site EUI out of range':
+                if violation['message'] == 'Site EUI out of range':
                     error_found = True
-                    self.assertEqual(violation['detailed_message'], u'Site EUI [525600] > 1000')
+                    self.assertEqual(violation['detailed_message'], 'Site EUI [525600] > 1000')
 
         self.assertEqual(error_found, True)
 

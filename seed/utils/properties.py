@@ -44,7 +44,7 @@ def diffupdate(old, new):
     """Returns lists of fields changed"""
     changed_fields = []
     changed_extra_data = []
-    for k, v in new.iteritems():
+    for k, v in new.items():
         if old.get(k, None) != v or k not in old:
             changed_fields.append(k)
     if 'extra_data' in changed_fields:

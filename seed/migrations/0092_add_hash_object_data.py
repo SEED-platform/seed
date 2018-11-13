@@ -13,19 +13,19 @@ def forwards(apps, schema_editor):
     # find which columns are not used in column mappings
     property_count = PropertyState.objects.all().count()
     taxlot_count = TaxLotState.objects.all().count()
-    print "Thereare %s objects to traverse" % (property_count + taxlot_count)
+    print("Thereare %s objects to traverse" % (property_count + taxlot_count))
 
-    print "Iterating over PropertyStates. Count %s" % PropertyState.objects.all().count()
+    print("Iterating over PropertyStates. Count %s" % PropertyState.objects.all().count())
     for idx, obj in enumerate(PropertyState.objects.all().iterator()):
         if idx % 1000 == 0:
-            print "... %s / %s ..." % (idx, property_count)
+            print("... %s / %s ..." % (idx, property_count))
         obj.hash_object = hash_state_object(obj)
         obj.save()
 
-    print "Iterating over TaxLotStates. Count %s" % TaxLotState.objects.all().count()
+    print("Iterating over TaxLotStates. Count %s" % TaxLotState.objects.all().count())
     for idx, obj in enumerate(TaxLotState.objects.all().iterator()):
         if idx % 1000 == 0:
-            print "... %s / %s ..." % (idx, taxlot_count)
+            print("... %s / %s ..." % (idx, taxlot_count))
         obj.hash_object = hash_state_object(obj)
         obj.save()
 

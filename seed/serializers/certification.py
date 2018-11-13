@@ -11,6 +11,7 @@ from collections import OrderedDict
 from datetime import timedelta
 
 from django.core.exceptions import ValidationError
+from past.builtins import basestring
 from rest_framework import serializers
 
 from seed.models import (
@@ -172,7 +173,7 @@ class GreenAssessmentPropertySerializer(OrgValidateMixin, serializers.ModelSeria
         )
         initial_log = instance.initialize_audit_logs(
             user=user,
-            changed_fields=unicode(validated_data),
+            changed_fields=str(validated_data),
             description="Created by api call."
         )
         GreenAssessmentURL.objects.bulk_create(
@@ -202,7 +203,7 @@ class GreenAssessmentPropertySerializer(OrgValidateMixin, serializers.ModelSeria
         )
         log = instance.log(
             user=user,
-            changed_fields=unicode(validated_data),
+            changed_fields=str(validated_data),
             description="Updated by api call."
         )
         # PATCH request, remove exisiting urls only if urls is supplied

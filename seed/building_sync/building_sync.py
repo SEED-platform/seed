@@ -9,10 +9,12 @@ import copy
 import json
 import logging
 import os
+from builtins import str
 from collections import OrderedDict
 
 import xmltodict
 from django.db.models import FieldDoesNotExist
+from past.builtins import basestring
 from quantityfield import ureg
 
 from seed.models.measures import _snake_case
@@ -190,14 +192,14 @@ class BuildingSync(object):
             new_dict = OrderedDict(
                 [
                     (
-                        u'auc:Audits', OrderedDict(
+                        'auc:Audits', OrderedDict(
                             [
-                                (u'@xsi:schemaLocation',
-                                 u'http://nrel.gov/schemas/bedes-auc/2014 https://github.com/BuildingSync/schema/releases/download/v0.3/BuildingSync.xsd'),
+                                ('@xsi:schemaLocation',
+                                 'http://nrel.gov/schemas/bedes-auc/2014 https://github.com/BuildingSync/schema/releases/download/v0.3/BuildingSync.xsd'),
                                 ('@xmlns', OrderedDict(
                                     [
-                                        (u'auc', u'http://nrel.gov/schemas/bedes-auc/2014'),
-                                        (u'xsi', u'http://www.w3.org/2001/XMLSchema-instance')
+                                        ('auc', 'http://nrel.gov/schemas/bedes-auc/2014'),
+                                        ('xsi', 'http://www.w3.org/2001/XMLSchema-instance')
                                     ]
                                 ))
                             ]
@@ -221,8 +223,7 @@ class BuildingSync(object):
             if value:
                 full_path = "{}.{}".format(process_struct['root'], v['path'])
 
-                if v.get('key_path_name', None) and v.get('value_path_name', None) and v.get(
-                        'key_path_value', None):
+                if v.get('key_path_name', None) and v.get('value_path_name', None) and v.get('key_path_value', None):
                     # iterate over the paths and find the correct node to set
                     self._set_compound_node(
                         full_path,
@@ -450,8 +451,7 @@ class BuildingSync(object):
             value = self._get_node(path, data, [])
 
             try:
-                if v.get('key_path_name', None) and v.get('value_path_name', None) and v.get(
-                        'key_path_value', None):
+                if v.get('key_path_name', None) and v.get('value_path_name', None) and v.get('key_path_value', None):
                     value = _lookup_sub(
                         value,
                         v.get('key_path_name'),
@@ -522,13 +522,15 @@ class BuildingSync(object):
         measures = self._get_node('auc:Audits.auc:Audit.auc:Measures.auc:Measure', data, [])
         for m in measures:
             if m.get('auc:TechnologyCategories', None):
-                cat_w_namespace = m['auc:TechnologyCategories']['auc:TechnologyCategory'].keys()[0]
+                cat_w_namespace = list(m['auc:TechnologyCategories']['auc:TechnologyCategory'].keys())[0]
                 category = cat_w_namespace.replace('auc:', '')
                 new_data = {
-                    'property_measure_name': m.get('@ID'),  # This will be the IDref from the scenarios
+                    'property_measure_name': m.get('@ID'),
+                    # This will be the IDref from the scenarios
                     'category': _snake_case(category),
-                    'name': m['auc:TechnologyCategories']['auc:TechnologyCategory'][cat_w_namespace][
-                        'auc:MeasureName']
+                    'name':
+                        m['auc:TechnologyCategories']['auc:TechnologyCategory'][cat_w_namespace][
+                            'auc:MeasureName']
                 }
                 for k, v in m.items():
                     if k in ['@ID', 'auc:PremisesAffected', 'auc:TechnologyCategories']:
@@ -578,7 +580,7 @@ class BuildingSync(object):
                             if measure.get('@IDref', None):
                                 new_data['measures'].append(measure.get('@IDref'))
                     else:
-                        if isinstance(measures, (str, unicode)):
+                        if isinstance(measures, basestring):
                             # the measure is there, but it does not have an idref
                             continue
                         else:

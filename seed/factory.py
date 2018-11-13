@@ -6,10 +6,13 @@
 """
 import random
 
+from faker import Factory
+
 from seed.models import BuildingSnapshot
 from seed.test_helpers.factory.helpers import DjangoFunctionalFactory
 
 
+# TODO: PYTHON3 Remove this test factory, not needed anymore. use fake.py
 class SEEDFactory(DjangoFunctionalFactory):
     """model factory for SEED"""
 
@@ -26,18 +29,19 @@ class SEEDFactory(DjangoFunctionalFactory):
                 ab = SEEDFactory.assessed_building()
                 cb = ab.canonical_building
                 b_snapshot = cb.canonical_snapshot
-                print ab.year_built == b_snapshot.year_built  # True
+                ab.year_built == b_snapshot.year_built  # True
 
                 # or loop through to create a whole bunch:
                 for i in range(10):
                     SEEDFactory.building_snapshot(name='tester_' % i)
 
         """
+        fake = Factory.create()
 
         defaults = {
-            "tax_lot_id": cls.rand_str(length=50),
-            "pm_property_id": cls.rand_str(length=50),
-            "custom_id_1": cls.rand_str(length=50),
+            "tax_lot_id": fake.random_letters(length=50),
+            "pm_property_id": fake.random_letters(length=50),
+            "custom_id_1": fake.random_letters(length=50),
             "gross_floor_area": random.uniform(35000, 50000),
             "year_built": random.randint(1900, 2012),
             "address_line_1": cls.rand_street_address(),

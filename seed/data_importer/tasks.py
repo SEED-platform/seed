@@ -18,13 +18,15 @@ from collections import namedtuple
 from functools import reduce
 from itertools import chain
 
+from builtins import str
 from celery import chord, shared_task
 from celery.utils.log import get_task_logger
 from django.db import IntegrityError, DataError
 from django.db import transaction
 from django.db.models import Q
-from django.utils import timezone
+from django.utils import timezone as tz
 from django.utils.timezone import make_naive
+from past.builtins import basestring
 from unidecode import unidecode
 
 from seed.data_importer.equivalence_partitioner import EquivalencePartitioner
@@ -171,7 +173,7 @@ def finish_mapping(import_file_id, mark_as_done, progress_key):
                 value = True
             setattr(import_record, '{0}_{1}'.format(action, state), value)
 
-    import_record.finish_time = timezone.now()
+    import_record.finish_time = tz.now()
     import_record.status = STATUS_READY_TO_MERGE
     import_record.save()
 
@@ -249,13 +251,13 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
     # Ideally the table_mapping method would be attached to the import_file_id, someday...
     list_of_raw_columns = import_file.first_row_columns
     if list_of_raw_columns:
-        for table, mappings in table_mappings.items():
-            for raw_column_name in mappings.keys():
+        for table, mappings in table_mappings.copy().items():
+            for raw_column_name in mappings.copy():
                 if raw_column_name not in list_of_raw_columns:
                     del table_mappings[table][raw_column_name]
 
         # check that the dictionaries are not empty, if empty, then delete.
-        for table in table_mappings.keys():
+        for table in table_mappings.copy():
             if not table_mappings[table]:
                 del table_mappings[table]
 
@@ -267,14 +269,16 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
     # hard coded
     try:
         delimited_fields = {}
-        if 'TaxLotState' in table_mappings.keys():
-            tmp = table_mappings['TaxLotState'].keys()[table_mappings['TaxLotState'].values().index(
-                ('TaxLotState', 'jurisdiction_tax_lot_id', 'Jurisdiction Tax Lot ID', False))]
+        if 'TaxLotState' in table_mappings:
+            tmp = list(table_mappings['TaxLotState'].keys())[
+                list(table_mappings['TaxLotState'].values()).index(ColumnMapping.DELIMITED_FIELD)
+            ]
             delimited_fields['jurisdiction_tax_lot_id'] = {
                 'from_field': tmp,
                 'to_table': 'TaxLotState',
                 'to_field_name': 'jurisdiction_tax_lot_id',
             }
+
     except ValueError:
         delimited_fields = {}
         # field does not exist in mapping list, so ignoring
@@ -286,7 +290,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
     # an extra custom mapping for the cross-related data. If the data are not being imported into
     # the property table then make sure to skip this so that superfluous property entries are
     # not created.
-    if 'PropertyState' in table_mappings.keys():
+    if 'PropertyState' in table_mappings:
         if delimited_fields and delimited_fields['jurisdiction_tax_lot_id']:
             table_mappings['PropertyState'][
                 delimited_fields['jurisdiction_tax_lot_id']['from_field']] = (
@@ -394,16 +398,16 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                 if map_model_obj:
                     Column.save_column_names(map_model_obj)
     except IntegrityError as e:
-        progress_data.finish_with_error('Could not map_row_chunk with error', e.message)
-        raise IntegrityError("Could not map_row_chunk with error: %s" % e.message)
+        progress_data.finish_with_error('Could not map_row_chunk with error', str(e))
+        raise IntegrityError("Could not map_row_chunk with error: %s" % str(e))
     except DataError as e:
         _log.error(traceback.format_exc())
-        progress_data.finish_with_error('Invalid data found', e.message)
-        raise DataError("Invalid data found: %s" % e.message)
+        progress_data.finish_with_error('Invalid data found', str(e))
+        raise DataError("Invalid data found: %s" % (e))
     except TypeError as e:
-        _log.error('Error mapping data with error: %s' % e.message)
-        progress_data.finish_with_error('Invalid type found while mapping data', e.message)
-        raise DataError("Invalid type found while mapping data: %s" % e.message)
+        _log.error('Error mapping data with error: %s' % str(e))
+        progress_data.finish_with_error('Invalid type found while mapping data', (e))
+        raise DataError("Invalid type found while mapping data: %s" % (e))
 
     progress_data.step()
 
@@ -424,10 +428,10 @@ def _map_data_create_tasks(import_file_id, progress_key):
 
     # If we haven't finished saving, we should not proceed with mapping
     # Re-queue this task.
-    if not import_file.raw_save_done:
-        _log.debug("_map_data raw_save_done is false, queueing the task until raw_save finishes")
-        map_data.apply_async(args=[import_file_id], countdown=60, expires=120)
-        return progress_data.finish_with_error('waiting for raw data save.')
+    # if not import_file.raw_save_done:
+    #     _log.debug("_map_data raw_save_done is false, queueing the task until raw_save finishes")
+    #     map_data.apply_async(args=[import_file_id], countdown=60, expires=120)
+    #     return progress_data.finish_with_error('waiting for raw data save.')
 
     source_type_dict = {
         'Portfolio Raw': PORTFOLIO_RAW,
@@ -564,10 +568,10 @@ def _save_raw_data_chunk(chunk, file_pk, progress_key):
 
                 # sanitize c and remove any diacritics
                 new_chunk = {}
-                for k, v in c.iteritems():
+                for k, v in c.items():
                     # remove extra spaces surrounding keys.
                     key = k.strip()
-                    if isinstance(v, unicode):
+                    if isinstance(v, basestring):
                         new_chunk[key] = unidecode(v)
                     elif isinstance(v, (dt.datetime, dt.date)):
                         raise TypeError(
@@ -580,7 +584,7 @@ def _save_raw_data_chunk(chunk, file_pk, progress_key):
                 raw_property.organization = import_file.import_record.super_organization
                 raw_property.save()
     except IntegrityError as e:
-        raise IntegrityError("Could not save_raw_data_chunk with error: %s" % e.message)
+        raise IntegrityError("Could not save_raw_data_chunk with error: %s" % (e))
 
     # Indicate progress
     progress_data = ProgressData.from_key(progress_key)
@@ -594,7 +598,7 @@ def finish_raw_save(results, file_pk, progress_key):
     """
     Finish importing the raw file.
 
-    :param results: List of results from the parent task, not really used at the moment
+    :param results: List of results from the parent task, not used at the moment
     :param file_pk: ID of the file that was being imported
     :return: results: results from the other tasks before the chord ran
     """
@@ -669,12 +673,11 @@ def _save_raw_data_create_tasks(file_pk, progress_key):
 
     parser = reader.MCMParser(import_file.local_file)
     cache_first_rows(import_file, parser)
-    rows = parser.next()
     import_file.num_rows = 0
     import_file.num_columns = parser.num_columns()
 
     chunks = []
-    for batch_chunk in batch(rows, 100):
+    for batch_chunk in batch(parser.data, 100):
         import_file.num_rows += len(batch_chunk)
         chunks.append(batch_chunk)
     import_file.save()
@@ -705,12 +708,14 @@ def save_raw_data(file_pk):
     except StopIteration:
         progress_data.finish_with_error('StopIteration Exception', traceback.format_exc())
     except Error as e:
-        progress_data.finish_with_error('File Content Error: ' + e.message, traceback.format_exc())
+        progress_data.finish_with_error('File Content Error: ' + e, traceback.format_exc())
     except KeyError as e:
-        progress_data.finish_with_error('Invalid Column Name: "' + e.message + '"',
+        progress_data.finish_with_error('Invalid Column Name: "' + e + '"',
                                         traceback.format_exc())
+    except TypeError:
+        progress_data.finish_with_error('TypeError Exception', traceback.format_exc())
     except Exception as e:
-        progress_data.finish_with_error('Unhandled Error: ' + str(e.message),
+        progress_data.finish_with_error('Unhandled Error: ' + str(e),
                                         traceback.format_exc())
     _log.debug(progress_data.result())
     return progress_data.result()
@@ -786,11 +791,11 @@ def hash_state_object(obj, include_extra_data=True):
             if isinstance(value, dict):
                 add_dictionary_repr_to_hash(hash_obj, value)
             else:
-                hash_obj.update(str(unidecode(key)))
+                hash_obj.update(str(unidecode(key)).encode('utf-8'))
                 if isinstance(value, basestring):
-                    hash_obj.update(unidecode(value))
+                    hash_obj.update(unidecode(value).encode('utf-8'))
                 else:
-                    hash_obj.update(str(value))
+                    hash_obj.update(str(value).encode('utf-8'))
         return hash_obj
 
     def _get_field_from_obj(field_obj, field):
@@ -802,14 +807,14 @@ def hash_state_object(obj, include_extra_data=True):
     m = hashlib.md5()
     for f in Column.retrieve_db_field_name_for_hash_comparison():
         obj_val = _get_field_from_obj(obj, f)
-        m.update(str(f))
+        m.update(f.encode('utf-8'))
         if isinstance(obj_val, dt.datetime):
             # if this is a datetime, then make sure to save the string as a naive datetime.
             # Somehow, somewhere the data are being saved in mapping with a timezone,
             # then in matching they are removed (but the time is updated correctly)
-            m.update(str(make_naive(obj_val).isoformat()))
+            m.update(str(make_naive(obj_val).astimezone(tz.utc).isoformat()).encode('utf-8'))
         else:
-            m.update(str(obj_val))
+            m.update(str(obj_val).encode('utf-8'))
 
     if include_extra_data:
         add_dictionary_repr_to_hash(m, obj.extra_data)
@@ -900,7 +905,7 @@ def match_and_merge_unmatched_objects(unmatched_states, partitioner):
 
             merged_objects.append(merged_result)
 
-    return merged_objects, equivalence_classes.keys()
+    return merged_objects, list(equivalence_classes.keys())
 
 
 # @cprofile(n=50)
@@ -1005,7 +1010,7 @@ def merge_unmatched_into_views(unmatched_states, partitioner, org, import_file):
                 created_view = promote_datum[0].promote(promote_datum[1])
                 matched_views.append(created_view)
     except IntegrityError as e:
-        raise IntegrityError("Could not merge results with error: %s" % e.message)
+        raise IntegrityError("Could not merge results with error: %s" % (e))
 
     return list(set(matched_views))
 
@@ -1295,7 +1300,8 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
         return
 
     # Not sure what the below cycle code does.
-    cycle = chain(merged_property_views, merged_taxlot_views).next().cycle
+    # Commented out during Python3 upgrade.
+    # cycle = chain(merged_property_views, merged_taxlot_views).next().cycle
 
     tax_cmp_fmt = [
         ('jurisdiction_tax_lot_id', 'custom_id_1'),
@@ -1316,8 +1322,8 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
     tax_comparison_fields = sorted(list(set(chain.from_iterable(tax_cmp_fmt))))
     prop_comparison_fields = sorted(list(set(chain.from_iterable(prop_cmp_fmt))))
 
-    tax_comparison_field_names = map(lambda s: "state__{}".format(s), tax_comparison_fields)
-    prop_comparison_field_names = map(lambda s: "state__{}".format(s), prop_comparison_fields)
+    tax_comparison_field_names = list(map(lambda s: "state__{}".format(s), tax_comparison_fields))
+    prop_comparison_field_names = list(map(lambda s: "state__{}".format(s), prop_comparison_fields))
 
     # This is a not so nice hack. but it's the only special case/field
     # that isn't on the join to the State.
@@ -1326,7 +1332,7 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
     tax_comparison_field_names.insert(0, 'pk')
     prop_comparison_field_names.insert(0, 'pk')
 
-    view = chain(merged_property_views, merged_taxlot_views).next()
+    view = next(chain(merged_property_views, merged_taxlot_views))
     cycle = view.cycle
     org = view.state.organization
 

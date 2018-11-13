@@ -72,8 +72,8 @@ class OrganizationUser(models.Model):
                     raise UserWarning('Did not find suitable user to promote')
         super(OrganizationUser, self).delete(*args, **kwargs)
 
-    def __unicode__(self):
-        return u'OrganizationUser: {0} <{1}> ({2})'.format(
+    def __str__(self):
+        return 'OrganizationUser: {0} <{1}> ({2})'.format(
             self.user.username, self.organization.name, self.pk
         )
 
@@ -201,8 +201,8 @@ class Organization(models.Model):
             return self.id
         return self.parent_org.id
 
-    def __unicode__(self):
-        return u'Organization: {0}({1})'.format(self.name, self.pk)
+    def __str__(self):
+        return 'Organization: {0}({1})'.format(self.name, self.pk)
 
 
 def organization_pre_delete(sender, instance, **kwargs):

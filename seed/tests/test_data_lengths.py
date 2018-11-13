@@ -33,7 +33,7 @@ class TestBuildingSnapshot(TestCase):
 
         # Check that the data is converted correctly
         bs2 = BuildingSnapshot.objects.get(pk=self.bs.pk)
-        self.assertEqual(bs2.tax_lot_id, u'123123123')
+        self.assertEqual(bs2.tax_lot_id, '123123123')
 
     def test_pm_property_id(self):
         """

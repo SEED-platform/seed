@@ -14,6 +14,7 @@ from seed.models import (
     ColumnListSettingColumn,
 )
 from seed.utils.organizations import create_organization
+from past.builtins import basestring
 
 
 class TestColumnListSettings(TestCase):
@@ -27,14 +28,14 @@ class TestColumnListSettings(TestCase):
         """These are simple tests which really only test the m2m part. If these don't work, then django has
         some issues."""
         col1 = Column.objects.create(
-            column_name=u'New Column',
-            table_name=u'PropertyState',
+            column_name='New Column',
+            table_name='PropertyState',
             organization=self.fake_org,
             is_extra_data=True,
         )
         col2 = Column.objects.create(
-            column_name=u'Second Column',
-            table_name=u'PropertyState',
+            column_name='Second Column',
+            table_name='PropertyState',
             organization=self.fake_org,
             is_extra_data=True,
         )
@@ -57,19 +58,19 @@ class TestColumnListSettings(TestCase):
 
         # not the most robust tests, but they are least check for non-zero results
         self.assertIsInstance(ids[0], int)
-        self.assertIsInstance(name_mappings.keys()[0], unicode)
-        self.assertIsInstance(name_mappings.values()[0], unicode)
+        self.assertIsInstance(list(name_mappings.keys())[0], basestring)
+        self.assertIsInstance(list(name_mappings.values())[0], basestring)
 
     def test_returning_columns_with_profile(self):
         col1 = Column.objects.create(
-            column_name=u'New Column',
-            table_name=u'PropertyState',
+            column_name='New Column',
+            table_name='PropertyState',
             organization=self.fake_org,
             is_extra_data=True,
         )
         col2 = Column.objects.create(
-            column_name=u'Second Column',
-            table_name=u'PropertyState',
+            column_name='Second Column',
+            table_name='PropertyState',
             organization=self.fake_org,
             is_extra_data=True,
         )
@@ -81,10 +82,7 @@ class TestColumnListSettings(TestCase):
         # do not set up a profile and return the columns, should be all columns
         ids, name_mappings, objs = ColumnListSetting.return_columns(self.fake_org, new_list_setting.id)
 
-        # print ids
-        # print name_mappings
-
         # not the most robust tests, but they are least check for non-zero results
         self.assertIsInstance(ids[0], int)
-        self.assertIsInstance(name_mappings.keys()[0], unicode)
-        self.assertIsInstance(name_mappings.values()[0], unicode)
+        self.assertIsInstance(list(name_mappings.keys())[0], basestring)
+        self.assertIsInstance(list(name_mappings.values())[0], basestring)

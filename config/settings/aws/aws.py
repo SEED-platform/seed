@@ -15,7 +15,7 @@ try:
     elasticache = boto.elasticache.connect_to_region(AWS_REGION)
     cloudformation = boto.cloudformation.connect_to_region(AWS_REGION)
 except boto.exception.NoAuthHandlerFound:
-    print 'Looks like we are not on an AWS stack this module will not function'
+    print('Looks like we are not on an AWS stack this module will not function')
 
 
 def get_stack_outputs():
@@ -40,5 +40,6 @@ def get_cache_endpoint():
         ['CacheClusters'][0]['CacheNodes'][0]['Endpoint']
     )
 
+
 if __name__ == '__main__':
-    print get_cache_endpoint()['Address']
+    print(get_cache_endpoint()['Address'])
