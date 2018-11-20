@@ -186,7 +186,7 @@ Edit `local_untracked.py`. Open the file you created in your favorite editor. Th
     # postgres DB config
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'ENGINE': 'django.contrib.gis.db.backends.postgis',
             'NAME': 'seeddb',
             'USER': 'seeduser',
             'PASSWORD': 'seedpass',
@@ -304,4 +304,3 @@ Login with the user/password you created before, e.g., `admin@my.org` and
     these steps have been combined into a script called `start-seed.sh`.
     The script will also not start Celery or Redis if they already seem
     to be running.
-
