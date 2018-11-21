@@ -111,6 +111,7 @@ class Column(models.Model):
         'merge_state',
         'extra_data',
         'source_type',
+        'long_lat',
     ] + EXCLUDED_COLUMN_RETURN_FIELDS
 
     # These are fields that should not be mapped to
