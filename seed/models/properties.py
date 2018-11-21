@@ -14,6 +14,7 @@ from os import path
 from past.builtins import basestring
 from django.apps import apps
 from django.contrib.postgres.fields import JSONField
+from django.contrib.gis.db import models as geomodels
 from django.db import IntegrityError
 from django.db import models
 from django.db.models.signals import pre_delete, post_save
@@ -133,6 +134,8 @@ class PropertyState(models.Model):
     # New fields for latitude and longitude as native database objects
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
+
+    long_lat = geomodels.PointField(geography=True, null=True, blank=True)
 
     # Only spot where it's 'building' in the app, b/c this is a PM field.
     building_count = models.IntegerField(null=True, blank=True)
