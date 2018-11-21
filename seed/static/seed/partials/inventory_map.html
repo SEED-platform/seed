@@ -35,19 +35,19 @@
                     <li role="menuitem" ng-hide="::menu.user.organization.user_role === 'viewer'">
                         <a ng-click="open_delete_modal()" ng-disabled="selectedCount === 0" translate>Delete Selected</a>
                     </li>
-                    <li role="menuitem">
+                    <!-- <li role="menuitem">
                         <a ng-click="open_export_modal()" ng-disabled="selectedCount === 0" translate>Export Selected</a>
-                    </li>
+                    </li> -->
                     <li role="menuitem">
                         <a ng-click="open_update_labels_modal()" ng-disabled="selectedParentCount === 0" translate>Add/Remove Labels</a>
                     </li>
-                    <li role="menuitem">
+                    <!-- <li role="menuitem">
                         <a ng-click="run_data_quality_check()" ng-disabled="selectedCount === 0" translate>Data Quality Check</a>
-                    </li>
-                    <li class="divider"></li>
+                    </li> -->
+                    <!-- <li class="divider"></li>
                     <li role="menuitem">
                         <a ng-click="open_show_populated_columns_modal()" ng-disabled="data.length === 0" translate>Only Show Populated Columns</a>
-                    </li>
+                    </li> -->
                 </ul>
             </div>
         </div>
@@ -82,7 +82,6 @@
         <div class="btn-group">
             <button type="button" ng-click="gridApi.grid.clearAllFilters();" ng-disabled="!filters_exist()" class="btn btn-default btn-sm" translate>Clear Filters</button>
         </div>
-
     </form>
 
     <div class="form-group settings_profile" style="padding-top: 20px; display: flex; justify-content: space-between;">
@@ -94,13 +93,13 @@
                 </select>
             </div>
         </span>
-
+<!--
         <span ng-show="profiles.length > 0">
             <label>{$:: 'List Settings Profile' | translate $}:</label>
             <div style="display: inline-block;">
                 <select class="form-control input-sm" ng-model="currentProfile" ng-options="option.name for option in profiles track by option.id"></select>
             </div>
-        </span>
+        </span> -->
     </div>
 </div>
 
