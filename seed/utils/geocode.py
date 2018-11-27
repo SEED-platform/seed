@@ -7,15 +7,19 @@
 # base case:
 """
  - target properties provided within a queryset
- - address fields populated - address_line_1, city, state, and postal_code
- - long_lat not populated
+ - address fields may or may not be populated - address_line_1, address_line_2, city, state, and postal_code
+ - results definitely come back
+ - long_lat always updated
  - there are less than 101 addresses
 """
 
 # once base is covered, these cases should also be covered:
 """
- - case when the data is insufficient and geocodequality is low
- - case when the two lat long fields are populated already
+ - case when the data is insufficient and geocodequality is low (can notes be added?)
+ - case when there are no chars or numbers (covers an error edge case in API)
+    - possible that API doesn't return anything if only spaces or special chars provided
+ - case when the two lat long fields are populated already?
+    - might not be a case to worry about here
  - case when long_lat is populated already (consider worrying about this @ source)
 """
 
@@ -45,19 +49,20 @@ def geocode_addresses():
 
     for property in properties:
         property.long_lat = id_geocodings.get(property.id)
+        # property.long_lat = ""
         property.save()
 
 def _id_addresses(properties):
-    return {
-        property.id: ", ".join([
-            property.address_line_1,
-            property.city,
-            property.state,
-            property.postal_code
-        ])
-        for property
-        in properties
-    }
+    return { property.id: _full_address(property) for property in properties }
+
+def _full_address(property):
+    return ", ".join([
+        property.address_line_1 or "",
+        property.address_line_2 or "",
+        property.city or "",
+        property.state or "",
+        property.postal_code or ""
+    ])
 
 def _address_geocodings(id_addresses):
     addresses = list(set(id_addresses.values()))
@@ -76,10 +81,18 @@ def _address_geocodings(id_addresses):
     # any value out of dictionary comprehension vs other approach?
     # this where logic should live for assessing geocodequality
     return {
-        result.get('providedLocation').get('location'): f"POINT ({result.get('locations')[0].get('latLng').get('lng')} {result.get('locations')[0].get('latLng').get('lat')})"
+        _response_address(result): _response_location(result)
         for result
         in results
     }
+
+def _response_address(result):
+    return result.get('providedLocation').get('location')
+
+def _response_location(result):
+    # analyze geocodequality here and return empty string (which turns into NoneType)
+    return (f"POINT ({result.get('locations')[0].get('latLng').get('lng')} " +
+        f"{result.get('locations')[0].get('latLng').get('lat')})")
 
 def _id_geocodings(id_addresses, address_geocodings):
     return {
