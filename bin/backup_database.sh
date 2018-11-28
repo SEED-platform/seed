@@ -31,10 +31,12 @@ echo "pg_dump -U ${DB_USERNAME} -Fc ${DB_NAME} > $(file_name)"
 pg_dump -U ${DB_USERNAME} -Fc ${DB_NAME} > $(file_name)
 unset PGPASSWORD
 
-# Delete files older than 45 days
-find ${BACKUP_DIR} -mtime +45 -type f -name '*.dump' -delete
-
-# Also backup the media directory (uploads, especially buildingsync)
+# Backup the media directory (uploads, especially buildingsync)
 if [[ (! -z ${MEDIA_DIR}) ]] ; then
   tar zcvf $(media_file_name) ${MEDIA_DIR}
 fi
+
+# Delete files older than 45 days
+find ${BACKUP_DIR} -mtime +45 -type f -name '*.dump' -delete
+find ${BACKUP_DIR} -mtime +45 -type f -name '*.tgz' -delete
+
