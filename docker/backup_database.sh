@@ -29,8 +29,8 @@ mkdir -p ${BACKUP_DIR}
 
 # db_password is set from the environment variables in docker-compose. The docker stack must
 # be running for this command to work.
-echo "docker-compose -f ${DC_FILENAME} exec db-postgres pg_dump -U ${DB_USERNAME} -Fc ${DB_NAME} > $(file_name)"
-docker-compose -f ${DC_FILENAME} exec db-postgres pg_dump -U ${DB_USERNAME} -Fc ${DB_NAME} > $(file_name)
+echo "docker-compose -f ${DC_FILENAME} exec $(docker ps -f "name=db-postgres" --format "{{.ID}}") pg_dump -U ${DB_USERNAME} -Fc ${DB_NAME} > $(file_name)"
+docker-compose -f ${DC_FILENAME} exec $(docker ps -f "name=db-postgres" --format "{{.ID}}") pg_dump -U ${DB_USERNAME} -Fc ${DB_NAME} > $(file_name)
 
 # Backup the media directory (uploads, especially buildingsync). In docker-land this is
 # just a container volume, so create a new container with the volume attached and tar it up.
