@@ -26,26 +26,6 @@ angular.module('BE.seed.controller.inventory_map', [])
           source: new ol.source.OSM()
         });
 
-        // This will be done using iterations where WKT will be taken
-        // from each property/taxlot entry
-        var format = new ol.format.WKT();
-
-        var wkt = 'POINT(-104.9862 39.765566)';
-        var feature = format.readFeature(wkt, {
-          dataProjection: 'EPSG:4326',
-          featureProjection: 'EPSG:3857'
-        });
-
-        var wkt_two = 'POINT(-100.9862 39.765566)';
-        var feature_two = format.readFeature(wkt_two, {
-          dataProjection: 'EPSG:4326',
-          featureProjection: 'EPSG:3857'
-        });
-
-        var vector_sources = new ol.source.Vector({
-          features: [feature, feature_two]
-        });
-
         var vector_style = new ol.style.Style({
           image: new ol.style.Icon({
             src: urls.static_url + "seed/images/favicon.ico",
@@ -55,7 +35,7 @@ angular.module('BE.seed.controller.inventory_map', [])
         });
 
         var vectors = new ol.layer.Vector({
-          source: vector_sources,
+          source: vectorSources(),
           style: vector_style
         });
 
@@ -71,6 +51,23 @@ angular.module('BE.seed.controller.inventory_map', [])
           layers: [raster, vectors],
           view: new ol.View(center_zoom)
         });
+      };
+
+      var vectorSources = function () {
+        var features = _.map($scope.data, buildingPoint);
+
+        return new ol.source.Vector({ features: features });
+      };
+
+      var buildingPoint = function (building) {
+        var format = new ol.format.WKT();
+
+        var long_lat = building.long_lat
+        return format.readFeature(long_lat, {
+          dataProjection: 'EPSG:4326',
+          featureProjection: 'EPSG:3857'
+        });
+
       };
 
       renderMap();
