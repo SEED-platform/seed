@@ -1,12 +1,7 @@
-# from seed.utils.geocode import geocode_addresses
-
-# receives a collection of PropertyState objects
-# if applicable, updates long_lat
-# returns the same collection of PropertyState objects
 
 # base case:
 """
- - target properties provided within a queryset
+ - target buildings provided within a queryset
  - address fields may or may not be populated - address_line_1, address_line_2, city, state, and postal_code
  - results definitely come back
  - long_lat always updated
@@ -34,34 +29,33 @@
 import requests
 
 from django.conf import settings
-from seed.models.properties import PropertyState
+
+from django.contrib.gis.geos import GEOSGeometry
 
 
-def geocode_addresses():
-    # properties will be a parameter
-    # consider using objects.select_for_update() to lock objects
-    properties = PropertyState.objects.filter(state='Pennsylvania')
+def long_lat_wkt(state):
+    return GEOSGeometry(state.long_lat,srid=4326).wkt
 
-    id_addresses = _id_addresses(properties)
+def geocode_addresses(buildings):
+    id_addresses = _id_addresses(buildings)
     address_geocodings = _address_geocodings(id_addresses)
 
     id_geocodings = _id_geocodings(id_addresses, address_geocodings)
 
-    for property in properties:
-        property.long_lat = id_geocodings.get(property.id)
-        # property.long_lat = ""
-        property.save()
+    for building in buildings:
+        building.long_lat = id_geocodings.get(building.id)
+        building.save()
 
-def _id_addresses(properties):
-    return { property.id: _full_address(property) for property in properties }
+def _id_addresses(buildings):
+    return { building.id: _full_address(building) for building in buildings }
 
-def _full_address(property):
+def _full_address(building):
     return ", ".join([
-        property.address_line_1 or "",
-        property.address_line_2 or "",
-        property.city or "",
-        property.state or "",
-        property.postal_code or ""
+        building.address_line_1 or "",
+        building.address_line_2 or "",
+        building.city or "",
+        building.state or "",
+        building.postal_code or ""
     ])
 
 def _address_geocodings(id_addresses):
@@ -77,9 +71,7 @@ def _address_geocodings(id_addresses):
         settings.MAPQUEST_API_KEY
     )
     results = response.json().get('results')
-    # refactor below to not be so long in one line
-    # any value out of dictionary comprehension vs other approach?
-    # this where logic should live for assessing geocodequality
+
     return {
         _response_address(result): _response_location(result)
         for result
@@ -91,6 +83,7 @@ def _response_address(result):
 
 def _response_location(result):
     # analyze geocodequality here and return empty string (which turns into NoneType)
+    # possibly add a note for this field as well? consider this further
     return (f"POINT ({result.get('locations')[0].get('latLng').get('lng')} " +
         f"{result.get('locations')[0].get('latLng').get('lat')})")
 
