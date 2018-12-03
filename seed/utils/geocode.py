@@ -1,30 +1,5 @@
-
-# base case:
-"""
- - target buildings provided within a queryset
- - address fields may or may not be populated - address_line_1, address_line_2, city, state, and postal_code
- - results definitely come back
- - long_lat always updated
- - there are less than 101 addresses
-"""
-
-# once base is covered, these cases should also be covered:
-"""
- - case when the data is insufficient and geocodequality is low (can notes be added?)
- - case when there are no chars or numbers (covers an error edge case in API)
-    - possible that API doesn't return anything if only spaces or special chars provided
- - case when the two lat long fields are populated already?
-    - might not be a case to worry about here
- - case when long_lat is populated already (consider worrying about this @ source)
-"""
-
-# general considerations
-"""
- - Update docs to instruct users to update local_untracked.py
- - specific notes/TODOs listed in code
- - limit should be enforced on _address_geocodings
- - are these all the fields that are necessary? should more be added? address_line_2
-"""
+# !/usr/bin/env python
+# encoding: utf-8
 
 import requests
 
@@ -37,59 +12,104 @@ def long_lat_wkt(state):
     return GEOSGeometry(state.long_lat,srid=4326).wkt
 
 def geocode_addresses(buildings):
+    """
+    Upon receiving a QuerySet (QS) of properties or a QS tax lots, this method
+    builds a dictionary of {id: address} and a dictionary of {address: geocoding}.
+    It uses those two to build a dictionary of {id: geocoding} for buildings
+    whose addresses return a valid geocoded longitude and latitude.
+    Finally, the {id: geocoding} dictionary is used to update the QS objects.
+    """
     id_addresses = _id_addresses(buildings)
     address_geocodings = _address_geocodings(id_addresses)
 
     id_geocodings = _id_geocodings(id_addresses, address_geocodings)
 
-    for building in buildings:
-        building.long_lat = id_geocodings.get(building.id)
+    for id, geocoding in id_geocodings.items():
+        building = buildings.get(pk = id)
+        building.long_lat = geocoding
         building.save()
 
 def _id_addresses(buildings):
-    return { building.id: _full_address(building) for building in buildings }
+    return {
+        building.id: _full_address(building)
+        for building
+        in buildings.iterator()
+        if _full_address(building) is not None
+    }
 
 def _full_address(building):
-    return ", ".join([
+    """
+    Check there are at least 3 address components present. Combine components to
+    one full address. This helps to avoid receiving MapQuests' best guess result.
+    For example, only sending '3001 Brighton Blvd, Suite 2693' would yield a
+    valid point from one of multiple cities.
+    """
+
+    address_components = [
         building.address_line_1 or "",
         building.address_line_2 or "",
         building.city or "",
         building.state or "",
         building.postal_code or ""
-    ])
+    ]
+
+    if address_components.count("") < 3:
+        return ", ".join(address_components)
+    else:
+        return None
 
 def _address_geocodings(id_addresses):
     addresses = list(set(id_addresses.values()))
-    # (at the very least) group by 100 should be done here
-    locations = "location=" + "&location=".join(addresses)
 
-    response = requests.get(
-        'https://www.mapquestapi.com/geocoding/v1/batch?' +
-        '&inFormat=kvp&outFormat=json&thumbMaps=false&maxResults=1&' +
-        locations +
-        '&key=' +
-        settings.MAPQUEST_API_KEY
-    )
-    results = response.json().get('results')
+    batched_addresses = _batch_addresses(addresses)
+    results = []
+
+    for batch in batched_addresses:
+        locations = "location=" + "&location=".join(batch)
+        response = requests.get(
+            'https://www.mapquestapi.com/geocoding/v1/batch?' +
+            '&inFormat=kvp&outFormat=json&thumbMaps=false&maxResults=1&' +
+            locations +
+            '&key=' +
+            settings.MAPQUEST_API_KEY
+        )
+        results += response.json().get('results')
 
     return {
         _response_address(result): _response_location(result)
         for result
         in results
+        if _response_location(result) is not None
     }
 
 def _response_address(result):
     return result.get('providedLocation').get('location')
 
 def _response_location(result):
-    # analyze geocodequality here and return empty string (which turns into NoneType)
-    # possibly add a note for this field as well? consider this further
-    return (f"POINT ({result.get('locations')[0].get('latLng').get('lng')} " +
-        f"{result.get('locations')[0].get('latLng').get('lat')})")
+    """
+    According to MapQuest API
+     - https://developer.mapquest.com/documentation/geocoding-api/quality-codes/
+    'P1' indicates accuracy to a point on a map.
+    'AAA' indicates full confidence/quality rating.
+    """
+
+    quality = result.get('locations')[0].get('geocodeQualityCode')
+
+    if quality == "P1AAA":
+        long = result.get('locations')[0].get('latLng').get('lng')
+        lat = result.get('locations')[0].get('latLng').get('lat')
+        return f"POINT ({long} {lat})"
+    else:
+        return None
 
 def _id_geocodings(id_addresses, address_geocodings):
     return {
         id: address_geocodings.get(address)
         for id, address
         in id_addresses.items()
+        if address_geocodings.get(address) is not None
     }
+
+def _batch_addresses(addresses, n=100):
+    for i in range(0, len(addresses), n):
+        yield addresses[i:i + n]
