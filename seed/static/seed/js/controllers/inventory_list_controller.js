@@ -380,6 +380,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       };
       _.map($scope.columns, function (col) {
         var options = {};
+        col.cellTemplate = '<div class="ui-grid-cell-contents" title="{{COL_FIELD CUSTOM_FILTERS}}">{{COL_FIELD CUSTOM_FILTERS}}</div>';
         if (col.data_type === 'datetime') {
           options.cellFilter = 'date:\'yyyy-MM-dd h:mm a\'';
           options.filter = inventory_service.dateFilter();
@@ -762,15 +763,16 @@ angular.module('BE.seed.controller.inventory_list', [])
 
           gridApi.colMovable.on.columnPositionChanged($scope, function () {
             // Ensure that 'notes_count' and 'id' remain first
-            var idIndex = _.findIndex($scope.gridApi.grid.columns, {name: 'notes_count'});
+            var idIndex, col;
+            idIndex = _.findIndex($scope.gridApi.grid.columns, {name: 'notes_count'});
             if (idIndex !== 2) {
-              var col = $scope.gridApi.grid.columns[idIndex];
+              col = $scope.gridApi.grid.columns[idIndex];
               $scope.gridApi.grid.columns.splice(idIndex, 1);
               $scope.gridApi.grid.columns.splice(2, 0, col);
             }
-            var idIndex = _.findIndex($scope.gridApi.grid.columns, {name: 'id'});
+            idIndex = _.findIndex($scope.gridApi.grid.columns, {name: 'id'});
             if (idIndex !== 3) {
-              var col = $scope.gridApi.grid.columns[idIndex];
+              col = $scope.gridApi.grid.columns[idIndex];
               $scope.gridApi.grid.columns.splice(idIndex, 1);
               $scope.gridApi.grid.columns.splice(3, 0, col);
             }
