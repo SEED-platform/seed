@@ -20,6 +20,9 @@ angular.module('BE.seed.controller.inventory_map', [])
       $scope.data = inventory.results;
       $scope.pagination = inventory.pagination;
 
+      $scope.geocoded_data = $scope.data.filter(building => building.long_lat);
+      $scope.ungeocoded_data = $scope.data.filter(building => !building.long_lat);
+
       // Render Map
       var renderMap = function () {
         var raster = new ol.layer.Tile({
@@ -39,8 +42,8 @@ angular.module('BE.seed.controller.inventory_map', [])
           style: vector_style
         });
 
-        // Consider making center be the centroid of points above
-        // and zoom be dynamic (just large enough to see all points)
+        // Consider making center be the centroid of shown points
+        // and make zoom dynamic (just large enough to see all points)
         center_zoom = {
           center: ol.proj.fromLonLat([-104.986292, 39.765566]),
           zoom: 4
@@ -54,7 +57,7 @@ angular.module('BE.seed.controller.inventory_map', [])
       };
 
       var vectorSources = function () {
-        var features = _.map($scope.data, buildingPoint);
+        var features = _.map($scope.geocoded_data, buildingPoint);
 
         return new ol.source.Vector({ features: features });
       };

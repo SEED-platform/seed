@@ -11,6 +11,8 @@ intercepted/mocked by VCR. To execute an actual HTTP request/response
 
 import vcr
 
+from django.contrib.gis.geos import Point
+
 from django.test import TestCase
 
 from seed.landing.models import SEEDUser as User
@@ -28,7 +30,40 @@ from seed.utils.geocode import long_lat_wkt
 from seed.utils.organizations import create_organization
 
 
-class GeocodeBase(TestCase):
+class LongLatWkt(TestCase):
+    def test_long_lat_wkt_takes_a_state_and_returns_the_WKT_string_or_None(self):
+        user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+        }
+        user = User.objects.create_superuser(
+            email='test_user@demo.com', **user_details
+        )
+        org, _, _ = create_organization(user)
+        property_state_factory = FakePropertyStateFactory(organization=org)
+
+        property_details = property_state_factory.get_details()
+        property_details['organization_id'] = org.id
+
+        no_long_lat_property = PropertyState(**property_details)
+        no_long_lat_property.save()
+
+        property_details['long_lat'] = 'POINT (-104.985765 39.764984)'
+
+        geocoded_property = PropertyState(**property_details)
+        geocoded_property.save()
+
+        no_long_lat_record = PropertyState.objects.get(pk=no_long_lat_property.id)
+        geocoded_record = PropertyState.objects.get(pk=geocoded_property.id)
+
+        self.assertIsNone(no_long_lat_record.long_lat)
+        self.assertIsNone(long_lat_wkt(no_long_lat_record))
+
+        self.assertIsInstance(geocoded_property.long_lat, Point)
+        self.assertEqual('POINT (-104.985765 39.764984)', long_lat_wkt(geocoded_property))
+
+
+class GeocodeAddresses(TestCase):
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',

@@ -9,7 +9,8 @@ from django.contrib.gis.geos import GEOSGeometry
 
 
 def long_lat_wkt(state):
-    return GEOSGeometry(state.long_lat,srid=4326).wkt
+    if state.long_lat:
+        return GEOSGeometry(state.long_lat,srid=4326).wkt
 
 def geocode_addresses(buildings):
     """
