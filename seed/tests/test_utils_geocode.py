@@ -30,6 +30,13 @@ from seed.utils.geocode import long_lat_wkt
 from seed.utils.organizations import create_organization
 
 
+def batch_request_uri_length_matcher(r1, r2):
+    return len(r1.uri) == len(r2.uri)
+
+batch_vcr = vcr.VCR()
+batch_vcr.register_matcher('uri_length', batch_request_uri_length_matcher)
+
+
 class LongLatWkt(TestCase):
     def test_long_lat_wkt_takes_a_state_and_returns_the_WKT_string_or_None(self):
         user_details = {
@@ -168,33 +175,33 @@ class GeocodeAddresses(TestCase):
         for property in properties:
             self.assertEqual('POINT (-104.985765 39.764984)', long_lat_wkt(property))
 
-    @vcr.use_cassette('seed/tests/data/vcr_cassettes/geocode_101_unique_addresses.yaml')
     def test_geocode_addresses_is_successful_with_over_100_properties(self):
-        property_details = self.property_state_factory.get_details()
-        property_details['organization_id'] = self.org.id
-        property_details['address_line_2'] = ""
-        property_details['city'] = "Denver"
-        property_details['state'] = "Colorado"
-        property_details['postal_code'] = "80202"
+        with batch_vcr.use_cassette('seed/tests/data/vcr_cassettes/geocode_101_unique_addresses.yaml', match_on=['uri_length']):
+            property_details = self.property_state_factory.get_details()
+            property_details['organization_id'] = self.org.id
+            property_details['address_line_2'] = ""
+            property_details['city'] = "Denver"
+            property_details['state'] = "Colorado"
+            property_details['postal_code'] = "80202"
 
-        ids = []
-        for n in range(101):
-            street_number = n + 1600
-            property_details['address_line_1'] = str(street_number) + " Larimer Street"
+            ids = []
+            for n in range(101):
+                street_number = n + 1600
+                property_details['address_line_1'] = str(street_number) + " Larimer Street"
 
-            property = PropertyState(**property_details)
-            property.save()
-            ids.append(property.id)
+                property = PropertyState(**property_details)
+                property.save()
+                ids.append(property.id)
 
-        properties = PropertyState.objects.filter(id__in=ids)
+            properties = PropertyState.objects.filter(id__in=ids).order_by('id')
 
-        geocode_addresses(properties)
+            geocode_addresses(properties)
 
-        long_lats = [
-            property.long_lat
-            for property
-            in properties
-            if property.long_lat is not None
-        ]
+            long_lats = [
+                property.long_lat
+                for property
+                in properties
+                if property.long_lat is not None
+            ]
 
-        self.assertTrue(len(long_lats) > 0)
+            self.assertTrue(len(long_lats) > 0)
