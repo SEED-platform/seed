@@ -67,6 +67,7 @@ def _address_geocodings(id_addresses):
 
     for batch in batched_addresses:
         locations = "location=" + "&location=".join(batch)
+        print("Request sent")
         response = requests.get(
             'https://www.mapquestapi.com/geocoding/v1/batch?' +
             '&inFormat=kvp&outFormat=json&thumbMaps=false&maxResults=1&' +
@@ -74,6 +75,7 @@ def _address_geocodings(id_addresses):
             '&key=' +
             settings.MAPQUEST_API_KEY
         )
+        print("Request received")
         results += response.json().get('results')
 
     return {
