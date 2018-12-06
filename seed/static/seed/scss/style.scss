@@ -198,8 +198,15 @@ a:not([href]) {
 }
 
 .app {
-  width: 100%;
+  width: 100vw;
   margin-left: 0;
+}
+
+.ui-view-container {
+  height: calc(100vh - 55px);
+  max-height: calc(100vh - 55px);
+  min-height: calc(100vh - 55px);
+  overflow-x: auto;
 }
 
 .sidebar {
@@ -210,6 +217,7 @@ a:not([href]) {
   background-color: $gray;
   white-space: nowrap;
   width: 56px;
+  z-index: 10;
 
   .menu {
     margin: 0;
@@ -943,15 +951,13 @@ a:not([href]) {
       background: url('../images/bg_first_td.png') repeat-x top center;
     }
     .table_list_container {
-      overflow-x: auto;
-
       &.has_borders {
         border-left: 1px solid $gray_lighter;
         border-right: 1px solid $gray_lighter;
       }
 
       &.remove_buildings_table {
-        width: 80%;
+        width: 100%;
       }
 
       table {
