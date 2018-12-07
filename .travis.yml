@@ -43,7 +43,7 @@ before_script:
   - psql -c "DROP DATABASE IF EXISTS test_seeddb;" -U postgres
   - mv config/settings/test_local_untracked.py config/settings/local_untracked.py
   - psql -c "CREATE DATABASE seeddb;" -U postgres
-  - psql -c "CREATE EXTENSION postgis;" -U postgres
+  - psql -d seeddb -c "CREATE EXTENSION postgis;" -U postgres
 env:
   global:
     - DOCKER_COMPOSE_VERSION=1.16.0
