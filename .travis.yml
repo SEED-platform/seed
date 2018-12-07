@@ -18,7 +18,7 @@ addons:
       - enchant
       - google-chrome-stable
       - gdal-bin
-      - postgresql-9.6-postgis-2.5
+      - postgresql-9.6-postgis-2.3
 services:
   - docker
   - redis-server
