@@ -17,6 +17,7 @@ addons:
     packages:
       - enchant
       - google-chrome-stable
+      - gdal-bin
 services:
   - docker
   - redis-server
@@ -32,6 +33,7 @@ install:
   - node --version
   - npm --version
   - nvm install stable
+  -
 before_script:
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start &
