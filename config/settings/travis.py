@@ -10,7 +10,7 @@ from config.settings.test import *  # noqa
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'seeddb',
         'USER': 'postgres',
         'PASSWORD': '',

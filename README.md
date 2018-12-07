@@ -22,7 +22,6 @@ running server, the Swagger API documentation can be found at `/api/swagger`
 or from the front end by clicking the API documentation link in the sidebar.
 
 
-
 ### Installation
 
 * Production on Amazon Web Service: See [Installation Notes][production-aws-url]
