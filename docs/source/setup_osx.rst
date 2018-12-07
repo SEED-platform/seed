@@ -18,6 +18,7 @@ This section is intended for developers who may already have their machine
 ready for general development. If this is not the case, skip to Prerequisites.
 
 * install Postgres 9.4 and redis for cache and message broker
+* install PostGIS 2.5 and enable it on the database using `CREATE EXTENSION postgis;`
 * use a virtualenv (if desired)
 * `git clone git@github.com:seed-platform/seed.git`
 * create a `local_untracked.py` in the `config/settings` folder and add CACHE and DB config (example `local_untracked.py.dist`)
@@ -116,6 +117,32 @@ default use password `seedpass` when prompted
     psql -c 'GRANT ALL PRIVILEGES ON DATABASE "seeddb" TO seeduser;'
     psql -c 'ALTER USER seeduser CREATEDB;'
     psql -c 'ALTER USER seeduser CREATEROLE;'
+
+
+PostGIS 2.5
+-----------
+
+MacPorts::
+
+    # Assuming you're still root from installing PostgreSQL,
+    port install postgis2
+
+
+
+Homebrew::
+
+    brew install postgis
+
+
+
+Configure PostGIS::
+
+    psql -d seeddb -c "CREATE EXTENSION postgis;"
+
+    # For testing, give seed user superuser access:
+    # psql -c 'ALTER USER seeduser CREATEDB;'
+
+
 
 Now exit any root environments, becoming just yourself (even though it's not
 that easy being green), for the remainder of these instructions.
