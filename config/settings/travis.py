@@ -33,6 +33,8 @@ DATABASES = {
 #         'scaffold_templates': None,
 #     }
 
+MAPQUEST_API_KEY = os.environ.get("MAPQUEST_API_KEY")
+
 CACHES = {
     'default': {
         'BACKEND': 'redis_cache.cache.RedisCache',
