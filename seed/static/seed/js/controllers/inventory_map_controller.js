@@ -42,7 +42,7 @@ angular.module('BE.seed.controller.inventory_map', [])
           style: vector_style
         });
 
-        // Consider making center be the centroid of shown points
+        // TODO: Consider making center be the centroid of shown points
         // and make zoom dynamic (just large enough to see all points)
         center_zoom = {
           center: ol.proj.fromLonLat([-104.986292, 39.765566]),
