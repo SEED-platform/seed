@@ -56,6 +56,7 @@ env:
     - TOX_ENV=docs
     - TOX_ENV=functional
     - TOX_ENV=apitest
+    - secure: HtOAAxPiA2NnSxXTBsmmXlFURH6WxnXXeaJLkjKc8cPWMsPX2QSouggtFYCPJxikrvN6bOYvDii67v2++E0qpuPO28LtywaLWu7AdDYxJ+rp4ysVjdi2Pp1bh723SZj2Xi3OMOLPz/kekT41DLKtoEzmBUEFEBIuJ27oU/phNGU=
 script:
   - tox -e $TOX_ENV
 jobs:
