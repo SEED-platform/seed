@@ -9,6 +9,11 @@ from django.contrib.gis.geos import GEOSGeometry
 
 
 def long_lat_wkt(state):
+    """
+    This translates point data saved as binary (WKB) into a text string (WKT).
+    4326 refers to the commonly used spatial reference system and is used
+    for the GIS fields on the PropertyState and TaxLotState models.
+    """
     if state.long_lat:
         return GEOSGeometry(state.long_lat,srid=4326).wkt
 
