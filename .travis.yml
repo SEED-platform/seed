@@ -17,6 +17,8 @@ addons:
     packages:
       - enchant
       - google-chrome-stable
+      - gdal-bin
+      - postgresql-9.6-postgis-2.3
 services:
   - docker
   - redis-server
@@ -40,12 +42,14 @@ before_script:
   - psql -c "DROP DATABASE IF EXISTS test_seeddb;" -U postgres
   - mv config/settings/test_local_untracked.py config/settings/local_untracked.py
   - psql -c "CREATE DATABASE seeddb;" -U postgres
+  - psql -d seeddb -c "CREATE EXTENSION postgis;" -U postgres
 env:
   global:
     - DOCKER_COMPOSE_VERSION=1.16.0
     - DJANGO_SETTINGS_MODULE=config.settings.travis
     - DISPLAY=:99.0
     - COVERALLS_REPO_TOKEN=y8UqJm8Bri5ZP8hr3YZM3guBaUKpsfoCv
+    - secure: HtOAAxPiA2NnSxXTBsmmXlFURH6WxnXXeaJLkjKc8cPWMsPX2QSouggtFYCPJxikrvN6bOYvDii67v2++E0qpuPO28LtywaLWu7AdDYxJ+rp4ysVjdi2Pp1bh723SZj2Xi3OMOLPz/kekT41DLKtoEzmBUEFEBIuJ27oU/phNGU=
   matrix:
     - TOX_ENV=python
     - TOX_ENV=flake8

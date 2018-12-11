@@ -74,6 +74,3 @@ docs/scripts/.python-version
 docs/scripts/seed_issues.csv
 
 lokalise.cfg
-
-# Ignore API Mocks (VCR cassettes)
-seed/tests/data/vcr_cassettes
