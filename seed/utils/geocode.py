@@ -15,7 +15,8 @@ def long_lat_wkt(state):
     for the GIS fields on the PropertyState and TaxLotState models.
     """
     if state.long_lat:
-        return GEOSGeometry(state.long_lat,srid=4326).wkt
+        return GEOSGeometry(state.long_lat, srid=4326).wkt
+
 
 def geocode_addresses(buildings):
     """
@@ -31,9 +32,10 @@ def geocode_addresses(buildings):
     id_geocodings = _id_geocodings(id_addresses, address_geocodings)
 
     for id, geocoding in id_geocodings.items():
-        building = buildings.get(pk = id)
+        building = buildings.get(pk=id)
         building.long_lat = geocoding
         building.save()
+
 
 def _id_addresses(buildings):
     return {
@@ -42,6 +44,7 @@ def _id_addresses(buildings):
         in buildings.iterator()
         if _full_address(building) is not None
     }
+
 
 def _full_address(building):
     """
@@ -63,6 +66,7 @@ def _full_address(building):
         return ", ".join(address_components)
     else:
         return None
+
 
 def _address_geocodings(id_addresses):
     addresses = list(set(id_addresses.values()))
@@ -90,8 +94,10 @@ def _address_geocodings(id_addresses):
         if _response_location(result) is not None
     }
 
+
 def _response_address(result):
     return result.get('providedLocation').get('location')
+
 
 def _response_location(result):
     """
@@ -110,6 +116,7 @@ def _response_location(result):
     else:
         return None
 
+
 def _id_geocodings(id_addresses, address_geocodings):
     return {
         id: address_geocodings.get(address)
@@ -117,6 +124,7 @@ def _id_geocodings(id_addresses, address_geocodings):
         in id_addresses.items()
         if address_geocodings.get(address) is not None
     }
+
 
 def _batch_addresses(addresses, n=100):
     for i in range(0, len(addresses), n):
