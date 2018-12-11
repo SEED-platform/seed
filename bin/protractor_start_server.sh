@@ -21,5 +21,5 @@ gem install coveralls-lcov
 pip install coveralls-merge
 echo "run lcov to coveralls json"
 coveralls-lcov -v -n protractorReports/lcov.info > coverage.protractor.json
-echo "merge and post coveralls"
-coveralls-merge coverage.protractor.json
+# echo "merge and post coveralls"
+# coveralls-merge coverage.protractor.json
