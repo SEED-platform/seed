@@ -31,8 +31,8 @@ angular.module('BE.seed.controller.inventory_map', [])
 
         var vector_style = new ol.style.Style({
           image: new ol.style.Icon({
-            src: urls.static_url + "seed/images/favicon.ico",
-            scale: 0.3,
+            src: urls.static_url + "seed/images/map_pin.png",
+            scale: 0.075,
             anchor: [0.5, 1]
           })
         });
