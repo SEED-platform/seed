@@ -17,6 +17,9 @@ seed local_untracked.py
 """
 import os
 
+# MapQuestAPI key
+# MAPQUEST_API_KEY = os.environ.get('MAPQUEST_API_KEY', '<your_key_here>')
+
 # Optional AWS Settings (if using RDS, SES, S3, etc)
 #AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID', '')
 #AWS_UPLOAD_CLIENT_KEY = AWS_ACCESS_KEY_ID
