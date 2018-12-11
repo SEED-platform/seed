@@ -11,7 +11,6 @@ from collections import defaultdict
 from itertools import chain
 
 from django.apps import apps
-from django.contrib.gis.geos import GEOSGeometry
 from django.db import models
 from django.db.models import Count
 from django.utils.timezone import make_naive

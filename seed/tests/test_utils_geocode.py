@@ -33,6 +33,7 @@ from seed.utils.organizations import create_organization
 def batch_request_uri_length_matcher(r1, r2):
     return len(r1.uri) == len(r2.uri)
 
+
 base_vcr = vcr.VCR()
 batch_vcr = vcr.VCR()
 batch_vcr.register_matcher('uri_length', batch_request_uri_length_matcher)
@@ -67,7 +68,7 @@ class LongLatWkt(TestCase):
         self.assertIsNone(no_long_lat_record.long_lat)
         self.assertIsNone(long_lat_wkt(no_long_lat_record))
 
-        self.assertIsInstance(geocoded_property.long_lat, Point)
+        self.assertIsInstance(geocoded_record.long_lat, Point)
         self.assertEqual('POINT (-104.985765 39.764984)', long_lat_wkt(geocoded_property))
 
 
