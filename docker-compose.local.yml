@@ -1,5 +1,4 @@
-# Docker Compose for deployment. This removes the hard coded usernames and
-# passwords and pulls Docker Hub seedplatform/seed for the latest version.
+# Docker Compose for deployment using a local registry.
 # Must set the following environment variables
 #   POSTGRES_USER
 #   POSTGRES_PASSWORD
