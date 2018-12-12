@@ -41,19 +41,14 @@ angular.module('BE.seed.controller.inventory_map', [])
           source: vectorSources(),
           style: vector_style
         });
-
-        // TODO: Consider making center be the centroid of shown points
-        // and make zoom dynamic (just large enough to see all points)
-        center_zoom = {
-          center: ol.proj.fromLonLat([-104.986292, 39.765566]),
-          zoom: 4
-        };
+        var vectors_extent = vectors.getSource().getExtent();
 
         var map = new ol.Map({
           target: 'map',
-          layers: [raster, vectors],
-          view: new ol.View(center_zoom)
+          layers: [raster, vectors]
         });
+
+        map.getView().fit(vectors_extent, map.getSize());
       };
 
       var vectorSources = function () {
