@@ -18,44 +18,23 @@ angular.module('BE.seed.controller.inventory_map', [])
 
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.data = inventory.results;
-      $scope.pagination = inventory.pagination;
 
       $scope.geocoded_data = $scope.data.filter(building => building.long_lat);
       $scope.ungeocoded_data = $scope.data.filter(building => !building.long_lat);
 
-      // Render Map
-      var renderMap = function () {
-        var raster = new ol.layer.Tile({
-          source: new ol.source.OSM()
-        });
+      // Define base map layer
+      var raster = new ol.layer.Tile({
+        source: new ol.source.OSM()
+      });
 
-        var vector_style = new ol.style.Style({
-          image: new ol.style.Icon({
-            src: urls.static_url + "seed/images/map_pin.png",
-            scale: 0.075,
-            anchor: [0.5, 1]
-          })
-        });
-
-        var vectors = new ol.layer.Vector({
-          source: vectorSources(),
-          style: vector_style
-        });
-        var vectors_extent = vectors.getSource().getExtent();
-
-        var map = new ol.Map({
-          target: 'map',
-          layers: [raster, vectors]
-        });
-
-        map.getView().fit(vectors_extent, map.getSize());
-      };
-
-      var vectorSources = function () {
-        var features = _.map($scope.geocoded_data, buildingPoint);
-
-        return new ol.source.Vector({ features: features });
-      };
+      //Define points/pins layer
+      var point_style = new ol.style.Style({
+        image: new ol.style.Icon({
+          src: urls.static_url + "seed/images/map_pin.png",
+          scale: 0.075,
+          anchor: [0.5, 1]
+        })
+      });
 
       var buildingPoint = function (building) {
         var format = new ol.format.WKT();
@@ -65,9 +44,33 @@ angular.module('BE.seed.controller.inventory_map', [])
           dataProjection: 'EPSG:4326',
           featureProjection: 'EPSG:3857'
         });
-
       };
 
-      renderMap();
+      var pointSources = function (records = $scope.geocoded_data) {
+        var features = _.map(records, buildingPoint);
+
+        return new ol.source.Vector({ features: features });
+      };
+
+      $scope.map_points = new ol.layer.Vector({
+        source: pointSources(),
+        style: point_style
+      });
+
+      // Define map with layers
+      $scope.map = new ol.Map({
+        target: 'map',
+        layers: [raster, $scope.map_points]
+      });
+
+      // Set initial zoom and center
+      var getPointsExtent = function () {
+        return $scope.map_points.getSource().getExtent();
+      };
+      var view_options = {
+        size: $scope.map.getSize(),
+        padding: [10, 10, 10, 10],
+      };
+      $scope.map.getView().fit(getPointsExtent(), view_options);
 
     }]);
