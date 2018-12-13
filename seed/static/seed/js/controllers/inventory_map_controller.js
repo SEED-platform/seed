@@ -7,11 +7,15 @@ angular.module('BE.seed.controller.inventory_map', [])
     '$scope',
     '$stateParams',
     'inventory',
+    'inventory_service',
+    'labels',
     'urls',
     'spinner_utility',
     function ($scope,
               $stateParams,
               inventory,
+              inventory_service,
+              labels,
               urls,
               spinner_utility) {
       spinner_utility.show();
@@ -27,7 +31,7 @@ angular.module('BE.seed.controller.inventory_map', [])
         source: new ol.source.OSM()
       });
 
-      //Define points/pins layer
+      // Define points/pins layer
       var point_style = new ol.style.Style({
         image: new ol.style.Icon({
           src: urls.static_url + "seed/images/map_pin.png",
@@ -72,5 +76,93 @@ angular.module('BE.seed.controller.inventory_map', [])
         padding: [10, 10, 10, 10],
       };
       $scope.map.getView().fit(getPointsExtent(), view_options);
+
+
+      var rerenderPoints = function (records) {
+        $scope.map_points.setSource(pointSources(records));
+        // TODO: Decide if we want to rezoom and recenter map
+        // $scope.map.getView().fit(getPointsExtent(), view_options);
+      };
+
+      // Labels
+      // Reduce labels to only records found in the current cycle
+      $scope.selected_labels = [];
+      updateApplicableLabels();
+
+      var localStorageLabelKey = 'grid.' + $scope.inventory_type + '.labels';
+
+      // Reapply valid previously-applied labels
+      var ids = inventory_service.loadSelectedLabels(localStorageLabelKey);
+      $scope.selected_labels = _.filter($scope.labels, function (label) {
+        return _.includes(ids, label.id);
+      });
+
+      $scope.clear_labels = function () {
+        $scope.selected_labels = [];
+      };
+
+      $scope.loadLabelsForFilter = function (query) {
+        return _.filter($scope.labels, function (lbl) {
+          if (_.isEmpty(query)) {
+            // Empty query so return the whole list.
+            return true;
+          } else {
+            // Only include element if its name contains the query string.
+            return _.includes(_.toLower(lbl.name), _.toLower(query));
+          }
+        });
+      };
+
+      function updateApplicableLabels() {
+        var inventoryIds;
+        if ($scope.inventory_type === 'properties') {
+          inventoryIds = _.map($scope.data, 'property_view_id').sort();
+        } else {
+          inventoryIds = _.map($scope.data, 'taxlot_view_id').sort();
+        }
+        $scope.labels = _.filter(labels, function (label) {
+          return _.some(label.is_applied, function (id) {
+            return _.includes(inventoryIds, id);
+          });
+        });
+        // Ensure that no previously-applied labels remain
+        var new_labels = _.filter($scope.selected_labels, function (label) {
+          return _.includes($scope.labels, label.id);
+        });
+        if ($scope.selected_labels.length !== new_labels.length) {
+          $scope.selected_labels = new_labels;
+        }
+      }
+
+      var filterUsingLabels = function () {
+        // Only submit the `id` of the label to the API.
+        var ids;
+        if ($scope.labelLogic === 'and') {
+          ids = _.intersection.apply(null, _.map($scope.selected_labels, 'is_applied'));
+        } else if (_.includes(['or', 'exclude'], $scope.labelLogic)) {
+          ids = _.union.apply(null, _.map($scope.selected_labels, 'is_applied'));
+        }
+
+        inventory_service.saveSelectedLabels(localStorageLabelKey, _.map($scope.selected_labels, 'id'));
+
+        if (_.isEmpty(ids)) {
+          rerenderPoints($scope.geocoded_data)
+        } else {
+          var filtered_records = _.filter($scope.geocoded_data, function (record) {
+            return _.includes(ids,record.id);
+          });
+          rerenderPoints(filtered_records);
+        }
+      };
+
+      $scope.labelLogic = localStorage.getItem('labelLogic');
+      $scope.labelLogic = _.includes(['and', 'or', 'exclude'], $scope.labelLogic) ? $scope.labelLogic : 'and';
+      $scope.labelLogicUpdated = function (labelLogic) {
+        $scope.labelLogic = labelLogic;
+        localStorage.setItem('labelLogic', $scope.labelLogic);
+        filterUsingLabels();
+      };
+
+      $scope.$watchCollection('selected_labels', filterUsingLabels);
 
     }]);
