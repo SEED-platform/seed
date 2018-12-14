@@ -23,8 +23,12 @@ angular.module('BE.seed.controller.inventory_map', [])
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.data = inventory.results;
 
-      $scope.geocoded_data = $scope.data.filter(building => building.long_lat);
-      $scope.ungeocoded_data = $scope.data.filter(building => !building.long_lat);
+      $scope.geocoded_data = _.filter($scope.data, function(building) {
+        return building.long_lat
+      });
+      $scope.ungeocoded_data = _.filter($scope.data, function(building) {
+        return !building.long_lat
+      });
 
       // Define base map layer
       var raster = new ol.layer.Tile({
@@ -44,10 +48,13 @@ angular.module('BE.seed.controller.inventory_map', [])
         var format = new ol.format.WKT();
 
         var long_lat = building.long_lat
-        return format.readFeature(long_lat, {
+        var feature = format.readFeature(long_lat, {
           dataProjection: 'EPSG:4326',
           featureProjection: 'EPSG:3857'
         });
+
+        feature.setProperties(building)
+        return feature
       };
 
       var pointSources = function (records = $scope.geocoded_data) {
