@@ -8,6 +8,11 @@ from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry
 
 
+class MapQuestAPIKeyError(Exception):
+    """Your MapQuest API Key is either invalid or at its limit."""
+    pass
+
+
 def long_lat_wkt(state):
     """
     This translates point data saved as binary (WKB) into a text string (WKT).
@@ -85,7 +90,14 @@ def _address_geocodings(id_addresses):
         )
 
         response = requests.get(request_url)
-        results += response.json().get('results')
+        try:
+            results += response.json().get('results')
+        except Exception as e:
+            if response.status_code == 403:
+                raise MapQuestAPIKeyError
+            else:
+                raise e
+
 
     return {
         _response_address(result): _response_location(result)
