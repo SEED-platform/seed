@@ -107,12 +107,12 @@
     <div class="item-count">
         <span ng-if="::inventory_type === 'properties'">
             <i class="fa fa-building-o"></i>
-            <span translate="NUMBER_OF_PROPERTIES" translate-values="{ num: (total | number: 0) }"></span>
+            <span translate="NUMBER_OF_PROPERTIES" translate-values="{ num: (geocoded_data.length | number: 0)}"></span>
         </span>
 
         <span ng-if="::inventory_type === 'taxlots'">
             <i class="fa fa-map-o"></i>
-            <span translate="NUMBER_OF_TAXLOTS" translate-values="{ num: (total | number: 0) }"></span>
+            <span translate="NUMBER_OF_TAXLOTS" translate-values="{ num: (geocoded_data.length | number: 0)}"></span>
         </span>
     </div>
     <ul class="nav nav-tabs" style="margin-bottom:1px;">
