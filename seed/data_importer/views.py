@@ -1560,7 +1560,7 @@ class ImportFileViewSet(viewsets.ViewSet):
                 geocode_addresses(PropertyState.objects.filter(import_file_id=import_file.id))
             else:
                 geocode_addresses(TaxLotState.objects.filter(import_file_id=import_file.id))
-        except MapQuestAPIKeyError as e:
+        except MapQuestAPIKeyError:
             return JsonResponse({
                 'status': 'error',
                 'message': 'MapQuest API key may be invalid or at its limit.'

@@ -98,7 +98,6 @@ def _address_geocodings(id_addresses):
             else:
                 raise e
 
-
     return {
         _response_address(result): _response_location(result)
         for result
@@ -125,7 +124,7 @@ def _response_location(result):
     quality = result.get('locations')[0].get('geocodeQualityCode')
     granularity_level = quality[0:2]
     confidence_level = quality[2:5]
-    is_acceptable_granularity = granularity_level in [ "P1", "L1" ]
+    is_acceptable_granularity = granularity_level in ["P1", "L1"]
     is_acceptable_confidence = not ("C" in confidence_level or "X" in confidence_level)
 
     if is_acceptable_confidence and is_acceptable_granularity:
