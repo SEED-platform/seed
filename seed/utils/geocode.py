@@ -75,13 +75,13 @@ def _address_geocodings(id_addresses):
     results = []
 
     for batch in batched_addresses:
-        locations = "location=" + "&location=".join(batch)
+        locations = "&location=" + "&location=".join(batch)
         request_url = (
             'https://www.mapquestapi.com/geocoding/v1/batch?' +
             '&inFormat=kvp&outFormat=json&thumbMaps=false&maxResults=1&' +
-            locations +
             '&key=' +
-            settings.MAPQUEST_API_KEY
+            settings.MAPQUEST_API_KEY +
+            locations
         )
 
         response = requests.get(request_url)
