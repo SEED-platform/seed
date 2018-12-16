@@ -103,13 +103,20 @@ def _response_location(result):
     """
     According to MapQuest API
      - https://developer.mapquest.com/documentation/geocoding-api/quality-codes/
-    'P1' indicates accuracy to a point on a map.
-    'AAA' indicates full confidence/quality rating.
+     GeoCode Quality ratings are provided in 5 characters in the form 'ZZYYY'.
+     'ZZ' describes granularity level, and 'YYY' describes confidence ratings.
+
+    Accuracy to either a point or a street address is accepted, while confidence
+    ratings must all be at least A's and B's without C's or X's (N/A).
     """
 
     quality = result.get('locations')[0].get('geocodeQualityCode')
+    granularity_level = quality[0:2]
+    confidence_level = quality[2:5]
+    is_acceptable_granularity = granularity_level in [ "P1", "L1" ]
+    is_acceptable_confidence = not ("C" in confidence_level or "X" in confidence_level)
 
-    if quality == "P1AAA":
+    if is_acceptable_confidence and is_acceptable_granularity:
         long = result.get('locations')[0].get('latLng').get('lng')
         lat = result.get('locations')[0].get('latLng').get('lat')
         return f"POINT ({long} {lat})"
