@@ -117,8 +117,8 @@ def _response_location(result):
     is_acceptable_confidence = not ("C" in confidence_level or "X" in confidence_level)
 
     if is_acceptable_confidence and is_acceptable_granularity:
-        long = result.get('locations')[0].get('latLng').get('lng')
-        lat = result.get('locations')[0].get('latLng').get('lat')
+        long = result.get('locations')[0].get('displayLatLng').get('lng')
+        lat = result.get('locations')[0].get('displayLatLng').get('lat')
         return f"POINT ({long} {lat})"
     else:
         return None

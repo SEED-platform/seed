@@ -114,8 +114,8 @@ class GeocodeAddresses(TestCase):
             geocode_addresses(properties)
             geocode_addresses(tax_lots)
 
-            self.assertEqual('POINT (-104.985765 39.764984)', long_lat_wkt(properties[0]))
-            self.assertEqual('POINT (-104.991315 39.752603)', long_lat_wkt(tax_lots[0]))
+            self.assertEqual('POINT (-104.986138 39.765251)', long_lat_wkt(properties[0]))
+            self.assertEqual('POINT (-104.991046 39.752396)', long_lat_wkt(tax_lots[0]))
 
     def test_geocode_addresses_returns_no_data_when_provided_address_is_ambigious(self):
         with base_vcr.use_cassette('seed/tests/data/vcr_cassettes/geocode_low_geocodequality.yaml', filter_query_parameters=['key']):
@@ -175,7 +175,7 @@ class GeocodeAddresses(TestCase):
             geocode_addresses(properties)
 
             for property in properties:
-                self.assertEqual('POINT (-104.985765 39.764984)', long_lat_wkt(property))
+                self.assertEqual('POINT (-104.986138 39.765251)', long_lat_wkt(property))
 
     def test_geocode_addresses_is_successful_with_over_100_properties(self):
         with batch_vcr.use_cassette('seed/tests/data/vcr_cassettes/geocode_101_unique_addresses.yaml', match_on=['uri_length'], filter_query_parameters=['key']):

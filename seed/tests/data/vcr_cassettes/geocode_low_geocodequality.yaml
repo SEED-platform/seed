@@ -20,14 +20,14 @@ interactions:
       Cache-Control: ['no-cache, must-revalidate']
       Content-Length: ['932']
       Content-Type: [application/json;charset=UTF-8]
-      Date: ['Mon, 10 Dec 2018 20:36:32 GMT']
+      Date: ['Sun, 16 Dec 2018 02:00:40 GMT']
       Expires: ['Mon, 20 Dec 1998 01:00:00 GMT']
       GeocodeTransactionCount: ['1']
-      Last-Modified: ['Mon, 10 Dec 2018 20:36:32 GMT']
+      Last-Modified: ['Sun, 16 Dec 2018 02:00:40 GMT']
       Pragma: [no-cache]
       ReverseGeocodeTransactionCount: ['0']
       Server: [Apache-Coyote/1.1]
-      Set-Cookie: [JSESSIONID=EBDD5939C341779B66266481D361605C; Path=/; HttpOnly;
+      Set-Cookie: [JSESSIONID=8F3BC8207EEBA658C2694DD7F255D1B1; Path=/; HttpOnly;
           Secure]
       Strict-Transport-Security: [max-age=0]
       status: [success]
