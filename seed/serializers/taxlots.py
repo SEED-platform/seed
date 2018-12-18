@@ -7,7 +7,7 @@
 from rest_framework import serializers
 
 from seed.models import (
-    TaxLot, TaxLotProperty, TaxLotState, TaxLotView,
+    TaxLot, TaxLotProperty, TaxLotState, TaxLotView, Column
 )
 
 
