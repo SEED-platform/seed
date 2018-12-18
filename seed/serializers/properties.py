@@ -20,6 +20,7 @@ from rest_framework.fields import empty
 from seed.models import (
     AUDIT_USER_CREATE,
     AUDIT_USER_EDIT,
+    Column,
     GreenAssessmentProperty,
     PropertyAuditLog,
     Property,
@@ -171,8 +172,25 @@ class PropertyStateSerializer(serializers.ModelSerializer):
         }
 
     def to_representation(self, data):
-        """Overwritten to handle time conversion"""
+        """Overwritten to handle time conversion and extra_data null fields"""
         result = super(PropertyStateSerializer, self).to_representation(data)
+
+        if data.extra_data:
+            organization = data.organization
+            extra_data_columns = Column.objects.filter(
+                organization=organization,
+                is_extra_data=True,
+                table_name='PropertyState'
+            ).values_list('column_name', flat=True)
+
+            prepopulated_extra_data = {
+                col_name: data.extra_data.get(col_name, None)
+                for col_name
+                in extra_data_columns
+            }
+
+            result['extra_data'] = prepopulated_extra_data
+
         # for datetime to be isoformat and remove timezone data
         if data.generation_date:
             result['generation_date'] = make_naive(data.generation_date).isoformat()

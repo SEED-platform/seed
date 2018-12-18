@@ -38,6 +38,28 @@ class TaxLotStateSerializer(serializers.ModelSerializer):
         model = TaxLotState
         fields = '__all__'
 
+    def to_representation(self, data):
+        """Overwritten to handle extra_data null fields"""
+        result = super(TaxLotStateSerializer, self).to_representation(data)
+
+        if data.extra_data:
+            organization = data.organization
+            extra_data_columns = Column.objects.filter(
+                organization=organization,
+                is_extra_data=True,
+                table_name='PropertyState'
+            ).values_list('column_name', flat=True)
+
+            prepopulated_extra_data = {
+                col_name: data.extra_data.get(col_name, None)
+                for col_name
+                in extra_data_columns
+            }
+
+            result['extra_data'] = prepopulated_extra_data
+
+        return result
+
 
 class TaxLotViewSerializer(serializers.ModelSerializer):
     state = TaxLotStateSerializer()
