@@ -47,7 +47,7 @@ class TaxLotStateSerializer(serializers.ModelSerializer):
             extra_data_columns = Column.objects.filter(
                 organization=organization,
                 is_extra_data=True,
-                table_name='PropertyState'
+                table_name='TaxLotState'
             ).values_list('column_name', flat=True)
 
             prepopulated_extra_data = {
