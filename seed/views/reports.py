@@ -144,26 +144,21 @@ class Report(DecoratorMixin(drf_api_endpoint), ViewSet):
                 params['organization_id'], cycles,
                 params['x_var'], params['y_var'], campus_only
             )
-            empty = True
             for datum in data:
                 if datum['property_counts']['num_properties_w-data'] != 0:
                     empty = False
                     break
-            if empty:
-                result = {'status': 'error', 'message': 'No data found'}
-                status_code = status.HTTP_404_NOT_FOUND
-            else:
-                property_counts = []
-                chart_data = []
-                for datum in data:
-                    property_counts.append(datum['property_counts'])
-                    chart_data.extend(datum['chart_data'])
-                data = {
-                    'property_counts': property_counts,
-                    'chart_data': chart_data,
-                }
-                result = {'status': 'success', 'data': data}
-                status_code = status.HTTP_200_OK
+            property_counts = []
+            chart_data = []
+            for datum in data:
+                property_counts.append(datum['property_counts'])
+                chart_data.extend(datum['chart_data'])
+            data = {
+                'property_counts': property_counts,
+                'chart_data': chart_data,
+            }
+            result = {'status': 'success', 'data': data}
+            status_code = status.HTTP_200_OK
         return Response(result, status=status_code)
 
     def get_aggregated_property_report_data(self, request):
