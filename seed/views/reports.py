@@ -146,7 +146,6 @@ class Report(DecoratorMixin(drf_api_endpoint), ViewSet):
             )
             for datum in data:
                 if datum['property_counts']['num_properties_w-data'] != 0:
-                    empty = False
                     break
             property_counts = []
             chart_data = []
