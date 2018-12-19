@@ -125,19 +125,10 @@ class Report(DecoratorMixin(drf_api_endpoint), ViewSet):
         params = {}
         missing_params = []
         error = ''
-        valid_values = [
-            'site_eui', 'source_eui', 'site_eui_weather_normalized',
-            'source_eui_weather_normalized', 'energy_score',
-            'gross_floor_area', 'use_description', 'year_built'
-        ]
         for param in ['x_var', 'y_var', 'organization_id', 'start', 'end']:
             val = request.query_params.get(param, None)
             if not val:
                 missing_params.append(param)
-            elif param in ['x_var', 'y_var'] and val not in valid_values:
-                error = "{} {} is not a valid value for {}.".format(
-                    error, val, param
-                )
             else:
                 params[param] = val
         if missing_params:
@@ -177,10 +168,6 @@ class Report(DecoratorMixin(drf_api_endpoint), ViewSet):
 
     def get_aggregated_property_report_data(self, request):
         campus_only = request.query_params.get('campus_only', False)
-        valid_x_values = [
-            'site_eui', 'source_eui', 'site_eui_weather_normalized',
-            'source_eui_weather_normalized', 'energy_score',
-        ]
         valid_y_values = ['gross_floor_area', 'use_description', 'year_built']
         params = {}
         missing_params = []
@@ -190,10 +177,6 @@ class Report(DecoratorMixin(drf_api_endpoint), ViewSet):
             val = request.query_params.get(param, None)
             if not val:
                 missing_params.append(param)
-            elif param == 'x_var' and val not in valid_x_values:
-                error = "{} {} is not a valid value for {}.".format(
-                    error, val, param
-                )
             elif param == 'y_var' and val not in valid_y_values:
                 error = "{} {} is not a valid value for {}.".format(
                     error, val, param
