@@ -2,6 +2,7 @@
 # encoding: utf-8
 
 import requests
+import json
 
 from django.conf import settings
 
@@ -80,13 +81,15 @@ def _address_geocodings(id_addresses):
     results = []
 
     for batch in batched_addresses:
-        locations = "&location=" + "&location=".join(batch)
+        locations = {"locations":[]}
+        locations["locations"] = [ {"street": address} for address in batch ]
+        locations_json = json.dumps(locations)
+
         request_url = (
             'https://www.mapquestapi.com/geocoding/v1/batch?' +
-            '&inFormat=kvp&outFormat=json&thumbMaps=false&maxResults=1&' +
-            '&key=' +
-            settings.MAPQUEST_API_KEY +
-            locations
+            '&inFormat=json&outFormat=json&thumbMaps=false&maxResults=1' +
+            '&key=' + settings.MAPQUEST_API_KEY +
+            '&json=' + locations_json
         )
 
         response = requests.get(request_url)
@@ -107,7 +110,7 @@ def _address_geocodings(id_addresses):
 
 
 def _response_address(result):
-    return result.get('providedLocation').get('location')
+    return result.get('providedLocation').get('street')
 
 
 def _response_location(result):

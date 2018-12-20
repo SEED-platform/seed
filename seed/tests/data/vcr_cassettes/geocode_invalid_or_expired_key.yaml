@@ -7,7 +7,7 @@ interactions:
       Connection: [keep-alive]
       User-Agent: [python-requests/2.20.0]
     method: GET
-    uri: https://www.mapquestapi.com/geocoding/v1/batch?&inFormat=kvp&outFormat=json&thumbMaps=false&maxResults=1&&key=fakeapikey&location=3001%20Brighton%20Blvd,%20suite%202693,%20Denver,%20Colorado,%2080216
+    uri: https://www.mapquestapi.com/geocoding/v1/batch?&inFormat=json&outFormat=json&thumbMaps=false&maxResults=1&&key=fakeapikey&json=%7B%22locations%22:%20[%7B%22street%22:%20%223001%20Brighton%20Blvd,%20suite%202693,%20Denver,%20Colorado,%2080216%22%7D]%7D
   response:
     body: {string: The AppKey submitted with this request is invalid.}
     headers:
@@ -15,7 +15,7 @@ interactions:
       Access-Control-Allow-Origin: ['*']
       Content-Length: ['50']
       Content-Type: [text/plain]
-      Date: ['Sun, 16 Dec 2018 03:26:24 GMT']
+      Date: ['Thu, 20 Dec 2018 19:35:07 GMT']
       Strict-Transport-Security: [max-age=0]
     status: {code: 403, message: Forbidden}
 version: 1
