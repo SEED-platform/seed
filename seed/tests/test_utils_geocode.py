@@ -118,8 +118,11 @@ class GeocodeAddresses(TestCase):
             geocode_addresses(properties)
             geocode_addresses(tax_lots)
 
-            self.assertEqual('POINT (-104.986138 39.765251)', long_lat_wkt(properties[0]))
-            self.assertEqual('POINT (-104.991046 39.752396)', long_lat_wkt(tax_lots[0]))
+            refreshed_properties = PropertyState.objects.filter(pk=property.id)
+            refreshed_tax_lots = TaxLotState.objects.filter(pk=tax_lot.id)
+
+            self.assertEqual('POINT (-104.986138 39.765251)', long_lat_wkt(refreshed_properties[0]))
+            self.assertEqual('POINT (-104.991046 39.752396)', long_lat_wkt(refreshed_tax_lots[0]))
 
     def test_geocode_addresses_returns_no_data_when_provided_address_is_ambigious(self):
         with base_vcr.use_cassette('seed/tests/data/vcr_cassettes/geocode_low_geocodequality.yaml', filter_query_parameters=['key']):
@@ -178,7 +181,9 @@ class GeocodeAddresses(TestCase):
 
             geocode_addresses(properties)
 
-            for property in properties:
+            refreshed_properties = PropertyState.objects.filter(id__in=ids)
+
+            for property in refreshed_properties:
                 self.assertEqual('POINT (-104.986138 39.765251)', long_lat_wkt(property))
 
     def test_geocode_addresses_is_successful_with_over_100_properties(self):
@@ -203,10 +208,12 @@ class GeocodeAddresses(TestCase):
 
             geocode_addresses(properties)
 
+            refreshed_properties = PropertyState.objects.filter(id__in=ids).order_by('id')
+
             long_lats = [
                 property.long_lat
                 for property
-                in properties
+                in refreshed_properties
                 if property.long_lat is not None
             ]
 
