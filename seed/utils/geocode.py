@@ -88,8 +88,8 @@ def _address_geocodings(id_addresses):
         request_url = (
             'https://www.mapquestapi.com/geocoding/v1/batch?' +
             '&inFormat=json&outFormat=json&thumbMaps=false&maxResults=1' +
-            '&key=' + settings.MAPQUEST_API_KEY +
-            '&json=' + locations_json
+            '&json=' + locations_json +
+            '&key=' + settings.MAPQUEST_API_KEY
         )
 
         response = requests.get(request_url)

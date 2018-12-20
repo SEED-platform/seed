@@ -234,7 +234,6 @@ class GeocodeAddresses(TestCase):
 
             properties = PropertyState.objects.filter(pk=property.id)
 
-            settings.MAPQUEST_API_KEY = "fakeapikey"
-
-            with self.assertRaises(MapQuestAPIKeyError):
-                geocode_addresses(properties)
+            with self.settings(MAPQUEST_API_KEY = "fakeapikey"):
+                with self.assertRaises(MapQuestAPIKeyError):
+                    geocode_addresses(properties)
