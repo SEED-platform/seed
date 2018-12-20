@@ -85,8 +85,8 @@ def _address_geocodings(id_addresses):
     results = []
 
     for batch in batched_addresses:
-        locations = {"locations": [ ]}
-        locations["locations"] = [ {"street": address} for address in batch ]
+        locations = {"locations": []}
+        locations["locations"] = [{"street": address} for address in batch]
         locations_json = json.dumps(locations)
 
         request_url = (
