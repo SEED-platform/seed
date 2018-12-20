@@ -151,6 +151,6 @@ def _id_geocodings(id_addresses, address_geocodings):
     }
 
 
-def _batch_addresses(addresses, n=100):
+def _batch_addresses(addresses, n=50):
     for i in range(0, len(addresses), n):
         yield addresses[i:i + n]
