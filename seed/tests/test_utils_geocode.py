@@ -13,8 +13,6 @@ import vcr
 
 from django.contrib.gis.geos import Point
 
-from django.conf import settings
-
 from django.test import TestCase
 
 from seed.landing.models import SEEDUser as User
@@ -234,7 +232,7 @@ class GeocodeAddresses(TestCase):
 
             properties = PropertyState.objects.filter(pk=property.id)
 
-            with self.settings(MAPQUEST_API_KEY = "fakeapikey"):
+            with self.settings(MAPQUEST_API_KEY="fakeapikey"):
                 with self.assertRaises(MapQuestAPIKeyError):
                     geocode_addresses(properties)
 
@@ -242,7 +240,7 @@ class GeocodeAddresses(TestCase):
         with base_vcr.use_cassette('seed/tests/data/vcr_cassettes/geocode_reserved_and_unsafe_characters.yaml'):
             property_details = self.property_state_factory.get_details()
             property_details['organization_id'] = self.org.id
-            property_details['address_line_1'] = '3001 Brighton Blvd;/?:@=&<>#%{}|"\^~[]`'
+            property_details['address_line_1'] = r'3001 Brighton Blvd;/?:@=&<>#%{}|"\^~[]`'
             property_details['address_line_2'] = "suite 2693"
             property_details['city'] = "Denver"
             property_details['state'] = "Colorado"
