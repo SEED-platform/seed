@@ -74,16 +74,32 @@ angular.module('BE.seed.controller.inventory_map', [])
         layers: [raster, $scope.map_points]
       });
 
-      // Set initial zoom and center
+      // Find area of given points or null if no points
       var getPointsExtent = function () {
-        return $scope.map_points.getSource().getExtent();
-      };
-      var view_options = {
-        size: $scope.map.getSize(),
-        padding: [10, 10, 10, 10],
-      };
-      $scope.map.getView().fit(getPointsExtent(), view_options);
+        var points_source = $scope.map_points.getSource();
 
+        if (points_source.isEmpty()) {
+          return null;
+        } else {
+          return $scope.map_points.getSource().getExtent();
+        };
+      };
+
+      // Set initial zoom and center
+      if (getPointsExtent()) {
+        var view_options = {
+          size: $scope.map.getSize(),
+          padding: [10, 10, 10, 10],
+        };
+        $scope.map.getView().fit(getPointsExtent(), view_options);
+      } else {
+        // Default view with no points is the middle of US
+        var empty_view = new ol.View ({
+          center: ol.proj.fromLonLat([-99.066067, 39.390897]),
+          zoom: 4.5,
+        })
+        $scope.map.setView(empty_view);
+      };
 
       var rerenderPoints = function (records) {
         $scope.map_points.setSource(pointSources(records));

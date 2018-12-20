@@ -13,6 +13,8 @@ import vcr
 
 from django.contrib.gis.geos import Point
 
+from django.conf import settings
+
 from django.test import TestCase
 
 from seed.landing.models import SEEDUser as User
@@ -27,6 +29,8 @@ from seed.test_helpers.fake import (
 
 from seed.utils.geocode import geocode_addresses
 from seed.utils.geocode import long_lat_wkt
+from seed.utils.geocode import MapQuestAPIKeyError
+
 from seed.utils.organizations import create_organization
 
 
@@ -114,8 +118,8 @@ class GeocodeAddresses(TestCase):
             geocode_addresses(properties)
             geocode_addresses(tax_lots)
 
-            self.assertEqual('POINT (-104.985765 39.764984)', long_lat_wkt(properties[0]))
-            self.assertEqual('POINT (-104.991315 39.752603)', long_lat_wkt(tax_lots[0]))
+            self.assertEqual('POINT (-104.986138 39.765251)', long_lat_wkt(properties[0]))
+            self.assertEqual('POINT (-104.991046 39.752396)', long_lat_wkt(tax_lots[0]))
 
     def test_geocode_addresses_returns_no_data_when_provided_address_is_ambigious(self):
         with base_vcr.use_cassette('seed/tests/data/vcr_cassettes/geocode_low_geocodequality.yaml', filter_query_parameters=['key']):
@@ -175,7 +179,7 @@ class GeocodeAddresses(TestCase):
             geocode_addresses(properties)
 
             for property in properties:
-                self.assertEqual('POINT (-104.985765 39.764984)', long_lat_wkt(property))
+                self.assertEqual('POINT (-104.986138 39.765251)', long_lat_wkt(property))
 
     def test_geocode_addresses_is_successful_with_over_100_properties(self):
         with batch_vcr.use_cassette('seed/tests/data/vcr_cassettes/geocode_101_unique_addresses.yaml', match_on=['uri_length'], filter_query_parameters=['key']):
@@ -207,3 +211,23 @@ class GeocodeAddresses(TestCase):
             ]
 
             self.assertTrue(len(long_lats) > 0)
+
+    def test_geocode_addresses_is_unsuccessful_when_the_API_key_is_invalid_or_expired(self):
+        with base_vcr.use_cassette('seed/tests/data/vcr_cassettes/geocode_invalid_or_expired_key.yaml'):
+            property_details = self.property_state_factory.get_details()
+            property_details['organization_id'] = self.org.id
+            property_details['address_line_1'] = "3001 Brighton Blvd"
+            property_details['address_line_2'] = "suite 2693"
+            property_details['city'] = "Denver"
+            property_details['state'] = "Colorado"
+            property_details['postal_code'] = "80216"
+
+            property = PropertyState(**property_details)
+            property.save()
+
+            properties = PropertyState.objects.filter(pk=property.id)
+
+            settings.MAPQUEST_API_KEY = "fakeapikey"
+
+            with self.assertRaises(MapQuestAPIKeyError):
+                geocode_addresses(properties)

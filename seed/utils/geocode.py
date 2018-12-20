@@ -8,6 +8,11 @@ from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry
 
 
+class MapQuestAPIKeyError(Exception):
+    """Your MapQuest API Key is either invalid or at its limit."""
+    pass
+
+
 def long_lat_wkt(state):
     """
     This translates point data saved as binary (WKB) into a text string (WKT).
@@ -75,17 +80,23 @@ def _address_geocodings(id_addresses):
     results = []
 
     for batch in batched_addresses:
-        locations = "location=" + "&location=".join(batch)
+        locations = "&location=" + "&location=".join(batch)
         request_url = (
             'https://www.mapquestapi.com/geocoding/v1/batch?' +
             '&inFormat=kvp&outFormat=json&thumbMaps=false&maxResults=1&' +
-            locations +
             '&key=' +
-            settings.MAPQUEST_API_KEY
+            settings.MAPQUEST_API_KEY +
+            locations
         )
 
         response = requests.get(request_url)
-        results += response.json().get('results')
+        try:
+            results += response.json().get('results')
+        except Exception as e:
+            if response.status_code == 403:
+                raise MapQuestAPIKeyError
+            else:
+                raise e
 
     return {
         _response_address(result): _response_location(result)
@@ -103,15 +114,22 @@ def _response_location(result):
     """
     According to MapQuest API
      - https://developer.mapquest.com/documentation/geocoding-api/quality-codes/
-    'P1' indicates accuracy to a point on a map.
-    'AAA' indicates full confidence/quality rating.
+     GeoCode Quality ratings are provided in 5 characters in the form 'ZZYYY'.
+     'ZZ' describes granularity level, and 'YYY' describes confidence ratings.
+
+    Accuracy to either a point or a street address is accepted, while confidence
+    ratings must all be at least A's and B's without C's or X's (N/A).
     """
 
     quality = result.get('locations')[0].get('geocodeQualityCode')
+    granularity_level = quality[0:2]
+    confidence_level = quality[2:5]
+    is_acceptable_granularity = granularity_level in ["P1", "L1"]
+    is_acceptable_confidence = not ("C" in confidence_level or "X" in confidence_level)
 
-    if quality == "P1AAA":
-        long = result.get('locations')[0].get('latLng').get('lng')
-        lat = result.get('locations')[0].get('latLng').get('lat')
+    if is_acceptable_confidence and is_acceptable_granularity:
+        long = result.get('locations')[0].get('displayLatLng').get('lng')
+        lat = result.get('locations')[0].get('displayLatLng').get('lat')
         return f"POINT ({long} {lat})"
     else:
         return None
