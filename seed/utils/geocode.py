@@ -3,6 +3,7 @@
 
 import requests
 import json
+import re
 
 from django.conf import settings
 
@@ -58,6 +59,8 @@ def _full_address(building):
     one full address. This helps to avoid receiving MapQuests' best guess result.
     For example, only sending '3001 Brighton Blvd, Suite 2693' would yield a
     valid point from one of multiple cities.
+
+    Before passing the address back, special and reserved characters are removed.
     """
 
     address_components = [
@@ -69,7 +72,8 @@ def _full_address(building):
     ]
 
     if address_components.count("") < 3:
-        return ", ".join(address_components)
+        full_address = ", ".join(address_components)
+        return re.sub(r'[;/?:@=&"<>#%{}|["^~`\]\\]', '', full_address)
     else:
         return None
 

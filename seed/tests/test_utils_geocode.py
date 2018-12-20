@@ -237,3 +237,24 @@ class GeocodeAddresses(TestCase):
             with self.settings(MAPQUEST_API_KEY = "fakeapikey"):
                 with self.assertRaises(MapQuestAPIKeyError):
                     geocode_addresses(properties)
+
+    def test_geocode_address_can_handle_addresses_with_reserved_and_unsafe_characters(self):
+        with base_vcr.use_cassette('seed/tests/data/vcr_cassettes/geocode_reserved_and_unsafe_characters.yaml'):
+            property_details = self.property_state_factory.get_details()
+            property_details['organization_id'] = self.org.id
+            property_details['address_line_1'] = '3001 Brighton Blvd;/?:@=&<>#%{}|"\^~[]`'
+            property_details['address_line_2'] = "suite 2693"
+            property_details['city'] = "Denver"
+            property_details['state'] = "Colorado"
+            property_details['postal_code'] = "80216"
+
+            property = PropertyState(**property_details)
+            property.save()
+
+            properties = PropertyState.objects.filter(pk=property.id)
+
+            geocode_addresses(properties)
+
+            refreshed_properties = PropertyState.objects.filter(pk=property.id)
+
+            self.assertEqual('POINT (-104.986138 39.765251)', long_lat_wkt(refreshed_properties[0]))
