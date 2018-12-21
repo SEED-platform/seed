@@ -357,3 +357,62 @@ def cycles(header, main_url, organization_id, log):
 
     # TODO: Test deleting a cycle
     return cycle_id
+
+
+def labels(header, main_url, organization_id, cycle_id, log):
+
+    # Create label
+    print ('API Function: create_label\n')
+    partmsg = 'create_label'
+    params = {
+        'organization_id': organization_id
+    }
+    payload = {
+        'name': 'TestLabel',
+        'color': 'red'
+    }
+    result = requests.post(main_url + '/api/v2/labels/',
+                           headers=header,
+                           params=params,
+                           json=payload)
+    check_status(result, partmsg, log)
+    label_id = result.json()['id']
+
+    # Get IDs for all properties
+    params = {
+        'organization_id': organization_id,
+        'cycle': cycle_id,
+        'page': 1,
+        'per_page': 999999999
+    }
+    result = requests.post(main_url + '/api/v2/properties/filter/',
+                           headers=header,
+                           params=params)
+    inventory_ids = [prop['id'] for prop in result.json()['results']]
+
+    # Apply label to properties
+    print ('API Function: apply_label\n')
+    partmsg = 'apply_label'
+    params = {
+        'organization_id': organization_id
+    }
+    payload = {
+        'add_label_ids': [label_id],
+        'inventory_ids': inventory_ids
+    }
+    result = requests.put(main_url + '/api/v2/labels-property/',
+                          headers=header,
+                          params=params,
+                          json=payload)
+    check_status(result, partmsg, log)
+
+    # Delete label
+    print ('API Function: delete_label\n')
+    partmsg = 'delete_label'
+    params = {
+        'organization_id': organization_id
+    }
+    result = requests.delete(main_url + '/api/v2/labels/%s/' % label_id,
+                             headers=header,
+                             params=params)
+    check_status(result, partmsg, log)

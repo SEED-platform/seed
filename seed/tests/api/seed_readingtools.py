@@ -190,6 +190,12 @@ def check_status(result_out, part_msg, log, piid_flag=None):
 
         log.info(part_msg + passed)
         log.debug(msg)
+
+    elif result_out.status_code in [204]:
+        msg = result_out.content
+        log.info(part_msg + passed)
+        log.debug(msg)
+
     else:
         msg = result_out.reason
         log.error(part_msg + failed)
