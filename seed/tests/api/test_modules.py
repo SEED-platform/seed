@@ -273,6 +273,46 @@ def account(header, main_url, username, log):
                           headers=header)
     check_status(result, partmsg, log)
 
+    # Create an organization
+    print ('API Function: create_org\n'),
+    partmsg = 'create_org'
+    payload = {
+        'user_id': user_pk,
+        'organization_name': 'TestOrg_JoZ2wSd2boQWifGau3qxdFFu76oIy9r0' # hopefully ensuring a unique org name
+    }
+    result = requests.post(main_url + '/api/v2/organizations/',
+                           headers=header,
+                           json=payload)
+    check_status(result, partmsg, log)
+    org_id = result.json()['organization']['org_id']
+
+    # Delete an organization
+    print ('API Function: delete_org\n'),
+    partmsg = 'delete_org'
+    result = requests.delete(main_url + '/api/v2/organizations/%s/' % org_id,
+                             headers=header)
+    check_status(result, partmsg, log)
+
+    # Create a suborganization
+    print ('API Function: create_sub_org\n'),
+    partmsg = 'create_sub_org'
+    payload = {
+        'sub_org_name': 'TestSuborg',
+        'sub_org_owner_email': username
+    }
+    result = requests.post(main_url + '/api/v2/organizations/%s/sub_org/' % organization_id,
+                           headers=header,
+                           data=payload)
+    check_status(result, partmsg, log)
+    suborg_id = result.json()['organization_id']
+
+    # Delete a suborganization
+    print ('API Function: delete_sub_org\n'),
+    partmsg = 'delete_sub_org'
+    result = requests.delete(main_url + '/api/v2/organizations/%s/' % suborg_id,
+                             headers=header)
+    check_status(result, partmsg, log)
+
     return organization_id
 
 
