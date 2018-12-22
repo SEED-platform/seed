@@ -30,19 +30,40 @@ angular.module('BE.seed.controller.inventory_map', [])
         return !building.long_lat
       });
 
-      // Define base map layer
-      var raster = new ol.layer.Tile({
+      var base_layer = new ol.layer.Tile({
         source: new ol.source.OSM()
       });
 
-      // Define points/pins layer
-      var point_style = new ol.style.Style({
-        image: new ol.style.Icon({
-          src: urls.static_url + "seed/images/map_pin.png",
-          scale: 0.075,
-          anchor: [0.5, 1]
-        })
-      });
+      var clusterPointStyle = function (size) {
+        // TODO revisit this with a larger dataset
+        // point radius of each cluster icon is relative to size and has a min and max.
+        var relative_radius = 10 + Math.min(7, size/50)
+        return new ol.style.Style({
+          image: new ol.style.Circle({
+            radius: relative_radius,
+            stroke: new ol.style.Stroke({
+              color: '#fff'
+            }),
+            fill: new ol.style.Fill({
+              color: '#3399CC'
+            })
+          }),
+          text: new ol.style.Text({
+            text: size.toString(),
+            fill: new ol.style.Fill({ color: '#fff' })
+          })
+        });
+      };
+
+      var singlePointStyle = function () {
+        return new ol.style.Style({
+          image: new ol.style.Icon({
+            src: urls.static_url + "seed/images/map_pin.png",
+            scale: 0.05,
+            anchor: [0.5, 1],
+          })
+        });
+      };
 
       var buildingPoint = function (building) {
         var format = new ol.format.WKT();
@@ -63,48 +84,65 @@ angular.module('BE.seed.controller.inventory_map', [])
         return new ol.source.Vector({ features: features });
       };
 
-      $scope.map_points = new ol.layer.Vector({
-        source: pointSources(),
-        style: point_style
+      var clusterSource = function (records = $scope.geocoded_data) {
+        return new ol.source.Cluster({
+          source: pointSources(records),
+          distance: 45,
+        });
+      };
+
+      // Define points/clusters layer
+      $scope.points_layer = new ol.layer.Vector({
+        source: clusterSource(),
+        style: function(feature) {
+          var size = feature.get('features').length;
+          if (size > 1) {
+            return clusterPointStyle(size)
+          } else {
+            return singlePointStyle();
+          };
+        }
       });
 
-      // Define map with layers
       $scope.map = new ol.Map({
         target: 'map',
-        layers: [raster, $scope.map_points]
+        layers: [base_layer, $scope.points_layer]
       });
 
-      // Find area of given points or null if no points
-      var getPointsExtent = function () {
-        var points_source = $scope.map_points.getSource();
+      // Define points/cluster on click event
+      $scope.map.on("click", function (event) {
+        $scope.map.forEachFeatureAtPixel(event.pixel, function (feature, layer) {
+          var points = feature.get("features");
+          if ( points.length > 1) {
+            var source = new ol.source.Vector({ features: points });
+            zoomCenter(source, { duration: 750 });
+          };
+        })
+      });
 
+      var zoomCenter = function (points_source, extra_view_options = {}) {
         if (points_source.isEmpty()) {
-          return null;
+          // Default view with no points is the middle of US
+          var empty_view = new ol.View ({
+            center: ol.proj.fromLonLat([-99.066067, 39.390897]),
+            zoom: 4.5,
+          });
+          $scope.map.setView(empty_view);
         } else {
-          return $scope.map_points.getSource().getExtent();
+          var extent = points_source.getExtent();
+          var view_options = Object.assign({
+            size: $scope.map.getSize(),
+            padding: [10, 10, 10, 10],
+          }, extra_view_options);
+          $scope.map.getView().fit(extent, view_options);
         };
       };
 
       // Set initial zoom and center
-      if (getPointsExtent()) {
-        var view_options = {
-          size: $scope.map.getSize(),
-          padding: [10, 10, 10, 10],
-        };
-        $scope.map.getView().fit(getPointsExtent(), view_options);
-      } else {
-        // Default view with no points is the middle of US
-        var empty_view = new ol.View ({
-          center: ol.proj.fromLonLat([-99.066067, 39.390897]),
-          zoom: 4.5,
-        })
-        $scope.map.setView(empty_view);
-      };
+      zoomCenter(clusterSource().getSource());
 
       var rerenderPoints = function (records) {
-        $scope.map_points.setSource(pointSources(records));
-        // TODO: Decide if we want to rezoom and recenter map
-        // $scope.map.getView().fit(getPointsExtent(), view_options);
+        $scope.points_layer.setSource(clusterSource(records));
       };
 
       // Labels
