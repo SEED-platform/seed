@@ -6,6 +6,7 @@ angular.module('BE.seed.controller.inventory_map', [])
   .controller('inventory_map_controller', [
     '$scope',
     '$stateParams',
+    '$document',
     'inventory',
     'inventory_service',
     'labels',
@@ -13,6 +14,7 @@ angular.module('BE.seed.controller.inventory_map', [])
     'spinner_utility',
     function ($scope,
               $stateParams,
+              $document,
               inventory,
               inventory_service,
               labels,
@@ -109,9 +111,46 @@ angular.module('BE.seed.controller.inventory_map', [])
         layers: [base_layer, $scope.points_layer]
       });
 
+      // Grab HTML element
+      var popup_element = angular.element(document).find('#popup_element')[0];
+
+      // Define overlay attaching html element
+      var popup_overlay = new ol.Overlay({
+        element: popup_element,
+        positioning: 'bottom-center',
+        stopEvent: false,
+        offset: [0, -50]
+      });
+      $scope.map.addOverlay(popup_overlay);
+
+      // Define points mouse over event
+      $scope.map.on("pointermove", function (event) {
+        var feature = $scope.map.forEachFeatureAtPixel(event.pixel, function (feature) {
+          return feature;
+        });
+        if (feature) {
+          var points = feature.get("features");
+          if ( points.length == 1 ) {
+
+            var coords = feature.getGeometry().getCoordinates();
+            popup_overlay.setPosition(coords);
+
+            $(popup_element).popover({
+              placement: 'top',
+              html: true,
+              content: "feature.get(address_)"
+            });
+
+            $(popup_element).popover('show');
+          }
+        } else {
+          $(popup_element).popover('destroy');
+        }
+      });
+
       // Define points/cluster on click event
       $scope.map.on("click", function (event) {
-        $scope.map.forEachFeatureAtPixel(event.pixel, function (feature, layer) {
+        $scope.map.forEachFeatureAtPixel(event.pixel, function (feature) {
           var points = feature.get("features");
           if ( points.length > 1) {
             var source = new ol.source.Vector({ features: points });
