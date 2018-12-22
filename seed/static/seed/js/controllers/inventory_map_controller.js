@@ -31,7 +31,9 @@ angular.module('BE.seed.controller.inventory_map', [])
       });
 
       var base_layer = new ol.layer.Tile({
-        source: new ol.source.OSM()
+        source: new ol.source.Stamen({
+          layer: 'terrain'
+        })
       });
 
       var clusterPointStyle = function (size) {
