@@ -69,6 +69,7 @@ from seed.models import TaxLotProperty
 from seed.models.auditlog import AUDIT_IMPORT
 from seed.models.data_quality import DataQualityCheck
 from seed.utils.buildings import get_source_type
+from seed.utils.geocode import geocode_addresses, MapQuestAPIKeyError
 
 # from seed.utils.cprofile import cprofile
 
@@ -731,6 +732,21 @@ def save_raw_data(file_pk):
 #     :return:
 #     """
 #     pass
+
+def geocode_buildings(file_pk):
+    try:
+        if PropertyState.objects.filter(import_file_id=file_pk):
+            qs = PropertyState.objects.filter(import_file_id=file_pk)
+            chord([geocode_addresses.s((chunk), interval=10) for chunk in batch(qs, 100)])
+        else:
+            qs = TaxLotState.objects.filter(import_file_id=file_pk)
+            chord([geocode_addresses.s((chunk), interval=10) for chunk in batch(qs, 100)])
+    except MapQuestAPIKeyError:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'MapQuest API key may be invalid or at its limit.'
+        }, status=status.HTTP_403_FORBIDDEN)
+
 
 # @cprofile()
 def match_buildings(file_pk):

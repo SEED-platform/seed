@@ -37,6 +37,7 @@ from seed.data_importer.models import ROW_DELIMITER
 from seed.data_importer.tasks import do_checks
 from seed.data_importer.tasks import (
     map_data,
+    geocode_buildings as task_geocode_buildings,
     match_buildings as task_match_buildings,
     save_raw_data as task_save_raw
 )
@@ -79,7 +80,6 @@ from seed.models import (
     PORTFOLIO_RAW)
 from seed.utils.api import api_endpoint, api_endpoint_class
 from seed.utils.cache import get_cache
-from seed.utils.geocode import geocode_addresses, MapQuestAPIKeyError
 
 _log = logging.getLogger(__name__)
 
@@ -1367,7 +1367,7 @@ class ImportFileViewSet(viewsets.ViewSet):
     @ajax_request_class
     @has_perm_class('can_modify_data')
     @detail_route(methods=['POST'])
-    def start_system_matching(self, request, pk=None):
+    def start_system_matching_and_geocoding(self, request, pk=None):
         """
         Starts a background task to attempt automatic matching between buildings
         in an ImportFile with other existing buildings within the same org.
@@ -1387,6 +1387,7 @@ class ImportFileViewSet(viewsets.ViewSet):
               required: true
               paramType: path
         """
+        task_geocode_buildings(pk)
         return task_match_buildings(pk)
 
     @api_endpoint_class
@@ -1555,17 +1556,6 @@ class ImportFileViewSet(viewsets.ViewSet):
         import_file.mapping_done = True
         import_file.save()
 
-        try:
-            if PropertyState.objects.filter(import_file_id=import_file.id):
-                geocode_addresses(PropertyState.objects.filter(import_file_id=import_file.id))
-            else:
-                geocode_addresses(TaxLotState.objects.filter(import_file_id=import_file.id))
-        except MapQuestAPIKeyError:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'MapQuest API key may be invalid or at its limit.'
-            }, status=status.HTTP_403_FORBIDDEN)
-
         return JsonResponse(
             {
                 'status': 'success',
@@ -1703,6 +1693,8 @@ class ImportFileViewSet(viewsets.ViewSet):
                 tax_lots_matched.append(state.id)
             else:
                 tax_lots_new.append(state.id)
+
+
 
         # merge in any of the matching results from the JSON field
         return {
