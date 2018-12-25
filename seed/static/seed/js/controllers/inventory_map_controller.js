@@ -112,40 +112,84 @@ angular.module('BE.seed.controller.inventory_map', [])
       });
 
       // Grab HTML element
-      var popup_element = angular.element(document).find('#popup_element')[0];
+      var popup_element = document.getElementById('popup-element');
 
       // Define overlay attaching html element
       var popup_overlay = new ol.Overlay({
         element: popup_element,
         positioning: 'bottom-center',
         stopEvent: false,
-        offset: [0, -50]
+        offset: [0, -120]
       });
       $scope.map.addOverlay(popup_overlay);
 
       // Define points mouse over event
       $scope.map.on("pointermove", function (event) {
-        var feature = $scope.map.forEachFeatureAtPixel(event.pixel, function (feature) {
-          return feature;
-        });
-        if (feature) {
-          var points = feature.get("features");
-          if ( points.length == 1 ) {
+        // doesn't register hovers if the map is being dragged
+        if (event.dragging) {
+          return;
+        };
 
-            var coords = feature.getGeometry().getCoordinates();
-            popup_overlay.setPosition(coords);
+        $scope.map.forEachFeatureAtPixel(event.pixel, function(feature, layer) {
+          //works but doesn't make info go away once cursor leaves
+          if (feature.get('features').length == 1) {
+            var pop_info = "12345";
 
+            var coordinates = feature.getGeometry().getCoordinates();
+            popup_overlay.setPosition(coordinates);
             $(popup_element).popover({
               placement: 'top',
               html: true,
-              content: "feature.get(address_)"
+              content: pop_info
             });
-
             $(popup_element).popover('show');
+          } else {
+            $(popup_element).popover('destroy');
           }
-        } else {
-          $(popup_element).popover('destroy');
-        }
+
+          //works but doesn't make info go away once cursor leaves
+          // if (!layer) {
+          //   $(popup_element).popover('destroy');
+          //   return;
+          // } else if (feature.get("features").length > 1) {
+          //   return;
+          // } else {
+          //   // causes flickering
+          //   // $(popup_element).popover('destroy');
+          //
+          //   var pop_info = "12345";
+          //
+          //   var coordinates = feature.getGeometry().getCoordinates();
+          //   popup_overlay.setPosition(coordinates);
+          //   $(popup_element).popover({
+          //     placement: 'top',
+          //     html: true,
+          //     content: pop_info
+          //   });
+          //   $(popup_element).popover('show');
+          // };
+        });
+        // var feature = $scope.map.forEachFeatureAtPixel(event.pixel, function (feature) {
+        //   return feature;
+        // });
+        // if (feature) {
+        //   var points = feature.get("features");
+        //   if ( points.length == 1 ) {
+        //
+        //     var coords = feature.getGeometry().getCoordinates();
+        //     popup_overlay.setPosition(coords);
+        //
+        //     $(popup_element).popover({
+        //       placement: 'top',
+        //       html: true,
+        //       content: "feature.get(address_)"
+        //     });
+        //
+        //     $(popup_element).popover('show');
+        //   }
+        // } else {
+        //   $(popup_element).popover('destroy');
+        // }
       });
 
       // Define points/cluster on click event
