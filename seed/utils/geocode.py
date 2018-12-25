@@ -9,8 +9,6 @@ from django.conf import settings
 
 from django.contrib.gis.geos import GEOSGeometry
 
-from seed.models.properties import PropertyState
-
 
 class MapQuestAPIKeyError(Exception):
     """Your MapQuest API Key is either invalid or at its limit."""
@@ -39,6 +37,8 @@ def geocode_addresses(buildings):
     whose addresses return a valid geocoded longitude and latitude.
     Finally, the {id: geocoding} dictionary is used to update the QS objects.
     """
+    from seed.models.properties import PropertyState
+    
     if buildings.model is PropertyState:
         pregeocoded = buildings.exclude(longitude__isnull=True, latitude__isnull=True)
         _geocode_by_prepopulated_fields(pregeocoded)
