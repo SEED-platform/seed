@@ -31,7 +31,7 @@ def geocode_addresses(buildings):
     contains properties, this method filters out properties with both latitude
     and longitude fields populated and uses those values to pouplate long_lat.
 
-    With the remaining buildings, regardless of moedel type, this method builds
+    With the remaining buildings, regardless of model type, this method builds
     a dictionary of {id: address} and a dictionary of {address: geocoding}.
     It uses those two to build a dictionary of {id: geocoding} for buildings
     whose addresses return a valid geocoded longitude and latitude.
