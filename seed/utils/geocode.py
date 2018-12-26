@@ -38,7 +38,7 @@ def geocode_addresses(buildings):
     Finally, the {id: geocoding} dictionary is used to update the QS objects.
     """
     from seed.models.properties import PropertyState
-    
+
     if buildings.model is PropertyState:
         pregeocoded = buildings.exclude(longitude__isnull=True, latitude__isnull=True)
         _geocode_by_prepopulated_fields(pregeocoded)
