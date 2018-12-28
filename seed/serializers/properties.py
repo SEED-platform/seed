@@ -295,7 +295,7 @@ class PropertyViewListSerializer(serializers.ListSerializer):
             results = []
 
             # Grab extra_data columns to be shown in the result
-            organization_id = data.organization
+            organization = data[0].state.organization_id
             all_extra_data_columns = Column.objects.filter(
                 organization=organization,
                 is_extra_data=True,
