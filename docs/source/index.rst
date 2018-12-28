@@ -34,6 +34,7 @@ with funding from the U.S. Department of Energy.
    deployment
    api
    data_model
+   data_quality
    mapping
    modules
    developer_resources
