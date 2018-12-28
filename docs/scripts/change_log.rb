@@ -40,7 +40,7 @@ puts options
 repo_owner = 'SEED-Platform'
 repo = 'SEED'
 # List of users who are part of the core team. Their pull requests will not appear as 'external collaborator'
-internal_users = %w[nllong axelstudios Myoldmopar maronnax]
+internal_users = %w[nllong axelstudios Myoldmopar adrian-lara]
 
 github = Github.new
 if options[:token]
