@@ -294,12 +294,14 @@ class PropertyViewListSerializer(serializers.ListSerializer):
             view_ids = [view.id for view in iterable]
             results = []
 
-            # Grab extra_data columns to be shown in the result
-            organization = data[0].state.organization_id
-            all_extra_data_columns = Column.objects.filter(
-                organization=organization,
-                is_extra_data=True,
-                table_name='PropertyState').values_list('column_name', flat=True)
+            # If data is provided, grab extra_data columns to be shown in the result
+            if iterable:
+                organization_id = data[0].state.organization_id
+
+                all_extra_data_columns = Column.objects.filter(
+                    organization_id=organization_id,
+                    is_extra_data=True,
+                    table_name='PropertyState').values_list('column_name', flat=True)
 
             for item in iterable:
                 cycle = [
