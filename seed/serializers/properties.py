@@ -171,22 +171,21 @@ class PropertyStateSerializer(serializers.ModelSerializer):
             'organization': {'read_only': True}
         }
 
+    def __init__(self, instance=None, data=empty, all_extra_data_columns=None, **kwargs):
+        """Override __init__ for the optional all_extra_data_columns argument"""
+        self.all_extra_data_columns = all_extra_data_columns
+        super(PropertyStateSerializer, self).__init__(instance=instance, data=data, **kwargs)
+
     def to_representation(self, data):
         """Overwritten to handle time conversion and extra_data null fields"""
         result = super(PropertyStateSerializer, self).to_representation(data)
 
-        if data.extra_data:
-            organization = data.organization
-            extra_data_columns = Column.objects.filter(
-                organization=organization,
-                is_extra_data=True,
-                table_name='PropertyState'
-            ).values_list('column_name', flat=True)
-
+        # Prepopulate the extra_data columns with a default of None so that they will appear in the result
+        if self.all_extra_data_columns and data.extra_data:
             prepopulated_extra_data = {
                 col_name: data.extra_data.get(col_name, None)
                 for col_name
-                in extra_data_columns
+                in self.all_extra_data_columns
             }
 
             result['extra_data'] = prepopulated_extra_data
@@ -294,12 +293,20 @@ class PropertyViewListSerializer(serializers.ListSerializer):
             iterable = data
             view_ids = [view.id for view in iterable]
             results = []
+
+            # Grab extra_data columns to be shown in the result
+            organization_id = data.organization
+            all_extra_data_columns = Column.objects.filter(
+                organization=organization,
+                is_extra_data=True,
+                table_name='PropertyState').values_list('column_name', flat=True)
+
             for item in iterable:
                 cycle = [
                     (field, getattr(item.cycle, field, None)) for field in CYCLE_FIELDS
                 ]
                 cycle = OrderedDict(cycle)
-                state = PropertyStateSerializer(item.state).data
+                state = PropertyStateSerializer(item.state, all_extra_data_columns=all_extra_data_columns).data
                 representation = OrderedDict((
                     ('id', item.id),
                     ('property', item.property_id),
