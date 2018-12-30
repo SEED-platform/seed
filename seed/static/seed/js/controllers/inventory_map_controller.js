@@ -121,77 +121,47 @@ angular.module('BE.seed.controller.inventory_map', [])
         element: popup_element,
         positioning: 'bottom-center',
         stopEvent: false,
-        offset: [0, -120]
+        autoPan: true,
+        autoPanMargin: 75,
+        offset: [0, -135]
       });
       $scope.map.addOverlay(popup_overlay);
 
+      var showPointInfo = function (point) {
+        var pop_info = point.getProperties().id;
+        var coordinates = point.getGeometry().getCoordinates();
+
+        popup_overlay.setPosition(coordinates);
+        $(popup_element).popover({
+          placement: 'top',
+          html: true,
+          selector: true,
+          content: pop_info
+        });
+
+        $(popup_element).popover('show');
+      }
+
       // Define points mouse over event
+      // flickering and info gets printed too many times.
+      // might need to preload info for each point, then just hide and show info
       $scope.map.on("pointermove", function (event) {
         // doesn't register hovers if the map is being dragged
         if (event.dragging) {
           return;
         };
 
-        $scope.map.forEachFeatureAtPixel(event.pixel, function(feature, layer) {
-          //works but doesn't make info go away once cursor leaves
-          if (feature.get('features').length == 1) {
-            var pop_info = "12345";
+        var points = []
 
-            var coordinates = feature.getGeometry().getCoordinates();
-            popup_overlay.setPosition(coordinates);
-            $(popup_element).popover({
-              placement: 'top',
-              html: true,
-              content: pop_info
-            });
-            $(popup_element).popover('show');
-          } else {
-            $(popup_element).popover('destroy');
-          }
-
-          //works but doesn't make info go away once cursor leaves
-          // if (!layer) {
-          //   $(popup_element).popover('destroy');
-          //   return;
-          // } else if (feature.get("features").length > 1) {
-          //   return;
-          // } else {
-          //   // causes flickering
-          //   // $(popup_element).popover('destroy');
-          //
-          //   var pop_info = "12345";
-          //
-          //   var coordinates = feature.getGeometry().getCoordinates();
-          //   popup_overlay.setPosition(coordinates);
-          //   $(popup_element).popover({
-          //     placement: 'top',
-          //     html: true,
-          //     content: pop_info
-          //   });
-          //   $(popup_element).popover('show');
-          // };
+        $scope.map.forEachFeatureAtPixel(event.pixel, function (feature) {
+          points = feature.get("features")
         });
-        // var feature = $scope.map.forEachFeatureAtPixel(event.pixel, function (feature) {
-        //   return feature;
-        // });
-        // if (feature) {
-        //   var points = feature.get("features");
-        //   if ( points.length == 1 ) {
-        //
-        //     var coords = feature.getGeometry().getCoordinates();
-        //     popup_overlay.setPosition(coords);
-        //
-        //     $(popup_element).popover({
-        //       placement: 'top',
-        //       html: true,
-        //       content: "feature.get(address_)"
-        //     });
-        //
-        //     $(popup_element).popover('show');
-        //   }
-        // } else {
-        //   $(popup_element).popover('destroy');
-        // }
+
+        if (points && points.length == 1) {
+          showPointInfo(points[0]);
+        } else {
+          $(popup_element).popover('destroy');
+        }
       });
 
       // Define points/cluster on click event
