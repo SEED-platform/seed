@@ -164,16 +164,20 @@ angular.module('BE.seed.controller.inventory_map', [])
         }
       });
 
-      // Define points/cluster on click event
+      // Define cluster on click event
       $scope.map.on("click", function (event) {
         $scope.map.forEachFeatureAtPixel(event.pixel, function (feature) {
           var points = feature.get("features");
           if ( points.length > 1) {
-            var source = new ol.source.Vector({ features: points });
-            zoomCenter(source, { duration: 750 });
-          };
-        })
+            zoomOnCluster(points);
+          }
+        });
       });
+
+      var zoomOnCluster = function (points) {
+        var source = new ol.source.Vector({ features: points });
+        zoomCenter(source, { duration: 750 });
+      }
 
       var zoomCenter = function (points_source, extra_view_options = {}) {
         if (points_source.isEmpty()) {
