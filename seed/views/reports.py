@@ -125,19 +125,10 @@ class Report(DecoratorMixin(drf_api_endpoint), ViewSet):
         params = {}
         missing_params = []
         error = ''
-        valid_values = [
-            'site_eui', 'source_eui', 'site_eui_weather_normalized',
-            'source_eui_weather_normalized', 'energy_score',
-            'gross_floor_area', 'use_description', 'year_built'
-        ]
         for param in ['x_var', 'y_var', 'organization_id', 'start', 'end']:
             val = request.query_params.get(param, None)
             if not val:
                 missing_params.append(param)
-            elif param in ['x_var', 'y_var'] and val not in valid_values:
-                error = "{} {} is not a valid value for {}.".format(
-                    error, val, param
-                )
             else:
                 params[param] = val
         if missing_params:
@@ -153,34 +144,24 @@ class Report(DecoratorMixin(drf_api_endpoint), ViewSet):
                 params['organization_id'], cycles,
                 params['x_var'], params['y_var'], campus_only
             )
-            empty = True
             for datum in data:
                 if datum['property_counts']['num_properties_w-data'] != 0:
-                    empty = False
                     break
-            if empty:
-                result = {'status': 'error', 'message': 'No data found'}
-                status_code = status.HTTP_404_NOT_FOUND
-            else:
-                property_counts = []
-                chart_data = []
-                for datum in data:
-                    property_counts.append(datum['property_counts'])
-                    chart_data.extend(datum['chart_data'])
-                data = {
-                    'property_counts': property_counts,
-                    'chart_data': chart_data,
-                }
-                result = {'status': 'success', 'data': data}
-                status_code = status.HTTP_200_OK
+            property_counts = []
+            chart_data = []
+            for datum in data:
+                property_counts.append(datum['property_counts'])
+                chart_data.extend(datum['chart_data'])
+            data = {
+                'property_counts': property_counts,
+                'chart_data': chart_data,
+            }
+            result = {'status': 'success', 'data': data}
+            status_code = status.HTTP_200_OK
         return Response(result, status=status_code)
 
     def get_aggregated_property_report_data(self, request):
         campus_only = request.query_params.get('campus_only', False)
-        valid_x_values = [
-            'site_eui', 'source_eui', 'site_eui_weather_normalized',
-            'source_eui_weather_normalized', 'energy_score',
-        ]
         valid_y_values = ['gross_floor_area', 'use_description', 'year_built']
         params = {}
         missing_params = []
@@ -190,10 +171,6 @@ class Report(DecoratorMixin(drf_api_endpoint), ViewSet):
             val = request.query_params.get(param, None)
             if not val:
                 missing_params.append(param)
-            elif param == 'x_var' and val not in valid_x_values:
-                error = "{} {} is not a valid value for {}.".format(
-                    error, val, param
-                )
             elif param == 'y_var' and val not in valid_y_values:
                 error = "{} {} is not a valid value for {}.".format(
                     error, val, param

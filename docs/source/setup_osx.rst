@@ -18,9 +18,11 @@ This section is intended for developers who may already have their machine
 ready for general development. If this is not the case, skip to Prerequisites.
 
 * install Postgres 9.4 and redis for cache and message broker
+* install PostGIS 2.5 and enable it on the database using `CREATE EXTENSION postgis;`
 * use a virtualenv (if desired)
 * `git clone git@github.com:seed-platform/seed.git`
 * create a `local_untracked.py` in the `config/settings` folder and add CACHE and DB config (example `local_untracked.py.dist`)
+* get MapQuest API key and save it as an ENV VAR or save it to your `local_untracked.py`
 * `export DJANGO_SETTINGS_MODULE=config.settings.dev`
 * `pip install -r requirements/local.txt`
 * `./manage.py migrate`
@@ -117,6 +119,32 @@ default use password `seedpass` when prompted
     psql -c 'ALTER USER seeduser CREATEDB;'
     psql -c 'ALTER USER seeduser CREATEROLE;'
 
+
+PostGIS 2.5
+-----------
+
+MacPorts::
+
+    # Assuming you're still root from installing PostgreSQL,
+    port install postgis2
+
+
+
+Homebrew::
+
+    brew install postgis
+
+
+
+Configure PostGIS::
+
+    psql -d seeddb -c "CREATE EXTENSION postgis;"
+
+    # For testing, give seed user superuser access:
+    # psql -c 'ALTER USER seeduser CREATEDB;'
+
+
+
 Now exit any root environments, becoming just yourself (even though it's not
 that easy being green), for the remainder of these instructions.
 
@@ -186,7 +214,7 @@ Edit `local_untracked.py`. Open the file you created in your favorite editor. Th
     # postgres DB config
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'ENGINE': 'django.contrib.gis.db.backends.postgis',
             'NAME': 'seeddb',
             'USER': 'seeduser',
             'PASSWORD': 'seedpass',
@@ -210,6 +238,22 @@ For Redis, edit the `CACHES` and `CELERY_BROKER_URL` values to look like this:
         }
     }
     CELERY_BROKER_URL = 'redis://127.0.0.1:6379/1'
+
+MapQuest API Key
+----------------
+
+Register for a MapQuest API key:
+`<https://developer.mapquest.com/plan_purchase/steps/business_edition/business_edition_free/register>`_
+
+Visit the Manage Keys page:
+`<https://developer.mapquest.com/user/me/apps>`_
+Either create a new key or use the key initially provided.
+Copy the "Consumer Key" into `local_untracked.py` or save it as an environment variable.
+
+.. code-block:: python
+
+    # MapQuestAPI key
+    MAPQUEST_API_KEY = os.environ.get('MAPQUEST_API_KEY', '<your_key_here>')
 
 Run Django Migrations
 ---------------------
@@ -304,4 +348,3 @@ Login with the user/password you created before, e.g., `admin@my.org` and
     these steps have been combined into a script called `start-seed.sh`.
     The script will also not start Celery or Redis if they already seem
     to be running.
-

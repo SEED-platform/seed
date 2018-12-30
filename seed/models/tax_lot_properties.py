@@ -16,6 +16,7 @@ from django.db.models import Count
 from django.utils.timezone import make_naive
 
 from seed.models.columns import Column
+from seed.utils.geocode import long_lat_wkt
 
 logger = logging.getLogger(__name__)
 
@@ -136,6 +137,7 @@ class TaxLotProperty(models.Model):
                 'obj_state_id': 'property_state_id',
                 'obj_view_id': 'property_view_id',
                 'obj_id': 'property_id',
+                'long_lat': 'long_lat',
                 'related_class': 'TaxLotView',
                 'related_query_in': 'taxlot_view_id__in',
                 'select_related': 'taxlot',
@@ -150,6 +152,7 @@ class TaxLotProperty(models.Model):
                 'obj_state_id': 'taxlot_state_id',
                 'obj_view_id': 'taxlot_view_id',
                 'obj_id': 'taxlot_id',
+                'long_lat': 'long_lat',
                 'related_class': 'PropertyView',
                 'related_query_in': 'property_view_id__in',
                 'select_related': 'property',
@@ -325,6 +328,8 @@ class TaxLotProperty(models.Model):
 
             obj_dict[lookups['obj_state_id']] = obj.state.id
             obj_dict[lookups['obj_view_id']] = obj.id
+
+            obj_dict[lookups['long_lat']] = long_lat_wkt(obj.state)
 
             # store the property / taxlot data to the object dictionary as well. This is hacky.
             if lookups['obj_class'] == 'PropertyView':

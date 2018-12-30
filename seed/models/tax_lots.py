@@ -14,6 +14,7 @@ from os import path
 from .auditlog import AUDIT_IMPORT
 from .auditlog import DATA_UPDATE_TYPE
 from django.contrib.postgres.fields import JSONField
+from django.contrib.gis.db import models as geomodels
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -80,6 +81,8 @@ class TaxLotState(models.Model):
 
     extra_data = JSONField(default=dict, blank=True)
     hash_object = models.CharField(max_length=32, null=True, blank=True, default=None)
+
+    long_lat = geomodels.PointField(geography=True, null=True, blank=True)
 
     class Meta:
         index_together = [
