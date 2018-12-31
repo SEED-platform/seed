@@ -78,8 +78,8 @@ class Project(TimeStampedModel):
         """For compliance with organization names in new data model."""
         return self.super_organization
 
-    def __unicode__(self):
-        return u"Project %s" % (self.name,)
+    def __str__(self):
+        return "Project %s" % (self.name,)
 
     def get_compliance(self):
         if self.has_compliance:
@@ -112,7 +112,7 @@ class ProjectPropertyView(TimeStampedModel):
         verbose_name = _("project property view")
         verbose_name_plural = _("project property views")
 
-    def __unicode__(self):
+    def __str__(self):
         return u"{0} - {1}".format(self.property_view, self.project.name)
 
 
@@ -134,8 +134,8 @@ class ProjectTaxLotView(TimeStampedModel):
     class Meta:
         ordering = ['project', 'taxlot_view']
         unique_together = ('taxlot_view', 'project')
-        verbose_name = _("project taxlot view")
-        verbose_name_plural = _("project taxlot views")
+        verbose_name = _('project taxlot view')
+        verbose_name_plural = _('project taxlot views')
 
-    def __unicode__(self):
-        return u"{0} - {1}".format(self.taxlot_view, self.project.name)
+    def __str__(self):
+        return '{0} - {1}'.format(self.taxlot_view, self.project.name)

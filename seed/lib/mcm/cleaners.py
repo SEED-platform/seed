@@ -11,6 +11,7 @@ from datetime import datetime, date
 import dateutil
 import dateutil.parser
 from django.utils import timezone
+from past.builtins import basestring
 # django orm gets confused unless we specifically use `ureg` from quantityfield
 # ie. don't try `import pint; ureg = pint.UnitRegistry()`
 from quantityfield import ureg
@@ -18,15 +19,15 @@ from quantityfield import ureg
 from seed.lib.mcm.matchers import fuzzy_in_set
 
 NONE_SYNONYMS = (
-    (u'_', u'not available'),
-    (u'_', u'not applicable'),
-    (u'_', u'n/a'),
+    ('_', 'not available'),
+    ('_', 'not applicable'),
+    ('_', 'n/a'),
 )
 BOOL_SYNONYMS = (
-    (u'_', u'true'),
-    (u'_', u'yes'),
-    (u'_', u'y'),
-    (u'_', u'1'),
+    ('_', 'true'),
+    ('_', 'yes'),
+    ('_', 'y'),
+    ('_', '1'),
 )
 PUNCT_REGEX = re.compile('[{0}]'.format(
     re.escape(string.punctuation.replace('.', '').replace('-', '')))
@@ -35,11 +36,11 @@ PUNCT_REGEX = re.compile('[{0}]'.format(
 
 def default_cleaner(value, *args):
     """Pass-through validation for strings we don't know about."""
-    if isinstance(value, unicode):
+    if isinstance(value, basestring):
         if fuzzy_in_set(value.lower(), NONE_SYNONYMS):
             return None
-        # guard against `u''` coming in from an Excel empty cell
-        if (value == u''):
+        # guard against `''` coming in from an Excel empty cell
+        if (value == ''):
             return None
     return value
 
@@ -63,7 +64,7 @@ def float_cleaner(value, *args):
     if value is None:
         return None
 
-    if isinstance(value, (str, unicode)):
+    if isinstance(value, basestring):
         value = PUNCT_REGEX.sub('', value)
 
     try:
@@ -101,7 +102,7 @@ def date_time_cleaner(value, *args):
 
     try:
         # the dateutil parser only parses strings, make sure to return None if not a string
-        if isinstance(value, (str, unicode)):
+        if isinstance(value, basestring):
             value = dateutil.parser.parse(value)
             value = timezone.make_aware(value, timezone.get_current_timezone())
         else:
@@ -127,7 +128,7 @@ def int_cleaner(value, *args):
     if value is None:
         return None
 
-    if isinstance(value, (str, unicode)):
+    if isinstance(value, basestring):
         value = PUNCT_REGEX.sub('', value)
 
     try:
@@ -165,22 +166,22 @@ class Cleaner(object):
     def __init__(self, ontology):
 
         self.ontology = ontology
-        self.schema = self.ontology.get(u'types', {})
-        self.float_columns = filter(
-            lambda x: self.schema[x] == u'float', self.schema
-        )
-        self.date_columns = filter(
-            lambda x: self.schema[x] == u'date', self.schema
-        )
-        self.date_time_columns = filter(
-            lambda x: self.schema[x] == u'datetime', self.schema
-        )
-        self.string_columns = filter(
-            lambda x: self.schema[x] == u'string', self.schema
-        )
-        self.int_columns = filter(
-            lambda x: self.schema[x] == u'integer', self.schema
-        )
+        self.schema = self.ontology.get('types', {})
+        self.float_columns = list(filter(
+            lambda x: self.schema[x] == 'float', self.schema
+        ))
+        self.date_columns = list(filter(
+            lambda x: self.schema[x] == 'date', self.schema
+        ))
+        self.date_time_columns = list(filter(
+            lambda x: self.schema[x] == 'datetime', self.schema
+        ))
+        self.string_columns = list(filter(
+            lambda x: self.schema[x] == 'string', self.schema
+        ))
+        self.int_columns = list(filter(
+            lambda x: self.schema[x] == 'integer', self.schema
+        ))
         self.pint_column_map = self._build_pint_column_map()
 
     def _build_pint_column_map(self):
@@ -192,16 +193,16 @@ class Cleaner(object):
         use with `pint_cleaner(value, UNIT_STRING)`
 
         example input: {
-            u'pm_parent_property_id': 'string',
-            u'Weather Normalized Site EUI (GJ/m2)': ('quantity', u'GJ/m**2/year')
+            'pm_parent_property_id': 'string',
+            'Weather Normalized Site EUI (GJ/m2)': ('quantity', 'GJ/m**2/year')
         }
 
         example output: {
-            u'Weather Normalized Site EUI (GJ/m2)': u'GJ/m**2/year'
+            'Weather Normalized Site EUI (GJ/m2)': 'GJ/m**2/year'
         }
         """
         pint_column_map = {raw_col: pint_spec[1]
-                           for (raw_col, pint_spec) in self.schema.iteritems()
+                           for (raw_col, pint_spec) in self.schema.items()
                            if isinstance(pint_spec, tuple)
                            and pint_spec[0] == 'quantity'}
 
@@ -229,7 +230,7 @@ class Cleaner(object):
             if not is_extra_data:
                 # If the object is not extra data, then check if the data are in the
                 # pint_column_map. This needs to be cleaned up significantly.
-                if column_name in self.pint_column_map.keys():
+                if column_name in self.pint_column_map:
                     units = self.pint_column_map[column_name]
                     return pint_cleaner(value, units)
 

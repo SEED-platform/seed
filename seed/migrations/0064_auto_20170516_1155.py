@@ -20,6 +20,3 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RunSQL(DROP_ACCOUNT_TABLES),
     ]
-
-
-

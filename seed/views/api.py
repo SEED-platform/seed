@@ -4,13 +4,14 @@
 # :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 # :author
 
+from django.http import JsonResponse
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
+
 from seed.decorators import ajax_request
 from seed.utils.api import (
     get_api_endpoints, format_api_docstring, api_endpoint
 )
-from django.http import JsonResponse
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 
 @api_endpoint
@@ -37,8 +38,7 @@ def get_api_schema(request):
 
     resp = {}
     for url, fn in endpoints.items():
-        desc = format_api_docstring(fn.func_doc)
-        endpoint_details = {'name': fn.func_name,
-                            'description': desc}
+        desc = format_api_docstring(fn.__doc__)
+        endpoint_details = {'name': fn.__name__, 'description': desc}
         resp[url] = endpoint_details
     return JsonResponse(resp)

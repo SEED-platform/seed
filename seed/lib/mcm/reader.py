@@ -12,13 +12,13 @@ elsewhere.
 """
 import mmap
 import operator
+from builtins import str
+from csv import DictReader, Sniffer
 
-from unicodecsv import DictReader, Sniffer
+from past.builtins import basestring
 from unidecode import unidecode
 from xlrd import xldate, XLRDError, open_workbook, empty_cell
 from xlrd.xldate import XLDateAmbiguous
-
-from seed.lib.mcm import mapper, utils
 
 (
     XL_CELL_EMPTY,
@@ -104,7 +104,7 @@ class ExcelParser(object):
             else:
                 return item.value
 
-        if isinstance(item.value, unicode):
+        if isinstance(item.value, basestring):
             return unidecode(item.value)
 
         return item.value
@@ -139,14 +139,6 @@ class ExcelParser(object):
             dict(item(i, j) for j in range(sheet.ncols))
             for i in range(header_row + 1, sheet.nrows)
         )
-
-    def next(self):
-        """generator to match CSVReader"""
-        while True:
-            try:
-                yield self.excelreader.next()
-            except StopIteration:
-                break
 
     def seek_to_beginning(self):
         """seeks to the beginning of the file
@@ -185,7 +177,8 @@ class CSVParser(object):
         self.csvfile = csvfile
         self.csvreader = self._get_csv_reader(csvfile, **kwargs)
 
-        # cleaning the superscripts also assigns the headers to the csvreader.unicode_fieldnames
+        # read the next line to get the field names
+        # cleaning the superscripts also assigns the headers to the csvreader.fieldnames
         self.clean_super_scripts()
 
     def _get_csv_reader(self, *args, **kwargs):
@@ -200,7 +193,7 @@ class CSVParser(object):
         self.csvfile.seek(0)
 
         if 'reader_type' not in kwargs:
-            return DictReader(self.csvfile, errors='replace')
+            return DictReader(self.csvfile)
 
         else:
             reader_type = kwargs.get('reader_type')
@@ -210,33 +203,26 @@ class CSVParser(object):
     def clean_super_scripts(self):
         """Replaces column names with clean ones."""
         new_fields = []
-        for col in self.csvreader.unicode_fieldnames:
+        for col in self.csvreader.fieldnames:
             new_fields.append(unidecode(col))
 
-        self.csvreader.unicode_fieldnames = new_fields
-
-    def next(self):
-        """Wouldn't it be nice to get iterables form csvreader?"""
-        while True:
-            try:
-                yield self.csvreader.next()
-            except StopIteration:
-                break
+        self.csvreader.fieldnames = new_fields
 
     def seek_to_beginning(self):
         """seeks to the beginning of the file"""
         self.csvfile.seek(0)
+
         # skip header row
-        self.next().next()
+        self.csvfile.__next__()
 
     def num_columns(self):
         """gets the number of columns for the file"""
-        return len(self.csvreader.unicode_fieldnames)
+        return len(self.csvreader.fieldnames)
 
     @property
     def headers(self):
         """original ordered list of headers with leading and trailing spaces stripped"""
-        return [entry.strip() for entry in self.csvreader.unicode_fieldnames]
+        return [entry.strip() for entry in self.csvreader.fieldnames]
 
 
 class MCMParser(object):
@@ -263,6 +249,8 @@ class MCMParser(object):
 
     def __init__(self, import_file, *args, **kwargs):
         self.reader = self._get_reader(import_file)
+        self.seek_to_beginning()
+
         self.import_file = import_file
         if 'matching_func' not in kwargs:
             # Special note, contains expects arguments like the following
@@ -272,43 +260,30 @@ class MCMParser(object):
         else:
             self.matching_func = kwargs.get('matching_func')
 
-    def split_rows(self, chunk_size, callback, *args, **kwargs):
-        """Break up the CSV into smaller pieces for parallel processing."""
-        row_num = 0
-        for batch in utils.batch(self.next(), chunk_size):
-            row_num += len(batch)
-            callback(batch, *args, **kwargs)
-
-        return row_num
-
-    def map_rows(self, mapping, model_class):
-        """Convenience method to call ``mapper.map_row`` on all rows.
-
-        :param mapping: dict, keys map columns to model_class attrs.
-        :param model_class: class, reference to model class.
-
-        """
-        for row in self.next():
-            # Figure out if this is an inser or update.
-            # e.g. model.objects.get('some canonical id') or model_class()
-            yield mapper.map_row(row, mapping, model_class)
-
     def _get_reader(self, import_file):
         """returns a CSV or XLS/XLSX reader or raises an exception"""
         try:
             return ExcelParser(import_file)
         except XLRDError as e:
-            if 'Unsupported format' in e.message:
+            if 'Unsupported format' in str(e):
                 return CSVParser(import_file)
             else:
                 raise Exception('Cannot parse file')
 
-    def next(self):
+    def __next__(self):
         """calls the reader's next"""
-        return self.reader.next()
+        # TODO: Do i need to switch between csvreader and excelreader?
+        return self.data.__next__()
 
     def seek_to_beginning(self):
         """calls the reader's seek_to_beginning"""
+        if isinstance(self.reader, CSVParser):
+            self.data = self.reader.csvreader
+        elif isinstance(self.reader, ExcelParser):
+            self.data = self.reader.excelreader
+        else:
+            raise Exception('Uknown type of parser in MCMParser')
+
         return self.reader.seek_to_beginning()
 
     def num_columns(self):
@@ -329,16 +304,15 @@ class MCMParser(object):
         :return: list of rows with ROW_DELIMITER
         """
         self.seek_to_beginning()
-        rows = self.next()
 
         validation_rows = []
         for i in range(5):
             try:
-                row = rows.next()
+                row = self.__next__()
                 if row:
                     # Trim out the spaces around the keys
                     new_row = {}
-                    for k, v in row.iteritems():
+                    for k, v in row.items():
                         new_row[k.strip()] = v
                     validation_rows.append(new_row)
             except StopIteration:
@@ -353,7 +327,7 @@ class MCMParser(object):
             row_arr = []
             for x in first_row:
                 row_field = r[x]
-                if isinstance(row_field, unicode):
+                if isinstance(row_field, basestring):
                     row_field = unidecode(r[x])
                 else:
                     row_field = str(r[x])

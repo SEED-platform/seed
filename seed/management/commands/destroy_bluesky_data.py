@@ -1,7 +1,12 @@
+# -*- coding: utf-8 -*-
+"""
+:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
+"""
 from __future__ import unicode_literals
 
-from django.core.management.base import BaseCommand
 from django.apps import apps
+from django.core.management.base import BaseCommand
 
 
 def delete_based_on_org(apps, org):
@@ -56,11 +61,11 @@ class Command(BaseCommand):
             orgs_to_delete = [int(x) for x in orgs_to_delete]
 
             for org in orgs_to_delete:
-                print "Destroying SEED migrated data for organization {}".format(org)
+                print("Destroying SEED migrated data for organization {}".format(org))
                 delete_based_on_org(apps, org)
 
         else:
-            print "Destroying all SEED migrated data"
+            print("Destroying all SEED migrated data")
             apps.get_model("seed", "Cycle").objects.all().delete()
             apps.get_model("seed", "PropertyState").objects.all().delete()
             apps.get_model("seed", "PropertyView").objects.all().delete()

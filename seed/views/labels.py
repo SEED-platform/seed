@@ -256,7 +256,7 @@ class UpdateInventoryLabelsAPIView(APIView):
         if error:
             result = {
                 'status': 'error',
-                'message': error.message
+                'message': str(error)
             }
             status_code = error.status_code
         else:

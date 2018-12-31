@@ -29,7 +29,7 @@ class TestProgressData(TestCase):
             'status_message': '',
             'stacktrace': None,
             'func_name': 'test_func',
-            'progress_key': u':1:SEED:test_func:PROG:abc123',
+            'progress_key': ':1:SEED:test_func:PROG:abc123',
             'progress': 0,
             'message': None,
             'total': None,

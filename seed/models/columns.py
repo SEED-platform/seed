@@ -20,10 +20,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
 from seed.models.column_mappings import ColumnMapping
-from seed.models.models import (
-    Enum,
-    Unit,
-)
+from seed.models.models import Unit
 
 INVENTORY_DISPLAY = {
     'PropertyState': 'Property',
@@ -524,7 +521,6 @@ class Column(models.Model):
     modified = models.DateTimeField(auto_now=True)
 
     unit = models.ForeignKey(Unit, blank=True, null=True)
-    enum = models.ForeignKey(Enum, blank=True, null=True)
     is_extra_data = models.BooleanField(default=False)
     import_file = models.ForeignKey('data_importer.ImportFile', blank=True, null=True)
     units_pint = models.CharField(max_length=64, blank=True, null=True)
@@ -536,8 +532,8 @@ class Column(models.Model):
     merge_protection = models.IntegerField(choices=COLUMN_MERGE_PROTECTION,
                                            default=COLUMN_MERGE_FAVOR_NEW)
 
-    def __unicode__(self):
-        return u'{} - {}:{}'.format(self.pk, self.table_name, self.column_name)
+    def __str__(self):
+        return '{} - {}:{}'.format(self.pk, self.table_name, self.column_name)
 
     def clean(self):
         # Don't allow Columns that are not extra_data and not a field in the database
@@ -934,7 +930,7 @@ class Column(models.Model):
             try:
                 types[c['column_name']] = MAP_TYPES[c['data_type']]
             except KeyError:
-                print "could not find data_type for %s" % c
+                _log.error("could not find data_type for %s" % c)
                 types[c['column_name']] = ''
 
         return {"types": types}
@@ -1134,7 +1130,7 @@ class Column(models.Model):
                 columns.append(new_c)
 
         # import json
-        # print json.dumps(columns, indent=2)
+        # print(json.dumps(columns, indent=2))
 
         # validate that the field 'name' is unique.
         uniq = set()
@@ -1155,16 +1151,16 @@ class Column(models.Model):
 
         {
             'PropertyState': {
-                u'lot_number': 'Favor New',
-                u'owner_address': 'Favor New',
-                u'extra_data': {
-                    u'data_007': 'Favor New'
+                'lot_number': 'Favor New',
+                'owner_address': 'Favor New',
+                'extra_data': {
+                    'data_007': 'Favor New'
                 }
             'TaxLotState': {
-                u'custom_id_1': 'Favor New',
-                u'block_number': 'Favor New',
-                u'extra_data': {
-                    u'data_008': 'Favor New'
+                'custom_id_1': 'Favor New',
+                'block_number': 'Favor New',
+                'extra_data': {
+                    'data_008': 'Favor New'
                 }
         }
 

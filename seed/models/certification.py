@@ -17,6 +17,7 @@ from django.db import models
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.contrib.postgres.fields import JSONField
+from past.builtins import basestring
 
 from seed.lib.superperms.orgs.models import Organization
 from seed.models.auditlog import (
@@ -49,29 +50,29 @@ class GreenAssessment(models.Model):
     recognition_type    n/a                     Assessment Recognition Type
     description n/a                             n/a
     """
-    AWARD = "AWD"
-    CERTIFICATION = "CRT"
-    LABEL = "LBL"
-    PARTICIPANT = "PRT"
-    RATING = "RAT"
-    SCORE = "SCR"
-    ZERO = "ZER"
+    AWARD = 'AWD'
+    CERTIFICATION = 'CRT'
+    LABEL = 'LBL'
+    PARTICIPANT = 'PRT'
+    RATING = 'RAT'
+    SCORE = 'SCR'
+    ZERO = 'ZER'
     RECOGNITION_TYPE_CHOICES = (
-        (AWARD, "Award"),
-        (CERTIFICATION, "Certification"),
-        (LABEL, "Label"),
-        (PARTICIPANT, "Participant"),
-        (RATING, "Rating"),
-        (SCORE, "Score"),
-        (ZERO, "Zero Energy Ready Home")
+        (AWARD, 'Award'),
+        (CERTIFICATION, 'Certification'),
+        (LABEL, 'Label'),
+        (PARTICIPANT, 'Participant'),
+        (RATING, 'Rating'),
+        (SCORE, 'Score'),
+        (ZERO, 'Zero Energy Ready Home')
     )
     # A DOE Zero Energy Ready Home is a high performance home which is so energy
     # efficient, that a renewable energy system can offset all or most of its
     # annual energy consumption.
 
-    def __unicode__(self):
+    def __str__(self):
         # pylint:disable=no-member
-        return u"{}, {}, {}".format(
+        return '{}, {}, {}'.format(
             self.award_body, self.name,
             self.get_recognition_type_display()
         )
@@ -97,7 +98,7 @@ class GreenAssessment(models.Model):
     )
 
     class Meta:
-        unique_together = ("organization", "name", "award_body")
+        unique_together = ('organization', 'name', 'award_body')
 
 
 class GreenAssessmentProperty(models.Model):
@@ -146,8 +147,8 @@ class GreenAssessmentProperty(models.Model):
         'date': ('GreenVerification{}Date', None)
     }
 
-    def __unicode__(self):
-        return u"{}, {}: {}".format(
+    def __str__(self):
+        return '{}, {}: {}'.format(
             self.body, self.name, self.metric if self.metric else self.rating
         )
 
@@ -315,7 +316,7 @@ class GreenAssessmentProperty(models.Model):
         Return a dict where keys are BEDES compatible names.
         """
         bedes_dict = {}
-        for key, val in self.MAPPING.iteritems():
+        for key, val in self.MAPPING.items():
             field = val[1]
             if field:
                 bedes_dict[field] = getattr(self, key)
@@ -340,7 +341,7 @@ class GreenAssessmentProperty(models.Model):
             sub = ''
         url_field = 'GreenVerification{}URL'.format(sub)
         reso_dict = {}
-        for key, val in self.MAPPING.iteritems():
+        for key, val in self.MAPPING.items():
             field = val[0]
             if field == 'GreenBuildingVerificationType':
                 reso_dict[field] = self.name

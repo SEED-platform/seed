@@ -760,7 +760,7 @@ class TaxLotViewSet(GenericViewSet):
             new_taxlot_state_data = data['state']
 
             # set empty strings to None
-            for key, val in new_taxlot_state_data.iteritems():
+            for key, val in new_taxlot_state_data.items():
                 if val == '':
                     new_taxlot_state_data[key] = None
 
@@ -777,7 +777,7 @@ class TaxLotViewSet(GenericViewSet):
                     state=taxlot_view.state
                 ).order_by('-id').first()
 
-                if 'extra_data' in new_taxlot_state_data.keys():
+                if 'extra_data' in new_taxlot_state_data:
                     taxlot_state_data['extra_data'].update(new_taxlot_state_data.pop('extra_data'))
                 taxlot_state_data.update(new_taxlot_state_data)
 
@@ -810,6 +810,9 @@ class TaxLotViewSet(GenericViewSet):
                             {'state': new_taxlot_state_serializer.data}
                         )
 
+                        # save the property view so that the datetime gets updated on the property.
+                        taxlot_view.save()
+
                         return JsonResponse(result, status=status.HTTP_200_OK)
                     else:
                         result.update({
@@ -820,22 +823,26 @@ class TaxLotViewSet(GenericViewSet):
                         return JsonResponse(result, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
                 elif log.name in ['Manual Edit', 'Manual Match', 'System Match',
                                   'Merge current state in migration']:
-                    # Convert this to using the serializer to save the data. This will override the previous values
-                    # in the state object.
+                    # Convert this to using the serializer to save the data. This will override the
+                    # previous values in the state object.
 
-                    # Note: We should be able to use partial update here and pass in the changed fields instead of the
-                    # entire state_data.
+                    # Note: We should be able to use partial update here and pass in the changed
+                    # fields instead of the entire state_data.
                     updated_taxlot_state_serializer = TaxLotStateSerializer(
                         taxlot_view.state,
                         data=taxlot_state_data
                     )
                     if updated_taxlot_state_serializer.is_valid():
-                        # create the new property state, and perform an initial save / moving relationships
+                        # create the new property state, and perform an initial save / moving
+                        # relationships
                         updated_taxlot_state_serializer.save()
 
                         result.update(
                             {'state': updated_taxlot_state_serializer.data}
                         )
+
+                        # save the property view so that the datetime gets updated on the property.
+                        taxlot_view.save()
 
                         return JsonResponse(result, status=status.HTTP_200_OK)
                     else:
@@ -851,11 +858,5 @@ class TaxLotViewSet(GenericViewSet):
                         'message': 'Unrecognized audit log name: ' + log.name
                     }
                     return JsonResponse(result, status=status.HTTP_204_NO_CONTENT)
-
-            # save the tax lot view, even if it hasn't changed so that the datetime gets updated on the taxlot.
-            # Uhm, does this ever get called? There are a bunch of returns in the code above.
-            taxlot_view.save()
         else:
             return JsonResponse(result, status=status.HTTP_404_NOT_FOUND)
-
-        return JsonResponse(result, status=status.HTTP_404_NOT_FOUND)

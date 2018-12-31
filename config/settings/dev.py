@@ -21,7 +21,7 @@ DATABASES = {
         'NAME': 'seed',
         'USER': 'postgres',
         'PASSWORD': 'postgres',
-        'HOST': "127.0.0.1",
+        'HOST': '127.0.0.1',
         'PORT': '',
     },
 }
@@ -94,10 +94,10 @@ try:
     local_untracked_exists = imp.find_module(
         'local_untracked', config.settings.__path__
     )
-except:
+except BaseException:
     pass
 
 if 'local_untracked_exists' in locals():
     from config.settings.local_untracked import *  # noqa
 else:
-    print >> sys.stderr, "Unable to find the local_untracked module in config/settings/local_untracked.py"
+    raise Exception("Unable to find the local_untracked in config/settings/local_untracked.py")

@@ -6,8 +6,7 @@
 """
 
 from seed import models
-from seed import search
-from seed.models import ASSESSED_RAW, BuildingSnapshot
+from seed.models import ASSESSED_RAW
 
 
 def get_source_type(import_file, source_type=''):
@@ -19,49 +18,3 @@ def get_source_type(import_file, source_type=''):
     source_type_str = source_type_str.upper().replace(' ', '_')
 
     return getattr(models, source_type_str, ASSESSED_RAW)
-
-
-def get_buildings_for_user_count(user):
-    """returns the number of buildings in a user's orgs"""
-    return BuildingSnapshot.objects.filter(
-        super_organization__in=user.orgs.all(),
-        canonicalbuilding__active=True,
-    ).count()
-
-
-def get_search_query(user, params):
-    other_search_params = params.get('filter_params', {})
-    q = other_search_params.get('q', '')
-    order_by = params.get('order_by', 'pk')
-    sort_reverse = params.get('sort_reverse', False)
-    project_slug = other_search_params.get('project__slug', None)
-
-    mappable_types = models.Column.retrieve_db_types()
-
-    if project_slug:
-        mappable_types['project__slug'] = 'string'
-
-    if order_by:
-        if sort_reverse:
-            order_by = "-%s" % order_by
-        building_snapshots = BuildingSnapshot.objects.order_by(
-            order_by
-        ).filter(
-            super_organization__in=user.orgs.all(),
-            canonicalbuilding__active=True,
-        )
-    else:
-        building_snapshots = BuildingSnapshot.objects.filter(
-            super_organization__in=user.orgs.all(),
-            canonicalbuilding__active=True,
-        )
-
-    buildings_queryset = search.search_buildings(
-        q, queryset=building_snapshots
-    )
-
-    buildings_queryset = search.filter_other_params(
-        buildings_queryset, other_search_params, mappable_types
-    )
-
-    return buildings_queryset

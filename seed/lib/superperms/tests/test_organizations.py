@@ -5,25 +5,15 @@
 :author
 """
 
-import os.path
-
-from django.core.exceptions import ValidationError
 from django.test import TestCase
 
-from seed import models as seed_models
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import ROLE_VIEWER
-from seed.lib.superperms.orgs.models import Organization
-from seed.models import (
-    PropertyState,
-    Column,
-    ColumnMapping,
-)
 from seed.utils.organizations import create_organization, create_suborganization
 
 
 class TestOrganizations(TestCase):
-    """Test the clean methods on BuildingSnapshotModel."""
+    """Test the clean methods on the organization."""
 
     def setUp(self):
         user_details = {
@@ -76,4 +66,3 @@ class TestOrganizations(TestCase):
         created, message, org_user = create_suborganization(user3, suborg, 'sub org of sub org')
         self.assertFalse(created)
         self.assertEqual(message, 'Tried to create child of a child organization.')
-

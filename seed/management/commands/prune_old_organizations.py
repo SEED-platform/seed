@@ -1,20 +1,25 @@
-"""Delete all organizations that are not part of the main 12.
+# -*- coding: utf-8 -*-
+"""
+:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
 
+Delete all organizations that are not part of the main 12.
 See code for organization list and source documentation.
 """
-
 from __future__ import unicode_literals
 
-from django.core.management.base import BaseCommand
-from IPython import embed
 import logging
-import seed.tasks
+
+from django.core.management.base import BaseCommand
+
 import seed.models
+import seed.tasks
 from _localtools import get_core_organizations
 
 logging.basicConfig(level=logging.DEBUG)
 
-def getOrganizationsToDelete():
+
+def get_organizations_to_delete():
     """Get all organizations that are not in the global white list."""
 
     all_organizations = seed.models.Organization.objects.all()
@@ -22,7 +27,7 @@ def getOrganizationsToDelete():
     return bad_organizations
 
 
-def destroyOrganization(org):
+def destroy_organization(org):
     """Delete an organization using the Celery information."""
     logging.info("Deleting organization {}".format(org))
     seed.tasks.delete_organization(org.pk)
@@ -35,10 +40,10 @@ class Command(BaseCommand):
 
         logging.debug("**NOTE - Celery server must be running for this operation to work")
 
-        deprecated_organizations = getOrganizationsToDelete()
+        deprecated_organizations = get_organizations_to_delete()
 
         logging.info("Deleting {} deprecated organizations.".format(deprecated_organizations))
         for org in deprecated_organizations:
-            destroyOrganization(org)
+            destroy_organization(org)
 
         return

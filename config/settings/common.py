@@ -112,7 +112,6 @@ SEED_CORE_APPS = (
     'seed.data_importer',
     'seed',
     'seed.lib.superperms.orgs',
-    'seed.audit_logs',
 )
 
 # Apps with tables created by migrations, but which 3rd-party apps depend on.

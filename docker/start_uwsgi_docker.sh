@@ -18,4 +18,4 @@ echo "Waiting for redis to start"
 echo "Creating default user"
 ./manage.py create_default_user --username=$SEED_ADMIN_USER --password=$SEED_ADMIN_PASSWORD --organization=$SEED_ADMIN_ORG
 
-/usr/local/bin/uwsgi --ini /seed/docker/uwsgi.ini
+/usr/bin/uwsgi --ini /seed/docker/uwsgi.ini

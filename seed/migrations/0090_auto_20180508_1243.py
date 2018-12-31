@@ -33,7 +33,7 @@ def forwards(apps, schema_editor):
     # Go through all the organizatoins
     for org in Organization.objects.all():
         # for org in Organization.objects.filter(id=1):
-        print "Checking for missing columns for %s" % org.id
+        print("Checking for missing columns for %s" % org.id)
         # if org.id != 20:
         #     continue
         details = {
@@ -48,24 +48,19 @@ def forwards(apps, schema_editor):
                 is_extra_data=False,
             )
 
-            # print "column is %s:%s" % (columns[0].table_name, columns[0].column_name)
             if not columns.count():
-                # print "  Adding in new column: %s" % field
                 details.update(field)
                 Column.objects.create(**details)
             elif columns.count() == 1:
                 c = columns.first()
                 # update the display name and data_type if it is not already defined
-                # print "  Found one column: %s" % c.id
                 if c.display_name is None or c.display_name == '':
-                    # print "  Changing display_name %s to %s" % (c.display_name, field['display_name'])
                     c.display_name = field['display_name']
                 if c.data_type is None or c.data_type == '' or c.data_type == 'None':
-                    # print "  Adding data_type %s to %s" % (c.data_type, field['data_type'])
                     c.data_type = field['data_type']
                 c.save()
             else:
-                print "  More than one column returned"
+                print("  More than one column returned")
                 # raise Exception("More than one column returned in migration: %s" % field)
 
         # Find all the columns that are not raw database columns, and make sure they are tagged is_extra_data
@@ -74,17 +69,17 @@ def forwards(apps, schema_editor):
         # Ordering here is important, the object that have extra_data are first, so the duplicates are
         # later in the iteration
         for column in Column.objects.filter(organization=org).exclude(table_name='').exclude(table_name=None).order_by(
-            'column_name', '-is_extra_data'):
-            print "%s %s %s %s" % (column.id, column.table_name, column.column_name, column.is_extra_data)
+                'column_name', '-is_extra_data'):
+            print("%s %s %s %s" % (column.id, column.table_name, column.column_name, column.is_extra_data))
             if column in cols_to_delete:
-                print "  Column is tagged to be deleted, continuing..."
+                print("  Column is tagged to be deleted, continuing...")
                 continue
 
             if exist_in_db_columns(column, db_fields):
-                print "  This is a database column, ignoring"
+                print("  This is a database column, ignoring")
             else:
                 if not column.is_extra_data:
-                    print "  The column is not a database field, and is not tagged extradata, fixing..."
+                    print("  The column is not a database field, and is not tagged extradata, fixing...")
                     column.is_extra_data = True
                     column.save()
 
@@ -93,9 +88,9 @@ def forwards(apps, schema_editor):
                                                    column_name=column.column_name)
                 for dup in duplicates:
                     if dup.id == column.id:
-                        print "  Same column, skipping"
+                        print("  Same column, skipping")
                     else:
-                        print "  There is a duplicate, updating mappings and removing"
+                        print("  There is a duplicate, updating mappings and removing")
 
                         cols_to_delete.append(dup)
 
@@ -105,20 +100,20 @@ def forwards(apps, schema_editor):
                         dup_cms = ColumnMapping.objects.filter(Q(column_raw=dup) | Q(column_mapped=dup))
                         if exist_cm:
                             # remove the other mappings if the mapping already exists
-                            print "    Column Mapping exists, removing duplicate column mapping: Count - %s" % dup_cms.count()
+                            print("    Column Mapping exists, removing duplicate column mapping: Count - %s" % dup_cms.count())
                             for dup_cm in dup_cms:
-                                print dup_cm
+                                print(dup_cm)
                             dup_cms.delete()
                         else:
                             # if the column is not in any of the column mappings, then just delete it.
                             if ColumnMapping.objects.filter(Q(column_raw=column) | Q(column_mapped=column)).count() == 0:
-                                print "    Column Mapping does not exist, marking column to be removed"
+                                print("    Column Mapping does not exist, marking column to be removed")
                                 cols_to_delete.append(column)
                             else:
                                 raise Exception("    Column is mapped to a raw, but not a destination, not sure what to do")
 
         for c in cols_to_delete:
-            print "  Deleting %s:%s" % (c.table_name, c.column_name)
+            print("  Deleting %s:%s" % (c.table_name, c.column_name))
             c.delete()
 
 

@@ -238,11 +238,11 @@ Update ``config/settings/local_untracked.py``:
     STATIC_ROOT = 'collected_static'
     STATIC_URL = '/static/'
 
-Start the web server:
+Start the web server (this also starts celery):
 
 .. code-block:: console
 
-    $ sudo /usr/local/bin/uwsgi --http :80 --module standalone_uwsgi --max-requests 5000 --pidfile /tmp/uwsgi.pid --single-interpreter --enable-threads --cheaper-initial 1 -p 4
+    $ ./bin/start-seed
 
 .. warning::
 

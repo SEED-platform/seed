@@ -240,7 +240,6 @@
                             </thead>
                             <tbody>
                                 <tr ng-repeat="file in item_state.files">
-                                    console.dir(item_state.files)
                                     <td> {$ file.file_type $}</td>
                                     <td><a href='{$ file.file $}'>{$ file.filename $}</a></td>
                                     <td>{$ file.created | date: 'yyyy-MM-dd h:mm a' $}</a></td>

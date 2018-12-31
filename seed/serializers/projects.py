@@ -11,7 +11,7 @@ from seed.models import (
 )
 
 STATUS_LOOKUP = {
-    choice[0]: unicode(choice[1]).lower() for choice in Project.STATUS_CHOICES
+    choice[0]: str(choice[1]).lower() for choice in Project.STATUS_CHOICES
 }
 
 

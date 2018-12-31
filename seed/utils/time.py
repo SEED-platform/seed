@@ -10,6 +10,7 @@ import datetime
 import dateutil
 import pytz
 from django.utils.timezone import make_aware
+from past.builtins import basestring
 
 
 def convert_datestr(datestr, make_tz_aware=False):
