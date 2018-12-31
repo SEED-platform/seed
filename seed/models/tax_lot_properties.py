@@ -54,14 +54,11 @@ class TaxLotProperty(models.Model):
         :return: dict
         """
         data = {}
-        for extra_data_field, extra_data_value in instance.items():
-            if fields and extra_data_field not in fields:
-                continue
-
-            if extra_data_field in mappings:
-                data[mappings[extra_data_field]] = extra_data_value
+        for field in fields:
+            if field in mappings:
+                data[mappings[field]] = instance.get(field, None)
             else:
-                data[extra_data_field] = extra_data_value
+                data[field] = instance.get(field, None)
 
         return data
 

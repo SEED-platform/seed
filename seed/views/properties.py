@@ -909,7 +909,15 @@ class PropertyViewSet(GenericViewSet):
             result.update(PropertyViewSerializer(property_view).data)
             # remove PropertyView id from result
             result.pop('id')
-            result['state'] = PropertyStateSerializer(property_view.state).data
+
+            # Grab extra_data columns to be shown in the result
+            organization_id = request.query_params['organization_id']
+            all_extra_data_columns = Column.objects.filter(
+                organization_id=organization_id,
+                is_extra_data=True,
+                table_name='PropertyState').values_list('column_name', flat=True)
+
+            result['state'] = PropertyStateSerializer(property_view.state, all_extra_data_columns=all_extra_data_columns).data
             result['taxlots'] = self._get_taxlots(property_view.pk)
             result['history'], master = self.get_history(property_view)
             result = update_result_with_master(result, master)
