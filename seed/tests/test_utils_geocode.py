@@ -256,3 +256,20 @@ class GeocodeAddresses(TestCase):
             refreshed_properties = PropertyState.objects.filter(pk=property.id)
 
             self.assertEqual('POINT (-104.986138 39.765251)', long_lat_wkt(refreshed_properties[0]))
+
+    def test_geocode_address_can_use_prepopulated_lat_and_long_fields(self):
+        property_details = self.property_state_factory.get_details()
+        property_details['organization_id'] = self.org.id
+        property_details['latitude'] = 39.765251
+        property_details['longitude'] = -104.986138
+
+        property = PropertyState(**property_details)
+        property.save()
+
+        properties = PropertyState.objects.filter(pk=property.id)
+
+        geocode_addresses(properties)
+
+        refreshed_properties = PropertyState.objects.filter(pk=property.id)
+
+        self.assertEqual('POINT (-104.986138 39.765251)', long_lat_wkt(refreshed_properties[0]))

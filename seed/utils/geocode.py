@@ -30,20 +30,41 @@ def long_lat_wkt(state):
 @shared_task
 def geocode_addresses(buildings):
     """
-    Upon receiving a QuerySet (QS) of properties or a QS tax lots, this method
-    builds a dictionary of {id: address} and a dictionary of {address: geocoding}.
+    Upon receiving a QuerySet (QS) of properties or a QS tax lots, if the QS
+    contains properties, this method filters out properties with both latitude
+    and longitude fields populated and uses those values to pouplate long_lat.
+
+    With the remaining buildings, regardless of model type, this method builds
+    a dictionary of {id: address} and a dictionary of {address: geocoding}.
     It uses those two to build a dictionary of {id: geocoding} for buildings
     whose addresses return a valid geocoded longitude and latitude.
     Finally, the {id: geocoding} dictionary is used to update the QS objects.
     """
-    id_addresses = _id_addresses(buildings)
+    from seed.models.properties import PropertyState
+
+    if buildings.model is PropertyState:
+        pregeocoded = buildings.exclude(longitude__isnull=True, latitude__isnull=True)
+        _geocode_by_prepopulated_fields(pregeocoded)
+
+        ungeocoded_buildings = buildings.filter(longitude__isnull=True, latitude__isnull=True)
+    else:
+        ungeocoded_buildings = buildings
+
+    id_addresses = _id_addresses(ungeocoded_buildings)
     address_geocodings = _address_geocodings(id_addresses)
 
     id_geocodings = _id_geocodings(id_addresses, address_geocodings)
 
     for id, geocoding in id_geocodings.items():
-        building = buildings.get(pk=id)
+        building = ungeocoded_buildings.get(pk=id)
         building.long_lat = geocoding
+        building.save()
+
+
+def _geocode_by_prepopulated_fields(buildings):
+    for building in buildings.iterator():
+        long_lat = f"POINT ({building.longitude} {building.latitude})"
+        building.long_lat = long_lat
         building.save()
 
 

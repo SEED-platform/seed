@@ -111,16 +111,20 @@ angular.module('BE.seed.controller.inventory_map', [])
         layers: [base_layer, $scope.points_layer]
       });
 
-      // Define points/cluster on click event
+      // Define cluster on click event
       $scope.map.on("click", function (event) {
-        $scope.map.forEachFeatureAtPixel(event.pixel, function (feature, layer) {
+        $scope.map.forEachFeatureAtPixel(event.pixel, function (feature) {
           var points = feature.get("features");
           if ( points.length > 1) {
-            var source = new ol.source.Vector({ features: points });
-            zoomCenter(source, { duration: 750 });
-          };
-        })
+            zoomOnCluster(points);
+          }
+        });
       });
+
+      var zoomOnCluster = function (points) {
+        var source = new ol.source.Vector({ features: points });
+        zoomCenter(source, { duration: 750 });
+      }
 
       var zoomCenter = function (points_source, extra_view_options = {}) {
         if (points_source.isEmpty()) {
@@ -198,6 +202,10 @@ angular.module('BE.seed.controller.inventory_map', [])
       }
 
       var filterUsingLabels = function () {
+        if (_.isEmpty($scope.selected_labels)) {
+          return rerenderPoints($scope.geocoded_data);
+        }
+
         // Only submit the `id` of the label to the API.
         var ids;
         if ($scope.labelLogic === 'and') {
@@ -209,7 +217,7 @@ angular.module('BE.seed.controller.inventory_map', [])
         inventory_service.saveSelectedLabels(localStorageLabelKey, _.map($scope.selected_labels, 'id'));
 
         if (_.isEmpty(ids)) {
-          rerenderPoints($scope.geocoded_data)
+          rerenderPoints(ids);
         } else {
           var filtered_records = _.filter($scope.geocoded_data, function (record) {
             return _.includes(ids,record.id);
