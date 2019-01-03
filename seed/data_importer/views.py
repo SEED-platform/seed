@@ -80,6 +80,7 @@ from seed.models import (
     PORTFOLIO_RAW)
 from seed.utils.api import api_endpoint, api_endpoint_class
 from seed.utils.cache import get_cache
+from seed.utils.geocode import geocode_addresses, MapQuestAPIKeyError
 
 _log = logging.getLogger(__name__)
 
@@ -1555,6 +1556,17 @@ class ImportFileViewSet(viewsets.ViewSet):
         import_file = ImportFile.objects.get(pk=import_file_id)
         import_file.mapping_done = True
         import_file.save()
+
+        try:
+            if PropertyState.objects.filter(import_file_id=import_file.id):
+                geocode_addresses(PropertyState.objects.filter(import_file_id=import_file.id))
+            else:
+                geocode_addresses(TaxLotState.objects.filter(import_file_id=import_file.id))
+        except MapQuestAPIKeyError:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'MapQuest API key may be invalid or at its limit.'
+            }, status=status.HTTP_403_FORBIDDEN)
 
         return JsonResponse(
             {

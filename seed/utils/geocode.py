@@ -27,6 +27,7 @@ def long_lat_wkt(state):
         return GEOSGeometry(state.long_lat, srid=4326).wkt
 
 
+
 @shared_task
 def geocode_addresses(buildings):
     """
