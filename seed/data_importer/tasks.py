@@ -735,17 +735,25 @@ def save_raw_data(file_pk):
 
 def geocode_buildings(file_pk):
     try:
-        if PropertyState.objects.filter(import_file_id=file_pk):
-            qs = PropertyState.objects.filter(import_file_id=file_pk)
-            geocode_addresses.s(qs).apply_async(serializer='pickle')
-        else:
-            qs = TaxLotState.objects.filter(import_file_id=file_pk)
-            geocode_addresses.s(qs).apply_async(serializer='pickle')
+        async_result = _geocode_properties_or_tax_lots.s(file_pk).apply_async()
+        result = [r for r in async_result.collect()]
     except MapQuestAPIKeyError:
-        return JsonResponse({
+        result = JsonResponse({
             'status': 'error',
             'message': 'MapQuest API key may be invalid or at its limit.'
         }, status=status.HTTP_403_FORBIDDEN)
+
+    return result
+
+
+@shared_task
+def _geocode_properties_or_tax_lots(file_pk):
+    if PropertyState.objects.filter(import_file_id=file_pk):
+        qs = PropertyState.objects.filter(import_file_id=file_pk)
+        return geocode_addresses(qs)
+    else:
+        qs = TaxLotState.objects.filter(import_file_id=file_pk)
+        return geocode_addresses(qs)
 
 
 # @cprofile()

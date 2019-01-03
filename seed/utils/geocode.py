@@ -5,8 +5,6 @@ import requests
 import json
 import re
 
-from celery import shared_task
-
 from django.conf import settings
 
 from django.contrib.gis.geos import GEOSGeometry
@@ -27,7 +25,6 @@ def long_lat_wkt(state):
         return GEOSGeometry(state.long_lat, srid=4326).wkt
 
 
-@shared_task
 def geocode_addresses(buildings):
     """
     Upon receiving a QuerySet (QS) of properties or a QS tax lots, if the QS
