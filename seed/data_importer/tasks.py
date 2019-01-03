@@ -69,6 +69,7 @@ from seed.models import TaxLotProperty
 from seed.models.auditlog import AUDIT_IMPORT
 from seed.models.data_quality import DataQualityCheck
 from seed.utils.buildings import get_source_type
+from seed.utils.geocode import geocode_addresses
 
 # from seed.utils.cprofile import cprofile
 
@@ -731,6 +732,23 @@ def save_raw_data(file_pk):
 #     :return:
 #     """
 #     pass
+
+def geocode_buildings(file_pk):
+    async_result = _geocode_properties_or_tax_lots.s(file_pk).apply_async()
+    result = [r for r in async_result.collect()]
+
+    return result
+
+
+@shared_task
+def _geocode_properties_or_tax_lots(file_pk):
+    if PropertyState.objects.filter(import_file_id=file_pk):
+        qs = PropertyState.objects.filter(import_file_id=file_pk)
+        return geocode_addresses(qs)
+    else:
+        qs = TaxLotState.objects.filter(import_file_id=file_pk)
+        return geocode_addresses(qs)
+
 
 # @cprofile()
 def match_buildings(file_pk):
