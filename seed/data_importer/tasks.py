@@ -69,7 +69,7 @@ from seed.models import TaxLotProperty
 from seed.models.auditlog import AUDIT_IMPORT
 from seed.models.data_quality import DataQualityCheck
 from seed.utils.buildings import get_source_type
-from seed.utils.geocode import geocode_addresses, MapQuestAPIKeyError
+from seed.utils.geocode import geocode_addresses
 
 # from seed.utils.cprofile import cprofile
 

@@ -1703,7 +1703,6 @@ class ImportFileViewSet(viewsets.ViewSet):
             else:
                 tax_lots_new.append(state.id)
 
-
         # merge in any of the matching results from the JSON field
         return {
             'status': 'success',
