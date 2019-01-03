@@ -737,10 +737,10 @@ def geocode_buildings(file_pk):
     try:
         if PropertyState.objects.filter(import_file_id=file_pk):
             qs = PropertyState.objects.filter(import_file_id=file_pk)
-            chord([geocode_addresses.s((chunk), interval=10) for chunk in batch(qs, 100)])
+            geocode_addresses.s(qs).apply_async(serializer='pickle')
         else:
             qs = TaxLotState.objects.filter(import_file_id=file_pk)
-            chord([geocode_addresses.s((chunk), interval=10) for chunk in batch(qs, 100)])
+            geocode_addresses.s(qs).apply_async(serializer='pickle')
     except MapQuestAPIKeyError:
         return JsonResponse({
             'status': 'error',
