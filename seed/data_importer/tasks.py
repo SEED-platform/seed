@@ -734,14 +734,8 @@ def save_raw_data(file_pk):
 #     pass
 
 def geocode_buildings(file_pk):
-    try:
-        async_result = _geocode_properties_or_tax_lots.s(file_pk).apply_async()
-        result = [r for r in async_result.collect()]
-    except MapQuestAPIKeyError:
-        result = JsonResponse({
-            'status': 'error',
-            'message': 'MapQuest API key may be invalid or at its limit.'
-        }, status=status.HTTP_403_FORBIDDEN)
+    async_result = _geocode_properties_or_tax_lots.s(file_pk).apply_async()
+    result = [r for r in async_result.collect()]
 
     return result
 

@@ -80,6 +80,7 @@ from seed.models import (
     PORTFOLIO_RAW)
 from seed.utils.api import api_endpoint, api_endpoint_class
 from seed.utils.cache import get_cache
+from seed.utils.geocode import MapQuestAPIKeyError
 
 _log = logging.getLogger(__name__)
 
@@ -1387,7 +1388,15 @@ class ImportFileViewSet(viewsets.ViewSet):
               required: true
               paramType: path
         """
-        task_geocode_buildings(pk)
+        try:
+            task_geocode_buildings(pk)
+        except MapQuestAPIKeyError:
+            result = JsonResponse({
+                'status': 'error',
+                'message': 'MapQuest API key may be invalid or at its limit.'
+            }, status=status.HTTP_403_FORBIDDEN)
+            return result
+
         return task_match_buildings(pk)
 
     @api_endpoint_class
@@ -1693,7 +1702,6 @@ class ImportFileViewSet(viewsets.ViewSet):
                 tax_lots_matched.append(state.id)
             else:
                 tax_lots_new.append(state.id)
-
 
 
         # merge in any of the matching results from the JSON field
