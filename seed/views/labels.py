@@ -47,7 +47,7 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint), viewsets.ModelViewSet):
                         'name': Name given to label
                         'color': Color of label,
                         'organization_id': Id of organization label belongs to,
-                        'is_applied': Whether or not the label is applied
+                        'is_applied': Will be empty array if not applied to property/taxlots
                     }
                 ]
 
