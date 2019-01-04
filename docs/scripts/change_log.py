@@ -76,9 +76,9 @@ for issue in repo.issues(state='closed'):
                 # print('Found duplicate label on issue, will ignore in change log')
                 continue
 
-            if 'Feature Request' in labels:
+            if 'Feature' in labels:
                 # print('New feature found')
-                add_issue(closed_issues, 'New Feature', issue)
+                add_issue(closed_issues, 'Feature', issue)
             elif 'Maintenance' in labels:
                 # print('New maintenance task')
                 add_issue(closed_issues, 'Improved', issue)
@@ -88,8 +88,17 @@ for issue in repo.issues(state='closed'):
 
 for issue in repo.issues(state='open'):
     if issue.created_at > start_date:
-        # print('new issue created during this time')
-        add_issue(new_issues, 'New Issue', issue)
+        # convert the github iterator to a normal list
+        labels = [label.name for label in issue.labels()]
+
+        if not issue.pull_request():
+            if 'Feature' in labels:
+                # print('new issue created during this time')
+                add_issue(new_issues, 'New Feature', issue)
+            elif 'Maintenance' in labels:
+                add_issue(new_issues, 'New Improvement', issue)
+            else:
+                add_issue(new_issues, 'New Issue', issue)
 
 # Sort the issues by oldest to newest
 closed_issues = sorted(closed_issues, key=lambda kv: kv['number'])
@@ -109,7 +118,7 @@ print('Date Range: %s - %s' % (start_date.strftime('%m/%d/%y'), end_date.strftim
 print('')
 print('New Issues:')
 for issue in new_issues:
-    print('- New Issue [#%s]( %s ), %s' % (issue['number'], issue['url'], issue['title']))
+    print('- %s [#%s]( %s ), %s' % (issue['type'], issue['number'], issue['url'], issue['title']))
 print('')
 print('Closed Issues:')
 for issue in closed_issues:
