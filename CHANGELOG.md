@@ -1,37 +1,27 @@
 # SEED Version 2.4.1
 
-Date Range: 10/06/18 - 12/31/18:
+Date Range: 10/06/18 - 01/04/19:
 
-Closed Issues: 11
+Closed Issues:
 - Fixed [#17]( https://github.com/SEED-platform/seed/issues/17 ), Ability to change mapping after it has been saved
+- Fixed [#43]( https://github.com/SEED-platform/seed/issues/43 ), Internationalization of units
 - Fixed [#343]( https://github.com/SEED-platform/seed/issues/343 ), Edit Organization Mappings screen -- add it
-- Fixed [#1358]( https://github.com/SEED-platform/seed/issues/1358 ), DQ Check - Allow users to define custom data quality rules (compound logic)
 - Fixed [#1561]( https://github.com/SEED-platform/seed/issues/1561 ), Program Drops 2nd tax lot pairing (in mapping?) to do discarding duplicate tax lot record
-- Fixed [#1593]( https://github.com/SEED-platform/seed/issues/1593 ), Importing large files (17000 rows x 256 columns) and less than 25MB
 - Fixed [#1594]( https://github.com/SEED-platform/seed/issues/1594 ), List view -- fields with long strings need popup like in building detail
 - Fixed [#1645]( https://github.com/SEED-platform/seed/issues/1645 ), Release Date not being mapped as "Release Date" (defaulting to PM Release Date)
 - Fixed [#1718]( https://github.com/SEED-platform/seed/issues/1718 ), Deleting all records for an org doesn't delete values in column settings
 - Fixed [#1724]( https://github.com/SEED-platform/seed/issues/1724 ), KeyError: u'measures'
-- Fixed [#1730]( https://github.com/SEED-platform/seed/issues/1730 ), Error importing BuildingSync File
 - Fixed [#1733]( https://github.com/SEED-platform/seed/issues/1733 ), Newly created column will not show up in API until data exists
-- Fixed [#1734]( https://github.com/SEED-platform/seed/issues/1734 ), segfault when loading a lot of records to view in Inventory List
 - Fixed [#1739]( https://github.com/SEED-platform/seed/issues/1739 ), Admin Screen needs scroll bar at the bottom of the screen to scroll right
-- Fixed [#1743]( https://github.com/SEED-platform/seed/issues/1743 ), Remove deprecated repositories
-
-Accepted Pull Requests: 16
-- Fixed [#1711]( https://github.com/SEED-platform/seed/pull/1711 ), Add flake8 checks to more directories and remove old migration code
-- Fixed [#1725]( https://github.com/SEED-platform/seed/pull/1725 ), use alpine linux
-- Fixed [#1726]( https://github.com/SEED-platform/seed/pull/1726 ), Updated dependency with security vulnerability
-- Fixed [#1727]( https://github.com/SEED-platform/seed/pull/1727 ), No measures in BuildingSync scenario
-- Fixed [#1728]( https://github.com/SEED-platform/seed/pull/1728 ), Python 3 Upgrade
-- Fixed [#1729]( https://github.com/SEED-platform/seed/pull/1729 ), Return PropertyView ID from Label Filter API
-- Fixed [#1731]( https://github.com/SEED-platform/seed/pull/1731 ), Remove unused models
-- Fixed [#1732]( https://github.com/SEED-platform/seed/pull/1732 ), Update the update datetime field when changing tax lot or property
-- Fixed [#1735]( https://github.com/SEED-platform/seed/pull/1735 ), add deploy script for docker stack deploy
-- Fixed [#1744]( https://github.com/SEED-platform/seed/pull/1744 ), Added site-wide horizontal scrollbars if necessary
-- Fixed [#1745]( https://github.com/SEED-platform/seed/pull/1745 ), Inventory tooltips
-- Fixed [#1746]( https://github.com/SEED-platform/seed/pull/1746 ), Updated uWSGI for the aws config to match the test config
-- Fixed [#1751]( https://github.com/SEED-platform/seed/pull/1751 ), 421 reports no data and X-Axis options
+- Improved [#1743]( https://github.com/SEED-platform/seed/issues/1743 ), Remove deprecated repositories
+- Fixed [#1767]( https://github.com/SEED-platform/seed/issues/1767 ), IDs for labels API return false
+- Improved [#1768]( https://github.com/SEED-platform/seed/issues/1768 ), Upgrade to Python 3
+- Improved [#1769]( https://github.com/SEED-platform/seed/issues/1769 ), Deploy script for docker stack deploy
+- Fixed [#1770]( https://github.com/SEED-platform/seed/issues/1770 ), Update the update datetime field when changing tax lot or property
+- Improved [#1771]( https://github.com/SEED-platform/seed/issues/1771 ), Remove Unused Django Models and Migration Code
+- Fixed [#1772]( https://github.com/SEED-platform/seed/issues/1772 ), Return PropertyView ID from Label Filter API
+- Fixed [#1773]( https://github.com/SEED-platform/seed/issues/1773 ), No measures in scenario break BuildingSync
+- Improved [#1774]( https://github.com/SEED-platform/seed/issues/1774 ), Use alpine linux in Docker
 
 # SEED Version 2.4.0
 
