@@ -76,6 +76,10 @@ for issue in repo.issues(state='closed'):
                 # print('Found duplicate label on issue, will ignore in change log')
                 continue
 
+            if 'No Longer Valid' in labels:
+                # print('No longer valid issue found, will ignore in change log')
+                continue
+
             if 'Feature' in labels:
                 # print('New feature found')
                 add_issue(closed_issues, 'Feature', issue)
