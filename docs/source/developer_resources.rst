@@ -45,7 +45,7 @@ complicated and not documented yet.
     * models/columns.py: Column.DATABASE_COLUMNS
     * TaxLotState.coparent or PropertyState.coparent: SQL query and keep_fields
 3. Run `./manage.py makemigrations`
-4. Add in a Python script in the new migration to add in the new column into every organizations list of columns
+4. Add in a Python script in the new migration to add in the new column into every organizations list of columns. Note that the new_db_fields will be the same as the data in the Column.DATABASE_COLUMNS that were added.
 
     .. code-block:: python
 
@@ -53,35 +53,44 @@ complicated and not documented yet.
             Column = apps.get_model("seed", "Column")
             Organization = apps.get_model("orgs", "Organization")
 
-            # from seed.lib.superperms.orgs.models import (
-            new_db_field = {
-                'column_name': 'pm_property_id',
-                'table_name': 'PropertyState',
-                'display_name': 'PM Property ID',
-                'data_type': 'string',
-            }
+            new_db_fields = [
+                {
+                    'column_name': 'geocoding_confidence',
+                    'table_name': 'PropertyState',
+                    'display_name': 'Geocoding Confidence',
+                    'data_type': 'number',
+                }, {
+                    'column_name': 'geocoding_confidence',
+                    'table_name': 'TaxLotState',
+                    'display_name': 'Geocoding Confidence',
+                    'data_type': 'number',
+                }
+            ]
 
             # Go through all the organizatoins
             for org in Organization.objects.all():
-                 columns = Column.objects.filter(
-                    organization_id=org.id,
-                    table_name=new_db_field['table_name'],
-                    column_name=new_db_field['column_name'],
-                    is_extra_data=False,
-                )
+                for new_db_field in new_db_fields:
+                    columns = Column.objects.filter(
+                        organization_id=org.id,
+                        table_name=new_db_field['table_name'],
+                        column_name=new_db_field['column_name'],
+                        is_extra_data=False,
+                    )
 
-                if not columns.count():
-                    details.update(new_db_field)
-                    Column.objects.create(**details)
-                elif columns.count() == 1:
-                    c = columns.first()
-                    if c.display_name is None or c.display_name == '':
-                        c.display_name = new_db_field['display_name']
-                    if c.data_type is None or c.data_type == '' or c.data_type == 'None':
-                        c.data_type = new_db_field['data_type']
-                    c.save()
-                else:
-                    print "  More than one column returned"
+                    if not columns.count():
+                        new_db_field['organization_id'] = org.id
+                        Column.objects.create(**new_db_field)
+                    elif columns.count() == 1:
+                        # If the column exists, then just update the display_name and data_type if empty
+                        c = columns.first()
+                        if c.display_name is None or c.display_name == '':
+                            c.display_name = new_db_field['display_name']
+                        if c.data_type is None or c.data_type == '' or c.data_type == 'None':
+                            c.data_type = new_db_field['data_type']
+                        c.save()
+                    else:
+                        print("  More than one column returned")
+
 
         class Migration(migrations.Migration):
             dependencies = [
@@ -89,6 +98,7 @@ complicated and not documented yet.
             ]
 
             operations = [
+                ... existing db migrations ...,
                 migrations.RunPython(forwards),
             ]
 
@@ -254,9 +264,8 @@ user:
     psql -c 'DROP DATABASE "seeddb"'
     psql -c 'CREATE DATABASE "seeddb" WITH OWNER = "seeduser";'
     psql -c 'GRANT ALL PRIVILEGES ON DATABASE "seeddb" TO seeduser;'
-    psql -c 'ALTER USER seeduser CREATEDB;'
-
-    psql -c 'ALTER USER seeduser CREATEROLE;'
+    psql -c 'ALTER ROLE seeduser SUPERUSER;
+    psql -d seeddb -c "CREATE EXTENSION postgis;"
     ./manage.py migrate
     ./manage.py create_default_user \
         --username=testuser@seed.org \

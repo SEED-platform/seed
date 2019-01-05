@@ -83,6 +83,7 @@ class TaxLotState(models.Model):
     hash_object = models.CharField(max_length=32, null=True, blank=True, default=None)
 
     long_lat = geomodels.PointField(geography=True, null=True, blank=True)
+    geocoding_confidence = models.FloatField(null=True, blank=True)
 
     class Meta:
         index_together = [
@@ -334,6 +335,7 @@ class TaxLotState(models.Model):
                       ps.extra_data,
                       ps.number_properties,
                       ps.jurisdiction_tax_lot_id,
+                      ps.geocoding_confidence,
                       NULL
                     FROM seed_taxlotstate ps, audit_id aid
                     WHERE (ps.id = aid.parent_state1_id AND

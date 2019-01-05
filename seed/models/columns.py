@@ -60,10 +60,11 @@ class Column(models.Model):
         ('TaxLotState', 'jurisdiction_tax_lot_id')
     ]
 
-    # Do not return these columns to the front end -- when using the tax_lot_properties get_related method .
+    # Do not return these columns to the front end -- when using the tax_lot_properties
+    # get_related method.
     EXCLUDED_COLUMN_RETURN_FIELDS = [
-        'normalized_address',
         'hash_object',
+        'normalized_address',
         # Records below are old and should not be used
         'source_eui_modeled_orig',
         'site_eui_orig',
@@ -95,26 +96,26 @@ class Column(models.Model):
         (COLUMN_MERGE_FAVOR_EXISTING, 'Favor Existing')
     ]
 
-    # These fields are excluded from being returned to the front end via the API and the Column.retrieve_all method.
-    # Note that not all the endpoints are respecting this at the moment.
+    # These fields are excluded from being returned to the front end via the API and the
+    # Column.retrieve_all method. Note that not all the endpoints are respecting this at the moment.
     EXCLUDED_API_FIELDS = [
         'normalized_address',
     ]
 
     # These are the columns that are removed when looking to see if the records are the same
     COLUMN_EXCLUDE_FIELDS = [
-        'id',
-        'source_type',
-        'import_file',
         'analysis_state',
         'data_state',
-        'merge_state',
         'extra_data',
-        'source_type',
+        'geocoding_confidence',
+        'id',
+        'import_file',
         'long_lat',
+        'merge_state',
+        'source_type',
     ] + EXCLUDED_COLUMN_RETURN_FIELDS
 
-    # These are fields that should not be mapped to
+    # These are fields that should not be mapped to, ever.
     EXCLUDED_MAPPING_FIELDS = [
         'extra_data',
         'lot_number',
@@ -129,11 +130,13 @@ class Column(models.Model):
         'analysis_state_message',
         'campus',
         'created',
+        'geocoding_confidence',
         'lot_number',
         'updated'
     ]
     UNMAPPABLE_TAXLOT_FIELDS = [
         'created',
+        'geocoding_confidence',
         'updated'
     ]
 
@@ -267,6 +270,16 @@ class Column(models.Model):
             'column_name': 'longitude',
             'table_name': 'PropertyState',
             'display_name': 'Longitude',
+            'data_type': 'number',
+        }, {
+            'column_name': 'geocoding_confidence',
+            'table_name': 'PropertyState',
+            'display_name': 'Geocoding Confidence',
+            'data_type': 'number',
+        }, {
+            'column_name': 'geocoding_confidence',
+            'table_name': 'TaxLotState',
+            'display_name': 'Geocoding Confidence',
             'data_type': 'number',
         }, {
             'column_name': 'campus',

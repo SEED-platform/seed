@@ -136,6 +136,7 @@ class PropertyState(models.Model):
     longitude = models.FloatField(null=True, blank=True)
 
     long_lat = geomodels.PointField(geography=True, null=True, blank=True)
+    geocoding_confidence = models.FloatField(null=True, blank=True)
 
     # Only spot where it's 'building' in the app, b/c this is a PM field.
     building_count = models.IntegerField(null=True, blank=True)
@@ -492,6 +493,7 @@ class PropertyState(models.Model):
                     ps.postal_code,
                     ps.longitude,
                     ps.latitude,
+                    ps.geocoding_confidence,
                     ps.lot_number,
                     ps.gross_floor_area,
                     ps.use_description,
