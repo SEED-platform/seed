@@ -147,7 +147,7 @@ angular.module('BE.seed.controller.inventory_map', [])
       // Define point/cluster click event
       // TODO Display info doesn't change bug when popover already shown.
       // TODO cont. Another bug comes up if trying to destroy element before recreate and render
-      // TODO cont. set timeout wasn't working well??
+      // TODO cont. set timeout wasn't working as expected??
       $scope.map.on("click", function (event) {
         var points = []
 
