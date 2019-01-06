@@ -302,12 +302,13 @@ To make a release do the following:
 
 1. Github admin user, on develop branch: update the ``package.json`` and ``setup.py`` file with the
    most recent version number. Always use MAJOR.MINOR.RELEASE.
-2. Run the ``docs/scripts/change_log.rb`` script and add the changes to the CHANGELOG.md file for
-   the range of time between last release and this release.
+2. Run the ``docs/scripts/change_log.py`` script and add the changes to the CHANGELOG.md file for
+   the range of time between last release and this release. Only add the *Closed Issues*. Also make
+   sure that all the pull requests have a related Issue in order to be included in the change log.
 
 .. code-block:: console
 
-    ruby docs/scripts/change_log.rb –token GITHUB_API_TOKEN –start-date 2018-02-26 –end-date 2018-05-30
+    python docs/scripts/change_log.py –k GITHUB_API_TOKEN –s 2018-02-26 –e 2018-05-30
 
 3. Paste the results (remove unneeded Accepted Pull Requests) into the CHANGELOG.md. Make sure to cleanup the formatting.
 4. Make sure that any new UI needing localization has been tagged for
