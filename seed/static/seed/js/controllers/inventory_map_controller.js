@@ -128,7 +128,11 @@ angular.module('BE.seed.controller.inventory_map', [])
       $scope.map.addOverlay(popup_overlay);
 
       var showPointInfo = function (point) {
-        var pop_info = point.getProperties().id;
+        var pop_info = point.getProperties();
+        var address_line_1_key = _.find(_.keys(pop_info), function(key) {
+          return _.startsWith(key, "address_line_1")
+        });
+
         var coordinates = point.getGeometry().getCoordinates();
 
         popup_overlay.setPosition(coordinates);
@@ -136,21 +140,17 @@ angular.module('BE.seed.controller.inventory_map', [])
           placement: 'top',
           html: true,
           selector: true,
-          content: pop_info
+          content: pop_info[address_line_1_key]
         });
 
         $(popup_element).popover('show');
-      }
+      };
 
-      // Define points mouse over event
-      // flickering and info gets printed too many times.
-      // might need to preload info for each point, then just hide and show info
-      $scope.map.on("pointermove", function (event) {
-        // doesn't register hovers if the map is being dragged
-        if (event.dragging) {
-          return;
-        };
-
+      // Define point/cluster click event
+      // TODO Display info doesn't change bug when popover already shown.
+      // TODO cont. Another bug comes up if trying to destroy element before recreate and render
+      // TODO cont. set timeout wasn't working well??
+      $scope.map.on("click", function (event) {
         var points = []
 
         $scope.map.forEachFeatureAtPixel(event.pixel, function (feature) {
@@ -159,19 +159,12 @@ angular.module('BE.seed.controller.inventory_map', [])
 
         if (points && points.length == 1) {
           showPointInfo(points[0]);
+        } else if (points && points.length ) {
+          zoomOnCluster(points);
+          $(popup_element).popover('destroy');
         } else {
           $(popup_element).popover('destroy');
         }
-      });
-
-      // Define cluster on click event
-      $scope.map.on("click", function (event) {
-        $scope.map.forEachFeatureAtPixel(event.pixel, function (feature) {
-          var points = feature.get("features");
-          if ( points.length > 1) {
-            zoomOnCluster(points);
-          }
-        });
       });
 
       var zoomOnCluster = function (points) {
