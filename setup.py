@@ -1,8 +1,10 @@
 from setuptools import setup, find_packages
 
+# TODO: This file can most likely be removed.
+
 setup(
     name='seed',
-    version='0.1.0',
+    version='2.4.1',
     packages=find_packages(),
     url='',
     license='revised BSD',

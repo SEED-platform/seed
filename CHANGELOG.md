@@ -1,3 +1,42 @@
+# SEED Version 2.5.0-Beta GIS
+
+This is a beta release of the SEED GIS functionality.
+
+# SEED Version 2.4.1
+
+Date Range: 10/06/18 - 12/31/18:
+
+Closed Issues: 11
+- Fixed [#17]( https://github.com/SEED-platform/seed/issues/17 ), Ability to change mapping after it has been saved
+- Fixed [#343]( https://github.com/SEED-platform/seed/issues/343 ), Edit Organization Mappings screen -- add it
+- Fixed [#1358]( https://github.com/SEED-platform/seed/issues/1358 ), DQ Check - Allow users to define custom data quality rules (compound logic)
+- Fixed [#1561]( https://github.com/SEED-platform/seed/issues/1561 ), Program Drops 2nd tax lot pairing (in mapping?) to do discarding duplicate tax lot record
+- Fixed [#1593]( https://github.com/SEED-platform/seed/issues/1593 ), Importing large files (17000 rows x 256 columns) and less than 25MB
+- Fixed [#1594]( https://github.com/SEED-platform/seed/issues/1594 ), List view -- fields with long strings need popup like in building detail
+- Fixed [#1645]( https://github.com/SEED-platform/seed/issues/1645 ), Release Date not being mapped as "Release Date" (defaulting to PM Release Date)
+- Fixed [#1718]( https://github.com/SEED-platform/seed/issues/1718 ), Deleting all records for an org doesn't delete values in column settings
+- Fixed [#1724]( https://github.com/SEED-platform/seed/issues/1724 ), KeyError: u'measures'
+- Fixed [#1730]( https://github.com/SEED-platform/seed/issues/1730 ), Error importing BuildingSync File
+- Fixed [#1733]( https://github.com/SEED-platform/seed/issues/1733 ), Newly created column will not show up in API until data exists
+- Fixed [#1734]( https://github.com/SEED-platform/seed/issues/1734 ), segfault when loading a lot of records to view in Inventory List
+- Fixed [#1739]( https://github.com/SEED-platform/seed/issues/1739 ), Admin Screen needs scroll bar at the bottom of the screen to scroll right
+- Fixed [#1743]( https://github.com/SEED-platform/seed/issues/1743 ), Remove deprecated repositories
+
+Accepted Pull Requests: 16
+- Fixed [#1711]( https://github.com/SEED-platform/seed/pull/1711 ), Add flake8 checks to more directories and remove old migration code
+- Fixed [#1725]( https://github.com/SEED-platform/seed/pull/1725 ), use alpine linux
+- Fixed [#1726]( https://github.com/SEED-platform/seed/pull/1726 ), Updated dependency with security vulnerability
+- Fixed [#1727]( https://github.com/SEED-platform/seed/pull/1727 ), No measures in BuildingSync scenario
+- Fixed [#1728]( https://github.com/SEED-platform/seed/pull/1728 ), Python 3 Upgrade
+- Fixed [#1729]( https://github.com/SEED-platform/seed/pull/1729 ), Return PropertyView ID from Label Filter API
+- Fixed [#1731]( https://github.com/SEED-platform/seed/pull/1731 ), Remove unused models
+- Fixed [#1732]( https://github.com/SEED-platform/seed/pull/1732 ), Update the update datetime field when changing tax lot or property
+- Fixed [#1735]( https://github.com/SEED-platform/seed/pull/1735 ), add deploy script for docker stack deploy
+- Fixed [#1744]( https://github.com/SEED-platform/seed/pull/1744 ), Added site-wide horizontal scrollbars if necessary
+- Fixed [#1745]( https://github.com/SEED-platform/seed/pull/1745 ), Inventory tooltips
+- Fixed [#1746]( https://github.com/SEED-platform/seed/pull/1746 ), Updated uWSGI for the aws config to match the test config
+- Fixed [#1751]( https://github.com/SEED-platform/seed/pull/1751 ), 421 reports no data and X-Axis options
+
 # SEED Version 2.4.0
 
 Date Range: 07/04/18 - 10/05/18:
