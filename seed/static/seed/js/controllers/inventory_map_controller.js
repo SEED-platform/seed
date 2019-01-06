@@ -6,7 +6,6 @@ angular.module('BE.seed.controller.inventory_map', [])
   .controller('inventory_map_controller', [
     '$scope',
     '$stateParams',
-    '$document',
     'inventory',
     'inventory_service',
     'labels',
@@ -14,7 +13,6 @@ angular.module('BE.seed.controller.inventory_map', [])
     'spinner_utility',
     function ($scope,
               $stateParams,
-              $document,
               inventory,
               inventory_service,
               labels,
