@@ -40,6 +40,7 @@ def batch_request_uri_length_matcher(r1, r2):
 
 def scrub_key_from_response(key=''):
     bytes_key = key.encode('utf-8')
+
     def before_record_response(response):
         response['body']['string'] = response['body']['string'].replace(bytes_key, b'key')
         return response
