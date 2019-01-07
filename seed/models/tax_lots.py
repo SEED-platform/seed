@@ -83,7 +83,7 @@ class TaxLotState(models.Model):
     hash_object = models.CharField(max_length=32, null=True, blank=True, default=None)
 
     long_lat = geomodels.PointField(geography=True, null=True, blank=True)
-    geocoding_confidence = models.FloatField(null=True, blank=True)
+    geocoding_confidence = models.CharField(max_length=32, null=True, blank=True)
 
     class Meta:
         index_together = [

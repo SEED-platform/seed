@@ -275,12 +275,12 @@ class Column(models.Model):
             'column_name': 'geocoding_confidence',
             'table_name': 'PropertyState',
             'display_name': 'Geocoding Confidence',
-            'data_type': 'number',
+            'data_type': 'string',
         }, {
             'column_name': 'geocoding_confidence',
             'table_name': 'TaxLotState',
             'display_name': 'Geocoding Confidence',
-            'data_type': 'number',
+            'data_type': 'string',
         }, {
             'column_name': 'campus',
             'table_name': 'Property',
