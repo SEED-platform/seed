@@ -286,19 +286,18 @@ angular.module('BE.seed.controller.mapping', [])
         return mappings;
       };
 
-      var suggested_property_address_fields = [
-        {column_name: 'address_line_1', inventory_type: 'PropertyState'},
-        {column_name: 'city', inventory_type: 'PropertyState'},
-        {column_name: 'state', inventory_type: 'PropertyState'},
-        {column_name: 'postal_code', inventory_type: 'PropertyState'}
+      var suggested_address_fields = [
+        {column_name: 'address_line_1'},
+        {column_name: 'city'},
+        {column_name: 'state'},
+        {column_name: 'postal_code'}
       ];
 
-      $scope.suggested_property_fields_present = function () {
-        var property_mappings_found = _.find($scope.mappings, {suggestion_table_name: 'PropertyState'});
-        if (!property_mappings_found) return true;
+      $scope.suggested_fields_present = function () {
+        if (!$scope.mappings) return true;
 
         var intersections = _.intersectionWith(suggested_property_address_fields, $scope.mappings, function (required_field, raw_col) {
-          return required_field.column_name === raw_col.suggestion_column_name && required_field.inventory_type === raw_col.suggestion_table_name;
+          return required_field.column_name === raw_col.suggestion_column_name;
         }).length;
 
         return intersections === 4;
@@ -322,24 +321,6 @@ angular.module('BE.seed.controller.mapping', [])
         }).length;
 
         return intersections > 0;
-      };
-
-      var suggested_taxlot_fields = [
-        {column_name: 'address_line_1', inventory_type: 'TaxLotState'},
-        {column_name: 'city', inventory_type: 'TaxLotState'},
-        {column_name: 'state', inventory_type: 'TaxLotState'},
-        {column_name: 'postal_code', inventory_type: 'TaxLotState'}
-      ];
-
-      $scope.suggested_taxlot_fields_present = function () {
-        var property_mappings_found = _.find($scope.mappings, {suggestion_table_name: 'TaxLotState'});
-        if (!property_mappings_found) return true;
-
-        var intersections = _.intersectionWith(suggested_taxlot_fields, $scope.mappings, function (required_field, raw_col) {
-          return required_field.column_name === raw_col.suggestion_column_name && required_field.inventory_type === raw_col.suggestion_table_name;
-        }).length;
-
-        return intersections === 4;
       };
 
       var required_taxlot_fields = [
