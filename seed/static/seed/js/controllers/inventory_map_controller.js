@@ -157,7 +157,7 @@ angular.module('BE.seed.controller.inventory_map', [])
 
         if (points && points.length == 1) {
           showPointInfo(points[0]);
-        } else if (points && points.length ) {
+        } else if (points && points.length > 1 ) {
           zoomOnCluster(points);
           $(popup_element).popover('destroy');
         } else {
