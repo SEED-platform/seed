@@ -111,14 +111,58 @@ angular.module('BE.seed.controller.inventory_map', [])
         layers: [base_layer, $scope.points_layer]
       });
 
-      // Define cluster on click event
-      $scope.map.on("click", function (event) {
-        $scope.map.forEachFeatureAtPixel(event.pixel, function (feature) {
-          var points = feature.get("features");
-          if ( points.length > 1) {
-            zoomOnCluster(points);
-          }
+      // Building Popup
+      var popup_element = document.getElementById('popup-element');
+
+      // Define overlay attaching html element
+      var popup_overlay = new ol.Overlay({
+        element: popup_element,
+        positioning: 'bottom-center',
+        stopEvent: false,
+        autoPan: true,
+        autoPanMargin: 75,
+        offset: [0, -135]
+      });
+      $scope.map.addOverlay(popup_overlay);
+
+      var showPointInfo = function (point) {
+        var pop_info = point.getProperties();
+        var address_line_1_key = _.find(_.keys(pop_info), function(key) {
+          return _.startsWith(key, "address_line_1")
         });
+
+        var coordinates = point.getGeometry().getCoordinates();
+
+        popup_overlay.setPosition(coordinates);
+        $(popup_element).popover({
+          placement: 'top',
+          html: true,
+          selector: true,
+          content: pop_info[address_line_1_key]
+        });
+
+        $(popup_element).popover('show');
+      };
+
+      // Define point/cluster click event
+      // TODO Display info doesn't change bug when popover already shown.
+      // TODO cont. Another bug comes up if trying to destroy element before recreate and render
+      // TODO cont. set timeout wasn't working as expected??
+      $scope.map.on("click", function (event) {
+        var points = []
+
+        $scope.map.forEachFeatureAtPixel(event.pixel, function (feature) {
+          points = feature.get("features")
+        });
+
+        if (points && points.length == 1) {
+          showPointInfo(points[0]);
+        } else if (points && points.length > 1 ) {
+          zoomOnCluster(points);
+          $(popup_element).popover('destroy');
+        } else {
+          $(popup_element).popover('destroy');
+        }
       });
 
       var zoomOnCluster = function (points) {
@@ -126,6 +170,7 @@ angular.module('BE.seed.controller.inventory_map', [])
         zoomCenter(source, { duration: 750 });
       }
 
+      // Zoom and center based on provided points (none, all, or a subset)
       var zoomCenter = function (points_source, extra_view_options = {}) {
         if (points_source.isEmpty()) {
           // Default view with no points is the middle of US
