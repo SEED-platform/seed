@@ -130,15 +130,15 @@ angular.module('BE.seed.controller.inventory_map', [])
         var icon_html = '<i class="ui-grid-icon-info-circled"></i>'
 
         if ($scope.inventory_type == 'properties') {
-          link_html = '<a ui-sref="inventory_detail({inventory_type: \'properties\', view_id:' +
+          link_html = '<a href="#/properties/' +
             point_info.property_view_id +
-            ')">' +
+            '">' +
             icon_html +
             '</a>'
         } else {
-          link_html = '<a ui-sref="inventory_detail({inventory_type: \'taxlots\', view_id:' +
+          link_html = '<a href="#/taxlots/' +
             point_info.property_view_id +
-            ')">' +
+            '">' +
             icon_html +
             '</a>'
         }
