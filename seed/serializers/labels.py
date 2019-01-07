@@ -50,7 +50,7 @@ class LabelSerializer(serializers.ModelSerializer):
         model = Label
 
     def get_is_applied(self, obj):
-        filtered_result = False
+        filtered_result = []
         if self.inventory:
             result = self.inventory.filter(
                 labels=obj,

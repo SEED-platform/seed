@@ -11,6 +11,8 @@ intercepted/mocked by VCR. To execute an actual HTTP request/response
 
 import vcr
 
+from django.conf import settings
+
 from django.contrib.gis.geos import Point
 
 from django.test import TestCase
@@ -36,8 +38,20 @@ def batch_request_uri_length_matcher(r1, r2):
     return len(r1.uri) == len(r2.uri)
 
 
-base_vcr = vcr.VCR()
-batch_vcr = vcr.VCR()
+def scrub_key_from_response(key=''):
+    bytes_key = key.encode('utf-8')
+
+    def before_record_response(response):
+        response['body']['string'] = response['body']['string'].replace(bytes_key, b'key')
+        return response
+    return before_record_response
+
+
+base_vcr = vcr.VCR(
+    filter_query_parameters=['key'],
+    before_record_response=scrub_key_from_response(settings.MAPQUEST_API_KEY)
+)
+batch_vcr = base_vcr
 batch_vcr.register_matcher('uri_length', batch_request_uri_length_matcher)
 
 
@@ -88,7 +102,7 @@ class GeocodeAddresses(TestCase):
         self.tax_lot_state_factory = FakeTaxLotStateFactory(organization=self.org)
 
     def test_geocode_addresses_successful_when_real_fields_provided(self):
-        with base_vcr.use_cassette('seed/tests/data/vcr_cassettes/geocode_base_case.yaml', filter_query_parameters=['key']):
+        with base_vcr.use_cassette('seed/tests/data/vcr_cassettes/geocode_base_case.yaml'):
             property_details = self.property_state_factory.get_details()
             property_details['organization_id'] = self.org.id
             property_details['address_line_1'] = "3001 Brighton Blvd"
@@ -123,7 +137,7 @@ class GeocodeAddresses(TestCase):
             self.assertEqual('POINT (-104.991046 39.752396)', long_lat_wkt(refreshed_tax_lots[0]))
 
     def test_geocode_addresses_returns_no_data_when_provided_address_is_ambigious(self):
-        with base_vcr.use_cassette('seed/tests/data/vcr_cassettes/geocode_low_geocodequality.yaml', filter_query_parameters=['key']):
+        with base_vcr.use_cassette('seed/tests/data/vcr_cassettes/geocode_low_geocodequality.yaml'):
             state_zip_only_details = self.property_state_factory.get_details()
             state_zip_only_details['organization_id'] = self.org.id
             state_zip_only_details['address_line_1'] = ""
@@ -159,7 +173,7 @@ class GeocodeAddresses(TestCase):
             self.assertIsNone(wrong_state_zip_property.long_lat)
 
     def test_geocode_addresses_is_successful_even_if_two_buildings_have_same_address(self):
-        with base_vcr.use_cassette('seed/tests/data/vcr_cassettes/geocode_dup_addresses.yaml', filter_query_parameters=['key']):
+        with base_vcr.use_cassette('seed/tests/data/vcr_cassettes/geocode_dup_addresses.yaml'):
             property_details = self.property_state_factory.get_details()
             property_details['organization_id'] = self.org.id
             property_details['address_line_1'] = "3001 Brighton Blvd"
@@ -185,7 +199,7 @@ class GeocodeAddresses(TestCase):
                 self.assertEqual('POINT (-104.986138 39.765251)', long_lat_wkt(property))
 
     def test_geocode_addresses_is_successful_with_over_100_properties(self):
-        with batch_vcr.use_cassette('seed/tests/data/vcr_cassettes/geocode_101_unique_addresses.yaml', match_on=['uri_length'], filter_query_parameters=['key']):
+        with batch_vcr.use_cassette('seed/tests/data/vcr_cassettes/geocode_101_unique_addresses.yaml', match_on=['uri_length']):
             property_details = self.property_state_factory.get_details()
             property_details['organization_id'] = self.org.id
             property_details['address_line_2'] = ""
