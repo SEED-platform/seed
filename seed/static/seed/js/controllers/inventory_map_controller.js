@@ -111,7 +111,7 @@ angular.module('BE.seed.controller.inventory_map', [])
         layers: [base_layer, $scope.points_layer]
       });
 
-      // Grab HTML element
+      // Building Popup
       var popup_element = document.getElementById('popup-element');
 
       // Define overlay attaching html element
@@ -170,6 +170,7 @@ angular.module('BE.seed.controller.inventory_map', [])
         zoomCenter(source, { duration: 750 });
       }
 
+      // Zoom and center based on provided points (none, all, or a subset)
       var zoomCenter = function (points_source, extra_view_options = {}) {
         if (points_source.isEmpty()) {
           // Default view with no points is the middle of US
