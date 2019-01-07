@@ -125,6 +125,27 @@ angular.module('BE.seed.controller.inventory_map', [])
       });
       $scope.map.addOverlay(popup_overlay);
 
+      var detailPageIcon = function(point_info) {
+        var link_html = ''
+        var icon_html = '<i class="ui-grid-icon-info-circled"></i>'
+
+        if ($scope.inventory_type == 'properties') {
+          link_html = '<a href="#/properties/' +
+            point_info.property_view_id +
+            '">' +
+            icon_html +
+            '</a>'
+        } else {
+          link_html = '<a href="#/taxlots/' +
+            point_info.property_view_id +
+            '">' +
+            icon_html +
+            '</a>'
+        }
+
+        return link_html
+      };
+
       var showPointInfo = function (point) {
         var pop_info = point.getProperties();
         var address_line_1_key = _.find(_.keys(pop_info), function(key) {
@@ -138,7 +159,7 @@ angular.module('BE.seed.controller.inventory_map', [])
           placement: 'top',
           html: true,
           selector: true,
-          content: pop_info[address_line_1_key]
+          content: pop_info[address_line_1_key] + detailPageIcon(pop_info)
         });
 
         $(popup_element).popover('show');
