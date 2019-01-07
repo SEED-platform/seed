@@ -47,9 +47,11 @@ def scrub_key_from_response(key=''):
     return before_record_response
 
 
+test_key = settings.TESTING_MAPQUEST_API_KEY or "placeholder"
+
 base_vcr = vcr.VCR(
     filter_query_parameters=['key'],
-    before_record_response=scrub_key_from_response(settings.MAPQUEST_API_KEY)
+    before_record_response=scrub_key_from_response(test_key)
 )
 batch_vcr = base_vcr
 batch_vcr.register_matcher('uri_length', batch_request_uri_length_matcher)
@@ -98,6 +100,9 @@ class GeocodeAddresses(TestCase):
             email='test_user@demo.com', **user_details
         )
         self.org, _, _ = create_organization(self.user)
+        self.org.mapquest_api_key = test_key
+        self.org.save()
+
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
         self.tax_lot_state_factory = FakeTaxLotStateFactory(organization=self.org)
 
@@ -233,22 +238,50 @@ class GeocodeAddresses(TestCase):
 
     def test_geocode_addresses_is_unsuccessful_when_the_API_key_is_invalid_or_expired(self):
         with base_vcr.use_cassette('seed/tests/data/vcr_cassettes/geocode_invalid_or_expired_key.yaml'):
-            property_details = self.property_state_factory.get_details()
-            property_details['organization_id'] = self.org.id
-            property_details['address_line_1'] = "3001 Brighton Blvd"
-            property_details['address_line_2'] = "suite 2693"
-            property_details['city'] = "Denver"
-            property_details['state'] = "Colorado"
-            property_details['postal_code'] = "80216"
+            self.org_fake_key, _, _ = create_organization(self.user)
+            self.org_fake_key.mapquest_api_key = 'fakeapikey'
+            self.org_fake_key.save()
 
-            property = PropertyState(**property_details)
+            self.property_state_factory_fake_key = FakePropertyStateFactory(organization=self.org_fake_key)
+
+            property_details_fake_key = self.property_state_factory_fake_key.get_details()
+            property_details_fake_key['organization_id'] = self.org_fake_key.id
+            property_details_fake_key['address_line_1'] = "3001 Brighton Blvd"
+            property_details_fake_key['address_line_2'] = "suite 2693"
+            property_details_fake_key['city'] = "Denver"
+            property_details_fake_key['state'] = "Colorado"
+            property_details_fake_key['postal_code'] = "80216"
+
+            property = PropertyState(**property_details_fake_key)
             property.save()
 
             properties = PropertyState.objects.filter(pk=property.id)
 
-            with self.settings(MAPQUEST_API_KEY="fakeapikey"):
-                with self.assertRaises(MapQuestAPIKeyError):
-                    geocode_addresses(properties)
+            with self.assertRaises(MapQuestAPIKeyError):
+                geocode_addresses(properties)
+
+    def test_geocode_addresses_doesnt_run_an_api_request_when_an_API_key_is_not_provided(self):
+        self.org_no_key, _, _ = create_organization(self.user)
+        self.property_state_factory_no_key = FakePropertyStateFactory(organization=self.org_no_key)
+        property_details_no_key = self.property_state_factory_no_key.get_details()
+
+        property_details_no_key['organization_id'] = self.org_no_key.id
+        property_details_no_key['address_line_1'] = "3001 Brighton Blvd"
+        property_details_no_key['address_line_2'] = "suite 2693"
+        property_details_no_key['city'] = "Denver"
+        property_details_no_key['state'] = "Colorado"
+        property_details_no_key['postal_code'] = "80216"
+
+        property = PropertyState(**property_details_no_key)
+        property.save()
+
+        properties = PropertyState.objects.filter(pk=property.id)
+
+        self.assertIsNone(geocode_addresses(properties))
+
+        refreshed_property = PropertyState.objects.get(pk=property.id)
+
+        self.assertIsNone(refreshed_property.long_lat)
 
     def test_geocode_address_can_handle_addresses_with_reserved_and_unsafe_characters(self):
         with base_vcr.use_cassette('seed/tests/data/vcr_cassettes/geocode_reserved_and_unsafe_characters.yaml'):
@@ -287,3 +320,6 @@ class GeocodeAddresses(TestCase):
         refreshed_properties = PropertyState.objects.filter(pk=property.id)
 
         self.assertEqual('POINT (-104.986138 39.765251)', long_lat_wkt(refreshed_properties[0]))
+
+    def test_geocode_address_can_handle_receiving_no_buildings(self):
+        self.assertIsNone(geocode_addresses(PropertyState.objects.none()))

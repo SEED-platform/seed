@@ -13,21 +13,21 @@ interactions:
         Inc.","imageUrl":"http://api.mqcdn.com/res/mqlogo.gif","imageAltText":"\u00A9
         2019 MapQuest, Inc."},"messages":[]},"options":{"maxResults":-1,"thumbMaps":true,"ignoreLatLngInput":false},"results":[{"providedLocation":{"street":"3001
         Brighton Blvd, suite 2693, Denver, Colorado, 80216"},"locations":[{"street":"3001
-        Brighton Blvd, SUITE 2693","adminArea6":"","adminArea6Type":"Neighborhood","adminArea5":"Denver","adminArea5Type":"City","adminArea4":"Denver","adminArea4Type":"County","adminArea3":"CO","adminArea3Type":"State","adminArea1":"US","adminArea1Type":"Country","postalCode":"80216-5014","geocodeQualityCode":"P1AAA","geocodeQuality":"POINT","dragPoint":false,"sideOfStreet":"L","linkId":"r11913793|p227333290|n14782249","unknownInput":"","type":"s","latLng":{"lat":39.764984,"lng":-104.985765},"displayLatLng":{"lat":39.765251,"lng":-104.986138},"mapUrl":"http://www.mapquestapi.com/staticmap/v5/map?key=key&type=map&size=225,160&locations=39.764984,-104.985765|marker-sm-50318A-1&scalebar=true&zoom=15&rand=-1408045581"}]}]}'}
+        Brighton Blvd, SUITE 2693","adminArea6":"","adminArea6Type":"Neighborhood","adminArea5":"Denver","adminArea5Type":"City","adminArea4":"Denver","adminArea4Type":"County","adminArea3":"CO","adminArea3Type":"State","adminArea1":"US","adminArea1Type":"Country","postalCode":"80216-5014","geocodeQualityCode":"P1AAA","geocodeQuality":"POINT","dragPoint":false,"sideOfStreet":"L","linkId":"r11913793|p227333290|n14782249","unknownInput":"","type":"s","latLng":{"lat":39.764984,"lng":-104.985765},"displayLatLng":{"lat":39.765251,"lng":-104.986138},"mapUrl":"http://www.mapquestapi.com/staticmap/v5/map?key=key&type=map&size=225,160&locations=39.764984,-104.985765|marker-sm-50318A-1&scalebar=true&zoom=15&rand=1277407475"}]}]}'}
     headers:
       Access-Control-Allow-Methods: ['OPTIONS,GET,POST']
       Access-Control-Allow-Origin: ['*']
       Cache-Control: ['no-cache, must-revalidate']
-      Content-Length: ['1132']
+      Content-Length: ['1131']
       Content-Type: [application/json;charset=UTF-8]
-      Date: ['Mon, 07 Jan 2019 02:11:03 GMT']
+      Date: ['Mon, 07 Jan 2019 22:52:04 GMT']
       Expires: ['Mon, 20 Dec 1998 01:00:00 GMT']
       GeocodeTransactionCount: ['1']
-      Last-Modified: ['Mon, 07 Jan 2019 02:11:03 GMT']
+      Last-Modified: ['Mon, 07 Jan 2019 22:52:04 GMT']
       Pragma: [no-cache]
       ReverseGeocodeTransactionCount: ['0']
       Server: [Apache-Coyote/1.1]
-      Set-Cookie: [JSESSIONID=F27A58BA99F0B964EE402643BDFE5A08; Path=/; HttpOnly;
+      Set-Cookie: [JSESSIONID=3DACB4F99D67C31A51D227405F71B7EF; Path=/; HttpOnly;
           Secure]
       Strict-Transport-Security: [max-age=0]
       status: [success]

@@ -5,8 +5,6 @@ import requests
 import json
 import re
 
-from django.conf import settings
-
 from django.contrib.gis.geos import GEOSGeometry
 
 
@@ -39,7 +37,7 @@ def geocode_addresses(buildings):
     """
     from seed.models.properties import PropertyState
 
-    if buildings.model is PropertyState:
+    if buildings and buildings.model is PropertyState:
         pregeocoded = buildings.exclude(longitude__isnull=True, latitude__isnull=True)
         _geocode_by_prepopulated_fields(pregeocoded)
 
@@ -47,8 +45,16 @@ def geocode_addresses(buildings):
     else:
         ungeocoded_buildings = buildings
 
+    if ungeocoded_buildings: # if there are buildings remaining
+        mapquest_api_key = ungeocoded_buildings[0].organization.mapquest_api_key
+    else:
+        return
+
+    if not mapquest_api_key: # don't continue if the mapquest_api_key is ''
+        return
+
     id_addresses = _id_addresses(ungeocoded_buildings)
-    address_geocodings = _address_geocodings(id_addresses)
+    address_geocodings = _address_geocodings(id_addresses, mapquest_api_key)
 
     id_geocodings = _id_geocodings(id_addresses, address_geocodings)
 
@@ -99,7 +105,7 @@ def _full_address(building):
         return None
 
 
-def _address_geocodings(id_addresses):
+def _address_geocodings(id_addresses, mapquest_api_key):
     addresses = list(set(id_addresses.values()))
 
     batched_addresses = _batch_addresses(addresses)
@@ -114,7 +120,7 @@ def _address_geocodings(id_addresses):
             'https://www.mapquestapi.com/geocoding/v1/batch?' +
             '&inFormat=json&outFormat=json&thumbMaps=false&maxResults=1' +
             '&json=' + locations_json +
-            '&key=' + settings.MAPQUEST_API_KEY
+            '&key=' + mapquest_api_key
         )
 
         response = requests.get(request_url)
