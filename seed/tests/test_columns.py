@@ -502,7 +502,7 @@ class TestColumnsByInventory(TestCase):
                 "energy_alerts": "string",
                 "energy_score": "integer",
                 "generation_date": "datetime",
-                "geocoding_confidence": "float",
+                "geocoding_confidence": "string",
                 "gross_floor_area": "float",
                 "home_energy_score_id": "string",
                 "jurisdiction_property_id": "string",
