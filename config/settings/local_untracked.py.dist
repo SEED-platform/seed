@@ -17,7 +17,8 @@ seed local_untracked.py
 """
 import os
 
-# MapQuest API key - A valid key is only needed when refreshing VCR cassettes.
+# MapQuest API key for testing only - A valid key is only needed when refreshing VCR cassettes.
+# Keys for app users are attached to each organization. 
 TESTING_MAPQUEST_API_KEY = os.environ.get('TESTING_MAPQUEST_API_KEY', '<your_key_here>')
 
 # Optional AWS Settings (if using RDS, SES, S3, etc)
