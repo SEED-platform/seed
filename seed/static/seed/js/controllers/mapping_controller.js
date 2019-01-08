@@ -296,7 +296,7 @@ angular.module('BE.seed.controller.mapping', [])
       $scope.suggested_fields_present = function () {
         if (!$scope.mappings) return true;
 
-        var intersections = _.intersectionWith(suggested_property_address_fields, $scope.mappings, function (required_field, raw_col) {
+        var intersections = _.intersectionWith(suggested_address_fields, $scope.mappings, function (required_field, raw_col) {
           return required_field.column_name === raw_col.suggestion_column_name;
         }).length;
 
