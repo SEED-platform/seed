@@ -45,12 +45,14 @@ def geocode_addresses(buildings):
     else:
         ungeocoded_buildings = buildings
 
-    if ungeocoded_buildings: # if there are buildings remaining
-        mapquest_api_key = ungeocoded_buildings[0].organization.mapquest_api_key
-    else:
+    # Don't continue if there are no buildings remaining
+    if not ungeocoded_buildings:
         return
 
-    if not mapquest_api_key: # don't continue if the mapquest_api_key is ''
+    mapquest_api_key = ungeocoded_buildings[0].organization.mapquest_api_key
+
+    # Don't continue if the mapquest_api_key for this org is ''
+    if not mapquest_api_key:
         return
 
     id_addresses = _id_addresses(ungeocoded_buildings)
