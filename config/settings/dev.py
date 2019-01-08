@@ -17,7 +17,7 @@ CSRF_COOKIE_SECURE = False
 # override this in local_untracked.py
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'seed',
         'USER': 'postgres',
         'PASSWORD': 'postgres',

@@ -17,7 +17,7 @@ Quick Installation Instructions
 This section is intended for developers who may already have their machine
 ready for general development. If this is not the case, skip to Prerequisites.
 
-* install Postgres 9.4 and redis for cache and message broker
+* install Postgres 11.1 and redis for cache and message broker
 * install PostGIS 2.5 and enable it on the database using `CREATE EXTENSION postgis;`
 * use a virtualenv (if desired)
 * `git clone git@github.com:seed-platform/seed.git`
@@ -48,7 +48,6 @@ These instructions assume you have MacPorts_ or Homebrew_. Your system
 should have the following dependencies already installed:
 
 * git (`port install git` or `brew install git`)
-* Mercurial (`port install hg` or `brew install mercurial`)
 * graphviz (`brew install graphviz`)
 * virtualenv_ and virtualenvwrapper_ (Recommended)
 
@@ -69,9 +68,9 @@ should have the following dependencies already installed:
 
     .. code-block:: bash
 
-        mkvirtualenv --python=python2.7 seed
+        mkvirtualenv --python=python3.6 seed
 
-PostgreSQL 9.4
+PostgreSQL 11.1
 --------------
 
 MacPorts::
@@ -108,7 +107,8 @@ Homebrew::
 
 
 Configure PostgreSQL. Replace 'seeddb', 'seeduser' with desired db/user. By
-default use password `seedpass` when prompted
+default use password `seedpass` when prompted. Use the code block below in development only since
+the seeduser is a SUPERUSER.
 
 .. code-block:: bash
 
@@ -116,8 +116,8 @@ default use password `seedpass` when prompted
     createdb `whoami`
     psql -c 'CREATE DATABASE "seeddb" WITH OWNER = "seeduser";'
     psql -c 'GRANT ALL PRIVILEGES ON DATABASE "seeddb" TO seeduser;'
-    psql -c 'ALTER USER seeduser CREATEDB;'
-    psql -c 'ALTER USER seeduser CREATEROLE;'
+    psql -c 'ALTER ROLE seeduser SUPERUSER;
+
 
 
 PostGIS 2.5
@@ -144,6 +144,8 @@ Configure PostGIS::
     # psql -c 'ALTER USER seeduser CREATEDB;'
 
 
+If upgrading from an existing database or existing local_untracked.py file, make sure to add the
+MapQuest API Key and set the database engine to 'ENGINE': 'django.contrib.gis.db.backends.postgis'.
 
 Now exit any root environments, becoming just yourself (even though it's not
 that easy being green), for the remainder of these instructions.
@@ -161,7 +163,7 @@ to seed.
 
     workon seed
 
-Make sure PostgreSQL command line scripts are in your PATH (if using port)
+Make sure PostgreSQL command line scripts are in your PATH (if using MacPorts)
 
 .. code-block:: bash
 
@@ -268,7 +270,7 @@ You need a Django admin (super) user.
 
 .. code-block:: bash
 
-    ./manage.py create_default_user --username=admin@my.org --organization=lbnl --password=badpass
+    ./manage.py create_default_user --username=admin@my.org --organization=seedorg --password=badpass
 
 Of course, you need to save this user/password somewhere, since this is what
 you will use to login to the SEED website.

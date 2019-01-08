@@ -30,7 +30,7 @@ ALLOWED_HOSTS = ['*']
 # PostgreSQL DB config - override in local_untracked if needed
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'seed',
         'USER': 'your-username',
         'PASSWORD': 'your-password',

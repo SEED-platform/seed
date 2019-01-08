@@ -113,11 +113,15 @@ class StateFieldsTest(TestCase):
 
     def test_taxlot_state(self):
         expected = (
-            ('address_line_1', 'address_line_1'), ('address_line_2', 'address_line_2'),
-            ('block_number', 'block_number'), ('city', 'city'),
+            ('address_line_1', 'address_line_1'),
+            ('address_line_2', 'address_line_2'),
+            ('block_number', 'block_number'),
+            ('city', 'city'),
             ('custom_id_1', 'custom_id_1'),
-            ('district', 'district'), ('jurisdiction_tax_lot_id', 'jurisdiction_tax_lot_id'),
-            ('number_properties', 'number_properties'), ('postal_code', 'postal_code'),
+            ('district', 'district'),
+            ('jurisdiction_tax_lot_id', 'jurisdiction_tax_lot_id'),
+            ('number_properties', 'number_properties'),
+            ('postal_code', 'postal_code'),
             ('state', 'state'))
         result = get_state_to_state_tuple('TaxLotState')
         self.assertSequenceEqual(expected, result)
