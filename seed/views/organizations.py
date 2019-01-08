@@ -84,6 +84,7 @@ def _dict_org(request, organizations):
             'display_significant_figures': o.display_significant_figures,
             'cycles': cycles,
             'created': o.created.strftime('%Y-%m-%d') if o.created else '',
+            'mapquest_api_key': o.mapquest_api_key
         }
         orgs.append(org)
 
@@ -622,6 +623,10 @@ class OrganizationViewSet(viewsets.ViewSet):
         elif desired_display_significant_figures is not None:
             _log.warn("got bad sig figs {0} for org {1}".format(
                 desired_display_significant_figures, org.name))
+
+        # Update MapQuest API Key if it's been changed
+        if posted_org.get('mapquest_api_key') != org.mapquest_api_key:
+            org.mapquest_api_key = posted_org.get('mapquest_api_key')
 
         org.save()
 
