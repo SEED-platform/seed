@@ -51,8 +51,6 @@ Configure PostgreSQL
 .. note:: Any database name and username can be used here in place of "seed-deploy" and DBUsername
 
 
-
-
 Python Dependencies
 ^^^^^^^^^^^^^^^^^^^
 

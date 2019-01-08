@@ -22,7 +22,7 @@ DEBUG = True
 # postgres DB config
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'seeddb',
         'USER': 'postgres',
         'PASSWORD': 'postgres',
