@@ -6,6 +6,8 @@ angular.module('BE.seed.controller.inventory_map', [])
   .controller('inventory_map_controller', [
     '$scope',
     '$stateParams',
+    '$state',
+    'cycles',
     'inventory',
     'inventory_service',
     'labels',
@@ -13,6 +15,8 @@ angular.module('BE.seed.controller.inventory_map', [])
     'spinner_utility',
     function ($scope,
               $stateParams,
+              $state,
+              cycles,
               inventory,
               inventory_service,
               labels,
@@ -30,6 +34,7 @@ angular.module('BE.seed.controller.inventory_map', [])
         return !building.long_lat
       });
 
+      // Map
       var base_layer = new ol.layer.Tile({
         source: new ol.source.Stamen({
           layer: 'terrain'
@@ -302,4 +307,25 @@ angular.module('BE.seed.controller.inventory_map', [])
 
       $scope.$watchCollection('selected_labels', filterUsingLabels);
 
+      // Cycles
+      $scope.cycle = {
+        selected_cycle: _.find(cycles.cycles, {id: inventory.cycle_id}),
+        cycles: cycles.cycles
+      };
+
+      var refreshUsingCycle = function() {
+        if ($scope.inventory_type === 'properties') {
+          $scope.data = inventory_service.get_properties(1, undefined, $scope.cycle.selected_cycle, undefined).results;
+          $state.reload();
+        } else if ($scope.inventory_type === 'taxlots') {
+          $scope.data = inventory_service.get_taxlots(1, undefined, $scope.cycle.selected_cycle, undefined).results;
+          $state.reload();
+        }
+      };
+
+      $scope.update_cycle = function (cycle) {
+        inventory_service.save_last_cycle(cycle.id);
+        $scope.cycle.selected_cycle = cycle;
+        refreshUsingCycle();
+      };
     }]);
