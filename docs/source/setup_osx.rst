@@ -22,7 +22,7 @@ ready for general development. If this is not the case, skip to Prerequisites.
 * use a virtualenv (if desired)
 * `git clone git@github.com:seed-platform/seed.git`
 * create a `local_untracked.py` in the `config/settings` folder and add CACHE and DB config (example `local_untracked.py.dist`)
-* get MapQuest API key and save it as an ENV VAR or save it to your `local_untracked.py`
+* to enable geocoding, get MapQuest API key and attach it to your organization
 * `export DJANGO_SETTINGS_MODULE=config.settings.dev`
 * `pip install -r requirements/local.txt`
 * `./manage.py migrate`
@@ -248,12 +248,7 @@ Register for a MapQuest API key:
 Visit the Manage Keys page:
 `<https://developer.mapquest.com/user/me/apps>`_
 Either create a new key or use the key initially provided.
-Copy the "Consumer Key" into `local_untracked.py` or save it as an environment variable.
-
-.. code-block:: python
-
-    # MapQuestAPI key
-    MAPQUEST_API_KEY = os.environ.get('MAPQUEST_API_KEY', '<your_key_here>')
+Copy the "Consumer Key" into the target organizations MapQuest API Key field under the organization's settings page or directly within the DB.
 
 Run Django Migrations
 ---------------------
