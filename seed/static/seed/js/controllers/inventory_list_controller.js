@@ -12,6 +12,7 @@ angular.module('BE.seed.controller.inventory_list', [])
     'inventory_service',
     'label_service',
     'data_quality_service',
+    'geocode_service',
     'user_service',
     'inventory',
     'cycles',
@@ -32,6 +33,7 @@ angular.module('BE.seed.controller.inventory_list', [])
               inventory_service,
               label_service,
               data_quality_service,
+              geocode_service,
               user_service,
               inventory,
               cycles,
@@ -366,6 +368,24 @@ angular.module('BE.seed.controller.inventory_list', [])
           });
         });
       };
+
+      $scope.run_geocode = function() {
+        spinner_utility.show();
+
+        var property_state_ids = _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
+          if ($scope.inventory_type === 'properties') return row.$$treeLevel === 0;
+          return !_.has(row, '$$treeLevel');
+        }), 'property_state_id');
+
+        var taxlot_state_ids = _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
+          if ($scope.inventory_type === 'taxlots') return row.$$treeLevel === 0;
+          return !_.has(row, '$$treeLevel');
+        }), 'taxlot_state_id');
+
+        geocode_service.geocode_by_ids(property_state_ids, taxlot_state_ids);
+
+        spinner_utility.hide();
+      }
 
       $scope.cycle = {
         selected_cycle: _.find(cycles.cycles, {id: inventory.cycle_id}),

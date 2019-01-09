@@ -29,6 +29,7 @@ from seed.views.column_list_settings import ColumnListingViewSet
 from seed.views.cycles import CycleViewSet
 from seed.views.data_quality import DataQualityViews
 from seed.views.datasets import DatasetViewSet
+from seed.views.geocode import GeocodeViews
 from seed.views.labels import LabelViewSet, UpdateInventoryLabelsAPIView
 from seed.views.main import version
 from seed.views.measures import MeasureViewSet
@@ -51,6 +52,7 @@ api_v2_router.register(r'data_quality_checks', DataQualityViews, base_name='data
 api_v2_router.register(r'datasets', DatasetViewSet, base_name="datasets")
 api_v2_router.register(r'import_files', ImportFileViewSet, base_name="import_files")
 api_v2_router.register(r'gbr_properties', GBRPropertyViewSet, base_name="properties")
+api_v2_router.register(r'geocode', GeocodeViews, base_name="geocode")
 api_v2_router.register(r'green_assessment_urls', GreenAssessmentURLViewSet, base_name="green_assessment_urls")
 api_v2_router.register(r'green_assessment_properties', GreenAssessmentPropertyViewSet,
                        base_name="green_assessment_properties")

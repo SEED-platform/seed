@@ -109,6 +109,7 @@ angular.module('BE.seed.services', [
   'BE.seed.service.cycle',
   'BE.seed.service.dataset',
   'BE.seed.service.flippers',
+  'BE.seed.service.geocode',
   'BE.seed.service.httpParamSerializerSeed',
   'BE.seed.service.inventory',
   'BE.seed.service.inventory_reports',
