@@ -9,7 +9,8 @@ All rights reserved.  # NOQA
 """
 import json
 import os
-from unittest import skipIf
+import requests
+from unittest import skip, skipIf
 
 from django.core.urlresolvers import reverse_lazy
 from django.test import TestCase
@@ -17,6 +18,24 @@ from django.test import TestCase
 from seed.landing.models import SEEDUser as User
 from seed.utils.organizations import create_organization
 from seed.views.portfoliomanager import PortfolioManagerImport
+
+
+PM_UN = 'SEED_PM_UN'
+PM_PW = 'SEED_PM_PW'
+pm_skip_test_check = skipIf(
+    not os.environ.get(PM_UN, False) and not os.environ.get(PM_PW, False),
+    'Cannot run "expect-pass" PM unit tests without %s and %s in environment' % (PM_UN, PM_PW)
+)
+
+# override this decorator for more pressing conditions
+pm_avail_check = requests.get('https://isthewallbuilt.us/api')
+string_response = pm_avail_check.content.decode("utf-8").strip()
+if string_response == 'yes':
+    government_going = True
+else:
+    government_going = False
+if not government_going:
+    pm_skip_test_check = skip('Government shutdown has forced ESPM to shut down temporarily, test cannot run')
 
 
 class PortfolioManagerImportTest(TestCase):
@@ -86,6 +105,7 @@ class PortfolioManagerTemplateListViewTestsFailure(TestCase):
         self.assertEqual('error', data['status'])
         self.assertIn('missing password', data['message'])
 
+    @pm_skip_test_check
     def test_template_list_invalid_credentials(self):
         resp = self.client.post(
             reverse_lazy('api:v2.1:portfolio_manager-template-list'),
@@ -101,14 +121,6 @@ class PortfolioManagerTemplateListViewTestsFailure(TestCase):
         self.assertIn('message', data)
         self.assertEqual('error', data['status'])
         self.assertIn('Check credentials.', data['message'])
-
-
-PM_UN = 'SEED_PM_UN'
-PM_PW = 'SEED_PM_PW'
-pm_skip_test_check = skipIf(
-    not os.environ.get(PM_UN, False) and not os.environ.get(PM_PW, False),
-    'Cannot run "expect-pass" PM unit tests without %s and %s in environment' % (PM_UN, PM_PW)
-)
 
 
 class PortfolioManagerTemplateListViewTestsSuccess(TestCase):
@@ -231,6 +243,7 @@ class PortfolioManagerReportGenerationViewTestsFailure(TestCase):
         self.assertEqual('error', data['status'])
         self.assertIn('missing template', data['message'])
 
+    @pm_skip_test_check
     def test_report_invalid_credentials(self):
         resp = self.client.post(
             reverse_lazy('api:v2.1:portfolio_manager-report'),
