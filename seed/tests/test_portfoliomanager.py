@@ -28,14 +28,17 @@ pm_skip_test_check = skipIf(
 )
 
 # override this decorator for more pressing conditions
-pm_avail_check = requests.get('https://isthewallbuilt.us/api')
-string_response = pm_avail_check.content.decode("utf-8").strip()
-if string_response == 'yes':
-    government_going = True
-else:
-    government_going = False
-if not government_going:
-    pm_skip_test_check = skip('Government shutdown has forced ESPM to shut down temporarily, test cannot run')
+try:
+    pm_avail_check = requests.get('http://isthewallbuilt.us/api', timeout=5)
+    string_response = pm_avail_check.content.decode("utf-8").strip()
+    if string_response == 'yes':
+        skip_due_to_espm_down = True
+    else:
+        skip_due_to_espm_down = False
+    if skip_due_to_espm_down:
+        pm_skip_test_check = skip('ESPM is likely down temporarily, ESPM tests will not run')
+except Exception:
+    pass
 
 
 class PortfolioManagerImportTest(TestCase):
