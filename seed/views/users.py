@@ -555,7 +555,7 @@ class UserViewSet(viewsets.ViewSet):
         """returns all actions"""
         return {
             'status': 'success',
-            'actions': PERMS.keys(),
+            'actions': list(PERMS.keys()),
         }
 
     @ajax_request_class

@@ -7,6 +7,7 @@
 from collections import defaultdict
 
 import dateutil
+from past.builtins import basestring
 from rest_framework import status
 from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
@@ -16,12 +17,12 @@ from rest_framework.viewsets import ViewSet
 from seed.decorators import (
     DecoratorMixin,
 )
+from seed.lib.superperms.orgs.models import (
+    Organization
+)
 from seed.models import (
     Cycle,
     PropertyView
-)
-from seed.lib.superperms.orgs.models import (
-    Organization
 )
 from seed.serializers.pint import (
     apply_display_unit_preferences,
@@ -42,13 +43,13 @@ class Report(DecoratorMixin(drf_api_endpoint), ViewSet):
         try:
             start = int(start)
             end = int(end)
-        except ValueError as error:
+        except ValueError as error:  # noqa
             # assume string is JS date
             if isinstance(start, basestring):
                 start_datetime = dateutil.parser.parse(start)
                 end_datetime = dateutil.parser.parse(end)
             else:
-                raise error
+                raise Exception('Date is not a string')
         # get date times from cycles
         if isinstance(start, int):
             cycle = Cycle.objects.get(pk=start, organization_id=organization_id)
@@ -124,19 +125,10 @@ class Report(DecoratorMixin(drf_api_endpoint), ViewSet):
         params = {}
         missing_params = []
         error = ''
-        valid_values = [
-            'site_eui', 'source_eui', 'site_eui_weather_normalized',
-            'source_eui_weather_normalized', 'energy_score',
-            'gross_floor_area', 'use_description', 'year_built'
-        ]
         for param in ['x_var', 'y_var', 'organization_id', 'start', 'end']:
             val = request.query_params.get(param, None)
             if not val:
                 missing_params.append(param)
-            elif param in ['x_var', 'y_var'] and val not in valid_values:
-                error = "{} {} is not a valid value for {}.".format(
-                    error, val, param
-                )
             else:
                 params[param] = val
         if missing_params:
@@ -152,34 +144,24 @@ class Report(DecoratorMixin(drf_api_endpoint), ViewSet):
                 params['organization_id'], cycles,
                 params['x_var'], params['y_var'], campus_only
             )
-            empty = True
             for datum in data:
                 if datum['property_counts']['num_properties_w-data'] != 0:
-                    empty = False
                     break
-            if empty:
-                result = {'status': 'error', 'message': 'No data found'}
-                status_code = status.HTTP_404_NOT_FOUND
-            else:
-                property_counts = []
-                chart_data = []
-                for datum in data:
-                    property_counts.append(datum['property_counts'])
-                    chart_data.extend(datum['chart_data'])
-                data = {
-                    'property_counts': property_counts,
-                    'chart_data': chart_data,
-                }
-                result = {'status': 'success', 'data': data}
-                status_code = status.HTTP_200_OK
+            property_counts = []
+            chart_data = []
+            for datum in data:
+                property_counts.append(datum['property_counts'])
+                chart_data.extend(datum['chart_data'])
+            data = {
+                'property_counts': property_counts,
+                'chart_data': chart_data,
+            }
+            result = {'status': 'success', 'data': data}
+            status_code = status.HTTP_200_OK
         return Response(result, status=status_code)
 
     def get_aggregated_property_report_data(self, request):
         campus_only = request.query_params.get('campus_only', False)
-        valid_x_values = [
-            'site_eui', 'source_eui', 'site_eui_weather_normalized',
-            'source_eui_weather_normalized', 'energy_score',
-        ]
         valid_y_values = ['gross_floor_area', 'use_description', 'year_built']
         params = {}
         missing_params = []
@@ -189,10 +171,6 @@ class Report(DecoratorMixin(drf_api_endpoint), ViewSet):
             val = request.query_params.get(param, None)
             if not val:
                 missing_params.append(param)
-            elif param == 'x_var' and val not in valid_x_values:
-                error = "{} {} is not a valid value for {}.".format(
-                    error, val, param
-                )
             elif param == 'y_var' and val not in valid_y_values:
                 error = "{} {} is not a valid value for {}.".format(
                     error, val, param
@@ -300,7 +278,7 @@ class Report(DecoratorMixin(drf_api_endpoint), ViewSet):
             900000: '900-999k',
             1000000: 'over 1,000k',
         }
-        max_bin = max(y_display_map.keys())
+        max_bin = max(y_display_map)
 
         # Group buildings in this year_ending group into ranges
         grouped_ranges = defaultdict(list)

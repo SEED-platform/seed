@@ -84,12 +84,12 @@ class TestViewsMatching(DataMappingBaseTestCase):
     #
     #     property_states = PropertyState.objects.filter(id__in=state_ids)
     #     # Check that the use descriptions have been updated to the new ones
-    #     # expected = [u'Bar', u'Building', u'Club', u'Coffee House',
-    #     #             u'Daycare', u'Diversity Building', u'House', u'Multifamily Housing',
-    #     #             u'Multistorys', u'Pizza House', u'Residence', u'Residence', u'Residence',
-    #     #             u'Swimming Pool']
+    #     # expected = ['Bar', 'Building', 'Club', 'Coffee House',
+    #     #             'Daycare', 'Diversity Building', 'House', 'Multifamily Housing',
+    #     #             'Multistorys', 'Pizza House', 'Residence', 'Residence', 'Residence',
+    #     #             'Swimming Pool']
     #
-    #     # print sorted([p.use_description for p in property_states])
+    #     # print(sorted([p.use_description for p in property_states]))
     #     results = sorted([p.use_description for p in property_states])
     #     self.assertTrue('Bar' in results)
     #     self.assertTrue('Building' in results)
@@ -175,9 +175,9 @@ class TestViewsMatching(DataMappingBaseTestCase):
     #
     #     coparents = vs.has_coparent(property_state.id, 'properties', fields)
     #     expected = {
-    #         'lot_number': u'11160509',
+    #         'lot_number': '11160509',
     #         'gross_floor_area': 23543.0,
-    #         'owner_telephone': u'213-546-9755',
+    #         'owner_telephone': '213-546-9755',
     #         'energy_score': 63,
     #         'use_description': 'Retail',
     #     }

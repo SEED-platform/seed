@@ -95,7 +95,7 @@ class BuildingFile(models.Model):
         Parser = self.BUILDING_FILE_PARSERS.get(self.file_type, None)
         if not Parser:
             acceptable_file_types = ', '.join(
-                map(dict(self.BUILDING_FILE_TYPES).get, self.BUILDING_FILE_PARSERS.keys())
+                map(dict(self.BUILDING_FILE_TYPES).get, list(self.BUILDING_FILE_PARSERS.keys()))
             )
             return False, None, None, "File format was not one of: {}".format(acceptable_file_types)
 
@@ -189,8 +189,8 @@ class BuildingFile(models.Model):
         for s in data.get('scenarios', []):
             # measures = models.ManyToManyField(PropertyMeasure)
 
-            # {'reference_case': u'Baseline', 'annual_savings_site_energy': None,
-            #  'measures': [], 'id': u'Baseline', 'name': u'Baseline'}
+            # {'reference_case': 'Baseline', 'annual_savings_site_energy': None,
+            #  'measures': [], 'id': 'Baseline', 'name': 'Baseline'}
 
             scenario, _ = Scenario.objects.get_or_create(
                 name=s.get('name'),
@@ -218,8 +218,8 @@ class BuildingFile(models.Model):
                 if len(ref_case) == 1:
                     scenario.reference_case = ref_case.first()
 
-            # set the list of measures
-            for measure_name in s['measures']:
+            # set the list of measures. Note that this can be empty (e.g. baseline has no measures)
+            for measure_name in s.get('measures', []):
                 # find the join measure in the database
                 measure = None
                 try:

@@ -50,7 +50,7 @@ def chunk_iterable(iterlist, chunk_size):
     returning a generator of the chunk.
     """
     assert hasattr(iterlist, "__iter__"), "iter is not an iterable"
-    for i in xrange(0, len(iterlist), chunk_size):
+    for i in range(0, len(iterlist), chunk_size):
         yield iterlist[i:i + chunk_size]
 
 

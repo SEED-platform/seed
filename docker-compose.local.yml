@@ -1,0 +1,85 @@
+# Docker Compose for deployment using a local registry.
+# Must set the following environment variables
+#   POSTGRES_USER
+#   POSTGRES_PASSWORD
+#   SEED_ADMIN_USER
+#   SEED_ADMIN_PASSWORD
+#   SEED_ADMIN_ORG
+#   SECRET_KEY
+
+version: '3'
+services:
+  db-postgres:
+    image: 127.0.0.1:5000/postgres
+    environment:
+      - POSTGRES_DB=seed
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+    volumes:
+      - seed_pgdata:/var/lib/postgresql/data
+      - $HOME/seed-backups:/backups
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+  db-redis:
+    image: 127.0.0.1:5000/redis
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+  web:
+    image: 127.0.0.1:5000/seed
+    environment:
+      - POSTGRES_DB=seed
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - SEED_ADMIN_USER
+      - SEED_ADMIN_PASSWORD
+      - SEED_ADMIN_ORG
+      - SECRET_KEY
+      - DJANGO_SETTINGS_MODULE=config.settings.docker
+    depends_on:
+      - db-redis
+      - db-postgres
+    volumes:
+      - seed_media:/seed/media
+    ports:
+      - "80:80"
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+  web-celery:
+    image: 127.0.0.1:5000/seed
+    environment:
+      - POSTGRES_DB=seed
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - SECRET_KEY
+      - DJANGO_SETTINGS_MODULE=config.settings.docker
+      - NUMBER_OF_WORKERS
+    depends_on:
+      - db-redis
+      - db-postgres
+      - web
+    volumes:
+      - seed_media:/seed/media
+    command: /seed/docker/start_celery_docker.sh
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+volumes:
+  seed_pgdata:
+    external: true
+  seed_media:
+    external: true

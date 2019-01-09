@@ -4,19 +4,20 @@
 :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+from __future__ import absolute_import
 from __future__ import unicode_literals
 
 import logging
 import re
 from os import path
 
+from .auditlog import AUDIT_IMPORT
+from .auditlog import DATA_UPDATE_TYPE
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from auditlog import AUDIT_IMPORT
-from auditlog import DATA_UPDATE_TYPE
 from seed.data_importer.models import ImportFile
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
@@ -46,8 +47,8 @@ class TaxLot(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
-    def __unicode__(self):
-        return u'TaxLot - %s' % self.pk
+    def __str__(self):
+        return 'TaxLot - %s' % self.pk
 
 
 class TaxLotState(models.Model):
@@ -87,8 +88,8 @@ class TaxLotState(models.Model):
             ['import_file', 'data_state', 'merge_state']
         ]
 
-    def __unicode__(self):
-        return u'TaxLot State - %s' % self.pk
+    def __str__(self):
+        return 'TaxLot State - %s' % self.pk
 
     def promote(self, cycle):
         """
@@ -146,7 +147,7 @@ class TaxLotState(models.Model):
         if fields:
             model_fields, ed_fields = split_model_fields(self, fields)
             extra_data = self.extra_data
-            ed_fields = filter(lambda f: f in extra_data, ed_fields)
+            ed_fields = list(filter(lambda f: f in extra_data, ed_fields))
 
             result = {
                 field: getattr(self, field) for field in model_fields
@@ -155,24 +156,12 @@ class TaxLotState(models.Model):
                 field: extra_data[field] for field in ed_fields
             }
 
-            # always return id's and canonical_building id's
+            # always return id's
             result['id'] = result['pk'] = self.pk
-
-            # should probably also return children, parents, and coparent
-            # result['children'] = map(lambda c: c.id, self.children.all())
-            # result['parents'] = map(lambda p: p.id, self.parents.all())
-            # result['co_parent'] = (self.co_parent and self.co_parent.pk)
-            # result['coparent'] = (self.co_parent and {
-            #     field: self.co_parent.pk for field in ['pk', 'id']
-            #     })
 
             return result
 
         d = obj_to_dict(self, include_m2m=include_related_data)
-
-        # if include_related_data:
-        # d['parents'] = list(self.parents.values_list('id', flat=True))
-        # d['co_parent'] = self.co_parent.pk if self.co_parent else None
 
         return d
 
@@ -247,8 +236,7 @@ class TaxLotState(models.Model):
 
                 while not done_searching:
                     # if there is no parents, then break out immediately
-                    if (
-                            log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
+                    if (log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
                         break
 
                     # initalize the tree to None everytime. If not new tree is found, then we will not iterate
@@ -260,8 +248,7 @@ class TaxLotState(models.Model):
                         if log.parent2.name in ['Import Creation', 'Manual Edit']:
                             record = record_dict(log.parent2)
                             history.append(record)
-                        elif log.parent2.name == 'System Match' and log.parent2.parent1.name == 'Import Creation' and \
-                                log.parent2.parent2.name == 'Import Creation':
+                        elif log.parent2.name == 'System Match' and log.parent2.parent1.name == 'Import Creation' and log.parent2.parent2.name == 'Import Creation':
                             # Handle case where an import file matches within itself, and proceeds to match with
                             # existing records
                             record = record_dict(log.parent2.parent2)
@@ -275,8 +262,7 @@ class TaxLotState(models.Model):
                         if log.parent1.name in ['Import Creation', 'Manual Edit']:
                             record = record_dict(log.parent1)
                             history.append(record)
-                        elif log.parent1.name == 'System Match' and log.parent1.parent1.name == 'Import Creation' and \
-                                log.parent1.parent2.name == 'Import Creation':
+                        elif log.parent1.name == 'System Match' and log.parent1.parent1.name == 'Import Creation' and log.parent1.parent2.name == 'Import Creation':
                             # Handle case where an import file matches within itself, and proceeds to match with
                             # existing records
                             record = record_dict(log.parent1.parent2)
@@ -377,8 +363,8 @@ class TaxLotView(models.Model):
 
     # labels = models.ManyToManyField(StatusLabel)
 
-    def __unicode__(self):
-        return u'TaxLot View - %s' % self.pk
+    def __str__(self):
+        return 'TaxLot View - %s' % self.pk
 
     class Meta:
         unique_together = ('taxlot', 'cycle',)
@@ -407,9 +393,7 @@ class TaxLotView(models.Model):
         # forwent the use of list comprehension to make the code more readable.
         # get the related property_view__state as well to save time, if needed.
         result = []
-        for tlp in TaxLotProperty.objects.filter(
-                cycle=self.cycle,
-                taxlot_view=self).select_related('property_view', 'property_view__state'):
+        for tlp in TaxLotProperty.objects.filter(cycle=self.cycle, taxlot_view=self).select_related('property_view', 'property_view__state'):
             if tlp.taxlot_view:
                 result.append(tlp.property_view)
 

@@ -16,7 +16,7 @@ def robots_txt(request, allow=False):
             return HttpResponse(
                 "User-agent: *\nAllow: /", content_type="text/plain"
             )
-    except:
+    except BaseException:
         pass
     if allow:
         return HttpResponse("User-agent: *\nAllow: /", content_type="text/plain")

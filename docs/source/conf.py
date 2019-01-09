@@ -61,9 +61,9 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'SEED Platform'
-copyright = u'2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory'
-author = u'The Regents of the University of California, through Lawrence Berkeley National Laboratory'
+project = 'SEED Platform'
+copyright = '2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory'
+author = 'The Regents of the University of California, through Lawrence Berkeley National Laboratory'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -224,23 +224,23 @@ htmlhelp_basename = 'SEED-Platform-documentation'
 
 latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
-    #'papersize': 'letterpaper',
+    # 'papersize': 'letterpaper',
 
     # The font size ('10pt', '11pt' or '12pt').
-    #'pointsize': '10pt',
+    # 'pointsize': '10pt',
 
     # Additional stuff for the LaTeX preamble.
-    #'preamble': '',
+    # 'preamble': '',
 
     # Latex figure (float) alignment
-    #'figure_align': 'htbp',
+    # 'figure_align': 'htbp',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'SEEDPlatform.tex', u'SEED Platform Documentation',
+    (master_doc, 'SEEDPlatform.tex', 'SEED Platform Documentation',
      author, 'manual'),
 ]
 
@@ -270,7 +270,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'seedplatform', u'SEED Platform Documentation',
+    (master_doc, 'seedplatform', 'SEED Platform Documentation',
      [author], 1)
 ]
 
@@ -284,7 +284,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'SEEDPlatform', u'SEED Platform Documentation',
+    (master_doc, 'SEEDPlatform', 'SEED Platform Documentation',
      author, 'SEEDPlatform', 'One line description of project.',
      'Miscellaneous'),
 ]

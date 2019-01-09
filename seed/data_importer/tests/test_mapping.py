@@ -51,7 +51,7 @@ class TestMapping(DataMappingBaseTestCase):
         # Create mappings from the new states
         # TODO #239: Convert this to a single helper method to suggest and save
         suggested_mappings = mapper.build_column_mapping(
-            state.extra_data.keys(),
+            list(state.extra_data.keys()),
             Column.retrieve_all_by_tuple(self.org),
             previous_mapping=get_column_mapping,
             map_args=[self.org],
@@ -61,7 +61,7 @@ class TestMapping(DataMappingBaseTestCase):
         # Convert mapping suggests to the format needed for saving
         mappings = []
         for raw_column, suggestion in suggested_mappings.items():
-            # Single suggestion looks like:'lot_number': [u'PropertyState', u'lot_number', 100]
+            # Single suggestion looks like:'lot_number': ['PropertyState', 'lot_number', 100]
             mapping = {
                 "from_field": raw_column,
                 "from_units": None,
@@ -72,7 +72,7 @@ class TestMapping(DataMappingBaseTestCase):
             mappings.append(mapping)
 
         # Now save the mappings
-        # print mappings
+        # print(mappings)
         Column.create_mappings(mappings, self.org, self.user, self.import_file.id)
         # END TODO
 

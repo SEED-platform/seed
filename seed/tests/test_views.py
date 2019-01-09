@@ -19,7 +19,6 @@ from seed.lib.superperms.orgs.models import OrganizationUser
 from seed.models import (
     Column,
     ColumnMapping,
-    FLOAT,
     PropertyView,
     StatusLabel,
     TaxLot,
@@ -196,95 +195,17 @@ class ImportFileViewsTests(TestCase):
         self.assertEqual('success', json.loads(response.content)['status'])
 
 
-# @skip('Fix for new data model')
-# class ReportViewsTests(TestCase):
-#
-#     def setUp(self):
-#         user_details = {
-#             'username': 'test_user@demo.com',
-#             'password': 'test_pass',
-#             'email': 'test_user@demo.com'
-#         }
-#         self.user = User.objects.create_superuser(**user_details)
-#         self.org, _, _ = create_organization(self.user)
-#
-#         self.import_record = ImportRecord.objects.create(owner=self.user)
-#         self.import_record.super_organization = self.org
-#         self.import_record.save()
-#         self.import_file = ImportFile.objects.create(
-#             import_record=self.import_record,
-#             cached_first_row='Name|#*#|Address'
-#         )
-#
-#         BuildingSnapshot.objects.create(super_organization=self.org,
-#                                         import_file=self.import_file)
-#
-#         self.client.login(**user_details)
-#
-#     def test_get_building_summary_report_data(self):
-#         params = {
-#             'start_date': (datetime.now() - timedelta(days=30)).strftime(
-#                 '%Y-%m-%d'),
-#             'end_date': datetime.now().strftime('%Y-%m-%d'),
-#             'organization_id': self.org.pk
-#         }
-#
-#         response = self.client.get(
-#             reverse('seed:get_building_summary_report_data'), params)
-#         self.assertEqual('success', json.loads(response.content)['status'])
-#
-#     # TODO replace with test for inventory report
-#     @skip('Fix for new data model')
-#     def test_get_building_report_data(self):
-#         params = {
-#             'start_date': (datetime.now() - timedelta(days=30)).strftime(
-#                 '%Y-%m-%d'),
-#             'end_date': datetime.now().strftime('%Y-%m-%d'),
-#             'x_var': 'use_description',
-#             'y_var': 'year_built',
-#             'organization_id': self.org.pk
-#         }
-#
-#         response = self.client.get(reverse('seed:get_building_report_data'),
-#                                    params)
-#         self.assertEqual('success', json.loads(response.content)['status'])
-#
-#     @skip('Fix for new data model')
-#     def test_get_inventory_report_data(self):
-#         pass  # TODO
-#
-#     # TODO replace with test for inventory report
-#     @skip('Fix for new data model')
-#     def test_get_aggregated_building_report_data(self):
-#         params = {
-#             'start_date': (datetime.now() - timedelta(days=30)).strftime(
-#                 '%Y-%m-%d'),
-#             'end_date': datetime.now().strftime('%Y-%m-%d'),
-#             'x_var': 'energy_score',
-#             'y_var': 'year_built',
-#             'organization_id': self.org.pk
-#         }
-#
-#         response = self.client.get(
-#             reverse('seed:get_aggregated_building_report_data'), params)
-#         self.assertEqual('success', json.loads(response.content)['status'])
-#
-#     @skip('Fix for new data model')
-#     def test_get_aggregated_inventory_report_data(self):
-#         pass  # TODO
-
-
 class TestMCMViews(TestCase):
     expected_mappings = {
-        u'address': [u'owner_address', 70],
-        u'building id': [u'Building air leakage', 64],
-        u'name': [u'Name of Audit Certification Holder', 47],
-        u'year built': [u'year_built', 50]
+        'address': ['owner_address', 70],
+        'building id': ['Building air leakage', 64],
+        'name': ['Name of Audit Certification Holder', 47],
+        'year built': ['year_built', 50]
     }
 
     raw_columns_expected = {
-        u'status': u'success',
-        u'raw_columns': [u'name', u'address', u'year built', u'building id']
+        'status': 'success',
+        'raw_columns': ['name', 'address', 'year built', 'building id']
     }
 
     def assert_expected_mappings(self, actual, expected):
@@ -323,7 +244,7 @@ class TestMCMViews(TestCase):
         self.import_file = ImportFile.objects.create(
             import_record=self.import_record,
             cached_first_row=ROW_DELIMITER.join(
-                [u'name', u'address', u'year built', u'building id']
+                ['name', 'address', 'year built', 'building id']
             )
         )
 
@@ -388,7 +309,7 @@ class TestMCMViews(TestCase):
 
         # create a National Median Site Energy use
         float_unit = Unit.objects.create(unit_name='test energy use intensity',
-                                         unit_type=FLOAT)
+                                         unit_type=Unit.FLOAT)
         Column.objects.create(
             organization=self.org,
             table_name='PropertyState',
@@ -431,7 +352,7 @@ class TestMCMViews(TestCase):
         eu_col = energy_use_columns.first()
         self.assertTrue(eu_col.unit is not None)
         self.assertEqual(eu_col.unit.unit_name, 'test energy use intensity')
-        self.assertEqual(eu_col.unit.unit_type, FLOAT)
+        self.assertEqual(eu_col.unit.unit_type, Unit.FLOAT)
 
     def test_save_column_mappings_idempotent(self):
         """We need to make successive calls to save_column_mappings."""
@@ -1020,11 +941,13 @@ class InventoryViewTests(DeleteModelsTestCase):
 
         result = results[0]
         self.assertEquals(len(result['related']), 1)
-        self.assertEquals(result[column_name_mappings['address_line_1']], taxlot_state.address_line_1)
+        self.assertEquals(result[column_name_mappings['address_line_1']],
+                          taxlot_state.address_line_1)
         self.assertEquals(result[column_name_mappings['block_number']], taxlot_state.block_number)
 
         related = result['related'][0]
-        self.assertEquals(related[column_name_mappings_related['address_line_1']], property_state.address_line_1)
+        self.assertEquals(related[column_name_mappings_related['address_line_1']],
+                          property_state.address_line_1)
         self.assertEquals(related[column_name_mappings_related['pm_parent_property_id']],
                           property_state.pm_parent_property_id)
         # self.assertEquals(related['calculated_taxlot_ids'], taxlot_state.jurisdiction_tax_lot_id)
@@ -1144,11 +1067,13 @@ class InventoryViewTests(DeleteModelsTestCase):
 
         result = results[0]
         self.assertEquals(len(result['related']), 1)
-        self.assertEquals(result[column_name_mappings['address_line_1']], taxlot_state_1.address_line_1)
+        self.assertEquals(result[column_name_mappings['address_line_1']],
+                          taxlot_state_1.address_line_1)
         self.assertEquals(result[column_name_mappings['block_number']], taxlot_state_1.block_number)
 
         related = result['related'][0]
-        self.assertEquals(related[column_name_mappings_related['address_line_1']], property_state.address_line_1)
+        self.assertEquals(related[column_name_mappings_related['address_line_1']],
+                          property_state.address_line_1)
         self.assertEquals(related[column_name_mappings_related['pm_parent_property_id']],
                           property_state.pm_parent_property_id)
         # calculated_taxlot_ids = related['calculated_taxlot_ids'].split('; ')
@@ -1159,11 +1084,13 @@ class InventoryViewTests(DeleteModelsTestCase):
 
         result = results[1]
         self.assertEquals(len(result['related']), 1)
-        self.assertEquals(result[column_name_mappings['address_line_1']], taxlot_state_2.address_line_1)
+        self.assertEquals(result[column_name_mappings['address_line_1']],
+                          taxlot_state_2.address_line_1)
         self.assertEquals(result[column_name_mappings['block_number']], taxlot_state_2.block_number)
 
         related = result['related'][0]
-        self.assertEquals(related[column_name_mappings_related['address_line_1']], property_state.address_line_1)
+        self.assertEquals(related[column_name_mappings_related['address_line_1']],
+                          property_state.address_line_1)
         self.assertEquals(related[column_name_mappings_related['pm_parent_property_id']],
                           property_state.pm_parent_property_id)
 
@@ -1394,7 +1321,7 @@ class InventoryViewTests(DeleteModelsTestCase):
         response = self.client.get('/api/v2/properties/columns/', params)
         results = json.loads(response.content)['columns']
 
-        self.assertTrue('id' in results[0].keys())
+        self.assertTrue('id' in results[0])
 
         # go through and delete all the results.ids so that it is easy to do a compare
         for result in results:
@@ -1464,15 +1391,13 @@ class InventoryViewTests(DeleteModelsTestCase):
         response = self.client.get('/api/v2/taxlots/columns/', params)
         results = json.loads(response.content)['columns']
 
-        self.assertTrue('id' in results[0].keys())
+        self.assertTrue('id' in results[0])
 
         # go through and delete all the results.ids so that it is easy to do a compare
         for result in results:
             del result['id']
             del result['name']
             del result['organization_id']
-
-        # print json.dumps(results, indent=2)
 
         jurisdiction_tax_lot_id_col = {
             'table_name': 'TaxLotState',
@@ -1492,7 +1417,7 @@ class InventoryViewTests(DeleteModelsTestCase):
         expected_property_extra_data_column = {
             'table_name': 'PropertyState',
             'column_name': 'Property Extra Data Column',
-            'display_name': u'Property Extra Data Column (Property)',
+            'display_name': 'Property Extra Data Column (Property)',
             'is_extra_data': True,
             'merge_protection': 'Favor New',
             'data_type': 'None',

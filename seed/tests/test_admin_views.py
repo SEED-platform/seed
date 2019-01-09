@@ -257,4 +257,4 @@ class AdminViewsTest(TestCase):
         # good logins will have 302 and no content
         user = User.objects.get(pk=user.pk)
         self.assertEqual(resp.status_code, 302)
-        self.assertEqual(resp.content, '')
+        self.assertEqual(resp.content, b'')

@@ -166,7 +166,7 @@ class PortfolioManagerTemplateListViewTestsSuccess(TestCase):
             # if it is a child (data request) row, the display name should be formatted
             # it is possible that a parent row could have the same "indentation", and that's fine, we don't assert there
             if row['z_seed_child_row']:
-                self.assertEquals(u'  -  ', row['display_name'][0:5])
+                self.assertEquals('  -  ', row['display_name'][0:5])
 
 
 class PortfolioManagerReportGenerationViewTestsFailure(TestCase):
@@ -281,13 +281,13 @@ class PortfolioManagerReportGenerationViewTestsSuccess(TestCase):
     def test_report_generation_parent_template(self):
 
         parent_template = {
-            u'display_name': u'SEED City Test Report',
-            u'name': u'SEED City Test Report',
-            u'id': 1103344,
-            u'z_seed_child_row': False,
-            u'type': 0,
-            u'children': [],
-            u'pending': 0
+            'display_name': 'SEED City Test Report',
+            'name': 'SEED City Test Report',
+            'id': 1103344,
+            'z_seed_child_row': False,
+            'type': 0,
+            'children': [],
+            'pending': 0
         }
 
         # so now we'll call out to PM to get a parent template report
@@ -318,15 +318,15 @@ class PortfolioManagerReportGenerationViewTestsSuccess(TestCase):
     def test_report_generation_empty_child_template(self):
 
         child_template = {
-            u'display_name': u'  -  Data Request:SEED City Test Report April 24 2018',
-            u'name': u'Data Request:SEED City Test Report April 24 2018',
-            u'id': 2097417,
-            u'subtype': 2,
-            u'z_seed_child_row': True,
-            u'hasChildrenRows': False,
-            u'type': 1,
-            u'children': [],
-            u'pending': 0
+            'display_name': '  -  Data Request:SEED City Test Report April 24 2018',
+            'name': 'Data Request:SEED City Test Report April 24 2018',
+            'id': 2097417,
+            'subtype': 2,
+            'z_seed_child_row': True,
+            'hasChildrenRows': False,
+            'type': 1,
+            'children': [],
+            'pending': 0
         }
 
         # so now we'll call out to PM to get a child template report

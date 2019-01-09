@@ -17,7 +17,7 @@ def forwards(apps, schema_editor):
     column_keys = ['organization', 'table_name', 'column_name', 'is_extra_data']
     for o in Organization.objects.all():
         # for o in Organization.objects.filter(id=267):
-        print "Processing organization {}.{}".format(o.id, o.name)
+        print("Processing organization {}.{}".format(o.id, o.name))
 
         objs_to_delete = set()
 
@@ -25,60 +25,57 @@ def forwards(apps, schema_editor):
         for c in columns:
             # skip if the column is in the delete list
             if c.pk in [c_obj.pk for c_obj in objs_to_delete]:
-                print 'skipping column because it is to be deleted {}'.format(c.pk)
+                print('skipping column because it is to be deleted {}'.format(c.pk))
                 continue
 
             check_c = {key: obj_to_dict(c)[key] for key in column_keys}
 
             multiples = Column.objects.filter(**check_c)
             if multiples.count() > 1:
-                print "Found {} duplicate column".format(multiples.count())
+                print("Found {} duplicate column".format(multiples.count()))
 
                 pointer_column = None
                 for idx, m in enumerate(multiples):
                     if idx == 0:
-                        print "  setting pointer columns to {}".format(m.pk)
+                        print("  setting pointer columns to {}".format(m.pk))
                         pointer_column = m
                         continue
 
-                    print "  checking idx {} - pk {}".format(idx, m.pk)
+                    print("  checking idx {} - pk {}".format(idx, m.pk))
                     # check if there is mappings
                     cms = ColumnMapping.objects.filter(Q(column_raw=m) | Q(column_mapped=m))
                     if cms.count() == 0:
-                        print "  no column mappings and idx is > 1, so deleting column {}".format(
-                            m.pk)
+                        print("  no column mappings and idx is > 1, so deleting column {}".format(m.pk))
                         objs_to_delete.add(m)
                         continue
 
                     cms_raw = ColumnMapping.objects.filter(column_raw=m)
                     if cms_raw.count() == 1:
-                        print "    removing old column and adding in new one {} -> {}".format(m.pk,
-                                                                                              pointer_column.pk)
+                        print("    removing old column and adding in new one {} -> {}".format(m.pk, pointer_column.pk))
                         cms_raw.first().column_raw.add(pointer_column)
                         cms_raw.first().column_raw.remove(m)
                         objs_to_delete.add(m)
                         continue
 
                     if cms_raw.count() > 1:
-                        print "  Not sure what to do here but it probably does not matter"
+                        print("  Not sure what to do here but it probably does not matter")
 
-                    print ColumnMapping.objects.filter(column_raw=m).count()
+                    print(ColumnMapping.objects.filter(column_raw=m).count())
 
                     for cm in ColumnMapping.objects.filter(column_mapped=m):
-                        print "  cleaning up mapping"
+                        print("  cleaning up mapping")
                         if pointer_column in cm.column_mapped.all():
-                            print "    already in there"
+                            print("    already in there")
                         else:
-                            print "    removing old column and adding in new one {} -> {}".format(
-                                m.pk, pointer_column.pk)
+                            print("    removing old column and adding in new one {} -> {}".format(m.pk, pointer_column.pk))
                             cm.column_mapped.remove(m)
                             cm.column_mapped.add(pointer_column)
-                            print "    staging old column for delete {}".format(m.pk)
+                            print("    staging old column for delete {}".format(m.pk))
                             objs_to_delete.add(m)
 
-        print "objects to delete:"
+        print("objects to delete:")
         for obj in objs_to_delete:
-            print "  {}  --  {}".format(obj.id, obj.column_name)
+            print("  {}  --  {}".format(obj.id, obj.column_name))
             obj.delete()
 
 

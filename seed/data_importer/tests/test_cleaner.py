@@ -11,8 +11,6 @@ from django.test import TestCase
 from seed.data_importer import tasks
 from seed.landing.models import SEEDUser as User
 from seed.models import (
-    FLOAT,
-    STRING,
     Column,
     ColumnMapping,
     Unit,
@@ -36,7 +34,7 @@ class TestCleaner(TestCase):
         # Float
         float_unit = Unit.objects.create(
             unit_name='mapped_col unit',
-            unit_type=FLOAT,
+            unit_type=Unit.FLOAT,
         )
         float_raw = Column.objects.create(
             column_name='float_raw_col',
@@ -59,7 +57,7 @@ class TestCleaner(TestCase):
         # Integer
         str_unit = Unit.objects.create(
             unit_name='mapped_col unit',
-            unit_type=STRING,
+            unit_type=Unit.STRING,
         )
         str_raw = Column.objects.create(
             column_name='string_raw_col',
@@ -86,14 +84,14 @@ class TestCleaner(TestCase):
         # model
         bs_field = 'gross_floor_area'
         self.assertEqual(
-            cleaner.clean_value('123,456', bs_field),
-            123456
+            cleaner.clean_value('1,456', bs_field),
+            1456
         )
 
         # data are cleaned correctly for mapped fields that have float unit
         self.assertEqual(
-            cleaner.clean_value('123,456', self.float_col),
-            123456
+            cleaner.clean_value('2,456', self.float_col),
+            2456
         )
 
         # String test
@@ -103,8 +101,8 @@ class TestCleaner(TestCase):
         )
 
         self.assertEqual(
-            cleaner.clean_value('123,456', self.float_col),
-            123456
+            cleaner.clean_value('3,456', self.float_col),
+            3456
         )
 
         # other fields are just strings

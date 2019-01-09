@@ -144,7 +144,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
 
         # check the first item in the header and make sure that it isn't ID (it can be id, or iD).
         # excel doesn't like the first item to be ID in a CSV
-        header = column_name_mappings.values()
+        header = list(column_name_mappings.values())
         if header[0] == 'ID':
             header[0] = 'id'
         writer.writerow(header)
@@ -152,7 +152,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
         # iterate over the results to preserve column order and write row.
         for datum in data:
             row = []
-            for column in column_name_mappings.keys():
+            for column in column_name_mappings:
                 row_result = datum.get(column, None)
 
                 # Try grabbing the value out of the related field if not found yet.

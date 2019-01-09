@@ -14,6 +14,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.http import JsonResponse
 from django.shortcuts import render
+from past.builtins import basestring
 from rest_framework import status
 from rest_framework.decorators import api_view
 
@@ -23,7 +24,6 @@ from seed.decorators import ajax_request
 from seed.lib.superperms.orgs.decorators import has_perm
 from seed.utils.api import api_endpoint
 from seed.views.users import _get_js_role
-from .. import search
 
 _log = logging.getLogger(__name__)
 
@@ -103,7 +103,7 @@ def version(request):
 
     return JsonResponse({
         'version': manifest['version'],
-        'sha': sha
+        'sha': sha.decode('utf-8')
     })
 
 
@@ -137,97 +137,13 @@ def error500(request):
 # require authentication for some reason.
 @ajax_request
 def public_search(request):
-    """the public API unauthenticated endpoint
-
-    see ``search_buildings`` for the non-public version
     """
-    orgs = search.get_orgs_w_public_fields()
-    search_results, building_count = search.search_public_buildings(
-        request, orgs
-    )
-    search_results = search.remove_results_below_q_threshold(search_results)
-    search_results = search.paginate_results(request, search_results)
-    search_results = search.mask_results(search_results)
+    The public API unauthenticated endpoint
+    """
+    # orgs = search.get_orgs_w_public_fields()
     return JsonResponse({
-        'status': 'success',
-        'buildings': search_results,
-        'number_matching_search': building_count,
-        'number_returned': len(search_results)
-    })
-
-
-@api_endpoint
-@ajax_request
-@login_required
-@api_view(['POST'])
-def search_buildings(request):
-    """
-    Retrieves a paginated list of CanonicalBuildings matching search params.
-
-    Payload::
-
-        {
-            'q': a string to search on (optional),
-            'show_shared_buildings': True to include buildings from other orgs in this user's org tree,
-            'order_by': which field to order by (e.g. pm_property_id),
-            'import_file_id': ID of an import to limit search to,
-            'filter_params': {
-                a hash of Django-like filter parameters to limit query.  See seed.search.filter_other_params.
-                If 'project__slug' is included and set to a project's slug, buildings will include associated labels
-                for that project.
-            }
-            'page': Which page of results to retrieve (default: 1),
-            'number_per_page': Number of buildings to retrieve per page (default: 10),
-        }
-
-    Returns::
-
-        {
-            'status': 'success',
-            'buildings': [
-                {
-                    all fields for buildings the request user has access to, e.g.:
-                        'canonical_building': the CanonicalBuilding ID of the building,
-                        'pm_property_id': ID of building (from Portfolio Manager),
-                        'address_line_1': First line of building's address,
-                        'property_name': Building's name, if any
-                    ...
-                }...
-            ]
-            'number_matching_search': Total number of buildings matching search,
-            'number_returned': Number of buildings returned for this page
-        }
-    """
-    params = search.parse_body(request)
-
-    orgs = request.user.orgs.select_related('parent_org').all()
-    parent_org = orgs[0].parent_org
-
-    buildings_queryset = search.orchestrate_search_filter_sort(
-        params=params,
-        user=request.user,
-    )
-
-    below_threshold = (
-        parent_org and parent_org.query_threshold and
-        len(buildings_queryset) < parent_org.query_threshold
-    )
-
-    buildings, building_count = search.generate_paginated_results(
-        buildings_queryset,
-        number_per_page=params['number_per_page'],
-        page=params['page'],
-        # Generally just orgs, sometimes all orgs with public fields.
-        whitelist_orgs=orgs,
-        below_threshold=below_threshold,
-        matching=False
-    )
-
-    return JsonResponse({
-        'status': 'success',
-        'buildings': buildings,
-        'number_matching_search': building_count,
-        'number_returned': len(buildings)
+        'status': 'error',
+        'message': 'this is not enabled yet'
     })
 
 
@@ -250,7 +166,7 @@ def get_default_building_detail_columns(request):
     if columns == '{}' or isinstance(columns, dict):
         # Return empty result, telling the FE to show all.
         columns = []
-    if isinstance(columns, unicode):
+    if isinstance(columns, basestring):
         # PostgreSQL 9.1 stores JSONField as unicode
         columns = json.loads(columns)
 

@@ -13,12 +13,14 @@ from collections import OrderedDict
 from django.apps import apps
 from django.db import models
 from django.utils.timezone import make_naive
+from past.builtins import basestring
 from rest_framework import serializers
 from rest_framework.fields import empty
 
 from seed.models import (
     AUDIT_USER_CREATE,
     AUDIT_USER_EDIT,
+    Column,
     GreenAssessmentProperty,
     PropertyAuditLog,
     Property,
@@ -169,9 +171,25 @@ class PropertyStateSerializer(serializers.ModelSerializer):
             'organization': {'read_only': True}
         }
 
+    def __init__(self, instance=None, data=empty, all_extra_data_columns=None, **kwargs):
+        """Override __init__ for the optional all_extra_data_columns argument"""
+        self.all_extra_data_columns = all_extra_data_columns
+        super(PropertyStateSerializer, self).__init__(instance=instance, data=data, **kwargs)
+
     def to_representation(self, data):
-        """Overwritten to handle time conversion"""
+        """Overwritten to handle time conversion and extra_data null fields"""
         result = super(PropertyStateSerializer, self).to_representation(data)
+
+        # Prepopulate the extra_data columns with a default of None so that they will appear in the result
+        if self.all_extra_data_columns and data.extra_data:
+            prepopulated_extra_data = {
+                col_name: data.extra_data.get(col_name, None)
+                for col_name
+                in self.all_extra_data_columns
+            }
+
+            result['extra_data'] = prepopulated_extra_data
+
         # for datetime to be isoformat and remove timezone data
         if data.generation_date:
             result['generation_date'] = make_naive(data.generation_date).isoformat()
@@ -275,12 +293,22 @@ class PropertyViewListSerializer(serializers.ListSerializer):
             iterable = data
             view_ids = [view.id for view in iterable]
             results = []
+
+            # If data is provided, grab extra_data columns to be shown in the result
+            if iterable:
+                organization_id = data[0].state.organization_id
+
+                all_extra_data_columns = Column.objects.filter(
+                    organization_id=organization_id,
+                    is_extra_data=True,
+                    table_name='PropertyState').values_list('column_name', flat=True)
+
             for item in iterable:
                 cycle = [
                     (field, getattr(item.cycle, field, None)) for field in CYCLE_FIELDS
                 ]
                 cycle = OrderedDict(cycle)
-                state = PropertyStateSerializer(item.state).data
+                state = PropertyStateSerializer(item.state, all_extra_data_columns=all_extra_data_columns).data
                 representation = OrderedDict((
                     ('id', item.id),
                     ('property', item.property_id),
@@ -595,11 +623,10 @@ def unflatten_values(vdict, fkeys):
     :param fkeys: field names for foreign key (e.g. state for state__city)
     :type fkeys: list
     """
-    assert set(vdict.keys()).isdisjoint(set(fkeys)), \
-        "unflatten_values: {} has fields named in {}".format(vdict, fkeys)
+    assert set(list(vdict.keys())).isdisjoint(set(fkeys)), "unflatten_values: {} has fields named in {}".format(vdict, fkeys)
     idents = tuple(["{}__".format(fkey) for fkey in fkeys])
     newdict = vdict.copy()
-    for key, val in vdict.iteritems():
+    for key, val in vdict.items():
         if key.startswith(idents):
             fkey, new_key = key.split('__', 1)
             subdict = newdict.setdefault(fkey, {})

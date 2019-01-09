@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2016, The Regents of the University of California,
+:copyright (c) 2014 - 2018, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
@@ -236,7 +236,7 @@ class FakePropertyStateFactory(BaseFake):
     def get_property_state_as_extra_data(self, organization=None, **kw):
         """Return the porperty state but only populated as extra_data (used for mapping)"""
         property_details = {}
-        if 'no_default_data' not in kw.keys():
+        if 'no_default_data' not in kw:
             property_details = self.get_details()
         else:
             del kw['no_default_data']
@@ -271,7 +271,7 @@ class FakePropertyStateFactory(BaseFake):
     def get_property_state(self, organization=None, **kw):
         """Return a property state populated with pseudo random data"""
         property_details = {}
-        if 'no_default_data' not in kw.keys():
+        if 'no_default_data' not in kw:
             property_details = self.get_details()
         else:
             del kw['no_default_data']
@@ -343,7 +343,7 @@ class FakePropertyMeasureFactory(BaseFake):
         self.property_state.measures.all().delete()
 
         # assign a random number of measures to the PropertyState
-        for n in xrange(number_of_measures):
+        for n in range(number_of_measures):
             measure = Measure.objects.all().order_by('?')[0]
             property_measure_details = {
                 'measure_id': measure.id,
@@ -447,7 +447,7 @@ class FakeGreenAssessmentPropertyFactory(BaseFake):
     def get_details(self, assessment, property_view, organization):
         """Get GreenAssessmentProperty details"""
         metric = self.fake.random_digit_not_null() if assessment.is_numeric_score else None
-        rating = None if assessment.is_numeric_score else u'{} stars'.format(
+        rating = None if assessment.is_numeric_score else '{} stars'.format(
             self.fake.random.randint(1, 5))
         details = {
             'organization': organization,
@@ -524,7 +524,7 @@ class FakeStatusLabelFactory(BaseFake):
         self.organization = organization
         self.colors = [color[0] for color in StatusLabel.COLOR_CHOICES]
         self.label_names = StatusLabel.DEFAULT_LABELS
-        self.label_values = zip(self.colors, self.label_names)
+        self.label_values = list(zip(self.colors, self.label_names))
 
     def get_statuslabel(self, organization=None, **kw):
         """Get statuslabel instance."""
@@ -643,7 +643,7 @@ class FakeTaxLotStateFactory(BaseFake):
     def get_taxlot_state(self, organization=None, **kw):
         """Return a taxlot state populated with pseudo random data"""
         taxlot_details = {}
-        if 'no_default_data' not in kw.keys():
+        if 'no_default_data' not in kw:
             taxlot_details = self.get_details()
         else:
             del kw['no_default_data']

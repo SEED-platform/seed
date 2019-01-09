@@ -51,7 +51,7 @@ class AccountsViewTests(TestCase):
         self.maxDiff = None
 
         year = date.today().year - 1
-        self.cal_year_name = "{} Calendar Year".format(year).encode('utf-8')
+        self.cal_year_name = "{} Calendar Year".format(year)
 
     def test_dict_org(self):
         """_dict_org turns our org structure into a json payload."""
@@ -59,9 +59,9 @@ class AccountsViewTests(TestCase):
         expected_single_org_payload = {
             'sub_orgs': [],
             'owners': [{
-                'first_name': u'Johnny',
-                'last_name': u'Energy',
-                'email': u'test_user@demo.com',
+                'first_name': 'Johnny',
+                'last_name': 'Energy',
+                'email': 'test_user@demo.com',
                 'id': self.user.pk}],
             'number_of_users': 1,
             'name': 'my org',
@@ -121,20 +121,20 @@ class AccountsViewTests(TestCase):
             'sub_orgs': [{
                 'sub_orgs': [],
                 'owners': [{
-                    'first_name': u'Johnny',
-                    'last_name': u'Energy',
-                    'email': u'test_user@demo.com',
+                    'first_name': 'Johnny',
+                    'last_name': 'Energy',
+                    'email': 'test_user@demo.com',
                     'id': self.user.pk}],
                 'number_of_users': 1,
-                'name': u'sub',
+                'name': 'sub',
                 'user_role': 'owner',
                 'is_parent': False,
                 'parent_id': self.org.pk,
                 'org_id': new_org.pk,
                 'id': new_org.pk,
                 'user_is_owner': True,
-                'display_units_area': u'ft**2',
-                'display_units_eui': u'kBtu/ft**2/year',
+                'display_units_area': 'ft**2',
+                'display_units_eui': 'kBtu/ft**2/year',
                 'display_significant_figures': 2,
                 'cycles': [{
                     'num_taxlots': 0,
@@ -145,12 +145,12 @@ class AccountsViewTests(TestCase):
                 'created': self.org.created.strftime('%Y-%m-%d'),
             }],
             'owners': [{
-                'first_name': u'Johnny',
-                'last_name': u'Energy',
-                'email': u'test_user@demo.com',
+                'first_name': 'Johnny',
+                'last_name': 'Energy',
+                'email': 'test_user@demo.com',
                 'id': self.user.pk}],
             'number_of_users': 1,
-            'name': u'my org',
+            'name': 'my org',
             'user_role': 'owner',
             'is_parent': True,
             'parent_id': self.org.pk,
@@ -158,8 +158,8 @@ class AccountsViewTests(TestCase):
             'id': self.org.pk,
             'user_is_owner': True,
             'display_significant_figures': 2,
-            'display_units_area': u'ft**2',
-            'display_units_eui': u'kBtu/ft**2/year',
+            'display_units_area': 'ft**2',
+            'display_units_eui': 'kBtu/ft**2/year',
             'cycles': [{
                 'num_taxlots': 0,
                 'num_properties': 0,
@@ -187,9 +187,9 @@ class AccountsViewTests(TestCase):
         self.assertDictEqual(
             org['owners'][0],
             {
-                'email': u'test_user@demo.com',
-                'first_name': u'Johnny',
-                'last_name': u'Energy',
+                'email': 'test_user@demo.com',
+                'first_name': 'Johnny',
+                'last_name': 'Energy',
                 'id': self.user.pk  # since this could change
             }
         )
@@ -216,9 +216,9 @@ class AccountsViewTests(TestCase):
         self.assertDictEqual(
             org['owners'][0],
             {
-                'email': u'test_user@demo.com',
-                'first_name': u'Johnny',
-                'last_name': u'Energy',
+                'email': 'test_user@demo.com',
+                'first_name': 'Johnny',
+                'last_name': 'Energy',
                 'id': self.user.pk  # since this could change
             }
         )
@@ -533,12 +533,12 @@ class AccountsViewTests(TestCase):
 
         # There are already several columns in the database due to the create_organization method
         payload = {
-            u'organization_id': self.org.pk,
-            u'organization': {
-                u'owners': self.user.pk,
-                u'query_threshold': 2,
-                u'name': self.org.name,
-                u'public_fields': [
+            'organization_id': self.org.pk,
+            'organization': {
+                'owners': self.user.pk,
+                'query_threshold': 2,
+                'name': self.org.name,
+                'public_fields': [
                     {
                         "id": ubid_id,
                         "displayName": "UBID",
@@ -662,10 +662,10 @@ class AccountsViewTests(TestCase):
             json.loads(resp.content),
             {
                 'status': 'success',
-                u'api_key': u'',
-                u'email': u'some@hgg.com',
-                u'first_name': u'bob',
-                u'last_name': u'd'
+                'api_key': '',
+                'email': 'some@hgg.com',
+                'first_name': 'bob',
+                'last_name': 'd'
 
             })
 

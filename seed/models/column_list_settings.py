@@ -46,7 +46,7 @@ class ColumnListSetting(models.Model):
 
     @classmethod
     def return_columns(cls, organization_id, profile_id, inventory_type='properties'):
-        '''
+        """
         Return a list of columns based on the profile_id. If the profile ID doesn't exist, then it will return
         the list of raw database fields for the organization (i.e. all the fields).
 
@@ -54,7 +54,7 @@ class ColumnListSetting(models.Model):
         :param profile_id:
         :param inventory_type:
         :return:
-        '''
+        """
         try:
             profile = ColumnListSetting.objects.get(
                 organization=organization_id,

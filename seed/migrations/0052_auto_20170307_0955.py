@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 
 from django.db import migrations
 
+
 def forwards(apps, schema_editor):
     Column = apps.get_model("seed", "Column")
 

@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+"""
+:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
+"""
 from __future__ import unicode_literals
 
 from django.core.management.base import BaseCommand
@@ -13,31 +18,30 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         if options['user'] and options['user_id']:
-            print "Both --user and --user-id is set, using --user_id and ignoring --user."
+            print("Both --user and --user-id is set, using --user_id and ignoring --user.")
             options['user'] = False
 
         if not options['user'] and not options['user_id']:
-            print "Must set either --user and --user-id to add user, or run with --stats to display the users.  Nothing for me to do here."
+            print("Must set either --user and --user-id to add user, or run with --stats to display the users.  Nothing for me to do here.")
             return
 
         if options['user']:
             query = User.objects.filter(username=options['user'])
             if not query.count():
-                print "No user by the name '{}' was found.  Run with --stats to display all users."
+                print("No user by the name '{}' was found.  Run with --stats to display all users.")
                 return
             user = query.first()
 
         if options['user_id']:
             try:
                 user = User.objects.get(pk=options['user_id'])
-            except AttributeError, xcpt:
-                print "No user with id={} was found.  Run with --stats to display all the users.".format(
-                    options['user_id'])
+            except AttributeError:
+                print("No user with id={} was found.  Run with --stats to display all the users.".format(options['user_id']))
                 return
 
         user.is_superuser = False
         user.save()  # One for good measure
 
-        print "Done!"
+        print("Done!")
 
         return

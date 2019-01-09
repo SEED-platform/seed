@@ -50,7 +50,7 @@ class LabelSerializer(serializers.ModelSerializer):
         model = Label
 
     def get_is_applied(self, obj):
-        filtered_result = False
+        filtered_result = []
         if self.inventory:
             result = self.inventory.filter(
                 labels=obj,
@@ -58,8 +58,8 @@ class LabelSerializer(serializers.ModelSerializer):
 
             # Limit results to ones attached to view
             if self.inventory.model is Property:
-                filtered_result = PropertyView.objects.filter(property_id__in=result).values_list('property_id', flat=True)
+                filtered_result = PropertyView.objects.filter(property_id__in=result).values_list('pk', flat=True)
             elif self.inventory.model is TaxLot:
-                filtered_result = TaxLotView.objects.filter(taxlot_id__in=result).values_list('taxlot_id', flat=True)
+                filtered_result = TaxLotView.objects.filter(taxlot_id__in=result).values_list('pk', flat=True)
 
         return filtered_result

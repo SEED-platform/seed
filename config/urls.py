@@ -20,8 +20,6 @@ schema_view = get_schema_view(title='SEED API Schema')
 urlpatterns = [
     # Application
     url(r'^', include('seed.landing.urls', namespace="landing", app_name="landing")),
-    url(r'^audit_logs/',
-        include('seed.audit_logs.urls', namespace="audit_logs", app_name="audit_logs")),
     url(r'^app/', include('seed.urls', namespace="seed", app_name="seed")),
 
     # root configuration items

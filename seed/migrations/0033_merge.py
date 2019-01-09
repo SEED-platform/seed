@@ -9,7 +9,6 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('seed', '0032_migrate_label_data'),
-        #('seed', '0031_auto_20160912_1155'),
         ('seed', '0031_auto_20160913_0001'),
     ]
 

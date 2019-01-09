@@ -53,12 +53,12 @@ COMPLIANCE_KEYS = ['compliance_type', 'end_date', 'deadline_date']
 PROJECT_KEYS = ['name', 'description', 'status', 'is_compliance']
 
 COMPLIANCE_LOOKUP = {
-    unicode(choice[1]).lower(): choice[0]
+    str(choice[1]).lower(): choice[0]
     for choice in COMPLIANCE_CHOICES
 }
 
 STATUS_LOOKUP = {
-    unicode(choice[1]).lower(): choice[0] for choice in Project.STATUS_CHOICES
+    str(choice[1]).lower(): choice[0] for choice in Project.STATUS_CHOICES
 }
 
 PLURALS = {'property': 'properties', 'taxlot': 'taxlots'}

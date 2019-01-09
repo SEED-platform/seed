@@ -28,8 +28,8 @@ class TestMeasures(DeleteModelsTestCase):
         self.assertEqual(ps.propertymeasure_set.count(), 5)
 
         # for m in ps.propertymeasure_set.all():
-        #     print m.measure
-        #     print m.cost_mv
+        #     print(m.measure)
+        #     print(m.cost_mv)
 
         # s = Scenario.objects.create(
         #     name='Test'

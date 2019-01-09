@@ -9,7 +9,7 @@ from django.core.cache.backends.base import DEFAULT_TIMEOUT
 
 
 def make_key(key):
-    return unicode(django_cache.make_key(key))
+    return str(django_cache.make_key(key))
 
 
 def set_cache_raw(key, data, timeout=DEFAULT_TIMEOUT):

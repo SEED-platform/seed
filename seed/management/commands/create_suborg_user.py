@@ -7,9 +7,9 @@ from django.core.management.base import BaseCommand
 
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization
+from seed.lib.superperms.orgs.models import ROLE_MEMBER, ROLE_OWNER, ROLE_VIEWER
 from seed.utils.organizations import create_suborganization
 
-from seed.lib.superperms.orgs.models import ROLE_MEMBER, ROLE_OWNER, ROLE_VIEWER
 
 class Command(BaseCommand):
     help = 'Creates a default super user for the system tied to an organization'

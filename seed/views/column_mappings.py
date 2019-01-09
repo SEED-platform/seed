@@ -75,7 +75,6 @@ class ColumnMappingViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
             instance = self.get_object()
             instance.delete()
         except Http404:
-            # print e
             return JsonResponse({
                 'status': 'success',
                 'message': 'Column mapping with id and organization did not exist, nothing removed'
