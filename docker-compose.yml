@@ -3,7 +3,7 @@
 version: '3'
 services:
   db-postgres:
-    image: postgres
+    image: postgres:11.1
     environment:
       - POSTGRES_DB=seed
       - POSTGRES_USER=seed
@@ -11,7 +11,7 @@ services:
     volumes:
       - seed_pgdata:/var/lib/postgresql/data
   db-redis:
-    image: redis
+    image: redis:5.0.1
   web:
     image: seedplatform/seed:latest
     build: .

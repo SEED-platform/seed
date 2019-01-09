@@ -74,12 +74,15 @@ else
 fi
 
 echo "Building lasest version of SEED"
-docker-compose build --pull
+# explicitly pull images from docker-compose. Note that you will need to keep the
+# versions consistent between the compose file and what is below.
+docker-compose pull
+docker-compose build
 
 echo "Tagging local containers"
 docker tag seedplatform/seed:latest 127.0.0.1:5000/seed
-docker tag postgres:latest 127.0.0.1:5000/postgres
-docker tag redis:latest 127.0.0.1:5000/redis
+docker tag postgres:11.1 127.0.0.1:5000/postgres
+docker tag redis:5.0.1 127.0.0.1:5000/redis
 
 sleep 3
 echo "Pushing tagged versions to local registry"
