@@ -30,10 +30,12 @@ def geocode_addresses(buildings):
     and longitude fields populated and uses those values to pouplate long_lat.
 
     With the remaining buildings, regardless of model type, this method builds
-    a dictionary of {id: address} and a dictionary of {address: geocoding}.
-    It uses those two to build a dictionary of {id: geocoding} for buildings
-    whose addresses return a valid geocoded longitude and latitude.
-    Finally, the {id: geocoding} dictionary is used to update the QS objects.
+    a dictionary of {id: address} and a dictionary of {address: geocoding_results}.
+    It uses those two to construct a dictionary of {id: geocoding_results}.
+    Finally, the {id: geocoding_results} dictionary is used to update the QS objects.
+
+    Depending on if and how a building is geocoded, the geocoding_confidence is
+    populated with the details such as the confidence quality or lack thereof.
     """
     from seed.models.properties import PropertyState
 
@@ -56,13 +58,23 @@ def geocode_addresses(buildings):
         return
 
     id_addresses = _id_addresses(ungeocoded_buildings)
-    address_geocodings = _address_geocodings(id_addresses, mapquest_api_key)
+    address_geocoding_results = _address_geocoding_results(id_addresses, mapquest_api_key)
 
-    id_geocodings = _id_geocodings(id_addresses, address_geocodings)
+    id_geocoding_results = _id_geocodings(id_addresses, address_geocoding_results)
 
-    for id, geocoding in id_geocodings.items():
+    _save_geocoding_results(id_geocoding_results, ungeocoded_buildings)
+
+
+def _save_geocoding_results(id_geocoding_results, ungeocoded_buildings):
+    for id, geocoding_result in id_geocoding_results.items():
         building = ungeocoded_buildings.get(pk=id)
-        building.long_lat = geocoding
+
+        if geocoding_result.get("is_valid"):
+            building.long_lat = geocoding_result.get("long_lat")
+            building.geocoding_confidence = f"High ({geocoding_result.get('quality')})"
+        else:
+            building.geocoding_confidence = f"Low - check address ({geocoding_result.get('quality')})"
+
         building.save()
 
 
@@ -70,16 +82,29 @@ def _geocode_by_prepopulated_fields(buildings):
     for building in buildings.iterator():
         long_lat = f"POINT ({building.longitude} {building.latitude})"
         building.long_lat = long_lat
+        building.geocoding_confidence = "Manually geocoded (N/A)"
         building.save()
 
 
 def _id_addresses(buildings):
-    return {
-        building.id: _full_address(building)
-        for building
-        in buildings.iterator()
-        if _full_address(building) is not None
-    }
+    """
+    Return a dictionary with {id: address, ...} containing only addresses with
+    enough components.
+
+    For any addresses that don't have enough components,
+    specify this in `geocoding_confidence`.
+    """
+    id_addresses = {}
+
+    for building in buildings.iterator():
+        full_address = _full_address(building)
+        if full_address is not None:
+            id_addresses[building.id] = full_address
+        else:
+            building.geocoding_confidence = "Missing address components (N/A)"
+            building.save()
+
+    return id_addresses
 
 
 def _full_address(building):
@@ -107,7 +132,7 @@ def _full_address(building):
         return None
 
 
-def _address_geocodings(id_addresses, mapquest_api_key):
+def _address_geocoding_results(id_addresses, mapquest_api_key):
     addresses = list(set(id_addresses.values()))
 
     batched_addresses = _batch_addresses(addresses)
@@ -134,19 +159,14 @@ def _address_geocodings(id_addresses, mapquest_api_key):
             else:
                 raise e
 
-    return {
-        _response_address(result): _response_location(result)
-        for result
-        in results
-        if _response_location(result) is not None
-    }
+    return {_response_address(result): _analyze_location(result) for result in results}
 
 
 def _response_address(result):
     return result.get('providedLocation').get('street')
 
 
-def _response_location(result):
+def _analyze_location(result):
     """
     According to MapQuest API
      - https://developer.mapquest.com/documentation/geocoding-api/quality-codes/
@@ -166,17 +186,22 @@ def _response_location(result):
     if is_acceptable_confidence and is_acceptable_granularity:
         long = result.get('locations')[0].get('displayLatLng').get('lng')
         lat = result.get('locations')[0].get('displayLatLng').get('lat')
-        return f"POINT ({long} {lat})"
+
+        return {
+            "is_valid": True,
+            "long_lat": f"POINT ({long} {lat})",
+            "quality": quality
+        }
     else:
-        return None
+        return {"quality": quality}
 
 
-def _id_geocodings(id_addresses, address_geocodings):
+def _id_geocodings(id_addresses, address_geocoding_results):
     return {
-        id: address_geocodings.get(address)
+        id: address_geocoding_results.get(address)
         for id, address
         in id_addresses.items()
-        if address_geocodings.get(address) is not None
+        if address_geocoding_results.get(address) is not None
     }
 
 

@@ -135,11 +135,13 @@ class GeocodeAddresses(TestCase):
             geocode_addresses(properties)
             geocode_addresses(tax_lots)
 
-            refreshed_properties = PropertyState.objects.filter(pk=property.id)
-            refreshed_tax_lots = TaxLotState.objects.filter(pk=tax_lot.id)
+            refreshed_property = PropertyState.objects.get(pk=property.id)
+            refreshed_tax_lot = TaxLotState.objects.get(pk=tax_lot.id)
 
-            self.assertEqual('POINT (-104.986138 39.765251)', long_lat_wkt(refreshed_properties[0]))
-            self.assertEqual('POINT (-104.991046 39.752396)', long_lat_wkt(refreshed_tax_lots[0]))
+            self.assertEqual('POINT (-104.986138 39.765251)', long_lat_wkt(refreshed_property))
+            self.assertEqual('High (P1AAA)', refreshed_property.geocoding_confidence)
+            self.assertEqual('POINT (-104.991046 39.752396)', long_lat_wkt(refreshed_tax_lot))
+            self.assertEqual('High (P1AAA)', refreshed_tax_lot.geocoding_confidence)
 
     def test_geocode_addresses_returns_no_data_when_provided_address_is_ambigious(self):
         with base_vcr.use_cassette('seed/tests/data/vcr_cassettes/geocode_low_geocodequality.yaml'):
@@ -175,7 +177,9 @@ class GeocodeAddresses(TestCase):
             wrong_state_zip_property = PropertyState.objects.get(pk=wrong_state_zip_property.id)
 
             self.assertIsNone(state_zip_only_property.long_lat)
+            self.assertEqual("Missing address components (N/A)", state_zip_only_property.geocoding_confidence)
             self.assertIsNone(wrong_state_zip_property.long_lat)
+            self.assertEqual("Low - check address (B3BCA)", wrong_state_zip_property.geocoding_confidence)
 
     def test_geocode_addresses_is_successful_even_if_two_buildings_have_same_address(self):
         with base_vcr.use_cassette('seed/tests/data/vcr_cassettes/geocode_dup_addresses.yaml'):
@@ -202,6 +206,7 @@ class GeocodeAddresses(TestCase):
 
             for property in refreshed_properties:
                 self.assertEqual('POINT (-104.986138 39.765251)', long_lat_wkt(property))
+                self.assertEqual('High (P1AAA)', property.geocoding_confidence)
 
     def test_geocode_addresses_is_successful_with_over_100_properties(self):
         with batch_vcr.use_cassette('seed/tests/data/vcr_cassettes/geocode_101_unique_addresses.yaml', match_on=['uri_length']):
@@ -233,8 +238,15 @@ class GeocodeAddresses(TestCase):
                 in refreshed_properties
                 if property.long_lat is not None
             ]
+            geocode_confidence_results = [
+                property.geocoding_confidence
+                for property
+                in refreshed_properties
+                if property.geocoding_confidence is not None
+            ]
 
             self.assertTrue(len(long_lats) > 0)
+            self.assertTrue(len(geocode_confidence_results) == 101)
 
     def test_geocode_addresses_is_unsuccessful_when_the_API_key_is_invalid_or_expired(self):
         with base_vcr.use_cassette('seed/tests/data/vcr_cassettes/geocode_invalid_or_expired_key.yaml'):
@@ -282,6 +294,7 @@ class GeocodeAddresses(TestCase):
         refreshed_property = PropertyState.objects.get(pk=property.id)
 
         self.assertIsNone(refreshed_property.long_lat)
+        self.assertIsNone(refreshed_property.geocoding_confidence)
 
     def test_geocode_address_can_handle_addresses_with_reserved_and_unsafe_characters(self):
         with base_vcr.use_cassette('seed/tests/data/vcr_cassettes/geocode_reserved_and_unsafe_characters.yaml'):
@@ -317,9 +330,10 @@ class GeocodeAddresses(TestCase):
 
         geocode_addresses(properties)
 
-        refreshed_properties = PropertyState.objects.filter(pk=property.id)
+        refreshed_property = PropertyState.objects.get(pk=property.id)
 
-        self.assertEqual('POINT (-104.986138 39.765251)', long_lat_wkt(refreshed_properties[0]))
+        self.assertEqual('POINT (-104.986138 39.765251)', long_lat_wkt(refreshed_property))
+        self.assertEqual("Manually geocoded (N/A)", refreshed_property.geocoding_confidence)
 
     def test_geocode_address_can_handle_receiving_no_buildings(self):
         self.assertIsNone(geocode_addresses(PropertyState.objects.none()))
