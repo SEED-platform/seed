@@ -22,7 +22,7 @@ class GeocodeViews(viewsets.ViewSet):
     @has_perm_class('can_modify_data')
     @list_route(methods=['POST'])
     def geocode_by_ids(self, request):
-        body = request.data
+        body = dict(request.data)
         property_ids = body.get('property_ids')
         taxlot_ids = body.get('taxlot_ids')
 
