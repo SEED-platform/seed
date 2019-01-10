@@ -845,8 +845,8 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       });
     };
 
-    inventory_service.get_matching_results = function (import_file_id) {
-      return $http.get('/api/v2/import_files/' + import_file_id + '/matching_results/', {
+    inventory_service.get_matching_and_geocoding_results = function (import_file_id) {
+      return $http.get('/api/v2/import_files/' + import_file_id + '/matching_and_geocoding_results/', {
         params: {
           organization_id: user_service.get_organization().id
         }

@@ -1625,7 +1625,7 @@ class ImportFileViewSet(viewsets.ViewSet):
     @ajax_request_class
     @has_perm_class('requires_member')
     @detail_route(methods=['GET'])
-    def matching_results(self, request, pk=None):
+    def matching_and_geocoding_results(self, request, pk=None):
         """
         Retrieves the number of matched and unmatched properties & tax lots for
         a given ImportFile record.  Specifically for new imports
@@ -1703,6 +1703,48 @@ class ImportFileViewSet(viewsets.ViewSet):
             else:
                 tax_lots_new.append(state.id)
 
+        # Construct Geocode Results
+        property_geocode_results = {
+            'high_confidence': len(PropertyState.objects.filter(
+                import_file__pk=import_file.pk,
+                data_state=DATA_STATE_MATCHING,
+                geocoding_confidence__startswith='High'
+            )),
+            'low_confidence': len(PropertyState.objects.filter(
+                import_file__pk=import_file.pk,
+                data_state=DATA_STATE_MATCHING,
+                geocoding_confidence__startswith='Low'
+            )),
+            'manual': len(PropertyState.objects.filter(
+                import_file__pk=import_file.pk,
+                data_state=DATA_STATE_MATCHING,
+                geocoding_confidence='Manually geocoded (N/A)'
+            )),
+            'missing_address_components': len(PropertyState.objects.filter(
+                import_file__pk=import_file.pk,
+                data_state=DATA_STATE_MATCHING,
+                geocoding_confidence='Missing address components (N/A)'
+            )),
+        }
+
+        tax_lot_geocode_results = {
+            'high_confidence': len(TaxLotState.objects.filter(
+                import_file__pk=import_file.pk,
+                data_state=DATA_STATE_MATCHING,
+                geocoding_confidence__startswith='High'
+            )),
+            'low_confidence': len(TaxLotState.objects.filter(
+                import_file__pk=import_file.pk,
+                data_state=DATA_STATE_MATCHING,
+                geocoding_confidence__startswith='Low'
+            )),
+            'missing_address_components': len(TaxLotState.objects.filter(
+                import_file__pk=import_file.pk,
+                data_state=DATA_STATE_MATCHING,
+                geocoding_confidence='Missing address components (N/A)'
+            )),
+        }
+
         # merge in any of the matching results from the JSON field
         return {
             'status': 'success',
@@ -1717,6 +1759,10 @@ class ImportFileViewSet(viewsets.ViewSet):
                 'duplicates_of_existing': import_file.matching_results_data.get(
                     'property_duplicates_of_existing', None),
                 'unmatched_copy': import_file.matching_results_data.get('property_unmatched', None),
+                'geocoded_high_confidence': property_geocode_results.get('high_confidence'),
+                'geocoded_low_confidence': property_geocode_results.get('low_confidence'),
+                'geocoded_manually': property_geocode_results.get('manual'),
+                'geocode_not_possible': property_geocode_results.get('missing_address_components'),
             },
             'tax_lots': {
                 'matched': len(tax_lots_matched),
@@ -1727,6 +1773,9 @@ class ImportFileViewSet(viewsets.ViewSet):
                 'duplicates_of_existing': import_file.matching_results_data.get(
                     'tax_lot_duplicates_of_existing', None),
                 'unmatched_copy': import_file.matching_results_data.get('tax_lot_unmatched', None),
+                'geocoded_high_confidence': tax_lot_geocode_results.get('high_confidence'),
+                'geocoded_low_confidence': tax_lot_geocode_results.get('low_confidence'),
+                'geocode_not_possible': tax_lot_geocode_results.get('missing_address_components'),
             }
         }
 
