@@ -30,9 +30,8 @@ pm_skip_test_check = skipIf(
 # override this decorator for more pressing conditions
 try:
     pm_avail_check = requests.get('http://isthewallbuilt.us/api.json', timeout=5)
-    string_response = pm_avail_check.content.decode("utf-8").strip()
-    data = json.loads(string_response)
-    if data['status'] == 'yes':
+    string_response = pm_avail_check.json()['status']
+    if string_response == 'no':
         skip_due_to_espm_down = True
     else:
         skip_due_to_espm_down = False
