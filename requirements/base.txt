@@ -51,8 +51,8 @@ lxml==4.2.5
 probablepeople==0.5.4
 
 enum34==1.1.6  # enum34 needs to be specified to support cryptography and oauth2
+oauthlib==2.0.2
 jwt-oauth2>=0.1.1
 django-oauth-toolkit==0.12.0
-django-braces>=1.11.0
 
 future==0.16.0
