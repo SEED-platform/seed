@@ -275,11 +275,11 @@ def account(header, main_url, username, log):
     check_status(result, partmsg, log)
 
     # Create an organization
-    print ('API Function: create_org\n'),
+    print('API Function: create_org\n'),
     partmsg = 'create_org'
     payload = {
         'user_id': user_pk,
-        'organization_name': 'TestOrg_JoZ2wSd2boQWifGau3qxdFFu76oIy9r0' # hopefully ensuring a unique org name
+        'organization_name': 'TestOrg_JoZ2wSd2boQWifGau3qxdFFu76oIy9r0'  # hopefully ensuring a unique org name
     }
     result = requests.post(main_url + '/api/v2/organizations/',
                            headers=header,
@@ -288,14 +288,14 @@ def account(header, main_url, username, log):
     org_id = result.json()['organization']['org_id']
 
     # Delete an organization
-    print ('API Function: delete_org\n'),
+    print('API Function: delete_org\n'),
     partmsg = 'delete_org'
     result = requests.delete(main_url + '/api/v2/organizations/%s/' % org_id,
                              headers=header)
     check_status(result, partmsg, log)
 
     # Create a suborganization
-    print ('API Function: create_sub_org\n'),
+    print('API Function: create_sub_org\n'),
     partmsg = 'create_sub_org'
     payload = {
         'sub_org_name': 'TestSuborg',
@@ -308,7 +308,7 @@ def account(header, main_url, username, log):
     suborg_id = result.json()['organization_id']
 
     # Delete a suborganization
-    print ('API Function: delete_sub_org\n'),
+    print('API Function: delete_sub_org\n'),
     partmsg = 'delete_sub_org'
     result = requests.delete(main_url + '/api/v2/organizations/%s/' % suborg_id,
                              headers=header)
@@ -403,7 +403,7 @@ def cycles(header, main_url, organization_id, log):
 def labels(header, main_url, organization_id, cycle_id, log):
 
     # Create label
-    print ('API Function: create_label\n')
+    print('API Function: create_label\n')
     partmsg = 'create_label'
     params = {
         'organization_id': organization_id
@@ -432,7 +432,7 @@ def labels(header, main_url, organization_id, cycle_id, log):
     inventory_ids = [prop['id'] for prop in result.json()['results']]
 
     # Apply label to properties
-    print ('API Function: apply_label\n')
+    print('API Function: apply_label\n')
     partmsg = 'apply_label'
     params = {
         'organization_id': organization_id
@@ -448,7 +448,7 @@ def labels(header, main_url, organization_id, cycle_id, log):
     check_status(result, partmsg, log)
 
     # Delete label
-    print ('API Function: delete_label\n')
+    print('API Function: delete_label\n')
     partmsg = 'delete_label'
     params = {
         'organization_id': organization_id
