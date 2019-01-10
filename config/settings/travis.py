@@ -33,7 +33,7 @@ DATABASES = {
 #         'scaffold_templates': None,
 #     }
 
-MAPQUEST_API_KEY = os.environ.get("MAPQUEST_API_KEY")
+TESTING_MAPQUEST_API_KEY = os.environ.get("TESTING_MAPQUEST_API_KEY")
 
 CACHES = {
     'default': {
