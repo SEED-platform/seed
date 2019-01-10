@@ -742,11 +742,11 @@ def geocode_buildings(file_pk):
 
 @shared_task
 def _geocode_properties_or_tax_lots(file_pk):
-    if PropertyState.objects.filter(import_file_id=file_pk):
-        qs = PropertyState.objects.filter(import_file_id=file_pk)
+    if PropertyState.objects.filter(import_file_id=file_pk).exclude(data_state=DATA_STATE_IMPORT):
+        qs = PropertyState.objects.filter(import_file_id=file_pk).exclude(data_state=DATA_STATE_IMPORT)
         return geocode_addresses(qs)
     else:
-        qs = TaxLotState.objects.filter(import_file_id=file_pk)
+        qs = TaxLotState.objects.filter(import_file_id=file_pk).exclude(data_state=DATA_STATE_IMPORT)
         return geocode_addresses(qs)
 
 
