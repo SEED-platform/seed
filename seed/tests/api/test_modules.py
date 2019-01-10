@@ -115,11 +115,11 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, f
     check_status(result, partmsg, log)
 
     # Check number of matched and unmatched records
-    print('API Function: matching_results\n'),
-    partmsg = 'matching_results'
+    print('API Function: matching_and_geocoding_results\n'),
+    partmsg = 'matching_and_geocoding_results'
 
     result = requests.get(
-        main_url + '/api/v2/import_files/{}/matching_results/'.format(import_id),
+        main_url + '/api/v2/import_files/{}/matching_and_geocoding_results/'.format(import_id),
         headers=header,
         params={})
     check_status(result, partmsg, log)
