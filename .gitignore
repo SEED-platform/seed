@@ -77,3 +77,9 @@ docs/scripts/.python-version
 docs/scripts/seed_issues.csv
 
 lokalise.cfg
+
+# Docker-based files
+docker-compose.*.yml
+!docker-compose.yml
+!docker-compose.local.yml
+!docker-compose.deploy.yml
