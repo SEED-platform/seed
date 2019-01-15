@@ -33,3 +33,58 @@ class GeocodeViews(viewsets.ViewSet):
         if taxlot_ids:
             taxlots = TaxLotState.objects.filter(id__in=taxlot_ids)
             geocode_addresses(taxlots)
+
+    @ajax_request_class
+    @list_route(methods=['POST'])
+    def confidence_summary(self, request):
+        body = dict(request.data)
+        property_ids = body.get('property_ids')
+        tax_lot_ids = body.get('tax_lot_ids')
+
+        result = {}
+
+        if property_ids:
+            result["properties"] = {
+                'not_geocoded': len(PropertyState.objects.filter(
+                    id__in=property_ids,
+                    geocoding_confidence__isnull=True
+                )),
+                'high_confidence': len(PropertyState.objects.filter(
+                    id__in=property_ids,
+                    geocoding_confidence__startswith='High'
+                )),
+                'low_confidence': len(PropertyState.objects.filter(
+                    id__in=property_ids,
+                    geocoding_confidence__startswith='Low'
+                )),
+                'manual': len(PropertyState.objects.filter(
+                    id__in=property_ids,
+                    geocoding_confidence='Manually geocoded (N/A)'
+                )),
+                'missing_address_components': len(PropertyState.objects.filter(
+                    id__in=property_ids,
+                    geocoding_confidence='Missing address components (N/A)'
+                )),
+            }
+
+        if tax_lot_ids:
+            result["tax_lots"] = {
+                'not_geocoded': len(TaxLotState.objects.filter(
+                    id__in=tax_lot_ids,
+                    geocoding_confidence__isnull=True
+                )),
+                'high_confidence': len(TaxLotState.objects.filter(
+                    id__in=tax_lot_ids,
+                    geocoding_confidence__startswith='High'
+                )),
+                'low_confidence': len(TaxLotState.objects.filter(
+                    id__in=tax_lot_ids,
+                    geocoding_confidence__startswith='Low'
+                )),
+                'missing_address_components': len(TaxLotState.objects.filter(
+                    id__in=tax_lot_ids,
+                    geocoding_confidence='Missing address components (N/A)'
+                )),
+            }
+
+        return result
