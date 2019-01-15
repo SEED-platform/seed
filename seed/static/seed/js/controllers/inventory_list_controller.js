@@ -561,7 +561,8 @@ angular.module('BE.seed.controller.inventory_list', [])
                 if ($scope.inventory_type === 'taxlots') return row.$$treeLevel === 0;
                 return !_.has(row, '$$treeLevel');
               }), 'taxlot_state_id');
-            }
+            },
+            org_id: function () {return user_service.get_organization().id},
           }
         });
 

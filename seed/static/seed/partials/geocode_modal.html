@@ -1,11 +1,22 @@
 <div class="modal-header">
     <h4 class="modal-title" id="exportModalLabel" ng-show="geocode_state === 'verify'">Geocode Inventory</h4>
+    <h4 class="modal-title" id="exportModalLabel" ng-show="geocode_state === 'no_key'">Geocode Inventory</h4>
     <h4 class="modal-title" id="exportModalLabel" ng-show="geocode_state === 'geocoding'">Geocoding now...</h4>
     <h4 class="modal-title" id="exportModalLabel" ng-show="geocode_state === 'result'">Geocoding Complete</h4>
 </div>
 <div class="modal-body">
+
+  <!-- Comments to the user hinting the state the user is in. -->
   <div ng-show="geocode_state === 'verify'">
     <div>You've selected the following to be geocoded. Please verify before continuing.</div>
+  </div>
+
+  <div ng-show="geocode_state === 'no_key'">
+    <div class="alert alert-danger">
+      <p>There is no MapQuest API key associated to your organization.</p>
+      <p>If you'd like to geocode your data using the MapQuest service, please provide a valid key within your organization's settings.</p>
+    </div>
+    <div>Here's a summary of what you've selected.</div>
   </div>
 
   <div ng-show="geocode_state === 'geocoding'">
@@ -16,7 +27,7 @@
     <div>Before geocoding:</div>
   </div>
 
-  <!-- Shown at all times. -->
+  <!-- The summary of selected records is shown in any state. -->
   <div class="alert alert-info" ng-if="pre_properties_not_geocoded || pre_tax_lots_not_geocoded">
     <div>Not geocoded previously:</div>
     <li ng-if="pre_properties_not_geocoded">{$ pre_properties_not_geocoded|number:0 $} properties</li>
@@ -72,6 +83,6 @@
 </div>
 <div class="modal-footer">
   <button type="button" class="btn btn-primary" ng-click="geocode_buildings()" ng-show="geocode_state === 'verify'">Geocode</button>
-  <button type="button" class="btn btn-default" ng-show="geocode_state === 'verify'" ng-click="cancel()">Cancel</button>
+  <button type="button" class="btn btn-default" ng-show="geocode_state === 'verify' || geocode_state === 'no_key'" ng-click="cancel()">Cancel</button>
   <button type="button" class="btn btn-default" ng-show="geocode_state === 'result'" ng-click="close()">Close</button>
 </div>
