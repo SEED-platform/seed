@@ -14,6 +14,15 @@ angular.module('BE.seed.service.geocode', [])
         });
       };
 
+      geocode_factory.confidence_summary = function (property_state_ids, taxlot_state_ids) {
+        return $http.post('/api/v2/geocode/confidence_summary/', {
+          'property_ids': property_state_ids,
+          'tax_lot_ids': taxlot_state_ids,
+        }).then(function (response) {
+          return response.data
+        });
+      };
+
       return geocode_factory;
     }
 ])
