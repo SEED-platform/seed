@@ -54,6 +54,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.delete_modal',
   'BE.seed.controller.developer',
   'BE.seed.controller.export_inventory_modal',
+  'BE.seed.controller.geocode_modal',
   'BE.seed.controller.inventory_detail',
   'BE.seed.controller.inventory_detail_settings',
   'BE.seed.controller.inventory_detail_notes',

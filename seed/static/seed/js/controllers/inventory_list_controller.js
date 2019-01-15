@@ -369,24 +369,6 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
-      $scope.run_geocode = function() {
-        spinner_utility.show();
-
-        var property_state_ids = _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
-          if ($scope.inventory_type === 'properties') return row.$$treeLevel === 0;
-          return !_.has(row, '$$treeLevel');
-        }), 'property_state_id');
-
-        var taxlot_state_ids = _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
-          if ($scope.inventory_type === 'taxlots') return row.$$treeLevel === 0;
-          return !_.has(row, '$$treeLevel');
-        }), 'taxlot_state_id');
-
-        geocode_service.geocode_by_ids(property_state_ids, taxlot_state_ids);
-
-        spinner_utility.hide();
-      }
-
       $scope.cycle = {
         selected_cycle: _.find(cycles.cycles, {id: inventory.cycle_id}),
         cycles: cycles.cycles
@@ -561,6 +543,32 @@ angular.module('BE.seed.controller.inventory_list', [])
             return !_.isEmpty(label.is_applied);
           });
         });
+      };
+
+      $scope.open_geocode_modal = function() {
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/geocode_modal.html',
+          controller: 'geocode_modal_controller',
+          resolve: {
+            property_state_ids: function () {
+              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
+                if ($scope.inventory_type === 'properties') return row.$$treeLevel === 0;
+                return !_.has(row, '$$treeLevel');
+              }), 'property_state_id');
+            },
+            taxlot_state_ids: function () {
+              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
+                if ($scope.inventory_type === 'taxlots') return row.$$treeLevel === 0;
+                return !_.has(row, '$$treeLevel');
+              }), 'taxlot_state_id');
+            }
+          }
+        });
+
+          modalInstance.result.then(function (result) {
+            // dialog was closed with 'Close' button.
+            refresh_objects();
+          });
       };
 
       $scope.open_delete_modal = function () {
