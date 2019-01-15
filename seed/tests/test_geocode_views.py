@@ -149,3 +149,19 @@ class GeocodeViewTests(TestCase):
         }
 
         self.assertEqual(result_dict, expectation)
+
+    def test_api_key_endpoint_returns_true_or_false_if_org_has_api_key(self):
+        url = reverse('api:v2:geocode-api-key-exists')
+
+        post_params_false = {'organization_id': self.org.pk}
+        false_result = self.client.get(url, post_params_false)
+
+        self.assertEqual(b'false', false_result.content)
+
+        org_with_key, _, _ = create_organization(self.user)
+        org_with_key.mapquest_api_key = "somekey"
+        org_with_key.save()
+        post_params_true = {'organization_id': org_with_key.id}
+        true_result = self.client.get(url, post_params_true)
+
+        self.assertEqual(b'true', true_result.content)

@@ -23,6 +23,15 @@ angular.module('BE.seed.service.geocode', [])
         });
       };
 
+      geocode_factory.check_org_has_api_key = function (org_id) {
+        params = {'organization_id': org_id}
+        return $http.get('/api/v2/geocode/api_key_exists', {
+          'params': params
+        }).then(function (response) {
+          return response.data
+        });
+      }
+
       return geocode_factory;
     }
 ])

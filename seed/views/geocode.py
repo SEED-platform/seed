@@ -7,6 +7,7 @@ from rest_framework.decorators import list_route
 from seed.decorators import ajax_request_class
 
 from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.models import Organization
 
 from seed.models.properties import PropertyState
 from seed.models.tax_lots import TaxLotState
@@ -88,3 +89,14 @@ class GeocodeViews(viewsets.ViewSet):
             }
 
         return result
+
+    @ajax_request_class
+    @list_route(methods=['GET'])
+    def api_key_exists(self, request):
+        org_id = request.GET.get("organization_id")
+        org = Organization.objects.get(id=org_id)
+
+        if org.mapquest_api_key:
+            return True
+        else:
+            return False
