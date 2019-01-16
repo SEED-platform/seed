@@ -38,7 +38,8 @@ angular.module('BE.seed.controller.inventory_map', [])
       var base_layer = new ol.layer.Tile({
         source: new ol.source.Stamen({
           layer: 'terrain'
-        })
+        }),
+        zIndex: 0,  // Note: This is used for layer toggling.
       });
 
       // Define buildings source - the basis of layers
@@ -111,15 +112,80 @@ angular.module('BE.seed.controller.inventory_map', [])
 
       $scope.points_layer = new ol.layer.Vector({
         source: clusterSource(),
+        zIndex: 2,  // Note: This is used for layer toggling.
         style: pointsLayerStyle
       });
 
+      // Hexbin layer
+      var hexagon_size = 750;
+
+      var hexbinSource = function (records = $scope.geocoded_data) {
+        return new ol.source.HexBin(
+          {
+            source: buildingSources(records),
+            size: hexagon_size,
+          }
+        );
+      };
+
+      var hexagonStyle = function (opacity) {
+        return [
+          new ol.style.Style({
+             fill: new ol.style.Fill({ color: [75,0,130,opacity] })
+           })
+         ]
+      };
+
+      var hexbinStyle = function(feature) {
+        var features = feature.getProperties().features
+        var site_eui_key = _.find(_.keys(features[0].values_), function(key) {
+          return _.startsWith(key, "site_eui")
+        });
+        var site_euis = _.map(features, function(point) {
+          return point.values_[site_eui_key]
+        });
+        var total_eui = _.sum(site_euis)
+        var opacity = Math.max(0.20,total_eui/hexagon_size);
+
+        return hexagonStyle(opacity);
+      };
+
+      $scope.hexbin_layer = new ol.layer.Vector({
+        source: hexbinSource(),
+        zIndex: 1,  // Note: This is used for layer toggling.
+        opacity: 0.8,
+        style:  hexbinStyle,
+      })
+
+      // Render map
       $scope.map = new ol.Map({
         target: 'map',
-        layers: [base_layer, $scope.points_layer]
+        layers: [base_layer, $scope.hexbin_layer, $scope.points_layer]
       });
 
-      // Building Popup
+      // Toggle layers
+
+      // If a layer's z-index is changed, it should be changed here as well.
+      var layer_at_z_index = {
+        0: base_layer,
+        1: $scope.hexbin_layer,
+        2: $scope.points_layer,
+      }
+
+      $scope.toggle_layer = function(z_index) {
+        var layers = $scope.map.getLayers().array_
+        var z_indexes = _.map(layers, function(layer) {
+          return layer.values_.zIndex;
+        });
+
+        if (z_indexes.includes(z_index)) {
+          $scope.map.removeLayer(layer_at_z_index[z_index]);
+        } else {
+          $scope.map.addLayer(layer_at_z_index[z_index]);
+        }
+      };
+
+      // Popup
       var popup_element = document.getElementById('popup-element');
 
       // Define overlay attaching html element
@@ -181,6 +247,10 @@ angular.module('BE.seed.controller.inventory_map', [])
         var points = []
 
         $scope.map.forEachFeatureAtPixel(event.pixel, function (feature) {
+          // If feature has a center (implies it is a hexbin), disregard click
+          if (feature.getKeys().includes("center")) {
+            return;
+          }
           points = feature.get("features")
         });
 
@@ -223,6 +293,7 @@ angular.module('BE.seed.controller.inventory_map', [])
 
       var rerenderPoints = function (records) {
         $scope.points_layer.setSource(clusterSource(records));
+        $scope.hexbin_layer.setSource(hexbinSource(records));
       };
 
       // Labels

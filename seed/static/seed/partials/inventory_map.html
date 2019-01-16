@@ -30,7 +30,10 @@
                 </button>
                 <ul id="inventory-actions-dropdown" uib-dropdown-menu class="dropdown-menu" role="menu" aria-labelledby="btnInventoryActions">
                     <li role="menuitem">
-                      <a>Show Overview</a>
+                      <a ng-click="toggle_layer(2)">Toggle Points</a>
+                    </li>
+                    <li role="menuitem">
+                      <a ng-click="toggle_layer(1)">Toggle Hexbins</a>
                     </li>
                 </ul>
             </div>
