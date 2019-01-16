@@ -41,6 +41,27 @@ angular.module('BE.seed.controller.inventory_map', [])
         })
       });
 
+      // Define buildings source - the basis of layers
+      var buildingPoint = function (building) {
+        var format = new ol.format.WKT();
+
+        var long_lat = building.long_lat
+        var feature = format.readFeature(long_lat, {
+          dataProjection: 'EPSG:4326',
+          featureProjection: 'EPSG:3857'
+        });
+
+        feature.setProperties(building)
+        return feature
+      };
+
+      var buildingSources = function (records = $scope.geocoded_data) {
+        var features = _.map(records, buildingPoint);
+
+        return new ol.source.Vector({ features: features });
+      };
+
+      // Points/clusters layer
       var clusterPointStyle = function (size) {
         // TODO revisit this with a larger dataset
         // point radius of each cluster icon is relative to size and has a min and max.
@@ -72,43 +93,25 @@ angular.module('BE.seed.controller.inventory_map', [])
         });
       };
 
-      var buildingPoint = function (building) {
-        var format = new ol.format.WKT();
-
-        var long_lat = building.long_lat
-        var feature = format.readFeature(long_lat, {
-          dataProjection: 'EPSG:4326',
-          featureProjection: 'EPSG:3857'
-        });
-
-        feature.setProperties(building)
-        return feature
-      };
-
-      var pointSources = function (records = $scope.geocoded_data) {
-        var features = _.map(records, buildingPoint);
-
-        return new ol.source.Vector({ features: features });
-      };
-
       var clusterSource = function (records = $scope.geocoded_data) {
         return new ol.source.Cluster({
-          source: pointSources(records),
+          source: buildingSources(records),
           distance: 45,
         });
       };
 
-      // Define points/clusters layer
+      var pointsLayerStyle = function(feature) {
+        var size = feature.get('features').length;
+        if (size > 1) {
+          return clusterPointStyle(size)
+        } else {
+          return singlePointStyle();
+        }
+      };
+
       $scope.points_layer = new ol.layer.Vector({
         source: clusterSource(),
-        style: function(feature) {
-          var size = feature.get('features').length;
-          if (size > 1) {
-            return clusterPointStyle(size)
-          } else {
-            return singlePointStyle();
-          };
-        }
+        style: pointsLayerStyle
       });
 
       $scope.map = new ol.Map({
