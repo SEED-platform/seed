@@ -6,6 +6,7 @@ import json
 import re
 
 from django.contrib.gis.geos import GEOSGeometry
+from django.db.models import Q
 
 
 class MapQuestAPIKeyError(Exception):
@@ -40,10 +41,14 @@ def geocode_addresses(buildings):
     from seed.models.properties import PropertyState
 
     if buildings and buildings.model is PropertyState:
-        pregeocoded = buildings.exclude(longitude__isnull=True, latitude__isnull=True)
+        # Filter on any properties with both Latitude and Longitude fields populated.
+        # Exclude any that had fields populated because they were previously geocoded sucessfully.
+        pregeocoded = buildings.filter(longitude__isnull=False, latitude__isnull=False).exclude(geocoding_confidence__startswith="High")
         _geocode_by_prepopulated_fields(pregeocoded)
 
-        ungeocoded_buildings = buildings.filter(longitude__isnull=True, latitude__isnull=True)
+        # Filter on any properties with both Latitude and Longitude fields unpopulated
+        # or on any properties successfully geocoded previously (whose Latitude and Longitude are populated).
+        ungeocoded_buildings = buildings.filter(Q(longitude__isnull=True, latitude__isnull=True) | Q(geocoding_confidence__startswith="High"))
     else:
         ungeocoded_buildings = buildings
 
@@ -66,12 +71,18 @@ def geocode_addresses(buildings):
 
 
 def _save_geocoding_results(id_geocoding_results, ungeocoded_buildings):
+    from seed.models.properties import PropertyState
+
     for id, geocoding_result in id_geocoding_results.items():
         building = ungeocoded_buildings.get(pk=id)
 
         if geocoding_result.get("is_valid"):
             building.long_lat = geocoding_result.get("long_lat")
             building.geocoding_confidence = f"High ({geocoding_result.get('quality')})"
+
+            if isinstance(building, PropertyState):
+                building.longitude = geocoding_result.get("longitude")
+                building.latitude = geocoding_result.get("latitude")
         else:
             building.geocoding_confidence = f"Low - check address ({geocoding_result.get('quality')})"
 
@@ -190,7 +201,9 @@ def _analyze_location(result):
         return {
             "is_valid": True,
             "long_lat": f"POINT ({long} {lat})",
-            "quality": quality
+            "quality": quality,
+            "longitude": long,
+            "latitude": lat
         }
     else:
         return {"quality": quality}

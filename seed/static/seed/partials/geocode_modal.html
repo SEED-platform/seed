@@ -29,21 +29,21 @@
 
   <!-- The summary of selected records is shown in any state. -->
   <div class="alert alert-info" ng-if="pre_properties_not_geocoded || pre_tax_lots_not_geocoded">
-    <div>Not geocoded previously:</div>
+    <div>Not geocoded previously for the following:</div>
     <li ng-if="pre_properties_not_geocoded">{$ pre_properties_not_geocoded|number:0 $} properties</li>
     <li ng-if="pre_tax_lots_not_geocoded">{$ pre_tax_lots_not_geocoded|number:0 $} tax lots</li>
   </div>
 
   <div class="alert alert-warning" ng-if="pre_properties_geocoded_high_confidence || pre_properties_geocoded_low_confidence || pre_properties_geocoded_manually || pre_properties_geocode_not_possible || pre_tax_lots_geocoded_high_confidence || pre_tax_lots_geocoded_low_confidence || pre_tax_lots_geocode_not_possible">
     <div>
-      Geocoding attempted previously:
+      Geocoding attempted previously for the following:
       <br>(Unless you've made changes to these records, the results will likely be the same.)
     </div>
     <div ng-if="pre_properties_geocoded_high_confidence || pre_properties_geocoded_low_confidence || pre_properties_geocoded_manually || pre_properties_geocode_not_possible">
       <br>
       <div>Properties</div>
       <li ng-if="pre_properties_geocoded_high_confidence">{$ pre_properties_geocoded_high_confidence|number:0 $} successful with high confidence in the result</li>
-      <li ng-if="pre_properties_geocoded_manually">{$ pre_properties_geocoded_manually|number:0 $} geocoded manually</li>
+      <li ng-if="pre_properties_geocoded_manually">{$ pre_properties_geocoded_manually|number:0 $} geocoded manually - <b>these will not change</b> </li>
       <li ng-if="pre_properties_geocoded_low_confidence">{$ pre_properties_geocoded_low_confidence|number:0 $} unsuccessful due to a low geocode confidence in the result</li>
       <li ng-if="pre_properties_geocode_not_possible">{$ pre_properties_geocode_not_possible|number:0 $} unsuccessful due to missing address fields</li>
     </div>
