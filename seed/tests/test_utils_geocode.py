@@ -140,6 +140,9 @@ class GeocodeAddresses(TestCase):
 
             self.assertEqual('POINT (-104.986138 39.765251)', long_lat_wkt(refreshed_property))
             self.assertEqual('High (P1AAA)', refreshed_property.geocoding_confidence)
+            self.assertEqual(-104.986138, refreshed_property.longitude)
+            self.assertEqual(39.765251, refreshed_property.latitude)
+
             self.assertEqual('POINT (-104.991046 39.752396)', long_lat_wkt(refreshed_tax_lot))
             self.assertEqual('High (P1AAA)', refreshed_tax_lot.geocoding_confidence)
 
@@ -177,8 +180,13 @@ class GeocodeAddresses(TestCase):
             wrong_state_zip_property = PropertyState.objects.get(pk=wrong_state_zip_property.id)
 
             self.assertIsNone(state_zip_only_property.long_lat)
+            self.assertIsNone(state_zip_only_property.longitude)
+            self.assertIsNone(state_zip_only_property.latitude)
             self.assertEqual("Missing address components (N/A)", state_zip_only_property.geocoding_confidence)
+
             self.assertIsNone(wrong_state_zip_property.long_lat)
+            self.assertIsNone(wrong_state_zip_property.longitude)
+            self.assertIsNone(wrong_state_zip_property.latitude)
             self.assertEqual("Low - check address (B3BCA)", wrong_state_zip_property.geocoding_confidence)
 
     def test_geocode_addresses_is_successful_even_if_two_buildings_have_same_address(self):
@@ -207,6 +215,8 @@ class GeocodeAddresses(TestCase):
             for property in refreshed_properties:
                 self.assertEqual('POINT (-104.986138 39.765251)', long_lat_wkt(property))
                 self.assertEqual('High (P1AAA)', property.geocoding_confidence)
+                self.assertEqual(-104.986138, property.longitude)
+                self.assertEqual(39.765251, property.latitude)
 
     def test_geocode_addresses_is_successful_with_over_100_properties(self):
         with batch_vcr.use_cassette('seed/tests/data/vcr_cassettes/geocode_101_unique_addresses.yaml', match_on=['uri_length']):
@@ -337,3 +347,91 @@ class GeocodeAddresses(TestCase):
 
     def test_geocode_address_can_handle_receiving_no_buildings(self):
         self.assertIsNone(geocode_addresses(PropertyState.objects.none()))
+
+    def test_geocoding_an_address_again_after_successful_geocode_executes_successfully(self):
+        with base_vcr.use_cassette('seed/tests/data/vcr_cassettes/geocode_same_record_twice.yaml'):
+            property_details = self.property_state_factory.get_details()
+            property_details['organization_id'] = self.org.id
+            property_details['address_line_1'] = "3001 Brighton Blvd"
+            property_details['address_line_2'] = "suite 2693"
+            property_details['city'] = "Denver"
+            property_details['state'] = "Colorado"
+            property_details['postal_code'] = "80216"
+            property = PropertyState(**property_details)
+            property.save()
+
+            properties = PropertyState.objects.filter(pk=property.id)
+            geocode_addresses(properties)
+
+            refreshed_property = PropertyState.objects.get(pk=property.id)
+            refreshed_property.address_line_1 = "2020 Lawrence St"
+            refreshed_property.address_line_2 = "unit A"
+            refreshed_property.postal_code = "80205"
+            refreshed_property.save()
+
+            refreshed_properties = PropertyState.objects.filter(pk=refreshed_property.id)
+            geocode_addresses(refreshed_properties)
+
+            refreshed_updated_property = PropertyState.objects.get(pk=refreshed_property.id)
+
+            self.assertEqual('POINT (-104.991046 39.752396)', long_lat_wkt(refreshed_updated_property))
+            self.assertEqual('High (P1AAA)', refreshed_updated_property.geocoding_confidence)
+            self.assertEqual(-104.991046, refreshed_updated_property.longitude)
+            self.assertEqual(39.752396, refreshed_updated_property.latitude)
+
+    def test_geocoded_fields_are_changed_appropriately_if_a_user_manually_updates_latitude_or_longitude_of_ungeocoded_property(self):
+        property_details = self.property_state_factory.get_details()
+        property_details['organization_id'] = self.org.id
+        property = PropertyState(**property_details)
+        property.save()
+
+        refreshed_property = PropertyState.objects.get(pk=property.id)
+        self.assertIsNone(long_lat_wkt(refreshed_property))
+        self.assertIsNone(refreshed_property.geocoding_confidence)
+
+        refreshed_property.latitude = 39.765251
+        refreshed_property.save()
+
+        refreshed_property = PropertyState.objects.get(pk=property.id)
+        self.assertEqual(39.765251, refreshed_property.latitude)
+        self.assertIsNone(long_lat_wkt(refreshed_property))
+        self.assertIsNone(refreshed_property.geocoding_confidence)
+
+        refreshed_property.longitude = -104.986138
+        refreshed_property.save()
+
+        refreshed_property = PropertyState.objects.get(pk=property.id)
+        self.assertEqual(-104.986138, refreshed_property.longitude)
+        self.assertEqual('POINT (-104.986138 39.765251)', long_lat_wkt(refreshed_property))
+        self.assertEqual("Manually geocoded (N/A)", refreshed_property.geocoding_confidence)
+
+    def test_geocoded_fields_are_changed_appropriately_if_a_user_manually_updates_latitude_or_longitude_of_geocoded_property(self):
+        property_details = self.property_state_factory.get_details()
+        property_details['organization_id'] = self.org.id
+        property_details['latitude'] = 39.765251
+        property_details['longitude'] = -104.986138
+        property_details['long_lat'] = 'POINT (-104.986138 39.765251)'
+        property_details['geocoding_confidence'] = 'High (P1AAA)'
+        property = PropertyState(**property_details)
+        property.save()
+
+        # Make sure geocoding_confidence isn't overriden to be Manual given latitude and longitude are updated
+        refreshed_property = PropertyState.objects.get(pk=property.id)
+        self.assertEqual('High (P1AAA)', refreshed_property.geocoding_confidence)
+
+        # Try updating latitude
+        refreshed_property.latitude = 39.81
+        refreshed_property.save()
+
+        refreshed_property = PropertyState.objects.get(pk=property.id)
+        self.assertEqual(39.81, refreshed_property.latitude)
+        self.assertEqual('POINT (-104.986138 39.81)', long_lat_wkt(refreshed_property))
+        self.assertEqual("Manually geocoded (N/A)", refreshed_property.geocoding_confidence)
+
+        # If latitude or longitude are not there long_lat and geocoding_confidence should be empty
+        refreshed_property.latitude = None
+        refreshed_property.save()
+
+        self.assertIsNone(refreshed_property.latitude)
+        self.assertIsNone(long_lat_wkt(refreshed_property))
+        self.assertIsNone(refreshed_property.geocoding_confidence)
