@@ -78,7 +78,19 @@
             </div>
         </span>
 
+        <span ng-show="layerVisible(1)" style="width: 500px">
+          <p class="text-center">Total Site EUI (kBtu/ft2)</p>
+          <div>
+            <p class="col-sm-2 text-right" style="float: left">20 -</p>
+            <p class="col-sm-2 text-left" style="float: right">+ 750</p>
+          </div>
+          <div>
+            <uib-progressbar value=0 style="background:linear-gradient(to right, rgb(75,0,130,0.16),rgb(75,0,130,0.8))"></uib-progressbar>
+          </div>
+        </span>
+
     </div>
+
 </div>
 
 <div class="inventory-list-tab-container">
@@ -103,13 +115,6 @@
     </ul>
 </div>
 
-<!-- <div class="section_content_container" ng-cloak style="clear:both; overflow:hidden;">
-    <div class="section_content">
-        <div id="grid-container">
-            <div ui-grid="gridOptions" ui-grid-exporter ui-grid-move-columns ui-grid-pinning ui-grid-resize-columns ui-grid-save-state ui-grid-selection ui-grid-tree-view></div>
-        </div>
-    </div>
-</div> -->
 <div id="map">
   <div id="popup-element"></div>
 </div>

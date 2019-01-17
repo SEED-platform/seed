@@ -172,13 +172,17 @@ angular.module('BE.seed.controller.inventory_map', [])
         2: $scope.points_layer,
       }
 
-      $scope.toggle_layer = function(z_index) {
+      $scope.layerVisible = function(z_index) {
         var layers = $scope.map.getLayers().array_
         var z_indexes = _.map(layers, function(layer) {
           return layer.values_.zIndex;
         });
 
-        if (z_indexes.includes(z_index)) {
+        return z_indexes.includes(z_index);
+      };
+
+      $scope.toggle_layer = function(z_index) {
+        if ($scope.layerVisible(z_index)) {
           $scope.map.removeLayer(layer_at_z_index[z_index]);
         } else {
           $scope.map.addLayer(layer_at_z_index[z_index]);
