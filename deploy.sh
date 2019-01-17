@@ -5,6 +5,10 @@
 # will not be updated.
 
 : << 'arguments'
+There is only one optional argument and that is the name of the docker compose file to load.
+For example: ./deploy.sh docker-compose.local.oep.yml
+
+There are several required environment variables that need to be set in order to launch seed:
 POSTGRES_DB (optional), defaults to seed
 DJANGO_SETTINGS_MODULE (optional), defaults to config.settings.docker
 POSTGRES_USER (required), admin user of postgres database
@@ -59,6 +63,14 @@ if [ -z ${SECRET_KEY+x} ]; then
     exit 1
 fi
 
+DOCKER_COMPOSE_FILE=docker-compose.local.yml
+if [ -z "$1" ]; then
+    echo "There are no arguments, defaulting to use '${DOCKER_COMPOSE_FILE}'."
+else
+    DOCKER_COMPOSE_FILE=$1
+    echo "Using passed docker-compose file of ${DOCKER_COMPOSE_FILE}"
+fi
+
 if docker exec $(docker ps -qf "name=registry") true > /dev/null 2>&1; then
     echo "Registry is already running"
 else
@@ -74,22 +86,27 @@ else
 fi
 
 echo "Building lasest version of SEED"
-docker-compose build --pull
+# explicitly pull images from docker-compose. Note that you will need to keep the
+# versions consistent between the compose file and what is below.
+docker-compose pull
+docker-compose build
 
 echo "Tagging local containers"
 docker tag seedplatform/seed:latest 127.0.0.1:5000/seed
-docker tag postgres:latest 127.0.0.1:5000/postgres
-docker tag redis:latest 127.0.0.1:5000/redis
+docker tag postgres:11.1 127.0.0.1:5000/postgres
+docker tag redis:5.0.1 127.0.0.1:5000/redis
+docker tag seedplatform/oep:1.0.0-SNAPSHOT 127.0.0.1:5000/oep
 
 sleep 3
 echo "Pushing tagged versions to local registry"
 docker push 127.0.0.1:5000/seed
 docker push 127.0.0.1:5000/postgres
 docker push 127.0.0.1:5000/redis
+docker push 127.0.0.1:5000/oep
 
 echo "Deploying"
 # check if the stack is running, and if so then shut it down
-docker stack deploy seed --compose-file=docker-compose.local.yml &
+docker stack deploy seed --compose-file=${DOCKER_COMPOSE_FILE} &
 wait $!
 while ( nc -zv 127.0.0.1 80 3>&1 1>&2- 2>&3- ) | awk -F ":" '$3 != " Connection refused" {exit 1}'; do echo -n "."; sleep 5; done
 echo 'SEED stack redeployed'
