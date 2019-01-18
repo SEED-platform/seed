@@ -13,7 +13,10 @@ import vcr
 
 from django.conf import settings
 
-from django.contrib.gis.geos import Point
+from django.contrib.gis.geos import (
+    Point,
+    Polygon,
+)
 
 from django.test import TestCase
 
@@ -27,9 +30,12 @@ from seed.test_helpers.fake import (
     FakeTaxLotStateFactory,
 )
 
-from seed.utils.geocode import geocode_addresses
-from seed.utils.geocode import long_lat_wkt
-from seed.utils.geocode import MapQuestAPIKeyError
+from seed.utils.geocode import (
+    bounding_box_wkt,
+    geocode_addresses,
+    long_lat_wkt,
+    MapQuestAPIKeyError,
+)
 
 from seed.utils.organizations import create_organization
 
@@ -58,19 +64,20 @@ batch_vcr.register_matcher('uri_length', batch_request_uri_length_matcher)
 
 
 class LongLatWkt(TestCase):
-    def test_long_lat_wkt_takes_a_state_and_returns_the_WKT_string_or_None(self):
-        user_details = {
+    def setUp(self):
+        self.user_details = {
             'username': 'test_user@demo.com',
             'password': 'test_pass',
         }
-        user = User.objects.create_superuser(
-            email='test_user@demo.com', **user_details
+        self.user = User.objects.create_superuser(
+            email='test_user@demo.com', **self.user_details
         )
-        org, _, _ = create_organization(user)
-        property_state_factory = FakePropertyStateFactory(organization=org)
+        self.org, _, _ = create_organization(self.user)
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
 
-        property_details = property_state_factory.get_details()
-        property_details['organization_id'] = org.id
+    def test_long_lat_wkt_takes_a_state_and_returns_the_WKT_string_or_None(self):
+        property_details = self.property_state_factory.get_details()
+        property_details['organization_id'] = self.org.id
 
         no_long_lat_property = PropertyState(**property_details)
         no_long_lat_property.save()
@@ -88,6 +95,27 @@ class LongLatWkt(TestCase):
 
         self.assertIsInstance(geocoded_record.long_lat, Point)
         self.assertEqual('POINT (-104.985765 39.764984)', long_lat_wkt(geocoded_property))
+
+    def test_bounding_box_wkt_takes_a_state_and_returns_the_WKT_string_or_None(self):
+        property_details = self.property_state_factory.get_details()
+        property_details['organization_id'] = self.org.id
+
+        no_bounding_box_property = PropertyState(**property_details)
+        no_bounding_box_property.save()
+
+        property_details['bounding_box'] = 'POLYGON ((0 0, 4 0, 4 4, 0 4, 0 0))'
+
+        bounding_box_property = PropertyState(**property_details)
+        bounding_box_property.save()
+
+        no_bounding_box_record = PropertyState.objects.get(pk=no_bounding_box_property.id)
+        geocoded_record = PropertyState.objects.get(pk=bounding_box_property.id)
+
+        self.assertIsNone(no_bounding_box_record.bounding_box)
+        self.assertIsNone(bounding_box_wkt(no_bounding_box_record))
+
+        self.assertIsInstance(geocoded_record.bounding_box, Polygon)
+        self.assertEqual('POLYGON ((0 0, 4 0, 4 4, 0 4, 0 0))', bounding_box_wkt(bounding_box_property))
 
 
 class GeocodeAddresses(TestCase):

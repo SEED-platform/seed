@@ -136,6 +136,7 @@ class PropertyState(models.Model):
     longitude = models.FloatField(null=True, blank=True)
 
     long_lat = geomodels.PointField(geography=True, null=True, blank=True)
+    bounding_box = geomodels.PolygonField(geography=True, null=True, blank=True)
     geocoding_confidence = models.CharField(max_length=32, null=True, blank=True)
 
     # Only spot where it's 'building' in the app, b/c this is a PM field.

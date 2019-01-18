@@ -105,6 +105,7 @@ class Column(models.Model):
     # These are the columns that are removed when looking to see if the records are the same
     COLUMN_EXCLUDE_FIELDS = [
         'analysis_state',
+        'bounding_box',
         'data_state',
         'extra_data',
         'geocoding_confidence',
