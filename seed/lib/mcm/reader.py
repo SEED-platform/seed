@@ -10,8 +10,10 @@ out of CSV files. Fuzzy matches, application to data models happens
 elsewhere.
 
 """
+import json
 import mmap
 import operator
+import re
 from builtins import str
 from csv import DictReader, Sniffer
 
@@ -31,6 +33,43 @@ from xlrd.xldate import XLDateAmbiguous
 ) = range(7)
 
 ROW_DELIMITER = "|#*#|"
+
+
+class JSONParser(object):
+    def __init__(self, json_file):
+        raw_data = json.load(json_file)
+        features = raw_data.get("features")
+        raw_column_names = features[0].get("properties").keys()
+
+        self.headers = [self._display_name(col) for col in raw_column_names]
+        self.column_translations = {col: self._display_name(col) for col in raw_column_names}
+        self.first_five_rows = [self._capture_row(feature) for feature in features[:5]]
+
+        self.data = []
+        for feature in features:
+            properties = feature.get('properties')
+
+            entry = {self.column_translations.get(k, k): v for k, v in properties.items()}
+            entry["bounding_box"] = self._get_bounding_box(feature)
+
+            self.data.append(entry)
+
+    def _display_name(self, col):
+        # Returns string with capitalized words and underscores removed
+        return re.sub(r'[_]', ' ', col.title())
+
+    def _get_bounding_box(self, feature):
+        raw_coordinates = feature.get('geometry').get('coordinates')[0]
+        coords_strings = [f"{coords[0]} {coords[1]}" for coords in raw_coordinates]
+
+        return f"POLYGON (({', '.join(coords_strings)}))"
+
+    def _capture_row(self, feature):
+        stringified_values = [str(value) for value in feature.get('properties').values()]
+        return "|#*#|".join(stringified_values)
+
+    def num_columns(self):
+        return len(self.headers)
 
 
 class ExcelParser(object):

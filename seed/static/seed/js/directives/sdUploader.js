@@ -16,7 +16,7 @@
  *  importrecord - int or string - id of import record or dataset
  *
  */
-var UPLOADER_ALLOWED_EXTENSIONS = ['csv', 'xls', 'xlsx'];
+var UPLOADER_ALLOWED_EXTENSIONS = ['csv', 'xls', 'xlsx', 'json'];
 
 var makeS3Uploader = function (scope, element) {
   var uploader = new qq.s3.FineUploaderBasic({

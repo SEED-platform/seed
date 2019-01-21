@@ -12,6 +12,7 @@ import copy
 import datetime as dt
 import hashlib
 import operator
+import os
 import traceback
 from _csv import Error
 from collections import namedtuple
@@ -316,7 +317,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                 # _log.debug("extra data fields: {}".format(extra_data_fields))
 
                 # All the data live in the PropertyState.extra_data field when the data are imported
-                data = PropertyState.objects.filter(id__in=ids).only('extra_data').iterator()
+                data = PropertyState.objects.filter(id__in=ids).only('extra_data', 'bounding_box').iterator()
 
                 # Since we are importing CSV, then each extra_data field will have the same fields.
                 # So save the map_model_obj outside of for loop to pass into the `save_column_names`
@@ -356,6 +357,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                         # model's collection as well.
 
                         # Assign some other arguments here
+                        map_model_obj.bounding_box = original_row.bounding_box
                         map_model_obj.import_file = import_file
                         map_model_obj.source_type = save_type
                         map_model_obj.organization = import_file.import_record.super_organization
@@ -572,7 +574,10 @@ def _save_raw_data_chunk(chunk, file_pk, progress_key):
                 for k, v in c.items():
                     # remove extra spaces surrounding keys.
                     key = k.strip()
-                    if isinstance(v, basestring):
+
+                    if key == "bounding_box":  # capture bounding_box GIS field on raw record
+                        raw_property.bounding_box = v
+                    elif isinstance(v, basestring):
                         new_chunk[key] = unidecode(v)
                     elif isinstance(v, (dt.datetime, dt.date)):
                         raise TypeError(
@@ -672,7 +677,14 @@ def _save_raw_data_create_tasks(file_pk, progress_key):
         # TODO #239: Should remove green button from here until later.
         return _save_raw_green_button_data(file_pk)
 
-    parser = reader.MCMParser(import_file.local_file)
+    file_extension = os.path.splitext(import_file.file.name)[1]
+
+    if file_extension == ".json":
+        parser = reader.JSONParser(import_file.local_file)
+    else:
+        parser = reader.MCMParser(import_file.local_file)
+
+    # TODO: Need to think about how this information will be saved
     cache_first_rows(import_file, parser)
     import_file.num_rows = 0
     import_file.num_columns = parser.num_columns()
