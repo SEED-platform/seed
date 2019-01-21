@@ -1,11 +1,14 @@
 # .git  # For now add in the .git repo so that the version is parsed on the page correctly
+.dockerignore
 .idea
 .tox
+**/*.pyc
 collected_static
 media
 node_modules
 seed/static/vendors
 config/settings/local_untracked.py
 config/settings/local_untracked.py.dist
-/deploy.sh
-/docker-*.yml
+./deploy.sh
+./docker-compose*.yml
+

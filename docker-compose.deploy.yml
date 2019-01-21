@@ -1,6 +1,9 @@
 # Docker Compose for deployment. This removes the hard coded usernames and
 # passwords and pulls Docker Hub seedplatform/seed for the latest version.
-# Must set the following environment variables
+# It is recommended that you use docker stack to deploy which defaults to using
+# the docker-compose.local.yml file. This file is intended to support simple
+# production-based docker-compose deployments (not docker stack).
+# Must set the following environment variables.
 #   POSTGRES_USER
 #   POSTGRES_PASSWORD
 #   SEED_ADMIN_USER
@@ -11,7 +14,7 @@
 version: '3'
 services:
   db-postgres:
-    image: postgres
+    image: postgres:11.1
     environment:
       - POSTGRES_DB=seed
       - POSTGRES_USER
@@ -19,7 +22,7 @@ services:
     volumes:
       - seed_pgdata:/var/lib/postgresql/data
   db-redis:
-    image: redis
+    image: redis:5.0.1
   web:
     image: seedplatform/seed
     environment:
@@ -54,6 +57,11 @@ services:
       - web
     volumes:
       - seed_media:/seed/media
+  oep-city-1:
+    # This is a placeholder. If needed, follow the instructions to enable: https://cloud.docker.com/u/seedplatform/repository/docker/seedplatform/oep
+    image: seedplatform/oep:1.0.0-SNAPSHOT
+    environment:
+      - OEP_DISABLED=true
 volumes:
   seed_pgdata:
     external: true

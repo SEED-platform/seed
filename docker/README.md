@@ -33,7 +33,13 @@ Add user to docker group.
 sudo usermod -a -G docker ubuntu
 ```
 
-
 The preferred way to deploy with Docker is using docker swarm and docker stack. 
 Look at the deploy.sh script in the root of this repository.
 
+The short version is to simply run the command below. Note that the passing of the docker-compose yml filename is not required if using docker-compose.local.yml.
+
+```bash
+./deploy.sh docker-compose.local.yml
+```
+
+If deploying using a custom docker-compose yml file, then simple replace the name in the command above. This would be required if using the Open Efficiency Platform work (connecting SEED to Salesforce).

@@ -3,7 +3,7 @@
 version: '3'
 services:
   db-postgres:
-    image: postgres
+    image: postgres:11.1
     environment:
       - POSTGRES_DB=seed
       - POSTGRES_USER=seed
@@ -11,7 +11,7 @@ services:
     volumes:
       - seed_pgdata:/var/lib/postgresql/data
   db-redis:
-    image: redis
+    image: redis:5.0.1
   web:
     image: seedplatform/seed:latest
     build: .
@@ -48,6 +48,13 @@ services:
       - web
     volumes:
       - seed_media:/seed/media
+  oep-city-1:
+    # This is a placeholder. If needed, follow the instructions to enable: https://cloud.docker.com/u/seedplatform/repository/docker/seedplatform/oep
+    image: seedplatform/oep:1.0.0-SNAPSHOT
+    depends_on:
+      - web
+    environment:
+      - OEP_DISABLED=true
 volumes:
   seed_pgdata:
     external: true
