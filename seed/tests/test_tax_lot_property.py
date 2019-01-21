@@ -89,14 +89,14 @@ class TestTaxLotProperty(TestCase):
             columns.append(c['name'])
 
         # call the API
-        url = reverse_lazy('api:v2.1:tax_lot_properties-csv')
+        url = reverse_lazy('api:v2.1:tax_lot_properties-export')
         response = self.client.post(
             url + '?{}={}&{}={}&{}={}'.format(
                 'organization_id', self.org.pk,
                 'cycle_id', self.cycle,
                 'inventory_type', 'properties'
             ),
-            data=json.dumps({'columns': columns}),
+            data=json.dumps({'columns': columns, 'export_type': 'csv'}),
             content_type='application/json'
         )
 
