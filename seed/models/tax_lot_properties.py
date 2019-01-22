@@ -17,6 +17,7 @@ from django.utils.timezone import make_naive
 
 from seed.models.columns import Column
 from seed.utils.geocode import (
+    centroid_wkt,
     bounding_box_wkt,
     long_lat_wkt,
 )
@@ -139,6 +140,7 @@ class TaxLotProperty(models.Model):
                 'obj_state_id': 'property_state_id',
                 'obj_view_id': 'property_view_id',
                 'obj_id': 'property_id',
+                'centroid': 'centroid',
                 'bounding_box': 'bounding_box',
                 'long_lat': 'long_lat',
                 'related_class': 'TaxLotView',
@@ -339,6 +341,9 @@ class TaxLotProperty(models.Model):
 
             # store the property / taxlot data to the object dictionary as well. This is hacky.
             if lookups['obj_class'] == 'PropertyView':
+                # bring in property-specific GIS data
+                obj_dict[lookups['centroid']] = centroid_wkt(obj.state)
+
                 if 'campus' in filtered_fields:
                     obj_dict[obj_column_name_mapping['campus']] = obj.property.campus
                 # Do not make these timestamps naive. They persist correctly.

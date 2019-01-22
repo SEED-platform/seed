@@ -106,6 +106,7 @@ class Column(models.Model):
     COLUMN_EXCLUDE_FIELDS = [
         'analysis_state',
         'bounding_box',
+        'centroid',
         'data_state',
         'extra_data',
         'geocoding_confidence',

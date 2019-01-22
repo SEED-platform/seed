@@ -31,6 +31,7 @@ from seed.test_helpers.fake import (
 )
 
 from seed.utils.geocode import (
+    centroid_wkt,
     bounding_box_wkt,
     geocode_addresses,
     long_lat_wkt,
@@ -63,7 +64,7 @@ batch_vcr = base_vcr
 batch_vcr.register_matcher('uri_length', batch_request_uri_length_matcher)
 
 
-class LongLatWkt(TestCase):
+class WktTests(TestCase):
     def setUp(self):
         self.user_details = {
             'username': 'test_user@demo.com',
@@ -116,6 +117,27 @@ class LongLatWkt(TestCase):
 
         self.assertIsInstance(geocoded_record.bounding_box, Polygon)
         self.assertEqual('POLYGON ((0 0, 4 0, 4 4, 0 4, 0 0))', bounding_box_wkt(bounding_box_property))
+
+    def test_centroid_wkt_takes_a_state_and_returns_the_WKT_string_or_None(self):
+        property_details = self.property_state_factory.get_details()
+        property_details['organization_id'] = self.org.id
+
+        no_centroid_property = PropertyState(**property_details)
+        no_centroid_property.save()
+
+        property_details['centroid'] = 'POLYGON ((0 0, 4 0, 4 4, 0 4, 0 0))'
+
+        centroid_property = PropertyState(**property_details)
+        centroid_property.save()
+
+        no_centroid_record = PropertyState.objects.get(pk=no_centroid_property.id)
+        geocoded_record = PropertyState.objects.get(pk=centroid_property.id)
+
+        self.assertIsNone(no_centroid_record.centroid)
+        self.assertIsNone(centroid_wkt(no_centroid_record))
+
+        self.assertIsInstance(geocoded_record.centroid, Polygon)
+        self.assertEqual('POLYGON ((0 0, 4 0, 4 4, 0 4, 0 0))', centroid_wkt(centroid_property))
 
 
 class GeocodeAddresses(TestCase):
