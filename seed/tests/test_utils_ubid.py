@@ -138,7 +138,7 @@ class UbidUtilMethods(TestCase):
         self.assertEqual(property_bounding_box_wkt, bounding_box_wkt(refreshed_property))
         self.assertEqual(property_centroid_wkt, centroid_wkt(refreshed_property))
 
-    def test_decode_ubids_throws_an_error_if_an_invalid_ubid_is_provided(self):
+    def test_decode_ubids_doesnt_throw_an_error_if_an_invalid_ubid_is_provided(self):
         property_details = self.property_state_factory.get_details()
         property_details['organization_id'] = self.org.id
         property_details['ubid'] = 'invalidubid'
@@ -147,5 +147,9 @@ class UbidUtilMethods(TestCase):
         property.save()
         properties = PropertyState.objects.filter(pk=property.id)
 
-        with self.assertRaises(ValueError):
-            decode_ubids(properties)
+        decode_ubids(properties)
+
+        refreshed_property = PropertyState.objects.get(pk=property.id)
+
+        self.assertIsNone(bounding_box_wkt(refreshed_property))
+        self.assertIsNone(centroid_wkt(refreshed_property))

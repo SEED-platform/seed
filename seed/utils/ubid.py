@@ -22,7 +22,10 @@ def decode_ubids(qs):
         try:
             bounding_box_obj = buildingid.v3.decode(property.ubid)
         except ValueError:
-            bounding_box_obj = buildingid.v2.decode(property.ubid)
+            try:
+                bounding_box_obj = buildingid.v2.decode(property.ubid)
+            except ValueError:
+                continue  # property with an incorrectly formatted UBID is skipped
 
         # Starting with the SE point, list the points in counter-clockwise order
         bounding_box_polygon = (
