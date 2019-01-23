@@ -545,6 +545,21 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
+      $scope.open_ubid_modal = function() {
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/ubid_modal.html',
+          controller: 'ubid_modal_controller',
+          resolve: {
+            property_state_ids: function () {
+              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
+                if ($scope.inventory_type === 'properties') return row.$$treeLevel === 0;
+                return !_.has(row, '$$treeLevel');
+              }), 'property_state_id');
+            }
+          }
+        });
+      };
+
       $scope.open_geocode_modal = function() {
         var modalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/geocode_modal.html',

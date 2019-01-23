@@ -79,6 +79,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.security',
   'BE.seed.controller.settings_profile_modal',
   'BE.seed.controller.show_populated_columns_modal',
+  'BE.seed.controller.ubid_modal',
   'BE.seed.controller.unmerge_modal',
   'BE.seed.controller.update_item_labels_modal'
 ]);
@@ -124,6 +125,7 @@ angular.module('BE.seed.services', [
   'BE.seed.service.pairing',
   'BE.seed.service.search',
   'BE.seed.service.simple_modal',
+  'BE.seed.service.ubid',
   'BE.seed.service.uploader',
   'BE.seed.service.user'
 ]);
