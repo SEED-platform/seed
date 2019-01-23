@@ -40,6 +40,7 @@ from seed.views.properties import (PropertyViewSet, PropertyStateViewSet,
                                    PropertyViewViewSet, GBRPropertyViewSet)
 from seed.views.reports import Report
 from seed.views.taxlots import TaxLotViewSet
+from seed.views.ubid import UbidViews
 from seed.views.users import UserViewSet
 
 api_v2_router = routers.DefaultRouter()
@@ -68,6 +69,7 @@ api_v2_router.register(r'property_states', PropertyStateViewSet, base_name="prop
 api_v2_router.register(r'property_views', PropertyViewViewSet, base_name="property_views")
 api_v2_router.register(r'reverse_and_test', TestReverseViewSet, base_name="reverse_and_test")
 api_v2_router.register(r'taxlots', TaxLotViewSet, base_name="taxlots")
+api_v2_router.register(r'ubid', UbidViews, base_name="ubid")
 api_v2_router.register(r'upload', LocalUploaderViewSet, base_name='local_uploader')
 api_v2_router.register(r'users', UserViewSet, base_name="users")
 
