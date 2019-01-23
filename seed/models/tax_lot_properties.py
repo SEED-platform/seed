@@ -17,10 +17,10 @@ from django.utils.timezone import make_naive
 
 from seed.models.columns import Column
 from seed.utils.geocode import (
-    centroid_wkt,
     bounding_box_wkt,
     long_lat_wkt,
 )
+from seed.utils.ubid import centroid_wkt
 
 logger = logging.getLogger(__name__)
 

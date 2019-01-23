@@ -32,14 +32,6 @@ def bounding_box_wkt(state):
         return GEOSGeometry(state.bounding_box, srid=4326).wkt
 
 
-def centroid_wkt(state):
-    """
-    This translates GIS data saved as binary (WKB) into a text string (WKT).
-    """
-    if state.centroid:
-        return GEOSGeometry(state.centroid, srid=4326).wkt
-
-
 def geocode_addresses(buildings):
     """
     Upon receiving a QuerySet (QS) of properties or a QS tax lots, if the QS
