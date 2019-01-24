@@ -50,6 +50,9 @@ requests==2.20.0
 lxml==4.2.5
 probablepeople==0.5.4
 
+# pnnl/buildingid
+-e git+https://github.com/SEED-platform/buildingid.git@aa4725b0e1fdaf45a58fca9635087e06069e413d#egg=buildingid
+
 enum34==1.1.6  # enum34 needs to be specified to support cryptography and oauth2
 oauthlib==2.0.2
 jwt-oauth2>=0.1.1
