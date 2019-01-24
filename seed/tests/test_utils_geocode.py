@@ -32,7 +32,7 @@ from seed.test_helpers.fake import (
 
 from seed.utils.geocode import (
     bounding_box_wkt,
-    geocode_addresses,
+    geocode_buildings,
     long_lat_wkt,
     MapQuestAPIKeyError,
 )
@@ -134,7 +134,7 @@ class GeocodeAddresses(TestCase):
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
         self.tax_lot_state_factory = FakeTaxLotStateFactory(organization=self.org)
 
-    def test_geocode_addresses_successful_when_real_fields_provided(self):
+    def test_geocode_buildings_successful_when_real_fields_provided(self):
         with base_vcr.use_cassette('seed/tests/data/vcr_cassettes/geocode_base_case.yaml'):
             property_details = self.property_state_factory.get_details()
             property_details['organization_id'] = self.org.id
@@ -160,8 +160,8 @@ class GeocodeAddresses(TestCase):
             tax_lot.save()
             tax_lots = TaxLotState.objects.filter(pk=tax_lot.id)
 
-            geocode_addresses(properties)
-            geocode_addresses(tax_lots)
+            geocode_buildings(properties)
+            geocode_buildings(tax_lots)
 
             refreshed_property = PropertyState.objects.get(pk=property.id)
             refreshed_tax_lot = TaxLotState.objects.get(pk=tax_lot.id)
@@ -174,7 +174,7 @@ class GeocodeAddresses(TestCase):
             self.assertEqual('POINT (-104.991046 39.752396)', long_lat_wkt(refreshed_tax_lot))
             self.assertEqual('High (P1AAA)', refreshed_tax_lot.geocoding_confidence)
 
-    def test_geocode_addresses_returns_no_data_when_provided_address_is_ambigious(self):
+    def test_geocode_buildings_returns_no_data_when_provided_address_is_ambigious(self):
         with base_vcr.use_cassette('seed/tests/data/vcr_cassettes/geocode_low_geocodequality.yaml'):
             state_zip_only_details = self.property_state_factory.get_details()
             state_zip_only_details['organization_id'] = self.org.id
@@ -202,7 +202,7 @@ class GeocodeAddresses(TestCase):
 
             properties = PropertyState.objects.filter(id__in=ids)
 
-            geocode_addresses(properties)
+            geocode_buildings(properties)
 
             state_zip_only_property = PropertyState.objects.get(pk=state_zip_only_property.id)
             wrong_state_zip_property = PropertyState.objects.get(pk=wrong_state_zip_property.id)
@@ -217,7 +217,7 @@ class GeocodeAddresses(TestCase):
             self.assertIsNone(wrong_state_zip_property.latitude)
             self.assertEqual("Low - check address (B3BCA)", wrong_state_zip_property.geocoding_confidence)
 
-    def test_geocode_addresses_is_successful_even_if_two_buildings_have_same_address(self):
+    def test_geocode_buildings_is_successful_even_if_two_buildings_have_same_address(self):
         with base_vcr.use_cassette('seed/tests/data/vcr_cassettes/geocode_dup_addresses.yaml'):
             property_details = self.property_state_factory.get_details()
             property_details['organization_id'] = self.org.id
@@ -236,7 +236,7 @@ class GeocodeAddresses(TestCase):
 
             properties = PropertyState.objects.filter(id__in=ids)
 
-            geocode_addresses(properties)
+            geocode_buildings(properties)
 
             refreshed_properties = PropertyState.objects.filter(id__in=ids)
 
@@ -246,7 +246,7 @@ class GeocodeAddresses(TestCase):
                 self.assertEqual(-104.986138, property.longitude)
                 self.assertEqual(39.765251, property.latitude)
 
-    def test_geocode_addresses_is_successful_with_over_100_properties(self):
+    def test_geocode_buildings_is_successful_with_over_100_properties(self):
         with batch_vcr.use_cassette('seed/tests/data/vcr_cassettes/geocode_101_unique_addresses.yaml', match_on=['uri_length']):
             property_details = self.property_state_factory.get_details()
             property_details['organization_id'] = self.org.id
@@ -266,7 +266,7 @@ class GeocodeAddresses(TestCase):
 
             properties = PropertyState.objects.filter(id__in=ids).order_by('id')
 
-            geocode_addresses(properties)
+            geocode_buildings(properties)
 
             refreshed_properties = PropertyState.objects.filter(id__in=ids).order_by('id')
 
@@ -286,7 +286,7 @@ class GeocodeAddresses(TestCase):
             self.assertTrue(len(long_lats) > 0)
             self.assertTrue(len(geocode_confidence_results) == 101)
 
-    def test_geocode_addresses_is_unsuccessful_when_the_API_key_is_invalid_or_expired(self):
+    def test_geocode_buildings_is_unsuccessful_when_the_API_key_is_invalid_or_expired(self):
         with base_vcr.use_cassette('seed/tests/data/vcr_cassettes/geocode_invalid_or_expired_key.yaml'):
             self.org_fake_key, _, _ = create_organization(self.user)
             self.org_fake_key.mapquest_api_key = 'fakeapikey'
@@ -308,9 +308,9 @@ class GeocodeAddresses(TestCase):
             properties = PropertyState.objects.filter(pk=property.id)
 
             with self.assertRaises(MapQuestAPIKeyError):
-                geocode_addresses(properties)
+                geocode_buildings(properties)
 
-    def test_geocode_addresses_doesnt_run_an_api_request_when_an_API_key_is_not_provided(self):
+    def test_geocode_buildings_doesnt_run_an_api_request_when_an_API_key_is_not_provided(self):
         self.org_no_key, _, _ = create_organization(self.user)
         self.property_state_factory_no_key = FakePropertyStateFactory(organization=self.org_no_key)
         property_details_no_key = self.property_state_factory_no_key.get_details()
@@ -327,7 +327,7 @@ class GeocodeAddresses(TestCase):
 
         properties = PropertyState.objects.filter(pk=property.id)
 
-        self.assertIsNone(geocode_addresses(properties))
+        self.assertIsNone(geocode_buildings(properties))
 
         refreshed_property = PropertyState.objects.get(pk=property.id)
 
@@ -349,7 +349,7 @@ class GeocodeAddresses(TestCase):
 
             properties = PropertyState.objects.filter(pk=property.id)
 
-            geocode_addresses(properties)
+            geocode_buildings(properties)
 
             refreshed_properties = PropertyState.objects.filter(pk=property.id)
 
@@ -366,7 +366,7 @@ class GeocodeAddresses(TestCase):
 
         properties = PropertyState.objects.filter(pk=property.id)
 
-        geocode_addresses(properties)
+        geocode_buildings(properties)
 
         refreshed_property = PropertyState.objects.get(pk=property.id)
 
@@ -374,7 +374,7 @@ class GeocodeAddresses(TestCase):
         self.assertEqual("Manually geocoded (N/A)", refreshed_property.geocoding_confidence)
 
     def test_geocode_address_can_handle_receiving_no_buildings(self):
-        self.assertIsNone(geocode_addresses(PropertyState.objects.none()))
+        self.assertIsNone(geocode_buildings(PropertyState.objects.none()))
 
     def test_geocoding_an_address_again_after_successful_geocode_executes_successfully(self):
         with base_vcr.use_cassette('seed/tests/data/vcr_cassettes/geocode_same_record_twice.yaml'):
@@ -389,7 +389,7 @@ class GeocodeAddresses(TestCase):
             property.save()
 
             properties = PropertyState.objects.filter(pk=property.id)
-            geocode_addresses(properties)
+            geocode_buildings(properties)
 
             refreshed_property = PropertyState.objects.get(pk=property.id)
             refreshed_property.address_line_1 = "2020 Lawrence St"
@@ -398,7 +398,7 @@ class GeocodeAddresses(TestCase):
             refreshed_property.save()
 
             refreshed_properties = PropertyState.objects.filter(pk=refreshed_property.id)
-            geocode_addresses(refreshed_properties)
+            geocode_buildings(refreshed_properties)
 
             refreshed_updated_property = PropertyState.objects.get(pk=refreshed_property.id)
 

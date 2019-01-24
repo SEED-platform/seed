@@ -13,7 +13,7 @@ from seed.models.properties import PropertyState
 from seed.models.tax_lots import TaxLotState
 
 from seed.utils.api import api_endpoint_class
-from seed.utils.geocode import geocode_addresses
+from seed.utils.geocode import geocode_buildings
 
 
 class GeocodeViews(viewsets.ViewSet):
@@ -29,11 +29,11 @@ class GeocodeViews(viewsets.ViewSet):
 
         if property_ids:
             properties = PropertyState.objects.filter(id__in=property_ids)
-            geocode_addresses(properties)
+            geocode_buildings(properties)
 
         if taxlot_ids:
             taxlots = TaxLotState.objects.filter(id__in=taxlot_ids)
-            geocode_addresses(taxlots)
+            geocode_buildings(taxlots)
 
     @ajax_request_class
     @list_route(methods=['POST'])

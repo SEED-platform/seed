@@ -70,7 +70,7 @@ from seed.models import TaxLotProperty
 from seed.models.auditlog import AUDIT_IMPORT
 from seed.models.data_quality import DataQualityCheck
 from seed.utils.buildings import get_source_type
-from seed.utils.geocode import geocode_addresses
+from seed.utils.geocode import geocode_buildings
 from seed.utils.ubid import decode_ubids
 
 
@@ -762,7 +762,7 @@ def _geocode_properties_or_tax_lots(file_pk):
     else:
         qs = TaxLotState.objects.filter(import_file_id=file_pk).exclude(data_state=DATA_STATE_IMPORT)
 
-    geocode_addresses(qs)
+    geocode_buildings(qs)
 
 
 # @cprofile()

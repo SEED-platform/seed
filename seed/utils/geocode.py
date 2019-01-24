@@ -32,7 +32,7 @@ def bounding_box_wkt(state):
         return GEOSGeometry(state.bounding_box, srid=4326).wkt
 
 
-def geocode_addresses(buildings):
+def geocode_buildings(buildings):
     """
     Upon receiving a QuerySet (QS) of properties or a QS tax lots, if the QS
     contains properties, this method filters out properties with both latitude
