@@ -36,7 +36,7 @@ def geocode_buildings(buildings):
     """
     Upon receiving a QuerySet (QS) of properties or a QS tax lots, if the QS
     contains properties, this method filters out properties with both latitude
-    and longitude fields populated and uses those values to pouplate long_lat.
+    and longitude fields populated and uses those values to populate long_lat.
 
     With the remaining buildings, regardless of model type, this method builds
     a dictionary of {id: address} and a dictionary of {address: geocoding_results}.
@@ -49,40 +49,42 @@ def geocode_buildings(buildings):
     from seed.models.properties import PropertyState
 
     if buildings and buildings.model is PropertyState:
-        # Filter on any properties with both Latitude and Longitude fields populated.
-        # Exclude any that had fields populated because they were previously geocoded sucessfully.
+        """Filter on any properties with both Latitude and Longitude fields populated.
+        Exclude any that had fields populated because they were previously geocoded sucessfully."""
         pregeocoded = buildings.filter(longitude__isnull=False, latitude__isnull=False).exclude(geocoding_confidence__startswith="High")
         _geocode_by_prepopulated_fields(pregeocoded)
 
-        # Filter on any properties with both Latitude and Longitude fields unpopulated
-        # or on any properties successfully geocoded previously (whose Latitude and Longitude are populated).
-        ungeocoded_buildings = buildings.filter(Q(longitude__isnull=True, latitude__isnull=True) | Q(geocoding_confidence__startswith="High"))
+        """ Previously geocoded buildings via external API should be eligible for re-geocoding.
+        So, filter on any properties with both Latitude and Longitude fields unpopulated
+        or on any properties successfully geocoded previously (whose Latitude and Longitude are populated).
+        """
+        buildings_to_geocode = buildings.filter(Q(longitude__isnull=True, latitude__isnull=True) | Q(geocoding_confidence__startswith="High"))
     else:
-        ungeocoded_buildings = buildings
+        buildings_to_geocode = buildings
 
     # Don't continue if there are no buildings remaining
-    if not ungeocoded_buildings:
+    if not buildings_to_geocode:
         return
 
-    mapquest_api_key = ungeocoded_buildings[0].organization.mapquest_api_key
+    mapquest_api_key = buildings_to_geocode[0].organization.mapquest_api_key
 
     # Don't continue if the mapquest_api_key for this org is ''
     if not mapquest_api_key:
         return
 
-    id_addresses = _id_addresses(ungeocoded_buildings)
+    id_addresses = _id_addresses(buildings_to_geocode)
     address_geocoding_results = _address_geocoding_results(id_addresses, mapquest_api_key)
 
     id_geocoding_results = _id_geocodings(id_addresses, address_geocoding_results)
 
-    _save_geocoding_results(id_geocoding_results, ungeocoded_buildings)
+    _save_geocoding_results(id_geocoding_results, buildings_to_geocode)
 
 
-def _save_geocoding_results(id_geocoding_results, ungeocoded_buildings):
+def _save_geocoding_results(id_geocoding_results, buildings_to_geocode):
     from seed.models.properties import PropertyState
 
     for id, geocoding_result in id_geocoding_results.items():
-        building = ungeocoded_buildings.get(pk=id)
+        building = buildings_to_geocode.get(pk=id)
 
         if geocoding_result.get("is_valid"):
             building.long_lat = geocoding_result.get("long_lat")
