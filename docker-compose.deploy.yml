@@ -26,6 +26,11 @@ services:
   web:
     image: seedplatform/seed
     environment:
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_SES_REGION_NAME
+      - AWS_SES_REGION_ENDPOINT
+      - SERVER_EMAIL
       - POSTGRES_DB=seed
       - POSTGRES_USER
       - POSTGRES_PASSWORD

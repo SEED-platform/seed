@@ -17,6 +17,11 @@ SEED_ADMIN_USER (required), admin user for SEED
 SEED_ADMIN_PASSWORD (required), admin password for SEED
 SEED_ADMIN_ORG (required), default organization for admin user in SEED
 SECRET_KEY (required), unique key for SEED web application
+AWS_ACCESS_KEY (optional), Access key for AWS
+AWS_SECRET_ACCESS_KEY, Secret key for AWS
+AWS_SES_REGION_NAME (optional), AWS Region for SES
+AWS_SES_REGION_ENDPOINT (optional), AWS endpoint for SES
+SERVER_EMAIL (optional), Email that is used by the server to send messages
 
 # example (do not use these values in production).
 export POSTGRES_USER=seed
@@ -25,6 +30,13 @@ export SEED_ADMIN_USER=user@seed-platform.org
 export SEED_ADMIN_PASSWORD=super-secret-password
 export SEED_ADMIN_ORG=default
 export SECRET_KEY=ARQV8qGuJKH8sGnBf6ZeEdJQRKLTUhsvEcp8qG9X9sCPXvGLhdxqnNXpZcy6HEyf
+# If using SES for email, then you need to also pass in the following optional arguments (change as
+# needed):
+export AWS_ACCESS_KEY_ID=key
+export AWS_SECRET_ACCESS_KEY=secret_key
+export AWS_SES_REGION_NAME=us-west-2
+export AWS_SES_REGION_ENDPOINT=email.us-west-2.amazonaws.com
+export SERVER_EMAIL=info@seed-platform.org
 arguments
 
 # Verify that env vars are set

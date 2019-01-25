@@ -193,9 +193,6 @@ LOGIN_REDIRECT_URL = "/app/"
 
 APPEND_SLASH = True
 
-PASSWORD_RESET_EMAIL = 'reset@seed-platform.org'
-SERVER_EMAIL = 'no-reply@seed-platform.org'
-
 CELERY_WORKER_MAX_TASKS_PER_CHILD = 1
 
 # Default queue
@@ -223,6 +220,8 @@ CELERY_TASK_COMPRESSION = 'gzip'
 LOG_FILE = os.path.join(BASE_DIR, '../logs/py.log/')
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+SERVER_EMAIL = 'info@seed-platform.org'
+PASSWORD_RESET_EMAIL = SERVER_EMAIL
 
 # Added By Gavin on 1/27/2014
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
@@ -230,7 +229,6 @@ NOSE_PLUGINS = [
     'nose_exclude.NoseExclude',
 ]
 
-# Django 1.5+ way of doing user profiles
 AUTH_USER_MODEL = 'landing.SEEDUser'
 AUTH_PASSWORD_VALIDATORS = [
     {
