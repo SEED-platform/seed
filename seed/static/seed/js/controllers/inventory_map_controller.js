@@ -64,8 +64,6 @@ angular.module('BE.seed.controller.inventory_map', [])
 
       // Points/clusters layer
       var clusterPointStyle = function (size) {
-        // TODO revisit this with a larger dataset
-        // point radius of each cluster icon is relative to size and has a min and max.
         var relative_radius = 10 + Math.min(7, size/50)
         return new ol.style.Style({
           image: new ol.style.Circle({
@@ -254,12 +252,12 @@ angular.module('BE.seed.controller.inventory_map', [])
         });
 
         $(popup_element).popover('show');
+        popupShown = true;
       };
 
-      // Define point/cluster click event
-      // TODO Display info doesn't change bug when popover already shown.
-      // TODO cont. Another bug comes up if trying to destroy element before recreate and render
-      // TODO cont. set timeout wasn't working as expected??
+      // Define point/cluster click event - default is no popup shown
+      var popupShown = false;
+
       $scope.map.on("click", function (event) {
         var points = []
 
@@ -271,13 +269,13 @@ angular.module('BE.seed.controller.inventory_map', [])
           points = feature.get("features")
         });
 
-        if (points && points.length == 1) {
+        if (popupShown) {
+          $(popup_element).popover('destroy');
+          popupShown = false;
+        } else if (points && points.length == 1) {
           showPointInfo(points[0]);
         } else if (points && points.length > 1 ) {
           zoomOnCluster(points);
-          $(popup_element).popover('destroy');
-        } else {
-          $(popup_element).popover('destroy');
         }
       });
 
