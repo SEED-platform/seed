@@ -4,6 +4,7 @@ dj-database-url==0.4.2
 django-autoslug==1.9.3
 django-storages==1.6.5
 django-crispy-forms==1.7.2
+django-ses==0.8.9
 modeltranslation==0.25
 
 # Persistence stores
