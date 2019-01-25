@@ -37,7 +37,7 @@ from seed.data_importer.models import ROW_DELIMITER
 from seed.data_importer.tasks import do_checks
 from seed.data_importer.tasks import (
     map_data,
-    geocode_buildings as task_geocode_buildings,
+    geocode_buildings_task as task_geocode_buildings,
     match_buildings as task_match_buildings,
     save_raw_data as task_save_raw
 )

@@ -48,8 +48,8 @@ def forwards(apps, schema_editor):
             else:
                 print("  More than one column returned")
 
-class Migration(migrations.Migration):
 
+class Migration(migrations.Migration):
     dependencies = [
         ('seed', '0097_auto_20181107_1231'),
     ]

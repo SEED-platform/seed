@@ -747,7 +747,7 @@ def save_raw_data(file_pk):
 #     """
 #     pass
 
-def geocode_buildings(file_pk):
+def geocode_buildings_task(file_pk):
     async_result = _geocode_properties_or_tax_lots.s(file_pk).apply_async()
     result = [r for r in async_result.collect()]
 
