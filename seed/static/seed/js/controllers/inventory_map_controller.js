@@ -128,10 +128,23 @@ angular.module('BE.seed.controller.inventory_map', [])
         );
       };
 
+      $scope.hexbin_color = [75,0,130];
+      var hexbin_max_opacity = 0.8;
+      var hexbin_min_opacity = 0.2;
+
+      $scope.hexbinInfoBarColor = function() {
+        var hexbin_color_code = $scope.hexbin_color.join(",");
+        var left_color = `rgb(${hexbin_color_code},${hexbin_max_opacity * hexbin_min_opacity})`;
+        var right_color = `rgb(${hexbin_color_code},${hexbin_max_opacity})`;
+
+        return {background: `linear-gradient(to right, ${left_color}, ${right_color})`}
+      }
+
       var hexagonStyle = function (opacity) {
+        var color = $scope.hexbin_color.concat([opacity]);
         return [
           new ol.style.Style({
-             fill: new ol.style.Fill({ color: [75,0,130,opacity] })
+             fill: new ol.style.Fill({ color: color })
            })
          ]
       };
@@ -145,7 +158,7 @@ angular.module('BE.seed.controller.inventory_map', [])
           return point.values_[site_eui_key]
         });
         var total_eui = _.sum(site_euis)
-        var opacity = Math.max(0.20,total_eui/hexagon_size);
+        var opacity = Math.max(hexbin_min_opacity, total_eui/hexagon_size);
 
         return hexagonStyle(opacity);
       };
@@ -153,7 +166,7 @@ angular.module('BE.seed.controller.inventory_map', [])
       $scope.hexbin_layer = new ol.layer.Vector({
         source: hexbinSource(),
         zIndex: 1,  // Note: This is used for layer toggling.
-        opacity: 0.8,
+        opacity: hexbin_max_opacity,
         style:  hexbinStyle,
       })
 
