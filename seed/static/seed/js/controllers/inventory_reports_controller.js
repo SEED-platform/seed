@@ -77,14 +77,14 @@ angular.module('BE.seed.controller.inventory_reports', [])
         return str;
       };
 
-      var parse_axis_label = function(column) {
+      var parse_axis_label = function (column) {
         if (column.column_name.includes('eui')) {
           return translateAxisLabel(column.displayName, eui_units());
         } else if (column.column_name.includes('area')) {
           return translateAxisLabel(column.displayName, area_units());
         } else {
           return $translate.instant(column.displayName);
-        };
+        }
       };
 
       /* SCOPE VARS */
@@ -109,10 +109,10 @@ angular.module('BE.seed.controller.inventory_reports', [])
         'eui',
         'float',
         'integer',
-        'number',
-      ]
+        'number'
+      ];
       var filtered_columns = _.filter(columns, function (column) {
-          return _.includes(acceptable_column_types, column.data_type);
+        return _.includes(acceptable_column_types, column.data_type);
       });
 
       $scope.xAxisVars = _.map(filtered_columns, function (column) {
@@ -123,7 +123,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
           axisLabel: parse_axis_label(column),             //label to be used in charts, should include units
           axisType: 'Measure',                             //DimpleJS property for axis type
           axisTickFormat: ',.0f'                           //DimpleJS property for axis tick format
-        }
+        };
       });
 
       $scope.yAxisVars = [

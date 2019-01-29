@@ -359,7 +359,6 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         resolve: {
           columns: ['$stateParams', 'user_service', 'inventory_service', 'naturalSort', function ($stateParams, user_service, inventory_service, naturalSort) {
             var organization_id = user_service.get_organization().id;
-            console.log(organization_id);
             if ($stateParams.inventory_type === 'properties') {
               return inventory_service.get_property_columns_for_org(organization_id).then(function (columns) {
                 columns = _.reject(columns, 'related');
