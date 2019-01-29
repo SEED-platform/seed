@@ -7,6 +7,7 @@ that's where the display preference lives.
 
 import re
 
+from builtins import str
 from django.core.serializers.json import DjangoJSONEncoder
 from quantityfield import ureg
 from rest_framework import serializers
@@ -59,7 +60,7 @@ def apply_display_unit_preferences(org, pt_dict):
     API and collapse any Quantity objects present down to a straight float, per
     the organization preferences.
     """
-    converted_dict = {k: collapse_unit(org, v) for k, v in pt_dict.iteritems()}
+    converted_dict = {k: collapse_unit(org, v) for k, v in pt_dict.items()}
 
     return converted_dict
 
@@ -69,7 +70,7 @@ def pretty_units(quantity):
     hack; can lose it when Pint gets something like a "{:~U}" format code
     see https://github.com/hgrecco/pint/pull/231
     """
-    return u"{:~P}".format(quantity).split(" ")[1]
+    return '{:~P}'.format(quantity).split(' ')[1]
 
 
 def pretty_units_from_spec(unit_spec):
@@ -89,14 +90,14 @@ def add_pint_unit_suffix(organization, column):
         # strip the suffix; shouldn't have to do this when we've swapped over
         # the columns. The mere presence of a unit suffix will tell us in the UI
         # that this is a Pint-aware column
-        stripped_name = re.sub(' \(pint\)$', '', column_name, flags=re.IGNORECASE)
-        return stripped_name + u" ({})".format(display_units)
+        stripped_name = re.sub(r' \(pint\)$', '', column_name, flags=re.IGNORECASE)
+        return stripped_name + ' ({})'.format(display_units)
 
     try:
-        if column['dataType'] == "area":
+        if column['dataType'] == 'area':
             column['displayName'] = format_column_name(
                 column['displayName'], organization.display_units_area)
-        elif column['dataType'] == "eui":
+        elif column['dataType'] == 'eui':
             column['displayName'] = format_column_name(
                 column['displayName'], organization.display_units_eui)
     except KeyError:

@@ -4,6 +4,9 @@
 :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+from builtins import str
+from functools import cmp_to_key
+
 import jellyfish
 
 
@@ -16,7 +19,8 @@ def sort_scores(a, b):
     if a[2] > b[2]:
         return -1
     elif a[2] == b[2]:  # Sort by the strings if they match up
-        com_a = '.'.join(a[0:2])  # so, 0:2 returns the first 2 elements, okay python, you win this time.
+        com_a = '.'.join(
+            a[0:2])  # so, 0:2 returns the first 2 elements, okay python, you win this time.
         com_b = '.'.join(b[0:2])
         if com_a > com_b:
             return 1
@@ -50,7 +54,7 @@ def best_match(s, categories, top_n=5):
 
     """
 
-    # print 'starting match on {}'.format(s)
+    # print('starting match on {}'.format(s))
     scores = []
     for cat in categories:
         # verify that the category has two elements, if not, then just
@@ -69,21 +73,22 @@ def best_match(s, categories, top_n=5):
                 table_name,
                 category,
                 jellyfish.jaro_winkler(
-                    unicode(s.encode('ascii', 'replace').lower()),
-                    unicode(category.encode('ascii', 'replace').lower())
+                    str(s.encode('ascii', 'replace').lower()),
+                    str(category.encode('ascii', 'replace').lower())
                 )
             )
         )
 
         # sort first by the ones
 
-    # print 'all scores for {} are {}'.format(s, scores)
-    scores = sorted(scores, cmp=sort_scores)
+    # print('all scores for {} are {}'.format(s, scores))
+    scores.sort()
+    scores = sorted(scores, key=cmp_to_key(sort_scores))
     # take the top n number of matches
     scores = scores[:top_n]
     # convert to hundreds
     scores = [(score[0], score[1], int(score[2] * 100)) for score in scores]
-    # print 'ending all categories match of {} with scores {}'.format(s, scores)
+    # print('ending all categories match of {} with scores {}'.format(s, scores))
 
     return scores
 

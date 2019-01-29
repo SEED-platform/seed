@@ -201,7 +201,7 @@ class TestGreenAssessmentPropertySerializer(DeleteModelsTestCase):
         with self.assertRaises(ValidationError) as conm:
             serializer.validate(data)
         exception = conm.exception
-        expected = "[u'Only one of metric or rating can be supplied.']"
+        expected = "['Only one of metric or rating can be supplied.']"
         self.assertEqual(expected, str(exception))
 
         # assert raises error if metric is expected
@@ -210,7 +210,7 @@ class TestGreenAssessmentPropertySerializer(DeleteModelsTestCase):
         with self.assertRaises(ValidationError) as conm:
             serializer.validate(data)
         exception = conm.exception
-        expected = "[u'{} uses a metric (numeric score).']".format(
+        expected = "['{} uses a metric (numeric score).']".format(
             self.assessment.name
         )
         self.assertEqual(expected, str(exception))
@@ -221,7 +221,7 @@ class TestGreenAssessmentPropertySerializer(DeleteModelsTestCase):
         with self.assertRaises(ValidationError) as conm:
             serializer.validate(data)
         exception = conm.exception
-        expected = "[u'Metric must be a number.']"
+        expected = "['Metric must be a number.']"
         self.assertEqual(expected, str(exception))
 
         # assert raises error if rating expected
@@ -230,7 +230,7 @@ class TestGreenAssessmentPropertySerializer(DeleteModelsTestCase):
         with self.assertRaises(ValidationError) as conm:
             serializer.validate(data)
         exception = conm.exception
-        expected = "[u'{} uses a rating (non-numeric score).']".format(
+        expected = "['{} uses a rating (non-numeric score).']".format(
             self.assessment.name
         )
 
@@ -240,7 +240,7 @@ class TestGreenAssessmentPropertySerializer(DeleteModelsTestCase):
         with self.assertRaises(ValidationError) as conm:
             serializer.validate(data)
         exception = conm.exception
-        expected = "[u'Rating must be a string.']"
+        expected = "['Rating must be a string.']"
         self.assertEqual(expected, str(exception))
 
         # assert converts ints to floats
@@ -255,7 +255,7 @@ class TestGreenAssessmentPropertySerializer(DeleteModelsTestCase):
         with self.assertRaises(ValidationError) as conm:
             serializer.validate(data)
         exception = conm.exception
-        expected = "[u'Metric must be an integer.']"
+        expected = "['Metric must be an integer.']"
         self.assertEqual(expected, str(exception))
 
         # assert raises error if assessment missing
@@ -263,7 +263,7 @@ class TestGreenAssessmentPropertySerializer(DeleteModelsTestCase):
         with self.assertRaises(ValidationError) as conm:
             serializer.validate(data)
         exception = conm.exception
-        expected = "[u'Could not find assessment.']"
+        expected = "['Could not find assessment.']"
         self.assertEqual(expected, str(exception))
 
 
@@ -296,11 +296,11 @@ class TestGreenAssessmentSerializer(DeleteModelsTestCase):
         """Test object serialization."""
         expected = {
             'id': self.assessment.id,
-            'name': u'Test',
-            'award_body': u'Test Inc',
-            'recognition_type': u'AWD',
-            'recognition_description': u'Award',
-            'description': u'Test Award',
+            'name': 'Test',
+            'award_body': 'Test Inc',
+            'recognition_type': 'AWD',
+            'recognition_description': 'Award',
+            'description': 'Test Award',
             'is_numeric_score': True,
             'is_integer_score': True,
             'validity_duration': 365

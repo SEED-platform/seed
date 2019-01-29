@@ -9,7 +9,8 @@ All rights reserved.  # NOQA
 """
 import json
 import os
-from unittest import skipIf
+import requests
+from unittest import skip, skipIf
 
 from django.core.urlresolvers import reverse_lazy
 from django.test import TestCase
@@ -17,6 +18,27 @@ from django.test import TestCase
 from seed.landing.models import SEEDUser as User
 from seed.utils.organizations import create_organization
 from seed.views.portfoliomanager import PortfolioManagerImport
+
+
+PM_UN = 'SEED_PM_UN'
+PM_PW = 'SEED_PM_PW'
+pm_skip_test_check = skipIf(
+    not os.environ.get(PM_UN, False) and not os.environ.get(PM_PW, False),
+    'Cannot run "expect-pass" PM unit tests without %s and %s in environment' % (PM_UN, PM_PW)
+)
+
+# override this decorator for more pressing conditions
+try:
+    pm_avail_check = requests.get('http://isthewallbuilt.us/api.json', timeout=5)
+    string_response = pm_avail_check.json()['status']
+    if string_response == 'no':
+        skip_due_to_espm_down = True
+    else:
+        skip_due_to_espm_down = False
+    if skip_due_to_espm_down:
+        pm_skip_test_check = skip('ESPM is likely down temporarily, ESPM tests will not run')
+except Exception:
+    pass
 
 
 class PortfolioManagerImportTest(TestCase):
@@ -86,6 +108,7 @@ class PortfolioManagerTemplateListViewTestsFailure(TestCase):
         self.assertEqual('error', data['status'])
         self.assertIn('missing password', data['message'])
 
+    @pm_skip_test_check
     def test_template_list_invalid_credentials(self):
         resp = self.client.post(
             reverse_lazy('api:v2.1:portfolio_manager-template-list'),
@@ -101,14 +124,6 @@ class PortfolioManagerTemplateListViewTestsFailure(TestCase):
         self.assertIn('message', data)
         self.assertEqual('error', data['status'])
         self.assertIn('Check credentials.', data['message'])
-
-
-PM_UN = 'SEED_PM_UN'
-PM_PW = 'SEED_PM_PW'
-pm_skip_test_check = skipIf(
-    not os.environ.get(PM_UN, False) and not os.environ.get(PM_PW, False),
-    'Cannot run "expect-pass" PM unit tests without %s and %s in environment' % (PM_UN, PM_PW)
-)
 
 
 class PortfolioManagerTemplateListViewTestsSuccess(TestCase):
@@ -166,7 +181,7 @@ class PortfolioManagerTemplateListViewTestsSuccess(TestCase):
             # if it is a child (data request) row, the display name should be formatted
             # it is possible that a parent row could have the same "indentation", and that's fine, we don't assert there
             if row['z_seed_child_row']:
-                self.assertEquals(u'  -  ', row['display_name'][0:5])
+                self.assertEquals('  -  ', row['display_name'][0:5])
 
 
 class PortfolioManagerReportGenerationViewTestsFailure(TestCase):
@@ -231,6 +246,7 @@ class PortfolioManagerReportGenerationViewTestsFailure(TestCase):
         self.assertEqual('error', data['status'])
         self.assertIn('missing template', data['message'])
 
+    @pm_skip_test_check
     def test_report_invalid_credentials(self):
         resp = self.client.post(
             reverse_lazy('api:v2.1:portfolio_manager-report'),
@@ -281,13 +297,13 @@ class PortfolioManagerReportGenerationViewTestsSuccess(TestCase):
     def test_report_generation_parent_template(self):
 
         parent_template = {
-            u'display_name': u'SEED City Test Report',
-            u'name': u'SEED City Test Report',
-            u'id': 1103344,
-            u'z_seed_child_row': False,
-            u'type': 0,
-            u'children': [],
-            u'pending': 0
+            'display_name': 'SEED City Test Report',
+            'name': 'SEED City Test Report',
+            'id': 1103344,
+            'z_seed_child_row': False,
+            'type': 0,
+            'children': [],
+            'pending': 0
         }
 
         # so now we'll call out to PM to get a parent template report
@@ -318,15 +334,15 @@ class PortfolioManagerReportGenerationViewTestsSuccess(TestCase):
     def test_report_generation_empty_child_template(self):
 
         child_template = {
-            u'display_name': u'  -  Data Request:SEED City Test Report April 24 2018',
-            u'name': u'Data Request:SEED City Test Report April 24 2018',
-            u'id': 2097417,
-            u'subtype': 2,
-            u'z_seed_child_row': True,
-            u'hasChildrenRows': False,
-            u'type': 1,
-            u'children': [],
-            u'pending': 0
+            'display_name': '  -  Data Request:SEED City Test Report April 24 2018',
+            'name': 'Data Request:SEED City Test Report April 24 2018',
+            'id': 2097417,
+            'subtype': 2,
+            'z_seed_child_row': True,
+            'hasChildrenRows': False,
+            'type': 1,
+            'children': [],
+            'pending': 0
         }
 
         # so now we'll call out to PM to get a child template report

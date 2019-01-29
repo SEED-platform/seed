@@ -11,7 +11,11 @@ from config.settings.common import *  # noqa
 # Gather all the settings from the docker environment variables
 ENV_VARS = ['POSTGRES_DB', 'POSTGRES_USER', 'POSTGRES_PASSWORD', ]
 
-for loc in ENV_VARS:
+# The optional vars will set the SERVER_EMAIL information as needed
+OPTIONAL_ENV_VARS = ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SES_REGION_NAME',
+                     'AWS_SES_REGION_ENDPOINT', 'SERVER_EMAIL', ]
+
+for loc in ENV_VARS + OPTIONAL_ENV_VARS:
     locals()[loc] = os.environ.get(loc)
 
 for loc in ENV_VARS:
@@ -22,6 +26,11 @@ DEBUG = False
 COMPRESS_ENABLED = True
 
 ALLOWED_HOSTS = ['*']
+
+# By default we are using SES as our email client. If you would like to use
+# another backend (e.g. SMTP), then please update this model to support both and
+# create a pull request.
+EMAIL_BACKEND = 'django_ses.SESBackend'
 
 # PostgreSQL DB config
 DATABASES = {
@@ -75,4 +84,3 @@ LOGGING = {
 
 if 'default' in SECRET_KEY:
     print("WARNING: SECRET_KEY is defaulted. Makes sure to override SECKET_KEY in local_untracked or env var")
-

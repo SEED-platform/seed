@@ -16,7 +16,6 @@ from django import template
 from django.template import Node, Variable
 from django.template import VariableDoesNotExist
 from django.template.defaulttags import url
-from django.utils.encoding import smart_unicode
 from django.utils.translation import ugettext as _
 
 _log = logging.getLogger(__name__)
@@ -171,7 +170,6 @@ class BreadcrumbNode(Node):
 
         else:
             title = title.strip("'").strip('"')
-            title = smart_unicode(title)
 
         url = None
 
@@ -206,7 +204,6 @@ class UrlBreadcrumbNode(Node):
                 title = ''
         else:
             title = title.strip("'").strip('"')
-            title = smart_unicode(title)
 
         url = self.url_node.render(context)
         # add ugettext function for title translation i18n

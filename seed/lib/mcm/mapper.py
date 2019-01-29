@@ -5,15 +5,18 @@
 :author
 """
 
+from __future__ import absolute_import
+
 import copy
 import itertools
 import logging
 import re
 from datetime import datetime, date
 
+from .cleaners import default_cleaner
 from django.apps import apps
+from past.builtins import basestring
 
-from cleaners import default_cleaner
 from seed.lib.mappings.mapping_columns import MappingColumns
 
 _log = logging.getLogger(__name__)
@@ -112,7 +115,8 @@ def apply_column_value(raw_column_name, column_value, model, mapping, is_extra_d
                 if mapped_column_name != raw_column_name:
                     # now clean against the raw name with pint (Quantity Units) because that's the column
                     # that holds the units needed to interpret the value correctly
-                    cleaned_value = cleaner.clean_value(cleaned_value, raw_column_name, is_extra_data)
+                    cleaned_value = cleaner.clean_value(cleaned_value, raw_column_name,
+                                                        is_extra_data)
             else:
                 cleaned_value = cleaner.clean_value(column_value, mapped_column_name, is_extra_data)
         else:
@@ -168,7 +172,7 @@ def _normalize_expanded_field(value):
 
     Method does the following:
         Removes leading/trailing spaces
-        Removes duplicate characters next to each other when it is a space, \, /, -, *, .
+        Removes duplicate characters next to each other when it is a space, backslash, /, -, *, .
         Does not remove combinations of duplicates, so 1./*5 will still be valid
 
     :param value: string
@@ -198,7 +202,7 @@ def expand_and_normalize_field(field, return_list=False):
     :return: list of individual values after after delimiting
     """
 
-    if isinstance(field, str) or isinstance(field, unicode):
+    if isinstance(field, basestring):
         field = field.rstrip(';:,')
         data = [_normalize_expanded_field(r) for r in re.split(",|;|:", field)]
         if return_list:
@@ -235,7 +239,7 @@ def expand_rows(row, delimited_fields, expand_row):
         new_values = []
         for d in delimited_fields:
             fields = []
-            if d in copy_row.keys():
+            if d in copy_row:
                 for value in expand_and_normalize_field(copy_row[d], True):
                     fields.append({d: value})
                 new_values.append(fields)
@@ -248,7 +252,7 @@ def expand_rows(row, delimited_fields, expand_row):
             new_row = copy.deepcopy(copy_row)
             # c is a tuple because of the .product command
             for item in c:
-                for k, v in item.iteritems():
+                for k, v in item.items():
                     new_row[k] = v
             new_rows.append(new_row)
 

@@ -22,7 +22,7 @@ def split_duplicate_mapping(apps, cm):
     if cm.column_raw.count() > 1 or cm.column_mapped.count() > 1:
         raise Exception("More than one column_raw or column_mapped in mapping")
 
-    print "    Splitting duplicate mapping"
+    print("    Splitting duplicate mapping")
     raw = cm.column_raw.first()
     new_raw = duplicate_column(apps, raw)
     cm.column_raw.clear()
@@ -42,17 +42,11 @@ def forwards(apps, schema_editor):
     for c in Column.objects.all():
         cm_duplicates = ColumnMapping.objects.filter(column_raw=c, column_mapped=c)
         if cm_duplicates.count() > 0:
-            print "Column {}: {}.{}".format(c.id, c.table_name, c.column_name)
-            print "    duplicate 'from' and 'to' column used in same mapping(s)"
+            print("Column {}: {}.{}".format(c.id, c.table_name, c.column_name))
+            print("    duplicate 'from' and 'to' column used in same mapping(s)")
             for cm in cm_duplicates:
                 double_usage_count += 1
                 split_duplicate_mapping(apps, cm)
-
-    # print ""
-    # print ""
-    # print "-------------------------------------------------------------------"
-    # print "Total from/to used duplicate columns: {}".format(double_usage_count)
-    # print "Total Columns: {}".format(Column.objects.all().count())
 
 
 class Migration(migrations.Migration):

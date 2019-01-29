@@ -11,9 +11,11 @@ from datetime import date, datetime
 from random import randint
 
 import pytz
+from builtins import str
 from django.apps import apps
 from django.db import models
 from django.utils.timezone import get_current_timezone, make_aware, make_naive
+from past.builtins import basestring
 from quantityfield import ureg
 
 from seed.lib.superperms.orgs.models import Organization
@@ -59,16 +61,16 @@ def format_pint_violation(rule, source_value):
     pretty_rule_units = pretty_units(rule_value)
 
     if incoming_data_units != rule_units:
-        formatted_value = u"{:.1f} {} → {:.1f} {}".format(
+        formatted_value = '{:.1f} {} → {:.1f} {}'.format(
             source_value.magnitude, pretty_source_units,
             rule_value.magnitude, pretty_rule_units,
         )
     else:
-        formatted_value = u"{:.1f} {}".format(source_value.magnitude, pretty_rule_units)
+        formatted_value = '{:.1f} {}'.format(source_value.magnitude, pretty_rule_units)
     if rule.min is not None:
-        formatted_min = u"{:.1f} {}".format(rule.min, pretty_rule_units)
+        formatted_min = '{:.1f} {}'.format(rule.min, pretty_rule_units)
     if rule.max is not None:
-        formatted_max = u"{:.1f} {}".format(rule.max, pretty_rule_units)
+        formatted_max = '{:.1f} {}'.format(rule.max, pretty_rule_units)
     return (formatted_value, formatted_min, formatted_max)
 
 
@@ -300,7 +302,7 @@ class Rule(models.Model):
     severity = models.IntegerField(choices=SEVERITY, default=SEVERITY_ERROR)
     units = models.CharField(max_length=100, blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return json.dumps(obj_to_dict(self))
 
     def valid_text(self, value):
@@ -311,7 +313,7 @@ class Rule(models.Model):
         :return: bool, True is valid, False if the value does not match
         """
 
-        if self.data_type == self.TYPE_STRING and isinstance(value, (str, unicode)):
+        if self.data_type == self.TYPE_STRING and isinstance(value, basestring):
             if self.text_match is None or self.text_match == '':
                 return True
 
@@ -342,7 +344,7 @@ class Rule(models.Model):
                 rule_min = int(rule_min)
             elif isinstance(value, ureg.Quantity):
                 rule_min = rule_min * ureg(self.units)
-            elif not isinstance(value, (str, unicode)):
+            elif not isinstance(value, basestring):
                 # must be a float...
                 value = float(value)
 
@@ -377,7 +379,7 @@ class Rule(models.Model):
                 rule_max = int(rule_max)
             elif isinstance(value, ureg.Quantity):
                 rule_max = rule_max * ureg(self.units)
-            elif not isinstance(value, (str, unicode)):
+            elif not isinstance(value, basestring):
                 # must be a float...
                 value = float(value)
 
@@ -399,7 +401,7 @@ class Rule(models.Model):
         :return: typed value
         """
 
-        if isinstance(value, (str, unicode)):
+        if isinstance(value, basestring):
             # check if we can type cast the value
             try:
                 # strip the string of any leading/trailing spaces
@@ -460,7 +462,7 @@ class Rule(models.Model):
                 f_max = str(self.max)
         elif isinstance(value, ureg.Quantity):
             f_value, f_min, f_max = format_pint_violation(self, value)
-        elif isinstance(value, (str, unicode)):
+        elif isinstance(value, basestring):
             f_value = str(value)
             f_min = str(self.min)
             f_max = str(self.max)
@@ -586,7 +588,7 @@ class DataQualityCheck(models.Model):
             self._check(rules, row)
 
         # Prune the results will remove any entries that have zero data_quality_results
-        for k, v in self.results.items():
+        for k, v in self.results.copy().items():
             if not v['data_quality_results']:
                 del self.results[k]
 
@@ -938,6 +940,6 @@ class DataQualityCheck(models.Model):
             raise RuntimeError(
                 "More than 1 data quality results for tax lot id '{}'".format(tax_lot_id))
 
-    def __unicode__(self):
-        return u'DataQuality ({}:{}) - Rule Count: {}'.format(self.pk, self.name,
-                                                              self.rules.count())
+    def __str__(self):
+        return 'DataQuality ({}:{}) - Rule Count: {}'.format(self.pk, self.name,
+                                                             self.rules.count())

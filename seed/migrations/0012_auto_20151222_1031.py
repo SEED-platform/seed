@@ -17,7 +17,7 @@ def merge_extra_data(b1, b2, default=None):
     default_extra_data = getattr(default, 'extra_data', {})
     non_default_extra_data = getattr(non_default, 'extra_data', {})
 
-    all_keys = set(default_extra_data.keys() + non_default_extra_data.keys())
+    all_keys = set(list(default_extra_data.keys()) + list(non_default_extra_data.keys()))
     extra_data = {
         k: default_extra_data.get(k) or non_default_extra_data.get(k)
         for k in all_keys
@@ -36,21 +36,9 @@ def merge_extra_data(b1, b2, default=None):
 
 def recover_extra_data(app, schema_editor, **kwargs):
     """
-    Populate the default labels for each organization.
+    Used in old version (< 1.5), not needed anymore
     """
-    BuildingSnapshot = app.get_model("seed", "BuildingSnapshot")
-
-    # Get all snapshots which are the canonical snapshot which also have parent
-    # buildings and which DO NOT have any children.
-    leaves = BuildingSnapshot.objects.filter(
-        pk__in=BuildingSnapshot.objects.filter(
-            parents__isnull=False,
-            children__isnull=True,
-            canonicalbuilding__isnull=False,
-        ).values_list('pk', flat=True),
-    )
-    for leaf_snapshot in leaves:
-        merge_extra_data_from_parents(leaf_snapshot)
+    pass
 
 
 def merge_extra_data_from_parents(bs):

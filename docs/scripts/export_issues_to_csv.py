@@ -83,7 +83,7 @@ if args.csv:
 
     print("Finding P-1 Issues")
     for issue in repo.issues(state='open', labels='P-1'):
-       add_issue_to_csv(issue)
+        add_issue_to_csv(issue)
 
     print("Finding P-2 Issues")
     for issue in repo.issues(state='open', labels='P-2'):
@@ -98,7 +98,7 @@ if args.csv:
         try:
             if issue.number not in ids_added and not issue.pull_request():
                 add_issue_to_csv(issue)
-        except:
+        except BaseException:
             pass
 
     # write out the lines

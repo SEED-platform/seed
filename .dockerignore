@@ -1,6 +1,10 @@
 # .git  # For now add in the .git repo so that the version is parsed on the page correctly
+.dockerignore
 .idea
 .tox
+./docker-compose*.yml
+./deploy.sh
+**/*.pyc
 collected_static
 media
 node_modules

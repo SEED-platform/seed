@@ -78,10 +78,10 @@ class TestMatching(DataMappingBaseTestCase):
             )
 
         # for ps in PropertyState.objects.filter(organization=self.org):
-        #     print "%s -- %s -- %s" % (ps.lot_number, ps.import_file_id, ps.address_line_1)
+        #     print("%s -- %s -- %s" % (ps.lot_number, ps.import_file_id, ps.address_line_1))
 
         # for tl in TaxLotState.objects.filter(organization=self.org):
-        #     print "%s -- %s" % (tl.import_file_id, tl.jurisdiction_tax_lot_id)
+        #     print("%s -- %s" % (tl.import_file_id, tl.jurisdiction_tax_lot_id))
 
         # set import_file mapping done so that matching can occur.
         self.import_file.mapping_done = True
@@ -89,7 +89,7 @@ class TestMatching(DataMappingBaseTestCase):
         match_buildings(self.import_file.id)
 
         # for pv in PropertyView.objects.filter(state__organization=self.org):
-        #     print "%s -- %s" % (pv.state, pv.cycle)
+        #     print("%s -- %s" % (pv.state, pv.cycle))
 
         # should only have 1 PropertyView and 4 taxlot views
         self.assertEqual(PropertyView.objects.filter(state__organization=self.org).count(), 1)
@@ -127,10 +127,10 @@ class TestMatching(DataMappingBaseTestCase):
             )
 
         # for ps in PropertyState.objects.filter(organization=self.org):
-        #     print "%s -- %s -- %s" % (ps.lot_number, ps.import_file_id, ps.address_line_1)
+        #     print("%s -- %s -- %s" % (ps.lot_number, ps.import_file_id, ps.address_line_1))
 
         # for tl in TaxLotState.objects.filter(organization=self.org):
-        #     print "%s -- %s" % (tl.import_file_id, tl.jurisdiction_tax_lot_id)
+        #     print("%s -- %s" % (tl.import_file_id, tl.jurisdiction_tax_lot_id))
 
         # set import_file mapping done so that matching can occur.
         self.import_file.mapping_done = True
@@ -138,7 +138,7 @@ class TestMatching(DataMappingBaseTestCase):
         match_buildings(self.import_file.id)
 
         # for pv in PropertyView.objects.filter(state__organization=self.org):
-        #     print "%s -- %s" % (pv.state, pv.cycle)
+        #     print("%s -- %s" % (pv.state, pv.cycle))
 
         # should only have 1 PropertyView and 4 taxlot views
         self.assertEqual(PropertyView.objects.filter(state__organization=self.org).count(), 1)
@@ -178,12 +178,12 @@ class TestMatching(DataMappingBaseTestCase):
         )
 
         # for ps in PropertyState.objects.filter(organization=self.org):
-        #     print "%s -- %s -- %s" % (ps.lot_number, ps.import_file_id, ps.ubid)
+        #     print("%s -- %s -- %s" % (ps.lot_number, ps.import_file_id, ps.ubid))
         # pv = PropertyView.objects.get(state=ps, cycle=self.cycle)
         # TaxLotProperty.objects.filter()
 
         # for tl in TaxLotState.objects.filter(organization=self.org):
-        #     print "%s -- %s" % (tl.import_file_id, tl.jurisdiction_tax_lot_id)
+        #     print("%s -- %s" % (tl.import_file_id, tl.jurisdiction_tax_lot_id))
 
         # set import_file mapping done so that matching can occur.
         self.import_file.mapping_done = True
@@ -191,7 +191,7 @@ class TestMatching(DataMappingBaseTestCase):
         match_buildings(self.import_file.id)
 
         # for pv in PropertyView.objects.filter(state__organization=self.org):
-        #     print "%s -- %s" % (pv.state.ubid, pv.cycle)
+        #     print("%s -- %s" % (pv.state.ubid, pv.cycle))
 
         # should only have 1 PropertyView and 4 taxlot views
         self.assertEqual(PropertyView.objects.filter(state__organization=self.org).count(), 4)
@@ -230,12 +230,12 @@ class TestMatching(DataMappingBaseTestCase):
         )
 
         # for ps in PropertyState.objects.filter(organization=self.org):
-        #     print "%s -- %s -- %s" % (ps.lot_number, ps.import_file_id, ps.custom_id_1)
+        #     print("%s -- %s -- %s" % (ps.lot_number, ps.import_file_id, ps.custom_id_1))
         # pv = PropertyView.objects.get(state=ps, cycle=self.cycle)
         # TaxLotProperty.objects.filter()
 
         # for tl in TaxLotState.objects.filter(organization=self.org):
-        #     print "%s -- %s" % (tl.import_file_id, tl.jurisdiction_tax_lot_id)
+        #     print("%s -- %s" % (tl.import_file_id, tl.jurisdiction_tax_lot_id))
 
         # set import_file mapping done so that matching can occur.
         self.import_file.mapping_done = True
@@ -243,7 +243,7 @@ class TestMatching(DataMappingBaseTestCase):
         match_buildings(self.import_file.id)
 
         # for pv in PropertyView.objects.filter(state__organization=self.org):
-        #     print "%s -- %s" % (pv.state, pv.cycle)
+        #     print("%s -- %s" % (pv.state, pv.cycle))
 
         # should only have 1 PropertyView and 4 taxlot views
         self.assertEqual(PropertyView.objects.filter(state__organization=self.org).count(), 4)

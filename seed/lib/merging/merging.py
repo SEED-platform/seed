@@ -93,7 +93,7 @@ def _merge_extra_data(ed1, ed2, priorities):
     :param priorities: dict, column names with favor new or existing
     :return dict, merged result
     """
-    all_keys = set(ed1.keys() + ed2.keys())
+    all_keys = set(list(ed1.keys()) + list(ed2.keys()))
     extra_data = {}
     for key in all_keys:
         val1 = ed1.get(key, None)
@@ -127,7 +127,7 @@ def merge_state(merged_state, state1, state2, priorities):
     default = state2
     for attr in can_attrs:
         # Do we have any differences between these fields? - Check if not None instead of if value.
-        attr_values = list(set([value for value in can_attrs[attr].values() if value is not None]))
+        attr_values = [value for value in list(can_attrs[attr].values()) if value is not None]
         attr_values = [v for v in attr_values if v is not None]
 
         attr_value = None

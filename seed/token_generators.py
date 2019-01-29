@@ -81,8 +81,7 @@ class SignupTokenGenerator(object):
         login_timestamp = user.last_login.replace(microsecond=0, tzinfo=None)
 
         value = (
-            six.text_type(user.pk) + user.password +
-            six.text_type(login_timestamp) + six.text_type(timestamp)
+            six.text_type(user.pk) + user.password + six.text_type(login_timestamp) + six.text_type(timestamp)
         )
         hash = salted_hmac(key_salt, value).hexdigest()[::2]
         return "%s-%s" % (ts_b36, hash)

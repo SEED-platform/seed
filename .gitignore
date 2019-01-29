@@ -45,6 +45,9 @@ htmlcov/
 src/
 node_modules/
 
+# JetBrainz tends to suggest a venv directory in the project root for virtual environments
+venv/
+
 package-lock.json
 dump.rdb
 log/*.log
@@ -73,3 +76,9 @@ docs/scripts/.python-version
 docs/scripts/seed_issues.csv
 
 lokalise.cfg
+
+# Docker-based files
+docker-compose.*.yml
+!docker-compose.yml
+!docker-compose.local.yml
+!docker-compose.deploy.yml

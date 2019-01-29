@@ -25,7 +25,7 @@ ALLOWED_HOSTS = ['*']
 
 # Enable this if not using Cloudflare
 #ONLY_HTTPS = os.environ.get('ONLY_HTTPS', 'True') == 'True'
-#if ONLY_HTTPS:
+# if ONLY_HTTPS:
 #    MIDDLEWARE = ('sslify.middleware.SSLifyMiddleware',) + \
 #        MIDDLEWARE
 

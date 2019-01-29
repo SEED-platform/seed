@@ -5,12 +5,13 @@
 :author
 """
 from __future__ import unicode_literals
+from __future__ import absolute_import
 
 import copy
 import logging
 import re
 from os import path
-
+from past.builtins import basestring
 from django.apps import apps
 from django.contrib.postgres.fields import JSONField
 from django.db import IntegrityError
@@ -20,11 +21,11 @@ from django.dispatch import receiver
 from django.forms.models import model_to_dict
 from quantityfield.fields import QuantityField
 
+from .auditlog import AUDIT_IMPORT
+from .auditlog import DATA_UPDATE_TYPE
+from seed.data_importer.models import ImportFile
 # from seed.utils.cprofile import cprofile
 from seed.lib.mcm.cleaners import date_cleaner
-from auditlog import AUDIT_IMPORT
-from auditlog import DATA_UPDATE_TYPE
-from seed.data_importer.models import ImportFile
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     Cycle,
@@ -40,7 +41,6 @@ from seed.utils.address import normalize_address_str
 from seed.utils.generic import split_model_fields, obj_to_dict
 from seed.utils.time import convert_datestr
 from seed.utils.time import convert_to_js_timestamp
-
 
 _log = logging.getLogger(__name__)
 
@@ -71,8 +71,8 @@ class Property(models.Model):
     class Meta:
         verbose_name_plural = 'properties'
 
-    def __unicode__(self):
-        return u'Property - %s' % (self.pk)
+    def __str__(self):
+        return 'Property - %s' % (self.pk)
 
 
 class PropertyState(models.Model):
@@ -276,8 +276,8 @@ class PropertyState(models.Model):
 
             return None
 
-    def __unicode__(self):
-        return u'Property State - %s' % self.pk
+    def __str__(self):
+        return 'Property State - %s' % self.pk
 
     def clean(self):
         date_field_names = (
@@ -288,11 +288,10 @@ class PropertyState(models.Model):
         )
         for field in date_field_names:
             value = getattr(self, field)
-            if value and isinstance(value, (str, unicode)):
-                print "Saving %s which is a date time" % field
-                print convert_datestr(value)
-                print date_cleaner(value)
-                # setattr(self, field, convert_datestr(value))
+            if value and isinstance(value, basestring):
+                _log.info("Saving %s which is a date time" % field)
+                _log.info(convert_datestr(value))
+                _log.info(date_cleaner(value))
 
     def to_dict(self, fields=None, include_related_data=True):
         """
@@ -302,7 +301,7 @@ class PropertyState(models.Model):
         if fields:
             model_fields, ed_fields = split_model_fields(self, fields)
             extra_data = self.extra_data
-            ed_fields = filter(lambda f: f in extra_data, ed_fields)
+            ed_fields = list(filter(lambda f: f in extra_data, ed_fields))
 
             result = {
                 field: getattr(self, field) for field in model_fields
@@ -311,24 +310,12 @@ class PropertyState(models.Model):
                 field: extra_data[field] for field in ed_fields
             }
 
-            # always return id's and canonical_building id's
+            # always return id's
             result['id'] = result['pk'] = self.pk
-
-            # should probably also return children, parents, and coparent
-            # result['children'] = map(lambda c: c.id, self.children.all())
-            # result['parents'] = map(lambda p: p.id, self.parents.all())
-            # result['co_parent'] = (self.co_parent and self.co_parent.pk)
-            # result['coparent'] = (self.co_parent and {
-            #     field: self.co_parent.pk for field in ['pk', 'id']
-            #     })
 
             return result
 
         d = obj_to_dict(self, include_m2m=include_related_data)
-
-        # if include_related_data:
-        # d['parents'] = list(self.parents.values_list('id', flat=True))
-        # d['co_parent'] = self.co_parent.pk if self.co_parent else None
 
         return d
 
@@ -404,7 +391,8 @@ class PropertyState(models.Model):
 
                 while not done_searching:
                     # if there is no parents, then break out immediately
-                    if (log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
+                    if (
+                            log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
                         break
 
                     # initalize the tree to None everytime. If not new tree is found, then we will not iterate
@@ -547,7 +535,8 @@ class PropertyState(models.Model):
         # important because the fields that were not queried will be deferred and require a new
         # query to retrieve.
         keep_fields = ['id', 'pm_property_id', 'pm_parent_property_id', 'custom_id_1', 'ubid',
-                       'address_line_1', 'address_line_2', 'city', 'state', 'postal_code', 'longitude', 'latitude',
+                       'address_line_1', 'address_line_2', 'city', 'state', 'postal_code',
+                       'longitude', 'latitude',
                        'lot_number', 'gross_floor_area', 'use_description', 'energy_score',
                        'site_eui', 'site_eui_modeled', 'property_notes', 'property_type',
                        'year_ending', 'owner', 'owner_email', 'owner_telephone', 'building_count',
@@ -576,9 +565,12 @@ class PropertyState(models.Model):
         # collect the relationships
         no_measure_scenarios = [x for x in state2.scenarios.filter(measures__isnull=True)] + \
                                [x for x in state1.scenarios.filter(measures__isnull=True)]
-        building_files = [x for x in state2.building_files.all()] + [x for x in state1.building_files.all()]
-        simulations = [x for x in SimulationClass.objects.filter(property_state__in=[state1, state2])]
-        measures = [x for x in PropertyMeasureClass.objects.filter(property_state__in=[state1, state2])]
+        building_files = [x for x in state2.building_files.all()] + [x for x in
+                                                                     state1.building_files.all()]
+        simulations = [x for x in
+                       SimulationClass.objects.filter(property_state__in=[state1, state2])]
+        measures = [x for x in
+                    PropertyMeasureClass.objects.filter(property_state__in=[state1, state2])]
 
         # copy in the no measure scenarios
         for new_s in no_measure_scenarios:
@@ -631,7 +623,7 @@ class PropertyState(models.Model):
 
                         # grab the scenario that is attached to the orig measure and create a new connection
                         for scenario in measure.scenario_set.all():
-                            if scenario.pk not in scenario_measure_map.keys():
+                            if scenario.pk not in scenario_measure_map:
                                 scenario_measure_map[scenario.pk] = []
                             scenario_measure_map[scenario.pk].append(new_measure.pk)
 
@@ -680,8 +672,8 @@ class PropertyView(models.Model):
 
     # notes has a relationship here -- PropertyViews have notes, not the state, and not the property.
 
-    def __unicode__(self):
-        return u'Property View - %s' % self.pk
+    def __str__(self):
+        return 'Property View - %s' % self.pk
 
     class Meta:
         unique_together = ('property', 'cycle',)

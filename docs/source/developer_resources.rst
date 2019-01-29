@@ -22,6 +22,8 @@ to emulate the same checks as the CI machine.
 +------+--------------------------------------------------+
 | W503 | line break occurred before a binary operator     |
 +------+--------------------------------------------------+
+| W504 | line break occurred after a binary operator      |
++------+--------------------------------------------------+
 
 To run flake locally call:
 
@@ -118,7 +120,6 @@ settings var is the reply-to email sent along with new account emails.
     # config/settings/common.py
     PASSWORD_RESET_EMAIL = 'reset@seed.lbl.gov'
     SERVER_EMAIL = 'no-reply@seed.lbl.gov'
-
 
 
 AngularJS Integration Notes
@@ -294,3 +295,26 @@ JS Compliance uses jshint
 
     jshint seed/static/seed/js
 
+Release Instructions
+--------------------
+
+To make a release do the following:
+
+1. Github admin user, on develop branch: update the ``package.json`` and ``setup.py`` file with the
+   most recent version number. Always use MAJOR.MINOR.RELEASE.
+2. Run the ``docs/scripts/change_log.py`` script and add the changes to the CHANGELOG.md file for
+   the range of time between last release and this release. Only add the *Closed Issues*. Also make
+   sure that all the pull requests have a related Issue in order to be included in the change log.
+
+.. code-block:: console
+
+    python docs/scripts/change_log.py –k GITHUB_API_TOKEN –s 2018-02-26 –e 2018-05-30
+
+3. Paste the results (remove unneeded Accepted Pull Requests) into the CHANGELOG.md. Make sure to cleanup the formatting.
+4. Make sure that any new UI needing localization has been tagged for
+   translation, and that any new translation keys exist in the lokalise.co project (see ``/docs/translation.md``).
+5. Once develop passes, then create a new PR from develop to master.
+6. Draft new Release from Github (https://github.com/SEED-platform/seed/releases).
+7. Include list of changes since previous release (i.e. the content in the CHANGELOG.md)
+8. Verify that the Docker versions are built and pushed to Docker hub (https://hub.docker.com/r/seedplatform/seed/tags/).
+9. Go to Read the Docs and enable the latest version to be active (https://readthedocs.org/dashboard/seed-platform/versions/)
