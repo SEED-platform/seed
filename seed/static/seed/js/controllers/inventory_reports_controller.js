@@ -288,7 +288,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
             y_axis_label: $translate.instant($scope.yAxisSelectedItem.label)
           };
         } catch (e) {
-          console.error('$sce issue... missing translation');
+          $log.error('$sce issue... missing translation');
           interpolationParams = {
             x_axis_label: $scope.xAxisSelectedItem.label,
             y_axis_label: $scope.yAxisSelectedItem.label

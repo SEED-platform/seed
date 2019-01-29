@@ -1,3 +1,5 @@
+@import "fonts.scss";
+
 @-webkit-keyframes fadein {
   from {
     opacity: 0;
@@ -852,7 +854,7 @@ a:not([href]) {
       }
     }
     .jumbotron {
-      background: url('../images/kc_2.jpg') no-repeat;
+      background: url('../../seed/images/kc_2.jpg') no-repeat;
       height: 402px;
       margin-bottom: 0;
       padding: 30px 10%;
@@ -940,7 +942,7 @@ a:not([href]) {
       height: 400px;
       overflow-y: scroll;
       border-bottom: 1px solid $gray_lighter;
-      background: url('../images/bg_first_td.png') repeat-x top center;
+      background: url('../../seed/images/bg_first_td.png') repeat-x top center;
     }
     .table_list_container {
       overflow-x: auto;
@@ -1353,10 +1355,10 @@ a:not([href]) {
       }
 
       //.table-striped tbody tr:nth-child(1) td {
-      //  background: url('../images/bg_first_td.png') repeat-x;
+      //  background: url('../../seed/images/bg_first_td.png') repeat-x;
       //
       //  &.sorted {
-      //    background: url('../images/bg_first_td.png') repeat-x;
+      //    background: url('../../seed/images/bg_first_td.png') repeat-x;
       //  }
       //}
       .table-striped tbody tr td h3 {

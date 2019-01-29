@@ -14,9 +14,7 @@ angular.module('BE.seed.service.modified', []).factory('modified_service', [
 
     modified_service.setModified = function () {
       if (!modified) {
-        $window.onbeforeunload = function () {
-          return 'You have unsaved changes.';
-        };
+        $window.onbeforeunload = _.constant('You have unsaved changes.');
         modified = true;
       }
     };

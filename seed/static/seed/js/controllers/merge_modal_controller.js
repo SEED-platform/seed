@@ -5,6 +5,7 @@
 angular.module('BE.seed.controller.merge_modal', [])
   .controller('merge_modal_controller', [
     '$scope',
+    '$log',
     'matching_service',
     '$uibModalInstance',
     'Notification',
@@ -14,7 +15,7 @@ angular.module('BE.seed.controller.merge_modal', [])
     'columns',
     'data',
     'inventory_type',
-    function ($scope, matching_service, $uibModalInstance, Notification, spinner_utility, uiGridConstants, naturalSort, columns, data, inventory_type) {
+    function ($scope, $log, matching_service, $uibModalInstance, Notification, spinner_utility, uiGridConstants, naturalSort, columns, data, inventory_type) {
       spinner_utility.hide();
 
       $scope.inventory_type = inventory_type;

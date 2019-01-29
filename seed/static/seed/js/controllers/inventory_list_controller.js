@@ -103,7 +103,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       };
 
       var ignoreNextChange = true;
-      $scope.$watch('currentProfile', function (newProfile, oldProfile) {
+      $scope.$watch('currentProfile', function (newProfile) {
         if (ignoreNextChange) {
           ignoreNextChange = false;
           return;
@@ -147,8 +147,8 @@ angular.module('BE.seed.controller.inventory_list', [])
         }
       };
 
-      function populated_columns_modal() {
-        var modalInstance = $uibModal.open({
+      function populated_columns_modal () {
+        $uibModal.open({
           backdrop: 'static',
           templateUrl: urls.static_url + 'seed/partials/show_populated_columns_modal.html',
           controller: 'show_populated_columns_modal_controller',
@@ -181,7 +181,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
-      function updateApplicableLabels() {
+      function updateApplicableLabels () {
         var inventoryIds = _.map($scope.data, 'id').sort();
         $scope.labels = _.filter(labels, function (label) {
           return _.some(label.is_applied, function (id) {
@@ -330,7 +330,7 @@ angular.module('BE.seed.controller.inventory_list', [])
 
         data_quality_service.start_data_quality_checks(property_states, taxlot_states).then(function (response) {
           data_quality_service.data_quality_checks_status(response.progress_key).then(function (result) {
-            data_quality_service.get_data_quality_results(user_service.get_organization().id, result.unique_id).then(function(dq_result) {
+            data_quality_service.get_data_quality_results(user_service.get_organization().id, result.unique_id).then(function (dq_result) {
               var modalInstance = $uibModal.open({
                 templateUrl: urls.static_url + 'seed/partials/data_quality_modal.html',
                 controller: 'data_quality_modal_controller',
@@ -650,7 +650,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
-      function currentColumns() {
+      function currentColumns () {
         // Save all columns except first 3
         var gridCols = _.filter($scope.gridApi.grid.columns, function (col) {
           return !_.includes(['treeBaseRowHeaderCol', 'selectionRowHeaderCol', 'notes_count', 'id'], col.name) && col.visible;
@@ -751,15 +751,16 @@ angular.module('BE.seed.controller.inventory_list', [])
 
           gridApi.colMovable.on.columnPositionChanged($scope, function () {
             // Ensure that 'notes_count' and 'id' remain first
-            var idIndex = _.findIndex($scope.gridApi.grid.columns, {name: 'notes_count'});
+            var col, idIndex;
+            idIndex = _.findIndex($scope.gridApi.grid.columns, {name: 'notes_count'});
             if (idIndex !== 2) {
-              var col = $scope.gridApi.grid.columns[idIndex];
+              col = $scope.gridApi.grid.columns[idIndex];
               $scope.gridApi.grid.columns.splice(idIndex, 1);
               $scope.gridApi.grid.columns.splice(2, 0, col);
             }
-            var idIndex = _.findIndex($scope.gridApi.grid.columns, {name: 'id'});
+            idIndex = _.findIndex($scope.gridApi.grid.columns, {name: 'id'});
             if (idIndex !== 3) {
-              var col = $scope.gridApi.grid.columns[idIndex];
+              col = $scope.gridApi.grid.columns[idIndex];
               $scope.gridApi.grid.columns.splice(idIndex, 1);
               $scope.gridApi.grid.columns.splice(3, 0, col);
             }

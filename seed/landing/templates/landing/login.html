@@ -1,14 +1,5 @@
 {% extends "landing/base.html" %}{% load compress %}{% load i18n %}
 
-{% block js %}{{block.super}}
-<script type="text/javascript">
-$(document).ready(function () {
-    $("#id_email").focus();
-    BEHome.actions.check_unsupported_browser();
-});
-
-</script>
-{% endblock %}
 {% block content %}
 <div class="page login">
     {% include "landing/_header.html" %}
@@ -38,4 +29,13 @@ $(document).ready(function () {
     <!-- END .page_section .content -->
 </div>
 <!-- END .page -->
+{% endblock %}
+
+{% block js %}{{block.super}}
+<script type="text/javascript">
+$(function () {
+  $('#id_email').focus();
+  BEHome.actions.check_unsupported_browser();
+});
+</script>
 {% endblock %}

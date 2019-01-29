@@ -6,11 +6,6 @@ var $ = require('gulp-load-plugins')();
 
 var conf = {
   jsPattern: ['./seed/landing/static/**/*.js', './seed/static/seed/**/*.js'],
-  sassPattern: ['./seed/landing/static/landing/scss/**/*.scss', './seed/static/seed/scss/**/*.scss'],
-  autoprefixerOptions: {
-    browsers: ['last 3 versions', 'ie >= 8'],
-    cascade: false
-  },
   errorHandler: function (title) {
     return function (err) {
       $.util.log($.util.colors.red('[' + title + ']'), err.toString());
@@ -35,21 +30,5 @@ gulp.task('lint:fix', function () {
   return eslint(true);
 });
 
-// Compile SCSS
-gulp.task('sass', function () {
-  return gulp.src(conf.sassPattern)
-    .pipe($.sourcemaps.init())
-    .pipe($.sass({noCache: true})).on('error', conf.errorHandler('Sass'))
-    .pipe($.autoprefixer(conf.autoprefixerOptions)).on('error', conf.errorHandler('Autoprefixer'))
-    .pipe($.csso())
-    .pipe($.sourcemaps.write('.'))
-    .pipe(gulp.dest('./seed/static/seed/css'));
-});
-
-// Monitor SCSS files and recompile on change
-gulp.task('watch', ['sass'], function () {
-  gulp.watch(conf.sassPattern, ['sass']);
-});
-
 // Default task
-gulp.task('default', ['watch']);
+gulp.task('default', ['lint']);

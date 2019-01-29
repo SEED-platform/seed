@@ -132,13 +132,23 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'collected_static')
+COMPRESS_AUTOPREFIXER_BINARY = 'node_modules/.bin/postcss'
+COMPRESS_CSS_FILTERS = [
+    'compressor.filters.css_default.CssAbsoluteFilter',
+    'django_compressor_autoprefixer.AutoprefixerFilter',
+    'compressor.filters.cssmin.CSSMinFilter'
+]
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'seed/static'),
+    os.path.join(BASE_DIR, 'vendors')
+]
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'compressor.finders.CompressorFinder',
 )
 COMPRESS_PRECOMPILERS = (
-    ('text/less', 'lessc {infile} {outfile}'),
+    ('text/x-scss', 'django_libsass.SassCompiler'),
 )
 AWS_QUERYSTRING_AUTH = False
 
@@ -287,7 +297,7 @@ REST_FRAMEWORK = {
 }
 
 SWAGGER_SETTINGS = {
-    "exclude_namespaces": ["app"],  # List URL namespaces to ignore
+    'exclude_namespaces': ['app'],  # List URL namespaces to ignore
     'APIS_SORTER': 'alpha',
     'LOGOUT_URL': '/accounts/logout',
 }

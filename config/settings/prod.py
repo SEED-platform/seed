@@ -14,6 +14,8 @@ from kombu import Exchange, Queue
 
 DEBUG = False
 COMPRESS_ENABLED = True
+COMPRESS_STORAGE = 'compressor.storage.GzipCompressorFileStorage'
+COMPRESS_OFFLINE = True
 # Need to test with cloudflare
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True

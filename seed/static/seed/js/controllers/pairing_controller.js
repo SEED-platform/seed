@@ -73,8 +73,8 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
     };
 
     var refreshObjects = function () {
-      var propertyColumnNames = _.map($scope.propertyColumns, 'name');
-      var taxlotColumnNames = _.map($scope.taxlotColumns, 'name');
+      // var propertyColumnNames = _.map($scope.propertyColumns, 'name');
+      // var taxlotColumnNames = _.map($scope.taxlotColumns, 'name');
 
       var promises = [];
       promises.push(inventory_service.get_properties(1, undefined, $scope.cycle.selected_cycle, undefined));

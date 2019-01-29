@@ -115,7 +115,7 @@ angular.module('BE.seed.controller.column_settings', [])
         });
 
         spinner_utility.show();
-        $q.all(promises).then(function (results) {
+        $q.all(promises).then(function (/*results*/) {
           $scope.columns_updated = true;
           modified_service.resetModified();
           var totalChanged = _.keys(diff).length;

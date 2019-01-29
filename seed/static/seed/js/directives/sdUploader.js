@@ -160,7 +160,9 @@ var makeS3Uploader = function (scope, element) {
           if (_.has(json, 'message')) {
             error = json.message;
           }
-        } catch (e) {}
+        } catch (e) {
+          // no-op
+        }
 
         scope.eventfunc({
           message: 'upload_error',
@@ -310,7 +312,9 @@ var makeFileSystemUploader = function (scope, element) {
           if (_.has(json, 'message')) {
             error = json.message;
           }
-        } catch (e) {}
+        } catch (e) {
+          // no-op
+        }
 
         scope.eventfunc({
           message: 'upload_error',
@@ -446,7 +450,9 @@ var makeBuildingSyncUploader = function (scope, element) {
           if (_.has(json, 'message')) {
             error = json.message;
           }
-        } catch (e) {}
+        } catch (e) {
+          // no-op
+        }
 
         scope.eventfunc({
           message: 'upload_error',
@@ -585,7 +591,9 @@ var makeBuildingSyncUpdater = function (scope, element) {
           if (_.has(json, 'message')) {
             error = json.message;
           }
-        } catch (e) {}
+        } catch (e) {
+          // no-op
+        }
 
         scope.eventfunc({
           message: 'upload_error',

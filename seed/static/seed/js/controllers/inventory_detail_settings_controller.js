@@ -105,7 +105,7 @@ angular.module('BE.seed.controller.inventory_detail_settings', [])
         }
       });
 
-      function switchProfile(newProfile) {
+      function switchProfile (newProfile) {
         ignoreNextChange = true;
         if (newProfile) {
           $scope.currentProfile = _.find($scope.profiles, {id: newProfile.id});

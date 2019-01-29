@@ -182,11 +182,11 @@ angular.module('BE.seed.controller.admin', [])
           .then(function (data) {
             // resolve promise
             uploader_service.check_progress_loop(data.progress_key, 0, 1, function () {
-                org.remove_message = 'success';
-                get_organizations();
-              }, function () {
+              org.remove_message = 'success';
+              get_organizations();
+            }, function () {
                 // Do nothing
-              },
+            },
               org);
           });
       };

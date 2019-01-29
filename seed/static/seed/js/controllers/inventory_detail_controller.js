@@ -90,7 +90,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.item_state = inventory_payload.state;
 
       // item_parent is the property or the tax lot instead of the PropertyState / TaxLotState
-      if($scope.inventory_type === 'properties'){
+      if($scope.inventory_type === 'properties') {
         $scope.item_parent = inventory_payload.property;
       } else {
         $scope.item_parent = inventory_payload.taxlot;
@@ -122,7 +122,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       };
 
       var ignoreNextChange = true;
-      $scope.$watch('currentProfile', function (newProfile, oldProfile) {
+      $scope.$watch('currentProfile', function (newProfile) {
         if (ignoreNextChange) {
           ignoreNextChange = false;
           return;
@@ -133,7 +133,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
         $window.location.reload();
       });
 
-      $scope.gotoMeasureAnchor = function(x) {
+      $scope.gotoMeasureAnchor = function (x) {
         $location.hash('measureAnchor' + x);
         $anchorScroll();
       };

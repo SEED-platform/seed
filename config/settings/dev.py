@@ -10,9 +10,12 @@ from kombu import Exchange, Queue
 from django.conf import settings
 
 DEBUG = True
-COMPRESS_ENABLED = False
+compress = False
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
+
+COMPRESS_ENABLED = compress
+COMPRESS_OFFLINE = compress
 
 # override this in local_untracked.py
 DATABASES = {
