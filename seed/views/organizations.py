@@ -453,11 +453,13 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         # check the user and make sure they still have a valid organization to belong to
         if request.user.default_organization == org:
-            # find the first org and set it to that
+            # find the first org and set it to that. It is okay if first_org is none.
+            # it simply means the user has no allowed organizations and will need an admin to
+            # assign them to a new organization if they want to use the account again.
             first_org_user = OrganizationUser.objects.filter(user=user).order_by('id').first()
-            # it is okay if first_org is none. It means the user has no allowed organizations
-            request.user.default_organization = first_org_user.organization
-            request.user.save()
+            if first_org_user:
+                request.user.default_organization = first_org_user.organization
+                request.user.save()
 
         return JsonResponse({'status': 'success'})
 
