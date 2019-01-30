@@ -263,25 +263,39 @@ override default Django settings.
     export ONLY_HTTPS=True
 
 
-SMTP service
-^^^^^^^^^^^^
+Mail Services
+^^^^^^^^^^^^^
+
+AWS SES Service
+---------------
 
 In the AWS setup, we can use SES to provide an email service for Django. The service is
-configured in the config/settings/main.py:
+configured in the config/settings/local_untracked.py:
 
 .. code-block:: python
 
     EMAIL_BACKEND = 'django_ses.SESBackend'
 
-Many options for setting up your own SMTP service/server or using other SMTP
-third party services are available and compatible including `gmail`_.
 
+In general, the following steps are needed to configure SES:
+
+1. Access Amazon SES Console  - `Quickstart <https://docs.aws.amazon.com/ses/latest/DeveloperGuide/quick-start.html>`_
+2. Login to Amazon SES Console. Verify which region we are using (e.g., us-east-1)
+3. Decide on email address that will be sending the emails and add them to the `SES Verified Emails <https://docs.aws.amazon.com/ses/latest/DeveloperGuide/verify-email-addresses.html>`_.
+4. Test that SES works as expected (while in the SES sandbox). Note that you will need to add the sender and recipient emails to the verified emails while in the sandbox.
+5. Update the local_untracked.py file or set the environment variables for the docker file.
+6. Once ready, move the SES instance out of the sandbox. Following instructions `here <https://docs.aws.amazon.com/ses/latest/DeveloperGuide/request-production-access.html>`_
+7. (Optional) Set up Amazon Simple Notification Service (Amazon SNS) to notify you of bounced emails and other issues.
+8. (Optional) Use the AWS Management Console to set up Easy DKIM, which is a way to authenticate your emails. Amazon SES console will have the values for SPF and DKIM that you need to put into your DNS.
+
+SMTP service
+------------
+
+Many options for setting up your own `SMTP`_ service/server or using other SMTP
+third party services are available and compatible including `gmail`_. SMTP is not configured for working within Docker at the moment.
+
+.. _SMTP: https://docs.djangoproject.com/en/2.0/ref/settings/#email-backend
 .. _gmail: http://stackoverflow.com/questions/19264907/python-django-gmail-smtp-setup
-
-Django can likewise send emails via python's smtplib with sendmail or postfix
-installed. See their `docs`_ for more info.
-
-.. _docs: https://docs.djangoproject.com/en/1.6/topics/email/
 
 .. code-block:: python
 
