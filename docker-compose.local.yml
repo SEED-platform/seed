@@ -35,6 +35,11 @@ services:
   web:
     image: 127.0.0.1:5000/seed
     environment:
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_SES_REGION_NAME
+      - AWS_SES_REGION_ENDPOINT
+      - SERVER_EMAIL
       - POSTGRES_DB=seed
       - POSTGRES_USER
       - POSTGRES_PASSWORD
@@ -42,6 +47,8 @@ services:
       - SEED_ADMIN_PASSWORD
       - SEED_ADMIN_ORG
       - SECRET_KEY
+      - SENTRY_JS_DSN
+      - SENTRY_RAVEN_DSN
       - DJANGO_SETTINGS_MODULE=config.settings.docker
     depends_on:
       - db-redis
@@ -63,6 +70,8 @@ services:
       - POSTGRES_USER
       - POSTGRES_PASSWORD
       - SECRET_KEY
+      - SENTRY_JS_DSN
+      - SENTRY_RAVEN_DSN
       - DJANGO_SETTINGS_MODULE=config.settings.docker
       - NUMBER_OF_WORKERS
     depends_on:
@@ -78,6 +87,11 @@ services:
         delay: 5s
         max_attempts: 3
         window: 120s
+  oep-city-1:
+    # This is a placeholder. If needed, follow the instructions to enable: https://cloud.docker.com/u/seedplatform/repository/docker/seedplatform/oep
+    image: 127.0.0.1:5000/oep
+    environment:
+      - OEP_DISABLED=true
 volumes:
   seed_pgdata:
     external: true

@@ -1,6 +1,9 @@
 # Docker Compose for deployment. This removes the hard coded usernames and
 # passwords and pulls Docker Hub seedplatform/seed for the latest version.
-# Must set the following environment variables
+# It is recommended that you use docker stack to deploy which defaults to using
+# the docker-compose.local.yml file. This file is intended to support simple
+# production-based docker-compose deployments (not docker stack).
+# Must set the following environment variables.
 #   POSTGRES_USER
 #   POSTGRES_PASSWORD
 #   SEED_ADMIN_USER
@@ -11,7 +14,7 @@
 version: '3'
 services:
   db-postgres:
-    image: postgres
+    image: postgres:11.1
     environment:
       - POSTGRES_DB=seed
       - POSTGRES_USER
@@ -19,10 +22,15 @@ services:
     volumes:
       - seed_pgdata:/var/lib/postgresql/data
   db-redis:
-    image: redis
+    image: redis:5.0.1
   web:
     image: seedplatform/seed
     environment:
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_SES_REGION_NAME
+      - AWS_SES_REGION_ENDPOINT
+      - SERVER_EMAIL
       - POSTGRES_DB=seed
       - POSTGRES_USER
       - POSTGRES_PASSWORD
@@ -30,6 +38,8 @@ services:
       - SEED_ADMIN_PASSWORD
       - SEED_ADMIN_ORG
       - SECRET_KEY
+      - SENTRY_JS_DSN
+      - SENTRY_RAVEN_DSN
       - DJANGO_SETTINGS_MODULE=config.settings.docker
     depends_on:
       - db-redis
@@ -46,6 +56,8 @@ services:
       - POSTGRES_USER
       - POSTGRES_PASSWORD
       - SECRET_KEY
+      - SENTRY_JS_DSN
+      - SENTRY_RAVEN_DSN
       - DJANGO_SETTINGS_MODULE=config.settings.docker
       - NUMBER_OF_WORKERS
     depends_on:
@@ -54,6 +66,11 @@ services:
       - web
     volumes:
       - seed_media:/seed/media
+  oep-city-1:
+    # This is a placeholder. If needed, follow the instructions to enable: https://cloud.docker.com/u/seedplatform/repository/docker/seedplatform/oep
+    image: seedplatform/oep:1.0.0-SNAPSHOT
+    environment:
+      - OEP_DISABLED=true
 volumes:
   seed_pgdata:
     external: true
