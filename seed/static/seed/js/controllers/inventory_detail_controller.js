@@ -4,6 +4,7 @@
  */
 angular.module('BE.seed.controller.inventory_detail', [])
   .controller('inventory_detail_controller', [
+    '$http',
     '$state',
     '$scope',
     '$uibModal',
@@ -25,7 +26,8 @@ angular.module('BE.seed.controller.inventory_detail', [])
     'profiles',
     'current_profile',
     'labels_payload',
-    function ($state,
+    function ($http,
+              $state,
               $scope,
               $uibModal,
               $log,
@@ -361,6 +363,19 @@ angular.module('BE.seed.controller.inventory_detail', [])
           });
         });
       };
+
+      $scope.export_building_sync = function(){
+        var the_url = '/api/v2_1/properties/' + $stateParams.view_id + '/building_sync/';
+        $http.get(the_url, {})
+          .then(function (response) {
+            const blob = new Blob([response.data], {type: 'application/xml;charset=utf-8;' });
+            const downloadLink = angular.element('<a></a>');
+            const filename = 'buildingsync_property_' + $stateParams.view_id + ".xml"
+            downloadLink.attr('href', $window.URL.createObjectURL(blob));
+            downloadLink.attr('download', filename);
+            downloadLink[0].click();
+          });
+      }
 
       $scope.unpair_property_from_taxlot = function (property_id) {
         pairing_service.unpair_property_from_taxlot($scope.inventory.view_id, property_id);

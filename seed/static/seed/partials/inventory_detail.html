@@ -42,10 +42,44 @@
                  </span>
             </div>
 
+            <div style="margin:10px 250px 10px 0; padding:0 10px; display: flex; justify-content: space-between;">
+                <div uib-dropdown class="btn-group pointer" ng-style="nothing_selected_cursor()">
+                    <button id="btnInventoryActions"
+                            type="button"
+                            uib-dropdown-toggle
+                            class="btn btn-default btn-sm">
+                        {$:: 'Actions' | translate $} <span class="caret"></span>
+                    </button>
+                    <ul id="inventory-actions-dropdown" uib-dropdown-menu class="dropdown-menu" role="menu" aria-labelledby="btnInventoryActions">
+                        
+                        <div ng-if="::inventory_type === 'properties'" style="margin: 5px 0px 0 20px;">
+                            
+                            <li role="menuitem" sd-uploader sourcetype="BuildingSyncUpdate" sourceprog="" sourcever="" importrecord="item_parent.id" organization-id="organization.id" cycle-id="cycle.id" eventfunc="uploaderfunc(message, file, progress)">{$:: 'Upload BuildingSync Data' | translate $}
+                            </li>
+    
+                        </div>
+
+                        <li ng-if="::inventory_type === 'properties'" role="menuitem">
+                            <a ng-click="export_building_sync()">{$:: 'Export BuildingSync' | translate $}</a>
+                        </li>    
+
+                        <li role="menuitem">
+                            <a ng-click="open_update_labels_modal()" ng-disabled="selectedCount === 0">{$:: 'Add/Remove Labels' | translate $}</a>
+                        </li>
+
+
+                        <li ng-if="::historical_items.length > 1">
+                            <a ng-click="unmerge()">{$:: 'Unmerge Last' | translate $}</a>
+                        </li>
+        
+                    </ul>
+                </div>
+            </div>
+
+
+
             <div style="margin:10px 250px 10px 0; padding:0 10px;">
-                <button type="button" class="btn btn-default" ng-click="open_update_labels_modal()" style="vertical-align: top;">
-                    <i class="fa fa-tag"></i> {$:: 'Add/Remove Labels' | translate $}
-                </button>
+                
                 <span style="display:inline-block; margin-top:9px; padding-left:15px; vertical-align: top;"><strong>{$:: 'Labels' | translate $}:</strong></span>
                 <span ng-if="!labels.length" style="color:#999;display:inline-block;margin-top:7px;" translate>(no labels applied)</span>
                 <div ng-if="labels.length" style="display: inline-block; width: calc(100vw - 570px); vertical-align: top;">
@@ -54,18 +88,24 @@
             </div>
 
             <div style="margin:10px 10px 10px 0; padding:0 10px; display: flex; justify-content: space-between;">
-                <span>
-                    <button ng-if="::historical_items.length > 1" type="button" class="btn btn-warning" ng-click="unmerge()" style="vertical-align: top;">
-                        <i class="fa fa-files-o"></i> {$:: 'Unmerge Last' | translate $}
-                    </button>
-                </span>
-
                 <span ng-show="profiles.length > 0">
                     <label>{$:: 'Detail Settings Profile' | translate $}:</label>
                     <div style="display: inline-block;">
                         <select class="form-control input-sm" ng-model="currentProfile" ng-options="option.name for option in profiles track by option.id"></select>
                     </div>
                 </span>
+            </div>
+
+            <div ng-if="::inventory_type === 'properties'" style="margin:10px 10px 10px 0; padding:0 10px; display: flex; justify-content: space-between;">
+                <div class="progress_bar_container" ng-show="uploader.in_progress">
+                    <div class="progress_bar_copy_top"
+                             translate="UPLOADING_PROGRESS"
+                             translate-values="{ dataset_filename: uploader.filename }"></div>
+
+                        <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
+                        <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$ uploader.status_message ? ': ' + uploader.status_message : '' $}</div>
+                    </div>
+                </div>
             </div>
 
             <div class="table_list_container table_item_detail">
@@ -247,20 +287,9 @@
                             </tbody>
                         </table>
                     </div>
-
                     <div ng-if="::inventory_type === 'properties'" style="margin: 25px 25px 0;">
                         <div class="alert alert-danger" ng-show="uploader.invalid_xml_extension_alert" translate="INVALID_XML_EXTENSION_ALERT"></div>
-                        <div class="btn btn-primary" sd-uploader sourcetype="BuildingSyncUpdate" sourceprog="" sourcever="" importrecord="item_parent.id" organization-id="organization.id" cycle-id="cycle.id" eventfunc="uploaderfunc(message, file, progress)">{$:: 'Upload BuildingSync Data' | translate $}</div>
-
-                        <div class="progress_bar_container" ng-show="uploader.in_progress">
-                            <div class="progress_bar_copy_top"
-                                 translate="UPLOADING_PROGRESS"
-                                 translate-values="{ dataset_filename: uploader.filename }"></div>
-
-                            <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
-                            <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$ uploader.status_message ? ': ' + uploader.status_message : '' $}</div>
-                        </div>
-                    </div>
+                    </div>    
                 </div>
             </div>
 
