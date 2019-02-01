@@ -24,6 +24,12 @@ for loc in ENV_VARS:
 
 DEBUG = False
 COMPRESS_ENABLED = True
+COMPRESS_STORAGE = 'compressor.storage.GzipCompressorFileStorage'
+COMPRESS_OFFLINE = True
+
+# Need to test the following items on dev1. Historically they have been False
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -54,7 +60,9 @@ CACHES = {
     }
 }
 CELERY_BROKER_TRANSPORT = 'redis'
-CELERY_BROKER_URL = "redis://db-redis:6379/1"
+CELERY_BROKER_URL = 'redis://%s/%s' % (
+    CACHES['default']['LOCATION'], CACHES['default']['OPTIONS']['DB']
+)
 CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 CELERY_TASK_DEFAULT_QUEUE = 'seed-docker'
 CELERY_TASK_QUEUES = (
