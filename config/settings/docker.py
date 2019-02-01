@@ -1,5 +1,5 @@
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author nicholas.long@nrel.gov
 
 File contains settings needed to run SEED with docker
@@ -23,7 +23,12 @@ for loc in ENV_VARS:
         raise Exception("%s Not defined as env variables" % loc)
 
 DEBUG = False
-COMPRESS_ENABLED = True
+# Do not compress files in docker
+COMPRESS_ENABLED = False
+
+# Need to test the following items on dev1. Historically they have been False
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -54,7 +59,9 @@ CACHES = {
     }
 }
 CELERY_BROKER_TRANSPORT = 'redis'
-CELERY_BROKER_URL = "redis://db-redis:6379/1"
+CELERY_BROKER_URL = 'redis://%s/%s' % (
+    CACHES['default']['LOCATION'], CACHES['default']['OPTIONS']['DB']
+)
 CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 CELERY_TASK_DEFAULT_QUEUE = 'seed-docker'
 CELERY_TASK_QUEUES = (

@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 /**
@@ -27,7 +27,6 @@ angular.module('BE.seed.vendor_dependencies', [
   'ui.router',
   'ui.router.stateHelper',
   'ui.sortable',
-  'ui.tree',
   'focus-if',
   'xeditable',
   angularDragula(angular),
@@ -173,7 +172,7 @@ SEED_app.run([
     $rootScope._ = window._;
 
     // ui-router transition actions
-    $transitions.onStart({}, function (transition) {
+    $transitions.onStart({}, function (/*transition*/) {
       if (modified_service.isModified()) {
         return modified_service.showModifiedDialog().then(function () {
           modified_service.resetModified();
@@ -185,7 +184,7 @@ SEED_app.run([
       }
     });
 
-    $transitions.onSuccess({}, function (transition) {
+    $transitions.onSuccess({}, function (/*transition*/) {
       if ($rootScope.route_load_error && $rootScope.load_error_message === 'Your SEED account is not associated with any organizations. Please contact a SEED administrator.') {
         $state.go('home');
         return;
@@ -232,21 +231,21 @@ SEED_app.run([
 /**
  * Initialize release flippers
  */
-SEED_app.run([
-  'flippers',
-  function (flippers) {
-    // wraps some minor UI that we'll need until we migrate to delete the old
-    // PropertyState columns for EUI and area. This flipper should be removed
-    // for 2.4 when we remove the archived "_orig" area and EUI columns.
-    //
-    //
-    // flippers.make_flipper('ryan@ryanmccuaig.net', '2018-05-31T00:00:00Z',
-    //   'release:orig_columns', 'boolean', true);
-    //
-    // var make2 = _.partial(flippers.make_flipper, 'nicholas.long@nrel.gov', '2018-01-01T00:00:00Z');
-    // make2('release:bricr', 'boolean', true);
-  }
-]);
+// SEED_app.run([
+//   'flippers',
+//   function (flippers) {
+//     // wraps some minor UI that we'll need until we migrate to delete the old
+//     // PropertyState columns for EUI and area. This flipper should be removed
+//     // for 2.4 when we remove the archived "_orig" area and EUI columns.
+//     //
+//     //
+//     // flippers.make_flipper('ryan@ryanmccuaig.net', '2018-05-31T00:00:00Z',
+//     //   'release:orig_columns', 'boolean', true);
+//     //
+//     // var make2 = _.partial(flippers.make_flipper, 'nicholas.long@nrel.gov', '2018-01-01T00:00:00Z');
+//     // make2('release:bricr', 'boolean', true);
+//   }
+// ]);
 
 /**
  * Create custom UI-Grid templates
@@ -360,7 +359,6 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         resolve: {
           columns: ['$stateParams', 'user_service', 'inventory_service', 'naturalSort', function ($stateParams, user_service, inventory_service, naturalSort) {
             var organization_id = user_service.get_organization().id;
-            console.log(organization_id);
             if ($stateParams.inventory_type === 'properties') {
               return inventory_service.get_property_columns_for_org(organization_id).then(function (columns) {
                 columns = _.reject(columns, 'related');

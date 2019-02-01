@@ -1,5 +1,5 @@
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -14,6 +14,8 @@ from kombu import Exchange, Queue
 
 DEBUG = False
 COMPRESS_ENABLED = True
+COMPRESS_STORAGE = 'compressor.storage.GzipCompressorFileStorage'
+COMPRESS_OFFLINE = True
 # Need to test with cloudflare
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
