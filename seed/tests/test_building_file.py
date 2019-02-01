@@ -84,7 +84,7 @@ class TestBuildingFiles(TestCase):
         status, property_state, property_view, messages = bf.process(self.org.id, self.org.cycles.first())
         self.assertTrue(status)
         self.assertEqual(property_state.address_line_1, '123 Main St')
-        self.assertEqual(messages, {'errors': [], 'warnings': []})    
+        self.assertEqual(messages, {'errors': [], 'warnings': []})
 
     def test_hpxml_constructor(self):
         filename = path.join(BASE_DIR, 'seed', 'hpxml', 'tests', 'data', 'audit.xml')

@@ -207,26 +207,20 @@ class BuildingSync(object):
                     )
                 ]
             )
-        else: 
+        else:
             # check that the appropriate headers are set or XML won't render correctly in the browser
-            
             if '@xsi:schemaLocation' not in new_dict['auc:Audits'] or '@xmlns' not in new_dict['auc:Audits']:
                 new_dict['auc:Audits']['@xsi:schemaLocation'] = 'http://nrel.gov/schemas/bedes-auc/2014 https://github.com/BuildingSync/schema/releases/download/v0.3/BuildingSync.xsd'
-                new_dict['auc:Audits']['@xmlns'] = OrderedDict(
-                        [
-                            ('auc', 'http://nrel.gov/schemas/bedes-auc/2014'),
-                            ('xsi', 'http://www.w3.org/2001/XMLSchema-instance')
-                        ]
-                    )
+                new_dict['auc:Audits']['@xmlns'] = OrderedDict
+                (
+                    [
+                        ('auc', 'http://nrel.gov/schemas/bedes-auc/2014'),
+                        ('xsi', 'http://www.w3.org/2001/XMLSchema-instance')
+                    ]
+                )
                 # for some reason the auc header gets put on Audits.Audit instead of Audit by the building_sync parser...remove
                 if '@xmlns' in new_dict['auc:Audits']['auc:Audit']:
                     del new_dict['auc:Audits']['auc:Audit']['@xmlns']
-
-            print("auc:Audit:")
-            print(new_dict['auc:Audits'])    
-
-            print("keys:")
-            print(new_dict['auc:Audits'].keys())
 
         for field, v in process_struct['return'].items():
             value = None
