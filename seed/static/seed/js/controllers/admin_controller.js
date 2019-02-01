@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.admin', [])
@@ -182,11 +182,11 @@ angular.module('BE.seed.controller.admin', [])
           .then(function (data) {
             // resolve promise
             uploader_service.check_progress_loop(data.progress_key, 0, 1, function () {
-                org.remove_message = 'success';
-                get_organizations();
-              }, function () {
+              org.remove_message = 'success';
+              get_organizations();
+            }, function () {
                 // Do nothing
-              },
+            },
               org);
           });
       };
