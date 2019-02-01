@@ -22,6 +22,8 @@ AWS_SECRET_ACCESS_KEY, Secret key for AWS
 AWS_SES_REGION_NAME (optional), AWS Region for SES
 AWS_SES_REGION_ENDPOINT (optional), AWS endpoint for SES
 SERVER_EMAIL (optional), Email that is used by the server to send messages
+SENTRY_JS_DSN (optional), Sentry JavaScript DSN
+SENTRY_RAVEN_DSN (optional), Sentry Django DSN (Raven-based)
 
 # example (do not use these values in production).
 export POSTGRES_USER=seed
@@ -37,6 +39,8 @@ export AWS_SECRET_ACCESS_KEY=secret_key
 export AWS_SES_REGION_NAME=us-west-2
 export AWS_SES_REGION_ENDPOINT=email.us-west-2.amazonaws.com
 export SERVER_EMAIL=info@seed-platform.org
+export SENTRY_JS_DSN=https://bcde@sentry.io/123456789
+export SENTRY_RAVEN_DSN=https://abcd:1234@sentry.io/123456789
 arguments
 
 # Verify that env vars are set

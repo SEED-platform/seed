@@ -47,6 +47,8 @@ services:
       - SEED_ADMIN_PASSWORD
       - SEED_ADMIN_ORG
       - SECRET_KEY
+      - SENTRY_JS_DSN
+      - SENTRY_RAVEN_DSN
       - DJANGO_SETTINGS_MODULE=config.settings.docker
     depends_on:
       - db-redis
@@ -68,6 +70,8 @@ services:
       - POSTGRES_USER
       - POSTGRES_PASSWORD
       - SECRET_KEY
+      - SENTRY_JS_DSN
+      - SENTRY_RAVEN_DSN
       - DJANGO_SETTINGS_MODULE=config.settings.docker
       - NUMBER_OF_WORKERS
     depends_on:
