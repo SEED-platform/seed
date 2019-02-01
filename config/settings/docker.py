@@ -23,9 +23,8 @@ for loc in ENV_VARS:
         raise Exception("%s Not defined as env variables" % loc)
 
 DEBUG = False
-COMPRESS_ENABLED = True
-COMPRESS_STORAGE = 'compressor.storage.GzipCompressorFileStorage'
-COMPRESS_OFFLINE = True
+# Do not compress files in docker
+COMPRESS_ENABLED = False
 
 # Need to test the following items on dev1. Historically they have been False
 SESSION_COOKIE_SECURE = True
