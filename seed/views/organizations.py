@@ -419,12 +419,15 @@ class OrganizationViewSet(viewsets.ViewSet):
                 'message': 'user does not exist'
             }, status=status.HTTP_404_NOT_FOUND)
 
-        if not OrganizationUser.objects.filter(
+        # A super user can remove a user. The superuser logic is also part of the decorator which
+        # checks if super permissions have been limited per the ALLOW_SUPER_USER_PERMS setting.
+        org_owner = OrganizationUser.objects.filter(
             user=request.user, organization=org, role_level=ROLE_OWNER
-        ).exists():
+        ).exists()
+        if not request.user.is_superuser and not org_owner:
             return JsonResponse({
                 'status': 'error',
-                'message': 'only the organization owner can remove a member'
+                'message': 'only the organization owner or superuser can remove a member'
             }, status=status.HTTP_403_FORBIDDEN)
 
         is_last_member = not OrganizationUser.objects.filter(
