@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.mapping', [])
@@ -23,7 +23,6 @@ angular.module('BE.seed.controller.mapping', [])
     'inventory_service',
     '$translate',
     'i18nService', // from ui-grid
-    'flippers',
     function ($scope,
               $log,
               $q,
@@ -42,8 +41,7 @@ angular.module('BE.seed.controller.mapping', [])
               data_quality_service,
               inventory_service,
               $translate,
-              i18nService,
-              flippers) {
+              i18nService) {
       // let angular-translate be in charge ... need to feed the language-only part of its $translate setting into
       // ui-grid's i18nService
       var stripRegion = function (languageTag) {
@@ -254,7 +252,10 @@ angular.module('BE.seed.controller.mapping', [])
        */
       $scope.check_reset_mappings = function () {
         return _.every($scope.mappings, function (col) {
-          return col.suggestion === col.name && col.suggestion_table_name === 'PropertyState';
+          return _.isMatch(col, {
+            suggestion: col.name,
+            suggestion_table_name: 'PropertyState'
+          });
         });
       };
 
@@ -317,7 +318,10 @@ angular.module('BE.seed.controller.mapping', [])
         if (!property_mappings_found) return true;
 
         var intersections = _.intersectionWith(required_property_fields, $scope.mappings, function (required_field, raw_col) {
-          return required_field.column_name === raw_col.suggestion_column_name && required_field.inventory_type === raw_col.suggestion_table_name;
+          return _.isMatch(required_field, {
+            column_name: raw_col.suggestion_column_name,
+            inventory_type: raw_col.suggestion_table_name
+          });
         }).length;
 
         return intersections > 0;
@@ -336,7 +340,10 @@ angular.module('BE.seed.controller.mapping', [])
         if (!taxlot_mappings_found) return true;
 
         var intersections = _.intersectionWith(required_taxlot_fields, $scope.mappings, function (required_field, raw_col) {
-          return required_field.column_name === raw_col.suggestion_column_name && required_field.inventory_type === raw_col.suggestion_table_name;
+          return _.isMatch(required_field, {
+            column_name: raw_col.suggestion_column_name,
+            inventory_type: raw_col.suggestion_table_name
+          });
         }).length;
 
         return intersections > 0;

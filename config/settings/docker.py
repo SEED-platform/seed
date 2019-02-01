@@ -1,5 +1,5 @@
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author nicholas.long@nrel.gov
 
 File contains settings needed to run SEED with docker
@@ -13,7 +13,7 @@ ENV_VARS = ['POSTGRES_DB', 'POSTGRES_USER', 'POSTGRES_PASSWORD', ]
 
 # The optional vars will set the SERVER_EMAIL information as needed
 OPTIONAL_ENV_VARS = ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SES_REGION_NAME',
-                     'AWS_SES_REGION_ENDPOINT', 'SERVER_EMAIL', ]
+                     'AWS_SES_REGION_ENDPOINT', 'SERVER_EMAIL', 'SENTRY_JS_DSN', 'SENTRY_RAVEN_DSN']
 
 for loc in ENV_VARS + OPTIONAL_ENV_VARS:
     locals()[loc] = os.environ.get(loc)
@@ -23,7 +23,12 @@ for loc in ENV_VARS:
         raise Exception("%s Not defined as env variables" % loc)
 
 DEBUG = False
-COMPRESS_ENABLED = True
+# Do not compress files in docker
+COMPRESS_ENABLED = False
+
+# Need to test the following items on dev1. Historically they have been False
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -54,7 +59,9 @@ CACHES = {
     }
 }
 CELERY_BROKER_TRANSPORT = 'redis'
-CELERY_BROKER_URL = "redis://db-redis:6379/1"
+CELERY_BROKER_URL = 'redis://%s/%s' % (
+    CACHES['default']['LOCATION'], CACHES['default']['OPTIONS']['DB']
+)
 CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 CELERY_TASK_DEFAULT_QUEUE = 'seed-docker'
 CELERY_TASK_QUEUES = (
@@ -84,3 +91,14 @@ LOGGING = {
 
 if 'default' in SECRET_KEY:
     print("WARNING: SECRET_KEY is defaulted. Makes sure to override SECKET_KEY in local_untracked or env var")
+
+if 'SENTRY_RAVEN_DSN' in os.environ:
+    import raven
+    RAVEN_CONFIG = {
+        'dsn': SENTRY_RAVEN_DSN,
+        # If you are using git, you can also automatically configure the
+        # release based on the git info.
+        'release': raven.fetch_git_sha(os.path.abspath(os.curdir)),
+    }
+# SENTRY_JS_DSN is directly passed through to the Sentry configuration for JS.
+

@@ -12,6 +12,9 @@ echo "Waiting for redis to start"
 ./manage.py collectstatic --no-input
 ./manage.py compress --force
 
+# set the permissions in the /seed/collected_static folder
+chown -R uwsgi /seed/collected_static
+
 # Run any migrations before starting -- always for now
 ./manage.py migrate
 

@@ -18,6 +18,7 @@
     "moment": true,
     "protractor": true,
     "qq": true,
+    "saveAs": true,
     "Spinner": true
   },
   "plugins": ["angular", "lodash", "protractor"],

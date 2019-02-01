@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 // inventory services
@@ -11,8 +11,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
   'cycle_service',
   'spinner_utility',
   'naturalSort',
-  'flippers',
-  function ($http, $log, urls, user_service, cycle_service, spinner_utility, naturalSort, flippers) {
+  function ($http, $log, urls, user_service, cycle_service, spinner_utility, naturalSort) {
 
     var inventory_service = {
       total_properties_for_user: 0,
@@ -414,7 +413,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
         // Rename display_name to displayName (ui-grid compatibility)
         columns = _.map(columns, function (col) {
-          return _.mapKeys(col, function(value, key) {
+          return _.mapKeys(col, function (value, key) {
             return key === 'display_name' ? 'displayName' : key;
           });
         });
@@ -431,7 +430,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           return _.includes(iteratee, value, index + 1);
         });
         if (duplicates.length) {
-          console.error('Duplicate property column names detected:', duplicates);
+          $log.error('Duplicate property column names detected:', duplicates);
         }
 
         return columns;
@@ -451,7 +450,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
         // Rename display_name to displayName (ui-grid compatibility)
         columns = _.map(columns, function (col) {
-          return _.mapKeys(col, function(value, key) {
+          return _.mapKeys(col, function (value, key) {
             return key === 'display_name' ? 'displayName' : key;
           });
         });
@@ -468,7 +467,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           return _.includes(iteratee, value, index + 1);
         });
         if (duplicates.length) {
-          console.error('Duplicate property column names detected:', duplicates);
+          $log.error('Duplicate property column names detected:', duplicates);
         }
 
         return columns;
@@ -492,7 +491,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
         // Rename display_name to displayName (ui-grid compatibility)
         columns = _.map(columns, function (col) {
-          return _.mapKeys(col, function(value, key) {
+          return _.mapKeys(col, function (value, key) {
             return key === 'display_name' ? 'displayName' : key;
           });
         });
@@ -509,7 +508,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           return _.includes(iteratee, value, index + 1);
         });
         if (duplicates.length) {
-          console.error('Duplicate tax lot column names detected:', duplicates);
+          $log.error('Duplicate tax lot column names detected:', duplicates);
         }
 
         return columns;
@@ -529,7 +528,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
         // Rename display_name to displayName (ui-grid compatibility)
         columns = _.map(columns, function (col) {
-          return _.mapKeys(col, function(value, key) {
+          return _.mapKeys(col, function (value, key) {
             return key === 'display_name' ? 'displayName' : key;
           });
         });
@@ -546,7 +545,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           return _.includes(iteratee, value, index + 1);
         });
         if (duplicates.length) {
-          console.error('Duplicate tax lot column names detected:', duplicates);
+          $log.error('Duplicate tax lot column names detected:', duplicates);
         }
 
         return columns;
@@ -924,7 +923,6 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           organization_id: user_service.get_organization().id
         }
       }).then(function (response) {
-        console.log(angular.copy(response));
         return response.data.data;
       });
     };

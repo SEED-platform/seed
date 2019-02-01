@@ -43,8 +43,7 @@ bpd/data/BEDES*
 lin/migrations/disabled
 htmlcov/
 src/
-*node_modules*
-bower_components/
+node_modules/
 
 # JetBrainz tends to suggest a venv directory in the project root for virtual environments
 venv/

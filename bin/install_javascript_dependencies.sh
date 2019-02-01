@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
-# installs npm and bower dependencies
+# installs npm dependencies
 # assumes npm is installed
 
-echo "Installing npm dependencies from packages.json"
+echo "Installing npm dependencies from package.json"
 npm install
-echo -e "\n\n\nInstalling bower dependencies from bower.json"
-$(npm bin)/bower install --config.interactive=false --allow-root
+
+echo -e "\n\n\nInstalling UI npm dependencies"
+cd vendors
+npm install
+cd ..

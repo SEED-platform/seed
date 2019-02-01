@@ -303,8 +303,7 @@ Homebrew::
 Install JavaScript Dependencies
 -------------------------------
 
-The JS dependencies are installed using node.js package management (npm), with
-a helper package called `bower`.
+The JS dependencies are installed using node.js package management (npm).
 
 .. code-block:: bash
 
