@@ -1,7 +1,7 @@
 ﻿# !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author Claudine Custodio / Baptiste Ravache
 """
 """
@@ -47,7 +47,7 @@ from subprocess import Popen
 import requests
 
 from seed_readingtools import check_status, setup_logger
-from test_modules import cycles, upload_match_sort, account, delete_set, labels
+from test_modules import cycles, upload_match_sort, account, delete_set, labels, data_quality
 
 location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 print("Running from {}".format(location))
@@ -158,6 +158,10 @@ upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, raw_b
 # print ('\n|---Portfolio Manager File---|\n')
 # upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, pm_building_file, 'Portfolio Raw',
 #                   pm_map_file, log)
+
+# Data quality
+print('\n|---Data Quality---|\n')
+data_quality(header, main_url, organization_id, log)
 
 # -- Labels
 print('\n\n|-------Labels-------|')

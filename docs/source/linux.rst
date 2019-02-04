@@ -76,14 +76,12 @@ JavaScript Dependencies
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 ``npm`` is required to install the JS dependencies. The ``bin/install_javascript_dependencies.sh`` script will
-download all JavaScript dependencies and build them. ``bower`` and ``gulp`` should be installed globally for
-convenience.
+download all JavaScript dependencies and build them.
 
 .. code-block:: console
 
     $ curl -sL https://deb.nodesource.com/setup_5.x | sudo -E bash -
     $ sudo apt-get install -y nodejs
-    $ sudo npm install -g bower gulp
 
 
 .. code-block:: console

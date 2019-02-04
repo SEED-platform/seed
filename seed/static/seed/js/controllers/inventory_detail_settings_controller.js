@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.inventory_detail_settings', [])
@@ -105,7 +105,7 @@ angular.module('BE.seed.controller.inventory_detail_settings', [])
         }
       });
 
-      function switchProfile(newProfile) {
+      function switchProfile (newProfile) {
         ignoreNextChange = true;
         if (newProfile) {
           $scope.currentProfile = _.find($scope.profiles, {id: newProfile.id});

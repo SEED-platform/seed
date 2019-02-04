@@ -13,7 +13,9 @@ psycopg2-binary==2.7.5
 celery==4.2.1
 django-redis-cache==1.7.1
 django_compressor==2.2
+django-compressor-autoprefixer==0.1.0
 django-extensions==1.9.6
+django-libsass==0.7
 redis==2.10.6
 
 # Time zones support
