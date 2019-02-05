@@ -343,7 +343,7 @@ var makeBuildingSyncUploader = function (scope, element) {
       }
     },
     validation: {
-      allowedExtensions: ['xml']
+      allowedExtensions: ['xml', 'zip']
     },
     text: {
       uploadButton: scope.buttontext
@@ -401,7 +401,8 @@ var makeBuildingSyncUploader = function (scope, element) {
               filename: fileName,
               view_id: _.get(responseJSON, 'data.property_view.id'),
               cycle_id: (scope.sourceprog === 'PortfolioManager' && scope.$parent.useField) ? 'year_ending' : scope.$parent.selectedCycle.id,
-              source_type: scope.sourcetype
+              source_type: scope.sourcetype,
+              message: _.get(responseJSON, 'message')
             }
           });
         }

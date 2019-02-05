@@ -197,6 +197,9 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           case 'upload_error':
             $scope.step_12_error_message = file.error;
             $scope.step.number = 12;
+            // add variables to identify buildingsync bulk uploads
+            $scope.building_sync_files = (file.source_type === 'BuildingSync');
+            $scope.bulk_upload = (_.last(file.filename.split('.')) === 'zip');
             break;
 
           case 'upload_in_progress':
@@ -212,11 +215,14 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             var current_step = $scope.step.number;
             $scope.uploader.status_message = 'upload complete';
             $scope.dataset.filename = file.filename;
+            $scope.step_14_message = null;
+
             if (file.source_type === 'BuildingSync') {
               $scope.uploader.complete = true;
               $scope.uploader.in_progress = false;
               $scope.uploader.progress = 100;
               $scope.step.number = 14;
+              $scope.step_14_message = (_.size(file.message['warnings']) > 0) ? file.message['warnings'] : null;
             } else {
               $scope.dataset.import_file_id = file.file_id;
 
