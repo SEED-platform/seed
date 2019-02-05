@@ -84,7 +84,7 @@ class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
             with zipfile.ZipFile(the_file, "r", zipfile.ZIP_STORED) as openzip:
                 filelist = openzip.infolist()
                 for f in filelist:
-                    #print("FILE: {}".format(f.filename))
+                    # print("FILE: {}".format(f.filename))
                     # process xml files
                     if '.xml' in f.filename and '__MACOSX' not in f.filename:
                         print("PROCESSING file: {}".format(f.filename))
@@ -93,8 +93,8 @@ class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
                         data_file.seek(0)
                         size = os.path.getsize(data_file.name)
                         content_type = 'text/xml'
-                        #print("DATAFILE:")
-                        #print(data_file)
+                        # print("DATAFILE:")
+                        # print(data_file)
                         a_file = InMemoryUploadedFile(
                             data_file, 'data_file', f.filename, content_type,
                             size, charset=None)
@@ -104,8 +104,7 @@ class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
                             filename=f.filename,
                             file_type=file_type,
                         )
-                        p_status_tmp, property_state_tmp, property_view, messages_tmp = building_file.process(organization_id,
-                                                                                                  cycle)
+                        p_status_tmp, property_state_tmp, property_view, messages_tmp = building_file.process(organization_id, cycle)
                         # print('messages_tmp: ')
                         # print(messages_tmp)
 
@@ -159,4 +158,3 @@ class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
                 'status': 'error',
                 'message': messages
             }, status=status.HTTP_400_BAD_REQUEST)
-
