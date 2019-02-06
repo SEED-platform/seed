@@ -13,15 +13,17 @@ angular.module('BE.seed.controller.data_quality_modal', [])
     'uploaded',
     'importFileId',
     'orgId',
-    function ($scope,
-              $uibModalInstance,
-              search_service,
-              naturalSort,
-              dataQualityResults,
-              name,
-              uploaded,
-              importFileId,
-              orgId) {
+    function (
+      $scope,
+      $uibModalInstance,
+      search_service,
+      naturalSort,
+      dataQualityResults,
+      name,
+      uploaded,
+      importFileId,
+      orgId
+    ) {
       $scope.name = name;
       $scope.uploaded = moment.utc(uploaded).local().format('MMMM Do YYYY, h:mm:ss A Z');
       var originalDataQualityResults = dataQualityResults || [];

@@ -266,7 +266,7 @@ The JS dependencies are installed using node.js package management (npm).
 
 .. code-block:: bash
 
-    ./bin/install_javascript_dependencies.sh
+    npm install
 
 Start the Server
 ----------------

@@ -20,22 +20,24 @@ angular.module('BE.seed.controller.column_settings', [])
     'naturalSort',
     'flippers',
     '$translate',
-    function ($scope,
-              $q,
-              $state,
-              $stateParams,
-              Notification,
-              columns,
-              organization_payload,
-              auth_payload,
-              columns_service,
-              modified_service,
-              organization_service,
-              spinner_utility,
-              urls,
-              naturalSort,
-              flippers,
-              $translate) {
+    function (
+      $scope,
+      $q,
+      $state,
+      $stateParams,
+      Notification,
+      columns,
+      organization_payload,
+      auth_payload,
+      columns_service,
+      modified_service,
+      organization_service,
+      spinner_utility,
+      urls,
+      naturalSort,
+      flippers,
+      $translate
+    ) {
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.org = organization_payload.organization;
       $scope.auth = auth_payload.auth;

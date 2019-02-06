@@ -12,14 +12,16 @@ angular.module('BE.seed.controller.members', [])
     'organization_service',
     'user_profile_payload',
     'urls',
-    function ($scope,
-              $uibModal,
-              users_payload,
-              organization_payload,
-              auth_payload,
-              organization_service,
-              user_profile_payload,
-              urls) {
+    function (
+      $scope,
+      $uibModal,
+      users_payload,
+      organization_payload,
+      auth_payload,
+      organization_service,
+      user_profile_payload,
+      urls
+    ) {
       $scope.roles = [
         'member', 'owner', 'viewer'
       ];

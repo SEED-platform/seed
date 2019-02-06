@@ -16,7 +16,20 @@ angular.module('BE.seed.controller.admin', [])
     'users_payload',
     'Notification',
     '$window',
-    function ($scope, $log, user_service, organization_service, column_mappings_service, uploader_service, auth_payload, organizations_payload, user_profile_payload, users_payload, Notification, $window) {
+    function (
+      $scope,
+      $log,
+      user_service,
+      organization_service,
+      column_mappings_service,
+      uploader_service,
+      auth_payload,
+      organizations_payload,
+      user_profile_payload,
+      users_payload,
+      Notification,
+      $window
+    ) {
       $scope.is_superuser = auth_payload.auth.requires_superuser;
       $scope.user = {};
       $scope.temp_users = [];
@@ -185,9 +198,9 @@ angular.module('BE.seed.controller.admin', [])
               org.remove_message = 'success';
               get_organizations();
             }, function () {
-                // Do nothing
+              // Do nothing
             },
-              org);
+            org);
           });
       };
 

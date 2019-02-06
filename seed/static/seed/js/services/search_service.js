@@ -38,8 +38,7 @@ angular.module('BE.seed.service.search', [])
   .factory('search_service', [
     '$http',
     'spinner_utility',
-    function ($http,
-              spinner_utility) {
+    function ($http, spinner_utility) {
       /************
        * variables
        */
@@ -67,12 +66,10 @@ angular.module('BE.seed.service.search', [])
         has_checkbox: true,
         prefix: ''
       };
-      search_service.next_page_disabled = (
-      search_service.number_matching_search <= 10);
+      search_service.next_page_disabled = search_service.number_matching_search <= 10;
       search_service.showing = {
         start: 1,
-        end: (search_service.number_matching_search > 10) ? 10 :
-          search_service.number_matching_search
+        end: (search_service.number_matching_search > 10) ? 10 : search_service.number_matching_search
       };
       var saas; // set to the local instance of the extended search_service this
 
