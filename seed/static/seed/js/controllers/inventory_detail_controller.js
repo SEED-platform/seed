@@ -4,6 +4,7 @@
  */
 angular.module('BE.seed.controller.inventory_detail', [])
   .controller('inventory_detail_controller', [
+    '$http',
     '$state',
     '$scope',
     '$uibModal',
@@ -25,27 +26,30 @@ angular.module('BE.seed.controller.inventory_detail', [])
     'profiles',
     'current_profile',
     'labels_payload',
-    function ($state,
-              $scope,
-              $uibModal,
-              $log,
-              $filter,
-              $stateParams,
-              $anchorScroll,
-              $location,
-              $window,
-              urls,
-              spinner_utility,
-              label_service,
-              inventory_service,
-              matching_service,
-              pairing_service,
-              user_service,
-              inventory_payload,
-              columns,
-              profiles,
-              current_profile,
-              labels_payload) {
+    function (
+      $http,
+      $state,
+      $scope,
+      $uibModal,
+      $log,
+      $filter,
+      $stateParams,
+      $anchorScroll,
+      $location,
+      $window,
+      urls,
+      spinner_utility,
+      label_service,
+      inventory_service,
+      matching_service,
+      pairing_service,
+      user_service,
+      inventory_payload,
+      columns,
+      profiles,
+      current_profile,
+      labels_payload
+    ) {
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.organization = user_service.get_organization();
 
@@ -361,6 +365,19 @@ angular.module('BE.seed.controller.inventory_detail', [])
             view_id: result.view_id
           });
         });
+      };
+
+      $scope.export_building_sync = function () {
+        var the_url = '/api/v2_1/properties/' + $stateParams.view_id + '/building_sync/';
+        $http.get(the_url, {})
+          .then(function (response) {
+            var blob = new Blob([response.data], {type: 'application/xml;charset=utf-8;' });
+            var downloadLink = angular.element('<a></a>');
+            var filename = 'buildingsync_property_' + $stateParams.view_id + '.xml';
+            downloadLink.attr('href', $window.URL.createObjectURL(blob));
+            downloadLink.attr('download', filename);
+            downloadLink[0].click();
+          });
       };
 
       $scope.unpair_property_from_taxlot = function (property_id) {

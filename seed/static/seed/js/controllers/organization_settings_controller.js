@@ -8,11 +8,13 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
   'auth_payload',
   'organization_service',
   '$translate',
-  function ($scope,
-            organization_payload,
-            auth_payload,
-            organization_service,
-            $translate) {
+  function (
+    $scope,
+    organization_payload,
+    auth_payload,
+    organization_service,
+    $translate
+  ) {
     $scope.org = organization_payload.organization;
     $scope.auth = auth_payload.auth;
 

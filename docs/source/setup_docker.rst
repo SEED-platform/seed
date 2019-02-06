@@ -1,5 +1,5 @@
 Installation using Docker
-======================
+=========================
 
 Docker works natively on Linux, Mac OSX, and Windows 10. If you are using an older version of
 Windows (and some older versions of Mac OSX), you will need to install Docker Toolbox.

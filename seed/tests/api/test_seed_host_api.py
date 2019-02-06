@@ -47,7 +47,7 @@ from subprocess import Popen
 import requests
 
 from seed_readingtools import check_status, setup_logger
-from test_modules import cycles, upload_match_sort, account, delete_set, labels
+from test_modules import cycles, upload_match_sort, account, delete_set, labels, data_quality
 
 location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 print("Running from {}".format(location))
@@ -158,6 +158,10 @@ upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, raw_b
 # print ('\n|---Portfolio Manager File---|\n')
 # upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, pm_building_file, 'Portfolio Raw',
 #                   pm_map_file, log)
+
+# Data quality
+print('\n|---Data Quality---|\n')
+data_quality(header, main_url, organization_id, log)
 
 # -- Labels
 print('\n\n|-------Labels-------|')

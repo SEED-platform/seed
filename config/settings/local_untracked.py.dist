@@ -23,8 +23,7 @@ from kombu import Exchange, Queue
 
 # ============================ General settings and flags ===========================
 COMPRESS_ENABLED = False
-DOMAIN_URLCONFS = {}
-DOMAIN_URLCONFS['default'] = 'config.urls'
+DOMAIN_URLCONFS = {'default': 'config.urls'}
 DEBUG = True  # Set to False if this is being used in production mode. If this is set as false, then
 # you will need to configure nginx to serve the static assets. Deploying with docker is recommended
 # and handles setting up nginx.
@@ -94,7 +93,7 @@ DATABASES = {
 CACHES = {
     'default': {
         'BACKEND': 'redis_cache.cache.RedisCache',
-        'LOCATION': "your-cache-url:your-cache-port",
+        'LOCATION': 'your-cache-url:your-cache-port',
         'OPTIONS': {'DB': 1},
         'TIMEOUT': 300
     }

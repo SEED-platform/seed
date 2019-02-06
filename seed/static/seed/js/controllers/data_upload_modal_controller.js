@@ -40,21 +40,23 @@ angular.module('BE.seed.controller.data_upload_modal', [])
     'dataset',
     'cycles',
     'organization',
-    function ($http,
-              $scope,
-              $uibModalInstance,
-              $log,
-              $timeout,
-              uploader_service,
-              $state,
-              mapping_service,
-              matching_service,
-              inventory_service,
-              spinner_utility,
-              step,
-              dataset,
-              cycles,
-              organization) {
+    function (
+      $http,
+      $scope,
+      $uibModalInstance,
+      $log,
+      $timeout,
+      uploader_service,
+      $state,
+      mapping_service,
+      matching_service,
+      inventory_service,
+      spinner_utility,
+      step,
+      dataset,
+      cycles,
+      organization
+    ) {
       $scope.cycles = cycles.cycles;
       if ($scope.cycles.length) $scope.selectedCycle = $scope.cycles[0];
       $scope.step_10_style = 'info';
