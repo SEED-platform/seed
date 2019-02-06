@@ -5,7 +5,6 @@ Modules
 .. toctree::
     :maxdepth: 3
 
-    modules/seed.audit_logs
     modules/config
     modules/seed.data
     modules/seed.data_importer
