@@ -192,6 +192,11 @@ class BuildingFile(models.Model):
             # {'reference_case': 'Baseline', 'annual_savings_site_energy': None,
             #  'measures': [], 'id': 'Baseline', 'name': 'Baseline'}
 
+            # If the scenario does not have a name then log a warning and continue
+            if not s.get('name'):
+                messages['warnings'].append('Scenario does not have a name. ID = %s' % s.get('id'))
+                continue
+
             scenario, _ = Scenario.objects.get_or_create(
                 name=s.get('name'),
                 property_state_id=self.property_state_id,
