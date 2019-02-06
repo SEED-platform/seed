@@ -31,10 +31,11 @@ pm_skip_test_check = skipIf(
 try:
     pm_avail_check = requests.get('http://isthewallbuilt.us/api.json', timeout=5)
     string_response = pm_avail_check.json()['status']
-    if string_response == 'no':
-        skip_due_to_espm_down = True
-    else:
+    if string_response != 'no':
         skip_due_to_espm_down = False
+    else:
+        skip_due_to_espm_down = True
+
     if skip_due_to_espm_down:
         pm_skip_test_check = skip('ESPM is likely down temporarily, ESPM tests will not run')
 except Exception:
