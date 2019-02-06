@@ -48,7 +48,7 @@ default use password `seedpass` when prompted
     $ createdb "seeddb" --owner="seeduser"
     $ psql
     postgres=# GRANT ALL PRIVILEGES ON DATABASE "seeddb" TO "seeduser";
-    postgres=# ALTER USER "seeduser" CREATEDB CREATEROLE;
+    postgres=# ALTER USER "seeduser" CREATEDB CREATEROLE SUPERUSER;
     postgres=# \q
     $ exit
 
