@@ -108,8 +108,8 @@ instance you have manually installed within your infrastructure.
 
 .. note::
 
-In the above database configuration, ``seed`` is the database name, this
-is arbitrary and any valid name can be used as long as the database exists.
+    In the above database configuration, ``seed`` is the database name, this
+    is arbitrary and any valid name can be used as long as the database exists.
 
 create the database within the postgres ``psql`` shell:
 
@@ -225,4 +225,6 @@ override default Django settings.
     export SENTRY_DSN=https://xyz@app.getsentry.com/123
     export DEBUG=False
     export ONLY_HTTPS=True
+
+.. _`JSON Type`: https://www.postgresql.org/docs/9.4/datatype-json.html
 

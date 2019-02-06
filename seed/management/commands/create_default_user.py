@@ -15,7 +15,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('--username',
-                            default='demo@seed.lbl.gov',
+                            default='demo@seed-platform.org',
                             help='Sets the default username.',
                             action='store',
                             dest='username')
