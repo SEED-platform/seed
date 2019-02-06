@@ -246,6 +246,13 @@ user:
         --password=password \
         --organization=testorg
 
+
+Migrating the Database
+----------------------
+
+Migrations are handles through Django; however, various versions have customs actions for the migrations. See the :doc:`migrations page <migrations>` for more information based on the version of SEED.
+
+
 Testing
 -------
 
