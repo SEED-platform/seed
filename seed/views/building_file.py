@@ -71,7 +71,8 @@ class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
             cycle = Cycle.objects.get(pk=cycle)
 
         # figure out if file is xml or zip
-        tmp_filename, file_extension = os.path.splitext(request.data.get('qqfilename'))
+        the_filename = the_file._get_name()
+        tmp_filename, file_extension = os.path.splitext(the_filename)
         # initialize
         p_status = True
         property_state = True
