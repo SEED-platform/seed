@@ -18,21 +18,22 @@ angular.module('BE.seed.controller.menu', [])
     '$timeout',
     '$state',
     '$cookies',
-    function ($rootScope,
-              $scope,
-              $location,
-              $window,
-              $uibModal,
-              $log,
-              urls,
-              organization_service,
-              user_service,
-              dataset_service,
-              modified_service,
-              $timeout,
-              $state,
-              $cookies) {
-
+    function (
+      $rootScope,
+      $scope,
+      $location,
+      $window,
+      $uibModal,
+      $log,
+      urls,
+      organization_service,
+      user_service,
+      dataset_service,
+      modified_service,
+      $timeout,
+      $state,
+      $cookies
+    ) {
       // initial state of css classes for menu and sidebar
       $scope.expanded_controller = false;
       $scope.collapsed_controller = false;

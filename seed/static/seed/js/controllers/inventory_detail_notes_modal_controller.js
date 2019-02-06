@@ -10,12 +10,14 @@ angular.module('BE.seed.controller.inventory_detail_notes_modal', [])
     'inventoryType',
     'viewId',
     'orgId',
-    function ($scope,
-              $uibModalInstance,
-              note_service,
-              inventoryType,
-              viewId,
-              orgId) {
+    function (
+      $scope,
+      $uibModalInstance,
+      note_service,
+      inventoryType,
+      viewId,
+      orgId
+    ) {
       $scope.inventoryType = inventoryType;
       $scope.newNote = '';
       $scope.viewId = viewId;

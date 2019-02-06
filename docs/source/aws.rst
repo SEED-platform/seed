@@ -70,8 +70,7 @@ enter the repo and install the python dependencies from `requirements`_
 JavaScript Dependencies
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-``npm`` is required to install the JS dependencies. The ``bin/install_javascript_dependencies.sh`` script will
-download all JavaScript dependencies and build them.
+``npm`` is required to install the JS dependencies.
 
 .. code-block:: console
 
@@ -81,7 +80,7 @@ download all JavaScript dependencies and build them.
 
 .. code-block:: console
 
-    $ bin/install_javascript_dependencies.sh
+    $ npm install
 
 
 Database Configuration
