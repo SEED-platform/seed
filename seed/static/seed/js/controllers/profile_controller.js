@@ -9,11 +9,13 @@ angular.module('BE.seed.controller.profile', [])
     'auth_payload',
     'user_profile_payload',
     'user_service',
-    function ($scope,
-              urls,
-              auth_payload,
-              user_profile_payload,
-              user_service) {
+    function (
+      $scope,
+      urls,
+      auth_payload,
+      user_profile_payload,
+      user_service
+    ) {
       $scope.is_superuser = auth_payload.auth.requires_superuser;
       $scope.user = user_profile_payload;
       $scope.user_updated = false;

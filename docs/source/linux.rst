@@ -16,19 +16,19 @@ is an excellent place to general understanding of this project's layout.
 Prerequisites
 ^^^^^^^^^^^^^^
 
-Ubuntu server 14.04 or newer
+Ubuntu server/desktop 16.04 or newer (18.04 recommended)
 
 Install the following base packages to run SEED:
 
 .. code-block:: console
 
-    sudo apt-get update
-    sudo apt-get upgrade
-    sudo apt-get install libpq-dev python-dev python-pip libatlas-base-dev \
-    gfortran build-essential g++ npm libxml2-dev libxslt1-dev git mercurial \
+    sudo apt update
+    sudo apt upgrade
+    sudo apt install libpq-dev python3-dev python3-pip libatlas-base-dev \
+    gfortran build-essential nodejs npm libxml2-dev libxslt1-dev git \
     libssl-dev libffi-dev curl uwsgi-core uwsgi-plugin-python
-    sudo apt-get install redis-server
-    sudo apt-get install postgresql postgresql-contrib
+    sudo apt install redis-server
+    sudo apt install postgresql postgresql-contrib
 
 
 .. note:: postgresql ``>=9.3`` is required to support `JSON Type`_
@@ -38,19 +38,19 @@ Install the following base packages to run SEED:
 Configure PostgreSQL
 ^^^^^^^^^^^^^^^^^^^^
 
+Replace 'seeddb', 'seeduser' with desired db/user. By
+default use password `seedpass` when prompted
+
 .. code-block:: console
 
     $ sudo su - postgres
-    $ createdb "seed-deploy"
-    $ createuser -P DBUsername
+    $ createuser -P "seeduser"
+    $ createdb "seeddb" --owner="seeduser"
     $ psql
-    postgres=# GRANT ALL PRIVILEGES ON DATABASE "seed-deploy" TO DBUsername;
+    postgres=# GRANT ALL PRIVILEGES ON DATABASE "seeddb" TO "seeduser";
+    postgres=# ALTER USER "seeduser" CREATEDB CREATEROLE SUPERUSER;
     postgres=# \q
     $ exit
-
-.. note:: Any database name and username can be used here in place of "seed-deploy" and DBUsername
-
-
 
 
 Python Dependencies
@@ -69,24 +69,15 @@ enter the repo and install the python dependencies from `requirements`_
 .. code-block:: console
 
     $ cd seed
-    $ sudo pip install -r requirements/local.txt
+    $ pip3 install -r requirements/local.txt
 
 
 JavaScript Dependencies
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-``npm`` is required to install the JS dependencies. The ``bin/install_javascript_dependencies.sh`` script will
-download all JavaScript dependencies and build them.
-
 .. code-block:: console
 
-    $ curl -sL https://deb.nodesource.com/setup_5.x | sudo -E bash -
-    $ sudo apt-get install -y nodejs
-
-
-.. code-block:: console
-
-    $ bin/install_javascript_dependencies.sh
+    $ npm install
 
 
 Django Database Configuration
@@ -102,10 +93,10 @@ you have manually installed within your infrastructure.
     # Database
     DATABASES = {
         'default': {
-            'ENGINE':'django.db.backends.postgresql_psycopg2',
-            'NAME': 'seed-deploy',
-            'USER': 'DBUsername',
-            'PASSWORD': '',
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': 'seeddb',
+            'USER': 'seeduser',
+            'PASSWORD': '<PASSWORD>',
             'HOST': 'localhost',
             'PORT': '5432',
         }
@@ -120,21 +111,21 @@ you have manually installed within your infrastructure.
 In in the above database configuration, ``seed`` is the database name, this is arbitrary and any valid name can be
 used as long as the database exists. Enter the database name, user, password you set above.
 
-The database settings can be tested using the Django management command, ``./manage.py dbshell`` to connect to the
+The database settings can be tested using the Django management command, ``python3 manage.py dbshell`` to connect to the
 configured database.
 
 create the database tables and migrations:
 
 .. code-block:: console
 
-    $ python manage.py migrate
+    $ python3 manage.py migrate
 
 Cache and Message Broker
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 The SEED project relies on `redis`_ for both cache and message brokering, and
 is available as an AWS `ElastiCache`_ service or with the ``redis-server``
-Linux package. (``sudo apt-get install redis-server``)
+Linux package. (``sudo apt install redis-server``)
 
 ``local_untracked.py`` should be updated with the ``CACHES`` and ``CELERY_BROKER_URL``
 settings.
@@ -149,7 +140,7 @@ settings.
     CACHES = {
         'default': {
             'BACKEND': 'redis_cache.cache.RedisCache',
-            'LOCATION': "127.0.0.1:6379",
+            'LOCATION': '127.0.0.1:6379',
             'OPTIONS': {'DB': 1},
             'TIMEOUT': 300
         }
@@ -164,10 +155,13 @@ create a superuser to access the system
 
 .. code-block:: console
 
-    $ python manage.py create_default_user --username=demo@example.com --organization=example --password=demo123
+    $ python3 manage.py create_default_user --username=admin@my.org --organization=lbnl --password=badpass
 
 
 .. note::
+
+    Of course, you need to save this user/password somewhere, since this is what
+    you will use to login to the SEED website.
 
     Every user must be tied to an organization, visit ``/app/#/profile/admin``
     as the superuser to create parent organizations and add users to them.
@@ -183,7 +177,7 @@ project directory, ``celery`` can be started:
 
 .. code-block:: console
 
-    celery -A seed worker -l INFO -c 2 -B --events --maxtasksperchild 1000
+    DJANGO_SETTINGS_MODULE=config.settings.dev celery -A seed worker -l info -c 2 -B --events --maxtasksperchild=1000
 
 .. _Celery: http://www.celeryproject.org/
 
@@ -200,7 +194,7 @@ options.
 
 .. code-block:: console
 
-    $ python manage.py runserver --settings=config.settings.dev
+    $ python3 manage.py runserver --settings=config.settings.dev
 
 
 Running a production web server
@@ -218,14 +212,14 @@ to load static files.
 
 .. code-block:: console
 
-    $ sudo pip install uwsgi dj-static
+    $ pip3 install uwsgi dj-static
 
 
 Generate static files:
 
 .. code-block:: console
 
-    $ sudo ./manage.py collectstatic --settings=config.settings.dev
+    $ python3 manage.py collectstatic --settings=config.settings.prod
 
 Update ``config/settings/local_untracked.py``:
 
@@ -250,8 +244,8 @@ Start the web server (this also starts celery):
 
 
 
-Environmental Variables
-^^^^^^^^^^^^^^^^^^^^^^^
+Environment Variables
+^^^^^^^^^^^^^^^^^^^^^
 
 The following environment variables can be set within the ``~/.bashrc`` file to
 override default Django settings.
@@ -319,13 +313,12 @@ local_untracked.py
     }
 
     # config for local storage backend
-    DOMAIN_URLCONFS = {}
-    DOMAIN_URLCONFS['default'] = 'urls.main'
+    DOMAIN_URLCONFS = {'default': 'config.urls'}
 
     CACHES = {
         'default': {
             'BACKEND': 'redis_cache.cache.RedisCache',
-            'LOCATION': "127.0.0.1:6379",
+            'LOCATION': '127.0.0.1:6379',
             'OPTIONS': {'DB': 1},
             'TIMEOUT': 300
         }

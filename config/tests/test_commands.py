@@ -19,14 +19,14 @@ class ManagementTests(TestCase):
         # check default case
         call_command('create_default_user')
         self.assertTrue(User.objects.filter(
-            username='demo@seed.lbl.gov').exists())
+            username='demo@seed-platform.org').exists())
         self.assertTrue(Organization.objects.filter(name='demo').exists())
         self.assertTrue(OrganizationUser.objects.filter(
-            user__username='demo@seed.lbl.gov',
+            user__username='demo@seed-platform.org',
             organization__name='demo'
         ).exists())
 
-        u = User.objects.get(username='demo@seed.lbl.gov')
+        u = User.objects.get(username='demo@seed-platform.org')
         u.check_password('demo')
 
         # check custom user case

@@ -23,25 +23,27 @@ angular.module('BE.seed.controller.mapping', [])
     'inventory_service',
     '$translate',
     'i18nService', // from ui-grid
-    function ($scope,
-              $log,
-              $q,
-              $filter,
-              import_file_payload,
-              suggested_mappings_payload,
-              raw_columns_payload,
-              first_five_rows_payload,
-              cycles,
-              mapping_service,
-              spinner_utility,
-              urls,
-              $uibModal,
-              user_service,
-              uploader_service,
-              data_quality_service,
-              inventory_service,
-              $translate,
-              i18nService) {
+    function (
+      $scope,
+      $log,
+      $q,
+      $filter,
+      import_file_payload,
+      suggested_mappings_payload,
+      raw_columns_payload,
+      first_five_rows_payload,
+      cycles,
+      mapping_service,
+      spinner_utility,
+      urls,
+      $uibModal,
+      user_service,
+      uploader_service,
+      data_quality_service,
+      inventory_service,
+      $translate,
+      i18nService
+    ) {
       // let angular-translate be in charge ... need to feed the language-only part of its $translate setting into
       // ui-grid's i18nService
       var stripRegion = function (languageTag) {
@@ -352,15 +354,15 @@ angular.module('BE.seed.controller.mapping', [])
        */
       var check_mapping = function (progress_key) {
         uploader_service.check_progress_loop(
-          progress_key,  // key
+          progress_key, // key
           0, //starting prog bar percentage
-          1.0,  // progress multiplier
+          1.0, // progress multiplier
           function () {
             $scope.get_mapped_buildings();
           }, function () {
             // Do nothing
           },
-          $scope.import_file  // progress bar obj
+          $scope.import_file // progress bar obj
         );
       };
 
@@ -478,7 +480,7 @@ angular.module('BE.seed.controller.mapping', [])
           // Submit the data quality checks and wait for the results
           data_quality_service.start_data_quality_checks_for_import_file(user_service.get_organization().id, $scope.import_file.id).then(function (response) {
             data_quality_service.data_quality_checks_status(response.progress_key).then(function (check_result) {
-               // Fetch data quality check results
+              // Fetch data quality check results
               $scope.data_quality_results_ready = false;
               $scope.data_quality_results = data_quality_service.get_data_quality_results(user_service.get_organization().id, check_result.unique_id);
               $scope.data_quality_results.then(function (data) {

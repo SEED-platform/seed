@@ -20,23 +20,25 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
   'dragulaService',
   'naturalSort',
   '$translate',
-  function ($scope,
-            $log,
-            $q,
-            import_file_payload,
-            inventory_service,
-            pairing_service,
-            allPropertyColumns,
-            allTaxlotColumns,
-            propertyInventory,
-            taxlotInventory,
-            cycles,
-            $state,
-            $stateParams,
-            spinner_utility,
-            dragulaService,
-            naturalSort,
-            $translate) {
+  function (
+    $scope,
+    $log,
+    $q,
+    import_file_payload,
+    inventory_service,
+    pairing_service,
+    allPropertyColumns,
+    allTaxlotColumns,
+    propertyInventory,
+    taxlotInventory,
+    cycles,
+    $state,
+    $stateParams,
+    spinner_utility,
+    dragulaService,
+    naturalSort,
+    $translate
+  ) {
     spinner_utility.show();
 
     $scope.import_file = import_file_payload.import_file;
