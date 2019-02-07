@@ -53,8 +53,7 @@ RUN pip install -r requirements/aws.txt
 COPY ./package.json /seed/package.json
 COPY ./vendors/package.json /seed/vendors/package.json
 COPY ./README.md /seed/README.md
-COPY ./bin/install_javascript_dependencies.sh /seed/bin/install_javascript_dependencies.sh
-RUN npm update && /seed/bin/install_javascript_dependencies.sh
+RUN npm install
 
 ### Copy over the remaining part of the SEED application and some helpers
 COPY . /seed/
