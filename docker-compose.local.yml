@@ -10,7 +10,7 @@
 version: '3'
 services:
   db-postgres:
-    image: 127.0.0.1:5000/postgres
+    image: 127.0.0.1:5000/postgres-seed
     environment:
       - POSTGRES_DB=seed
       - POSTGRES_USER

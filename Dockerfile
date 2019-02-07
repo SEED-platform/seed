@@ -18,6 +18,8 @@ RUN apk add --no-cache python \
         bash-completion \
         npm \
         nginx && \
+    apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/main openssl && \
+    apk add --no-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ geos gdal && \
     ln -sf /usr/bin/python3 /usr/bin/python && \
     python -m ensurepip && \
     rm -r /usr/lib/python*/ensurepip && \
