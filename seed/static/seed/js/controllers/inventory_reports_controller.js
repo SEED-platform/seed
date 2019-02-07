@@ -21,18 +21,19 @@ angular.module('BE.seed.controller.inventory_reports', [])
     'flippers',
     '$sce',
     '$translate',
-    function ($scope,
-              $log,
-              $stateParams,
-              inventory_reports_service,
-              simple_modal_service,
-              columns,
-              cycles,
-              organization_payload,
-              flippers,
-              $sce,
-              $translate) {
-
+    function (
+      $scope,
+      $log,
+      $stateParams,
+      inventory_reports_service,
+      simple_modal_service,
+      columns,
+      cycles,
+      organization_payload,
+      flippers,
+      $sce,
+      $translate
+    ) {
       $scope.inventory_type = $stateParams.inventory_type;
 
       var pretty_unit = function (pint_spec) {
@@ -117,12 +118,12 @@ angular.module('BE.seed.controller.inventory_reports', [])
 
       $scope.xAxisVars = _.map(filtered_columns, function (column) {
         return {
-          name: $translate.instant(column.displayName),    //short name for variable, used in pulldown
-          label: $translate.instant(column.displayName),   //full name for variable
-          varName: column.column_name,                     //name of variable, to be sent to server
-          axisLabel: parse_axis_label(column),             //label to be used in charts, should include units
-          axisType: 'Measure',                             //DimpleJS property for axis type
-          axisTickFormat: ',.0f'                           //DimpleJS property for axis tick format
+          name: $translate.instant(column.displayName), //short name for variable, used in pulldown
+          label: $translate.instant(column.displayName), //full name for variable
+          varName: column.column_name, //name of variable, to be sent to server
+          axisLabel: parse_axis_label(column), //label to be used in charts, should include units
+          axisType: 'Measure', //DimpleJS property for axis type
+          axisTickFormat: ',.0f' //DimpleJS property for axis tick format
         };
       });
 
@@ -175,8 +176,8 @@ angular.module('BE.seed.controller.inventory_reports', [])
       $scope.aggChartSeries = ['use_description', 'yr_e'];
 
       //Currently selected x and y variables
-      $scope.xAxisSelectedItem = $scope.xAxisVars[0];  //initialize to first var
-      $scope.yAxisSelectedItem = $scope.yAxisVars[0];  //initialize to first var
+      $scope.xAxisSelectedItem = $scope.xAxisVars[0]; //initialize to first var
+      $scope.yAxisSelectedItem = $scope.yAxisVars[0]; //initialize to first var
 
       //Chart data
       $scope.chartData = [];
@@ -336,10 +337,10 @@ angular.module('BE.seed.controller.inventory_reports', [])
               $scope.chartStatusMessage = 'No Data';
             }
           },
-            function (data, status) {
-              $scope.chartStatusMessage = 'Data Load Error';
-              $log.error('#InventoryReportsController: Error loading chart data : ' + status);
-            })
+          function (data, status) {
+            $scope.chartStatusMessage = 'Data Load Error';
+            $log.error('#InventoryReportsController: Error loading chart data : ' + status);
+          })
           .finally(function () {
             $scope.chartIsLoading = false;
           });
@@ -386,10 +387,10 @@ angular.module('BE.seed.controller.inventory_reports', [])
             $scope.aggChartStatusMessage = 'No Data';
           }
         },
-          function (data, status) {
-            $scope.aggChartStatusMessage = 'Data Load Error';
-            $log.error('#InventoryReportsController: Error loading agg chart data : ' + status);
-          })
+        function (data, status) {
+          $scope.aggChartStatusMessage = 'Data Load Error';
+          $log.error('#InventoryReportsController: Error loading agg chart data : ' + status);
+        })
           .finally(function () {
             $scope.aggChartIsLoading = false;
           });

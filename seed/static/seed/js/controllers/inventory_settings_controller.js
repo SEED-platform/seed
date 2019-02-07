@@ -21,24 +21,25 @@ angular.module('BE.seed.controller.inventory_settings', [])
     'flippers',
     '$translate',
     'i18nService', // from ui-grid
-    function ($scope,
-              $window,
-              $uibModalInstance,
-              $stateParams,
-              $uibModal,
-              Notification,
-              inventory_service,
-              modified_service,
-              user_service,
-              urls,
-              all_columns,
-              profiles,
-              current_profile,
-              shared_fields_payload,
-              flippers,
-              $translate,
-              i18nService) {
-
+    function (
+      $scope,
+      $window,
+      $uibModalInstance,
+      $stateParams,
+      $uibModal,
+      Notification,
+      inventory_service,
+      modified_service,
+      user_service,
+      urls,
+      all_columns,
+      profiles,
+      current_profile,
+      shared_fields_payload,
+      flippers,
+      $translate,
+      i18nService
+    ) {
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.inventory = {
         id: $stateParams.inventory_id
