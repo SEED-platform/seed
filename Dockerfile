@@ -53,7 +53,8 @@ RUN pip install -r requirements/aws.txt
 COPY ./package.json /seed/package.json
 COPY ./vendors/package.json /seed/vendors/package.json
 COPY ./README.md /seed/README.md
-RUN npm install
+# unsafe-perm allows the package.json postinstall script to run with the elevated permissions
+RUN npm install --unsafe-perm
 
 ### Copy over the remaining part of the SEED application and some helpers
 COPY . /seed/
