@@ -22,6 +22,5 @@ for DB in template_postgis "$POSTGRES_DB"; do
         -- Upgrade PostGIS (includes raster)
         CREATE EXTENSION IF NOT EXISTS postgis VERSION '$POSTGIS_VERSION';
         ALTER EXTENSION postgis  UPDATE TO '$POSTGIS_VERSION';
-
     "
 done

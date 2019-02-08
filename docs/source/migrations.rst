@@ -9,7 +9,7 @@ Version 2.5.0
 Docker-based Deployment
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-- Add your MapQuest Key to the docker-compose file that is used for deployment. `MAPQUEST_API_KEY`.
+- Add your MapQuest Key, `MAPQUEST_API_KEY`, to the docker-compose file that is used for deployment. You can also add the MapQuest API key to your organization.
 
 Development
 ^^^^^^^^^^^
@@ -29,6 +29,22 @@ Development
 - If testing geocoding, then sign up for as a `MapQuest Developer`_ and create a new `MapQuest Key`_.
 - Add the key to either your local_untracked.py file or as an environment variables `MAPQUEST_API_KEY`.
 
+- **Update** your DATABASES engine to be `django.contrib.gis.db.backends.postgis`
+
+.. code-block:: json
+
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.contrib.gis.db.backends.postgis',
+            'NAME': 'seeddb',
+            'USER': 'seeduser',
+            'PASSWORD': 'seedpass',
+            'HOST': 'localhost',
+            'PORT': '5432',
+        }
+    }
+
+- Run `./manage.py migrate`
 
 .. _`MapQuest Developer`: https://developer.mapquest.com/plan_purchase/steps/business_edition/business_edition_free/register
 
