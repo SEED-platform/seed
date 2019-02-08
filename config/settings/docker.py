@@ -26,13 +26,10 @@ DEBUG = False
 COMPRESS_ENABLED = True
 COMPRESS_STORAGE = 'compressor.storage.GzipCompressorFileStorage'
 COMPRESS_OFFLINE = True
-# Need to test with cloudflare
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
 
-# Need to test the following items on dev1. Historically they have been False
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+# Need to test the following items on dev1/cloudflare. Historically they have been False
+# SESSION_COOKIE_SECURE = True
+# CSRF_COOKIE_SECURE = True
 
 ALLOWED_HOSTS = ['*']
 
