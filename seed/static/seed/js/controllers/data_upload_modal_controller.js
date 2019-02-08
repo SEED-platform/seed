@@ -91,6 +91,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       /**
        * uploader: hold the state of the upload.
        * invalid_extension_alert: bool - hides or shows the bootstrap alert for csv/xls/xlsx files
+       * invalid_geojson_extension_alert: bool - hides or shows the bootstrap alert for geojson/json files
        * invalid_xml_extension_alert: bool - hides or shows the bootstrap alert for xml files
        * in_progress: bool - when true: shows the progress bar and hides the
        *  upload button. when false: hides the progress bar and shows the upload
@@ -100,6 +101,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        */
       $scope.uploader = {
         invalid_extension_alert: false,
+        invalid_geojson_extension_alert: false,
         invalid_xml_extension_alert: false,
         in_progress: false,
         progress: 0,
@@ -182,11 +184,20 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         switch (event_message) {
           case 'invalid_extension':
             $scope.uploader.invalid_extension_alert = true;
+            $scope.uploader.invalid_geojson_extension_alert = false;
             $scope.uploader.invalid_xml_extension_alert = false;
             break;
 
+          case 'invalid_geojson_extension':
+            $scope.uploader.invalid_extension_alert = false;
+            $scope.uploader.invalid_geojson_extension_alert = true;
+            $scope.uploader.invalid_xml_extension_alert = false;
+            break;
+
+
           case 'invalid_xml_extension':
             $scope.uploader.invalid_extension_alert = false;
+            $scope.uploader.invalid_geojson_extension_alert = false;
             $scope.uploader.invalid_xml_extension_alert = true;
             break;
 

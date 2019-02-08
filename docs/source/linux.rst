@@ -26,7 +26,7 @@ Install the following base packages to run SEED:
     sudo apt upgrade
     sudo apt install libpq-dev python3-dev python3-pip libatlas-base-dev \
     gfortran build-essential nodejs npm libxml2-dev libxslt1-dev git \
-    libssl-dev libffi-dev curl uwsgi-core uwsgi-plugin-python
+    libssl-dev libffi-dev curl uwsgi-core uwsgi-plugin-python mercurial
     sudo apt install redis-server
     sudo apt install postgresql postgresql-contrib
 
