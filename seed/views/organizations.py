@@ -26,6 +26,7 @@ from seed.lib.superperms.orgs.models import (
     OrganizationUser,
 )
 from seed.models import Cycle, PropertyView, TaxLotView, Column
+from seed.tasks import invite_to_organization
 from seed.utils.api import api_endpoint_class
 from seed.utils.organizations import create_organization, create_suborganization
 
@@ -546,7 +547,17 @@ class OrganizationViewSet(viewsets.ViewSet):
         org = Organization.objects.get(pk=pk)
         user = User.objects.get(pk=body['user_id'])
 
-        org.add_member(user)
+        _orguser, status = org.add_member(user)
+
+        # Send an email if a new user has been added to the organization
+        if status:
+            try:
+                domain = request.get_host()
+            except Exception:
+                domain = 'seed-platform.org'
+            invite_to_organization(
+                domain, user, request.user.username, org.name
+            )
 
         return JsonResponse({'status': 'success'})
 
@@ -621,8 +632,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             warn_bad_pint_spec('area', desired_display_units_area)
 
         desired_display_significant_figures = posted_org.get('display_significant_figures')
-        if isinstance(desired_display_significant_figures, int) \
-                and desired_display_significant_figures >= 0:
+        if isinstance(desired_display_significant_figures, int) and desired_display_significant_figures >= 0:  # noqa
             org.display_significant_figures = desired_display_significant_figures
         elif desired_display_significant_figures is not None:
             _log.warn("got bad sig figs {0} for org {1}".format(
@@ -768,7 +778,8 @@ class OrganizationViewSet(viewsets.ViewSet):
                 'message': 'User with email address (%s) does not exist' % email
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        created, mess_or_org, _ = create_suborganization(user, org, body['sub_org_name'], ROLE_OWNER)
+        created, mess_or_org, _ = create_suborganization(user, org, body['sub_org_name'],
+                                                         ROLE_OWNER)
         if created:
             return JsonResponse({
                 'status': 'success',
