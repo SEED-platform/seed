@@ -10,7 +10,7 @@ from config.settings.test import *  # noqa
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'seeddb',
         'USER': 'postgres',
         'PASSWORD': '',
@@ -32,6 +32,8 @@ DATABASES = {
 #         'snippets': None,
 #         'scaffold_templates': None,
 #     }
+
+TESTING_MAPQUEST_API_KEY = os.environ.get("TESTING_MAPQUEST_API_KEY")
 
 CACHES = {
     'default': {

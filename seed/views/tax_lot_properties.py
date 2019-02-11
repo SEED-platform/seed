@@ -47,7 +47,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
     @ajax_request_class
     @has_perm_class('requires_member')
     @list_route(methods=['POST'])
-    def csv(self, request):
+    def export(self, request):
         """
         Download a csv of the TaxLot and Properties
 
@@ -129,11 +129,6 @@ class TaxLotPropertyViewSet(GenericViewSet):
 
         model_views = view_klass.objects.select_related(*select_related).filter(**filter_str).order_by('id')
 
-        filename = request.data.get('filename', "ExportedData.csv")
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="{}"'.format(filename)
-        writer = csv.writer(response)
-
         # get the data in a dict which includes the related data
         data = TaxLotProperty.get_related(model_views, column_ids, columns_from_database)
 
@@ -141,6 +136,21 @@ class TaxLotPropertyViewSet(GenericViewSet):
         if ids:
             order_dict = {obj_id: index for index, obj_id in enumerate(ids)}
             data.sort(key=lambda x: order_dict[x['id']])  # x is the property/taxlot object
+
+        export_type = request.data.get('export_type')
+
+        filename = request.data.get('filename', f"ExportedData.{export_type}")
+
+        if export_type == "csv":
+            return self._csv_response(filename, data, column_name_mappings)
+        elif export_type == "json":
+            return self._json_response(filename, data, column_name_mappings)
+
+    def _csv_response(self, filename, data, column_name_mappings):
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="{}"'.format(filename)
+
+        writer = csv.writer(response)
 
         # check the first item in the header and make sure that it isn't ID (it can be id, or iD).
         # excel doesn't like the first item to be ID in a CSV
@@ -171,3 +181,60 @@ class TaxLotPropertyViewSet(GenericViewSet):
             writer.writerow(row)
 
         return response
+
+    def _json_response(self, filename, data, column_name_mappings):
+        features = []
+        for datum in data:
+            feature = {
+                "properties": {}
+            }
+
+            for key, value in datum.items():
+                if value is None:
+                    continue
+
+                if isinstance(value, ureg.Quantity):
+                    value = value.magnitude
+                elif isinstance(value, datetime.datetime):
+                    value = value.strftime("%Y-%m-%d %H:%M:%S")
+                elif isinstance(value, datetime.date):
+                    value = value.strftime("%Y-%m-%d")
+
+                if key == "bounding_box" and value:
+                    """If bounding_box is populated, add the 'geometry'
+                    key-value-pair in the appropriate GeoJSON format."""
+                    coordinates = self._serialized_coordinates(value)
+
+                    feature["geometry"] = {
+                        "coordinates": [coordinates],
+                        "type": "Polygon"
+                    }
+                else:
+                    display_key = column_name_mappings.get(key, key)
+                    feature["properties"][display_key] = value
+
+            features.append(feature)
+
+        response_dict = {
+            "type": "FeatureCollection",
+            "crs": {
+                    "type": "EPSG",
+                    "properties": {"code": 4326}
+            },
+            "features": features
+        }
+
+        response = JsonResponse(response_dict)
+        response['Content-Disposition'] = 'attachment; filename="{}"'.format(filename)
+
+        return response
+
+    def _serialized_coordinates(self, polygon_wkt):
+        string_coord_pairs = polygon_wkt.lstrip('POLYGON (').rstrip(')').split(', ')
+
+        coordinates = []
+        for coord_pair in string_coord_pairs:
+            float_coords = [float(coord) for coord in coord_pair.split(' ')]
+            coordinates.append(float_coords)
+
+        return coordinates

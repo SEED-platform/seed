@@ -14,9 +14,10 @@ from os import path
 from past.builtins import basestring
 from django.apps import apps
 from django.contrib.postgres.fields import JSONField
+from django.contrib.gis.db import models as geomodels
 from django.db import IntegrityError
 from django.db import models
-from django.db.models.signals import pre_delete, post_save
+from django.db.models.signals import pre_delete, pre_save, post_save
 from django.dispatch import receiver
 from django.forms.models import model_to_dict
 from quantityfield.fields import QuantityField
@@ -133,6 +134,11 @@ class PropertyState(models.Model):
     # New fields for latitude and longitude as native database objects
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
+
+    long_lat = geomodels.PointField(geography=True, null=True, blank=True)
+    centroid = geomodels.PolygonField(geography=True, null=True, blank=True)
+    bounding_box = geomodels.PolygonField(geography=True, null=True, blank=True)
+    geocoding_confidence = models.CharField(max_length=32, null=True, blank=True)
 
     # Only spot where it's 'building' in the app, b/c this is a PM field.
     building_count = models.IntegerField(null=True, blank=True)
@@ -489,6 +495,7 @@ class PropertyState(models.Model):
                     ps.postal_code,
                     ps.longitude,
                     ps.latitude,
+                    ps.geocoding_confidence,
                     ps.lot_number,
                     ps.gross_floor_area,
                     ps.use_description,
@@ -769,3 +776,25 @@ class PropertyAuditLog(models.Model):
 
     class Meta:
         index_together = [['state', 'name'], ['parent_state1', 'parent_state2']]
+
+
+@receiver(pre_save, sender=PropertyState)
+def sync_latitude_longitude_and_long_lat(sender, instance, **kwargs):
+    try:
+        original_obj = sender.objects.get(pk=instance.pk)
+    except sender.DoesNotExist:
+        pass  # Occurs on object creation
+    else:
+        # Sync Latitude, Longitude, and long_lat fields if applicable
+        latitude_change = original_obj.latitude != instance.latitude
+        longitude_change = original_obj.longitude != instance.longitude
+        long_lat_change = original_obj.long_lat != instance.long_lat
+        lat_and_long_both_populated = instance.latitude is not None and instance.longitude is not None
+
+        # The 'not long_lat_change' condition removes the case when long_lat is changed by an external API
+        if (latitude_change or longitude_change) and lat_and_long_both_populated and not long_lat_change:
+            instance.long_lat = f"POINT ({instance.longitude} {instance.latitude})"
+            instance.geocoding_confidence = "Manually geocoded (N/A)"
+        elif (latitude_change or longitude_change) and not lat_and_long_both_populated:
+            instance.long_lat = None
+            instance.geocoding_confidence = None

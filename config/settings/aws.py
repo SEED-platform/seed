@@ -2,6 +2,8 @@
 :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+
+# TODO: This needs to be updated or deprecated since postgis is not setup to work with AWS RDS.
 from __future__ import absolute_import
 from config.settings.common import *  # noqa
 from kombu import Exchange, Queue
@@ -33,7 +35,7 @@ if ONLY_HTTPS:
 
 # Upload to S3
 AWS_S3_MAX_MEMORY_SIZE = 1024 * 1024
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
+DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 STATICFILES_STORAGE = DEFAULT_FILE_STORAGE
 STATIC_URL = "https://%s.s3.amazonaws.com/" % AWS_STORAGE_BUCKET_NAME
 

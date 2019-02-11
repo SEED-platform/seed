@@ -23,12 +23,13 @@ for loc in ENV_VARS:
         raise Exception("%s Not defined as env variables" % loc)
 
 DEBUG = False
-# Do not compress files in docker
-COMPRESS_ENABLED = False
+COMPRESS_ENABLED = True
+COMPRESS_STORAGE = 'compressor.storage.GzipCompressorFileStorage'
+COMPRESS_OFFLINE = True
 
-# Need to test the following items on dev1. Historically they have been False
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+# Need to test the following items on dev1/cloudflare. Historically they have been False
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -40,7 +41,7 @@ EMAIL_BACKEND = 'django_ses.SESBackend'
 # PostgreSQL DB config
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': POSTGRES_DB,
         'USER': POSTGRES_USER,
         'PASSWORD': POSTGRES_PASSWORD,

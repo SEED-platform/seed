@@ -46,7 +46,7 @@ fields. Follow the steps below to add new fields to the SEED database:
 - TaxLotState.coparent or PropertyState.coparent: SQL query and keep_fields
 
 #. Run `./manage.py makemigrations`
-#. Add in a Python script in the new migration to add in the new column into every organizations list of columns
+#. Add in a Python script in the new migration to add in the new column into every organizations list of columns. Note that the new_db_fields will be the same as the data in the Column.DATABASE_COLUMNS that were added.
 
     .. code-block:: python
 
@@ -54,35 +54,44 @@ fields. Follow the steps below to add new fields to the SEED database:
             Column = apps.get_model("seed", "Column")
             Organization = apps.get_model("orgs", "Organization")
 
-            # from seed.lib.superperms.orgs.models import (
-            new_db_field = {
-                'column_name': 'pm_property_id',
-                'table_name': 'PropertyState',
-                'display_name': 'PM Property ID',
-                'data_type': 'string',
-            }
+            new_db_fields = [
+                {
+                    'column_name': 'geocoding_confidence',
+                    'table_name': 'PropertyState',
+                    'display_name': 'Geocoding Confidence',
+                    'data_type': 'number',
+                }, {
+                    'column_name': 'geocoding_confidence',
+                    'table_name': 'TaxLotState',
+                    'display_name': 'Geocoding Confidence',
+                    'data_type': 'number',
+                }
+            ]
 
             # Go through all the organizatoins
             for org in Organization.objects.all():
-                 columns = Column.objects.filter(
-                    organization_id=org.id,
-                    table_name=new_db_field['table_name'],
-                    column_name=new_db_field['column_name'],
-                    is_extra_data=False,
-                )
+                for new_db_field in new_db_fields:
+                    columns = Column.objects.filter(
+                        organization_id=org.id,
+                        table_name=new_db_field['table_name'],
+                        column_name=new_db_field['column_name'],
+                        is_extra_data=False,
+                    )
 
-                if not columns.count():
-                    details.update(new_db_field)
-                    Column.objects.create(**details)
-                elif columns.count() == 1:
-                    c = columns.first()
-                    if c.display_name is None or c.display_name == '':
-                        c.display_name = new_db_field['display_name']
-                    if c.data_type is None or c.data_type == '' or c.data_type == 'None':
-                        c.data_type = new_db_field['data_type']
-                    c.save()
-                else:
-                    print "  More than one column returned"
+                    if not columns.count():
+                        new_db_field['organization_id'] = org.id
+                        Column.objects.create(**new_db_field)
+                    elif columns.count() == 1:
+                        # If the column exists, then just update the display_name and data_type if empty
+                        c = columns.first()
+                        if c.display_name is None or c.display_name == '':
+                            c.display_name = new_db_field['display_name']
+                        if c.data_type is None or c.data_type == '' or c.data_type == 'None':
+                            c.data_type = new_db_field['data_type']
+                        c.save()
+                    else:
+                        print("  More than one column returned")
+
 
         class Migration(migrations.Migration):
             dependencies = [
@@ -90,6 +99,7 @@ fields. Follow the steps below to add new fields to the SEED database:
             ]
 
             operations = [
+                ... existing db migrations ...,
                 migrations.RunPython(forwards),
             ]
 
@@ -237,9 +247,8 @@ user:
     psql -c 'DROP DATABASE "seeddb"'
     psql -c 'CREATE DATABASE "seeddb" WITH OWNER = "seeduser";'
     psql -c 'GRANT ALL PRIVILEGES ON DATABASE "seeddb" TO seeduser;'
-    psql -c 'ALTER USER seeduser CREATEDB;'
-
-    psql -c 'ALTER USER seeduser CREATEROLE;'
+    psql -c 'ALTER ROLE seeduser SUPERUSER;
+    psql -d seeddb -c "CREATE EXTENSION postgis;"
     ./manage.py migrate
     ./manage.py create_default_user \
         --username=demo@seed-platform.org \
@@ -263,6 +272,13 @@ Python unit tests are run with
 .. code-block:: console
 
     python manage.py test --settings=config.settings.test
+
+Note on geocode-related testing:
+    Most of these tests use VCR.py and cassettes to capture and reuse recordings of HTTP requests and responses. Given that, unless you want to make changes and/or refresh the cassettes/recordings, there isn't anything needed to run the geocode tests.
+
+    In the case that the geocoding logic/code is changed or you'd like to the verify the MapQuest API is still working as expected, you'll need to run the tests with a small change. Namely, you'll want to provide the tests with an API key via an environment variable called "TESTING_MAPQUEST_API_KEY" or within your local_untracked.py file with that same variable name.
+
+    In order to refresh the actual cassettes, you'll just need to delete or move the old ones which can be found at ".seed/tests/data/vcr_cassettes". The API key should be hidden within the cassettes, so these new cassettes can and should be pushed to GitHub.
 
 Run coverage using
 

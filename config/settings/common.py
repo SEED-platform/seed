@@ -94,6 +94,7 @@ INSTALLED_APPS = (
     'django.contrib.humanize',
     'django.contrib.admin',
     'django.contrib.staticfiles',
+    'django.contrib.gis',
 
     'compressor',
     'django_extensions',

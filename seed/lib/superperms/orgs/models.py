@@ -123,6 +123,8 @@ class Organization(models.Model):
     # in exported views of its data.
     query_threshold = models.IntegerField(blank=True, null=True)
 
+    mapquest_api_key = models.CharField(blank=True, max_length=128, default='')
+
     def save(self, *args, **kwargs):
         """Perform checks before saving."""
         # There can only be one.

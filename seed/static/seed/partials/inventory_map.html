@@ -1,0 +1,120 @@
+<div class="page_header_container" ng-cloak>
+    <div class="page_header">
+        <div class="left page_action_container">
+
+        </div>
+        <div class="page_title">
+            <h1>{$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') | translate $}</h1>
+        </div>
+        <div class="right page_action_container page_action_btn"></div>
+    </div>
+</div>
+
+<div class="section_nav_container">
+    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_nav.html'"></div>
+</div>
+
+<div class="inventory-list-controls">
+    <form name="listControlsForm"
+          class="form-inline"
+          role="form"
+          ng-submit="submitNewLabelForm(newLabelForm.$valid)"
+          novalidate>
+        <div class="form-group">
+            <div uib-dropdown class="btn-group pointer" ng-style="nothing_selected_cursor()">
+                <button id="btnInventoryActions"
+                        type="button"
+                        uib-dropdown-toggle
+                        class="btn btn-default btn-sm">
+                    {$:: 'Actions' | translate $} <span class="caret"></span>
+                </button>
+                <ul id="inventory-actions-dropdown" uib-dropdown-menu class="dropdown-menu" role="menu" aria-labelledby="btnInventoryActions">
+                    <li role="menuitem">
+                      <a ng-click="toggle_layer(2)">Toggle Points</a>
+                    </li>
+                    <li role="menuitem">
+                      <a ng-click="toggle_layer(1)">Toggle Hexbins</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="tagsInput" translate>Filter by label:</label>
+            <div class="btn-group">
+                <tags-input id="tagsInput"
+                            ng-model="selected_labels"
+                            min-length="1"
+                            placeholder="{$:: 'Add a label' | translate $}"
+                            replace-spaces-with-dashes="false"
+                            add-from-autocomplete-only="true"
+                            ng-disabled="!labels.length">
+                    <auto-complete source="loadLabelsForFilter($query)"
+                                   max-results-to-show="255"
+                                   min-length="0"
+                                   load-on-empty="true"
+                                   load-on-focus="true"
+                                   ng-disabled="!labels.length">
+                    </auto-complete>
+                </tags-input>
+            </div>
+        </div>
+        <div class="form-group btn-group">
+            <label class="btn btn-default btn-sm" style="width:50px;" ng-class="{active: labelLogic === 'and'}" ng-click="labelLogicUpdated('and')" ng-disabled="!labels.length" translate>AND</label>
+            <label class="btn btn-default btn-sm" style="width:50px;" ng-class="{active: labelLogic === 'or'}" ng-click="labelLogicUpdated('or')" ng-disabled="!labels.length" translate>OR</label>
+            <label class="btn btn-default btn-sm" style="width:75px;" ng-class="{active: labelLogic === 'exclude'}" ng-click="labelLogicUpdated('exclude')" ng-disabled="!labels.length" translate>EXCLUDE</label>
+        </div>
+        <div class="form-group btn-group building-list-filter-buttons">
+            <button type="button" ng-click="clear_labels()" class="btn btn-default btn-sm" ng-disabled="!selected_labels.length" translate>Clear Labels</button>
+        </div>
+    </form>
+
+    <div class="form-group settings_profile" style="padding-top: 20px; display: flex; justify-content: space-between;">
+        <span>
+            <label>{$:: 'Cycle' | translate $}:</label>
+            <div style="display: inline-block;">
+                <select class="form-control input-sm" ng-model="cycle.selected_cycle" ng-change="update_cycle(cycle.selected_cycle)"
+                        ng-options="option.name for option in ::cycle.cycles track by option.id">
+                </select>
+            </div>
+        </span>
+
+        <span ng-show="layerVisible(1)" style="width: 500px">
+          <p class="text-center">Total Site EUI (kBtu/ft2)</p>
+          <div>
+            <p class="col-sm-2 text-right" style="float: left">20 -</p>
+            <p class="col-sm-2 text-left" style="float: right">+ 750</p>
+          </div>
+          <div>
+            <uib-progressbar value=0 ng-style=hexbinInfoBarColor()></uib-progressbar>
+          </div>
+        </span>
+
+    </div>
+
+</div>
+
+<div class="inventory-list-tab-container">
+    <div class="item-count">
+        <span ng-if="::inventory_type === 'properties'">
+            <i class="fa fa-building-o"></i>
+            <span translate="NUMBER_OF_PROPERTIES" translate-values="{ num: (geocoded_data.length | number: 0)}"></span>
+        </span>
+
+        <span ng-if="::inventory_type === 'taxlots'">
+            <i class="fa fa-map-o"></i>
+            <span translate="NUMBER_OF_TAXLOTS" translate-values="{ num: (geocoded_data.length | number: 0)}"></span>
+        </span>
+    </div>
+    <ul class="nav nav-tabs" style="margin-bottom:1px;">
+        <li ng-class="::{active: inventory_type==='properties'}" heading="View by Property">
+            <a ui-sref="inventory_map(::{inventory_type: 'properties'})" translate>View by Property</a>
+        </li>
+        <li ng-class="::{active: inventory_type==='taxlots'}" heading="View by Tax Lot">
+            <a ui-sref="inventory_map(::{inventory_type: 'taxlots'})" translate>View by Tax Lot</a>
+        </li>
+    </ul>
+</div>
+
+<div id="map">
+  <div id="popup-element"></div>
+</div>

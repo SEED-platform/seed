@@ -10,7 +10,7 @@
 version: '3'
 services:
   db-postgres:
-    image: 127.0.0.1:5000/postgres
+    image: 127.0.0.1:5000/postgres-seed
     environment:
       - POSTGRES_DB=seed
       - POSTGRES_USER
@@ -49,6 +49,7 @@ services:
       - SECRET_KEY
       - SENTRY_JS_DSN
       - SENTRY_RAVEN_DSN
+      - MAPQUEST_API_KEY
       - DJANGO_SETTINGS_MODULE=config.settings.docker
     depends_on:
       - db-redis
@@ -74,6 +75,7 @@ services:
       - SENTRY_RAVEN_DSN
       - DJANGO_SETTINGS_MODULE=config.settings.docker
       - NUMBER_OF_WORKERS
+      - MAPQUEST_API_KEY
     depends_on:
       - db-redis
       - db-postgres

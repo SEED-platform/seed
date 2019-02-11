@@ -289,6 +289,23 @@ angular.module('BE.seed.controller.mapping', [])
         return mappings;
       };
 
+      var suggested_address_fields = [
+        {column_name: 'address_line_1'},
+        {column_name: 'city'},
+        {column_name: 'state'},
+        {column_name: 'postal_code'}
+      ];
+
+      $scope.suggested_fields_present = function () {
+        if (!$scope.mappings) return true;
+
+        var intersections = _.intersectionWith(suggested_address_fields, $scope.mappings, function (required_field, raw_col) {
+          return required_field.column_name === raw_col.suggestion_column_name;
+        }).length;
+
+        return intersections === 4;
+      };
+
       var required_property_fields = [
         {column_name: 'address_line_1', inventory_type: 'PropertyState'},
         {column_name: 'custom_id_1', inventory_type: 'PropertyState'},

@@ -1,3 +1,7 @@
+# SEED Version 2.5.0-Beta GIS
+
+This is a beta release of the SEED GIS functionality.
+
 # SEED Version 2.4.1
 
 Date Range: 10/06/18 - 01/04/19:
