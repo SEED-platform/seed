@@ -14,7 +14,7 @@ angular.module('BE.seed.controller.geocode_modal', [])
         if (result) {
           $scope.geocode_state = 'verify';
         } else {
-          $scope.geocode_state = 'no_key'
+          $scope.geocode_state = 'no_key';
         }
       });
 
@@ -56,7 +56,7 @@ angular.module('BE.seed.controller.geocode_modal', [])
             }
 
             $scope.geocode_state = 'result';
-          })
+          });
         });
       };
 

@@ -547,8 +547,8 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
-      $scope.open_ubid_modal = function() {
-        var modalInstance = $uibModal.open({
+      $scope.open_ubid_modal = function () {
+        $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/ubid_modal.html',
           controller: 'ubid_modal_controller',
           resolve: {
@@ -562,7 +562,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
-      $scope.open_geocode_modal = function() {
+      $scope.open_geocode_modal = function () {
         var modalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/geocode_modal.html',
           controller: 'geocode_modal_controller',
@@ -579,14 +579,16 @@ angular.module('BE.seed.controller.inventory_list', [])
                 return !_.has(row, '$$treeLevel');
               }), 'taxlot_state_id');
             },
-            org_id: function () {return user_service.get_organization().id},
+            org_id: function () {
+              return user_service.get_organization().id;
+            }
           }
         });
 
-          modalInstance.result.then(function (result) {
-            // dialog was closed with 'Close' button.
-            refresh_objects();
-          });
+        modalInstance.result.then(function (/*result*/) {
+          // dialog was closed with 'Close' button.
+          refresh_objects();
+        });
       };
 
       $scope.open_delete_modal = function () {

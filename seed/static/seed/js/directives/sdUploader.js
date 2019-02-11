@@ -440,8 +440,7 @@ var makeBuildingSyncUpdater = function (scope, element, allowed_extensions) {
   return uploader;
 };
 
-var sdUploaderFineUploader = function (scope, element, attrs, filename) {
-  var dest = window.BE.FILE_UPLOAD_DESTINATION;
+var sdUploaderFineUploader = function (scope, element/*, attrs, filename*/) {
   var uploader;
   if (scope.sourcetype === 'BuildingSync') {
     uploader = makeBuildingSyncUploader(scope, element, ['xml']);

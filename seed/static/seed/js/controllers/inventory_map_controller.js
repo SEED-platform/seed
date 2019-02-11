@@ -13,50 +13,49 @@ angular.module('BE.seed.controller.inventory_map', [])
     'labels',
     'urls',
     'spinner_utility',
-    function ($scope,
-              $stateParams,
-              $state,
-              cycles,
-              inventory,
-              inventory_service,
-              labels,
-              urls,
-              spinner_utility) {
+    function (
+      $scope,
+      $stateParams,
+      $state,
+      cycles,
+      inventory,
+      inventory_service,
+      labels,
+      urls,
+      spinner_utility
+    ) {
       spinner_utility.show();
 
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.data = inventory.results;
 
-      $scope.geocoded_data = _.filter($scope.data, function(building) {
-        return building.long_lat
-      });
-      $scope.ungeocoded_data = _.filter($scope.data, function(building) {
-        return !building.long_lat
-      });
+      $scope.geocoded_data = _.filter($scope.data, 'long_lat');
+      $scope.ungeocoded_data = _.reject($scope.data, 'long_lat');
 
       // Map
       var base_layer = new ol.layer.Tile({
         source: new ol.source.Stamen({
           layer: 'terrain'
         }),
-        zIndex: 0,  // Note: This is used for layer toggling.
+        zIndex: 0 // Note: This is used for layer toggling.
       });
 
       // Define buildings source - the basis of layers
       var buildingPoint = function (building) {
         var format = new ol.format.WKT();
 
-        var long_lat = building.long_lat
+        var long_lat = building.long_lat;
         var feature = format.readFeature(long_lat, {
           dataProjection: 'EPSG:4326',
           featureProjection: 'EPSG:3857'
         });
 
-        feature.setProperties(building)
-        return feature
+        feature.setProperties(building);
+        return feature;
       };
 
-      var buildingSources = function (records = $scope.geocoded_data) {
+      var buildingSources = function (records) {
+        if (_.isUndefined(records)) records = $scope.geocoded_data;
         var features = _.map(records, buildingPoint);
 
         return new ol.source.Vector({ features: features });
@@ -64,7 +63,7 @@ angular.module('BE.seed.controller.inventory_map', [])
 
       // Points/clusters layer
       var clusterPointStyle = function (size) {
-        var relative_radius = 10 + Math.min(7, size/50)
+        var relative_radius = 10 + Math.min(7, size / 50);
         return new ol.style.Style({
           image: new ol.style.Circle({
             radius: relative_radius,
@@ -85,24 +84,25 @@ angular.module('BE.seed.controller.inventory_map', [])
       var singlePointStyle = function () {
         return new ol.style.Style({
           image: new ol.style.Icon({
-            src: urls.static_url + "seed/images/map_pin.png",
+            src: urls.static_url + 'seed/images/map_pin.png',
             scale: 0.05,
-            anchor: [0.5, 1],
+            anchor: [0.5, 1]
           })
         });
       };
 
-      var clusterSource = function (records = $scope.geocoded_data) {
+      var clusterSource = function (records) {
+        if (_.isUndefined(records)) records = $scope.geocoded_data;
         return new ol.source.Cluster({
           source: buildingSources(records),
-          distance: 45,
+          distance: 45
         });
       };
 
-      var pointsLayerStyle = function(feature) {
+      var pointsLayerStyle = function (feature) {
         var size = feature.get('features').length;
         if (size > 1) {
-          return clusterPointStyle(size)
+          return clusterPointStyle(size);
         } else {
           return singlePointStyle();
         }
@@ -110,63 +110,66 @@ angular.module('BE.seed.controller.inventory_map', [])
 
       $scope.points_layer = new ol.layer.Vector({
         source: clusterSource(),
-        zIndex: 2,  // Note: This is used for layer toggling.
+        zIndex: 2, // Note: This is used for layer toggling.
         style: pointsLayerStyle
       });
 
       // Hexbin layer
       var hexagon_size = 750;
 
-      var hexbinSource = function (records = $scope.geocoded_data) {
+      var hexbinSource = function (records) {
+        if (_.isUndefined(records)) records = $scope.geocoded_data;
         return new ol.source.HexBin(
           {
             source: buildingSources(records),
-            size: hexagon_size,
+            size: hexagon_size
           }
         );
       };
 
-      $scope.hexbin_color = [75,0,130];
+      $scope.hexbin_color = [75, 0, 130];
       var hexbin_max_opacity = 0.8;
       var hexbin_min_opacity = 0.2;
 
-      $scope.hexbinInfoBarColor = function() {
-        var hexbin_color_code = $scope.hexbin_color.join(",");
-        var left_color = `rgb(${hexbin_color_code},${hexbin_max_opacity * hexbin_min_opacity})`;
-        var right_color = `rgb(${hexbin_color_code},${hexbin_max_opacity})`;
+      $scope.hexbinInfoBarColor = function () {
+        var hexbin_color_code = $scope.hexbin_color.join(',');
+        var left_color = 'rgb(' + hexbin_color_code + ',' + hexbin_max_opacity * hexbin_min_opacity + ')';
+        var right_color = 'rgb(' + hexbin_color_code + ',' + hexbin_max_opacity + ')';
 
-        return {background: `linear-gradient(to right, ${left_color}, ${right_color})`}
-      }
+        return {
+          background: 'linear-gradient(to right, ' + left_color + ', ' + right_color + ')'
+        };
+      };
 
       var hexagonStyle = function (opacity) {
         var color = $scope.hexbin_color.concat([opacity]);
         return [
           new ol.style.Style({
-             fill: new ol.style.Fill({ color: color })
-           })
-         ]
+            fill: new ol.style.Fill({ color: color })
+          })
+        ];
       };
 
-      var hexbinStyle = function(feature) {
-        var features = feature.getProperties().features
-        var site_eui_key = _.find(_.keys(features[0].values_), function(key) {
-          return _.startsWith(key, "site_eui")
+      var hexbinStyle = function (feature) {
+        var features = feature.getProperties().features;
+        var site_eui_key = _.find(_.keys(features[0].values_), function (key) {
+          return _.startsWith(key, 'site_eui');
         });
-        var site_euis = _.map(features, function(point) {
-          return point.values_[site_eui_key]
+        var site_euis = _.map(features, function (point) {
+          return point.values_[site_eui_key];
         });
-        var total_eui = _.sum(site_euis)
-        var opacity = Math.max(hexbin_min_opacity, total_eui/hexagon_size);
+        var total_eui = _.sum(site_euis);
+        var opacity = Math.max(hexbin_min_opacity, total_eui / hexagon_size);
 
         return hexagonStyle(opacity);
       };
 
       $scope.hexbin_layer = new ol.layer.Vector({
         source: hexbinSource(),
-        zIndex: 1,  // Note: This is used for layer toggling.
+        zIndex: 1, // Note: This is used for layer toggling.
         opacity: hexbin_max_opacity,
-        style:  hexbinStyle,
-      })
+        style: hexbinStyle
+      });
 
       // Render map
       $scope.map = new ol.Map({
@@ -180,19 +183,19 @@ angular.module('BE.seed.controller.inventory_map', [])
       var layer_at_z_index = {
         0: base_layer,
         1: $scope.hexbin_layer,
-        2: $scope.points_layer,
-      }
+        2: $scope.points_layer
+      };
 
-      $scope.layerVisible = function(z_index) {
-        var layers = $scope.map.getLayers().array_
-        var z_indexes = _.map(layers, function(layer) {
+      $scope.layerVisible = function (z_index) {
+        var layers = $scope.map.getLayers().array_;
+        var z_indexes = _.map(layers, function (layer) {
           return layer.values_.zIndex;
         });
 
         return z_indexes.includes(z_index);
       };
 
-      $scope.toggle_layer = function(z_index) {
+      $scope.toggle_layer = function (z_index) {
         if ($scope.layerVisible(z_index)) {
           $scope.map.removeLayer(layer_at_z_index[z_index]);
         } else {
@@ -214,31 +217,31 @@ angular.module('BE.seed.controller.inventory_map', [])
       });
       $scope.map.addOverlay(popup_overlay);
 
-      var detailPageIcon = function(point_info) {
-        var link_html = ''
-        var icon_html = '<i class="ui-grid-icon-info-circled"></i>'
+      var detailPageIcon = function (point_info) {
+        var link_html = '';
+        var icon_html = '<i class="ui-grid-icon-info-circled"></i>';
 
-        if ($scope.inventory_type == 'properties') {
+        if ($scope.inventory_type === 'properties') {
           link_html = '<a href="#/properties/' +
             point_info.property_view_id +
             '">' +
             icon_html +
-            '</a>'
+            '</a>';
         } else {
           link_html = '<a href="#/taxlots/' +
             point_info.property_view_id +
             '">' +
             icon_html +
-            '</a>'
+            '</a>';
         }
 
-        return link_html
+        return link_html;
       };
 
       var showPointInfo = function (point) {
         var pop_info = point.getProperties();
-        var address_line_1_key = _.find(_.keys(pop_info), function(key) {
-          return _.startsWith(key, "address_line_1")
+        var address_line_1_key = _.find(_.keys(pop_info), function (key) {
+          return _.startsWith(key, 'address_line_1');
         });
 
         var coordinates = point.getGeometry().getCoordinates();
@@ -258,15 +261,15 @@ angular.module('BE.seed.controller.inventory_map', [])
       // Define point/cluster click event - default is no popup shown
       var popupShown = false;
 
-      $scope.map.on("click", function (event) {
-        var points = []
+      $scope.map.on('click', function (event) {
+        var points = [];
 
         $scope.map.forEachFeatureAtPixel(event.pixel, function (feature) {
           // If feature has a center (implies it is a hexbin), disregard click
-          if (feature.getKeys().includes("center")) {
+          if (feature.getKeys().includes('center')) {
             return;
           }
-          points = feature.get("features")
+          points = feature.get('features');
         });
 
         if (popupShown) {
@@ -282,25 +285,26 @@ angular.module('BE.seed.controller.inventory_map', [])
       var zoomOnCluster = function (points) {
         var source = new ol.source.Vector({ features: points });
         zoomCenter(source, { duration: 750 });
-      }
+      };
 
       // Zoom and center based on provided points (none, all, or a subset)
-      var zoomCenter = function (points_source, extra_view_options = {}) {
+      var zoomCenter = function (points_source, extra_view_options) {
+        if (_.isUndefined(extra_view_options)) extra_view_options = {};
         if (points_source.isEmpty()) {
           // Default view with no points is the middle of US
           var empty_view = new ol.View ({
             center: ol.proj.fromLonLat([-99.066067, 39.390897]),
-            zoom: 4.5,
+            zoom: 4.5
           });
           $scope.map.setView(empty_view);
         } else {
           var extent = points_source.getExtent();
           var view_options = Object.assign({
             size: $scope.map.getSize(),
-            padding: [10, 10, 10, 10],
+            padding: [10, 10, 10, 10]
           }, extra_view_options);
           $scope.map.getView().fit(extent, view_options);
-        };
+        }
       };
 
       // Set initial zoom and center
@@ -340,7 +344,7 @@ angular.module('BE.seed.controller.inventory_map', [])
         });
       };
 
-      function updateApplicableLabels() {
+      function updateApplicableLabels () {
         var inventoryIds;
         if ($scope.inventory_type === 'properties') {
           inventoryIds = _.map($scope.data, 'property_view_id').sort();
@@ -380,7 +384,7 @@ angular.module('BE.seed.controller.inventory_map', [])
           rerenderPoints(ids);
         } else {
           var filtered_records = _.filter($scope.geocoded_data, function (record) {
-            return _.includes(ids,record.id);
+            return _.includes(ids, record.id);
           });
           rerenderPoints(filtered_records);
         }
@@ -402,7 +406,7 @@ angular.module('BE.seed.controller.inventory_map', [])
         cycles: cycles.cycles
       };
 
-      var refreshUsingCycle = function() {
+      var refreshUsingCycle = function () {
         if ($scope.inventory_type === 'properties') {
           $scope.data = inventory_service.get_properties(1, undefined, $scope.cycle.selected_cycle, undefined).results;
           $state.reload();
