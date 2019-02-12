@@ -222,8 +222,8 @@ angular.module('BE.seed.controller.data_upload_modal', [])
 
               // Assessed Data; upload is step 2; PM import is currently treated as such, and is step 13
               if (current_step === 2 || current_step === 13) {
-                var is_green_button = (file.source_type === 'Green Button Raw');
-                save_raw_assessed_data(file.file_id, file.cycle_id, is_green_button);
+                var is_meter_data = (file.source_type === 'PM Meter Usage');
+                save_raw_assessed_data(file.file_id, file.cycle_id, is_meter_data);
               }
               // Portfolio Data
               if (current_step === 4) {
@@ -318,7 +318,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        * @param cycle_id
        * @param is_green_button
        */
-      var save_raw_assessed_data = function (file_id, cycle_id, is_green_button) {
+      var save_raw_assessed_data = function (file_id, cycle_id, is_meter_data) {
         $scope.uploader.status_message = 'saving data';
         $scope.uploader.progress = 0;
         uploader_service.save_raw_data(file_id, cycle_id).then(function (data) {
@@ -326,8 +326,8 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           uploader_service.check_progress_loop(data.progress_key, progress, 1 - (progress / 100), function () {
             $scope.uploader.status_message = 'saving complete';
             $scope.uploader.progress = 100;
-            if (is_green_button) {
-              $scope.step.number = 8;
+            if (is_meter_data) {
+              $scope.step.number = 15;
             } else {
               $scope.step.number = 3;
             }

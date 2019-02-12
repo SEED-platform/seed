@@ -23,7 +23,7 @@ from builtins import str
 from celery import chord, shared_task
 from celery.utils.log import get_task_logger
 from django.db import IntegrityError, DataError
-from django.db import transaction
+from django.db import connection, transaction
 from django.db.models import Q
 from django.utils import timezone as tz
 from django.utils.timezone import make_naive
@@ -52,6 +52,7 @@ from seed.models import (
     PORTFOLIO_RAW,
     Column,
     ColumnMapping,
+    Meter,
     PropertyState,
     PropertyView,
     TaxLotView,
@@ -71,6 +72,7 @@ from seed.models.auditlog import AUDIT_IMPORT
 from seed.models.data_quality import DataQualityCheck
 from seed.utils.buildings import get_source_type
 from seed.utils.geocode import geocode_buildings
+from seed.utils.meter import parse_meter_details
 from seed.utils.ubid import decode_ubids
 
 
@@ -660,6 +662,48 @@ def _save_raw_green_button_data(file_pk, progress_key):
         return progress_data.finish_with_error('data failed to import')
 
 
+def _save_meter_usage_data(file_pk, progress_key):
+    progress_data = ProgressData.from_key(progress_key)
+
+    import_file = ImportFile.objects.get(pk=file_pk)
+    parser = reader.MCMParser(import_file.local_file)
+
+    raw_meter_data = list(parser.data)
+
+    meters_and_readings = parse_meter_details(raw_meter_data, monthly=True)
+
+    try:
+        with transaction.atomic():
+            for meter_readings in meters_and_readings:
+                readings = meter_readings['readings']
+                del meter_readings['readings']
+
+                meter = Meter.objects.get_or_create(**meter_readings)[0]
+
+                reading_strings = [
+                    f"({meter.id}, '{reading['start_time'].isoformat(' ')}', '{reading['end_time'].isoformat(' ')}', {reading['reading']})"
+                    for reading
+                    in readings
+                ]
+
+                sql = (
+                    "INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading)" +
+                    " VALUES " + ", ".join(reading_strings) +
+                    " ON CONFLICT (meter_id, start_time, end_time)" +
+                    " DO UPDATE SET reading = EXCLUDED.reading;"
+                )
+
+                with connection.cursor() as cursor:
+                    cursor.execute(sql)
+    except Exception as e:
+        return progress_data.finish_with_error('data failed to import')
+
+    import_file.raw_save_done = True
+    import_file.save()
+
+    return progress_data.finish_with_success()
+
+
 def _save_raw_data_create_tasks(file_pk, progress_key):
     """
     Worker method for saving raw data. Chunk up the CSV or XLSX file and save the raw data
@@ -678,6 +722,9 @@ def _save_raw_data_create_tasks(file_pk, progress_key):
     if import_file.source_type == "Green Button Raw":
         # TODO #239: Should remove green button from here until later.
         return _save_raw_green_button_data(file_pk)
+    elif import_file.source_type == "PM Meter Usage":
+        # TODO make use of celery here
+        return _save_meter_usage_data(file_pk, progress_key)
 
     file_extension = os.path.splitext(import_file.file.name)[1]
 
@@ -716,7 +763,7 @@ def save_raw_data(file_pk):
     try:
         # Go get the tasks that need to be created, then call them in the chord here.
         tasks = _save_raw_data_create_tasks(file_pk, progress_data.key)
-        if tasks:
+        if isinstance(tasks, list):
             chord(tasks, interval=15)(finish_raw_save.s(file_pk, progress_data.key))
         else:
             finish_raw_save.s(file_pk, progress_data.key)
