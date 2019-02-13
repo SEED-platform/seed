@@ -186,6 +186,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
         features = []
         for datum in data:
             feature = {
+                "type": "Feature",
                 "properties": {}
             }
 
