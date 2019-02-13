@@ -1,5 +1,5 @@
 # Django
-django==1.11.19
+django==1.11.20
 dj-database-url==0.4.2
 django-autoslug==1.9.3
 django-storages==1.6.5
