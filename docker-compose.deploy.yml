@@ -4,6 +4,7 @@
 # the docker-compose.local.yml file. This file is intended to support simple
 # production-based docker-compose deployments (not docker stack).
 # Must set the following environment variables.
+#   POSTGRES_DB
 #   POSTGRES_USER
 #   POSTGRES_PASSWORD
 #   SEED_ADMIN_USER
@@ -16,7 +17,7 @@ services:
   db-postgres:
     image: postgres:11.1
     environment:
-      - POSTGRES_DB=seed
+      - POSTGRES_DB
       - POSTGRES_USER
       - POSTGRES_PASSWORD
     volumes:
@@ -31,7 +32,7 @@ services:
       - AWS_SES_REGION_NAME
       - AWS_SES_REGION_ENDPOINT
       - SERVER_EMAIL
-      - POSTGRES_DB=seed
+      - POSTGRES_DB
       - POSTGRES_USER
       - POSTGRES_PASSWORD
       - SEED_ADMIN_USER
@@ -52,7 +53,7 @@ services:
     command: /seed/docker/start_celery_docker.sh
     image: seedplatform/seed
     environment:
-      - POSTGRES_DB=seed
+      - POSTGRES_DB
       - POSTGRES_USER
       - POSTGRES_PASSWORD
       - SECRET_KEY

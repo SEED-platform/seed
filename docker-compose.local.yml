@@ -1,5 +1,6 @@
 # Docker Compose for deployment using a local registry.
 # Must set the following environment variables
+#   POSTGRES_DB
 #   POSTGRES_USER
 #   POSTGRES_PASSWORD
 #   SEED_ADMIN_USER
@@ -12,7 +13,7 @@ services:
   db-postgres:
     image: 127.0.0.1:5000/postgres
     environment:
-      - POSTGRES_DB=seed
+      - POSTGRES_DB
       - POSTGRES_USER
       - POSTGRES_PASSWORD
     volumes:
@@ -40,7 +41,7 @@ services:
       - AWS_SES_REGION_NAME
       - AWS_SES_REGION_ENDPOINT
       - SERVER_EMAIL
-      - POSTGRES_DB=seed
+      - POSTGRES_DB
       - POSTGRES_USER
       - POSTGRES_PASSWORD
       - SEED_ADMIN_USER
@@ -66,7 +67,7 @@ services:
   web-celery:
     image: 127.0.0.1:5000/seed
     environment:
-      - POSTGRES_DB=seed
+      - POSTGRES_DB
       - POSTGRES_USER
       - POSTGRES_PASSWORD
       - SECRET_KEY
