@@ -201,15 +201,28 @@ class TaxLotPropertyViewSet(GenericViewSet):
                 elif isinstance(value, datetime.date):
                     value = value.strftime("%Y-%m-%d")
 
-                if key == "bounding_box" and value:
-                    """If bounding_box is populated, add the 'geometry'
-                    key-value-pair in the appropriate GeoJSON format."""
+                if (key == "bounding_box" or key == "centroid") and value:
+                    """
+                    If bounding_box or centroid is populated, add the 'geometry'
+                    key-value-pair in the appropriate GeoJSON format.
+                    When the first geometry is added, the correct format is
+                    established. When/If a second geometry is added, this is
+                    appended alongside the previous geometry.
+                    """
                     coordinates = self._serialized_coordinates(value)
 
-                    feature["geometry"] = {
+                    individual_geometry = {
                         "coordinates": [coordinates],
                         "type": "Polygon"
                     }
+
+                    if feature.get("geometry", None) is None:
+                        feature["geometry"] = {
+                            "type": "GeometryCollection",
+                            "geometries": [individual_geometry]
+                        }
+                    else:
+                        feature["geometry"]["geometries"].append(individual_geometry)
                 else:
                     display_key = column_name_mappings.get(key, key)
                     feature["properties"][display_key] = value
