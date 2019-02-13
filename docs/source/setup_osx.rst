@@ -2,6 +2,7 @@ Installation on OSX
 ===================
 
 .. _virtualenv: https://virtualenv.pypa.io/en/latest/
+.. _pyenv: https://github.com/pyenv/pyenv
 .. _virtualenvwrapper: https://virtualenvwrapper.readthedocs.io/en/latest/
 .. _MacPorts: https://www.macports.org/
 .. _Homebrew: http://brew.sh/
@@ -15,18 +16,20 @@ Quick Installation Instructions
 -------------------------------
 
 This section is intended for developers who may already have their machine
-ready for general development. If this is not the case, skip to Prerequisites.
+ready for general development. If this is not the case, skip to Prerequisites.  Note that SEED uses python 3.
 
 * install Postgres 9.4 and redis for cache and message broker
 * use a virtualenv (if desired)
 * `git clone git@github.com:seed-platform/seed.git`
 * create a `local_untracked.py` in the `config/settings` folder and add CACHE and DB config (example `local_untracked.py.dist`)
-* `export DJANGO_SETTINGS_MODULE=config.settings.dev`
+* `export DJANGO_SETTINGS_MODULE=config.settings.dev` in all terminals used by SEED (celery terminal and runserver terminal)
 * `pip install -r requirements/local.txt`
+    * for condas python, you way need to run this command to get pip install to succeed: `conda install -c conda-forge python-crfsuite`
+* bin/install_javascript_dependencies.sh
 * `./manage.py migrate`
 * `./manage.py create_default_user`
 * `./manage.py runserver`
-* `celery -A seed worker -l info -c 4 --maxtasksperchild 1000 --events`
+* `DJANGO_SETTINGS_MODULE=config.settings.dev celery -A seed worker -l info -c 4 --maxtasksperchild=1000 --events`
 * navigate to `http://127.0.0.1:8000/app/#/profile/admin` in your browser to add users to organizations
 * main app runs at `127.0.0.1:8000/app`
 
@@ -48,7 +51,7 @@ should have the following dependencies already installed:
 * git (`port install git` or `brew install git`)
 * Mercurial (`port install hg` or `brew install mercurial`)
 * graphviz (`brew install graphviz`)
-* virtualenv_ and virtualenvwrapper_ (Recommended)
+* pyenv_ (Recommended)
 
     .. note::
 
@@ -59,15 +62,11 @@ should have the following dependencies already installed:
 
     .. code-block:: bash
 
-        pip install virtualenv
-        pip install virtualenvwrapper
+        brew install pyenv
+        pyenv install <python3 version you want>
+        pyenv virtualenv <python3 version you want> seed
+        pyenv local seed
 
-* Follow instructions on virtualenvwrapper_ to setup your environment.
-* Once you have these installed, creating and entering a new virtualenv called "``seed``" for SEED development is by calling:
-
-    .. code-block:: bash
-
-        mkvirtualenv --python=python2.7 seed
 
 PostgreSQL 9.4
 --------------
