@@ -109,8 +109,8 @@ fi
 echo "Building lasest version of SEED"
 # explicitly pull images from docker-compose. Note that you will need to keep the
 # versions consistent between the compose file and what is below.
-docker-compose pull
 docker-compose build
+docker-compose pull
 
 echo "Tagging local containers"
 docker tag seedplatform/seed:latest 127.0.0.1:5000/seed
