@@ -128,7 +128,7 @@ class TestTaxLotProperty(TestCase):
                 'cycle_id', self.cycle,
                 'inventory_type', 'properties'
             ),
-            data=json.dumps({'columns': columns, 'export_type': 'json'}),
+            data=json.dumps({'columns': columns, 'export_type': 'geojson'}),
             content_type='application/json'
         )
 

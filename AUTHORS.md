@@ -46,6 +46,7 @@ NREL
 - Nicholas Long (https://github.com/nllong)
 - Alex Swindler (https://github.com/axelstudios)
 - Edwin Lee (https://github.com/myoldmopar)
+- Katherine Fleming (https://github.com/kflemin)
 
 ---
 Maalka
@@ -67,3 +68,8 @@ Building Energy
 ---
 Open Green Building Society
 - Ryan McCuaig (https://github.com/rgm/)
+
+--- 
+Devetry
+- Adrian Lara (https://github.com/adrian-lara)
+- Daniel Bressan (https://github.com/danielbressan)
