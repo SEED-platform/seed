@@ -143,7 +143,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
 
         if export_type == "csv":
             return self._csv_response(filename, data, column_name_mappings)
-        elif export_type == "json":
+        elif export_type == "geojson":
             return self._json_response(filename, data, column_name_mappings)
 
     def _csv_response(self, filename, data, column_name_mappings):

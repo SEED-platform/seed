@@ -5,14 +5,14 @@ import os
 
 from django.test import TestCase
 
-from seed.lib.mcm.reader import JSONParser
+from seed.lib.mcm.reader import GeoJSONParser
 
 
 class JSONParserTest(TestCase):
     def setUp(self):
         file_path = os.path.dirname(os.path.abspath(__file__)) + "/test_data/example_feature_collection_geojson.json"
         self.file = open(file_path, "r", encoding="utf-8")
-        self.parser = JSONParser(self.file)
+        self.parser = GeoJSONParser(self.file)
 
     def test_it_has_a_data_property(self):
         expectation = [
