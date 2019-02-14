@@ -31,7 +31,6 @@ services:
       - SEED_ADMIN_ORG=default
       - SECRET_KEY=ARQV8qGuJKH8sGnBf6ZeEdJQRKLTUhsvEcp8qG9X9sCPXvGLhdxqnNXpZcy6HEyf
       - DJANGO_SETTINGS_MODULE=config.settings.docker
-      - MAPQUEST_API_KEY
     depends_on:
       - db-redis
       - db-postgres
@@ -50,7 +49,6 @@ services:
       - SECRET_KEY=ARQV8qGuJKH8sGnBf6ZeEdJQRKLTUhsvEcp8qG9X9sCPXvGLhdxqnNXpZcy6HEyf
       - DJANGO_SETTINGS_MODULE=config.settings.docker
       - NUMBER_OF_WORKERS
-      - MAPQUEST_API_KEY
     depends_on:
       - db-redis
       - db-postgres
