@@ -6,6 +6,7 @@
 ./deploy.sh
 **/*.pyc
 collected_static
+docs
 media
 node_modules
 vendors/node_modules

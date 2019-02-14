@@ -57,6 +57,7 @@ COPY ./README.md /seed/README.md
 RUN npm install --unsafe-perm
 
 ### Copy over the remaining part of the SEED application and some helpers
+WORKDIR /seed
 COPY . /seed/
 COPY ./docker/wait-for-it.sh /usr/local/wait-for-it.sh
 

@@ -27,7 +27,7 @@ COMPRESS_ENABLED = True
 COMPRESS_STORAGE = 'compressor.storage.GzipCompressorFileStorage'
 COMPRESS_OFFLINE = True
 
-# Need to test the following items on dev1/cloudflare. Historically they have been False
+# Make sure to disable secure cooking and csrf when usign Cloudflare
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
 

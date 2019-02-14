@@ -26,6 +26,7 @@ from seed.lib.superperms.orgs.models import (
     OrganizationUser,
 )
 from seed.models import Cycle, PropertyView, TaxLotView, Column
+from seed.tasks import invite_to_organization
 from seed.utils.api import api_endpoint_class
 from seed.utils.organizations import create_organization, create_suborganization
 
@@ -420,12 +421,15 @@ class OrganizationViewSet(viewsets.ViewSet):
                 'message': 'user does not exist'
             }, status=status.HTTP_404_NOT_FOUND)
 
-        if not OrganizationUser.objects.filter(
+        # A super user can remove a user. The superuser logic is also part of the decorator which
+        # checks if super permissions have been limited per the ALLOW_SUPER_USER_PERMS setting.
+        org_owner = OrganizationUser.objects.filter(
             user=request.user, organization=org, role_level=ROLE_OWNER
-        ).exists():
+        ).exists()
+        if not request.user.is_superuser and not org_owner:
             return JsonResponse({
                 'status': 'error',
-                'message': 'only the organization owner can remove a member'
+                'message': 'only the organization owner or superuser can remove a member'
             }, status=status.HTTP_403_FORBIDDEN)
 
         is_last_member = not OrganizationUser.objects.filter(
@@ -544,7 +548,17 @@ class OrganizationViewSet(viewsets.ViewSet):
         org = Organization.objects.get(pk=pk)
         user = User.objects.get(pk=body['user_id'])
 
-        org.add_member(user)
+        _orguser, status = org.add_member(user)
+
+        # Send an email if a new user has been added to the organization
+        if status:
+            try:
+                domain = request.get_host()
+            except Exception:
+                domain = 'seed-platform.org'
+            invite_to_organization(
+                domain, user, request.user.username, org.name
+            )
 
         return JsonResponse({'status': 'success'})
 
@@ -619,8 +633,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             warn_bad_pint_spec('area', desired_display_units_area)
 
         desired_display_significant_figures = posted_org.get('display_significant_figures')
-        if isinstance(desired_display_significant_figures, int) \
-                and desired_display_significant_figures >= 0:
+        if isinstance(desired_display_significant_figures, int) and desired_display_significant_figures >= 0:  # noqa
             org.display_significant_figures = desired_display_significant_figures
         elif desired_display_significant_figures is not None:
             _log.warn("got bad sig figs {0} for org {1}".format(
@@ -770,7 +783,8 @@ class OrganizationViewSet(viewsets.ViewSet):
                 'message': 'User with email address (%s) does not exist' % email
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        created, mess_or_org, _ = create_suborganization(user, org, body['sub_org_name'], ROLE_OWNER)
+        created, mess_or_org, _ = create_suborganization(user, org, body['sub_org_name'],
+                                                         ROLE_OWNER)
         if created:
             return JsonResponse({
                 'status': 'success',
