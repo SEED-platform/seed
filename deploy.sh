@@ -9,7 +9,7 @@ There is only one optional argument and that is the name of the docker compose f
 For example: ./deploy.sh docker-compose.local.oep.yml
 
 There are several required environment variables that need to be set in order to launch seed:
-POSTGRES_DB (optional), defaults to seed
+POSTGRES_DB (required), name of the POSTGRES DB
 DJANGO_SETTINGS_MODULE (optional), defaults to config.settings.docker
 POSTGRES_USER (required), admin user of postgres database
 POSTGRES_PASSWORD (required), admin password for postgres database
@@ -44,6 +44,11 @@ export SENTRY_RAVEN_DSN=https://abcd:1234@sentry.io/123456789
 arguments
 
 # Verify that env vars are set
+if [ -z ${POSTGRES_DB+x} ]; then
+    echo "POSTGRES_DB is not set"
+    exit 1
+fi
+
 if [ -z ${POSTGRES_USER+x} ]; then
     echo "POSTGRES_USER is not set"
     exit 1

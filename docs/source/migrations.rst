@@ -24,7 +24,7 @@ Development
     STATICFILES_STORAGE = DEFAULT_FILE_STORAGE
 
 - Run `pip3 install -r requirements/local.txt`.
-- Run `./bin/install_javascript_dependencies.sh`.
+- Run `npm install` from root checkout of SEED.
 
 - If testing geocoding, then sign up for as a `MapQuest Developer`_ and create a new `MapQuest Key`_.
 - Add the key to either your local_untracked.py file or as an environment variables `MAPQUEST_API_KEY`.
