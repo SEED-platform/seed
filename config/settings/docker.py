@@ -23,9 +23,9 @@ for loc in ENV_VARS:
         raise Exception("%s Not defined as env variables" % loc)
 
 DEBUG = False
-COMPRESS_ENABLED = True
-COMPRESS_STORAGE = 'compressor.storage.GzipCompressorFileStorage'
-COMPRESS_OFFLINE = True
+COMPRESS_ENABLED = False
+# COMPRESS_STORAGE = 'compressor.storage.GzipCompressorFileStorage'
+# COMPRESS_OFFLINE = True
 
 # Make sure to disable secure cooking and csrf when usign Cloudflare
 SESSION_COOKIE_SECURE = False

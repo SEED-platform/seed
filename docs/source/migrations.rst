@@ -10,6 +10,11 @@ Docker-based Deployment
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 - Add your MapQuest Key, `MAPQUEST_API_KEY`, to the docker-compose file that is used for deployment. You can also add the MapQuest API key to your organization.
+- On deployment, the error below is indicative that you need to install the extensions in the postgres database. Run `docker exec <posgres_container_id> update-postgis.sh`.
+
+    django.db.utils.OperationalError: could not open extension control file "/usr/share/postgresql/11/extension/postgis.control": No such file or directory
+
+
 
 Development
 ^^^^^^^^^^^
