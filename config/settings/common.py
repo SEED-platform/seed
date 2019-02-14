@@ -120,10 +120,9 @@ HIGH_DEPENDENCY_APPS = ('seed.landing',)  # 'landing' contains SEEDUser
 
 INSTALLED_APPS = HIGH_DEPENDENCY_APPS + INSTALLED_APPS + SEED_CORE_APPS
 
-# apps to auto load name spaced URLs for JS use (see seed.urls and seed.main.views.home)
+# apps to auto load name spaced URLs for JS use (see seed.urls)
 SEED_URL_APPS = (
     'seed',
-    'audit_logs',
 )
 
 MEDIA_URL = '/media/'
@@ -138,12 +137,12 @@ COMPRESS_CSS_FILTERS = [
     'compressor.filters.cssmin.CSSMinFilter'
 ]
 STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'seed/landing/static'),
     os.path.join(BASE_DIR, 'seed/static'),
     os.path.join(BASE_DIR, 'vendors')
 ]
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
-    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'compressor.finders.CompressorFinder',
 )
 COMPRESS_PRECOMPILERS = (

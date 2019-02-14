@@ -6,8 +6,9 @@
 ./deploy.sh
 **/*.pyc
 collected_static
+docs
 media
 node_modules
-seed/static/vendors
+vendors/node_modules
 config/settings/local_untracked.py
 config/settings/local_untracked.py.dist
