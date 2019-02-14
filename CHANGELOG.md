@@ -1,6 +1,6 @@
-# SEED Version 2.5.0-Beta GIS
+# SEED Version 2.5.0
 
-This is a beta release of the SEED GIS functionality.
+Add GIS related functionality.
 
 # SEED Version 2.4.1
 

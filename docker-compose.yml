@@ -3,9 +3,8 @@
 version: '3'
 services:
   db-postgres:
-    build:
-      context: ./docker/postgres
-    image: postgres-seed
+    image: seedplatform/postgres-seed:11.1
+    build: ./docker/postgres
     environment:
       - POSTGRES_DB=seed
       - POSTGRES_USER=seed
