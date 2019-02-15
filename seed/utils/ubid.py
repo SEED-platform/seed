@@ -47,4 +47,6 @@ def decode_ubids(qs):
         )
         property.centroid = centroid_polygon
 
+        property.latitude, property.longitude = bounding_box_obj.latlng()
+
         property.save()
