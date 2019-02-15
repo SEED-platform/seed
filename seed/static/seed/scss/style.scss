@@ -2679,7 +2679,11 @@ gs-input .tags .tag-item .remove-button {
   }
 }
 
-#inventory-actions-dropdown, #inventory-detail-edit {
+#inventory-actions-dropdown, #inventory-detail-actions-dropdown, #inventory-detail-edit {
+  &#inventory-detail-actions-dropdown {
+    width: 200px;
+  }
+
   li {
     cursor: default;
   }
@@ -3191,6 +3195,19 @@ $pairedCellWidth: 60px;
 
 .pink-bg {
   background-color: rgba(255, 0, 0, 0.07);
+
+  &:hover {
+    background-color: rgba(255, 0, 0, 0.12) !important;
+  }
+}
+
+.yellow-bg {
+  background-color: #f0ad4e;
+  color: #fff !important;
+
+  &:hover {
+    background-color: #ec971f !important;
+  }
 }
 
 :not(.active) .typeahead-native {
@@ -3213,4 +3230,14 @@ $pairedCellWidth: 60px;
 	white-space: -pre-wrap;      /* Opera 4-6 */
 	white-space: -o-pre-wrap;    /* Opera 7 */
 	word-wrap: break-word;       /* Internet Explorer 5.5+ */
+}
+
+.upload-list-item {
+  > div {
+    padding: 3px 20px;
+  }
+
+  &:hover {
+    background-color: #f5f5f5;
+  }
 }
