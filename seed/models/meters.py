@@ -7,6 +7,8 @@ from django.db import models
 
 from seed.models import Property
 
+from quantityfield.fields import QuantityField
+
 
 class Meter(models.Model):
     # Previously included in model
@@ -183,20 +185,6 @@ class Meter(models.Model):
 
     type_lookup = dict((reversed(type) for type in ENERGY_TYPES))
 
-    KBTU = 1
-    # KILOWATT_HOURS = 2
-    # THERMS = 3
-    # WATT_HOURS = 4
-
-    ENERGY_UNITS = (
-        (KBTU, 'kBtu'),
-        # (KILOWATT_HOURS, 'kWh'),
-        # (THERMS, 'Therms'),
-        # (WATT_HOURS, 'Wh'),
-    )
-
-    unit_lookup = dict((reversed(unit) for unit in ENERGY_UNITS))
-
     PROPERTY_MANAGER = 1
     GREENBUTTON = 2
     BUILDINGSYNC = 3
@@ -221,7 +209,7 @@ class Meter(models.Model):
     source_id = models.CharField(max_length=255, null=True, blank=True)
 
     type = models.IntegerField(choices=ENERGY_TYPES)
-    units = models.IntegerField(choices=ENERGY_UNITS)
+    # units = models.IntegerField(choices=ENERGY_UNITS)
 
 
 class MeterReading(models.Model):
@@ -236,7 +224,7 @@ class MeterReading(models.Model):
     start_time = models.DateTimeField(db_index=True, primary_key=True)
     end_time = models.DateTimeField(db_index=True)
 
-    reading = models.FloatField(null=True)
+    reading = QuantityField('kBtu')
     # cost = models.DecimalField(max_digits=11, decimal_places=4, null=True)
 
     class Meta:

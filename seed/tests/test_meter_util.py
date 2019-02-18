@@ -85,7 +85,6 @@ class MeterUtilTests(TestCase):
                 'source': Meter.PROPERTY_MANAGER,
                 'source_id': self.pm_property_id,
                 'type': Meter.ELECTRICITY,
-                'units': Meter.KBTU,
                 'readings': [
                     {
                         'start_time': make_aware(datetime(2016, 3, 1, 0, 0, 0), timezone=self.tz_obj),
@@ -99,7 +98,6 @@ class MeterUtilTests(TestCase):
                 'source': Meter.PROPERTY_MANAGER,
                 'source_id': self.pm_property_id,
                 'type': Meter.NATURAL_GAS,
-                'units': Meter.KBTU,
                 'readings': [
                     {
                         'start_time': make_aware(datetime(2016, 3, 1, 0, 0, 0), timezone=self.tz_obj),
@@ -134,7 +132,6 @@ class MeterUtilTests(TestCase):
                 'source': Meter.PROPERTY_MANAGER,
                 'source_id': self.pm_property_id,
                 'type': Meter.ELECTRICITY,
-                'units': Meter.KBTU,
                 'readings': [
                     {
                         'start_time': make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=self.tz_obj),
@@ -153,7 +150,6 @@ class MeterUtilTests(TestCase):
                 'source': Meter.PROPERTY_MANAGER,
                 'source_id': self.pm_property_id,
                 'type': Meter.NATURAL_GAS,
-                'units': Meter.KBTU,
                 'readings': [
                     {
                         'start_time': make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=self.tz_obj),
@@ -170,3 +166,28 @@ class MeterUtilTests(TestCase):
         ]
 
         self.assertEqual(parse_meter_details(raw_meters, monthly=True), expected)
+
+    def test_parse_meter_details_converts_energy_units_if_necessary(self):
+        raw_meters = [
+            {
+                'Property Id': self.pm_property_id,
+                'Property Name': 'EPA Sample Library',
+                'Parent Property Id': 'Not Applicable: Standalone Property',
+                'Parent Property Name': 'Not Applicable: Standalone Property',
+                'Month': 'Mar-16',
+                'Electricity Use  (kWh)': 1000,
+                'Fuel Oil (No. 1) Use  (GJ)': 1000
+            }
+        ]
+
+        result = parse_meter_details(raw_meters, monthly=True)
+
+        if result[0]["type"] == Meter.FUEL_OIL_NO_1:
+            fuel_oil_details = result[0]
+            electricity_details = result[1]
+        else:
+            fuel_oil_details = result[1]
+            electricity_details = result[0]
+
+        self.assertEqual(fuel_oil_details["readings"][0]["reading"], 947817)
+        self.assertEqual(electricity_details["readings"][0]["reading"], 3412)

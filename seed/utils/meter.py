@@ -14,6 +14,7 @@ from pytz import timezone
 from seed.models import (
     Meter,
     PropertyState,
+    ThermalConversions,
 )
 
 
@@ -27,7 +28,6 @@ def parse_meter_details(meters_and_readings_details, property_link='Property Id'
         <unique meter identifier>: {
             'property_id': <id>,
             'type': <char>,
-            'units': <char>,
             ...(other meter metadata)
             'readings': [
                 {
@@ -42,7 +42,7 @@ def parse_meter_details(meters_and_readings_details, property_link='Property Id'
     }
 
     The unique identifier of a meter is composed of the values of it's details
-    which include property_id, type, units, etc. This is used to easily associate
+    which include property_id, type, etc. This is used to easily associate
     readings to a previously parsed meter.
     """
     result = {}
@@ -108,13 +108,13 @@ def _parse_meter_readings(details, meter_shared_details, result, start_time, end
     for type in meter_types:
         meter_details = meter_shared_details.copy()
 
+        reading = _parse_type_and_convert_reading(type, meter_details, details[type])
+
         meter_reading = {
             'start_time': start_time,
             'end_time': end_time,
-            'reading': details[type]
+            'reading': reading
         }
-
-        _parse_type_and_units(type, meter_details)
 
         meter_identifier = '-'.join([str(v) for k, v in meter_details.items()])
 
@@ -128,9 +128,17 @@ def _parse_meter_readings(details, meter_shared_details, result, start_time, end
             existing_property_meter['readings'].append(meter_reading)
 
 
-def _parse_type_and_units(type_unit, meter_details):
-    type = type_unit[:(type_unit.find(" Use"))]
+def _parse_type_and_convert_reading(type_unit, meter_details, raw_reading):
+    use_position = type_unit.find(" Use")
+    type = type_unit[:use_position]
     meter_details['type'] = Meter.type_lookup[type]
 
-    unit = type_unit[(type_unit.find('(') + 1):(type_unit.find(')'))]
-    meter_details['units'] = Meter.unit_lookup[unit]
+    unit = type_unit[(type_unit.find('(', use_position) + 1):(type_unit.find(')', use_position))]
+
+    if unit == "kBtu":
+        return raw_reading
+    else:
+        # TODO: If Fuzzy matching is needed, it should be done here
+        # TODO; If no conversion, skip entry? via try except
+        conversion_factor = ThermalConversions.us_kbtu_conversion_factors[type][unit]
+        return raw_reading * conversion_factor

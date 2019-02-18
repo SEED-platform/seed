@@ -17,6 +17,8 @@ from django.utils.timezone import (
 
 from pytz import timezone
 
+from quantityfield import ureg
+
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
 from seed.models import (
@@ -108,34 +110,32 @@ class MeterUsageImportTest(TestCase):
         meter_1 = refreshed_property_1.meters.get(type=Meter.ELECTRICITY)
         self.assertEqual(meter_1.source, Meter.PROPERTY_MANAGER)
         self.assertEqual(meter_1.source_id, '5766973')
-        self.assertEqual(meter_1.units, Meter.KBTU)
         self.assertEqual(meter_1.meter_readings.all().count(), 2)
 
         meter_reading_10, meter_reading_11 = list(meter_1.meter_readings.order_by('start_time').all())
 
         self.assertEqual(meter_reading_10.start_time, make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=self.tz_obj))
         self.assertEqual(meter_reading_10.end_time, make_aware(datetime(2016, 1, 31, 23, 59, 59), timezone=self.tz_obj))
-        self.assertEqual(meter_reading_10.reading, 597478.9)
+        self.assertEqual(meter_reading_10.reading, 597478.9 * ureg('kBtu'))
 
         self.assertEqual(meter_reading_11.start_time, make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=self.tz_obj))
         self.assertEqual(meter_reading_11.end_time, make_aware(datetime(2016, 2, 29, 23, 59, 59), timezone=self.tz_obj))
-        self.assertEqual(meter_reading_11.reading, 548603.7)
+        self.assertEqual(meter_reading_11.reading, 548603.7 * ureg('kBtu'))
 
         meter_2 = refreshed_property_1.meters.get(type=Meter.NATURAL_GAS)
         self.assertEqual(meter_2.source, Meter.PROPERTY_MANAGER)
         self.assertEqual(meter_2.source_id, '5766973')
-        self.assertEqual(meter_2.units, Meter.KBTU)
         self.assertEqual(meter_2.meter_readings.all().count(), 2)
 
         meter_reading_20, meter_reading_21 = list(meter_2.meter_readings.order_by('start_time').all())
 
         self.assertEqual(meter_reading_20.start_time, make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=self.tz_obj))
         self.assertEqual(meter_reading_20.end_time, make_aware(datetime(2016, 1, 31, 23, 59, 59), timezone=self.tz_obj))
-        self.assertEqual(meter_reading_20.reading, 576000.2)
+        self.assertEqual(meter_reading_20.reading, 576000.2 * ureg('kBtu'))
 
         self.assertEqual(meter_reading_21.start_time, make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=self.tz_obj))
         self.assertEqual(meter_reading_21.end_time, make_aware(datetime(2016, 2, 29, 23, 59, 59), timezone=self.tz_obj))
-        self.assertEqual(meter_reading_21.reading, 488000.1)
+        self.assertEqual(meter_reading_21.reading, 488000.1 * ureg('kBtu'))
 
         refreshed_property_2 = Property.objects.get(pk=self.property_2.id)
         self.assertEqual(refreshed_property_2.meters.all().count(), 2)
@@ -143,34 +143,32 @@ class MeterUsageImportTest(TestCase):
         meter_3 = refreshed_property_2.meters.get(type=Meter.ELECTRICITY)
         self.assertEqual(meter_3.source, Meter.PROPERTY_MANAGER)
         self.assertEqual(meter_3.source_id, '5766975')
-        self.assertEqual(meter_3.units, Meter.KBTU)
         self.assertEqual(meter_3.meter_readings.all().count(), 2)
 
         meter_reading_30, meter_reading_40 = list(meter_3.meter_readings.order_by('start_time').all())
 
         self.assertEqual(meter_reading_30.start_time, make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=self.tz_obj))
         self.assertEqual(meter_reading_30.end_time, make_aware(datetime(2016, 1, 31, 23, 59, 59), timezone=self.tz_obj))
-        self.assertEqual(meter_reading_30.reading, 154572.2)
+        self.assertEqual(meter_reading_30.reading, 154572.2 * ureg('kBtu'))
 
         self.assertEqual(meter_reading_40.start_time, make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=self.tz_obj))
         self.assertEqual(meter_reading_40.end_time, make_aware(datetime(2016, 2, 29, 23, 59, 59), timezone=self.tz_obj))
-        self.assertEqual(meter_reading_40.reading, 141437.5)
+        self.assertEqual(meter_reading_40.reading, 141437.5 * ureg('kBtu'))
 
         meter_4 = refreshed_property_2.meters.get(type=Meter.NATURAL_GAS)
         self.assertEqual(meter_4.source, Meter.PROPERTY_MANAGER)
         self.assertEqual(meter_4.source_id, '5766975')
-        self.assertEqual(meter_4.units, Meter.KBTU)
         self.assertEqual(meter_4.meter_readings.all().count(), 2)
 
         meter_reading_40, meter_reading_41 = list(meter_4.meter_readings.order_by('start_time').all())
 
         self.assertEqual(meter_reading_40.start_time, make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=self.tz_obj))
         self.assertEqual(meter_reading_40.end_time, make_aware(datetime(2016, 1, 31, 23, 59, 59), timezone=self.tz_obj))
-        self.assertEqual(meter_reading_40.reading, 299915)
+        self.assertEqual(meter_reading_40.reading, 299915 * ureg('kBtu'))
 
         self.assertEqual(meter_reading_41.start_time, make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=self.tz_obj))
         self.assertEqual(meter_reading_41.end_time, make_aware(datetime(2016, 2, 29, 23, 59, 59), timezone=self.tz_obj))
-        self.assertEqual(meter_reading_41.reading, 496310.9)
+        self.assertEqual(meter_reading_41.reading, 496310.9 * ureg('kBtu'))
 
     def test_existing_meter_is_found_and_used_if_import_file_should_reference_it(self):
         property = Property.objects.get(pk=self.property_1.id)
@@ -180,7 +178,6 @@ class MeterUsageImportTest(TestCase):
             property=property,
             source=Meter.PROPERTY_MANAGER,
             source_id='5766973',
-            units=Meter.KBTU,
             type=Meter.ELECTRICITY,
         )
         unsaved_meter.save()
@@ -209,8 +206,8 @@ class MeterUsageImportTest(TestCase):
         refreshed_meter = refreshed_property_1.meters.get(type=Meter.ELECTRICITY)
 
         meter_reading_10, meter_reading_11, meter_reading_12 = list(refreshed_meter.meter_readings.order_by('start_time').all())
-        self.assertEqual(meter_reading_10.reading, 597478.9)
-        self.assertEqual(meter_reading_11.reading, 548603.7)
+        self.assertEqual(meter_reading_10.reading, 597478.9 * ureg('kBtu'))
+        self.assertEqual(meter_reading_11.reading, 548603.7 * ureg('kBtu'))
 
         # Sanity check to be sure, nothing was changed with existing meter reading
         self.assertEqual(meter_reading_12, existing_meter_reading)
@@ -223,7 +220,6 @@ class MeterUsageImportTest(TestCase):
             property=property,
             source=Meter.PROPERTY_MANAGER,
             source_id='5766973',
-            units=Meter.KBTU,
             type=Meter.ELECTRICITY,
         )
         unsaved_meter.save()
@@ -256,4 +252,4 @@ class MeterUsageImportTest(TestCase):
         meter_reading = refreshed_meter.meter_readings.get(start_time=start_time)
 
         self.assertEqual(meter_reading.end_time, end_time)
-        self.assertEqual(meter_reading.reading, 597478.9)
+        self.assertEqual(meter_reading.reading, 597478.9 * ureg('kBtu'))
