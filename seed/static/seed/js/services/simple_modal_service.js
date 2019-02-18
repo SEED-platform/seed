@@ -45,9 +45,9 @@ angular.module('BE.seed.service.simple_modal', [])
       var validModalTypes = [TYPE_DEFAULT, TYPE_ERROR];
 
       var modalDefaults = {
-        type: TYPE_DEFAULT,             //can be "default" or "error"
-        backdrop: 'static',             //user cannot click anywhere on screen to close modal, only buttons
-        keyboard: true,                 //user can use ESC key to close
+        type: TYPE_DEFAULT, //can be "default" or "error"
+        backdrop: 'static', //user cannot click anywhere on screen to close modal, only buttons
+        keyboard: true, //user can use ESC key to close
         modalFade: true,
         templateUrl: urls.static_url + 'seed/partials/simple_modal.html'
       };

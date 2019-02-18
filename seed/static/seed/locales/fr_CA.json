@@ -298,6 +298,7 @@
     "INCLUDE_SHARED_TAXLOTS": "Inclure dans votre Liste de Lots d'Impôt tous les lots d'impôt partagé avec vous.",
     "INTERNAL": "INTERNE",
     "INVALID_EXTENSION_ALERT": "<strong>Désolée!<\/strong> SEED ne supporte actuellement pas ce format de fichier. Seuls les fichiers <strong>.csv<\/strong>, <strong>.xls<\/strong>, <strong>.xlsx<\/strong>, et <strong>.xml<\/strong> sont pris en charge.",
+    "INVALID_GEOJSON_EXTENSION_ALERT": "<strong>Désolée!<\/strong> SEED ne supporte actuellement pas ce format de fichier. Seuls les fichiers <strong>.geojson<\/strong>, et <strong>.json<\/strong> sont pris en charge.",
     "INVALID_XML_EXTENSION_ALERT": "<strong>Désolée!<\/strong> SEED ne supporte actuellement pas ce format de fichier. Seuls les fichiers <strong>.xml<\/strong> sont pris en charge.",
     "Inventory": "Inventaire",
     "Inventory list file": "Fichier de liste d'inventaire",

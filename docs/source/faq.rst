@@ -48,7 +48,7 @@ Why is the domain set to example.com?
 If you see example.com in the emails that are sent from your hosted version of SEED then you will
 need to update your django sites object in the database.
 
-.. code-block::
+.. code-block:: bash
 
     $ ./manage.py shell
 
@@ -59,7 +59,7 @@ need to update your django sites object in the database.
     one.save()
 
 
-.. _staticfiles:
+.. _staticfiles: 
 
 Why aren't the static assets being served correctly?
 ----------------------------------------------------

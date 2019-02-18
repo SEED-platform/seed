@@ -281,7 +281,7 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
               required: true
             - name: file_type
               type: string
-              enum: ["Unknown", "BuildingSync", "GeoJSON"]
+              enum: ["Unknown", "BuildingSync"]
               required: true
             - name: file
               description: In-memory file object

@@ -16,9 +16,9 @@ angular.module('BE.seed.controller.export_inventory_modal', []).controller('expo
     $scope.export_name = '';
 
     $scope.export_selected = function (export_type) {
-      var filename = $scope.export_name
+      var filename = $scope.export_name;
 
-      var ext = "." + export_type
+      var ext = '.' + export_type;
       if (!_.endsWith(filename, ext)) filename += ext;
 
 
@@ -34,7 +34,7 @@ angular.module('BE.seed.controller.export_inventory_modal', []).controller('expo
           inventory_type: inventory_type
         }
       }).then(function (response) {
-        var blob_type = response.headers()['content-type']
+        var blob_type = response.headers()['content-type'];
         var blob_data;
 
         if (blob_type === 'application/json') {

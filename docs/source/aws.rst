@@ -70,8 +70,7 @@ enter the repo and install the python dependencies from `requirements`_
 JavaScript Dependencies
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-``npm`` is required to install the JS dependencies. The ``bin/install_javascript_dependencies.sh`` script will
-download all JavaScript dependencies and build them.
+``npm`` is required to install the JS dependencies.
 
 .. code-block:: console
 
@@ -81,7 +80,7 @@ download all JavaScript dependencies and build them.
 
 .. code-block:: console
 
-    $ bin/install_javascript_dependencies.sh
+    $ npm install
 
 
 Database Configuration
@@ -109,8 +108,8 @@ instance you have manually installed within your infrastructure.
 
 .. note::
 
-In the above database configuration, ``seed`` is the database name, this
-is arbitrary and any valid name can be used as long as the database exists.
+    In the above database configuration, ``seed`` is the database name, this
+    is arbitrary and any valid name can be used as long as the database exists.
 
 create the database within the postgres ``psql`` shell:
 
@@ -183,47 +182,20 @@ project directory, ``celery`` can be started:
 .. _Celery: http://www.celeryproject.org/
 
 
-Running the Development Web Server
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The Django dev server (not for production use) can be a quick and easy way to
-get an instance up and running. The dev server runs by default on port 8000
-and can be run on any port. See Django's `runserver documentation`_ for more
-options.
-
-.. _runserver documentation: https://docs.djangoproject.com/en/1.6/ref/django-admin/#django-admin-runserver
-
-.. code-block:: console
-
-    $ ./manage.py runserver
-
-
 Running a Production Web Server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Our recommended web server is uwsgi sitting behind nginx. The
-``bin/start_uwsgi.sh`` `script`_ can been created to start ``uwsgi`` assuming
-your Ubuntu user is named ``ubuntu``.
+The preferred way to deploy with Docker is using docker swarm and docker stack.
+Look at the `deploy.sh script`_  for implementation details.
 
-Also, static assets will need to be moved to S3 for production use. The
-``bin/post_compile`` script contains a list of commands to move assets to S3.
+The short version is to simply run the command below. Note that the passing of the docker-compose.yml filename is not required if using docker-compose.local.yml.
 
-.. code-block:: console
+```bash
+./deploy.sh docker-compose.local.yml
+```
 
-    $ bin/post_compile
+If deploying using a custom docker-compose yml file, then simple replace the name in the command above. This would be required if using the Open Efficiency Platform work (connecting SEED to Salesforce).
 
-.. _script: https://github.com/SEED-platform/seed/blob/master/bin/start_uwsgi.sh
 
-.. code-block:: console
-
-    $ bin/start_uwsgi
-
-The following environment variables can be set within the ``~/.bashrc`` file to
-override default Django settings.
-
-.. code-block:: bash
-
-    export SENTRY_DSN=https://xyz@app.getsentry.com/123
-    export DEBUG=False
-    export ONLY_HTTPS=True
-
+.. _`deploy.sh script`: https://github.com/SEED-platform/seed/blob/develop/deploy.sh
+.. _`JSON Type`: https://www.postgresql.org/docs/9.4/datatype-json.html

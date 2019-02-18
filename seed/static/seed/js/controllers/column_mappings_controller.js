@@ -14,17 +14,18 @@ angular.module('BE.seed.controller.column_mappings', [])
     'column_mappings',
     'organization_payload',
     'auth_payload',
-    function ($scope,
-              $q,
-              $state,
-              $stateParams,
-              Notification,
-              column_mappings_service,
-              spinner_utility,
-              column_mappings,
-              organization_payload,
-              auth_payload) {
-
+    function (
+      $scope,
+      $q,
+      $state,
+      $stateParams,
+      Notification,
+      column_mappings_service,
+      spinner_utility,
+      column_mappings,
+      organization_payload,
+      auth_payload
+    ) {
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.org = organization_payload.organization;
       $scope.auth = auth_payload.auth;

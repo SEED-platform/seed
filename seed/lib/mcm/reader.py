@@ -35,7 +35,7 @@ from xlrd.xldate import XLDateAmbiguous
 ROW_DELIMITER = "|#*#|"
 
 
-class JSONParser(object):
+class GeoJSONParser(object):
     def __init__(self, json_file):
         raw_data = json.load(json_file)
         features = raw_data.get("features")

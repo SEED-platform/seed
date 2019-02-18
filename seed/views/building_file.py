@@ -39,7 +39,7 @@ class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
               required: true
             - name: file_type
               type: string
-              enum: ["Unknown", "BuildingSync", "GeoJSON", "HPXML"]
+              enum: ["Unknown", "BuildingSync", "HPXML"]
               required: true
             - name: file
               description: In-memory file object

@@ -39,7 +39,7 @@ angular.module('BE.seed.controller.ubid_modal', [])
       $scope.cancel = function () {
         $uibModalInstance.dismiss({
           decode_ubid_state: $scope.decode_ubid_state,
-          property_state_ids: $scope.property_state_ids,
+          property_state_ids: $scope.property_state_ids
         });
       };
 
@@ -49,7 +49,7 @@ angular.module('BE.seed.controller.ubid_modal', [])
       $scope.close = function () {
         $uibModalInstance.close({
           decode_ubid_state: $scope.decode_ubid_state,
-          property_state_ids: $scope.property_state_ids,
+          property_state_ids: $scope.property_state_ids
         });
       };
     }]);

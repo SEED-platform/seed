@@ -37,7 +37,7 @@
   <div class="alert alert-warning" ng-if="pre_properties_geocoded_high_confidence || pre_properties_geocoded_low_confidence || pre_properties_geocoded_manually || pre_properties_geocode_not_possible || pre_tax_lots_geocoded_high_confidence || pre_tax_lots_geocoded_low_confidence || pre_tax_lots_geocode_not_possible">
     <div>
       Geocoding attempted previously for the following:
-      <br>(Unless you've made changes to these records, the results will likely be the same.)
+      <br>(If the properties have been manually geocoded, then they will not be updated. To update geocoding, then remove the lat/long.)
     </div>
     <div ng-if="pre_properties_geocoded_high_confidence || pre_properties_geocoded_low_confidence || pre_properties_geocoded_manually || pre_properties_geocode_not_possible">
       <br>

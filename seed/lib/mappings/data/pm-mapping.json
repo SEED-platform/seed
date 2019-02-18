@@ -129,6 +129,15 @@
     "display_name": "Gross Floor Area",
     "to_field": "gross_floor_area",
     "to_table_name": "PropertyState",
+    "from_field": "Gross Floor Area",
+    "units": "ft**2",
+    "type": "float",
+    "schema": ""
+  },
+  {
+    "display_name": "Gross Floor Area",
+    "to_field": "gross_floor_area",
+    "to_table_name": "PropertyState",
     "from_field": "propGrossFloorArea",
     "units": "ft**2",
     "type": "float",

@@ -23,12 +23,13 @@ for loc in ENV_VARS:
         raise Exception("%s Not defined as env variables" % loc)
 
 DEBUG = False
-# Do not compress files in docker
 COMPRESS_ENABLED = False
+# COMPRESS_STORAGE = 'compressor.storage.GzipCompressorFileStorage'
+# COMPRESS_OFFLINE = True
 
-# Need to test the following items on dev1. Historically they have been False
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+# Make sure to disable secure cooking and csrf when usign Cloudflare
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
 
 ALLOWED_HOSTS = ['*']
 

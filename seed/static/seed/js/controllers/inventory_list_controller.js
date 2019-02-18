@@ -25,27 +25,29 @@ angular.module('BE.seed.controller.inventory_list', [])
     'naturalSort',
     '$translate',
     'i18nService', // from ui-grid
-    function ($scope,
-              $filter,
-              $window,
-              $uibModal,
-              $stateParams,
-              inventory_service,
-              label_service,
-              data_quality_service,
-              geocode_service,
-              user_service,
-              inventory,
-              cycles,
-              profiles,
-              current_profile,
-              labels,
-              all_columns,
-              urls,
-              spinner_utility,
-              naturalSort,
-              $translate,
-              i18nService) {
+    function (
+      $scope,
+      $filter,
+      $window,
+      $uibModal,
+      $stateParams,
+      inventory_service,
+      label_service,
+      data_quality_service,
+      geocode_service,
+      user_service,
+      inventory,
+      cycles,
+      profiles,
+      current_profile,
+      labels,
+      all_columns,
+      urls,
+      spinner_utility,
+      naturalSort,
+      $translate,
+      i18nService
+    ) {
       spinner_utility.show();
       $scope.selectedCount = 0;
       $scope.selectedParentCount = 0;
@@ -545,8 +547,8 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
-      $scope.open_ubid_modal = function() {
-        var modalInstance = $uibModal.open({
+      $scope.open_ubid_modal = function () {
+        $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/ubid_modal.html',
           controller: 'ubid_modal_controller',
           resolve: {
@@ -560,7 +562,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
-      $scope.open_geocode_modal = function() {
+      $scope.open_geocode_modal = function () {
         var modalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/geocode_modal.html',
           controller: 'geocode_modal_controller',
@@ -577,14 +579,16 @@ angular.module('BE.seed.controller.inventory_list', [])
                 return !_.has(row, '$$treeLevel');
               }), 'taxlot_state_id');
             },
-            org_id: function () {return user_service.get_organization().id},
+            org_id: function () {
+              return user_service.get_organization().id;
+            }
           }
         });
 
-          modalInstance.result.then(function (result) {
-            // dialog was closed with 'Close' button.
-            refresh_objects();
-          });
+        modalInstance.result.then(function (/*result*/) {
+          // dialog was closed with 'Close' button.
+          refresh_objects();
+        });
       };
 
       $scope.open_delete_modal = function () {

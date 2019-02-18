@@ -35,7 +35,7 @@ if ONLY_HTTPS:
 
 # Upload to S3
 AWS_S3_MAX_MEMORY_SIZE = 1024 * 1024
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
+DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 STATICFILES_STORAGE = DEFAULT_FILE_STORAGE
 STATIC_URL = "https://%s.s3.amazonaws.com/" % AWS_STORAGE_BUCKET_NAME
 

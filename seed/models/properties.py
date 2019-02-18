@@ -138,6 +138,7 @@ class PropertyState(models.Model):
     long_lat = geomodels.PointField(geography=True, null=True, blank=True)
     centroid = geomodels.PolygonField(geography=True, null=True, blank=True)
     bounding_box = geomodels.PolygonField(geography=True, null=True, blank=True)
+    # footprint = geomodels.PolygonField(geography=True, null=True, blank=True)
     geocoding_confidence = models.CharField(max_length=32, null=True, blank=True)
 
     # Only spot where it's 'building' in the app, b/c this is a PM field.
@@ -425,8 +426,8 @@ class PropertyState(models.Model):
                         if log.parent1.name in ['Import Creation', 'Manual Edit']:
                             record = record_dict(log.parent1)
                             history.append(record)
-                        elif log.parent1.name == 'System Match' and log.parent1.parent1.name == 'Import Creation' and \
-                                log.parent1.parent2.name == 'Import Creation':
+                        elif log.parent1.name == 'System Match' and log.parent1.parent1 and log.parent1.parent1.name == 'Import Creation' and \
+                                log.parent1.parent2 and log.parent1.parent2.name == 'Import Creation':
                             # Handle case where an import file matches within itself, and proceeds to match with
                             # existing records
                             record = record_dict(log.parent1.parent2)

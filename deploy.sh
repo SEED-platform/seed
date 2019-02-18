@@ -9,7 +9,7 @@ There is only one optional argument and that is the name of the docker compose f
 For example: ./deploy.sh docker-compose.local.oep.yml
 
 There are several required environment variables that need to be set in order to launch seed:
-POSTGRES_DB (optional), defaults to seed
+POSTGRES_DB (required), name of the POSTGRES DB
 DJANGO_SETTINGS_MODULE (optional), defaults to config.settings.docker
 POSTGRES_USER (required), admin user of postgres database
 POSTGRES_PASSWORD (required), admin password for postgres database
@@ -44,6 +44,11 @@ export SENTRY_RAVEN_DSN=https://abcd:1234@sentry.io/123456789
 arguments
 
 # Verify that env vars are set
+if [ -z ${POSTGRES_DB+x} ]; then
+    echo "POSTGRES_DB is not set"
+    exit 1
+fi
+
 if [ -z ${POSTGRES_USER+x} ]; then
     echo "POSTGRES_USER is not set"
     exit 1
@@ -105,18 +110,18 @@ echo "Building lasest version of SEED"
 # explicitly pull images from docker-compose. Note that you will need to keep the
 # versions consistent between the compose file and what is below.
 docker-compose pull
-docker-compose build
+docker-compose build --pull
 
 echo "Tagging local containers"
 docker tag seedplatform/seed:latest 127.0.0.1:5000/seed
-docker tag postgres:11.1 127.0.0.1:5000/postgres
+docker tag seedplatform/postgres-seed:11.1 127.0.0.1:5000/postgres-seed
 docker tag redis:5.0.1 127.0.0.1:5000/redis
 docker tag seedplatform/oep:1.0.0-SNAPSHOT 127.0.0.1:5000/oep
 
 sleep 3
 echo "Pushing tagged versions to local registry"
 docker push 127.0.0.1:5000/seed
-docker push 127.0.0.1:5000/postgres
+docker push 127.0.0.1:5000/postgres-seed
 docker push 127.0.0.1:5000/redis
 docker push 127.0.0.1:5000/oep
 

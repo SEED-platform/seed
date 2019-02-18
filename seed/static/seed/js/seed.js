@@ -1255,10 +1255,10 @@ SEED_app.constant('naturalSort', function (a, b) {
    * Natural Sort algorithm for Javascript - Version 0.8.1 - Released under MIT license
    * Author: Jim Palmer (based on chunking idea from Dave Koelle)
    */
-  var re = /(^([+\-]?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?(?=\D|\s|$))|^0x[\da-fA-F]+$|\d+)/g,
+  var re = /(^([+-]?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?(?=\D|\s|$))|^0x[\da-fA-F]+$|\d+)/g,
     sre = /^\s+|\s+$/g, // trim pre-post whitespace
     snre = /\s+/g, // normalize all whitespace to single ' ' character
-    dre = /(^([\w ]+,?[\w ]+)?[\w ]+,?[\w ]+\d+:\d+(:\d+)?[\w ]?|^\d{1,4}[\/\-]\d{1,4}[\/\-]\d{1,4}|^\w+, \w+ \d+, \d{4})/,
+    dre = /(^([\w ]+,?[\w ]+)?[\w ]+,?[\w ]+\d+:\d+(:\d+)?[\w ]?|^\d{1,4}[/-]\d{1,4}[/-]\d{1,4}|^\w+, \w+ \d+, \d{4})/,
     ore = /^0/,
     i = function (s) {
       return (('' + s).toLowerCase() || '' + s).replace(sre, '');

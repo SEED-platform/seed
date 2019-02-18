@@ -728,8 +728,8 @@ def _save_raw_data_create_tasks(file_pk, progress_key):
 
     file_extension = os.path.splitext(import_file.file.name)[1]
 
-    if file_extension == ".json":
-        parser = reader.JSONParser(import_file.local_file)
+    if file_extension == ".json" or file_extension == '.geojson':
+        parser = reader.GeoJSONParser(import_file.local_file)
     else:
         parser = reader.MCMParser(import_file.local_file)
 
