@@ -29,6 +29,7 @@ from seed.views.column_list_settings import ColumnListingViewSet
 from seed.views.cycles import CycleViewSet
 from seed.views.data_quality import DataQualityViews
 from seed.views.datasets import DatasetViewSet
+from seed.views.geocode import GeocodeViews
 from seed.views.labels import LabelViewSet, UpdateInventoryLabelsAPIView
 from seed.views.main import version
 from seed.views.measures import MeasureViewSet
@@ -39,6 +40,7 @@ from seed.views.properties import (PropertyViewSet, PropertyStateViewSet,
                                    PropertyViewViewSet, GBRPropertyViewSet)
 from seed.views.reports import Report
 from seed.views.taxlots import TaxLotViewSet
+from seed.views.ubid import UbidViews
 from seed.views.users import UserViewSet
 
 api_v2_router = routers.DefaultRouter()
@@ -51,6 +53,7 @@ api_v2_router.register(r'data_quality_checks', DataQualityViews, base_name='data
 api_v2_router.register(r'datasets', DatasetViewSet, base_name="datasets")
 api_v2_router.register(r'import_files', ImportFileViewSet, base_name="import_files")
 api_v2_router.register(r'gbr_properties', GBRPropertyViewSet, base_name="properties")
+api_v2_router.register(r'geocode', GeocodeViews, base_name="geocode")
 api_v2_router.register(r'green_assessment_urls', GreenAssessmentURLViewSet, base_name="green_assessment_urls")
 api_v2_router.register(r'green_assessment_properties', GreenAssessmentPropertyViewSet,
                        base_name="green_assessment_properties")
@@ -66,6 +69,7 @@ api_v2_router.register(r'property_states', PropertyStateViewSet, base_name="prop
 api_v2_router.register(r'property_views', PropertyViewViewSet, base_name="property_views")
 api_v2_router.register(r'reverse_and_test', TestReverseViewSet, base_name="reverse_and_test")
 api_v2_router.register(r'taxlots', TaxLotViewSet, base_name="taxlots")
+api_v2_router.register(r'ubid', UbidViews, base_name="ubid")
 api_v2_router.register(r'upload', LocalUploaderViewSet, base_name='local_uploader')
 api_v2_router.register(r'users', UserViewSet, base_name="users")
 

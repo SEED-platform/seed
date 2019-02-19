@@ -1,3 +1,7 @@
+# SEED Version 2.5.0
+
+Add GIS related functionality.
+
 # SEED Version 2.4.2
 
 Date Range: 01/05/19 - 02/19/19

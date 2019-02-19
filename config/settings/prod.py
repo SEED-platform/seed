@@ -17,8 +17,8 @@ COMPRESS_ENABLED = True
 COMPRESS_STORAGE = 'compressor.storage.GzipCompressorFileStorage'
 COMPRESS_OFFLINE = True
 # Need to test with cloudflare
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -32,7 +32,7 @@ ALLOWED_HOSTS = ['*']
 # PostgreSQL DB config - override in local_untracked if needed
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'seed',
         'USER': 'your-username',
         'PASSWORD': 'your-password',

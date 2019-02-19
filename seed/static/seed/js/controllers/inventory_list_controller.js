@@ -12,6 +12,7 @@ angular.module('BE.seed.controller.inventory_list', [])
     'inventory_service',
     'label_service',
     'data_quality_service',
+    'geocode_service',
     'user_service',
     'inventory',
     'cycles',
@@ -34,6 +35,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       inventory_service,
       label_service,
       data_quality_service,
+      geocode_service,
       user_service,
       inventory,
       cycles,
@@ -546,6 +548,50 @@ angular.module('BE.seed.controller.inventory_list', [])
           $scope.labels = _.filter(labels, function (label) {
             return !_.isEmpty(label.is_applied);
           });
+        });
+      };
+
+      $scope.open_ubid_modal = function () {
+        $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/ubid_modal.html',
+          controller: 'ubid_modal_controller',
+          resolve: {
+            property_state_ids: function () {
+              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
+                if ($scope.inventory_type === 'properties') return row.$$treeLevel === 0;
+                return !_.has(row, '$$treeLevel');
+              }), 'property_state_id');
+            }
+          }
+        });
+      };
+
+      $scope.open_geocode_modal = function () {
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/geocode_modal.html',
+          controller: 'geocode_modal_controller',
+          resolve: {
+            property_state_ids: function () {
+              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
+                if ($scope.inventory_type === 'properties') return row.$$treeLevel === 0;
+                return !_.has(row, '$$treeLevel');
+              }), 'property_state_id');
+            },
+            taxlot_state_ids: function () {
+              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
+                if ($scope.inventory_type === 'taxlots') return row.$$treeLevel === 0;
+                return !_.has(row, '$$treeLevel');
+              }), 'taxlot_state_id');
+            },
+            org_id: function () {
+              return user_service.get_organization().id;
+            }
+          }
+        });
+
+        modalInstance.result.then(function (/*result*/) {
+          // dialog was closed with 'Close' button.
+          refresh_objects();
         });
       };
 

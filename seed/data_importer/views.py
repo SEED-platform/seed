@@ -37,6 +37,7 @@ from seed.data_importer.models import ROW_DELIMITER
 from seed.data_importer.tasks import do_checks
 from seed.data_importer.tasks import (
     map_data,
+    geocode_buildings_task as task_geocode_buildings,
     match_buildings as task_match_buildings,
     save_raw_data as task_save_raw
 )
@@ -79,6 +80,7 @@ from seed.models import (
     PORTFOLIO_RAW)
 from seed.utils.api import api_endpoint, api_endpoint_class
 from seed.utils.cache import get_cache
+from seed.utils.geocode import MapQuestAPIKeyError
 
 _log = logging.getLogger(__name__)
 
@@ -1368,7 +1370,7 @@ class ImportFileViewSet(viewsets.ViewSet):
     @ajax_request_class
     @has_perm_class('can_modify_data')
     @detail_route(methods=['POST'])
-    def start_system_matching(self, request, pk=None):
+    def start_system_matching_and_geocoding(self, request, pk=None):
         """
         Starts a background task to attempt automatic matching between buildings
         in an ImportFile with other existing buildings within the same org.
@@ -1388,6 +1390,15 @@ class ImportFileViewSet(viewsets.ViewSet):
               required: true
               paramType: path
         """
+        try:
+            task_geocode_buildings(pk)
+        except MapQuestAPIKeyError:
+            result = JsonResponse({
+                'status': 'error',
+                'message': 'MapQuest API key may be invalid or at its limit.'
+            }, status=status.HTTP_403_FORBIDDEN)
+            return result
+
         return task_match_buildings(pk)
 
     @api_endpoint_class
@@ -1616,7 +1627,7 @@ class ImportFileViewSet(viewsets.ViewSet):
     @ajax_request_class
     @has_perm_class('requires_member')
     @detail_route(methods=['GET'])
-    def matching_results(self, request, pk=None):
+    def matching_and_geocoding_results(self, request, pk=None):
         """
         Retrieves the number of matched and unmatched properties & tax lots for
         a given ImportFile record.  Specifically for new imports
@@ -1694,6 +1705,48 @@ class ImportFileViewSet(viewsets.ViewSet):
             else:
                 tax_lots_new.append(state.id)
 
+        # Construct Geocode Results
+        property_geocode_results = {
+            'high_confidence': len(PropertyState.objects.filter(
+                import_file__pk=import_file.pk,
+                data_state=DATA_STATE_MATCHING,
+                geocoding_confidence__startswith='High'
+            )),
+            'low_confidence': len(PropertyState.objects.filter(
+                import_file__pk=import_file.pk,
+                data_state=DATA_STATE_MATCHING,
+                geocoding_confidence__startswith='Low'
+            )),
+            'manual': len(PropertyState.objects.filter(
+                import_file__pk=import_file.pk,
+                data_state=DATA_STATE_MATCHING,
+                geocoding_confidence='Manually geocoded (N/A)'
+            )),
+            'missing_address_components': len(PropertyState.objects.filter(
+                import_file__pk=import_file.pk,
+                data_state=DATA_STATE_MATCHING,
+                geocoding_confidence='Missing address components (N/A)'
+            )),
+        }
+
+        tax_lot_geocode_results = {
+            'high_confidence': len(TaxLotState.objects.filter(
+                import_file__pk=import_file.pk,
+                data_state=DATA_STATE_MATCHING,
+                geocoding_confidence__startswith='High'
+            )),
+            'low_confidence': len(TaxLotState.objects.filter(
+                import_file__pk=import_file.pk,
+                data_state=DATA_STATE_MATCHING,
+                geocoding_confidence__startswith='Low'
+            )),
+            'missing_address_components': len(TaxLotState.objects.filter(
+                import_file__pk=import_file.pk,
+                data_state=DATA_STATE_MATCHING,
+                geocoding_confidence='Missing address components (N/A)'
+            )),
+        }
+
         # merge in any of the matching results from the JSON field
         return {
             'status': 'success',
@@ -1708,6 +1761,10 @@ class ImportFileViewSet(viewsets.ViewSet):
                 'duplicates_of_existing': import_file.matching_results_data.get(
                     'property_duplicates_of_existing', None),
                 'unmatched_copy': import_file.matching_results_data.get('property_unmatched', None),
+                'geocoded_high_confidence': property_geocode_results.get('high_confidence'),
+                'geocoded_low_confidence': property_geocode_results.get('low_confidence'),
+                'geocoded_manually': property_geocode_results.get('manual'),
+                'geocode_not_possible': property_geocode_results.get('missing_address_components'),
             },
             'tax_lots': {
                 'matched': len(tax_lots_matched),
@@ -1718,6 +1775,9 @@ class ImportFileViewSet(viewsets.ViewSet):
                 'duplicates_of_existing': import_file.matching_results_data.get(
                     'tax_lot_duplicates_of_existing', None),
                 'unmatched_copy': import_file.matching_results_data.get('tax_lot_unmatched', None),
+                'geocoded_high_confidence': tax_lot_geocode_results.get('high_confidence'),
+                'geocoded_low_confidence': tax_lot_geocode_results.get('low_confidence'),
+                'geocode_not_possible': tax_lot_geocode_results.get('missing_address_components'),
             }
         }
 

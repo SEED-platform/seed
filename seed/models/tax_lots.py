@@ -14,6 +14,7 @@ from os import path
 from .auditlog import AUDIT_IMPORT
 from .auditlog import DATA_UPDATE_TYPE
 from django.contrib.postgres.fields import JSONField
+from django.contrib.gis.db import models as geomodels
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -80,6 +81,10 @@ class TaxLotState(models.Model):
 
     extra_data = JSONField(default=dict, blank=True)
     hash_object = models.CharField(max_length=32, null=True, blank=True, default=None)
+
+    long_lat = geomodels.PointField(geography=True, null=True, blank=True)
+    bounding_box = geomodels.PolygonField(geography=True, null=True, blank=True)
+    geocoding_confidence = models.CharField(max_length=32, null=True, blank=True)
 
     class Meta:
         index_together = [
@@ -331,6 +336,7 @@ class TaxLotState(models.Model):
                       ps.extra_data,
                       ps.number_properties,
                       ps.jurisdiction_tax_lot_id,
+                      ps.geocoding_confidence,
                       NULL
                     FROM seed_taxlotstate ps, audit_id aid
                     WHERE (ps.id = aid.parent_state1_id AND

@@ -18,10 +18,12 @@ Quick Installation Instructions
 This section is intended for developers who may already have their machine
 ready for general development. If this is not the case, skip to Prerequisites.  Note that SEED uses python 3.
 
-* install Postgres 9.4 and redis for cache and message broker
+* install Postgres 11.1 and redis for cache and message broker
+* install PostGIS 2.5 and enable it on the database using `CREATE EXTENSION postgis;`
 * use a virtualenv (if desired)
 * `git clone git@github.com:seed-platform/seed.git`
 * create a `local_untracked.py` in the `config/settings` folder and add CACHE and DB config (example `local_untracked.py.dist`)
+* to enable geocoding, get MapQuest API key and attach it to your organization
 * `export DJANGO_SETTINGS_MODULE=config.settings.dev` in all terminals used by SEED (celery terminal and runserver terminal)
 * `pip install -r requirements/local.txt`
     * for condas python, you way need to run this command to get pip install to succeed: `conda install -c conda-forge python-crfsuite`
@@ -49,7 +51,6 @@ These instructions assume you have MacPorts_ or Homebrew_. Your system
 should have the following dependencies already installed:
 
 * git (`port install git` or `brew install git`)
-* Mercurial (`port install hg` or `brew install mercurial`)
 * graphviz (`brew install graphviz`)
 * pyenv_ (Recommended)
 
@@ -68,7 +69,7 @@ should have the following dependencies already installed:
         pyenv local seed
 
 
-PostgreSQL 9.4
+PostgreSQL 11.1
 --------------
 
 MacPorts::
@@ -105,7 +106,8 @@ Homebrew::
 
 
 Configure PostgreSQL. Replace 'seeddb', 'seeduser' with desired db/user. By
-default use password `seedpass` when prompted
+default use password `seedpass` when prompted. Use the code block below in development only since
+the seeduser is a SUPERUSER.
 
 .. code-block:: bash
 
@@ -113,8 +115,36 @@ default use password `seedpass` when prompted
     createdb `whoami`
     psql -c 'CREATE DATABASE "seeddb" WITH OWNER = "seeduser";'
     psql -c 'GRANT ALL PRIVILEGES ON DATABASE "seeddb" TO seeduser;'
-    psql -c 'ALTER USER seeduser CREATEDB;'
-    psql -c 'ALTER USER seeduser CREATEROLE;'
+    psql -c 'ALTER ROLE seeduser SUPERUSER;
+
+
+
+PostGIS 2.5
+-----------
+
+MacPorts::
+
+    # Assuming you're still root from installing PostgreSQL,
+    port install postgis2
+
+
+
+Homebrew::
+
+    brew install postgis
+
+
+
+Configure PostGIS::
+
+    psql -d seeddb -c "CREATE EXTENSION postgis;"
+
+    # For testing, give seed user superuser access:
+    # psql -c 'ALTER USER seeduser CREATEDB;'
+
+
+If upgrading from an existing database or existing local_untracked.py file, make sure to add the
+MapQuest API Key and set the database engine to 'ENGINE': 'django.contrib.gis.db.backends.postgis'.
 
 Now exit any root environments, becoming just yourself (even though it's not
 that easy being green), for the remainder of these instructions.
@@ -132,7 +162,7 @@ to seed.
 
     workon seed
 
-Make sure PostgreSQL command line scripts are in your PATH (if using port)
+Make sure PostgreSQL command line scripts are in your PATH (if using MacPorts)
 
 .. code-block:: bash
 
@@ -185,7 +215,7 @@ Edit `local_untracked.py`. Open the file you created in your favorite editor. Th
     # postgres DB config
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'ENGINE': 'django.contrib.gis.db.backends.postgis',
             'NAME': 'seeddb',
             'USER': 'seeduser',
             'PASSWORD': 'seedpass',
@@ -210,6 +240,17 @@ For Redis, edit the `CACHES` and `CELERY_BROKER_URL` values to look like this:
     }
     CELERY_BROKER_URL = 'redis://127.0.0.1:6379/1'
 
+MapQuest API Key
+----------------
+
+Register for a MapQuest API key:
+`<https://developer.mapquest.com/plan_purchase/steps/business_edition/business_edition_free/register>`_
+
+Visit the Manage Keys page:
+`<https://developer.mapquest.com/user/me/apps>`_
+Either create a new key or use the key initially provided.
+Copy the "Consumer Key" into the target organizations MapQuest API Key field under the organization's settings page or directly within the DB.
+
 Run Django Migrations
 ---------------------
 
@@ -228,7 +269,7 @@ You need a Django admin (super) user.
 
 .. code-block:: bash
 
-    ./manage.py create_default_user --username=admin@my.org --organization=lbnl --password=badpass
+    ./manage.py create_default_user --username=admin@my.org --organization=seedorg --password=badpass
 
 Of course, you need to save this user/password somewhere, since this is what
 you will use to login to the SEED website.
@@ -302,4 +343,3 @@ Login with the user/password you created before, e.g., `admin@my.org` and
     these steps have been combined into a script called `start-seed.sh`.
     The script will also not start Celery or Redis if they already seem
     to be running.
-

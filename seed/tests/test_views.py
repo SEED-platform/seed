@@ -189,9 +189,9 @@ class ImportFileViewsTests(TestCase):
         self.assertEqual('success', json.loads(response.content)['status'])
         self.assertFalse(ImportFile.objects.filter(pk=self.import_file.pk).exists())
 
-    def test_get_matching_results(self):
+    def test_get_matching_and_geocoding_results(self):
         response = self.client.get(
-            '/api/v2/import_files/' + str(self.import_file.pk) + '/matching_results/')
+            '/api/v2/import_files/' + str(self.import_file.pk) + '/matching_and_geocoding_results/')
         self.assertEqual('success', json.loads(response.content)['status'])
 
 
