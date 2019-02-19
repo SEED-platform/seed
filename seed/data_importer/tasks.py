@@ -666,11 +666,14 @@ def _save_meter_usage_data(file_pk, progress_key):
     progress_data = ProgressData.from_key(progress_key)
 
     import_file = ImportFile.objects.get(pk=file_pk)
+
+    org_id = import_file.cycle.organization.id
+
     parser = reader.MCMParser(import_file.local_file)
 
     raw_meter_data = list(parser.data)
 
-    meters_and_readings = parse_meter_details(raw_meter_data, monthly=True)
+    meters_and_readings = parse_meter_details(raw_meter_data, org_id, monthly=True)
 
     try:
         with transaction.atomic():

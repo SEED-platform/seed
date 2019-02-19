@@ -253,3 +253,62 @@ class MeterUsageImportTest(TestCase):
 
         self.assertEqual(meter_reading.end_time, end_time)
         self.assertEqual(meter_reading.reading, 597478.9 * ureg('kBtu'))
+
+    def test_property_existing_in_multiple_cycles_can_have_meters_and_readings_associated_to_it(self):
+        property_details = FakePropertyStateFactory(organization=self.org).get_details()
+        property_details['organization_id'] = self.org.id
+
+        # new state to be associated to new cycle using the same pm_property_id as state in old cycle
+        property_details['pm_property_id'] = self.state_1.pm_property_id
+        state = PropertyState(**property_details)
+        state.save()
+        new_property_state = PropertyState.objects.get(pk=state.id)
+
+        new_cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
+        new_cycle = new_cycle_factory.get_cycle(start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
+
+        # new state and cycle associated to old property
+        PropertyView.objects.create(property=self.property_1, cycle=new_cycle, state=new_property_state)
+
+        url = reverse("api:v2:import_files-save-raw-data", args=[self.import_file.id])
+        post_params = {
+            'cycle_id': self.cycle.pk,
+            'organization_id': self.org.pk,
+        }
+        self.client.post(url, post_params)
+
+        refreshed_property_1 = Property.objects.get(pk=self.property_1.id)
+        self.assertEqual(refreshed_property_1.meters.all().count(), 2)
+
+    def test_pm_property_id_existing_across_two_different_orgs_wont_lead_to_misassociated_meters(self):
+        new_org, _, _ = create_organization(self.user)
+
+        property_details = FakePropertyStateFactory(organization=new_org).get_details()
+        property_details['organization_id'] = new_org.id
+
+        # new state to be associated to property of different organization but has the same pm_property_id
+        property_details['pm_property_id'] = self.state_1.pm_property_id
+        state = PropertyState(**property_details)
+        state.save()
+        new_property_state = PropertyState.objects.get(pk=state.id)
+
+        new_cycle_factory = FakeCycleFactory(organization=new_org, user=self.user)
+        new_cycle = new_cycle_factory.get_cycle(start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
+
+        new_property = self.property_factory.get_property()
+
+        PropertyView.objects.create(property=new_property, cycle=new_cycle, state=new_property_state)
+
+        url = reverse("api:v2:import_files-save-raw-data", args=[self.import_file.id])
+        post_params = {
+            'cycle_id': self.cycle.pk,
+            'organization_id': self.org.pk,
+        }
+        self.client.post(url, post_params)
+
+        # self.property_1 is associated to self.org, so according to post request, it should have 2 meters
+        refreshed_property_1 = Property.objects.get(pk=self.property_1.id, self.org.pk)
+        self.assertEqual(refreshed_property_1.meters.all().count(), 2)
+
+        refreshed_new_property = Property.objects.get(pk=new_property.id)
+        self.assertEqual(refreshed_new_property.meters.count(), 0)

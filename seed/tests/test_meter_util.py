@@ -108,7 +108,7 @@ class MeterUtilTests(TestCase):
             }
         ]
 
-        self.assertEqual(parse_meter_details(raw_meters, monthly=True), expected)
+        self.assertEqual(parse_meter_details(raw_meters, self.org.id, monthly=True), expected)
 
     def test_parse_meter_details_works_with_multiple_meters_impacted_by_a_leap_year(self):
         raw_meters = [
@@ -165,7 +165,7 @@ class MeterUtilTests(TestCase):
             }
         ]
 
-        self.assertEqual(parse_meter_details(raw_meters, monthly=True), expected)
+        self.assertEqual(parse_meter_details(raw_meters, self.org.id, monthly=True), expected)
 
     def test_parse_meter_details_converts_energy_units_if_necessary(self):
         raw_meters = [
@@ -180,7 +180,7 @@ class MeterUtilTests(TestCase):
             }
         ]
 
-        result = parse_meter_details(raw_meters, monthly=True)
+        result = parse_meter_details(raw_meters, self.org.id, monthly=True)
 
         if result[0]["type"] == Meter.FUEL_OIL_NO_1:
             fuel_oil_details = result[0]

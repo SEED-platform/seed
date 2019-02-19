@@ -18,7 +18,7 @@ from seed.models import (
 )
 
 
-def parse_meter_details(meters_and_readings_details, property_link='Property Id', monthly=False):
+def parse_meter_details(meters_and_readings_details, org_id, property_link='Property Id', monthly=False):
     """
     Meter and meter reading details are parsed from meter usage data, converting
     that raw meter usage data into a format that is accepted by the two models.
@@ -58,7 +58,7 @@ def parse_meter_details(meters_and_readings_details, property_link='Property Id'
         meter_shared_details['source'] = 1  # probably need to be passed in as arg
         meter_shared_details['source_id'] = str(source_id)
 
-        _get_property_id_from_source(source_id, meter_shared_details, source_to_property_ids)
+        _get_property_id_from_source(source_id, meter_shared_details, source_to_property_ids, org_id)
 
         if monthly:
             start_time, end_time = _parse_times(details['Month'], tz)
@@ -79,15 +79,20 @@ def _parse_times(month_year, tz):
     return start_time, end_time
 
 
-def _get_property_id_from_source(source_id, shared_details, source_to_property_ids):
+def _get_property_id_from_source(source_id, shared_details, source_to_property_ids, org_id):
     """This is set up to avoid querying for the same property_id more than once"""
     property_id = source_to_property_ids.get(source_id, None)
 
     if property_id is not None:
         shared_details['property_id'] = property_id
     else:
+        """
+        Filter used because property may exist across multiple cycles within an org.
+        If so, multiple property states will be found, but the underlying
+        property should be the same, so take the first.
+        """
         property_id = PropertyState.objects \
-            .get(pm_property_id__exact=source_id) \
+            .filter(pm_property_id__exact=source_id, organization_id__exact=org_id)[0] \
             .propertyview_set \
             .first() \
             .property_id
@@ -139,6 +144,7 @@ def _parse_type_and_convert_reading(type_unit, meter_details, raw_reading):
         return raw_reading
     else:
         # TODO: If Fuzzy matching is needed, it should be done here
-        # TODO; If no conversion, skip entry? via try except
+        # TODO; If no conversion exists? skip entry (via try except)?
+        # TODO: ThermalConversions model should only be instantiated once on the outermost method call
         conversion_factor = ThermalConversions.us_kbtu_conversion_factors[type][unit]
         return raw_reading * conversion_factor
