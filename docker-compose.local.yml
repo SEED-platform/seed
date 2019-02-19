@@ -19,6 +19,8 @@ services:
     volumes:
       - seed_pgdata:/var/lib/postgresql/data
       - $HOME/seed-backups:/backups
+    ports:
+      - "5432:5432"
     deploy:
       restart_policy:
         condition: on-failure

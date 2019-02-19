@@ -10,6 +10,8 @@ services:
       - POSTGRES_PASSWORD=super-secret-password
     volumes:
       - seed_pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
   db-redis:
     image: redis:5.0.1
   web:
