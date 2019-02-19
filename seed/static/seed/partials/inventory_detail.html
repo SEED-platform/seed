@@ -51,9 +51,9 @@
                         {$:: 'Actions' | translate $} <span class="caret"></span>
                     </button>
                     <ul id="inventory-detail-actions-dropdown" uib-dropdown-menu class="dropdown-menu" role="menu" aria-labelledby="btnInventoryActions">
-
                         <li role="menuitem" ng-if="::inventory_type === 'properties'" class="upload-list-item">
                             <div sd-uploader sourcetype="BuildingSyncUpdate" sourceprog="" sourcever="" importrecord="item_parent.id" organization-id="organization.id" cycle-id="cycle.id" eventfunc="uploaderfunc(message, file, progress)">{$:: 'Update with BuildingSync' | translate $}</div>
+
                         </li>
 
                         <li ng-if="::inventory_type === 'properties'" role="menuitem">
@@ -69,13 +69,13 @@
                         </li>
 
                     </ul>
+                    <div ng-if="::inventory_type === 'properties'" style="margin: 50px 25px 0;">
+                        <div class="alert alert-danger" ng-show="uploader.invalid_xml_extension_alert" translate="INVALID_XML_EXTENSION_ALERT"></div>
+                    </div>
                 </div>
             </div>
 
-
-
             <div style="margin:10px 250px 10px 0; padding:0 10px;">
-
                 <span style="display:inline-block; margin-top:9px; padding-left:15px; vertical-align: top;"><strong>{$:: 'Labels' | translate $}:</strong></span>
                 <span ng-if="!labels.length" style="color:#999;display:inline-block;margin-top:7px;" translate>(no labels applied)</span>
                 <div ng-if="labels.length" style="display: inline-block; width: calc(100vw - 570px); vertical-align: top;">
@@ -282,9 +282,6 @@
                                 </tr>
                             </tbody>
                         </table>
-                    </div>
-                    <div ng-if="::inventory_type === 'properties'" style="margin: 25px 25px 0;">
-                        <div class="alert alert-danger" ng-show="uploader.invalid_xml_extension_alert" translate="INVALID_XML_EXTENSION_ALERT"></div>
                     </div>
                 </div>
             </div>
