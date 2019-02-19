@@ -232,7 +232,8 @@ var makeBuildingSyncUploader = function (scope, element, allowed_extensions) {
               filename: fileName,
               view_id: _.get(responseJSON, 'data.property_view.id'),
               cycle_id: (scope.sourceprog === 'PortfolioManager' && scope.$parent.useField) ? 'year_ending' : scope.$parent.selectedCycle.id,
-              source_type: scope.sourcetype
+              source_type: scope.sourcetype,
+              message: _.get(responseJSON, 'message')
             }
           });
         }
@@ -443,7 +444,7 @@ var makeBuildingSyncUpdater = function (scope, element, allowed_extensions) {
 var sdUploaderFineUploader = function (scope, element/*, attrs, filename*/) {
   var uploader;
   if (scope.sourcetype === 'BuildingSync') {
-    uploader = makeBuildingSyncUploader(scope, element, ['xml']);
+    uploader = makeBuildingSyncUploader(scope, element, ['xml', 'zip']);
   } else if (scope.sourcetype === 'BuildingSyncUpdate') {
     uploader = makeBuildingSyncUpdater(scope, element, ['xml']);
   } else if (scope.sourcetype === 'GeoJSON') {
