@@ -20,7 +20,6 @@ Closed Issues:
 - Fixed [#1807]( https://github.com/SEED-platform/seed/issues/1807 ), Only fields in property or tax lot DB are shown in mapping screen (not showing Extra Data fields)
 - Fixed [#1812]( https://github.com/SEED-platform/seed/issues/1812 ), Merge screen doesn't show extra data fields
 - Fixed [#1813]( https://github.com/SEED-platform/seed/issues/1813 ), When merging records, the merged records don't show up in the detail view, only the final Master Record
-- Fixed [#1814]( https://github.com/SEED-platform/seed/issues/1814 ), Export contains (internal db?) ID
 
 # SEED Version 2.4.1
 
