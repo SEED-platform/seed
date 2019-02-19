@@ -57,92 +57,6 @@ class Meter(models.Model):
     #     (OTHER, 'Other'),
     # )
 
-    # If validation of unit and type combination is desired
-    # from collections import defaultdict
-    # valid_energy_units = defaultdict(lambda: [])
-    #
-    # valid_energy_units['Electricity'].append('kBtu (thousand Btu)')
-    # valid_energy_units['Electricity'].append('MBtu (million Btu)')
-    # valid_energy_units['Electricity'].append('kWh (thousand Watt-hours)')
-    # valid_energy_units['Electricity'].append('MWh (million Watt-hours)')
-    # valid_energy_units['Natural Gas'].append('kBtu (thousand Btu)')
-    # valid_energy_units['Natural Gas'].append('MBtu (million Btu)')
-    # valid_energy_units['Natural Gas'].append('cf (cubic feet)')
-    # valid_energy_units['Natural Gas'].append('ccf (hundred cubic feet)')
-    # valid_energy_units['Natural Gas'].append('kcf (thousand cubic feet)')
-    # valid_energy_units['Natural Gas'].append('MCF(million cubic feet)')
-    # valid_energy_units['Natural Gas'].append('therms')
-    # valid_energy_units['Natural Gas'].append('cm (Cubic meters)')
-    # valid_energy_units['District Steam'].append('kBtu (thousand Btu)')
-    # valid_energy_units['District Steam'].append('MBtu (million Btu)')
-    # valid_energy_units['District Steam'].append('pounds')
-    # valid_energy_units['District Steam'].append('KLbs. (thousand pounds)')
-    # valid_energy_units['District Steam'].append('MLbs. (million pounds)')
-    # valid_energy_units['District Steam'].append('therms')
-    # valid_energy_units['District Hot Water'].append('kBtu (thousand Btu)')
-    # valid_energy_units['District Hot Water'].append('MBtu (million Btu)')
-    # valid_energy_units['District Hot Water'].append('therms')
-    # valid_energy_units['District Chilled Water'].append('kBtu (thousand Btu)')
-    # valid_energy_units['District Chilled Water'].append('MBtu (million Btu)')
-    # valid_energy_units['District Chilled Water'].append('ton hours')
-    # valid_energy_units['Kerosene'].append('kBtu (thousand Btu)')
-    # valid_energy_units['Kerosene'].append('MBtu (million Btu)')
-    # valid_energy_units['Kerosene'].append('Gallons (US)')
-    # valid_energy_units['Kerosene'].append('Liters')
-    # valid_energy_units['Fuel Oil (No. 1)'].append('kBtu (thousand Btu)')
-    # valid_energy_units['Fuel Oil (No. 1)'].append('MBtu (million Btu)')
-    # valid_energy_units['Fuel Oil (No. 1)'].append('Gallons (US)')
-    # valid_energy_units['Fuel Oil (No. 1)'].append('Liters')
-    # valid_energy_units['Diesel'].append('kBtu (thousand Btu)')
-    # valid_energy_units['Diesel'].append('MBtu (million Btu)')
-    # valid_energy_units['Diesel'].append('Gallons (US)')
-    # valid_energy_units['Diesel'].append('Liters')
-    # valid_energy_units['Fuel Oil (No. 2)'].append('kBtu (thousand Btu)')
-    # valid_energy_units['Fuel Oil (No. 2)'].append('MBtu (million Btu)')
-    # valid_energy_units['Fuel Oil (No. 2)'].append('Gallons (US)')
-    # valid_energy_units['Fuel Oil (No. 2)'].append('Liters')
-    # valid_energy_units['Propane and Liquid Propane'].append('kBtu (thousand Btu)')
-    # valid_energy_units['Propane and Liquid Propane'].append('MBtu (million Btu)')
-    # valid_energy_units['Propane and Liquid Propane'].append('cf (cubic feet)')
-    # valid_energy_units['Propane and Liquid Propane'].append('kcf (thousand cubic feet)')
-    # valid_energy_units['Propane and Liquid Propane'].append('Gallons (US)')
-    # valid_energy_units['Propane and Liquid Propane'].append('Liters')
-    # valid_energy_units['Fuel Oil (No. 4)'].append('kBtu (thousand Btu)')
-    # valid_energy_units['Fuel Oil (No. 4)'].append('MBtu (million Btu)')
-    # valid_energy_units['Fuel Oil (No. 4)'].append('Gallons (US)')
-    # valid_energy_units['Fuel Oil (No. 4)'].append('Liters')
-    # valid_energy_units['Fuel Oil (No. 5 & No. 6)'].append('kBtu (thousand Btu)')
-    # valid_energy_units['Fuel Oil (No. 5 & No. 6)'].append('MBtu (million Btu)')
-    # valid_energy_units['Fuel Oil (No. 5 & No. 6)'].append('Gallons (US)')
-    # valid_energy_units['Fuel Oil (No. 5 & No. 6)'].append('Liters')
-    # valid_energy_units['Coal (anthracite)'].append('kBtu (thousand Btu)')
-    # valid_energy_units['Coal (anthracite)'].append('MBtu (million Btu)')
-    # valid_energy_units['Coal (anthracite)'].append('tons')
-    # valid_energy_units['Coal (anthracite)'].append('pounds')
-    # valid_energy_units['Coal (anthracite)'].append('KLbs. (thousand pounds)')
-    # valid_energy_units['Coal (anthracite)'].append('MLbs. (million pounds)')
-    # valid_energy_units['Coal (bituminous)'].append('kBtu (thousand Btu)')
-    # valid_energy_units['Coal (bituminous)'].append('MBtu (million Btu)')
-    # valid_energy_units['Coal (bituminous)'].append('tons')
-    # valid_energy_units['Coal (bituminous)'].append('pounds')
-    # valid_energy_units['Coal (bituminous)'].append('KLbs. (thousand pounds)')
-    # valid_energy_units['Coal (bituminous)'].append('MLbs')
-    # valid_energy_units['Coke'].append('kBtu (thousand Btu)')
-    # valid_energy_units['Coke'].append('MBtu (million Btu)')
-    # valid_energy_units['Coke'].append('tons')
-    # valid_energy_units['Coke'].append('pounds')
-    # valid_energy_units['Coke'].append('KLbs. (thousand pounds)')
-    # valid_energy_units['Coke'].append('MLbs. (million pounds)')
-    # valid_energy_units['Wood'].append('kBtu (thousand Btu)')
-    # valid_energy_units['Wood'].append('MBtu (million Btu)')
-    # valid_energy_units['Wood'].append('tons')
-    # valid_energy_units['Other'].append('kBtu (thousand Btu)')
-    # valid_energy_units['Electricity - on site renewable'].append('kBtu (thousand Btu)')
-    # valid_energy_units['Electricity - on site renewable'].append('MBtu (million Btu)')
-    # valid_energy_units['Electricity - on site renewable'].append('kWh (thousand Watt-hours)')
-    # valid_energy_units['Electricity - on site renewable'].append('MWh (million Watt-hours)')
-
-    # Taken from https://portfoliomanager.zendesk.com/hc/en-us/articles/211025388-Is-there-a-list-of-valid-property-level-energy-meter-types-and-unit-of-measure-combinations-
     COAL_ANTHRACITE = 1
     COAL_BITUMINOUS = 2
     COKE = 3
@@ -162,12 +76,14 @@ class Meter(models.Model):
     PROPANE = 17
     WOOD = 18
 
+    # Taken from https://portfoliomanager.zendesk.com/hc/en-us/articles/211025388-Is-there-a-list-of-valid-property-level-energy-meter-types-and-unit-of-measure-combinations-
+    # Double check these against more examples
     ENERGY_TYPES = (
         (COAL_ANTHRACITE, 'Coal (anthracite)'),
         (COAL_BITUMINOUS, 'Coal (bituminous)'),
         (COKE, 'Coke'),
         (DIESEL, 'Diesel'),
-        (DISTRICT_CHILLED_WATER, 'District Chilled Water'),
+        (DISTRICT_CHILLED_WATER, 'District Chilled Water'),  # This isn't copied exactly
         (DISTRICT_HOT_WATER, 'District Hot Water'),
         (DISTRICT_STEAM, 'District Steam'),
         (ELECTRICITY, 'Electricity'),
@@ -209,7 +125,7 @@ class Meter(models.Model):
     source_id = models.CharField(max_length=255, null=True, blank=True)
 
     type = models.IntegerField(choices=ENERGY_TYPES)
-    # units = models.IntegerField(choices=ENERGY_UNITS)
+    # units = models.IntegerField(choices=ENERGY_UNITS) ------- removed because pint library used and everything's stored as kBtu
 
 
 class MeterReading(models.Model):
@@ -225,7 +141,7 @@ class MeterReading(models.Model):
     end_time = models.DateTimeField(db_index=True)
 
     reading = QuantityField('kBtu')
-    # cost = models.DecimalField(max_digits=11, decimal_places=4, null=True)
+    # cost = models.DecimalField(max_digits=11, decimal_places=4, null=True)  -------- this was included before but I don't believe this is in scope (included in reports?)
 
     class Meta:
         unique_together = ('meter', 'start_time', 'end_time')

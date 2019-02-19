@@ -666,11 +666,9 @@ def _save_meter_usage_data(file_pk, progress_key):
     progress_data = ProgressData.from_key(progress_key)
 
     import_file = ImportFile.objects.get(pk=file_pk)
-
     org_id = import_file.cycle.organization.id
 
     parser = reader.MCMParser(import_file.local_file)
-
     raw_meter_data = list(parser.data)
 
     meters_and_readings = parse_meter_details(raw_meter_data, org_id, monthly=True)
@@ -678,11 +676,21 @@ def _save_meter_usage_data(file_pk, progress_key):
     try:
         with transaction.atomic():
             for meter_readings in meters_and_readings:
+                """
+                Separate readings from meter details, then get or create meter.
+                Create or update readings while associating readings
+                to created meter.
+
+                For meter readings, a reading is updated if inserted values
+                match that of meter_id, start_time, and end_time. Otherwise,
+                a new meter reading entry is created.
+                """
                 readings = meter_readings['readings']
                 del meter_readings['readings']
 
                 meter = Meter.objects.get_or_create(**meter_readings)[0]
 
+                # These strings should be batched with some max length? This would change transaction structure.
                 reading_strings = [
                     f"({meter.id}, '{reading['start_time'].isoformat(' ')}', '{reading['end_time'].isoformat(' ')}', {reading['reading']})"
                     for reading
