@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 /**
@@ -160,7 +160,9 @@ var makeS3Uploader = function (scope, element) {
           if (_.has(json, 'message')) {
             error = json.message;
           }
-        } catch (e) {}
+        } catch (e) {
+          // no-op
+        }
 
         scope.eventfunc({
           message: 'upload_error',
@@ -310,7 +312,9 @@ var makeFileSystemUploader = function (scope, element) {
           if (_.has(json, 'message')) {
             error = json.message;
           }
-        } catch (e) {}
+        } catch (e) {
+          // no-op
+        }
 
         scope.eventfunc({
           message: 'upload_error',
@@ -339,7 +343,7 @@ var makeBuildingSyncUploader = function (scope, element) {
       }
     },
     validation: {
-      allowedExtensions: ['xml']
+      allowedExtensions: ['xml', 'zip']
     },
     text: {
       uploadButton: scope.buttontext
@@ -397,7 +401,8 @@ var makeBuildingSyncUploader = function (scope, element) {
               filename: fileName,
               view_id: _.get(responseJSON, 'data.property_view.id'),
               cycle_id: (scope.sourceprog === 'PortfolioManager' && scope.$parent.useField) ? 'year_ending' : scope.$parent.selectedCycle.id,
-              source_type: scope.sourcetype
+              source_type: scope.sourcetype,
+              message: _.get(responseJSON, 'message')
             }
           });
         }
@@ -446,7 +451,9 @@ var makeBuildingSyncUploader = function (scope, element) {
           if (_.has(json, 'message')) {
             error = json.message;
           }
-        } catch (e) {}
+        } catch (e) {
+          // no-op
+        }
 
         scope.eventfunc({
           message: 'upload_error',
@@ -585,7 +592,9 @@ var makeBuildingSyncUpdater = function (scope, element) {
           if (_.has(json, 'message')) {
             error = json.message;
           }
-        } catch (e) {}
+        } catch (e) {
+          // no-op
+        }
 
         scope.eventfunc({
           message: 'upload_error',

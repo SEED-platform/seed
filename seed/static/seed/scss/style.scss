@@ -1,3 +1,5 @@
+@import "fonts.scss";
+
 @-webkit-keyframes fadein {
   from {
     opacity: 0;
@@ -860,7 +862,7 @@ a:not([href]) {
       }
     }
     .jumbotron {
-      background: url('../images/kc_2.jpg') no-repeat;
+      background: url('../../seed/images/kc_2.jpg') no-repeat;
       height: 402px;
       margin-bottom: 0;
       padding: 30px 10%;
@@ -948,7 +950,7 @@ a:not([href]) {
       height: 400px;
       overflow-y: scroll;
       border-bottom: 1px solid $gray_lighter;
-      background: url('../images/bg_first_td.png') repeat-x top center;
+      background: url('../../seed/images/bg_first_td.png') repeat-x top center;
     }
     .table_list_container {
       &.has_borders {
@@ -1359,10 +1361,10 @@ a:not([href]) {
       }
 
       //.table-striped tbody tr:nth-child(1) td {
-      //  background: url('../images/bg_first_td.png') repeat-x;
+      //  background: url('../../seed/images/bg_first_td.png') repeat-x;
       //
       //  &.sorted {
-      //    background: url('../images/bg_first_td.png') repeat-x;
+      //    background: url('../../seed/images/bg_first_td.png') repeat-x;
       //  }
       //}
       .table-striped tbody tr td h3 {
@@ -2677,7 +2679,11 @@ gs-input .tags .tag-item .remove-button {
   }
 }
 
-#inventory-actions-dropdown, #inventory-detail-edit {
+#inventory-actions-dropdown, #inventory-detail-actions-dropdown, #inventory-detail-edit {
+  &#inventory-detail-actions-dropdown {
+    width: 200px;
+  }
+
   li {
     cursor: default;
   }
@@ -3189,6 +3195,19 @@ $pairedCellWidth: 60px;
 
 .pink-bg {
   background-color: rgba(255, 0, 0, 0.07);
+
+  &:hover {
+    background-color: rgba(255, 0, 0, 0.12) !important;
+  }
+}
+
+.yellow-bg {
+  background-color: #f0ad4e;
+  color: #fff !important;
+
+  &:hover {
+    background-color: #ec971f !important;
+  }
 }
 
 :not(.active) .typeahead-native {
@@ -3203,4 +3222,22 @@ $pairedCellWidth: 60px;
 .lock {
   color: #444;
   padding-left: 6px;
+}
+
+.text-wrap {
+	white-space: pre-wrap;       /* css-3 */
+	white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+	white-space: -pre-wrap;      /* Opera 4-6 */
+	white-space: -o-pre-wrap;    /* Opera 7 */
+	word-wrap: break-word;       /* Internet Explorer 5.5+ */
+}
+
+.upload-list-item {
+  > div {
+    padding: 3px 20px;
+  }
+
+  &:hover {
+    background-color: #f5f5f5;
+  }
 }

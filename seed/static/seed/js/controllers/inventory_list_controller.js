@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.inventory_list', [])
@@ -23,27 +23,31 @@ angular.module('BE.seed.controller.inventory_list', [])
     'spinner_utility',
     'naturalSort',
     '$translate',
+    'uiGridConstants',
     'i18nService', // from ui-grid
-    function ($scope,
-              $filter,
-              $window,
-              $uibModal,
-              $stateParams,
-              inventory_service,
-              label_service,
-              data_quality_service,
-              user_service,
-              inventory,
-              cycles,
-              profiles,
-              current_profile,
-              labels,
-              all_columns,
-              urls,
-              spinner_utility,
-              naturalSort,
-              $translate,
-              i18nService) {
+    function (
+      $scope,
+      $filter,
+      $window,
+      $uibModal,
+      $stateParams,
+      inventory_service,
+      label_service,
+      data_quality_service,
+      user_service,
+      inventory,
+      cycles,
+      profiles,
+      current_profile,
+      labels,
+      all_columns,
+      urls,
+      spinner_utility,
+      naturalSort,
+      $translate,
+      uiGridConstants,
+      i18nService
+    ) {
       spinner_utility.show();
       $scope.selectedCount = 0;
       $scope.selectedParentCount = 0;
@@ -103,7 +107,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       };
 
       var ignoreNextChange = true;
-      $scope.$watch('currentProfile', function (newProfile, oldProfile) {
+      $scope.$watch('currentProfile', function (newProfile) {
         if (ignoreNextChange) {
           ignoreNextChange = false;
           return;
@@ -147,8 +151,8 @@ angular.module('BE.seed.controller.inventory_list', [])
         }
       };
 
-      function populated_columns_modal() {
-        var modalInstance = $uibModal.open({
+      function populated_columns_modal () {
+        $uibModal.open({
           backdrop: 'static',
           templateUrl: urls.static_url + 'seed/partials/show_populated_columns_modal.html',
           controller: 'show_populated_columns_modal_controller',
@@ -181,7 +185,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
-      function updateApplicableLabels() {
+      function updateApplicableLabels () {
         var inventoryIds;
         if ($scope.inventory_type === 'properties') {
           inventoryIds = _.map($scope.data, 'property_view_id').sort();
@@ -293,7 +297,7 @@ angular.module('BE.seed.controller.inventory_list', [])
               var data = new Array($scope.selectedOrder.length);
 
               if ($scope.inventory_type === 'properties') {
-                return inventory_service.get_properties(1, undefined, undefined, undefined, selectedOrder).then(function (inventory_data) {
+                return inventory_service.get_properties(1, undefined, undefined, -1, selectedOrder).then(function (inventory_data) {
                   _.forEach(selectedOrder, function (id, index) {
                     var match = _.find(inventory_data.results, {id: id});
                     if (match) {
@@ -303,7 +307,7 @@ angular.module('BE.seed.controller.inventory_list', [])
                   return data;
                 });
               } else if ($scope.inventory_type === 'taxlots') {
-                return inventory_service.get_taxlots(1, undefined, undefined, undefined, selectedOrder).then(function (inventory_data) {
+                return inventory_service.get_taxlots(1, undefined, undefined, -1, selectedOrder).then(function (inventory_data) {
                   _.forEach(selectedOrder, function (id, index) {
                     var match = _.find(inventory_data.results, {id: id});
                     if (match) {
@@ -341,7 +345,7 @@ angular.module('BE.seed.controller.inventory_list', [])
 
         data_quality_service.start_data_quality_checks(property_states, taxlot_states).then(function (response) {
           data_quality_service.data_quality_checks_status(response.progress_key).then(function (result) {
-            data_quality_service.get_data_quality_results(user_service.get_organization().id, result.unique_id).then(function(dq_result) {
+            data_quality_service.get_data_quality_results(user_service.get_organization().id, result.unique_id).then(function (dq_result) {
               var modalInstance = $uibModal.open({
                 templateUrl: urls.static_url + 'seed/partials/data_quality_modal.html',
                 controller: 'data_quality_modal_controller',
@@ -441,7 +445,8 @@ angular.module('BE.seed.controller.inventory_list', [])
       });
 
       // Data
-      var processData = function () {
+      var processData = function (data) {
+        if (_.isUndefined(data)) data = $scope.data;
         var visibleColumns = _.map($scope.columns, 'name')
           .concat(['$$treeLevel', 'notes_count', 'id', 'property_state_id', 'property_view_id', 'taxlot_state_id', 'taxlot_view_id']);
 
@@ -451,7 +456,6 @@ angular.module('BE.seed.controller.inventory_list', [])
         }, {});
         var columnNamesToAggregate = _.keys(columnsToAggregate);
 
-        var data = $scope.data;
         var roots = data.length;
         for (var i = 0, trueIndex = 0; i < roots; ++i, ++trueIndex) {
           data[trueIndex].$$treeLevel = 0;
@@ -502,21 +506,23 @@ angular.module('BE.seed.controller.inventory_list', [])
 
       var refresh_objects = function () {
         spinner_utility.show();
+        var promise;
         if ($scope.inventory_type === 'properties') {
-          inventory_service.get_properties($scope.pagination.page, $scope.number_per_page, $scope.cycle.selected_cycle, _.has($scope.currentProfile, 'id') ? $scope.currentProfile.id : undefined).then(function (properties) {
-            $scope.data = properties.results;
+          promise = inventory_service.get_properties($scope.pagination.page, $scope.number_per_page, $scope.cycle.selected_cycle, _.has($scope.currentProfile, 'id') ? $scope.currentProfile.id : undefined).then(function (properties) {
+            processData(properties.results);
             $scope.pagination = properties.pagination;
-            processData();
             spinner_utility.hide();
           });
         } else if ($scope.inventory_type === 'taxlots') {
-          inventory_service.get_taxlots($scope.pagination.page, $scope.number_per_page, $scope.cycle.selected_cycle, _.has($scope.currentProfile, 'id') ? $scope.currentProfile.id : undefined).then(function (taxlots) {
-            $scope.data = taxlots.results;
+          promise = inventory_service.get_taxlots($scope.pagination.page, $scope.number_per_page, $scope.cycle.selected_cycle, _.has($scope.currentProfile, 'id') ? $scope.currentProfile.id : undefined).then(function (taxlots) {
+            processData(taxlots.results);
             $scope.pagination = taxlots.pagination;
-            processData();
             spinner_utility.hide();
           });
         }
+        return promise.then(function () {
+          $scope.gridApi.core.notifyDataChange(uiGridConstants.dataChange.EDIT);
+        });
       };
 
       $scope.update_cycle = function (cycle) {
@@ -662,7 +668,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
-      function currentColumns() {
+      function currentColumns () {
         // Save all columns except first 3
         var gridCols = _.filter($scope.gridApi.grid.columns, function (col) {
           return !_.includes(['treeBaseRowHeaderCol', 'selectionRowHeaderCol', 'notes_count', 'id'], col.name) && col.visible;
@@ -763,7 +769,7 @@ angular.module('BE.seed.controller.inventory_list', [])
 
           gridApi.colMovable.on.columnPositionChanged($scope, function () {
             // Ensure that 'notes_count' and 'id' remain first
-            var idIndex, col;
+            var col, idIndex;
             idIndex = _.findIndex($scope.gridApi.grid.columns, {name: 'notes_count'});
             if (idIndex !== 2) {
               col = $scope.gridApi.grid.columns[idIndex];

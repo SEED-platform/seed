@@ -1,7 +1,7 @@
 ﻿# !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import csv
@@ -190,6 +190,12 @@ def check_status(result_out, part_msg, log, piid_flag=None):
 
         log.info(part_msg + passed)
         log.debug(msg)
+
+    elif result_out.status_code in [204]:
+        msg = result_out.content
+        log.info(part_msg + passed)
+        log.debug(msg)
+
     else:
         msg = result_out.reason
         log.error(part_msg + failed)

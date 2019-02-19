@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from django.core.management.base import BaseCommand
@@ -16,7 +16,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('--username',
-                            default='demo@seed.lbl.gov',
+                            default='demo@seed-platform.org',
                             help='Existing SEED User',
                             action='store',
                             dest='username')

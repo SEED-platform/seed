@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import base64
@@ -864,7 +864,8 @@ class ImportFileViewSet(viewsets.ViewSet):
                 prop_dict.update(
                     TaxLotProperty.extra_data_to_dict_with_mapping(
                         prop.extra_data,
-                        property_column_name_mapping
+                        property_column_name_mapping,
+                        fields=prop.extra_data.keys(),
                     ).items()
                 )
                 property_results.append(prop_dict)
@@ -889,7 +890,8 @@ class ImportFileViewSet(viewsets.ViewSet):
                 tax_lot_dict.update(
                     TaxLotProperty.extra_data_to_dict_with_mapping(
                         tax_lot.extra_data,
-                        taxlot_column_name_mapping
+                        taxlot_column_name_mapping,
+                        fields=tax_lot.extra_data.keys(),
                     ).items()
                 )
                 tax_lot_results.append(tax_lot_dict)
@@ -1603,9 +1605,9 @@ class ImportFileViewSet(viewsets.ViewSet):
         import_file = ImportFile.objects.get(pk=pk)
         organization = import_file.import_record.super_organization
         mappings = body.get('mappings', [])
-        status = Column.create_mappings(mappings, organization, request.user, import_file.id)
+        result = Column.create_mappings(mappings, organization, request.user, import_file.id)
 
-        if status:
+        if result:
             return JsonResponse({'status': 'success'})
         else:
             return JsonResponse({'status': 'error'})

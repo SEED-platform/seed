@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California,
+:copyright (c) 2014 - 2019, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
@@ -31,10 +31,11 @@ pm_skip_test_check = skipIf(
 try:
     pm_avail_check = requests.get('http://isthewallbuilt.us/api.json', timeout=5)
     string_response = pm_avail_check.json()['status']
-    if string_response == 'no':
-        skip_due_to_espm_down = True
-    else:
+    if string_response != 'no':
         skip_due_to_espm_down = False
+    else:
+        skip_due_to_espm_down = True
+
     if skip_due_to_espm_down:
         pm_skip_test_check = skip('ESPM is likely down temporarily, ESPM tests will not run')
 except Exception:

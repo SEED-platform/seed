@@ -197,8 +197,11 @@
         <div class="row">
             <div class="col-sm-12">
                 <div>
-                    <p translate>An error occurred while processing the file. Please ensure that your file meets the required specifications.</p>
-                    <pre ng-class="{'pre-scrollable': step_12_error_message.length >= 300}" ng-show="step_12_error_message">{$ step_12_error_message $}</pre>
+
+                    <p ng-if="!building_sync_files" translate>An error occurred while processing the file. Please ensure that your file meets the required specifications.</p>
+                    <p ng-if="building_sync_files && bulk_upload" translate>Error(s) occurred while processing the BuildingSync data bulk upload, potentially resulting in a partial import.  Fix the errors and re-upload the corrected files.</p>
+                    <p ng-if="building_sync_files && !bulk_upload" translate>An error occurred while processing the BuildingSync xml file. Please ensure that your file meets the required specifications.</p>
+                    <pre class="text-wrap" ng-class="{'pre-scrollable': step_12_error_message.length >= 300}" ng-show="step_12_error_message">{$ step_12_error_message | json $}</pre>
                 </div>
             </div>
         </div>
@@ -242,7 +245,14 @@
         <div class="row">
             <div class="alert alert-success"
             translate="DATASET_FILENAME_UPLOADED_TO"
-            translate-values="{ dataset_name: dataset.name , dataset_filename: dataset.filename }"></div>
+            translate-values="{ dataset_name: dataset.name, dataset_filename: dataset.filename }"></div>
+             <div class="col-sm-12">
+                <div ng-if="step_14_message.length > 0">
+                    <p translate>Warnings:</p>
+                    <pre class="text-wrap" ng-class="{'pre-scrollable': step_14_message.length >= 300}" ng-show="step_14_message">{$ step_14_message | json $}</pre>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>

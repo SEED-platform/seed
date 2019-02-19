@@ -41,6 +41,7 @@ extensions = [
     'sphinx.ext.todo',
     'sphinxcontrib.spelling',
     'sphinx.ext.inheritance_diagram',
+    'sphinx.ext.intersphinx',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -62,7 +63,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'SEED Platform'
-copyright = '2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory'
+copyright = '2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory'
 author = 'The Regents of the University of California, through Lawrence Berkeley National Laboratory'
 
 # The version info for the project you're documenting, acts as replacement for

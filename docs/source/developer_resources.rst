@@ -39,13 +39,14 @@ Adding New Fields to Database
 Adding new fields to SEED can be complicated since SEED has a mix of typed fields (database fields) and extra data
 fields. Follow the steps below to add new fields to the SEED database:
 
-1. Add the field to the PropertyState or the TaxLotState model. Adding fields to the Property or TaxLot is more
-complicated and not documented yet.
-2. Add field to list in the following locations:
-    * models/columns.py: Column.DATABASE_COLUMNS
-    * TaxLotState.coparent or PropertyState.coparent: SQL query and keep_fields
-3. Run `./manage.py makemigrations`
-4. Add in a Python script in the new migration to add in the new column into every organizations list of columns
+#. Add the field to the PropertyState or the TaxLotState model. Adding fields to the Property or TaxLot models is more complicated and not documented yet.
+#. Add field to list in the following locations:
+
+- models/columns.py: Column.DATABASE_COLUMNS
+- TaxLotState.coparent or PropertyState.coparent: SQL query and keep_fields
+
+#. Run `./manage.py makemigrations`
+#. Add in a Python script in the new migration to add in the new column into every organizations list of columns
 
     .. code-block:: python
 
@@ -93,33 +94,15 @@ complicated and not documented yet.
             ]
 
 
-5. Run migrations `./manage.py migrate`
-6. Run unit tests, fix failures. Below is a list of files that need to be fixed (this is not an exhaustive list):
-    * test_mapping_data.py:test_keys
-    * test_columns.py:test_column_retrieve_schema
-    * test_columns.py:test_column_retrieve_db_fields
-7. (Optional) Update example files to include new fields
-8. Test import workflow with mapping to new fields
+#. Run migrations `./manage.py migrate`
+#. Run unit tests, fix failures. Below is a list of files that need to be fixed (this is not an exhaustive list)
 
+- test_mapping_data.py:test_keys
+- test_columns.py:test_column_retrieve_schema
+- test_columns.py:test_column_retrieve_db_fields
 
-AWS S3
-^^^^^^
-
-Amazon AWS S3 Expires headers should be set on the AngularJS partials if using S3 with the management command:
-set_s3_expires_headers_for_angularjs_partials
-
-Example::
-
-    python manage.py set_s3_expires_headers_for_angularjs_partials --verbosity=3
-
-The default user invite reply-to email can be overridden in the config/settings/common.py file. The `SERVER_EMAIL`
-settings var is the reply-to email sent along with new account emails.
-
-.. code-block:: console
-
-    # config/settings/common.py
-    PASSWORD_RESET_EMAIL = 'reset@seed.lbl.gov'
-    SERVER_EMAIL = 'no-reply@seed.lbl.gov'
+#. (Optional) Update example files to include new fields
+#. Test import workflow with mapping to new fields
 
 
 AngularJS Integration Notes
@@ -259,9 +242,16 @@ user:
     psql -c 'ALTER USER seeduser CREATEROLE;'
     ./manage.py migrate
     ./manage.py create_default_user \
-        --username=testuser@seed.org \
+        --username=demo@seed-platform.org \
         --password=password \
         --organization=testorg
+
+
+Migrating the Database
+----------------------
+
+Migrations are handles through Django; however, various versions have customs actions for the migrations. See the :doc:`migrations page <migrations>` for more information based on the version of SEED.
+
 
 Testing
 -------
@@ -300,21 +290,18 @@ Release Instructions
 
 To make a release do the following:
 
-1. Github admin user, on develop branch: update the ``package.json`` and ``setup.py`` file with the
-   most recent version number. Always use MAJOR.MINOR.RELEASE.
-2. Run the ``docs/scripts/change_log.py`` script and add the changes to the CHANGELOG.md file for
-   the range of time between last release and this release. Only add the *Closed Issues*. Also make
-   sure that all the pull requests have a related Issue in order to be included in the change log.
+1. Github admin user, on develop branch: update the ``package.json`` and ``setup.py`` file with the most recent version number. Always use MAJOR.MINOR.RELEASE.
+2. Update the ``docs/sources/migrations.rst`` file with any required actions.
+3. Run the ``docs/scripts/change_log.py`` script and add the changes to the CHANGELOG.md file for the range of time between last release and this release. Only add the *Closed Issues*. Also make sure that all the pull requests have a related Issue in order to be included in the change log.
 
 .. code-block:: console
 
     python docs/scripts/change_log.py –k GITHUB_API_TOKEN –s 2018-02-26 –e 2018-05-30
 
-3. Paste the results (remove unneeded Accepted Pull Requests) into the CHANGELOG.md. Make sure to cleanup the formatting.
-4. Make sure that any new UI needing localization has been tagged for
-   translation, and that any new translation keys exist in the lokalise.co project (see ``/docs/translation.md``).
-5. Once develop passes, then create a new PR from develop to master.
-6. Draft new Release from Github (https://github.com/SEED-platform/seed/releases).
-7. Include list of changes since previous release (i.e. the content in the CHANGELOG.md)
-8. Verify that the Docker versions are built and pushed to Docker hub (https://hub.docker.com/r/seedplatform/seed/tags/).
-9. Go to Read the Docs and enable the latest version to be active (https://readthedocs.org/dashboard/seed-platform/versions/)
+4. Paste the results (remove unneeded Accepted Pull Requests) into the CHANGELOG.md. Make sure to cleanup the formatting.
+5. Make sure that any new UI needing localization has been tagged for translation, and that any new translation keys exist in the lokalise.co project. (see :doc:`translation documentation <translation>`).
+6. Once develop passes, then create a new PR from develop to master.
+7. Draft new Release from Github (https://github.com/SEED-platform/seed/releases).
+8. Include list of changes since previous release (i.e. the content in the CHANGELOG.md)
+9. Verify that the Docker versions are built and pushed to Docker hub (https://hub.docker.com/r/seedplatform/seed/tags/).
+10. Go to Read the Docs and enable the latest version to be active (https://readthedocs.org/dashboard/seed-platform/versions/)

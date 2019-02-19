@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import logging
@@ -143,9 +143,7 @@ class Organization(models.Model):
 
     def add_member(self, user, role=ROLE_OWNER):
         """Add a user to an organization."""
-        return OrganizationUser.objects.get_or_create(
-            user=user, organization=self, role_level=role
-        )
+        return OrganizationUser.objects.get_or_create(user=user, organization=self, role_level=role)
 
     def remove_member(self, user):
         """Remove user from organization."""

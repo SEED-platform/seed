@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from __future__ import unicode_literals
@@ -419,8 +419,8 @@ class PropertyState(models.Model):
                         if log.parent1.name in ['Import Creation', 'Manual Edit']:
                             record = record_dict(log.parent1)
                             history.append(record)
-                        elif log.parent1.name == 'System Match' and log.parent1.parent1.name == 'Import Creation' and \
-                                log.parent1.parent2.name == 'Import Creation':
+                        elif log.parent1.name == 'System Match' and log.parent1.parent1 and log.parent1.parent1.name == 'Import Creation' and \
+                                log.parent1.parent2 and log.parent1.parent2.name == 'Import Creation':
                             # Handle case where an import file matches within itself, and proceeds to match with
                             # existing records
                             record = record_dict(log.parent1.parent2)

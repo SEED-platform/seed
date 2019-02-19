@@ -4,7 +4,7 @@ group: deprecated-2017Q4
 cache:
   directories:
     - node_modules
-    - seed/static/vendors/bower_components
+    - vendors/node_modules
     - "$HOME/.pip-cache/"
     - "$HOME/.nvm"
     - ".tox"

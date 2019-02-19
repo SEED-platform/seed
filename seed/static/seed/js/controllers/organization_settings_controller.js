@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.organization_settings', []).controller('organization_settings_controller', [
@@ -8,11 +8,13 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
   'auth_payload',
   'organization_service',
   '$translate',
-  function ($scope,
-            organization_payload,
-            auth_payload,
-            organization_service,
-            $translate) {
+  function (
+    $scope,
+    organization_payload,
+    auth_payload,
+    organization_service,
+    $translate
+  ) {
     $scope.org = organization_payload.organization;
     $scope.auth = auth_payload.auth;
 

@@ -48,14 +48,15 @@ RUN pip install -r requirements/aws.txt
 ### Install JavaScript requirements - do this first because they take awhile
 ### and the dependencies will probably change slower than python packages.
 ### README.md stops the no readme warning
-COPY ./bower.json /seed/bower.json
-COPY ./.bowerrc /seed/.bowerrc
 COPY ./package.json /seed/package.json
+COPY ./vendors/package.json /seed/vendors/package.json
 COPY ./README.md /seed/README.md
-COPY ./bin/install_javascript_dependencies.sh /seed/bin/install_javascript_dependencies.sh
-RUN npm update && /seed/bin/install_javascript_dependencies.sh
+RUN npm update && npm install
+WORKDIR /seed/vendors
+RUN npm install
 
 ### Copy over the remaining part of the SEED application and some helpers
+WORKDIR /seed
 COPY . /seed/
 COPY ./docker/wait-for-it.sh /usr/local/wait-for-it.sh
 

@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.column_settings', [])
@@ -20,22 +20,24 @@ angular.module('BE.seed.controller.column_settings', [])
     'naturalSort',
     'flippers',
     '$translate',
-    function ($scope,
-              $q,
-              $state,
-              $stateParams,
-              Notification,
-              columns,
-              organization_payload,
-              auth_payload,
-              columns_service,
-              modified_service,
-              organization_service,
-              spinner_utility,
-              urls,
-              naturalSort,
-              flippers,
-              $translate) {
+    function (
+      $scope,
+      $q,
+      $state,
+      $stateParams,
+      Notification,
+      columns,
+      organization_payload,
+      auth_payload,
+      columns_service,
+      modified_service,
+      organization_service,
+      spinner_utility,
+      urls,
+      naturalSort,
+      flippers,
+      $translate
+    ) {
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.org = organization_payload.organization;
       $scope.auth = auth_payload.auth;
@@ -115,7 +117,7 @@ angular.module('BE.seed.controller.column_settings', [])
         });
 
         spinner_utility.show();
-        $q.all(promises).then(function (results) {
+        $q.all(promises).then(function (/*results*/) {
           $scope.columns_updated = true;
           modified_service.resetModified();
           var totalChanged = _.keys(diff).length;

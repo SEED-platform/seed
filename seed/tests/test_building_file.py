@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -67,6 +67,23 @@ class TestBuildingFiles(TestCase):
         status, property_state, property_view, messages = bf.process(self.org.id, self.org.cycles.first())
         self.assertTrue(status)
         self.assertEqual(property_state.address_line_1, '1215 - 18th St')
+        self.assertEqual(messages, {'errors': [], 'warnings': []})
+
+    def test_buildingsync_constructor_single_scenario(self):
+        # test having only 1 measure and 1 scenario
+        filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'test_single_scenario.xml')
+        file = open(filename, 'rb')
+        simple_uploaded_file = SimpleUploadedFile(file.name, file.read())
+
+        bf = BuildingFile.objects.create(
+            file=simple_uploaded_file,
+            filename=filename,
+            file_type=BuildingFile.BUILDINGSYNC,
+        )
+
+        status, property_state, property_view, messages = bf.process(self.org.id, self.org.cycles.first())
+        self.assertTrue(status)
+        self.assertEqual(property_state.address_line_1, '123 Main St')
         self.assertEqual(messages, {'errors': [], 'warnings': []})
 
     def test_hpxml_constructor(self):

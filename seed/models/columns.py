@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -900,14 +900,15 @@ class Column(models.Model):
     @staticmethod
     def retrieve_db_types():
         """
-        return the data types for the database columns in the format of:
+        Return the data types for the database columns in the format of:
 
-        Example:
-        {
-          "field_name": "data_type",
-          "field_name_2": "data_type_2",
-          "address_line_1": "string",
-        }
+        .. code-block:: json
+
+            {
+              "field_name": "data_type",
+              "field_name_2": "data_type_2",
+              "address_line_1": "string",
+            }
 
         :return: dict
         """
@@ -958,7 +959,8 @@ class Column(models.Model):
         """
         Similar to keys, except it returns a list of tuples of the columns that are in the database
 
-        .. code:
+        .. code-block:: json
+
             [
               ('PropertyState', 'address_line_1'),
               ('PropertyState', 'address_line_2'),
@@ -1145,24 +1147,24 @@ class Column(models.Model):
     @staticmethod
     def retrieve_priorities(org_id):
         """
-        Return the list of priorties for the columns
+        Return the list of priorties for the columns. Result will be in the form of:
 
-        Result will be in the form of:
+        .. code-block:: json
 
-        {
-            'PropertyState': {
-                'lot_number': 'Favor New',
-                'owner_address': 'Favor New',
-                'extra_data': {
-                    'data_007': 'Favor New'
-                }
-            'TaxLotState': {
-                'custom_id_1': 'Favor New',
-                'block_number': 'Favor New',
-                'extra_data': {
-                    'data_008': 'Favor New'
-                }
-        }
+            {
+                'PropertyState': {
+                    'lot_number': 'Favor New',
+                    'owner_address': 'Favor New',
+                    'extra_data': {
+                        'data_007': 'Favor New'
+                    }
+                'TaxLotState': {
+                    'custom_id_1': 'Favor New',
+                    'block_number': 'Favor New',
+                    'extra_data': {
+                        'data_008': 'Favor New'
+                    }
+            }
 
         :param org_id: organization with the columns
         :return: dict
@@ -1190,7 +1192,8 @@ class Column(models.Model):
         """
         Return list of all columns for an organization as a tuple.
 
-        .. code:
+        .. code-block:: json
+
             [
               ('PropertyState', 'address_line_1'),
               ('PropertyState', 'address_line_2'),
