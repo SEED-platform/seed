@@ -113,6 +113,8 @@ class Meter(models.Model):
 
     source_lookup = dict((reversed(source) for source in SOURCES))
 
+    is_virtual = models.BooleanField(default=False)
+
     property = models.ForeignKey(
         Property,
         related_name='meters',

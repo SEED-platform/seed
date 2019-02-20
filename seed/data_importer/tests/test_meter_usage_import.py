@@ -110,6 +110,7 @@ class MeterUsageImportTest(TestCase):
         meter_1 = refreshed_property_1.meters.get(type=Meter.ELECTRICITY)
         self.assertEqual(meter_1.source, Meter.PORTFOLIO_MANAGER)
         self.assertEqual(meter_1.source_id, '5766973')
+        self.assertEqual(meter_1.is_virtual, False)
         self.assertEqual(meter_1.meter_readings.all().count(), 2)
 
         meter_reading_10, meter_reading_11 = list(meter_1.meter_readings.order_by('start_time').all())

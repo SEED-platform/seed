@@ -21,6 +21,7 @@ class Migration(migrations.Migration):
             name='Meter',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('is_virtual', models.BooleanField(default=False)),
                 ('source', models.IntegerField(choices=[(1, 'Portfolio Manager'), (2, 'GreenButton'), (3, 'BuildingSync')])),
                 ('source_id', models.CharField(blank=True, max_length=255, null=True)),
                 ('type', models.IntegerField(choices=[(1, 'Coal (anthracite)'), (2, 'Coal (bituminous)'), (3, 'Coke'), (4, 'Diesel'), (5, 'District Chilled Water'), (6, 'District Hot Water'), (7, 'District Steam'), (8, 'Electricity'), (9, 'Electricity - on site renewable'), (10, 'Fuel Oil (No. 1)'), (11, 'Fuel Oil (No. 2)'), (12, 'Fuel Oil (No. 4)'), (13, 'Fuel Oil (No. 5 & No. 6)'), (14, 'Kerosene'), (15, 'Natural Gas'), (16, 'Other'), (17, 'Propane and Liquid Propane'), (18, 'Wood')])),
