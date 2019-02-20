@@ -2,6 +2,25 @@
 
 Add GIS related functionality.
 
+# SEED Version 2.4.2
+
+Date Range: 01/05/19 - 02/19/19
+
+Closed Issues:
+- Fixed [#421]( https://github.com/SEED-platform/seed/issues/421 ), Reports - Message saying why there is no data
+- Fixed [#1124]( https://github.com/SEED-platform/seed/issues/1124 ), Linux install instructions
+- Fixed [#1626]( https://github.com/SEED-platform/seed/issues/1626 ), 403 Error deleting Inventory from Org in Admin
+- Fixed [#1730]( https://github.com/SEED-platform/seed/issues/1730 ), Error importing BuildingSync File
+- Fixed [#1738]( https://github.com/SEED-platform/seed/issues/1738 ), No email sent to set password when I created a new organization
+- Feature [#1741]( https://github.com/SEED-platform/seed/issues/1741 ), BuildingSync batch import from UI
+- Feature [#1782]( https://github.com/SEED-platform/seed/issues/1782 ), Add OEI to docker deployment
+- Fixed [#1797]( https://github.com/SEED-platform/seed/issues/1797 ), Ability to remove user who only belongs to a single organization
+- Fixed [#1800]( https://github.com/SEED-platform/seed/issues/1800 ), Add managed task for adding user to organization via cli
+- Feature [#1801]( https://github.com/SEED-platform/seed/issues/1801 ), Add dropdown for actions on inventory detail page
+- Fixed [#1807]( https://github.com/SEED-platform/seed/issues/1807 ), Only fields in property or tax lot DB are shown in mapping screen (not showing Extra Data fields)
+- Fixed [#1812]( https://github.com/SEED-platform/seed/issues/1812 ), Merge screen doesn't show extra data fields
+- Fixed [#1813]( https://github.com/SEED-platform/seed/issues/1813 ), When merging records, the merged records don't show up in the detail view, only the final Master Record
+
 # SEED Version 2.4.1
 
 Date Range: 10/06/18 - 01/04/19:
