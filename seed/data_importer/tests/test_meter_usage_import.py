@@ -108,7 +108,7 @@ class MeterUsageImportTest(TestCase):
         self.assertEqual(refreshed_property_1.meters.all().count(), 2)
 
         meter_1 = refreshed_property_1.meters.get(type=Meter.ELECTRICITY)
-        self.assertEqual(meter_1.source, Meter.PROPERTY_MANAGER)
+        self.assertEqual(meter_1.source, Meter.PORTFOLIO_MANAGER)
         self.assertEqual(meter_1.source_id, '5766973')
         self.assertEqual(meter_1.meter_readings.all().count(), 2)
 
@@ -123,7 +123,7 @@ class MeterUsageImportTest(TestCase):
         self.assertEqual(meter_reading_11.reading, 548603.7 * ureg('kBtu'))
 
         meter_2 = refreshed_property_1.meters.get(type=Meter.NATURAL_GAS)
-        self.assertEqual(meter_2.source, Meter.PROPERTY_MANAGER)
+        self.assertEqual(meter_2.source, Meter.PORTFOLIO_MANAGER)
         self.assertEqual(meter_2.source_id, '5766973')
         self.assertEqual(meter_2.meter_readings.all().count(), 2)
 
@@ -141,7 +141,7 @@ class MeterUsageImportTest(TestCase):
         self.assertEqual(refreshed_property_2.meters.all().count(), 2)
 
         meter_3 = refreshed_property_2.meters.get(type=Meter.ELECTRICITY)
-        self.assertEqual(meter_3.source, Meter.PROPERTY_MANAGER)
+        self.assertEqual(meter_3.source, Meter.PORTFOLIO_MANAGER)
         self.assertEqual(meter_3.source_id, '5766975')
         self.assertEqual(meter_3.meter_readings.all().count(), 2)
 
@@ -156,7 +156,7 @@ class MeterUsageImportTest(TestCase):
         self.assertEqual(meter_reading_40.reading, 141437.5 * ureg('kBtu'))
 
         meter_4 = refreshed_property_2.meters.get(type=Meter.NATURAL_GAS)
-        self.assertEqual(meter_4.source, Meter.PROPERTY_MANAGER)
+        self.assertEqual(meter_4.source, Meter.PORTFOLIO_MANAGER)
         self.assertEqual(meter_4.source_id, '5766975')
         self.assertEqual(meter_4.meter_readings.all().count(), 2)
 
@@ -176,7 +176,7 @@ class MeterUsageImportTest(TestCase):
         # Create a meter with the same details of one meter in the import file
         unsaved_meter = Meter(
             property=property,
-            source=Meter.PROPERTY_MANAGER,
+            source=Meter.PORTFOLIO_MANAGER,
             source_id='5766973',
             type=Meter.ELECTRICITY,
         )
@@ -218,7 +218,7 @@ class MeterUsageImportTest(TestCase):
         # Create a meter with the same details of one meter in the import file
         unsaved_meter = Meter(
             property=property,
-            source=Meter.PROPERTY_MANAGER,
+            source=Meter.PORTFOLIO_MANAGER,
             source_id='5766973',
             type=Meter.ELECTRICITY,
         )
@@ -307,7 +307,7 @@ class MeterUsageImportTest(TestCase):
         self.client.post(url, post_params)
 
         # self.property_1 is associated to self.org, so according to post request, it should have 2 meters
-        refreshed_property_1 = Property.objects.get(pk=self.property_1.id, self.org.pk)
+        refreshed_property_1 = Property.objects.get(pk=self.property_1.id, organization_id__exact=self.org.pk)
         self.assertEqual(refreshed_property_1.meters.all().count(), 2)
 
         refreshed_new_property = Property.objects.get(pk=new_property.id)

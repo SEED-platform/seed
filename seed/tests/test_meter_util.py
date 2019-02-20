@@ -82,7 +82,7 @@ class MeterUtilTests(TestCase):
         expected = [
             {
                 'property_id': self.property.id,
-                'source': Meter.PROPERTY_MANAGER,
+                'source': Meter.PORTFOLIO_MANAGER,
                 'source_id': self.pm_property_id,
                 'type': Meter.ELECTRICITY,
                 'readings': [
@@ -95,7 +95,7 @@ class MeterUtilTests(TestCase):
             },
             {
                 'property_id': self.property.id,
-                'source': Meter.PROPERTY_MANAGER,
+                'source': Meter.PORTFOLIO_MANAGER,
                 'source_id': self.pm_property_id,
                 'type': Meter.NATURAL_GAS,
                 'readings': [
@@ -129,7 +129,7 @@ class MeterUtilTests(TestCase):
         expected = [
             {
                 'property_id': self.property.id,
-                'source': Meter.PROPERTY_MANAGER,
+                'source': Meter.PORTFOLIO_MANAGER,
                 'source_id': self.pm_property_id,
                 'type': Meter.ELECTRICITY,
                 'readings': [
@@ -147,7 +147,7 @@ class MeterUtilTests(TestCase):
             },
             {
                 'property_id': self.property.id,
-                'source': Meter.PROPERTY_MANAGER,
+                'source': Meter.PORTFOLIO_MANAGER,
                 'source_id': self.pm_property_id,
                 'type': Meter.NATURAL_GAS,
                 'readings': [

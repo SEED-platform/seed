@@ -688,7 +688,7 @@ def _save_meter_usage_data(file_pk, progress_key):
                 readings = meter_readings['readings']
                 del meter_readings['readings']
 
-                meter = Meter.objects.get_or_create(**meter_readings)[0]
+                meter, _created = Meter.objects.get_or_create(**meter_readings)
 
                 # These strings should be batched with some max length? This would change transaction structure.
                 reading_strings = [

@@ -101,12 +101,12 @@ class Meter(models.Model):
 
     type_lookup = dict((reversed(type) for type in ENERGY_TYPES))
 
-    PROPERTY_MANAGER = 1
+    PORTFOLIO_MANAGER = 1
     GREENBUTTON = 2
     BUILDINGSYNC = 3
 
     SOURCES = (
-        (PROPERTY_MANAGER, 'Property Manager'),
+        (PORTFOLIO_MANAGER, 'Portfolio Manager'),
         (GREENBUTTON, 'GreenButton'),
         (BUILDINGSYNC, 'BuildingSync'),
     )
