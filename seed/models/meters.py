@@ -127,7 +127,6 @@ class Meter(models.Model):
     source_id = models.CharField(max_length=255, null=True, blank=True)
 
     type = models.IntegerField(choices=ENERGY_TYPES)
-    # units = models.IntegerField(choices=ENERGY_UNITS) ------- removed because pint library used and everything's stored as kBtu
 
 
 class MeterReading(models.Model):
@@ -144,6 +143,10 @@ class MeterReading(models.Model):
 
     reading = QuantityField('kBtu')
     # cost = models.DecimalField(max_digits=11, decimal_places=4, null=True)  -------- this was included before but I don't believe this is in scope (included in reports?)
+
+    # The following two fields are tracked for historical convenience
+    source_unit = models.CharField(max_length=255, null=True, blank=True)  # TODO: if source_unit choices are well defined, use an enum
+    conversion_factor = models.FloatField(null=True, blank=True)
 
     class Meta:
         unique_together = ('meter', 'start_time', 'end_time')

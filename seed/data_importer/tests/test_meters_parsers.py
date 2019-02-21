@@ -89,7 +89,9 @@ class MeterUtilTests(TestCase):
                     {
                         'start_time': make_aware(datetime(2016, 3, 1, 0, 0, 0), timezone=self.tz_obj),
                         'end_time': make_aware(datetime(2016, 3, 31, 23, 59, 59), timezone=self.tz_obj),
-                        'reading': 597478.9
+                        'reading': 597478.9,
+                        'source_unit': 'kBtu',
+                        'conversion_factor': 1
                     }
                 ]
             },
@@ -102,7 +104,9 @@ class MeterUtilTests(TestCase):
                     {
                         'start_time': make_aware(datetime(2016, 3, 1, 0, 0, 0), timezone=self.tz_obj),
                         'end_time': make_aware(datetime(2016, 3, 31, 23, 59, 59), timezone=self.tz_obj),
-                        'reading': 576000.2
+                        'reading': 576000.2,
+                        'source_unit': 'kBtu',
+                        'conversion_factor': 1
                     }
                 ]
             }
@@ -138,12 +142,16 @@ class MeterUtilTests(TestCase):
                     {
                         'start_time': make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=self.tz_obj),
                         'end_time': make_aware(datetime(2016, 2, 29, 23, 59, 59), timezone=self.tz_obj),
-                        'reading': 111
+                        'reading': 111,
+                        'source_unit': 'kBtu',
+                        'conversion_factor': 1
                     },
                     {
                         'start_time': make_aware(datetime(2017, 2, 1, 0, 0, 0), timezone=self.tz_obj),
                         'end_time': make_aware(datetime(2017, 2, 28, 23, 59, 59), timezone=self.tz_obj),
-                        'reading': 222
+                        'reading': 222,
+                        'source_unit': 'kBtu',
+                        'conversion_factor': 1
                     }
                 ]
             },
@@ -156,12 +164,16 @@ class MeterUtilTests(TestCase):
                     {
                         'start_time': make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=self.tz_obj),
                         'end_time': make_aware(datetime(2016, 2, 29, 23, 59, 59), timezone=self.tz_obj),
-                        'reading': 333
+                        'reading': 333,
+                        'source_unit': 'kBtu',
+                        'conversion_factor': 1
                     },
                     {
                         'start_time': make_aware(datetime(2017, 2, 1, 0, 0, 0), timezone=self.tz_obj),
                         'end_time': make_aware(datetime(2017, 2, 28, 23, 59, 59), timezone=self.tz_obj),
-                        'reading': 444
+                        'reading': 444,
+                        'source_unit': 'kBtu',
+                        'conversion_factor': 1
                     }
                 ]
             }
@@ -196,4 +208,8 @@ class MeterUtilTests(TestCase):
             electricity_details = result[0]
 
         self.assertEqual(fuel_oil_details["readings"][0]["reading"], 947817)
+        self.assertEqual(fuel_oil_details["readings"][0]["source_unit"], "GJ")
+        self.assertEqual(fuel_oil_details["readings"][0]["conversion_factor"], 947.817)
         self.assertEqual(electricity_details["readings"][0]["reading"], 3412)
+        self.assertEqual(electricity_details["readings"][0]["source_unit"], "kWh")
+        self.assertEqual(electricity_details["readings"][0]["conversion_factor"], 3.412)

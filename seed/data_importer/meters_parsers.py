@@ -121,12 +121,14 @@ class PMMeterParser(object):
         for type in meter_types:
             meter_details = meter_shared_details.copy()
 
-            reading = self._parse_type_and_convert_reading(type, meter_details, details[type])
+            unit, conversion_factor = self._parse_unit_and_factor(type, meter_details)
 
             meter_reading = {
                 'start_time': start_time,
                 'end_time': end_time,
-                'reading': reading
+                'reading': details[type] * conversion_factor,
+                'source_unit': unit,
+                'conversion_factor': conversion_factor
             }
 
             meter_identifier = '-'.join([str(v) for k, v in meter_details.items()])
@@ -140,17 +142,15 @@ class PMMeterParser(object):
             else:
                 existing_property_meter['readings'].append(meter_reading)
 
-    def _parse_type_and_convert_reading(self, type_unit, meter_details, raw_reading):
+    def _parse_unit_and_factor(self, type_unit, meter_details):
         use_position = type_unit.find(" Use")
         type = type_unit[:use_position]
         meter_details['type'] = Meter.type_lookup[type]
 
         unit = type_unit[(type_unit.find('(', use_position) + 1):(type_unit.find(')', use_position))]
 
-        if unit == "kBtu":
-            return raw_reading
-        else:
-            # TODO: If Fuzzy matching is needed, it should be done here
-            # TODO; If no conversion exists? skip entry (via try except)?
-            conversion_factor = self.us_kbtu_thermal_conversion_factors[type][unit]
-            return raw_reading * conversion_factor
+        # TODO: If Fuzzy matching is needed, it should be done here
+        # TODO; If no conversion exists? skip entry (via try except)?
+        factor = self.us_kbtu_thermal_conversion_factors[type][unit]
+
+        return unit, factor

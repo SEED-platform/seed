@@ -34,6 +34,8 @@ class Migration(migrations.Migration):
                 ('start_time', models.DateTimeField(db_index=True, primary_key=True, serialize=False)),
                 ('end_time', models.DateTimeField(db_index=True)),
                 ('reading', quantityfield.fields.QuantityField(base_units='kBtu')),
+                ('source_unit', models.CharField(blank=True, max_length=255, null=True)),
+                ('conversion_factor', models.FloatField(blank=True, null=True)),
                 ('meter', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='meter_readings', to='seed.Meter')),
             ],
         ),

@@ -118,6 +118,8 @@ class MeterUsageImportTest(TestCase):
         self.assertEqual(meter_reading_10.start_time, make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=self.tz_obj))
         self.assertEqual(meter_reading_10.end_time, make_aware(datetime(2016, 1, 31, 23, 59, 59), timezone=self.tz_obj))
         self.assertEqual(meter_reading_10.reading, 597478.9 * ureg('kBtu'))
+        self.assertEqual(meter_reading_10.source_unit, "kBtu")  # spot check
+        self.assertEqual(meter_reading_10.conversion_factor, 1)  # spot check
 
         self.assertEqual(meter_reading_11.start_time, make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=self.tz_obj))
         self.assertEqual(meter_reading_11.end_time, make_aware(datetime(2016, 2, 29, 23, 59, 59), timezone=self.tz_obj))
@@ -151,6 +153,8 @@ class MeterUsageImportTest(TestCase):
         self.assertEqual(meter_reading_30.start_time, make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=self.tz_obj))
         self.assertEqual(meter_reading_30.end_time, make_aware(datetime(2016, 1, 31, 23, 59, 59), timezone=self.tz_obj))
         self.assertEqual(meter_reading_30.reading, 154572.2 * ureg('kBtu'))
+        self.assertEqual(meter_reading_30.source_unit, "kBtu")  # spot check
+        self.assertEqual(meter_reading_30.conversion_factor, 1)  # spot check
 
         self.assertEqual(meter_reading_40.start_time, make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=self.tz_obj))
         self.assertEqual(meter_reading_40.end_time, make_aware(datetime(2016, 2, 29, 23, 59, 59), timezone=self.tz_obj))
@@ -213,7 +217,7 @@ class MeterUsageImportTest(TestCase):
         # Sanity check to be sure, nothing was changed with existing meter reading
         self.assertEqual(meter_reading_12, existing_meter_reading)
 
-    def test_existing_meter_reading_is_updated_if_import_file_references_previous_entry(self):
+    def test_existing_meter_reading_has_reading_source_unit_and_conversion_factor_updated_if_import_file_references_previous_entry(self):
         property = Property.objects.get(pk=self.property_1.id)
 
         # Create a meter with the same details of one meter in the import file
@@ -235,6 +239,8 @@ class MeterUsageImportTest(TestCase):
             start_time=start_time,
             end_time=end_time,
             reading=12345,
+            source_unit="GJ",
+            conversion_factor=947.817
         )
         unsaved_meter_reading.save()
 
@@ -254,6 +260,8 @@ class MeterUsageImportTest(TestCase):
 
         self.assertEqual(meter_reading.end_time, end_time)
         self.assertEqual(meter_reading.reading, 597478.9 * ureg('kBtu'))
+        self.assertEqual(meter_reading.source_unit, "kBtu")
+        self.assertEqual(meter_reading.conversion_factor, 1)
 
     def test_property_existing_in_multiple_cycles_can_have_meters_and_readings_associated_to_it(self):
         property_details = FakePropertyStateFactory(organization=self.org).get_details()

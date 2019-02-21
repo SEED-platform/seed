@@ -693,16 +693,16 @@ def _save_meter_usage_data(file_pk, progress_key):
 
                 # These strings should be batched with some max length? This would change transaction structure.
                 reading_strings = [
-                    f"({meter.id}, '{reading['start_time'].isoformat(' ')}', '{reading['end_time'].isoformat(' ')}', {reading['reading']})"
+                    f"({meter.id}, '{reading['start_time'].isoformat(' ')}', '{reading['end_time'].isoformat(' ')}', {reading['reading']}, '{reading['source_unit']}', {reading['conversion_factor']})"
                     for reading
                     in readings
                 ]
 
                 sql = (
-                    "INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading)" +
+                    "INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor)" +
                     " VALUES " + ", ".join(reading_strings) +
                     " ON CONFLICT (meter_id, start_time, end_time)" +
-                    " DO UPDATE SET reading = EXCLUDED.reading;"
+                    " DO UPDATE SET reading = EXCLUDED.reading, source_unit = EXCLUDED.source_unit, conversion_factor = EXCLUDED.conversion_factor;"
                 )
 
                 with connection.cursor() as cursor:
