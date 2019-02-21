@@ -31,6 +31,7 @@ from past.builtins import basestring
 from unidecode import unidecode
 
 from seed.data_importer.equivalence_partitioner import EquivalencePartitioner
+from seed.data_importer.meters_parsers import PMMeterParser
 from seed.data_importer.models import (
     ImportFile,
     ImportRecord,
@@ -72,7 +73,6 @@ from seed.models.auditlog import AUDIT_IMPORT
 from seed.models.data_quality import DataQualityCheck
 from seed.utils.buildings import get_source_type
 from seed.utils.geocode import geocode_buildings
-from seed.utils.meter import parse_meter_details
 from seed.utils.ubid import decode_ubids
 
 
@@ -671,7 +671,8 @@ def _save_meter_usage_data(file_pk, progress_key):
     parser = reader.MCMParser(import_file.local_file)
     raw_meter_data = list(parser.data)
 
-    meters_and_readings = parse_meter_details(raw_meter_data, org_id, monthly=True)
+    meters_parser = PMMeterParser(org_id, raw_meter_data)
+    meters_and_readings = meters_parser.construct_objects_details()
 
     try:
         with transaction.atomic():

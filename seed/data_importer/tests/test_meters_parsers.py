@@ -14,6 +14,7 @@ from django.utils.timezone import (
 
 from pytz import timezone
 
+from seed.data_importer.meters_parsers import PMMeterParser
 from seed.landing.models import SEEDUser as User
 from seed.models import (
     Meter,
@@ -25,7 +26,6 @@ from seed.test_helpers.fake import (
     FakePropertyFactory,
     FakePropertyStateFactory,
 )
-from seed.utils.meter import parse_meter_details
 from seed.utils.organizations import create_organization
 
 
@@ -108,7 +108,9 @@ class MeterUtilTests(TestCase):
             }
         ]
 
-        self.assertEqual(parse_meter_details(raw_meters, self.org.id, monthly=True), expected)
+        meters_parser = PMMeterParser(self.org.id, raw_meters)
+
+        self.assertEqual(meters_parser.construct_objects_details(), expected)
 
     def test_parse_meter_details_works_with_multiple_meters_impacted_by_a_leap_year(self):
         raw_meters = [
@@ -165,7 +167,9 @@ class MeterUtilTests(TestCase):
             }
         ]
 
-        self.assertEqual(parse_meter_details(raw_meters, self.org.id, monthly=True), expected)
+        meters_parser = PMMeterParser(self.org.id, raw_meters)
+
+        self.assertEqual(meters_parser.construct_objects_details(), expected)
 
     def test_parse_meter_details_converts_energy_units_if_necessary(self):
         raw_meters = [
@@ -180,7 +184,9 @@ class MeterUtilTests(TestCase):
             }
         ]
 
-        result = parse_meter_details(raw_meters, self.org.id, monthly=True)
+        meters_parser = PMMeterParser(self.org.id, raw_meters)
+
+        result = meters_parser.construct_objects_details()
 
         if result[0]["type"] == Meter.FUEL_OIL_NO_1:
             fuel_oil_details = result[0]
