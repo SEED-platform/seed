@@ -10,7 +10,6 @@ import logging
 import os
 import subprocess
 
-from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.http import JsonResponse
 from django.shortcuts import render

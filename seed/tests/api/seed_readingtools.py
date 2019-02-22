@@ -40,7 +40,7 @@ def upload_file(upload_header, upload_filepath, main_url, upload_dataset_id, upl
                                   headers=upload_header)
     upload_details = upload_details.json()
 
-    filename = os.path.basename(upload_filepath)
+    # filename = os.path.basename(upload_filepath)
 
     upload_url = "%s%s" % (main_url, upload_details['upload_path'])
     params = {
