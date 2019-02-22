@@ -47,7 +47,7 @@ from subprocess import Popen
 import requests
 
 from seed_readingtools import check_status, setup_logger
-from test_modules import cycles, upload_match_sort, account, delete_set, labels, data_quality
+from test_modules import cycles, upload_match_sort, account, delete_set, labels, data_quality, export
 
 location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 print("Running from {}".format(location))
@@ -166,6 +166,10 @@ data_quality(header, main_url, organization_id, log)
 # -- Labels
 print ('\n\n|-------Labels-------|')
 labels(header, main_url, organization_id, cycle_id, log)
+
+# Export dataset
+print ('\n|---Export Dataset---|\n')
+export(header, main_url, organization_id, cycle_id, log)
 
 # Delete dataset
 print ('\n|---Delete Dataset---|\n')
