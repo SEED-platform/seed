@@ -153,41 +153,31 @@ Routes in `static/seed/js/seed.js` (the normal angularjs `app.js`)
 
 .. code-block:: JavaScript
 
-    window.BE.apps.seed.config(['$routeProvider', function ($routeProvider) {
-            $routeProvider
-                .when('/', {
-                    templateUrl: static_url + '/seed/partials/home.html'
-                })
-                .when('/projects', {
-                    controller: 'project_list_controller',
-                    templateUrl: static_url + '/seed/partials/projects.html'
-                })
-                .when('/buildings', {
-                    templateUrl: static_url + '/seed/partials/buildings.html'
-                })
-                .when('/admin', {
-                    controller: 'seed_admin_controller',
-                    templateUrl: static_url + '/seed/partials/admin.html'
-                })
-                .otherwise({ redirectTo: '/' });
-        }]);
+  SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider', function (stateHelperProvider, $urlRouterProvider, $locationProvider) {
+    stateHelperProvider
+      .state({
+        name: 'home',
+        url: '/',
+        templateUrl: static_url + 'seed/partials/home.html'
+      })
+      .state({
+        name: 'profile',
+        url: '/profile',
+        templateUrl: static_url + 'seed/partials/profile.html',
+        controller: 'profile_controller',
+        resolve: {
+          auth_payload: ['auth_service', '$q', 'user_service', function (auth_service, $q, user_service) {
+            var organization_id = user_service.get_organization().id;
+            return auth_service.is_authorized(organization_id, ['requires_superuser']);
+          }],
+          user_profile_payload: ['user_service', function (user_service) {
+            return user_service.get_user_profile();
+          }]
+        }
+      });
+  }]);
 
 HTML partials in `static/seed/partials/`
-
-on production and staging servers on AWS, or for the partial html templates loaded on S3, or a CDN,
-the external resource should be added to the white list in `static/seed/js/seed/js`
-
-.. code-block:: JavaScript
-
-    // white list for s3
-    window.BE.apps.seed.config(function( $sceDelegateProvider ) {
-    $sceDelegateProvider.resourceUrlWhitelist([
-        // localhost
-        'self',
-        // AWS s3
-        'https://be-*.amazonaws.com/**'
-        ]);
-    });
 
 Logging
 -------
@@ -265,7 +255,7 @@ Migrations are handles through Django; however, various versions have customs ac
 Testing
 -------
 
-JS tests can be run with Jasmine at the url `app/angular_js_tests/`.
+JS tests can be run with Jasmine at the url `/angular_js_tests/`.
 
 Python unit tests are run with
 

@@ -66,19 +66,9 @@ def home(request):
 
         * **app_urls**: a json object of all the URLs that is loaded in the JS global namespace
         * **username**: the request user's username (first and last name)
-        * **AWS_UPLOAD_BUCKET_NAME**: S3 direct upload bucket
-        * **AWS_CLIENT_ACCESS_KEY**: S3 direct upload client key
-        * **FILE_UPLOAD_DESTINATION**: 'S3' or 'filesystem'
     """
 
     username = request.user.first_name + " " + request.user.last_name
-    if 'S3' in settings.DEFAULT_FILE_STORAGE:
-        FILE_UPLOAD_DESTINATION = 'S3'
-        AWS_UPLOAD_BUCKET_NAME = settings.AWS_BUCKET_NAME
-        AWS_CLIENT_ACCESS_KEY = settings.AWS_UPLOAD_CLIENT_KEY
-    else:
-        FILE_UPLOAD_DESTINATION = 'filesystem'
-
     initial_org_id, initial_org_name, initial_org_user_role = _get_default_org(
         request.user
     )
@@ -249,7 +239,7 @@ def delete_file(request):
             'message': 'user does not have permission to delete file',
         })
 
-    # Note that the file itself is not delete, it remains on the disk/s3
+    # Note that the file itself is not deleted, it remains on the disk
     import_file.delete()
     return JsonResponse({'status': 'success'})
 

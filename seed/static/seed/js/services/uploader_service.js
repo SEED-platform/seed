@@ -12,11 +12,6 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
 
     var uploader_factory = {};
 
-    uploader_factory.get_AWS_creds = function () {
-      return $http.get(window.BE.urls.get_AWS_creds).then(function (response) {
-        return response.data;
-      });
-    };
     /**
      * create_dataset: AJAX request to create a new dataset/import record
      * should have a response like:
