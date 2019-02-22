@@ -12,7 +12,7 @@ seed local_untracked.py
             $ ./manage.py runserver --settings=config.settings.dev
         - add your settings. Make sure to update the DATABASES, AWS related configurations, and
             CACHES (i.e. everything here starting with 'your-')
-    For local dev, all these services can run locally on localhost or 127.0.0.1 except for S3.
+    For local dev, all these services can run locally on localhost, 127.0.0.1, or 0.0.0.0.
 """
 from __future__ import absolute_import
 
@@ -36,16 +36,14 @@ MAPQUEST_API_KEY = os.environ.get('MAPQUEST_API_KEY', 'a-mapquest-api-key')
 # You can create a key from https://www.miniwebtool.com/django-secret-key-generator/
 #SECRET_KEY = 'default-your-secret-key-here'
 
-# Optional AWS Settings (if using RDS, SES, S3, etc)
-#AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID', '')
-#AWS_UPLOAD_CLIENT_KEY = AWS_ACCESS_KEY_ID
-#AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY', '')
-#AWS_UPLOAD_CLIENT_SECRET_KEY = AWS_SECRET_ACCESS_KEY
-#AWS_BUCKET_NAME = os.environ.get("AWS_BUCKET_NAME", "seed-dev-uploads")
-#AWS_STORAGE_BUCKET_NAME = AWS_BUCKET_NAME
+# MapQuest API key for testing only - A valid key is only needed when refreshing VCR cassettes.
+# Keys for app users are attached to each organization. 
+TESTING_MAPQUEST_API_KEY = os.environ.get('TESTING_MAPQUEST_API_KEY', '<your_key_here>')
 
 # email through SES (django-ses)
 #EMAIL_BACKEND = 'django_ses.SESBackend'
+#AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID', '')
+#AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY', '')
 #AWS_SES_REGION_NAME = 'us-west-2'
 #AWS_SES_REGION_ENDPOINT = 'email.us-west-2.amazonaws.com'
 #SERVER_EMAIL = 'info@seed-platform.org'
@@ -74,7 +72,7 @@ MAPQUEST_API_KEY = os.environ.get('MAPQUEST_API_KEY', 'a-mapquest-api-key')
 # ================================= Database settings ===============================
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'seed',
         'USER': 'your-username',
         'PASSWORD': 'your-password',

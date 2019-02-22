@@ -11,7 +11,7 @@
 version: '3'
 services:
   db-postgres:
-    image: 127.0.0.1:5000/postgres
+    image: 127.0.0.1:5000/postgres-seed
     environment:
       - POSTGRES_DB
       - POSTGRES_USER
@@ -19,6 +19,8 @@ services:
     volumes:
       - seed_pgdata:/var/lib/postgresql/data
       - $HOME/seed-backups:/backups
+    ports:
+      - "5432:5432"
     deploy:
       restart_policy:
         condition: on-failure

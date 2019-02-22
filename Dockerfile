@@ -18,6 +18,8 @@ RUN apk add --no-cache python \
         bash-completion \
         npm \
         nginx && \
+    apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/main openssl && \
+    apk add --no-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ geos gdal && \
     ln -sf /usr/bin/python3 /usr/bin/python && \
     python -m ensurepip && \
     rm -r /usr/lib/python*/ensurepip && \
@@ -51,9 +53,8 @@ RUN pip install -r requirements/aws.txt
 COPY ./package.json /seed/package.json
 COPY ./vendors/package.json /seed/vendors/package.json
 COPY ./README.md /seed/README.md
-RUN npm update && npm install
-WORKDIR /seed/vendors
-RUN npm install
+# unsafe-perm allows the package.json postinstall script to run with the elevated permissions
+RUN npm install --unsafe-perm
 
 ### Copy over the remaining part of the SEED application and some helpers
 WORKDIR /seed

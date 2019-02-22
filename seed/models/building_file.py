@@ -35,13 +35,11 @@ class BuildingFile(models.Model):
     """
     UNKNOWN = 0
     BUILDINGSYNC = 1
-    GEOJSON = 2
     HPXML = 3
 
     BUILDING_FILE_TYPES = (
         (UNKNOWN, 'Unknown'),
         (BUILDINGSYNC, 'BuildingSync'),
-        (GEOJSON, 'GeoJSON'),
         (HPXML, 'HPXML')
     )
 

@@ -91,7 +91,9 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       /**
        * uploader: hold the state of the upload.
        * invalid_extension_alert: bool - hides or shows the bootstrap alert for csv/xls/xlsx files
+       * invalid_geojson_extension_alert: bool - hides or shows the bootstrap alert for geojson/json files
        * invalid_xml_extension_alert: bool - hides or shows the bootstrap alert for xml files
+       * invalid_xml_zip_extension_alert: bool - hides or shows the bootstrap alert for xml/zip files
        * in_progress: bool - when true: shows the progress bar and hides the
        *  upload button. when false: hides the progress bar and shows the upload
        *  button.
@@ -100,7 +102,9 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        */
       $scope.uploader = {
         invalid_extension_alert: false,
+        invalid_geojson_extension_alert: false,
         invalid_xml_extension_alert: false,
+        invalid_xml_zip_extension_alert: false,
         in_progress: false,
         progress: 0,
         complete: false,
@@ -182,12 +186,30 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         switch (event_message) {
           case 'invalid_extension':
             $scope.uploader.invalid_extension_alert = true;
+            $scope.uploader.invalid_geojson_extension_alert = false;
             $scope.uploader.invalid_xml_extension_alert = false;
+            $scope.uploader.invalid_xml_zip_extension_alert = false;
+            break;
+
+          case 'invalid_geojson_extension':
+            $scope.uploader.invalid_extension_alert = false;
+            $scope.uploader.invalid_geojson_extension_alert = true;
+            $scope.uploader.invalid_xml_extension_alert = false;
+            $scope.uploader.invalid_xml_zip_extension_alert = false;
             break;
 
           case 'invalid_xml_extension':
             $scope.uploader.invalid_extension_alert = false;
+            $scope.uploader.invalid_geojson_extension_alert = false;
             $scope.uploader.invalid_xml_extension_alert = true;
+            $scope.uploader.invalid_xml_zip_extension_alert = false;
+            break;
+
+          case 'invalid_xml_zip_extension':
+            $scope.uploader.invalid_extension_alert = false;
+            $scope.uploader.invalid_geojson_extension_alert = false;
+            $scope.uploader.invalid_xml_extension_alert = false;
+            $scope.uploader.invalid_xml_zip_extension_alert = true;
             break;
 
           case 'upload_submitted':
@@ -199,6 +221,9 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           case 'upload_error':
             $scope.step_12_error_message = file.error;
             $scope.step.number = 12;
+            // add variables to identify buildingsync bulk uploads
+            $scope.building_sync_files = (file.source_type === 'BuildingSync');
+            $scope.bulk_upload = (_.last(file.filename.split('.')) === 'zip');
             break;
 
           case 'upload_in_progress':
@@ -214,11 +239,14 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             var current_step = $scope.step.number;
             $scope.uploader.status_message = 'upload complete';
             $scope.dataset.filename = file.filename;
+            $scope.step_14_message = null;
+
             if (file.source_type === 'BuildingSync') {
               $scope.uploader.complete = true;
               $scope.uploader.in_progress = false;
               $scope.uploader.progress = 100;
               $scope.step.number = 14;
+              $scope.step_14_message = (_.size(file.message['warnings']) > 0) ? file.message['warnings'] : null;
             } else {
               $scope.dataset.import_file_id = file.file_id;
 
@@ -357,12 +385,21 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             $scope.step_10_title = data.message;
           } else {
             uploader_service.check_progress_loop(data.progress_key, data.progress, 1, function () {
-              inventory_service.get_matching_results($scope.dataset.import_file_id).then(function (result_data) {
+              inventory_service.get_matching_and_geocoding_results($scope.dataset.import_file_id).then(function (result_data) {
                 $scope.duplicate_property_states = result_data.properties.duplicates;
                 $scope.duplicate_tax_lot_states = result_data.tax_lots.duplicates;
                 $scope.duplicates_of_existing_property_states = result_data.properties.duplicates_of_existing;
                 $scope.duplicates_of_existing_taxlot_states = result_data.tax_lots.duplicates_of_existing;
                 $scope.import_file_records = result_data.import_file_records;
+
+                $scope.properties_geocoded_high_confidence = result_data.properties.geocoded_high_confidence;
+                $scope.properties_geocoded_low_confidence = result_data.properties.geocoded_low_confidence;
+                $scope.properties_geocoded_manually = result_data.properties.geocoded_manually;
+                $scope.properties_geocode_not_possible = result_data.properties.geocode_not_possible;
+
+                $scope.tax_lots_geocoded_high_confidence = result_data.tax_lots.geocoded_high_confidence;
+                $scope.tax_lots_geocoded_low_confidence = result_data.tax_lots.geocoded_low_confidence;
+                $scope.tax_lots_geocode_not_possible = result_data.tax_lots.geocode_not_possible;
 
                 $scope.matched_properties = result_data.properties.matched;
                 $scope.unmatched_properties = result_data.properties.unmatched;

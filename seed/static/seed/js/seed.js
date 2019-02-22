@@ -53,11 +53,13 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.delete_modal',
   'BE.seed.controller.developer',
   'BE.seed.controller.export_inventory_modal',
+  'BE.seed.controller.geocode_modal',
   'BE.seed.controller.inventory_detail',
   'BE.seed.controller.inventory_detail_settings',
   'BE.seed.controller.inventory_detail_notes',
   'BE.seed.controller.inventory_detail_notes_modal',
   'BE.seed.controller.inventory_list',
+  'BE.seed.controller.inventory_map',
   'BE.seed.controller.inventory_reports',
   'BE.seed.controller.inventory_settings',
   'BE.seed.controller.label_admin',
@@ -76,6 +78,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.security',
   'BE.seed.controller.settings_profile_modal',
   'BE.seed.controller.show_populated_columns_modal',
+  'BE.seed.controller.ubid_modal',
   'BE.seed.controller.unmerge_modal',
   'BE.seed.controller.update_item_labels_modal'
 ]);
@@ -107,6 +110,7 @@ angular.module('BE.seed.services', [
   'BE.seed.service.cycle',
   'BE.seed.service.dataset',
   'BE.seed.service.flippers',
+  'BE.seed.service.geocode',
   'BE.seed.service.httpParamSerializerSeed',
   'BE.seed.service.inventory',
   'BE.seed.service.inventory_reports',
@@ -120,6 +124,7 @@ angular.module('BE.seed.services', [
   'BE.seed.service.pairing',
   'BE.seed.service.search',
   'BE.seed.service.simple_modal',
+  'BE.seed.service.ubid',
   'BE.seed.service.uploader',
   'BE.seed.service.user'
 ]);
@@ -1090,6 +1095,33 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         }
       })
       .state({
+        name: 'inventory_map',
+        url: '/{inventory_type:properties|taxlots}/map',
+        templateUrl: static_url + 'seed/partials/inventory_map.html',
+        controller: 'inventory_map_controller',
+        resolve: {
+          inventory: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service ) {
+            if ($stateParams.inventory_type === 'properties') {
+              return inventory_service.get_properties(1, undefined, undefined, undefined);
+            } else if ($stateParams.inventory_type === 'taxlots') {
+              return inventory_service.get_taxlots(1, undefined, undefined, undefined);
+            }
+          }],
+          cycles: ['cycle_service', function (cycle_service) {
+            return cycle_service.get_cycles();
+          }],
+          labels: ['$stateParams', 'label_service', function ($stateParams, label_service) {
+            return label_service.get_labels([], {
+              inventory_type: $stateParams.inventory_type
+            }).then(function (labels) {
+              return _.filter(labels, function (label) {
+                return !_.isEmpty(label.is_applied);
+              });
+            });
+          }]
+        }
+      })
+      .state({
         name: 'inventory_detail',
         url: '/{inventory_type:properties|taxlots}/{view_id:int}',
         templateUrl: static_url + 'seed/partials/inventory_detail.html',
@@ -1155,20 +1187,6 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         }
       });
   }]);
-
-/**
- * whitelist needed to load html partials from Amazon AWS S3
- * defaults to 'self' otherwise
- */
-SEED_app.config([
-  '$sceDelegateProvider',
-  function ($sceDelegateProvider) {
-    $sceDelegateProvider.resourceUrlWhitelist([
-      'self',
-      '**'
-    ]);
-  }
-]);
 
 SEED_app.config(['$httpProvider', function ($httpProvider) {
   $httpProvider.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';

@@ -3,13 +3,17 @@
 version: '3'
 services:
   db-postgres:
-    image: postgres:11.1
+    image: seedplatform/postgres-seed:11.1
+    build:
+      context: ./docker/postgres
     environment:
       - POSTGRES_DB=seed
       - POSTGRES_USER=seed
       - POSTGRES_PASSWORD=super-secret-password
     volumes:
       - seed_pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
   db-redis:
     image: redis:5.0.1
   web:

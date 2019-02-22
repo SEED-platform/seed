@@ -94,6 +94,7 @@ INSTALLED_APPS = (
     'django.contrib.humanize',
     'django.contrib.admin',
     'django.contrib.staticfiles',
+    'django.contrib.gis',
 
     'compressor',
     'django_extensions',
@@ -137,12 +138,11 @@ COMPRESS_CSS_FILTERS = [
     'compressor.filters.cssmin.CSSMinFilter'
 ]
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'seed/landing/static'),
-    os.path.join(BASE_DIR, 'seed/static'),
     os.path.join(BASE_DIR, 'vendors')
 ]
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'compressor.finders.CompressorFinder',
 )
 COMPRESS_PRECOMPILERS = (

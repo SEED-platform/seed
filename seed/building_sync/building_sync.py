@@ -535,7 +535,7 @@ class BuildingSync(object):
         measures = self._get_node('auc:Audits.auc:Audit.auc:Measures.auc:Measure', data, [])
         # check that this is a list, if not, make it a list or the loop won't work correctly
         if isinstance(measures, dict):
-            print("measures is a dict...converting it to a list")
+            # print("measures is a dict...converting it to a list")
             measures_tmp = []
             measures_tmp.append(measures)
             measures = measures_tmp
@@ -581,7 +581,7 @@ class BuildingSync(object):
 
         # check that this is a list; if not, make it a list or the loop won't work correctly
         if isinstance(scenarios, dict):
-            print("scenarios is a dict (only found 1...converting it to a list)")
+            # print("scenarios is a dict (only found 1...converting it to a list)")
             scenarios_tmp = []
             scenarios_tmp.append(scenarios)
             scenarios = scenarios_tmp
