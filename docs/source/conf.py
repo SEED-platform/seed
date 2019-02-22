@@ -15,12 +15,17 @@
 import os
 import sys
 import json
+from shutil import copyfile
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
-# sets the default settings module for read the docs
+# Copy over the local_untracked if it does not exist yet.
+if not os.path.exists('../../config/settings/local_untracked.py'):
+    copyfile('../../config/settings/local_untracked.py.dist',
+             '../../config/settings/local_untracked.py')
+
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.dev")
 sys.path.insert(0, os.path.abspath('../..'))
 
