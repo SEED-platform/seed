@@ -365,10 +365,9 @@ class LocalUploaderViewSet(viewsets.ViewSet):
         # Create a single row for each building
         for pm_property in request.data['properties']:
 
-            # report some helpful info
+            # report some helpful info every 20 properties
             property_num += 1
-            # TODO: PYTHON3 check division
-            if property_num / 20.0 == property_num / 20:
+            if property_num % 20 == 0:
                 new_time = datetime.datetime.now()
                 _log.debug("On property number %s; current time: %s" % (property_num, new_time))
 
@@ -427,22 +426,10 @@ class LocalUploaderViewSet(viewsets.ViewSet):
             rows.append(this_row)
 
         # Then write the actual data out as csv
-        # Note that the Python 2.x csv module doesn't allow easily specifying an encoding, and it was failing on a few
-        # rows here and there with a large test dataset.  This local function allows converting to utf8 before writing
-        def py2_unicode_to_str(u):
-            # TODO: PYTHON3 check unicode check
-            if isinstance(u, basestring):
-                return u.encode('utf-8')
-            else:
-                return u
-        with open(path, 'wb') as csv_file:
+        with open(path, 'w', encoding='utf-8') as csv_file:
             pm_csv_writer = csv.writer(csv_file)
             for row_num, row in enumerate(rows):
-                try:
-                    pm_csv_writer.writerow(row)
-                except UnicodeEncodeError:
-                    cleaned_row_data = [py2_unicode_to_str(datum) for datum in row]
-                    pm_csv_writer.writerow(cleaned_row_data)
+                pm_csv_writer.writerow(row)
 
         # Look up the import record (data set)
         import_record_pk = request.data['import_record_id']
