@@ -31,7 +31,6 @@ describe('The sdUploader directive', function () {
         g_progress = fine_object.progress;
       };
       window.BE = window.BE || {};
-      window.BE.FILE_UPLOAD_DESTINATION = 'filesystem';
     });
   });
 

@@ -201,8 +201,7 @@ Running a production web server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Our recommended web server is uwsgi sitting behind nginx. The python package ``uwsgi`` is needed for this, and
-should install to ``/usr/local/bin/uwsgi`` Since AWS S3, is not being used here, we recommend using ``dj-static``
-to load static files.
+should install to ``/usr/local/bin/uwsgi`` We recommend using ``dj-static`` to load static files.
 
 .. note::
 

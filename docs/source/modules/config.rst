@@ -4,14 +4,6 @@ Configuration
 Submodules
 ----------
 
-Storage
--------
-
-.. automodule:: config.storage
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 Template Context
 ----------------
 

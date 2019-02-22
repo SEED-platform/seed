@@ -3,8 +3,7 @@
  * :author
  */
 /**
- * directive sd-uploader: wraps fineuploader.js assumed AWS creds are in global
- *                        namespace: window.config.AWS_UPLOAD_BUCKET_NAME window.config.AWS_CLIENT_ACCESS_KEY
+ * directive sd-uploader: wraps Fine Uploader
  *   sourcetype: string - upon upload successful, send the sourcetype param to
  *                        the server to store the linked file
  *   eventfunc: callback function with three arguments: `message`, `filename`, `progress`
@@ -32,6 +31,7 @@ var makeFileSystemUploader = function (scope, element, allowed_extensions) {
       allowedExtensions: allowed_extensions
     },
     text: {
+      fileInputTitle: '',
       uploadButton: scope.buttontext
     },
     retry: {
@@ -177,6 +177,7 @@ var makeBuildingSyncUploader = function (scope, element, allowed_extensions) {
       allowedExtensions: allowed_extensions
     },
     text: {
+      fileInputTitle: '',
       uploadButton: scope.buttontext
     },
     retry: {
@@ -266,7 +267,7 @@ var makeBuildingSyncUploader = function (scope, element, allowed_extensions) {
        */
       onError: function (id, fileName, errorReason, xhr) {
         if (_.includes(errorReason, ' has an invalid extension.')) {
-          scope.eventfunc({message: 'invalid_xml_extension'});
+          scope.eventfunc({message: 'invalid_xml_zip_extension'});
           return;
         }
 
@@ -320,6 +321,7 @@ var makeBuildingSyncUpdater = function (scope, element, allowed_extensions) {
       allowedExtensions: allowed_extensions
     },
     text: {
+      fileInputTitle: '',
       uploadButton: scope.buttontext
     },
     retry: {

@@ -43,16 +43,6 @@ describe('controller: data_upload_modal_controller', function () {
       mock_uploader_service = uploader_service;
       mock_mapping_service = mapping_service;
       mock_matching_service = matching_service;
-      spyOn(mock_uploader_service, 'get_AWS_creds')
-        .andCallFake(function () {
-            // return $q.reject for error scenario
-          return $q.resolve({
-            status: 'success',
-            AWS_CLIENT_ACCESS_KEY: '123',
-            AWS_UPLOAD_BUCKET_NAME: 'test-bucket'
-          });
-        }
-        );
       spyOn(mock_uploader_service, 'check_progress')
         .andCallFake(function () {
           // return $q.reject for error scenario
