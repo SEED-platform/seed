@@ -5,6 +5,8 @@ from calendar import monthrange
 
 from config.settings.common import TIME_ZONE
 
+from collections import defaultdict
+
 from datetime import datetime
 
 from django.utils.timezone import make_aware
@@ -47,9 +49,21 @@ class PMMeterParser(object):
                 "unit": unit,
             })
 
-
         return result
 
+    def proposed_imports(self):
+        object_details = self.construct_objects_details()
+
+        id_counts = defaultdict(lambda: 0)
+
+        for obj in object_details:
+            id_counts[obj.get("source_id")] += len(obj.get("readings"))
+
+        return [
+            {"portfolio_manager_id": id, "number_of_readings": reading_count}
+            for id, reading_count
+            in id_counts.items()
+        ]
 
     def construct_objects_details(self, property_link='Property Id', monthly=True):
         """

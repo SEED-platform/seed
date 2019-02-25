@@ -18,7 +18,6 @@ from seed.landing.models import SEEDUser as User
 from seed.models import (
     PropertyState,
     PropertyView,
-    Meter,
 )
 from seed.test_helpers.fake import (
     FakeCycleFactory,
@@ -81,16 +80,16 @@ class TestMeterViewSet(TestCase):
             cycle=self.cycle
         )
 
-    def test_meter_type_unit_confirmation_verifies_energy_type_and_unit_parsed_from_column_headers(self):
+    def test_parsed_meters_confirmation_verifies_energy_type_and_unit_parsed_from_column_headers(self):
         # TODO: very possible/likely that this endpoint should invalidate entries
-        # but valid/invalid energy types and units may be changed before feature end
-        url = reverse('api:v2:meters-parsed-type-units')
+        # but valid/invalid energy types and units may be changed before feature work ends
+        url = reverse('api:v2:meters-parsed-meters-confirmation')
 
-        post_params = {
+        post_params = json.dumps({
             'file_id': self.import_file.id,
             'organization_id': self.org.pk,
-        }
-        result = self.client.post(url, post_params)
+        })
+        result = self.client.post(url, post_params, content_type="application/json")
         result_dict = ast.literal_eval(result.content.decode("utf-8"))
 
         expectation = [
@@ -104,10 +103,33 @@ class TestMeterViewSet(TestCase):
                 "type": "Natural Gas",
                 "unit": "GJ",
             },
-
         ]
 
-        self.assertEqual(result_dict, expectation)
+        self.assertEqual(result_dict.get("validated_type_units"), expectation)
+
+    def test_parsed_meters_confirmation_returns_pm_property_ids_and_corresponding_reading_counts(self):
+        url = reverse('api:v2:meters-parsed-meters-confirmation')
+
+        post_params = json.dumps({
+            'file_id': self.import_file.id,
+            'organization_id': self.org.pk,
+        })
+        result = self.client.post(url, post_params, content_type="application/json")
+        result_dict = ast.literal_eval(result.content.decode("utf-8"))
+
+        expectation = [
+            {
+                "portfolio_manager_id": "5766973",
+                "number_of_readings": 4,
+            },
+            {
+                "portfolio_manager_id": "5766975",
+                "number_of_readings": 4,
+            },
+        ]
+
+        self.assertEqual(result_dict.get("proposed_imports"), expectation)
+
 
 #         """We throw an error when there's no building id passed in."""
 #         client = APIClient()

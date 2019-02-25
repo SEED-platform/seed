@@ -12,21 +12,16 @@ from seed.data_importer.meters_parsers import PMMeterParser
 # from seed.decorators import require_organization_id_class
 from seed.decorators import ajax_request_class
 from seed.lib.mcm import reader
-from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.models import (
-    ImportFile
-#     obj_to_dict,
-#     Meter,
-#     PropertyView,
-)
-from seed.utils.api import api_endpoint_class
+# from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.models import ImportFile
+# from seed.utils.api import api_endpoint_class
 
 
 class MeterViewSet(viewsets.ViewSet):
 
     @ajax_request_class
     @list_route(methods=['POST'])
-    def parsed_type_units(self, request):
+    def parsed_meters_confirmation(self, request):
         body = dict(request.data)
         file_id = body['file_id']
         org_id = body['organization_id']
@@ -37,7 +32,12 @@ class MeterViewSet(viewsets.ViewSet):
 
         meters_parser = PMMeterParser(org_id, raw_meter_data)
 
-        return meters_parser.validated_type_units()
+        result = {}
+
+        result["validated_type_units"] = meters_parser.validated_type_units()
+        result["proposed_imports"] = meters_parser.proposed_imports()
+
+        return result
 
 
 #     raise_exception = True
