@@ -1,7 +1,7 @@
 ﻿# !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author Claudine Custodio / Baptiste Ravache
 """
 """
@@ -135,7 +135,7 @@ print('\n\n|-------Cycles-------|')
 cycle_id = cycles(header, main_url, organization_id, log)
 
 # Create a dataset
-print ('\n\n|-------Create Dataset-------|')
+print('\n\n|-------Create Dataset-------|')
 partmsg = 'create_dataset'
 params = {'organization_id': organization_id}
 payload = {'name': 'API Test'}
@@ -160,11 +160,11 @@ upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, raw_b
 #                   pm_map_file, log)
 
 # Data quality
-print ('\n|---Data Quality---|\n')
+print('\n|---Data Quality---|\n')
 data_quality(header, main_url, organization_id, log)
 
 # -- Labels
-print ('\n\n|-------Labels-------|')
+print('\n\n|-------Labels-------|')
 labels(header, main_url, organization_id, cycle_id, log)
 
 # Export dataset
@@ -172,7 +172,7 @@ print ('\n|---Export Dataset---|\n')
 export(header, main_url, organization_id, cycle_id, log)
 
 # Delete dataset
-print ('\n|---Delete Dataset---|\n')
+print('\n|---Delete Dataset---|\n')
 delete_set(header, main_url, organization_id, dataset_id, log)
 
 time2 = dt.datetime.now()

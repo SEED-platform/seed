@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -90,7 +90,7 @@ class TestProperties(DataMappingBaseTestCase):
         # This is the last property state of the object that is in test_coparent test above
         property_state = PropertyState.objects.filter(
             use_description='Pizza House',
-            ubid='M7RZ35FK+6LL-M7RZ35FK+9GS-M7RZ35FK+H0V',
+            ubid='86HJX5QV+FJ3-2-3-2-2',
             data_state__in=[DATA_STATE_MATCHING],
             merge_state__in=[MERGE_STATE_MERGED]
         ).first()
@@ -105,8 +105,9 @@ class TestProperties(DataMappingBaseTestCase):
 
     def test_get_history_complex(self):
         # test a complicated case where there is matching on itself
+        # International House   93029 Wellington Blvd   Rust    13334485;23810533   Residence
         property_state = PropertyState.objects.filter(
-            ubid='WW2YKUX2+FVE-WW2YKUX2+8SH-WW2YKUX2+3K2',
+            ubid='86HJX66G+P7C-2-3-2-3',
             data_state__in=[DATA_STATE_MATCHING],
             merge_state__in=[MERGE_STATE_MERGED]
         ).first()

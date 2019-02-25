@@ -792,7 +792,7 @@ msgid "File Source:"
 msgstr "File Source:"
 
 msgid "FILE_TYPES_SUPPORTED"
-msgstr "File types supported: <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, and <strong>.xml</strong>."
+msgstr "File types supported: <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, <strong>.xml</strong>, <strong>.zip</strong>, <strong>.geojson</strong>, and <strong>.json</strong>."
 
 msgid "Files (Master State Only)"
 msgstr "Files (Master State Only)"
@@ -954,8 +954,14 @@ msgstr "INTERNAL"
 msgid "INVALID_EXTENSION_ALERT"
 msgstr "<strong>Sorry!</strong> SEED doesn't currently support that file format. Only <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, and <strong>.xml</strong> files are supported."
 
+msgid "INVALID_GEOJSON_EXTENSION_ALERT"
+msgstr "<strong>Sorry!</strong> SEED doesn't currently support that file format. Only <strong>.geojson</strong> and <strong>.json</strong> files are supported."
+
 msgid "INVALID_XML_EXTENSION_ALERT"
 msgstr "<strong>Sorry!</strong> SEED doesn't currently support that file format. Only <strong>.xml</strong> files are supported."
+
+msgid "INVALID_XML_ZIP_EXTENSION_ALERT"
+msgstr "<strong>Sorry!</strong> SEED doesn't currently support that file format. Only <strong>.xml</strong> and <strong>.zip</strong> files are supported."
 
 msgid "Inventory"
 msgstr "Inventory"

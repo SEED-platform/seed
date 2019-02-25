@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author nicholas.long@nrel.gov
 """
 
@@ -69,12 +69,12 @@ class BuildingSync(object):
             },
             "longitude": {
                 "path": "auc:Sites.auc:Site.auc:Longitude",
-                "required": True,
+                "required": False,
                 "type": "double"
             },
             "latitude": {
                 "path": "auc:Sites.auc:Site.auc:Latitude",
-                "required": True,
+                "required": False,
                 "type": "double",
             },
             "property_name": {
@@ -89,12 +89,12 @@ class BuildingSync(object):
             },
             "floors_above_grade": {
                 "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:FloorsAboveGrade",
-                "required": True,
+                "required": False,
                 "type": "integer",
             },
             "floors_below_grade": {
                 "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:FloorsBelowGrade",
-                "required": True,
+                "required": False,
                 "type": "integer",
             },
             "premise_identifier": {
@@ -110,7 +110,7 @@ class BuildingSync(object):
                 "key_path_name": "auc:IdentifierCustomName",
                 "key_path_value": "Custom ID 1",
                 "value_path_name": "auc:IdentifierValue",
-                "required": True,
+                "required": False,
                 "type": "string",
             },
             "gross_floor_area": {
@@ -207,6 +207,20 @@ class BuildingSync(object):
                     )
                 ]
             )
+        else:
+            # check that the appropriate headers are set or XML won't render correctly in the browser
+            if '@xsi:schemaLocation' not in new_dict['auc:Audits'] or '@xmlns' not in new_dict['auc:Audits']:
+                new_dict['auc:Audits']['@xsi:schemaLocation'] = 'http://nrel.gov/schemas/bedes-auc/2014 https://github.com/BuildingSync/schema/releases/download/v0.3/BuildingSync.xsd'
+                new_dict['auc:Audits']['@xmlns'] = OrderedDict
+                (
+                    [
+                        ('auc', 'http://nrel.gov/schemas/bedes-auc/2014'),
+                        ('xsi', 'http://www.w3.org/2001/XMLSchema-instance')
+                    ]
+                )
+                # for some reason the auc header gets put on Audits.Audit instead of Audit by the building_sync parser...remove
+                if '@xmlns' in new_dict['auc:Audits']['auc:Audit']:
+                    del new_dict['auc:Audits']['auc:Audit']['@xmlns']
 
         for field, v in process_struct['return'].items():
             value = None
@@ -432,7 +446,6 @@ class BuildingSync(object):
         :param data: dict, data to parse and fill
         :return: list, the `return` value, if all paths were found, and list of messages
         """
-
         def _lookup_sub(node, key_path_name, key_path_value, value_path_name):
             items = [node] if isinstance(node, dict) else node
             for item in items:
@@ -520,6 +533,12 @@ class BuildingSync(object):
         #   <auc:MeasureMaterialCost>0.0</auc:MeasureMaterialCost>
         # </auc:Measure>
         measures = self._get_node('auc:Audits.auc:Audit.auc:Measures.auc:Measure', data, [])
+        # check that this is a list, if not, make it a list or the loop won't work correctly
+        if isinstance(measures, dict):
+            # print("measures is a dict...converting it to a list")
+            measures_tmp = []
+            measures_tmp.append(measures)
+            measures = measures_tmp
         for m in measures:
             if m.get('auc:TechnologyCategories', None):
                 cat_w_namespace = list(m['auc:TechnologyCategories']['auc:TechnologyCategory'].keys())[0]
@@ -559,6 +578,14 @@ class BuildingSync(object):
         # </auc:Scenario>
         scenarios = self._get_node('auc:Audits.auc:Audit.auc:Report.auc:Scenarios.auc:Scenario',
                                    data, [])
+
+        # check that this is a list; if not, make it a list or the loop won't work correctly
+        if isinstance(scenarios, dict):
+            # print("scenarios is a dict (only found 1...converting it to a list)")
+            scenarios_tmp = []
+            scenarios_tmp.append(scenarios)
+            scenarios = scenarios_tmp
+
         for s in scenarios:
             new_data = {
                 'id': s.get('@ID'),
@@ -592,7 +619,7 @@ class BuildingSync(object):
         return res, messages
 
     def process(self, process_struct=ADDRESS_STRUCT):
-        """Process the BuildingSync file based ont he process structure.
+        """Process the BuildingSync file based on the process structure.
 
         :param process_struct: dict, structure on how to extract data from file and save into dict
         :return: list, [dict, dict], [results, dict of errors and warnings]

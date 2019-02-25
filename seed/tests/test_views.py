@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import json
@@ -189,9 +189,9 @@ class ImportFileViewsTests(TestCase):
         self.assertEqual('success', json.loads(response.content)['status'])
         self.assertFalse(ImportFile.objects.filter(pk=self.import_file.pk).exists())
 
-    def test_get_matching_results(self):
+    def test_get_matching_and_geocoding_results(self):
         response = self.client.get(
-            '/api/v2/import_files/' + str(self.import_file.pk) + '/matching_results/')
+            '/api/v2/import_files/' + str(self.import_file.pk) + '/matching_and_geocoding_results/')
         self.assertEqual('success', json.loads(response.content)['status'])
 
 

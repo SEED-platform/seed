@@ -1,5 +1,5 @@
 /*
- * :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.members', [])
@@ -12,14 +12,16 @@ angular.module('BE.seed.controller.members', [])
     'organization_service',
     'user_profile_payload',
     'urls',
-    function ($scope,
-              $uibModal,
-              users_payload,
-              organization_payload,
-              auth_payload,
-              organization_service,
-              user_profile_payload,
-              urls) {
+    function (
+      $scope,
+      $uibModal,
+      users_payload,
+      organization_payload,
+      auth_payload,
+      organization_service,
+      user_profile_payload,
+      urls
+    ) {
       $scope.roles = [
         'member', 'owner', 'viewer'
       ];

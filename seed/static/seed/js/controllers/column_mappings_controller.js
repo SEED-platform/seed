@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.column_mappings', [])
@@ -14,17 +14,18 @@ angular.module('BE.seed.controller.column_mappings', [])
     'column_mappings',
     'organization_payload',
     'auth_payload',
-    function ($scope,
-              $q,
-              $state,
-              $stateParams,
-              Notification,
-              column_mappings_service,
-              spinner_utility,
-              column_mappings,
-              organization_payload,
-              auth_payload) {
-
+    function (
+      $scope,
+      $q,
+      $state,
+      $stateParams,
+      Notification,
+      column_mappings_service,
+      spinner_utility,
+      column_mappings,
+      organization_payload,
+      auth_payload
+    ) {
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.org = organization_payload.organization;
       $scope.auth = auth_payload.auth;

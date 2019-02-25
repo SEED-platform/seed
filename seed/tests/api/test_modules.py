@@ -1,7 +1,7 @@
 ﻿# !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import datetime as dt
@@ -101,12 +101,12 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, f
     check_status(result, partmsg, log, piid_flag='data_quality')
 
     # Match uploaded buildings with buildings already in the organization.
-    print('API Function: start_system_matching\n'),
-    partmsg = 'start_system_matching'
+    print('API Function: start_system_matching_and_geocoding\n'),
+    partmsg = 'start_system_matching_and_geocoding'
     payload = {'file_id': import_id, 'organization_id': organization_id}
 
     result = requests.post(
-        main_url + '/api/v2/import_files/{}/start_system_matching/'.format(import_id),
+        main_url + '/api/v2/import_files/{}/start_system_matching_and_geocoding/'.format(import_id),
         headers=header,
         params={"organization_id": organization_id},
         json=payload
@@ -115,11 +115,11 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, f
     check_status(result, partmsg, log)
 
     # Check number of matched and unmatched records
-    print('API Function: matching_results\n'),
-    partmsg = 'matching_results'
+    print('API Function: matching_and_geocoding_results\n'),
+    partmsg = 'matching_and_geocoding_results'
 
     result = requests.get(
-        main_url + '/api/v2/import_files/{}/matching_results/'.format(import_id),
+        main_url + '/api/v2/import_files/{}/matching_and_geocoding_results/'.format(import_id),
         headers=header,
         params={})
     check_status(result, partmsg, log)
@@ -275,11 +275,11 @@ def account(header, main_url, username, log):
     check_status(result, partmsg, log)
 
     # Create an organization
-    print ('API Function: create_org\n'),
+    print('API Function: create_org\n'),
     partmsg = 'create_org'
     payload = {
         'user_id': user_pk,
-        'organization_name': 'TestOrg_JoZ2wSd2boQWifGau3qxdFFu76oIy9r0' # hopefully ensuring a unique org name
+        'organization_name': 'TestOrg_JoZ2wSd2boQWifGau3qxdFFu76oIy9r0'  # hopefully ensuring a unique org name
     }
     result = requests.post(main_url + '/api/v2/organizations/',
                            headers=header,
@@ -288,14 +288,14 @@ def account(header, main_url, username, log):
     org_id = result.json()['organization']['org_id']
 
     # Delete an organization
-    print ('API Function: delete_org\n'),
+    print('API Function: delete_org\n'),
     partmsg = 'delete_org'
     result = requests.delete(main_url + '/api/v2/organizations/%s/' % org_id,
                              headers=header)
     check_status(result, partmsg, log)
 
     # Create a suborganization
-    print ('API Function: create_sub_org\n'),
+    print('API Function: create_sub_org\n'),
     partmsg = 'create_sub_org'
     payload = {
         'sub_org_name': 'TestSuborg',
@@ -308,7 +308,7 @@ def account(header, main_url, username, log):
     suborg_id = result.json()['organization_id']
 
     # Delete a suborganization
-    print ('API Function: delete_sub_org\n'),
+    print('API Function: delete_sub_org\n'),
     partmsg = 'delete_sub_org'
     result = requests.delete(main_url + '/api/v2/organizations/%s/' % suborg_id,
                              headers=header)
@@ -403,7 +403,7 @@ def cycles(header, main_url, organization_id, log):
 def labels(header, main_url, organization_id, cycle_id, log):
 
     # Create label
-    print ('API Function: create_label\n')
+    print('API Function: create_label\n')
     partmsg = 'create_label'
     params = {
         'organization_id': organization_id
@@ -432,7 +432,7 @@ def labels(header, main_url, organization_id, cycle_id, log):
     inventory_ids = [prop['id'] for prop in result.json()['results']]
 
     # Apply label to properties
-    print ('API Function: apply_label\n')
+    print('API Function: apply_label\n')
     partmsg = 'apply_label'
     params = {
         'organization_id': organization_id
@@ -448,7 +448,7 @@ def labels(header, main_url, organization_id, cycle_id, log):
     check_status(result, partmsg, log)
 
     # Delete label
-    print ('API Function: delete_label\n')
+    print('API Function: delete_label\n')
     partmsg = 'delete_label'
     params = {
         'organization_id': organization_id
@@ -493,7 +493,7 @@ def data_quality(header, main_url, organization_id, log):
                 'severity': 'warning',
                 'units': '',
                 'label': None}
-    payload = {'data_quality_rules': {'properties': prop_rules+[new_rule], 'taxlots': tax_rules}}
+    payload = {'data_quality_rules': {'properties': prop_rules + [new_rule], 'taxlots': tax_rules}}
     result = requests.post(main_url + '/api/v2/data_quality_checks/save_data_quality_rules/',
                            headers=header,
                            params=params,

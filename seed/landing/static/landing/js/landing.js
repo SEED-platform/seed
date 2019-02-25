@@ -75,6 +75,5 @@ $(function () {
   setTimeout(BEHome.actions.vertically_center_page, 200);
   BEHome.actions.hide_all_forms();
   BEHome.util.bind_all_handlers();
-  $('input, textarea').placeholder();
 });
 

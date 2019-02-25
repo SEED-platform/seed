@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.mapping', [])
@@ -23,27 +23,27 @@ angular.module('BE.seed.controller.mapping', [])
     'inventory_service',
     '$translate',
     'i18nService', // from ui-grid
-    'flippers',
-    function ($scope,
-              $log,
-              $q,
-              $filter,
-              import_file_payload,
-              suggested_mappings_payload,
-              raw_columns_payload,
-              first_five_rows_payload,
-              cycles,
-              mapping_service,
-              spinner_utility,
-              urls,
-              $uibModal,
-              user_service,
-              uploader_service,
-              data_quality_service,
-              inventory_service,
-              $translate,
-              i18nService,
-              flippers) {
+    function (
+      $scope,
+      $log,
+      $q,
+      $filter,
+      import_file_payload,
+      suggested_mappings_payload,
+      raw_columns_payload,
+      first_five_rows_payload,
+      cycles,
+      mapping_service,
+      spinner_utility,
+      urls,
+      $uibModal,
+      user_service,
+      uploader_service,
+      data_quality_service,
+      inventory_service,
+      $translate,
+      i18nService
+    ) {
       // let angular-translate be in charge ... need to feed the language-only part of its $translate setting into
       // ui-grid's i18nService
       var stripRegion = function (languageTag) {
@@ -254,7 +254,10 @@ angular.module('BE.seed.controller.mapping', [])
        */
       $scope.check_reset_mappings = function () {
         return _.every($scope.mappings, function (col) {
-          return col.suggestion === col.name && col.suggestion_table_name === 'PropertyState';
+          return _.isMatch(col, {
+            suggestion: col.name,
+            suggestion_table_name: 'PropertyState'
+          });
         });
       };
 
@@ -286,6 +289,23 @@ angular.module('BE.seed.controller.mapping', [])
         return mappings;
       };
 
+      var suggested_address_fields = [
+        {column_name: 'address_line_1'},
+        {column_name: 'city'},
+        {column_name: 'state'},
+        {column_name: 'postal_code'}
+      ];
+
+      $scope.suggested_fields_present = function () {
+        if (!$scope.mappings) return true;
+
+        var intersections = _.intersectionWith(suggested_address_fields, $scope.mappings, function (required_field, raw_col) {
+          return required_field.column_name === raw_col.suggestion_column_name;
+        }).length;
+
+        return intersections === 4;
+      };
+
       var required_property_fields = [
         {column_name: 'address_line_1', inventory_type: 'PropertyState'},
         {column_name: 'custom_id_1', inventory_type: 'PropertyState'},
@@ -300,7 +320,10 @@ angular.module('BE.seed.controller.mapping', [])
         if (!property_mappings_found) return true;
 
         var intersections = _.intersectionWith(required_property_fields, $scope.mappings, function (required_field, raw_col) {
-          return required_field.column_name === raw_col.suggestion_column_name && required_field.inventory_type === raw_col.suggestion_table_name;
+          return _.isMatch(required_field, {
+            column_name: raw_col.suggestion_column_name,
+            inventory_type: raw_col.suggestion_table_name
+          });
         }).length;
 
         return intersections > 0;
@@ -319,7 +342,10 @@ angular.module('BE.seed.controller.mapping', [])
         if (!taxlot_mappings_found) return true;
 
         var intersections = _.intersectionWith(required_taxlot_fields, $scope.mappings, function (required_field, raw_col) {
-          return required_field.column_name === raw_col.suggestion_column_name && required_field.inventory_type === raw_col.suggestion_table_name;
+          return _.isMatch(required_field, {
+            column_name: raw_col.suggestion_column_name,
+            inventory_type: raw_col.suggestion_table_name
+          });
         }).length;
 
         return intersections > 0;
@@ -345,15 +371,15 @@ angular.module('BE.seed.controller.mapping', [])
        */
       var check_mapping = function (progress_key) {
         uploader_service.check_progress_loop(
-          progress_key,  // key
+          progress_key, // key
           0, //starting prog bar percentage
-          1.0,  // progress multiplier
+          1.0, // progress multiplier
           function () {
             $scope.get_mapped_buildings();
           }, function () {
             // Do nothing
           },
-          $scope.import_file  // progress bar obj
+          $scope.import_file // progress bar obj
         );
       };
 
@@ -471,7 +497,7 @@ angular.module('BE.seed.controller.mapping', [])
           // Submit the data quality checks and wait for the results
           data_quality_service.start_data_quality_checks_for_import_file(user_service.get_organization().id, $scope.import_file.id).then(function (response) {
             data_quality_service.data_quality_checks_status(response.progress_key).then(function (check_result) {
-               // Fetch data quality check results
+              // Fetch data quality check results
               $scope.data_quality_results_ready = false;
               $scope.data_quality_results = data_quality_service.get_data_quality_results(user_service.get_organization().id, check_result.unique_id);
               $scope.data_quality_results.then(function (data) {

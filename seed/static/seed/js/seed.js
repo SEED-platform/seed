@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 /**
@@ -27,7 +27,6 @@ angular.module('BE.seed.vendor_dependencies', [
   'ui.router',
   'ui.router.stateHelper',
   'ui.sortable',
-  'ui.tree',
   'focus-if',
   'xeditable',
   angularDragula(angular),
@@ -54,11 +53,13 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.delete_modal',
   'BE.seed.controller.developer',
   'BE.seed.controller.export_inventory_modal',
+  'BE.seed.controller.geocode_modal',
   'BE.seed.controller.inventory_detail',
   'BE.seed.controller.inventory_detail_settings',
   'BE.seed.controller.inventory_detail_notes',
   'BE.seed.controller.inventory_detail_notes_modal',
   'BE.seed.controller.inventory_list',
+  'BE.seed.controller.inventory_map',
   'BE.seed.controller.inventory_reports',
   'BE.seed.controller.inventory_settings',
   'BE.seed.controller.label_admin',
@@ -77,6 +78,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.security',
   'BE.seed.controller.settings_profile_modal',
   'BE.seed.controller.show_populated_columns_modal',
+  'BE.seed.controller.ubid_modal',
   'BE.seed.controller.unmerge_modal',
   'BE.seed.controller.update_item_labels_modal'
 ]);
@@ -108,6 +110,7 @@ angular.module('BE.seed.services', [
   'BE.seed.service.cycle',
   'BE.seed.service.dataset',
   'BE.seed.service.flippers',
+  'BE.seed.service.geocode',
   'BE.seed.service.httpParamSerializerSeed',
   'BE.seed.service.inventory',
   'BE.seed.service.inventory_reports',
@@ -121,6 +124,7 @@ angular.module('BE.seed.services', [
   'BE.seed.service.pairing',
   'BE.seed.service.search',
   'BE.seed.service.simple_modal',
+  'BE.seed.service.ubid',
   'BE.seed.service.uploader',
   'BE.seed.service.user'
 ]);
@@ -173,7 +177,7 @@ SEED_app.run([
     $rootScope._ = window._;
 
     // ui-router transition actions
-    $transitions.onStart({}, function (transition) {
+    $transitions.onStart({}, function (/*transition*/) {
       if (modified_service.isModified()) {
         return modified_service.showModifiedDialog().then(function () {
           modified_service.resetModified();
@@ -185,7 +189,7 @@ SEED_app.run([
       }
     });
 
-    $transitions.onSuccess({}, function (transition) {
+    $transitions.onSuccess({}, function (/*transition*/) {
       if ($rootScope.route_load_error && $rootScope.load_error_message === 'Your SEED account is not associated with any organizations. Please contact a SEED administrator.') {
         $state.go('home');
         return;
@@ -232,21 +236,21 @@ SEED_app.run([
 /**
  * Initialize release flippers
  */
-SEED_app.run([
-  'flippers',
-  function (flippers) {
-    // wraps some minor UI that we'll need until we migrate to delete the old
-    // PropertyState columns for EUI and area. This flipper should be removed
-    // for 2.4 when we remove the archived "_orig" area and EUI columns.
-    //
-    //
-    // flippers.make_flipper('ryan@ryanmccuaig.net', '2018-05-31T00:00:00Z',
-    //   'release:orig_columns', 'boolean', true);
-    //
-    // var make2 = _.partial(flippers.make_flipper, 'nicholas.long@nrel.gov', '2018-01-01T00:00:00Z');
-    // make2('release:bricr', 'boolean', true);
-  }
-]);
+// SEED_app.run([
+//   'flippers',
+//   function (flippers) {
+//     // wraps some minor UI that we'll need until we migrate to delete the old
+//     // PropertyState columns for EUI and area. This flipper should be removed
+//     // for 2.4 when we remove the archived "_orig" area and EUI columns.
+//     //
+//     //
+//     // flippers.make_flipper('ryan@ryanmccuaig.net', '2018-05-31T00:00:00Z',
+//     //   'release:orig_columns', 'boolean', true);
+//     //
+//     // var make2 = _.partial(flippers.make_flipper, 'nicholas.long@nrel.gov', '2018-01-01T00:00:00Z');
+//     // make2('release:bricr', 'boolean', true);
+//   }
+// ]);
 
 /**
  * Create custom UI-Grid templates
@@ -360,7 +364,6 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         resolve: {
           columns: ['$stateParams', 'user_service', 'inventory_service', 'naturalSort', function ($stateParams, user_service, inventory_service, naturalSort) {
             var organization_id = user_service.get_organization().id;
-            console.log(organization_id);
             if ($stateParams.inventory_type === 'properties') {
               return inventory_service.get_property_columns_for_org(organization_id).then(function (columns) {
                 columns = _.reject(columns, 'related');
@@ -1092,6 +1095,33 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         }
       })
       .state({
+        name: 'inventory_map',
+        url: '/{inventory_type:properties|taxlots}/map',
+        templateUrl: static_url + 'seed/partials/inventory_map.html',
+        controller: 'inventory_map_controller',
+        resolve: {
+          inventory: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service ) {
+            if ($stateParams.inventory_type === 'properties') {
+              return inventory_service.get_properties(1, undefined, undefined, undefined);
+            } else if ($stateParams.inventory_type === 'taxlots') {
+              return inventory_service.get_taxlots(1, undefined, undefined, undefined);
+            }
+          }],
+          cycles: ['cycle_service', function (cycle_service) {
+            return cycle_service.get_cycles();
+          }],
+          labels: ['$stateParams', 'label_service', function ($stateParams, label_service) {
+            return label_service.get_labels([], {
+              inventory_type: $stateParams.inventory_type
+            }).then(function (labels) {
+              return _.filter(labels, function (label) {
+                return !_.isEmpty(label.is_applied);
+              });
+            });
+          }]
+        }
+      })
+      .state({
         name: 'inventory_detail',
         url: '/{inventory_type:properties|taxlots}/{view_id:int}',
         templateUrl: static_url + 'seed/partials/inventory_detail.html',
@@ -1158,20 +1188,6 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
       });
   }]);
 
-/**
- * whitelist needed to load html partials from Amazon AWS S3
- * defaults to 'self' otherwise
- */
-SEED_app.config([
-  '$sceDelegateProvider',
-  function ($sceDelegateProvider) {
-    $sceDelegateProvider.resourceUrlWhitelist([
-      'self',
-      '**'
-    ]);
-  }
-]);
-
 SEED_app.config(['$httpProvider', function ($httpProvider) {
   $httpProvider.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
   $httpProvider.defaults.paramSerializer = 'httpParamSerializerSeed';
@@ -1225,10 +1241,10 @@ SEED_app.constant('naturalSort', function (a, b) {
    * Natural Sort algorithm for Javascript - Version 0.8.1 - Released under MIT license
    * Author: Jim Palmer (based on chunking idea from Dave Koelle)
    */
-  var re = /(^([+\-]?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?(?=\D|\s|$))|^0x[\da-fA-F]+$|\d+)/g,
+  var re = /(^([+-]?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?(?=\D|\s|$))|^0x[\da-fA-F]+$|\d+)/g,
     sre = /^\s+|\s+$/g, // trim pre-post whitespace
     snre = /\s+/g, // normalize all whitespace to single ' ' character
-    dre = /(^([\w ]+,?[\w ]+)?[\w ]+,?[\w ]+\d+:\d+(:\d+)?[\w ]?|^\d{1,4}[\/\-]\d{1,4}[\/\-]\d{1,4}|^\w+, \w+ \d+, \d{4})/,
+    dre = /(^([\w ]+,?[\w ]+)?[\w ]+,?[\w ]+\d+:\d+(:\d+)?[\w ]?|^\d{1,4}[/-]\d{1,4}[/-]\d{1,4}|^\w+, \w+ \d+, \d{4})/,
     ore = /^0/,
     i = function (s) {
       return (('' + s).toLowerCase() || '' + s).replace(sre, '');

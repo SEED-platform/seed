@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import json
@@ -84,7 +84,7 @@ class InventoryViewTests(DeleteModelsTestCase):
         self.assertEqual(response.status_code, 200)
         result = json.loads(response.content)
         self.assertEqual(result['status'], 'success')
-        self.assertEqual(result['message'], 'successfully imported file')
+        self.assertEqual(result['message'], {'warnings': []})
         self.assertEqual(result['data']['property_view']['state']['year_built'], 1967)
         self.assertEqual(result['data']['property_view']['state']['postal_code'], '94111')
 
@@ -94,6 +94,28 @@ class InventoryViewTests(DeleteModelsTestCase):
         response = self.client.get(url)
         self.assertIn('<auc:YearOfConstruction>1967</auc:YearOfConstruction>',
                       response.content.decode("utf-8"))
+
+    def test_upload_batch_building_sync(self):
+        # import a zip file of BuildingSync xmls
+        # import_record =
+        filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'valid_xml_ex1_ex2.zip')
+
+        url = '/api/v2/building_file/'
+        fsysparams = {
+            'file': open(filename, 'rb'),
+            'file_type': 'BuildingSync',
+            'organization_id': self.org.id,
+            'cycle_id': self.cycle.id
+        }
+
+        response = self.client.post(url, fsysparams)
+        self.assertEqual(response.status_code, 200)
+        result = json.loads(response.content)
+
+        self.assertEqual(result['status'], 'success')
+        self.assertEqual(result['message'], {'warnings': []})
+        self.assertEqual(result['data']['property_view']['state']['year_built'], 1967)
+        self.assertEqual(result['data']['property_view']['state']['postal_code'], '94111')
 
     def test_upload_with_measure_duplicates(self):
         # import_record =
@@ -110,7 +132,7 @@ class InventoryViewTests(DeleteModelsTestCase):
         self.assertEqual(response.status_code, 200)
         result = json.loads(response.content)
         self.assertEqual(result['status'], 'success')
-        expected_message = "successfully imported file with warnings ['Measure category and name is not valid other_electric_motors_and_drives:replace_with_higher_efficiency', 'Measure category and name is not valid other_hvac:install_demand_control_ventilation', 'Measure associated with scenario not found. Scenario: Replace with higher efficiency Only, Measure name: Measure22', 'Measure associated with scenario not found. Scenario: Install demand control ventilation Only, Measure name: Measure24']"
+        expected_message = {'warnings': ['Measure category and name is not valid other_electric_motors_and_drives:replace_with_higher_efficiency', 'Measure category and name is not valid other_hvac:install_demand_control_ventilation', 'Measure associated with scenario not found. Scenario: Replace with higher efficiency Only, Measure name: Measure22', 'Measure associated with scenario not found. Scenario: Install demand control ventilation Only, Measure name: Measure24']}
         self.assertEqual(result['message'], expected_message)
         self.assertEqual(len(result['data']['property_view']['state']['measures']), 28)
         self.assertEqual(len(result['data']['property_view']['state']['scenarios']), 31)
@@ -150,7 +172,7 @@ class InventoryViewTests(DeleteModelsTestCase):
         self.assertEqual(response.status_code, 200)
         result = json.loads(response.content)
         self.assertEqual(result['status'], 'success')
-        self.assertEqual(result['message'], 'successfully imported file')
+        self.assertEqual(result['message'], {'warnings': []})
         self.assertEqual(result['data']['property_view']['state']['year_built'], 1889)
 
         # now get the building sync that was just uploaded

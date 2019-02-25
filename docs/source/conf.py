@@ -15,12 +15,17 @@
 import os
 import sys
 import json
+from shutil import copyfile
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
-# sets the default settings module for read the docs
+# Copy over the local_untracked if it does not exist yet.
+if not os.path.exists('../../config/settings/local_untracked.py'):
+    copyfile('../../config/settings/local_untracked.py.dist',
+             '../../config/settings/local_untracked.py')
+
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.dev")
 sys.path.insert(0, os.path.abspath('../..'))
 
@@ -41,6 +46,7 @@ extensions = [
     'sphinx.ext.todo',
     'sphinxcontrib.spelling',
     'sphinx.ext.inheritance_diagram',
+    'sphinx.ext.intersphinx',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -62,7 +68,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'SEED Platform'
-copyright = '2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory'
+copyright = '2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory'
 author = 'The Regents of the University of California, through Lawrence Berkeley National Laboratory'
 
 # The version info for the project you're documenting, acts as replacement for

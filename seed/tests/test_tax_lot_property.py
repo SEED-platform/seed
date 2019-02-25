@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import json
@@ -89,14 +89,14 @@ class TestTaxLotProperty(TestCase):
             columns.append(c['name'])
 
         # call the API
-        url = reverse_lazy('api:v2.1:tax_lot_properties-csv')
+        url = reverse_lazy('api:v2.1:tax_lot_properties-export')
         response = self.client.post(
             url + '?{}={}&{}={}&{}={}'.format(
                 'organization_id', self.org.pk,
                 'cycle_id', self.cycle,
                 'inventory_type', 'properties'
             ),
-            data=json.dumps({'columns': columns}),
+            data=json.dumps({'columns': columns, 'export_type': 'csv'}),
             content_type='application/json'
         )
 
@@ -109,6 +109,45 @@ class TestTaxLotProperty(TestCase):
         self.assertEqual(len(data), 53)
         # last row should be blank
         self.assertEqual(data[52], '')
+
+    def test_json_export(self):
+        """Test to make sure get_related returns the fields"""
+        for i in range(50):
+            p = self.property_view_factory.get_property_view()
+            self.properties.append(p.id)
+
+        columns = []
+        for c in Column.retrieve_all(self.org.id, 'property', False):
+            columns.append(c['name'])
+
+        # call the API
+        url = reverse_lazy('api:v2.1:tax_lot_properties-export')
+        response = self.client.post(
+            url + '?{}={}&{}={}&{}={}'.format(
+                'organization_id', self.org.pk,
+                'cycle_id', self.cycle,
+                'inventory_type', 'properties'
+            ),
+            data=json.dumps({'columns': columns, 'export_type': 'geojson'}),
+            content_type='application/json'
+        )
+
+        # parse the content as dictionary
+        data = json.loads(response.content)
+
+        first_level_keys = list(data.keys())
+
+        self.assertIn("type", first_level_keys)
+        self.assertIn("crs", first_level_keys)
+        self.assertIn("features", first_level_keys)
+
+        record_level_keys = list(data['features'][0]['properties'].keys())
+
+        self.assertIn('Address Line 1', record_level_keys)
+        self.assertTrue('Gross Floor Area', record_level_keys)
+
+        # ids 52 up to and including 102
+        self.assertEqual(len(data['features']), 51)
 
     def tearDown(self):
         for x in self.properties:

@@ -1,5 +1,5 @@
 /*
- * :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.pairing', []).controller('pairing_controller', [
@@ -20,23 +20,25 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
   'dragulaService',
   'naturalSort',
   '$translate',
-  function ($scope,
-            $log,
-            $q,
-            import_file_payload,
-            inventory_service,
-            pairing_service,
-            allPropertyColumns,
-            allTaxlotColumns,
-            propertyInventory,
-            taxlotInventory,
-            cycles,
-            $state,
-            $stateParams,
-            spinner_utility,
-            dragulaService,
-            naturalSort,
-            $translate) {
+  function (
+    $scope,
+    $log,
+    $q,
+    import_file_payload,
+    inventory_service,
+    pairing_service,
+    allPropertyColumns,
+    allTaxlotColumns,
+    propertyInventory,
+    taxlotInventory,
+    cycles,
+    $state,
+    $stateParams,
+    spinner_utility,
+    dragulaService,
+    naturalSort,
+    $translate
+  ) {
     spinner_utility.show();
 
     $scope.import_file = import_file_payload.import_file;
@@ -73,8 +75,8 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
     };
 
     var refreshObjects = function () {
-      var propertyColumnNames = _.map($scope.propertyColumns, 'name');
-      var taxlotColumnNames = _.map($scope.taxlotColumns, 'name');
+      // var propertyColumnNames = _.map($scope.propertyColumns, 'name');
+      // var taxlotColumnNames = _.map($scope.taxlotColumns, 'name');
 
       var promises = [];
       promises.push(inventory_service.get_properties(1, undefined, $scope.cycle.selected_cycle, undefined));

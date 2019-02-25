@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import base64
@@ -367,7 +367,6 @@ class TestApi(TestCase):
         upload_details = self.client.get('/api/v2/get_upload_details/', follow=True, **self.headers)
         self.assertEqual(upload_details.status_code, 200)
         upload_details = json.loads(upload_details.content)
-        self.assertEqual(upload_details['upload_mode'], 'filesystem')
         self.assertEqual(upload_details['upload_path'], '/api/v2/upload/')
 
         # create hash for /data/upload/

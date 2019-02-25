@@ -3,19 +3,28 @@
 version: '3'
 services:
   db-postgres:
-    image: postgres
+    image: seedplatform/postgres-seed:11.1
+    build:
+      context: ./docker/postgres
     environment:
       - POSTGRES_DB=seed
       - POSTGRES_USER=seed
       - POSTGRES_PASSWORD=super-secret-password
     volumes:
       - seed_pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
   db-redis:
-    image: redis
+    image: redis:5.0.1
   web:
     image: seedplatform/seed:latest
     build: .
     environment:
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_SES_REGION_NAME
+      - AWS_SES_REGION_ENDPOINT
+      - SERVER_EMAIL
       - POSTGRES_DB=seed
       - POSTGRES_USER=seed
       - POSTGRES_PASSWORD=super-secret-password
@@ -48,6 +57,13 @@ services:
       - web
     volumes:
       - seed_media:/seed/media
+  oep-city-1:
+    # This is a placeholder. If needed, follow the instructions to enable: https://cloud.docker.com/u/seedplatform/repository/docker/seedplatform/oep
+    image: seedplatform/oep:1.0.0-SNAPSHOT
+    depends_on:
+      - web
+    environment:
+      - OEP_DISABLED=true
 volumes:
   seed_pgdata:
     external: true

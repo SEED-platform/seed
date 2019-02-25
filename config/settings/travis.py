@@ -1,5 +1,5 @@
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 
 settings for travis (travis-ci.org)
@@ -10,7 +10,7 @@ from config.settings.test import *  # noqa
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'seeddb',
         'USER': 'postgres',
         'PASSWORD': '',
@@ -32,6 +32,8 @@ DATABASES = {
 #         'snippets': None,
 #         'scaffold_templates': None,
 #     }
+
+TESTING_MAPQUEST_API_KEY = os.environ.get("TESTING_MAPQUEST_API_KEY")
 
 CACHES = {
     'default': {

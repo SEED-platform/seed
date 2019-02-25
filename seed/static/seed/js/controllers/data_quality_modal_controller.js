@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.data_quality_modal', [])
@@ -13,15 +13,17 @@ angular.module('BE.seed.controller.data_quality_modal', [])
     'uploaded',
     'importFileId',
     'orgId',
-    function ($scope,
-              $uibModalInstance,
-              search_service,
-              naturalSort,
-              dataQualityResults,
-              name,
-              uploaded,
-              importFileId,
-              orgId) {
+    function (
+      $scope,
+      $uibModalInstance,
+      search_service,
+      naturalSort,
+      dataQualityResults,
+      name,
+      uploaded,
+      importFileId,
+      orgId
+    ) {
       $scope.name = name;
       $scope.uploaded = moment.utc(uploaded).local().format('MMMM Do YYYY, h:mm:ss A Z');
       var originalDataQualityResults = dataQualityResults || [];

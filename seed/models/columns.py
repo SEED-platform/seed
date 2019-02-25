@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -60,10 +60,11 @@ class Column(models.Model):
         ('TaxLotState', 'jurisdiction_tax_lot_id')
     ]
 
-    # Do not return these columns to the front end -- when using the tax_lot_properties get_related method .
+    # Do not return these columns to the front end -- when using the tax_lot_properties
+    # get_related method.
     EXCLUDED_COLUMN_RETURN_FIELDS = [
-        'normalized_address',
         'hash_object',
+        'normalized_address',
         # Records below are old and should not be used
         'source_eui_modeled_orig',
         'site_eui_orig',
@@ -95,25 +96,28 @@ class Column(models.Model):
         (COLUMN_MERGE_FAVOR_EXISTING, 'Favor Existing')
     ]
 
-    # These fields are excluded from being returned to the front end via the API and the Column.retrieve_all method.
-    # Note that not all the endpoints are respecting this at the moment.
+    # These fields are excluded from being returned to the front end via the API and the
+    # Column.retrieve_all method. Note that not all the endpoints are respecting this at the moment.
     EXCLUDED_API_FIELDS = [
         'normalized_address',
     ]
 
     # These are the columns that are removed when looking to see if the records are the same
     COLUMN_EXCLUDE_FIELDS = [
-        'id',
-        'source_type',
-        'import_file',
         'analysis_state',
+        'bounding_box',
+        'centroid',
         'data_state',
-        'merge_state',
         'extra_data',
+        'geocoding_confidence',
+        'id',
+        'import_file',
+        'long_lat',
+        'merge_state',
         'source_type',
     ] + EXCLUDED_COLUMN_RETURN_FIELDS
 
-    # These are fields that should not be mapped to
+    # These are fields that should not be mapped to, ever.
     EXCLUDED_MAPPING_FIELDS = [
         'extra_data',
         'lot_number',
@@ -128,11 +132,13 @@ class Column(models.Model):
         'analysis_state_message',
         'campus',
         'created',
+        'geocoding_confidence',
         'lot_number',
         'updated'
     ]
     UNMAPPABLE_TAXLOT_FIELDS = [
         'created',
+        'geocoding_confidence',
         'updated'
     ]
 
@@ -267,6 +273,16 @@ class Column(models.Model):
             'table_name': 'PropertyState',
             'display_name': 'Longitude',
             'data_type': 'number',
+        }, {
+            'column_name': 'geocoding_confidence',
+            'table_name': 'PropertyState',
+            'display_name': 'Geocoding Confidence',
+            'data_type': 'string',
+        }, {
+            'column_name': 'geocoding_confidence',
+            'table_name': 'TaxLotState',
+            'display_name': 'Geocoding Confidence',
+            'data_type': 'string',
         }, {
             'column_name': 'campus',
             'table_name': 'Property',
@@ -900,14 +916,15 @@ class Column(models.Model):
     @staticmethod
     def retrieve_db_types():
         """
-        return the data types for the database columns in the format of:
+        Return the data types for the database columns in the format of:
 
-        Example:
-        {
-          "field_name": "data_type",
-          "field_name_2": "data_type_2",
-          "address_line_1": "string",
-        }
+        .. code-block:: json
+
+            {
+              "field_name": "data_type",
+              "field_name_2": "data_type_2",
+              "address_line_1": "string",
+            }
 
         :return: dict
         """
@@ -958,7 +975,8 @@ class Column(models.Model):
         """
         Similar to keys, except it returns a list of tuples of the columns that are in the database
 
-        .. code:
+        .. code-block:: json
+
             [
               ('PropertyState', 'address_line_1'),
               ('PropertyState', 'address_line_2'),
@@ -1145,24 +1163,24 @@ class Column(models.Model):
     @staticmethod
     def retrieve_priorities(org_id):
         """
-        Return the list of priorties for the columns
+        Return the list of priorties for the columns. Result will be in the form of:
 
-        Result will be in the form of:
+        .. code-block:: json
 
-        {
-            'PropertyState': {
-                'lot_number': 'Favor New',
-                'owner_address': 'Favor New',
-                'extra_data': {
-                    'data_007': 'Favor New'
-                }
-            'TaxLotState': {
-                'custom_id_1': 'Favor New',
-                'block_number': 'Favor New',
-                'extra_data': {
-                    'data_008': 'Favor New'
-                }
-        }
+            {
+                'PropertyState': {
+                    'lot_number': 'Favor New',
+                    'owner_address': 'Favor New',
+                    'extra_data': {
+                        'data_007': 'Favor New'
+                    }
+                'TaxLotState': {
+                    'custom_id_1': 'Favor New',
+                    'block_number': 'Favor New',
+                    'extra_data': {
+                        'data_008': 'Favor New'
+                    }
+            }
 
         :param org_id: organization with the columns
         :return: dict
@@ -1190,7 +1208,8 @@ class Column(models.Model):
         """
         Return list of all columns for an organization as a tuple.
 
-        .. code:
+        .. code-block:: json
+
             [
               ('PropertyState', 'address_line_1'),
               ('PropertyState', 'address_line_2'),
