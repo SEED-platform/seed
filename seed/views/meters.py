@@ -1,27 +1,45 @@
-# # !/usr/bin/env python
-# # encoding: utf-8
-# """
-# :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
-# :author
-# """
+# !/usr/bin/env python
+# encoding: utf-8
 # # import json
 #
 # from django.http import JsonResponse
-# from rest_framework import viewsets
+from rest_framework import viewsets
+from rest_framework.decorators import list_route
 # from rest_framework.decorators import detail_route
 # from rest_framework.parsers import JSONParser, FormParser
-#
+
+from seed.data_importer.meters_parsers import PMMeterParser
 # from seed.decorators import require_organization_id_class
-# from seed.lib.superperms.orgs.decorators import has_perm_class
-# from seed.models import (
+from seed.decorators import ajax_request_class
+from seed.lib.mcm import reader
+from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.models import (
+    ImportFile
 #     obj_to_dict,
 #     Meter,
 #     PropertyView,
-# )
-# from seed.utils.api import api_endpoint_class
-#
-#
-# class MeterViewSet(viewsets.ViewSet):
+)
+from seed.utils.api import api_endpoint_class
+
+
+class MeterViewSet(viewsets.ViewSet):
+
+    @ajax_request_class
+    @list_route(methods=['POST'])
+    def parsed_type_units(self, request):
+        body = dict(request.data)
+        file_id = body['file_id']
+        org_id = body['organization_id']
+
+        import_file = ImportFile.objects.get(pk=file_id)
+        parser = reader.MCMParser(import_file.local_file)
+        raw_meter_data = list(parser.data)
+
+        meters_parser = PMMeterParser(org_id, raw_meter_data)
+
+        return meters_parser.validated_type_units()
+
+
 #     raise_exception = True
 #     parser_classes = (JSONParser, FormParser)
 #

@@ -33,7 +33,7 @@ from seed.views.geocode import GeocodeViews
 from seed.views.labels import LabelViewSet, UpdateInventoryLabelsAPIView
 from seed.views.main import version
 from seed.views.measures import MeasureViewSet
-# from seed.views.meters import MeterViewSet
+from seed.views.meters import MeterViewSet
 from seed.views.organizations import OrganizationViewSet
 from seed.views.projects import ProjectViewSet
 from seed.views.properties import (PropertyViewSet, PropertyStateViewSet,
@@ -60,7 +60,7 @@ api_v2_router.register(r'green_assessment_properties', GreenAssessmentPropertyVi
 api_v2_router.register(r'green_assessments', GreenAssessmentViewSet, base_name="green_assessments")
 api_v2_router.register(r'labels', LabelViewSet, base_name="labels")
 api_v2_router.register(r'measures', MeasureViewSet, base_name='measures')
-# api_v2_router.register(r'meters', MeterViewSet, base_name='meters')
+api_v2_router.register(r'meters', MeterViewSet, base_name='meters')
 api_v2_router.register(r'organizations', OrganizationViewSet, base_name="organizations")
 api_v2_router.register(r'progress', ProgressViewSetV2, base_name="progress")
 api_v2_router.register(r'projects', ProjectViewSet, base_name="projects")

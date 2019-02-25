@@ -34,6 +34,23 @@ class PMMeterParser(object):
 
         return self._us_kbtu_thermal_conversion_factors
 
+    def validated_type_units(self):
+        column_headers = self._find_type_columns(self._meters_and_readings_details[0])
+
+        result = []
+
+        for header in column_headers:
+            type, unit, _factor = self._parse_unit_and_factor(header)
+            result.append({
+                "column_header": header,
+                "type": type,
+                "unit": unit,
+            })
+
+
+        return result
+
+
     def construct_objects_details(self, property_link='Property Id', monthly=True):
         """
         Details for meter and meter reading objects are parsed from meter usage data.
@@ -116,12 +133,12 @@ class PMMeterParser(object):
         first reading details are saved in a list. If a meter was previously parsed
         and has readings already, any new readings are appended to that list.
         """
-        meter_types = [k for k, v in details.items() if ' Use  (' in k]
+        meter_types = self._find_type_columns(details)
 
         for type in meter_types:
             meter_details = meter_shared_details.copy()
 
-            unit, conversion_factor = self._parse_unit_and_factor(type, meter_details)
+            _type, unit, conversion_factor = self._parse_unit_and_factor(type, meter_details)
 
             meter_reading = {
                 'start_time': start_time,
@@ -142,7 +159,10 @@ class PMMeterParser(object):
             else:
                 existing_property_meter['readings'].append(meter_reading)
 
-    def _parse_unit_and_factor(self, type_unit, meter_details):
+    def _find_type_columns(self, details):
+        return [k for k, v in details.items() if ' Use  (' in k]
+
+    def _parse_unit_and_factor(self, type_unit, meter_details={}):
         use_position = type_unit.find(" Use")
         type = type_unit[:use_position]
         meter_details['type'] = Meter.type_lookup[type]
@@ -153,4 +173,4 @@ class PMMeterParser(object):
         # TODO; If no conversion exists? skip entry (via try except)?
         factor = self.us_kbtu_thermal_conversion_factors[type][unit]
 
-        return unit, factor
+        return type, unit, factor

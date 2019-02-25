@@ -1,37 +1,114 @@
-# # !/usr/bin/env python
-# # encoding: utf-8
-# """
-# :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
-# :author
-# """
-# import json
-#
-# from django.core.urlresolvers import reverse
-# from django.test import TestCase
+# !/usr/bin/env python
+# encoding: utf-8
+
+import ast
+import os
+import json
+
+from datetime import datetime
+
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.urlresolvers import reverse
+from django.test import TestCase
+from django.utils.timezone import get_current_timezone
 # from rest_framework import status
-# from rest_framework.test import APIClient
-#
-# from seed.landing.models import SEEDUser as User
-# from seed.models import (
-#     PropertyState,
-#     Meter,
-# )
-# from seed.utils.organizations import create_organization
-#
-#
-# class TestMeterViewSet(TestCase):
-#     def setUp(self):
-#         self.user = User.objects.create_superuser(
-#             email='test_user@demo.com',
-#             username='test_user@demo.com',
-#             password='secret',
-#         )
-#         self.org, _, _ = create_organization(self.user, "test-organization-a")
-#         self.cycle = self.org.cycles.first()
-#
-#         self.maxDiff = None
-#
-#     def test_get_meters_no_building(self):
+
+from seed.data_importer.models import ImportFile, ImportRecord
+from seed.landing.models import SEEDUser as User
+from seed.models import (
+    PropertyState,
+    PropertyView,
+    Meter,
+)
+from seed.test_helpers.fake import (
+    FakeCycleFactory,
+    FakePropertyFactory,
+    FakePropertyStateFactory,
+)
+from seed.utils.organizations import create_organization
+
+
+class TestMeterViewSet(TestCase):
+    def setUp(self):
+        self.user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+        }
+        self.user = User.objects.create_superuser(
+            email='test_user@demo.com', **self.user_details
+        )
+        self.org, _, _ = create_organization(self.user)
+        self.client.login(**self.user_details)
+
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+        property_details = self.property_state_factory.get_details()
+        property_details['organization_id'] = self.org.id
+
+        # pm_property_ids must match those within example-monthly-meter-usage.xlsx
+        self.pm_property_id_1 = '5766973'
+        self.pm_property_id_2 = '5766975'
+
+        property_details['pm_property_id'] = self.pm_property_id_1
+        state_1 = PropertyState(**property_details)
+        state_1.save()
+        self.state_1 = PropertyState.objects.get(pk=state_1.id)
+
+        property_details['pm_property_id'] = self.pm_property_id_2
+        state_2 = PropertyState(**property_details)
+        state_2.save()
+        self.state_2 = PropertyState.objects.get(pk=state_2.id)
+
+        self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
+        self.cycle = self.cycle_factory.get_cycle(start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
+
+        self.property_factory = FakePropertyFactory(organization=self.org)
+        self.property_1 = self.property_factory.get_property()
+        self.property_2 = self.property_factory.get_property()
+
+        self.property_view_1 = PropertyView.objects.create(property=self.property_1, cycle=self.cycle, state=self.state_1)
+        self.property_view_2 = PropertyView.objects.create(property=self.property_2, cycle=self.cycle, state=self.state_2)
+
+        import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
+
+        filename = "example-pm-monthly-meter-usage.xlsx"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+
+        self.import_file = ImportFile.objects.create(
+            import_record=import_record,
+            source_type="PM Meter Usage",
+            uploaded_filename=filename,
+            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            cycle=self.cycle
+        )
+
+    def test_meter_type_unit_confirmation_verifies_energy_type_and_unit_parsed_from_column_headers(self):
+        # TODO: very possible/likely that this endpoint should invalidate entries
+        # but valid/invalid energy types and units may be changed before feature end
+        url = reverse('api:v2:meters-parsed-type-units')
+
+        post_params = {
+            'file_id': self.import_file.id,
+            'organization_id': self.org.pk,
+        }
+        result = self.client.post(url, post_params)
+        result_dict = ast.literal_eval(result.content.decode("utf-8"))
+
+        expectation = [
+            {
+                "column_header": "Electricity Use  (kBtu)",
+                "type": "Electricity",
+                "unit": "kBtu",
+            },
+            {
+                "column_header": "Natural Gas Use  (GJ)",
+                "type": "Natural Gas",
+                "unit": "GJ",
+            },
+
+        ]
+
+        self.assertEqual(result_dict, expectation)
+
 #         """We throw an error when there's no building id passed in."""
 #         client = APIClient()
 #         client.login(username=self.user.username, password='secret')
