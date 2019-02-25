@@ -240,10 +240,11 @@ angular.module('BE.seed.controller.data_upload_modal', [])
               $scope.step_14_message = (_.size(file.message['warnings']) > 0) ? file.message['warnings'] : null;
             } else if (file.source_type === 'PM Meter Usage') {
               meters_service.parsed_type_units(file.file_id, $scope.organization.org_id).then(function (result) {
-                $scope.parsed_type_units = result
-                $scope.file_id = file.file_id
-                $scope.cycle_id = file.cycle_id
-                $scope.step.number = 15
+                $scope.parsed_type_units = result.validated_type_units;
+                $scope.proposed_imports = result.proposed_imports;
+                $scope.file_id = file.file_id;
+                $scope.cycle_id = file.cycle_id;
+                $scope.step.number = 15;
               });
             } else {
               $scope.dataset.import_file_id = file.file_id;

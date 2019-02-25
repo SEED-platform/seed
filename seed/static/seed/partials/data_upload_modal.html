@@ -13,7 +13,7 @@
     <h4 class="modal-title" ng-switch-when="12" translate>Error Processing Data</h4>
     <h4 class="modal-title" ng-switch-when="13" translate>Portfolio Manager Import</h4>
     <h4 class="modal-title" ng-switch-when="14" translate>Successful upload!</h4>
-    <h4 class="modal-title" ng-switch-when="15" translate>Confirm parsed meter types and units</h4>
+    <h4 class="modal-title" ng-switch-when="15" translate>Confirm Meter Readings</h4>
     <h4 class="modal-title" ng-switch-when="16" translate>Successful meter upload!</h4>
 
 </div>
@@ -303,10 +303,17 @@
 
         </div>
     </div>
-    <!-- Step 15:  Confirm parsed meter types and units -->
+    <!-- Step 15:  Confirm Meter Readings -->
     <div class="data_upload_steps" ng-switch-when="15">
         <div class="row">
+            <div class="alert alert-info">
+                <p><b>Reading Counts</b></p>
+                <div ui-grid="{ data: proposed_imports }"></div>
+            </div>
+        </div>
+        <div class="row">
             <div class="alert alert-warning">
+                <p><b>Assumed Energy Types and Units</b></p>
                 <ul ng-repeat="type_unit in parsed_type_units">
                     <li>
                       <p><b>Column header in import file:</b> {$:: type_unit.column_header | translate $}</p>
