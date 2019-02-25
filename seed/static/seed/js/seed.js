@@ -118,6 +118,7 @@ angular.module('BE.seed.services', [
   'BE.seed.service.main',
   'BE.seed.service.mapping',
   'BE.seed.service.matching',
+  'BE.seed.service.meters',
   'BE.seed.service.modified',
   'BE.seed.service.note',
   'BE.seed.service.organization',

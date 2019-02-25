@@ -13,7 +13,8 @@
     <h4 class="modal-title" ng-switch-when="12" translate>Error Processing Data</h4>
     <h4 class="modal-title" ng-switch-when="13" translate>Portfolio Manager Import</h4>
     <h4 class="modal-title" ng-switch-when="14" translate>Successful upload!</h4>
-    <!-- Currently no feedback provided --> <h4 class="modal-title" ng-switch-when="15" translate>Successful upload!</h4> 
+    <h4 class="modal-title" ng-switch-when="15" translate>Confirm parsed meter types and units</h4>
+    <h4 class="modal-title" ng-switch-when="16" translate>Successful meter upload!</h4>
 
 </div>
 <div class="modal-body no_bottom_padding" ng-switch on="step.number">
@@ -302,6 +303,20 @@
 
         </div>
     </div>
+    <!-- Step 15:  Confirm parsed meter types and units -->
+    <div class="data_upload_steps" ng-switch-when="15">
+        <div class="row">
+            <div class="alert alert-warning">
+                <ul ng-repeat="type_unit in parsed_type_units">
+                    <li>
+                      <p><b>Column header in import file:</b> {$:: type_unit.column_header | translate $}</p>
+                      <p><b>Parsed Type:</b> {$:: type_unit.type | translate $}</p>
+                      <p><b>Parsed Unit:</b> {$:: type_unit.unit | translate $}</p>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="modal-footer container-fluid" ng-switch on="step.number">
@@ -357,6 +372,11 @@
         </div>
         <div class="row text-center">
             <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="view_my_properties()" translate>View my properties</button>
+        </div>
+    </div>
+    <div ng-switch-when="15">
+        <div class="row text-center">
+            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="accept_meters(file_id, cycle_id)" translate>Confirm</button>
         </div>
     </div>
     <div class="row text-center">

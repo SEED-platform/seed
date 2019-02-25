@@ -34,6 +34,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
     '$state',
     'mapping_service',
     'matching_service',
+    'meters_service',
     'inventory_service',
     'spinner_utility',
     'step',
@@ -50,6 +51,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       $state,
       mapping_service,
       matching_service,
+      meters_service,
       inventory_service,
       spinner_utility,
       step,
@@ -236,13 +238,19 @@ angular.module('BE.seed.controller.data_upload_modal', [])
               $scope.uploader.progress = 100;
               $scope.step.number = 14;
               $scope.step_14_message = (_.size(file.message['warnings']) > 0) ? file.message['warnings'] : null;
+            } else if (file.source_type === 'PM Meter Usage') {
+              meters_service.parsed_type_units(file.file_id, $scope.organization.org_id).then(function (result) {
+                $scope.parsed_type_units = result
+                $scope.file_id = file.file_id
+                $scope.cycle_id = file.cycle_id
+                $scope.step.number = 15
+              });
             } else {
               $scope.dataset.import_file_id = file.file_id;
 
               // Assessed Data; upload is step 2; PM import is currently treated as such, and is step 13
               if (current_step === 2 || current_step === 13) {
-                var is_meter_data = (file.source_type === 'PM Meter Usage');
-                save_raw_assessed_data(file.file_id, file.cycle_id, is_meter_data);
+                save_raw_assessed_data(file.file_id, file.cycle_id, false);
               }
               // Portfolio Data
               if (current_step === 4) {
@@ -252,6 +260,9 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             break;
         }
 
+        $scope.accept_meters = function(file_id, cycle_id) {
+          save_raw_assessed_data(file_id, cycle_id, true);
+        };
 
         // $apply() or $digest() needed maybe because of this:
         // https://github.com/angular-ui/bootstrap/issues/1798
@@ -335,7 +346,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        *
        * @param {string} file_id: the id of the import file
        * @param cycle_id
-       * @param is_green_button
+       * @param is_meter_data
        */
       var save_raw_assessed_data = function (file_id, cycle_id, is_meter_data) {
         $scope.uploader.status_message = 'saving data';
@@ -346,7 +357,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             $scope.uploader.status_message = 'saving complete';
             $scope.uploader.progress = 100;
             if (is_meter_data) {
-              $scope.step.number = 15;
+              $scope.step.number = 16;
             } else {
               $scope.step.number = 3;
             }
