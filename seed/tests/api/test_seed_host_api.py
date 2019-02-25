@@ -168,7 +168,7 @@ print('\n\n|-------Labels-------|')
 labels(header, main_url, organization_id, cycle_id, log)
 
 # Export dataset
-print ('\n|---Export Dataset---|\n')
+print('\n|---Export Dataset---|\n')
 export(header, main_url, organization_id, cycle_id, log)
 
 # Delete dataset
