@@ -93,7 +93,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
         if 'profile_id' not in request.data:
             profile_id = None
         else:
-            if request.data['profile_id'] == 'None':
+            if request.data['profile_id'] == 'None' or request.data['profile_id'] == '':
                 profile_id = None
             else:
                 profile_id = request.data['profile_id']
@@ -137,7 +137,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
             order_dict = {obj_id: index for index, obj_id in enumerate(ids)}
             data.sort(key=lambda x: order_dict[x['id']])  # x is the property/taxlot object
 
-        export_type = request.data.get('export_type')
+        export_type = request.data.get('export_type', 'csv')
 
         filename = request.data.get('filename', f"ExportedData.{export_type}")
 

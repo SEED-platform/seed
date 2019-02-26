@@ -63,19 +63,10 @@ def check_status(result_out, part_msg, log, piid_flag=None):
         try:
             if piid_flag == 'export':
                 content_str = result_out.content.decode()
-                if content_str.startswith('{') and content_str.endswith('}'):
-                    content_dict = eval(content_str)
-                    if 'status' in content_dict and content_dict['status'] == 'error':
-                        msg = content_dict['message']
-                        log.error(part_msg + failed)
-                        log.debug(msg)
-                        raise RuntimeError
-                    elif 'success' in content_dict and not content_dict['success']:
-                        msg = content_dict
-                        log.error(part_msg + failed)
-                        log.debug(msg)
-                    else:
-                        msg = content_dict
+                if content_str.startswith('id'):
+                    msg = "Data exported successfully"
+                    # the data are returned as text. No easy way to check the status. If ID
+                    # exists, then claim success.
                 else:
                     msg = content_str
             elif 'status' in result_out.json() and result_out.json()['status'] == 'error':

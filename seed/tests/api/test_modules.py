@@ -548,7 +548,7 @@ def data_quality(header, main_url, organization_id, log):
     check_status(result, partmsg, log)
 
 
-def export(header, main_url, organization_id, cycle_id, log):
+def export_data(header, main_url, organization_id, cycle_id, log):
 
     # Get IDs for some properties
     num_props = 25
@@ -574,9 +574,10 @@ def export(header, main_url, organization_id, cycle_id, log):
     payload = {
         'ids': prop_ids,
         'filename': 'test_seed_host_api---properties-export.csv',
-        'profile_id': None
+        'profile_id': None,
+        'export_type': 'csv',
     }
-    result = requests.post(main_url + '/api/v2.1/tax_lot_properties/csv/',
+    result = requests.post(main_url + '/api/v2.1/tax_lot_properties/export/',
                            headers=header,
                            params=params,
                            json=payload)
@@ -606,9 +607,10 @@ def export(header, main_url, organization_id, cycle_id, log):
     payload = {
         'ids': lot_ids,
         'filename': 'test_seed_host_api---taxlots-export.csv',
-        'profile_id': None
+        'profile_id': None,
+        'export_type': 'csv',
     }
-    result = requests.post(main_url + '/api/v2.1/tax_lot_properties/csv/',
+    result = requests.post(main_url + '/api/v2.1/tax_lot_properties/export/',
                            headers=header,
                            params=params,
                            json=payload)
