@@ -114,7 +114,7 @@ class MeterUtilTests(TestCase):
 
         meters_parser = PMMeterParser(self.org.id, raw_meters)
 
-        self.assertEqual(meters_parser.construct_objects_details(), expected)
+        self.assertEqual(meters_parser.meter_and_reading_objs, expected)
 
     def test_parse_meter_details_works_with_multiple_meters_impacted_by_a_leap_year(self):
         raw_meters = [
@@ -181,7 +181,7 @@ class MeterUtilTests(TestCase):
 
         meters_parser = PMMeterParser(self.org.id, raw_meters)
 
-        self.assertEqual(meters_parser.construct_objects_details(), expected)
+        self.assertEqual(meters_parser.meter_and_reading_objs, expected)
 
     def test_parse_meter_details_converts_energy_units_if_necessary(self):
         raw_meters = [
@@ -198,7 +198,7 @@ class MeterUtilTests(TestCase):
 
         meters_parser = PMMeterParser(self.org.id, raw_meters)
 
-        result = meters_parser.construct_objects_details()
+        result = meters_parser.meter_and_reading_objs
 
         if result[0]["type"] == Meter.FUEL_OIL_NO_1:
             fuel_oil_details = result[0]

@@ -1,6 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 
+import json
 import os
 
 from config.settings.common import TIME_ZONE
@@ -321,3 +322,28 @@ class MeterUsageImportTest(TestCase):
 
         refreshed_new_property = Property.objects.get(pk=new_property.id)
         self.assertEqual(refreshed_new_property.meters.count(), 0)
+
+    def test_the_response_contains_expected_and_actual_reading_counts_for_pm_ids(self):
+        url = reverse("api:v2:import_files-save-raw-data", args=[self.import_file.id])
+        post_params = {
+            'cycle_id': self.cycle.pk,
+            'organization_id': self.org.pk,
+        }
+        response = self.client.post(url, post_params)
+
+        result = json.loads(response.content)
+
+        expectation = [
+            {
+                "portfolio_manager_id": "5766973",
+                "incoming": 4,
+                "successfully_imported": 4,
+            },
+            {
+                "portfolio_manager_id": "5766975",
+                "incoming": 4,
+                "successfully_imported": 4,
+            },
+        ]
+
+        self.assertEqual(result['message'], expectation)

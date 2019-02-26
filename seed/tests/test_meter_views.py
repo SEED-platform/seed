@@ -95,13 +95,13 @@ class TestMeterViewSet(TestCase):
         expectation = [
             {
                 "column_header": "Electricity Use  (kBtu)",
-                "type": "Electricity",
-                "unit": "kBtu",
+                "parsed_type": "Electricity",
+                "parsed_unit": "kBtu",
             },
             {
                 "column_header": "Natural Gas Use  (GJ)",
-                "type": "Natural Gas",
-                "unit": "GJ",
+                "parsed_type": "Natural Gas",
+                "parsed_unit": "GJ",
             },
         ]
 
@@ -120,11 +120,11 @@ class TestMeterViewSet(TestCase):
         expectation = [
             {
                 "portfolio_manager_id": "5766973",
-                "number_of_readings": 4,
+                "incoming": 4,
             },
             {
                 "portfolio_manager_id": "5766975",
-                "number_of_readings": 4,
+                "incoming": 4,
             },
         ]
 

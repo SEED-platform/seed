@@ -13,8 +13,8 @@
     <h4 class="modal-title" ng-switch-when="12" translate>Error Processing Data</h4>
     <h4 class="modal-title" ng-switch-when="13" translate>Portfolio Manager Import</h4>
     <h4 class="modal-title" ng-switch-when="14" translate>Successful upload!</h4>
-    <h4 class="modal-title" ng-switch-when="15" translate>Confirm Meter Readings</h4>
-    <h4 class="modal-title" ng-switch-when="16" translate>Successful meter upload!</h4>
+    <h4 class="modal-title" ng-switch-when="15" translate>Confirm Meter Readings from Import File</h4>
+    <h4 class="modal-title" ng-switch-when="16" translate>Meter Import Results</h4>
 
 </div>
 <div class="modal-body no_bottom_padding" ng-switch on="step.number">
@@ -303,24 +303,24 @@
 
         </div>
     </div>
-    <!-- Step 15:  Confirm Meter Readings -->
+    <!-- Step 15:  Confirm Meter Readings from Import File -->
     <div class="data_upload_steps" ng-switch-when="15">
         <div class="row">
-            <div class="alert alert-info">
-                <p><b>Reading Counts</b></p>
+            <div class="alert alert-warning">
+                <p><b>Meter Reading Counts</b></p>
                 <div ui-grid="{ data: proposed_imports }"></div>
+                <br>
+                <p><b>Assumed Energy Types and Units</b></p>
+                <div ui-grid="{ data: parsed_type_units }"></div>
             </div>
         </div>
+    </div>
+    <!-- Step 16:  Meter Import Results -->
+    <div class="data_upload_steps" ng-switch-when="16">
         <div class="row">
-            <div class="alert alert-warning">
-                <p><b>Assumed Energy Types and Units</b></p>
-                <ul ng-repeat="type_unit in parsed_type_units">
-                    <li>
-                      <p><b>Column header in import file:</b> {$:: type_unit.column_header | translate $}</p>
-                      <p><b>Parsed Type:</b> {$:: type_unit.type | translate $}</p>
-                      <p><b>Parsed Unit:</b> {$:: type_unit.unit | translate $}</p>
-                    </li>
-                </ul>
+            <div class="alert alert-info">
+                <p><b>Meter Reading Counts</b></p>
+                <div ui-grid="{ data: import_results }"></div>
             </div>
         </div>
     </div>

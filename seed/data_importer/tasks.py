@@ -672,8 +672,11 @@ def _save_meter_usage_data(file_pk, progress_key):
     raw_meter_data = list(parser.data)
 
     meters_parser = PMMeterParser(org_id, raw_meter_data)
-    meters_and_readings = meters_parser.construct_objects_details()
+    meters_and_readings = meters_parser.meter_and_reading_objs
 
+    proposed_imports = meters_parser.proposed_imports()
+
+    successful_import_counts = collections.defaultdict(lambda: 0)
     try:
         with transaction.atomic():
             for meter_readings in meters_and_readings:
@@ -702,18 +705,26 @@ def _save_meter_usage_data(file_pk, progress_key):
                     "INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor)" +
                     " VALUES " + ", ".join(reading_strings) +
                     " ON CONFLICT (meter_id, start_time, end_time)" +
-                    " DO UPDATE SET reading = EXCLUDED.reading, source_unit = EXCLUDED.source_unit, conversion_factor = EXCLUDED.conversion_factor;"
+                    " DO UPDATE SET reading = EXCLUDED.reading, source_unit = EXCLUDED.source_unit, conversion_factor = EXCLUDED.conversion_factor" +
+                    " RETURNING reading;"
                 )
 
                 with connection.cursor() as cursor:
                     cursor.execute(sql)
+                    successful_import_counts[meter.source_id] += len(cursor.fetchall())
     except Exception as e:
         return progress_data.finish_with_error('data failed to import')
 
     import_file.raw_save_done = True
     import_file.save()
 
-    return progress_data.finish_with_success()
+    proposed_and_successful_imports = []
+    for import_info in proposed_imports:
+        pm_id = import_info["portfolio_manager_id"]
+        import_info["successfully_imported"] = successful_import_counts[pm_id]
+        proposed_and_successful_imports.append(import_info)
+
+    return progress_data.finish_with_success(proposed_and_successful_imports)
 
 
 def _save_raw_data_create_tasks(file_pk, progress_key):

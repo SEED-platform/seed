@@ -21,13 +21,27 @@ from seed.data_importer.utils import kbtu_thermal_conversion_factors
 
 
 class PMMeterParser(object):
-    def __init__(self, org_id, meters_and_readings_details):
+    """
+    This class parses and validates different details about a Portfolio Manager
+    Import File including meter energy types & units along with a summary of the
+    potential records to be created before execution.
+
+    It's able to create a collection of Meter object details and their
+    corresponding Meter Reading objects details.
+    """
+
+    _tz = timezone(TIME_ZONE)
+
+    def __init__(self, org_id, meters_and_readings_details, property_link='Property Id', is_monthly=True):
         self._org_id = org_id
         self._meters_and_readings_details = meters_and_readings_details
-        self._tz = timezone(TIME_ZONE)
+        self._property_link = property_link
+        self._is_monthly = is_monthly
+
         self._source_to_property_ids = {}  # tracked to reduce the number of database queries
         self._us_kbtu_thermal_conversion_factors = {}
-        self.result = {}
+        self._cache_meter_and_reading_objs = []
+        self._unique_meters = {}
 
     @property
     def us_kbtu_thermal_conversion_factors(self):
@@ -36,41 +50,12 @@ class PMMeterParser(object):
 
         return self._us_kbtu_thermal_conversion_factors
 
-    def validated_type_units(self):
-        column_headers = self._find_type_columns(self._meters_and_readings_details[0])
-
-        result = []
-
-        for header in column_headers:
-            type, unit, _factor = self._parse_unit_and_factor(header)
-            result.append({
-                "column_header": header,
-                "type": type,
-                "unit": unit,
-            })
-
-        return result
-
-    def proposed_imports(self):
-        object_details = self.construct_objects_details()
-
-        id_counts = defaultdict(lambda: 0)
-
-        for obj in object_details:
-            id_counts[obj.get("source_id")] += len(obj.get("readings"))
-
-        return [
-            {"portfolio_manager_id": id, "number_of_readings": reading_count}
-            for id, reading_count
-            in id_counts.items()
-        ]
-
-    def construct_objects_details(self, property_link='Property Id', monthly=True):
+    @property
+    def meter_and_reading_objs(self):
         """
-        Details for meter and meter reading objects are parsed from meter usage data.
-        Specifically, the raw meter usage data is converted into a format that is
-        accepted by the two models. The following dictionary is generated, and
-        it's values are returned as details of several objects:
+        Raw meter usage data is converted into a format that is accepted by the
+        two models. The following dictionary is generated, and it's values are
+        returned as details of several objects:
         {
             <unique meter identifier>: {
                 'property_id': <id>,
@@ -90,36 +75,78 @@ class PMMeterParser(object):
 
         The unique identifier of a meter is composed of the values of it's details
         which include property_id, type, etc. This is used to easily associate
-        readings to a previously parsed meter.
+        readings to a previously parsed meter without creating duplicates.
         """
-        for details in self._meters_and_readings_details:
-            meter_shared_details = {}
+        if not self._cache_meter_and_reading_objs:
+            for details in self._meters_and_readings_details:
+                meter_shared_details = {}
 
-            source_id = details[property_link]
+                meter_shared_details['source'] = Meter.PORTFOLIO_MANAGER
 
-            meter_shared_details['source'] = 1  # probably need to be passed in as arg
-            meter_shared_details['source_id'] = str(source_id)
+                source_id = details[self._property_link]
+                meter_shared_details['source_id'] = str(source_id)
 
-            self._get_property_id_from_source(source_id, meter_shared_details)
+                self._get_property_id_from_source(source_id, meter_shared_details)
 
-            if monthly:
-                start_time, end_time = self._parse_times(details['Month'])
+                if self._is_monthly:
+                    start_time, end_time = self._parse_times(details['Month'])
 
-            self._parse_meter_readings(details, meter_shared_details, start_time, end_time)
+                self._parse_meter_readings(details, meter_shared_details, start_time, end_time)
 
-        return list(self.result.values())
+            self._cache_meter_and_reading_objs = list(self._unique_meters.values())
+
+        return self._cache_meter_and_reading_objs
+
+    def validated_type_units(self):
+        """
+        Reviews column headers from a PM Meter Usage file to identify and parse
+        energy types and units.
+        """
+        column_headers = self._find_type_columns(self._meters_and_readings_details[0])
+
+        result = []
+
+        for header in column_headers:
+            type, unit, _factor = self._parse_unit_and_factor(header)
+            result.append({
+                "column_header": header,
+                "parsed_type": type,
+                "parsed_unit": unit,
+            })
+
+        return result
+
+    def proposed_imports(self):
+        """
+        Summarizes meters and readings that will be created via file import.
+        """
+        object_details = self.meter_and_reading_objs
+
+        id_counts = defaultdict(lambda: 0)
+
+        for obj in object_details:
+            id_counts[obj.get("source_id")] += len(obj.get("readings"))
+
+        return [
+            {"portfolio_manager_id": id, "incoming": reading_count}
+            for id, reading_count
+            in id_counts.items()
+        ]
 
     def _get_property_id_from_source(self, source_id, shared_details):
-        """This is set up to avoid querying for the same property_id more than once"""
+        """
+        Find and cache property_ids to avoid querying for the same property_id
+        more than once. This assumes a Property model connects like PropertyStates
+        across Cycles within an Organization.
+        """
         property_id = self._source_to_property_ids.get(source_id, None)
 
         if property_id is not None:
             shared_details['property_id'] = property_id
         else:
             """
-            Filter used because property may exist across multiple cycles within an org.
-            If so, multiple property states will be found, but the underlying
-            property should be the same, so take the first.
+            Filter used because multiple PropertyStates will be found, but the
+            underlying Property should be the same, so take the first.
             """
             property_id = PropertyState.objects \
                 .filter(pm_property_id__exact=source_id, organization_id__exact=self._org_id)[0] \
@@ -131,6 +158,10 @@ class PMMeterParser(object):
             self._source_to_property_ids[source_id] = property_id
 
     def _parse_times(self, month_year):
+        """
+        Returns timezone aware start_time and end_time taken from a Mon-YYYY substring.
+        The exact times are the first and last second of the month, respectively.
+        """
         unaware_start = datetime.strptime(month_year, '%b-%y')
         start_time = make_aware(unaware_start, timezone=self._tz)
 
@@ -164,12 +195,12 @@ class PMMeterParser(object):
 
             meter_identifier = '-'.join([str(v) for k, v in meter_details.items()])
 
-            existing_property_meter = self.result.get(meter_identifier, None)
+            existing_property_meter = self._unique_meters.get(meter_identifier, None)
 
             if existing_property_meter is None:
                 meter_details['readings'] = [meter_reading]
 
-                self.result[meter_identifier] = meter_details
+                self._unique_meters[meter_identifier] = meter_details
             else:
                 existing_property_meter['readings'].append(meter_reading)
 
