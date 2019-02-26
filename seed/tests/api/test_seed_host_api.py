@@ -47,7 +47,7 @@ from subprocess import Popen
 import requests
 
 from seed_readingtools import check_status, setup_logger
-from test_modules import cycles, upload_match_sort, account, delete_set, labels, data_quality
+from test_modules import cycles, upload_match_sort, account, delete_set, labels, data_quality, export_data
 
 location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 print("Running from {}".format(location))
@@ -167,6 +167,10 @@ data_quality(header, main_url, organization_id, log)
 print('\n\n|-------Labels-------|')
 labels(header, main_url, organization_id, cycle_id, log)
 
+# Export dataset
+print('\n|---Export Dataset---|\n')
+export_data(header, main_url, organization_id, cycle_id, log)
+
 # Delete dataset
 print('\n|---Delete Dataset---|\n')
 delete_set(header, main_url, organization_id, dataset_id, log)
@@ -176,4 +180,3 @@ diff = time2 - time1
 log.info('Processing Time:{}min, {}sec'.format(diff.seconds / 60, diff.seconds % 60))
 
 exit(0)
-#

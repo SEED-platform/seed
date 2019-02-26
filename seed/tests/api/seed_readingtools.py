@@ -61,7 +61,15 @@ def check_status(result_out, part_msg, log, piid_flag=None):
 
     if result_out.status_code in [200, 201, 403, 401]:
         try:
-            if 'status' in result_out.json() and result_out.json()['status'] == 'error':
+            if piid_flag == 'export':
+                content_str = result_out.content.decode()
+                if content_str.startswith('id'):
+                    msg = "Data exported successfully"
+                    # the data are returned as text. No easy way to check the status. If ID
+                    # exists, then claim success.
+                else:
+                    msg = content_str
+            elif 'status' in result_out.json() and result_out.json()['status'] == 'error':
                 msg = result_out.json()['message']
                 log.error(part_msg + failed)
                 log.debug(msg)

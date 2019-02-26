@@ -26,7 +26,7 @@ from sys import path
 BASE_DIR = dirname(dirname(abspath(__file__)))
 path.append(BASE_DIR)
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.prod")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.dev")
 
 # This application object is used by any WSGI server configured to use this
 # file. This includes Django's development server, if the WSGI_APPLICATION
