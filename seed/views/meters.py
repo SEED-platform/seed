@@ -36,6 +36,7 @@ class MeterViewSet(viewsets.ViewSet):
 
         result["validated_type_units"] = meters_parser.validated_type_units()
         result["proposed_imports"] = meters_parser.proposed_imports()
+        result["unlinkable_pm_ids"] = meters_parser.unlinkable_pm_ids
 
         return result
 

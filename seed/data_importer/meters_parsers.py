@@ -33,15 +33,16 @@ class PMMeterParser(object):
     _tz = timezone(TIME_ZONE)
 
     def __init__(self, org_id, meters_and_readings_details, property_link='Property Id', is_monthly=True):
-        self._org_id = org_id
-        self._meters_and_readings_details = meters_and_readings_details
-        self._property_link = property_link
         self._is_monthly = is_monthly
+        self._meters_and_readings_details = meters_and_readings_details
+        self._org_id = org_id
+        self._property_link = property_link
 
+        self._cache_meter_and_reading_objs = None  # defaulted to None to show it hasn't been cached yet
         self._source_to_property_ids = {}  # tracked to reduce the number of database queries
-        self._us_kbtu_thermal_conversion_factors = {}
-        self._cache_meter_and_reading_objs = []
         self._unique_meters = {}
+        self._unlinkable_pm_ids = set()  # to avoid duplicates
+        self._us_kbtu_thermal_conversion_factors = {}
 
     @property
     def us_kbtu_thermal_conversion_factors(self):
@@ -49,6 +50,12 @@ class PMMeterParser(object):
             self._us_kbtu_thermal_conversion_factors = kbtu_thermal_conversion_factors("US")
 
         return self._us_kbtu_thermal_conversion_factors
+
+    @property
+    def unlinkable_pm_ids(self):
+        self.meter_and_reading_objs  # provided raw details need to have been parsed first
+
+        return [{"portfolio_manager_id": id} for id in self._unlinkable_pm_ids]
 
     @property
     def meter_and_reading_objs(self):
@@ -77,16 +84,18 @@ class PMMeterParser(object):
         which include property_id, type, etc. This is used to easily associate
         readings to a previously parsed meter without creating duplicates.
         """
-        if not self._cache_meter_and_reading_objs:
+        if self._cache_meter_and_reading_objs is None:
             for details in self._meters_and_readings_details:
                 meter_shared_details = {}
 
                 meter_shared_details['source'] = Meter.PORTFOLIO_MANAGER
 
-                source_id = details[self._property_link]
-                meter_shared_details['source_id'] = str(source_id)
+                source_id = str(details[self._property_link])
+                meter_shared_details['source_id'] = source_id
 
-                self._get_property_id_from_source(source_id, meter_shared_details)
+                # Continue/skip, if no property is found.
+                if not self._get_property_id_from_source(source_id, meter_shared_details):
+                    continue
 
                 if self._is_monthly:
                     start_time, end_time = self._parse_times(details['Month'])
@@ -137,25 +146,34 @@ class PMMeterParser(object):
         """
         Find and cache property_ids to avoid querying for the same property_id
         more than once. This assumes a Property model connects like PropertyStates
-        across Cycles within an Organization.
+        across Cycles within an Organization. Return True when a property_id is found.
+
+        If no ProperyStates (and subsequent Properties) are found, flag the
+        PM ID as unlinkable, and False is returned.
         """
         property_id = self._source_to_property_ids.get(source_id, None)
 
         if property_id is not None:
             shared_details['property_id'] = property_id
         else:
-            """
-            Filter used because multiple PropertyStates will be found, but the
-            underlying Property should be the same, so take the first.
-            """
-            property_id = PropertyState.objects \
-                .filter(pm_property_id__exact=source_id, organization_id__exact=self._org_id)[0] \
-                .propertyview_set \
-                .first() \
-                .property_id
+            try:
+                """
+                Filter used because multiple PropertyStates will be found, but the
+                underlying Property should be the same, so take the first.
+                """
+                property_id = PropertyState.objects \
+                    .filter(pm_property_id__exact=source_id, organization_id__exact=self._org_id)[0] \
+                    .propertyview_set \
+                    .first() \
+                    .property_id
 
-            shared_details['property_id'] = property_id
-            self._source_to_property_ids[source_id] = property_id
+                shared_details['property_id'] = property_id
+                self._source_to_property_ids[source_id] = property_id
+            except IndexError as e:
+                self._unlinkable_pm_ids.add(source_id)
+                return False
+
+        return True
 
     def _parse_times(self, month_year):
         """

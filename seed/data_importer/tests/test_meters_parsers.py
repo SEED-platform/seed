@@ -213,3 +213,45 @@ class MeterUtilTests(TestCase):
         self.assertEqual(electricity_details["readings"][0]["reading"], 3412)
         self.assertEqual(electricity_details["readings"][0]["source_unit"], "kWh")
         self.assertEqual(electricity_details["readings"][0]["conversion_factor"], 3.412)
+
+    def test_unlinked_properties_are_identified(self):
+        raw_meters = [
+            {
+                'Property Id': "11111111",
+                'Property Name': 'EPA Sample Library',
+                'Parent Property Id': 'Not Applicable: Standalone Property',
+                'Parent Property Name': 'Not Applicable: Standalone Property',
+                'Month': 'Mar-16',
+                'Electricity Use  (kWh)': 1000,
+                'Fuel Oil (No. 1) Use  (GJ)': 1000
+            },
+            {
+                'Property Id': "22222222",
+                'Property Name': 'EPA Sample Library',
+                'Parent Property Id': 'Not Applicable: Standalone Property',
+                'Parent Property Name': 'Not Applicable: Standalone Property',
+                'Month': 'Mar-16',
+                'Electricity Use  (kBtu)': 597478.9,
+                'Natural Gas Use  (kBtu)': 576000.2
+            },
+            {
+                'Property Id': "22222222",
+                'Property Name': 'EPA Sample Library',
+                'Parent Property Id': 'Not Applicable: Standalone Property',
+                'Parent Property Name': 'Not Applicable: Standalone Property',
+                'Month': 'Feb-16',
+                'Electricity Use  (kBtu)': 597478.9,
+                'Natural Gas Use  (kBtu)': 576000.2
+            },
+        ]
+
+        meters_parser = PMMeterParser(self.org.id, raw_meters)
+
+        expected = [
+            {'portfolio_manager_id': "11111111"},
+            {'portfolio_manager_id': "22222222"},
+        ]
+
+        self.assertCountEqual(expected, meters_parser.unlinkable_pm_ids)
+
+        self.assertEqual([], meters_parser.meter_and_reading_objs)

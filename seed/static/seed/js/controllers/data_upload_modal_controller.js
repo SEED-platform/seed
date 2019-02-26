@@ -242,6 +242,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
               meters_service.parsed_type_units(file.file_id, $scope.organization.org_id).then(function (result) {
                 $scope.parsed_type_units = result.validated_type_units;
                 $scope.proposed_imports = result.proposed_imports;
+                $scope.unlinkable_pm_ids = result.unlinkable_pm_ids;
                 $scope.file_id = file.file_id;
                 $scope.cycle_id = file.cycle_id;
                 $scope.step.number = 15;

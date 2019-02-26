@@ -307,11 +307,20 @@
     <div class="data_upload_steps" ng-switch-when="15">
         <div class="row">
             <div class="alert alert-warning">
-                <p><b>Meter Reading Counts</b></p>
-                <div ui-grid="{ data: proposed_imports }"></div>
+                <div ng-if="proposed_imports.length">
+                    <p><b>Meter Reading Counts</b></p>
+                    <div ui-grid="{ data: proposed_imports }"></div>
+                </div>
                 <br>
-                <p><b>Assumed Energy Types and Units</b></p>
-                <div ui-grid="{ data: parsed_type_units }"></div>
+                <div>
+                    <p><b>Assumed Energy Types and Units</b></p>
+                    <div ui-grid="{ data: parsed_type_units }"></div>
+                </div>
+                <br>
+            </div>
+            <div class="alert alert-danger" ng-if="unlinkable_pm_ids.length">
+                <p><b>Unable to Import - No associations to previously imported properties</b></p>
+                <div ui-grid="{ data: unlinkable_pm_ids }"></div>
             </div>
         </div>
     </div>
@@ -321,6 +330,10 @@
             <div class="alert alert-info">
                 <p><b>Meter Reading Counts</b></p>
                 <div ui-grid="{ data: import_results }"></div>
+            </div>
+            <div class="alert alert-danger" ng-if="unlinkable_pm_ids.length">
+                <p><b>Unable to Import - No associations to previously imported properties</b></p>
+                <div ui-grid="{ data: unlinkable_pm_ids }"></div>
             </div>
         </div>
     </div>

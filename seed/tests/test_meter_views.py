@@ -107,7 +107,7 @@ class TestMeterViewSet(TestCase):
 
         self.assertEqual(result_dict.get("validated_type_units"), expectation)
 
-    def test_parsed_meters_confirmation_returns_pm_property_ids_and_corresponding_reading_counts(self):
+    def test_parsed_meters_confirmation_returns_pm_property_ids_and_corresponding_incoming_counts(self):
         url = reverse('api:v2:meters-parsed-meters-confirmation')
 
         post_params = json.dumps({
@@ -130,6 +130,28 @@ class TestMeterViewSet(TestCase):
 
         self.assertEqual(result_dict.get("proposed_imports"), expectation)
 
+    def test_parsed_meters_confirmation_returns_unlinkable_pm_property_ids(self):
+        PropertyState.objects.all().delete()
+
+        url = reverse('api:v2:meters-parsed-meters-confirmation')
+
+        post_params = json.dumps({
+            'file_id': self.import_file.id,
+            'organization_id': self.org.pk,
+        })
+        result = self.client.post(url, post_params, content_type="application/json")
+        result_dict = ast.literal_eval(result.content.decode("utf-8"))
+
+        expectation = [
+            {
+                "portfolio_manager_id": "5766973",
+            },
+            {
+                "portfolio_manager_id": "5766975",
+            },
+        ]
+
+        self.assertCountEqual(result_dict.get("unlinkable_pm_ids"), expectation)
 
 #         """We throw an error when there's no building id passed in."""
 #         client = APIClient()
