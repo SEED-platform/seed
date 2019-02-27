@@ -19,7 +19,6 @@ addons:
       - google-chrome-stable
       - gdal-bin
       - postgresql-9.6-postgis-2.3
-      - timescaledb-postgresql-9.6
 services:
   - docker
   - redis-server
@@ -29,8 +28,6 @@ before_install:
   - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
-  - sudo add-apt-repository ppa:timescale/timescaledb-ppa
-  - sudo apt-get update -q
 install:
   - pip install --upgrade pip
   - pip install tox==2.7.0
@@ -44,6 +41,11 @@ before_script:
   - psql -c "DROP DATABASE IF EXISTS seeddb;" -U postgres
   - psql -c "DROP DATABASE IF EXISTS test_seeddb;" -U postgres
   - mv config/settings/test_local_untracked.py config/settings/local_untracked.py
+  - sudo add-apt-repository ppa:timescale/timescaledb-ppa
+  - sudo apt-get update -q
+  - sudo apt install timescaledb-postgresql-9.6
+  - sudo timescaledb-tune
+  - sudo service postgresql restart
   - psql -c "CREATE DATABASE seeddb;" -U postgres
   - psql -d seeddb -c "CREATE EXTENSION postgis;" -U postgres
 env:
