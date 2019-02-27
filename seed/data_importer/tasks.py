@@ -712,7 +712,7 @@ def _save_meter_usage_data(file_pk, progress_key):
                 with connection.cursor() as cursor:
                     cursor.execute(sql)
                     successful_import_counts[meter.source_id] += len(cursor.fetchall())
-    except Exception as e:
+    except Exception:
         return progress_data.finish_with_error('data failed to import')
 
     import_file.raw_save_done = True
