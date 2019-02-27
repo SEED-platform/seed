@@ -44,7 +44,7 @@ before_script:
   - sudo add-apt-repository ppa:timescale/timescaledb-ppa -y
   - sudo apt-get update -q
   - sudo apt install timescaledb-postgresql-9.6
-  - sudo timescaledb-tune -y
+  - sudo timescaledb-tune -yes
   - sudo service postgresql restart
   - psql -c "CREATE DATABASE seeddb;" -U postgres
   - psql -d seeddb -c "CREATE EXTENSION postgis;" -U postgres
