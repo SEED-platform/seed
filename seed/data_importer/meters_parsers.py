@@ -169,7 +169,7 @@ class PMMeterParser(object):
 
                 shared_details['property_id'] = property_id
                 self._source_to_property_ids[source_id] = property_id
-            except IndexError as e:
+            except IndexError:
                 self._unlinkable_pm_ids.add(source_id)
                 return False
 
