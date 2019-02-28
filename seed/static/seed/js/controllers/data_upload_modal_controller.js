@@ -177,6 +177,18 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           }
         });
       };
+
+      var present_parsed_meters_confirmation = function (result) {
+        $scope.parsed_type_units = result.validated_type_units;
+        $scope.proposed_imports = result.proposed_imports;
+        $scope.unlinkable_pm_ids = result.unlinkable_pm_ids;
+
+        $scope.uploader.in_progress = false;
+        $scope.uploader.progress = 0;
+
+        $scope.step.number = 15;
+      };
+
       /**
        * uploaderfunc: the callback function passed to sdUploader. Depending on
        *  the `event_message` from sdUploader, it will change the state of the
@@ -239,14 +251,13 @@ angular.module('BE.seed.controller.data_upload_modal', [])
               $scope.step.number = 14;
               $scope.step_14_message = (_.size(file.message['warnings']) > 0) ? file.message['warnings'] : null;
             } else if (file.source_type === 'PM Meter Usage') {
-              meters_service.parsed_type_units(file.file_id, $scope.organization.org_id).then(function (result) {
-                $scope.parsed_type_units = result.validated_type_units;
-                $scope.proposed_imports = result.proposed_imports;
-                $scope.unlinkable_pm_ids = result.unlinkable_pm_ids;
-                $scope.file_id = file.file_id;
-                $scope.cycle_id = file.cycle_id;
-                $scope.step.number = 15;
-              });
+              $scope.cycle_id = file.cycle_id;
+              $scope.file_id = file.file_id;
+
+              // Hardcoded as this is a 2 step process: upload & analyze
+              $scope.uploader.progress = 50;
+              $scope.uploader.status_message = 'analyzing file';
+              meters_service.parsed_meters_confirmation(file.file_id, $scope.organization.org_id).then(present_parsed_meters_confirmation);
             } else {
               $scope.dataset.import_file_id = file.file_id;
 
@@ -263,6 +274,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         }
 
         $scope.accept_meters = function(file_id, cycle_id) {
+          $scope.uploader.in_progress = true;
           save_raw_assessed_data(file_id, cycle_id, true);
         };
 
@@ -354,14 +366,12 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         $scope.uploader.status_message = 'saving data';
         $scope.uploader.progress = 0;
         uploader_service.save_raw_data(file_id, cycle_id).then(function (data) {
-          if (is_meter_data) {
-            $scope.import_results = data.message;
-          }
           var progress = _.clamp(data.progress, 0, 100);
-          uploader_service.check_progress_loop(data.progress_key, progress, 1 - (progress / 100), function () {
+          uploader_service.check_progress_loop(data.progress_key, progress, 1 - (progress / 100), function (progress_data) {
             $scope.uploader.status_message = 'saving complete';
             $scope.uploader.progress = 100;
             if (is_meter_data) {
+              $scope.import_results = progress_data.message;
               $scope.step.number = 16;
             } else {
               $scope.step.number = 3;

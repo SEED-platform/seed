@@ -13,8 +13,8 @@
     <h4 class="modal-title" ng-switch-when="12" translate>Error Processing Data</h4>
     <h4 class="modal-title" ng-switch-when="13" translate>Portfolio Manager Import</h4>
     <h4 class="modal-title" ng-switch-when="14" translate>Successful upload!</h4>
-    <h4 class="modal-title" ng-switch-when="15" translate>Confirm Meter Readings from Import File</h4>
-    <h4 class="modal-title" ng-switch-when="16" translate>Meter Import Results</h4>
+    <h4 class="modal-title" ng-switch-when="15" translate>Upload Meter Readings</h4> <!-- TODO: Translate this -->
+    <h4 class="modal-title" ng-switch-when="16" translate>Meter Import Results</h4> <!-- TODO: Translate this -->
 
 </div>
 <div class="modal-body no_bottom_padding" ng-switch on="step.number">
@@ -303,24 +303,35 @@
 
         </div>
     </div>
-    <!-- Step 15:  Confirm Meter Readings from Import File -->
+    <!-- Step 15:  Upload Meter Readings -->
     <div class="data_upload_steps" ng-switch-when="15">
-        <div class="row">
-            <div class="alert alert-warning">
-                <div ng-if="proposed_imports.length">
-                    <p><b>Meter Reading Counts</b></p>
-                    <div ui-grid="{ data: proposed_imports }"></div>
+        <div class="progress_bar_container" ng-show="uploader.in_progress">
+            <div class="progress_bar_copy_top"
+                 translate="UPLOADING_PROGRESS"
+                 translate-values="{ dataset_filename: dataset.filename }"></div>
+
+            <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
+            <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$ uploader.status_message ? ': ' + uploader.status_message : '' $}</div>
+        </div>
+        <div ng-hide="uploader.in_progress">
+            <p>Confirm the contents of meter usage file.</p> <!-- TODO: Translate this -->
+            <div class="row">
+                <div class="alert alert-warning">
+                    <div ng-if="proposed_imports.length">
+                        <p><b>Meter Reading Counts</b></p> <!-- TODO: Translate this -->
+                        <div ui-grid="{ data: proposed_imports }"></div>
+                    </div>
+                    <br>
+                    <div>
+                        <p><b>Assumed Energy Types and Units</b></p> <!-- TODO: Translate this -->
+                        <div ui-grid="{ data: parsed_type_units }"></div>
+                    </div>
+                    <br>
                 </div>
-                <br>
-                <div>
-                    <p><b>Assumed Energy Types and Units</b></p>
-                    <div ui-grid="{ data: parsed_type_units }"></div>
+                <div class="alert alert-danger" ng-if="unlinkable_pm_ids.length">
+                    <p><b>Unable to Import - No associations to previously imported properties</b></p> <!-- TODO: Translate this -->
+                    <div ui-grid="{ data: unlinkable_pm_ids }"></div>
                 </div>
-                <br>
-            </div>
-            <div class="alert alert-danger" ng-if="unlinkable_pm_ids.length">
-                <p><b>Unable to Import - No associations to previously imported properties</b></p>
-                <div ui-grid="{ data: unlinkable_pm_ids }"></div>
             </div>
         </div>
     </div>
@@ -328,11 +339,11 @@
     <div class="data_upload_steps" ng-switch-when="16">
         <div class="row">
             <div class="alert alert-info">
-                <p><b>Meter Reading Counts</b></p>
+                <p><b>Meter Reading Counts</b></p> <!-- TODO: Translate this -->
                 <div ui-grid="{ data: import_results }"></div>
             </div>
             <div class="alert alert-danger" ng-if="unlinkable_pm_ids.length">
-                <p><b>Unable to Import - No associations to previously imported properties</b></p>
+                <p><b>Unable to Import - No associations to previously imported properties</b></p> <!-- TODO: Translate this -->
                 <div ui-grid="{ data: unlinkable_pm_ids }"></div>
             </div>
         </div>
@@ -395,7 +406,7 @@
         </div>
     </div>
     <div ng-switch-when="15">
-        <div class="row text-center">
+        <div class="row text-center" ng-hide="uploader.in_progress">
             <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="accept_meters(file_id, cycle_id)" translate>Confirm</button>
         </div>
     </div>
