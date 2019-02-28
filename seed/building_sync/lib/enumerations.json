@@ -148,10 +148,9 @@
     "sub_name": "Window",
     "documentation": "Window assembly type.",
     "enumerations": [
-      "Double Hung",
-      ""
+      "Double Hung"
     ],
-    "enumerations_html": "<ul><li>Double Hung</li><li></li></ul>"
+    "enumerations_html": "<ul><li>Double Hung</li></ul>"
   },
   {
     "name": "AssessmentLevel",
@@ -242,19 +241,21 @@
   {
     "name": "AuditorQualificationType",
     "sub_name": null,
-    "documentation": "BuildingSync Schema - Version 0.2",
+    "documentation": "BuildingSync Schema - Version 1.0 (January 31, 2019)",
     "enumerations": [
       "Professional Engineer (PE)",
-      "Certified Energy Manager (CEM)",
-      "Building Operator Certification (BOC)",
+      "Association of Energy Engineers Certified Energy Manager (CEM)",
+      "Association of Energy Engineers Certified Energy Auditor (CEA)",
+      "Building Operator Certification (BOC): Level 1",
+      "Building Operator Certification (BOC): Level 2",
       "Building Performance Institute (BPI) Certification",
-      "Building Performance Institute: Building Analyst (BA)",
-      "Building Performance Institute: Advanced Home Energy Professional (HEP)",
-      "Building Performance Institute: Advanced Home Energy Professional - Energy Auditor (HEP-EA)",
-      "Building Performance Institute: Advanced Home Energy Professional - Quality Control Inspector (HEP-QCI)",
-      "Building Performance Institute: Advanced Home Energy Professional - Retrofit Installer (HEP-RI)",
-      "Building Performance Institute: Advanced Home Energy Professional - Crew Leader (HEP-CL)",
-      "Building Performance Institute: Multifamily Building Analyst",
+      "Building Performance Institute (BPI): Building Analyst (BA)",
+      "Building Performance Institute (BPI): Advanced Home Energy Professional (HEP)",
+      "Building Performance Institute (BPI): Advanced Home Energy Professional - Energy Auditor (HEP-EA)",
+      "Building Performance Institute (BPI): Advanced Home Energy Professional - Quality Control Inspector (HEP-QCI)",
+      "Building Performance Institute (BPI): Advanced Home Energy Professional - Retrofit Installer (HEP-RI)",
+      "Building Performance Institute (BPI): Advanced Home Energy Professional - Crew Leader (HEP-CL)",
+      "Building Performance Institute (BPI): Multifamily Building Analyst",
       "Residential Energy Services Network (RESNET) Certification",
       "Residential Energy Services Network (RESNET) - Home Partner",
       "Registered Architect (RA)",
@@ -266,12 +267,13 @@
       "Commissioning Process Management Professional (CPMP)",
       "Accredited Commissioning Process Authority Professional (CxAP)",
       "NYSERDA FlexTech Consultant",
-      "Certified Energy Auditor (CEA)",
+      "ASHRAE Building Energy Assessment Professional (BEAP)",
+      "Department of Buildings (DOB) Approved Agent",
       "High-Performance Building Design Professional (HBDP)",
       "Other",
       "None"
     ],
-    "enumerations_html": "<ul><li>Professional Engineer (PE)</li><li>Certified Energy Manager (CEM)</li><li>Building Operator Certification (BOC)</li><li>Building Performance Institute (BPI) Certification</li><li>Building Performance Institute: Building Analyst (BA)</li><li>Building Performance Institute: Advanced Home Energy Professional (HEP)</li><li>Building Performance Institute: Advanced Home Energy Professional - Energy Auditor (HEP-EA)</li><li>Building Performance Institute: Advanced Home Energy Professional - Quality Control Inspector (HEP-QCI)</li><li>Building Performance Institute: Advanced Home Energy Professional - Retrofit Installer (HEP-RI)</li><li>Building Performance Institute: Advanced Home Energy Professional - Crew Leader (HEP-CL)</li><li>Building Performance Institute: Multifamily Building Analyst</li><li>Residential Energy Services Network (RESNET) Certification</li><li>Residential Energy Services Network (RESNET) - Home Partner</li><li>Registered Architect (RA)</li><li>Refrigerating System Operating Engineer</li><li>High Pressure Boiler Operating Engineer</li><li>Certified Commissioning Professional (CCP)</li><li>Associate Commissioning Professional (ACP)</li><li>Existing Building Commissioning Professional (EBCP)</li><li>Commissioning Process Management Professional (CPMP)</li><li>Accredited Commissioning Process Authority Professional (CxAP)</li><li>NYSERDA FlexTech Consultant</li><li>Certified Energy Auditor (CEA)</li><li>High-Performance Building Design Professional (HBDP)</li><li>Other</li><li>None</li></ul>"
+    "enumerations_html": "<ul><li>Professional Engineer (PE)</li><li>Association of Energy Engineers Certified Energy Manager (CEM)</li><li>Association of Energy Engineers Certified Energy Auditor (CEA)</li><li>Building Operator Certification (BOC): Level 1</li><li>Building Operator Certification (BOC): Level 2</li><li>Building Performance Institute (BPI) Certification</li><li>Building Performance Institute (BPI): Building Analyst (BA)</li><li>Building Performance Institute (BPI): Advanced Home Energy Professional (HEP)</li><li>Building Performance Institute (BPI): Advanced Home Energy Professional - Energy Auditor (HEP-EA)</li><li>Building Performance Institute (BPI): Advanced Home Energy Professional - Quality Control Inspector (HEP-QCI)</li><li>Building Performance Institute (BPI): Advanced Home Energy Professional - Retrofit Installer (HEP-RI)</li><li>Building Performance Institute (BPI): Advanced Home Energy Professional - Crew Leader (HEP-CL)</li><li>Building Performance Institute (BPI): Multifamily Building Analyst</li><li>Residential Energy Services Network (RESNET) Certification</li><li>Residential Energy Services Network (RESNET) - Home Partner</li><li>Registered Architect (RA)</li><li>Refrigerating System Operating Engineer</li><li>High Pressure Boiler Operating Engineer</li><li>Certified Commissioning Professional (CCP)</li><li>Associate Commissioning Professional (ACP)</li><li>Existing Building Commissioning Professional (EBCP)</li><li>Commissioning Process Management Professional (CPMP)</li><li>Accredited Commissioning Process Authority Professional (CxAP)</li><li>NYSERDA FlexTech Consultant</li><li>ASHRAE Building Energy Assessment Professional (BEAP)</li><li>Department of Buildings (DOB) Approved Agent</li><li>High-Performance Building Design Professional (HBDP)</li><li>Other</li><li>None</li></ul>"
   },
   {
     "name": "BallastType",
@@ -342,6 +344,18 @@
     "enumerations_html": "<ul><li>Steam</li><li>Hot water</li><li>Other</li><li>Unknown</li></ul>"
   },
   {
+    "name": "BuildingClassification",
+    "sub_name": null,
+    "documentation": "Specify the type of building.",
+    "enumerations": [
+      "Commercial",
+      "Residential",
+      "Mixed use commercial",
+      "Other"
+    ],
+    "enumerations_html": "<ul><li>Commercial</li><li>Residential</li><li>Mixed use commercial</li><li>Other</li></ul>"
+  },
+  {
     "name": "BuildingProfileStatus",
     "sub_name": null,
     "documentation": "The status of the building profile submission process for Portfolio Manager.",
@@ -354,6 +368,20 @@
       "Reviewed and Not Approved"
     ],
     "enumerations_html": "<ul><li>Draft</li><li>Received</li><li>Under Review</li><li>On Hold</li><li>Reviewed and Approved</li><li>Reviewed and Not Approved</li></ul>"
+  },
+  {
+    "name": "BurnerControlType",
+    "sub_name": null,
+    "documentation": "Control type of burner, if applicable.",
+    "enumerations": [
+      "Full Modulation Manual",
+      "Full Modulation Automatic",
+      "Step Modulation",
+      "High Low",
+      "On Off",
+      "Unknown"
+    ],
+    "enumerations_html": "<ul><li>Full Modulation Manual</li><li>Full Modulation Automatic</li><li>Step Modulation</li><li>High Low</li><li>On Off</li><li>Unknown</li></ul>"
   },
   {
     "name": "BurnerType",
@@ -504,21 +532,6 @@
     "enumerations_html": "<ul><li>Loose fill</li><li>Batt</li><li>Spray on</li><li>Rigid</li><li>Other</li><li>Unknown</li><li>None</li></ul>"
   },
   {
-    "name": "CeilingInsulationCondition",
-    "sub_name": null,
-    "documentation": "Assessed condition of installed insulation.",
-    "enumerations": [
-      "Excellent",
-      "Good",
-      "Average",
-      "Poor",
-      "Other",
-      "Unknown",
-      "None"
-    ],
-    "enumerations_html": "<ul><li>Excellent</li><li>Good</li><li>Average</li><li>Poor</li><li>Other</li><li>Unknown</li><li>None</li></ul>"
-  },
-  {
     "name": "CeilingInsulationContinuity",
     "sub_name": null,
     "documentation": "Insulation installation type.",
@@ -542,9 +555,10 @@
       "Seasonal",
       "Never-rarely",
       "Other",
-      "Unknown"
+      "Unknown",
+      "None"
     ],
-    "enumerations_html": "<ul><li>During the day</li><li>At night</li><li>During sleeping and unoccupied hours</li><li>Seasonal</li><li>Never-rarely</li><li>Other</li><li>Unknown</li></ul>"
+    "enumerations_html": "<ul><li>During the day</li><li>At night</li><li>During sleeping and unoccupied hours</li><li>Seasonal</li><li>Never-rarely</li><li>Other</li><li>Unknown</li><li>None</li></ul>"
   },
   {
     "name": "ChillerCompressorDriver",
@@ -576,7 +590,7 @@
   {
     "name": "ChillerType",
     "sub_name": null,
-    "documentation": "Vehicle for driving the compressor used in a chiller",
+    "documentation": "Type of chiller",
     "enumerations": [
       "Vapor compression",
       "Absorption",
@@ -584,6 +598,19 @@
       "Unknown"
     ],
     "enumerations_html": "<ul><li>Vapor compression</li><li>Absorption</li><li>Other</li><li>Unknown</li></ul>"
+  },
+  {
+    "name": "ClimateZone",
+    "sub_name": null,
+    "documentation": "Based on the Climate Zone Type term, this is the climate zone designation.",
+    "enumerations": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5"
+    ],
+    "enumerations_html": "<ul><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li></ul>"
   },
   {
     "name": "ClimateZone",
@@ -625,19 +652,6 @@
       "Very cold"
     ],
     "enumerations_html": "<ul><li>Subarctic</li><li>Marine</li><li>Hot-dry</li><li>Mixed-dry</li><li>Hot-humid</li><li>Mixed-humid</li><li>Cold</li><li>Very cold</li></ul>"
-  },
-  {
-    "name": "ClimateZone",
-    "sub_name": "CBECS",
-    "documentation": "Based on the Climate Zone Type term, this is the climate zone designation.",
-    "enumerations": [
-      "1",
-      "2",
-      "3",
-      "4",
-      "5"
-    ],
-    "enumerations_html": "<ul><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li></ul>"
   },
   {
     "name": "ClimateZone",
@@ -790,7 +804,7 @@
   {
     "name": "ContactEmailAddressLabel",
     "sub_name": null,
-    "documentation": "The type of email address, to distinguish between multiple instances of Contact Email Address.",
+    "documentation": "The type of email address, to distinguish between multiple instances of Email Address.",
     "enumerations": [
       "Personal",
       "Work",
@@ -835,10 +849,16 @@
       "Electric Distribution Utility (EDU)",
       "ESCO",
       "Facilitator",
-      "Finance Specialist",
+      "Facility Manager",
+      "Trainer",
+      "Electrical Engineer",
+      "Controls Engineer",
+      "Lender",
+      "Servicer",
+      "Originator",
       "Other"
     ],
-    "enumerations_html": "<ul><li>Premises</li><li>Occupant</li><li>Agency</li><li>Owner</li><li>Customer</li><li>Customer agreement</li><li>Administrator</li><li>Qualified Assessor</li><li>Contributor</li><li>Property Management Company</li><li>Operator</li><li>Energy Auditor</li><li>Energy Modeler</li><li>Contractor</li><li>Implementer</li><li>Financier</li><li>Commissioning Agent</li><li>MV Agent</li><li>Evaluator</li><li>Builder</li><li>Service</li><li>Billing</li><li>Architect</li><li>Mechanical Engineer</li><li>Energy Consultant</li><li>Service and Product Provider</li><li>Authority Having Jurisdiction</li><li>Utility</li><li>Power plant</li><li>Electric Distribution Utility (EDU)</li><li>ESCO</li><li>Facilitator</li><li>Finance Specialist</li><li>Other</li></ul>"
+    "enumerations_html": "<ul><li>Premises</li><li>Occupant</li><li>Agency</li><li>Owner</li><li>Customer</li><li>Customer agreement</li><li>Administrator</li><li>Qualified Assessor</li><li>Contributor</li><li>Property Management Company</li><li>Operator</li><li>Energy Auditor</li><li>Energy Modeler</li><li>Contractor</li><li>Implementer</li><li>Financier</li><li>Commissioning Agent</li><li>MV Agent</li><li>Evaluator</li><li>Builder</li><li>Service</li><li>Billing</li><li>Architect</li><li>Mechanical Engineer</li><li>Energy Consultant</li><li>Service and Product Provider</li><li>Authority Having Jurisdiction</li><li>Utility</li><li>Power plant</li><li>Electric Distribution Utility (EDU)</li><li>ESCO</li><li>Facilitator</li><li>Facility Manager</li><li>Trainer</li><li>Electrical Engineer</li><li>Controls Engineer</li><li>Lender</li><li>Servicer</li><li>Originator</li><li>Other</li></ul>"
   },
   {
     "name": "ContactTelephoneNumberLabel",
@@ -937,17 +957,40 @@
     "enumerations_html": "<ul><li>Fixed</li><li>Outside Air Reset</li><li>Scheduled</li><li>Warmest Reset</li><li>Other</li><li>Unknown</li></ul>"
   },
   {
-    "name": "CoolingTowerControlType",
+    "name": "CoolingTowerCellControl",
     "sub_name": null,
     "documentation": "Type of system operation control.",
     "enumerations": [
-      "Wet Bulb Reset",
       "Max Cells",
       "Min Cells",
       "Other",
       "Unknown"
     ],
-    "enumerations_html": "<ul><li>Wet Bulb Reset</li><li>Max Cells</li><li>Min Cells</li><li>Other</li><li>Unknown</li></ul>"
+    "enumerations_html": "<ul><li>Max Cells</li><li>Min Cells</li><li>Other</li><li>Unknown</li></ul>"
+  },
+  {
+    "name": "CoolingTowerFanControl",
+    "sub_name": null,
+    "documentation": "Type of system operation control.",
+    "enumerations": [
+      "Single Speed",
+      "Two Speed",
+      "Variable Speed",
+      "Other",
+      "Unknown"
+    ],
+    "enumerations_html": "<ul><li>Single Speed</li><li>Two Speed</li><li>Variable Speed</li><li>Other</li><li>Unknown</li></ul>"
+  },
+  {
+    "name": "CoolingTowerTemperatureControl",
+    "sub_name": null,
+    "documentation": "Type of system operation control.",
+    "enumerations": [
+      "Wet Bulb Reset",
+      "Other",
+      "Unknown"
+    ],
+    "enumerations_html": "<ul><li>Wet Bulb Reset</li><li>Other</li><li>Unknown</li></ul>"
   },
   {
     "name": "CostEffectivenessScreeningMethod",
@@ -959,9 +1002,12 @@
       "Lifecycle cost",
       "Net present value",
       "Internal rate of return",
+      "Modified internal rate of return",
+      "Levelized cost of energy",
+      "Savings to investment ratio",
       "Other"
     ],
-    "enumerations_html": "<ul><li>Simple payback</li><li>Return on investment</li><li>Lifecycle cost</li><li>Net present value</li><li>Internal rate of return</li><li>Other</li></ul>"
+    "enumerations_html": "<ul><li>Simple payback</li><li>Return on investment</li><li>Lifecycle cost</li><li>Net present value</li><li>Internal rate of return</li><li>Modified internal rate of return</li><li>Levelized cost of energy</li><li>Savings to investment ratio</li><li>Other</li></ul>"
   },
   {
     "name": "DXSystemType",
@@ -1180,22 +1226,6 @@
     "enumerations_html": "<ul><li>Single</li><li>Dual</li><li>Three</li><li>Ductless</li><li>Other</li><li>Unknown</li></ul>"
   },
   {
-    "name": "DuctInsulationCondition",
-    "sub_name": null,
-    "documentation": "Condition of duct insulation.",
-    "enumerations": [
-      "Excellent",
-      "Good",
-      "Average",
-      "Fair",
-      "Poor",
-      "Very poor",
-      "None",
-      "Unknown"
-    ],
-    "enumerations_html": "<ul><li>Excellent</li><li>Good</li><li>Average</li><li>Fair</li><li>Poor</li><li>Very poor</li><li>None</li><li>Unknown</li></ul>"
-  },
-  {
     "name": "DuctLeakageTestMethod",
     "sub_name": null,
     "documentation": "Method used to estimate duct leakage",
@@ -1282,18 +1312,20 @@
     "sub_name": null,
     "documentation": "Category of greenhouse gas or other emission.",
     "enumerations": [
-      "Co2e",
-      "Co2",
+      "CO2e",
+      "CO2",
       "CH4",
       "N2O",
+      "NOx",
+      "SO2",
       "Other"
     ],
-    "enumerations_html": "<ul><li>Co2e</li><li>Co2</li><li>CH4</li><li>N2O</li><li>Other</li></ul>"
+    "enumerations_html": "<ul><li>CO2e</li><li>CO2</li><li>CH4</li><li>N2O</li><li>NOx</li><li>SO2</li><li>Other</li></ul>"
   },
   {
     "name": "EndUse",
     "sub_name": null,
-    "documentation": "BuildingSync Schema - Version 0.2",
+    "documentation": "BuildingSync Schema - Version 1.0 (January 31, 2019)",
     "enumerations": [
       "All end uses",
       "Total lighting",
@@ -1346,7 +1378,7 @@
   {
     "name": "EnvelopeConstructionType",
     "sub_name": null,
-    "documentation": "BuildingSync Schema - Version 0.2",
+    "documentation": "BuildingSync Schema - Version 1.0 (January 31, 2019)",
     "enumerations": [
       "Masonry",
       "Structural brick",
@@ -1384,6 +1416,20 @@
       "Windows U-Value"
     ],
     "enumerations_html": "<ul><li>Floor U-Value, Mass</li><li>Roof U-Value, Non-Attic</li><li>Walls U-Value, Framed</li><li>Walls + Windows U-Value</li><li>Window Solar Heat Gain Coefficient</li><li>Windows U-Value</li></ul>"
+  },
+  {
+    "name": "EquipmentCondition",
+    "sub_name": null,
+    "documentation": "BuildingSync Schema - Version 1.0 (January 31, 2019)",
+    "enumerations": [
+      "Excellent",
+      "Good",
+      "Average",
+      "Poor",
+      "Other",
+      "Unknown"
+    ],
+    "enumerations_html": "<ul><li>Excellent</li><li>Good</li><li>Average</li><li>Poor</li><li>Other</li><li>Unknown</li></ul>"
   },
   {
     "name": "EvaporativeCoolingType",
@@ -1525,18 +1571,6 @@
     "enumerations_html": "<ul><li>AC to AC</li><li>AC to DC</li><li>Low Voltage</li><li>No Load</li><li>Other</li><li>Unknown</li></ul>"
   },
   {
-    "name": "FacilityClassification",
-    "sub_name": null,
-    "documentation": "Specify the type of facility.",
-    "enumerations": [
-      "Commercial",
-      "Residential",
-      "Mixed use commercial",
-      "Other"
-    ],
-    "enumerations_html": "<ul><li>Commercial</li><li>Residential</li><li>Mixed use commercial</li><li>Other</li></ul>"
-  },
-  {
     "name": "FanApplication",
     "sub_name": null,
     "documentation": "Application of fan (supply, return, or exhaust)",
@@ -1651,10 +1685,22 @@
     "enumerations_html": "<ul><li>Single pane</li><li>Double pane</li><li>Triple pane</li><li>Single paned with storm panel</li><li>Unknown</li></ul>"
   },
   {
+    "name": "FloorAreaPercentage",
+    "sub_name": null,
+    "documentation": "The percentage of subsection floor area that belongs to a FloorAreaType. (0-100) (%)",
+    "enumerations": [
+      "0.0",
+      "100.0"
+    ],
+    "enumerations_html": "<ul><li>0.0</li><li>100.0</li></ul>"
+  },
+  {
     "name": "FloorAreaType",
     "sub_name": null,
     "documentation": "Floor area can be defined and described in many different ways for different purposes. This type field allows multiple types of floor area definitions to exist in the same dataset.",
     "enumerations": [
+      "Tenant",
+      "Common",
       "Gross",
       "Net",
       "Finished",
@@ -1678,7 +1724,7 @@
       "Lot",
       "Custom"
     ],
-    "enumerations_html": "<ul><li>Gross</li><li>Net</li><li>Finished</li><li>Footprint</li><li>Rentable</li><li>Occupied</li><li>Lighted</li><li>Daylit</li><li>Heated</li><li>Cooled</li><li>Conditioned</li><li>Unconditioned</li><li>Semi-conditioned</li><li>Heated and Cooled</li><li>Heated only</li><li>Cooled only</li><li>Ventilated</li><li>Enclosed</li><li>Non-Enclosed</li><li>Open</li><li>Lot</li><li>Custom</li></ul>"
+    "enumerations_html": "<ul><li>Tenant</li><li>Common</li><li>Gross</li><li>Net</li><li>Finished</li><li>Footprint</li><li>Rentable</li><li>Occupied</li><li>Lighted</li><li>Daylit</li><li>Heated</li><li>Cooled</li><li>Conditioned</li><li>Unconditioned</li><li>Semi-conditioned</li><li>Heated and Cooled</li><li>Heated only</li><li>Cooled only</li><li>Ventilated</li><li>Enclosed</li><li>Non-Enclosed</li><li>Open</li><li>Lot</li><li>Custom</li></ul>"
   },
   {
     "name": "FloorCovering",
@@ -1694,21 +1740,6 @@
       "Unknown"
     ],
     "enumerations_html": "<ul><li>Carpet</li><li>Tile</li><li>Hardwood</li><li>Vinyl</li><li>Linoleum</li><li>Other</li><li>Unknown</li></ul>"
-  },
-  {
-    "name": "FloorInsulationCondition",
-    "sub_name": null,
-    "documentation": "General physical condition of floor insulation.",
-    "enumerations": [
-      "Excellent",
-      "Good",
-      "Average",
-      "Poor",
-      "Other",
-      "Unknown",
-      "None"
-    ],
-    "enumerations_html": "<ul><li>Excellent</li><li>Good</li><li>Average</li><li>Poor</li><li>Other</li><li>Unknown</li><li>None</li></ul>"
   },
   {
     "name": "FluorescentStartType",
@@ -1738,21 +1769,6 @@
       "Unknown"
     ],
     "enumerations_html": "<ul><li>Rectangular</li><li>L-Shape</li><li>U-Shape</li><li>H-Shape</li><li>T-Shape</li><li>O-Shape</li><li>Other</li><li>Unknown</li></ul>"
-  },
-  {
-    "name": "FoundationWallInsulationCondition",
-    "sub_name": null,
-    "documentation": "Assessed condition of installed insulation.",
-    "enumerations": [
-      "Excellent",
-      "Good",
-      "Average",
-      "Poor",
-      "Other",
-      "Unknown",
-      "None"
-    ],
-    "enumerations_html": "<ul><li>Excellent</li><li>Good</li><li>Average</li><li>Poor</li><li>Other</li><li>Unknown</li><li>None</li></ul>"
   },
   {
     "name": "FoundationWallInsulationContinuity",
@@ -1800,7 +1816,7 @@
   {
     "name": "FuelTypes",
     "sub_name": null,
-    "documentation": "BuildingSync Schema - Version 0.2",
+    "documentation": "BuildingSync Schema - Version 1.0 (January 31, 2019)",
     "enumerations": [
       "Electricity",
       "Natural gas",
@@ -2083,10 +2099,11 @@
       "Tax map number",
       "Assessor parcel number",
       "Tax parcel letter",
+      "UBID",
       "Custom",
       "Other"
     ],
-    "enumerations_html": "<ul><li>Premises</li><li>Listing</li><li>Name</li><li>Portfolio Manager Property ID</li><li>Portfolio Manager Standard</li><li>Federal real property</li><li>Tax book number</li><li>Tax map number</li><li>Assessor parcel number</li><li>Tax parcel letter</li><li>Custom</li><li>Other</li></ul>"
+    "enumerations_html": "<ul><li>Premises</li><li>Listing</li><li>Name</li><li>Portfolio Manager Property ID</li><li>Portfolio Manager Standard</li><li>Federal real property</li><li>Tax book number</li><li>Tax map number</li><li>Assessor parcel number</li><li>Tax parcel letter</li><li>UBID</li><li>Custom</li><li>Other</li></ul>"
   },
   {
     "name": "IgnitionType",
@@ -2154,9 +2171,24 @@
     "enumerations_html": "<ul><li>Plug-in</li><li>Recessed</li><li>Surface</li><li>Suspended</li><li>Other</li><li>Unknown</li></ul>"
   },
   {
+    "name": "InsulationCondition",
+    "sub_name": null,
+    "documentation": "BuildingSync Schema - Version 1.0 (January 31, 2019)",
+    "enumerations": [
+      "Excellent",
+      "Good",
+      "Average",
+      "Poor",
+      "Other",
+      "Unknown",
+      "None"
+    ],
+    "enumerations_html": "<ul><li>Excellent</li><li>Good</li><li>Average</li><li>Poor</li><li>Other</li><li>Unknown</li><li>None</li></ul>"
+  },
+  {
     "name": "InsulationMaterialType",
     "sub_name": null,
-    "documentation": "BuildingSync Schema - Version 0.2",
+    "documentation": "BuildingSync Schema - Version 1.0 (January 31, 2019)",
     "enumerations": [
       "Fiberglass",
       "Cellulose",
@@ -2413,6 +2445,10 @@
     "sub_name": null,
     "documentation": "Location of system.",
     "enumerations": [
+      "Roof",
+      "Mechanical Room",
+      "Mechanical Floor",
+      "Penthouse",
       "Interior",
       "Exterior",
       "Closet",
@@ -2421,7 +2457,7 @@
       "Other",
       "Unknown"
     ],
-    "enumerations_html": "<ul><li>Interior</li><li>Exterior</li><li>Closet</li><li>Garage</li><li>Attic</li><li>Other</li><li>Unknown</li></ul>"
+    "enumerations_html": "<ul><li>Roof</li><li>Mechanical Room</li><li>Mechanical Floor</li><li>Penthouse</li><li>Interior</li><li>Exterior</li><li>Closet</li><li>Garage</li><li>Attic</li><li>Other</li><li>Unknown</li></ul>"
   },
   {
     "name": "LocationsOfExteriorWaterIntrusionDamage",
@@ -2493,9 +2529,10 @@
       "Clean and/or repair",
       "Implement training and/or documentation",
       "Upgrade operating protocols, calibration, and/or sequencing",
+      "Convert to Cleaner Fuels",
       "Other"
     ],
-    "enumerations_html": "<ul><li>Replace boiler</li><li>Replace burner</li><li>Decentralize boiler</li><li>Insulate boiler room</li><li>Add energy recovery</li><li>Convert gas-fired unit to boiler loop</li><li>Convert system from steam to hot water</li><li>Clean and/or repair</li><li>Implement training and/or documentation</li><li>Upgrade operating protocols, calibration, and/or sequencing</li><li>Other</li></ul>"
+    "enumerations_html": "<ul><li>Replace boiler</li><li>Replace burner</li><li>Decentralize boiler</li><li>Insulate boiler room</li><li>Add energy recovery</li><li>Convert gas-fired unit to boiler loop</li><li>Convert system from steam to hot water</li><li>Clean and/or repair</li><li>Implement training and/or documentation</li><li>Upgrade operating protocols, calibration, and/or sequencing</li><li>Convert to Cleaner Fuels</li><li>Other</li></ul>"
   },
   {
     "name": "MeasureName",
@@ -2549,15 +2586,18 @@
       "Replace or upgrade water heater",
       "Add energy recovery",
       "Install solar hot water system",
-      "Separate DHW from heating",
+      "Separate SHW from heating",
       "Replace with higher efficiency pump",
       "Replace with variable speed pump",
+      "Install or upgrade master venting",
+      "Replace steam traps with orifice plates",
+      "Install steam condensate heat recovery",
       "Clean and/or repair",
       "Implement training and/or documentation",
       "Upgrade operating protocols, calibration, and/or sequencing",
       "Other"
     ],
-    "enumerations_html": "<ul><li>Add pipe insulation</li><li>Repair and/or replace steam traps</li><li>Retrofit and replace chiller plant pumping, piping, and controls</li><li>Repair or replace existing condensate return systems or install new condensate return systems</li><li>Add recirculating pumps</li><li>Replace or upgrade water heater</li><li>Add energy recovery</li><li>Install solar hot water system</li><li>Separate DHW from heating</li><li>Replace with higher efficiency pump</li><li>Replace with variable speed pump</li><li>Clean and/or repair</li><li>Implement training and/or documentation</li><li>Upgrade operating protocols, calibration, and/or sequencing</li><li>Other</li></ul>"
+    "enumerations_html": "<ul><li>Add pipe insulation</li><li>Repair and/or replace steam traps</li><li>Retrofit and replace chiller plant pumping, piping, and controls</li><li>Repair or replace existing condensate return systems or install new condensate return systems</li><li>Add recirculating pumps</li><li>Replace or upgrade water heater</li><li>Add energy recovery</li><li>Install solar hot water system</li><li>Separate SHW from heating</li><li>Replace with higher efficiency pump</li><li>Replace with variable speed pump</li><li>Install or upgrade master venting</li><li>Replace steam traps with orifice plates</li><li>Install steam condensate heat recovery</li><li>Clean and/or repair</li><li>Implement training and/or documentation</li><li>Upgrade operating protocols, calibration, and/or sequencing</li><li>Other</li></ul>"
   },
   {
     "name": "MeasureName",
@@ -2579,6 +2619,37 @@
   },
   {
     "name": "MeasureName",
+    "sub_name": "ConveyanceSystems",
+    "documentation": "Conveyance Systems (e.g., Elevators)",
+    "enumerations": [
+      "Add elevator regenerative drives",
+      "Upgrade controls",
+      "Upgrade motors",
+      "Clean and/or repair",
+      "Implement training and/or documentation",
+      "Upgrade operating protocols, calibration, and/or sequencing",
+      "Other"
+    ],
+    "enumerations_html": "<ul><li>Add elevator regenerative drives</li><li>Upgrade controls</li><li>Upgrade motors</li><li>Clean and/or repair</li><li>Implement training and/or documentation</li><li>Upgrade operating protocols, calibration, and/or sequencing</li><li>Other</li></ul>"
+  },
+  {
+    "name": "MeasureName",
+    "sub_name": "DataCenterImprovements",
+    "documentation": "Data center energy conservation improvements",
+    "enumerations": [
+      "Improve data center efficiency",
+      "Implement hot aisle hold aisle design",
+      "Implement server virtualization",
+      "Upgrade servers",
+      "Clean and/or repair",
+      "Implement training and/or documentation",
+      "Upgrade operating protocols, calibration, and/or sequencing",
+      "Other"
+    ],
+    "enumerations_html": "<ul><li>Improve data center efficiency</li><li>Implement hot aisle hold aisle design</li><li>Implement server virtualization</li><li>Upgrade servers</li><li>Clean and/or repair</li><li>Implement training and/or documentation</li><li>Upgrade operating protocols, calibration, and/or sequencing</li><li>Other</li></ul>"
+  },
+  {
+    "name": "MeasureName",
     "sub_name": "DistributedGeneration",
     "documentation": "Distributed Generation",
     "enumerations": [
@@ -2592,21 +2663,6 @@
       "Other"
     ],
     "enumerations_html": "<ul><li>Install CHP/cogeneration systems</li><li>Install fuel cells</li><li>Install microturbines</li><li>Convert fuels</li><li>Clean and/or repair</li><li>Implement training and/or documentation</li><li>Upgrade operating protocols, calibration, and/or sequencing</li><li>Other</li></ul>"
-  },
-  {
-    "name": "MeasureName",
-    "sub_name": "ElectricMotorsAndDrives",
-    "documentation": "Electric Motors and Drives",
-    "enumerations": [
-      "Add drive controls",
-      "Replace with higher efficiency",
-      "Add VSD motor controller",
-      "Clean and/or repair",
-      "Implement training and/or documentation",
-      "Upgrade operating protocols, calibration, and/or sequencing",
-      "Other"
-    ],
-    "enumerations_html": "<ul><li>Add drive controls</li><li>Replace with higher efficiency</li><li>Add VSD motor controller</li><li>Clean and/or repair</li><li>Implement training and/or documentation</li><li>Upgrade operating protocols, calibration, and/or sequencing</li><li>Other</li></ul>"
   },
   {
     "name": "MeasureName",
@@ -2685,12 +2741,32 @@
       "Retrofit with light emitting diode technologies",
       "Add daylight controls",
       "Add occupancy sensors",
+      "Install photocell control",
+      "Install timers",
+      "Replace diffusers",
+      "Upgrade exit signs to LED",
+      "Upgrade exterior lighting",
       "Clean and/or repair",
       "Implement training and/or documentation",
       "Upgrade operating protocols, calibration, and/or sequencing",
       "Other"
     ],
-    "enumerations_html": "<ul><li>Retrofit with CFLs</li><li>Retrofit with T-5</li><li>Retrofit with T-8</li><li>Install spectrally enhanced lighting</li><li>Retrofit with fiber optic lighting technologies</li><li>Retrofit with light emitting diode technologies</li><li>Add daylight controls</li><li>Add occupancy sensors</li><li>Clean and/or repair</li><li>Implement training and/or documentation</li><li>Upgrade operating protocols, calibration, and/or sequencing</li><li>Other</li></ul>"
+    "enumerations_html": "<ul><li>Retrofit with CFLs</li><li>Retrofit with T-5</li><li>Retrofit with T-8</li><li>Install spectrally enhanced lighting</li><li>Retrofit with fiber optic lighting technologies</li><li>Retrofit with light emitting diode technologies</li><li>Add daylight controls</li><li>Add occupancy sensors</li><li>Install photocell control</li><li>Install timers</li><li>Replace diffusers</li><li>Upgrade exit signs to LED</li><li>Upgrade exterior lighting</li><li>Clean and/or repair</li><li>Implement training and/or documentation</li><li>Upgrade operating protocols, calibration, and/or sequencing</li><li>Other</li></ul>"
+  },
+  {
+    "name": "MeasureName",
+    "sub_name": "OtherElectricMotorsAndDrives",
+    "documentation": "Electric Motors and Drives Other than Those for Conveyance Systems",
+    "enumerations": [
+      "Add drive controls",
+      "Replace with higher efficiency",
+      "Add VSD motor controller",
+      "Clean and/or repair",
+      "Implement training and/or documentation",
+      "Upgrade operating protocols, calibration, and/or sequencing",
+      "Other"
+    ],
+    "enumerations_html": "<ul><li>Add drive controls</li><li>Replace with higher efficiency</li><li>Add VSD motor controller</li><li>Clean and/or repair</li><li>Implement training and/or documentation</li><li>Upgrade operating protocols, calibration, and/or sequencing</li><li>Other</li></ul>"
   },
   {
     "name": "MeasureName",
@@ -2701,7 +2777,6 @@
       "Improve distribution fans",
       "Improve ventilation fans",
       "Convert CV system to VAV system",
-      "Upgrade operating protocols, calibration, and/or sequencing",
       "Repair leaks / seal ducts",
       "Add duct insulation",
       "Balance ventilation/distribution system",
@@ -2711,21 +2786,28 @@
       "Replace packaged terminal units",
       "Install passive solar heating",
       "Replace AC and heating units with ground coupled heat pump systems",
-      "Add energy recovery",
-      "Add or replace cooling tower",
-      "Install gas cooling",
-      "Add or repair economizer",
       "Add enhanced dehumidification",
       "Install solar ventilation preheating system",
+      "Add or repair economizer",
+      "Add energy recovery",
+      "Add or replace cooling tower",
+      "Install thermal destratification fans",
+      "Install demand control ventilation",
+      "Install gas cooling",
+      "Install air source heat pump",
+      "Install variable refrigerant flow system",
+      "Capture and return condensate",
+      "Install or Upgrade Master Venting",
       "Clean and/or repair",
       "Implement training and/or documentation",
+      "Upgrade operating protocols, calibration, and/or sequencing",
       "Other heating",
       "Other cooling",
       "Other ventilation",
       "Other distribution",
       "Other"
     ],
-    "enumerations_html": "<ul><li>Replace or modify AHU</li><li>Improve distribution fans</li><li>Improve ventilation fans</li><li>Convert CV system to VAV system</li><li>Upgrade operating protocols, calibration, and/or sequencing</li><li>Repair leaks / seal ducts</li><li>Add duct insulation</li><li>Balance ventilation/distribution system</li><li>Repair or replace HVAC damper and controller</li><li>Replace burner</li><li>Replace package units</li><li>Replace packaged terminal units</li><li>Install passive solar heating</li><li>Replace AC and heating units with ground coupled heat pump systems</li><li>Add energy recovery</li><li>Add or replace cooling tower</li><li>Install gas cooling</li><li>Add or repair economizer</li><li>Add enhanced dehumidification</li><li>Install solar ventilation preheating system</li><li>Clean and/or repair</li><li>Implement training and/or documentation</li><li>Other heating</li><li>Other cooling</li><li>Other ventilation</li><li>Other distribution</li><li>Other</li></ul>"
+    "enumerations_html": "<ul><li>Replace or modify AHU</li><li>Improve distribution fans</li><li>Improve ventilation fans</li><li>Convert CV system to VAV system</li><li>Repair leaks / seal ducts</li><li>Add duct insulation</li><li>Balance ventilation/distribution system</li><li>Repair or replace HVAC damper and controller</li><li>Replace burner</li><li>Replace package units</li><li>Replace packaged terminal units</li><li>Install passive solar heating</li><li>Replace AC and heating units with ground coupled heat pump systems</li><li>Add enhanced dehumidification</li><li>Install solar ventilation preheating system</li><li>Add or repair economizer</li><li>Add energy recovery</li><li>Add or replace cooling tower</li><li>Install thermal destratification fans</li><li>Install demand control ventilation</li><li>Install gas cooling</li><li>Install air source heat pump</li><li>Install variable refrigerant flow system</li><li>Capture and return condensate</li><li>Install or Upgrade Master Venting</li><li>Clean and/or repair</li><li>Implement training and/or documentation</li><li>Upgrade operating protocols, calibration, and/or sequencing</li><li>Other heating</li><li>Other cooling</li><li>Other ventilation</li><li>Other distribution</li><li>Other</li></ul>"
   },
   {
     "name": "MeasureName",
@@ -2734,14 +2816,16 @@
     "enumerations": [
       "Replace with ENERGY STAR rated",
       "Install plug load controls",
+      "Automatic shutdown or sleep mode for computers",
       "De-lamp vending machines",
-      "Improve data center efficiency",
+      "Replace clothes dryers",
+      "Replace washing machines",
       "Clean and/or repair",
       "Implement training and/or documentation",
       "Upgrade operating protocols, calibration, and/or sequencing",
       "Other"
     ],
-    "enumerations_html": "<ul><li>Replace with ENERGY STAR rated</li><li>Install plug load controls</li><li>De-lamp vending machines</li><li>Improve data center efficiency</li><li>Clean and/or repair</li><li>Implement training and/or documentation</li><li>Upgrade operating protocols, calibration, and/or sequencing</li><li>Other</li></ul>"
+    "enumerations_html": "<ul><li>Replace with ENERGY STAR rated</li><li>Install plug load controls</li><li>Automatic shutdown or sleep mode for computers</li><li>De-lamp vending machines</li><li>Replace clothes dryers</li><li>Replace washing machines</li><li>Clean and/or repair</li><li>Implement training and/or documentation</li><li>Upgrade operating protocols, calibration, and/or sequencing</li><li>Other</li></ul>"
   },
   {
     "name": "MeasureName",
@@ -2773,6 +2857,30 @@
       "Other"
     ],
     "enumerations_html": "<ul><li>Install landfill gas, wastewater treatment plant digester gas, or coal bed methane power plant</li><li>Install photovoltaic system</li><li>Install wind energy system</li><li>Install wood waste or other organic waste stream heating or power plant</li><li>Clean and/or repair</li><li>Implement training and/or documentation</li><li>Upgrade operating protocols, calibration, and/or sequencing</li><li>Other</li></ul>"
+  },
+  {
+    "name": "MeasureName",
+    "sub_name": "ServiceHotWaterSystems",
+    "documentation": "Service hot water (SHW) and domestic hot water (DHW) systems",
+    "enumerations": [
+      "Decrease SHW temperature",
+      "Install SHW controls",
+      "Install solar thermal SHW",
+      "Install water pressure booster",
+      "Insulate SHW piping",
+      "Insulate SHW tank",
+      "Replace piping",
+      "Replace tankless coil",
+      "Separate SHW from heating",
+      "Upgrade SHW boiler",
+      "Install heat pump SHW system",
+      "Install tankless water heaters",
+      "Clean and/or repair",
+      "Implement training and/or documentation",
+      "Upgrade operating protocols, calibration, and/or sequencing",
+      "Other"
+    ],
+    "enumerations_html": "<ul><li>Decrease SHW temperature</li><li>Install SHW controls</li><li>Install solar thermal SHW</li><li>Install water pressure booster</li><li>Insulate SHW piping</li><li>Insulate SHW tank</li><li>Replace piping</li><li>Replace tankless coil</li><li>Separate SHW from heating</li><li>Upgrade SHW boiler</li><li>Install heat pump SHW system</li><li>Install tankless water heaters</li><li>Clean and/or repair</li><li>Implement training and/or documentation</li><li>Upgrade operating protocols, calibration, and/or sequencing</li><li>Other</li></ul>"
   },
   {
     "name": "MeasureName",
@@ -2904,6 +3012,7 @@
       "Multifamily",
       "Multifamily with commercial",
       "Multifamily individual unit",
+      "Public housing",
       "Residential",
       "Health care-Pharmacy",
       "Health care-Skilled nursing facility",
@@ -3035,7 +3144,7 @@
       "Other",
       "Unknown"
     ],
-    "enumerations_html": "<ul><li>Manufactured home</li><li>Single family</li><li>Multifamily</li><li>Multifamily with commercial</li><li>Multifamily individual unit</li><li>Residential</li><li>Health care-Pharmacy</li><li>Health care-Skilled nursing facility</li><li>Health care-Residential treatment center</li><li>Health care-Inpatient hospital</li><li>Health care-Outpatient rehabilitation</li><li>Health care-Diagnostic center</li><li>Health care-Outpatient non-diagnostic</li><li>Health care-Outpatient surgical</li><li>Health care-Veterinary</li><li>Health care-Morgue or mortuary</li><li>Health care</li><li>Gas station</li><li>Convenience store</li><li>Food sales-Grocery store</li><li>Food sales</li><li>Laboratory-Testing</li><li>Laboratory-Medical</li><li>Laboratory </li><li>Vivarium</li><li>Office</li><li>Bank</li><li>Courthouse</li><li>Public safety station</li><li>Public safety-Detention center</li><li>Public safety-Correctional facility</li><li>Public safety</li><li>Warehouse-Refrigerated</li><li>Warehouse-Unrefrigerated</li><li>Warehouse-Self-storage</li><li>Warehouse</li><li>Assembly-Religious</li><li>Assembly-Cultural entertainment</li><li>Assembly-Social entertainment</li><li>Assembly-Arcade or casino without lodging</li><li>Assembly-Convention center</li><li>Assembly-Stadium</li><li>Assembly-Public</li><li>Recreation-Pool</li><li>Recreation-Fitness center</li><li>Recreation-Ice rink</li><li>Recreation-Indoor sport</li><li>Recreation</li><li>Education-Higher</li><li>Education-Secondary</li><li>Education-Primary</li><li>Education-Preschool or daycare</li><li>Education</li><li>Food service-Fast</li><li>Food service-Full</li><li>Food service-Limited</li><li>Food service-Institutional</li><li>Food service</li><li>Lodging-Institutional</li><li>Lodging with extended amenities</li><li>Lodging with limited amenities</li><li>Lodging</li><li>Retail-Mall</li><li>Retail-Strip mall</li><li>Retail-Enclosed mall</li><li>Retail-Dry goods retail</li><li>Retail-Hypermarket</li><li>Retail</li><li>Service-Postal</li><li>Service-Repair</li><li>Service-Laundry or dry cleaning</li><li>Service-Studio</li><li>Service-Beauty and health</li><li>Service-Production and assembly</li><li>Service</li><li>Transportation terminal</li><li>Central Plant</li><li>Water treatment-Wastewater</li><li>Water treatment-Drinking water and distribution</li><li>Water treatment</li><li>Energy generation plant</li><li>Industrial manufacturing plant</li><li>Utility</li><li>Industrial</li><li>Agricultural estate</li><li>Mixed-use commercial</li><li>Parking</li><li>Attic</li><li>Basement</li><li>Dining area</li><li>Living area</li><li>Sleeping area</li><li>Laundry area</li><li>Lodging area</li><li>Dressing area</li><li>Restroom</li><li>Auditorium</li><li>Classroom</li><li>Day room</li><li>Sport play area</li><li>Stage</li><li>Spectator area</li><li>Office work area</li><li>Non-office work area</li><li>Common area</li><li>Reception area</li><li>Waiting area</li><li>Transportation waiting area</li><li>Lobby</li><li>Conference room</li><li>Computer lab</li><li>Data center</li><li>Printing room</li><li>Media center</li><li>Telephone data entry</li><li>Darkroom</li><li>Courtroom</li><li>Kitchen</li><li>Kitchenette</li><li>Refrigerated storage</li><li>Bar</li><li>Dance floor</li><li>Security room</li><li>Shipping and receiving</li><li>Mechanical room</li><li>Chemical storage room</li><li>Non-chemical storage room</li><li>Janitorial closet</li><li>Vault</li><li>Corridor</li><li>Deck</li><li>Courtyard</li><li>Atrium</li><li>Other</li><li>Unknown</li></ul>"
+    "enumerations_html": "<ul><li>Manufactured home</li><li>Single family</li><li>Multifamily</li><li>Multifamily with commercial</li><li>Multifamily individual unit</li><li>Public housing</li><li>Residential</li><li>Health care-Pharmacy</li><li>Health care-Skilled nursing facility</li><li>Health care-Residential treatment center</li><li>Health care-Inpatient hospital</li><li>Health care-Outpatient rehabilitation</li><li>Health care-Diagnostic center</li><li>Health care-Outpatient non-diagnostic</li><li>Health care-Outpatient surgical</li><li>Health care-Veterinary</li><li>Health care-Morgue or mortuary</li><li>Health care</li><li>Gas station</li><li>Convenience store</li><li>Food sales-Grocery store</li><li>Food sales</li><li>Laboratory-Testing</li><li>Laboratory-Medical</li><li>Laboratory </li><li>Vivarium</li><li>Office</li><li>Bank</li><li>Courthouse</li><li>Public safety station</li><li>Public safety-Detention center</li><li>Public safety-Correctional facility</li><li>Public safety</li><li>Warehouse-Refrigerated</li><li>Warehouse-Unrefrigerated</li><li>Warehouse-Self-storage</li><li>Warehouse</li><li>Assembly-Religious</li><li>Assembly-Cultural entertainment</li><li>Assembly-Social entertainment</li><li>Assembly-Arcade or casino without lodging</li><li>Assembly-Convention center</li><li>Assembly-Stadium</li><li>Assembly-Public</li><li>Recreation-Pool</li><li>Recreation-Fitness center</li><li>Recreation-Ice rink</li><li>Recreation-Indoor sport</li><li>Recreation</li><li>Education-Higher</li><li>Education-Secondary</li><li>Education-Primary</li><li>Education-Preschool or daycare</li><li>Education</li><li>Food service-Fast</li><li>Food service-Full</li><li>Food service-Limited</li><li>Food service-Institutional</li><li>Food service</li><li>Lodging-Institutional</li><li>Lodging with extended amenities</li><li>Lodging with limited amenities</li><li>Lodging</li><li>Retail-Mall</li><li>Retail-Strip mall</li><li>Retail-Enclosed mall</li><li>Retail-Dry goods retail</li><li>Retail-Hypermarket</li><li>Retail</li><li>Service-Postal</li><li>Service-Repair</li><li>Service-Laundry or dry cleaning</li><li>Service-Studio</li><li>Service-Beauty and health</li><li>Service-Production and assembly</li><li>Service</li><li>Transportation terminal</li><li>Central Plant</li><li>Water treatment-Wastewater</li><li>Water treatment-Drinking water and distribution</li><li>Water treatment</li><li>Energy generation plant</li><li>Industrial manufacturing plant</li><li>Utility</li><li>Industrial</li><li>Agricultural estate</li><li>Mixed-use commercial</li><li>Parking</li><li>Attic</li><li>Basement</li><li>Dining area</li><li>Living area</li><li>Sleeping area</li><li>Laundry area</li><li>Lodging area</li><li>Dressing area</li><li>Restroom</li><li>Auditorium</li><li>Classroom</li><li>Day room</li><li>Sport play area</li><li>Stage</li><li>Spectator area</li><li>Office work area</li><li>Non-office work area</li><li>Common area</li><li>Reception area</li><li>Waiting area</li><li>Transportation waiting area</li><li>Lobby</li><li>Conference room</li><li>Computer lab</li><li>Data center</li><li>Printing room</li><li>Media center</li><li>Telephone data entry</li><li>Darkroom</li><li>Courtroom</li><li>Kitchen</li><li>Kitchenette</li><li>Refrigerated storage</li><li>Bar</li><li>Dance floor</li><li>Security room</li><li>Shipping and receiving</li><li>Mechanical room</li><li>Chemical storage room</li><li>Non-chemical storage room</li><li>Janitorial closet</li><li>Vault</li><li>Corridor</li><li>Deck</li><li>Courtyard</li><li>Atrium</li><li>Other</li><li>Unknown</li></ul>"
   },
   {
     "name": "OccupantQuantityType",
@@ -3110,21 +3219,12 @@
     "enumerations": [
       "Owner",
       "Occupant",
-      "Property management company",
-      "Other corporation/partnership/LLC",
-      "Religious organization",
-      "Other non-profit organization",
-      "Privately-owned school",
-      "Individual owner",
-      "Other non-government owner",
-      "Government",
-      "Federal government",
-      "State government",
-      "Local government",
+      "Tenant",
+      "Landlord",
       "Other",
       "Unknown"
     ],
-    "enumerations_html": "<ul><li>Owner</li><li>Occupant</li><li>Property management company</li><li>Other corporation/partnership/LLC</li><li>Religious organization</li><li>Other non-profit organization</li><li>Privately-owned school</li><li>Individual owner</li><li>Other non-government owner</li><li>Government</li><li>Federal government</li><li>State government</li><li>Local government</li><li>Other</li><li>Unknown</li></ul>"
+    "enumerations_html": "<ul><li>Owner</li><li>Occupant</li><li>Tenant</li><li>Landlord</li><li>Other</li><li>Unknown</li></ul>"
   },
   {
     "name": "OtherEnergyGenerationTechnology",
@@ -3141,10 +3241,11 @@
       "Hydrokinetic",
       "Solar parabolic trough",
       "Solar power tower",
+      "Wind",
       "Other",
       "Unknown"
     ],
-    "enumerations_html": "<ul><li>Standby generator</li><li>Turbine</li><li>Microturbine</li><li>Fuel cell</li><li>Gasification</li><li>Binary Cycle</li><li>Anaerobic biodigester</li><li>Hydrokinetic</li><li>Solar parabolic trough</li><li>Solar power tower</li><li>Other</li><li>Unknown</li></ul>"
+    "enumerations_html": "<ul><li>Standby generator</li><li>Turbine</li><li>Microturbine</li><li>Fuel cell</li><li>Gasification</li><li>Binary Cycle</li><li>Anaerobic biodigester</li><li>Hydrokinetic</li><li>Solar parabolic trough</li><li>Solar power tower</li><li>Wind</li><li>Other</li><li>Unknown</li></ul>"
   },
   {
     "name": "Ownership",
@@ -3288,6 +3389,28 @@
     "enumerations_html": "<ul><li>Pneumatic</li><li>Electric</li><li>Other</li><li>Unknown</li></ul>"
   },
   {
+    "name": "PrimaryHVACSystemType",
+    "sub_name": null,
+    "documentation": "Primary HVAC type.",
+    "enumerations": [
+      "Packaged Terminal Air Conditioner",
+      "Four Pipe Fan Coil Unit",
+      "Packaged Terminal Heat Pump",
+      "Packaged Rooftop Air Conditioner",
+      "Packaged Rooftop Heat Pump",
+      "Packaged Rooftop VAV with Hot Water Reheat",
+      "Packaged Rooftop VAV with Electric Reheat",
+      "VAV with Hot Water Reheat",
+      "VAV with Electric Reheat",
+      "Warm Air Furnace",
+      "Ventilation Only",
+      "Dedicated Outdoor Air System",
+      "Water Loop Heat Pump",
+      "Ground Source Heat Pump"
+    ],
+    "enumerations_html": "<ul><li>Packaged Terminal Air Conditioner</li><li>Four Pipe Fan Coil Unit</li><li>Packaged Terminal Heat Pump</li><li>Packaged Rooftop Air Conditioner</li><li>Packaged Rooftop Heat Pump</li><li>Packaged Rooftop VAV with Hot Water Reheat</li><li>Packaged Rooftop VAV with Electric Reheat</li><li>VAV with Hot Water Reheat</li><li>VAV with Electric Reheat</li><li>Warm Air Furnace</li><li>Ventilation Only</li><li>Dedicated Outdoor Air System</li><li>Water Loop Heat Pump</li><li>Ground Source Heat Pump</li></ul>"
+  },
+  {
     "name": "Priority",
     "sub_name": null,
     "documentation": "Order of precedence relative to other applicable systems. Enter Primary if this is the only system.",
@@ -3318,6 +3441,21 @@
       "Unknown"
     ],
     "enumerations_html": "<ul><li>Medical Equipment</li><li>Laboratory Equipment</li><li>Machinery</li><li>Air Compressor</li><li>Fume Hood</li><li>Appliance</li><li>Gaming/Hobby/Leisure</li><li>Infrastructure</li><li>Electric Vehicle Charging</li><li>Other</li><li>Unknown</li></ul>"
+  },
+  {
+    "name": "ProgramClassification",
+    "sub_name": null,
+    "documentation": "The classification or type of the program.",
+    "enumerations": [
+      "Audit",
+      "Performance",
+      "Deemed",
+      "Retrofit",
+      "Rebate",
+      "Other",
+      "Not Applicable"
+    ],
+    "enumerations_html": "<ul><li>Audit</li><li>Performance</li><li>Deemed</li><li>Retrofit</li><li>Rebate</li><li>Other</li><li>Not Applicable</li></ul>"
   },
   {
     "name": "PumpApplication",
@@ -3399,7 +3537,7 @@
   {
     "name": "RankType",
     "sub_name": null,
-    "documentation": "BuildingSync Schema - Version 0.2",
+    "documentation": "BuildingSync Schema - Version 1.0 (January 31, 2019)",
     "enumerations": [
       "Fair",
       "Good",
@@ -3663,21 +3801,6 @@
     "enumerations_html": "<ul><li>Loose fill</li><li>Batt</li><li>Spray on</li><li>Rigid</li><li>Other</li><li>Unknown</li><li>None</li></ul>"
   },
   {
-    "name": "RoofInsulationCondition",
-    "sub_name": null,
-    "documentation": "Assessed condition of installed insulation.",
-    "enumerations": [
-      "Excellent",
-      "Good",
-      "Average",
-      "Poor",
-      "Other",
-      "Unknown",
-      "None"
-    ],
-    "enumerations_html": "<ul><li>Excellent</li><li>Good</li><li>Average</li><li>Poor</li><li>Other</li><li>Unknown</li><li>None</li></ul>"
-  },
-  {
     "name": "RoofInsulationContinuity",
     "sub_name": null,
     "documentation": "Insulation installation type.",
@@ -3800,21 +3923,6 @@
       "Unknown"
     ],
     "enumerations_html": "<ul><li>Heated</li><li>Unheated</li><li>Other</li><li>Unknown</li></ul>"
-  },
-  {
-    "name": "SlabInsulationCondition",
-    "sub_name": null,
-    "documentation": "Assessed condition of installed insulation.",
-    "enumerations": [
-      "Excellent",
-      "Good",
-      "Average",
-      "Poor",
-      "Other",
-      "Unknown",
-      "None"
-    ],
-    "enumerations_html": "<ul><li>Excellent</li><li>Good</li><li>Average</li><li>Poor</li><li>Other</li><li>Unknown</li><li>None</li></ul>"
   },
   {
     "name": "SlabInsulationOrientation",
@@ -3946,7 +4054,7 @@
   {
     "name": "State",
     "sub_name": null,
-    "documentation": "BuildingSync Schema - Version 0.2",
+    "documentation": "BuildingSync Schema - Version 1.0 (January 31, 2019)",
     "enumerations": [
       "AA",
       "AE",
@@ -4364,7 +4472,7 @@
   {
     "name": "TelephoneNumber",
     "sub_name": null,
-    "documentation": "BuildingSync Schema - Version 0.2",
+    "documentation": "BuildingSync Schema - Version 1.0 (January 31, 2019)",
     "enumerations": [
 
     ],
@@ -4392,6 +4500,29 @@
       "Other"
     ],
     "enumerations_html": "<ul><li>Pre retrofit</li><li>Post retrofit</li><li>Baseline</li><li>Current</li><li>Target</li><li>Design Target</li><li>Last billing period</li><li>Additional to last billing period</li><li>Current billing period</li><li>Billed to date</li><li>Current day</li><li>Current day last year</li><li>Previous day</li><li>Previous day last year</li><li>Other</li></ul>"
+  },
+  {
+    "name": "TenantEmailAddressLabel",
+    "sub_name": null,
+    "documentation": "The type of email address, to distinguish between multiple instances of Email Address.",
+    "enumerations": [
+      "Personal",
+      "Work",
+      "Other"
+    ],
+    "enumerations_html": "<ul><li>Personal</li><li>Work</li><li>Other</li></ul>"
+  },
+  {
+    "name": "TenantTelephoneNumberLabel",
+    "sub_name": null,
+    "documentation": "The type of telephone number, to distinguish between multiple instances of Telephone Number.",
+    "enumerations": [
+      "Days",
+      "Evenings",
+      "Cell",
+      "Other"
+    ],
+    "enumerations_html": "<ul><li>Days</li><li>Evenings</li><li>Cell</li><li>Other</li></ul>"
   },
   {
     "name": "TerminalUnit",
@@ -4596,6 +4727,24 @@
     "enumerations_html": "<ul><li>Revenue grade meter</li><li>Advanced resource meter</li><li>Analog</li><li>Interval</li><li>Net</li><li>Smart meter</li><li>PDU input meter</li><li>IT equipment input meter</li><li>Supply UPS output meter</li><li>PDU output meter</li><li>Other</li><li>Unknown</li></ul>"
   },
   {
+    "name": "TypicalOccupantUsageUnits",
+    "sub_name": null,
+    "documentation": null,
+    "enumerations": [
+      "Hours per day",
+      "Hours per week",
+      "Hours per month",
+      "Hours per year",
+      "Days per week",
+      "Days per month",
+      "Days per year",
+      "Weeks per month",
+      "Weeks per year",
+      "Months per year"
+    ],
+    "enumerations_html": "<ul><li>Hours per day</li><li>Hours per week</li><li>Hours per month</li><li>Hours per year</li><li>Days per week</li><li>Days per month</li><li>Days per year</li><li>Weeks per month</li><li>Weeks per year</li><li>Months per year</li></ul>"
+  },
+  {
     "name": "VentilationControlMethod",
     "sub_name": null,
     "documentation": "The method used to control the rate of outside air ventilation.",
@@ -4682,21 +4831,6 @@
     "enumerations_html": "<ul><li>Loose fill</li><li>Batt</li><li>Spray on</li><li>Rigid</li><li>Other</li><li>Unknown</li><li>None</li></ul>"
   },
   {
-    "name": "WallInsulationCondition",
-    "sub_name": null,
-    "documentation": "Assessed condition of installed insulation.",
-    "enumerations": [
-      "Excellent",
-      "Good",
-      "Average",
-      "Poor",
-      "Other",
-      "Unknown",
-      "None"
-    ],
-    "enumerations_html": "<ul><li>Excellent</li><li>Good</li><li>Average</li><li>Poor</li><li>Other</li><li>Unknown</li><li>None</li></ul>"
-  },
-  {
     "name": "WallInsulationContinuity",
     "sub_name": null,
     "documentation": "Insulation installation type.",
@@ -4763,9 +4897,10 @@
     "documentation": null,
     "enumerations": [
       "Energy Factor",
-      "Thermal Efficiency"
+      "Thermal Efficiency",
+      "COP"
     ],
-    "enumerations_html": "<ul><li>Energy Factor</li><li>Thermal Efficiency</li></ul>"
+    "enumerations_html": "<ul><li>Energy Factor</li><li>Thermal Efficiency</li><li>COP</li></ul>"
   },
   {
     "name": "WaterResource",
@@ -4888,7 +5023,7 @@
   {
     "name": "ZipCode",
     "sub_name": null,
-    "documentation": "BuildingSync Schema - Version 0.2",
+    "documentation": "BuildingSync Schema - Version 1.0 (January 31, 2019)",
     "enumerations": [
 
     ],

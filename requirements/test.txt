@@ -17,6 +17,7 @@ vcrpy==2.0.1
 
 # static code analysis
 flake8==3.5.0
+pycodestyle==2.3.1
 
 # documentation and spelling
 Sphinx==1.8.1
