@@ -25,6 +25,7 @@ from celery.utils.log import get_task_logger
 from django.db import IntegrityError, DataError
 from django.db import connection, transaction
 from django.db.models import Q
+from django.db.utils import ProgrammingError
 from django.utils import timezone as tz
 from django.utils.timezone import make_naive
 from past.builtins import basestring
@@ -676,10 +677,13 @@ def _save_meter_usage_data_task(meter_readings, file_pk, progress_key):
     This method creates an individual task to save a single Meter and its
     corresponding MeterReadings. Each task returns the results of the import.
 
-    Get or create the meter without it's readings. Then create or update
-    readings while associating them to the meter via raw SQL upsert.
+    Within the query get or create the meter without it's readings. Then,
+    create or update readings while associating them to the meter via raw SQL upsert.
     Specifically, meter_id, start_time, and end_time must be unique or an update
     occurs. Otherwise, a new reading entry is created.
+
+    If the query leads to an error regarding trying to update the same row
+    within the same query, the error is logged in the results.
     """
     progress_data = ProgressData.from_key(progress_key)
 
@@ -708,6 +712,10 @@ def _save_meter_usage_data_task(meter_readings, file_pk, progress_key):
                 cursor.execute(sql)
                 result['source_id'] = meter.source_id
                 result['count'] = len(cursor.fetchall())
+    except ProgrammingError as e:
+        if "ON CONFLICT DO UPDATE command cannot affect row a second time" in str(e):
+            result['source_id'] = meter_readings.get("source_id")
+            result['error'] = "Overlapping readings."
     except Exception:
         return progress_data.finish_with_error('data failed to import')
 
@@ -754,15 +762,26 @@ def _save_meter_usage_data_create_tasks(file_pk, progress_key):
 
 def _append_meter_import_results_to_summary(import_results, summary):
     """
-    Worker method for aggregating meter import
+    This appends meter import result counts and, if applicable, error messages.
     """
     agg_results_summary = collections.defaultdict(lambda: 0)
+    error_comments = collections.defaultdict(lambda: set())
+
     for id_count in import_results:
-        agg_results_summary[id_count["source_id"]] += id_count["count"]
+        success_count = id_count.get("count")
+
+        if success_count:
+            agg_results_summary[id_count["source_id"]] += success_count
+        else:
+            error_comments[id_count["source_id"]].add(id_count.get("error"))
 
     for import_info in summary:
         pm_id = import_info["portfolio_manager_id"]
-        import_info["successfully_imported"] = agg_results_summary[pm_id]
+
+        import_info["successfully_imported"] = agg_results_summary.get(pm_id, 0)
+
+        if error_comments:
+            import_info["errors"] = " ".join(list(error_comments.get(pm_id, "")))
 
     return summary
 
