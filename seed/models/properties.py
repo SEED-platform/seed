@@ -106,7 +106,7 @@ class PropertyState(models.Model):
 
     custom_id_1 = models.CharField(max_length=255, null=True, blank=True)
 
-    # A unique building identifier as defined by DOE's current effort (link to follow)
+    # A unique building identifier as defined by DOE's UBID project (https://buildingid.pnnl.gov/)
     ubid = models.CharField(max_length=255, null=True, blank=True)
 
     # If the property is a campus then the pm_parent_property_id is the same
@@ -138,6 +138,8 @@ class PropertyState(models.Model):
     long_lat = geomodels.PointField(geography=True, null=True, blank=True)
     centroid = geomodels.PolygonField(geography=True, null=True, blank=True)
     bounding_box = geomodels.PolygonField(geography=True, null=True, blank=True)
+    property_footprint = geomodels.PolygonField(geography=True, null=True, blank=True)
+
     # footprint = geomodels.PolygonField(geography=True, null=True, blank=True)
     geocoding_confidence = models.CharField(max_length=32, null=True, blank=True)
 
