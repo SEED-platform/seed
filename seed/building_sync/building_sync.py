@@ -77,7 +77,7 @@ class BuildingSync(object):
                 "required": False,
                 "type": "double",
             },
-            "property_name": { #verify
+            "property_name": {
                 "path": "auc:Sites.auc:Site.auc:Buildings.auc:Building.@ID",
                 "required": True,
                 "type": "string",
@@ -219,9 +219,6 @@ class BuildingSync(object):
                         ('xsi', 'http://www.w3.org/2001/XMLSchema-instance')
                     ]
                 )
-                # for some reason the auc header gets put on ?? by the building_sync parser...remove
-                #if '@xmlns' in new_dict['auc:BuildingSync']['auc:Audit']:
-                #    del new_dict['auc:Audits']['auc:Audit']['@xmlns']
 
         for field, v in process_struct['return'].items():
             value = None

@@ -21,6 +21,7 @@ def _snake_case(display_name):
     str = re.sub('([a-z0-9])([A-Z])', r'\1_\2', str).lower()
     return re.sub(' +', '_', str)
 
+
 def populate_measures(apps, organization_id, schema_type='BuildingSync', schema_version="1.0.0"):
     """
     Populate the list of measures from the BuildingSync
@@ -62,7 +63,6 @@ def populate_measures(apps, organization_id, schema_type='BuildingSync', schema_
 # process the measures table with changes from BuildingSync v1.0.0
 def forwards(apps, schema_editor):
     Organization = apps.get_model("orgs", "Organization")
-    Measure = apps.get_model("seed", "Measure")
 
     # find all organizations
     for c in Organization.objects.all():
