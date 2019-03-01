@@ -107,8 +107,8 @@ class TestPropertyMeasures(TestCase):
         self.assertEqual(PropertyMeasure.str_to_application_scale(None), None)
 
     def test_populate_measures(self):
-        self.assertEqual(Measure.objects.count(), 174)
+        self.assertEqual(Measure.objects.count(), 222)
 
         # if we run it again, it shouldn't add anything new
         Measure.populate_measures(self.org.id)
-        self.assertEqual(Measure.objects.count(), 174)
+        self.assertEqual(Measure.objects.count(), 222)
