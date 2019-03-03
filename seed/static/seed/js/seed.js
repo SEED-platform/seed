@@ -58,6 +58,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.inventory_detail_settings',
   'BE.seed.controller.inventory_detail_notes',
   'BE.seed.controller.inventory_detail_notes_modal',
+  'BE.seed.controller.inventory_detail_energy',
   'BE.seed.controller.inventory_list',
   'BE.seed.controller.inventory_map',
   'BE.seed.controller.inventory_reports',
@@ -1185,6 +1186,28 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
               inventory_type: $stateParams.inventory_type
             });
           }]
+        }
+      })
+      .state({
+        name: 'inventory_detail_energy',
+        url: '/{inventory_type:properties|taxlots}/{view_id:int}/energy',
+        templateUrl: static_url + 'seed/partials/inventory_detail_energy.html',
+        controller: 'inventory_detail_energy_controller',
+        resolve: {
+          inventory_payload: ['$state', '$stateParams', 'inventory_service', function ($state, $stateParams, inventory_service) {
+            // load `get_building` before page is loaded to avoid page flicker.
+            var view_id = $stateParams.view_id;
+            var promise;
+            if ($stateParams.inventory_type === 'properties') promise = inventory_service.get_property(view_id);
+            else if ($stateParams.inventory_type === 'taxlots') promise = inventory_service.get_taxlot(view_id);
+            promise.catch(function (err) {
+              if (err.message.match(/^(?:property|taxlot) view with id \d+ does not exist$/)) {
+                // Inventory item not found for current organization, redirecting
+                $state.go('inventory_list', {inventory_type: $stateParams.inventory_type});
+              }
+            });
+            return promise;
+          }],
         }
       });
   }]);
