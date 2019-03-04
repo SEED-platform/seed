@@ -5,15 +5,22 @@ import ast
 import os
 import json
 
+from config.settings.common import TIME_ZONE
+
 from datetime import datetime
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.urlresolvers import reverse
 from django.test import TestCase
-from django.utils.timezone import get_current_timezone
-# from rest_framework import status
+from django.utils.timezone import (
+    get_current_timezone,
+    make_aware,
+)
+
+from pytz import timezone
 
 from seed.data_importer.models import ImportFile, ImportRecord
+from seed.data_importer.tasks import save_raw_data
 from seed.landing.models import SEEDUser as User
 from seed.models import (
     PropertyState,
@@ -152,6 +159,37 @@ class TestMeterViewSet(TestCase):
         ]
 
         self.assertCountEqual(result_dict.get("unlinkable_pm_ids"), expectation)
+
+    def test_meter_readings_from_property_view(self):
+        save_raw_data(self.import_file.id)
+
+        tz_obj = timezone(TIME_ZONE)
+
+        url = reverse('api:v2:meters-readings-list')
+
+        post_params = json.dumps({
+            'property_view_id': self.property_view_1.id,
+            'organization_id': self.org.pk,
+        })
+        result = self.client.post(url, post_params, content_type="application/json")
+        result_dict = ast.literal_eval(result.content.decode("utf-8"))
+
+        expectation = [
+            {
+                'start_time': make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=tz_obj).isoformat(),
+                'end_time': make_aware(datetime(2016, 1, 31, 23, 59, 59), timezone=tz_obj).isoformat(),
+                'Electricity': 597478.9,
+                'Natural Gas': 545942781.5634,
+            },
+            {
+                'start_time': make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=tz_obj).isoformat(),
+                'end_time': make_aware(datetime(2016, 2, 29, 23, 59, 59), timezone=tz_obj).isoformat(),
+                'Electricity': 548603.7,
+                'Natural Gas': 462534790.7817,
+            },
+        ]
+
+        self.assertCountEqual(result_dict, expectation)
 
 #         """We throw an error when there's no building id passed in."""
 #         client = APIClient()
