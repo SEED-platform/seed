@@ -11,20 +11,17 @@ import collections
 import copy
 import datetime as dt
 import hashlib
-import operator
 import os
 import traceback
 from _csv import Error
+from builtins import str
 from collections import namedtuple
-from functools import reduce
 from itertools import chain
 
-from builtins import str
 from celery import chord, shared_task
 from celery.utils.log import get_task_logger
 from django.db import IntegrityError, DataError
 from django.db import transaction
-from django.db.models import Q
 from django.utils import timezone as tz
 from django.utils.timezone import make_naive
 from past.builtins import basestring
@@ -72,7 +69,6 @@ from seed.models.data_quality import DataQualityCheck
 from seed.utils.buildings import get_source_type
 from seed.utils.geocode import geocode_buildings
 from seed.utils.ubid import decode_ubids
-
 
 # from seed.utils.cprofile import cprofile
 
@@ -319,7 +315,8 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                 # _log.debug("extra data fields: {}".format(extra_data_fields))
 
                 # All the data live in the PropertyState.extra_data field when the data are imported
-                data = PropertyState.objects.filter(id__in=ids).only('extra_data', 'bounding_box').iterator()
+                data = PropertyState.objects.filter(id__in=ids).only('extra_data',
+                                                                     'bounding_box').iterator()
 
                 # Since we are importing CSV, then each extra_data field will have the same fields.
                 # So save the map_model_obj outside of for loop to pass into the `save_column_names`
@@ -757,10 +754,12 @@ def geocode_buildings_task(file_pk):
 @shared_task
 def _geocode_properties_or_tax_lots(file_pk):
     if PropertyState.objects.filter(import_file_id=file_pk).exclude(data_state=DATA_STATE_IMPORT):
-        qs = PropertyState.objects.filter(import_file_id=file_pk).exclude(data_state=DATA_STATE_IMPORT)
+        qs = PropertyState.objects.filter(import_file_id=file_pk).exclude(
+            data_state=DATA_STATE_IMPORT)
         decode_ubids(qs)
     else:
-        qs = TaxLotState.objects.filter(import_file_id=file_pk).exclude(data_state=DATA_STATE_IMPORT)
+        qs = TaxLotState.objects.filter(import_file_id=file_pk).exclude(
+            data_state=DATA_STATE_IMPORT)
 
     geocode_buildings(qs)
 
@@ -1217,42 +1216,6 @@ def list_canonical_property_states(org_id):
 
     ids = [p.state.id for p in pvs]
     return PropertyState.objects.filter(pk__in=ids)
-
-
-def query_property_matches(properties, pm_id, custom_id, ubid):
-    """
-    Returns query set of PropertyStates that match at least one of the specified ids
-
-    :param properties: QuerySet, PropertyStates
-    :param pm_id: string, PM Property ID
-    :param custom_id: String, Custom ID
-    :param ubid: String, Unique Building Identifier
-    :return: QuerySet of objects that meet criteria.
-    """
-
-    """"""
-    params = []
-    # Not sure what the point of this logic is here. If we are passing in a custom_id then
-    # why would we want to check pm_property_id against the custom_id, what if we pass both in?
-    # Seems like this favors pm_id
-    if pm_id:
-        params.append(Q(pm_property_id=pm_id))
-        params.append(Q(custom_id_1=pm_id))
-        params.append(Q(ubid=pm_id))
-    if custom_id:
-        params.append(Q(pm_property_id=custom_id))
-        params.append(Q(custom_id_1=custom_id))
-        params.append(Q(ubid=custom_id))
-    if ubid:
-        params.append(Q(pm_property_id=ubid))
-        params.append(Q(custom_id_1=ubid))
-        params.append(Q(ubid=ubid))
-
-    if not params:
-        # Return an empty QuerySet if we don't have any params.
-        return properties.none()
-
-    return properties.filter(reduce(operator.or_, params)).order_by('id')
 
 
 def save_state_match(state1, state2, priorities):

@@ -33,20 +33,6 @@ _log = logging.getLogger(__name__)
 
 class Column(models.Model):
     """The name of a column for a given organization."""
-
-    # We have two concepts of the SOURCE. The table_name, which is mostly used, and the
-    # SOURCE_* fields. Need to converge on one or the other.
-    # SOURCE_PROPERTY = 'P'
-    # SOURCE_TAXLOT = 'T'
-    # SOURCE_CHOICES = (
-    #     (SOURCE_PROPERTY, 'Property'),
-    #     (SOURCE_TAXLOT, 'Taxlot'),
-    # )
-    # SOURCE_CHOICES_MAP = {
-    #     SOURCE_PROPERTY: 'property',
-    #     SOURCE_TAXLOT: 'taxlot',
-    # }
-
     SHARED_NONE = 0
     SHARED_PUBLIC = 1
 
@@ -107,6 +93,8 @@ class Column(models.Model):
         'analysis_state',
         'bounding_box',
         'centroid',
+        'property_footprint',
+        'taxlot_footprint',
         'data_state',
         'extra_data',
         'geocoding_confidence',
@@ -174,6 +162,11 @@ class Column(models.Model):
             'column_name': 'jurisdiction_property_id',
             'table_name': 'PropertyState',
             'display_name': 'Jurisdiction Property ID',
+            'data_type': 'string',
+        }, {
+            'column_name': 'ulid',
+            'table_name': 'TaxLotState',
+            'display_name': 'ULID',
             'data_type': 'string',
         }, {
             'column_name': 'ubid',

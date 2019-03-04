@@ -536,6 +536,7 @@ class TestColumnsByInventory(TestCase):
                 "space_alerts": "string",
                 "state": "string",
                 "ubid": "string",
+                "ulid": "string",
                 "updated": "datetime",
                 "use_description": "string",
                 "year_ending": "date",
@@ -561,7 +562,7 @@ class TestColumnsByInventory(TestCase):
                 'postal_code', 'property_name', 'property_notes', 'property_type',
                 'recent_sale_date', 'release_date', 'site_eui', 'site_eui_modeled',
                 'site_eui_weather_normalized', 'source_eui', 'source_eui_modeled',
-                'source_eui_weather_normalized', 'space_alerts', 'state', 'ubid', 'updated',
+                'source_eui_weather_normalized', 'space_alerts', 'state', 'ubid', 'ulid', 'updated',
                 'use_description', 'year_built', 'year_ending']
 
         self.assertCountEqual(c, data)
@@ -580,7 +581,7 @@ class TestColumnsByInventory(TestCase):
                     'property_notes', 'property_type', 'recent_sale_date', 'release_date',
                     'site_eui', 'site_eui_modeled', 'site_eui_weather_normalized', 'source_eui',
                     'source_eui_modeled', 'source_eui_weather_normalized', 'space_alerts', 'state',
-                    'ubid', 'updated', 'use_description', 'year_built', 'year_ending']
+                    'ubid', 'ulid', 'updated', 'use_description', 'year_built', 'year_ending']
 
         method_columns = Column.retrieve_db_field_name_for_hash_comparison()
         self.assertListEqual(method_columns, expected)

@@ -104,9 +104,10 @@ class TaxLotPropertyViewSet(GenericViewSet):
 
         # Set the first column to be the ID
         column_name_mappings = OrderedDict([('id', 'ID')])
-        column_ids, add_column_name_mappings, columns_from_database = ColumnListSetting.return_columns(org_id,
-                                                                                                       profile_id,
-                                                                                                       view_klass_str)
+        column_ids, add_column_name_mappings, columns_from_database = ColumnListSetting.return_columns(
+            org_id,
+            profile_id,
+            view_klass_str)
         column_name_mappings.update(add_column_name_mappings)
         select_related = ['state', 'cycle']
         ids = request.data.get('ids', [])
@@ -127,7 +128,8 @@ class TaxLotPropertyViewSet(GenericViewSet):
             # always export the labels
             column_name_mappings['taxlot_labels'] = 'Tax Lot Labels'
 
-        model_views = view_klass.objects.select_related(*select_related).filter(**filter_str).order_by('id')
+        model_views = view_klass.objects.select_related(*select_related).filter(
+            **filter_str).order_by('id')
 
         # get the data in a dict which includes the related data
         data = TaxLotProperty.get_related(model_views, column_ids, columns_from_database)
@@ -183,6 +185,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
         return response
 
     def _json_response(self, filename, data, column_name_mappings):
+        polygon_fields = ["bounding_box", "centroid", "property_footprint", "taxlot_footprint"]
         features = []
         for datum in data:
             feature = {
@@ -201,9 +204,9 @@ class TaxLotPropertyViewSet(GenericViewSet):
                 elif isinstance(value, datetime.date):
                     value = value.strftime("%Y-%m-%d")
 
-                if (key == "bounding_box" or key == "centroid") and value:
+                if value and any(k in key for k in polygon_fields):
                     """
-                    If bounding_box or centroid is populated, add the 'geometry'
+                    If object is a polygon and is populated, add the 'geometry'
                     key-value-pair in the appropriate GeoJSON format.
                     When the first geometry is added, the correct format is
                     established. When/If a second geometry is added, this is
@@ -232,8 +235,8 @@ class TaxLotPropertyViewSet(GenericViewSet):
         response_dict = {
             "type": "FeatureCollection",
             "crs": {
-                    "type": "EPSG",
-                    "properties": {"code": 4326}
+                "type": "EPSG",
+                "properties": {"code": 4326}
             },
             "features": features
         }
