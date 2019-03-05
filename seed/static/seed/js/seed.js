@@ -110,6 +110,7 @@ angular.module('BE.seed.services', [
   'BE.seed.service.columns',
   'BE.seed.service.cycle',
   'BE.seed.service.dataset',
+  'BE.seed.service.energy',
   'BE.seed.service.flippers',
   'BE.seed.service.geocode',
   'BE.seed.service.httpParamSerializerSeed',
@@ -1194,19 +1195,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/inventory_detail_energy.html',
         controller: 'inventory_detail_energy_controller',
         resolve: {
-          inventory_payload: ['$state', '$stateParams', 'inventory_service', function ($state, $stateParams, inventory_service) {
-            // load `get_building` before page is loaded to avoid page flicker.
-            var view_id = $stateParams.view_id;
-            var promise;
-            if ($stateParams.inventory_type === 'properties') promise = inventory_service.get_property(view_id);
-            else if ($stateParams.inventory_type === 'taxlots') promise = inventory_service.get_taxlot(view_id);
-            promise.catch(function (err) {
-              if (err.message.match(/^(?:property|taxlot) view with id \d+ does not exist$/)) {
-                // Inventory item not found for current organization, redirecting
-                $state.go('inventory_list', {inventory_type: $stateParams.inventory_type});
-              }
-            });
-            return promise;
+          property_energy_usage: ['$stateParams', 'user_service', 'energy_service', function ($stateParams, user_service, energy_service) {
+            var organization_id = user_service.get_organization().id;
+            return energy_service.property_energy_usage($stateParams.view_id, organization_id)
           }],
         }
       });

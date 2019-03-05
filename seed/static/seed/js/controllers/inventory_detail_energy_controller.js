@@ -3,24 +3,30 @@ angular.module('BE.seed.controller.inventory_detail_energy', [])
     '$state',
     '$scope',
     '$stateParams',
-    'user_service',
+    'property_energy_usage',
     'spinner_utility',
-    'inventory_payload',
+    'user_service',
     function (
       $state,
       $scope,
       $stateParams,
-      user_service,
+      property_energy_usage,
       spinner_utility,
-      inventory_payload,
+      user_service,
     ) {
+      spinner_utility.show();
+
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.organization = user_service.get_organization();
 
       $scope.inventory = {
         view_id: $stateParams.view_id,
-        related: $scope.inventory_type === 'properties' ? inventory_payload.taxlots : inventory_payload.properties,
-        is_property: true,
       };
-      // debugger;
+
+      $scope.data = property_energy_usage.readings;
+
+      $scope.gridOptions = {
+        data: 'data',
+        columnDefs: property_energy_usage.headers,
+      };
     }]);

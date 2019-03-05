@@ -44,20 +44,36 @@ class MeterViewSet(viewsets.ViewSet):
 
     @ajax_request_class
     @list_route(methods=['POST'])
-    def readings_list(self, request):
+    def property_energy_usage(self, request):
         body = dict(request.data)
         property_view_id = body['property_view_id']
 
         meters = PropertyView.objects.get(pk=property_view_id).property.meters.all()
 
+        # Used to consolidate different readings (types) within the same time window
         start_end_times = defaultdict(lambda: {})
+
+        time_format = "%Y-%m-%d %H:%M:%S"
         tz = timezone(TIME_ZONE)
+
+        # Construct headers using this dictionary's values for frontend to use
+        headers = {
+            '_start_time': {'field': 'start_time'},
+            '_end_time': {'field': 'end_time'},
+        }
 
         for meter in meters:
             type = dict(meter.ENERGY_TYPES)[meter.type]
+
+            headers[type] = {
+                'field': type,
+                'displayName': type + " (kBtu)",
+                'cellFilter': "number: 0",
+            }
+
             for meter_reading in meter.meter_readings.all():
-                start_time = meter_reading.start_time.astimezone(tz=tz).isoformat()
-                end_time = meter_reading.end_time.astimezone(tz=tz).isoformat()
+                start_time = meter_reading.start_time.astimezone(tz=tz).strftime(time_format)
+                end_time = meter_reading.end_time.astimezone(tz=tz).strftime(time_format)
 
                 times_key = "-".join([start_time, end_time])
 
@@ -65,4 +81,9 @@ class MeterViewSet(viewsets.ViewSet):
                 start_end_times[times_key]['end_time'] = end_time
                 start_end_times[times_key][type] = meter_reading.reading.magnitude
 
-        return list(start_end_times.values())
+        result = {
+            'readings': list(start_end_times.values()),
+            'headers': list(headers.values())
+        }
+
+        return result

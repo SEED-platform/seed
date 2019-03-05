@@ -14,3 +14,10 @@
 <div class="section_nav_container">
     <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_detail_nav.html'"></div>
 </div>
+<div class="section_content_container" ng-cloak style="clear:both; overflow:hidden;">
+    <div class="section_content">
+        <div id="grid-container">
+            <div style="height: 600px" ui-grid="gridOptions" ui-grid-move-columns ui-grid-pinning ui-grid-resize-columns></div>
+        </div>
+    </div>
+</div>
