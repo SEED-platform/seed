@@ -24,6 +24,7 @@ angular.module('BE.seed.controller.inventory_detail_energy', [])
       };
 
       $scope.data = property_energy_usage.readings;
+      $scope.has_meters = $scope.data.length > 0;
 
       $scope.gridOptions = {
         data: 'data',
