@@ -12,7 +12,7 @@ angular.module('BE.seed.controller.inventory_detail_energy', [])
       $stateParams,
       property_energy_usage,
       spinner_utility,
-      user_service,
+      user_service
     ) {
       spinner_utility.show();
 
