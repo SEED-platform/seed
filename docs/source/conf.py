@@ -49,6 +49,14 @@ extensions = [
     'sphinx.ext.intersphinx',
 ]
 
+autodoc_mock_imports = [
+    'pnnl_buildingid',
+    'utils.ubid',
+    'buildingid',
+    'django.contrib.gis',
+    'django.contrib.gis.geos',
+]
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
