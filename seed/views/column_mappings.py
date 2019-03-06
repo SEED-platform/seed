@@ -29,7 +29,7 @@ from seed.utils.viewsets import SEEDOrgCreateUpdateModelViewSet
 _log = logging.getLogger(__name__)
 
 
-class ColumnMappingiewSetFilterBackend(BaseFilterBackend):
+class ColumnMappingViewSetFilterBackend(BaseFilterBackend):
     """
     Specify the schema for the column view set. This allows the user to see the other
     required columns in Swagger.
@@ -50,7 +50,7 @@ class ColumnMappingViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
     model = ColumnMapping
     pagination_class = NoPagination
     parser_classes = (JSONParser, FormParser)
-    filter_backends = (ColumnMappingiewSetFilterBackend,)
+    filter_backends = (ColumnMappingViewSetFilterBackend,)
     orgfilter = 'super_organization_id'
     queryset = ColumnMapping.objects.all()
 
