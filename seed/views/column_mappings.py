@@ -8,6 +8,7 @@
 import logging
 
 import coreapi
+from django.db.models import Q
 from django.http import JsonResponse, Http404
 from django.shortcuts import get_object_or_404
 from rest_framework import status
@@ -52,7 +53,12 @@ class ColumnMappingViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
     parser_classes = (JSONParser, FormParser)
     filter_backends = (ColumnMappingViewSetFilterBackend,)
     orgfilter = 'super_organization_id'
-    queryset = ColumnMapping.objects.all()
+    # Do not return column mappings where the column_raw or the column_mapped fields are NULL.
+    # This needs to be cleaned up in the near future to have the API clean up the column mappings
+    # upon the deletion of a column.
+    queryset = ColumnMapping.objects.exclude(
+        Q(column_mapped__isnull=True) | Q(column_raw__isnull=True)
+    )
 
     @ajax_request_class
     def retrieve(self, request, pk=None):
