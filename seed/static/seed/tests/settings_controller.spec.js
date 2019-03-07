@@ -7,6 +7,7 @@ describe('controller: organization_settings_controller', function () {
   var controller;
   var ctrl_scope;
   var mock_organization_service;
+  var mock_meters_service;
 
   beforeEach(function () {
     module('BE.seed');
@@ -14,13 +15,22 @@ describe('controller: organization_settings_controller', function () {
       $httpBackend = _$httpBackend_;
       $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });
-    inject(function ($controller, $rootScope, $uibModal, $q, organization_service) {
+    inject(function ($controller, $rootScope, $uibModal, $q, organization_service, meters_service) {
       controller = $controller;
       ctrl_scope = $rootScope.$new();
 
       mock_organization_service = organization_service;
+      mock_meters_service = meters_service;
 
       spyOn(mock_organization_service, 'save_org_settings')
+        .andCallFake(function () {
+          // return $q.reject for error scenario
+          return $q.resolve({
+            status: 'success'
+          });
+        });
+
+      spyOn(mock_meters_service, 'valid_energy_types_units')
         .andCallFake(function () {
           // return $q.reject for error scenario
           return $q.resolve({
@@ -89,6 +99,7 @@ describe('controller: organization_settings_controller', function () {
       // query_threshold: 10
     });
     expect(mock_organization_service.save_org_settings).toHaveBeenCalledWith(ctrl_scope.org);
+    expect(mock_meters_service.valid_energy_types_units).toHaveBeenCalled(ctrl_scope.org);
     expect(ctrl_scope.settings_updated).toEqual(true);
     // expect(ctrl_scope.fields[0].checked).toEqual(true);
     // expect(ctrl_scope.fields[1].checked).toEqual(false);
