@@ -8,9 +8,11 @@ import logging
 
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.db.models.signals import pre_delete
 
+from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.lib.superperms.orgs.exceptions import TooManyNestedOrgs
 
 _log = logging.getLogger(__name__)
@@ -94,6 +96,12 @@ class Organization(models.Model):
         ('kBtu/m**2/year', 'kBtu/m²/year'),  # really, Toronto?
     )
 
+    _default_display_meter_units = {
+        type: 'kBtu'
+        for type, units
+        in kbtu_thermal_conversion_factors("US").items()
+    }
+
     class Meta:
         ordering = ['name']
 
@@ -118,6 +126,9 @@ class Organization(models.Model):
 
     created = models.DateTimeField(auto_now_add=True, null=True)
     modified = models.DateTimeField(auto_now=True, null=True)
+
+    # Default preferred all meter units to kBtu
+    display_meter_units = JSONField(default=_default_display_meter_units)
 
     # If below this threshold, we don't show results from this Org
     # in exported views of its data.
