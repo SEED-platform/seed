@@ -85,7 +85,8 @@ def _dict_org(request, organizations):
             'display_significant_figures': o.display_significant_figures,
             'cycles': cycles,
             'created': o.created.strftime('%Y-%m-%d') if o.created else '',
-            'mapquest_api_key': o.mapquest_api_key or ''
+            'mapquest_api_key': o.mapquest_api_key or '',
+            'display_meter_units': o.display_meter_units,
         }
         orgs.append(org)
 
