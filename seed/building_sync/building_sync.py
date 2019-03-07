@@ -24,7 +24,7 @@ _log = logging.getLogger(__name__)
 
 class BuildingSync(object):
     ADDRESS_STRUCT = {
-        "root": "auc:Audits.auc:Audit.auc:Sites.auc:Site.auc:Address",
+        "root": "auc:BuildingSync.auc:Facilities.auc:Facility.auc:Sites.auc:Site.auc:Address",
         "return": {
             "address_line_1": {
                 "path": "auc:StreetAddressDetail.auc:Simplified.auc:StreetAddress",
@@ -45,7 +45,7 @@ class BuildingSync(object):
     }
 
     BRICR_STRUCT = {
-        "root": "auc:Audits.auc:Audit",
+        "root": "auc:BuildingSync.auc:Facilities.auc:Facility",
         "return": {
             "address_line_1": {
                 "path": "auc:Sites.auc:Site.auc:Address.auc:StreetAddressDetail.auc:Simplified.auc:StreetAddress",
@@ -78,27 +78,27 @@ class BuildingSync(object):
                 "type": "double",
             },
             "property_name": {
-                "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.@ID",
+                "path": "auc:Sites.auc:Site.auc:Buildings.auc:Building.@ID",
                 "required": True,
                 "type": "string",
             },
             "year_built": {
-                "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:YearOfConstruction",
+                "path": "auc:Sites.auc:Site.auc:Buildings.auc:Building.auc:YearOfConstruction",
                 "required": True,
                 "type": "integer",
             },
             "floors_above_grade": {
-                "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:FloorsAboveGrade",
+                "path": "auc:Sites.auc:Site.auc:Buildings.auc:Building.auc:FloorsAboveGrade",
                 "required": False,
                 "type": "integer",
             },
             "floors_below_grade": {
-                "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:FloorsBelowGrade",
+                "path": "auc:Sites.auc:Site.auc:Buildings.auc:Building.auc:FloorsBelowGrade",
                 "required": False,
                 "type": "integer",
             },
             "premise_identifier": {
-                "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:PremisesIdentifiers.auc:PremisesIdentifier",
+                "path": "auc:Sites.auc:Site.auc:Buildings.auc:Building.auc:PremisesIdentifiers.auc:PremisesIdentifier",
                 "key_path_name": "auc:IdentifierLabel",
                 "key_path_value": "Assessor parcel number",
                 "value_path_name": "auc:IdentifierValue",
@@ -106,7 +106,7 @@ class BuildingSync(object):
                 "type": "string",
             },
             "custom_id_1": {
-                "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:PremisesIdentifiers.auc:PremisesIdentifier",
+                "path": "auc:Sites.auc:Site.auc:Buildings.auc:Building.auc:PremisesIdentifiers.auc:PremisesIdentifier",
                 "key_path_name": "auc:IdentifierCustomName",
                 "key_path_value": "Custom ID 1",
                 "value_path_name": "auc:IdentifierValue",
@@ -114,7 +114,7 @@ class BuildingSync(object):
                 "type": "string",
             },
             "gross_floor_area": {
-                "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:FloorAreas.auc:FloorArea",
+                "path": "auc:Sites.auc:Site.auc:Buildings.auc:Building.auc:FloorAreas.auc:FloorArea",
                 "key_path_name": "auc:FloorAreaType",
                 "key_path_value": "Gross",
                 "value_path_name": "auc:FloorAreaValue",
@@ -122,7 +122,7 @@ class BuildingSync(object):
                 "type": "double",
             },
             "net_floor_area": {
-                "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:FloorAreas.auc:FloorArea",
+                "path": "auc:Sites.auc:Site.auc:Buildings.auc:Building.auc:FloorAreas.auc:FloorArea",
                 "key_path_name": "auc:FloorAreaType",
                 "key_path_value": "Net",
                 "value_path_name": "auc:FloorAreaValue",
@@ -130,7 +130,7 @@ class BuildingSync(object):
                 "type": "double",
             },
             "footprint_floor_area": {
-                "path": "auc:Sites.auc:Site.auc:Facilities.auc:Facility.auc:FloorAreas.auc:FloorArea",
+                "path": "auc:Sites.auc:Site.auc:Buildings.auc:Building.auc:FloorAreas.auc:FloorArea",
                 "key_path_name": "auc:FloorAreaType",
                 "key_path_value": "Footprint",
                 "value_path_name": "auc:FloorAreaValue",
@@ -162,10 +162,11 @@ class BuildingSync(object):
                     xmlfile.read(),
                     process_namespaces=True,
                     namespaces={
-                        'http://nrel.gov/schemas/bedes-auc/2014': 'auc',
+                        'http://buildingsync.net/schemas/bedes-auc/2019': 'auc',
                         'http://www.w3.org/2001/XMLSchema-instance': 'xsi',
                     }
                 )
+
         else:
             raise Exception("File not found: {}".format(filename))
 
@@ -192,13 +193,13 @@ class BuildingSync(object):
             new_dict = OrderedDict(
                 [
                     (
-                        'auc:Audits', OrderedDict(
+                        'auc:BuildingSync', OrderedDict(
                             [
                                 ('@xsi:schemaLocation',
-                                 'http://nrel.gov/schemas/bedes-auc/2014 https://github.com/BuildingSync/schema/releases/download/v0.3/BuildingSync.xsd'),
+                                 'http://buildingsync.net/schemas/bedes-auc/2019 https://github.com/BuildingSync/schema/releases/download/v1.0.0/BuildingSync.xsd'),
                                 ('@xmlns', OrderedDict(
                                     [
-                                        ('auc', 'http://nrel.gov/schemas/bedes-auc/2014'),
+                                        ('auc', 'http://buildingsync.net/schemas/bedes-auc/2019'),
                                         ('xsi', 'http://www.w3.org/2001/XMLSchema-instance')
                                     ]
                                 ))
@@ -209,18 +210,15 @@ class BuildingSync(object):
             )
         else:
             # check that the appropriate headers are set or XML won't render correctly in the browser
-            if '@xsi:schemaLocation' not in new_dict['auc:Audits'] or '@xmlns' not in new_dict['auc:Audits']:
-                new_dict['auc:Audits']['@xsi:schemaLocation'] = 'http://nrel.gov/schemas/bedes-auc/2014 https://github.com/BuildingSync/schema/releases/download/v0.3/BuildingSync.xsd'
-                new_dict['auc:Audits']['@xmlns'] = OrderedDict
+            if '@xsi:schemaLocation' not in new_dict['auc:BuildingSync'] or '@xmlns' not in new_dict['auc:BuildingSync']:
+                new_dict['auc:BuildingSync']['@xsi:schemaLocation'] = 'http://buildingsync.net/schemas/bedes-auc/2019 https://github.com/BuildingSync/schema/releases/download/v1.0.0/BuildingSync.xsd'
+                new_dict['auc:BuildingSync']['@xmlns'] = OrderedDict
                 (
                     [
-                        ('auc', 'http://nrel.gov/schemas/bedes-auc/2014'),
+                        ('auc', 'http://buildingsync.net/schemas/bedes-auc/2019'),
                         ('xsi', 'http://www.w3.org/2001/XMLSchema-instance')
                     ]
                 )
-                # for some reason the auc header gets put on Audits.Audit instead of Audit by the building_sync parser...remove
-                if '@xmlns' in new_dict['auc:Audits']['auc:Audit']:
-                    del new_dict['auc:Audits']['auc:Audit']['@xmlns']
 
         for field, v in process_struct['return'].items():
             value = None
@@ -404,9 +402,11 @@ class BuildingSync(object):
         :param results: list or value, results
         :return: list, results
         """
+
         path = path.split(".")
 
         for idx, p in enumerate(path):
+
             if p == '':
                 if node:
                     results.append(node)
@@ -459,6 +459,7 @@ class BuildingSync(object):
 
         res = {'measures': [], 'scenarios': []}
         messages = {'errors': [], 'warnings': []}
+
         for k, v in struct['return'].items():
             path = ".".join([struct['root'], v['path']])
             value = self._get_node(path, data, [])
@@ -532,7 +533,7 @@ class BuildingSync(object):
         #   <auc:MeasureInstallationCost>0.0</auc:MeasureInstallationCost>
         #   <auc:MeasureMaterialCost>0.0</auc:MeasureMaterialCost>
         # </auc:Measure>
-        measures = self._get_node('auc:Audits.auc:Audit.auc:Measures.auc:Measure', data, [])
+        measures = self._get_node('auc:BuildingSync.auc:Facilities.auc:Facility.auc:Measures.auc:Measure', data, [])
         # check that this is a list, if not, make it a list or the loop won't work correctly
         if isinstance(measures, dict):
             # print("measures is a dict...converting it to a list")
@@ -576,7 +577,7 @@ class BuildingSync(object):
         #     </auc:PackageOfMeasures>
         #   </auc:ScenarioType>
         # </auc:Scenario>
-        scenarios = self._get_node('auc:Audits.auc:Audit.auc:Report.auc:Scenarios.auc:Scenario',
+        scenarios = self._get_node('auc:BuildingSync.auc:Facilities.auc:Facility.auc:Report.auc:Scenarios.auc:Scenario',
                                    data, [])
 
         # check that this is a list; if not, make it a list or the loop won't work correctly

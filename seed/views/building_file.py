@@ -88,7 +88,7 @@ class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
                     # print("FILE: {}".format(f.filename))
                     # process xml files
                     if '.xml' in f.filename and '__MACOSX' not in f.filename:
-                        print("PROCESSING file: {}".format(f.filename))
+                        # print("PROCESSING file: {}".format(f.filename))
                         data_file = NamedTemporaryFile()
                         data_file.write(openzip.read(f))
                         data_file.seek(0)

@@ -132,7 +132,7 @@ class InventoryViewTests(DeleteModelsTestCase):
         self.assertEqual(response.status_code, 200)
         result = json.loads(response.content)
         self.assertEqual(result['status'], 'success')
-        expected_message = {'warnings': ['Measure category and name is not valid other_electric_motors_and_drives:replace_with_higher_efficiency', 'Measure category and name is not valid other_hvac:install_demand_control_ventilation', 'Measure associated with scenario not found. Scenario: Replace with higher efficiency Only, Measure name: Measure22', 'Measure associated with scenario not found. Scenario: Install demand control ventilation Only, Measure name: Measure24']}
+        expected_message = {'warnings': ['Measure category and name is not valid other_electric_motors_and_drives:replace_with_higher_efficiency_bad_name', 'Measure category and name is not valid other_hvac:install_demand_control_ventilation_bad_name', 'Measure associated with scenario not found. Scenario: Replace with higher efficiency Only, Measure name: Measure22', 'Measure associated with scenario not found. Scenario: Install demand control ventilation Only, Measure name: Measure24']}
         self.assertEqual(result['message'], expected_message)
         self.assertEqual(len(result['data']['property_view']['state']['measures']), 28)
         self.assertEqual(len(result['data']['property_view']['state']['scenarios']), 31)

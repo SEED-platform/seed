@@ -122,7 +122,8 @@ class StateFieldsTest(TestCase):
             ('jurisdiction_tax_lot_id', 'jurisdiction_tax_lot_id'),
             ('number_properties', 'number_properties'),
             ('postal_code', 'postal_code'),
-            ('state', 'state'))
+            ('state', 'state'),
+            ('ulid', 'ulid'))
         result = get_state_to_state_tuple('TaxLotState')
         self.assertSequenceEqual(expected, result)
 
