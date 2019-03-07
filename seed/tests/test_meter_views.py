@@ -154,7 +154,11 @@ class TestMeterViewSet(TestCase):
 
         self.assertCountEqual(result_dict.get("unlinkable_pm_ids"), expectation)
 
-    def test_meter_readings_and_headers_return_by_property_energy_usage_given_property_view(self):
+    def test_meter_readings_and_headers_return_by_property_energy_usage_given_property_view_and_nondefault_meter_display_org_settings(self):
+        # Update settings for display meter units to change it from the default values.
+        self.org.display_meter_units['Electricity'] = 'kWh'
+        self.org.save()
+
         save_raw_data(self.import_file.id)
 
         url = reverse('api:v2:meters-property-energy-usage')
@@ -171,13 +175,13 @@ class TestMeterViewSet(TestCase):
                 {
                     'start_time': '2016-01-01 00:00:00',
                     'end_time': '2016-01-31 23:59:59',
-                    'Electricity': 597478.9,
+                    'Electricity': (597478.9 / 3.412),
                     'Natural Gas': 545942781.5634,
                 },
                 {
                     'start_time': '2016-02-01 00:00:00',
                     'end_time': '2016-02-29 23:59:59',
-                    'Electricity': 548603.7,
+                    'Electricity': (548603.7 / 3.412),
                     'Natural Gas': 462534790.7817,
                 },
             ],
@@ -190,7 +194,7 @@ class TestMeterViewSet(TestCase):
                 },
                 {
                     'field': 'Electricity',
-                    'displayName': 'Electricity (kBtu)',
+                    'displayName': 'Electricity (kWh)',
                     'cellFilter': 'number: 0',
                 },
                 {
