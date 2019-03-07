@@ -10,6 +10,7 @@ modeltranslation==0.25
 psycopg2-binary==2.7.5
 
 # background process management
+kombu==4.2.2.post1  # 4.4 breaks celery without upgrading py-redis (redis below)
 celery==4.2.1
 django-redis-cache==1.7.1
 django_compressor==2.2
