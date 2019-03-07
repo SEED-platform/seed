@@ -99,7 +99,7 @@ describe('controller: organization_settings_controller', function () {
       // query_threshold: 10
     });
     expect(mock_organization_service.save_org_settings).toHaveBeenCalledWith(ctrl_scope.org);
-    expect(mock_meters_service.valid_energy_types_units).toHaveBeenCalled(ctrl_scope.org);
+    expect(mock_meters_service.valid_energy_types_units).toHaveBeenCalled();
     expect(ctrl_scope.settings_updated).toEqual(true);
     // expect(ctrl_scope.fields[0].checked).toEqual(true);
     // expect(ctrl_scope.fields[1].checked).toEqual(false);
