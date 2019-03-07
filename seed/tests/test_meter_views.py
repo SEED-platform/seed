@@ -14,6 +14,7 @@ from django.utils.timezone import get_current_timezone
 
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tasks import save_raw_data
+from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.landing.models import SEEDUser as User
 from seed.models import (
     PropertyState,
@@ -202,6 +203,34 @@ class TestMeterViewSet(TestCase):
 
         self.assertCountEqual(result_dict['readings'], expectation['readings'])
         self.assertCountEqual(result_dict['headers'], expectation['headers'])
+
+
+class TestMeterValidTypesUnits(TestCase):
+    def setUp(self):
+        self.user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+        }
+        self.user = User.objects.create_superuser(
+            email='test_user@demo.com', **self.user_details
+        )
+        self.org, _, _ = create_organization(self.user)
+        self.client.login(**self.user_details)
+
+    def test_view_that_returns_valid_types_and_units_for_meters(self):
+        url = reverse('api:v2:meters-valid-types-units')
+
+        result = self.client.get(url)
+        result_dict = ast.literal_eval(result.content.decode("utf-8"))
+
+        expectation = {
+            type: list(units.keys())
+            for type, units
+            in kbtu_thermal_conversion_factors("US").items()
+        }
+
+        self.assertEqual(result_dict, expectation)
+
 
 #         """We throw an error when there's no building id passed in."""
 #         client = APIClient()
