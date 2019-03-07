@@ -640,6 +640,10 @@ class OrganizationViewSet(viewsets.ViewSet):
             _log.warn("got bad sig figs {0} for org {1}".format(
                 desired_display_significant_figures, org.name))
 
+        desired_display_meter_units = posted_org.get('display_meter_units')
+        if desired_display_meter_units:
+            org.display_meter_units = desired_display_meter_units
+
         # Update MapQuest API Key if it's been changed
         if posted_org.get('mapquest_api_key', '') != org.mapquest_api_key:
             org.mapquest_api_key = posted_org.get('mapquest_api_key')
