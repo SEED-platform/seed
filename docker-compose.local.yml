@@ -21,6 +21,9 @@ services:
       - $HOME/seed-backups:/backups
     ports:
       - "5432:5432"
+    logging:
+      options:
+        max-size: 50m
     deploy:
       restart_policy:
         condition: on-failure
@@ -29,6 +32,9 @@ services:
         window: 120s
   db-redis:
     image: 127.0.0.1:5000/redis
+    logging:
+      options:
+        max-size: 50m
     deploy:
       restart_policy:
         condition: on-failure
@@ -60,6 +66,9 @@ services:
       - seed_media:/seed/media
     ports:
       - "80:80"
+    logging:
+      options:
+        max-size: 50m
     deploy:
       restart_policy:
         condition: on-failure
@@ -84,6 +93,9 @@ services:
     volumes:
       - seed_media:/seed/media
     command: /seed/docker/start_celery_docker.sh
+    logging:
+      options:
+        max-size: 50m
     deploy:
       restart_policy:
         condition: on-failure

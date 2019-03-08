@@ -14,6 +14,9 @@ services:
       - seed_pgdata:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    logging:
+      options:
+        max-size: 50m
   db-redis:
     image: redis:5.0.1
   web:
@@ -40,6 +43,9 @@ services:
       - seed_media:/seed/media
     ports:
       - "80:80"
+    logging:
+      options:
+        max-size: 50m
   web-celery:
     image: seedplatform/seed:latest
     build: .
@@ -57,6 +63,9 @@ services:
       - web
     volumes:
       - seed_media:/seed/media
+    logging:
+      options:
+        max-size: 50m
   oep-city-1:
     # This is a placeholder. If needed, follow the instructions to enable: https://cloud.docker.com/u/seedplatform/repository/docker/seedplatform/oep
     image: seedplatform/oep:1.1
@@ -64,6 +73,9 @@ services:
       - web
     environment:
       - OEP_DISABLED=true
+    logging:
+      options:
+        max-size: 50m
 volumes:
   seed_pgdata:
     external: true
