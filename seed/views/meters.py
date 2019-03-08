@@ -1,12 +1,6 @@
 # !/usr/bin/env python
 # encoding: utf-8
 
-from collections import defaultdict
-
-from config.settings.common import TIME_ZONE
-
-from pytz import timezone
-
 from rest_framework import viewsets
 from rest_framework.decorators import list_route
 
@@ -14,11 +8,11 @@ from seed.data_importer.meters_parsers import PMMeterParser
 from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.decorators import ajax_request_class
 from seed.lib.mcm import reader
-from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     ImportFile,
     PropertyView,
 )
+from seed.utils.meters import PropertyMeterReadingsExporter
 
 
 class MeterViewSet(viewsets.ViewSet):
@@ -49,52 +43,12 @@ class MeterViewSet(viewsets.ViewSet):
     def property_energy_usage(self, request):
         body = dict(request.data)
         property_view_id = body['property_view_id']
-        organization_id = body['organization_id']
+        org_id = body['organization_id']
+        property_id = PropertyView.objects.get(pk=property_view_id).property.id
 
-        meters = PropertyView.objects.get(pk=property_view_id).property.meters.all()
+        exporter = PropertyMeterReadingsExporter(property_id, org_id)
 
-        # Used to consolidate different readings (types) within the same time window
-        start_end_times = defaultdict(lambda: {})
-
-        factors = kbtu_thermal_conversion_factors("US")
-        org_meter_display_settings = Organization.objects.get(pk=organization_id).display_meter_units
-
-        time_format = "%Y-%m-%d %H:%M:%S"
-        tz = timezone(TIME_ZONE)
-
-        # Construct headers using this dictionary's values for frontend to use
-        headers = {
-            '_start_time': {'field': 'start_time'},
-            '_end_time': {'field': 'end_time'},
-        }
-
-        for meter in meters:
-            type = dict(meter.ENERGY_TYPES)[meter.type]
-            display_unit = org_meter_display_settings[type]
-            conversion_factor = factors[type][display_unit]
-
-            headers[type] = {
-                'field': type,
-                'displayName': '{} ({})'.format(type, display_unit),
-                'cellFilter': "number: 0",
-            }
-
-            for meter_reading in meter.meter_readings.all():
-                start_time = meter_reading.start_time.astimezone(tz=tz).strftime(time_format)
-                end_time = meter_reading.end_time.astimezone(tz=tz).strftime(time_format)
-
-                times_key = "-".join([start_time, end_time])
-
-                start_end_times[times_key]['start_time'] = start_time
-                start_end_times[times_key]['end_time'] = end_time
-                start_end_times[times_key][type] = meter_reading.reading.magnitude / conversion_factor
-
-        result = {
-            'readings': list(start_end_times.values()),
-            'headers': list(headers.values())
-        }
-
-        return result
+        return exporter.readings_and_headers()
 
     @ajax_request_class
     @list_route(methods=['GET'])
