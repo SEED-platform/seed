@@ -60,7 +60,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       ];
 
       $scope.units = [
-        {id: null, label: ''},
+        {id: '', label: ''},
         {id: 'ft**2', label: 'square feet'},
         {id: 'm**2', label: 'square metres'},
         {id: 'kBtu/ft**2/year', label: 'kBtu/sq. ft./year'},
