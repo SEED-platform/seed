@@ -44,11 +44,12 @@ class MeterViewSet(viewsets.ViewSet):
         body = dict(request.data)
         property_view_id = body['property_view_id']
         org_id = body['organization_id']
+        interval = body['interval']
         property_id = PropertyView.objects.get(pk=property_view_id).property.id
 
         exporter = PropertyMeterReadingsExporter(property_id, org_id)
 
-        return exporter.readings_and_headers()
+        return exporter.readings_and_headers(interval)
 
     @ajax_request_class
     @list_route(methods=['GET'])
