@@ -647,7 +647,7 @@ class DataQualityCheck(models.Model):
                     # TODO cleanup after the cleaner is better able to handle fields with units on import
                     # If the rule doesn't specify units only consider the value for the purposes of numerical comparison
                     if isinstance(value, ureg.Quantity) and rule.units == '':
-                         value = value.magnitude
+                        value = value.magnitude
                 elif rule.field in row.extra_data:
                     value = row.extra_data[rule.field]
                     try:
