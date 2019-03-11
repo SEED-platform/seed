@@ -1197,7 +1197,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         resolve: {
           property_energy_usage: ['$stateParams', 'user_service', 'energy_service', function ($stateParams, user_service, energy_service) {
             var organization_id = user_service.get_organization().id;
-            return energy_service.property_energy_usage($stateParams.view_id, organization_id)
+            return energy_service.property_energy_usage($stateParams.view_id, organization_id, 'Exact')
           }],
         }
       });
