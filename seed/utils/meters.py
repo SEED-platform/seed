@@ -32,33 +32,39 @@ class PropertyMeterReadingsExporter():
         self.factors = kbtu_thermal_conversion_factors("US")
         self.tz = timezone(TIME_ZONE)
 
-    def readings_and_headers(self, interval):
+    def readings_and_column_defs(self, interval):
         if interval == 'Exact':
-            return self._exact_usages()
+            return self._usages_by_exact_times()
         elif interval == 'Month':
             return self._usages_by_month()
         elif interval == 'Year':
             return self._usages_by_year()
 
-    def _exact_usages(self):
+    def _usages_by_exact_times(self):
         """
-        Returns readings and headers formatted to display all records and their
+        Returns readings and column definitions formatted to display all records and their
         start and end times.
         """
 
         # Used to consolidate different readings (types) within the same time window
         start_end_times = defaultdict(lambda: {})
 
-        # Construct headers using this dictionary's values for frontend to use
-        headers = {
-            '_start_time': {'field': 'start_time'},
-            '_end_time': {'field': 'end_time'},
+        # Construct column_defs using this dictionary's values for frontend to use
+        column_defs = {
+            '_start_time': {
+                'field': 'start_time',
+                '_filter_type': 'datetime',
+            },
+            '_end_time': {
+                'field': 'end_time',
+                '_filter_type': 'datetime',
+            },
         }
 
         time_format = "%Y-%m-%d %H:%M:%S"
 
         for meter in self.meters:
-            type, conversion_factor = self._build_header_info(meter, headers)
+            type, conversion_factor = self._build_column_def(meter, column_defs)
 
             for meter_reading in meter.meter_readings.all():
                 start_time = meter_reading.start_time.astimezone(tz=self.tz).strftime(time_format)
@@ -72,12 +78,12 @@ class PropertyMeterReadingsExporter():
 
         return {
             'readings': list(start_end_times.values()),
-            'headers': list(headers.values())
+            'column_defs': list(column_defs.values())
         }
 
     def _usages_by_month(self):
         """
-        Returns readings and headers formatted and aggregated to display all
+        Returns readings and column definitions formatted and aggregated to display all
         records in monthly intervals.
 
         At a high-level, following algorithm is used to acccomplish this:
@@ -88,13 +94,16 @@ class PropertyMeterReadingsExporter():
         # Used to consolidate different readings (types) within the same month
         monthly_readings = defaultdict(lambda: {})
 
-        # Construct headers using this dictionary's values for frontend to use
-        headers = {
-            '_month': {'field': 'month'},
+        # Construct column_defs using this dictionary's values for frontend to use
+        column_defs = {
+            '_month': {
+                'field': 'month',
+                '_filter_type': 'datetime',
+            },
         }
 
         for meter in self.meters:
-            type, conversion_factor = self._build_header_info(meter, headers)
+            type, conversion_factor = self._build_column_def(meter, column_defs)
 
             min_time = meter.meter_readings.earliest('start_time').start_time.astimezone(tz=self.tz)
             max_time = meter.meter_readings.latest('end_time').end_time.astimezone(tz=self.tz)
@@ -121,20 +130,23 @@ class PropertyMeterReadingsExporter():
 
         return {
             'readings': list(monthly_readings.values()),
-            'headers': list(headers.values())
+            'column_defs': list(column_defs.values())
         }
 
     def _usages_by_year(self):
         # Used to consolidate different readings (types) within the same month
         yearly_readings = defaultdict(lambda: {})
 
-        # Construct headers using this dictionary's values for frontend to use
-        headers = {
-            '_year': {'field': 'year'},
+        # Construct column_defs using this dictionary's values for frontend to use
+        column_defs = {
+            '_year': {
+                'field': 'year',
+                '_filter_type': 'datetime',
+            },
         }
 
         for meter in self.meters:
-            type, conversion_factor = self._build_header_info(meter, headers)
+            type, conversion_factor = self._build_column_def(meter, column_defs)
 
             min_time = meter.meter_readings.earliest('start_time').start_time.astimezone(tz=self.tz)
             max_time = meter.meter_readings.latest('end_time').end_time.astimezone(tz=self.tz)
@@ -159,18 +171,18 @@ class PropertyMeterReadingsExporter():
 
         return {
             'readings': list(yearly_readings.values()),
-            'headers': list(headers.values())
+            'column_defs': list(column_defs.values())
         }
 
-    def _build_header_info(self, meter, headers):
+    def _build_column_def(self, meter, column_defs):
         type = dict(meter.ENERGY_TYPES)[meter.type]
         display_unit = self.org_meter_display_settings[type]
         conversion_factor = self.factors[type][display_unit]
 
-        headers[type] = {
+        column_defs[type] = {
             'field': type,
             'displayName': '{} ({})'.format(type, display_unit),
-            'cellFilter': "number: 0",
+            '_filter_type': 'reading',
         }
 
         return type, conversion_factor

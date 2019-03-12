@@ -4,6 +4,7 @@ angular.module('BE.seed.controller.inventory_detail_energy', [])
     '$scope',
     '$stateParams',
     'energy_service',
+    'inventory_service',
     'property_energy_usage',
     'spinner_utility',
     'user_service',
@@ -12,6 +13,7 @@ angular.module('BE.seed.controller.inventory_detail_energy', [])
       $scope,
       $stateParams,
       energy_service,
+      inventory_service,
       property_energy_usage,
       spinner_utility,
       user_service
@@ -30,8 +32,25 @@ angular.module('BE.seed.controller.inventory_detail_energy', [])
 
       $scope.gridOptions = {
         data: 'data',
-        columnDefs: property_energy_usage.headers,
+        columnDefs: property_energy_usage.column_defs,
+        enableFiltering: true,
       };
+
+      $scope.apply_column_settings = function() {
+        _.forEach($scope.gridOptions.columnDefs, function(column) {
+          if (column.field == "year") {
+            // Filter years like integers
+            column.filter = inventory_service.combinedFilter();
+          } else if (column._filter_type == "reading") {
+            column.cellFilter = "number: 1";
+            column.filter = inventory_service.combinedFilter();
+          } else if (column._filter_type == "datetime") {
+            column.filter = inventory_service.dateFilter();
+          }
+        });
+      };
+
+      $scope.apply_column_settings();
 
       $scope.interval = {
         options: [ // TODO: Translate this
@@ -47,8 +66,9 @@ angular.module('BE.seed.controller.inventory_detail_energy', [])
         $scope.interval.selected = selected_interval;
         energy_service.property_energy_usage($scope.inventory.view_id, $scope.organization.id, selected_interval).then(function(usage) {
           $scope.data = usage.readings;
-          $scope.gridOptions.columnDefs = usage.headers;
+          $scope.gridOptions.columnDefs = usage.column_defs;
           $scope.has_meters = $scope.data.length > 0;
+          $scope.apply_column_settings();
           spinner_utility.hide();
         });
       };

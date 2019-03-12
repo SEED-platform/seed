@@ -90,7 +90,7 @@ class TestMeterViewSet(TestCase):
             cycle=self.cycle
         )
 
-    def test_parsed_meters_confirmation_verifies_energy_type_and_unit_parsed_from_column_headers(self):
+    def test_parsed_meters_confirmation_verifies_energy_type_and_unit_parsed_from_column_column_defs(self):
         # TODO: very possible/likely that this endpoint should invalidate entries
         # but valid/invalid energy types and units may be changed before feature work ends
         url = reverse('api:v2:meters-parsed-meters-confirmation')
@@ -163,7 +163,7 @@ class TestMeterViewSet(TestCase):
 
         self.assertCountEqual(result_dict.get("unlinkable_pm_ids"), expectation)
 
-    def test_property_energy_usage_returns_meter_readings_and_headers_given_property_view_and_nondefault_meter_display_org_settings(self):
+    def test_property_energy_usage_returns_meter_readings_and_column_defs_given_property_view_and_nondefault_meter_display_org_settings(self):
         # Update settings for display meter units to change it from the default values.
         self.org.display_meter_units['Electricity'] = 'kWh'
         self.org.save()
@@ -195,30 +195,32 @@ class TestMeterViewSet(TestCase):
                     'Natural Gas': 462534790.7817,
                 },
             ],
-            'headers': [
+            'column_defs': [
                 {
                     'field': 'start_time',
+                    '_filter_type': 'datetime',
                 },
                 {
                     'field': 'end_time',
+                    '_filter_type': 'datetime',
                 },
                 {
                     'field': 'Electricity',
                     'displayName': 'Electricity (kWh)',
-                    'cellFilter': 'number: 0',
+                    '_filter_type': 'reading',
                 },
                 {
                     'field': 'Natural Gas',
                     'displayName': 'Natural Gas (kBtu)',
-                    'cellFilter': 'number: 0',
+                    '_filter_type': 'reading',
                 },
             ]
         }
 
         self.assertCountEqual(result_dict['readings'], expectation['readings'])
-        self.assertCountEqual(result_dict['headers'], expectation['headers'])
+        self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
 
-    def test_property_energy_usage_can_return_monthly_meter_readings_and_headers_while_handling_a_DST_change_and_nondefault_display_setting(self):
+    def test_property_energy_usage_can_return_monthly_meter_readings_and_column_defs_while_handling_a_DST_change_and_nondefault_display_setting(self):
         # Update settings for display meter units to change it from the default values.
         self.org.display_meter_units['Electricity'] = 'kWh'
         self.org.save()
@@ -279,27 +281,28 @@ class TestMeterViewSet(TestCase):
                     'Natural Gas': 200,
                 },
             ],
-            'headers': [
+            'column_defs': [
                 {
                     'field': 'month',
+                    '_filter_type': 'datetime',
                 },
                 {
                     'field': 'Electricity',
                     'displayName': 'Electricity (kWh)',
-                    'cellFilter': 'number: 0',
+                    '_filter_type': 'reading',
                 },
                 {
                     'field': 'Natural Gas',
                     'displayName': 'Natural Gas (kBtu)',
-                    'cellFilter': 'number: 0',
+                    '_filter_type': 'reading',
                 },
             ]
         }
 
         self.assertCountEqual(result_dict['readings'], expectation['readings'])
-        self.assertCountEqual(result_dict['headers'], expectation['headers'])
+        self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
 
-    def test_property_energy_usage_can_return_annual_meter_readings_and_headers_while_handling_a_nondefault_display_setting(self):
+    def test_property_energy_usage_can_return_annual_meter_readings_and_column_defs_while_handling_a_nondefault_display_setting(self):
         # Update settings for display meter units to change it from the default values.
         self.org.display_meter_units['Electricity'] = 'kWh'
         self.org.save()
@@ -350,25 +353,26 @@ class TestMeterViewSet(TestCase):
                     'Natural Gas': 100 + 200,
                 },
             ],
-            'headers': [
+            'column_defs': [
                 {
                     'field': 'year',
+                    '_filter_type': 'datetime',
                 },
                 {
                     'field': 'Electricity',
                     'displayName': 'Electricity (kWh)',
-                    'cellFilter': 'number: 0',
+                    '_filter_type': 'reading',
                 },
                 {
                     'field': 'Natural Gas',
                     'displayName': 'Natural Gas (kBtu)',
-                    'cellFilter': 'number: 0',
+                    '_filter_type': 'reading',
                 },
             ]
         }
 
         self.assertCountEqual(result_dict['readings'], expectation['readings'])
-        self.assertCountEqual(result_dict['headers'], expectation['headers'])
+        self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
 
 
 class TestMeterValidTypesUnits(TestCase):

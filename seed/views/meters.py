@@ -49,7 +49,7 @@ class MeterViewSet(viewsets.ViewSet):
 
         exporter = PropertyMeterReadingsExporter(property_id, org_id)
 
-        return exporter.readings_and_headers(interval)
+        return exporter.readings_and_column_defs(interval)
 
     @ajax_request_class
     @list_route(methods=['GET'])
