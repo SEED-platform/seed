@@ -37,6 +37,8 @@ class PropertyMeterReadingsExporter():
             return self._exact_usages()
         elif interval == 'Month':
             return self._usages_by_month()
+        elif interval == 'Year':
+            return self._usages_by_year()
 
     def _exact_usages(self):
         """
@@ -122,6 +124,44 @@ class PropertyMeterReadingsExporter():
             'headers': list(headers.values())
         }
 
+    def _usages_by_year(self):
+        # Used to consolidate different readings (types) within the same month
+        yearly_readings = defaultdict(lambda: {})
+
+        # Construct headers using this dictionary's values for frontend to use
+        headers = {
+            '_year': {'field': 'year'},
+        }
+
+        for meter in self.meters:
+            type, conversion_factor = self._build_header_info(meter, headers)
+
+            min_time = meter.meter_readings.earliest('start_time').start_time.astimezone(tz=self.tz)
+            max_time = meter.meter_readings.latest('end_time').end_time.astimezone(tz=self.tz)
+
+            # Iterate through years
+            current_year_time = min_time
+            while current_year_time < max_time:
+                unaware_end = datetime(current_year_time.year, 12, 31, 23, 59, 59)
+                end_of_year = make_aware(unaware_end, timezone=self.tz)
+
+                # Find all meters fully contained within this month (second-level granularity)
+                readings = meter.meter_readings.filter(start_time__range=(current_year_time, end_of_year), end_time__range=(current_year_time, end_of_year))
+                if readings.exists():
+                    reading_year_total = self._agg_interval_readings(current_year_time, readings, end_of_year)
+
+                    if reading_year_total > 0:
+                        year = current_year_time.year
+                        yearly_readings[year]['year'] = year
+                        yearly_readings[year][type] = reading_year_total / conversion_factor
+
+                current_year_time = end_of_year + timedelta(seconds=1)
+
+        return {
+            'readings': list(yearly_readings.values()),
+            'headers': list(headers.values())
+        }
+
     def _build_header_info(self, meter, headers):
         type = dict(meter.ENERGY_TYPES)[meter.type]
         display_unit = self.org_meter_display_settings[type]
@@ -140,13 +180,15 @@ class PropertyMeterReadingsExporter():
         Returns a total of aggregated readings within a given time interval.
 
         This is done by the following algorithm:
-            1) Use the initial interval time as the current interval time
-            2) Get all readings starting at current interval time
-            3) Out of those readings, use the one with the latest end time
-                a) Take it's actual reading and add it to the running total
-                b) Take it's end time and check for remaining readings between this end time and the interval end time
-                    i) If remaining readings exist, jump to step 2 with the next earliest start time as the current interval time
-                    ii) If no readings exist, end the loop.
+            1) Use the initial interval time as the current interval time.
+            2) Get all readings starting at current interval time.
+                a) If there are readings, use the one with the latest end time.
+                    i) Take it's actual reading and add it to the running total.
+                    ii) Take it's end time and check for remaining readings between this end time and the interval end time.
+                b) If there aren't readings, check for remaining readings between this current time and the interval end time.
+            3) Step 2 always looks for remaining readings, so check if remaining readings are found.
+                a) If so, jump to step 2 with the next earliest start time as the current interval time.
+                b) If not, end the loop and return the total.
         """
 
         readings_total = 0
@@ -156,14 +198,18 @@ class PropertyMeterReadingsExporter():
 
             if current_time_readings.exists():
                 largest_interval = current_time_readings.latest('end_time')
+
                 readings_total += largest_interval.reading.magnitude
 
                 largest_interval_end = largest_interval.end_time.astimezone(tz=self.tz)
-                remaining_readings = interval_readings.filter(start_time__range=(largest_interval_end, interval_end))
 
-                if remaining_readings.exists():
-                    current_interval_time = remaining_readings.earliest('start_time').start_time.astimezone(tz=self.tz)
-                else:
-                    current_interval_time = interval_end
+                remaining_readings = interval_readings.filter(start_time__range=(largest_interval_end, interval_end))
+            else:
+                remaining_readings = interval_readings.filter(start_time__range=(current_interval_time, interval_end))
+
+            if remaining_readings.exists():
+                current_interval_time = remaining_readings.earliest('start_time').start_time.astimezone(tz=self.tz)
+            else:
+                current_interval_time = interval_end
 
         return readings_total

@@ -218,7 +218,7 @@ class TestMeterViewSet(TestCase):
         self.assertCountEqual(result_dict['readings'], expectation['readings'])
         self.assertCountEqual(result_dict['headers'], expectation['headers'])
 
-    def test_property_energy_usage_can_return_monthly_meter_readings_and_headers_while_handling_a_DST_change_and_nondefault_display_settings(self):
+    def test_property_energy_usage_can_return_monthly_meter_readings_and_headers_while_handling_a_DST_change_and_nondefault_display_setting(self):
         # Update settings for display meter units to change it from the default values.
         self.org.display_meter_units['Electricity'] = 'kWh'
         self.org.save()
@@ -226,11 +226,10 @@ class TestMeterViewSet(TestCase):
         # add initial meters and readings
         save_raw_data(self.import_file.id)
 
-
         # add additional entries for each initial meter
         tz_obj = timezone(TIME_ZONE)
         for meter in Meter.objects.all():
-            # Feb 2016 reading
+            # March 2016 reading
             reading_details = {
                 'meter_id': meter.id,
                 'start_time': make_aware(datetime(2016, 3, 1, 0, 0, 0), timezone=tz_obj),
@@ -283,6 +282,77 @@ class TestMeterViewSet(TestCase):
             'headers': [
                 {
                     'field': 'month',
+                },
+                {
+                    'field': 'Electricity',
+                    'displayName': 'Electricity (kWh)',
+                    'cellFilter': 'number: 0',
+                },
+                {
+                    'field': 'Natural Gas',
+                    'displayName': 'Natural Gas (kBtu)',
+                    'cellFilter': 'number: 0',
+                },
+            ]
+        }
+
+        self.assertCountEqual(result_dict['readings'], expectation['readings'])
+        self.assertCountEqual(result_dict['headers'], expectation['headers'])
+
+    def test_property_energy_usage_can_return_annual_meter_readings_and_headers_while_handling_a_nondefault_display_setting(self):
+        # Update settings for display meter units to change it from the default values.
+        self.org.display_meter_units['Electricity'] = 'kWh'
+        self.org.save()
+
+        # add initial meters and readings
+        save_raw_data(self.import_file.id)
+
+        # add additional 2018 entries for each initial meter
+        tz_obj = timezone(TIME_ZONE)
+        for meter in Meter.objects.all():
+            # March 2018 reading
+            reading_details = {
+                'meter_id': meter.id,
+                'start_time': make_aware(datetime(2018, 3, 1, 0, 0, 0), timezone=tz_obj),
+                'end_time': make_aware(datetime(2018, 3, 31, 23, 59, 59), timezone=tz_obj),
+                'reading': 100,
+                'source_unit': 'kBtu',
+                'conversion_factor': 1
+            }
+            MeterReading.objects.create(**reading_details)
+
+            # May 2018 reading
+            reading_details['start_time'] = make_aware(datetime(2018, 5, 1, 0, 0, 0), timezone=tz_obj)
+            reading_details['end_time'] = make_aware(datetime(2018, 5, 31, 23, 59, 59), timezone=tz_obj)
+            reading_details['reading'] = 200
+            MeterReading.objects.create(**reading_details)
+
+        url = reverse('api:v2:meters-property-energy-usage')
+
+        post_params = json.dumps({
+            'property_view_id': self.property_view_1.id,
+            'organization_id': self.org.pk,
+            'interval': 'Year',
+        })
+        result = self.client.post(url, post_params, content_type="application/json")
+        result_dict = ast.literal_eval(result.content.decode("utf-8"))
+
+        expectation = {
+            'readings': [
+                {
+                    'year': 2016,
+                    'Electricity': (597478.9 + 548603.7) / 3.412,
+                    'Natural Gas': 545942781.5634 + 462534790.7817,
+                },
+                {
+                    'year': 2018,
+                    'Electricity': (100 + 200) / 3.412,
+                    'Natural Gas': 100 + 200,
+                },
+            ],
+            'headers': [
+                {
+                    'field': 'year',
                 },
                 {
                     'field': 'Electricity',

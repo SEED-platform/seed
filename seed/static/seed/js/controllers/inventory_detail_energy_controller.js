@@ -37,6 +37,7 @@ angular.module('BE.seed.controller.inventory_detail_energy', [])
         options: [ // TODO: Translate this
           'Exact',
           'Month',
+          'Year',
         ],
         selected: 'Exact',
       };
