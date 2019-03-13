@@ -32,7 +32,7 @@ from past.builtins import basestring
 from unidecode import unidecode
 
 from seed.data_importer.equivalence_partitioner import EquivalencePartitioner
-from seed.data_importer.meters_parsers import PMMeterParser
+from seed.data_importer.meters_parser import MetersParser
 from seed.data_importer.models import (
     ImportFile,
     ImportRecord,
@@ -744,7 +744,7 @@ def _save_meter_usage_data_create_tasks(file_pk, progress_key):
     parser = reader.MCMParser(import_file.local_file)
     raw_meter_data = list(parser.data)
 
-    meters_parser = PMMeterParser(org_id, raw_meter_data)
+    meters_parser = MetersParser(org_id, raw_meter_data)
     meters_and_readings = meters_parser.meter_and_reading_objs
     proposed_imports = meters_parser.proposed_imports()
 

@@ -20,7 +20,7 @@ from seed.models import (
 from seed.data_importer.utils import kbtu_thermal_conversion_factors
 
 
-class PMMeterParser(object):
+class MetersParser(object):
     """
     This class parses and validates different details about a Portfolio Manager
     Import File including meter energy types & units along with a summary of the

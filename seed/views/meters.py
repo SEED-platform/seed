@@ -4,7 +4,7 @@
 from rest_framework import viewsets
 from rest_framework.decorators import list_route
 
-from seed.data_importer.meters_parsers import PMMeterParser
+from seed.data_importer.meters_parser import MetersParser
 from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.decorators import ajax_request_class
 from seed.lib.mcm import reader
@@ -28,7 +28,7 @@ class MeterViewSet(viewsets.ViewSet):
         parser = reader.MCMParser(import_file.local_file)
         raw_meter_data = list(parser.data)
 
-        meters_parser = PMMeterParser(org_id, raw_meter_data)
+        meters_parser = MetersParser(org_id, raw_meter_data)
 
         result = {}
 
