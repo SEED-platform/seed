@@ -14,7 +14,7 @@ from django.utils.timezone import (
 
 from pytz import timezone
 
-from seed.data_importer.meters_parsers import PMMeterParser
+from seed.data_importer.meters_parser import MetersParser
 from seed.landing.models import SEEDUser as User
 from seed.models import (
     Meter,
@@ -112,7 +112,7 @@ class MeterUtilTests(TestCase):
             }
         ]
 
-        meters_parser = PMMeterParser(self.org.id, raw_meters)
+        meters_parser = MetersParser(self.org.id, raw_meters)
 
         self.assertEqual(meters_parser.meter_and_reading_objs, expected)
 
@@ -179,7 +179,7 @@ class MeterUtilTests(TestCase):
             }
         ]
 
-        meters_parser = PMMeterParser(self.org.id, raw_meters)
+        meters_parser = MetersParser(self.org.id, raw_meters)
 
         self.assertEqual(meters_parser.meter_and_reading_objs, expected)
 
@@ -196,7 +196,7 @@ class MeterUtilTests(TestCase):
             }
         ]
 
-        meters_parser = PMMeterParser(self.org.id, raw_meters)
+        meters_parser = MetersParser(self.org.id, raw_meters)
 
         result = meters_parser.meter_and_reading_objs
 
@@ -245,7 +245,7 @@ class MeterUtilTests(TestCase):
             },
         ]
 
-        meters_parser = PMMeterParser(self.org.id, raw_meters)
+        meters_parser = MetersParser(self.org.id, raw_meters)
 
         expected = [
             {'portfolio_manager_id': "11111111"},
