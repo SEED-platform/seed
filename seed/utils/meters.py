@@ -89,7 +89,8 @@ class PropertyMeterReadingsExporter():
         At a high-level, following algorithm is used to acccomplish this:
             - Identify the first start time and last end time
             - For each month between, aggregate the readings found in that month
-                - For more details how that monthly aggregation occurs, see _agg_interval_readings()
+                - The highest possible reading total without overlapping times is found
+                - For more details how that monthly aggregation occurs, see _max_reading_total()
         """
         # Used to consolidate different readings (types) within the same month
         monthly_readings = defaultdict(lambda: {})
@@ -117,9 +118,11 @@ class PropertyMeterReadingsExporter():
                 end_of_month = make_aware(unaware_end, timezone=self.tz)
 
                 # Find all meters fully contained within this month (second-level granularity)
-                readings = meter.meter_readings.filter(start_time__range=(current_month_time, end_of_month), end_time__range=(current_month_time, end_of_month))
-                if readings.exists():
-                    reading_month_total = self._agg_interval_readings(current_month_time, readings, end_of_month)
+                interval_readings = meter.meter_readings.filter(start_time__range=(current_month_time, end_of_month), end_time__range=(current_month_time, end_of_month))
+                if interval_readings.exists():
+                    readings_list = list(interval_readings.order_by('-end_time'))
+                    last_index = len(readings_list) - 1
+                    reading_month_total = self._max_reading_total(readings_list, 0, last_index)
 
                     if reading_month_total > 0:
                         month_year = '{} {}'.format(month_name[current_month_time.month], current_month_time.year)
@@ -134,7 +137,11 @@ class PropertyMeterReadingsExporter():
         }
 
     def _usages_by_year(self):
-        # Used to consolidate different readings (types) within the same month
+        """
+        Similarly to _usages_by_month, this returns readings and column definitions
+        formatted and aggregated to display all records in yearly intervals.
+        """
+        # Used to consolidate different readings (types) within the same year
         yearly_readings = defaultdict(lambda: {})
 
         # Construct column_defs using this dictionary's values for frontend to use
@@ -158,9 +165,11 @@ class PropertyMeterReadingsExporter():
                 end_of_year = make_aware(unaware_end, timezone=self.tz)
 
                 # Find all meters fully contained within this month (second-level granularity)
-                readings = meter.meter_readings.filter(start_time__range=(current_year_time, end_of_year), end_time__range=(current_year_time, end_of_year))
-                if readings.exists():
-                    reading_year_total = self._agg_interval_readings(current_year_time, readings, end_of_year)
+                interval_readings = meter.meter_readings.filter(start_time__range=(current_year_time, end_of_year), end_time__range=(current_year_time, end_of_year))
+                if interval_readings.exists():
+                    readings_list = list(interval_readings.order_by('-end_time'))
+                    last_index = len(readings_list) - 1
+                    reading_year_total = self._max_reading_total(readings_list, 0, last_index)
 
                     if reading_year_total > 0:
                         year = current_year_time.year
@@ -187,41 +196,39 @@ class PropertyMeterReadingsExporter():
 
         return type, conversion_factor
 
-    def _agg_interval_readings(self, current_interval_time, interval_readings, interval_end):
+    def _max_reading_total(self, sorted_readings, current_index, last_index):
         """
-        Returns a total of aggregated readings within a given time interval.
+        Recursive method to find maximum possible total of readings that do not
+        overlap each other within a given interval.
 
-        This is done by the following algorithm:
-            1) Use the initial interval time as the current interval time.
-            2) Get all readings starting at current interval time.
-                a) If there are readings, use the one with the latest end time.
-                    i) Take it's actual reading and add it to the running total.
-                    ii) Take it's end time and check for remaining readings between this end time and the interval end time.
-                b) If there aren't readings, check for remaining readings between this current time and the interval end time.
-            3) Step 2 always looks for remaining readings, so check if remaining readings are found.
-                a) If so, jump to step 2 with the next earliest start time as the current interval time.
-                b) If not, end the loop and return the total.
+        This is an implementation of the algorithm used to solve the
+        Weighted Job Scheduling problem.
+
+        Note that the readings are expected to be sorted by descending end_times.
         """
+        if current_index == last_index:  # Only one valid reading left to analyze
+            return sorted_readings[current_index].reading.magnitude
+        else:
+            latest_completion = sorted_readings[current_index]
 
-        readings_total = 0
+            # The max will always at least be the latest_completion reading
+            max_including_reading = latest_completion.reading.magnitude
 
-        while current_interval_time < interval_end:
-            current_time_readings = interval_readings.filter(start_time=current_interval_time)
+            # Find the index of the next non-conflicting reading
+            latest_nonconflict_index = next(
+                (
+                    i
+                    for i, record
+                    in enumerate(sorted_readings)
+                    if (record.end_time < latest_completion.start_time) and (i > current_index)
+                ),
+                -1
+            )
+            # If a non-conflicting reading is found, recurse with this new reading
+            if latest_nonconflict_index > -1:
+                max_including_reading += self._max_reading_total(sorted_readings, latest_nonconflict_index, last_index)
 
-            if current_time_readings.exists():
-                largest_interval = current_time_readings.latest('end_time')
+            # Since the list is sorted, excluding the current reading is done by skipping it's index.
+            max_excluding_reading = self._max_reading_total(sorted_readings, current_index + 1, last_index)
 
-                readings_total += largest_interval.reading.magnitude
-
-                largest_interval_end = largest_interval.end_time.astimezone(tz=self.tz)
-
-                remaining_readings = interval_readings.filter(start_time__range=(largest_interval_end, interval_end))
-            else:
-                remaining_readings = interval_readings.filter(start_time__range=(current_interval_time, interval_end))
-
-            if remaining_readings.exists():
-                current_interval_time = remaining_readings.earliest('start_time').start_time.astimezone(tz=self.tz)
-            else:
-                current_interval_time = interval_end
-
-        return readings_total
+            return max(max_including_reading, max_excluding_reading)
