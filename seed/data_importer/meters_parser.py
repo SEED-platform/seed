@@ -22,9 +22,11 @@ from seed.data_importer.utils import kbtu_thermal_conversion_factors
 
 class MetersParser(object):
     """
-    This class parses and validates different details about a Portfolio Manager
+    This class parses and validates different details about a meter usage
     Import File including meter energy types & units along with a summary of the
     potential records to be created before execution.
+
+    The expected input includes a list of raw meters_and_readings_details.
 
     It's able to create a collection of Meter object details and their
     corresponding Meter Reading objects details.
@@ -32,17 +34,28 @@ class MetersParser(object):
 
     _tz = timezone(TIME_ZONE)
 
-    def __init__(self, org_id, meters_and_readings_details, property_link='Property Id', is_monthly=True):
-        self._is_monthly = is_monthly
+    def __init__(self, org_id, meters_and_readings_details, source_type="Portfolio Manager", property_id=None):
+        self._cache_meter_and_reading_objs = None  # defaulted to None to show it hasn't been cached yet
+        self._cache_is_monthly = None  # defaulted to None to show it hasn't been cached yet
         self._meters_and_readings_details = meters_and_readings_details
         self._org_id = org_id
-        self._property_link = property_link
-
-        self._cache_meter_and_reading_objs = None  # defaulted to None to show it hasn't been cached yet
-        self._source_to_property_ids = {}  # tracked to reduce the number of database queries
+        self._property_id = property_id
+        self._source_type = source_type
         self._unique_meters = {}
-        self._unlinkable_pm_ids = set()  # to avoid duplicates
         self._us_kbtu_thermal_conversion_factors = {}
+
+        # The following are only relevant/used if property_id isn't explicitly specified
+        if property_id is None:
+            self._property_link = 'Property Id'
+            self._source_to_property_ids = {}  # tracked to reduce the number of database queries
+            self._unlinkable_pm_ids = set()  # to avoid duplicates
+
+    @property
+    def is_monthly(self):
+        if self._cache_is_monthly is None:
+            self._cache_is_monthly = 'Month' in self._meters_and_readings_details[0]
+
+        return self._cache_is_monthly
 
     @property
     def us_kbtu_thermal_conversion_factors(self):
@@ -88,16 +101,19 @@ class MetersParser(object):
             for details in self._meters_and_readings_details:
                 meter_shared_details = {}
 
-                meter_shared_details['source'] = Meter.PORTFOLIO_MANAGER
+                meter_shared_details['source'] = Meter.source_lookup[self._source_type]
 
-                source_id = str(details[self._property_link])
-                meter_shared_details['source_id'] = source_id
+                if meter_shared_details['source'] == Meter.PORTFOLIO_MANAGER and self._property_id is None:
+                    source_id = str(details[self._property_link])
+                    meter_shared_details['source_id'] = source_id
 
-                # Continue/skip, if no property is found.
-                if not self._get_property_id_from_source(source_id, meter_shared_details):
-                    continue
+                    # Continue/skip, if no property is found.
+                    if not self._get_property_id_from_source(source_id, meter_shared_details):
+                        continue
+                elif self._property_id:
+                    meter_shared_details['property_id'] = self._property_id
 
-                if self._is_monthly:
+                if self.is_monthly:
                     start_time, end_time = self._parse_times(details['Month'])
 
                 self._parse_meter_readings(details, meter_shared_details, start_time, end_time)
@@ -232,8 +248,6 @@ class MetersParser(object):
 
         unit = type_unit[(type_unit.find('(', use_position) + 1):(type_unit.find(')', use_position))]
 
-        # TODO: If Fuzzy matching is needed, it should be done here
-        # TODO; If no conversion exists? skip entry (via try except)?
         factor = self.us_kbtu_thermal_conversion_factors[type][unit]
 
         return type, unit, factor
