@@ -103,6 +103,7 @@ class MetersParser(object):
 
                 meter_shared_details['source'] = Meter.source_lookup[self._source_type]
 
+                # Set source_id and property_id - using source_id to find property_id if necessary
                 if meter_shared_details['source'] == Meter.PORTFOLIO_MANAGER and self._property_id is None:
                     source_id = str(details[self._property_link])
                     meter_shared_details['source_id'] = source_id
@@ -111,10 +112,15 @@ class MetersParser(object):
                     if not self._get_property_id_from_source(source_id, meter_shared_details):
                         continue
                 elif self._property_id:
+                    meter_shared_details['source_id'] = details['source_id']
                     meter_shared_details['property_id'] = self._property_id
 
+                # Define start_time and end_time - using month name if necessary
                 if self.is_monthly:
                     start_time, end_time = self._parse_times(details['Month'])
+                else:
+                    start_time = datetime.fromtimestamp(details['start_time'], tz=self._tz)
+                    end_time = datetime.fromtimestamp((details['start_time'] + details['duration']), tz=self._tz)
 
                 self._parse_meter_readings(details, meter_shared_details, start_time, end_time)
 
