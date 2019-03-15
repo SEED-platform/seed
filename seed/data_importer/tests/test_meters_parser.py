@@ -255,3 +255,72 @@ class MeterUtilTests(TestCase):
         self.assertCountEqual(expected, meters_parser.unlinkable_pm_ids)
 
         self.assertEqual([], meters_parser.meter_and_reading_objs)
+
+    def test_meters_parser_can_handle_raw_meters_with_start_time_and_duration_involving_DST_change_and_a_leap_year(self):
+        raw_meters = [
+            {
+                'start_time': 1552211999,  # Mar. 10, 2019 01:59:59 (pre-DST change)
+                'source_id': 'ABCDEF',
+                'duration': 900,
+                'Electricity Use  (kBtu)': 100,
+                'Natural Gas Use  (GJ)': 100
+            },
+            {
+                'start_time': 1456732799,  # Feb. 28, 2016 23:59:59 (leap year)
+                'duration': 900,
+                'source_id': 'ABCDEF',
+                'Electricity Use  (kBtu)': 1000,
+                'Natural Gas Use  (GJ)': 1000
+            }
+        ]
+
+        expected = [
+            {
+                'property_id': self.property.id,
+                'source': Meter.GREENBUTTON,
+                'source_id': 'ABCDEF',
+                'type': Meter.ELECTRICITY,
+                'readings': [
+                    {
+                        'start_time': make_aware(datetime(2019, 3, 10, 1, 59, 59), timezone=self.tz_obj),
+                        'end_time': make_aware(datetime(2019, 3, 10, 3, 14, 59), timezone=self.tz_obj),
+                        'reading': 100,
+                        'source_unit': 'kBtu',
+                        'conversion_factor': 1
+                    },
+                    {
+                        'start_time': make_aware(datetime(2016, 2, 28, 23, 59, 59), timezone=self.tz_obj),
+                        'end_time': make_aware(datetime(2016, 2, 29, 0, 14, 59), timezone=self.tz_obj),
+                        'reading': 1000,
+                        'source_unit': 'kBtu',
+                        'conversion_factor': 1
+                    },
+                ]
+            },
+            {
+                'property_id': self.property.id,
+                'source': Meter.GREENBUTTON,
+                'source_id': 'ABCDEF',
+                'type': Meter.NATURAL_GAS,
+                'readings': [
+                    {
+                        'start_time': make_aware(datetime(2019, 3, 10, 1, 59, 59), timezone=self.tz_obj),
+                        'end_time': make_aware(datetime(2019, 3, 10, 3, 14, 59), timezone=self.tz_obj),
+                        'reading': 94781.7,
+                        'source_unit': 'GJ',
+                        'conversion_factor': 947.817
+                    },
+                    {
+                        'start_time': make_aware(datetime(2016, 2, 28, 23, 59, 59), timezone=self.tz_obj),
+                        'end_time': make_aware(datetime(2016, 2, 29, 0, 14, 59), timezone=self.tz_obj),
+                        'reading': 947817.0,
+                        'source_unit': 'GJ',
+                        'conversion_factor': 947.817
+                    },
+                ]
+            }
+        ]
+
+        meters_parser = MetersParser(self.org.id, raw_meters, source_type="GreenButton", property_id=self.property.id)
+
+        self.assertEqual(meters_parser.meter_and_reading_objs, expected)
