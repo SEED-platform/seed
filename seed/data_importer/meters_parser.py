@@ -7,7 +7,10 @@ from config.settings.common import TIME_ZONE
 
 from collections import defaultdict
 
-from datetime import datetime
+from datetime import (
+    datetime,
+    timedelta,
+)
 
 from django.utils.timezone import make_aware
 
@@ -212,7 +215,7 @@ class MetersParser(object):
         start_time = make_aware(unaware_start, timezone=self._tz)
 
         days_in_month = monthrange(start_time.year, start_time.month)[1]
-        unaware_end = datetime(start_time.year, start_time.month, days_in_month, 23, 59, 59)
+        unaware_end = datetime(start_time.year, start_time.month, days_in_month, 23, 59, 59) + timedelta(seconds=1)
         end_time = make_aware(unaware_end, timezone=self._tz)
 
         return start_time, end_time
