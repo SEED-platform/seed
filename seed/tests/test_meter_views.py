@@ -77,13 +77,13 @@ class TestMeterViewSet(TestCase):
         self.property_view_1 = PropertyView.objects.create(property=self.property_1, cycle=self.cycle, state=self.state_1)
         self.property_view_2 = PropertyView.objects.create(property=self.property_2, cycle=self.cycle, state=self.state_2)
 
-        import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
+        self.import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
 
         filename = "example-pm-monthly-meter-usage.xlsx"
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
 
         self.import_file = ImportFile.objects.create(
-            import_record=import_record,
+            import_record=self.import_record,
             source_type="PM Meter Usage",
             uploaded_filename=filename,
             file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
@@ -139,6 +139,46 @@ class TestMeterViewSet(TestCase):
         ]
 
         self.assertEqual(result_dict.get("proposed_imports"), expectation)
+
+    def test_green_button_parsed_meters_confirmation_returns_a_green_button_id_incoming_counts_and_parsed_type_units(self):
+        filename = "example-GreenButton-data.xml"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+
+        xml_import_file = ImportFile.objects.create(
+            import_record=self.import_record,
+            source_type="PM Meter Usage",
+            uploaded_filename=filename,
+            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            cycle=self.cycle
+        )
+
+        url = reverse('api:v2:meters-greenbutton-parsed-meters-confirmation')
+
+        post_params = json.dumps({
+            'file_id': xml_import_file.id,
+            'organization_id': self.org.pk,
+            'view_id': self.property_view_1.id,
+        })
+        result = self.client.post(url, post_params, content_type="application/json")
+        result_dict = ast.literal_eval(result.content.decode("utf-8"))
+
+        proposed_imports = [
+            {
+                "GreenButton ID": '409483',
+                "incoming": 2,
+            },
+        ]
+
+        validated_type_units = [
+            {
+                "column_header": "Electricity Use  (kWh)",
+                "parsed_type": "Electricity",
+                "parsed_unit": "kWh",
+            },
+        ]
+
+        self.assertEqual(result_dict['proposed_imports'], proposed_imports)
+        self.assertEqual(result_dict['validated_type_units'], validated_type_units)
 
     def test_parsed_meters_confirmation_returns_unlinkable_pm_property_ids(self):
         PropertyState.objects.all().delete()
