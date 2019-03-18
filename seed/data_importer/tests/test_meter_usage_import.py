@@ -117,13 +117,13 @@ class MeterUsageImportTest(TestCase):
         meter_reading_10, meter_reading_11 = list(meter_1.meter_readings.order_by('start_time').all())
 
         self.assertEqual(meter_reading_10.start_time, make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=self.tz_obj))
-        self.assertEqual(meter_reading_10.end_time, make_aware(datetime(2016, 1, 31, 23, 59, 59), timezone=self.tz_obj))
+        self.assertEqual(meter_reading_10.end_time, make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=self.tz_obj))
         self.assertEqual(meter_reading_10.reading, 597478.9 * ureg('kBtu'))
         self.assertEqual(meter_reading_10.source_unit, "kBtu")  # spot check
         self.assertEqual(meter_reading_10.conversion_factor, 1)  # spot check
 
         self.assertEqual(meter_reading_11.start_time, make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=self.tz_obj))
-        self.assertEqual(meter_reading_11.end_time, make_aware(datetime(2016, 2, 29, 23, 59, 59), timezone=self.tz_obj))
+        self.assertEqual(meter_reading_11.end_time, make_aware(datetime(2016, 3, 1, 0, 0, 0), timezone=self.tz_obj))
         self.assertEqual(meter_reading_11.reading, 548603.7 * ureg('kBtu'))
 
         meter_2 = refreshed_property_1.meters.get(type=Meter.NATURAL_GAS)
@@ -134,11 +134,11 @@ class MeterUsageImportTest(TestCase):
         meter_reading_20, meter_reading_21 = list(meter_2.meter_readings.order_by('start_time').all())
 
         self.assertEqual(meter_reading_20.start_time, make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=self.tz_obj))
-        self.assertEqual(meter_reading_20.end_time, make_aware(datetime(2016, 1, 31, 23, 59, 59), timezone=self.tz_obj))
+        self.assertEqual(meter_reading_20.end_time, make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=self.tz_obj))
         self.assertEqual(meter_reading_20.reading, 576000.2 * ureg('kBtu'))
 
         self.assertEqual(meter_reading_21.start_time, make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=self.tz_obj))
-        self.assertEqual(meter_reading_21.end_time, make_aware(datetime(2016, 2, 29, 23, 59, 59), timezone=self.tz_obj))
+        self.assertEqual(meter_reading_21.end_time, make_aware(datetime(2016, 3, 1, 0, 0, 0), timezone=self.tz_obj))
         self.assertEqual(meter_reading_21.reading, 488000.1 * ureg('kBtu'))
 
         refreshed_property_2 = Property.objects.get(pk=self.property_2.id)
@@ -152,13 +152,13 @@ class MeterUsageImportTest(TestCase):
         meter_reading_30, meter_reading_40 = list(meter_3.meter_readings.order_by('start_time').all())
 
         self.assertEqual(meter_reading_30.start_time, make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=self.tz_obj))
-        self.assertEqual(meter_reading_30.end_time, make_aware(datetime(2016, 1, 31, 23, 59, 59), timezone=self.tz_obj))
+        self.assertEqual(meter_reading_30.end_time, make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=self.tz_obj))
         self.assertEqual(meter_reading_30.reading, 154572.2 * ureg('kBtu'))
         self.assertEqual(meter_reading_30.source_unit, "kBtu")  # spot check
         self.assertEqual(meter_reading_30.conversion_factor, 1)  # spot check
 
         self.assertEqual(meter_reading_40.start_time, make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=self.tz_obj))
-        self.assertEqual(meter_reading_40.end_time, make_aware(datetime(2016, 2, 29, 23, 59, 59), timezone=self.tz_obj))
+        self.assertEqual(meter_reading_40.end_time, make_aware(datetime(2016, 3, 1, 0, 0, 0), timezone=self.tz_obj))
         self.assertEqual(meter_reading_40.reading, 141437.5 * ureg('kBtu'))
 
         meter_4 = refreshed_property_2.meters.get(type=Meter.NATURAL_GAS)
@@ -169,11 +169,11 @@ class MeterUsageImportTest(TestCase):
         meter_reading_40, meter_reading_41 = list(meter_4.meter_readings.order_by('start_time').all())
 
         self.assertEqual(meter_reading_40.start_time, make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=self.tz_obj))
-        self.assertEqual(meter_reading_40.end_time, make_aware(datetime(2016, 1, 31, 23, 59, 59), timezone=self.tz_obj))
+        self.assertEqual(meter_reading_40.end_time, make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=self.tz_obj))
         self.assertEqual(meter_reading_40.reading, 299915 * ureg('kBtu'))
 
         self.assertEqual(meter_reading_41.start_time, make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=self.tz_obj))
-        self.assertEqual(meter_reading_41.end_time, make_aware(datetime(2016, 2, 29, 23, 59, 59), timezone=self.tz_obj))
+        self.assertEqual(meter_reading_41.end_time, make_aware(datetime(2016, 3, 1, 0, 0, 0), timezone=self.tz_obj))
         self.assertEqual(meter_reading_41.reading, 496310.9 * ureg('kBtu'))
 
     def test_existing_meter_is_found_and_used_if_import_file_should_reference_it(self):
@@ -193,7 +193,7 @@ class MeterUsageImportTest(TestCase):
         unsaved_meter_reading = MeterReading(
             meter=existing_meter,
             start_time=make_aware(datetime(2018, 1, 1, 0, 0, 0), timezone=self.tz_obj),
-            end_time=make_aware(datetime(2018, 1, 31, 23, 59, 59), timezone=self.tz_obj),
+            end_time=make_aware(datetime(2018, 2, 1, 0, 0, 0), timezone=self.tz_obj),
             reading=12345,
         )
         unsaved_meter_reading.save()
@@ -233,7 +233,7 @@ class MeterUsageImportTest(TestCase):
 
         # Create a reading with the same date as one from the import file but different reading
         start_time = make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=self.tz_obj)
-        end_time = make_aware(datetime(2016, 1, 31, 23, 59, 59), timezone=self.tz_obj)
+        end_time = make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=self.tz_obj)
 
         unsaved_meter_reading = MeterReading(
             meter=existing_meter,

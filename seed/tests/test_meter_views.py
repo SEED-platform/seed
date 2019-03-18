@@ -224,13 +224,13 @@ class TestMeterViewSet(TestCase):
             'readings': [
                 {
                     'start_time': '2016-01-01 00:00:00',
-                    'end_time': '2016-01-31 23:59:59',
+                    'end_time': '2016-02-01 00:00:00',
                     'Electricity': (597478.9 / 3.412),
                     'Natural Gas': 545942781.5634,
                 },
                 {
                     'start_time': '2016-02-01 00:00:00',
-                    'end_time': '2016-02-29 23:59:59',
+                    'end_time': '2016-03-01 00:00:00',
                     'Electricity': (548603.7 / 3.412),
                     'Natural Gas': 462534790.7817,
                 },
@@ -275,7 +275,7 @@ class TestMeterViewSet(TestCase):
             reading_details = {
                 'meter_id': meter.id,
                 'start_time': make_aware(datetime(2016, 3, 1, 0, 0, 0), timezone=tz_obj),
-                'end_time': make_aware(datetime(2016, 3, 31, 23, 59, 59), timezone=tz_obj),
+                'end_time': make_aware(datetime(2016, 4, 1, 0, 0, 0), timezone=tz_obj),
                 'reading': 100,
                 'source_unit': 'kBtu',
                 'conversion_factor': 1
@@ -284,7 +284,7 @@ class TestMeterViewSet(TestCase):
 
             # May 2016 reading
             reading_details['start_time'] = make_aware(datetime(2016, 5, 1, 0, 0, 0), timezone=tz_obj)
-            reading_details['end_time'] = make_aware(datetime(2016, 5, 31, 23, 59, 59), timezone=tz_obj)
+            reading_details['end_time'] = make_aware(datetime(2016, 6, 1, 0, 0, 0), timezone=tz_obj)
             reading_details['reading'] = 200
             MeterReading.objects.create(**reading_details)
 
@@ -441,7 +441,7 @@ class TestMeterViewSet(TestCase):
         }
         MeterReading.objects.create(**reading_details)
 
-        # 2016 January reading that should be ignored because existing meters are more comprehensive
+        # 2016 January reading that should be ignored
         reading_details['start_time'] = make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=tz_obj)
         reading_details['end_time'] = make_aware(datetime(2016, 3, 31, 23, 59, 59), timezone=tz_obj)
         reading_details['reading'] = 0.1
@@ -558,7 +558,7 @@ class TestMeterViewSet(TestCase):
             reading_details = {
                 'meter_id': meter.id,
                 'start_time': make_aware(datetime(2018, 3, 1, 0, 0, 0), timezone=tz_obj),
-                'end_time': make_aware(datetime(2018, 3, 31, 23, 59, 59), timezone=tz_obj),
+                'end_time': make_aware(datetime(2018, 4, 1, 0, 0, 0), timezone=tz_obj),
                 'reading': 100,
                 'source_unit': 'kBtu',
                 'conversion_factor': 1
@@ -567,7 +567,7 @@ class TestMeterViewSet(TestCase):
 
             # May 2018 reading
             reading_details['start_time'] = make_aware(datetime(2018, 5, 1, 0, 0, 0), timezone=tz_obj)
-            reading_details['end_time'] = make_aware(datetime(2018, 5, 31, 23, 59, 59), timezone=tz_obj)
+            reading_details['end_time'] = make_aware(datetime(2018, 6, 1, 0, 0, 0), timezone=tz_obj)
             reading_details['reading'] = 200
             MeterReading.objects.create(**reading_details)
 

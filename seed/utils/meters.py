@@ -114,7 +114,7 @@ class PropertyMeterReadingsExporter():
             while current_month_time < max_time:
                 _weekday, days_in_month = monthrange(current_month_time.year, current_month_time.month)
 
-                unaware_end = datetime(current_month_time.year, current_month_time.month, days_in_month, 23, 59, 59)
+                unaware_end = datetime(current_month_time.year, current_month_time.month, days_in_month, 23, 59, 59) + timedelta(seconds=1)
                 end_of_month = make_aware(unaware_end, timezone=self.tz)
 
                 # Find all meters fully contained within this month (second-level granularity)
@@ -129,7 +129,7 @@ class PropertyMeterReadingsExporter():
                         monthly_readings[month_year]['month'] = month_year
                         monthly_readings[month_year][type] = reading_month_total / conversion_factor
 
-                current_month_time = end_of_month + timedelta(seconds=1)
+                current_month_time = end_of_month
 
         return {
             'readings': list(monthly_readings.values()),
@@ -161,7 +161,7 @@ class PropertyMeterReadingsExporter():
             # Iterate through years
             current_year_time = min_time
             while current_year_time < max_time:
-                unaware_end = datetime(current_year_time.year, 12, 31, 23, 59, 59)
+                unaware_end = datetime((current_year_time.year + 1), 1, 1, 0, 0, 0)
                 end_of_year = make_aware(unaware_end, timezone=self.tz)
 
                 # Find all meters fully contained within this month (second-level granularity)
@@ -176,7 +176,7 @@ class PropertyMeterReadingsExporter():
                         yearly_readings[year]['year'] = year
                         yearly_readings[year][type] = reading_year_total / conversion_factor
 
-                current_year_time = end_of_year + timedelta(seconds=1)
+                current_year_time = end_of_year
 
         return {
             'readings': list(yearly_readings.values()),
@@ -220,7 +220,7 @@ class PropertyMeterReadingsExporter():
                     i
                     for i, record
                     in enumerate(sorted_readings)
-                    if (record.end_time < latest_completion.start_time) and (i > current_index)
+                    if (record.end_time <= latest_completion.start_time) and (i > current_index)
                 ),
                 -1
             )
