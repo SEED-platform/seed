@@ -192,8 +192,11 @@ class TaxLotPropertyViewSet(GenericViewSet):
                 "type": "Feature",
                 "properties": {}
             }
-
+            found_geometry = False
+            point_geometry = [0,0]
             for key, value in datum.items():
+                print("***KEY: {}".format(key))
+                print("value: {}".format(value))
                 if value is None:
                     continue
 
@@ -212,6 +215,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
                     established. When/If a second geometry is added, this is
                     appended alongside the previous geometry.
                     """
+                    found_geometry = True
                     coordinates = self._serialized_coordinates(value)
 
                     individual_geometry = {
@@ -227,12 +231,40 @@ class TaxLotPropertyViewSet(GenericViewSet):
                     else:
                         feature["geometry"]["geometries"].append(individual_geometry)
                 else:
+                    """
+                    Non-polygon data
+                    """
                     display_key = column_name_mappings.get(key, key)
                     feature["properties"][display_key] = value
 
-            features.append(feature)
+                    # store point geometry in case you need it
+                    if display_key == "Longitude":
+                        point_geometry[0] = value
+                    if display_key == "Latitude":
+                        point_geometry[1] = value
 
-        response_dict = {
+
+            """ 
+            Before appending feature, ensure that if there is no geometry recorded, 
+            but a long_lat exists, point geometry is added. If no lat/lng, add feature anyway,
+            but note that the GeoJson will not render
+            """
+            if found_geometry:
+                features.append(feature)
+            elif not found_geometry and point_geometry != [0,0]:
+                # add point geometry
+                print("ADDING POINT GEOMETRY!!")
+                individual_geometry = {
+                    "coordinates": point_geometry,
+                    "type": "Point"
+                }
+                feature["geometry"] = individual_geometry
+                features.append(feature)
+            else:
+                # add it anyway, without any geometry
+                features.append(feature)
+
+            response_dict = {
             "type": "FeatureCollection",
             "crs": {
                 "type": "EPSG",
