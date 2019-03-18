@@ -1,0 +1,37 @@
+<div class="modal-header" ng-switch on="step.number">
+    <h4 class="modal-title" ng-switch-when="1" translate>Select Dataset</h4> <!-- TODO: Translate this -->
+    <h4 class="modal-title" ng-switch-when="2" translate>Confirm upload</h4> <!-- TODO: Translate this -->
+</div>
+
+<div class="modal-body no_bottom_padding" ng-switch on="step.number">
+    <div class="data_upload_steps container-fluid" ng-switch-when="1">
+        <div class="row">
+            <label class="col-sm-3 col-sm-offset-1 control-label" for="selected-dataset" translate>Name</label> <!-- TODO: Translate this -->
+            <div class="col-sm-7">
+                <select name="selected-dataset" class="form-control input-sm" ng-change="datasetChanged(selectedDataset)" ng-model="selectedDataset" ng-options="dataset.name for dataset in datasets track by dataset.id"></select>
+            </div>
+        </div>
+    </div>
+
+    <div class="data_upload_steps container-fluid" ng-switch-when="2">
+        <div class="row">
+            <!-- Status Update -->
+        </div>
+    </div>
+</div>
+
+<div class="modal-footer container-fluid" ng-switch on="step.number">
+    <div class="row text-center" ng-switch-when="1">
+        <button type="button" class="btn btn-primary col-sm-6 center-block" ng-if="!selectedDataset" ng-disabled="true">Upload File</button> <!-- TODO: Translate this -->
+        <button type="button" class="btn btn-primary col-sm-6 center-block" ng-if="selectedDataset" sd-uploader sourcetype="GreenButton" sourceprog="" sourcever="" importrecord="selectedDataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-disabled="selectedDataset === undefined">Upload File</button> <!-- TODO: Translate this -->
+    </div>
+
+    <div class="row text-center" ng-switch-when="2">
+      <!-- Confirm button -->
+    </div>
+
+
+    <div class="row text-center">
+        <button type="button" class="btn btn-default col-sm-6 center-block" ng-click="cancel()" translate>Dismiss</button>
+    </div>
+</div>

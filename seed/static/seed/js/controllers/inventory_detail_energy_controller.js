@@ -3,19 +3,23 @@ angular.module('BE.seed.controller.inventory_detail_energy', [])
     '$state',
     '$scope',
     '$stateParams',
+    '$uibModal',
     'energy_service',
     'inventory_service',
     'property_energy_usage',
     'spinner_utility',
+    'urls',
     'user_service',
     function (
       $state,
       $scope,
       $stateParams,
+      $uibModal,
       energy_service,
       inventory_service,
       property_energy_usage,
       spinner_utility,
+      urls,
       user_service
     ) {
       spinner_utility.show();
@@ -70,6 +74,28 @@ angular.module('BE.seed.controller.inventory_detail_energy', [])
           $scope.has_meters = $scope.data.length > 0;
           $scope.apply_column_settings();
           spinner_utility.hide();
+        });
+      };
+
+      $scope.open_green_button_upload_modal = function () {
+        var dataModalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/green_button_upload_modal.html',
+          controller: 'green_button_upload_modal_controller',
+          resolve: {
+            filler_cycle: function() {
+              return inventory_service.get_last_cycle()
+            },
+            organization_id: function() {
+              return $scope.organization.id
+            },
+            view_id: function () {
+              return $scope.inventory.view_id;
+            }
+          }
+        });
+
+        dataModalInstance.result.finally(function () {
+          init();
         });
       };
     }]);
