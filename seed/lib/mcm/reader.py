@@ -14,6 +14,8 @@ import json
 import mmap
 import operator
 import re
+import xmltodict
+
 from builtins import str
 from csv import DictReader, Sniffer
 
@@ -33,6 +35,53 @@ from xlrd.xldate import XLDateAmbiguous
 ) = range(7)
 
 ROW_DELIMITER = "|#*#|"
+
+class GreenButtonParser(object):
+    def __init__(self, xml_file):
+        self._xml_file = xml_file
+        self._cache_data = None
+
+    @property
+    def data(self):
+        if self._cache_data is None:
+            xml_string = self._xml_file.read()
+            raw_data = xmltodict.parse(xml_string)
+
+            readings_entry = raw_data['feed']['entry'][3]
+
+            href = readings_entry['link']['@href'].split('/')
+            usage_point_index = next(i for i, substring in enumerate(href) if substring == "UsagePoint") + 1
+            usage_point = href[usage_point_index]
+
+            readings = readings_entry['content']['IntervalBlock']['IntervalReading']
+            # TODO: Revisit comments once clarifications are received
+            # ServiceCategory hints at type
+            # ReadingType hints at unit????
+
+            kind_entry = raw_data['feed']['entry'][0]
+            kind = kind_entry['content']['UsagePoint']['ServiceCategory']['kind']
+            # type = needs to be verified?
+
+            uom_entry = raw_data['feed']['entry'][2]
+            powerOfTenMultiplier = uom_entry['content']['ReadingType']['powerOfTenMultiplier']
+            uom = uom_entry['content']['ReadingType']['uom']
+            # unit = needs to be dynamic and verified
+
+            self._cache_data = [
+                {
+                    'start_time': int(reading['timePeriod']['start']),
+                    'source_id': usage_point,
+                    'duration': int(reading['timePeriod']['duration']),
+                    'Electricity Use  (kWh)': float(reading['value']) / 1000,# TODO: needs to be dynamically parsed
+                    # "{} Use  ({})".format(type, unit): float(reading['value']) * conversion_factor,
+                }
+                for reading
+                in readings
+            ]
+            # from pprint import pprint
+            # import pdb; pdb.set_trace()
+
+        return self._cache_data
 
 
 class GeoJSONParser(object):
