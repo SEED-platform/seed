@@ -26,3 +26,6 @@ sphinx_rtd_theme==0.4.2
 
 # For running the server
 uWSGI==2.0.17.1
+
+# Parsing and managing geojson data (this is only used in managed tasks at the moment)
+geojson==2.4.1
