@@ -158,8 +158,14 @@ class MetersParser(object):
         for obj in object_details:
             id_counts[obj.get("source_id")] += len(obj.get("readings"))
 
+        key = ""
+        if self._source_type == "Portfolio Manager":
+            key = "portfolio_manager_id"
+        elif self._source_type == "GreenButton":
+            key = "GreenButton ID"
+
         return [
-            {"portfolio_manager_id": id, "incoming": reading_count}
+            {key: id, "incoming": reading_count}
             for id, reading_count
             in id_counts.items()
         ]
