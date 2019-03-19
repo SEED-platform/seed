@@ -212,7 +212,7 @@ class MetersParser(object):
         unaware_start = datetime.strptime(month_year, '%b-%y')
         start_time = make_aware(unaware_start, timezone=self._tz)
 
-        days_in_month = monthrange(start_time.year, start_time.month)[1]
+        _start_day, days_in_month = monthrange(start_time.year, start_time.month)
         unaware_end = datetime(start_time.year, start_time.month, days_in_month, 23, 59, 59) + timedelta(seconds=1)
         end_time = make_aware(unaware_end, timezone=self._tz)
 
