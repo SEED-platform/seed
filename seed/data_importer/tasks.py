@@ -28,6 +28,7 @@ from django.db.models import Q
 from django.db.utils import ProgrammingError
 from django.utils import timezone as tz
 from django.utils.timezone import make_naive
+from math import ceil
 from past.builtins import basestring
 from unidecode import unidecode
 
@@ -39,7 +40,6 @@ from seed.data_importer.models import (
     STATUS_READY_TO_MERGE,
 )
 from seed.decorators import lock_and_track
-from seed.green_button import xml_importer
 from seed.lib.mcm import cleaners, mapper, reader
 from seed.lib.mcm.mapper import expand_rows
 from seed.lib.mcm.utils import batch
@@ -622,7 +622,7 @@ def finish_raw_save(results, file_pk, progress_key, summary=None):
     import_file.raw_save_done = True
     import_file.save()
 
-    if import_file.source_type == "PM Meter Usage" and summary is not None:
+    if import_file.source_type in ["PM Meter Usage", "GreenButton"] and summary is not None:
         _append_meter_import_results_to_summary(results, summary)
         return progress_data.finish_with_success(summary)
     else:
@@ -651,24 +651,78 @@ def cache_first_rows(import_file, parser):
 
 @shared_task(ignore_result=True)
 @lock_and_track
-def _save_raw_green_button_data(file_pk, progress_key):
-    """
-    Pulls identifying information out of the XML data, find_or_creates
-    a building_snapshot for the data, parses and stores the time series
-    meter data and associates it with the building snapshot.
-    """
+def _save_greenbutton_data_create_tasks(file_pk, progress_key):
     progress_data = ProgressData.from_key(progress_key)
 
     import_file = ImportFile.objects.get(pk=file_pk)
-    import_file.raw_save_done = True
-    import_file.save()
+    org_id = import_file.cycle.organization.id
+    property_id = import_file.matching_results_data['property_id']
 
-    res = xml_importer.import_xml(import_file)
+    parser = reader.GreenButtonParser(import_file.local_file)
+    raw_meter_data = list(parser.data)
 
-    if res:
-        return progress_data.finish_with_success()
-    else:
+    meters_parser = MetersParser(org_id, raw_meter_data, source_type="GreenButton", property_id=property_id)
+    meter_readings = meters_parser.meter_and_reading_objs[0]  # there should only be one meter (1 property, 1 type/unit)
+    proposed_imports = meters_parser.proposed_imports()
+
+    readings = meter_readings['readings']
+    meter_only_details = {k: v for k, v in meter_readings.items() if k != "readings"}
+    meter, _created = Meter.objects.get_or_create(**meter_only_details)
+
+    meter_id = meter.id
+    meter_source_id = meter.source_id
+
+    chunk_size = 1000
+
+    progress_data.total = ceil(len(readings) / chunk_size)
+    progress_data.save()
+
+    tasks = [
+        _save_greenbutton_data_task.s(batch_readings, meter_id, meter_source_id, progress_data.key)
+        for batch_readings
+        in batch(readings, chunk_size)
+    ]
+
+    return tasks, proposed_imports
+
+
+@shared_task
+def _save_greenbutton_data_task(readings, meter_id, meter_source_id, progress_key):
+    """
+    """
+    progress_data = ProgressData.from_key(progress_key)
+
+    result = {}
+    try:
+        with transaction.atomic():
+            reading_strings = [
+                f"({meter_id}, '{reading['start_time'].isoformat(' ')}', '{reading['end_time'].isoformat(' ')}', {reading['reading']}, '{reading['source_unit']}', {reading['conversion_factor']})"
+                for reading
+                in readings
+            ]
+
+            sql = (
+                "INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor)" +
+                " VALUES " + ", ".join(reading_strings) +
+                " ON CONFLICT (meter_id, start_time, end_time)" +
+                " DO UPDATE SET reading = EXCLUDED.reading, source_unit = EXCLUDED.source_unit, conversion_factor = EXCLUDED.conversion_factor" +
+                " RETURNING reading;"
+            )
+            with connection.cursor() as cursor:
+                cursor.execute(sql)
+                result['source_id'] = meter_source_id
+                result['count'] = len(cursor.fetchall())
+    # except ProgrammingError as e:
+    #     if "ON CONFLICT DO UPDATE command cannot affect row a second time" in str(e):
+    #         result['source_id'] = meter_readings.get("source_id")
+    #         result['error'] = "Overlapping readings."
+    except Exception:
         return progress_data.finish_with_error('data failed to import')
+
+    # Indicate progress
+    progress_data.step()
+
+    return result
 
 
 @shared_task
@@ -806,9 +860,8 @@ def _save_raw_data_create_tasks(file_pk, progress_key):
 
     if import_file.source_type == "PM Meter Usage":
         return _save_meter_usage_data_create_tasks(file_pk, progress_data.key)
-    elif import_file.source_type == "Green Button Raw":
-        # TODO #239: Should remove green button from here until later.
-        return _save_raw_green_button_data(file_pk)
+    elif import_file.source_type == "GreenButton":
+        return _save_greenbutton_data_create_tasks(file_pk, progress_data.key)
 
     file_extension = os.path.splitext(import_file.file.name)[1]
 
@@ -830,6 +883,7 @@ def _save_raw_data_create_tasks(file_pk, progress_key):
     progress_data.total = len(chunks)
     progress_data.save()
 
+    # return tasks and None as a placeholder for proposed data import summary
     return [_save_raw_data_chunk.s(chunk, file_pk, progress_data.key) for chunk in chunks], None
 
 

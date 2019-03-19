@@ -58,6 +58,9 @@ class MeterViewSet(viewsets.ViewSet):
         result["validated_type_units"] = meters_parser.validated_type_units()
         result["proposed_imports"] = meters_parser.proposed_imports()
 
+        import_file.matching_results_data['property_id'] = property_id
+        import_file.save()
+
         return result
 
     @ajax_request_class
