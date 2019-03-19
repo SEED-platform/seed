@@ -335,12 +335,12 @@ class MeterUsageImportTest(TestCase):
 
         expectation = [
             {
-                "portfolio_manager_id": "5766973",
+                "source_id": "5766973",
                 "incoming": 4,
                 "successfully_imported": 4,
             },
             {
-                "portfolio_manager_id": "5766975",
+                "source_id": "5766975",
                 "incoming": 4,
                 "successfully_imported": 4,
             },
@@ -382,13 +382,13 @@ class MeterUsageImportTest(TestCase):
 
         expected_import_summary = [
             {
-                "portfolio_manager_id": "5766973",
+                "source_id": "5766973",
                 "incoming": 4,
                 "successfully_imported": 4,
                 "errors": "",
             },
             {
-                "portfolio_manager_id": "5766975",
+                "source_id": "5766975",
                 "incoming": 8,
                 "successfully_imported": 0,
                 "errors": "Overlapping readings.",

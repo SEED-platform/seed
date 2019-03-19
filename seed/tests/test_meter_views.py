@@ -129,11 +129,11 @@ class TestMeterViewSet(TestCase):
 
         expectation = [
             {
-                "portfolio_manager_id": "5766973",
+                "source_id": "5766973",
                 "incoming": 4,
             },
             {
-                "portfolio_manager_id": "5766975",
+                "source_id": "5766975",
                 "incoming": 4,
             },
         ]
@@ -164,7 +164,7 @@ class TestMeterViewSet(TestCase):
 
         proposed_imports = [
             {
-                "greenbutton_id": '409483',
+                "source_id": '409483',
                 "incoming": 2,
             },
         ]
