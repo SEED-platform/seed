@@ -67,6 +67,20 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
 
       var show_confirmation_info = function(file_id) {
         meters_service.greenbutton_parsed_meters_confirmation(file_id, $scope.organization_id, $scope.view_id).then(function(result) {
+          $scope.proposed_imports_options = {
+              data: result.proposed_imports,
+              columnDefs: [
+                {
+                  field: "greenbutton_id",
+                  displayName: "GreenButton ID",
+                  type: "string",
+                },
+                {
+                  field: "incoming",
+                },
+              ],
+          }
+          $scope.parsed_type_units = result.validated_type_units;
           $scope.step.number = 2;
         });
       };

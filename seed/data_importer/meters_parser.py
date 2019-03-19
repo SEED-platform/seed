@@ -142,11 +142,15 @@ class MetersParser(object):
 
         for header in column_headers:
             type, unit, _factor = self._parse_unit_and_factor(header)
-            result.append({
-                "column_header": header,
+            type_unit_info = {
                 "parsed_type": type,
                 "parsed_unit": unit,
-            })
+            }
+
+            if self._source_type == "Portfolio Manager":
+                type_unit_info["column_header"] = header
+
+            result.append(type_unit_info)
 
         return result
 
@@ -165,7 +169,7 @@ class MetersParser(object):
         if self._source_type == "Portfolio Manager":
             key = "portfolio_manager_id"
         elif self._source_type == "GreenButton":
-            key = "GreenButton ID"
+            key = "greenbutton_id"
 
         return [
             {key: id, "incoming": reading_count}
