@@ -164,14 +164,13 @@ class TestMeterViewSet(TestCase):
 
         proposed_imports = [
             {
-                "GreenButton ID": '409483',
+                "greenbutton_id": '409483',
                 "incoming": 2,
             },
         ]
 
         validated_type_units = [
             {
-                "column_header": "Electricity Use  (kWh)",
                 "parsed_type": "Electricity",
                 "parsed_unit": "kWh",
             },
