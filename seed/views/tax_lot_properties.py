@@ -195,8 +195,6 @@ class TaxLotPropertyViewSet(GenericViewSet):
             found_geometry = False
             point_geometry = [0,0]
             for key, value in datum.items():
-                print("***KEY: {}".format(key))
-                print("value: {}".format(value))
                 if value is None:
                     continue
 
@@ -253,7 +251,6 @@ class TaxLotPropertyViewSet(GenericViewSet):
                 features.append(feature)
             elif not found_geometry and point_geometry != [0,0]:
                 # add point geometry
-                print("ADDING POINT GEOMETRY!!")
                 individual_geometry = {
                     "coordinates": point_geometry,
                     "type": "Point"
