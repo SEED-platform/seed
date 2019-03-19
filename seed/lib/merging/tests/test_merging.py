@@ -120,6 +120,8 @@ class StateFieldsTest(TestCase):
             ('custom_id_1', 'custom_id_1'),
             ('district', 'district'),
             ('jurisdiction_tax_lot_id', 'jurisdiction_tax_lot_id'),
+            ('latitude', 'latitude'),
+            ('longitude', 'longitude'),
             ('number_properties', 'number_properties'),
             ('postal_code', 'postal_code'),
             ('state', 'state'),

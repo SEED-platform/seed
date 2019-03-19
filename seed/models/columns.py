@@ -267,6 +267,16 @@ class Column(models.Model):
             'display_name': 'Longitude',
             'data_type': 'number',
         }, {
+            'column_name': 'latitude',
+            'table_name': 'TaxLotState',
+            'display_name': 'Latitude',
+            'data_type': 'number',
+        }, {
+            'column_name': 'longitude',
+            'table_name': 'TaxLotState',
+            'display_name': 'Longitude',
+            'data_type': 'number',
+        }, {
             'column_name': 'geocoding_confidence',
             'table_name': 'PropertyState',
             'display_name': 'Geocoding Confidence',

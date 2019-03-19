@@ -68,7 +68,7 @@ from seed.models.auditlog import AUDIT_IMPORT
 from seed.models.data_quality import DataQualityCheck
 from seed.utils.buildings import get_source_type
 from seed.utils.geocode import geocode_buildings
-from seed.utils.ubid import decode_ubids
+from seed.utils.ubid import decode_unique_ids
 
 # from seed.utils.cprofile import cprofile
 
@@ -756,12 +756,14 @@ def _geocode_properties_or_tax_lots(file_pk):
     if PropertyState.objects.filter(import_file_id=file_pk).exclude(data_state=DATA_STATE_IMPORT):
         qs = PropertyState.objects.filter(import_file_id=file_pk).exclude(
             data_state=DATA_STATE_IMPORT)
-        decode_ubids(qs)
-    else:
+        decode_unique_ids(qs)
+        geocode_buildings(qs)
+
+    if TaxLotState.objects.filter(import_file_id=file_pk).exclude(data_state=DATA_STATE_IMPORT):
         qs = TaxLotState.objects.filter(import_file_id=file_pk).exclude(
             data_state=DATA_STATE_IMPORT)
-
-    geocode_buildings(qs)
+        decode_unique_ids(qs)
+        geocode_buildings(qs)
 
 
 # @cprofile()
