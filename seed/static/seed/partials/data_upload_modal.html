@@ -317,9 +317,9 @@
             <p>Confirm the contents of meter usage file.</p> <!-- TODO: Translate this -->
             <div class="row">
                 <div class="alert alert-warning">
-                    <div ng-if="proposed_imports.length">
+                    <div ng-if="proposed_imports_options.data.length">
                         <p><b>Meter Reading Counts</b></p> <!-- TODO: Translate this -->
-                        <div ui-grid="{ data: proposed_imports }"></div>
+                        <div ui-grid="proposed_imports_options"></div>
                     </div>
                     <br>
                     <div>

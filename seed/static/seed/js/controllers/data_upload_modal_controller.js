@@ -180,7 +180,19 @@ angular.module('BE.seed.controller.data_upload_modal', [])
 
       var present_parsed_meters_confirmation = function (result) {
         $scope.parsed_type_units = result.validated_type_units;
-        $scope.proposed_imports = result.proposed_imports;
+        $scope.proposed_imports_options = {
+          data: result.proposed_imports,
+          columnDefs: [
+            {
+              field: "source_id",
+              displayName: "Portfolio Manager ID",
+              type: "string",
+            },
+            {
+              field: "incoming",
+            },
+          ],
+        }
         $scope.unlinkable_pm_ids = result.unlinkable_pm_ids;
 
         $scope.uploader.in_progress = false;

@@ -71,7 +71,7 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
               data: result.proposed_imports,
               columnDefs: [
                 {
-                  field: "greenbutton_id",
+                  field: "source_id",
                   displayName: "GreenButton ID",
                   type: "string",
                 },

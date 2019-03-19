@@ -776,7 +776,7 @@ def _append_meter_import_results_to_summary(import_results, summary):
             error_comments[id_count["source_id"]].add(id_count.get("error"))
 
     for import_info in summary:
-        pm_id = import_info["portfolio_manager_id"]
+        pm_id = import_info["source_id"]
 
         import_info["successfully_imported"] = agg_results_summary.get(pm_id, 0)
 
