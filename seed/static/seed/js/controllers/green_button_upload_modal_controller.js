@@ -6,6 +6,7 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
     'dataset_service',
     'meters_service',
     'organization_id',
+    'uploader_service',
     'view_id',
     function (
       $scope,
@@ -14,6 +15,7 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
       dataset_service,
       meters_service,
       organization_id,
+      uploader_service,
       view_id
     ) {
       $scope.step = {
@@ -60,13 +62,14 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
             break;
 
           case 'upload_complete':
-            show_confirmation_info(file.file_id);
+            $scope.file_id = file.file_id;
+            show_confirmation_info();
             break;
         }
       };
 
-      var show_confirmation_info = function(file_id) {
-        meters_service.greenbutton_parsed_meters_confirmation(file_id, $scope.organization_id, $scope.view_id).then(function(result) {
+      var show_confirmation_info = function() {
+        meters_service.greenbutton_parsed_meters_confirmation($scope.file_id, $scope.organization_id, $scope.view_id).then(function(result) {
           $scope.proposed_imports_options = {
               data: result.proposed_imports,
               columnDefs: [
@@ -82,6 +85,12 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
           }
           $scope.parsed_type_units = result.validated_type_units;
           $scope.step.number = 2;
+        });
+      };
+
+      $scope.accept_greenbutton_meters = function() {
+        uploader_service.save_raw_data($scope.file_id, $scope.selectedCycle).then(function(data) {
+          console.log(data);
         });
       };
 

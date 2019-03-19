@@ -140,7 +140,7 @@ class TestMeterViewSet(TestCase):
 
         self.assertEqual(result_dict.get("proposed_imports"), expectation)
 
-    def test_green_button_parsed_meters_confirmation_returns_a_green_button_id_incoming_counts_and_parsed_type_units(self):
+    def test_green_button_parsed_meters_confirmation_returns_a_green_button_id_incoming_counts_and_parsed_type_units_and_saves_property_id_to_file_cache(self):
         filename = "example-GreenButton-data.xml"
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
 
@@ -178,6 +178,9 @@ class TestMeterViewSet(TestCase):
 
         self.assertEqual(result_dict['proposed_imports'], proposed_imports)
         self.assertEqual(result_dict['validated_type_units'], validated_type_units)
+
+        refreshed_import_file = ImportFile.objects.get(pk=xml_import_file.id)
+        self.assertEqual(refreshed_import_file.matching_results_data, {'property_id': self.property_view_1.property_id})
 
     def test_parsed_meters_confirmation_returns_unlinkable_pm_property_ids(self):
         PropertyState.objects.all().delete()

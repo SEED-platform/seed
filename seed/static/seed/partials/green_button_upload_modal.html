@@ -37,8 +37,10 @@
         <button type="button" class="btn btn-primary col-sm-6 center-block" ng-if="selectedDataset" sd-uploader sourcetype="GreenButton" sourceprog="" sourcever="" importrecord="selectedDataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-disabled="selectedDataset === undefined">Upload File</button> <!-- TODO: Translate this -->
     </div>
 
-    <div class="row text-center" ng-switch-when="2">
-      <!-- Confirm button -->
+    <div ng-switch-when="2">
+        <div class="row text-center">
+            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="accept_greenbutton_meters()" translate>Confirm</button>
+        </div>
     </div>
 
 
