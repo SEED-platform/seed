@@ -31,13 +31,29 @@ angular.module('BE.seed.controller.inventory_map', [])
       //$scope.inventory_type = $stateParams.inventory_type;
 
       $scope.data = inventory.results;
-      console.log("INVENTORY:");
-      console.log($scope.data);
+      console.log("INVENTORY:", $scope.data);
 
       $scope.geocoded_data = _.filter($scope.data, 'long_lat');
       $scope.ungeocoded_data = _.reject($scope.data, 'long_lat');
       // buildings with UBID bounding boxes
       $scope.bb_data = _.filter($scope.data, 'bounding_box');
+
+      var geocodedTaxlots = function (properties_data) {
+        var taxlots = [];
+        _.each(properties_data, function (record){
+          if (!_.isUndefined(record['related']) && !_.isEmpty(record['related'])){
+            // getting the ones with bounding boxes not long_lat
+            // since we are not interested in mapping points for taxlots
+            var bb_taxlots = _.filter(record['related'], 'bounding_box');
+            taxlots = _.concat(taxlots, bb_taxlots);
+          }
+        });
+        return _.uniqBy(taxlots, 'id');
+      };
+
+      // extract related taxlots from building inventory
+      $scope.taxlots = geocodedTaxlots($scope.data);
+      console.log("taxlots: ", $scope.taxlots);
 
       // store a mapping of layers z-index and visibility
       $scope.layers = {};
@@ -46,6 +62,8 @@ angular.module('BE.seed.controller.inventory_map', [])
       $scope.layers.points_layer = {zIndex: 2, visible: 1};
       $scope.layers.building_bb_layer = {zIndex: 3, visible: 1};
       $scope.layers.building_centroid_layer = {zIndex: 4, visible: 1};
+      $scope.layers.taxlot_bb_layer = {zIndex: 5, visible: 0};
+      $scope.layers.taxlot_centroid_layer = {zIndex: 6, visible: 0};
 
       // Map
       var base_layer = new ol.layer.Tile({
@@ -117,6 +135,46 @@ angular.module('BE.seed.controller.inventory_map', [])
         return new ol.source.Vector({ features: features });
       };
 
+            // Define taxlot ULID bounding box
+      var taxlotBB = function(taxlot) {
+        var format = new ol.format.WKT();
+
+        var bounding_box = taxlot.bounding_box;
+        var feature = format.readFeature(bounding_box, {
+          dataProjection: 'EPSG:4326',
+          featureProjection: 'EPSG:3857'
+        });
+        feature.setProperties(taxlot);
+        return feature;
+      };
+
+      // Define taxlot ULID centroid box
+      var taxlotCentroid = function(taxlot) {
+        var format = new ol.format.WKT();
+
+        var bounding_box = taxlot.centroid;
+        var feature = format.readFeature(bounding_box, {
+          dataProjection: 'EPSG:4326',
+          featureProjection: 'EPSG:3857'
+        });
+        feature.setProperties(taxlot);
+        return feature;
+      };
+
+       var taxlotBBSources = function (records) {
+        if (_.isUndefined(records)) records = $scope.taxlots;
+        var features = _.map(records, taxlotBB);
+
+        return new ol.source.Vector({ features: features });
+      };
+
+      var taxlotCentroidSources = function (records) {
+        if (_.isUndefined(records)) records = $scope.taxlots;
+        var features = _.map(records, taxlotCentroid);
+
+        return new ol.source.Vector({ features: features });
+      };
+
       // Points/clusters layer
       var clusterPointStyle = function (size) {
         var relative_radius = 10 + Math.min(7, size / 50);
@@ -168,7 +226,7 @@ angular.module('BE.seed.controller.inventory_map', [])
       var buildingStyle = function (feature) {
         return new ol.style.Style({
            stroke: new ol.style.Stroke({
-            color: '#41658A',
+            color: '#185189',
             width: 2
           })
         });
@@ -178,7 +236,7 @@ angular.module('BE.seed.controller.inventory_map', [])
       var taxlotStyle = function(feature) {
         return new ol.style.Style({
            stroke: new ol.style.Stroke({
-            color: '#297373',
+            color: '#10A0A0',
             width: 2
           })
         });
@@ -200,6 +258,18 @@ angular.module('BE.seed.controller.inventory_map', [])
         source: buildingCentroidSources(),
         zIndex: $scope.layers['building_centroid_layer']['zIndex'],
         style: buildingStyle
+      });
+
+      $scope.taxlot_bb_layer = new ol.layer.Vector({
+        source: taxlotBBSources(),
+        zIndex: $scope.layers.taxlot_bb_layer.zIndex,
+        style: taxlotStyle
+      });
+
+      $scope.taxlot_centroid_layer = new ol.layer.Vector({
+        source: taxlotCentroidSources(),
+        zIndex: $scope.layers['taxlot_centroid_layer']['zIndex'],
+        style: taxlotStyle
       });
 
       // Hexbin layer
@@ -260,6 +330,7 @@ angular.module('BE.seed.controller.inventory_map', [])
       });
 
       // Render map
+      // start with taxlot layers off
       $scope.map = new ol.Map({
         target: 'map',
         layers: [base_layer, $scope.hexbin_layer, $scope.points_layer, $scope.building_bb_layer, $scope.building_centroid_layer]
@@ -273,7 +344,9 @@ angular.module('BE.seed.controller.inventory_map', [])
         1: $scope.hexbin_layer,
         2: $scope.points_layer,
         3: $scope.building_bb_layer,
-        4: $scope.building_centroid_layer
+        4: $scope.building_centroid_layer,
+        5: $scope.taxlot_bb_layer,
+        6: $scope.taxlot_centroid_layer
       };
 
       $scope.layerVisible = function (z_index) {

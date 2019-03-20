@@ -157,6 +157,7 @@ class TaxLotProperty(models.Model):
                 'obj_state_id': 'taxlot_state_id',
                 'obj_view_id': 'taxlot_view_id',
                 'obj_id': 'taxlot_id',
+                'centroid': 'centroid',
                 'bounding_box': 'bounding_box',
                 'long_lat': 'long_lat',
                 'related_class': 'PropertyView',
@@ -190,6 +191,7 @@ class TaxLotProperty(models.Model):
                 obj_columns.append(column)
                 obj_column_name_mapping[column['column_name']] = column['name']
 
+
         related_map = {}
 
         if show_columns is None:
@@ -209,6 +211,12 @@ class TaxLotProperty(models.Model):
             )
 
             related_dict[lookups['related_state_id']] = related_view.state.id
+
+            # Add GIS stuff to the related dict
+            # (I guess these are special fields not in columns and not directly JSON serializable...)
+            related_dict[lookups['bounding_box']] = bounding_box_wkt(related_view.state)
+            related_dict[lookups['long_lat']] = long_lat_wkt(related_view.state)
+            related_dict[lookups['centroid']] = centroid_wkt(related_view.state)
 
             # custom handling for when it is TaxLotView
             if lookups['obj_class'] == 'TaxLotView':
