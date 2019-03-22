@@ -193,7 +193,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
                 "properties": {}
             }
             found_geometry = False
-            point_geometry = [0,0]
+            point_geometry = [0, 0]
             for key, value in datum.items():
                 if value is None:
                     continue
@@ -241,15 +241,14 @@ class TaxLotPropertyViewSet(GenericViewSet):
                     if display_key == "Latitude":
                         point_geometry[1] = value
 
-
-            """ 
-            Before appending feature, ensure that if there is no geometry recorded, 
+            """
+            Before appending feature, ensure that if there is no geometry recorded,
             but a long_lat exists, point geometry is added. If no lat/lng, add feature anyway,
             but note that the GeoJson will not render
             """
             if found_geometry:
                 features.append(feature)
-            elif not found_geometry and point_geometry != [0,0]:
+            elif not found_geometry and point_geometry != [0, 0]:
                 # add point geometry
                 individual_geometry = {
                     "coordinates": point_geometry,
@@ -262,13 +261,13 @@ class TaxLotPropertyViewSet(GenericViewSet):
                 features.append(feature)
 
             response_dict = {
-            "type": "FeatureCollection",
-            "crs": {
-                "type": "EPSG",
-                "properties": {"code": 4326}
-            },
-            "features": features
-        }
+                "type": "FeatureCollection",
+                "crs": {
+                    "type": "EPSG",
+                    "properties": {"code": 4326}
+                },
+                "features": features
+            }
 
         response = JsonResponse(response_dict)
         response['Content-Disposition'] = 'attachment; filename="{}"'.format(filename)
