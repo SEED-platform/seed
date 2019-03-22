@@ -199,7 +199,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
                 "type": "Feature",
                 "properties": {}
             }
-            found_geometry = False
+
             for key, value in datum.items():
                 if value is None:
                     continue
@@ -219,7 +219,6 @@ class TaxLotPropertyViewSet(GenericViewSet):
                     established. When/If a second geometry is added, this is
                     appended alongside the previous geometry.
                     """
-                    found_geometry = True
                     individual_geometry = {}
 
                     print("VALUE:")
@@ -280,13 +279,13 @@ class TaxLotPropertyViewSet(GenericViewSet):
             features.append(feature)
 
             response_dict = {
-            "type": "FeatureCollection",
-            "crs": {
-                "type": "EPSG",
-                "properties": {"code": 4326}
-            },
-            "features": features
-        }
+                "type": "FeatureCollection",
+                "crs": {
+                    "type": "EPSG",
+                    "properties": {"code": 4326}
+                },
+                "features": features
+            }
 
         response = JsonResponse(response_dict)
         response['Content-Disposition'] = 'attachment; filename="{}"'.format(filename)
