@@ -12,6 +12,7 @@ import copy
 import datetime as dt
 import hashlib
 import os
+import json
 import traceback
 from _csv import Error
 from builtins import str
@@ -308,11 +309,16 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                 # This may be historic, but we need to pull out the extra_data_fields here to pass
                 # into mapper.map_row. apply_columns are extra_data columns (the raw column names)
                 extra_data_fields = []
+                footprint_details = {}
                 for k, v in mappings.items():
                     # the 3rd element is the is_extra_data flag.
                     # Need to convert this to a dict and not a tuple.
                     if v[3]:
                         extra_data_fields.append(k)
+
+                    if v[1] in ['taxlot_footprint', 'property_footprint']:
+                        footprint_details['raw_field'] = k
+                        footprint_details['obj_field'] = v[1]
                 # _log.debug("extra data fields: {}".format(extra_data_fields))
 
                 # All the data live in the PropertyState.extra_data field when the data are imported
@@ -379,6 +385,30 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                             _log.warn(
                                 "Skipping property or taxlot during mapping because it is identical to another row")
                             continue
+
+                        # If a footprint was provided but not populated/valid,
+                        # create a new extra_data column and save the raw value there.
+                        if footprint_details.get('obj_field') and not hasattr(map_model_obj, footprint_details['raw_field']):
+                            column_name = footprint_details['raw_field'] + ' (Invalid Footprint)'
+
+                            column_mapping_for_cache = {
+                                'from_field': column_name,
+                                'from_units': None,
+                                'to_field': column_name,
+                                'to_table_name': table
+                            }
+
+                            column_mapping = column_mapping_for_cache.copy()
+                            column_mapping['to_field_display_name'] = column_name
+
+                            # create column and update mapped columns cache
+                            Column.create_mappings([column_mapping], org, import_file.import_record.last_modified_by)
+
+                            cached_column_mapping = json.loads(import_file.cached_mapped_columns)
+                            cached_column_mapping.append(column_mapping_for_cache)
+                            import_file.save_cached_mapped_columns(cached_column_mapping)
+
+                            map_model_obj.extra_data[column_name] = original_row.extra_data[footprint_details['raw_field']]
 
                         # There was an error with a field being too long [> 255 chars].
                         map_model_obj.save()
