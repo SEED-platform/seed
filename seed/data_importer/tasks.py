@@ -20,6 +20,7 @@ from itertools import chain
 
 from celery import chord, shared_task
 from celery.utils.log import get_task_logger
+from django.contrib.gis.geos import GEOSGeometry
 from django.db import IntegrityError, DataError
 from django.db import transaction
 from django.utils import timezone as tz
@@ -847,6 +848,8 @@ def hash_state_object(obj, include_extra_data=True):
             # Somehow, somewhere the data are being saved in mapping with a timezone,
             # then in matching they are removed (but the time is updated correctly)
             m.update(str(make_naive(obj_val).astimezone(tz.utc).isoformat()).encode('utf-8'))
+        elif isinstance(obj_val, GEOSGeometry):
+            m.update(GEOSGeometry(obj_val, srid=4326).wkt.encode('utf-8'))
         else:
             m.update(str(obj_val).encode('utf-8'))
 
