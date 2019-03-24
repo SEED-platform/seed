@@ -11,6 +11,8 @@ from collections import defaultdict
 from itertools import chain
 
 from django.apps import apps
+from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.gis.db.models import GeometryField
 from django.db import models
 from django.db.models import Count
 from django.utils.timezone import make_naive
@@ -93,6 +95,11 @@ class TaxLotProperty(models.Model):
                 value = f.value_from_object(instance)
                 if value:
                     value = make_naive(value).isoformat()
+            elif isinstance(f, GeometryField):
+                # If this is a GeometryField, convert (non-JSON serializable) geometry to string (wkt)
+                value = f.value_from_object(instance)
+                if value:
+                    value = GEOSGeometry(value, srid=4326).wkt
             else:
                 value = f.value_from_object(instance)
 
