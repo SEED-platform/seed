@@ -386,29 +386,30 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                                 "Skipping property or taxlot during mapping because it is identical to another row")
                             continue
 
-                        # If a footprint was provided but not populated/valid,
+                        # If a footprint was provided but footprint was not populated/valid,
                         # create a new extra_data column and save the raw value there.
-                        if footprint_details.get('obj_field') and not hasattr(map_model_obj, footprint_details['raw_field']):
-                            column_name = footprint_details['raw_field'] + ' (Invalid Footprint)'
+                        if footprint_details.get('obj_field'):
+                            if getattr(map_model_obj, footprint_details['obj_field']) is None:
+                                column_name = footprint_details['raw_field'] + ' (Invalid Footprint)'
 
-                            column_mapping_for_cache = {
-                                'from_field': column_name,
-                                'from_units': None,
-                                'to_field': column_name,
-                                'to_table_name': table
-                            }
+                                column_mapping_for_cache = {
+                                    'from_field': column_name,
+                                    'from_units': None,
+                                    'to_field': column_name,
+                                    'to_table_name': table
+                                }
 
-                            column_mapping = column_mapping_for_cache.copy()
-                            column_mapping['to_field_display_name'] = column_name
+                                column_mapping = column_mapping_for_cache.copy()
+                                column_mapping['to_field_display_name'] = column_name
 
-                            # create column and update mapped columns cache
-                            Column.create_mappings([column_mapping], org, import_file.import_record.last_modified_by)
+                                # create column and update mapped columns cache
+                                Column.create_mappings([column_mapping], org, import_file.import_record.last_modified_by)
 
-                            cached_column_mapping = json.loads(import_file.cached_mapped_columns)
-                            cached_column_mapping.append(column_mapping_for_cache)
-                            import_file.save_cached_mapped_columns(cached_column_mapping)
+                                cached_column_mapping = json.loads(import_file.cached_mapped_columns)
+                                cached_column_mapping.append(column_mapping_for_cache)
+                                import_file.save_cached_mapped_columns(cached_column_mapping)
 
-                            map_model_obj.extra_data[column_name] = original_row.extra_data[footprint_details['raw_field']]
+                                map_model_obj.extra_data[column_name] = original_row.extra_data[footprint_details['raw_field']]
 
                         # There was an error with a field being too long [> 255 chars].
                         map_model_obj.save()

@@ -128,6 +128,7 @@ class TestDemoV2(DataMappingBaseTestCase):
         # Check taxlot_footprints
         tax_lot_1 = TaxLotState.objects.get(address_line_1='050 Willow Ave SE')
         self.assertTrue(isinstance(tax_lot_1.taxlot_footprint, Polygon))
+        self.assertEqual(tax_lot_1.extra_data.get('Tax Lot Coordinates (Invalid Footprint)'), None)
 
         # For invalid footprints,
         # check that extra_data field added with ' (Invalid Footprint)' appended to original column title
@@ -155,6 +156,7 @@ class TestDemoV2(DataMappingBaseTestCase):
         # Check taxlot_footprints
         property_1 = PropertyState.objects.get(address_line_1='50 Willow Ave SE')
         self.assertTrue(isinstance(property_1.property_footprint, Polygon))
+        self.assertEqual(property_1.extra_data.get('Property Coordinates (Invalid Footprint)'), None)
 
         # For invalid footprints,
         # check that extra_data field added with ' (Invalid Footprint)' appended to original column title
