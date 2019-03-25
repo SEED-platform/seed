@@ -24,15 +24,14 @@ from seed.data_importer.tests.util import (
 from seed.landing.models import SEEDUser as User
 from seed.models import (
     Column,
+    Cycle,
     TaxLotState,
+    PropertyState,
     DATA_STATE_IMPORT,
     DATA_STATE_MAPPING,
     ASSESSED_RAW,
 )
-from seed.models import (
-    Cycle,
-    PropertyState,
-)
+from seed.models.data_quality import DataQualityCheck
 from seed.tests.util import DataMappingBaseTestCase
 from seed.utils.organizations import create_organization
 
@@ -133,9 +132,9 @@ class TestDemoV2(DataMappingBaseTestCase):
         # For invalid footprints,
         # check that extra_data field added with ' (Invalid Footprint)' appended to original column title
         tax_lot_2 = TaxLotState.objects.get(address_line_1='2655 Welstone Ave NE')
-        invalid_footprint_string = '(( -121.927490629756 37.3966545740305, -121.927428469962 37.3965654556064 ))'
+        invalid_taxlot_footprint_string = '(( -121.927490629756 37.3966545740305, -121.927428469962 37.3965654556064 ))'
         self.assertEqual(tax_lot_2.taxlot_footprint, None)
-        self.assertEqual(tax_lot_2.extra_data['Tax Lot Coordinates (Invalid Footprint)'], invalid_footprint_string)
+        self.assertEqual(tax_lot_2.extra_data['Tax Lot Coordinates (Invalid Footprint)'], invalid_taxlot_footprint_string)
 
         tax_lot_3 = TaxLotState.objects.get(address_line_1='94000 Wellington Blvd')
         self.assertEqual(tax_lot_3.taxlot_footprint, None)
@@ -161,10 +160,23 @@ class TestDemoV2(DataMappingBaseTestCase):
         # For invalid footprints,
         # check that extra_data field added with ' (Invalid Footprint)' appended to original column title
         property_2 = PropertyState.objects.get(address_line_1='2700 Welstone Ave NE')
-        invalid_footprint_string = '(( -121.927490629756 37.3966545740305, -121.927428469962 37.3965654556064 ))'
+        invalid_property_footprint_string = '(( 1 0, 0 1 ))'
         self.assertEqual(property_2.property_footprint, None)
-        self.assertEqual(property_2.extra_data['Property Coordinates (Invalid Footprint)'], invalid_footprint_string)
+        self.assertEqual(property_2.extra_data['Property Coordinates (Invalid Footprint)'], invalid_property_footprint_string)
 
         property_3 = PropertyState.objects.get(address_line_1='11 Ninth Street')
         self.assertEqual(property_3.property_footprint, None)
         self.assertEqual(property_3.extra_data['Property Coordinates (Invalid Footprint)'], 123)
+
+        # Make sure that new DQ rules have been added and apply to the states with (Invalid Footprints)
+        tdq = DataQualityCheck.retrieve(self.org.id)
+        tdq.check_data('TaxLotState', [tax_lot_1, tax_lot_2, tax_lot_3])
+        self.assertEqual(tdq.results.get(tax_lot_1.id, None), None)
+        self.assertEqual(tdq.results[tax_lot_2.id]['data_quality_results'][0]['detailed_message'], "'(( -121.927490629756 37.3...' is not a valid geometry")
+        self.assertEqual(tdq.results[tax_lot_3.id]['data_quality_results'][0]['detailed_message'], "'' is not a valid geometry")
+
+        pdq = DataQualityCheck.retrieve(self.org.id)
+        pdq.check_data('PropertyState', [property_1, property_2, property_3])
+        self.assertEqual(pdq.results.get(property_1.id, None), None)
+        self.assertEqual(pdq.results[property_2.id]['data_quality_results'][0]['detailed_message'], "'{}' is not a valid geometry".format(invalid_property_footprint_string))
+        self.assertEqual(pdq.results[property_3.id]['data_quality_results'][0]['detailed_message'], "'123' is not a valid geometry")

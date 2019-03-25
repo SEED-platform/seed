@@ -67,7 +67,10 @@ from seed.models import PropertyAuditLog
 from seed.models import TaxLotAuditLog
 from seed.models import TaxLotProperty
 from seed.models.auditlog import AUDIT_IMPORT
-from seed.models.data_quality import DataQualityCheck
+from seed.models.data_quality import (
+    DataQualityCheck,
+    Rule,
+)
 from seed.utils.buildings import get_source_type
 from seed.utils.geocode import geocode_buildings
 from seed.utils.ubid import decode_unique_ids
@@ -387,29 +390,11 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                             continue
 
                         # If a footprint was provided but footprint was not populated/valid,
-                        # create a new extra_data column and save the raw value there.
+                        # create a new extra_data column to store the raw, invalid data.
+                        # Also create a new rule for this new column
                         if footprint_details.get('obj_field'):
                             if getattr(map_model_obj, footprint_details['obj_field']) is None:
-                                column_name = footprint_details['raw_field'] + ' (Invalid Footprint)'
-
-                                column_mapping_for_cache = {
-                                    'from_field': column_name,
-                                    'from_units': None,
-                                    'to_field': column_name,
-                                    'to_table_name': table
-                                }
-
-                                column_mapping = column_mapping_for_cache.copy()
-                                column_mapping['to_field_display_name'] = column_name
-
-                                # create column and update mapped columns cache
-                                Column.create_mappings([column_mapping], org, import_file.import_record.last_modified_by)
-
-                                cached_column_mapping = json.loads(import_file.cached_mapped_columns)
-                                cached_column_mapping.append(column_mapping_for_cache)
-                                import_file.save_cached_mapped_columns(cached_column_mapping)
-
-                                map_model_obj.extra_data[column_name] = original_row.extra_data[footprint_details['raw_field']]
+                                _store_raw_footprint_and_create_rule(footprint_details, table, org, import_file, original_row, map_model_obj)
 
                         # There was an error with a field being too long [> 255 chars].
                         map_model_obj.save()
@@ -446,6 +431,39 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
     progress_data.step()
 
     return True
+
+
+def _store_raw_footprint_and_create_rule(footprint_details, table, org, import_file, original_row, map_model_obj):
+    column_name = footprint_details['raw_field'] + ' (Invalid Footprint)'
+
+    column_mapping_for_cache = {
+        'from_field': column_name,
+        'from_units': None,
+        'to_field': column_name,
+        'to_table_name': table
+    }
+
+    column_mapping = column_mapping_for_cache.copy()
+    column_mapping['to_field_display_name'] = column_name
+
+    # Create column without updating the mapped columns cache, then update cache separately
+    Column.create_mappings([column_mapping], org, import_file.import_record.last_modified_by)
+
+    cached_column_mapping = json.loads(import_file.cached_mapped_columns)
+    cached_column_mapping.append(column_mapping_for_cache)
+    import_file.save_cached_mapped_columns(cached_column_mapping)
+
+    map_model_obj.extra_data[column_name] = original_row.extra_data[footprint_details['raw_field']]
+
+    rule = {
+        'table_name': table,
+        'field': column_name,
+        'rule_type': Rule.RULE_TYPE_CUSTOM,
+        'severity': Rule.SEVERITY_ERROR,
+    }
+
+    dq, _created = DataQualityCheck.objects.get_or_create(organization=org.id)
+    dq.add_rule(rule)
 
 
 def _map_data_create_tasks(import_file_id, progress_key):
