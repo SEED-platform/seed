@@ -463,7 +463,7 @@ def _store_raw_footprint_and_create_rule(footprint_details, table, org, import_f
     }
 
     dq, _created = DataQualityCheck.objects.get_or_create(organization=org.id)
-    dq.add_rule(rule)
+    dq.add_rule_if_new(rule)
 
 
 def _map_data_create_tasks(import_file_id, progress_key):

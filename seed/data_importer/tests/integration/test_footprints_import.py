@@ -171,6 +171,7 @@ class TestDemoV2(DataMappingBaseTestCase):
         # Make sure that new DQ rules have been added and apply to the states with (Invalid Footprints)
         tdq = DataQualityCheck.retrieve(self.org.id)
         tdq.check_data('TaxLotState', [tax_lot_1, tax_lot_2, tax_lot_3])
+        initial_tdq_rules_count = tdq.rules.count()
         self.assertEqual(tdq.results.get(tax_lot_1.id, None), None)
         self.assertEqual(tdq.results[tax_lot_2.id]['data_quality_results'][0]['detailed_message'], "'(( -121.927490629756 37.3...' is not a valid geometry")
         self.assertEqual(tdq.results[tax_lot_3.id]['data_quality_results'][0]['detailed_message'], "'' is not a valid geometry")
@@ -180,3 +181,19 @@ class TestDemoV2(DataMappingBaseTestCase):
         self.assertEqual(pdq.results.get(property_1.id, None), None)
         self.assertEqual(pdq.results[property_2.id]['data_quality_results'][0]['detailed_message'], "'{}' is not a valid geometry".format(invalid_property_footprint_string))
         self.assertEqual(pdq.results[property_3.id]['data_quality_results'][0]['detailed_message'], "'123' is not a valid geometry")
+
+        # Run new import, and check that duplicate rules are not created
+        new_import_file_tax_lot = ImportFile.objects.create(
+            import_record=self.import_record_tax_lot, cycle=self.cycle
+        )
+        tax_lot_filename = getattr(self, 'filename', 'example-data-taxlots-1-invalid-footprint.xlsx')
+        filepath = osp.join(osp.dirname(__file__), '..', 'data', tax_lot_filename)
+        new_import_file_tax_lot.file = SimpleUploadedFile(
+            name=tax_lot_filename,
+            content=open(filepath, 'rb').read()
+        )
+        new_import_file_tax_lot.save()
+
+        tasks.save_raw_data(new_import_file_tax_lot.pk)
+        updated_tdq = DataQualityCheck.retrieve(self.org.id)
+        self.assertEqual(updated_tdq.rules.count(), initial_tdq_rules_count)

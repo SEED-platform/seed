@@ -785,6 +785,17 @@ class DataQualityCheck(models.Model):
 
         self.rules.add(r)
 
+    def add_rule_if_new(self, rule):
+        """
+        Add a new rule to the Data Quality Checks only if rule does not exist
+
+        :param rule: dict to be added as a new rule
+        :return: None
+        """
+        rule_exists = self.rules.get_queryset().filter(**rule).exists()
+        if not rule_exists:
+            self.add_rule(rule)
+
     def add_result_string_error(self, row_id, rule, display_name, value):
         self.results[row_id]['data_quality_results'].append(
             {
