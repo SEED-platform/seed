@@ -198,7 +198,6 @@ class TaxLotProperty(models.Model):
                 obj_columns.append(column)
                 obj_column_name_mapping[column['column_name']] = column['name']
 
-
         related_map = {}
 
         if show_columns is None:

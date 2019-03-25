@@ -6,10 +6,6 @@ import django.contrib.gis.db.models.fields
 from django.db import migrations, models
 
 
-import django.contrib.gis.db.models.fields
-from django.db import migrations, models
-
-
 def forwards(apps, schema_editor):
     Column = apps.get_model("seed", "Column")
     Organization = apps.get_model("orgs", "Organization")
