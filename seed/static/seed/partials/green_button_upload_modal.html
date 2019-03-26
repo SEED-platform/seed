@@ -1,6 +1,8 @@
 <div class="modal-header" ng-switch on="step.number">
     <h4 class="modal-title" ng-switch-when="1" translate>Select Dataset</h4> <!-- TODO: Translate this -->
-    <h4 class="modal-title" ng-switch-when="2" translate>Confirm upload</h4> <!-- TODO: Translate this -->
+    <h4 class="modal-title" ng-switch-when="2" translate>Confirm GreenButton Contents</h4> <!-- TODO: Translate this -->
+    <h4 class="modal-title" ng-switch-when="3" translate>Uploading...</h4> <!-- TODO: Translate this -->
+    <h4 class="modal-title" ng-switch-when="4" translate>Upload Complete</h4> <!-- TODO: Translate this -->
 </div>
 
 <div class="modal-body no_bottom_padding" ng-switch on="step.number">
@@ -29,6 +31,25 @@
             </div>
         </div>
     </div>
+
+    <div class="data_upload_steps container-fluid" ng-switch-when="3">
+        <div class="progress_bar_container">
+            <div class="progress_bar_copy_top"
+                 translate="UPLOADING_PROGRESS"
+                 translate-values="{ dataset_filename: filename }"></div>
+
+            <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
+            <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$ uploader.status_message ? ': ' + uploader.status_message : '' $}</div>
+        </div>
+    </div>
+
+    <div class="data_upload_steps container-fluid" ng-switch-when="4">
+        <div class="alert alert-info">
+            <p><b>Meter Reading Counts</b></p> <!-- TODO: Translate this -->
+            <div ui-grid="{ data: import_results }"></div>
+        </div>
+    </div>
+
 </div>
 
 <div class="modal-footer container-fluid" ng-switch on="step.number">

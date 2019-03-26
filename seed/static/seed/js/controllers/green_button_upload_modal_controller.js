@@ -25,6 +25,11 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
       $scope.selectedCycle = filler_cycle;
       $scope.organization_id = organization_id;
 
+      $scope.uploader = {
+        progress: 0,
+        status_message: ''
+      };
+
       dataset_service.get_datasets().then(function(result) {
         $scope.datasets = result.datasets;
       });
@@ -48,7 +53,7 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
 
           case 'upload_submitted':
             // debugger;
-            // TODO: placeholder for showing progress
+            // TODO: to be revisited
             break;
 
           case 'upload_error':
@@ -58,11 +63,12 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
 
           case 'upload_in_progress':
             // debugger;
-            // TODO: placeholder for showing progress
+            // TODO: to be revisited
             break;
 
           case 'upload_complete':
             $scope.file_id = file.file_id;
+            $scope.filename = file.filename;
             show_confirmation_info();
             break;
         }
@@ -88,9 +94,33 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
         });
       };
 
+      var saveSuccess = function (progress_data) {
+        $scope.uploader.status_message = 'saving complete';
+        $scope.uploader.progress = 100;
+        $scope.import_results = progress_data.message;
+        $scope.step.number = 4;
+      };
+
+      var saveFailure = function () {
+        // debugger; // TODO: to be revisited
+      };
+
       $scope.accept_greenbutton_meters = function() {
         uploader_service.save_raw_data($scope.file_id, $scope.selectedCycle).then(function(data) {
-          console.log(data);
+          $scope.uploader.status_message = 'saving data';
+          $scope.uploader.progress = 0;
+          $scope.step.number = 3;
+
+          var progress = _.clamp(data.progress, 0, 100);
+
+          uploader_service.check_progress_loop(
+            data.progress_key,
+            progress,
+            1 - (progress / 100),
+            saveSuccess,
+            saveFailure,
+            $scope.uploader
+          )
         });
       };
 
