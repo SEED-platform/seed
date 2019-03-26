@@ -17,7 +17,7 @@
     <content type="xml">
       <UsagePoint xmlns="http://naesb.org/espi">
         <ServiceCategory>
-          <kind>0</kind>
+          <kind>1</kind>
         </ServiceCategory>
       </UsagePoint>
     </content>
@@ -45,8 +45,8 @@
     <published>2011-11-30T12:00:00.000Z</published>
     <content type="xml">
       <ReadingType xmlns="http://naesb.org/espi">
-        <powerOfTenMultiplier>0</powerOfTenMultiplier>
-        <uom>72</uom>
+        <powerOfTenMultiplier>-3</powerOfTenMultiplier>
+        <uom>31</uom>
       </ReadingType>
     </content>
   </entry>
@@ -72,7 +72,7 @@
             <duration>900</duration>
             <start>1299388500</start>
           </timePeriod>
-          <value>1791</value>
+          <value>1792</value>
         </IntervalReading>
       </IntervalBlock>
     </content>

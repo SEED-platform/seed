@@ -20,6 +20,7 @@ from builtins import str
 from csv import DictReader, Sniffer
 
 from past.builtins import basestring
+from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from unidecode import unidecode
 from xlrd import xldate, XLRDError, open_workbook, empty_cell
 from xlrd.xldate import XLDateAmbiguous
@@ -36,13 +37,59 @@ from xlrd.xldate import XLDateAmbiguous
 
 ROW_DELIMITER = "|#*#|"
 
+
 class GreenButtonParser(object):
     def __init__(self, xml_file):
         self._xml_file = xml_file
         self._cache_data = None
 
+        # Codes taken from https://bedes.lbl.gov/sites/default/files/Green%20Button%20V0.7.2%20to%20BEDES%20V2.1%20Mapping%2020170927.pdf
+        self.kind_codes = {
+            0: 'Electricity',  # listed as 'electricity'
+            1: 'Natural Gas',  # listed as 'gas'
+        }
+        self.uom_codes = {
+            31: 'J',
+            42: 'cubic meters',  # listed as 'm3'
+            72: 'Wh',
+            119: 'cf',  # listed as 'ft3'
+            132: 'Btu',  # listed as 'btu'
+            169: 'Therms',  # listed as 'therm'
+        }
+        self.power_of_ten_codes = {
+            -12: 'p',      # Pico: 10^-12
+            -9: 'n',      # Nano: 10^-9
+            -6: 'micro',  # Micro: 10^-6
+            -3: 'm',      # Milli: 10^-3
+            -1: 'd',      # Deci: 10^-1
+            0: '',       # N/A
+            1: 'da',     # Deca: 10^1
+            2: 'h',      # Hecto: 10^2
+            3: 'k',      # Kilo: 10^3
+            6: 'M',      # Mega: 10^6
+            9: 'G',      # Giga: 10^9
+            12: 'T',      # Tera: 10^12
+        }
+
+        self._thermal_factors = kbtu_thermal_conversion_factors("US")
+
+        # These are the valid unit prefixes found in thermal conversions
+        self.thermal_factor_prefixes = {
+            'k': 3,
+            'M': 6,
+            'G': 9,
+            'C': 2,
+            'K': 3,
+        }
+
     @property
     def data(self):
+        """
+        Reads the sections of the GreenButton XML file to parse and reformat
+        the data as needed by the MetersParser.
+
+        If a valid type and unit could not be found, an empty list is returned.
+        """
         if self._cache_data is None:
             xml_string = self._xml_file.read()
             raw_data = xmltodict.parse(xml_string)
@@ -54,34 +101,78 @@ class GreenButtonParser(object):
             usage_point = href[usage_point_index]
 
             readings = readings_entry['content']['IntervalBlock']['IntervalReading']
-            # TODO: Revisit comments once clarifications are received
-            # ServiceCategory hints at type
-            # ReadingType hints at unit????
 
-            kind_entry = raw_data['feed']['entry'][0]
-            kind = kind_entry['content']['UsagePoint']['ServiceCategory']['kind']
-            # type = needs to be verified?
+            type, unit, multiplier = self._parse_type_and_unit(raw_data)
 
-            uom_entry = raw_data['feed']['entry'][2]
-            powerOfTenMultiplier = uom_entry['content']['ReadingType']['powerOfTenMultiplier']
-            uom = uom_entry['content']['ReadingType']['uom']
-            # unit = needs to be dynamic and verified
-
-            self._cache_data = [
-                {
-                    'start_time': int(reading['timePeriod']['start']),
-                    'source_id': usage_point,
-                    'duration': int(reading['timePeriod']['duration']),
-                    'Electricity Use  (kWh)': float(reading['value']) / 1000,# TODO: needs to be dynamically parsed
-                    # "{} Use  ({})".format(type, unit): float(reading['value']) * conversion_factor,
-                }
-                for reading
-                in readings
-            ]
-            # from pprint import pprint
-            # import pdb; pdb.set_trace()
+            if type and unit:
+                self._cache_data = [
+                    {
+                        'start_time': int(reading['timePeriod']['start']),
+                        'source_id': usage_point,
+                        'duration': int(reading['timePeriod']['duration']),
+                        "{} Use  ({})".format(type, unit): float(reading['value']) * multiplier,
+                    }
+                    for reading
+                    in readings
+                ]
+            else:
+                self._cache_data = []
 
         return self._cache_data
+
+    def _parse_type_and_unit(self, raw_data):
+        """
+        Uses the kind and uom/powerOfTenMultiplier to parse type and
+        raw unit, respectively.
+
+        For the given type, it first scans the valid units for that type to see
+        if the raw unit (including prefix) can be matched exactly to one of those
+        valid units.
+
+        If an exact match is not found, it scans those valid units again to find
+        an approximate match for the raw base unit (without the prefix). If an
+        approximate match is found, the prefix/powerOfTenMultiplier is used to
+        calculate the multiplier needed to convert readings from the
+        raw unit (including prefix) to the valid unit found as an approximate match.
+        """
+        kind_entry = raw_data['feed']['entry'][0]
+        kind = kind_entry['content']['UsagePoint']['ServiceCategory']['kind']
+        type = self.kind_codes.get(int(kind), None)
+
+        uom_entry = raw_data['feed']['entry'][2]
+        uom = uom_entry['content']['ReadingType']['uom']
+        raw_base_unit = self.uom_codes.get(int(uom), '')
+
+        power_of_ten_multiplier = int(uom_entry['content']['ReadingType']['powerOfTenMultiplier'])
+        raw_prefix_unit = self.power_of_ten_codes.get(power_of_ten_multiplier, None)
+
+        raw_unit = "{}{}".format(raw_prefix_unit, raw_base_unit)
+
+        valid_units_for_type = self._thermal_factors[type].keys()
+
+        exact_match_unit = next(
+            (key for key in valid_units_for_type if key.startswith(raw_unit)),
+            None
+        )
+
+        resulting_unit = None
+        multiplier = 1
+        if exact_match_unit is not None:
+            resulting_unit = exact_match_unit
+        else:
+            approx_base_unit_match = next(
+                (key for key in valid_units_for_type if raw_base_unit in key),
+                None
+            )
+            if approx_base_unit_match is not None:
+                factor_prefix = approx_base_unit_match[0]
+
+                # an exact match is expected for factor_prefix - if not, this should error
+                multiplier = 10**(power_of_ten_multiplier - self.thermal_factor_prefixes[factor_prefix])
+
+                resulting_unit = approx_base_unit_match
+
+        return type, resulting_unit, multiplier
 
 
 class GeoJSONParser(object):
