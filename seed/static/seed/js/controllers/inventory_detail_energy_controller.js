@@ -49,7 +49,7 @@ angular.module('BE.seed.controller.inventory_detail_energy', [])
             // Filter years like integers
             column.filter = inventory_service.combinedFilter();
           } else if (column._filter_type == "reading") {
-            column.cellFilter = "number: 1";
+            column.cellFilter = "number: 2";
             column.filter = inventory_service.combinedFilter();
           } else if (column._filter_type == "datetime") {
             column.filter = inventory_service.dateFilter();
