@@ -5,6 +5,7 @@ angular.module('BE.seed.controller.inventory_detail_energy', [])
     '$stateParams',
     '$uibModal',
     'energy_service',
+    'cycles',
     'inventory_service',
     'property_energy_usage',
     'spinner_utility',
@@ -16,6 +17,7 @@ angular.module('BE.seed.controller.inventory_detail_energy', [])
       $stateParams,
       $uibModal,
       energy_service,
+      cycles,
       inventory_service,
       property_energy_usage,
       spinner_utility,
@@ -26,6 +28,7 @@ angular.module('BE.seed.controller.inventory_detail_energy', [])
 
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.organization = user_service.get_organization();
+      $scope.filler_cycle = cycles.cycles[0].id;
 
       $scope.inventory = {
         view_id: $stateParams.view_id,
@@ -83,10 +86,10 @@ angular.module('BE.seed.controller.inventory_detail_energy', [])
           controller: 'green_button_upload_modal_controller',
           resolve: {
             filler_cycle: function() {
-              return inventory_service.get_last_cycle()
+              return $scope.filler_cycle;
             },
             organization_id: function() {
-              return $scope.organization.id
+              return $scope.organization.id;
             },
             view_id: function () {
               return $scope.inventory.view_id;
