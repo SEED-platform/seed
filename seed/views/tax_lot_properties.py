@@ -260,15 +260,14 @@ class TaxLotPropertyViewSet(GenericViewSet):
                     # if display_key == "Latitude":
                     #     point_geometry[1] = value
 
-
-            """ 
+            """
             Before appending feature, ensure that if there is no geometry recorded.
             Note that the GeoJson will not render if no lat/lng
             """
 
             # add style information
             if feature["properties"].get("property_state_id") is not None:
-                feature["properties"]["stroke"] = "#185189" # buildings color
+                feature["properties"]["stroke"] = "#185189"  # buildings color
             elif feature["properties"].get("taxlot_state_id") is not None:
                 feature["properties"]["stroke"] = "#10A0A0"  # buildings color
             feature["properties"]["marker-color"] = "#E74C3C"
@@ -330,10 +329,10 @@ class TaxLotPropertyViewSet(GenericViewSet):
         if is_property:
 
             unique = [dict(p) for p in set(tuple(i.items())
-                                  for i in related)]
+                                           for i in related)]
 
         else:
             unique = [dict(p) for p in set(tuple(i.items())
                                            for i in related)]
 
-        return unique;
+        return unique
