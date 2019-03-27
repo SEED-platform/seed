@@ -17,13 +17,13 @@ class GreenButtonParserTest(TestCase):
         expectation = [
             {
                 'start_time': 1299387600,
-                'source_id': '409483', # TODO:  verify out of /v1/User/6150855/UsagePoint/409483 , only 409483 is desired
+                'source_id': 'User/6150855/UsagePoint/409483/MeterReading/1/IntervalBlock/1',
                 'duration': 900,
                 'Electricity Use  (kWh)': 1.79,
             },
             {
                 'start_time': 1299388500,
-                'source_id': '409483', # TODO:  verify out of /v1/User/6150855/UsagePoint/409483 , only 409483 is desired
+                'source_id': 'User/6150855/UsagePoint/409483/MeterReading/1/IntervalBlock/1',
                 'duration': 900,
                 'Electricity Use  (kWh)': 1.792,
             }
@@ -39,13 +39,13 @@ class GreenButtonParserTest(TestCase):
         expectation = [
             {
                 'start_time': 1299387600,
-                'source_id': '409483', # TODO:  verify out of /v1/User/6150855/UsagePoint/409483 , only 409483 is desired
+                'source_id': 'User/6150855/UsagePoint/409483/MeterReading/1/IntervalBlock/1',
                 'duration': 900,
                 'Natural Gas Use  (MBtu/MMBtu (million Btu))': 1790.0,  # No conversion/multiplier
             },
             {
                 'start_time': 1299388500,
-                'source_id': '409483', # TODO:  verify out of /v1/User/6150855/UsagePoint/409483 , only 409483 is desired
+                'source_id': 'User/6150855/UsagePoint/409483/MeterReading/1/IntervalBlock/1',
                 'duration': 900,
                 'Natural Gas Use  (MBtu/MMBtu (million Btu))': 1792.0,  # No conversion/multiplier
             }
@@ -61,13 +61,13 @@ class GreenButtonParserTest(TestCase):
         expectation = [
             {
                 'start_time': 1299387600,
-                'source_id': '409483', # TODO:  verify out of /v1/User/6150855/UsagePoint/409483 , only 409483 is desired
+                'source_id': 'User/6150855/UsagePoint/409483/MeterReading/1/IntervalBlock/1',
                 'duration': 900,
                 'Natural Gas Use  (GJ)': 1790.0 / 10**12,
             },
             {
                 'start_time': 1299388500,
-                'source_id': '409483', # TODO:  verify out of /v1/User/6150855/UsagePoint/409483 , only 409483 is desired
+                'source_id': 'User/6150855/UsagePoint/409483/MeterReading/1/IntervalBlock/1',
                 'duration': 900,
                 'Natural Gas Use  (GJ)': 1792.0 / 10**12,
             }

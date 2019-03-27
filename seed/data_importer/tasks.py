@@ -670,7 +670,8 @@ def _save_greenbutton_data_create_tasks(file_pk, progress_key):
     meter, _created = Meter.objects.get_or_create(**meter_only_details)
 
     meter_id = meter.id
-    meter_source_id = meter.source_id
+
+    meter_usage_point_id = meters_parser.usage_point_id(meter.source_id)
 
     chunk_size = 1000
 
@@ -678,7 +679,7 @@ def _save_greenbutton_data_create_tasks(file_pk, progress_key):
     progress_data.save()
 
     tasks = [
-        _save_greenbutton_data_task.s(batch_readings, meter_id, meter_source_id, progress_data.key)
+        _save_greenbutton_data_task.s(batch_readings, meter_id, meter_usage_point_id, progress_data.key)
         for batch_readings
         in batch(readings, chunk_size)
     ]
@@ -687,7 +688,7 @@ def _save_greenbutton_data_create_tasks(file_pk, progress_key):
 
 
 @shared_task
-def _save_greenbutton_data_task(readings, meter_id, meter_source_id, progress_key):
+def _save_greenbutton_data_task(readings, meter_id, meter_usage_point_id, progress_key):
     """
     """
     progress_data = ProgressData.from_key(progress_key)
@@ -710,7 +711,7 @@ def _save_greenbutton_data_task(readings, meter_id, meter_source_id, progress_ke
             )
             with connection.cursor() as cursor:
                 cursor.execute(sql)
-                result['source_id'] = meter_source_id
+                result['source_id'] = meter_usage_point_id
                 result['count'] = len(cursor.fetchall())
     # except ProgrammingError as e:
     #     if "ON CONFLICT DO UPDATE command cannot affect row a second time" in str(e):

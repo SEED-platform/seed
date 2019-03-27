@@ -96,9 +96,8 @@ class GreenButtonParser(object):
 
             readings_entry = raw_data['feed']['entry'][3]
 
-            href = readings_entry['link']['@href'].split('/')
-            usage_point_index = next(i for i, substring in enumerate(href) if substring == "UsagePoint") + 1
-            usage_point = href[usage_point_index]
+            href = readings_entry['link']['@href']
+            source_id = re.sub(r'/v./', '', href)
 
             readings = readings_entry['content']['IntervalBlock']['IntervalReading']
 
@@ -108,7 +107,7 @@ class GreenButtonParser(object):
                 self._cache_data = [
                     {
                         'start_time': int(reading['timePeriod']['start']),
-                        'source_id': usage_point,
+                        'source_id': source_id,
                         'duration': int(reading['timePeriod']['duration']),
                         "{} Use  ({})".format(type, unit): float(reading['value']) * multiplier,
                     }
