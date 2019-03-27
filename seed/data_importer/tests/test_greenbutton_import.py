@@ -75,7 +75,7 @@ class GreenButtonImportTest(TestCase):
             uploaded_filename=filename,
             file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
             cycle=self.cycle,
-            matching_results_data={"property_id": self.property_1.id} # TODO: subject to change
+            matching_results_data={"property_id": self.property_1.id}
         )
 
         self.tz_obj = timezone(TIME_ZONE)
@@ -110,6 +110,10 @@ class GreenButtonImportTest(TestCase):
         self.assertEqual(meter_reading_11.reading, 1791 * 3.412 / 1000 * ureg('kBtu'))
         self.assertEqual(meter_reading_11.source_unit, "kWh")
         self.assertEqual(meter_reading_11.conversion_factor, 3.412)
+
+        # matching_results_data gets cleared out since the field wasn't meant for this
+        refreshed_import_file = ImportFile.objects.get(pk=self.import_file.id)
+        self.assertEqual(refreshed_import_file.matching_results_data, {})
 
     def test_existing_meter_is_found_and_used_if_import_file_should_reference_it(self):
         property = Property.objects.get(pk=self.property_1.id)
@@ -229,7 +233,7 @@ class GreenButtonImportTest(TestCase):
             uploaded_filename=filename,
             file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
             cycle=self.cycle,
-            matching_results_data={"property_id": self.property_1.id} # TODO: subject to change
+            matching_results_data={"property_id": self.property_1.id}
         )
 
         url = reverse("api:v2:import_files-save-raw-data", args=[one_dup_import_file.id])
