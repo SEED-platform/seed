@@ -157,19 +157,31 @@ class MetersParser(object):
     def proposed_imports(self):
         """
         Summarizes meters and readings that will be created via file import.
+
+        If this is a GreenButton import, take the UsagePoint as the source_id.
         """
         object_details = self.meter_and_reading_objs
 
         id_counts = defaultdict(lambda: 0)
 
         for obj in object_details:
-            id_counts[obj.get("source_id")] += len(obj.get("readings"))
+            id = obj.get("source_id")
+
+            if obj['source'] == Meter.GREENBUTTON:
+                id = self.usage_point_id(id)
+
+            id_counts[id] += len(obj.get("readings"))
 
         return [
             {"source_id": id, "incoming": reading_count}
             for id, reading_count
             in id_counts.items()
         ]
+
+    def usage_point_id(self, raw_source_id):
+        id_split = raw_source_id.split('/')
+        usage_point_index = next(i for i, substr in enumerate(id_split) if substr == "UsagePoint") + 1
+        return id_split[usage_point_index]
 
     def _get_property_id_from_source(self, source_id, shared_details):
         """

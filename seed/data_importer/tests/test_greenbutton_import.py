@@ -93,7 +93,7 @@ class GreenButtonImportTest(TestCase):
 
         meter_1 = refreshed_property_1.meters.get(type=Meter.ELECTRICITY)
         self.assertEqual(meter_1.source, Meter.GREENBUTTON)
-        self.assertEqual(meter_1.source_id, '409483')
+        self.assertEqual(meter_1.source_id, 'User/6150855/UsagePoint/409483/MeterReading/1/IntervalBlock/1')
         self.assertEqual(meter_1.is_virtual, False)
         self.assertEqual(meter_1.meter_readings.all().count(), 2)
 
@@ -118,7 +118,7 @@ class GreenButtonImportTest(TestCase):
         unsaved_meter = Meter(
             property=property,
             source=Meter.GREENBUTTON,
-            source_id='409483',
+            source_id='User/6150855/UsagePoint/409483/MeterReading/1/IntervalBlock/1',
             type=Meter.ELECTRICITY,
         )
         unsaved_meter.save()
@@ -160,7 +160,7 @@ class GreenButtonImportTest(TestCase):
         unsaved_meter = Meter(
             property=property,
             source=Meter.GREENBUTTON,
-            source_id='409483',
+            source_id='User/6150855/UsagePoint/409483/MeterReading/1/IntervalBlock/1',
             type=Meter.ELECTRICITY,
         )
         unsaved_meter.save()
