@@ -1,6 +1,7 @@
 angular.module('BE.seed.controller.green_button_upload_modal', [])
   .controller('green_button_upload_modal_controller', [
     '$scope',
+    '$state',
     '$uibModalInstance',
     'filler_cycle',
     'dataset_service',
@@ -10,6 +11,7 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
     'view_id',
     function (
       $scope,
+      $state,
       $uibModalInstance,
       filler_cycle,
       dataset_service,
@@ -147,6 +149,11 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
             $scope.uploader
           )
         });
+      };
+
+      $scope.refresh_page = function() {
+        $state.reload();
+        $uibModalInstance.dismiss('cancel');
       };
 
     }]);
