@@ -9,6 +9,7 @@ from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.decorators import ajax_request_class
 from seed.lib.mcm import reader
 from seed.models import (
+    Meter,
     ImportFile,
     PropertyView,
 )
@@ -51,7 +52,7 @@ class MeterViewSet(viewsets.ViewSet):
         raw_meter_data = list(parser.data)
 
         property_id = PropertyView.objects.get(pk=view_id).property_id
-        meters_parser = MetersParser(org_id, raw_meter_data, source_type="GreenButton", property_id=property_id)
+        meters_parser = MetersParser(org_id, raw_meter_data, source_type=Meter.GREENBUTTON, property_id=property_id)
 
         result = {}
 

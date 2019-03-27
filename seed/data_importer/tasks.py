@@ -670,7 +670,7 @@ def _save_greenbutton_data_create_tasks(file_pk, progress_key):
     parser = reader.GreenButtonParser(import_file.local_file)
     raw_meter_data = list(parser.data)
 
-    meters_parser = MetersParser(org_id, raw_meter_data, source_type="GreenButton", property_id=property_id)
+    meters_parser = MetersParser(org_id, raw_meter_data, source_type=Meter.GREENBUTTON, property_id=property_id)
     meter_readings = meters_parser.meter_and_reading_objs[0]  # there should only be one meter (1 property, 1 type/unit)
     proposed_imports = meters_parser.proposed_imports()
 
