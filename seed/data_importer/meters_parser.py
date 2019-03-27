@@ -37,15 +37,17 @@ class MetersParser(object):
 
     _tz = timezone(TIME_ZONE)
 
-    def __init__(self, org_id, meters_and_readings_details, source_type="Portfolio Manager", property_id=None):
-        self._cache_meter_and_reading_objs = None  # defaulted to None to show it hasn't been cached yet
-        self._cache_is_monthly = None  # defaulted to None to show it hasn't been cached yet
+    def __init__(self, org_id, meters_and_readings_details, source_type="Portfolio Manager", property_id=None): # TODO: source_type should already be Meter.SOURCE_TYPE
+        # defaulted to None to show it hasn't been cached yet
+        self._cache_is_monthly = None
+        self._cache_meter_and_reading_objs = None
+        self._cache_us_kbtu_thermal_conversion_factors = None
+
         self._meters_and_readings_details = meters_and_readings_details
         self._org_id = org_id
         self._property_id = property_id
         self._source_type = source_type
         self._unique_meters = {}
-        self._us_kbtu_thermal_conversion_factors = {}
 
         # The following are only relevant/used if property_id isn't explicitly specified
         if property_id is None:
@@ -61,11 +63,11 @@ class MetersParser(object):
         return self._cache_is_monthly
 
     @property
-    def us_kbtu_thermal_conversion_factors(self):
-        if not self._us_kbtu_thermal_conversion_factors:
-            self._us_kbtu_thermal_conversion_factors = kbtu_thermal_conversion_factors("US")
+    def _us_kbtu_thermal_conversion_factors(self):
+        if self._cache_us_kbtu_thermal_conversion_factors is None:
+            self._cache_us_kbtu_thermal_conversion_factors = kbtu_thermal_conversion_factors("US")
 
-        return self._us_kbtu_thermal_conversion_factors
+        return self._cache_us_kbtu_thermal_conversion_factors
 
     @property
     def unlinkable_pm_ids(self):
@@ -273,6 +275,6 @@ class MetersParser(object):
 
         unit = type_unit[(type_unit.find('(', use_position) + 1):(type_unit.find(')', use_position))]
 
-        factor = self.us_kbtu_thermal_conversion_factors[type][unit]
+        factor = self._us_kbtu_thermal_conversion_factors[type][unit]
 
         return type, unit, factor
