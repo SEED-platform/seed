@@ -321,6 +321,6 @@ class MeterUtilTests(TestCase):
             }
         ]
 
-        meters_parser = MetersParser(self.org.id, raw_meters, source_type="GreenButton", property_id=self.property.id)
+        meters_parser = MetersParser(self.org.id, raw_meters, source_type=Meter.GREENBUTTON, property_id=self.property.id)
 
         self.assertEqual(meters_parser.meter_and_reading_objs, expected)

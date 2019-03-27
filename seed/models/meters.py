@@ -111,8 +111,6 @@ class Meter(models.Model):
         (BUILDINGSYNC, 'BuildingSync'),
     )
 
-    source_lookup = dict((reversed(source) for source in SOURCES))
-
     is_virtual = models.BooleanField(default=False)
 
     property = models.ForeignKey(

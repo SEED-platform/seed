@@ -37,7 +37,7 @@ class MetersParser(object):
 
     _tz = timezone(TIME_ZONE)
 
-    def __init__(self, org_id, meters_and_readings_details, source_type="Portfolio Manager", property_id=None): # TODO: source_type should already be Meter.SOURCE_TYPE
+    def __init__(self, org_id, meters_and_readings_details, source_type=Meter.PORTFOLIO_MANAGER, property_id=None):
         # defaulted to None to show it hasn't been cached yet
         self._cache_is_monthly = None
         self._cache_meter_and_reading_objs = None
@@ -106,7 +106,7 @@ class MetersParser(object):
             for details in self._meters_and_readings_details:
                 meter_shared_details = {}
 
-                meter_shared_details['source'] = Meter.source_lookup[self._source_type]
+                meter_shared_details['source'] = self._source_type
 
                 # Set source_id and property_id - using source_id to find property_id if necessary
                 if meter_shared_details['source'] == Meter.PORTFOLIO_MANAGER and self._property_id is None:
@@ -149,7 +149,7 @@ class MetersParser(object):
                 "parsed_unit": unit,
             }
 
-            if self._source_type == "Portfolio Manager":
+            if self._source_type == Meter.PORTFOLIO_MANAGER:
                 type_unit_info["column_header"] = header
 
             result.append(type_unit_info)
