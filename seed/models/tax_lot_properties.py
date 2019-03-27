@@ -367,19 +367,6 @@ class TaxLotProperty(models.Model):
             if obj_dict.get('measures'):
                 del obj_dict['measures']
 
-            # # This isn't currently used, but if we ever re-enable it we need to prefetch all of the label data using a
-            # # single query for performance.  This code causes one query with a join for every record
-            # label_string = []
-            # if hasattr(obj, 'property'):
-            #     for label in obj.property.labels.all().order_by('name'):
-            #         label_string.append(label.name)
-            #     obj_dict['property_labels'] = ','.join(label_string)
-            #
-            # elif hasattr(obj, 'taxlot'):
-            #     for label in obj.taxlot.labels.all().order_by('name'):
-            #         label_string.append(label.name)
-            #     obj_dict['taxlot_labels'] = ','.join(label_string)
-
             results.append(obj_dict)
 
         return results
