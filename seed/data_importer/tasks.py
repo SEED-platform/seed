@@ -713,10 +713,10 @@ def _save_greenbutton_data_task(readings, meter_id, meter_usage_point_id, progre
                 cursor.execute(sql)
                 result['source_id'] = meter_usage_point_id
                 result['count'] = len(cursor.fetchall())
-    # except ProgrammingError as e:
-    #     if "ON CONFLICT DO UPDATE command cannot affect row a second time" in str(e):
-    #         result['source_id'] = meter_readings.get("source_id")
-    #         result['error'] = "Overlapping readings."
+    except ProgrammingError as e:
+        if "ON CONFLICT DO UPDATE command cannot affect row a second time" in str(e):
+            result['source_id'] = meter_usage_point_id
+            result['error'] = "Overlapping readings."
     except Exception:
         return progress_data.finish_with_error('data failed to import')
 

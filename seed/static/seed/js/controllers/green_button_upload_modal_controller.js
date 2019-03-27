@@ -74,7 +74,7 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
         }
       };
 
-      var base_green_button_column_defs = [
+      var base_green_button_col_defs = [
         {
           field: "source_id",
           displayName: "GreenButton UsagePoint",
@@ -85,17 +85,19 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
         },
       ];
 
-      var success_column_def = [
-        {
+      var successfully_imported_col_def = {
           field: "successfully_imported",
-        },
-      ];
+      };
+
+      var errors_col_def = {
+          field: "errors",
+      };
 
       var show_confirmation_info = function() {
         meters_service.greenbutton_parsed_meters_confirmation($scope.file_id, $scope.organization_id, $scope.view_id).then(function(result) {
           $scope.proposed_imports_options = {
               data: result.proposed_imports,
-              columnDefs: base_green_button_column_defs,
+              columnDefs: base_green_button_col_defs,
           };
           $scope.parsed_type_units = result.validated_type_units;
           $scope.step.number = 2;
@@ -105,11 +107,23 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
       var saveSuccess = function (progress_data) {
         $scope.uploader.status_message = 'saving complete';
         $scope.uploader.progress = 100;
-        $scope.import_results = {
-          data: progress_data.message,
-          columnDefs: base_green_button_column_defs.concat(success_column_def),
-        };
+        buildImportResults(progress_data.message);
         $scope.step.number = 4;
+      };
+
+      var buildImportResults = function (message) {
+        var col_defs = base_green_button_col_defs;
+
+        col_defs.push(successfully_imported_col_def);
+
+        if (message[0].hasOwnProperty("errors")) {
+          col_defs.push(errors_col_def);
+        }
+
+        $scope.import_results = {
+          data: message,
+          columnDefs: col_defs,
+        };
       };
 
       var saveFailure = function () {
