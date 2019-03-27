@@ -667,6 +667,10 @@ def _save_greenbutton_data_create_tasks(file_pk, progress_key):
     org_id = import_file.cycle.organization.id
     property_id = import_file.matching_results_data['property_id']
 
+    # matching_results_data gets cleared out since the field wasn't meant for this
+    import_file.matching_results_data = {}
+    import_file.save()
+
     parser = reader.GreenButtonParser(import_file.local_file)
     raw_meter_data = list(parser.data)
 
