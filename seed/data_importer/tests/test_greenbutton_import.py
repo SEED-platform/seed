@@ -64,13 +64,13 @@ class GreenButtonImportTest(TestCase):
 
         self.property_view_1 = PropertyView.objects.create(property=self.property_1, cycle=self.cycle, state=self.state_1)
 
-        import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
+        self.import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
 
         filename = "example-GreenButton-data.xml"
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
 
         self.import_file = ImportFile.objects.create(
-            import_record=import_record,
+            import_record=self.import_record,
             source_type="GreenButton",
             uploaded_filename=filename,
             file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
@@ -219,61 +219,34 @@ class GreenButtonImportTest(TestCase):
 
         self.assertEqual(result['message'], expectation)
 
-    # there should be an error if there exists the same time interval within the same import file
-    #   this needs to be checked before the SQL queries are sent since...
+    def test_error_noted_in_response_if_meter_has_overlapping_readings_in_the_same_batch(self):
+        filename = 'example-GreenButton-data-1002-1-dup.xml'
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
 
-    # Each file will probably be the data for only one meter
-    # but can expect it to have many readings, so...
+        one_dup_import_file = ImportFile.objects.create(
+            import_record=self.import_record,
+            source_type="GreenButton",
+            uploaded_filename=filename,
+            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            cycle=self.cycle,
+            matching_results_data={"property_id": self.property_1.id} # TODO: subject to change
+        )
 
-    # We'll probably want to be able to batch the by some, say 1000, meter_readings vs
-    # batching each meter to its own job
+        url = reverse("api:v2:import_files-save-raw-data", args=[one_dup_import_file.id])
+        post_params = {
+            'cycle_id': self.cycle.pk,
+            'organization_id': self.org.pk,
+        }
+        response = self.client.post(url, post_params)
+        result = json.loads(response.content)
 
-    # def test_error_noted_in_response_if_meter_has_overlapping_readings(self):
-    #     """
-    #     If a meter has overlapping readings, the process of upserting a reading
-    #     will encounter the issue of not knowing which reading should take
-    #     precedence over the other.
-    #
-    #     In this case, neither the meter (if applicable) nor any of its readings
-    #     are created.
-    #     """
-    #     dup_import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
-    #     dup_filename = "example-pm-monthly-meter-usage-1-dup.xlsx"
-    #     dup_filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + dup_filename
-    #
-    #     dup_file = ImportFile.objects.create(
-    #         import_record=dup_import_record,
-    #         source_type="PM Meter Usage",
-    #         uploaded_filename=dup_filename,
-    #         file=SimpleUploadedFile(name=dup_filename, content=open(dup_filepath, 'rb').read()),
-    #         cycle=self.cycle
-    #     )
-    #
-    #     url = reverse("api:v2:import_files-save-raw-data", args=[dup_file.id])
-    #     post_params = {
-    #         'cycle_id': self.cycle.pk,
-    #         'organization_id': self.org.pk,
-    #     }
-    #     response = self.client.post(url, post_params)
-    #
-    #     total_meters_count = Meter.objects.count()
-    #
-    #     result_summary = json.loads(response.content)
-    #
-    #     expected_import_summary = [
-    #         {
-    #             "portfolio_manager_id": "5766973",
-    #             "incoming": 4,
-    #             "successfully_imported": 4,
-    #             "errors": "",
-    #         },
-    #         {
-    #             "portfolio_manager_id": "5766975",
-    #             "incoming": 8,
-    #             "successfully_imported": 0,
-    #             "errors": "Overlapping readings.",
-    #         },
-    #     ]
-    #
-    #     self.assertEqual(result_summary['message'], expected_import_summary)
-    #     self.assertEqual(total_meters_count, 2)
+        expectation = [
+            {
+                "source_id": "409483",
+                "incoming": 1002,
+                "successfully_imported": 1000,
+                "errors": 'Overlapping readings.',
+            },
+        ]
+
+        self.assertEqual(result['message'], expectation)
