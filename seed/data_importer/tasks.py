@@ -652,6 +652,15 @@ def cache_first_rows(import_file, parser):
 @shared_task(ignore_result=True)
 @lock_and_track
 def _save_greenbutton_data_create_tasks(file_pk, progress_key):
+    """
+    Create GreenButton import tasks. Notably, 1 GreenButton import contains
+    data for 1 Property and 1 energy type.
+    Subsequently, this means 1 GreenButton import contains data for 1 Meter.
+
+    By first creating the single Meter for this file's Readings, the ID of this
+    Meter can be passed to the individual tasks that will actually create the
+    readings.
+    """
     progress_data = ProgressData.from_key(progress_key)
 
     import_file = ImportFile.objects.get(pk=file_pk)
@@ -690,6 +699,15 @@ def _save_greenbutton_data_create_tasks(file_pk, progress_key):
 @shared_task
 def _save_greenbutton_data_task(readings, meter_id, meter_usage_point_id, progress_key):
     """
+    This method defines an individual task to save MeterReadings for a single
+    Meter. Each task returns the results of the import.
+
+    The query creates or updates readings while associating them to the meter
+    via raw SQL upsert. Specifically, meter_id, start_time, and end_time must be
+    unique or an update occurs. Otherwise, a new reading entry is created.
+
+    If the query leads to an error regarding trying to update the same row
+    within the same query, the error is logged in the results.
     """
     progress_data = ProgressData.from_key(progress_key)
 
@@ -729,10 +747,10 @@ def _save_greenbutton_data_task(readings, meter_id, meter_usage_point_id, progre
 @shared_task
 def _save_meter_usage_data_task(meter_readings, file_pk, progress_key):
     """
-    This method creates an individual task to save a single Meter and its
+    This method defines an individual task to save a single Meter and its
     corresponding MeterReadings. Each task returns the results of the import.
 
-    Within the query get or create the meter without it's readings. Then,
+    Within the query, get or create the meter without it's readings. Then,
     create or update readings while associating them to the meter via raw SQL upsert.
     Specifically, meter_id, start_time, and end_time must be unique or an update
     occurs. Otherwise, a new reading entry is created.
