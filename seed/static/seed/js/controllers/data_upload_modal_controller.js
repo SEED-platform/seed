@@ -32,6 +32,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
     '$timeout',
     'uploader_service',
     '$state',
+    'dataset_service',
     'mapping_service',
     'matching_service',
     'meters_service',
@@ -49,6 +50,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       $timeout,
       uploader_service,
       $state,
+      dataset_service,
       mapping_service,
       matching_service,
       meters_service,
@@ -157,7 +159,14 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        *  scope
        */
       $scope.cancel = function () {
-        $uibModalInstance.dismiss('cancel');
+        // If step 15, PM Meter Usage import confirmation was not accepted by user, so delete file
+        if ($scope.step.number == 15) {
+          dataset_service.delete_file($scope.file_id).then(function (results) {
+            $uibModalInstance.dismiss('cancel');
+          });
+        } else {
+          $uibModalInstance.dismiss('cancel');
+        }
       };
       /**
        * create_dataset: uses the `uploader_service` to create a new data set. If

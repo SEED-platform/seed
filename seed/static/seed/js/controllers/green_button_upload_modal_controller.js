@@ -43,7 +43,14 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
       };
 
       $scope.cancel = function () {
-        $uibModalInstance.dismiss('cancel');
+        // If step 2, GB import confirmation was not accepted by user, so delete file
+        if ($scope.step.number == 2) {
+          dataset_service.delete_file($scope.file_id).then(function (results) {
+            $uibModalInstance.dismiss('cancel');
+          });
+        } else {
+          $uibModalInstance.dismiss('cancel');
+        }
       };
 
       $scope.uploaderfunc = function (event_message, file, progress) {
