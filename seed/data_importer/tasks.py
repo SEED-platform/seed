@@ -609,7 +609,8 @@ def finish_raw_save(results, file_pk, progress_key, summary=None):
     """
     Finish importing the raw file.
 
-    If a summary is provided (and the file is a PM Meter Usage), add results
+    If the file is a PM Meter Usage or GreenButton import, remove the cycle association.
+    If the file of one of those types and a summary is provided, add import results
     to this summary and save it to the ProgressData.
 
     :param results: List of results from the parent task
@@ -620,13 +621,18 @@ def finish_raw_save(results, file_pk, progress_key, summary=None):
     progress_data = ProgressData.from_key(progress_key)
     import_file = ImportFile.objects.get(pk=file_pk)
     import_file.raw_save_done = True
-    import_file.save()
 
     if import_file.source_type in ["PM Meter Usage", "GreenButton"] and summary is not None:
+        import_file.cycle_id = None
+
         _append_meter_import_results_to_summary(results, summary)
-        return progress_data.finish_with_success(summary)
+        finished_progress_data = progress_data.finish_with_success(summary)
     else:
-        return progress_data.finish_with_success()
+        finished_progress_data = progress_data.finish_with_success()
+
+    import_file.save()
+
+    return finished_progress_data
 
 
 def cache_first_rows(import_file, parser):

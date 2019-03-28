@@ -115,6 +115,9 @@ class GreenButtonImportTest(TestCase):
         refreshed_import_file = ImportFile.objects.get(pk=self.import_file.id)
         self.assertEqual(refreshed_import_file.matching_results_data, {})
 
+        # file should be disassociated from cycle too
+        self.assertEqual(refreshed_import_file.cycle_id, None)
+
     def test_existing_meter_is_found_and_used_if_import_file_should_reference_it(self):
         property = Property.objects.get(pk=self.property_1.id)
 

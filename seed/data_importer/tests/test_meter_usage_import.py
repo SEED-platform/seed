@@ -176,6 +176,10 @@ class MeterUsageImportTest(TestCase):
         self.assertEqual(meter_reading_41.end_time, make_aware(datetime(2016, 3, 1, 0, 0, 0), timezone=self.tz_obj))
         self.assertEqual(meter_reading_41.reading, 496310.9 * ureg('kBtu'))
 
+        # file should be disassociated from cycle too
+        refreshed_import_file = ImportFile.objects.get(pk=self.import_file.id)
+        self.assertEqual(refreshed_import_file.cycle_id, None)
+
     def test_existing_meter_is_found_and_used_if_import_file_should_reference_it(self):
         property = Property.objects.get(pk=self.property_1.id)
 
