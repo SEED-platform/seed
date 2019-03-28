@@ -1,5 +1,7 @@
 # SEED Version 2.5.0
 
+Date Range: 02/19/19 - 03/27/19
+
 Add GIS related functionality. Make sure to review the [migrations.mst](docs/source/migrations.rst) file on how to deploy the update.
 
 Closed Issues:
