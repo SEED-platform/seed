@@ -120,9 +120,8 @@ class PropertyMeterReadingsExporter():
                 # Find all meters fully contained within this month (second-level granularity)
                 interval_readings = meter.meter_readings.filter(start_time__range=(current_month_time, end_of_month), end_time__range=(current_month_time, end_of_month))
                 if interval_readings.exists():
-                    readings_list = list(interval_readings.order_by('-end_time'))
-                    last_index = len(readings_list) - 1
-                    reading_month_total = self._max_reading_total(readings_list, 0, last_index)
+                    readings_list = list(interval_readings.order_by('end_time'))
+                    reading_month_total = self._max_reading_total(readings_list)
 
                     if reading_month_total > 0:
                         month_year = '{} {}'.format(month_name[current_month_time.month], current_month_time.year)
@@ -167,9 +166,8 @@ class PropertyMeterReadingsExporter():
                 # Find all meters fully contained within this month (second-level granularity)
                 interval_readings = meter.meter_readings.filter(start_time__range=(current_year_time, end_of_year), end_time__range=(current_year_time, end_of_year))
                 if interval_readings.exists():
-                    readings_list = list(interval_readings.order_by('-end_time'))
-                    last_index = len(readings_list) - 1
-                    reading_year_total = self._max_reading_total(readings_list, 0, last_index)
+                    readings_list = list(interval_readings.order_by('end_time'))
+                    reading_year_total = self._max_reading_total(readings_list)
 
                     if reading_year_total > 0:
                         year = current_year_time.year
@@ -196,39 +194,62 @@ class PropertyMeterReadingsExporter():
 
         return type, conversion_factor
 
-    def _max_reading_total(self, sorted_readings, current_index, last_index):
+    def _latest_nonintersecting_index(self, sorted_readings, start_index):
         """
-        Recursive method to find maximum possible total of readings that do not
+        Using indexes, finds the latest reading before the current reading.
+        Specifically, this latest reading must not end after the current reading
+        starts. The index of the latest reading or -1, if none exists, is returned.
+
+        Note that the readings are expected to be sorted by ascending end_times.
+
+        This binary search is taken from
+        https://www.geeksforgeeks.org/weighted-job-scheduling-log-n-time/
+        """
+        lo = 0
+        hi = start_index - 1
+
+        while lo <= hi:
+            mid = (lo + hi) // 2
+            current_start_time = sorted_readings[start_index].start_time
+
+            if sorted_readings[mid].end_time <= current_start_time:
+                if sorted_readings[mid + 1].end_time <= current_start_time:
+                    lo = mid + 1
+                else:
+                    return mid
+            else:
+                hi = mid - 1
+        return -1
+
+    def _max_reading_total(self, sorted_readings):
+        """
+        Method to find maximum possible total of readings that do not
         overlap each other within a given interval.
 
         This is an implementation of the algorithm used to solve the
-        Weighted Job Scheduling problem.
+        Weighted Job Scheduling problem and is taken from
+        https://www.geeksforgeeks.org/weighted-job-scheduling-log-n-time/
 
-        Note that the readings are expected to be sorted by descending end_times.
+        At a high level, a running maximum is tracked to ultimately find the max.
+
+        Note that the readings are expected to be sorted by ascending end_times.
         """
-        if current_index == last_index:  # Only one valid reading left to analyze
-            return sorted_readings[current_index].reading.magnitude
-        else:
-            latest_completion = sorted_readings[current_index]
+        # Create list to track running maximum and prefill first entry
+        n = len(sorted_readings)
+        running_max = [0 for _ in range(n)]
+        running_max[0] = sorted_readings[0].reading.magnitude
 
-            # The max will always at least be the latest_completion reading
-            max_including_reading = latest_completion.reading.magnitude
+        # Fill the remaining entries in running_max
+        for i in range(1, n):
+            curr_max = sorted_readings[i].reading.magnitude
 
-            # Find the index of the next non-conflicting reading
-            latest_nonconflict_index = next(
-                (
-                    i
-                    for i, record
-                    in enumerate(sorted_readings)
-                    if (record.end_time <= latest_completion.start_time) and (i > current_index)
-                ),
-                -1
-            )
-            # If a non-conflicting reading is found, recurse with this new reading
-            if latest_nonconflict_index > -1:
-                max_including_reading += self._max_reading_total(sorted_readings, latest_nonconflict_index, last_index)
+            latest_index = self._latest_nonintersecting_index(sorted_readings, i)
 
-            # Since the list is sorted, excluding the current reading is done by skipping it's index.
-            max_excluding_reading = self._max_reading_total(sorted_readings, current_index + 1, last_index)
+            # If a latest index was found, add it's running_max value to curr_max
+            if (latest_index != -1):
+                curr_max += running_max[latest_index]
 
-            return max(max_including_reading, max_excluding_reading)
+            # Store maximum of curr_max and the prior running_max entry
+            running_max[i] = max(curr_max, running_max[i - 1])
+
+        return running_max[n - 1]
