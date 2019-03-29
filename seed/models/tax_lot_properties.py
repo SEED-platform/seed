@@ -16,6 +16,11 @@ from django.db.models import Count
 from django.utils.timezone import make_naive
 
 from seed.models.columns import Column
+from seed.utils.geocode import (
+    bounding_box_wkt,
+    long_lat_wkt,
+)
+from seed.utils.ubid import centroid_wkt
 
 logger = logging.getLogger(__name__)
 
@@ -135,6 +140,9 @@ class TaxLotProperty(models.Model):
                 'obj_state_id': 'property_state_id',
                 'obj_view_id': 'property_view_id',
                 'obj_id': 'property_id',
+                'centroid': 'centroid',
+                'bounding_box': 'bounding_box',
+                'long_lat': 'long_lat',
                 'related_class': 'TaxLotView',
                 'related_query_in': 'taxlot_view_id__in',
                 'select_related': 'taxlot',
@@ -149,6 +157,8 @@ class TaxLotProperty(models.Model):
                 'obj_state_id': 'taxlot_state_id',
                 'obj_view_id': 'taxlot_view_id',
                 'obj_id': 'taxlot_id',
+                'bounding_box': 'bounding_box',
+                'long_lat': 'long_lat',
                 'related_class': 'PropertyView',
                 'related_query_in': 'property_view_id__in',
                 'select_related': 'property',
@@ -325,8 +335,15 @@ class TaxLotProperty(models.Model):
             obj_dict[lookups['obj_state_id']] = obj.state.id
             obj_dict[lookups['obj_view_id']] = obj.id
 
+            # bring in GIS data
+            obj_dict[lookups['bounding_box']] = bounding_box_wkt(obj.state)
+            obj_dict[lookups['long_lat']] = long_lat_wkt(obj.state)
+
             # store the property / taxlot data to the object dictionary as well. This is hacky.
             if lookups['obj_class'] == 'PropertyView':
+                # bring in property-specific GIS data
+                obj_dict[lookups['centroid']] = centroid_wkt(obj.state)
+
                 if 'campus' in filtered_fields:
                     obj_dict[obj_column_name_mapping['campus']] = obj.property.campus
                 # Do not make these timestamps naive. They persist correctly.
@@ -349,19 +366,6 @@ class TaxLotProperty(models.Model):
             # remove the measures from this view for now
             if obj_dict.get('measures'):
                 del obj_dict['measures']
-
-            # # This isn't currently used, but if we ever re-enable it we need to prefetch all of the label data using a
-            # # single query for performance.  This code causes one query with a join for every record
-            # label_string = []
-            # if hasattr(obj, 'property'):
-            #     for label in obj.property.labels.all().order_by('name'):
-            #         label_string.append(label.name)
-            #     obj_dict['property_labels'] = ','.join(label_string)
-            #
-            # elif hasattr(obj, 'taxlot'):
-            #     for label in obj.taxlot.labels.all().order_by('name'):
-            #         label_string.append(label.name)
-            #     obj_dict['taxlot_labels'] = ','.join(label_string)
 
             results.append(obj_dict)
 

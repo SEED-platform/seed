@@ -796,7 +796,7 @@ msgid "File Source:"
 msgstr "Source du fichier:"
 
 msgid "FILE_TYPES_SUPPORTED"
-msgstr "Types de fichiers pris en charge: <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, et <strong>.xml</strong>."
+msgstr "Types de fichiers pris en charge: <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, <strong>.xml</strong>, <strong>.zip</strong>, <strong>.geojson</strong>, et <strong>.json</strong>."
 
 msgid "Files (Master State Only)"
 msgstr "Fichiers (état principal uniquement)"
@@ -958,8 +958,14 @@ msgstr "INTERNE"
 msgid "INVALID_EXTENSION_ALERT"
 msgstr "<strong>Désolée!</strong> SEED ne supporte actuellement pas ce format de fichier. Seuls les fichiers <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, et <strong>.xml</strong> sont pris en charge."
 
+msgid "INVALID_GEOJSON_EXTENSION_ALERT"
+msgstr "<strong>Désolée!</strong> SEED ne supporte actuellement pas ce format de fichier. Seuls les fichiers <strong>.geojson</strong>, et <strong>.json</strong> sont pris en charge."
+
 msgid "INVALID_XML_EXTENSION_ALERT"
 msgstr "<strong>Désolée!</strong> SEED ne supporte actuellement pas ce format de fichier. Seuls les fichiers <strong>.xml</strong> sont pris en charge."
+
+msgid "INVALID_XML_ZIP_EXTENSION_ALERT"
+msgstr "<strong>Désolée!</strong> SEED ne supporte actuellement pas ce format de fichier. Seuls les fichiers <strong>.xml</strong> et <strong>.zip</strong> sont pris en charge."
 
 msgid "Inventory"
 msgstr "Inventaire"

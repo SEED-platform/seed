@@ -101,12 +101,12 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, f
     check_status(result, partmsg, log, piid_flag='data_quality')
 
     # Match uploaded buildings with buildings already in the organization.
-    print('API Function: start_system_matching\n'),
-    partmsg = 'start_system_matching'
+    print('API Function: start_system_matching_and_geocoding\n'),
+    partmsg = 'start_system_matching_and_geocoding'
     payload = {'file_id': import_id, 'organization_id': organization_id}
 
     result = requests.post(
-        main_url + '/api/v2/import_files/{}/start_system_matching/'.format(import_id),
+        main_url + '/api/v2/import_files/{}/start_system_matching_and_geocoding/'.format(import_id),
         headers=header,
         params={"organization_id": organization_id},
         json=payload
@@ -115,11 +115,11 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, f
     check_status(result, partmsg, log)
 
     # Check number of matched and unmatched records
-    print('API Function: matching_results\n'),
-    partmsg = 'matching_results'
+    print('API Function: matching_and_geocoding_results\n'),
+    partmsg = 'matching_and_geocoding_results'
 
     result = requests.get(
-        main_url + '/api/v2/import_files/{}/matching_results/'.format(import_id),
+        main_url + '/api/v2/import_files/{}/matching_and_geocoding_results/'.format(import_id),
         headers=header,
         params={})
     check_status(result, partmsg, log)
@@ -546,3 +546,72 @@ def data_quality(header, main_url, organization_id, log):
                           headers=header,
                           params=params)
     check_status(result, partmsg, log)
+
+
+def export_data(header, main_url, organization_id, cycle_id, log):
+
+    # Get IDs for some properties
+    num_props = 25
+    params = {
+        'organization_id': organization_id,
+        'cycle': cycle_id,
+        'page': 1,
+        'per_page': 999999999
+    }
+    result = requests.post(main_url + '/api/v2/properties/filter/',
+                           headers=header,
+                           params=params)
+    prop_ids = [prop['id'] for prop in result.json()['results']]
+    prop_ids = prop_ids[:num_props]
+
+    print('API Function: export_properties\n')
+    partmsg = 'export_properties'
+    params = {
+        'organization_id': organization_id,
+        'cycle_id': cycle_id,
+        'inventory_type': 'properties'
+    }
+    payload = {
+        'ids': prop_ids,
+        'filename': 'test_seed_host_api---properties-export.csv',
+        'profile_id': None,
+        'export_type': 'csv',
+    }
+    result = requests.post(main_url + '/api/v2.1/tax_lot_properties/export/',
+                           headers=header,
+                           params=params,
+                           json=payload)
+    check_status(result, partmsg, log, piid_flag='export')
+
+    # Get IDs for some taxlots
+    num_lots = 25
+    params = {
+        'organization_id': organization_id,
+        'cycle': cycle_id,
+        'page': 1,
+        'per_page': 999999999
+    }
+    result = requests.post(main_url + '/api/v2/taxlots/filter/',
+                           headers=header,
+                           params=params)
+    lot_ids = [lot['id'] for lot in result.json()['results']]
+    lot_ids = lot_ids[:num_lots]
+
+    print('API Function: export_taxlots\n')
+    partmsg = 'export_taxlots'
+    params = {
+        'organization_id': organization_id,
+        'cycle_id': cycle_id,
+        'inventory_type': 'taxlots'
+    }
+    payload = {
+        'ids': lot_ids,
+        'filename': 'test_seed_host_api---taxlots-export.csv',
+        'profile_id': None,
+        'export_type': 'csv',
+    }
+    result = requests.post(main_url + '/api/v2.1/tax_lot_properties/export/',
+                           headers=header,
+                           params=params,
+                           json=payload)
+    check_status(result, partmsg, log, piid_flag='export')

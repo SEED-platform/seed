@@ -74,6 +74,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
           'analysis_start_time',
           'analysis_state',
           'analysis_state_message',
+          'geocoding_confidence',
           'campus',
           'created',
           'updated'

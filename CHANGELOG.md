@@ -1,3 +1,24 @@
+# SEED Version 2.5.0
+
+Date Range: 02/19/19 - 03/27/19
+
+Add GIS related functionality. Make sure to review the [migrations.mst](docs/source/migrations.rst) file on how to deploy the update.
+
+Closed Issues:
+- Fixed [#421]( https://github.com/SEED-platform/seed/issues/421 ), Reports - Message saying why there is no data
+- Fixed [#1730]( https://github.com/SEED-platform/seed/issues/1730 ), Error importing BuildingSync File
+- Fixed [#1734]( https://github.com/SEED-platform/seed/issues/1734 ), segfault when loading a lot of records to view in Inventory List
+- Feature [#1741]( https://github.com/SEED-platform/seed/issues/1741 ), BuildingSync batch import from UI
+- Fixed [#1811]( https://github.com/SEED-platform/seed/issues/1811 ), Unmerge Last doesn't work for BuildingSync XML files
+- Fixed [#1812]( https://github.com/SEED-platform/seed/issues/1812 ), Merge screen doesn't show extra data fields
+- Fixed [#1815]( https://github.com/SEED-platform/seed/issues/1815 ), Property labels are not in the export file
+- Fixed [#1831]( https://github.com/SEED-platform/seed/issues/1831 ), Clean up database tables
+- Feature [#1832]( https://github.com/SEED-platform/seed/issues/1832 ), Update BuildingSync to Version 1.0
+- Fixed [#1833]( https://github.com/SEED-platform/seed/issues/1833 ), Add ULID, Building Footprint, and Tax Lot Footprint to Database
+- Fixed [#1837]( https://github.com/SEED-platform/seed/issues/1837 ), Dimensionality Error
+- Fixed [#1838]( https://github.com/SEED-platform/seed/issues/1838 ), Column Mappings can fail to load in the UI
+
+
 # SEED Version 2.4.2
 
 Date Range: 01/05/19 - 02/19/19
@@ -16,7 +37,6 @@ Closed Issues:
 - Fixed [#1807]( https://github.com/SEED-platform/seed/issues/1807 ), Only fields in property or tax lot DB are shown in mapping screen (not showing Extra Data fields)
 - Fixed [#1812]( https://github.com/SEED-platform/seed/issues/1812 ), Merge screen doesn't show extra data fields
 - Fixed [#1813]( https://github.com/SEED-platform/seed/issues/1813 ), When merging records, the merged records don't show up in the detail view, only the final Master Record
-- Fixed [#1814]( https://github.com/SEED-platform/seed/issues/1814 ), Export contains (internal db?) ID
 
 # SEED Version 2.4.1
 

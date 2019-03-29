@@ -502,6 +502,7 @@ class TestColumnsByInventory(TestCase):
                 "energy_alerts": "string",
                 "energy_score": "integer",
                 "generation_date": "datetime",
+                "geocoding_confidence": "string",
                 "gross_floor_area": "float",
                 "home_energy_score_id": "string",
                 "jurisdiction_property_id": "string",
@@ -535,6 +536,7 @@ class TestColumnsByInventory(TestCase):
                 "space_alerts": "string",
                 "state": "string",
                 "ubid": "string",
+                "ulid": "string",
                 "updated": "datetime",
                 "use_description": "string",
                 "year_ending": "date",
@@ -552,15 +554,16 @@ class TestColumnsByInventory(TestCase):
                 'analysis_state', 'analysis_state_message', 'block_number',
                 'building_certification', 'building_count', 'campus', 'city',
                 'conditioned_floor_area', 'created', 'custom_id_1', 'district', 'energy_alerts',
-                'energy_score', 'generation_date', 'gross_floor_area', 'home_energy_score_id',
-                'jurisdiction_property_id', 'jurisdiction_tax_lot_id', 'latitude', 'longitude',
-                'lot_number', 'normalized_address', 'number_properties', 'occupied_floor_area',
-                'owner', 'owner_address', 'owner_city_state', 'owner_email', 'owner_postal_code',
-                'owner_telephone', 'pm_parent_property_id', 'pm_property_id', 'postal_code',
-                'property_name', 'property_notes', 'property_type', 'recent_sale_date',
-                'release_date', 'site_eui', 'site_eui_modeled', 'site_eui_weather_normalized',
-                'source_eui', 'source_eui_modeled', 'source_eui_weather_normalized', 'space_alerts',
-                'state', 'ubid', 'updated', 'use_description', 'year_built', 'year_ending']
+                'energy_score', 'generation_date', 'geocoding_confidence', 'gross_floor_area',
+                'home_energy_score_id', 'jurisdiction_property_id', 'jurisdiction_tax_lot_id',
+                'latitude', 'longitude', 'lot_number', 'normalized_address', 'number_properties',
+                'occupied_floor_area', 'owner', 'owner_address', 'owner_city_state', 'owner_email',
+                'owner_postal_code', 'owner_telephone', 'pm_parent_property_id', 'pm_property_id',
+                'postal_code', 'property_name', 'property_notes', 'property_type',
+                'recent_sale_date', 'release_date', 'site_eui', 'site_eui_modeled',
+                'site_eui_weather_normalized', 'source_eui', 'source_eui_modeled',
+                'source_eui_weather_normalized', 'space_alerts', 'state', 'ubid', 'ulid', 'updated',
+                'use_description', 'year_built', 'year_ending']
 
         self.assertCountEqual(c, data)
 
@@ -578,7 +581,7 @@ class TestColumnsByInventory(TestCase):
                     'property_notes', 'property_type', 'recent_sale_date', 'release_date',
                     'site_eui', 'site_eui_modeled', 'site_eui_weather_normalized', 'source_eui',
                     'source_eui_modeled', 'source_eui_weather_normalized', 'space_alerts', 'state',
-                    'ubid', 'updated', 'use_description', 'year_built', 'year_ending']
+                    'ubid', 'ulid', 'updated', 'use_description', 'year_built', 'year_ending']
 
         method_columns = Column.retrieve_db_field_name_for_hash_comparison()
         self.assertListEqual(method_columns, expected)

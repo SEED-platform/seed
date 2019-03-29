@@ -22,40 +22,31 @@ describe('controller: dataset_list_controller', function () {
       $state = _$state_;
       dataset_list_controller_scope = $rootScope.$new();
 
-        // mock the uploader_service factory methods used in the controller
-        // and return their promises
+      // mock the uploader_service factory methods used in the controller
+      // and return their promises
       mock_uploader_service = uploader_service;
-      spyOn(mock_uploader_service, 'get_AWS_creds')
-          .andCallFake(function () {
-            // return $q.reject for error scenario
+      spyOn(mock_uploader_service, 'create_dataset')
+        .andCallFake(function (dataset_name) {
+          // return $q.reject for error scenario
+          if (dataset_name !== 'fail') {
             return $q.resolve({
               status: 'success',
-              AWS_CLIENT_ACCESS_KEY: '123',
-              AWS_UPLOAD_BUCKET_NAME: 'test-bucket'
+              import_record_id: 3,
+              import_record_name: dataset_name
             });
-          });
-      spyOn(mock_uploader_service, 'create_dataset')
-          .andCallFake(function (dataset_name) {
-            // return $q.reject for error scenario
-            if (dataset_name !== 'fail') {
-              return $q.resolve({
-                status: 'success',
-                import_record_id: 3,
-                import_record_name: dataset_name
-              });
-            } else {
-              return $q.reject({
-                status: 'error',
-                message: 'name already in use'
-              });
-            }
-          });
-    }
+          } else {
+            return $q.reject({
+              status: 'error',
+              message: 'name already in use'
+            });
+          }
+        });
+      }
     );
   });
 
   // this is outside the beforeEach so it can be configured by each unit test
-  function create_dataset_list_controller () {
+  function create_dataset_list_controller() {
     var fake_datasets_payload = {
       status: 'success',
       datasets: [{

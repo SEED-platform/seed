@@ -55,7 +55,10 @@ def format_pint_violation(rule, source_value):
     formatted_min = formatted_max = None
     incoming_data_units = source_value.units
     rule_units = ureg(rule.units)
-    rule_value = source_value.to(rule_units)
+    if rule_units.dimensionless:
+        rule_value = source_value
+    else:
+        rule_value = source_value.to(rule_units)
 
     pretty_source_units = pretty_units(source_value)
     pretty_rule_units = pretty_units(rule_value)
@@ -641,6 +644,10 @@ class DataQualityCheck(models.Model):
 
                 if hasattr(row, rule.field):
                     value = getattr(row, rule.field)
+                    # TODO cleanup after the cleaner is better able to handle fields with units on import
+                    # If the rule doesn't specify units only consider the value for the purposes of numerical comparison
+                    if isinstance(value, ureg.Quantity) and rule.units == '':
+                        value = value.magnitude
                 elif rule.field in row.extra_data:
                     value = row.extra_data[rule.field]
                     try:
