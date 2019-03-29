@@ -18,14 +18,14 @@
     <div class="data_upload_steps container-fluid" ng-switch-when="2">
         <div class="row">
             <div class="alert alert-warning">
-                <div ng-if="true">
+                <div>
                     <p><b>Meter Reading Counts</b></p> <!-- TODO: Translate this -->
                     <div ui-grid="proposed_imports_options"></div>
                 </div>
                 <br>
                 <div>
                     <p><b>Parsed Energy Types and Units</b></p> <!-- TODO: Translate this -->
-                    <div ui-grid="{ data: parsed_type_units }"></div>
+                    <div ui-grid="parsed_type_units_options"></div>
                 </div>
                 <br>
             </div>

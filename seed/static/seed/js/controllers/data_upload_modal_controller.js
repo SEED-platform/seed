@@ -187,8 +187,11 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         });
       };
 
+      var grid_rows_to_display = function (data) {
+        return Math.min(data.length, 5)
+      };
+
       var present_parsed_meters_confirmation = function (result) {
-        $scope.parsed_type_units = result.validated_type_units;
         $scope.proposed_imports_options = {
           data: result.proposed_imports,
           columnDefs: [
@@ -201,8 +204,26 @@ angular.module('BE.seed.controller.data_upload_modal', [])
               field: "incoming",
             },
           ],
+          minRowsToShow: grid_rows_to_display(result.proposed_imports),
         }
+
+        $scope.parsed_type_units_options = {
+          data: result.validated_type_units,
+          columnDefs: [
+            {field: "parsed_type"},
+            {field: "parsed_unit"},
+          ],
+          minRowsToShow: grid_rows_to_display(result.validated_type_units),
+        };
+
         $scope.unlinkable_pm_ids = result.unlinkable_pm_ids;
+        $scope.unlinkable_pm_ids_options = {
+            data: result.unlinkable_pm_ids,
+            columnDefs: [
+              {field: "portfolio_manager_id"},
+            ],
+            minRowsToShow: grid_rows_to_display(result.unlinkable_pm_ids),
+        };
 
         $scope.uploader.in_progress = false;
         $scope.uploader.progress = 0;
@@ -376,6 +397,24 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         }, $scope.uploader);
       };
 
+      var meter_import_results = function (results) {
+        column_defs = [
+          {field: "source_id"},
+          {field: "incoming"},
+          {field: "successfully_imported"},
+        ]
+
+        if ((results[0] || {}).hasOwnProperty("errors")) {
+          column_defs.push({field: "errors"});
+        }
+
+        return {
+          data: results,
+          columnDefs: column_defs,
+          minRowsToShow: grid_rows_to_display(results),
+        }
+      };
+
       /**
        * save_raw_assessed_data: saves Assessed data
        *
@@ -392,7 +431,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             $scope.uploader.status_message = 'saving complete';
             $scope.uploader.progress = 100;
             if (is_meter_data) {
-              $scope.import_results = progress_data.message;
+              $scope.import_results_options = meter_import_results(progress_data.message);
               $scope.step.number = 16;
             } else {
               $scope.step.number = 3;

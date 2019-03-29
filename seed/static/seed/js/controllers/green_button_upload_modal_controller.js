@@ -98,17 +98,27 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
           field: "successfully_imported",
       };
 
-      var errors_col_def = {
-          field: "errors",
+      var grid_rows_to_display = function (data) {
+        return Math.min(data.length, 5)
       };
 
-      var show_confirmation_info = function() {
+      var show_confirmation_info = function () {
         meters_service.greenbutton_parsed_meters_confirmation($scope.file_id, $scope.organization_id, $scope.view_id).then(function(result) {
           $scope.proposed_imports_options = {
               data: result.proposed_imports,
               columnDefs: base_green_button_col_defs,
+              minRowsToShow: grid_rows_to_display(result.proposed_imports),
           };
-          $scope.parsed_type_units = result.validated_type_units;
+
+          $scope.parsed_type_units_options = {
+            data: result.validated_type_units,
+            columnDefs: [
+              {field: "parsed_type"},
+              {field: "parsed_unit"},
+            ],
+            minRowsToShow: grid_rows_to_display(result.validated_type_units),
+          };
+
           $scope.step.number = 2;
         });
       };
@@ -125,13 +135,14 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
 
         col_defs.push(successfully_imported_col_def);
 
-        if (message[0].hasOwnProperty("errors")) {
-          col_defs.push(errors_col_def);
+        if ((message[0] || {}).hasOwnProperty("errors")) {
+          col_defs.push({field: "errors"});
         }
 
         $scope.import_results = {
           data: message,
           columnDefs: col_defs,
+          minRowsToShow: grid_rows_to_display(message),
         };
       };
 

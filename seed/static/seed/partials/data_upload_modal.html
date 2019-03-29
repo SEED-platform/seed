@@ -77,7 +77,7 @@
         </div>
         <div class="row">
             <div class="col-sm-8 col-sm-offset-2" style="padding-top: 10px; padding-bottom: 10px;" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress">
-                <div class="btn btn-primary upload-btn" sd-uploader sourcetype="PM Meter Usage" sourceprog="" sourcever="" importrecord="dataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" ng-disabled="!selectedCycle">Upload Meter Usage</div>
+                <div class="btn btn-primary upload-btn" sd-uploader sourcetype="PM Meter Usage" sourceprog="" sourcever="" importrecord="dataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" ng-disabled="!selectedCycle">Upload Portfolio Manager Meter Usage</div> <!-- TODO: Translate this -->
             </div>
         </div>
         <!--<div class="row">
@@ -324,13 +324,13 @@
                     <br>
                     <div>
                         <p><b>Assumed Energy Types and Units</b></p> <!-- TODO: Translate this -->
-                        <div ui-grid="{ data: parsed_type_units }"></div>
+                        <div ui-grid="parsed_type_units_options"></div>
                     </div>
                     <br>
                 </div>
                 <div class="alert alert-danger" ng-if="unlinkable_pm_ids.length">
                     <p><b>Unable to Import - No associations to previously imported properties</b></p> <!-- TODO: Translate this -->
-                    <div ui-grid="{ data: unlinkable_pm_ids }"></div>
+                    <div ui-grid="unlinkable_pm_ids_options"></div>
                 </div>
             </div>
         </div>
@@ -340,11 +340,11 @@
         <div class="row">
             <div class="alert alert-info">
                 <p><b>Meter Reading Counts</b></p> <!-- TODO: Translate this -->
-                <div ui-grid="{ data: import_results }"></div>
+                <div ui-grid="import_results_options"></div>
             </div>
             <div class="alert alert-danger" ng-if="unlinkable_pm_ids.length">
                 <p><b>Unable to Import - No associations to previously imported properties</b></p> <!-- TODO: Translate this -->
-                <div ui-grid="{ data: unlinkable_pm_ids }"></div>
+                <div ui-grid="unlinkable_pm_ids_options"></div>
             </div>
         </div>
     </div>
