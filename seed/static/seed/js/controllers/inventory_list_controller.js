@@ -430,7 +430,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         var options = {};
         if (col.column_name === 'property_footprint' && col.table_name === 'PropertyState') {
           col.cellTemplate = '<div class="ui-grid-cell-contents" uib-tooltip-html="grid.appScope.polygon(row.entity, \'PropertyState\')" tooltip-append-to-body="true" tooltip-popup-delay="500">{{COL_FIELD CUSTOM_FILTERS}}</div>';
-        } else if (col.column_name === '' && col.table_name === 'TaxLotState') {
+        } else if (col.column_name === 'taxlot_footprint' && col.table_name === 'TaxLotState') {
           col.cellTemplate = '<div class="ui-grid-cell-contents" uib-tooltip-html="grid.appScope.polygon(row.entity, \'TaxLotState\')" tooltip-append-to-body="true" tooltip-popup-delay="500">{{COL_FIELD CUSTOM_FILTERS}}</div>';
         } else {
           col.cellTemplate = '<div class="ui-grid-cell-contents" uib-tooltip="{{COL_FIELD CUSTOM_FILTERS}}" tooltip-append-to-body="true" tooltip-popup-delay="500">{{COL_FIELD CUSTOM_FILTERS}}</div>';
