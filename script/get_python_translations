@@ -1,5 +1,17 @@
 #!/usr/bin/env bash
 
+# If Lokalise CLI isn't installed, download fr_CA.po and en_US.po files with
+# the settings listed below (including comments, sorting from A-Z, and replacing
+# empty translations with the base language).
+
+# Then, as shown in the code below, rename the unzipped .po files to django.po
+# and move them into the corresponding directories:
+# - seed/locale/fr_CA/LC_MESSAGES/
+# - seed/locale/en_US/LC_MESSAGES/
+
+# Then, assuming msgfmt is installed, run the `msgfmt` command
+# with the -o option referencing each of these django.po files.
+
 tmp=tmp/python_locales
 dest=locale
 
