@@ -13,8 +13,8 @@
     <h4 class="modal-title" ng-switch-when="12" translate>Error Processing Data</h4>
     <h4 class="modal-title" ng-switch-when="13" translate>Portfolio Manager Import</h4>
     <h4 class="modal-title" ng-switch-when="14" translate>Successful upload!</h4>
-    <h4 class="modal-title" ng-switch-when="15" translate>Upload Meter Readings</h4> <!-- TODO: Translate this -->
-    <h4 class="modal-title" ng-switch-when="16" translate>Meter Import Results</h4> <!-- TODO: Translate this -->
+    <h4 class="modal-title" ng-switch-when="15" translate>UPLOAD_PM_READINGS_MODAL_TITLE</h4>
+    <h4 class="modal-title" ng-switch-when="16" translate>PM_METER_IMPORT_RESULTS</h4>
 
 </div>
 <div class="modal-body no_bottom_padding" ng-switch on="step.number">
@@ -77,7 +77,7 @@
         </div>
         <div class="row">
             <div class="col-sm-8 col-sm-offset-2" style="padding-top: 10px; padding-bottom: 10px;" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress">
-                <div class="btn btn-primary upload-btn" sd-uploader sourcetype="PM Meter Usage" sourceprog="" sourcever="" importrecord="dataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" ng-disabled="!selectedCycle">Upload Portfolio Manager Meter Usage</div> <!-- TODO: Translate this -->
+                <div class="btn btn-primary upload-btn" sd-uploader sourcetype="PM Meter Usage" sourceprog="" sourcever="" importrecord="dataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" ng-disabled="!selectedCycle"><span translate>PM_METER_IMPORT_BUTTON</span></div>
             </div>
         </div>
         <!--<div class="row">
@@ -303,7 +303,7 @@
 
         </div>
     </div>
-    <!-- Step 15:  Upload Meter Readings -->
+    <!-- Step 15:  Upload PM Meter Readings -->
     <div class="data_upload_steps" ng-switch-when="15">
         <div class="progress_bar_container" ng-show="uploader.in_progress">
             <div class="progress_bar_copy_top"
@@ -314,22 +314,21 @@
             <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$ uploader.status_message ? ': ' + uploader.status_message : '' $}</div>
         </div>
         <div ng-hide="uploader.in_progress">
-            <p>Confirm the contents of meter usage file.</p> <!-- TODO: Translate this -->
             <div class="row">
                 <div class="alert alert-warning">
                     <div ng-if="proposed_imports_options.data.length">
-                        <p><b>Meter Reading Counts</b></p> <!-- TODO: Translate this -->
+                        <div translate><b>METER_READING_COUNTS_TITLE</b></div>
                         <div ui-grid="proposed_imports_options"></div>
                     </div>
                     <br>
                     <div>
-                        <p><b>Assumed Energy Types and Units</b></p> <!-- TODO: Translate this -->
+                        <div translate><b>PARSED_ENERGY_TYPES_AND_UNITS_TITLE</b></div>
                         <div ui-grid="parsed_type_units_options"></div>
                     </div>
                     <br>
                 </div>
                 <div class="alert alert-danger" ng-if="unlinkable_pm_ids.length">
-                    <p><b>Unable to Import - No associations to previously imported properties</b></p> <!-- TODO: Translate this -->
+                    <div translate><b>PM_METER_IMPORT_NO_ASSOCIATION</b></div>
                     <div ui-grid="unlinkable_pm_ids_options"></div>
                 </div>
             </div>
@@ -339,11 +338,11 @@
     <div class="data_upload_steps" ng-switch-when="16">
         <div class="row">
             <div class="alert alert-info">
-                <p><b>Meter Reading Counts</b></p> <!-- TODO: Translate this -->
+                <div translate><b>METER_READING_COUNTS_TITLE</b></div>
                 <div ui-grid="import_results_options"></div>
             </div>
             <div class="alert alert-danger" ng-if="unlinkable_pm_ids.length">
-                <p><b>Unable to Import - No associations to previously imported properties</b></p> <!-- TODO: Translate this -->
+                <div translate><b>PM_METER_IMPORT_NO_ASSOCIATION</b></div>
                 <div ui-grid="unlinkable_pm_ids_options"></div>
             </div>
         </div>

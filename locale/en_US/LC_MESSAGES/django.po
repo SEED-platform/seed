@@ -339,6 +339,9 @@ msgstr "Commercial"
 msgid "Complete"
 msgstr "Complete"
 
+msgid "COMPLETE_AND_REFRESH"
+msgstr "Complete and Refresh Page"
+
 msgid "Compliance"
 msgstr "Compliance"
 
@@ -690,6 +693,9 @@ msgstr "Email Address:"
 msgid "end_date"
 msgstr "end_date"
 
+msgid "Energy"
+msgstr "Energy"
+
 msgid "Energy Alerts"
 msgstr "Energy Alerts"
 
@@ -698,6 +704,12 @@ msgstr "Energy data file"
 
 msgid "ENERGY STAR Score"
 msgstr "ENERGY STAR Score"
+
+msgid "ENERGY_TYPE_DISPLAY_CHOICE_PLACEHOLDER"
+msgstr "----Choose energy type----"
+
+msgid "ENERGY_UNIT_DISPLAY_CHOICE_PLACEHOLDER"
+msgstr "----Change display unit----"
 
 #: config/settings/common.py:214
 msgid "English"
@@ -792,7 +804,7 @@ msgid "File Source:"
 msgstr "File Source:"
 
 msgid "FILE_TYPES_SUPPORTED"
-msgstr "File types supported: <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, and <strong>.xml</strong>."
+msgstr "File types supported: <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, <strong>.xml</strong>, <strong>.zip</strong>, <strong>.geojson</strong>, and <strong>.json</strong>."
 
 msgid "Files (Master State Only)"
 msgstr "Files (Master State Only)"
@@ -889,6 +901,9 @@ msgstr "gray"
 msgid "green"
 msgstr "green"
 
+msgid "GREENBUTTON_CONTENTS_TITLE"
+msgstr "Confirm GreenButton File Contents"
+
 msgid "Gross Floor Area"
 msgstr "Gross Floor Area"
 
@@ -951,11 +966,20 @@ msgstr "Include in your Tax Lot List all tax lots shared with you."
 msgid "INTERNAL"
 msgstr "INTERNAL"
 
+msgid "Interval"
+msgstr "Interval"
+
 msgid "INVALID_EXTENSION_ALERT"
 msgstr "<strong>Sorry!</strong> SEED doesn't currently support that file format. Only <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, and <strong>.xml</strong> files are supported."
 
+msgid "INVALID_GEOJSON_EXTENSION_ALERT"
+msgstr "<strong>Sorry!</strong> SEED doesn't currently support that file format. Only <strong>.geojson</strong> and <strong>.json</strong> files are supported."
+
 msgid "INVALID_XML_EXTENSION_ALERT"
 msgstr "<strong>Sorry!</strong> SEED doesn't currently support that file format. Only <strong>.xml</strong> files are supported."
+
+msgid "INVALID_XML_ZIP_EXTENSION_ALERT"
+msgstr "<strong>Sorry!</strong> SEED doesn't currently support that file format. Only <strong>.xml</strong> and <strong>.zip</strong> files are supported."
 
 msgid "Inventory"
 msgstr "Inventory"
@@ -1202,6 +1226,12 @@ msgstr "Merged properties"
 msgid "Merged tax lots"
 msgstr "Merged tax lots"
 
+msgid "METER_DISPLAY_SETTINGS_TITLE"
+msgstr "Meter energy display units (change one at a time)"
+
+msgid "METER_READING_COUNTS_TITLE"
+msgstr "Meter Reading Counts"
+
 msgid "Min"
 msgstr "Min"
 
@@ -1418,6 +1448,9 @@ msgstr "Pairing Settings"
 msgid "Parent ID"
 msgstr "Parent ID"
 
+msgid "PARSED_ENERGY_TYPES_AND_UNITS_TITLE"
+msgstr "Parsed Energy Types and Units"
+
 #: seed/landing/forms.py:20
 msgid "Password"
 msgstr "Password"
@@ -1484,6 +1517,15 @@ msgstr "PM Property ID"
 
 msgid "PM Release Date"
 msgstr "PM Release Date"
+
+msgid "PM_METER_IMPORT_BUTTON"
+msgstr "Upload Portfolio Manager Meter Usage"
+
+msgid "PM_METER_IMPORT_NO_ASSOCIATION"
+msgstr "Unable to Import - No associations to previously imported properties"
+
+msgid "PM_METER_IMPORT_RESULTS"
+msgstr "Portfolio Manager Meter Import Results"
 
 msgid "Postal Code (Property)"
 msgstr "Postal Code (Property)"
@@ -1793,6 +1835,9 @@ msgstr "Select the type of file(s) you would like to add to"
 
 msgid "Select which columns to include in the list:"
 msgstr "Select which columns to include in the list:"
+
+msgid "SELECT_DATA_SET_TITLE"
+msgstr "Select Data Set"
 
 msgid "SELECT_THE_TYPE_OF_FILE_TO_ADD_TO_DATASET"
 msgstr "Select the type of file(s) you would like to add to {dataset_name}."
@@ -2167,8 +2212,23 @@ msgstr "Upload your energy data file(s)"
 msgid "Upload your energy data."
 msgstr "Upload your energy data."
 
+msgid "UPLOAD_COMPLETE_TITLE"
+msgstr "Upload Complete"
+
+msgid "UPLOAD_FILE"
+msgstr "Upload File"
+
+msgid "UPLOAD_GB_DATA_BUTTON"
+msgstr "Upload GreenButton Data"
+
+msgid "UPLOAD_PM_READINGS_MODAL_TITLE"
+msgstr "Upload Portfolio Manager Meter Readings"
+
 msgid "uploading file"
 msgstr "uploading file"
+
+msgid "UPLOADING_FILE_TITLE"
+msgstr "Uploading File"
 
 msgid "UPLOADING_PROGRESS"
 msgstr "Uploading <strong>{dataset_filename}</strong>"

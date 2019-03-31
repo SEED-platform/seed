@@ -1,14 +1,14 @@
 <div class="modal-header" ng-switch on="step.number">
-    <h4 class="modal-title" ng-switch-when="1" translate>Select Dataset</h4> <!-- TODO: Translate this -->
-    <h4 class="modal-title" ng-switch-when="2" translate>Confirm GreenButton Contents</h4> <!-- TODO: Translate this -->
-    <h4 class="modal-title" ng-switch-when="3" translate>Uploading...</h4> <!-- TODO: Translate this -->
-    <h4 class="modal-title" ng-switch-when="4" translate>Upload Complete</h4> <!-- TODO: Translate this -->
+    <h4 class="modal-title" ng-switch-when="1" translate>SELECT_DATA_SET_TITLE</h4>
+    <h4 class="modal-title" ng-switch-when="2" translate>GREENBUTTON_CONTENTS_TITLE</h4>
+    <h4 class="modal-title" ng-switch-when="3" translate>UPLOADING_FILE_TITLE</h4>
+    <h4 class="modal-title" ng-switch-when="4" translate>UPLOAD_COMPLETE_TITLE</h4>
 </div>
 
 <div class="modal-body no_bottom_padding" ng-switch on="step.number">
     <div class="data_upload_steps container-fluid" ng-switch-when="1">
         <div class="row">
-            <label class="col-sm-3 col-sm-offset-1 control-label" for="selected-dataset" translate>Name</label> <!-- TODO: Translate this -->
+            <label class="col-sm-3 col-sm-offset-1 control-label" for="selected-dataset" translate>Name</label>
             <div class="col-sm-7">
                 <select name="selected-dataset" class="form-control input-sm" ng-change="datasetChanged(selectedDataset)" ng-model="selectedDataset" ng-options="dataset.name for dataset in datasets track by dataset.id"></select>
             </div>
@@ -19,12 +19,12 @@
         <div class="row">
             <div class="alert alert-warning">
                 <div>
-                    <p><b>Meter Reading Counts</b></p> <!-- TODO: Translate this -->
+                    <div translate><b>METER_READING_COUNTS_TITLE</b></div>
                     <div ui-grid="proposed_imports_options"></div>
                 </div>
                 <br>
                 <div>
-                    <p><b>Parsed Energy Types and Units</b></p> <!-- TODO: Translate this -->
+                    <div translate><b>PARSED_ENERGY_TYPES_AND_UNITS_TITLE</b></div>
                     <div ui-grid="parsed_type_units_options"></div>
                 </div>
                 <br>
@@ -45,8 +45,8 @@
 
     <div class="data_upload_steps container-fluid" ng-switch-when="4">
         <div class="alert alert-info">
-            <p><b>Meter Reading Counts</b></p> <!-- TODO: Translate this -->
             <div ui-grid="import_results"></div>
+            <div translate><b>METER_READING_COUNTS_TITLE</b></div>
         </div>
     </div>
 
@@ -54,8 +54,8 @@
 
 <div class="modal-footer container-fluid" ng-switch on="step.number">
     <div class="row text-center" ng-switch-when="1">
-        <button type="button" class="btn btn-primary col-sm-6 center-block" ng-if="!selectedDataset" ng-disabled="true">Upload File</button> <!-- TODO: Translate this -->
-        <button type="button" class="btn btn-primary col-sm-6 center-block" ng-if="selectedDataset" sd-uploader sourcetype="GreenButton" sourceprog="" sourcever="" importrecord="selectedDataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-disabled="selectedDataset === undefined">Upload File</button> <!-- TODO: Translate this -->
+        <button type="button" class="btn btn-primary col-sm-6 center-block" ng-if="!selectedDataset" ng-disabled="true" translate>UPLOAD_FILE</button>
+        <button type="button" class="btn btn-primary col-sm-6 center-block" ng-if="selectedDataset" sd-uploader sourcetype="GreenButton" sourceprog="" sourcever="" importrecord="selectedDataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-disabled="selectedDataset === undefined"><span translate>UPLOAD_FILE</span></button>
     </div>
 
     <div ng-switch-when="2">
@@ -66,7 +66,7 @@
 
     <div ng-switch-when="4">
         <div class="row text-center">
-            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="refresh_page()" translate>Complete and Refresh Page</button> <!-- TODO: Translate this -->
+            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="refresh_page()" translate>COMPLETE_AND_REFRESH</button>
         </div>
     </div>
 

@@ -16,7 +16,7 @@
 </div>
 <div class="section_content_container" ng-cloak style="clear:both; overflow:hidden;">
     <div class="form-group">
-        <label>{$:: 'Interval' | translate $}:</label> <!-- TODO: Translate this -->
+        <label>{$:: 'Interval' | translate $}:</label>
         <div style="display: inline-block;">
             <select class="form-control"
                 ng-model="interval.selected"
@@ -26,7 +26,7 @@
         </div>
     </div>
     <div class="btn-group">
-        <button type="button" ng-click="open_green_button_upload_modal()" class="btn btn-default" translate>Upload GreenButton Data</button>
+        <button type="button" ng-click="open_green_button_upload_modal()" class="btn btn-default" translate>UPLOAD_GB_DATA_BUTTON</button>
     </div>
     <div class="section_content" ng-show="has_meters">
         <div id="grid-container">
@@ -34,6 +34,6 @@
         </div>
     </div>
     <div ng-hide="has_meters">  <!-- TODO: Style needed -->
-        <div class="text-center" translate>No Data</div>  <!-- TODO: Translate this -->
+        <div class="text-center" translate>No Data</div>
     </div>
 </div>
