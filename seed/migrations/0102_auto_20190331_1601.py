@@ -13,7 +13,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('seed', '0100_auto_20190218_1600'),
+        ('seed', '0101_auto_20190331_1600'),
     ]
 
     operations = [
