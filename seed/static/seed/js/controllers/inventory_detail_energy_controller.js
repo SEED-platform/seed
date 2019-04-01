@@ -59,8 +59,10 @@ angular.module('BE.seed.controller.inventory_detail_energy', [])
 
       $scope.apply_column_settings();
 
+      // Ideally, these should be translatable, but the "selected" property
+      // should always be in English as this gets sent to BE.
       $scope.interval = {
-        options: [ // TODO: Translate this
+        options: [
           'Exact',
           'Month',
           'Year',

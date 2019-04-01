@@ -30,7 +30,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       { label: $translate.instant('kBtu/m²/year'), value: 'kBtu/m**2/year' }
     ];
 
-    // TODO: Translate where appropriate below
+    // Ideally, these the units and types for meters should be translatable.
     $scope.chosen_type_unit = {
       type: null,
       unit: null,
@@ -39,7 +39,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     // Energy type option executed within this method in order to repeat on organization update
     var get_energy_type_options = function () {
       $scope.energy_type_options = _.map($scope.org.display_meter_units, function(unit, type) {
-        return { label: $translate.instant(type) + " | " + $translate.instant(unit) , value: type }
+        return { label: type + " | " + unit , value: type }
       });
     };
     get_energy_type_options();
@@ -55,7 +55,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       $scope.chosen_type_unit.unit = null;
 
       $scope.energy_unit_options_for_type = _.map($scope.energy_unit_options[$scope.chosen_type_unit.type], function(unit) {
-        return { label: $translate.instant(unit) , value: unit }
+        return { label: unit , value: unit }
       });
     };
 
