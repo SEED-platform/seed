@@ -124,10 +124,13 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
       };
 
       var saveSuccess = function (progress_data) {
-        $scope.uploader.status_message = 'saving complete';
-        $scope.uploader.progress = 100;
-        buildImportResults(progress_data.message);
-        $scope.step.number = 4;
+        // recheck progress in order to ensure message has been appended to progress_data
+        uploader_service.check_progress(progress_data.progress_key).then(function(data) {
+          $scope.uploader.status_message = 'saving complete';
+          $scope.uploader.progress = 100;
+          buildImportResults(data.message);
+          $scope.step.number = 4;
+        });
       };
 
       var buildImportResults = function (message) {
@@ -139,7 +142,7 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
           col_defs.push({field: "errors"});
         }
 
-        $scope.import_results = {
+        $scope.import_result_options = {
           data: message,
           columnDefs: col_defs,
           minRowsToShow: grid_rows_to_display(message),
