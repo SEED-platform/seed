@@ -54,8 +54,8 @@ class TaxLotPropertyViewSet(GenericViewSet):
         .. code-block::
 
             {
-                    "ids": [1,2,3],
-                    "columns": ["tax_jurisdiction_tax_lot_id", "address_line_1", "property_view_id"]
+                "ids": [1,2,3],
+                "columns": ["tax_jurisdiction_tax_lot_id", "address_line_1", "property_view_id"]
             }
 
         ---
@@ -70,7 +70,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
               required: true
               paramType: query
             - name: ids
-              description: list of property ids to export (not property views)
+              description: list of property/taxlot ids to export (not property/taxlot views)
               required: true
               paramType: body
             - name: columns
@@ -93,7 +93,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
         if 'profile_id' not in request.data:
             profile_id = None
         else:
-            if request.data['profile_id'] == 'None':
+            if request.data['profile_id'] == 'None' or request.data['profile_id'] == '':
                 profile_id = None
             else:
                 profile_id = request.data['profile_id']
@@ -104,15 +104,17 @@ class TaxLotPropertyViewSet(GenericViewSet):
 
         # Set the first column to be the ID
         column_name_mappings = OrderedDict([('id', 'ID')])
-        column_ids, add_column_name_mappings, columns_from_database = ColumnListSetting.return_columns(org_id,
-                                                                                                       profile_id,
-                                                                                                       view_klass_str)
+        column_ids, add_column_name_mappings, columns_from_database = ColumnListSetting.return_columns(
+            org_id,
+            profile_id,
+            view_klass_str)
         column_name_mappings.update(add_column_name_mappings)
         select_related = ['state', 'cycle']
         ids = request.data.get('ids', [])
         filter_str = {'cycle': cycle_pk}
         if hasattr(view_klass, 'property'):
             select_related.append('property')
+            prefetch_related = ['property__labels']
             filter_str = {'property__organization_id': org_id}
             if ids:
                 filter_str['property__id__in'] = ids
@@ -121,23 +123,37 @@ class TaxLotPropertyViewSet(GenericViewSet):
 
         elif hasattr(view_klass, 'taxlot'):
             select_related.append('taxlot')
+            prefetch_related = ['taxlot__labels']
             filter_str = {'taxlot__organization_id': org_id}
             if ids:
                 filter_str['taxlot__id__in'] = ids
             # always export the labels
             column_name_mappings['taxlot_labels'] = 'Tax Lot Labels'
 
-        model_views = view_klass.objects.select_related(*select_related).filter(**filter_str).order_by('id')
+        model_views = view_klass.objects.select_related(*select_related).prefetch_related(*prefetch_related).filter(**filter_str).order_by('id')
 
         # get the data in a dict which includes the related data
         data = TaxLotProperty.get_related(model_views, column_ids, columns_from_database)
+
+        # add labels
+        for i, record in enumerate(model_views):
+            label_string = []
+            if hasattr(record, 'property'):
+                for label in list(record.property.labels.all().order_by('name')):
+                    label_string.append(label.name)
+                data[i]['property_labels'] = ','.join(label_string)
+
+            elif hasattr(record, 'taxlot'):
+                for label in list(record.taxlot.labels.all().order_by('name')):
+                    label_string.append(label.name)
+                data[i]['taxlot_labels'] = ','.join(label_string)
 
         # force the data into the same order as the IDs
         if ids:
             order_dict = {obj_id: index for index, obj_id in enumerate(ids)}
             data.sort(key=lambda x: order_dict[x['id']])  # x is the property/taxlot object
 
-        export_type = request.data.get('export_type')
+        export_type = request.data.get('export_type', 'csv')
 
         filename = request.data.get('filename', f"ExportedData.{export_type}")
 
@@ -183,6 +199,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
         return response
 
     def _json_response(self, filename, data, column_name_mappings):
+        polygon_fields = ["bounding_box", "centroid", "property_footprint", "taxlot_footprint"]
         features = []
         for datum in data:
             feature = {
@@ -201,9 +218,9 @@ class TaxLotPropertyViewSet(GenericViewSet):
                 elif isinstance(value, datetime.date):
                     value = value.strftime("%Y-%m-%d")
 
-                if (key == "bounding_box" or key == "centroid") and value:
+                if value and any(k in key for k in polygon_fields):
                     """
-                    If bounding_box or centroid is populated, add the 'geometry'
+                    If object is a polygon and is populated, add the 'geometry'
                     key-value-pair in the appropriate GeoJSON format.
                     When the first geometry is added, the correct format is
                     established. When/If a second geometry is added, this is
@@ -232,8 +249,8 @@ class TaxLotPropertyViewSet(GenericViewSet):
         response_dict = {
             "type": "FeatureCollection",
             "crs": {
-                    "type": "EPSG",
-                    "properties": {"code": 4326}
+                "type": "EPSG",
+                "properties": {"code": 4326}
             },
             "features": features
         }

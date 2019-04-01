@@ -4,12 +4,8 @@
 :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-import base64
 import csv
 import datetime
-import hashlib
-import hmac
-import json
 import logging
 import os
 
@@ -19,9 +15,8 @@ from django.apps import apps
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.postgres.fields import JSONField
-from django.core.exceptions import ImproperlyConfigured, ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.storage import FileSystemStorage
-from django.core.urlresolvers import reverse
 from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
 from rest_framework import serializers, status, viewsets
@@ -83,68 +78,6 @@ from seed.utils.cache import get_cache
 from seed.utils.geocode import MapQuestAPIKeyError
 
 _log = logging.getLogger(__name__)
-
-
-@api_endpoint
-@ajax_request
-@login_required
-@api_view(['POST'])
-def handle_s3_upload_complete(request):
-    """
-    Notify the system that an upload to S3 has been completed. This is
-    a necessary step after uploading to S3 or the SEED instance will not
-    be aware the file exists.
-
-    Valid source_type values are found in ``seed.models.SEED_DATA_SOURCES``
-
-    :GET: Expects the following in the query string:
-
-        key: The full path to the file, within the S3 bucket.
-            E.g. data_importer/buildings.csv
-
-        source_type: The source of the file.
-            E.g. 'Assessed Raw' or 'Portfolio Raw'
-
-        source_program: Optional value from common.mapper.Programs
-        source_version: e.g. "4.1"
-
-        import_record: The ID of the ImportRecord this file belongs to.
-
-    Returns::
-
-        {
-            'success': True,
-            'import_file_id': The ID of the newly-created ImportFile object.
-        }
-    """
-    if 'S3' not in settings.DEFAULT_FILE_STORAGE:
-        return {
-            'success': False,
-            'message': "Direct-to-S3 uploads not enabled"
-        }
-
-    import_record_pk = request.POST['import_record']
-    try:
-        record = ImportRecord.objects.get(pk=import_record_pk)
-    except ImportRecord.DoesNotExist:
-        # TODO: Remove the file from S3?
-        return {
-            'success': False,
-            'message': "Import Record %s not found" % import_record_pk
-        }
-
-    filename = request.POST['key']
-    source_type = request.POST['source_type']
-    # Add Program & Version fields (empty string if not given)
-    kw_fields = {
-        f: request.POST.get(f, '') for f in ['source_program', 'source_program_version']
-    }
-
-    f = ImportFile.objects.create(import_record=record,
-                                  file=filename,
-                                  source_type=source_type,
-                                  **kw_fields)
-    return JsonResponse({'success': True, "import_file_id": f.pk})
 
 
 class LocalUploaderViewSet(viewsets.ViewSet):
@@ -212,12 +145,6 @@ class LocalUploaderViewSet(viewsets.ViewSet):
         with open(path, 'wb+') as temp_file:
             for chunk in the_file.chunks():
                 temp_file.write(chunk)
-
-        # The s3 stuff needs to be redone someday... delete?
-        if 'S3' in settings.DEFAULT_FILE_STORAGE:
-            os.unlink(path)
-            raise ImproperlyConfigured(
-                "Local upload not supported")  # TODO: Is this wording correct?
 
         import_record_pk = request.POST.get('import_record', request.GET.get('import_record'))
         try:
@@ -367,10 +294,9 @@ class LocalUploaderViewSet(viewsets.ViewSet):
         # Create a single row for each building
         for pm_property in request.data['properties']:
 
-            # report some helpful info
+            # report some helpful info every 20 properties
             property_num += 1
-            # TODO: PYTHON3 check division
-            if property_num / 20.0 == property_num / 20:
+            if property_num % 20 == 0:
                 new_time = datetime.datetime.now()
                 _log.debug("On property number %s; current time: %s" % (property_num, new_time))
 
@@ -429,22 +355,10 @@ class LocalUploaderViewSet(viewsets.ViewSet):
             rows.append(this_row)
 
         # Then write the actual data out as csv
-        # Note that the Python 2.x csv module doesn't allow easily specifying an encoding, and it was failing on a few
-        # rows here and there with a large test dataset.  This local function allows converting to utf8 before writing
-        def py2_unicode_to_str(u):
-            # TODO: PYTHON3 check unicode check
-            if isinstance(u, basestring):
-                return u.encode('utf-8')
-            else:
-                return u
-        with open(path, 'wb') as csv_file:
+        with open(path, 'w', encoding='utf-8') as csv_file:
             pm_csv_writer = csv.writer(csv_file)
             for row_num, row in enumerate(rows):
-                try:
-                    pm_csv_writer.writerow(row)
-                except UnicodeEncodeError:
-                    cleaned_row_data = [py2_unicode_to_str(datum) for datum in row]
-                    pm_csv_writer.writerow(cleaned_row_data)
+                pm_csv_writer.writerow(row)
 
         # Look up the import record (data set)
         import_record_pk = request.data['import_record_id']
@@ -467,7 +381,7 @@ class LocalUploaderViewSet(viewsets.ViewSet):
                                          'source_program_version': '1.0'})
 
         # Return the newly created import file ID
-        return JsonResponse({'success': True, "import_file_id": f.pk})
+        return JsonResponse({'success': True, 'import_file_id': f.pk})
 
 
 @api_endpoint
@@ -480,82 +394,15 @@ def get_upload_details(request):
 
     Returns::
 
-        If S3 mode:
-
         {
-            'upload_mode': 'S3',
-            'upload_complete': A url to notify that upload is complete,
-            'signature': The url to post file details to for auth to upload to S3.
-        }
-
-        If local file system mode:
-
-        {
-            'upload_mode': 'filesystem',
             'upload_path': The url to POST files to (see local_uploader)
         }
 
     """
-    ret = {}
-    if 'S3' in settings.DEFAULT_FILE_STORAGE:
-        # S3 mode
-        ret['upload_mode'] = 'S3'
-        ret['upload_complete'] = reverse('api:v2:s3_upload_complete')
-        ret['signature'] = reverse('api:v2:sign_policy_document')
-        ret['aws_bucket_name'] = settings.AWS_BUCKET_NAME
-        ret['aws_client_key'] = settings.AWS_UPLOAD_CLIENT_KEY
-    else:
-        ret['upload_mode'] = 'filesystem'
-        ret['upload_path'] = '/api/v2/upload/'
+    ret = {
+        'upload_path': '/api/v2/upload/'
+    }
     return JsonResponse(ret)
-
-
-@api_endpoint
-@ajax_request
-@login_required
-@api_view(['POST'])
-def sign_policy_document(request):
-    """
-    Sign and return the policy document for a simple upload.
-    http://aws.amazon.com/articles/1434/#signyours3postform
-
-    Payload::
-
-        {
-         "expiration": ISO-encoded timestamp for when signature should expire,
-                       e.g. "2014-07-16T00:20:56.277Z",
-         "conditions":
-             [
-                 {"acl":"private"},
-                 {"bucket": The name of the bucket from get_upload_details},
-                 {"Content-Type":"text/csv"},
-                 {"success_action_status":"200"},
-                 {"key": filename of upload, prefixed with 'data_imports/',
-                         suffixed with a unique timestamp.
-                         e.g. 'data_imports/my_buildings.csv.1405469756'},
-                 {"x-amz-meta-category":"data_imports"},
-                 {"x-amz-meta-qqfilename": original filename}
-             ]
-        }
-
-    Returns::
-
-        {
-            "policy": A hash of the policy document. Using during upload to S3.
-            "signature": A signature of the policy document.  Also used during upload to S3.
-        }
-    """
-    policy_document = request.data
-    policy = base64.b64encode(json.dumps(policy_document))
-    signature = base64.b64encode(
-        hmac.new(
-            settings.AWS_UPLOAD_CLIENT_SECRET_KEY, policy, hashlib.sha1
-        ).digest()
-    )
-    return JsonResponse({
-        'policy': policy,
-        'signature': signature
-    })
 
 
 class MappingResultsPayloadSerializer(serializers.Serializer):

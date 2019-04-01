@@ -18,37 +18,6 @@ describe('controller: data_quality_admin_controller', function () {
     inject(function ($controller, $rootScope/*, $q*/) {
       controller = $controller;
       data_quality_admin_controller_scope = $rootScope.$new();
-      // mock_columns_service = [];
-      // mock_organization_service = [];
-      // mock_data_quality_service = [];
-
-      // mock the uploader_service factory methods used in the controller
-      // and return their promises
-      // spyOn(mock_uploader_service, 'get_AWS_creds')
-      //   .andCallFake(function () {
-      //     // return $q.reject for error scenario
-      //     return $q.resolve({
-      //       status: 'success',
-      //       AWS_CLIENT_ACCESS_KEY: '123',
-      //       AWS_UPLOAD_BUCKET_NAME: 'test-bucket'
-      //     });
-      //   });
-      // spyOn(mock_uploader_service, 'create_dataset')
-      //   .andCallFake(function (dataset_name) {
-      //     // return $q.reject for error scenario
-      //     if (dataset_name !== 'fail') {
-      //       return $q.resolve({
-      //         status: 'success',
-      //         import_record_id: 3,
-      //         import_record_name: dataset_name
-      //       });
-      //     } else {
-      //       return $q.reject({
-      //         status: 'error',
-      //         message: 'name already in use'
-      //       });
-      //     }
-      //   });
     });
   });
 

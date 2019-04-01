@@ -40,7 +40,7 @@ def default_cleaner(value, *args):
         if fuzzy_in_set(value.lower(), NONE_SYNONYMS):
             return None
         # guard against `''` coming in from an Excel empty cell
-        if (value == ''):
+        if value == '':
             return None
     return value
 
@@ -144,6 +144,11 @@ def int_cleaner(value, *args):
 
 def pint_cleaner(value, units, *args):
     """Try to convert value to a meaningful (magnitude, units) object."""
+
+    # If value is already a Quantity don't multiply the units
+    if isinstance(value, ureg.Quantity):
+        return value
+
     value = float_cleaner(value)
     # API breakage if None does not return None
     if value is None:

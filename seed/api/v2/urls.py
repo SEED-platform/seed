@@ -11,9 +11,7 @@ from seed.api.base.views import test_view_with_arg, TestReverseViewSet
 from seed.api.v2.views import ProgressViewSetV2
 from seed.data_importer.views import ImportFileViewSet
 from seed.data_importer.views import (
-    handle_s3_upload_complete,
     get_upload_details,
-    sign_policy_document,
     LocalUploaderViewSet
 )
 from seed.views.api import get_api_schema
@@ -79,9 +77,7 @@ urlpatterns = [
     # ajax routes
     url(r'^version/$', version, name='version'),
     # data uploader related things
-    url(r's3_upload_complete/$', handle_s3_upload_complete, name='s3_upload_complete'),
     url(r'get_upload_details/$', get_upload_details, name='get_upload_details'),
-    url(r'sign_policy_document/$', sign_policy_document, name='sign_policy_document'),
     url(r'^schema/$', get_api_schema, name='schema'),
     # url(r'meters/(?P<pk>\w+)/timeseries/$',
     #     MeterViewSet.as_view({'get': 'timeseries'}),

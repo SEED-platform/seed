@@ -1207,20 +1207,6 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
       });
   }]);
 
-/**
- * whitelist needed to load html partials from Amazon AWS S3
- * defaults to 'self' otherwise
- */
-SEED_app.config([
-  '$sceDelegateProvider',
-  function ($sceDelegateProvider) {
-    $sceDelegateProvider.resourceUrlWhitelist([
-      'self',
-      '**'
-    ]);
-  }
-]);
-
 SEED_app.config(['$httpProvider', function ($httpProvider) {
   $httpProvider.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
   $httpProvider.defaults.paramSerializer = 'httpParamSerializerSeed';
