@@ -11,52 +11,6 @@ from quantityfield.fields import QuantityField
 
 
 class Meter(models.Model):
-    # Previously included in model
-    # ELECTRICITY = 1
-    # NATURAL_GAS = 2
-    # FUEL_OIL = 3
-    # FUEL_OIL_NO_1 = 4
-    # FUEL_OIL_NO_2 = 5
-    # FUEL_OIL_NO_4 = 6
-    # FUEL_OIL_NO_5_AND_NO_6 = 7
-    # DISTRICT_STEAM = 8
-    # DISTRICT_HOT_WATER = 9
-    # DISTRICT_CHILLED_WATER = 10
-    # PROPANE = 11
-    # LIQUID_PROPANE = 12  # This and "PROPANE" are combined
-    # KEROSENE = 13
-    # DIESEL = 14
-    # COAL = 15  # not in list
-    # COAL_ANTHRACITE = 16
-    # COAL_BITUMINOUS = 17
-    # COKE = 18
-    # WOOD = 19
-    # OTHER = 20
-    # WATER = 21  # not in list
-    #
-    # ENERGY_TYPES = (
-    #     (ELECTRICITY, 'Electricity'),
-    #     (NATURAL_GAS, 'Natural Gas'),
-    #     (FUEL_OIL, 'Fuel Oil'),
-    #     (FUEL_OIL_NO_1, 'Fuel Oil No. 1'),
-    #     (FUEL_OIL_NO_2, 'Fuel Oil No. 2'),
-    #     (FUEL_OIL_NO_4, 'Fuel Oil No. 4'),
-    #     (FUEL_OIL_NO_5_AND_NO_6, 'Fuel Oil No. 5 and No. 6'),
-    #     (DISTRICT_STEAM, 'District Steam'),
-    #     (DISTRICT_HOT_WATER, 'District Hot Water'),
-    #     (DISTRICT_CHILLED_WATER, 'District Chilled Water'),
-    #     (PROPANE, 'Propane'),
-    #     (LIQUID_PROPANE, 'Liquid Propane'),
-    #     (KEROSENE, 'Kerosene'),
-    #     (DIESEL, 'Diesel'),
-    #     (COAL, 'Coal'),
-    #     (COAL_ANTHRACITE, 'Coal Anthracite'),
-    #     (COAL_BITUMINOUS, 'Coal Bituminous'),
-    #     (COKE, 'Coke'),
-    #     (WOOD, 'Wood'),
-    #     (OTHER, 'Other'),
-    # )
-
     COAL_ANTHRACITE = 1
     COAL_BITUMINOUS = 2
     COKE = 3
@@ -77,7 +31,6 @@ class Meter(models.Model):
     WOOD = 18
 
     # Taken from https://portfoliomanager.zendesk.com/hc/en-us/articles/211025388-Is-there-a-list-of-valid-property-level-energy-meter-types-and-unit-of-measure-combinations-
-    # Double check these against more examples
     ENERGY_TYPES = (
         (COAL_ANTHRACITE, 'Coal (anthracite)'),
         (COAL_BITUMINOUS, 'Coal (bituminous)'),
@@ -140,18 +93,10 @@ class MeterReading(models.Model):
     end_time = models.DateTimeField(db_index=True)
 
     reading = QuantityField('kBtu')
-    # cost = models.DecimalField(max_digits=11, decimal_places=4, null=True)  -------- this was included before but I don't believe this is in scope (included in reports?)
 
-    # The following two fields are tracked for historical convenience
-    source_unit = models.CharField(max_length=255, null=True, blank=True)  # TODO: if source_unit choices are well defined, use an enum
+    # The following two fields are tracked for historical purposes
+    source_unit = models.CharField(max_length=255, null=True, blank=True)
     conversion_factor = models.FloatField(null=True, blank=True)
 
     class Meta:
         unique_together = ('meter', 'start_time', 'end_time')
-
-
-# For migration - delete later once schema is closer to finalized
-# from django.contrib.postgres.operations import CreateExtension
-# CreateExtension('timescaledb'),
-# migrations.RunSQL("ALTER TABLE seed_meterreading DROP CONSTRAINT seed_meterreading_pkey"),
-# migrations.RunSQL("SELECT create_hypertable('seed_meterreading', 'start_time');"),

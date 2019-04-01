@@ -9,7 +9,6 @@ Modules
     modules/seed.data
     modules/seed.data_importer
     modules/seed.features
-    modules/seed.green_button
     modules/seed.landing
     modules/seed.lib
     modules/seed.mappings
@@ -22,4 +21,3 @@ Modules
     modules/seed.urls
     modules/seed.utils
     modules/seed.views
-

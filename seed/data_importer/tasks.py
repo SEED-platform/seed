@@ -46,7 +46,6 @@ from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     ASSESSED_BS,
     ASSESSED_RAW,
-    GREEN_BUTTON_RAW,
     PORTFOLIO_BS,
     PORTFOLIO_RAW,
     Column,
@@ -441,7 +440,6 @@ def _map_data_create_tasks(import_file_id, progress_key):
     source_type_dict = {
         'Portfolio Raw': PORTFOLIO_RAW,
         'Assessed Raw': ASSESSED_RAW,
-        'Green Button Raw': GREEN_BUTTON_RAW,
     }
     source_type = source_type_dict.get(import_file.source_type, ASSESSED_RAW)
 
