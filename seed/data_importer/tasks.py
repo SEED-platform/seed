@@ -22,7 +22,6 @@ from celery import chord, shared_task
 from celery.utils.log import get_task_logger
 from django.db import IntegrityError, DataError
 from django.db import connection, transaction
-from django.db.models import Q
 from django.db.utils import ProgrammingError
 from django.utils import timezone as tz
 from django.utils.timezone import make_naive
