@@ -305,6 +305,8 @@
     </div>
     <!-- Step 15:  Upload PM Meter Readings -->
     <div class="data_upload_steps" ng-switch-when="15">
+        <div class="alert alert-danger" ng-show="pm_meter_import_error" translate>An error occurred while processing the file. Please ensure that your file meets the required specifications.</div>
+
         <div class="progress_bar_container" ng-show="uploader.in_progress">
             <div class="progress_bar_copy_top"
                  translate="UPLOADING_PROGRESS"
@@ -315,19 +317,19 @@
         </div>
         <div ng-hide="uploader.in_progress">
             <div class="row">
-                <div class="alert alert-warning">
+                <div class="alert alert-warning" ng-if="proposed_imports_options.data.length">
                     <div ng-if="proposed_imports_options.data.length">
                         <div translate><b>METER_READING_COUNTS_TITLE</b></div>
                         <div ui-grid="proposed_imports_options"></div>
                     </div>
                     <br>
-                    <div>
+                    <div ng-if="parsed_type_units_options.data.length">
                         <div translate><b>PARSED_ENERGY_TYPES_AND_UNITS_TITLE</b></div>
                         <div ui-grid="parsed_type_units_options"></div>
                     </div>
                     <br>
                 </div>
-                <div class="alert alert-danger" ng-if="unlinkable_pm_ids.length">
+                <div class="alert alert-danger" ng-if="unlinkable_pm_ids_options.data.length">
                     <div translate><b>PM_METER_IMPORT_NO_ASSOCIATION</b></div>
                     <div ui-grid="unlinkable_pm_ids_options"></div>
                 </div>
@@ -405,7 +407,7 @@
         </div>
     </div>
     <div ng-switch-when="15">
-        <div class="row text-center" ng-hide="uploader.in_progress">
+        <div class="row text-center" ng-hide="uploader.in_progress" ng-if="proposed_imports_options.data.length">
             <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="accept_meters(file_id, cycle_id)" translate>Confirm</button>
         </div>
     </div>

@@ -218,7 +218,6 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           minRowsToShow: grid_rows_to_display(result.validated_type_units),
         };
 
-        $scope.unlinkable_pm_ids = result.unlinkable_pm_ids;
         $scope.unlinkable_pm_ids_options = {
             data: result.unlinkable_pm_ids,
             columnDefs: [
@@ -230,6 +229,15 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         $scope.uploader.in_progress = false;
         $scope.uploader.progress = 0;
 
+        $scope.step.number = 15;
+      };
+
+      var present_meter_import_error = function (error) {
+        $scope.pm_meter_import_error = true;
+        $scope.uploader.in_progress = false;
+        $scope.uploader.progress = 0;
+
+        // Go to step 15 as "Dismiss"ing from here will delete the file.
         $scope.step.number = 15;
       };
 
@@ -310,7 +318,10 @@ angular.module('BE.seed.controller.data_upload_modal', [])
               // Hardcoded as this is a 2 step process: upload & analyze
               $scope.uploader.progress = 50;
               $scope.uploader.status_message = 'analyzing file';
-              meters_service.parsed_meters_confirmation(file.file_id, $scope.organization.org_id).then(present_parsed_meters_confirmation);
+              meters_service
+                .parsed_meters_confirmation(file.file_id, $scope.organization.org_id)
+                .then(present_parsed_meters_confirmation)
+                .catch(present_meter_import_error);
             } else {
               $scope.dataset.import_file_id = file.file_id;
 
