@@ -91,8 +91,6 @@ class TestMeterViewSet(TestCase):
         )
 
     def test_parsed_meters_confirmation_verifies_energy_type_and_unit_parsed_from_column_column_defs(self):
-        # TODO: very possible/likely that this endpoint should invalidate entries
-        # but valid/invalid energy types and units may be changed before feature work ends
         url = reverse('api:v2:meters-parsed-meters-confirmation')
 
         post_params = json.dumps({
