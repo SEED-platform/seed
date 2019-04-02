@@ -28,8 +28,10 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
       $scope.organization_id = organization_id;
 
       $scope.uploader = {
+        invalid_file_contents: false,
+        invalid_xml_extension_alert: false,
         progress: 0,
-        status_message: ''
+        status_message: '',
       };
 
       dataset_service.get_datasets().then(function(result) {
@@ -56,23 +58,10 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
       $scope.uploaderfunc = function (event_message, file, progress) {
         switch (event_message) {
           case 'invalid_extension':
-            debugger;
-            // TODO: to be revisited
-            break;
-
-          case 'upload_submitted':
-            // debugger;
-            // TODO: to be revisited
-            break;
-
-          case 'upload_error':
-            debugger;
-            // TODO: to be revisited
-            break;
-
-          case 'upload_in_progress':
-            // debugger;
-            // TODO: to be revisited
+            $scope.$apply(function() {
+              $scope.uploader.invalid_xml_extension_alert = true;
+              $scope.uploader.invalid_file_contents = false;
+            });
             break;
 
           case 'upload_complete':
@@ -81,6 +70,20 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
             show_confirmation_info();
             break;
         }
+      };
+
+      var saveFailure = function (error) {
+        // Delete file and present error message
+
+        // file_id source varies depending on which step the error occurs
+        var file_id = $scope.file_id || error.config.data.file_id;
+        dataset_service.delete_file(file_id);
+
+        $scope.uploader.invalid_xml_extension_alert = false;
+        $scope.uploader.invalid_file_contents = true;
+
+        // Be sure user is back to step 1 where the error is shown and they can upload another file
+        $scope.step.number = 1;
       };
 
       var base_green_button_col_defs = [
@@ -120,7 +123,7 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
           };
 
           $scope.step.number = 2;
-        });
+        }).catch(saveFailure);
       };
 
       var saveSuccess = function (progress_data) {
@@ -149,10 +152,6 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
         };
       };
 
-      var saveFailure = function () {
-        // debugger; // TODO: to be revisited
-      };
-
       $scope.accept_greenbutton_meters = function() {
         uploader_service.save_raw_data($scope.file_id, $scope.selectedCycle).then(function(data) {
           $scope.uploader.status_message = 'saving data';
@@ -166,7 +165,7 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
             progress,
             1 - (progress / 100),
             saveSuccess,
-            saveFailure,
+            saveFailure,  // difficult to reach this as failures should be caught in confirmation step
             $scope.uploader
           )
         });
