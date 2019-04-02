@@ -54,6 +54,8 @@ xmltodict==0.11.0
 requests==2.20.0
 lxml==4.2.5
 probablepeople==0.5.4
+# Parsing and managing geojson data (this is only used in managed tasks at the moment)
+geojson==2.4.1
 
 # pnnl/buildingid
 -e git+https://github.com/SEED-platform/buildingid.git@475dfd6e0a10a8b0cd0cd06194eab72c31a00194#egg=buildingid

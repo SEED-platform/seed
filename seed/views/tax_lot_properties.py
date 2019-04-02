@@ -271,7 +271,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
             elif feature["properties"].get("taxlot_state_id") is not None:
                 feature["properties"]["stroke"] = "#10A0A0"  # buildings color
             feature["properties"]["marker-color"] = "#E74C3C"
-            #feature["properties"]["stroke-width"] = 3
+            # feature["properties"]["stroke-width"] = 3
             feature["properties"]["fill-opacity"] = 0
 
             # append feature

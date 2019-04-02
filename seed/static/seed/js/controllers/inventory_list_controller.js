@@ -355,19 +355,23 @@ angular.module('BE.seed.controller.inventory_list', [])
           var coords = Terraformer.toMercator(footprint).coordinates[0];
           var envelope = Terraformer.Tools.calculateEnvelope(footprint);
 
-          // 1px padding to allow for svg stroke
-          var scale = (outputSize - 2) / Math.max(envelope.h, envelope.w);
+          // padding to allow for svg stroke
+          var padding = 2;
+          var scale = (outputSize - padding) / Math.max(envelope.h, envelope.w);
 
-          var xOffset = (outputSize - envelope.w * scale) / 2;
-          var yOffset = (outputSize - envelope.h * scale) / 2;
+          var width = (envelope.w <= envelope.h) ? Math.ceil(envelope.w * scale + padding) : outputSize;
+          var height = (envelope.h <= envelope.w) ? Math.ceil(envelope.h * scale + padding) : outputSize;
+
+          var xOffset = (width - envelope.w * scale) / 2;
+          var yOffset = (height - envelope.h * scale) / 2;
 
           var points = _.map(coords, function(coord) {
             var x = _.round((coord[0] - envelope.x) * scale + xOffset, 2);
-            var y = _.round(outputSize - ((coord[1] - envelope.y) * scale + yOffset), 2);
+            var y = _.round(height - ((coord[1] - envelope.y) * scale + yOffset), 2);
             return x + ',' + y;
           });
 
-          var svg = '<svg height="' + outputSize + '" width="' + outputSize + '"><polygon points="' + _.initial(points).join(' ') + '" style="fill:#ffab66;stroke:#aaa;stroke-width:1;" /></svg>';
+          var svg = '<svg height="' + height + '" width="' + width + '"><polygon points="' + _.initial(points).join(' ') + '" style="fill:#ffab66;stroke:#aaa;stroke-width:1;" /></svg>';
 
           cache[record.id] = $sce.trustAsHtml(svg);
         }
