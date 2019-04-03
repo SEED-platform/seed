@@ -96,6 +96,14 @@ class Organization(models.Model):
         ('kBtu/m**2/year', 'kBtu/m²/year'),  # really, Toronto?
     )
 
+    US = 1
+    CAN = 2
+
+    THERMAL_CONVERSION_ASSUMPTION_CHOICES = (
+        (US, 'US'),
+        (CAN, 'CAN'),
+    )
+
     _default_display_meter_units = {
         type: 'kBtu'
         for type, units
@@ -135,6 +143,8 @@ class Organization(models.Model):
     query_threshold = models.IntegerField(blank=True, null=True)
 
     mapquest_api_key = models.CharField(blank=True, max_length=128, default='')
+
+    thermal_conversion_assumption = models.IntegerField(choices=THERMAL_CONVERSION_ASSUMPTION_CHOICES, default=US)
 
     def save(self, *args, **kwargs):
         """Perform checks before saving."""

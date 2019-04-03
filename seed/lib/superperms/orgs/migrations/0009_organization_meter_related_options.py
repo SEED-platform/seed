@@ -3,7 +3,7 @@
 from __future__ import unicode_literals
 
 import django.contrib.postgres.fields.jsonb
-from django.db import migrations
+from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
@@ -17,5 +17,10 @@ class Migration(migrations.Migration):
             model_name='organization',
             name='display_meter_units',
             field=django.contrib.postgres.fields.jsonb.JSONField(default={'Coal (anthracite)': 'kBtu', 'Coal (bituminous)': 'kBtu', 'Coke': 'kBtu', 'Diesel': 'kBtu', 'District Chilled Water': 'kBtu', 'District Hot Water': 'kBtu', 'District Steam': 'kBtu', 'Electricity': 'kBtu', 'Fuel Oil (No. 1)': 'kBtu', 'Fuel Oil (No. 2)': 'kBtu', 'Fuel Oil (No. 4)': 'kBtu', 'Fuel Oil (No. 5 & No. 6)': 'kBtu', 'Kerosene': 'kBtu', 'Natural Gas': 'kBtu', 'Other': 'kBtu', 'Propane': 'kBtu', 'Wood': 'kBtu'}),
+        ),
+        migrations.AddField(
+            model_name='organization',
+            name='thermal_conversion_assumption',
+            field=models.IntegerField(choices=[(1, 'US'), (2, 'CAN')], default=1),
         ),
     ]

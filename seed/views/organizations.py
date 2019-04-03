@@ -87,6 +87,7 @@ def _dict_org(request, organizations):
             'created': o.created.strftime('%Y-%m-%d') if o.created else '',
             'mapquest_api_key': o.mapquest_api_key or '',
             'display_meter_units': o.display_meter_units,
+            'thermal_conversion_assumption': o.thermal_conversion_assumption,
         }
         orgs.append(org)
 
@@ -608,7 +609,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         if desired_name is not None:
             org.name = desired_name
 
-        def is_valid_pint_spec(choice_tuples, s):
+        def is_valid_choice(choice_tuples, s):
             """choice_tuples is std model ((value, label), ...)"""
             return (s is not None) and (s in [choice[0] for choice in choice_tuples])
 
@@ -622,13 +623,13 @@ class OrganizationViewSet(viewsets.ViewSet):
                 kind, unit_string, org.name))
 
         desired_display_units_eui = posted_org.get('display_units_eui')
-        if is_valid_pint_spec(Organization.MEASUREMENT_CHOICES_EUI, desired_display_units_eui):
+        if is_valid_choice(Organization.MEASUREMENT_CHOICES_EUI, desired_display_units_eui):
             org.display_units_eui = desired_display_units_eui
         else:
             warn_bad_pint_spec('eui', desired_display_units_eui)
 
         desired_display_units_area = posted_org.get('display_units_area')
-        if is_valid_pint_spec(Organization.MEASUREMENT_CHOICES_AREA, desired_display_units_area):
+        if is_valid_choice(Organization.MEASUREMENT_CHOICES_AREA, desired_display_units_area):
             org.display_units_area = desired_display_units_area
         else:
             warn_bad_pint_spec('area', desired_display_units_area)
@@ -643,6 +644,10 @@ class OrganizationViewSet(viewsets.ViewSet):
         desired_display_meter_units = posted_org.get('display_meter_units')
         if desired_display_meter_units:
             org.display_meter_units = desired_display_meter_units
+
+        desired_thermal_conversion_assumption = posted_org.get('thermal_conversion_assumption')
+        if is_valid_choice(Organization.THERMAL_CONVERSION_ASSUMPTION_CHOICES, desired_thermal_conversion_assumption):
+            org.thermal_conversion_assumption = desired_thermal_conversion_assumption
 
         # Update MapQuest API Key if it's been changed
         if posted_org.get('mapquest_api_key', '') != org.mapquest_api_key:

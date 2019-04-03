@@ -83,6 +83,11 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       { label: '0.0004', value: 4 }
     ];
 
+    $scope.thermal_conversion_countries = [
+      { label: 'US', value: 1 },
+      { label: 'Canada', value: 2 },
+    ]
+
     /**
      * saves the updates settings
      */

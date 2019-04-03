@@ -2119,6 +2119,9 @@ msgstr "La Plate-forme SEED™ (Standard Energy Efficiency Data) est une applica
 msgid "There is also a link to the SEED-Platform Users forum, where you can connect with other users."
 msgstr "Il y a aussi un lien vers le forum SEED-Platform Users, où vous pouvez vous connecter avec d'autres utilisateurs."
 
+msgid "THERMAL_CONV_ASSUMPTION_TITLE"
+msgstr "Choix de Conversion Thermique"
+
 msgid "This cycle name is already taken."
 msgstr "Ce nom de cycle est déjà pris."
 
