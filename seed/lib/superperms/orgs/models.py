@@ -104,6 +104,7 @@ class Organization(models.Model):
         (CAN, 'CAN'),
     )
 
+    # US factors are usable here as the type-unit combinations are the same (though actual factors differ).
     _default_display_meter_units = {
         type: 'kBtu'
         for type, units

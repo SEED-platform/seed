@@ -15,7 +15,9 @@ from django.utils.timezone import (
 from pytz import timezone
 
 from seed.data_importer.meters_parser import MetersParser
+from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.landing.models import SEEDUser as User
+from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     Meter,
     PropertyState,
@@ -27,6 +29,25 @@ from seed.test_helpers.fake import (
     FakePropertyStateFactory,
 )
 from seed.utils.organizations import create_organization
+
+
+class ThermalConversionTests(TestCase):
+    def test_US_and_CAN_have_the_same_type_unit_combinations(self):
+        """
+        This was true when Meters features were first developed. Many aspects of
+        these features depend on this assumption, so this test was written.
+        """
+        def valid_type_and_unit_combinations(country):
+            return {
+                type: [unit for unit in unit_factors.keys()]
+                for type, unit_factors
+                in kbtu_thermal_conversion_factors(country).items()
+            }
+
+        us_type_units = valid_type_and_unit_combinations("US")
+        can_type_units = valid_type_and_unit_combinations("CAN")
+
+        self.assertEqual(us_type_units, can_type_units)
 
 
 class MeterUtilTests(TestCase):
@@ -115,6 +136,31 @@ class MeterUtilTests(TestCase):
         meters_parser = MetersParser(self.org.id, raw_meters)
 
         self.assertEqual(meters_parser.meter_and_reading_objs, expected)
+
+    def test_parser_uses_canadian_thermal_conversion_assumptions_if_org_specifies_it(self):
+        self.org.thermal_conversion_assumption = Organization.CAN
+        self.org.save()
+
+        raw_meters = [
+            {
+                'Property Id': self.pm_property_id,
+                'Month': 'Mar-16',
+                'Natural Gas Use  (cubic meters)': 1000
+            }
+        ]
+
+        meters_parser = MetersParser(self.org.id, raw_meters)
+        actual = meters_parser.meter_and_reading_objs[0]['readings'][0]
+
+        expected = {
+            'start_time': make_aware(datetime(2016, 3, 1, 0, 0, 0), timezone=self.tz_obj),
+            'end_time': make_aware(datetime(2016, 4, 1, 0, 0, 0), timezone=self.tz_obj),
+            'reading': 36425.0,
+            'source_unit': 'cubic meters',
+            'conversion_factor': 36.425,
+        }
+
+        self.assertEqual(actual, expected)
 
     def test_parse_meter_details_works_with_multiple_meters_impacted_by_a_leap_year(self):
         raw_meters = [

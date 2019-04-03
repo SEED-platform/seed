@@ -16,6 +16,7 @@ from django.utils.timezone import make_aware
 
 from pytz import timezone
 
+from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     Meter,
     PropertyState,
@@ -65,7 +66,8 @@ class MetersParser(object):
     @property
     def _us_kbtu_thermal_conversion_factors(self):
         if self._cache_us_kbtu_thermal_conversion_factors is None:
-            self._cache_us_kbtu_thermal_conversion_factors = kbtu_thermal_conversion_factors("US")
+            org_preference = Organization.objects.get(pk=self._org_id).get_thermal_conversion_assumption_display()
+            self._cache_us_kbtu_thermal_conversion_factors = kbtu_thermal_conversion_factors(org_preference)
 
         return self._cache_us_kbtu_thermal_conversion_factors
 

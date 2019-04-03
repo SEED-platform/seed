@@ -71,6 +71,7 @@ class GreenButtonParser(object):
             12: 'T',      # Tera: 10^12
         }
 
+        # US factors work for CAN factors as this is only used to find valid unit types for a given energy type
         self._thermal_factors = kbtu_thermal_conversion_factors("US")
 
         # These are the valid unit prefixes found in thermal conversions

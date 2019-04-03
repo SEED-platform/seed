@@ -57,7 +57,18 @@ def chunk_iterable(iterlist, chunk_size):
 
 
 def kbtu_thermal_conversion_factors(country):
-    # Conversion factors taken from https://portfoliomanager.energystar.gov/pdf/reference/Thermal%20Conversions.pdf
+    """
+    Returns thermal conversion factors provided by Portfolio Manager.
+    https://portfoliomanager.energystar.gov/pdf/reference/Thermal%20Conversions.pdf
+
+    Consideration was taken regarding having the provided 'country' value align with
+    Organizations' thermal_conversion_assumption enums. Even though these two
+    should be aligned, the concept and need for these factors are not specific
+    soley to Orgs. So the 'country' value here is expected to be a string.
+    Specifically, there are instances of in this codebase where the factors are
+    needed irrespective of any Organization's preferences.
+    """
+
     factors = defaultdict(lambda: {})
 
     if country == "US":
@@ -166,7 +177,112 @@ def kbtu_thermal_conversion_factors(country):
         factors["Wood"]["Tonnes (metric)"] = 15857.00000000000
         factors["Wood"]["GJ"] = 947.81700000000
         factors["Other"]["kBtu"] = 1.00000000000
-    # elif country == "CAN": finish once these numbers are confirmed
+    elif country == "CAN":
+        factors['Electricity']['kBtu'] = 1.00000000
+        factors['Electricity']['MBtu/MMBtu (million Btu)'] = 1000.00000000
+        factors['Electricity']['kWh'] = 3.41200000
+        factors['Electricity']['MWh (million Watt-hours)'] = 3412.00000000
+        factors['Electricity']['GJ'] = 947.81700000
+        factors['Natural Gas']['kBtu'] = 1.00000000
+        factors['Natural Gas']['MBtu/MMBtu (million Btu)'] = 1000.00000000
+        factors['Natural Gas']['cf'] = 1.03100000
+        factors['Natural Gas']['Ccf (hundred cubic feet)'] = 103.14300000
+        factors['Natural Gas']['Kcf (thousand cubic feet)'] = 1031.00000000
+        factors['Natural Gas']['Mcf (million cubic feet)'] = 1031430.00000000
+        factors['Natural Gas']['Therms'] = 100.00000000
+        factors['Natural Gas']['cubic meters'] = 36.42500000
+        factors['Natural Gas']['GJ'] = 947.81700000
+        factors['Fuel Oil (No. 1)']['kBtu'] = 1.00000000
+        factors['Fuel Oil (No. 1)']['MBtu/MMBtu (million Btu)'] = 1000.00000000
+        factors['Fuel Oil (No. 1)']['Gallons (US)'] = 139.21000000
+        factors['Fuel Oil (No. 1)']['Gallons (UK)'] = 167.18400000
+        factors['Fuel Oil (No. 1)']['liters'] = 36.77500000
+        factors['Fuel Oil (No. 1)']['GJ'] = 947.81700000
+        factors['Fuel Oil (No. 2)']['kBtu'] = 1.00000000
+        factors['Fuel Oil (No. 2)']['MBtu/MMBtu (million Btu)'] = 1000.00000000
+        factors['Fuel Oil (No. 2)']['Gallons (US)'] = 139.21000000
+        factors['Fuel Oil (No. 2)']['Gallons (UK)'] = 167.18400000
+        factors['Fuel Oil (No. 2)']['liters'] = 36.77500000
+        factors['Fuel Oil (No. 2)']['GJ'] = 947.81700000
+        factors['Fuel Oil (No. 4)']['kBtu'] = 1.00000000
+        factors['Fuel Oil (No. 4)']['MBtu/MMBtu (million Btu)'] = 1000.00000000
+        factors['Fuel Oil (No. 4)']['Gallons (US)'] = 139.21000000
+        factors['Fuel Oil (No. 4)']['Gallons (UK)'] = 167.18400000
+        factors['Fuel Oil (No. 4)']['liters'] = 36.77500000
+        factors['Fuel Oil (No. 4)']['GJ'] = 947.81700000
+        factors['Fuel Oil (No. 5 & No. 6)']['kBtu'] = 1.00000000
+        factors['Fuel Oil (No. 5 & No. 6)']['MBtu/MMBtu (million Btu)'] = 1000.00000000
+        factors['Fuel Oil (No. 5 & No. 6)']['Gallons (US)'] = 152.48500000
+        factors['Fuel Oil (No. 5 & No. 6)']['Gallons (UK)'] = 183.12700000
+        factors['Fuel Oil (No. 5 & No. 6)']['liters'] = 40.28200000
+        factors['Fuel Oil (No. 5 & No. 6)']['GJ'] = 947.81700000
+        factors['Diesel']['kBtu'] = 1.00000000
+        factors['Diesel']['MBtu/MMBtu (million Btu)'] = 1000.00000000
+        factors['Diesel']['Gallons (US)'] = 137.41600000
+        factors['Diesel']['Gallons (UK)'] = 165.02900000
+        factors['Diesel']['liters'] = 36.30100000
+        factors['Diesel']['GJ'] = 947.81700000
+        factors['Kerosene']['kBtu'] = 1.00000000
+        factors['Kerosene']['MBtu/MMBtu (million Btu)'] = 1000.00000000
+        factors['Kerosene']['Gallons (US)'] = 135.19100000
+        factors['Kerosene']['Gallons (UK)'] = 162.35800000
+        factors['Kerosene']['liters'] = 35.71400000
+        factors['Kerosene']['GJ'] = 947.81700000
+        factors['Propane']['kBtu'] = 1.00000000
+        factors['Propane']['MBtu/MMBtu (million Btu)'] = 1000.00000000
+        factors['Propane']['cf'] = 2.51600000
+        factors['Propane']['Ccf (hundred cubic feet)'] = 251.60000000
+        factors['Propane']['Kcf (thousand cubic feet)'] = 2516.00000000
+        factors['Propane']['Gallons (US)'] = 90.80900000
+        factors['Propane']['Gallons (UK)'] = 109.05700000
+        factors['Propane']['liters'] = 23.98900000
+        factors['Propane']['GJ'] = 947.81700000
+        factors['District Steam']['kBtu'] = 1.00000000
+        factors['District Steam']['MBtu/MMBtu (million Btu)'] = 1000.00000000
+        factors['District Steam']['Lbs'] = 1.19400000
+        factors['District Steam']['kLbs (thousand pounds)'] = 1194.00000000
+        factors['District Steam']['MLbs (million pounds)'] = 1194000.00000000
+        factors['District Steam']['therms'] = 100.00000000
+        factors['District Steam']['GJ'] = 947.81700000
+        factors['District Steam']['kg'] = 2.63200000
+        factors['District Hot Water']['kBtu'] = 1.00000000
+        factors['District Hot Water']['MBtu/MMBtu (million Btu)'] = 1000.00000000
+        factors['District Hot Water']['Therms'] = 100.00000000
+        factors['District Hot Water']['GJ'] = 947.81700000
+        factors['District Chilled Water']['kBtu'] = 1.00000000
+        factors['District Chilled Water']['MBtu/MMBtu (million Btu)'] = 1000.00000000
+        factors['District Chilled Water']['Ton Hours'] = 12.00000000
+        factors['District Chilled Water']['GJ'] = 947.81700000
+        factors['Coal (anthracite)']['kBtu'] = 1.00000000
+        factors['Coal (anthracite)']['MBtu/MMBtu (million Btu)'] = 1000.00000000
+        factors['Coal (anthracite)']['Tons'] = 23818.00000000
+        factors['Coal (anthracite)']['Lbs'] = 11.90900000
+        factors['Coal (anthracite)']['kLbs (thousand pounds)'] = 11909.00000000
+        factors['Coal (anthracite)']['MLbs (million pounds)'] = 11909055.00000000
+        factors['Coal (anthracite)']['Tonnes (metric)'] = 26255.00000000
+        factors['Coal (anthracite)']['GJ'] = 947.81700000
+        factors['Coal (bituminous)']['kBtu'] = 1.00000000
+        factors['Coal (bituminous)']['MBtu/MMBtu (million Btu)'] = 1000.00000000
+        factors['Coal (bituminous)']['Tons'] = 21496.00000000
+        factors['Coal (bituminous)']['Lbs'] = 10.74800000
+        factors['Coal (bituminous)']['kLbs (thousand pounds)'] = 10748.00000000
+        factors['Coal (bituminous)']['MLbs (million pounds)'] = 10748245.00000000
+        factors['Coal (bituminous)']['Tonnes (metric)'] = 23695.00000000
+        factors['Coal (bituminous)']['GJ'] = 947.81700000
+        factors['Coke']['kBtu'] = 1.00000000
+        factors['Coke']['MBtu/MMBtu (million Btu)'] = 1000.00000000
+        factors['Coke']['Tons'] = 24790.00000000
+        factors['Coke']['Lbs'] = 12.39500000
+        factors['Coke']['kLbs (thousand pounds)'] = 12395.00000000
+        factors['Coke']['MLbs (million pounds)'] = 12394876.00000000
+        factors['Coke']['Tonnes (metric)'] = 27326.00000000
+        factors['Coke']['GJ'] = 947.81700000
+        factors['Wood']['kBtu'] = 1.00000000
+        factors['Wood']['MBtu/MMBtu (million Btu)'] = 1000.00000000
+        factors['Wood']['Tons'] = 15477.00000000
+        factors['Wood']['Tonnes (metric)'] = 17061.00000000
+        factors['Wood']['GJ'] = 947.81700000
+        factors['Other']['kBtu'] = 1.00000000
 
     return factors
 
