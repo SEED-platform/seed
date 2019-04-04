@@ -237,7 +237,7 @@ class MeterUtilTests(TestCase):
                 'Parent Property Id': 'Not Applicable: Standalone Property',
                 'Parent Property Name': 'Not Applicable: Standalone Property',
                 'Month': 'Mar-16',
-                'Electricity Use  (kWh)': 1000,
+                'Natural Gas Use  (Ccf (hundred cubic feet))': 1000,
                 'Fuel Oil (No. 1) Use  (GJ)': 1000
             }
         ]
@@ -248,17 +248,17 @@ class MeterUtilTests(TestCase):
 
         if result[0]["type"] == Meter.FUEL_OIL_NO_1:
             fuel_oil_details = result[0]
-            electricity_details = result[1]
+            gas_details = result[1]
         else:
             fuel_oil_details = result[1]
-            electricity_details = result[0]
+            gas_details = result[0]
 
         self.assertEqual(fuel_oil_details["readings"][0]["reading"], 947817)
         self.assertEqual(fuel_oil_details["readings"][0]["source_unit"], "GJ")
         self.assertEqual(fuel_oil_details["readings"][0]["conversion_factor"], 947.817)
-        self.assertEqual(electricity_details["readings"][0]["reading"], 3412)
-        self.assertEqual(electricity_details["readings"][0]["source_unit"], "kWh")
-        self.assertEqual(electricity_details["readings"][0]["conversion_factor"], 3.412)
+        self.assertEqual(gas_details["readings"][0]["reading"], 102600)
+        self.assertEqual(gas_details["readings"][0]["source_unit"], "Ccf (hundred cubic feet)")
+        self.assertEqual(gas_details["readings"][0]["conversion_factor"], 102.6)
 
     def test_unlinked_properties_are_identified(self):
         raw_meters = [

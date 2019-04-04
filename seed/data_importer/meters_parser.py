@@ -275,7 +275,7 @@ class MetersParser(object):
         type = type_unit[:use_position]
         meter_details['type'] = Meter.type_lookup[type]
 
-        unit = type_unit[(type_unit.find('(', use_position) + 1):(type_unit.find(')', use_position))]
+        unit = type_unit[(type_unit.find('(', use_position) + 1):(len(type_unit) - 1)]
 
         factor = self._us_kbtu_thermal_conversion_factors[type][unit]
 
