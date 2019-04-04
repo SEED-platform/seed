@@ -23,6 +23,7 @@ from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tasks import save_raw_data
 from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.landing.models import SEEDUser as User
+from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     Meter,
     MeterReading,
@@ -259,6 +260,67 @@ class TestMeterViewSet(TestCase):
 
         self.assertCountEqual(result_dict['readings'], expectation['readings'])
         self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
+
+    def test_property_energy_usage_returns_meter_readings_according_to_thermal_conversion_preferences_of_an_org_if_applicable_for_display_settings(self):
+        # update the org settings thermal preference and display preference
+        self.org.thermal_conversion_assumption = Organization.CAN
+        self.org.display_meter_units["Diesel"] = "liters"
+        self.org.display_meter_units["Coke"] = "Lbs"
+        self.org.save()
+
+        # add meters and readings to property associated to property_view_1
+        meter_details = {
+            'source': Meter.PORTFOLIO_MANAGER,
+            'source_id': self.property_view_1.state.pm_property_id,
+            'type': Meter.DIESEL,
+            'property_id': self.property_view_1.property.id,
+        }
+        diesel_meter = Meter.objects.create(**meter_details)
+
+        meter_details['type'] = Meter.COKE
+        coke_meter = Meter.objects.create(**meter_details)
+
+        tz_obj = timezone(TIME_ZONE)
+        diesel_reading_details = {
+            'start_time': make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=tz_obj),
+            'end_time': make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=tz_obj),
+            'reading': 10,
+            'source_unit': 'kBtu',
+            'conversion_factor': 1,
+            'meter_id': diesel_meter.id,
+        }
+        MeterReading.objects.create(**diesel_reading_details)
+
+        coke_reading_details = {
+            'start_time': make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=tz_obj),
+            'end_time': make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=tz_obj),
+            'reading': 100,
+            'source_unit': 'kBtu',
+            'conversion_factor': 1,
+            'meter_id': coke_meter.id,
+        }
+        MeterReading.objects.create(**coke_reading_details)
+
+        post_params = json.dumps({
+            'property_view_id': self.property_view_1.id,
+            'organization_id': self.org.pk,
+            'interval': 'Exact',
+        })
+
+        url = reverse('api:v2:meters-property-energy-usage')
+        result = self.client.post(url, post_params, content_type="application/json")
+        result_dict = ast.literal_eval(result.content.decode("utf-8"))
+
+        display_readings = [
+            {
+                'start_time': '2016-01-01 00:00:00',
+                'end_time': '2016-02-01 00:00:00',
+                'Diesel': 10 / 36.301,
+                'Coke': 100 / 12.395,
+            },
+        ]
+
+        self.assertCountEqual(result_dict['readings'], display_readings)
 
     def test_property_energy_usage_can_return_monthly_meter_readings_and_column_defs_while_handling_a_DST_change_and_nondefault_display_setting(self):
         # Update settings for display meter units to change it from the default values.
@@ -641,158 +703,3 @@ class TestMeterValidTypesUnits(TestCase):
         }
 
         self.assertEqual(result_dict, expectation)
-
-
-#         """We throw an error when there's no building id passed in."""
-#         client = APIClient()
-#         client.login(username=self.user.username, password='secret')
-#
-#         url = reverse('api:v2:meters-list')
-#
-#         expected = {
-#             "status": "error",
-#             "message": "No property_view_id specified",
-#             "meters": []
-#         }
-#
-#         resp = client.get(url, {'organization_id': self.org.pk})
-#
-#         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-#         self.assertDictEqual(json.loads(resp.content), expected)
-#
-#     def test_get_meters(self):
-#         """We get a meter that we saved back that was assigned to a property view"""
-#         ps = PropertyState.objects.create(organization=self.org)
-#         property_view = ps.promote(self.cycle)
-#
-#         meter = Meter.objects.create(
-#             name='tester',
-#             energy_type=Meter.ELECTRICITY,
-#             energy_units=Meter.KILOWATT_HOURS,
-#             property_view=property_view,
-#         )
-#
-#         client = APIClient()
-#         client.login(username=self.user.username, password='secret')
-#
-#         url = reverse('api:v2:meters-detail', args=(meter.pk,))
-#         resp = client.get(url)
-#
-#         expected = {
-#             "status": "success",
-#             "meter": {
-#                 "property_view": property_view.pk,
-#                 "scenario": None,
-#                 "name": "tester",
-#                 "timeseries_count": 0,
-#                 "energy_units": 1,
-#                 "energy_type": 2,
-#                 "pk": meter.pk,
-#                 "model": "seed.meter",
-#                 "id": meter.pk,
-#             }
-#         }
-#
-#         self.assertDictEqual(json.loads(resp.content), expected)
-#
-#     def test_add_meter_to_property(self):
-#         """Add a meter to a building."""
-#         ps = PropertyState.objects.create(organization=self.org)
-#         pv = ps.promote(self.cycle)
-#
-#         data = {
-#             "property_view_id": pv.pk,
-#             "name": "test meter",
-#             "energy_type": Meter.NATURAL_GAS,
-#             "energy_units": Meter.KILOWATT_HOURS
-#         }
-#
-#         client = APIClient()
-#         client.login(username=self.user.username, password='secret')
-#         url = reverse('api:v2:meters-list') + '?organization_id={}'.format(self.org.pk)
-#         resp = client.post(url, data)
-#
-#         expected = {
-#             "status": "success",
-#             "meter": {
-#                 "property_view": pv.pk,
-#                 "name": "test meter",
-#                 "energy_units": Meter.KILOWATT_HOURS,
-#                 "energy_type": Meter.NATURAL_GAS,
-#                 "model": "seed.meter",
-#             }
-#         }
-#         self.assertEqual(json.loads(resp.content)['status'], "success")
-#         self.assertDictContainsSubset(expected['meter'], json.loads(resp.content)['meter'])
-#
-#     def test_get_timeseries(self):
-#         """We get all the times series for a meter."""
-#         meter = Meter.objects.create(
-#             name='test',
-#             energy_type=Meter.ELECTRICITY,
-#             energy_units=Meter.KILOWATT_HOURS
-#         )
-#
-#         for i in range(100):
-#             TimeSeries.objects.create(
-#                 begin_time="2015-01-01T08:00:00.000Z",
-#                 end_time="2015-01-01T08:00:00.000Z",
-#                 reading=23,
-#                 meter=meter
-#             )
-#
-#         client = APIClient()
-#         client.login(username=self.user.username, password='secret')
-#         url = reverse('api:v2:meters-get-timeseries', args=(meter.pk,))
-#         resp = client.get(url)
-#
-#         expected = {
-#             "begin": "2015-01-01 08:00:00+00:00",
-#             "end": "2015-01-01 08:00:00+00:00",
-#             "value": 23.0,
-#         }
-#
-#         jdata = json.loads(resp.content)
-#         self.assertEqual(jdata['status'], "success")
-#         self.assertEqual(len(jdata['meter']['data']), 100)
-#         self.assertDictEqual(jdata['meter']['data'][0], expected)
-#
-#         # Not yet implemented
-#         # def test_add_timeseries(self):
-#         #     """Adding time series works."""
-#         #     meter = Meter.objects.create(
-#         #         name='test',
-#         #         energy_type=Meter.ELECTRICITY,
-#         #         energy_units=Meter.KILOWATT_HOURS
-#         #     )
-#         #
-#         #     client = APIClient()
-#         #     client.login(username=self.user.username, password='secret')
-#         #     url = reverse('apiv2:meters-add-timeseries', args=(meter.pk,))
-#         #
-#         #     resp = client.post(url)
-#         #
-#         #             'timeseries': [
-#         #                 {
-#         #                     'begin_time': '2014-07-10T18:14:54.726Z',
-#         #                     'end_time': '2014-07-10T18:14:54.726Z',
-#         #                     'cost': 345,
-#         #                     'reading': 23.0,
-#         #                 },
-#         #                 {
-#         #                     'begin_time': '2014-07-09T18:14:54.726Z',
-#         #                     'end_time': '2014-07-09T18:14:54.726Z',
-#         #                     'cost': 33,
-#         #                     'reading': 11.0,
-#         #                 }
-#         #
-#         #             ]
-#         #         })
-#         #     )
-#         #
-#         #     self.assertEqual(TimeSeries.objects.all().count(), 0)
-#         #
-#         #     resp = json.loads(meters.add_timeseries(fake_request).content)
-#
-#         #     self.assertEqual(resp, {'status': 'success'})
-#         #     self.assertEqual(TimeSeries.objects.all().count(), 2)

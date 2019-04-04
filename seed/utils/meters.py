@@ -27,10 +27,20 @@ from seed.models import Property
 
 class PropertyMeterReadingsExporter():
     def __init__(self, property_id, org_id):
+        self._cache_factors = None
+
         self.meters = Property.objects.get(pk=property_id).meters.all()
+        self.org_id = org_id
         self.org_meter_display_settings = Organization.objects.get(pk=org_id).display_meter_units
-        self.factors = kbtu_thermal_conversion_factors("US")
         self.tz = timezone(TIME_ZONE)
+
+    @property
+    def factors(self):
+        if self._cache_factors is None:
+            thermal_conv_pref = Organization.objects.get(pk=self.org_id).get_thermal_conversion_assumption_display()
+            self._cache_factors = kbtu_thermal_conversion_factors(thermal_conv_pref)
+
+        return self._cache_factors
 
     def readings_and_column_defs(self, interval):
         if interval == 'Exact':
