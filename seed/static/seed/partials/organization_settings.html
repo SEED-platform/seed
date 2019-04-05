@@ -115,7 +115,7 @@
             <h3 translate>THERMAL_CONV_ASSUMPTION_TITLE</h3>
             <form class="form-horizontal" role="form">
                 <div class="form-group">
-                    <div class="col-sm-4">
+                    <div class="col-sm-4" uib-popover="Warning: Meters will be imported as and viewed according to this assumption." popover-trigger="mouseenter" popover-placement="right-top">
                         <select class="form-control"
                             ng-options="country.value as country.label for country in thermal_conversion_countries"
                             ng-model="org.thermal_conversion_assumption"></select>
