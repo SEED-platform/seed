@@ -207,9 +207,31 @@ class TestMeterViewSet(TestCase):
     def test_property_energy_usage_returns_meter_readings_and_column_defs_given_property_view_and_nondefault_meter_display_org_settings(self):
         # Update settings for display meter units to change it from the default values.
         self.org.display_meter_units['Electricity'] = 'kWh'
+        self.org.display_meter_units['Fuel Oil (No. 5 & No. 6)'] = 'Gallons (US)'
         self.org.save()
 
+        # add meters and readings to property associated to property_view_1
         save_raw_data(self.import_file.id)
+
+        # add meter with parenthesis in type name: FUEL_OIL_NO_5_AND_NO_6
+        meter_details = {
+            'source': Meter.PORTFOLIO_MANAGER,
+            'source_id': self.property_view_1.state.pm_property_id,
+            'type': Meter.FUEL_OIL_NO_5_AND_NO_6,
+            'property_id': self.property_view_1.property.id,
+        }
+        fuel_meter = Meter.objects.create(**meter_details)
+
+        tz_obj = timezone(TIME_ZONE)
+        fuel_reading_details = {
+            'start_time': make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=tz_obj),
+            'end_time': make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=tz_obj),
+            'reading': 10,
+            'source_unit': 'kBtu',
+            'conversion_factor': 1,
+            'meter_id': fuel_meter.id,
+        }
+        MeterReading.objects.create(**fuel_reading_details)
 
         url = reverse('api:v2:meters-property-energy-usage')
 
@@ -228,6 +250,7 @@ class TestMeterViewSet(TestCase):
                     'end_time': '2016-02-01 00:00:00',
                     'Electricity': (597478.9 / 3.412),
                     'Natural Gas': 545942781.5634,
+                    'Fuel Oil (No. 5 & No. 6)': 10 / 150,
                 },
                 {
                     'start_time': '2016-02-01 00:00:00',
@@ -253,6 +276,11 @@ class TestMeterViewSet(TestCase):
                 {
                     'field': 'Natural Gas',
                     'displayName': 'Natural Gas (kBtu)',
+                    '_filter_type': 'reading',
+                },
+                {
+                    'field': 'Fuel Oil (No. 5 & No. 6)',
+                    'displayName': 'Fuel Oil (No. 5 & No. 6) (Gallons (US))',
                     '_filter_type': 'reading',
                 },
             ]

@@ -41,6 +41,8 @@ angular.module('BE.seed.controller.inventory_detail_energy', [])
         data: 'data',
         columnDefs: property_energy_usage.column_defs,
         enableFiltering: true,
+        flatEntityAccess: true,
+        fastWatch: true,
       };
 
       $scope.apply_column_settings = function() {
