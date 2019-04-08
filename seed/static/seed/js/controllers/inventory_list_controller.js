@@ -351,7 +351,11 @@ angular.module('BE.seed.controller.inventory_list', [])
         }
 
         if (!_.has(cache, record.id)) {
-          var footprint = Terraformer.WKT.parse(record[field]);
+          try {
+            var footprint = Terraformer.WKT.parse(record[field]);
+          } catch (e) {
+            return record[field];
+          }
           var coords = Terraformer.toMercator(footprint).coordinates[0];
           var envelope = Terraformer.Tools.calculateEnvelope(footprint);
 
