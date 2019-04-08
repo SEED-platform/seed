@@ -8,6 +8,7 @@ angular.module('BE.seed.controller.inventory_list', [])
     '$filter',
     '$window',
     '$uibModal',
+    '$sce',
     '$stateParams',
     'inventory_service',
     'label_service',
@@ -31,6 +32,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       $filter,
       $window,
       $uibModal,
+      $sce,
       $stateParams,
       inventory_service,
       label_service,
@@ -332,6 +334,50 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
+      var propertyPolygonCache = {};
+      var taxlotPolygonCache = {};
+      var propertyFootprintColumn = _.find($scope.columns, {column_name: 'property_footprint', table_name: 'PropertyState'});
+      var taxlotFootprintColumn = _.find($scope.columns, {column_name: 'taxlot_footprint', table_name: 'TaxLotState'});
+      $scope.polygon = function (record, tableName) {
+        var outputSize = 180;
+
+        var cache, field;
+        if (tableName === 'PropertyState') {
+          cache = propertyPolygonCache;
+          field = propertyFootprintColumn.name;
+        } else {
+          cache = taxlotPolygonCache;
+          field = taxlotFootprintColumn.name;
+        }
+
+        if (!_.has(cache, record.id)) {
+          var footprint = Terraformer.WKT.parse(record[field]);
+          var coords = Terraformer.toMercator(footprint).coordinates[0];
+          var envelope = Terraformer.Tools.calculateEnvelope(footprint);
+
+          // padding to allow for svg stroke
+          var padding = 2;
+          var scale = (outputSize - padding) / Math.max(envelope.h, envelope.w);
+
+          var width = (envelope.w <= envelope.h) ? Math.ceil(envelope.w * scale + padding) : outputSize;
+          var height = (envelope.h <= envelope.w) ? Math.ceil(envelope.h * scale + padding) : outputSize;
+
+          var xOffset = (width - envelope.w * scale) / 2;
+          var yOffset = (height - envelope.h * scale) / 2;
+
+          var points = _.map(coords, function(coord) {
+            var x = _.round((coord[0] - envelope.x) * scale + xOffset, 2);
+            var y = _.round(height - ((coord[1] - envelope.y) * scale + yOffset), 2);
+            return x + ',' + y;
+          });
+
+          var svg = '<svg height="' + height + '" width="' + width + '"><polygon points="' + _.initial(points).join(' ') + '" style="fill:#ffab66;stroke:#aaa;stroke-width:1;" /></svg>';
+
+          cache[record.id] = $sce.trustAsHtml(svg);
+        }
+        return cache[record.id];
+      };
+
       $scope.run_data_quality_check = function () {
         spinner_utility.show();
 
@@ -386,7 +432,13 @@ angular.module('BE.seed.controller.inventory_list', [])
       };
       _.map($scope.columns, function (col) {
         var options = {};
-        col.cellTemplate = '<div class="ui-grid-cell-contents" uib-tooltip="{{COL_FIELD CUSTOM_FILTERS}}" tooltip-append-to-body="true" tooltip-popup-delay="500">{{COL_FIELD CUSTOM_FILTERS}}</div>';
+        if (col.column_name === 'property_footprint' && col.table_name === 'PropertyState') {
+          col.cellTemplate = '<div class="ui-grid-cell-contents" uib-tooltip-html="grid.appScope.polygon(row.entity, \'PropertyState\')" tooltip-append-to-body="true" tooltip-popup-delay="500">{{COL_FIELD CUSTOM_FILTERS}}</div>';
+        } else if (col.column_name === 'taxlot_footprint' && col.table_name === 'TaxLotState') {
+          col.cellTemplate = '<div class="ui-grid-cell-contents" uib-tooltip-html="grid.appScope.polygon(row.entity, \'TaxLotState\')" tooltip-append-to-body="true" tooltip-popup-delay="500">{{COL_FIELD CUSTOM_FILTERS}}</div>';
+        } else {
+          col.cellTemplate = '<div class="ui-grid-cell-contents" uib-tooltip="{{COL_FIELD CUSTOM_FILTERS}}" tooltip-append-to-body="true" tooltip-popup-delay="500">{{COL_FIELD CUSTOM_FILTERS}}</div>';
+        }
         if (col.data_type === 'datetime') {
           options.cellFilter = 'date:\'yyyy-MM-dd h:mm a\'';
           options.filter = inventory_service.dateFilter();
