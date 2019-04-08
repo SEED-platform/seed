@@ -58,7 +58,7 @@ probablepeople==0.5.4
 geojson==2.4.1
 
 # pnnl/buildingid
--e git+https://github.com/SEED-platform/buildingid.git@475dfd6e0a10a8b0cd0cd06194eab72c31a00194#egg=buildingid
+-e git+https://github.com/SEED-platform/buildingid.git@fd9067f70ae40f6ae3bf2bad6e31b5d2a9e8b150#egg=buildingid
 
 enum34==1.1.6  # enum34 needs to be specified to support cryptography and oauth2
 oauthlib==2.0.2

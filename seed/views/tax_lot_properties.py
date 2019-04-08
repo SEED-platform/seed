@@ -54,8 +54,8 @@ class TaxLotPropertyViewSet(GenericViewSet):
         .. code-block::
 
             {
-                    "ids": [1,2,3],
-                    "columns": ["tax_jurisdiction_tax_lot_id", "address_line_1", "property_view_id"]
+                "ids": [1,2,3],
+                "columns": ["tax_jurisdiction_tax_lot_id", "address_line_1", "property_view_id"]
             }
 
         ---
@@ -70,7 +70,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
               required: true
               paramType: query
             - name: ids
-              description: list of property ids to export (not property views)
+              description: list of property/taxlot ids to export (not property/taxlot views)
               required: true
               paramType: body
             - name: columns
@@ -114,6 +114,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
         filter_str = {'cycle': cycle_pk}
         if hasattr(view_klass, 'property'):
             select_related.append('property')
+            prefetch_related = ['property__labels']
             filter_str = {'property__organization_id': org_id}
             if ids:
                 filter_str['property__id__in'] = ids
@@ -122,17 +123,30 @@ class TaxLotPropertyViewSet(GenericViewSet):
 
         elif hasattr(view_klass, 'taxlot'):
             select_related.append('taxlot')
+            prefetch_related = ['taxlot__labels']
             filter_str = {'taxlot__organization_id': org_id}
             if ids:
                 filter_str['taxlot__id__in'] = ids
             # always export the labels
             column_name_mappings['taxlot_labels'] = 'Tax Lot Labels'
 
-        model_views = view_klass.objects.select_related(*select_related).filter(
-            **filter_str).order_by('id')
+        model_views = view_klass.objects.select_related(*select_related).prefetch_related(*prefetch_related).filter(**filter_str).order_by('id')
 
         # get the data in a dict which includes the related data
         data = TaxLotProperty.get_related(model_views, column_ids, columns_from_database)
+
+        # add labels
+        for i, record in enumerate(model_views):
+            label_string = []
+            if hasattr(record, 'property'):
+                for label in list(record.property.labels.all().order_by('name')):
+                    label_string.append(label.name)
+                data[i]['property_labels'] = ','.join(label_string)
+
+            elif hasattr(record, 'taxlot'):
+                for label in list(record.taxlot.labels.all().order_by('name')):
+                    label_string.append(label.name)
+                data[i]['taxlot_labels'] = ','.join(label_string)
 
         # force the data into the same order as the IDs
         if ids:
