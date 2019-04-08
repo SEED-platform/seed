@@ -605,7 +605,7 @@ def finish_raw_save(results, file_pk, progress_key, summary=None):
     Finish importing the raw file.
 
     If the file is a PM Meter Usage or GreenButton import, remove the cycle association.
-    If the file of one of those types and a summary is provided, add import results
+    If the file is of one of those types and a summary is provided, add import results
     to this summary and save it to the ProgressData.
 
     :param results: List of results from the parent task
@@ -655,12 +655,12 @@ def cache_first_rows(import_file, parser):
 def _save_greenbutton_data_create_tasks(file_pk, progress_key):
     """
     Create GreenButton import tasks. Notably, 1 GreenButton import contains
-    data for 1 Property and 1 energy type.
-    Subsequently, this means 1 GreenButton import contains data for 1 Meter.
+    data for 1 Property and 1 energy type. Subsequently, this means 1
+    GreenButton import contains MeterReadings for only 1 Meter.
 
-    By first creating the single Meter for this file's Readings, the ID of this
-    Meter can be passed to the individual tasks that will actually create the
-    readings.
+    By first getting or creating the single Meter for this file's MeterReadings,
+    the ID of this Meter can be passed to the individual tasks that will
+    actually create the readings.
     """
     progress_data = ProgressData.from_key(progress_key)
 
@@ -712,7 +712,8 @@ def _save_greenbutton_data_task(readings, meter_id, meter_usage_point_id, progre
     unique or an update occurs. Otherwise, a new reading entry is created.
 
     If the query leads to an error regarding trying to update the same row
-    within the same query, the error is logged in the results.
+    within the same query, the error is logged in the results and none of the
+    readings for that batch are saved.
     """
     progress_data = ProgressData.from_key(progress_key)
 
@@ -750,9 +751,9 @@ def _save_greenbutton_data_task(readings, meter_id, meter_usage_point_id, progre
 
 
 @shared_task
-def _save_meter_usage_data_task(meter_readings, file_pk, progress_key):
+def _save_pm_meter_usage_data_task(meter_readings, file_pk, progress_key):
     """
-    This method defines an individual task to save a single Meter and its
+    This method defines an individual task to get or create a single Meter and its
     corresponding MeterReadings. Each task returns the results of the import.
 
     Within the query, get or create the meter without it's readings. Then,
@@ -761,7 +762,9 @@ def _save_meter_usage_data_task(meter_readings, file_pk, progress_key):
     occurs. Otherwise, a new reading entry is created.
 
     If the query leads to an error regarding trying to update the same row
-    within the same query, the error is logged in the results.
+    within the same query, the error is logged in the results and all the
+    MeterReadings and their Meter (if that was created in this transaction) are
+    not saved.
     """
     progress_data = ProgressData.from_key(progress_key)
 
@@ -803,9 +806,9 @@ def _save_meter_usage_data_task(meter_readings, file_pk, progress_key):
     return result
 
 
-def _save_meter_usage_data_create_tasks(file_pk, progress_key):
+def _save_pm_meter_usage_data_create_tasks(file_pk, progress_key):
     """
-    This parses the given import file and restructure the given data in order to
+    This takes a PM meters import file and restructures the data in order to
     create and return the tasks to import Meters and their corresponding
     MeterReadings.
 
@@ -830,7 +833,7 @@ def _save_meter_usage_data_create_tasks(file_pk, progress_key):
     progress_data.save()
 
     tasks = [
-        _save_meter_usage_data_task.s(meter_readings, file_pk, progress_data.key)
+        _save_pm_meter_usage_data_task.s(meter_readings, file_pk, progress_data.key)
         for meter_readings
         in meters_and_readings
     ]
@@ -883,7 +886,7 @@ def _save_raw_data_create_tasks(file_pk, progress_key):
         return progress_data.finish_with_warning('Raw data already saved')
 
     if import_file.source_type == "PM Meter Usage":
-        return _save_meter_usage_data_create_tasks(file_pk, progress_data.key)
+        return _save_pm_meter_usage_data_create_tasks(file_pk, progress_data.key)
     elif import_file.source_type == "GreenButton":
         return _save_greenbutton_data_create_tasks(file_pk, progress_data.key)
 
@@ -916,7 +919,8 @@ def save_raw_data(file_pk):
     Simply report to the user that we have queued up the save_run_data to run. This is the entry
     point into saving the data.
 
-    It's possible to receive a summary of what the tasks intend to accomplish.
+    In the case of meter reading imports, it's possible to receive a summary of
+    what the tasks intend to accomplish.
 
     :param file_pk: ImportFile Primary Key
     :return: Dict, from cache, containing the progress key to track

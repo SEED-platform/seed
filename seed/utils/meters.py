@@ -26,6 +26,13 @@ from seed.models import Property
 
 
 class PropertyMeterReadingsExporter():
+    """
+    Returns readings and column definitions for UI-Grid. These readings can be
+    returned in different intervals: exact, monthly, and yearly.
+
+    Monthly and yearly aggregations are done here, and organization display
+    settings are considered/used when returning actual reading magnitudes.
+    """
     def __init__(self, property_id, org_id):
         self._cache_factors = None
 

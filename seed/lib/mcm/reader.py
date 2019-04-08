@@ -39,6 +39,17 @@ ROW_DELIMITER = "|#*#|"
 
 
 class GreenButtonParser(object):
+    """
+    This class accepts GreenButton data in XML format.
+
+    It's expected that XML contains a 'feed' tag at the root that contains 4
+    ordered 'entry' tags:
+        1) Should contain Kind/Energy Type
+        2) Not used but typically contains property information
+        3) Should contain Unit and order of 10 information
+        4) Should contain readings with start epoch times and second duration
+    """
+
     def __init__(self, xml_file):
         self._xml_file = xml_file
         self._cache_data = None

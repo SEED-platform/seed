@@ -30,7 +30,25 @@ class MetersParser(object):
     Import File including meter energy types & units along with a summary of the
     potential records to be created before execution.
 
-    The expected input includes a list of raw meters_and_readings_details.
+    The expected input includes a list of raw meters_and_readings_details. The
+    format of these raw details should be a list of dictionaries where the
+    dictionaries are of the following formats:
+        {
+            'Property Id': <pm_property_id>,
+            'Month': '<abbr. Month>-YY',
+            '<energy_type_name_1> Use  (<units_1>)': <reading>,
+            '<energy_type_name_2> Use  (<units_2>)': <reading>,
+            ...
+        }
+    or
+        {
+            'start_time': <epoch_time>,
+            'source_id': <greenbutton_source_id>,
+            'duration': <seconds>,
+            '<energy_type_name_1> Use  (<units_1>)': <reading>,
+            '<energy_type_name_2> Use  (<units_2>)': <reading>,
+            ...
+        }
 
     It's able to create a collection of Meter object details and their
     corresponding Meter Reading objects details.
@@ -137,8 +155,9 @@ class MetersParser(object):
 
     def validated_type_units(self):
         """
-        Reviews column headers from a PM Meter Usage file to identify and parse
-        energy types and units.
+        Returns energy type and unit combinations as they're understood by this
+        parser. For PM Meter Usage files, a column headers are also returned
+        with that information.
         """
         column_headers = self._find_type_columns(self._meters_and_readings_details[0])
 
@@ -223,7 +242,8 @@ class MetersParser(object):
     def _parse_times(self, month_year):
         """
         Returns timezone aware start_time and end_time taken from a Mon-YYYY substring.
-        The exact times are the first and last second of the month, respectively.
+        For any particular month, the start_time is the first second of that
+        month, while end_time is the first second of the next month.
         """
         unaware_start = datetime.strptime(month_year, '%b-%y')
         start_time = make_aware(unaware_start, timezone=self._tz)
@@ -271,6 +291,12 @@ class MetersParser(object):
         return [k for k, v in details.items() if ' Use  (' in k]
 
     def _parse_unit_and_factor(self, type_unit, meter_details={}):
+        """
+        Parses unit and factor given a type_unit key (of a dictionary).
+
+        The format of this key is expected to be:
+            '<energy_type_name_1> Use  (<units_1>)'
+        """
         use_position = type_unit.find(" Use")
         type = type_unit[:use_position]
         meter_details['type'] = Meter.type_lookup[type]
