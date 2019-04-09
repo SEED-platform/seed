@@ -90,6 +90,7 @@ class StateFieldsTest(TestCase):
                     ('pm_parent_property_id', 'pm_parent_property_id'),
                     ('pm_property_id', 'pm_property_id'),
                     ('postal_code', 'postal_code'),
+                    ('property_footprint', 'property_footprint'),
                     ('property_name', 'property_name'),
                     ('property_notes', 'property_notes'),
                     ('property_type', 'property_type'),
@@ -120,9 +121,12 @@ class StateFieldsTest(TestCase):
             ('custom_id_1', 'custom_id_1'),
             ('district', 'district'),
             ('jurisdiction_tax_lot_id', 'jurisdiction_tax_lot_id'),
+            ('latitude', 'latitude'),
+            ('longitude', 'longitude'),
             ('number_properties', 'number_properties'),
             ('postal_code', 'postal_code'),
             ('state', 'state'),
+            ('taxlot_footprint', 'taxlot_footprint'),
             ('ulid', 'ulid'))
         result = get_state_to_state_tuple('TaxLotState')
         self.assertSequenceEqual(expected, result)

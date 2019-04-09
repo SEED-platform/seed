@@ -251,3 +251,14 @@ FAKE_MAPPINGS = {
         'year_built': 'Year Built'
     },
 }
+
+TAXLOT_FOOTPRINT_MAPPING = {
+    "from_field": 'Tax Lot Coordinates',
+    "to_table_name": 'TaxLotState',
+    "to_field": 'taxlot_footprint',
+}
+PROPERTY_FOOTPRINT_MAPPING = {
+    "from_field": 'Property Coordinates',
+    "to_table_name": 'PropertyState',
+    "to_field": 'property_footprint',
+}

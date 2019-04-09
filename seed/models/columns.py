@@ -93,8 +93,6 @@ class Column(models.Model):
         'analysis_state',
         'bounding_box',
         'centroid',
-        'property_footprint',
-        'taxlot_footprint',
         'data_state',
         'extra_data',
         'geocoding_confidence',
@@ -139,6 +137,7 @@ class Column(models.Model):
         'DateTimeField': 'datetime',
         'BooleanField': 'boolean',
         'JSONField': 'string',
+        'PolygonField': 'geometry',
     }
 
     # These are the default columns (also known as the fields in the database)
@@ -267,6 +266,16 @@ class Column(models.Model):
             'display_name': 'Longitude',
             'data_type': 'number',
         }, {
+            'column_name': 'latitude',
+            'table_name': 'TaxLotState',
+            'display_name': 'Latitude',
+            'data_type': 'number',
+        }, {
+            'column_name': 'longitude',
+            'table_name': 'TaxLotState',
+            'display_name': 'Longitude',
+            'data_type': 'number',
+        }, {
             'column_name': 'geocoding_confidence',
             'table_name': 'PropertyState',
             'display_name': 'Geocoding Confidence',
@@ -276,6 +285,16 @@ class Column(models.Model):
             'table_name': 'TaxLotState',
             'display_name': 'Geocoding Confidence',
             'data_type': 'string',
+        }, {
+            'column_name': 'property_footprint',
+            'table_name': 'PropertyState',
+            'display_name': 'Property Footprint',
+            'data_type': 'geometry',
+        }, {
+            'column_name': 'taxlot_footprint',
+            'table_name': 'TaxLotState',
+            'display_name': 'Tax Lot Footprint',
+            'data_type': 'geometry',
         }, {
             'column_name': 'campus',
             'table_name': 'Property',
@@ -928,6 +947,7 @@ class Column(models.Model):
             'float': 'float',
             'integer': 'integer',
             'string': 'string',
+            'geometry': 'geometry',
             'datetime': 'datetime',
             'date': 'date',
             'boolean': 'boolean',

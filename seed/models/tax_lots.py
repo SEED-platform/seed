@@ -11,10 +11,8 @@ import logging
 import re
 from os import path
 
-from .auditlog import AUDIT_IMPORT
-from .auditlog import DATA_UPDATE_TYPE
-from django.contrib.postgres.fields import JSONField
 from django.contrib.gis.db import models as geomodels
+from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -34,6 +32,8 @@ from seed.models import (
 from seed.utils.address import normalize_address_str
 from seed.utils.generic import split_model_fields, obj_to_dict
 from seed.utils.time import convert_to_js_timestamp
+from .auditlog import AUDIT_IMPORT
+from .auditlog import DATA_UPDATE_TYPE
 
 _log = logging.getLogger(__name__)
 
@@ -82,7 +82,11 @@ class TaxLotState(models.Model):
     extra_data = JSONField(default=dict, blank=True)
     hash_object = models.CharField(max_length=32, null=True, blank=True, default=None)
 
+    # taxlots can now have lat/long and polygons, points.
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
     long_lat = geomodels.PointField(geography=True, null=True, blank=True)
+    centroid = geomodels.PolygonField(geography=True, null=True, blank=True)
     bounding_box = geomodels.PolygonField(geography=True, null=True, blank=True)
     taxlot_footprint = geomodels.PolygonField(geography=True, null=True, blank=True)
     # A unique building identifier as defined by DOE's UBID project (https://buildingid.pnnl.gov/)
@@ -247,7 +251,8 @@ class TaxLotState(models.Model):
 
                 while not done_searching:
                     # if there is no parents, then break out immediately
-                    if (log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
+                    if (
+                            log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
                         break
 
                     # initalize the tree to None everytime. If not new tree is found, then we will not iterate
@@ -405,7 +410,8 @@ class TaxLotView(models.Model):
         # forwent the use of list comprehension to make the code more readable.
         # get the related property_view__state as well to save time, if needed.
         result = []
-        for tlp in TaxLotProperty.objects.filter(cycle=self.cycle, taxlot_view=self).select_related('property_view', 'property_view__state'):
+        for tlp in TaxLotProperty.objects.filter(cycle=self.cycle, taxlot_view=self).select_related(
+                'property_view', 'property_view__state'):
             if tlp.taxlot_view:
                 result.append(tlp.property_view)
 
