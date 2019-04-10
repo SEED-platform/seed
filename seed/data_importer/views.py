@@ -539,25 +539,6 @@ class ImportFileViewSet(viewsets.ViewSet):
         if not import_file.uploaded_filename:
             f['uploaded_filename'] = import_file.filename
         f['dataset'] = obj_to_dict(import_file.import_record)
-        # add the importfiles for the matching select
-        f['dataset']['importfiles'] = []
-        files = f['dataset']['importfiles']
-        for i in import_file.import_record.files:
-            tmp_uploaded_filename = i.filename_only
-            if i.uploaded_filename:
-                tmp_uploaded_filename = i.uploaded_filename
-
-            files.append({
-                'name': i.filename_only,
-                'uploaded_filename': tmp_uploaded_filename,
-                'mapping_done': i.mapping_done,
-                'cycle': i.cycle.id,
-                'id': i.pk
-            })
-
-        # make the first element in the list the current import file
-        i = next(index for (index, d) in enumerate(files) if d["id"] == import_file.pk)
-        files[0], files[i] = files[i], files[0]
 
         return JsonResponse({
             'status': 'success',
