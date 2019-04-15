@@ -650,6 +650,11 @@ class DataQualityCheck(models.Model):
                         value = value.magnitude
                 elif rule.field in row.extra_data:
                     value = row.extra_data[rule.field]
+
+                    if ' (Invalid Footprint)' in rule.field:
+                        self.add_invalid_geometry_entry_provided(row.id, rule, display_name, value)
+                        continue
+
                     try:
                         value = rule.str_to_data_type(value)
                     except DataQualityTypeCastError:
@@ -780,6 +785,17 @@ class DataQualityCheck(models.Model):
 
         self.rules.add(r)
 
+    def add_rule_if_new(self, rule):
+        """
+        Add a new rule to the Data Quality Checks only if rule does not exist
+
+        :param rule: dict to be added as a new rule
+        :return: None
+        """
+        rule_exists = self.rules.get_queryset().filter(**rule).exists()
+        if not rule_exists:
+            self.add_rule(rule)
+
     def add_result_string_error(self, row_id, rule, display_name, value):
         self.results[row_id]['data_quality_results'].append(
             {
@@ -876,6 +892,23 @@ class DataQualityCheck(models.Model):
             'table_name': rule.table_name,
             'message': display_name + ' is null',
             'detailed_message': display_name + ' is null',
+            'severity': rule.get_severity_display(),
+        })
+
+    def add_invalid_geometry_entry_provided(self, row_id, rule, display_name, value):
+        detailed_message = " is not a valid geometry"
+        if len(str(value)) <= 25:
+            detailed_message = "'{}'".format(str(value)) + detailed_message
+        else:
+            detailed_message = "'{}...'".format(str(value)[0:25]) + detailed_message
+
+        self.results[row_id]['data_quality_results'].append({
+            'field': rule.field,
+            'formatted_field': display_name,
+            'value': value,
+            'table_name': rule.table_name,
+            'message': display_name + ' should be in WKT format',
+            'detailed_message': detailed_message,
             'severity': rule.get_severity_display(),
         })
 

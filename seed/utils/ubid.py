@@ -3,7 +3,6 @@
 
 import buildingid.v2
 import buildingid.v3
-
 from django.contrib.gis.geos import GEOSGeometry
 
 
@@ -15,17 +14,31 @@ def centroid_wkt(state):
         return GEOSGeometry(state.centroid, srid=4326).wkt
 
 
-def decode_ubids(qs):
-    filtered_qs = qs.exclude(ubid__isnull=True)
+def decode_unique_ids(qs):
+    # import here to prevent circular reference
+    from seed.models.properties import PropertyState
+    from seed.models.tax_lots import TaxLotState
 
-    for property in filtered_qs.iterator():
+    if len(qs) == 0:
+        return True
+
+    if isinstance(qs.first(), PropertyState):
+        filtered_qs = qs.exclude(ubid__isnull=True)
+        unique_id = 'ubid'
+    elif isinstance(qs.first(), TaxLotState):
+        filtered_qs = qs.exclude(ulid__isnull=True)
+        unique_id = 'ulid'
+    else:
+        return False
+
+    for item in filtered_qs.iterator():
         try:
-            bounding_box_obj = buildingid.v3.decode(property.ubid)
+            bounding_box_obj = buildingid.v3.decode(getattr(item, unique_id))
         except ValueError:
             try:
-                bounding_box_obj = buildingid.v2.decode(property.ubid)
+                bounding_box_obj = buildingid.v2.decode(getattr(item, unique_id))
             except ValueError:
-                continue  # property with an incorrectly formatted UBID is skipped
+                continue  # property with an incorrectly formatted UBID/ULID is skipped
 
         # Starting with the SE point, list the points in counter-clockwise order
         bounding_box_polygon = (
@@ -35,7 +48,7 @@ def decode_ubids(qs):
             f"{bounding_box_obj.longitudeLo} {bounding_box_obj.latitudeLo}, "
             f"{bounding_box_obj.longitudeHi} {bounding_box_obj.latitudeLo}))"
         )
-        property.bounding_box = bounding_box_polygon
+        item.bounding_box = bounding_box_polygon
 
         # Starting with the SE point, list the points in counter-clockwise order
         centroid_polygon = (
@@ -45,8 +58,8 @@ def decode_ubids(qs):
             f"{bounding_box_obj.child.longitudeLo} {bounding_box_obj.child.latitudeLo}, "
             f"{bounding_box_obj.child.longitudeHi} {bounding_box_obj.child.latitudeLo}))"
         )
-        property.centroid = centroid_polygon
+        item.centroid = centroid_polygon
 
-        property.latitude, property.longitude = bounding_box_obj.latlng()
+        item.latitude, item.longitude = bounding_box_obj.latlng()
 
-        property.save()
+        item.save()

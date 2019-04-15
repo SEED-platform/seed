@@ -10,8 +10,9 @@ from django.test import TestCase
 from seed.landing.models import SEEDUser as User
 
 from seed.models.properties import PropertyState
+from seed.models.tax_lots import TaxLotState
 
-from seed.test_helpers.fake import FakePropertyStateFactory
+from seed.test_helpers.fake import FakePropertyStateFactory, FakeTaxLotStateFactory
 
 from seed.utils.geocode import bounding_box_wkt
 from seed.utils.organizations import create_organization
@@ -31,6 +32,7 @@ class UbidViewTests(TestCase):
         self.client.login(**user_details)
 
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+        self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
 
     def test_ubid_decode_by_id_endpoint_base(self):
         property_details = self.property_state_factory.get_details()
@@ -119,7 +121,73 @@ class UbidViewTests(TestCase):
         expectation = {
             "ubid_unpopulated": 1,
             "ubid_successfully_decoded": 1,
-            "ubid_not_decoded": 1
+            "ubid_not_decoded": 1,
+            "ulid_unpopulated": 0,
+            "ulid_successfully_decoded": 0,
+            "ulid_not_decoded": 0
+        }
+
+        self.assertEqual(result_dict, expectation)
+
+    def test_decode_ulid_results_returns_a_summary_dictionary(self):
+        taxlot_none_details = self.taxlot_state_factory.get_details()
+        taxlot_none_details["organization_id"] = self.org.id
+        taxlot_none = TaxLotState(**taxlot_none_details)
+        taxlot_none.save()
+
+        taxlot_correctly_populated_details = self.taxlot_state_factory.get_details()
+        taxlot_correctly_populated_details["organization_id"] = self.org.id
+        taxlot_correctly_populated_details['ulid'] = '86HJPCWQ+2VV-1-3-2-3'
+        taxlot_correctly_populated_details['bounding_box'] = (
+            "POLYGON ((-87.56021875000002 41.74504999999999, "
+            "-87.56021875000002 41.74514999999997, "
+            "-87.56043749999996 41.74514999999997, "
+            "-87.56043749999996 41.74504999999999, "
+            "-87.56021875000002 41.74504999999999))"
+        )
+        taxlot_correctly_populated_details['centroid'] = (
+            "POLYGON ((-87.56031249999999 41.74509999999998, "
+            "-87.56031249999999 41.74512499999997, "
+            "-87.56034374999999 41.74512499999997, "
+            "-87.56034374999999 41.74509999999998, "
+            "-87.56031249999999 41.74509999999998))"
+        )
+        taxlot_correctly_populated = TaxLotState(**taxlot_correctly_populated_details)
+        taxlot_correctly_populated.save()
+
+        taxlot_not_decoded_details = self.taxlot_state_factory.get_details()
+        taxlot_not_decoded_details["organization_id"] = self.org.id
+        taxlot_not_decoded_details['ulid'] = '86HJPCWQ+2VV-1-3-2-3'
+        # bounding_box could be populated from a GeoJSON import
+        taxlot_not_decoded_details['bounding_box'] = (
+            "POLYGON ((-87.56021875000002 41.74504999999999, "
+            "-87.56021875000002 41.74514999999997, "
+            "-87.56043749999996 41.74514999999997, "
+            "-87.56043749999996 41.74504999999999, "
+            "-87.56021875000002 41.74504999999999))"
+        )
+        taxlot_not_decoded = TaxLotState(**taxlot_not_decoded_details)
+        taxlot_not_decoded.save()
+
+        url = reverse('api:v2:ubid-decode-results')
+        post_params = {
+            'taxlot_ids': [
+                taxlot_none.id,
+                taxlot_correctly_populated.id,
+                taxlot_not_decoded.id
+            ]
+        }
+
+        result = self.client.post(url, post_params)
+        result_dict = ast.literal_eval(result.content.decode("utf-8"))
+
+        expectation = {
+            "ubid_unpopulated": 0,
+            "ubid_successfully_decoded": 0,
+            "ubid_not_decoded": 0,
+            "ulid_unpopulated": 1,
+            "ulid_successfully_decoded": 1,
+            "ulid_not_decoded": 1
         }
 
         self.assertEqual(result_dict, expectation)

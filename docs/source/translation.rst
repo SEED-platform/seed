@@ -9,7 +9,7 @@ Translating SEED
 
    .. code:: bash
 
-      scripts/get_python_translations
+      script/get_python_translations
       script/get_angular_translations
 
 4. Verify and commit changes

@@ -81,9 +81,19 @@ def forwards(apps, schema_editor):
     new_db_fields = [
         {
             'column_name': 'ulid',
-            'table_name': 'PropertyState',
+            'table_name': 'TaxLotState',
             'display_name': 'ULID',
             'data_type': 'string',
+        }, {
+            'column_name': 'property_footprint',
+            'table_name': 'PropertyState',
+            'display_name': 'Property Footprint',
+            'data_type': 'geometry',
+        }, {
+            'column_name': 'taxlot_footprint',
+            'table_name': 'TaxLotState',
+            'display_name': 'Tax Lot Footprint',
+            'data_type': 'geometry',
         }
     ]
 

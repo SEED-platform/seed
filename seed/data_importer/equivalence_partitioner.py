@@ -116,6 +116,7 @@ class EquivalencePartitioner(object):
         """
         tax_lot_equivalence_fields = [
             ("jurisdiction_tax_lot_id", "custom_id_1"),
+            ("ulid",),
             ("custom_id_1",),
             ("normalized_address",)
         ]

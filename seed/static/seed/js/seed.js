@@ -1100,16 +1100,16 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
       })
       .state({
         name: 'inventory_map',
-        url: '/{inventory_type:properties|taxlots}/map',
+        url: '/{inventory_type:properties}/map',
         templateUrl: static_url + 'seed/partials/inventory_map.html',
         controller: 'inventory_map_controller',
         resolve: {
           inventory: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service ) {
-            if ($stateParams.inventory_type === 'properties') {
+            // if ($stateParams.inventory_type === 'properties') {
               return inventory_service.get_properties(1, undefined, undefined, undefined);
-            } else if ($stateParams.inventory_type === 'taxlots') {
-              return inventory_service.get_taxlots(1, undefined, undefined, undefined);
-            }
+            // } else if ($stateParams.inventory_type === 'taxlots') {
+            //   return inventory_service.get_taxlots(1, undefined, undefined, undefined);
+            // }
           }],
           cycles: ['cycle_service', function (cycle_service) {
             return cycle_service.get_cycles();

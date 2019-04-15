@@ -654,6 +654,51 @@ class InventoryViewTests(DeleteModelsTestCase):
                           result[column_name_mappings['postal_code']])
         # self.assertEquals(related['primary'], 'P')
 
+    def test_get_properties_with_taxlots_with_footprints(self):
+        property_state = self.property_state_factory.get_property_state(
+            property_footprint="POLYGON ((0 0, 1 1, 1 0, 0 0))"
+        )
+
+        property_property = self.property_factory.get_property(campus=True)
+        property_view = PropertyView.objects.create(
+            property=property_property, cycle=self.cycle, state=property_state
+        )
+        taxlot_state = self.taxlot_state_factory.get_taxlot_state(
+            address_line_1=property_state.address_line_1,
+            postal_code=property_state.postal_code,
+            taxlot_footprint="POLYGON ((0 0, 1 1, 1 0, 0 0))"
+        )
+        taxlot = TaxLot.objects.create(organization=self.org)
+        taxlot_view = TaxLotView.objects.create(
+            taxlot=taxlot, state=taxlot_state, cycle=self.cycle
+        )
+        TaxLotProperty.objects.create(
+            property_view=property_view, taxlot_view=taxlot_view,
+            cycle=self.cycle
+        )
+        response = self.client.post('/api/v2/properties/filter/?{}={}&{}={}&{}={}'.format(
+            'organization_id', self.org.pk,
+            'page', 1,
+            'per_page', 999999999
+        ), data={'profile_id': None})
+
+        column_name_mappings_related = {}
+        column_name_mappings = {}
+        for c in Column.retrieve_all(self.org.pk, 'property'):
+            if c['related']:
+                column_name_mappings_related[c['column_name']] = c['name']
+            else:
+                column_name_mappings[c['column_name']] = c['name']
+
+        results = json.loads(response.content)
+        self.assertEquals(len(results['results']), 1)
+        result = results['results'][0]
+        self.assertTrue(result[column_name_mappings['campus']])
+        self.assertEquals(len(result['related']), 1)
+        related = result['related'][0]
+        self.assertEquals(related[column_name_mappings_related['postal_code']],
+                          result[column_name_mappings['postal_code']])
+
     def test_get_properties_taxlot_extra_data(self):
         extra_data = {
             'is secret lair': True,

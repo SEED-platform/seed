@@ -12,6 +12,7 @@ import copy
 import datetime as dt
 import hashlib
 import os
+import json
 import traceback
 from _csv import Error
 from builtins import str
@@ -20,6 +21,7 @@ from itertools import chain
 
 from celery import chord, shared_task
 from celery.utils.log import get_task_logger
+from django.contrib.gis.geos import GEOSGeometry
 from django.db import IntegrityError, DataError
 from django.db import connection, transaction
 from django.db.utils import ProgrammingError
@@ -67,10 +69,13 @@ from seed.models import PropertyAuditLog
 from seed.models import TaxLotAuditLog
 from seed.models import TaxLotProperty
 from seed.models.auditlog import AUDIT_IMPORT
-from seed.models.data_quality import DataQualityCheck
+from seed.models.data_quality import (
+    DataQualityCheck,
+    Rule,
+)
 from seed.utils.buildings import get_source_type
 from seed.utils.geocode import geocode_buildings
-from seed.utils.ubid import decode_ubids
+from seed.utils.ubid import decode_unique_ids
 
 # from seed.utils.cprofile import cprofile
 
@@ -309,11 +314,16 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                 # This may be historic, but we need to pull out the extra_data_fields here to pass
                 # into mapper.map_row. apply_columns are extra_data columns (the raw column names)
                 extra_data_fields = []
+                footprint_details = {}
                 for k, v in mappings.items():
                     # the 3rd element is the is_extra_data flag.
                     # Need to convert this to a dict and not a tuple.
                     if v[3]:
                         extra_data_fields.append(k)
+
+                    if v[1] in ['taxlot_footprint', 'property_footprint']:
+                        footprint_details['raw_field'] = k
+                        footprint_details['obj_field'] = v[1]
                 # _log.debug("extra data fields: {}".format(extra_data_fields))
 
                 # All the data live in the PropertyState.extra_data field when the data are imported
@@ -381,6 +391,13 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                                 "Skipping property or taxlot during mapping because it is identical to another row")
                             continue
 
+                        # If a footprint was provided but footprint was not populated/valid,
+                        # create a new extra_data column to store the raw, invalid data.
+                        # Also create a new rule for this new column
+                        if footprint_details.get('obj_field'):
+                            if getattr(map_model_obj, footprint_details['obj_field']) is None:
+                                _store_raw_footprint_and_create_rule(footprint_details, table, org, import_file, original_row, map_model_obj)
+
                         # There was an error with a field being too long [> 255 chars].
                         map_model_obj.save()
 
@@ -416,6 +433,39 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
     progress_data.step()
 
     return True
+
+
+def _store_raw_footprint_and_create_rule(footprint_details, table, org, import_file, original_row, map_model_obj):
+    column_name = footprint_details['raw_field'] + ' (Invalid Footprint)'
+
+    column_mapping_for_cache = {
+        'from_field': column_name,
+        'from_units': None,
+        'to_field': column_name,
+        'to_table_name': table
+    }
+
+    column_mapping = column_mapping_for_cache.copy()
+    column_mapping['to_field_display_name'] = column_name
+
+    # Create column without updating the mapped columns cache, then update cache separately
+    Column.create_mappings([column_mapping], org, import_file.import_record.last_modified_by)
+
+    cached_column_mapping = json.loads(import_file.cached_mapped_columns)
+    cached_column_mapping.append(column_mapping_for_cache)
+    import_file.save_cached_mapped_columns(cached_column_mapping)
+
+    map_model_obj.extra_data[column_name] = original_row.extra_data[footprint_details['raw_field']]
+
+    rule = {
+        'table_name': table,
+        'field': column_name,
+        'rule_type': Rule.RULE_TYPE_CUSTOM,
+        'severity': Rule.SEVERITY_ERROR,
+    }
+
+    dq, _created = DataQualityCheck.objects.get_or_create(organization=org.id)
+    dq.add_rule_if_new(rule)
 
 
 def _map_data_create_tasks(import_file_id, progress_key):
@@ -970,12 +1020,14 @@ def _geocode_properties_or_tax_lots(file_pk):
     if PropertyState.objects.filter(import_file_id=file_pk).exclude(data_state=DATA_STATE_IMPORT):
         qs = PropertyState.objects.filter(import_file_id=file_pk).exclude(
             data_state=DATA_STATE_IMPORT)
-        decode_ubids(qs)
-    else:
+        decode_unique_ids(qs)
+        geocode_buildings(qs)
+
+    if TaxLotState.objects.filter(import_file_id=file_pk).exclude(data_state=DATA_STATE_IMPORT):
         qs = TaxLotState.objects.filter(import_file_id=file_pk).exclude(
             data_state=DATA_STATE_IMPORT)
-
-    geocode_buildings(qs)
+        decode_unique_ids(qs)
+        geocode_buildings(qs)
 
 
 # @cprofile()
@@ -1059,6 +1111,8 @@ def hash_state_object(obj, include_extra_data=True):
             # Somehow, somewhere the data are being saved in mapping with a timezone,
             # then in matching they are removed (but the time is updated correctly)
             m.update(str(make_naive(obj_val).astimezone(tz.utc).isoformat()).encode('utf-8'))
+        elif isinstance(obj_val, GEOSGeometry):
+            m.update(GEOSGeometry(obj_val, srid=4326).wkt.encode('utf-8'))
         else:
             m.update(str(obj_val).encode('utf-8'))
 
@@ -1515,6 +1569,7 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
 
     tax_cmp_fmt = [
         ('jurisdiction_tax_lot_id', 'custom_id_1'),
+        ('ulid',),
         ('custom_id_1',),
         ('normalized_address',),
         ('custom_id_1',),
