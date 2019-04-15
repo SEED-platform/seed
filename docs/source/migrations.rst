@@ -3,6 +3,13 @@ Migrations
 
 Django handles the migration of the database very well; however, there are various changes to SEED that may require some custom (manual) migrations. The migration documenation includes the required changes based on deployment and development for each release.
 
+Version 2.6.0-Beta
+------------------
+
+2.6.0-beta includes support for meters and time series data storage. In order to use this release
+you must first install [timescaledb](https://docs.timescale.com/v1.2/getting-started).
+
+
 Version 2.5.1
 -------------
 
