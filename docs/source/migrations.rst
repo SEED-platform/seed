@@ -3,6 +3,11 @@ Migrations
 
 Django handles the migration of the database very well; however, there are various changes to SEED that may require some custom (manual) migrations. The migration documenation includes the required changes based on deployment and development for each release.
 
+Version 2.5.1
+-------------
+
+- The migrations should work by simply running `./manage.py migrate`. There are no manual migrations needed for the 2.5.1 release.
+
 Version 2.5.0
 -------------
 

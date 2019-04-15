@@ -11,6 +11,8 @@ from collections import defaultdict
 from itertools import chain
 
 from django.apps import apps
+from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.gis.db.models import GeometryField
 from django.db import models
 from django.db.models import Count
 from django.utils.timezone import make_naive
@@ -93,6 +95,11 @@ class TaxLotProperty(models.Model):
                 value = f.value_from_object(instance)
                 if value:
                     value = make_naive(value).isoformat()
+            elif isinstance(f, GeometryField):
+                # If this is a GeometryField, convert (non-JSON serializable) geometry to string (wkt)
+                value = f.value_from_object(instance)
+                if value:
+                    value = GEOSGeometry(value, srid=4326).wkt
             else:
                 value = f.value_from_object(instance)
 
@@ -157,6 +164,7 @@ class TaxLotProperty(models.Model):
                 'obj_state_id': 'taxlot_state_id',
                 'obj_view_id': 'taxlot_view_id',
                 'obj_id': 'taxlot_id',
+                'centroid': 'centroid',
                 'bounding_box': 'bounding_box',
                 'long_lat': 'long_lat',
                 'related_class': 'PropertyView',
@@ -209,6 +217,12 @@ class TaxLotProperty(models.Model):
             )
 
             related_dict[lookups['related_state_id']] = related_view.state.id
+
+            # Add GIS stuff to the related dict
+            # (I guess these are special fields not in columns and not directly JSON serializable...)
+            related_dict[lookups['bounding_box']] = bounding_box_wkt(related_view.state)
+            related_dict[lookups['long_lat']] = long_lat_wkt(related_view.state)
+            related_dict[lookups['centroid']] = centroid_wkt(related_view.state)
 
             # custom handling for when it is TaxLotView
             if lookups['obj_class'] == 'TaxLotView':

@@ -522,6 +522,7 @@ class TestColumnsByInventory(TestCase):
                 "pm_parent_property_id": "string",
                 "pm_property_id": "string",
                 "postal_code": "string",
+                "property_footprint": "geometry",
                 "property_name": "string",
                 "property_notes": "string",
                 "property_type": "string",
@@ -535,6 +536,7 @@ class TestColumnsByInventory(TestCase):
                 "source_eui_weather_normalized": "float",
                 "space_alerts": "string",
                 "state": "string",
+                "taxlot_footprint": "geometry",
                 "ubid": "string",
                 "ulid": "string",
                 "updated": "datetime",
@@ -559,10 +561,10 @@ class TestColumnsByInventory(TestCase):
                 'latitude', 'longitude', 'lot_number', 'normalized_address', 'number_properties',
                 'occupied_floor_area', 'owner', 'owner_address', 'owner_city_state', 'owner_email',
                 'owner_postal_code', 'owner_telephone', 'pm_parent_property_id', 'pm_property_id',
-                'postal_code', 'property_name', 'property_notes', 'property_type',
+                'postal_code', 'property_footprint', 'property_name', 'property_notes', 'property_type',
                 'recent_sale_date', 'release_date', 'site_eui', 'site_eui_modeled',
                 'site_eui_weather_normalized', 'source_eui', 'source_eui_modeled',
-                'source_eui_weather_normalized', 'space_alerts', 'state', 'ubid', 'ulid', 'updated',
+                'source_eui_weather_normalized', 'space_alerts', 'state', 'taxlot_footprint', 'ubid', 'ulid', 'updated',
                 'use_description', 'year_built', 'year_ending']
 
         self.assertCountEqual(c, data)
@@ -577,10 +579,10 @@ class TestColumnsByInventory(TestCase):
                     'jurisdiction_tax_lot_id', 'latitude', 'longitude', 'lot_number',
                     'number_properties', 'occupied_floor_area', 'owner', 'owner_address',
                     'owner_city_state', 'owner_email', 'owner_postal_code', 'owner_telephone',
-                    'pm_parent_property_id', 'pm_property_id', 'postal_code', 'property_name',
+                    'pm_parent_property_id', 'pm_property_id', 'postal_code', 'property_footprint', 'property_name',
                     'property_notes', 'property_type', 'recent_sale_date', 'release_date',
                     'site_eui', 'site_eui_modeled', 'site_eui_weather_normalized', 'source_eui',
-                    'source_eui_modeled', 'source_eui_weather_normalized', 'space_alerts', 'state',
+                    'source_eui_modeled', 'source_eui_weather_normalized', 'space_alerts', 'state', 'taxlot_footprint',
                     'ubid', 'ulid', 'updated', 'use_description', 'year_built', 'year_ending']
 
         method_columns = Column.retrieve_db_field_name_for_hash_comparison()

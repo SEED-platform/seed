@@ -206,8 +206,8 @@ msgstr "IDs des lots d'impôt associé"
 msgid "At least one of the following Property fields is required: Address Line 1, Custom ID 1, UBID, or PM Property ID."
 msgstr "Au moins un des champs de propriété suivants est requis: Adresse ligne 1, personnalisée ID 1, UBID ou PM ID de Propriété."
 
-msgid "At least one of the following Tax Lot fields is required: Address Line 1, Custom ID 1, or Jurisdiction Tax Lot ID."
-msgstr "Au moins l'un des domaines fiscal Lot suivants est requis: Adresse ligne 1, sur mesure Id 1 ou juridiction fiscale Lot Id."
+msgid "At least one of the following Tax Lot fields is required: Address Line 1, Custom ID 1, Jurisdiction Tax Lot ID, or ULID."
+msgstr "Au moins l'un des domaines fiscal Lot suivants est requis: Adresse ligne 1, sur mesure Id 1, juridiction fiscale Lot Id, ou ULID."
 
 #: seed/models/models.py:136
 msgid "Auditing"
@@ -341,6 +341,9 @@ msgstr "Commercial"
 
 msgid "Complete"
 msgstr "Complète"
+
+msgid "COMPLETE_AND_REFRESH"
+msgstr "Complétez et Actualisez la Page"
 
 msgid "Compliance"
 msgstr "Conformité"
@@ -694,6 +697,9 @@ msgstr "Adresse e-mail:"
 msgid "end_date"
 msgstr "date de fin"
 
+msgid "Energy"
+msgstr "Énergie"
+
 msgid "Energy Alerts"
 msgstr "Alertes énergétiques"
 
@@ -702,6 +708,12 @@ msgstr "Fichier de données d'énergie"
 
 msgid "ENERGY STAR Score"
 msgstr "Compte ENERGY STAR"
+
+msgid "ENERGY_TYPE_DISPLAY_CHOICE_PLACEHOLDER"
+msgstr "---- Choisissez le type d'énergie ----"
+
+msgid "ENERGY_UNIT_DISPLAY_CHOICE_PLACEHOLDER"
+msgstr "---- Changer l'unité d'affichage ----"
 
 #: config/settings/common.py:214
 msgid "English"
@@ -784,7 +796,7 @@ msgid "Field Name"
 msgstr "Nom de champ"
 
 msgid "FIELD_NAMES_FOR_MATCHING_ADVICE"
-msgstr "<span class=\"label label-info\">Noms de zone pour l'appariement:</span> Les champs suivants sont utilisés par SEED pour faire correspondre les enregistrements: <strong>Juridiction Numéro de lot fiscal</strong>, <strong>Numéro de propriété PM</strong>, <strong>ID personnalisé 1</strong>, <strong>Ligne d'adresse 1</strong>, et <strong>UBID</strong>. Si des champs dans un fichier de données sont mappés à ces noms, le programme tentera de faire correspondre ces mêmes noms dans les enregistrements existants."
+msgstr "<span class=\"label label-info\">Noms de zone pour l'appariement:</span> Les champs suivants sont utilisés par SEED pour faire correspondre les enregistrements: <strong>Juridiction Numéro de lot fiscal</strong>, <strong>Numéro de propriété PM</strong>, <strong>ID personnalisé 1</strong>, <strong>Ligne d'adresse 1</strong>, <strong>UBID</strong>, et <strong>ULID</strong>. Si des champs dans un fichier de données sont mappés à ces noms, le programme tentera de faire correspondre ces mêmes noms dans les enregistrements existants."
 
 msgid "FIELDS NEEDED TO MAKE MATCHES:"
 msgstr "CHAMPS NÉCESSAIRES POUR ÉTABLIR DES CORRESPONDANCES:"
@@ -893,6 +905,9 @@ msgstr "gris"
 msgid "green"
 msgstr "vert"
 
+msgid "GREENBUTTON_CONTENTS_TITLE"
+msgstr "Confirmer le contenu du fichier GreenButton"
+
 msgid "Gross Floor Area"
 msgstr "Surface brute"
 
@@ -954,6 +969,9 @@ msgstr "Inclure dans votre Liste de Lots d'Impôt tous les lots d'impôt partag�
 
 msgid "INTERNAL"
 msgstr "INTERNE"
+
+msgid "Interval"
+msgstr "Intervalle"
 
 msgid "INVALID_EXTENSION_ALERT"
 msgstr "<strong>Désolée!</strong> SEED ne supporte actuellement pas ce format de fichier. Seuls les fichiers <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, et <strong>.xml</strong> sont pris en charge."
@@ -1213,6 +1231,12 @@ msgstr "Propriétés fusionnées"
 msgid "Merged tax lots"
 msgstr "Lots d'impôt fusionnés"
 
+msgid "METER_DISPLAY_SETTINGS_TITLE"
+msgstr "Compteur d'énergie d'affichage (changer un à la fois)"
+
+msgid "METER_READING_COUNTS_TITLE"
+msgstr "Compte de Relevé de Compteur"
+
 msgid "Min"
 msgstr "Min"
 
@@ -1429,6 +1453,9 @@ msgstr "Paramètres de jumelage"
 msgid "Parent ID"
 msgstr "ID du Parent"
 
+msgid "PARSED_ENERGY_TYPES_AND_UNITS_TITLE"
+msgstr "Types d'énergie et unités analysées"
+
 #: seed/landing/forms.py:20
 msgid "Password"
 msgstr "Mot de passe"
@@ -1495,6 +1522,15 @@ msgstr "ID de Propriété PM"
 
 msgid "PM Release Date"
 msgstr "PM Date de sortie"
+
+msgid "PM_METER_IMPORT_BUTTON"
+msgstr "Consommation d'énergie d'importation de Portfolio Manager"
+
+msgid "PM_METER_IMPORT_NO_ASSOCIATION"
+msgstr "Importation impossible - Aucune association à des propriétés précédemment importées"
+
+msgid "PM_METER_IMPORT_RESULTS"
+msgstr "Résultats d'importation de Portfolio Manager"
 
 msgid "Postal Code (Property)"
 msgstr "Code postal (propriété)"
@@ -1805,6 +1841,9 @@ msgstr "Sélectionnez le type de fichier (s) que vous souhaitez ajouter à"
 msgid "Select which columns to include in the list:"
 msgstr "Sélectionnez les colonnes à inclure dans la liste:"
 
+msgid "SELECT_DATA_SET_TITLE"
+msgstr "Sélectionner un ensemble de données"
+
 msgid "SELECT_THE_TYPE_OF_FILE_TO_ADD_TO_DATASET"
 msgstr "Sélectionnez le type de fichier(s) que vous souhaitez ajouter à {dataset_name}."
 
@@ -2080,6 +2119,9 @@ msgstr "La Plate-forme SEED™ (Standard Energy Efficiency Data) est une applica
 msgid "There is also a link to the SEED-Platform Users forum, where you can connect with other users."
 msgstr "Il y a aussi un lien vers le forum SEED-Platform Users, où vous pouvez vous connecter avec d'autres utilisateurs."
 
+msgid "THERMAL_CONV_ASSUMPTION_TITLE"
+msgstr "Choix de Conversion Thermique"
+
 msgid "This cycle name is already taken."
 msgstr "Ce nom de cycle est déjà pris."
 
@@ -2179,8 +2221,23 @@ msgstr "Téléchargez vos fichier(s) de données d'énergie"
 msgid "Upload your energy data."
 msgstr "Téléchargez vos données d'énergie."
 
+msgid "UPLOAD_COMPLETE_TITLE"
+msgstr "Téléchargement Complet"
+
+msgid "UPLOAD_FILE"
+msgstr "Téléverser un Fichier"
+
+msgid "UPLOAD_GB_DATA_BUTTON"
+msgstr "Importer des Données GreenButton"
+
+msgid "UPLOAD_PM_READINGS_MODAL_TITLE"
+msgstr "Importer des lectures de compteur Portfolio Manager"
+
 msgid "uploading file"
 msgstr "téléchargeant le fichier"
+
+msgid "UPLOADING_FILE_TITLE"
+msgstr "Téléchargement de Fichier"
 
 msgid "UPLOADING_PROGRESS"
 msgstr "Téléchargeant <strong>{dataset_filename}</strong>"

@@ -199,9 +199,16 @@ class TaxLotPropertyViewSet(GenericViewSet):
         return response
 
     def _json_response(self, filename, data, column_name_mappings):
-        polygon_fields = ["bounding_box", "centroid", "property_footprint", "taxlot_footprint"]
+        polygon_fields = ["bounding_box", "centroid", "property_footprint", "taxlot_footprint", "long_lat"]
         features = []
-        for datum in data:
+
+        # extract related records
+        related_records = self._extract_related(data)
+
+        # append related_records to data
+        complete_data = data + related_records
+
+        for datum in complete_data:
             feature = {
                 "type": "Feature",
                 "properties": {}
@@ -226,12 +233,26 @@ class TaxLotPropertyViewSet(GenericViewSet):
                     established. When/If a second geometry is added, this is
                     appended alongside the previous geometry.
                     """
-                    coordinates = self._serialized_coordinates(value)
+                    individual_geometry = {}
 
-                    individual_geometry = {
-                        "coordinates": [coordinates],
-                        "type": "Polygon"
-                    }
+                    print("VALUE:")
+                    print(value)
+
+                    # long_lat
+                    if key == 'long_lat':
+                        coordinates = self._serialized_point(value)
+                        # point
+                        individual_geometry = {
+                            "coordinates": coordinates,
+                            "type": "Point"
+                        }
+                    else:
+                        # polygons
+                        coordinates = self._serialized_coordinates(value)
+                        individual_geometry = {
+                            "coordinates": [coordinates],
+                            "type": "Polygon"
+                        }
 
                     if feature.get("geometry", None) is None:
                         feature["geometry"] = {
@@ -241,19 +262,43 @@ class TaxLotPropertyViewSet(GenericViewSet):
                     else:
                         feature["geometry"]["geometries"].append(individual_geometry)
                 else:
+                    """
+                    Non-polygon data
+                    """
                     display_key = column_name_mappings.get(key, key)
                     feature["properties"][display_key] = value
 
+                    # # store point geometry in case you need it
+                    # if display_key == "Longitude":
+                    #     point_geometry[0] = value
+                    # if display_key == "Latitude":
+                    #     point_geometry[1] = value
+
+            """
+            Before appending feature, ensure that if there is no geometry recorded.
+            Note that the GeoJson will not render if no lat/lng
+            """
+
+            # add style information
+            if feature["properties"].get("property_state_id") is not None:
+                feature["properties"]["stroke"] = "#185189"  # buildings color
+            elif feature["properties"].get("taxlot_state_id") is not None:
+                feature["properties"]["stroke"] = "#10A0A0"  # buildings color
+            feature["properties"]["marker-color"] = "#E74C3C"
+            # feature["properties"]["stroke-width"] = 3
+            feature["properties"]["fill-opacity"] = 0
+
+            # append feature
             features.append(feature)
 
-        response_dict = {
-            "type": "FeatureCollection",
-            "crs": {
-                "type": "EPSG",
-                "properties": {"code": 4326}
-            },
-            "features": features
-        }
+            response_dict = {
+                "type": "FeatureCollection",
+                "crs": {
+                    "type": "EPSG",
+                    "properties": {"code": 4326}
+                },
+                "features": features
+            }
 
         response = JsonResponse(response_dict)
         response['Content-Disposition'] = 'attachment; filename="{}"'.format(filename)
@@ -269,3 +314,39 @@ class TaxLotPropertyViewSet(GenericViewSet):
             coordinates.append(float_coords)
 
         return coordinates
+
+    def _serialized_point(self, point_wkt):
+        string_coords = point_wkt.lstrip('POINT (').rstrip(')').split(', ')
+
+        coordinates = []
+        for coord in string_coords[0].split(' '):
+            coordinates.append(float(coord))
+
+        return coordinates
+
+    def _extract_related(self, data):
+        # extract all related records into a separate array
+        related = []
+
+        # figure out if we are dealing with properties or taxlots
+        if data[0].get("property_state_id", None) is not None:
+            is_property = True
+        elif data[0].get("taxlot_state_id", None) is not None:
+            is_property = False
+
+        for datum in data:
+            if datum.get("related", None) is not None:
+                for record in datum["related"]:
+                    related.append(record)
+
+        # make array unique
+        if is_property:
+
+            unique = [dict(p) for p in set(tuple(i.items())
+                                           for i in related)]
+
+        else:
+            unique = [dict(p) for p in set(tuple(i.items())
+                                           for i in related)]
+
+        return unique

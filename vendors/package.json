@@ -34,6 +34,8 @@
     "ol-ext": "=3.1.0",
     "raven-js": "~3.22.1",
     "spin.js": "~2.3.2",
+    "terraformer": "~1.0.9",
+    "terraformer-wkt-parser": "~1.2.0",
     "ui-grid-draggable-rows": "~0.3.3"
   },
   "devDependencies": {
