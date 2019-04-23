@@ -10,7 +10,6 @@ All rights reserved.  # NOQA
 import json
 from collections import OrderedDict
 
-from django.apps import apps
 from django.db import models
 from django.utils.timezone import make_naive
 from past.builtins import basestring
@@ -97,23 +96,14 @@ class PropertyListSerializer(serializers.ListSerializer):
             iterable = data.all().prefetch_related('parent_property')
         else:
             iterable = data
-        property_ids = [item.id for item in iterable]
-        labels = PropertyLabel.objects.filter(property_id__in=property_ids)
-        labelset = {}
-        for label in labels:
-            record = labelset.setdefault(label.property_id, [])
-            record.append(label.statuslabel_id)
         result = []
         for item in iterable:
             representation = self.child.to_representation(item)
-            representation['labels'] = labelset.get(item.id, None)
             result.append(representation)
         return result
 
 
 class PropertySerializer(serializers.ModelSerializer):
-    # list of status labels (rather than the join field)
-    labels = PropertyLabelsField(read_only=True, many=True)
 
     class Meta:
         model = Property
@@ -262,12 +252,15 @@ class PropertyStateWritableSerializer(serializers.ModelSerializer):
 
 
 class PropertyViewSerializer(serializers.ModelSerializer):
+    # list of status labels (rather than the join field)
+    labels = PropertyLabelsField(read_only=True, many=True)
+
     state = PropertyStateSerializer()
 
     class Meta:
         model = PropertyView
         depth = 1
-        fields = ('id', 'cycle', 'state', 'property')
+        fields = ('id', 'cycle', 'state', 'property', 'labels')
 
 
 class PropertyViewListSerializer(serializers.ListSerializer):

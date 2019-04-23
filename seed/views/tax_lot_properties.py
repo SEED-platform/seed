@@ -114,7 +114,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
         filter_str = {'cycle': cycle_pk}
         if hasattr(view_klass, 'property'):
             select_related.append('property')
-            prefetch_related = ['property__labels']
+            prefetch_related = ['labels']
             filter_str = {'property__organization_id': org_id}
             if ids:
                 filter_str['property__id__in'] = ids
@@ -123,7 +123,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
 
         elif hasattr(view_klass, 'taxlot'):
             select_related.append('taxlot')
-            prefetch_related = ['taxlot__labels']
+            prefetch_related = ['labels']
             filter_str = {'taxlot__organization_id': org_id}
             if ids:
                 filter_str['taxlot__id__in'] = ids
@@ -139,12 +139,12 @@ class TaxLotPropertyViewSet(GenericViewSet):
         for i, record in enumerate(model_views):
             label_string = []
             if hasattr(record, 'property'):
-                for label in list(record.property.labels.all().order_by('name')):
+                for label in list(record.labels.all().order_by('name')):
                     label_string.append(label.name)
                 data[i]['property_labels'] = ','.join(label_string)
 
             elif hasattr(record, 'taxlot'):
-                for label in list(record.taxlot.labels.all().order_by('name')):
+                for label in list(record.labels.all().order_by('name')):
                     label_string.append(label.name)
                 data[i]['taxlot_labels'] = ','.join(label_string)
 

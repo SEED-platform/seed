@@ -615,7 +615,7 @@ class DataQualityCheck(models.Model):
         # check if the row has any rules applied to it
         model_labels = {'linked_id': None, 'label_ids': []}
         if row.__class__.__name__ == 'PropertyState':
-            label = apps.get_model('seed', 'Property_labels')
+            label = apps.get_model('seed', 'PropertyView_labels')
             if PropertyView.objects.filter(state=row).exists():
                 model_labels['linked_id'] = PropertyView.objects.get(state=row).property_id
                 model_labels['label_ids'] = list(
@@ -625,7 +625,7 @@ class DataQualityCheck(models.Model):
                 # _log.debug("Property {} has {} labels".format(model_labels['linked_id'],
                 #                                               len(model_labels['label_ids'])))
         elif row.__class__.__name__ == 'TaxLotState':
-            label = apps.get_model('seed', 'TaxLot_labels')
+            label = apps.get_model('seed', 'TaxLotView_labels')
             if TaxLotView.objects.filter(state=row).exists():
                 model_labels['linked_id'] = TaxLotView.objects.get(state=row).taxlot_id
                 model_labels['label_ids'] = list(

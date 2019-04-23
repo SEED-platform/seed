@@ -601,20 +601,22 @@ class FakeTaxLotFactory(BaseFake):
         self.organization = organization
         self.label_factory = FakeStatusLabelFactory(organization=organization)
 
-    def get_taxlot(self, organization=None, labels=None):
+    def get_taxlot(self, organization=None):
         """Get taxlot instance."""
         organization = self._get_attr('organization', organization)
         taxlot_details = {
             'organization': organization
         }
         taxlot = TaxLot.objects.create(**taxlot_details)
-        if labels:
-            for label in labels:
-                taxlot.labels.add(label)
-        else:
-            taxlot.labels.add(
-                self.label_factory.get_statuslabel(organization=organization)
-            )
+        # if labels:
+        #     for label in labels:
+        #         taxlot.labels.add(label)
+        # elif labels is False:  # added condition to avoid forcing label additions
+        #     return taxlot
+        # else:
+        #     taxlot.labels.add(
+        #         self.label_factory.get_statuslabel(organization=organization)
+        #     )
         return taxlot
 
 

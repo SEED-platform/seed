@@ -853,7 +853,7 @@ class PropertyViewSet(GenericViewSet):
     def _get_taxlots(self, pk):
         lot_view_pks = TaxLotProperty.objects.filter(property_view_id=pk).values_list(
             'taxlot_view_id', flat=True)
-        lot_views = TaxLotView.objects.filter(pk__in=lot_view_pks).select_related('cycle', 'state')
+        lot_views = TaxLotView.objects.filter(pk__in=lot_view_pks).select_related('cycle', 'state').prefetch_related('labels')
         lots = []
         for lot in lot_views:
             lots.append(TaxLotViewSerializer(lot).data)
