@@ -5,6 +5,7 @@
 :author
 """
 
+import copy
 import os.path
 
 from django.core.exceptions import ValidationError
@@ -17,6 +18,11 @@ from seed.models import (
     PropertyState,
     Column,
     ColumnMapping,
+
+)
+from seed.test_helpers.fake import (
+    FakePropertyStateFactory,
+    FakeTaxLotStateFactory,
 )
 from seed.utils.organizations import create_organization
 
@@ -218,6 +224,194 @@ class TestColumns(TestCase):
 
         test_mapping, _ = ColumnMapping.get_column_mappings(self.fake_org)
         self.assertCountEqual(expected, test_mapping)
+
+
+class TestRenameColumns(TestCase):
+    def setUp(self):
+        user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+        }
+        self.user = User.objects.create_superuser(
+            email='test_user@demo.com', **user_details
+        )
+        self.org, _, _ = create_organization(self.user)
+        self.client.login(**user_details)
+
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+        self.tax_lot_state_factory = FakeTaxLotStateFactory(organization=self.org)
+
+        self.extra_data_column = Column.objects.create(
+            table_name='PropertyState',
+            column_name='test_column',
+            organization=self.org,
+            is_extra_data=True,
+        )
+
+    def test_rename_column_no_data(self):
+        address_column = Column.objects.filter(column_name='address_line_1').first()
+
+        # verify that the column has to be new
+        self.assertFalse(address_column.rename_column('PropertyState', 'custom_id_1')[0])
+
+    def test_rename_column_no_data_and_force(self):
+        orig_address_column = Column.objects.filter(column_name='address_line_1').first()
+
+        # verify that the column has to be new
+        self.assertTrue(orig_address_column.rename_column('PropertyState', 'custom_id_1', True)[0])
+
+        # get the address column and check the fields
+        address_column = Column.objects.filter(column_name='address_line_1').first()
+        self.assertEqual(address_column.is_extra_data, False)
+        self.assertEqual(address_column.display_name, orig_address_column.display_name)
+
+    def test_rename_column_field_to_field(self):
+        address_column = Column.objects.filter(column_name='address_line_1').first()
+
+        # create the test data and assemble the expected data result
+        expected_data = []
+        for i in range(0, 20):
+            state = self.property_state_factory.get_property_state()
+            expected_data.append(state.address_line_1)
+
+        result = address_column.rename_column('PropertyState', 'property_type', force=True)
+        self.assertTrue(result)
+
+        results = list(
+            PropertyState.objects.filter(organization=self.org).order_by('id').values_list(
+                'property_type', flat=True)
+        )
+        self.assertListEqual(results, expected_data)
+
+        # verify that the original field is now empty
+        results = list(
+            PropertyState.objects.filter(organization=self.org).order_by('id').values_list(
+                'address_line_1', flat=True)
+        )
+        self.assertListEqual(results, [None for _x in range(20)])
+
+    def test_rename_column_field_to_extra_data(self):
+        address_column = Column.objects.filter(column_name='address_line_1').first()
+
+        # create the test data and assemble the expected data result
+        expected_data = []
+        for i in range(0, 20):
+            state = self.property_state_factory.get_property_state(
+                extra_data={'string': 'abc %s' % i})
+            expected_data.append({'string': state.extra_data['string'],
+                                  'new_address_line_1': state.address_line_1})
+
+        result = address_column.rename_column('PropertyState', 'new_address_line_1')
+        self.assertTrue(result)
+
+        results = list(
+            PropertyState.objects.filter(organization=self.org).order_by('id').values_list(
+                'extra_data', flat=True)
+        )
+        self.assertListEqual(results, expected_data)
+
+        # verify that the original field is now empty
+        results = list(
+            PropertyState.objects.filter(organization=self.org).order_by('id').values_list(
+                'address_line_1', flat=True)
+        )
+        self.assertListEqual(results, [None for _x in range(20)])
+
+    def test_rename_column_extra_data_to_field(self):
+        # create the test data and assemble the expected data result
+        expected_data = []
+        for i in range(0, 20):
+            state = self.property_state_factory.get_property_state(
+                extra_data={self.extra_data_column.column_name: 'abc %s' % i, 'skip': 'value'}
+            )
+            expected_data.append(state.extra_data[self.extra_data_column.column_name])
+
+        result = self.extra_data_column.rename_column('PropertyState', 'address_line_1', force=True)
+        self.assertTrue(result)
+
+        results = list(
+            PropertyState.objects.filter(organization=self.org).order_by('id').values_list(
+                'address_line_1', flat=True)
+        )
+        print(results)
+        print(expected_data)
+        self.assertListEqual(results, expected_data)
+
+        # verify that the original field is now empty
+        results = list(
+            PropertyState.objects.filter(organization=self.org).order_by('id').values_list(
+                'extra_data', flat=True)
+        )
+        self.assertListEqual(results, [{'skip': 'value'} for _x in range(20)])
+
+    def test_rename_column_extra_data_to_extra_data(self):
+        # create the test data and assemble the expected data result
+        expected_data = []
+        for i in range(0, 20):
+            state = self.property_state_factory.get_property_state(
+                extra_data={self.extra_data_column.column_name: 'abc %s' % i, 'skip': 'value'}
+            )
+            expected_data.append(state.extra_data[self.extra_data_column.column_name])
+
+        result = self.extra_data_column.rename_column('PropertyState', 'new_extra', force=True)
+        self.assertTrue(result)
+
+        results = list(
+            PropertyState.objects.filter(organization=self.org).order_by('id').values_list(
+                'extra_data', flat=True)
+        )
+        results = [x['new_extra'] for x in results]
+        print(results)
+        print(expected_data)
+        self.assertListEqual(results, expected_data)
+
+        # verify that the original field is now empty
+        results = list(
+            PropertyState.objects.filter(organization=self.org).order_by('id').values_list(
+                'extra_data', flat=True)
+        )
+        results = [x.get(self.extra_data_column.column_name, None) for x in results]
+        self.assertListEqual(results, [None for _x in range(20)])
+
+    def test_rename_column_extra_data_to_field_int_to_int(self):
+        # create the test data and assemble the expected data result
+        expected_data = []
+        for i in range(0, 20):
+            state = self.property_state_factory.get_property_state(
+                extra_data={self.extra_data_column.column_name: i}
+            )
+            expected_data.append(state.extra_data[self.extra_data_column.column_name])
+
+        result = self.extra_data_column.rename_column('PropertyState', 'building_count', force=True)
+        self.assertTrue(result)
+
+        results = list(
+            PropertyState.objects.filter(organization=self.org).order_by('id').values_list(
+                'building_count', flat=True)
+        )
+        print(results)
+        print(expected_data)
+        self.assertListEqual(results, expected_data)
+
+    # def test_rename_column_extra_data_to_field_str_to_int(self):
+    #     # create the test data and assemble the expected data result
+    #     expected_data = []
+    #     for i in range(0, 20):
+    #         state = self.property_state_factory.get_property_state(
+    #             extra_data={self.extra_data_column.column_name: '%s' % i}
+    #         )
+    #         expected_data.append(state.extra_data[self.extra_data_column.column_name])
+    #
+    #     result = self.extra_data_column.rename_column('PropertyState', 'building_count', force=True)
+    #     self.assertTrue(result)
+    #
+    #     results = list(
+    #         PropertyState.objects.filter(organization=self.org).order_by('id').values_list(
+    #             'building_count', flat=True)
+    #     )
+    #     print(results)
+    #     print(expected_data)
+    #     self.assertListEqual(results, expected_data)
 
 
 class TestColumnMapping(TestCase):
@@ -561,10 +755,12 @@ class TestColumnsByInventory(TestCase):
                 'latitude', 'longitude', 'lot_number', 'normalized_address', 'number_properties',
                 'occupied_floor_area', 'owner', 'owner_address', 'owner_city_state', 'owner_email',
                 'owner_postal_code', 'owner_telephone', 'pm_parent_property_id', 'pm_property_id',
-                'postal_code', 'property_footprint', 'property_name', 'property_notes', 'property_type',
+                'postal_code', 'property_footprint', 'property_name', 'property_notes',
+                'property_type',
                 'recent_sale_date', 'release_date', 'site_eui', 'site_eui_modeled',
                 'site_eui_weather_normalized', 'source_eui', 'source_eui_modeled',
-                'source_eui_weather_normalized', 'space_alerts', 'state', 'taxlot_footprint', 'ubid', 'ulid', 'updated',
+                'source_eui_weather_normalized', 'space_alerts', 'state', 'taxlot_footprint',
+                'ubid', 'ulid', 'updated',
                 'use_description', 'year_built', 'year_ending']
 
         self.assertCountEqual(c, data)
@@ -579,10 +775,12 @@ class TestColumnsByInventory(TestCase):
                     'jurisdiction_tax_lot_id', 'latitude', 'longitude', 'lot_number',
                     'number_properties', 'occupied_floor_area', 'owner', 'owner_address',
                     'owner_city_state', 'owner_email', 'owner_postal_code', 'owner_telephone',
-                    'pm_parent_property_id', 'pm_property_id', 'postal_code', 'property_footprint', 'property_name',
+                    'pm_parent_property_id', 'pm_property_id', 'postal_code', 'property_footprint',
+                    'property_name',
                     'property_notes', 'property_type', 'recent_sale_date', 'release_date',
                     'site_eui', 'site_eui_modeled', 'site_eui_weather_normalized', 'source_eui',
-                    'source_eui_modeled', 'source_eui_weather_normalized', 'space_alerts', 'state', 'taxlot_footprint',
+                    'source_eui_modeled', 'source_eui_weather_normalized', 'space_alerts', 'state',
+                    'taxlot_footprint',
                     'ubid', 'ulid', 'updated', 'use_description', 'year_built', 'year_ending']
 
         method_columns = Column.retrieve_db_field_name_for_hash_comparison()

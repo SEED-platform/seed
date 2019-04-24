@@ -578,6 +578,86 @@ class Column(models.Model):
                         'Column \'%s\':\'%s\' is not a field in the database and not marked as extra data. Mark as extra data to save column.') % (
                         self.table_name, self.column_name)})
 
+    def rename_column(self, table_name, new_column_name, force=False):
+        """
+        Rename the column and move all the data to the new column. This can move the
+        data from a canonical field to an extra data field or vice versa. By default the
+        column.
+
+        :param table_name: string name of the table ƒor the new column
+        :param new_column_name: string new name of column
+        :param force: boolean force the overwrite of data in the column?
+        :return:
+        """
+        from seed.models.properties import PropertyState
+
+        # check if the new_column already exists
+        new_column = Column.objects.filter(table_name=table_name, column_name=new_column_name)
+        if len(new_column) > 0:
+            if not force:
+                print("There is an existing column, do not allow the rename")
+                return [False, 'New column already exists, pass force=True to overwrite data']
+
+            new_column = new_column.first()
+
+            # update the fields in the new column to match the old columns
+            # new_column.display_name = self.display_name
+            # new_column.is_extra_data = self.is_extra_data
+            new_column.unit = self.unit
+            new_column.import_file = self.import_file
+            new_column.shared_field_type = self.shared_field_type
+            new_column.merge_protection = self.merge_protection
+            if not new_column.is_extra_data and not self.is_extra_data:
+                new_column.units_pint = self.units_pint
+            new_column.save()
+
+        elif len(new_column) == 0:
+            # There isn't a column yet, so creating a new one
+            # New column will always have extra data.
+            # The units and related data are copied over to the new field
+            new_column = Column.objects.create(
+                organization=self.organization,
+                table_name=table_name,
+                column_name=new_column_name,
+                display_name=self.display_name,
+                is_extra_data=True,
+                unit=self.unit,
+                # unit_pint  # Do not import unit_pint since that only works with db fields
+                import_file=self.import_file,
+                shared_field_type=self.shared_field_type,
+                merge_protection=self.merge_protection
+            )
+
+        # go through the data and move it to the new field. I'm not sure yet on how long this is
+        # going to take to run, so we may have to move this to a background task
+        if self.table_name == 'PropertyState':
+            properties = PropertyState.objects.filter(organization=new_column.organization)
+            if new_column.is_extra_data:
+                if self.is_extra_data:
+                    for prop in properties:
+                        prop.extra_data[new_column.column_name] = prop.extra_data[self.column_name]
+                        del prop.extra_data[self.column_name]
+                        prop.save()
+                else:
+                    for prop in properties:
+                        prop.extra_data[new_column.column_name] = getattr(prop, self.column_name)
+                        setattr(prop, self.column_name, None)
+                        prop.save()
+            else:
+                if self.is_extra_data:
+                    for prop in properties:
+                        setattr(prop, new_column.column_name, prop.extra_data[self.column_name])
+                        del prop.extra_data[self.column_name]
+                        prop.save()
+                else:
+                    for prop in properties:
+                        setattr(prop, new_column.column_name, getattr(prop, self.column_name))
+                        setattr(prop, self.column_name, None)
+                        prop.save()
+
+        # Return true if this opperation was successful
+        return [True, 'Successfully renamed column and moved data']
+
     @staticmethod
     def create_mappings_from_file(filename, organization, user, import_file_id=None):
         """
