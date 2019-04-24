@@ -124,6 +124,6 @@ print('New Issues:')
 for issue in new_issues:
     print('- %s [#%s]( %s ), %s' % (issue['type'], issue['number'], issue['url'], issue['title']))
 print('')
-print('Closed Issues:')
+print('Closed Issues and Features:')
 for issue in closed_issues:
     print('- %s [#%s]( %s ), %s' % (issue['type'], issue['number'], issue['url'], issue['title']))
