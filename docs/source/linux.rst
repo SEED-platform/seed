@@ -22,13 +22,14 @@ Install the following base packages to run SEED:
 
 .. code-block:: console
 
+    sudo add-apt-repository ppa:timescale/timescaledb-ppa
     sudo apt update
     sudo apt upgrade
     sudo apt install libpq-dev python3-dev python3-pip libatlas-base-dev \
     gfortran build-essential nodejs npm libxml2-dev libxslt1-dev git \
     libssl-dev libffi-dev curl uwsgi-core uwsgi-plugin-python mercurial
     sudo apt install redis-server
-    sudo apt install postgresql postgresql-contrib
+    sudo apt install timescaledb-postgresql-10 postgresql-contrib
 
 
 .. note:: postgresql ``>=9.3`` is required to support `JSON Type`_
@@ -43,6 +44,8 @@ default use password `seedpass` when prompted
 
 .. code-block:: console
 
+    $ sudo timescaledb-tune
+    $ sudo service postgresql restart
     $ sudo su - postgres
     $ createuser -P "seeduser"
     $ createdb "seeddb" --owner="seeduser"
