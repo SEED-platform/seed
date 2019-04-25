@@ -1179,13 +1179,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             return currentProfile;
           }],
           labels_payload: ['$stateParams', 'label_service', 'inventory_payload', function ($stateParams, label_service, inventory_payload) {
-            var inventory_id;
-            if ($stateParams.inventory_type === 'properties') {
-              inventory_id = inventory_payload.property.id;
-            } else {
-              inventory_id = inventory_payload.taxlot.id;
-            }
-            return label_service.get_labels([inventory_id], {
+            return label_service.get_labels([$stateParams.view_id], {
               inventory_type: $stateParams.inventory_type
             });
           }]

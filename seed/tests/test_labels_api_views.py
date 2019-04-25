@@ -6,6 +6,8 @@
 
 Unit tests for seed/views/labels.py
 """
+from collections import defaultdict
+
 from django.core.urlresolvers import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
@@ -113,12 +115,12 @@ class TestUpdateInventoryLabelsAPIView(DeleteModelsTestCase):
         self.api_view = UpdateInventoryLabelsAPIView()
 
         # Models can't  be imported directly hence self
-        self.PropertyLabels = self.api_view.models['property']
-        self.TaxlotLabels = self.api_view.models['taxlot']
+        self.PropertyViewLabels = self.api_view.models['property']
+        self.TaxlotViewLabels = self.api_view.models['taxlot']
         self.mock_property_queryset = mock_queryset_factory(
-            self.PropertyLabels,
+            self.PropertyViewLabels,
             flatten=True,
-            property_id=range(1, 11),
+            propertyview_id=range(1, 11),
             statuslabel_id=[1] * 3 + [2] * 3 + [3] * 2 + [4] * 2
         )
         self.user_details = {
@@ -130,6 +132,9 @@ class TestUpdateInventoryLabelsAPIView(DeleteModelsTestCase):
         self.org, _, _ = create_organization(self.user)
         self.status_label = Label.objects.create(
             name='test', super_organization=self.org
+        )
+        self.status_label_2 = Label.objects.create(
+            name='test_2', super_organization=self.org
         )
         self.client.login(**self.user_details)
 
@@ -162,9 +167,9 @@ class TestUpdateInventoryLabelsAPIView(DeleteModelsTestCase):
     def test_label_factory(self):
         result = self.api_view.label_factory('property', 100, 100)
         self.assertEqual(
-            result.__class__.__name__, self.PropertyLabels.__name__
+            result.__class__.__name__, self.PropertyViewLabels.__name__
         )
-        self.assertEqual(result.property_id, 100)
+        self.assertEqual(result.propertyview_id, 100)
         self.assertEqual(result.statuslabel_id, 100)
 
     def test_add_remove_labels(self):
@@ -173,13 +178,13 @@ class TestUpdateInventoryLabelsAPIView(DeleteModelsTestCase):
             [1, 2, 3], [5, 6]
         )
         self.assertEqual(result, [1, 2, 3] * 2)
-        qs = self.PropertyLabels.objects.all()
+        qs = self.PropertyViewLabels.objects.all()
         self.assertEqual(len(qs), 6)
-        self.assertEqual(qs[0].property_id, 1)
+        self.assertEqual(qs[0].propertyview_id, 1)
         self.assertEqual(qs[0].statuslabel_id, 5)
 
         result = self.api_view.remove_labels(qs, 'property', [5, 6])
-        qs = self.PropertyLabels.objects.all()
+        qs = self.PropertyViewLabels.objects.all()
         self.assertEqual(len(qs), 0)
 
     def test_put(self):
@@ -194,7 +199,7 @@ class TestUpdateInventoryLabelsAPIView(DeleteModelsTestCase):
         )
 
         post_params = {
-            'add_label_ids': [self.status_label.id],
+            'add_label_ids': [self.status_label.id, self.status_label_2.id],
             'remove_label_ids': [],
             'inventory_ids': [1, 2, 3],
         }
@@ -207,15 +212,20 @@ class TestUpdateInventoryLabelsAPIView(DeleteModelsTestCase):
         self.assertEqual(result['status'], 'success')
         self.assertEqual(result['num_updated'], 3)
 
-        label = result['labels'][0]
-        self.assertEqual(label['color'], self.status_label.color)
-        self.assertEqual(label['id'], self.status_label.id)
-        self.assertEqual(label['name'], self.status_label.name)
+        self.assertEqual(self.PropertyViewLabels.objects.count(), 6)
+        label_assignments = defaultdict(list)
+        for prop_label in self.PropertyViewLabels.objects.all():
+            label_assignments[prop_label.statuslabel_id].append(prop_label.propertyview_id)
+        expected_label_assignments = {
+            self.status_label.id: [1, 2, 3],
+            self.status_label_2.id: [1, 2, 3],
+        }
+        self.assertEqual(label_assignments, expected_label_assignments)
 
         post_params = {
             'add_label_ids': [],
             'remove_label_ids': [self.status_label.id],
-            'inventory_ids': [1, 2, 3],
+            'inventory_ids': [1, 2],
         }
         response = client.put(
             url, post_params, format='json'
@@ -224,9 +234,14 @@ class TestUpdateInventoryLabelsAPIView(DeleteModelsTestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(result['status'], 'success')
-        self.assertEqual(result['num_updated'], 3)
+        self.assertEqual(result['num_updated'], 2)
 
-        label = result['labels'][0]
-        self.assertEqual(label['color'], self.status_label.color)
-        self.assertEqual(label['id'], self.status_label.id)
-        self.assertEqual(label['name'], self.status_label.name)
+        self.assertEqual(self.PropertyViewLabels.objects.count(), 4)
+        label_assignments = defaultdict(list)
+        for prop_label in self.PropertyViewLabels.objects.all():
+            label_assignments[prop_label.statuslabel_id].append(prop_label.propertyview_id)
+        expected_label_assignments = {
+            self.status_label.id: [3],
+            self.status_label_2.id: [1, 2, 3],
+        }
+        self.assertEqual(label_assignments, expected_label_assignments)

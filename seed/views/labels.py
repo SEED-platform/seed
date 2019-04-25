@@ -25,8 +25,8 @@ from seed.filters import (
 )
 from seed.models import (
     StatusLabel as Label,
-    Property,
-    TaxLot,
+    PropertyView,
+    TaxLotView,
 )
 from seed.pagination import NoPagination
 from seed.serializers.labels import (
@@ -120,7 +120,7 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint), viewsets.ModelViewSet):
 class UpdateInventoryLabelsAPIView(APIView):
     renderer_classes = (JSONRenderer,)
     parser_classes = (JSONParser,)
-    inventory_models = {'property': Property, 'taxlot': TaxLot}
+    inventory_models = {'property': PropertyView, 'taxlot': TaxLotView}
     errors = {
         'disjoint': ErrorState(
             status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -140,8 +140,8 @@ class UpdateInventoryLabelsAPIView(APIView):
         Used for bulk_create operations.
         """
         return {
-            'property': apps.get_model('seed', 'Property_labels'),
-            'taxlot': apps.get_model('seed', 'TaxLot_labels')
+            'property': apps.get_model('seed', 'PropertyView_labels'),
+            'taxlot': apps.get_model('seed', 'TaxLotView_labels')
         }
 
     def get_queryset(self, inventory_type, organization_id):
@@ -156,7 +156,7 @@ class UpdateInventoryLabelsAPIView(APIView):
         ).values('id', 'color', 'name')
 
     def get_inventory_id(self, q, inventory_type):
-        return getattr(q, "{}_id".format(inventory_type))
+        return getattr(q, "{}view_id".format(inventory_type))
 
     def exclude(self, qs, inventory_type, label_ids):
         exclude = {label: [] for label in label_ids}
@@ -169,7 +169,7 @@ class UpdateInventoryLabelsAPIView(APIView):
     def filter_by_inventory(self, qs, inventory_type, inventory_ids):
         if inventory_ids:
             filterdict = {
-                "{}__pk__in".format(inventory_type): inventory_ids
+                "{}view__pk__in".format(inventory_type): inventory_ids
             }
             qs = qs.filter(**filterdict)
         return qs
@@ -178,7 +178,7 @@ class UpdateInventoryLabelsAPIView(APIView):
         Model = self.models[inventory_type]
         create_dict = {
             'statuslabel_id': label_id,
-            "{}_id".format(inventory_type): inventory_id
+            "{}view_id".format(inventory_type): inventory_id
         }
         return Model(**create_dict)
 
