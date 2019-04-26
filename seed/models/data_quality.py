@@ -617,9 +617,9 @@ class DataQualityCheck(models.Model):
         if row.__class__.__name__ == 'PropertyState':
             label = apps.get_model('seed', 'PropertyView_labels')
             if PropertyView.objects.filter(state=row).exists():
-                model_labels['linked_id'] = PropertyView.objects.get(state=row).property_id
+                model_labels['linked_id'] = PropertyView.objects.get(state=row).id
                 model_labels['label_ids'] = list(
-                    label.objects.filter(property_id=model_labels['linked_id']).values_list(
+                    label.objects.filter(propertyview_id=model_labels['linked_id']).values_list(
                         'statuslabel_id', flat=True)
                 )
                 # _log.debug("Property {} has {} labels".format(model_labels['linked_id'],
@@ -627,9 +627,9 @@ class DataQualityCheck(models.Model):
         elif row.__class__.__name__ == 'TaxLotState':
             label = apps.get_model('seed', 'TaxLotView_labels')
             if TaxLotView.objects.filter(state=row).exists():
-                model_labels['linked_id'] = TaxLotView.objects.get(state=row).taxlot_id
+                model_labels['linked_id'] = TaxLotView.objects.get(state=row).id
                 model_labels['label_ids'] = list(
-                    label.objects.filter(taxlot_id=model_labels['linked_id']).values_list(
+                    label.objects.filter(taxlotview_id=model_labels['linked_id']).values_list(
                         'statuslabel_id', flat=True)
                 )
                 # _log.debug("TaxLot {} has {} labels".format(model_labels['linked_id'],
@@ -923,10 +923,10 @@ class DataQualityCheck(models.Model):
 
         if rule.status_label_id is not None and linked_id is not None:
             if rule.table_name == 'PropertyState':
-                label_class.objects.get_or_create(property_id=linked_id,
+                label_class.objects.get_or_create(propertyview_id=linked_id,
                                                   statuslabel_id=rule.status_label_id)
             else:
-                label_class.objects.get_or_create(taxlot_id=linked_id,
+                label_class.objects.get_or_create(taxlotview_id=linked_id,
                                                   statuslabel_id=rule.status_label_id)
             return True
 

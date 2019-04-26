@@ -279,7 +279,7 @@ class TaxLotViewSet(GenericViewSet):
 
         audit_log = TaxLotAuditLog
         inventory = TaxLot
-        label = apps.get_model('seed', 'TaxLot_labels')
+        label = apps.get_model('seed', 'TaxLotView_labels')
         state = TaxLotState
         view = TaxLotView
 
@@ -340,7 +340,7 @@ class TaxLotViewSet(GenericViewSet):
                                    .order_by('property_view_id').distinct('property_view_id')
                                    .values_list('property_view_id', flat=True))
             for v in views:
-                label_ids.extend(list(v.taxlot.labels.all().values_list('id', flat=True)))
+                label_ids.extend(list(v.labels.all().values_list('id', flat=True)))
                 v.taxlot.delete()
             label_ids = list(set(label_ids))
 
@@ -349,11 +349,11 @@ class TaxLotViewSet(GenericViewSet):
             inventory_record.save()
 
             # Create new labels and view
-            for label_id in label_ids:
-                label(taxlot_id=inventory_record.id, statuslabel_id=label_id).save()
             new_view = view(cycle_id=cycle_id, state_id=merged_state.id,
                             taxlot_id=inventory_record.id)
             new_view.save()
+            for label_id in label_ids:
+                label(taxlotview_id=new_view.id, statuslabel_id=label_id).save()
 
             # Assign notes to the new view
             for note in notes:
@@ -427,20 +427,17 @@ class TaxLotViewSet(GenericViewSet):
                 'message': 'taxlot view with id {} must have two parent states'.format(pk)
             }
 
-        label = apps.get_model('seed', 'TaxLot_labels')
+        label = apps.get_model('seed', 'TaxLotView_labels')
         state1 = log.parent_state1
         state2 = log.parent_state2
         cycle_id = old_view.cycle_id
 
-        # Clone the taxlot record, then the labels
+        # Clone the taxlot record
         old_taxlot = old_view.taxlot
-        label_ids = list(old_taxlot.labels.all().values_list('id', flat=True))
+        label_ids = list(old_view.labels.all().values_list('id', flat=True))
         new_taxlot = old_taxlot
         new_taxlot.id = None
         new_taxlot.save()
-
-        for label_id in label_ids:
-            label(taxlot_id=new_taxlot.id, statuslabel_id=label_id).save()
 
         # Create the views
         new_view1 = TaxLotView(
@@ -489,6 +486,11 @@ class TaxLotViewSet(GenericViewSet):
         old_view.delete()
         new_view1.save()
         new_view2.save()
+
+        # Save old labels to both views
+        for label_id in label_ids:
+            label(taxlotview_id=new_view1.id, statuslabel_id=label_id).save()
+            label(taxlotview_id=new_view2.id, statuslabel_id=label_id).save()
 
         # Duplicate notes to the new views
         for note in notes:
