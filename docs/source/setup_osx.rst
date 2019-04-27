@@ -20,6 +20,7 @@ ready for general development. If this is not the case, skip to Prerequisites.  
 
 * install Postgres 11.1 and redis for cache and message broker
 * install PostGIS 2.5 and enable it on the database using `CREATE EXTENSION postgis;`
+* install TimescaleDB
 * use a virtualenv (if desired)
 * `git clone git@github.com:seed-platform/seed.git`
 * create a `local_untracked.py` in the `config/settings` folder and add CACHE and DB config (example `local_untracked.py.dist`)
@@ -148,6 +149,58 @@ MapQuest API Key and set the database engine to 'ENGINE': 'django.contrib.gis.db
 
 Now exit any root environments, becoming just yourself (even though it's not
 that easy being green), for the remainder of these instructions.
+
+
+TimescaleDB 1.2.2
+-----------------
+
+Homebrew::
+
+   # Add the tap
+   brew tap timescale/tap
+
+   # To install
+   brew install timescaledb
+
+   # Post-install to move files to appropriate place
+   /usr/local/bin/timescaledb_move.sh
+
+   timescaledb-tune
+
+   # Restart PostgreSQL instance
+   brew services restart postgresql
+
+
+Downloading From Source::
+
+   # Note: Installing from source should only be done
+   # if you have a Postgres installation not maintained by Homebrew.
+   # This installation requires C compiler (e.g., gcc or clang) and CMake version 3.4 or greater.
+
+   git clone https://github.com/timescale/timescaledb.git
+   cd timescaledb
+   git checkout <release_tag>  # e.g., git checkout 1.2.2
+
+   # Bootstrap the build system
+   ./bootstrap
+
+   # If OpenSSL can't be found by cmake - run the following instead
+   # ./bootstrap -DOPENSSL_ROOT_DIR=<location of OpenSSL> # e.g., -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl
+
+   # To build the extension
+   cd build && make
+
+   # To install
+   make install
+
+   # Find postgresql.conf
+   # Then uncomment the shared_preload_libraries line changing it to the following
+   # shared_preload_libraries = 'timescaledb'
+   psql -d postgres -c "SHOW config_file;"
+
+   # Restart PostgreSQL instance
+
+
 
 Python Packages
 ---------------
