@@ -2,7 +2,7 @@
 # starts local server and create test user for protractor tests
 
 echo "updating webdriver"
-./node_modules/protractor/bin/webdriver-manager update
+./node_modules/.bin/webdriver-manager update --gecko=false
 echo "migrating"
 ./manage.py migrate &> tox_migrate.log
 echo "creating default user"
