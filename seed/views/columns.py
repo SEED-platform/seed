@@ -10,7 +10,7 @@ import logging
 import coreapi
 from django.http import JsonResponse
 from rest_framework import status
-from rest_framework.decorators import list_route
+from rest_framework.decorators import list_route, detail_route
 from rest_framework.exceptions import NotFound, ParseError
 from rest_framework.filters import BaseFilterBackend
 from rest_framework.parsers import JSONParser, FormParser
@@ -59,8 +59,8 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
 
     def get_queryset(self):
         # check if the request is properties or taxlots
-        org_id = self.get_organization(self.request)
-        return Column.objects.filter(organization_id=org_id)
+        org = self.get_organization(self.request, True)
+        return Column.objects.filter(organization=org)
 
     @ajax_request_class
     def list(self, request):
@@ -248,3 +248,43 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
         )
         columns = ColumnSerializer(columns, many=True)
         return Response(columns.data, status=status.HTTP_200_OK)
+
+    @ajax_request_class
+    @has_perm_class('can_modify_data')
+    @detail_route(methods=['POST'])
+    def rename(self, request, pk=None):
+        org = self.get_organization(request, True)
+        try:
+            column = Column.objects.get(id=pk, organization=org)
+        except Column.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'Cannot find column in org=%s with pk=%s' % (org.pk, pk)
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        new_column_name = request.data.get('new_column_name', None)
+        overwrite = request.data.get('overwrite', False)
+        if not new_column_name:
+            return JsonResponse({
+                'success': False,
+                'message': 'You must specify the name of the new column as "new_column_name"'
+            })
+
+        result = column.rename_column(new_column_name, overwrite)
+        if not result[0]:
+            return JsonResponse({
+                'success': False,
+                'message': 'Unable to rename column with message: "%s"' % result[1]
+            })
+        else:
+            return JsonResponse({
+                'success': True,
+                'message': result[1]
+            })
+
+
+
+
+
+
+

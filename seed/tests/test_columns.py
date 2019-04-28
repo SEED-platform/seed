@@ -5,7 +5,6 @@
 :author
 """
 
-import copy
 import os.path
 
 from django.core.exceptions import ValidationError
@@ -15,6 +14,7 @@ from seed import models as seed_models
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
+    DATA_STATE_MATCHING,
     PropertyState,
     Column,
     ColumnMapping,
@@ -252,13 +252,13 @@ class TestRenameColumns(TestCase):
         address_column = Column.objects.filter(column_name='address_line_1').first()
 
         # verify that the column has to be new
-        self.assertFalse(address_column.rename_column('PropertyState', 'custom_id_1')[0])
+        self.assertFalse(address_column.rename_column('custom_id_1')[0])
 
     def test_rename_column_no_data_and_force(self):
         orig_address_column = Column.objects.filter(column_name='address_line_1').first()
 
         # verify that the column has to be new
-        self.assertTrue(orig_address_column.rename_column('PropertyState', 'custom_id_1', True)[0])
+        self.assertTrue(orig_address_column.rename_column('custom_id_1', True)[0])
 
         # get the address column and check the fields
         address_column = Column.objects.filter(column_name='address_line_1').first()
@@ -271,10 +271,10 @@ class TestRenameColumns(TestCase):
         # create the test data and assemble the expected data result
         expected_data = []
         for i in range(0, 20):
-            state = self.property_state_factory.get_property_state()
+            state = self.property_state_factory.get_property_state(data_state=DATA_STATE_MATCHING)
             expected_data.append(state.address_line_1)
 
-        result = address_column.rename_column('PropertyState', 'property_type', force=True)
+        result = address_column.rename_column('property_type', force=True)
         self.assertTrue(result)
 
         results = list(
@@ -297,11 +297,12 @@ class TestRenameColumns(TestCase):
         expected_data = []
         for i in range(0, 20):
             state = self.property_state_factory.get_property_state(
+                data_state=DATA_STATE_MATCHING,
                 extra_data={'string': 'abc %s' % i})
             expected_data.append({'string': state.extra_data['string'],
                                   'new_address_line_1': state.address_line_1})
 
-        result = address_column.rename_column('PropertyState', 'new_address_line_1')
+        result = address_column.rename_column('new_address_line_1')
         self.assertTrue(result)
 
         results = list(
@@ -322,19 +323,18 @@ class TestRenameColumns(TestCase):
         expected_data = []
         for i in range(0, 20):
             state = self.property_state_factory.get_property_state(
+                data_state=DATA_STATE_MATCHING,
                 extra_data={self.extra_data_column.column_name: 'abc %s' % i, 'skip': 'value'}
             )
             expected_data.append(state.extra_data[self.extra_data_column.column_name])
 
-        result = self.extra_data_column.rename_column('PropertyState', 'address_line_1', force=True)
+        result = self.extra_data_column.rename_column('address_line_1', force=True)
         self.assertTrue(result)
 
         results = list(
             PropertyState.objects.filter(organization=self.org).order_by('id').values_list(
                 'address_line_1', flat=True)
         )
-        print(results)
-        print(expected_data)
         self.assertListEqual(results, expected_data)
 
         # verify that the original field is now empty
@@ -349,11 +349,12 @@ class TestRenameColumns(TestCase):
         expected_data = []
         for i in range(0, 20):
             state = self.property_state_factory.get_property_state(
+                data_state=DATA_STATE_MATCHING,
                 extra_data={self.extra_data_column.column_name: 'abc %s' % i, 'skip': 'value'}
             )
             expected_data.append(state.extra_data[self.extra_data_column.column_name])
 
-        result = self.extra_data_column.rename_column('PropertyState', 'new_extra', force=True)
+        result = self.extra_data_column.rename_column('new_extra', force=True)
         self.assertTrue(result)
 
         results = list(
@@ -361,8 +362,6 @@ class TestRenameColumns(TestCase):
                 'extra_data', flat=True)
         )
         results = [x['new_extra'] for x in results]
-        print(results)
-        print(expected_data)
         self.assertListEqual(results, expected_data)
 
         # verify that the original field is now empty
@@ -378,40 +377,19 @@ class TestRenameColumns(TestCase):
         expected_data = []
         for i in range(0, 20):
             state = self.property_state_factory.get_property_state(
+                data_state=DATA_STATE_MATCHING,
                 extra_data={self.extra_data_column.column_name: i}
             )
             expected_data.append(state.extra_data[self.extra_data_column.column_name])
 
-        result = self.extra_data_column.rename_column('PropertyState', 'building_count', force=True)
+        result = self.extra_data_column.rename_column('building_count', force=True)
         self.assertTrue(result)
 
         results = list(
             PropertyState.objects.filter(organization=self.org).order_by('id').values_list(
                 'building_count', flat=True)
         )
-        print(results)
-        print(expected_data)
         self.assertListEqual(results, expected_data)
-
-    # def test_rename_column_extra_data_to_field_str_to_int(self):
-    #     # create the test data and assemble the expected data result
-    #     expected_data = []
-    #     for i in range(0, 20):
-    #         state = self.property_state_factory.get_property_state(
-    #             extra_data={self.extra_data_column.column_name: '%s' % i}
-    #         )
-    #         expected_data.append(state.extra_data[self.extra_data_column.column_name])
-    #
-    #     result = self.extra_data_column.rename_column('PropertyState', 'building_count', force=True)
-    #     self.assertTrue(result)
-    #
-    #     results = list(
-    #         PropertyState.objects.filter(organization=self.org).order_by('id').values_list(
-    #             'building_count', flat=True)
-    #     )
-    #     print(results)
-    #     print(expected_data)
-    #     self.assertListEqual(results, expected_data)
 
 
 class TestColumnMapping(TestCase):
@@ -823,7 +801,7 @@ class TestColumnsByInventory(TestCase):
             found = False
             for def_column in Column.DATABASE_COLUMNS:
                 if column['table_name'] == def_column['table_name'] and \
-                        column['column_name'] == def_column['column_name']:
+                    column['column_name'] == def_column['column_name']:
                     found = True
                     continue
 

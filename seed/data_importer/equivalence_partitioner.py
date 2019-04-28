@@ -17,8 +17,6 @@ from seed.models import (
 
 _log = get_task_logger(__name__)
 
-STR_TO_CLASS = {'TaxLotState': TaxLotState, 'PropertyState': PropertyState}
-
 
 class EquivalencePartitioner(object):
     """Class for calculating equivalence classes on model States

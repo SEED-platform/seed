@@ -90,18 +90,18 @@ class Column(models.Model):
 
     # These are the columns that are removed when looking to see if the records are the same
     COLUMN_EXCLUDE_FIELDS = [
-        'analysis_state',
-        'bounding_box',
-        'centroid',
-        'data_state',
-        'extra_data',
-        'geocoding_confidence',
-        'id',
-        'import_file',
-        'long_lat',
-        'merge_state',
-        'source_type',
-    ] + EXCLUDED_COLUMN_RETURN_FIELDS
+                                'analysis_state',
+                                'bounding_box',
+                                'centroid',
+                                'data_state',
+                                'extra_data',
+                                'geocoding_confidence',
+                                'id',
+                                'import_file',
+                                'long_lat',
+                                'merge_state',
+                                'source_type',
+                            ] + EXCLUDED_COLUMN_RETURN_FIELDS
 
     # These are fields that should not be mapped to, ever.
     EXCLUDED_MAPPING_FIELDS = [
@@ -576,26 +576,26 @@ class Column(models.Model):
                 raise ValidationError(
                     {'is_extra_data': _(
                         'Column \'%s\':\'%s\' is not a field in the database and not marked as extra data. Mark as extra data to save column.') % (
-                        self.table_name, self.column_name)})
+                                          self.table_name, self.column_name)})
 
-    def rename_column(self, table_name, new_column_name, force=False):
+    def rename_column(self, new_column_name, force=False):
         """
         Rename the column and move all the data to the new column. This can move the
         data from a canonical field to an extra data field or vice versa. By default the
         column.
 
-        :param table_name: string name of the table ƒor the new column
         :param new_column_name: string new name of column
         :param force: boolean force the overwrite of data in the column?
         :return:
         """
         from seed.models.properties import PropertyState
+        from seed.models.tax_lots import TaxLotState, DATA_STATE_MATCHING
+        STR_TO_CLASS = {'TaxLotState': TaxLotState, 'PropertyState': PropertyState}
 
         # check if the new_column already exists
-        new_column = Column.objects.filter(table_name=table_name, column_name=new_column_name)
+        new_column = Column.objects.filter(table_name=self.table_name, column_name=new_column_name)
         if len(new_column) > 0:
             if not force:
-                print("There is an existing column, do not allow the rename")
                 return [False, 'New column already exists, pass force=True to overwrite data']
 
             new_column = new_column.first()
@@ -617,7 +617,7 @@ class Column(models.Model):
             # The units and related data are copied over to the new field
             new_column = Column.objects.create(
                 organization=self.organization,
-                table_name=table_name,
+                table_name=self.table_name,
                 column_name=new_column_name,
                 display_name=self.display_name,
                 is_extra_data=True,
@@ -630,32 +630,34 @@ class Column(models.Model):
 
         # go through the data and move it to the new field. I'm not sure yet on how long this is
         # going to take to run, so we may have to move this to a background task
-        if self.table_name == 'PropertyState':
-            properties = PropertyState.objects.filter(organization=new_column.organization)
-            if new_column.is_extra_data:
-                if self.is_extra_data:
-                    for prop in properties:
-                        prop.extra_data[new_column.column_name] = prop.extra_data[self.column_name]
-                        del prop.extra_data[self.column_name]
-                        prop.save()
-                else:
-                    for prop in properties:
-                        prop.extra_data[new_column.column_name] = getattr(prop, self.column_name)
-                        setattr(prop, self.column_name, None)
-                        prop.save()
+        orig_data = STR_TO_CLASS[self.table_name].objects.filter(
+            organization=new_column.organization,
+            data_state=DATA_STATE_MATCHING
+        )
+        if new_column.is_extra_data:
+            if self.is_extra_data:
+                for datum in orig_data:
+                    datum.extra_data[new_column.column_name] = datum.extra_data[self.column_name]
+                    del datum.extra_data[self.column_name]
+                    datum.save()
             else:
-                if self.is_extra_data:
-                    for prop in properties:
-                        setattr(prop, new_column.column_name, prop.extra_data[self.column_name])
-                        del prop.extra_data[self.column_name]
-                        prop.save()
-                else:
-                    for prop in properties:
-                        setattr(prop, new_column.column_name, getattr(prop, self.column_name))
-                        setattr(prop, self.column_name, None)
-                        prop.save()
+                for datum in orig_data:
+                    datum.extra_data[new_column.column_name] = getattr(datum, self.column_name)
+                    setattr(datum, self.column_name, None)
+                    datum.save()
+        else:
+            if self.is_extra_data:
+                for datum in orig_data:
+                    setattr(datum, new_column.column_name, datum.extra_data[self.column_name])
+                    del datum.extra_data[self.column_name]
+                    datum.save()
+            else:
+                for datum in orig_data:
+                    setattr(datum, new_column.column_name, getattr(datum, self.column_name))
+                    setattr(datum, self.column_name, None)
+                    datum.save()
 
-        # Return true if this opperation was successful
+        # Return true if this operation was successful
         return [True, 'Successfully renamed column and moved data']
 
     @staticmethod
@@ -882,7 +884,7 @@ class Column(models.Model):
             is_extra_data = True
             for c in Column.DATABASE_COLUMNS:
                 if field['to_table_name'] == c['table_name'] and field['to_field'] == c[
-                        'column_name']:
+                    'column_name']:
                     is_extra_data = False
                     break
 
@@ -974,16 +976,16 @@ class Column(models.Model):
                                                         organization=model_obj.organization)
                         for c in columns:
                             if not ColumnMapping.objects.filter(
-                                    Q(column_raw=c) | Q(column_mapped=c)).exists():
+                                Q(column_raw=c) | Q(column_mapped=c)).exists():
                                 _log.debug("Deleting column object {}".format(c.column_name))
                                 c.delete()
 
                         # Check if there are more than one column still
                         if Column.objects.filter(
-                                table_name=model_obj.__class__.__name__,
-                                column_name=key[:511],
-                                is_extra_data=is_extra_data,
-                                organization=model_obj.organization).count() > 1:
+                            table_name=model_obj.__class__.__name__,
+                            column_name=key[:511],
+                            is_extra_data=is_extra_data,
+                            organization=model_obj.organization).count() > 1:
                             raise Exception(
                                 "Could not fix duplicate columns for {}. Contact dev team").format(
                                 key)
@@ -1117,9 +1119,9 @@ class Column(models.Model):
         """
         all_columns = []
         for f in apps.get_model('seed', 'PropertyState')._meta.fields + \
-                apps.get_model('seed', 'TaxLotState')._meta.fields + \
-                apps.get_model('seed', 'Property')._meta.fields + \
-                apps.get_model('seed', 'TaxLot')._meta.fields:
+                 apps.get_model('seed', 'TaxLotState')._meta.fields + \
+                 apps.get_model('seed', 'Property')._meta.fields + \
+                 apps.get_model('seed', 'TaxLot')._meta.fields:
 
             # this remove import_file and others
             if f.get_internal_type() == 'ForeignKey':

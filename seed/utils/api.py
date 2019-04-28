@@ -230,13 +230,14 @@ class OrgMixin(object):
     Provides get_organization and get_parent_org method
     """
 
-    def get_organization(self, request, return_obj=None):
+    def get_organization(self, request, return_obj=False):
         """Get org from query param or request.user.
         :param request: request object.
         :param return_obj: bool. Set to True if obj vs pk is desired.
         :return: int representing a valid organization pk or
             organization object.
         """
+        # print("my return obj is set to %s" % return_obj)
         if not request.user:
             return None
 
@@ -246,12 +247,17 @@ class OrgMixin(object):
             if not org_id:
                 org = get_user_org(request.user)
                 org_id = int(getattr(org, 'pk'))
-            if return_obj and not org:
-                try:
-                    org = request.user.orgs.get(pk=org_id)
-                except ObjectDoesNotExist:
-                    raise PermissionDenied('Incorrect org id.')
-            self._organization = org_id if not return_obj else org
+            if return_obj:
+                if not org:
+                    try:
+                        org = request.user.orgs.get(pk=org_id)
+                        self._organization = org
+                    except ObjectDoesNotExist:
+                        raise PermissionDenied('Incorrect org id.')
+                else:
+                    self._organization = org
+            else:
+                self._organization = org_id
         return self._organization
 
     def get_parent_org(self, request):
