@@ -90,18 +90,18 @@ class Column(models.Model):
 
     # These are the columns that are removed when looking to see if the records are the same
     COLUMN_EXCLUDE_FIELDS = [
-                                'analysis_state',
-                                'bounding_box',
-                                'centroid',
-                                'data_state',
-                                'extra_data',
-                                'geocoding_confidence',
-                                'id',
-                                'import_file',
-                                'long_lat',
-                                'merge_state',
-                                'source_type',
-                            ] + EXCLUDED_COLUMN_RETURN_FIELDS
+        'analysis_state',
+        'bounding_box',
+        'centroid',
+        'data_state',
+        'extra_data',
+        'geocoding_confidence',
+        'id',
+        'import_file',
+        'long_lat',
+        'merge_state',
+        'source_type',
+    ] + EXCLUDED_COLUMN_RETURN_FIELDS
 
     # These are fields that should not be mapped to, ever.
     EXCLUDED_MAPPING_FIELDS = [
@@ -576,7 +576,7 @@ class Column(models.Model):
                 raise ValidationError(
                     {'is_extra_data': _(
                         'Column \'%s\':\'%s\' is not a field in the database and not marked as extra data. Mark as extra data to save column.') % (
-                                          self.table_name, self.column_name)})
+                        self.table_name, self.column_name)})
 
     def rename_column(self, new_column_name, force=False):
         """
@@ -884,7 +884,7 @@ class Column(models.Model):
             is_extra_data = True
             for c in Column.DATABASE_COLUMNS:
                 if field['to_table_name'] == c['table_name'] and field['to_field'] == c[
-                    'column_name']:
+                        'column_name']:
                     is_extra_data = False
                     break
 
@@ -976,16 +976,16 @@ class Column(models.Model):
                                                         organization=model_obj.organization)
                         for c in columns:
                             if not ColumnMapping.objects.filter(
-                                Q(column_raw=c) | Q(column_mapped=c)).exists():
+                                    Q(column_raw=c) | Q(column_mapped=c)).exists():
                                 _log.debug("Deleting column object {}".format(c.column_name))
                                 c.delete()
 
                         # Check if there are more than one column still
                         if Column.objects.filter(
-                            table_name=model_obj.__class__.__name__,
-                            column_name=key[:511],
-                            is_extra_data=is_extra_data,
-                            organization=model_obj.organization).count() > 1:
+                                table_name=model_obj.__class__.__name__,
+                                column_name=key[:511],
+                                is_extra_data=is_extra_data,
+                                organization=model_obj.organization).count() > 1:
                             raise Exception(
                                 "Could not fix duplicate columns for {}. Contact dev team").format(
                                 key)
@@ -1119,9 +1119,9 @@ class Column(models.Model):
         """
         all_columns = []
         for f in apps.get_model('seed', 'PropertyState')._meta.fields + \
-                 apps.get_model('seed', 'TaxLotState')._meta.fields + \
-                 apps.get_model('seed', 'Property')._meta.fields + \
-                 apps.get_model('seed', 'TaxLot')._meta.fields:
+                apps.get_model('seed', 'TaxLotState')._meta.fields + \
+                apps.get_model('seed', 'Property')._meta.fields + \
+                apps.get_model('seed', 'TaxLot')._meta.fields:
 
             # this remove import_file and others
             if f.get_internal_type() == 'ForeignKey':

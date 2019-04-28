@@ -180,8 +180,8 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
 
         for ps in PropertyState.objects.filter(organization=self.org).order_by("pk"):
             new_data = [{"al1": ps.address_line_1,
-                          "ed": ps.extra_data,
-                          "na": ps.normalized_address}]
+                         "ed": ps.extra_data,
+                         "na": ps.normalized_address}]
 
         self.assertListEqual(expected_data, new_data)
 
@@ -224,8 +224,8 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
 
         for ps in PropertyState.objects.filter(organization=self.org).order_by("pk"):
             new_data = [{"al1": ps.address_line_1,
-                          "pn": ps.property_name,
-                          "na": ps.normalized_address}]
+                         "pn": ps.property_name,
+                         "na": ps.normalized_address}]
 
         self.assertListEqual(expected_data, new_data)
 
@@ -261,8 +261,8 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
 
         for ps in TaxLotState.objects.filter(organization=self.org).order_by("pk"):
             new_data = [{"al1": ps.address_line_1,
-                          "ed": ps.extra_data,
-                          "na": ps.normalized_address}]
+                         "ed": ps.extra_data,
+                         "na": ps.normalized_address}]
 
         self.assertListEqual(expected_data, new_data)
 

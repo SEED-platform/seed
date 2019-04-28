@@ -281,10 +281,3 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
                 'success': True,
                 'message': result[1]
             })
-
-
-
-
-
-
-

@@ -801,7 +801,7 @@ class TestColumnsByInventory(TestCase):
             found = False
             for def_column in Column.DATABASE_COLUMNS:
                 if column['table_name'] == def_column['table_name'] and \
-                    column['column_name'] == def_column['column_name']:
+                        column['column_name'] == def_column['column_name']:
                     found = True
                     continue
 
