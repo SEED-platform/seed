@@ -165,6 +165,7 @@ Homebrew::
    # Post-install to move files to appropriate place
    /usr/local/bin/timescaledb_move.sh
 
+   # This involves prompts regarding 1 required setting change and several optional optimizations for PostgreSQL
    timescaledb-tune
 
    # Restart PostgreSQL instance
