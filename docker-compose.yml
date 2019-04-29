@@ -55,7 +55,7 @@ services:
       - seed_media:/seed/media
   oep-city-1:
     # This is a placeholder. If needed, follow the instructions to enable: https://cloud.docker.com/u/seedplatform/repository/docker/seedplatform/oep
-    image: seedplatform/oep:1.1
+    image: seedplatform/oep:1.2
     depends_on:
       - web
     environment:

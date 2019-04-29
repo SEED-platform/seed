@@ -25,7 +25,7 @@ if [[ (-z ${DB_NAME}) || (-z ${DB_USERNAME}) ]] ; then
 fi
 
 # currently the backup directory is hard coded
-BACKUP_DIR=~/seed-backups
+BACKUP_DIR=/home/ubuntu/seed-backups
 mkdir -p ${BACKUP_DIR}
 
 # db_password is set from the environment variables in docker-compose. The docker stack must
