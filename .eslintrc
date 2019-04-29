@@ -20,7 +20,8 @@
     "protractor": true,
     "qq": true,
     "saveAs": true,
-    "Spinner": true
+    "Spinner": true,
+    "Terraformer": true
   },
   "plugins": ["angular", "lodash", "protractor"],
   "rules": {

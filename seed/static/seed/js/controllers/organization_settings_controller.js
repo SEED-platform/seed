@@ -33,34 +33,34 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     // Ideally, these the units and types for meters should be translatable.
     $scope.chosen_type_unit = {
       type: null,
-      unit: null,
+      unit: null
     };
 
     // Energy type option executed within this method in order to repeat on organization update
     var get_energy_type_options = function () {
-      $scope.energy_type_options = _.map($scope.org.display_meter_units, function(unit, type) {
-        return { label: type + " | " + unit , value: type }
+      $scope.energy_type_options = _.map($scope.org.display_meter_units, function (unit, type) {
+        return { label: type + ' | ' + unit, value: type };
       });
     };
     get_energy_type_options();
 
-    meters_service.valid_energy_types_units().then(function(results) {
+    meters_service.valid_energy_types_units().then(function (results) {
       $scope.energy_unit_options = results;
     });
 
     $scope.energy_unit_options_for_type = [];
 
-    $scope.get_valid_units_for_type = function() {
+    $scope.get_valid_units_for_type = function () {
       // Clear current unit choice to avoid possibility of invalid choice persisting
       $scope.chosen_type_unit.unit = null;
 
-      $scope.energy_unit_options_for_type = _.map($scope.energy_unit_options[$scope.chosen_type_unit.type], function(unit) {
-        return { label: unit , value: unit }
+      $scope.energy_unit_options_for_type = _.map($scope.energy_unit_options[$scope.chosen_type_unit.type], function (unit) {
+        return { label: unit, value: unit };
       });
     };
 
     // Called when save_settings is called to update the scoped org before org save request is sent.
-    var update_display_unit_for_scoped_org = function() {
+    var update_display_unit_for_scoped_org = function () {
       var type = $scope.chosen_type_unit.type;
       var unit = $scope.chosen_type_unit.unit;
 
@@ -85,8 +85,8 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
 
     $scope.thermal_conversion_countries = [
       { label: 'US', value: 1 },
-      { label: 'Canada', value: 2 },
-    ]
+      { label: 'Canada', value: 2 }
+    ];
 
     /**
      * saves the updates settings

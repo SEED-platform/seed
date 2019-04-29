@@ -30,7 +30,7 @@
     "grunt-istanbul": "~0.7.2",
     "grunt-protractor-coverage": "~0.2.17",
     "postcss-cli": "~6.1.1",
-    "protractor": "~4.0.14"
+    "protractor": "~5.4.2"
   },
   "scripts": {
     "postinstall": "cd vendors && npm install",

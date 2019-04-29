@@ -1,6 +1,5 @@
 sudo: required
-dist: trusty
-group: deprecated-2017Q4
+dist: xenial
 cache:
   directories:
     - node_modules
@@ -10,20 +9,26 @@ cache:
     - ".tox"
 language: python
 python:
-  - 3.6
+  - "3.6"
 addons:
-  postgresql: '9.6'
+  chrome: stable
+  postgresql: "11.2"
   apt:
     packages:
       - enchant
-      - google-chrome-stable
       - gdal-bin
-      - postgresql-9.6-postgis-2.3
 services:
   - docker
   - redis-server
   - postgresql
+  - xvfb
 before_install:
+  - sudo apt-get update
+  - sudo apt-get remove -y postgresql\*
+  - sudo apt-get install -y postgresql-11 postgresql-client-11
+  - sudo apt-get install -y postgis postgresql-11-postgis-2.5 postgresql-11-postgis-2.5-scripts
+  - sudo cp /etc/postgresql/{9.6,11}/main/pg_hba.conf
+  - sudo service postgresql restart 11
   - sudo rm /usr/local/bin/docker-compose
   - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
   - chmod +x docker-compose
@@ -31,19 +36,17 @@ before_install:
 install:
   - pip install --upgrade pip
   - pip install tox==2.7.0
+  - psql --version
   - node --version
   - npm --version
   - nvm install stable
 before_script:
-  - export DISPLAY=:99.0
-  - sh -e /etc/init.d/xvfb start &
-  - sleep 3
   - psql -c "DROP DATABASE IF EXISTS seeddb;" -U postgres
   - psql -c "DROP DATABASE IF EXISTS test_seeddb;" -U postgres
   - mv config/settings/test_local_untracked.py config/settings/local_untracked.py
   - sudo add-apt-repository ppa:timescale/timescaledb-ppa -y
   - sudo apt-get update -q
-  - sudo apt install timescaledb-postgresql-9.6
+  - sudo apt-get install -y timescaledb-postgresql-11 timescaledb-tools
   - sudo timescaledb-tune -yes
   - sudo service postgresql restart
   - psql -c "CREATE DATABASE seeddb;" -U postgres

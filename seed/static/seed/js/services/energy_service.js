@@ -8,7 +8,7 @@ angular.module('BE.seed.service.energy', [])
         return $http.post('/api/v2/meters/property_energy_usage/', {
           property_view_id: property_view_id,
           organization_id: organization_id,
-          interval: interval,
+          interval: interval
         }).then(function (response) {
           return response.data;
         });

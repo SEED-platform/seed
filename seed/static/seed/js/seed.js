@@ -1106,7 +1106,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         resolve: {
           inventory: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service ) {
             // if ($stateParams.inventory_type === 'properties') {
-              return inventory_service.get_properties(1, undefined, undefined, undefined);
+            return inventory_service.get_properties(1, undefined, undefined, undefined);
             // } else if ($stateParams.inventory_type === 'taxlots') {
             //   return inventory_service.get_taxlots(1, undefined, undefined, undefined);
             // }
@@ -1198,7 +1198,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         resolve: {
           property_energy_usage: ['$stateParams', 'user_service', 'energy_service', function ($stateParams, user_service, energy_service) {
             var organization_id = user_service.get_organization().id;
-            return energy_service.property_energy_usage($stateParams.view_id, organization_id, 'Exact')
+            return energy_service.property_energy_usage($stateParams.view_id, organization_id, 'Exact');
           }],
           cycles: ['cycle_service', function (cycle_service) {
             return cycle_service.get_cycles();

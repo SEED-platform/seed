@@ -9,6 +9,16 @@ Version 2.6.0-Beta
 2.6.0-beta includes support for meters and time series data storage. In order to use this release
 you must first install [timescaledb](https://docs.timescale.com/v1.2/getting-started).
 
+**Ubuntu Instructions**
+
+.. code-block:: console
+
+    sudo add-apt-repository ppa:timescale/timescaledb-ppa
+    sudo apt update
+    sudo apt install timescaledb-postgresql-10
+    sudo timescaledb-tune
+    sudo service postgresql restart
+
 
 Version 2.5.1
 -------------
@@ -22,7 +32,7 @@ Docker-based Deployment
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 - Add the MapQuest API key to your organization.
-- On deployment, the error below is indicative that you need to install the extensions in the postgres database. Run `docker exec <posgres_container_id> update-postgis.sh`.
+- On deployment, the error below is indicative that you need to install the extensions in the postgres database. Run `docker exec <postgres_container_id> update-postgis.sh`.
 
     django.db.utils.OperationalError: could not open extension control file "/usr/share/postgresql/11/extension/postgis.control": No such file or directory
 

@@ -1611,6 +1611,10 @@ a:not([href]) {
   .alert {
     margin-left: 15px;
     margin-right: 15px;
+
+    &.green-button-preview {
+      margin: 0;
+    }
   }
   .form-group {
 
@@ -1626,10 +1630,6 @@ a:not([href]) {
     ul.column {
       padding-left: 0;
       list-style-type: none;
-
-      li {
-
-      }
     }
     .checkbox {
       margin-bottom: 6px;
@@ -1773,7 +1773,7 @@ a:not([href]) {
   text-decoration: underline;
 }
 
-div[sd-uploader][disabled] {
+div[sd-uploader][disabled], button[sd-uploader][disabled] {
   pointer-events: none;
   .qq-upload-button {
     opacity: 0.3;
