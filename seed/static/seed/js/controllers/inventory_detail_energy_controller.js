@@ -31,7 +31,7 @@ angular.module('BE.seed.controller.inventory_detail_energy', [])
       $scope.filler_cycle = cycles.cycles[0].id;
 
       $scope.inventory = {
-        view_id: $stateParams.view_id,
+        view_id: $stateParams.view_id
       };
 
       $scope.data = property_energy_usage.readings;
@@ -42,18 +42,18 @@ angular.module('BE.seed.controller.inventory_detail_energy', [])
         columnDefs: property_energy_usage.column_defs,
         enableFiltering: true,
         flatEntityAccess: true,
-        fastWatch: true,
+        fastWatch: true
       };
 
-      $scope.apply_column_settings = function() {
-        _.forEach($scope.gridOptions.columnDefs, function(column) {
-          if (column.field == "year") {
+      $scope.apply_column_settings = function () {
+        _.forEach($scope.gridOptions.columnDefs, function (column) {
+          if (column.field == 'year') {
             // Filter years like integers
             column.filter = inventory_service.combinedFilter();
-          } else if (column._filter_type == "reading") {
-            column.cellFilter = "number: 2";
+          } else if (column._filter_type == 'reading') {
+            column.cellFilter = 'number: 2';
             column.filter = inventory_service.combinedFilter();
-          } else if (column._filter_type == "datetime") {
+          } else if (column._filter_type == 'datetime') {
             column.filter = inventory_service.dateFilter();
           }
         });
@@ -67,15 +67,15 @@ angular.module('BE.seed.controller.inventory_detail_energy', [])
         options: [
           'Exact',
           'Month',
-          'Year',
+          'Year'
         ],
-        selected: 'Exact',
+        selected: 'Exact'
       };
 
-      $scope.update_interval = function(selected_interval) {
+      $scope.update_interval = function (selected_interval) {
         spinner_utility.show();
         $scope.interval.selected = selected_interval;
-        energy_service.property_energy_usage($scope.inventory.view_id, $scope.organization.id, selected_interval).then(function(usage) {
+        energy_service.property_energy_usage($scope.inventory.view_id, $scope.organization.id, selected_interval).then(function (usage) {
           $scope.data = usage.readings;
           $scope.gridOptions.columnDefs = usage.column_defs;
           $scope.has_meters = $scope.data.length > 0;
@@ -85,24 +85,20 @@ angular.module('BE.seed.controller.inventory_detail_energy', [])
       };
 
       $scope.open_green_button_upload_modal = function () {
-        var dataModalInstance = $uibModal.open({
+        $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/green_button_upload_modal.html',
           controller: 'green_button_upload_modal_controller',
           resolve: {
-            filler_cycle: function() {
+            filler_cycle: function () {
               return $scope.filler_cycle;
             },
-            organization_id: function() {
+            organization_id: function () {
               return $scope.organization.id;
             },
             view_id: function () {
               return $scope.inventory.view_id;
             }
           }
-        });
-
-        dataModalInstance.result.finally(function () {
-          init();
         });
       };
     }]);

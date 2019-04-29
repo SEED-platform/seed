@@ -31,14 +31,14 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
         invalid_file_contents: false,
         invalid_xml_extension_alert: false,
         progress: 0,
-        status_message: '',
+        status_message: ''
       };
 
-      dataset_service.get_datasets().then(function(result) {
+      dataset_service.get_datasets().then(function (result) {
         $scope.datasets = result.datasets;
       });
 
-      $scope.datasetChanged = function(dataset) {
+      $scope.datasetChanged = function (dataset) {
         // set selectedDataset to null to rerender button
         $scope.selectedDataset = null;
         $scope.selectedDataset = dataset;
@@ -46,8 +46,8 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
 
       $scope.cancel = function () {
         // If step 2, GB import confirmation was not accepted by user, so delete file
-        if ($scope.step.number == 2) {
-          dataset_service.delete_file($scope.file_id).then(function (results) {
+        if ($scope.step.number === 2) {
+          dataset_service.delete_file($scope.file_id).then(function (/*results*/) {
             $uibModalInstance.dismiss('cancel');
           });
         } else {
@@ -55,10 +55,10 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
         }
       };
 
-      $scope.uploaderfunc = function (event_message, file, progress) {
+      $scope.uploaderfunc = function (event_message, file/*, progress*/) {
         switch (event_message) {
           case 'invalid_extension':
-            $scope.$apply(function() {
+            $scope.$apply(function () {
               $scope.uploader.invalid_xml_extension_alert = true;
               $scope.uploader.invalid_file_contents = false;
             });
@@ -86,40 +86,37 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
         $scope.step.number = 1;
       };
 
-      var base_green_button_col_defs = [
-        {
-          field: "source_id",
-          displayName: "GreenButton UsagePoint",
-          type: "string",
-        },
-        {
-          field: "incoming",
-        },
-      ];
+      var base_green_button_col_defs = [{
+        field: 'source_id',
+        displayName: 'GreenButton UsagePoint',
+        type: 'string'
+      }, {
+        field: 'incoming'
+      }];
 
       var successfully_imported_col_def = {
-          field: "successfully_imported",
+        field: 'successfully_imported'
       };
 
       var grid_rows_to_display = function (data) {
-        return Math.min(data.length, 5)
+        return Math.min(data.length, 5);
       };
 
       var show_confirmation_info = function () {
-        meters_service.greenbutton_parsed_meters_confirmation($scope.file_id, $scope.organization_id, $scope.view_id).then(function(result) {
+        meters_service.greenbutton_parsed_meters_confirmation($scope.file_id, $scope.organization_id, $scope.view_id).then(function (result) {
           $scope.proposed_imports_options = {
-              data: result.proposed_imports,
-              columnDefs: base_green_button_col_defs,
-              minRowsToShow: grid_rows_to_display(result.proposed_imports),
+            data: result.proposed_imports,
+            columnDefs: base_green_button_col_defs,
+            minRowsToShow: grid_rows_to_display(result.proposed_imports)
           };
 
           $scope.parsed_type_units_options = {
             data: result.validated_type_units,
             columnDefs: [
-              {field: "parsed_type"},
-              {field: "parsed_unit"},
+              {field: 'parsed_type'},
+              {field: 'parsed_unit'}
             ],
-            minRowsToShow: grid_rows_to_display(result.validated_type_units),
+            minRowsToShow: grid_rows_to_display(result.validated_type_units)
           };
 
           $scope.step.number = 2;
@@ -128,7 +125,7 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
 
       var saveSuccess = function (progress_data) {
         // recheck progress in order to ensure message has been appended to progress_data
-        uploader_service.check_progress(progress_data.progress_key).then(function(data) {
+        uploader_service.check_progress(progress_data.progress_key).then(function (data) {
           $scope.uploader.status_message = 'saving complete';
           $scope.uploader.progress = 100;
           buildImportResults(data.message);
@@ -141,19 +138,19 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
 
         col_defs.push(successfully_imported_col_def);
 
-        if ((message[0] || {}).hasOwnProperty("errors")) {
-          col_defs.push({field: "errors"});
+        if ((message[0] || {}).hasOwnProperty('errors')) {
+          col_defs.push({field: 'errors'});
         }
 
         $scope.import_result_options = {
           data: message,
           columnDefs: col_defs,
-          minRowsToShow: grid_rows_to_display(message),
+          minRowsToShow: grid_rows_to_display(message)
         };
       };
 
-      $scope.accept_greenbutton_meters = function() {
-        uploader_service.save_raw_data($scope.file_id, $scope.selectedCycle).then(function(data) {
+      $scope.accept_greenbutton_meters = function () {
+        uploader_service.save_raw_data($scope.file_id, $scope.selectedCycle).then(function (data) {
           $scope.uploader.status_message = 'saving data';
           $scope.uploader.progress = 0;
           $scope.step.number = 3;
@@ -165,13 +162,13 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
             progress,
             1 - (progress / 100),
             saveSuccess,
-            saveFailure,  // difficult to reach this as failures should be caught in confirmation step
+            saveFailure, // difficult to reach this as failures should be caught in confirmation step
             $scope.uploader
-          )
+          );
         });
       };
 
-      $scope.refresh_page = function() {
+      $scope.refresh_page = function () {
         $state.reload();
         $uibModalInstance.dismiss('cancel');
       };

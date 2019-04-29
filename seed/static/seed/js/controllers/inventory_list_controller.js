@@ -351,8 +351,9 @@ angular.module('BE.seed.controller.inventory_list', [])
         }
 
         if (!_.has(cache, record.id)) {
+          var footprint;
           try {
-            var footprint = Terraformer.WKT.parse(record[field]);
+            footprint = Terraformer.WKT.parse(record[field]);
           } catch (e) {
             return record[field];
           }
@@ -369,7 +370,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           var xOffset = (width - envelope.w * scale) / 2;
           var yOffset = (height - envelope.h * scale) / 2;
 
-          var points = _.map(coords, function(coord) {
+          var points = _.map(coords, function (coord) {
             var x = _.round((coord[0] - envelope.x) * scale + xOffset, 2);
             var y = _.round(height - ((coord[1] - envelope.y) * scale + yOffset), 2);
             return x + ',' + y;
@@ -436,9 +437,9 @@ angular.module('BE.seed.controller.inventory_list', [])
       };
       _.map($scope.columns, function (col) {
         var options = {};
-        if (col.column_name === 'property_footprint' && col.table_name === 'PropertyState') {
+        if (_.isMatch(col, {column_name: 'property_footprint', table_name: 'PropertyState'})) {
           col.cellTemplate = '<div class="ui-grid-cell-contents" uib-tooltip-html="grid.appScope.polygon(row.entity, \'PropertyState\')" tooltip-append-to-body="true" tooltip-popup-delay="500">{{COL_FIELD CUSTOM_FILTERS}}</div>';
-        } else if (col.column_name === 'taxlot_footprint' && col.table_name === 'TaxLotState') {
+        } else if (_.isMatch(col, {column_name: 'taxlot_footprint', table_name: 'TaxLotState'})) {
           col.cellTemplate = '<div class="ui-grid-cell-contents" uib-tooltip-html="grid.appScope.polygon(row.entity, \'TaxLotState\')" tooltip-append-to-body="true" tooltip-popup-delay="500">{{COL_FIELD CUSTOM_FILTERS}}</div>';
         } else {
           col.cellTemplate = '<div class="ui-grid-cell-contents" uib-tooltip="{{COL_FIELD CUSTOM_FILTERS}}" tooltip-append-to-body="true" tooltip-popup-delay="500">{{COL_FIELD CUSTOM_FILTERS}}</div>';
@@ -623,7 +624,7 @@ angular.module('BE.seed.controller.inventory_list', [])
                 if ($scope.inventory_type === 'taxlots') return row.$$treeLevel === 0;
                 return !_.has(row, '$$treeLevel');
               }), 'taxlot_state_id');
-            },
+            }
           }
         });
       };

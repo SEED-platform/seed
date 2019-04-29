@@ -163,7 +163,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       $scope.cancel = function () {
         // If step 15, PM Meter Usage import confirmation was not accepted by user, so delete file
         if ($scope.step.number == 15) {
-          dataset_service.delete_file($scope.file_id).then(function (results) {
+          dataset_service.delete_file($scope.file_id).then(function (/*results*/) {
             $uibModalInstance.dismiss('cancel');
           });
         } else {
@@ -190,40 +190,37 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       };
 
       var grid_rows_to_display = function (data) {
-        return Math.min(data.length, 5)
+        return Math.min(data.length, 5);
       };
 
       var present_parsed_meters_confirmation = function (result) {
         $scope.proposed_imports_options = {
           data: result.proposed_imports,
-          columnDefs: [
-            {
-              field: "source_id",
-              displayName: "Portfolio Manager ID",
-              type: "string",
-            },
-            {
-              field: "incoming",
-            },
-          ],
-          minRowsToShow: grid_rows_to_display(result.proposed_imports),
-        }
+          columnDefs: [{
+            field: 'source_id',
+            displayName: 'Portfolio Manager ID',
+            type: 'string'
+          }, {
+            field: 'incoming'
+          }],
+          minRowsToShow: grid_rows_to_display(result.proposed_imports)
+        };
 
         $scope.parsed_type_units_options = {
           data: result.validated_type_units,
           columnDefs: [
-            {field: "parsed_type"},
-            {field: "parsed_unit"},
+            {field: 'parsed_type'},
+            {field: 'parsed_unit'}
           ],
-          minRowsToShow: grid_rows_to_display(result.validated_type_units),
+          minRowsToShow: grid_rows_to_display(result.validated_type_units)
         };
 
         $scope.unlinkable_pm_ids_options = {
-            data: result.unlinkable_pm_ids,
-            columnDefs: [
-              {field: "portfolio_manager_id"},
-            ],
-            minRowsToShow: grid_rows_to_display(result.unlinkable_pm_ids),
+          data: result.unlinkable_pm_ids,
+          columnDefs: [
+            {field: 'portfolio_manager_id'}
+          ],
+          minRowsToShow: grid_rows_to_display(result.unlinkable_pm_ids)
         };
 
         $scope.uploader.in_progress = false;
@@ -232,7 +229,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         $scope.step.number = 15;
       };
 
-      var present_meter_import_error = function (error) {
+      var present_meter_import_error = function (/*error*/) {
         $scope.pm_meter_import_error = true;
         $scope.uploader.in_progress = false;
         $scope.uploader.progress = 0;
@@ -310,7 +307,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
               $scope.uploader.in_progress = false;
               $scope.uploader.progress = 100;
               $scope.step.number = 14;
-              $scope.step_14_message = (_.size(file.message['warnings']) > 0) ? file.message['warnings'] : null;
+              $scope.step_14_message = (_.size(file.message.warnings) > 0) ? file.message.warnings : null;
             } else if (file.source_type === 'PM Meter Usage') {
               $scope.cycle_id = file.cycle_id;
               $scope.file_id = file.file_id;
@@ -337,7 +334,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             break;
         }
 
-        $scope.accept_meters = function(file_id, cycle_id) {
+        $scope.accept_meters = function (file_id, cycle_id) {
           $scope.uploader.in_progress = true;
           save_raw_assessed_data(file_id, cycle_id, true);
         };
@@ -420,21 +417,21 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       };
 
       var meter_import_results = function (results) {
-        column_defs = [
-          {field: "source_id"},
-          {field: "incoming"},
-          {field: "successfully_imported"},
-        ]
+        var column_defs = [
+          {field: 'source_id'},
+          {field: 'incoming'},
+          {field: 'successfully_imported'}
+        ];
 
-        if ((results[0] || {}).hasOwnProperty("errors")) {
-          column_defs.push({field: "errors"});
+        if ((results[0] || {}).hasOwnProperty('errors')) {
+          column_defs.push({field: 'errors'});
         }
 
         return {
           data: results,
           columnDefs: column_defs,
-          minRowsToShow: grid_rows_to_display(results),
-        }
+          minRowsToShow: grid_rows_to_display(results)
+        };
       };
 
       /**
