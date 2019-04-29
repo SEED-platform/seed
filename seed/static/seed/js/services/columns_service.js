@@ -23,6 +23,22 @@ angular.module('BE.seed.service.columns', []).factory('columns_service', [
       });
     };
 
+    columns_service.rename_column = function (column_id, column_name, overwrite_preference) {
+      return $http.post('/api/v2/columns/' + column_id + '/rename/', {
+        new_column_name: column_name,
+        overwrite: overwrite_preference,
+      }).then(function (response) {
+        return response
+      }).catch(function (error_response) {
+        return {
+          data: {
+            success: false,
+            message: "Unsuccessful! " + error_response.statusText,
+          }
+        }
+      });
+    };
+
     return columns_service;
 
   }]);
