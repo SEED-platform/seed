@@ -3,22 +3,26 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
     '$scope',
     '$state',
     '$uibModalInstance',
+    'uiGridConstants',
     'filler_cycle',
     'dataset_service',
     'meters_service',
     'organization_id',
     'uploader_service',
     'view_id',
+    'datasets',
     function (
       $scope,
       $state,
       $uibModalInstance,
+      uiGridConstants,
       filler_cycle,
       dataset_service,
       meters_service,
       organization_id,
       uploader_service,
-      view_id
+      view_id,
+      datasets
     ) {
       $scope.step = {
         number: 1
@@ -26,6 +30,9 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
       $scope.view_id = view_id;
       $scope.selectedCycle = filler_cycle;
       $scope.organization_id = organization_id;
+      $scope.datasets = datasets;
+
+      if (datasets.length) $scope.selectedDataset = datasets[0];
 
       $scope.uploader = {
         invalid_file_contents: false,
@@ -33,10 +40,6 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
         progress: 0,
         status_message: ''
       };
-
-      dataset_service.get_datasets().then(function (result) {
-        $scope.datasets = result.datasets;
-      });
 
       $scope.datasetChanged = function (dataset) {
         // set selectedDataset to null to rerender button
@@ -89,13 +92,16 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
       var base_green_button_col_defs = [{
         field: 'source_id',
         displayName: 'GreenButton UsagePoint',
+        enableHiding: false,
         type: 'string'
       }, {
-        field: 'incoming'
+        field: 'incoming',
+        enableHiding: false
       }];
 
       var successfully_imported_col_def = {
-        field: 'successfully_imported'
+        field: 'successfully_imported',
+        enableHiding: false
       };
 
       var grid_rows_to_display = function (data) {
@@ -107,15 +113,22 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
           $scope.proposed_imports_options = {
             data: result.proposed_imports,
             columnDefs: base_green_button_col_defs,
+            enableHorizontalScrollbar: uiGridConstants.scrollbars.NEVER,
+            enableVerticalScrollbar: result.proposed_imports.length <= 5 ? uiGridConstants.scrollbars.NEVER : uiGridConstants.scrollbars.WHEN_NEEDED,
             minRowsToShow: grid_rows_to_display(result.proposed_imports)
           };
 
           $scope.parsed_type_units_options = {
             data: result.validated_type_units,
-            columnDefs: [
-              {field: 'parsed_type'},
-              {field: 'parsed_unit'}
-            ],
+            columnDefs: [{
+              field: 'parsed_type',
+              enableHiding: false
+            }, {
+              field: 'parsed_unit',
+              enableHiding: false
+            }],
+            enableHorizontalScrollbar: uiGridConstants.scrollbars.NEVER,
+            enableVerticalScrollbar: result.proposed_imports.length <= 5 ? uiGridConstants.scrollbars.NEVER : uiGridConstants.scrollbars.WHEN_NEEDED,
             minRowsToShow: grid_rows_to_display(result.validated_type_units)
           };
 
@@ -139,12 +152,17 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
         col_defs.push(successfully_imported_col_def);
 
         if ((message[0] || {}).hasOwnProperty('errors')) {
-          col_defs.push({field: 'errors'});
+          col_defs.push({
+            field: 'errors',
+            enableHiding: false
+          });
         }
 
         $scope.import_result_options = {
           data: message,
           columnDefs: col_defs,
+          enableHorizontalScrollbar: uiGridConstants.scrollbars.NEVER,
+          enableVerticalScrollbar: message.length <= 5 ? uiGridConstants.scrollbars.NEVER : uiGridConstants.scrollbars.WHEN_NEEDED,
           minRowsToShow: grid_rows_to_display(message)
         };
       };
