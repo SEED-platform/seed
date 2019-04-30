@@ -30,6 +30,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
     '$uibModalInstance',
     '$log',
     '$timeout',
+    'uiGridConstants',
     'uploader_service',
     '$state',
     'dataset_service',
@@ -48,6 +49,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       $uibModalInstance,
       $log,
       $timeout,
+      uiGridConstants,
       uploader_service,
       $state,
       dataset_service,
@@ -199,27 +201,40 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           columnDefs: [{
             field: 'source_id',
             displayName: 'Portfolio Manager ID',
+            enableHiding: false,
             type: 'string'
           }, {
-            field: 'incoming'
+            field: 'incoming',
+            enableHiding: false
           }],
+          enableHorizontalScrollbar: uiGridConstants.scrollbars.NEVER,
+          enableVerticalScrollbar: result.proposed_imports.length <= 5 ? uiGridConstants.scrollbars.NEVER : uiGridConstants.scrollbars.WHEN_NEEDED,
           minRowsToShow: grid_rows_to_display(result.proposed_imports)
         };
 
         $scope.parsed_type_units_options = {
           data: result.validated_type_units,
-          columnDefs: [
-            {field: 'parsed_type'},
-            {field: 'parsed_unit'}
-          ],
+          columnDefs: [{
+            field: 'parsed_type',
+            enableHiding: false
+          }, {
+            field: 'parsed_unit',
+            enableHiding: false
+          }],
+          enableHorizontalScrollbar: uiGridConstants.scrollbars.NEVER,
+          enableVerticalScrollbar: result.validated_type_units.length <= 5 ? uiGridConstants.scrollbars.NEVER : uiGridConstants.scrollbars.WHEN_NEEDED,
           minRowsToShow: grid_rows_to_display(result.validated_type_units)
         };
 
         $scope.unlinkable_pm_ids_options = {
           data: result.unlinkable_pm_ids,
-          columnDefs: [
-            {field: 'portfolio_manager_id'}
-          ],
+          columnDefs: [{
+            field: 'portfolio_manager_id',
+            displayName: 'Portfolio Manager ID',
+            enableHiding: false
+          }],
+          enableHorizontalScrollbar: uiGridConstants.scrollbars.NEVER,
+          enableVerticalScrollbar: result.unlinkable_pm_ids.length <= 5 ? uiGridConstants.scrollbars.NEVER : uiGridConstants.scrollbars.WHEN_NEEDED,
           minRowsToShow: grid_rows_to_display(result.unlinkable_pm_ids)
         };
 
@@ -417,19 +432,29 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       };
 
       var meter_import_results = function (results) {
-        var column_defs = [
-          {field: 'source_id'},
-          {field: 'incoming'},
-          {field: 'successfully_imported'}
-        ];
+        var column_defs = [{
+          field: 'source_id',
+          enableHiding: false
+        }, {
+          field: 'incoming',
+          enableHiding: false
+        }, {
+          field: 'successfully_imported',
+          enableHiding: false
+        }];
 
         if ((results[0] || {}).hasOwnProperty('errors')) {
-          column_defs.push({field: 'errors'});
+          column_defs.push({
+            field: 'errors',
+            enableHiding: false
+          });
         }
 
         return {
           data: results,
           columnDefs: column_defs,
+          enableHorizontalScrollbar: uiGridConstants.scrollbars.NEVER,
+          enableVerticalScrollbar: results.length <= 5 ? uiGridConstants.scrollbars.NEVER : uiGridConstants.scrollbars.WHEN_NEEDED,
           minRowsToShow: grid_rows_to_display(results)
         };
       };

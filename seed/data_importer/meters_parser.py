@@ -271,7 +271,7 @@ class MetersParser(object):
             meter_reading = {
                 'start_time': start_time,
                 'end_time': end_time,
-                'reading': details[type] * conversion_factor,
+                'reading': float(details[type]) * conversion_factor,
                 'source_unit': unit,
                 'conversion_factor': conversion_factor
             }
