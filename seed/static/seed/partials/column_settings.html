@@ -45,6 +45,7 @@
                         <tr>
                             <th translate>Display Name</th>
                             <th translate>Column Name</th>
+                            <th style="min-width: 130px; width: 130px;" translate>Rename</th>
                             <th style="min-width: 130px; width: 130px;" translate>Data Type</th>
                             <th style="min-width: 120px; width: 120px;" translate>Merge Protection</th>
                         </tr>
@@ -65,6 +66,7 @@
                             </th>
                             <th class="sub_head"></th>
                             <th class="sub_head"></th>
+                            <th class="sub_head"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -75,6 +77,9 @@
                             <td>
                                 {$:: column.column_name $}
                                 <span ng-if="column.is_extra_data" class="badge" style="margin-left: 10px;">extra data</span>
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-default" ng-click="open_rename_column_modal(column.id, column.column_name)">{$:: 'Rename' | translate $}</button>
                             </td>
                             <td>
                                 <select class="form-control input-sm" ng-model="column.data_type" ng-options="type.id as type.label for type in ::data_types" ng-change="setModified()" ng-disabled="!column.is_extra_data"></select>

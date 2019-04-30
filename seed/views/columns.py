@@ -59,8 +59,8 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
 
     def get_queryset(self):
         # check if the request is properties or taxlots
-        org = self.get_organization(self.request, True)
-        return Column.objects.filter(organization=org)
+        org_id = self.get_organization(self.request)
+        return Column.objects.filter(organization_id=org_id)
 
     @ajax_request_class
     def list(self, request):
@@ -253,13 +253,13 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
     @has_perm_class('can_modify_data')
     @detail_route(methods=['POST'])
     def rename(self, request, pk=None):
-        org = self.get_organization(request, True)
+        org_id = self.get_organization(request)
         try:
-            column = Column.objects.get(id=pk, organization=org)
+            column = Column.objects.get(id=pk, organization_id=org_id)
         except Column.DoesNotExist:
             return JsonResponse({
                 'success': False,
-                'message': 'Cannot find column in org=%s with pk=%s' % (org.pk, pk)
+                'message': 'Cannot find column in org=%s with pk=%s' % (org_id, pk)
             }, status=status.HTTP_404_NOT_FOUND)
 
         new_column_name = request.data.get('new_column_name', None)

@@ -288,7 +288,7 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
         )
         self.assertEqual(response.status_code, 403)
         result = response.json()
-        self.assertEqual(result['detail'], 'Permission denied.')
+        self.assertEqual(result['detail'], 'No relationship to organization')
 
     def test_rename_column_dne(self):
         # test building list columns

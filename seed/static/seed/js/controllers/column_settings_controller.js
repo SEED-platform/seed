@@ -8,6 +8,7 @@ angular.module('BE.seed.controller.column_settings', [])
     '$q',
     '$state',
     '$stateParams',
+    '$uibModal',
     'Notification',
     'columns',
     'organization_payload',
@@ -25,6 +26,7 @@ angular.module('BE.seed.controller.column_settings', [])
       $q,
       $state,
       $stateParams,
+      $uibModal,
       Notification,
       columns,
       organization_payload,
@@ -127,6 +129,24 @@ angular.module('BE.seed.controller.column_settings', [])
           $scope.$emit('app_error', data);
         }).finally(function () {
           spinner_utility.hide();
+        });
+      };
+
+      $scope.open_rename_column_modal = function (column_id, column_name) {
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/rename_column_modal.html',
+          controller: 'rename_column_modal_controller',
+          resolve: {
+            column_id: function () {
+              return column_id;
+            },
+            column_name: function () {
+              return column_name;
+            },
+            all_column_names: function() {
+              return _.map($scope.columns, 'column_name');
+            },
+          },
         });
       };
 
