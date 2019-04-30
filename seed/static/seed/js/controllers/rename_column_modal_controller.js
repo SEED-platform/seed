@@ -20,7 +20,7 @@ angular.module('BE.seed.controller.rename_column_modal', [])
       column_id,
       column_name,
       columns_service,
-      spinner_utility,
+      spinner_utility
     ) {
       $scope.step = {
         number: 1,
