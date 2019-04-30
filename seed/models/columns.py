@@ -596,7 +596,7 @@ class Column(models.Model):
         new_column = Column.objects.filter(table_name=self.table_name, column_name=new_column_name)
         if len(new_column) > 0:
             if not force:
-                return [False, 'New column already exists, pass force=True to overwrite data']
+                return [False, 'New column already exists, specify overwrite data if desired']
 
             new_column = new_column.first()
 
@@ -619,7 +619,7 @@ class Column(models.Model):
                 organization=self.organization,
                 table_name=self.table_name,
                 column_name=new_column_name,
-                display_name=self.display_name,
+                display_name=new_column_name,
                 is_extra_data=True,
                 unit=self.unit,
                 # unit_pint  # Do not import unit_pint since that only works with db fields
