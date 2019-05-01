@@ -45,7 +45,7 @@ from seed.models import (
     PropertyView,
     Simulation,
     TaxLotProperty,
-    TaxLotView,
+    TaxLotView
 )
 from seed.models import Property as PropertyModel
 from seed.serializers.pint import PintJSONEncoder

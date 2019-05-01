@@ -22,7 +22,6 @@ from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import PropertyState, TaxLotState
 from seed.models.columns import Column
-from seed.pagination import NoPagination
 from seed.renderers import SEEDJSONRenderer
 from seed.serializers.columns import ColumnSerializer
 from seed.utils.api import OrgValidateMixin
@@ -53,7 +52,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
     serializer_class = ColumnSerializer
     renderer_classes = (JSONRenderer,)
     model = Column
-    pagination_class = NoPagination
+    pagination_class = None
     parser_classes = (JSONParser, FormParser)
     filter_backends = (ColumnViewSetFilterBackend,)
 

@@ -28,7 +28,6 @@ from seed.models import (
     Property,
     TaxLot,
 )
-from seed.pagination import NoPagination
 from seed.serializers.labels import (
     LabelSerializer,
 )
@@ -58,7 +57,7 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint), viewsets.ModelViewSet):
     parser_classes = (JSONParser, FormParser)
     queryset = Label.objects.none()
     filter_backends = (LabelFilterBackend,)
-    pagination_class = NoPagination
+    pagination_class = None
 
     _organization = None
 

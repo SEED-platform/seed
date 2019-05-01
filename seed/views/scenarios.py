@@ -10,7 +10,6 @@ from rest_framework.renderers import JSONRenderer
 from seed.models import (
     Scenario,
 )
-from seed.pagination import NoPagination
 from seed.serializers.scenarios import ScenarioSerializer
 from seed.utils.viewsets import (
     SEEDOrgReadOnlyModelViewSet
@@ -25,7 +24,7 @@ class ScenarioViewSet(SEEDOrgReadOnlyModelViewSet):
     parser_classes = (JSONParser, FormParser,)
     renderer_classes = (JSONRenderer,)
     queryset = Scenario.objects.all()
-    pagination_class = NoPagination
+    pagination_class = None
     orgfilter = 'property_state__organization_id'
 
     def get_queryset(self):

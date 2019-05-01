@@ -219,10 +219,14 @@ def _build_cleaner(org):
 
     query_set = Column.objects.filter(organization=org, units_pint__isnull=False)
     for column in query_set:
+        # DON'T OVERRIDE DEFAULT COLUMNS WITH DATA FROM RAW COLUMNS
+        # THIS CAN HAPPEN IF YOU UPLOAD A FILE WITH A HEADER IDENTICAL TO THE DEFAULT COLUMN_NAME THAT ALSO HAS UNITS
+        # LIKE 'site_eui' OR 'source_eui'
+        # if column.column_name not in ontology['types']:
         # add available pint types as a tuple type
         ontology['types'][column.column_name] = ('quantity', column.units_pint)
 
-    # find all the extra data columns and add them as well
+    # find all the extra data columns with units and add them as well
     for column in Column.objects.filter(organization=org,
                                         is_extra_data=True).select_related('unit'):
         if column.unit:
@@ -240,7 +244,6 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
     :param file_pk: int, the PK for an ImportFile obj.
     :param source_type: int, represented by either ASSESSED_RAW or PORTFOLIO_RAW.
     :param prog_key: string, key of the progress key
-    :param increment: double, value by which to increment progress key
     """
     progress_data = ProgressData.from_key(prog_key)
     import_file = ImportFile.objects.get(pk=file_pk)
