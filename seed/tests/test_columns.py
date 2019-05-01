@@ -25,6 +25,7 @@ from seed.test_helpers.fake import (
     FakeTaxLotStateFactory,
 )
 from seed.utils.organizations import create_organization
+from quantityfield import ureg
 
 
 class TestColumns(TestCase):
@@ -390,6 +391,322 @@ class TestRenameColumns(TestCase):
                 'building_count', flat=True)
         )
         self.assertListEqual(results, expected_data)
+
+    def test_rename_datetime_field_to_extra_data(self):
+        expected_data = []
+
+        new_col_name = 'recent_sale_date_renamed'
+
+        for i in range(0, 5):
+            date = "2018-04-02T19:53:0{}+00:00".format(i)
+            state = self.property_state_factory.get_property_state(
+                data_state=DATA_STATE_MATCHING,
+                recent_sale_date=date
+            )
+            expected_data.append({new_col_name: state.recent_sale_date})
+
+        old_column = Column.objects.filter(column_name='recent_sale_date').first()
+        result = old_column.rename_column(new_col_name)
+        self.assertTrue(result)
+
+        results = list(
+            PropertyState.objects.filter(organization=self.org).order_by('id').values_list(
+                'extra_data', flat=True)
+        )
+
+        self.assertListEqual(results, expected_data)
+
+    def test_rename_datetime_field_to_another_datetime_field(self):
+        expected_data = []
+
+        new_col_name = 'recent_sale_date'
+
+        for i in range(0, 5):
+            date = "2018-04-02T19:53:0{}+00:00".format(i)
+            self.property_state_factory.get_property_state(
+                data_state=DATA_STATE_MATCHING,
+                generation_date=date
+            )
+            expected_data.append(date)
+
+        old_column = Column.objects.filter(column_name='generation_date').first()
+        result = old_column.rename_column(new_col_name, force=True)
+        self.assertTrue(result)
+
+        new_col_results_raw = list(
+            PropertyState.objects.filter(organization=self.org).order_by('id').values_list(
+                new_col_name, flat=True)
+        )
+        new_col_results = [dt.isoformat() for dt in new_col_results_raw]
+        self.assertListEqual(new_col_results, expected_data)
+
+        # Check that generation_dates were cleared
+        for p in PropertyState.objects.all():
+            self.assertIsNone(p.generation_date)
+
+    def test_rename_extra_data_field_to_datetime_field_success(self):
+        expected_data = []
+
+        new_col_name = 'recent_sale_date'
+
+        for i in range(0, 5):
+            date = "2018-04-02T19:53:0{}+00:00".format(i)
+            self.property_state_factory.get_property_state(
+                data_state=DATA_STATE_MATCHING,
+                extra_data={self.extra_data_column.column_name: date}
+            )
+            expected_data.append(date)
+
+        result = self.extra_data_column.rename_column(new_col_name, force=True)
+        self.assertTrue(result)
+
+        raw_results = list(
+            PropertyState.objects.filter(organization=self.org).order_by('id').values_list(
+                new_col_name, flat=True)
+        )
+
+        results = [dt.isoformat() for dt in raw_results]
+
+        self.assertListEqual(results, expected_data)
+
+    def test_rename_extra_data_field_to_datetime_field_unsuccessful(self):
+        expected_data = []
+        original_column_count = Column.objects.count()
+
+        new_col_name = 'recent_sale_date'
+
+        for i in range(9, 11):  # range is purposely set to cause errors in the date format but not immediately
+            date = "2018-04-02T19:53:0{}+00:00".format(i)
+            self.property_state_factory.get_property_state(
+                data_state=DATA_STATE_MATCHING,
+                extra_data={self.extra_data_column.column_name: date}
+            )
+            expected_data.append(date)
+
+        result = self.extra_data_column.rename_column(new_col_name, force=True)
+        self.assertEqual(result, [False, "The column data aren't formatted properly for the new column due to type constraints (e.g., Datatime, Quanties, etc.)."])
+
+        new_column_count = Column.objects.count()
+        self.assertEqual(original_column_count, new_column_count)
+
+        # Check that none of the PropertyStates were updated.
+        for p in PropertyState.objects.all():
+            self.assertIsNone(p.recent_sale_date)
+
+    def test_rename_date_field_to_extra_data(self):
+        expected_data = []
+
+        new_col_name = 'year_ending_renamed'
+
+        for i in range(1, 5):
+            date = "2018-04-0{}".format(i)
+            state = self.property_state_factory.get_property_state(
+                data_state=DATA_STATE_MATCHING,
+                year_ending=date
+            )
+            expected_data.append({new_col_name: state.year_ending})
+
+        old_column = Column.objects.filter(column_name='year_ending').first()
+        result = old_column.rename_column(new_col_name)
+        self.assertTrue(result)
+
+        results = list(
+            PropertyState.objects.filter(organization=self.org).order_by('id').values_list(
+                'extra_data', flat=True)
+        )
+
+        self.assertListEqual(results, expected_data)
+
+    def test_rename_extra_data_field_to_date_field_success(self):
+        expected_data = []
+
+        new_col_name = 'year_ending'
+
+        for i in range(1, 5):
+            date = "2018-04-0{}".format(i)
+            self.property_state_factory.get_property_state(
+                data_state=DATA_STATE_MATCHING,
+                extra_data={self.extra_data_column.column_name: date}
+            )
+            expected_data.append(date)
+
+        result = self.extra_data_column.rename_column(new_col_name, force=True)
+        self.assertTrue(result)
+
+        raw_results = list(
+            PropertyState.objects.filter(organization=self.org).order_by('id').values_list(
+                new_col_name, flat=True)
+        )
+
+        results = [dt.isoformat() for dt in raw_results]
+
+        self.assertListEqual(results, expected_data)
+
+    def test_rename_extra_data_field_to_date_field_unsuccessful(self):
+        expected_data = []
+        original_column_count = Column.objects.count()
+
+        new_col_name = 'year_ending'
+
+        for i in range(9, 11):  # range is purposely set to cause errors in the date format but not immediately
+            date = "2018-04-0{}".format(i)
+            self.property_state_factory.get_property_state(
+                data_state=DATA_STATE_MATCHING,
+                extra_data={self.extra_data_column.column_name: date}
+            )
+            expected_data.append(date)
+
+        result = self.extra_data_column.rename_column(new_col_name, force=True)
+        self.assertEqual(result, [False, "The column data aren't formatted properly for the new column due to type constraints (e.g., Datatime, Quanties, etc.)."])
+
+        new_column_count = Column.objects.count()
+        self.assertEqual(original_column_count, new_column_count)
+
+        # Check that none of the PropertyStates were updated.
+        for p in PropertyState.objects.all():
+            self.assertIsNone(p.recent_sale_date)
+
+    def test_rename_quantity_field_to_extra_data(self):
+        expected_data = []
+
+        new_col_name = 'gross_floor_area_renamed'
+
+        for i in range(1, 5):
+            area = i * 100.5
+            self.property_state_factory.get_property_state(
+                data_state=DATA_STATE_MATCHING,
+                gross_floor_area=area
+            )
+            expected_data.append({new_col_name: area})
+
+        old_column = Column.objects.filter(column_name='gross_floor_area').first()
+        result = old_column.rename_column(new_col_name)
+        self.assertTrue(result)
+
+        results = list(
+            PropertyState.objects.filter(organization=self.org).order_by('id').values_list(
+                'extra_data', flat=True)
+        )
+
+        self.assertListEqual(results, expected_data)
+
+    def test_rename_extra_data_field_to_quantity_field_success(self):
+        expected_data = []
+
+        new_col_name = 'gross_floor_area'
+
+        for i in range(1, 5):
+            area = i * 100.5
+            self.property_state_factory.get_property_state(
+                data_state=DATA_STATE_MATCHING,
+                extra_data={self.extra_data_column.column_name: area}
+            )
+            expected_data.append(ureg.Quantity(area, "foot ** 2"))
+
+        result = self.extra_data_column.rename_column(new_col_name, force=True)
+        self.assertTrue(result)
+
+        results = list(
+            PropertyState.objects.filter(organization=self.org).order_by('id').values_list(
+                'gross_floor_area', flat=True)
+        )
+
+        self.assertListEqual(results, expected_data)
+
+    def test_rename_extra_data_field_to_quantity_field_unsuccessful(self):
+        expected_data = []
+        original_column_count = Column.objects.count()
+
+        new_col_name = 'gross_floor_area'
+
+        for i in range(0, 2):
+            # add a valid and invalid area
+            area = (100 if i == 0 else "not a number")
+            state = self.property_state_factory.get_property_state(
+                data_state=DATA_STATE_MATCHING,
+                extra_data={self.extra_data_column.column_name: area}
+            )
+            # Capture default gross_floor_areas
+            expected_data.append(ureg.Quantity(state.gross_floor_area, "foot ** 2"))
+
+        result = self.extra_data_column.rename_column(new_col_name, force=True)
+        self.assertEqual(result, [False, "The column data aren't formatted properly for the new column due to type constraints (e.g., Datatime, Quanties, etc.)."])
+
+        new_column_count = Column.objects.count()
+        self.assertEqual(original_column_count, new_column_count)
+
+        # check that the states' gross_floor_area values were unchanged
+        results = list(
+            PropertyState.objects.filter(organization=self.org).order_by('id').values_list(
+                'gross_floor_area', flat=True)
+        )
+
+        self.assertListEqual(results, expected_data)
+
+    def test_rename_quantity_field_to_another_quantity_field_success(self):
+        expected_data = []
+
+        new_col_name = 'occupied_floor_area'
+
+        for i in range(1, 5):
+            area = i * 100.5
+            self.property_state_factory.get_property_state(
+                data_state=DATA_STATE_MATCHING,
+                gross_floor_area=area
+            )
+            # Capture the magnitude with default occupied_floor_area units
+            expected_data.append(ureg.Quantity(area, "foot ** 2"))
+
+        old_column = Column.objects.filter(column_name='gross_floor_area').first()
+        result = old_column.rename_column(new_col_name, force=True)
+        self.assertTrue(result)
+
+        results = list(
+            PropertyState.objects.filter(organization=self.org).order_by('id').values_list(
+                new_col_name, flat=True)
+        )
+
+        self.assertListEqual(results, expected_data)
+
+        # Check that gross_floor_areas were cleared
+        for p in PropertyState.objects.all():
+            self.assertIsNone(p.gross_floor_area)
+
+    def test_rename_quantity_field_to_another_quantity_field_unsuccessful(self):
+        # This should be unsuccessful because conversions don't exist between certain column units
+        expected_data = []
+        original_column_count = Column.objects.count()
+
+        new_col_name = 'site_eui'
+
+        for i in range(1, 5):
+            area = i * 100.5
+            self.property_state_factory.get_property_state(
+                data_state=DATA_STATE_MATCHING,
+                gross_floor_area=area
+            )
+            # Capture these pre-rename-attempt values
+            expected_data.append(ureg.Quantity(area, "foot ** 2"))
+
+        old_column = Column.objects.filter(column_name='gross_floor_area').first()
+        result = old_column.rename_column(new_col_name, force=True)
+        self.assertEqual(result, [False, "The column data can't be converted to the new column due to conversion contraints (e.g., converting square feet to kBtu etc.)."])
+
+        new_column_count = Column.objects.count()
+        self.assertEqual(original_column_count, new_column_count)
+
+        # check that the states' gross_floor_area values were unchanged
+        results = list(
+            PropertyState.objects.filter(organization=self.org).order_by('id').values_list(
+                'gross_floor_area', flat=True)
+        )
+
+        self.assertListEqual(results, expected_data)
+
+    def test_rename_property_campus_field_unsuccessful(self):
+        old_column = Column.objects.filter(column_name='campus').first()
+        result = old_column.rename_column("new_col_name", force=True)
+        self.assertEqual(result, [False, "This column can't be renamed."])
 
 
 class TestColumnMapping(TestCase):
