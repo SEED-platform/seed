@@ -2309,6 +2309,9 @@ msgstr "users"
 msgid "Using your current browser will prevent you from accessing features on our website. Use the links below to download a new browser or upgrade your existing browser."
 msgstr "Using your current browser will prevent you from accessing features on our website. Use the links below to download a new browser or upgrade your existing browser."
 
+msgid "USING_DEFAULT_UNITS_WARNING"
+msgstr "For columns with unit settings, default units will used for conversions."
+
 msgid "Version"
 msgstr "Version"
 
