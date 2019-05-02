@@ -13,7 +13,10 @@ from collections import OrderedDict
 
 from django.apps import apps
 from django.core.exceptions import ValidationError
-from django.db import models
+from django.db import (
+    models,
+    transaction,
+)
 from django.db.models import Q
 from django.db.models.signals import pre_save
 from django.utils.translation import ugettext_lazy as _
@@ -588,74 +591,101 @@ class Column(models.Model):
         :param force: boolean force the overwrite of data in the column?
         :return:
         """
+        from datetime import (
+            datetime as datetime_type,
+            date as date_type,
+        )
+        from django.db.utils import DataError
+        from pint.errors import DimensionalityError
         from seed.models.properties import PropertyState
         from seed.models.tax_lots import TaxLotState, DATA_STATE_MATCHING
+        from quantityfield import ureg
         STR_TO_CLASS = {'TaxLotState': TaxLotState, 'PropertyState': PropertyState}
 
-        # check if the new_column already exists
-        new_column = Column.objects.filter(table_name=self.table_name, column_name=new_column_name)
-        if len(new_column) > 0:
-            if not force:
-                return [False, 'New column already exists, specify overwrite data if desired']
-
-            new_column = new_column.first()
-
-            # update the fields in the new column to match the old columns
-            # new_column.display_name = self.display_name
-            # new_column.is_extra_data = self.is_extra_data
-            new_column.unit = self.unit
-            new_column.import_file = self.import_file
-            new_column.shared_field_type = self.shared_field_type
-            new_column.merge_protection = self.merge_protection
-            if not new_column.is_extra_data and not self.is_extra_data:
-                new_column.units_pint = self.units_pint
-            new_column.save()
-
-        elif len(new_column) == 0:
-            # There isn't a column yet, so creating a new one
-            # New column will always have extra data.
-            # The units and related data are copied over to the new field
-            new_column = Column.objects.create(
-                organization=self.organization,
-                table_name=self.table_name,
-                column_name=new_column_name,
-                display_name=new_column_name,
-                is_extra_data=True,
-                unit=self.unit,
-                # unit_pint  # Do not import unit_pint since that only works with db fields
-                import_file=self.import_file,
-                shared_field_type=self.shared_field_type,
-                merge_protection=self.merge_protection
-            )
-
-        # go through the data and move it to the new field. I'm not sure yet on how long this is
-        # going to take to run, so we may have to move this to a background task
-        orig_data = STR_TO_CLASS[self.table_name].objects.filter(
-            organization=new_column.organization,
-            data_state=DATA_STATE_MATCHING
-        )
-        if new_column.is_extra_data:
-            if self.is_extra_data:
-                for datum in orig_data:
-                    datum.extra_data[new_column.column_name] = datum.extra_data[self.column_name]
-                    del datum.extra_data[self.column_name]
-                    datum.save()
+        def _serialize_for_extra_data(column_value):
+            if isinstance(column_value, datetime_type):
+                return column_value.isoformat()
+            elif isinstance(column_value, date_type):
+                return column_value.isoformat()
+            elif isinstance(column_value, ureg.Quantity):
+                return column_value.magnitude
             else:
-                for datum in orig_data:
-                    datum.extra_data[new_column.column_name] = getattr(datum, self.column_name)
-                    setattr(datum, self.column_name, None)
-                    datum.save()
-        else:
-            if self.is_extra_data:
-                for datum in orig_data:
-                    setattr(datum, new_column.column_name, datum.extra_data[self.column_name])
-                    del datum.extra_data[self.column_name]
-                    datum.save()
-            else:
-                for datum in orig_data:
-                    setattr(datum, new_column.column_name, getattr(datum, self.column_name))
-                    setattr(datum, self.column_name, None)
-                    datum.save()
+                return column_value
+
+        if self.table_name == 'Property':
+            return [False, "This column can't be renamed."]
+
+        try:
+            with transaction.atomic():
+                # check if the new_column already exists
+                new_column = Column.objects.filter(table_name=self.table_name, column_name=new_column_name)
+                if len(new_column) > 0:
+                    if not force:
+                        return [False, 'New column already exists, specify overwrite data if desired']
+
+                    new_column = new_column.first()
+
+                    # update the fields in the new column to match the old columns
+                    # new_column.display_name = self.display_name
+                    # new_column.is_extra_data = self.is_extra_data
+                    new_column.unit = self.unit
+                    new_column.import_file = self.import_file
+                    new_column.shared_field_type = self.shared_field_type
+                    new_column.merge_protection = self.merge_protection
+                    if not new_column.is_extra_data and not self.is_extra_data:
+                        new_column.units_pint = self.units_pint
+                    new_column.save()
+
+                elif len(new_column) == 0:
+                    # There isn't a column yet, so creating a new one
+                    # New column will always have extra data.
+                    # The units and related data are copied over to the new field
+                    new_column = Column.objects.create(
+                        organization=self.organization,
+                        table_name=self.table_name,
+                        column_name=new_column_name,
+                        display_name=new_column_name,
+                        is_extra_data=True,
+                        unit=self.unit,
+                        # unit_pint  # Do not import unit_pint since that only works with db fields
+                        import_file=self.import_file,
+                        shared_field_type=self.shared_field_type,
+                        merge_protection=self.merge_protection
+                    )
+
+                # go through the data and move it to the new field. I'm not sure yet on how long this is
+                # going to take to run, so we may have to move this to a background task
+                orig_data = STR_TO_CLASS[self.table_name].objects.filter(
+                    organization=new_column.organization,
+                    data_state=DATA_STATE_MATCHING
+                )
+                if new_column.is_extra_data:
+                    if self.is_extra_data:
+                        for datum in orig_data:
+                            datum.extra_data[new_column.column_name] = datum.extra_data[self.column_name]
+                            del datum.extra_data[self.column_name]
+                            datum.save()
+                    else:
+                        for datum in orig_data:
+                            column_value = _serialize_for_extra_data(getattr(datum, self.column_name))
+                            datum.extra_data[new_column.column_name] = column_value
+                            setattr(datum, self.column_name, None)
+                            datum.save()
+                else:
+                    if self.is_extra_data:
+                        for datum in orig_data:
+                            setattr(datum, new_column.column_name, datum.extra_data[self.column_name])
+                            del datum.extra_data[self.column_name]
+                            datum.save()
+                    else:
+                        for datum in orig_data:
+                            setattr(datum, new_column.column_name, getattr(datum, self.column_name))
+                            setattr(datum, self.column_name, None)
+                            datum.save()
+        except (ValidationError, DataError):
+            return [False, "The column data aren't formatted properly for the new column due to type constraints (e.g., Datatime, Quanties, etc.)."]
+        except DimensionalityError:
+            return [False, "The column data can't be converted to the new column due to conversion contraints (e.g., converting square feet to kBtu etc.)."]
 
         # Return true if this operation was successful
         return [True, 'Successfully renamed column and moved data']

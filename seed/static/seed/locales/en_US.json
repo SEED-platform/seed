@@ -725,6 +725,7 @@
     "username (email)": "username (email)",
     "users": "users",
     "Using your current browser will prevent you from accessing features on our website. Use the links below to download a new browser or upgrade your existing browser.": "Using your current browser will prevent you from accessing features on our website. Use the links below to download a new browser or upgrade your existing browser.",
+    "USING_DEFAULT_UNITS_WARNING": "For columns with unit settings, default units will used for conversions.",
     "Version": "Version",
     "View by Property": "View by Property",
     "View by Tax Lot": "View by Tax Lot",

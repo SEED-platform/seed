@@ -725,6 +725,7 @@
     "username (email)": "nom d'utilisateur (email)",
     "users": "utilisateurs",
     "Using your current browser will prevent you from accessing features on our website. Use the links below to download a new browser or upgrade your existing browser.": "L'utilisation de votre navigateur actuel vous empêchera d'accéder aux fonctionnalités de notre site Web. Utilisez les liens ci-dessous pour télécharger un nouveau navigateur ou mettre à niveau votre navigateur existant.",
+    "USING_DEFAULT_UNITS_WARNING": "Pour les colonnes avec des paramètres d'unité, les unités par défaut seront utilisées pour les conversions.",
     "Version": "Version",
     "View by Property": "Examiner par propriété",
     "View by Tax Lot": "Examiner par lot d'impôt",
