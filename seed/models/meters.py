@@ -74,10 +74,10 @@ class Meter(models.Model):
         blank=True
     )
 
-    source = models.IntegerField(choices=SOURCES)
+    source = models.IntegerField(choices=SOURCES, default=None, null=True)
     source_id = models.CharField(max_length=255, null=True, blank=True)
 
-    type = models.IntegerField(choices=ENERGY_TYPES)
+    type = models.IntegerField(choices=ENERGY_TYPES, default=None, null=True)
 
 
 class MeterReading(models.Model):
