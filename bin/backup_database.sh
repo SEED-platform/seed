@@ -39,4 +39,3 @@ fi
 # Delete files older than 45 days
 find ${BACKUP_DIR} -mtime +45 -type f -name '*.dump' -delete
 find ${BACKUP_DIR} -mtime +45 -type f -name '*.tgz' -delete
-
