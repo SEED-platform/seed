@@ -8,7 +8,6 @@ from django.test import TestCase
 
 from seed.utils.address import normalize_address_str
 
-
 class TestColumnListSettings(TestCase):
 
     def test_adding_columns(self):
@@ -58,10 +57,11 @@ class TestColumnListSettings(TestCase):
             ('bytestring', b'123456 Main St', '123456 main st'),
             # Suites / building ids
             ('suite 1', '2655   SEELY AV Suite 9', '2655 seely av suite 9'),
-            ('suite 1', '2655   SEELY AV Ste 9', '2655 seely av suite 9'),
-            ('suite 1', '2655   SEELY AV BLDG 9', '2655 seely av building 9'),
-            ('suite 1', '2655   SEELY AV BUILDING 9', '2655 seely av building 9'),
-            ('suite 1', '2655   SEELY AV BUILDING 9 suite 50', '2655 seely av building 9 suite 50'),
+            ('suite 2', '2655   SEELY AV Ste 9', '2655 seely av suite 9'),
+            ('bldg 1', '2655   SEELY AV BLDG 9', '2655 seely av building 9'),
+            ('bldg 2', '2655   SEELY AV BUILDING 9', '2655 seely av building 9'),
+            ('b+s 1', '2655   SEELY AV BUILDING 9a ste 50', '2655 seely av building 9a suite 50'),
+            ('b+s 2', '2655   SEELY AV BUILDING 9 suite 50', '2655 seely av building 9 suite 50'),
         ]
 
         results = []

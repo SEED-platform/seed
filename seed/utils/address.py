@@ -140,7 +140,6 @@ def normalize_address_str(address_val):
         # Address can be parsed, so let's format it.
         normalized_address = ''
 
-        print(addr)
         if 'AddressNumber' in addr and addr['AddressNumber'] is not None:
             normalized_address = _normalize_address_number(
                 addr['AddressNumber'])
