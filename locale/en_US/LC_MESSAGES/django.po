@@ -336,6 +336,9 @@ msgstr "Column Name"
 msgid "Column Order/Visibility"
 msgstr "Column Order/Visibility"
 
+msgid "COLUMN_NAME_DUPLICATE_ERROR"
+msgstr "Error: New column name cannot match previous name."
+
 msgid "COLUMN_NAME_EXISTS_WARNING"
 msgstr "Warning: Column name already exists."
 
@@ -1428,7 +1431,7 @@ msgid "Organizations:"
 msgstr "Organizations:"
 
 msgid "OVERWRITE_COLUMN_DATA_QUESTION"
-msgstr "Overwrite data if the column already exists?"
+msgstr "Overwrite data?"
 
 msgid "Owner"
 msgstr "Owner"
@@ -2310,7 +2313,7 @@ msgid "Using your current browser will prevent you from accessing features on ou
 msgstr "Using your current browser will prevent you from accessing features on our website. Use the links below to download a new browser or upgrade your existing browser."
 
 msgid "USING_DEFAULT_UNITS_WARNING"
-msgstr "For columns with unit settings, default units will used for conversions."
+msgstr "For columns with unit settings, default units will be used for conversions."
 
 msgid "Version"
 msgstr "Version"

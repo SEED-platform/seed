@@ -29,14 +29,14 @@ angular.module('BE.seed.service.columns', []).factory('columns_service', [
         new_column_name: column_name,
         overwrite: overwrite_preference
       }).then(function (response) {
-        return response
+        return response;
       }).catch(function (error_response) {
         return {
           data: {
             success: false,
-            message: "Unsuccessful! " + error_response.statusText,
+            message: 'Unsuccessful: ' + error_response.data.message
           }
-        }
+        };
       });
     };
 

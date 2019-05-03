@@ -23,7 +23,7 @@ angular.module('BE.seed.controller.rename_column_modal', [])
       spinner_utility
     ) {
       $scope.step = {
-        number: 1,
+        number: 1
       };
 
       $scope.current_column_name = column_name;
@@ -31,35 +31,35 @@ angular.module('BE.seed.controller.rename_column_modal', [])
 
       $scope.column = {
         id: column_id,
-        name: "",
-        exists: false,
-      }
+        name: '',
+        exists: false
+      };
 
       $scope.settings = {
         user_acknowledgement: false,
-        overwrite_preference: false,
-      }
+        overwrite_preference: false
+      };
 
       $scope.check_name_exists = function () {
-        $scope.column.exists = _.find($scope.all_column_names, function(col_name) {
+        $scope.column.exists = _.find($scope.all_column_names, function (col_name) {
           return col_name === $scope.column.name;
         });
       };
 
-      $scope.accept_rename = function() {
+      $scope.accept_rename = function () {
         spinner_utility.show();
         columns_service.rename_column($scope.column.id, $scope.column.name, $scope.settings.overwrite_preference)
-          .then(function(response) {
+          .then(function (response) {
             $scope.results = {
               success: response.data.success,
-              message: response.data.message,
+              message: response.data.message
             };
             $scope.step.number = 2;
             spinner_utility.hide();
           });
       };
 
-      $scope.dismiss_and_refresh = function() {
+      $scope.dismiss_and_refresh = function () {
         $state.reload();
         $uibModalInstance.close();
       };
@@ -67,4 +67,14 @@ angular.module('BE.seed.controller.rename_column_modal', [])
       $scope.cancel = function () {
         $uibModalInstance.close();
       };
+
+      $scope.valid = function () {
+        if (!$scope.column.name || $scope.column.name === $scope.current_column_name) return false;
+
+        if ($scope.column.exists) {
+          return $scope.settings.user_acknowledgement && $scope.settings.overwrite_preference;
+        } else {
+          return $scope.settings.user_acknowledgement;
+        }
+      }
     }]);

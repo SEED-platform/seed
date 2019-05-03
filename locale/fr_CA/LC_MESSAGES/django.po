@@ -339,6 +339,9 @@ msgstr "Nom de colonne"
 msgid "Column Order/Visibility"
 msgstr "L'Ordre Des Colonnes/Visibilité"
 
+msgid "COLUMN_NAME_DUPLICATE_ERROR"
+msgstr "Erreur: Le nom de la nouvelle colonne ne peut pas correspondre au nom précédent."
+
 msgid "COLUMN_NAME_EXISTS_WARNING"
 msgstr "Attention: le nom de la colonne existe déjà."
 
@@ -1433,7 +1436,7 @@ msgid "Organizations:"
 msgstr "Organisations:"
 
 msgid "OVERWRITE_COLUMN_DATA_QUESTION"
-msgstr "Écraser les données si la colonne existe déjà?"
+msgstr "Écraser les données?"
 
 msgid "Owner"
 msgstr "Propriétaire"
@@ -2315,6 +2318,7 @@ msgstr "utilisateurs"
 msgid "Using your current browser will prevent you from accessing features on our website. Use the links below to download a new browser or upgrade your existing browser."
 msgstr "L'utilisation de votre navigateur actuel vous empêchera d'accéder aux fonctionnalités de notre site Web. Utilisez les liens ci-dessous pour télécharger un nouveau navigateur ou mettre à niveau votre navigateur existant."
 
+#, fuzzy
 msgid "USING_DEFAULT_UNITS_WARNING"
 msgstr "Pour les colonnes avec des paramètres d'unité, les unités par défaut seront utilisées pour les conversions."
 
