@@ -106,6 +106,23 @@ class Column(models.Model):
         'source_type',
     ] + EXCLUDED_COLUMN_RETURN_FIELDS
 
+    EXCLUDED_RENAME_TO_FIELDS = [
+        'lot_number',
+        'latitude',
+        'longitude',
+        'year_built',
+        'property_footprint',
+        'campus',
+        'created',
+        'updated',
+    ] + COLUMN_EXCLUDE_FIELDS
+
+    EXCLUDED_RENAME_FROM_FIELDS = [
+        'lot_number',
+        'year_built',
+        'property_footprint',
+    ] + COLUMN_EXCLUDE_FIELDS
+
     # These are fields that should not be mapped to, ever.
     EXCLUDED_MAPPING_FIELDS = [
         'extra_data',
@@ -612,8 +629,14 @@ class Column(models.Model):
             else:
                 return column_value
 
-        if self.table_name == 'Property':
-            return [False, "This column can't be renamed."]
+        # restricted columns to rename to or from
+        if new_column_name in self.EXCLUDED_RENAME_TO_FIELDS:
+            return [False, "Column name '%s' is a reserved name. Choose another." % new_column_name]
+
+        # Do not allow moving data out of the property based columns
+        if self.column_name in self.EXCLUDED_RENAME_FROM_FIELDS or \
+                self.table_name in ['Property', 'TaxLot']:
+            return [False, "Can't move data out of reserved column '%s'" % self.column_name]
 
         try:
             with transaction.atomic():
@@ -635,7 +658,6 @@ class Column(models.Model):
                     if not new_column.is_extra_data and not self.is_extra_data:
                         new_column.units_pint = self.units_pint
                     new_column.save()
-
                 elif len(new_column) == 0:
                     # There isn't a column yet, so creating a new one
                     # New column will always have extra data.
@@ -683,7 +705,7 @@ class Column(models.Model):
                             setattr(datum, self.column_name, None)
                             datum.save()
         except (ValidationError, DataError):
-            return [False, "The column data aren't formatted properly for the new column due to type constraints (e.g., Datatime, Quanties, etc.)."]
+            return [False, "The column data aren't formatted properly for the new column due to type constraints (e.g., Datatime, Quantities, etc.)."]
         except DimensionalityError:
             return [False, "The column data can't be converted to the new column due to conversion contraints (e.g., converting square feet to kBtu etc.)."]
 
