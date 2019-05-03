@@ -11,11 +11,8 @@
         <div class="row" style="padding-bottom: 20px;">
             <p translate>Desired Name</p>
             <input type="text" class="form-control" ng-model="column.name" ng-change=check_name_exists()>
-            <div class="alert alert-warning" style="margin-top: 10px;" ng-if="column.exists" translate>COLUMN_NAME_EXISTS_WARNING</div>
-        </div>
-        <div class="row" style="padding-bottom: 10px;">
-            <span translate>OVERWRITE_COLUMN_DATA_QUESTION</span>
-            <input type="checkbox" ng-model="settings.overwrite_preference">
+            <div class="alert alert-warning" style="margin: 16px 0 0;" ng-if="column.exists" translate>COLUMN_NAME_EXISTS_WARNING</div>
+            <div class="alert alert-danger" style="margin: 16px 0 0;" ng-if="column.name === current_column_name" translate>COLUMN_NAME_DUPLICATE_ERROR</div>
         </div>
         <div class="row" style="padding-bottom: 30px;">
             <div class="alert alert-danger" style="margin: 0px;">
@@ -26,9 +23,13 @@
                 <li translate>LONG_OPERATION_WARNING</li>
               </ul>
             </div>
+            <div style="margin: 5px;" ng-if="column.exists">
+                <input type="checkbox" id="overwrite-preference" ng-model="settings.overwrite_preference">
+                <label for="overwrite-preference" translate>OVERWRITE_COLUMN_DATA_QUESTION</label>
+            </div>
             <div style="margin: 5px;">
-                <input type="checkbox" ng-model="settings.user_acknowledgement">
-                <span translate>Acknowledge</span>
+                <input type="checkbox" id="user-acknowledgement" ng-model="settings.user_acknowledgement">
+                <label for="user-acknowledgement" translate>Acknowledge</label>
             </div>
         </div>
     </div>
@@ -46,7 +47,7 @@
 <div class="modal-footer container-fluid" ng-switch on="step.number">
     <div ng-switch-when="1">
         <div class="row text-center">
-            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-disabled="!settings.user_acknowledgement" ng-click="accept_rename()" translate>Confirm</button>
+            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-disabled="!valid()" ng-click="accept_rename()" translate>Confirm</button>
         </div>
 
         <div class="row text-center">

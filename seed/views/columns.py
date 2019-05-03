@@ -268,14 +268,14 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
             return JsonResponse({
                 'success': False,
                 'message': 'You must specify the name of the new column as "new_column_name"'
-            })
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         result = column.rename_column(new_column_name, overwrite)
         if not result[0]:
             return JsonResponse({
                 'success': False,
                 'message': 'Unable to rename column with message: "%s"' % result[1]
-            })
+            }, status=status.HTTP_400_BAD_REQUEST)
         else:
             return JsonResponse({
                 'success': True,
