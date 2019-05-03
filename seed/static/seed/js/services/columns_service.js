@@ -34,7 +34,7 @@ angular.module('BE.seed.service.columns', []).factory('columns_service', [
         return {
           data: {
             success: false,
-            message: 'Unsuccessful: ' + error_response.statusText
+            message: 'Unsuccessful: ' + error_response.data.message
           }
         };
       });
