@@ -207,7 +207,7 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
             })
         )
         result = response.json()
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 400)
         self.assertFalse(result['success'])
 
         response = self.client.post(

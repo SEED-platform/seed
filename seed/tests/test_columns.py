@@ -484,7 +484,7 @@ class TestRenameColumns(TestCase):
             expected_data.append(date)
 
         result = self.extra_data_column.rename_column(new_col_name, force=True)
-        self.assertEqual(result, [False, "The column data aren't formatted properly for the new column due to type constraints (e.g., Datatime, Quanties, etc.)."])
+        self.assertEqual(result, [False, "The column data aren't formatted properly for the new column due to type constraints (e.g., Datatime, Quantities, etc.)."])
 
         new_column_count = Column.objects.count()
         self.assertEqual(original_column_count, new_column_count)
@@ -557,7 +557,7 @@ class TestRenameColumns(TestCase):
             expected_data.append(date)
 
         result = self.extra_data_column.rename_column(new_col_name, force=True)
-        self.assertEqual(result, [False, "The column data aren't formatted properly for the new column due to type constraints (e.g., Datatime, Quanties, etc.)."])
+        self.assertEqual(result, [False, "The column data aren't formatted properly for the new column due to type constraints (e.g., Datatime, Quantities, etc.)."])
 
         new_column_count = Column.objects.count()
         self.assertEqual(original_column_count, new_column_count)
@@ -630,7 +630,7 @@ class TestRenameColumns(TestCase):
             expected_data.append(ureg.Quantity(state.gross_floor_area, "foot ** 2"))
 
         result = self.extra_data_column.rename_column(new_col_name, force=True)
-        self.assertEqual(result, [False, "The column data aren't formatted properly for the new column due to type constraints (e.g., Datatime, Quanties, etc.)."])
+        self.assertEqual(result, [False, "The column data aren't formatted properly for the new column due to type constraints (e.g., Datatime, Quantities, etc.)."])
 
         new_column_count = Column.objects.count()
         self.assertEqual(original_column_count, new_column_count)
@@ -706,7 +706,7 @@ class TestRenameColumns(TestCase):
     def test_rename_property_campus_field_unsuccessful(self):
         old_column = Column.objects.filter(column_name='campus').first()
         result = old_column.rename_column("new_col_name", force=True)
-        self.assertEqual(result, [False, "This column can't be renamed."])
+        self.assertEqual(result, [False, "Can't move data out of reserved column 'campus'"])
 
 
 class TestColumnMapping(TestCase):
