@@ -118,9 +118,11 @@ class Column(models.Model):
     ] + COLUMN_EXCLUDE_FIELDS
 
     EXCLUDED_RENAME_FROM_FIELDS = [
+        'campus',
         'lot_number',
         'year_built',
         'property_footprint',
+        'taxlot_footprint',
     ] + COLUMN_EXCLUDE_FIELDS
 
     # These are fields that should not be mapped to, ever.
