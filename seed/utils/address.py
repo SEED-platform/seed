@@ -8,8 +8,30 @@
 import re
 
 import usaddress
-from past.builtins import basestring
+# from past.builtins import basestring
 from streetaddress import StreetAddressFormatter
+
+
+def _normalize_subaddress_type(subaddress_type):
+    subaddress_type = subaddress_type.lower().replace('.', '')
+    map = {
+        'bldg': 'building',
+        'blg': 'building',
+    }
+    if subaddress_type in map:
+        return map[subaddress_type]
+    return subaddress_type
+
+
+def _normalize_occupancy_type(occupancy_id):
+    occupancy_id = occupancy_id.lower().replace('.', '')
+    map = {
+        'ste': 'suite',
+        'suite': 'suite',
+    }
+    if occupancy_id in map:
+        return map[occupancy_id]
+    return occupancy_id
 
 
 def _normalize_address_direction(direction):
@@ -83,17 +105,18 @@ def normalize_address_str(address_val):
 
     If a valid address is provided, a normalized version is returned.
     """
-
     # if this string is empty the regular expression in the sa wont
     # like it, and fail, so leave returning nothing
     if not address_val:
         return None
 
-    # encode the string as utf-8
-    if not isinstance(address_val, basestring):
+    # if this is a byte string, then convert to a string-string
+    if isinstance(address_val, bytes):
+        address_val = address_val.decode('utf-8')
+    elif not isinstance(address_val, str):
         address_val = str(address_val)
     else:
-        address_val = str(address_val.encode('utf-8'))
+        pass
 
     # Do some string replacements to remove odd characters that we come across
     replacements = {
@@ -137,8 +160,14 @@ def normalize_address_str(address_val):
             normalized_address = normalized_address + ' ' + _normalize_address_direction(
                 addr['StreetNamePostDirectional'])  # NOQA
 
+        if 'SubaddressType' in addr and addr['SubaddressType'] is not None:
+            normalized_address = normalized_address + ' ' + _normalize_subaddress_type(addr['SubaddressType'])  # NOQA
+
+        if 'SubaddressIdentifier' in addr and addr['SubaddressIdentifier'] is not None:
+            normalized_address = normalized_address + ' ' + addr['SubaddressIdentifier']
+
         if 'OccupancyType' in addr and addr['OccupancyType'] is not None:
-            normalized_address = normalized_address + ' ' + addr['OccupancyType']
+            normalized_address = normalized_address + ' ' + _normalize_occupancy_type(addr['OccupancyType'])
 
         if 'OccupancyIdentifier' in addr and addr['OccupancyIdentifier'] is not None:
             normalized_address = normalized_address + ' ' + addr['OccupancyIdentifier']
