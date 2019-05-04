@@ -6,6 +6,13 @@ Django handles the migration of the database very well; however, there are vario
 Version 2.5.1
 -------------
 
+- There are no manual migratios that are needed. The `./manage.py migrate` command may take awhile
+to run since the migration requires the recalculation of all the normalized addresses to parse
+bldg correct and to cast the result as a string and not a bytestring.
+
+Version 2.5.1
+-------------
+
 - The migrations should work by simply running `./manage.py migrate`. There are no manual migrations needed for the 2.5.1 release.
 
 Version 2.5.0

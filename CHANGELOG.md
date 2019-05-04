@@ -1,6 +1,12 @@
 # SEED Version 2.5.2
 
-* Placeholder
+Date Range: 04/15/19 - 05/04/19
+
+Closed Issues and Features:
+- Feature [#1855]( https://github.com/SEED-platform/seed/issues/1855 ), Add ULID as a matching field on taxlots
+- Feature [#1856]( https://github.com/SEED-platform/seed/issues/1856 ), Import building and taxlot footprints from WKT format
+- Feature [#1861]( https://github.com/SEED-platform/seed/issues/1861 ), Allow renaming of columns
+- Fixed [#1867]( https://github.com/SEED-platform/seed/issues/1867 ), Allow Bldg to be parsed as part of the normalized address
 
 # SEED Version 2.5.1
 
