@@ -71,5 +71,5 @@ jobs:
     - stage: publish
       install: skip
       before_script: skip
-      script: docker/travis_build_docker.sh
+      script: travis_wait 30 docker/travis_build_docker.sh
       env: DJANGO_SETTINGS_MODULE=config.settings.docker

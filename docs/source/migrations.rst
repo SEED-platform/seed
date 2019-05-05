@@ -3,13 +3,20 @@ Migrations
 
 Django handles the migration of the database very well; however, there are various changes to SEED that may require some custom (manual) migrations. The migration documenation includes the required changes based on deployment and development for each release.
 
-Version 2.6.0-Beta
+Version 2.6.0
 ------------------
 
-2.6.0-beta includes support for meters and time series data storage. In order to use this release
+Version 2.6.0 includes support for meters and time series data storage. In order to use this release
 you must first install [timescaledb](https://docs.timescale.com/v1.2/getting-started).
 
-**Ubuntu Instructions**
+Docker-based Deployment
+^^^^^^^^^^^^^^^^^^^^^^^
+Docker-based deployments shouldn't require running any additional commands for installation. The
+timescaledb installation will happen automatically when updating the postgres container. Also,
+the installation of the extension occurs in a Django migration.
+
+Ubuntu
+^^^^^^
 
 .. code-block:: console
 
@@ -19,6 +26,23 @@ you must first install [timescaledb](https://docs.timescale.com/v1.2/getting-sta
     sudo timescaledb-tune
     sudo service postgresql restart
 
+Max OSX
+^^^^^^^
+
+.. code-block:: console
+
+   brew tap timescale/tap
+   brew install timescaledb
+   /usr/local/bin/timescaledb_move.sh
+   timescaledb-tune
+   brew services restart postgresql
+
+Version 2.5.2
+-------------
+
+- There are no manual migratios that are needed. The `./manage.py migrate` command may take awhile
+to run since the migration requires the recalculation of all the normalized addresses to parse
+bldg correct and to cast the result as a string and not a bytestring.
 
 Version 2.5.1
 -------------

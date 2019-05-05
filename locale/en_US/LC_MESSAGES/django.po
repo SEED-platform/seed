@@ -58,6 +58,9 @@ msgstr "Accept"
 msgid "Accept Terms of Service?"
 msgstr "Accept Terms of Service?"
 
+msgid "Acknowledge"
+msgstr "Acknowledge"
+
 msgid "Actions"
 msgstr "Actions"
 
@@ -333,6 +336,12 @@ msgstr "Column Name"
 msgid "Column Order/Visibility"
 msgstr "Column Order/Visibility"
 
+msgid "COLUMN_NAME_DUPLICATE_ERROR"
+msgstr "Error: New column name cannot match previous name."
+
+msgid "COLUMN_NAME_EXISTS_WARNING"
+msgstr "Warning: Column name already exists."
+
 msgid "Commercial"
 msgstr "Commercial"
 
@@ -470,6 +479,9 @@ msgstr "Created label {label_name}"
 
 msgid "CREATED_NEW_CYCLE"
 msgstr "Created new Cycle {cycle_name}"
+
+msgid "Current Name"
+msgstr "Current Name"
 
 msgid "Current password"
 msgstr "Current password"
@@ -610,6 +622,9 @@ msgstr "Designates whether the user can log into this admin site."
 #: seed/landing/models.py:52
 msgid "Designates whether this user should be treated as active. Unselect this instead of deleting accounts."
 msgstr "Designates whether this user should be treated as active. Unselect this instead of deleting accounts."
+
+msgid "Desired Name"
+msgstr "Desired Name"
 
 msgid "Determine Time Period from Field:"
 msgstr "Determine Time Period from Field:"
@@ -1002,6 +1017,9 @@ msgstr "Invite a New Member"
 msgid "Invite an Owner"
 msgstr "Invite an Owner"
 
+msgid "IRREVERSIBLE_OPERATION_WARNING"
+msgstr "This operation is irreversible."
+
 msgid "It is necessary to map your field names to SEED field names. You can select from the list that appears as you start to type, which is based on the Building Energy Data Exchange Specification (BEDES), or you can type in your own name, as well as typing in the field name from the original datafile."
 msgstr "It is necessary to map your field names to SEED field names. You can select from the list that appears as you start to type, which is based on the Building Energy Data Exchange Specification (BEDES), or you can type in your own name, as well as typing in the field name from the original datafile."
 
@@ -1094,6 +1112,9 @@ msgstr "Log in to SEED Platform"
 
 msgid "Logout"
 msgstr "Logout"
+
+msgid "LONG_OPERATION_WARNING"
+msgstr "This operation may take a while."
 
 msgid "Make this a snapshot project."
 msgstr "Make this a snapshot project."
@@ -1289,6 +1310,9 @@ msgstr "New properties"
 msgid "New tax lots"
 msgstr "New tax lots"
 
+msgid "NEW_COLUMN_REPLACE_DATA_WARNING"
+msgstr "A new column will be created, and/or existing data can be replaced."
+
 msgid "Next"
 msgstr "Next"
 
@@ -1405,6 +1429,9 @@ msgstr "Organizations I Manage"
 
 msgid "Organizations:"
 msgstr "Organizations:"
+
+msgid "OVERWRITE_COLUMN_DATA_QUESTION"
+msgstr "Overwrite data?"
 
 msgid "Owner"
 msgstr "Owner"
@@ -1694,6 +1721,9 @@ msgstr "Remove User"
 
 msgid "Removing buildings from project"
 msgstr "Removing buildings from project"
+
+msgid "RENAME_COLUMN_TITLE"
+msgstr "Rename Column"
 
 msgid "Reorder Columns"
 msgstr "Reorder Columns"
@@ -2281,6 +2311,9 @@ msgstr "users"
 #: seed/landing/templates/landing/_browser_supported.html:5
 msgid "Using your current browser will prevent you from accessing features on our website. Use the links below to download a new browser or upgrade your existing browser."
 msgstr "Using your current browser will prevent you from accessing features on our website. Use the links below to download a new browser or upgrade your existing browser."
+
+msgid "USING_DEFAULT_UNITS_WARNING"
+msgstr "For columns with unit settings, default units will be used for conversions."
 
 msgid "Version"
 msgstr "Version"

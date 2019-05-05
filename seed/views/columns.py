@@ -10,7 +10,7 @@ import logging
 import coreapi
 from django.http import JsonResponse
 from rest_framework import status
-from rest_framework.decorators import list_route
+from rest_framework.decorators import list_route, detail_route
 from rest_framework.exceptions import NotFound, ParseError
 from rest_framework.filters import BaseFilterBackend
 from rest_framework.parsers import JSONParser, FormParser
@@ -248,3 +248,36 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
         )
         columns = ColumnSerializer(columns, many=True)
         return Response(columns.data, status=status.HTTP_200_OK)
+
+    @ajax_request_class
+    @has_perm_class('can_modify_data')
+    @detail_route(methods=['POST'])
+    def rename(self, request, pk=None):
+        org_id = self.get_organization(request)
+        try:
+            column = Column.objects.get(id=pk, organization_id=org_id)
+        except Column.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'Cannot find column in org=%s with pk=%s' % (org_id, pk)
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        new_column_name = request.data.get('new_column_name', None)
+        overwrite = request.data.get('overwrite', False)
+        if not new_column_name:
+            return JsonResponse({
+                'success': False,
+                'message': 'You must specify the name of the new column as "new_column_name"'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        result = column.rename_column(new_column_name, overwrite)
+        if not result[0]:
+            return JsonResponse({
+                'success': False,
+                'message': 'Unable to rename column with message: "%s"' % result[1]
+            }, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return JsonResponse({
+                'success': True,
+                'message': result[1]
+            })
