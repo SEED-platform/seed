@@ -59,6 +59,9 @@ msgstr "Acceptez"
 msgid "Accept Terms of Service?"
 msgstr "Accepter les conditions d'utilisation?"
 
+msgid "Acknowledge"
+msgstr "Reconnaître"
+
 msgid "Actions"
 msgstr "Actions"
 
@@ -336,6 +339,12 @@ msgstr "Nom de colonne"
 msgid "Column Order/Visibility"
 msgstr "L'Ordre Des Colonnes/Visibilité"
 
+msgid "COLUMN_NAME_DUPLICATE_ERROR"
+msgstr "Erreur: Le nom de la nouvelle colonne ne peut pas correspondre au nom précédent."
+
+msgid "COLUMN_NAME_EXISTS_WARNING"
+msgstr "Attention: le nom de la colonne existe déjà."
+
 msgid "Commercial"
 msgstr "Commercial"
 
@@ -473,6 +482,9 @@ msgstr "Créé étiquette {label_name}"
 
 msgid "CREATED_NEW_CYCLE"
 msgstr "Nouveau cycle créé avec nom {cycle_name}"
+
+msgid "Current Name"
+msgstr "Nom Actuel"
 
 msgid "Current password"
 msgstr "Mot de passe actuel"
@@ -613,6 +625,9 @@ msgstr "Désigne si l'utilisateur peut se connecter à ce site d'administration.
 #: seed/landing/models.py:52
 msgid "Designates whether this user should be treated as active. Unselect this instead of deleting accounts."
 msgstr "Indique si cet utilisateur doit être traité comme actif. Désélectionnez ceci au lieu de supprimer des comptes."
+
+msgid "Desired Name"
+msgstr "Nom Désiré"
 
 msgid "Determine Time Period from Field:"
 msgstr "Déterminer la durée du champ:"
@@ -1006,6 +1021,9 @@ msgstr "Inviter un nouveau membre"
 msgid "Invite an Owner"
 msgstr "Inviter un propriétaire"
 
+msgid "IRREVERSIBLE_OPERATION_WARNING"
+msgstr "Cette opération est irréversible."
+
 msgid "It is necessary to map your field names to SEED field names. You can select from the list that appears as you start to type, which is based on the Building Energy Data Exchange Specification (BEDES), or you can type in your own name, as well as typing in the field name from the original datafile."
 msgstr "Il est nécessaire de mapper vos noms de champs aux noms de champs SEED. Vous pouvez sélectionner dans la liste qui apparaît lorsque vous commencez à taper, qui est basée sur la spécification BEDES (Building Energy Data Exchange Specification) ou vous pouvez taper votre propre nom et saisir le nom du champ dans le fichier de données d'origine."
 
@@ -1099,6 +1117,9 @@ msgstr "Connectez-vous à SEED Platform"
 
 msgid "Logout"
 msgstr "Déconnexion"
+
+msgid "LONG_OPERATION_WARNING"
+msgstr "Cette opération peut prendre un certain temps."
 
 msgid "Make this a snapshot project."
 msgstr "Faire un projet de capture instantanée."
@@ -1294,6 +1315,9 @@ msgstr "Nouvelles propriétés"
 msgid "New tax lots"
 msgstr "Nouveaux lots d'impôt"
 
+msgid "NEW_COLUMN_REPLACE_DATA_WARNING"
+msgstr "Une nouvelle colonne sera créée et/ou les données existantes peuvent être remplacées."
+
 msgid "Next"
 msgstr "Prochain"
 
@@ -1410,6 +1434,9 @@ msgstr "Organisations que je gère"
 
 msgid "Organizations:"
 msgstr "Organisations:"
+
+msgid "OVERWRITE_COLUMN_DATA_QUESTION"
+msgstr "Écraser les données?"
 
 msgid "Owner"
 msgstr "Propriétaire"
@@ -1699,6 +1726,9 @@ msgstr "Supprimer l'utilisateur"
 
 msgid "Removing buildings from project"
 msgstr "Retrait des bâtiments du projet"
+
+msgid "RENAME_COLUMN_TITLE"
+msgstr "Renommer la Colonne"
 
 msgid "Reorder Columns"
 msgstr "Réorganiser les colonnes"
@@ -2287,6 +2317,10 @@ msgstr "utilisateurs"
 #: seed/landing/templates/landing/_browser_supported.html:5
 msgid "Using your current browser will prevent you from accessing features on our website. Use the links below to download a new browser or upgrade your existing browser."
 msgstr "L'utilisation de votre navigateur actuel vous empêchera d'accéder aux fonctionnalités de notre site Web. Utilisez les liens ci-dessous pour télécharger un nouveau navigateur ou mettre à niveau votre navigateur existant."
+
+#, fuzzy
+msgid "USING_DEFAULT_UNITS_WARNING"
+msgstr "Pour les colonnes avec des paramètres d'unité, les unités par défaut seront utilisées pour les conversions."
 
 msgid "Version"
 msgstr "Version"

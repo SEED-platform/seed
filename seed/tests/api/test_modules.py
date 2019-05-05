@@ -8,6 +8,7 @@ import datetime as dt
 import json
 import pprint
 import time
+import uuid
 
 import requests
 from builtins import str
@@ -277,9 +278,10 @@ def account(header, main_url, username, log):
     # Create an organization
     print('API Function: create_org\n'),
     partmsg = 'create_org'
+    org_name = 'TestOrg_{}'.format(str(uuid.uuid4()))
     payload = {
         'user_id': user_pk,
-        'organization_name': 'TestOrg_JoZ2wSd2boQWifGau3qxdFFu76oIy9r0'  # hopefully ensuring a unique org name
+        'organization_name': org_name  # hopefully ensuring a unique org name
     }
     result = requests.post(main_url + '/api/v2/organizations/',
                            headers=header,

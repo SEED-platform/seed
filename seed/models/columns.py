@@ -13,7 +13,10 @@ from collections import OrderedDict
 
 from django.apps import apps
 from django.core.exceptions import ValidationError
-from django.db import models
+from django.db import (
+    models,
+    transaction,
+)
 from django.db.models import Q
 from django.db.models.signals import pre_save
 from django.utils.translation import ugettext_lazy as _
@@ -102,6 +105,25 @@ class Column(models.Model):
         'merge_state',
         'source_type',
     ] + EXCLUDED_COLUMN_RETURN_FIELDS
+
+    EXCLUDED_RENAME_TO_FIELDS = [
+        'lot_number',
+        'latitude',
+        'longitude',
+        'year_built',
+        'property_footprint',
+        'campus',
+        'created',
+        'updated',
+    ] + COLUMN_EXCLUDE_FIELDS
+
+    EXCLUDED_RENAME_FROM_FIELDS = [
+        'campus',
+        'lot_number',
+        'year_built',
+        'property_footprint',
+        'taxlot_footprint',
+    ] + COLUMN_EXCLUDE_FIELDS
 
     # These are fields that should not be mapped to, ever.
     EXCLUDED_MAPPING_FIELDS = [
@@ -577,6 +599,120 @@ class Column(models.Model):
                     {'is_extra_data': _(
                         'Column \'%s\':\'%s\' is not a field in the database and not marked as extra data. Mark as extra data to save column.') % (
                         self.table_name, self.column_name)})
+
+    def rename_column(self, new_column_name, force=False):
+        """
+        Rename the column and move all the data to the new column. This can move the
+        data from a canonical field to an extra data field or vice versa. By default the
+        column.
+
+        :param new_column_name: string new name of column
+        :param force: boolean force the overwrite of data in the column?
+        :return:
+        """
+        from datetime import (
+            datetime as datetime_type,
+            date as date_type,
+        )
+        from django.db.utils import DataError
+        from pint.errors import DimensionalityError
+        from seed.models.properties import PropertyState
+        from seed.models.tax_lots import TaxLotState, DATA_STATE_MATCHING
+        from quantityfield import ureg
+        STR_TO_CLASS = {'TaxLotState': TaxLotState, 'PropertyState': PropertyState}
+
+        def _serialize_for_extra_data(column_value):
+            if isinstance(column_value, datetime_type):
+                return column_value.isoformat()
+            elif isinstance(column_value, date_type):
+                return column_value.isoformat()
+            elif isinstance(column_value, ureg.Quantity):
+                return column_value.magnitude
+            else:
+                return column_value
+
+        # restricted columns to rename to or from
+        if new_column_name in self.EXCLUDED_RENAME_TO_FIELDS:
+            return [False, "Column name '%s' is a reserved name. Choose another." % new_column_name]
+
+        # Do not allow moving data out of the property based columns
+        if self.column_name in self.EXCLUDED_RENAME_FROM_FIELDS or \
+                self.table_name in ['Property', 'TaxLot']:
+            return [False, "Can't move data out of reserved column '%s'" % self.column_name]
+
+        try:
+            with transaction.atomic():
+                # check if the new_column already exists
+                new_column = Column.objects.filter(table_name=self.table_name, column_name=new_column_name)
+                if len(new_column) > 0:
+                    if not force:
+                        return [False, 'New column already exists, specify overwrite data if desired']
+
+                    new_column = new_column.first()
+
+                    # update the fields in the new column to match the old columns
+                    # new_column.display_name = self.display_name
+                    # new_column.is_extra_data = self.is_extra_data
+                    new_column.unit = self.unit
+                    new_column.import_file = self.import_file
+                    new_column.shared_field_type = self.shared_field_type
+                    new_column.merge_protection = self.merge_protection
+                    if not new_column.is_extra_data and not self.is_extra_data:
+                        new_column.units_pint = self.units_pint
+                    new_column.save()
+                elif len(new_column) == 0:
+                    # There isn't a column yet, so creating a new one
+                    # New column will always have extra data.
+                    # The units and related data are copied over to the new field
+                    new_column = Column.objects.create(
+                        organization=self.organization,
+                        table_name=self.table_name,
+                        column_name=new_column_name,
+                        display_name=new_column_name,
+                        is_extra_data=True,
+                        unit=self.unit,
+                        # unit_pint  # Do not import unit_pint since that only works with db fields
+                        import_file=self.import_file,
+                        shared_field_type=self.shared_field_type,
+                        merge_protection=self.merge_protection
+                    )
+
+                # go through the data and move it to the new field. I'm not sure yet on how long this is
+                # going to take to run, so we may have to move this to a background task
+                orig_data = STR_TO_CLASS[self.table_name].objects.filter(
+                    organization=new_column.organization,
+                    data_state=DATA_STATE_MATCHING
+                )
+                if new_column.is_extra_data:
+                    if self.is_extra_data:
+                        for datum in orig_data:
+                            datum.extra_data[new_column.column_name] = datum.extra_data[self.column_name]
+                            del datum.extra_data[self.column_name]
+                            datum.save()
+                    else:
+                        for datum in orig_data:
+                            column_value = _serialize_for_extra_data(getattr(datum, self.column_name))
+                            datum.extra_data[new_column.column_name] = column_value
+                            setattr(datum, self.column_name, None)
+                            datum.save()
+                else:
+                    if self.is_extra_data:
+                        for datum in orig_data:
+                            setattr(datum, new_column.column_name, datum.extra_data[self.column_name])
+                            del datum.extra_data[self.column_name]
+                            datum.save()
+                    else:
+                        for datum in orig_data:
+                            setattr(datum, new_column.column_name, getattr(datum, self.column_name))
+                            setattr(datum, self.column_name, None)
+                            datum.save()
+        except (ValidationError, DataError):
+            return [False, "The column data aren't formatted properly for the new column due to type constraints (e.g., Datatime, Quantities, etc.)."]
+        except DimensionalityError:
+            return [False, "The column data can't be converted to the new column due to conversion contraints (e.g., converting square feet to kBtu etc.)."]
+
+        # Return true if this operation was successful
+        return [True, 'Successfully renamed column and moved data']
 
     @staticmethod
     def create_mappings_from_file(filename, organization, user, import_file_id=None):
