@@ -5,7 +5,7 @@ Translating SEED
 
 2. Copy lokalise.cfg.example to lokalise.cfg. Update API token.
 
-3. Run scripts
+3. Run scripts if you have Lokalise CLI installed. If not, see scripts for manual steps.
 
    .. code:: bash
 

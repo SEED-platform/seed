@@ -106,7 +106,7 @@ else
   docker swarm init
 fi
 
-echo "Building lasest version of SEED"
+echo "Building latest version of SEED"
 # explicitly pull images from docker-compose. Note that you will need to keep the
 # versions consistent between the compose file and what is below.
 docker-compose pull
@@ -114,7 +114,7 @@ docker-compose build --pull
 
 echo "Tagging local containers"
 docker tag seedplatform/seed:latest 127.0.0.1:5000/seed
-docker tag seedplatform/postgres-seed:11.1 127.0.0.1:5000/postgres-seed
+docker tag seedplatform/postgres-seed:11.2 127.0.0.1:5000/postgres-seed
 docker tag redis:5.0.1 127.0.0.1:5000/redis
 docker tag seedplatform/oep:1.2 127.0.0.1:5000/oep
 

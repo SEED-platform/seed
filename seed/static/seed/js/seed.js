@@ -54,10 +54,12 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.developer',
   'BE.seed.controller.export_inventory_modal',
   'BE.seed.controller.geocode_modal',
+  'BE.seed.controller.green_button_upload_modal',
   'BE.seed.controller.inventory_detail',
   'BE.seed.controller.inventory_detail_settings',
   'BE.seed.controller.inventory_detail_notes',
   'BE.seed.controller.inventory_detail_notes_modal',
+  'BE.seed.controller.inventory_detail_energy',
   'BE.seed.controller.inventory_list',
   'BE.seed.controller.inventory_map',
   'BE.seed.controller.inventory_reports',
@@ -110,6 +112,7 @@ angular.module('BE.seed.services', [
   'BE.seed.service.columns',
   'BE.seed.service.cycle',
   'BE.seed.service.dataset',
+  'BE.seed.service.energy',
   'BE.seed.service.flippers',
   'BE.seed.service.geocode',
   'BE.seed.service.httpParamSerializerSeed',
@@ -119,6 +122,7 @@ angular.module('BE.seed.services', [
   'BE.seed.service.main',
   'BE.seed.service.mapping',
   'BE.seed.service.matching',
+  'BE.seed.service.meters',
   'BE.seed.service.modified',
   'BE.seed.service.note',
   'BE.seed.service.organization',
@@ -1103,7 +1107,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         resolve: {
           inventory: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service ) {
             // if ($stateParams.inventory_type === 'properties') {
-              return inventory_service.get_properties(1, undefined, undefined, undefined);
+            return inventory_service.get_properties(1, undefined, undefined, undefined);
             // } else if ($stateParams.inventory_type === 'taxlots') {
             //   return inventory_service.get_taxlots(1, undefined, undefined, undefined);
             // }
@@ -1184,6 +1188,21 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             return label_service.get_labels([inventory_id], {
               inventory_type: $stateParams.inventory_type
             });
+          }]
+        }
+      })
+      .state({
+        name: 'inventory_detail_energy',
+        url: '/{inventory_type:properties|taxlots}/{view_id:int}/energy',
+        templateUrl: static_url + 'seed/partials/inventory_detail_energy.html',
+        controller: 'inventory_detail_energy_controller',
+        resolve: {
+          property_energy_usage: ['$stateParams', 'user_service', 'energy_service', function ($stateParams, user_service, energy_service) {
+            var organization_id = user_service.get_organization().id;
+            return energy_service.property_energy_usage($stateParams.view_id, organization_id, 'Exact');
+          }],
+          cycles: ['cycle_service', function (cycle_service) {
+            return cycle_service.get_cycles();
           }]
         }
       });

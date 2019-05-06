@@ -13,6 +13,9 @@
     <h4 class="modal-title" ng-switch-when="12" translate>Error Processing Data</h4>
     <h4 class="modal-title" ng-switch-when="13" translate>Portfolio Manager Import</h4>
     <h4 class="modal-title" ng-switch-when="14" translate>Successful upload!</h4>
+    <h4 class="modal-title" ng-switch-when="15" translate>UPLOAD_PM_READINGS_MODAL_TITLE</h4>
+    <h4 class="modal-title" ng-switch-when="16" translate>PM_METER_IMPORT_RESULTS</h4>
+
 </div>
 <div class="modal-body no_bottom_padding" ng-switch on="step.number">
     <!-- Step 1 -->
@@ -60,6 +63,11 @@
         <div class="row">
             <div class="col-sm-8 col-sm-offset-2" style="padding-bottom: 10px;" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress">
                 <div class="btn btn-primary upload-btn" sd-uploader sourcetype="Assessed Raw" sourceprog="PortfolioManager" sourcever="1.0" importrecord="dataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress">{$:: 'Upload Portfolio Manager Data' | translate $}</div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-8 col-sm-offset-2" style="padding-bottom: 10px;" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress">
+                <div class="btn btn-primary upload-btn" sd-uploader sourcetype="PM Meter Usage" sourceprog="" sourcever="" importrecord="dataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" ng-disabled="!selectedCycle"><span translate>PM_METER_IMPORT_BUTTON</span></div>
             </div>
         </div>
         <div class="row">
@@ -295,6 +303,52 @@
 
         </div>
     </div>
+    <!-- Step 15:  Upload PM Meter Readings -->
+    <div class="data_upload_steps" ng-switch-when="15">
+        <div class="alert alert-danger" ng-show="pm_meter_import_error" translate>An error occurred while processing the file. Please ensure that your file meets the required specifications.</div>
+
+        <div class="progress_bar_container" ng-show="uploader.in_progress">
+            <div class="progress_bar_copy_top"
+                 translate="UPLOADING_PROGRESS"
+                 translate-values="{ dataset_filename: dataset.filename }"></div>
+
+            <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
+            <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$ uploader.status_message ? ': ' + uploader.status_message : '' $}</div>
+        </div>
+        <div ng-hide="uploader.in_progress">
+            <div class="row">
+                <div class="alert alert-warning" ng-if="proposed_imports_options.data.length">
+                    <div ng-if="proposed_imports_options.data.length">
+                        <div translate><b>METER_READING_COUNTS_TITLE</b></div>
+                        <div ui-grid="proposed_imports_options"></div>
+                    </div>
+                    <br>
+                    <div ng-if="parsed_type_units_options.data.length">
+                        <div translate><b>PARSED_ENERGY_TYPES_AND_UNITS_TITLE</b></div>
+                        <div ui-grid="parsed_type_units_options"></div>
+                    </div>
+                    <br>
+                </div>
+                <div class="alert alert-danger" ng-if="unlinkable_pm_ids_options.data.length">
+                    <div translate><b>PM_METER_IMPORT_NO_ASSOCIATION</b></div>
+                    <div ui-grid="unlinkable_pm_ids_options"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Step 16:  Meter Import Results -->
+    <div class="data_upload_steps" ng-switch-when="16">
+        <div class="row">
+            <div class="alert alert-info">
+                <div translate><b>METER_READING_COUNTS_TITLE</b></div>
+                <div ui-grid="import_results_options"></div>
+            </div>
+            <div class="alert alert-danger" ng-if="unlinkable_pm_ids.length">
+                <div translate><b>PM_METER_IMPORT_NO_ASSOCIATION</b></div>
+                <div ui-grid="unlinkable_pm_ids_options"></div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="modal-footer container-fluid" ng-switch on="step.number">
@@ -350,6 +404,11 @@
         </div>
         <div class="row text-center">
             <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="view_my_properties()" translate>View my properties</button>
+        </div>
+    </div>
+    <div ng-switch-when="15">
+        <div class="row text-center" ng-hide="uploader.in_progress" ng-if="proposed_imports_options.data.length">
+            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="accept_meters(file_id, cycle_id)" translate>Confirm</button>
         </div>
     </div>
     <div class="row text-center">

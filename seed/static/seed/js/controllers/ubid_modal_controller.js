@@ -66,4 +66,4 @@ angular.module('BE.seed.controller.ubid_modal', [])
       };
     }
   ]
-);
+  );

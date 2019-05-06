@@ -1,3 +1,7 @@
+# SEED Version 2.6.0
+
+2.6.0-beta includes support for meters and time series data storage. In order to use this release, you must first install [timescaledb](https://docs.timescale.com/v1.2/getting-started). Note that this is a Beta release and should not be used on production datasets until we have completed testing.
+
 # SEED Version 2.5.2
 
 Date Range: 04/15/19 - 05/04/19

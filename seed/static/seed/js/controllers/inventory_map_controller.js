@@ -7,6 +7,7 @@ angular.module('BE.seed.controller.inventory_map', [])
     '$scope',
     '$stateParams',
     '$state',
+    '$log',
     'cycles',
     'inventory',
     'inventory_service',
@@ -17,6 +18,7 @@ angular.module('BE.seed.controller.inventory_map', [])
       $scope,
       $stateParams,
       $state,
+      $log,
       cycles,
       inventory,
       inventory_service,
@@ -31,7 +33,7 @@ angular.module('BE.seed.controller.inventory_map', [])
       //$scope.inventory_type = $stateParams.inventory_type;
 
       $scope.data = inventory.results;
-      console.log("INVENTORY:", $scope.data);
+      $log.log('INVENTORY:', $scope.data);
 
       $scope.geocoded_data = _.filter($scope.data, 'long_lat');
       $scope.ungeocoded_data = _.reject($scope.data, 'long_lat');
@@ -40,11 +42,11 @@ angular.module('BE.seed.controller.inventory_map', [])
 
       var geocodedTaxlots = function (properties_data) {
         var taxlots = [];
-        _.each(properties_data, function (record){
-          if (!_.isUndefined(record['related']) && !_.isEmpty(record['related'])){
+        _.each(properties_data, function (record) {
+          if (!_.isUndefined(record.related) && !_.isEmpty(record.related)) {
             // getting the ones with bounding boxes not long_lat
             // since we are not interested in mapping points for taxlots
-            var bb_taxlots = _.filter(record['related'], 'bounding_box');
+            var bb_taxlots = _.filter(record.related, 'bounding_box');
             taxlots = _.concat(taxlots, bb_taxlots);
           }
         });
@@ -53,7 +55,7 @@ angular.module('BE.seed.controller.inventory_map', [])
 
       // extract related taxlots from building inventory
       $scope.taxlots = geocodedTaxlots($scope.data);
-      console.log("taxlots: ", $scope.taxlots);
+      $log.log('taxlots: ', $scope.taxlots);
 
       // store a mapping of layers z-index and visibility
       $scope.layers = {};
@@ -96,7 +98,7 @@ angular.module('BE.seed.controller.inventory_map', [])
       };
 
       // Define building UBID bounding box
-      var buildingBB = function(building) {
+      var buildingBB = function (building) {
         var format = new ol.format.WKT();
 
         var bounding_box = building.bounding_box;
@@ -109,7 +111,7 @@ angular.module('BE.seed.controller.inventory_map', [])
       };
 
       // Define building UBID centroid box
-      var buildingCentroid = function(building) {
+      var buildingCentroid = function (building) {
         var format = new ol.format.WKT();
 
         var bounding_box = building.centroid;
@@ -135,8 +137,8 @@ angular.module('BE.seed.controller.inventory_map', [])
         return new ol.source.Vector({ features: features });
       };
 
-            // Define taxlot ULID bounding box
-      var taxlotBB = function(taxlot) {
+      // Define taxlot ULID bounding box
+      var taxlotBB = function (taxlot) {
         var format = new ol.format.WKT();
 
         var bounding_box = taxlot.bounding_box;
@@ -149,7 +151,7 @@ angular.module('BE.seed.controller.inventory_map', [])
       };
 
       // Define taxlot ULID centroid box
-      var taxlotCentroid = function(taxlot) {
+      var taxlotCentroid = function (taxlot) {
         var format = new ol.format.WKT();
 
         var bounding_box = taxlot.centroid;
@@ -161,7 +163,7 @@ angular.module('BE.seed.controller.inventory_map', [])
         return feature;
       };
 
-       var taxlotBBSources = function (records) {
+      var taxlotBBSources = function (records) {
         if (_.isUndefined(records)) records = $scope.taxlots;
         var features = _.map(records, taxlotBB);
 
@@ -207,7 +209,7 @@ angular.module('BE.seed.controller.inventory_map', [])
 
       var clusterSource = function (records) {
         if (_.isUndefined(records)) records = $scope.geocoded_data;
-         return new ol.source.Cluster({
+        return new ol.source.Cluster({
           source: buildingSources(records),
           distance: 45
         });
@@ -223,9 +225,9 @@ angular.module('BE.seed.controller.inventory_map', [])
       };
 
       // style for building ubid bounding and centroid boxes
-      var buildingStyle = function (feature) {
+      var buildingStyle = function (/*feature*/) {
         return new ol.style.Style({
-           stroke: new ol.style.Stroke({
+          stroke: new ol.style.Stroke({
             color: '#185189',
             width: 2
           })
@@ -233,9 +235,9 @@ angular.module('BE.seed.controller.inventory_map', [])
       };
 
       // style for taxlot ulid bounding and centroid boxes
-      var taxlotStyle = function(feature) {
+      var taxlotStyle = function (/*feature*/) {
         return new ol.style.Style({
-           stroke: new ol.style.Stroke({
+          stroke: new ol.style.Stroke({
             color: '#10A0A0',
             width: 2
           })
@@ -256,7 +258,7 @@ angular.module('BE.seed.controller.inventory_map', [])
 
       $scope.building_centroid_layer = new ol.layer.Vector({
         source: buildingCentroidSources(),
-        zIndex: $scope.layers['building_centroid_layer']['zIndex'],
+        zIndex: $scope.layers.building_centroid_layer.zIndex,
         style: buildingStyle
       });
 
@@ -268,7 +270,7 @@ angular.module('BE.seed.controller.inventory_map', [])
 
       $scope.taxlot_centroid_layer = new ol.layer.Vector({
         source: taxlotCentroidSources(),
-        zIndex: $scope.layers['taxlot_centroid_layer']['zIndex'],
+        zIndex: $scope.layers.taxlot_centroid_layer.zIndex,
         style: taxlotStyle
       });
 

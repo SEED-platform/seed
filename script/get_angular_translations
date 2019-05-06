@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 
+# If Lokalise CLI isn't installed, download fr_CA.json and en_US.json files with
+# the settings listed below (including comments, sorting from A-Z, and replacing
+# empty translations with the base language).
+
+# Then, as shown in the code below, move the unzipped .json files into the
+# seed/static/seed/locales directory.
+
 tmp=tmp/angular_locales
 dest=seed/static/seed/locales
 

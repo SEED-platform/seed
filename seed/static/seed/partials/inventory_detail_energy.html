@@ -1,0 +1,44 @@
+<div class="page_header_container" ng-cloak>
+    <div class="page_header">
+        <div class="left page_action_container">
+            <a ui-sref="inventory_list(::{inventory_type: inventory_type})" class="page_action">
+                <i class="fa fa-chevron-left"></i>
+                {$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') | translate $}
+            </a>
+        </div>
+        <div class="page_title">
+            <h1>{$:: (inventory_type === 'taxlots' ? 'Tax Lot Detail' : 'Property Detail') | translate $}</h1>
+        </div>
+    </div>
+</div>
+<div class="section_nav_container">
+    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_detail_nav.html'"></div>
+</div>
+<div class="section_content_container" ng-cloak style="clear:both; overflow:hidden;">
+    <div class="inventory-list-controls">
+        <div class="form-group">
+            <label>{$:: 'Interval' | translate $}:</label>
+            <div style="display: inline-block;">
+                <select class="form-control"
+                    ng-model="interval.selected"
+                    ng-change="update_interval(interval.selected)"
+                    ng-options="option for option in interval.options"
+                    style="margin-left: 30px;">
+                </select>
+            </div>
+        </div>
+        <div class="btn-group" style="padding-top: 10px;">
+            <button type="button" ng-click="open_green_button_upload_modal()" class="btn btn-default" translate>UPLOAD_GB_DATA_BUTTON</button>
+        </div>
+    </div>
+
+
+    <div class="section_content" ng-show="has_meters">
+        <div id="grid-container">
+            <div ui-grid="gridOptions"></div>
+        </div>
+    </div>
+    <div ng-hide="has_meters">
+        <div class="jumbotron text-center" translate>No Data</div>
+    </div>
+</div>

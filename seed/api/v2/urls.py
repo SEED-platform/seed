@@ -79,12 +79,6 @@ urlpatterns = [
     # data uploader related things
     url(r'get_upload_details/$', get_upload_details, name='get_upload_details'),
     url(r'^schema/$', get_api_schema, name='schema'),
-    url(r'meters/(?P<pk>\w+)/timeseries/$',
-        MeterViewSet.as_view({'get': 'timeseries'}),
-        name='meters-get-timeseries'),
-    url(r'meters/(?P<pk>\w+)/timeseries/$',
-        MeterViewSet.as_view({'post': 'add_timeseries'}),
-        name='meters-add-timeseries'),
     url(
         r'projects/(?P<pk>\w+)/add/$',
         ProjectViewSet.as_view({'put': 'add'}),

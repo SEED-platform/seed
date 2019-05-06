@@ -30,10 +30,13 @@ angular.module('BE.seed.controller.data_upload_modal', [])
     '$uibModalInstance',
     '$log',
     '$timeout',
+    'uiGridConstants',
     'uploader_service',
     '$state',
+    'dataset_service',
     'mapping_service',
     'matching_service',
+    'meters_service',
     'inventory_service',
     'spinner_utility',
     'step',
@@ -46,10 +49,13 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       $uibModalInstance,
       $log,
       $timeout,
+      uiGridConstants,
       uploader_service,
       $state,
+      dataset_service,
       mapping_service,
       matching_service,
+      meters_service,
       inventory_service,
       spinner_utility,
       step,
@@ -157,7 +163,14 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        *  scope
        */
       $scope.cancel = function () {
-        $uibModalInstance.dismiss('cancel');
+        // If step 15, PM Meter Usage import confirmation was not accepted by user, so delete file
+        if ($scope.step.number == 15) {
+          dataset_service.delete_file($scope.file_id).then(function (/*results*/) {
+            $uibModalInstance.dismiss('cancel');
+          });
+        } else {
+          $uibModalInstance.dismiss('cancel');
+        }
       };
       /**
        * create_dataset: uses the `uploader_service` to create a new data set. If
@@ -177,6 +190,69 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           }
         });
       };
+
+      var grid_rows_to_display = function (data) {
+        return Math.min(data.length, 5);
+      };
+
+      var present_parsed_meters_confirmation = function (result) {
+        $scope.proposed_imports_options = {
+          data: result.proposed_imports,
+          columnDefs: [{
+            field: 'source_id',
+            displayName: 'Portfolio Manager ID',
+            enableHiding: false,
+            type: 'string'
+          }, {
+            field: 'incoming',
+            enableHiding: false
+          }],
+          enableHorizontalScrollbar: uiGridConstants.scrollbars.NEVER,
+          enableVerticalScrollbar: result.proposed_imports.length <= 5 ? uiGridConstants.scrollbars.NEVER : uiGridConstants.scrollbars.WHEN_NEEDED,
+          minRowsToShow: grid_rows_to_display(result.proposed_imports)
+        };
+
+        $scope.parsed_type_units_options = {
+          data: result.validated_type_units,
+          columnDefs: [{
+            field: 'parsed_type',
+            enableHiding: false
+          }, {
+            field: 'parsed_unit',
+            enableHiding: false
+          }],
+          enableHorizontalScrollbar: uiGridConstants.scrollbars.NEVER,
+          enableVerticalScrollbar: result.validated_type_units.length <= 5 ? uiGridConstants.scrollbars.NEVER : uiGridConstants.scrollbars.WHEN_NEEDED,
+          minRowsToShow: grid_rows_to_display(result.validated_type_units)
+        };
+
+        $scope.unlinkable_pm_ids_options = {
+          data: result.unlinkable_pm_ids,
+          columnDefs: [{
+            field: 'portfolio_manager_id',
+            displayName: 'Portfolio Manager ID',
+            enableHiding: false
+          }],
+          enableHorizontalScrollbar: uiGridConstants.scrollbars.NEVER,
+          enableVerticalScrollbar: result.unlinkable_pm_ids.length <= 5 ? uiGridConstants.scrollbars.NEVER : uiGridConstants.scrollbars.WHEN_NEEDED,
+          minRowsToShow: grid_rows_to_display(result.unlinkable_pm_ids)
+        };
+
+        $scope.uploader.in_progress = false;
+        $scope.uploader.progress = 0;
+
+        $scope.step.number = 15;
+      };
+
+      var present_meter_import_error = function (/*error*/) {
+        $scope.pm_meter_import_error = true;
+        $scope.uploader.in_progress = false;
+        $scope.uploader.progress = 0;
+
+        // Go to step 15 as "Dismiss"ing from here will delete the file.
+        $scope.step.number = 15;
+      };
+
       /**
        * uploaderfunc: the callback function passed to sdUploader. Depending on
        *  the `event_message` from sdUploader, it will change the state of the
@@ -246,14 +322,24 @@ angular.module('BE.seed.controller.data_upload_modal', [])
               $scope.uploader.in_progress = false;
               $scope.uploader.progress = 100;
               $scope.step.number = 14;
-              $scope.step_14_message = (_.size(file.message['warnings']) > 0) ? file.message['warnings'] : null;
+              $scope.step_14_message = (_.size(file.message.warnings) > 0) ? file.message.warnings : null;
+            } else if (file.source_type === 'PM Meter Usage') {
+              $scope.cycle_id = file.cycle_id;
+              $scope.file_id = file.file_id;
+
+              // Hardcoded as this is a 2 step process: upload & analyze
+              $scope.uploader.progress = 50;
+              $scope.uploader.status_message = 'analyzing file';
+              meters_service
+                .parsed_meters_confirmation(file.file_id, $scope.organization.org_id)
+                .then(present_parsed_meters_confirmation)
+                .catch(present_meter_import_error);
             } else {
               $scope.dataset.import_file_id = file.file_id;
 
               // Assessed Data; upload is step 2; PM import is currently treated as such, and is step 13
               if (current_step === 2 || current_step === 13) {
-                var is_green_button = (file.source_type === 'Green Button Raw');
-                save_raw_assessed_data(file.file_id, file.cycle_id, is_green_button);
+                save_raw_assessed_data(file.file_id, file.cycle_id, false);
               }
               // Portfolio Data
               if (current_step === 4) {
@@ -263,6 +349,10 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             break;
         }
 
+        $scope.accept_meters = function (file_id, cycle_id) {
+          $scope.uploader.in_progress = true;
+          save_raw_assessed_data(file_id, cycle_id, true);
+        };
 
         // $apply() or $digest() needed maybe because of this:
         // https://github.com/angular-ui/bootstrap/issues/1798
@@ -341,23 +431,52 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         }, $scope.uploader);
       };
 
+      var meter_import_results = function (results) {
+        var column_defs = [{
+          field: 'source_id',
+          enableHiding: false
+        }, {
+          field: 'incoming',
+          enableHiding: false
+        }, {
+          field: 'successfully_imported',
+          enableHiding: false
+        }];
+
+        if ((results[0] || {}).hasOwnProperty('errors')) {
+          column_defs.push({
+            field: 'errors',
+            enableHiding: false
+          });
+        }
+
+        return {
+          data: results,
+          columnDefs: column_defs,
+          enableHorizontalScrollbar: uiGridConstants.scrollbars.NEVER,
+          enableVerticalScrollbar: results.length <= 5 ? uiGridConstants.scrollbars.NEVER : uiGridConstants.scrollbars.WHEN_NEEDED,
+          minRowsToShow: grid_rows_to_display(results)
+        };
+      };
+
       /**
        * save_raw_assessed_data: saves Assessed data
        *
        * @param {string} file_id: the id of the import file
        * @param cycle_id
-       * @param is_green_button
+       * @param is_meter_data
        */
-      var save_raw_assessed_data = function (file_id, cycle_id, is_green_button) {
+      var save_raw_assessed_data = function (file_id, cycle_id, is_meter_data) {
         $scope.uploader.status_message = 'saving data';
         $scope.uploader.progress = 0;
         uploader_service.save_raw_data(file_id, cycle_id).then(function (data) {
           var progress = _.clamp(data.progress, 0, 100);
-          uploader_service.check_progress_loop(data.progress_key, progress, 1 - (progress / 100), function () {
+          uploader_service.check_progress_loop(data.progress_key, progress, 1 - (progress / 100), function (progress_data) {
             $scope.uploader.status_message = 'saving complete';
             $scope.uploader.progress = 100;
-            if (is_green_button) {
-              $scope.step.number = 8;
+            if (is_meter_data) {
+              $scope.import_results_options = meter_import_results(progress_data.message);
+              $scope.step.number = 16;
             } else {
               $scope.step.number = 3;
             }

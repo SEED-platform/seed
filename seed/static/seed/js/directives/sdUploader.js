@@ -449,6 +449,8 @@ var sdUploaderFineUploader = function (scope, element/*, attrs, filename*/) {
     uploader = makeBuildingSyncUploader(scope, element, ['xml', 'zip']);
   } else if (scope.sourcetype === 'BuildingSyncUpdate') {
     uploader = makeBuildingSyncUpdater(scope, element, ['xml']);
+  } else if (scope.sourcetype === 'GreenButton') {
+    uploader = makeFileSystemUploader(scope, element, ['xml']);
   } else if (scope.sourcetype === 'GeoJSON') {
     uploader = makeFileSystemUploader(scope, element, ['json', 'geojson']);
   } else {

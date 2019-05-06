@@ -3,7 +3,41 @@ Migrations
 
 Django handles the migration of the database very well; however, there are various changes to SEED that may require some custom (manual) migrations. The migration documenation includes the required changes based on deployment and development for each release.
 
-Version 2.5.1
+Version 2.6.0
+------------------
+
+Version 2.6.0 includes support for meters and time series data storage. In order to use this release
+you must first install [timescaledb](https://docs.timescale.com/v1.2/getting-started).
+
+Docker-based Deployment
+^^^^^^^^^^^^^^^^^^^^^^^
+Docker-based deployments shouldn't require running any additional commands for installation. The
+timescaledb installation will happen automatically when updating the postgres container. Also,
+the installation of the extension occurs in a Django migration.
+
+Ubuntu
+^^^^^^
+
+.. code-block:: console
+
+    sudo add-apt-repository ppa:timescale/timescaledb-ppa
+    sudo apt update
+    sudo apt install timescaledb-postgresql-10
+    sudo timescaledb-tune
+    sudo service postgresql restart
+
+Max OSX
+^^^^^^^
+
+.. code-block:: console
+
+   brew tap timescale/tap
+   brew install timescaledb
+   /usr/local/bin/timescaledb_move.sh
+   timescaledb-tune
+   brew services restart postgresql
+
+Version 2.5.2
 -------------
 
 - There are no manual migratios that are needed. The `./manage.py migrate` command may take awhile
@@ -22,7 +56,7 @@ Docker-based Deployment
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 - Add the MapQuest API key to your organization.
-- On deployment, the error below is indicative that you need to install the extensions in the postgres database. Run `docker exec <posgres_container_id> update-postgis.sh`.
+- On deployment, the error below is indicative that you need to install the extensions in the postgres database. Run `docker exec <postgres_container_id> update-postgis.sh`.
 
     django.db.utils.OperationalError: could not open extension control file "/usr/share/postgresql/11/extension/postgis.control": No such file or directory
 
