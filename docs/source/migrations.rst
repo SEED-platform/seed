@@ -38,7 +38,7 @@ local_untracked.py file
         CACHES['default']['OPTIONS']['DB']
     )
     CELERY_RESULT_BACKEND = CELERY_BROKER_URL
-    CELERY_TASK_DEFAULT_QUEUE = 'seed-junk'
+    CELERY_TASK_DEFAULT_QUEUE = 'seed-local'
     CELERY_TASK_QUEUES = (
         Queue(
             CELERY_TASK_DEFAULT_QUEUE,
