@@ -3,6 +3,51 @@ Migrations
 
 Django handles the migration of the database very well; however, there are various changes to SEED that may require some custom (manual) migrations. The migration documenation includes the required changes based on deployment and development for each release.
 
+Version Develop
+---------------
+
+In order to support Redis passwords, the configuration of the Redis/Celery settings changed a bit.
+You will need to add the following to your local_untracked.py configuration file. If you are using
+Docker then you will not need to do this.
+
+.. code-block:: console
+
+    CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+
+If you are using a password, then in your local_untracked.py configuration, add the password to
+the CACHES configuration option. Your final configuration should look like the following in your
+local_untracked.py file
+
+.. code-block:: console
+
+    CACHES = {
+        'default': {
+            'BACKEND': 'redis_cache.cache.RedisCache',
+            'LOCATION': "127.0.0.1:6379",
+            'OPTIONS': {
+                'DB': 1,
+                'PASSWORD': 'password',
+            },
+            'TIMEOUT': 300
+        }
+    }
+
+    CELERY_BROKER_URL = 'redis://:%s@%s/%s' % (
+        CACHES['default']['OPTIONS']['PASSWORD'],
+        CACHES['default']['LOCATION'],
+        CACHES['default']['OPTIONS']['DB']
+    )
+    CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+    CELERY_TASK_DEFAULT_QUEUE = 'seed-junk'
+    CELERY_TASK_QUEUES = (
+        Queue(
+            CELERY_TASK_DEFAULT_QUEUE,
+            Exchange(CELERY_TASK_DEFAULT_QUEUE),
+            routing_key=CELERY_TASK_DEFAULT_QUEUE
+        ),
+    )
+
+
 Version 2.6.0
 ------------------
 
