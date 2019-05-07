@@ -556,10 +556,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             });
           }],
           propertyInventory: ['inventory_service', function (inventory_service) {
-            return inventory_service.get_properties(1, undefined, undefined, undefined);
+            return inventory_service.get_properties(1, undefined, undefined, -1);
           }],
           taxlotInventory: ['inventory_service', function (inventory_service) {
-            return inventory_service.get_taxlots(1, undefined, undefined, undefined);
+            return inventory_service.get_taxlots(1, undefined, undefined, -1);
           }],
           cycles: ['cycle_service', function (cycle_service) {
             return cycle_service.get_cycles();
