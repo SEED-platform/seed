@@ -20,8 +20,7 @@ import os
 
 from kombu import Exchange, Queue
 
-
-# ============================ General settings and flags ===========================
+# ============================ General settings and flags ============================
 COMPRESS_ENABLED = False
 DOMAIN_URLCONFS = {'default': 'config.urls'}
 DEBUG = True  # Set to False if this is being used in production mode. If this is set as false, then
@@ -37,7 +36,7 @@ MAPQUEST_API_KEY = os.environ.get('MAPQUEST_API_KEY', 'a-mapquest-api-key')
 #SECRET_KEY = 'default-your-secret-key-here'
 
 # MapQuest API key for testing only - A valid key is only needed when refreshing VCR cassettes.
-# Keys for app users are attached to each organization. 
+# Keys for app users are attached to each organization.
 TESTING_MAPQUEST_API_KEY = os.environ.get('TESTING_MAPQUEST_API_KEY', '<your_key_here>')
 
 # email through SES (django-ses)
@@ -81,9 +80,7 @@ DATABASES = {
     }
 }
 
-# Redis cache config.
-#   If using AWS ElastiCache redis, the LOCATION setting looks something like:
-#   'xx-yy-zzrr0aax9a.ntmprk.0001.usw2.cache.amazonaws.com:6379'
+# =============================== Celery/Redis Cache Settings (No Password) =========
 CACHES = {
     'default': {
         'BACKEND': 'redis_cache.cache.RedisCache',
@@ -93,11 +90,10 @@ CACHES = {
     }
 }
 
-
-# =============================== Celery Settings ===================================
-# redis celery/message broker config. If using AWS, then the URL will look like the following:
-# 'redis://xx-yy-zzrr0aax9a.ntmprk.0001.usw2.cache.amazonaws.com:6379/1'
-CELERY_BROKER_URL = 'redis://%s/%s' % (CACHES['default']['LOCATION'], CACHES['default']['OPTIONS']['DB'])
+CELERY_BROKER_URL = 'redis://%s/%s' % (
+    CACHES['default']['LOCATION'], CACHES['default']['OPTIONS']['DB']
+)
+CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 CELERY_TASK_DEFAULT_QUEUE = 'seed-local'
 CELERY_TASK_QUEUES = (
     Queue(
@@ -106,6 +102,34 @@ CELERY_TASK_QUEUES = (
         routing_key=CELERY_TASK_DEFAULT_QUEUE
     ),
 )
+
+# =============================== Celery/Redis Cache Settings (w/Password) =========
+#CACHES = {
+#   'default': {
+#        'BACKEND': 'redis_cache.cache.RedisCache',
+#        'LOCATION': 'your-cache-url:your-cache-port',
+#        'OPTIONS': {
+#            'DB': 1,
+#             'PASSWORD': 'your-redis-password',
+#        },
+#        'TIMEOUT': 300
+#    }
+#}
+#
+#CELERY_BROKER_URL = 'redis://:%s@%s/%s' % (
+#    CACHES['default']['OPTIONS']['PASSWORD'],
+#    CACHES['default']['LOCATION'],
+#    CACHES['default']['OPTIONS']['DB']
+#)
+#CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+#CELERY_TASK_DEFAULT_QUEUE = 'seed-local'
+#CELERY_TASK_QUEUES = (
+#    Queue(
+#        CELERY_TASK_DEFAULT_QUEUE,
+#        Exchange(CELERY_TASK_DEFAULT_QUEUE),
+#        routing_key=CELERY_TASK_DEFAULT_QUEUE
+#    ),
+#)
 
 
 # =================================== Logging =======================================

@@ -13,7 +13,8 @@ ENV_VARS = ['POSTGRES_DB', 'POSTGRES_USER', 'POSTGRES_PASSWORD', ]
 
 # The optional vars will set the SERVER_EMAIL information as needed
 OPTIONAL_ENV_VARS = ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SES_REGION_NAME',
-                     'AWS_SES_REGION_ENDPOINT', 'SERVER_EMAIL', 'SENTRY_JS_DSN', 'SENTRY_RAVEN_DSN']
+                     'AWS_SES_REGION_ENDPOINT', 'SERVER_EMAIL', 'SENTRY_JS_DSN', 'SENTRY_RAVEN_DSN',
+                     'REDIS_PASSWORD']
 
 for loc in ENV_VARS + OPTIONAL_ENV_VARS:
     locals()[loc] = os.environ.get(loc)
@@ -51,18 +52,39 @@ DATABASES = {
 }
 
 # Redis / Celery config
-CACHES = {
-    'default': {
-        'BACKEND': 'redis_cache.cache.RedisCache',
-        'LOCATION': "db-redis:6379",
-        'OPTIONS': {'DB': 1},
-        'TIMEOUT': 300
+if 'REDIS_PASSWORD' in os.environ:
+    CACHES = {
+        'default': {
+            'BACKEND': 'redis_cache.cache.RedisCache',
+            'LOCATION': "db-redis:6379",
+            'OPTIONS': {
+                'DB': 1,
+                'PASSWORD': REDIS_PASSWORD,
+            },
+            'TIMEOUT': 300
+        }
     }
-}
+    CELERY_BROKER_URL = 'redis://:%s@%s/%s' % (
+       CACHES['default']['OPTIONS']['PASSWORD'],
+       CACHES['default']['LOCATION'],
+       CACHES['default']['OPTIONS']['DB']
+    )
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'redis_cache.cache.RedisCache',
+            'LOCATION': "db-redis:6379",
+            'OPTIONS': {
+                'DB': 1
+            },
+            'TIMEOUT': 300
+        }
+    }
+    CELERY_BROKER_URL = 'redis://%s/%s' % (
+        CACHES['default']['LOCATION'], CACHES['default']['OPTIONS']['DB']
+    )
+
 CELERY_BROKER_TRANSPORT = 'redis'
-CELERY_BROKER_URL = 'redis://%s/%s' % (
-    CACHES['default']['LOCATION'], CACHES['default']['OPTIONS']['DB']
-)
 CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 CELERY_TASK_DEFAULT_QUEUE = 'seed-docker'
 CELERY_TASK_QUEUES = (

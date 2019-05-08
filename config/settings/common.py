@@ -202,23 +202,11 @@ LOGIN_REDIRECT_URL = "/app/"
 
 APPEND_SLASH = True
 
-CELERY_WORKER_MAX_TASKS_PER_CHILD = 1
-
-# Default queue
-CELERY_TASK_DEFAULT_QUEUE = 'seed-common'
-CELERY_TASK_QUEUES = (
-    Queue(
-        CELERY_TASK_DEFAULT_QUEUE,
-        Exchange(CELERY_TASK_DEFAULT_QUEUE),
-        routing_key=CELERY_TASK_DEFAULT_QUEUE
-    ),
-)
-
 # Register our custom JSON serializer so we can serialize datetime objects in celery.
 register('seed_json', CeleryDatetimeSerializer.seed_dumps,
          CeleryDatetimeSerializer.seed_loads,
          content_type='application/json', content_encoding='utf-8')
-
+CELERY_WORKER_MAX_TASKS_PER_CHILD = 1
 CELERY_ACCEPT_CONTENT = ['seed_json']
 CELERY_TASK_SERIALIZER = 'seed_json'
 CELERY_RESULT_SERIALIZER = 'seed_json'
