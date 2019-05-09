@@ -42,7 +42,6 @@ class TaxLot(models.Model):
     # NOTE: we have been calling this the organization. We
     # should stay consistent although I prefer the name organization (!super_org)
     organization = models.ForeignKey(Organization)
-    labels = models.ManyToManyField(StatusLabel)
 
     # Track when the entry was created and when it was updated
     created = models.DateTimeField(auto_now_add=True)
@@ -378,7 +377,7 @@ class TaxLotView(models.Model):
     state = models.ForeignKey(TaxLotState, on_delete=models.CASCADE)
     cycle = models.ForeignKey(Cycle, on_delete=models.PROTECT)
 
-    # labels = models.ManyToManyField(StatusLabel)
+    labels = models.ManyToManyField(StatusLabel)
 
     def __str__(self):
         return 'TaxLot View - %s' % self.pk

@@ -39,9 +39,6 @@ from seed.serializers.pint import PintQuantitySerializerField
 from seed.serializers.scenarios import ScenarioSerializer
 from seed.serializers.taxlots import TaxLotViewSerializer
 
-# expose internal model
-PropertyLabel = apps.get_model('seed', 'Property_labels')
-
 CYCLE_FIELDS = ['id', 'name', 'start', 'end', 'created']
 
 # Need to reevaluate this list of fields that are being removed.
