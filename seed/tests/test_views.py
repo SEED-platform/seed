@@ -853,12 +853,12 @@ class InventoryViewTests(DeleteModelsTestCase):
             rtaxlot_view['taxlot'],
         )
 
-        tcycle = rtaxlot['cycle']
+        tcycle = rtaxlot_view['cycle']
         self.assertEquals(tcycle['name'], '2010 Annual')
         self.assertEquals(tcycle['user'], self.user.pk)
         self.assertEquals(tcycle['organization'], self.org.pk)
 
-        tstate = rtaxlot['state']
+        tstate = rtaxlot_view['state']
         self.assertEqual(tstate['id'], taxlot_state.pk)
         self.assertEqual(tstate['address_line_1'], taxlot_state.address_line_1)
 
@@ -911,12 +911,12 @@ class InventoryViewTests(DeleteModelsTestCase):
             rtaxlot_view_1['taxlot'],
         )
 
-        tcycle_1 = rtaxlot_1['cycle']
+        tcycle_1 = rtaxlot_view_1['cycle']
         self.assertEquals(tcycle_1['name'], '2010 Annual')
         self.assertEquals(tcycle_1['user'], self.user.pk)
         self.assertEquals(tcycle_1['organization'], self.org.pk)
 
-        tstate_1 = rtaxlot_1['state']
+        tstate_1 = rtaxlot_view_1['state']
         self.assertEqual(tstate_1['id'], taxlot_state_1.pk)
         self.assertEqual(tstate_1['address_line_1'], taxlot_state_1.address_line_1)
 
@@ -928,12 +928,12 @@ class InventoryViewTests(DeleteModelsTestCase):
             rtaxlot_view_2['taxlot'],
         )
 
-        tcycle_2 = rtaxlot_2['cycle']
+        tcycle_2 = rtaxlot_view_2['cycle']
         self.assertEquals(tcycle_2['name'], '2010 Annual')
         self.assertEquals(tcycle_2['user'], self.user.pk)
         self.assertEquals(tcycle_2['organization'], self.org.pk)
 
-        tstate_2 = rtaxlot_2['state']
+        tstate_2 = rtaxlot_view_2['state']
         self.assertEqual(tstate_2['id'], taxlot_state_2.pk)
         self.assertEqual(tstate_2['address_line_1'], taxlot_state_2.address_line_1)
 
