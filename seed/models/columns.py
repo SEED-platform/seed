@@ -572,6 +572,7 @@ class Column(models.Model):
 
     unit = models.ForeignKey(Unit, blank=True, null=True)
     is_extra_data = models.BooleanField(default=False)
+    is_matching_criteria = models.BooleanField(default=False)
     import_file = models.ForeignKey('data_importer.ImportFile', blank=True, null=True)
     units_pint = models.CharField(max_length=64, blank=True, null=True)
 
