@@ -27,6 +27,19 @@ def _create_default_columns(organization_id):
             'organization_id': organization_id,
         }
         details.update(column)
+
+        original_identity_fields = [
+            'normalized_address',
+            'custom_id_1',
+            'pm_property_id',
+            'jurisdiction_tax_lot_id',
+            'ubid',
+            'ulid'
+        ]
+
+        if column.get('column_name') in original_identity_fields:
+            details['is_matching_criteria'] = True
+
         Column.objects.create(**details)
 
 
