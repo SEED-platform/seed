@@ -1386,6 +1386,7 @@ class InventoryViewTests(DeleteModelsTestCase):
             'related': False,
             'unit_name': None,
             'unit_type': None,
+            'is_matching_criteria': True,
         }
         self.assertIn(pm_property_id_col, results)
 
@@ -1400,6 +1401,7 @@ class InventoryViewTests(DeleteModelsTestCase):
             'related': False,
             'unit_name': None,
             'unit_type': None,
+            'is_matching_criteria': False,
         }
         self.assertIn(expected_property_extra_data_column, results)
 
@@ -1414,6 +1416,7 @@ class InventoryViewTests(DeleteModelsTestCase):
             'related': True,
             'unit_name': None,
             'unit_type': None,
+            'is_matching_criteria': False,
         }
         self.assertIn(expected_taxlot_extra_data_column, results)
 
@@ -1456,6 +1459,7 @@ class InventoryViewTests(DeleteModelsTestCase):
             'pinnedLeft': True,
             'unit_name': None,
             'unit_type': None,
+            'is_matching_criteria': True,
         }
         self.assertIn(jurisdiction_tax_lot_id_col, results)
 
@@ -1470,6 +1474,7 @@ class InventoryViewTests(DeleteModelsTestCase):
             'related': True,
             'unit_name': None,
             'unit_type': None,
+            'is_matching_criteria': False,
         }
         self.assertIn(expected_property_extra_data_column, results)
 
@@ -1484,5 +1489,6 @@ class InventoryViewTests(DeleteModelsTestCase):
             'related': False,
             'unit_name': None,
             'unit_type': None,
+            'is_matching_criteria': False,
         }
         self.assertIn(expected_taxlot_extra_data_column, results)

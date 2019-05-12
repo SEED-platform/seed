@@ -849,6 +849,7 @@ class TestColumnsByInventory(TestCase):
             'sharedFieldType': 'Public',
             'unit_name': None,
             'unit_type': None,
+            'is_matching_criteria': False,
         }
         self.assertIn(c, columns)
 
@@ -864,6 +865,7 @@ class TestColumnsByInventory(TestCase):
             'sharedFieldType': 'None',
             'unit_name': None,
             'unit_type': None,
+            'is_matching_criteria': False,
         }
         self.assertIn(c, columns)
 
@@ -879,6 +881,7 @@ class TestColumnsByInventory(TestCase):
             'sharedFieldType': 'None',
             'unit_name': None,
             'unit_type': None,
+            'is_matching_criteria': False,
         }
         self.assertIn(c, columns)
 
@@ -895,6 +898,7 @@ class TestColumnsByInventory(TestCase):
             'sharedFieldType': 'None',
             'unit_name': None,
             'unit_type': None,
+            'is_matching_criteria': True,
         }
         self.assertIn(c, columns)
 
@@ -910,6 +914,7 @@ class TestColumnsByInventory(TestCase):
             'related': True,
             'unit_name': None,
             'unit_type': None,
+            'is_matching_criteria': False,
         }
         self.assertIn(c, columns)
 
@@ -924,6 +929,7 @@ class TestColumnsByInventory(TestCase):
             'related': True,
             'unit_name': None,
             'unit_type': None,
+            'is_matching_criteria': False,
         }
         self.assertIn(c, columns)
 
@@ -949,6 +955,7 @@ class TestColumnsByInventory(TestCase):
             'related': False,
             'unit_name': None,
             'unit_type': None,
+            'is_matching_criteria': False,
         }
         self.assertIn(c, columns)
 
