@@ -71,6 +71,11 @@ angular.module('BE.seed.controller.column_settings', [])
         $scope.setModified();
       };
 
+      $scope.change_is_matching_criteria = function (column) {
+        column.is_matching_criteria = !column.is_matching_criteria;
+        $scope.setModified();
+      };
+
       $scope.setModified = function () {
         $scope.columns_updated = false;
         updateDiff();

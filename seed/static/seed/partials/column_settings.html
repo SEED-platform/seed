@@ -48,6 +48,7 @@
                             <th style="min-width: 130px; width: 130px;" translate>Rename</th>
                             <th style="min-width: 130px; width: 130px;" translate>Data Type</th>
                             <th style="min-width: 120px; width: 120px;" translate>Merge Protection</th>
+                            <th class="text-center" style="min-width: 120px; width: 120px;" translate>Match Criteria</th>
                         </tr>
                         <tr class="sub_head">
                             <th class="sub_head">
@@ -64,6 +65,7 @@
                                      placeholder="{$:: 'Search column name' | translate $}"
                                      ng-class="{active: filter_params.column_name.length > 0}">
                             </th>
+                            <th class="sub_head"></th>
                             <th class="sub_head"></th>
                             <th class="sub_head"></th>
                             <th class="sub_head"></th>
@@ -86,6 +88,9 @@
                             </td>
                             <td ng-click="change_merge_protection(column)" class="text-center">
                                 <input type="checkbox" ng-checked="column.merge_protection === 'Favor Existing'" class="no-click">
+                            </td>
+                            <td ng-click="change_is_matching_criteria(column)" class="text-center">
+                                <input type="checkbox" ng-checked="column.is_matching_criteria" class="no-click">
                             </td>
                         </tr>
                     </tbody>
