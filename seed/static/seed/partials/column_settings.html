@@ -45,9 +45,9 @@
                         <tr>
                             <th translate>Display Name</th>
                             <th translate>Column Name</th>
-                            <th style="min-width: 130px; width: 130px;" translate>Rename</th>
-                            <th style="min-width: 130px; width: 130px;" translate>Data Type</th>
-                            <th style="min-width: 120px; width: 120px;" translate>Merge Protection</th>
+                            <th class="text-center" style="min-width: 130px; width: 130px;" translate>Rename</th>
+                            <th class="text-center" style="min-width: 130px; width: 130px;" translate>Data Type</th>
+                            <th class="text-center" style="min-width: 120px; width: 120px;" translate>Merge Protection</th>
                             <th class="text-center" style="min-width: 120px; width: 120px;" translate>Match Criteria</th>
                         </tr>
                         <tr class="sub_head">
@@ -80,10 +80,10 @@
                                 {$:: column.column_name $}
                                 <span ng-if="column.is_extra_data" class="badge" style="margin-left: 10px;">extra data</span>
                             </td>
-                            <td>
+                            <td class="text-center">
                                 <button type="button" class="btn btn-default" ng-click="open_rename_column_modal(column.id, column.column_name)">{$:: 'Rename' | translate $}</button>
                             </td>
-                            <td>
+                            <td class="text-center">
                                 <select class="form-control input-sm" ng-model="column.data_type" ng-options="type.id as type.label for type in ::data_types" ng-change="setModified()" ng-disabled="!column.is_extra_data"></select>
                             </td>
                             <td ng-click="change_merge_protection(column)" class="text-center">
