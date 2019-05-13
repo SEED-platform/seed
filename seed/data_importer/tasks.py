@@ -1152,7 +1152,7 @@ def filter_duplicated_states(unmatched_states):
 
 # from seed.utils.cprofile import cprofile
 # @cprofile()
-def match_and_merge_unmatched_objects(unmatched_states, partitioner):
+def match_and_merge_unmatched_objects(unmatched_states):
     """
     Take a list of unmatched_property_states or unmatched_tax_lot_states and returns a set of
     states that correspond to unmatched states.
@@ -1161,51 +1161,50 @@ def match_and_merge_unmatched_objects(unmatched_states, partitioner):
     :param partitioner: instance of EquivalencePartitioner
     :return: [list, list], merged_objects, equivalence_classes keys
     """
-    # Sort unmatched states/This should not be happening!
-    unmatched_states.sort(key=lambda state: state.pk)
-
-    def getattrdef(obj, attr, default):
-        if hasattr(obj, attr):
-            return getattr(obj, attr)
-        else:
-            return default
+    organization = unmatched_states[0].organization
+    table_name = type(unmatched_states[0]).__name__
 
     # create lambda function to sort the properties/taxlots by release_data first, then generation_
     # date, and finally the primary key
-    keyfunction = lambda ndx: (
-        getattrdef(unmatched_states[ndx], "release_date", None),
-        getattrdef(unmatched_states[ndx], "generation_date", None),
-        getattrdef(unmatched_states[ndx], "pk", None)
-    )
+    # keyfunction = lambda ndx: (
+    #     getattr(unmatched_states[ndx], "release_date", None),
+    #     getattr(unmatched_states[ndx], "generation_date", None),
+    #     getattr(unmatched_states[ndx], "pk", None)
+    # )
+    #         class_ndxs.sort(key=keyfunction)
 
-    # This removes any states that are duplicates,
-    equivalence_classes = partitioner.calculate_equivalence_classes(unmatched_states)
+    matching_criteria_column_names = [
+        # 'normalized_address' if c.column_name == "address_line_1" else c.column_name
+        c.column_name
+        for c
+        in Column.objects.filter(
+            organization_id=organization.id,
+            is_matching_criteria=True,
+            table_name=table_name
+        )
+    ]
 
-    # get the priorities of the columns from the database
-    if len(equivalence_classes) > 0:
-        priorities = Column.retrieve_priorities(unmatched_states[0].organization)
-    else:
-        priorities = None
+    unmatched_ids = collections.defaultdict(list)
+    for ps in unmatched_states:
+        matching_criteria_values = tuple(
+            getattr(ps, column_name, None)
+            for column_name
+            in matching_criteria_column_names
+        )
+        unmatched_ids[matching_criteria_values].append(ps)
 
-    # For each of the equivalence classes, merge them down to a single
-    # object of that type.
     merged_objects = []
+    priorities = Column.retrieve_priorities(organization)
+    for ids in unmatched_ids.values():
+        merge_state = ids.pop()
 
-    for (class_key, class_ndxs) in equivalence_classes.items():
-        if len(class_ndxs) == 1:
-            # If there is only one class_ndx, then just save the object to merged_objects and
-            # move on
-            merged_objects.append(unmatched_states[class_ndxs[0]])
-        else:
-            class_ndxs.sort(key=keyfunction)
-            unmatched_state_class = [unmatched_states[ndx] for ndx in class_ndxs]
-            merged_result = unmatched_state_class[0]
-            for unmatched in unmatched_state_class[1:]:
-                merged_result = save_state_match(merged_result, unmatched, priorities)
+        while len(ids) > 0:
+            # second state is considered the "newer" state in actual merging method
+            merge_state = save_state_match(merge_state, ids.pop(), priorities)
 
-            merged_objects.append(merged_result)
+        merged_objects.append(merge_state)
 
-    return merged_objects, list(equivalence_classes.keys())
+    return merged_objects
 
 
 # @cprofile(n=50)
@@ -1357,10 +1356,7 @@ def _match_properties_and_taxlots(file_pk, progress_key):
         # provided by the partitioner, while ignoring duplicates.
         _log.debug("Start match_and_merge_unmatched_objects: %s" % dt.datetime.now().strftime(
             "%Y-%m-%d %H:%M:%S"))
-        unmatched_properties, property_equivalence_keys = match_and_merge_unmatched_objects(
-            unmatched_properties,
-            property_partitioner
-        )
+        unmatched_properties = match_and_merge_unmatched_objects(unmatched_properties)
         _log.debug("End match_and_merge_unmatched_objects: %s" % dt.datetime.now().strftime(
             "%Y-%m-%d %H:%M:%S"))
 
@@ -1400,10 +1396,7 @@ def _match_properties_and_taxlots(file_pk, progress_key):
 
         # Merge everything together based on the notion of equivalence
         # provided by the partitioner.
-        unmatched_tax_lots, taxlot_equivalence_keys = match_and_merge_unmatched_objects(
-            unmatched_tax_lots,
-            taxlot_partitioner
-        )
+        unmatched_tax_lots = match_and_merge_unmatched_objects(unmatched_tax_lots)
 
         # Take the final merged-on-import objects, and find Views that
         # correspond to it and merge those together.

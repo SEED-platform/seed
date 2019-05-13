@@ -5,26 +5,30 @@
 :author
 """
 
-import datetime
+# import datetime
+#
+# from django.utils import timezone as tz
 
-from django.utils import timezone as tz
-
-from seed.data_importer.equivalence_partitioner import EquivalencePartitioner
+# from seed.data_importer.equivalence_partitioner import EquivalencePartitioner
 from seed.data_importer.tasks import (
     match_buildings,
     save_state_match,
     filter_duplicated_states,
-    match_and_merge_unmatched_objects,
+    # match_and_merge_unmatched_objects,
 )
 from seed.models import (
     ASSESSED_RAW,
+    DATA_STATE_DELETE,
     DATA_STATE_MAPPING,
     MERGE_STATE_MERGED,
     Column,
+    Property,
     PropertyAuditLog,
     PropertyState,
     PropertyView,
-    TaxLotProperty,
+    TaxLot,
+    # TaxLotProperty,
+    TaxLotState,
     TaxLotView,
 )
 from seed.test_helpers.fake import (
@@ -37,10 +41,7 @@ from seed.test_helpers.fake import (
 from seed.tests.util import DataMappingBaseTestCase
 
 
-# from seed.data_importer.tasks import merge_unmatched_into_views
-
-
-class TestMatching(DataMappingBaseTestCase):
+class TestInCycleMatching(DataMappingBaseTestCase):
     def setUp(self):
         selfvars = self.set_up(ASSESSED_RAW)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
@@ -52,206 +53,101 @@ class TestMatching(DataMappingBaseTestCase):
         self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
         self.taxlot_view_factory = FakeTaxLotViewFactory(organization=self.org, cycle=self.cycle)
 
-    def test_match_properties_and_taxlots_with_address(self):
-        # create an ImportFile for testing purposes. Seems like we would want to run this matching just on a
-        # list of properties and taxlots.
-        #
-        # This emulates importing the following
-        #   Address,                Jurisdiction Tax Lot
-        #   742 Evergreen Terrace,  100;101;110;111
-
-        lot_numbers = '100;101;110;111'
-        for i in range(10):
-            self.property_state_factory.get_property_state(
-                address_line_1='742 Evergreen Terrace',
-                lot_number=lot_numbers,
-                import_file_id=self.import_file.id,
-                data_state=DATA_STATE_MAPPING,
-            )
-
-        for lot_number in lot_numbers.split(';'):
-            self.taxlot_state_factory.get_taxlot_state(
-                address_line_1=None,
-                jurisdiction_tax_lot_id=lot_number,
-                import_file_id=self.import_file.id,
-                data_state=DATA_STATE_MAPPING,
-            )
-
-        # for ps in PropertyState.objects.filter(organization=self.org):
-        #     print("%s -- %s -- %s" % (ps.lot_number, ps.import_file_id, ps.address_line_1))
-
-        # for tl in TaxLotState.objects.filter(organization=self.org):
-        #     print("%s -- %s" % (tl.import_file_id, tl.jurisdiction_tax_lot_id))
+    def test_duplicate_properties_within_same_file_identified(self):
+        base_details = {
+            'address_line_1': '123 Match Street',
+            'import_file_id': self.import_file.id,
+            'data_state': DATA_STATE_MAPPING,
+            'no_default_data': False,
+        }
+        # Create pair of properties that are exact duplicates
+        self.property_state_factory.get_property_state(**base_details)
+        self.property_state_factory.get_property_state(**base_details)
 
         # set import_file mapping done so that matching can occur.
         self.import_file.mapping_done = True
         self.import_file.save()
         match_buildings(self.import_file.id)
 
-        # for pv in PropertyView.objects.filter(state__organization=self.org):
-        #     print("%s -- %s" % (pv.state, pv.cycle))
+        # 1 Property, 1 PropertyViews, 2 PropertyState (1 flagged to be ignored)
+        self.assertEqual(Property.objects.count(), 1)
+        self.assertEqual(PropertyView.objects.count(), 1)
+        self.assertEqual(PropertyState.objects.count(), 2)
+        self.assertEqual(PropertyState.objects.filter(data_state=DATA_STATE_DELETE).count(), 1)
 
-        # should only have 1 PropertyView and 4 taxlot views
-        self.assertEqual(PropertyView.objects.filter(state__organization=self.org).count(), 1)
-        self.assertEqual(TaxLotView.objects.filter(state__organization=self.org).count(), 4)
-        pv = PropertyView.objects.filter(state__organization=self.org).first()
+    def test_match_properties_within_same_file_if_all_default_fields_match(self):
+        base_details = {
+            'address_line_1': '123 Match Street',
+            'import_file_id': self.import_file.id,
+            'data_state': DATA_STATE_MAPPING,
+            'no_default_data': False,
+        }
+        # Create first set of properties that match each other
+        self.property_state_factory.get_property_state(**base_details)
+        base_details['city'] = 'Denver'
+        self.property_state_factory.get_property_state(**base_details)
 
-        # there should be 4 relationships in the TaxLotProperty associated with view, one each for the taxlots defined
-        self.assertEqual(TaxLotProperty.objects.filter(property_view_id=pv).count(), 4)
+        # Create second set of properties that match each other
+        base_details['pm_property_id'] = '11111'
+        self.property_state_factory.get_property_state(**base_details)
+        base_details['city'] = 'Philadelphia'
+        self.property_state_factory.get_property_state(**base_details)
 
-    def test_match_properties_and_taxlots_with_address_no_lot_number(self):
-        # create an ImportFile for testing purposes. Seems like we would want to run this matching just on a
-        # list of properties and taxlots.
-        #
-        # This emulates importing the following
-        #   Address,                Jurisdiction Tax Lot
-        #   742 Evergreen Terrace,  100
-        #   742 Evergreen Terrace,  101
-        #   742 Evergreen Terrace,  110
-        #   742 Evergreen Terrace,  111
-
-        lot_numbers = '100;101;110;111'
-        for lot_number in lot_numbers.split(';'):
-            self.property_state_factory.get_property_state(
-                address_line_1='742 Evergreen Terrace',
-                lot_number=lot_number,
-                import_file_id=self.import_file.id,
-                data_state=DATA_STATE_MAPPING,
-            )
-
-            self.taxlot_state_factory.get_taxlot_state(
-                address_line_1=None,
-                jurisdiction_tax_lot_id=lot_number,
-                import_file_id=self.import_file.id,
-                data_state=DATA_STATE_MAPPING,
-            )
-
-        # for ps in PropertyState.objects.filter(organization=self.org):
-        #     print("%s -- %s -- %s" % (ps.lot_number, ps.import_file_id, ps.address_line_1))
-
-        # for tl in TaxLotState.objects.filter(organization=self.org):
-        #     print("%s -- %s" % (tl.import_file_id, tl.jurisdiction_tax_lot_id))
+        # Create unmatched property
+        base_details['pm_property_id'] = '000'
+        self.property_state_factory.get_property_state(**base_details)
 
         # set import_file mapping done so that matching can occur.
         self.import_file.mapping_done = True
         self.import_file.save()
         match_buildings(self.import_file.id)
 
-        # for pv in PropertyView.objects.filter(state__organization=self.org):
-        #     print("%s -- %s" % (pv.state, pv.cycle))
+        # 3 Property, 3 PropertyViews, 7 PropertyStates (5 imported, 2 merge results)
+        self.assertEqual(Property.objects.count(), 3)
+        self.assertEqual(PropertyView.objects.count(), 3)
+        self.assertEqual(PropertyState.objects.count(), 7)
 
-        # should only have 1 PropertyView and 4 taxlot views
-        self.assertEqual(PropertyView.objects.filter(state__organization=self.org).count(), 1)
-        self.assertEqual(TaxLotView.objects.filter(state__organization=self.org).count(), 4)
-        pv = PropertyView.objects.filter(state__organization=self.org).first()
+    def test_match_taxlots_within_same_file_if_all_default_fields_match(self):
+        base_details = {
+            'address_line_1': '123 Match Street',
+            'import_file_id': self.import_file.id,
+            'data_state': DATA_STATE_MAPPING,
+            'no_default_data': False,
+        }
+        # Create first set of taxlots that match each other
+        self.taxlot_state_factory.get_taxlot_state(**base_details)
+        base_details['city'] = 'Denver'
+        self.taxlot_state_factory.get_taxlot_state(**base_details)
 
-        # there should be 4 relationships in the TaxLotProperty associated with view, one each for the taxlots defined
-        self.assertEqual(TaxLotProperty.objects.filter(property_view_id=pv).count(), 4)
+        # Create second set of taxlots that match each other
+        base_details['jurisdiction_tax_lot_id'] = '11111'
+        self.taxlot_state_factory.get_taxlot_state(**base_details)
+        base_details['city'] = 'Philadelphia'
+        self.taxlot_state_factory.get_taxlot_state(**base_details)
 
-    def test_match_properties_and_taxlots_with_ubid(self):
-        # create an ImportFile for testing purposes. Seems like we would want to run this matching just on a
-        # list of properties and taxlots.
-        #
-        # This emulates importing the following
-        #   UBID,    Jurisdiction Tax Lot
-        #   ubid_100,     lot_1
-        #   ubid_101,     lot_1
-        #   ubid_110,     lot_1
-        #   ubid_111,     lot_1
-
-        ids = [('ubid_100', 'lot_1'), ('ubid_101', 'lot_1'), ('ubid_110', 'lot_1'),
-               ('ubid_111', 'lot_1')]
-        for id in ids:
-            self.property_state_factory.get_property_state(
-                no_default_data=True,
-                ubid=id[0],
-                lot_number=id[1],
-                import_file_id=self.import_file.id,
-                data_state=DATA_STATE_MAPPING,
-            )
-
-        self.taxlot_state_factory.get_taxlot_state(
-            no_default_data=True,
-            jurisdiction_tax_lot_id=ids[0][1],
-            import_file_id=self.import_file.id,
-            data_state=DATA_STATE_MAPPING,
-        )
-
-        # for ps in PropertyState.objects.filter(organization=self.org):
-        #     print("%s -- %s -- %s" % (ps.lot_number, ps.import_file_id, ps.ubid))
-        # pv = PropertyView.objects.get(state=ps, cycle=self.cycle)
-        # TaxLotProperty.objects.filter()
-
-        # for tl in TaxLotState.objects.filter(organization=self.org):
-        #     print("%s -- %s" % (tl.import_file_id, tl.jurisdiction_tax_lot_id))
+        # Create unmatched taxlot
+        base_details['jurisdiction_tax_lot_id'] = '000'
+        self.taxlot_state_factory.get_taxlot_state(**base_details)
 
         # set import_file mapping done so that matching can occur.
         self.import_file.mapping_done = True
         self.import_file.save()
         match_buildings(self.import_file.id)
 
-        # for pv in PropertyView.objects.filter(state__organization=self.org):
-        #     print("%s -- %s" % (pv.state.ubid, pv.cycle))
+        # 3 TaxLot, 3 TaxLotViews, 7 TaxLotStates (5 imported, 2 merge results)
+        self.assertEqual(TaxLot.objects.count(), 3)
+        self.assertEqual(TaxLotView.objects.count(), 3)
+        self.assertEqual(TaxLotState.objects.count(), 7)
 
-        # should only have 1 PropertyView and 4 taxlot views
-        self.assertEqual(PropertyView.objects.filter(state__organization=self.org).count(), 4)
-        self.assertEqual(TaxLotView.objects.filter(state__organization=self.org).count(), 1)
-        tlv = TaxLotView.objects.filter(state__organization=self.org).first()
+    # Tests to write:
+    # def test_match_properties_within_same_file_on_ubid(self):
+    # def test_match_taxlots_within_same_file_on_ubid(self):
+    # def test_match_properties_within_same_file_normalized_address_used_instead_of_address_line_1(self):
+    # def test_match_taxlots_within_same_file_normalized_address_used_instead_of_address_line_1(self):
+    # def test_match_properties_within_same_file_using_extra_data_field(self):
+    # def test_match_taxlots_within_same_file_using_extra_data_field(self):
 
-        # there should be 4 relationships in the TaxLotProperty associated with view, one each for the taxlots defined
-        self.assertEqual(TaxLotProperty.objects.filter(taxlot_view_id=tlv).count(), 4)
-
-    def test_match_properties_and_taxlots_with_custom_id(self):
-        # create an ImportFile for testing purposes. Seems like we would want to run this matching just on a
-        # list of properties and taxlots.
-        #
-        # This emulates importing the following
-        #   Custom ID 1,    Jurisdiction Tax Lot
-        #   custom_100,     lot_1
-        #   custom_101,     lot_1
-        #   custom_110,     lot_1
-        #   custom_111,     lot_1
-        ids = [('custom_100', 'lot_1'), ('custom_101', 'lot_1'), ('custom_110', 'lot_1'),
-               ('custom_111', 'lot_1')]
-        for id in ids:
-            self.property_state_factory.get_property_state(
-                no_default_data=True,
-                custom_id_1=id[0],
-                lot_number=id[1],
-                import_file_id=self.import_file.id,
-                data_state=DATA_STATE_MAPPING,
-            )
-
-        self.taxlot_state_factory.get_taxlot_state(
-            no_default_data=True,
-            jurisdiction_tax_lot_id=ids[0][1],
-            import_file_id=self.import_file.id,
-            data_state=DATA_STATE_MAPPING,
-        )
-
-        # for ps in PropertyState.objects.filter(organization=self.org):
-        #     print("%s -- %s -- %s" % (ps.lot_number, ps.import_file_id, ps.custom_id_1))
-        # pv = PropertyView.objects.get(state=ps, cycle=self.cycle)
-        # TaxLotProperty.objects.filter()
-
-        # for tl in TaxLotState.objects.filter(organization=self.org):
-        #     print("%s -- %s" % (tl.import_file_id, tl.jurisdiction_tax_lot_id))
-
-        # set import_file mapping done so that matching can occur.
-        self.import_file.mapping_done = True
-        self.import_file.save()
-        match_buildings(self.import_file.id)
-
-        # for pv in PropertyView.objects.filter(state__organization=self.org):
-        #     print("%s -- %s" % (pv.state, pv.cycle))
-
-        # should only have 1 PropertyView and 4 taxlot views
-        self.assertEqual(PropertyView.objects.filter(state__organization=self.org).count(), 4)
-        self.assertEqual(TaxLotView.objects.filter(state__organization=self.org).count(), 1)
-        tlv = TaxLotView.objects.filter(state__organization=self.org).first()
-
-        # there should be 4 relationships in the TaxLotProperty associated with view, one each for the taxlots defined
-        self.assertEqual(TaxLotProperty.objects.filter(taxlot_view_id=tlv).count(), 4)
+    # release_date=datetime.datetime(2010, 1, 1, 1, 1, tzinfo=tz.get_current_timezone()),
 
     def test_save_state_match(self):
         # create a couple states to merge together
@@ -294,115 +190,3 @@ class TestMatching(DataMappingBaseTestCase):
         # There should be 6 uniq states. 5 from the second call, and one of 'The Same Address'
         self.assertEqual(len(uniq_states), 6)
         self.assertEqual(len(dup_states), 9)
-
-    def test_match_and_merge_unmatched_objects_all_unique(self):
-        # create some objects to match and merge
-        partitioner = EquivalencePartitioner.make_default_state_equivalence(PropertyState)
-
-        for i in range(10):
-            self.property_state_factory.get_property_state(
-                import_file_id=self.import_file.id,
-                data_state=DATA_STATE_MAPPING,
-            )
-
-        props = self.import_file.find_unmatched_property_states()
-        uniq_states, dup_states = filter_duplicated_states(props)
-        merged, keys = match_and_merge_unmatched_objects(uniq_states, partitioner)
-
-        self.assertEqual(len(merged), 10)
-
-    def test_match_and_merge_unmatched_objects_with_duplicates(self):
-        # create some objects to match and merge
-        partitioner = EquivalencePartitioner.make_default_state_equivalence(PropertyState)
-
-        for i in range(8):
-            self.property_state_factory.get_property_state(
-                import_file_id=self.import_file.id,
-                data_state=DATA_STATE_MAPPING,
-            )
-
-        self.property_state_factory.get_property_state(
-            no_default_data=True,
-            extra_data={'moniker': '12345'},
-            address_line_1='123 same address',
-            site_eui=25,
-            import_file_id=self.import_file.id,
-            data_state=DATA_STATE_MAPPING,
-        )
-
-        self.property_state_factory.get_property_state(
-            no_default_data=True,
-            extra_data={'moniker': '12345'},
-            address_line_1='123 same address',
-            site_eui=150,
-            import_file_id=self.import_file.id,
-            data_state=DATA_STATE_MAPPING,
-        )
-
-        props = self.import_file.find_unmatched_property_states()
-        uniq_states, dup_states = filter_duplicated_states(props)
-        merged, keys = match_and_merge_unmatched_objects(uniq_states, partitioner)
-
-        self.assertEqual(len(merged), 9)
-        self.assertEqual(len(keys), 9)
-
-        # find the ps_cp_1 in the list of merged
-        found = False
-        for ps in merged:
-            if ps.extra_data.get('moniker', None) == '12345':
-                found = True
-                self.assertEqual(ps.site_eui.magnitude, 150)  # from the second record
-        self.assertEqual(found, True)
-
-    def test_match_and_merge_unmatched_objects_with_dates(self):
-        # Make sure that the dates sort correctly! (only testing release_date, but also sorts
-        # on generation_date, then pk
-
-        partitioner = EquivalencePartitioner.make_default_state_equivalence(PropertyState)
-
-        self.property_state_factory.get_property_state(
-            no_default_data=True,
-            address_line_1='123 same address',
-            release_date=datetime.datetime(2010, 1, 1, 1, 1, tzinfo=tz.get_current_timezone()),
-            site_eui=25,
-            import_file_id=self.import_file.id,
-            data_state=DATA_STATE_MAPPING,
-        )
-
-        self.property_state_factory.get_property_state(
-            no_default_data=True,
-            address_line_1='123 same address',
-            release_date=datetime.datetime(2015, 1, 1, 1, 1, tzinfo=tz.get_current_timezone()),
-            site_eui=150,
-            import_file_id=self.import_file.id,
-            data_state=DATA_STATE_MAPPING,
-        )
-
-        self.property_state_factory.get_property_state(
-            no_default_data=True,
-            address_line_1='123 same address',
-            release_date=datetime.datetime(2005, 1, 1, 1, 1, tzinfo=tz.get_current_timezone()),
-            site_eui=300,
-            import_file_id=self.import_file.id,
-            data_state=DATA_STATE_MAPPING,
-        )
-
-        props = self.import_file.find_unmatched_property_states()
-        uniq_states, dup_states = filter_duplicated_states(props)
-        merged, keys = match_and_merge_unmatched_objects(uniq_states, partitioner)
-
-        found = False
-        for ps in merged:
-            found = True
-            self.assertEqual(ps.site_eui.magnitude, 150)  # from the second record
-        self.assertEqual(found, True)
-
-    def test_merge_unmatched_into_views_no_matches(self):
-        """It is very unlikely that any of these states will match since it is using faker."""
-        for i in range(10):
-            self.property_state_factory.get_property_state(
-                import_file_id=self.import_file.id,
-                data_state=DATA_STATE_MAPPING,
-            )
-
-        # merge_unmatched_into_views(unmatched_states, partitioner, org, import_file):
