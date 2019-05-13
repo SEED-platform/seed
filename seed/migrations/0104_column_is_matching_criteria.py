@@ -10,7 +10,7 @@ def forwards(apps, schema_editor):
 
     with transaction.atomic():
         original_identity_fields = [
-            'normalized_address',
+            'address_line_1',
             'custom_id_1',
             'pm_property_id',
             'jurisdiction_tax_lot_id',
