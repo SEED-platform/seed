@@ -1164,15 +1164,6 @@ def match_and_merge_unmatched_objects(unmatched_states):
     organization = unmatched_states[0].organization
     table_name = type(unmatched_states[0]).__name__
 
-    # create lambda function to sort the properties/taxlots by release_data first, then generation_
-    # date, and finally the primary key
-    # keyfunction = lambda ndx: (
-    #     getattr(unmatched_states[ndx], "release_date", None),
-    #     getattr(unmatched_states[ndx], "generation_date", None),
-    #     getattr(unmatched_states[ndx], "pk", None)
-    # )
-    #         class_ndxs.sort(key=keyfunction)
-
     # Collect matching criteria columns while replacing address_line_1 with
     # normalized_address if applicable. No errors if normalized_address shows up
     # twice, which shouldn't really happen anyway.
@@ -1188,7 +1179,9 @@ def match_and_merge_unmatched_objects(unmatched_states):
 
     merged_objects = []
     unmatched_ids = collections.defaultdict(list)
-    for state in unmatched_states:
+    # Iterate through sorted -States (by ascending PK) ensuring precedence is
+    # given to newer state on merges done later.
+    for state in sorted(unmatched_states, key=lambda state: -getattr(state, "pk", None)):
         matching_criteria_values = tuple(
             getattr(
                 state,
@@ -1210,8 +1203,8 @@ def match_and_merge_unmatched_objects(unmatched_states):
         merge_state = ids.pop()
 
         while len(ids) > 0:
-            # second state is considered the "newer" state in actual merging method
-            merge_state = save_state_match(merge_state, ids.pop(), priorities)
+            newer_state = ids.pop()  # This is newer due to the previous sort by PK
+            merge_state = save_state_match(merge_state, newer_state, priorities)
 
         merged_objects.append(merge_state)
 

@@ -297,6 +297,40 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
         self.assertEqual(TaxLotView.objects.count(), 1)
         self.assertEqual(TaxLotState.objects.count(), 3)
 
+    def test_match_properties_get_rolled_up_into_one_in_the_order_their_uploaded(self):
+        """
+        The most recently uploaded should take precedence when merging states.
+        If more than 2 states match each other, they are merged two at a time
+        until one is remaining.
+        """
+        base_details = {
+            'address_line_1': '123 Match Street',
+            'import_file_id': self.import_file.id,
+            'data_state': DATA_STATE_MAPPING,
+            'no_default_data': False,
+        }
+        # Create first set of properties that match each other
+        base_details['city'] = 'Philadelphia'
+        self.property_state_factory.get_property_state(**base_details)
+        base_details['city'] = 'Arvada'
+        self.property_state_factory.get_property_state(**base_details)
+        base_details['city'] = 'Golden'
+        self.property_state_factory.get_property_state(**base_details)
+        base_details['city'] = 'Denver'
+        self.property_state_factory.get_property_state(**base_details)
+
+        # set import_file mapping done so that matching can occur.
+        self.import_file.mapping_done = True
+        self.import_file.save()
+        match_buildings(self.import_file.id)
+
+        # 1 Property, 1 PropertyViews, 7 PropertyStates (4 imported, 3 merge results)
+        self.assertEqual(Property.objects.count(), 1)
+        self.assertEqual(PropertyView.objects.count(), 1)
+        self.assertEqual(PropertyState.objects.count(), 7)
+
+        self.assertEqual(PropertyView.objects.first().state.city, 'Denver')
+
 
 class TestMatchingHelperMethods(DataMappingBaseTestCase):
     def setUp(self):
