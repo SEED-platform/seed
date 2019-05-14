@@ -5,13 +5,12 @@
 :author
 """
 
-# import datetime
-#
-# from django.utils import timezone as tz
 from seed.data_importer.tasks import (
     match_buildings,
-    save_state_match,
+)
+from seed.data_importer.match import (
     filter_duplicated_states,
+    save_state_match,
 )
 from seed.models import (
     ASSESSED_RAW,
