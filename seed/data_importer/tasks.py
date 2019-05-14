@@ -1173,9 +1173,11 @@ def match_and_merge_unmatched_objects(unmatched_states):
     # )
     #         class_ndxs.sort(key=keyfunction)
 
+    # Collect matching criteria columns while replacing address_line_1 with
+    # normalized_address if applicable. No errors if normalized_address shows up
+    # twice, which shouldn't really happen anyway.
     matching_criteria_column_names = [
-        # 'normalized_address' if c.column_name == "address_line_1" else c.column_name
-        c.column_name
+        'normalized_address' if c.column_name == "address_line_1" else c.column_name
         for c
         in Column.objects.filter(
             organization_id=organization.id,
@@ -1184,16 +1186,25 @@ def match_and_merge_unmatched_objects(unmatched_states):
         )
     ]
 
+    merged_objects = []
     unmatched_ids = collections.defaultdict(list)
-    for ps in unmatched_states:
+    for state in unmatched_states:
         matching_criteria_values = tuple(
-            getattr(ps, column_name, None)
+            getattr(
+                state,
+                column_name,
+                state.extra_data.get(column_name, None)
+            )
             for column_name
             in matching_criteria_column_names
         )
-        unmatched_ids[matching_criteria_values].append(ps)
 
-    merged_objects = []
+        # If values are all None append -State to return list
+        if all(value is None for value in matching_criteria_values):
+            merged_objects.append(state)
+        else:
+            unmatched_ids[matching_criteria_values].append(state)
+
     priorities = Column.retrieve_priorities(organization)
     for ids in unmatched_ids.values():
         merge_state = ids.pop()
