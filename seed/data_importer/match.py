@@ -18,8 +18,7 @@ from django.db import (
 )
 
 from itertools import chain
-
-from seed.data_importer.equivalence_partitioner import EquivalencePartitioner
+# from seed.data_importer.equivalence_partitioner import EquivalencePartitioner
 from seed.data_importer.models import (
     ImportFile,
     # ImportRecord,
@@ -50,7 +49,7 @@ _log = get_task_logger(__name__)
 
 
 # @cprofile(n=50)
-def merge_unmatched_into_views(unmatched_states, partitioner, org, import_file):
+def merge_unmatched_into_views(unmatched_states, org, import_file):
     """
     This is fairly inefficient, because we grab all the organization's entire PropertyViews at once.
     Surely this can be improved, but the logic is unusual/particularly dynamic here, so hopefully
@@ -68,84 +67,77 @@ def merge_unmatched_into_views(unmatched_states, partitioner, org, import_file):
     # Cycle coming from the import_file does not make sense here.
     # Makes testing hard. Should be an argument.
     current_match_cycle = import_file.cycle
+    organization = unmatched_states[0].organization
+    table_name = type(unmatched_states[0]).__name__
 
-    if isinstance(unmatched_states[0], PropertyState):
+    if table_name == 'PropertyState':
+        ObjectStateClass = PropertyState
         ObjectViewClass = PropertyView
-        ParentAttrName = "property"
-    elif isinstance(unmatched_states[0], TaxLotState):
+        # ParentAttrName = "property"
+    elif table_name == 'TaxLotState':
+        ObjectStateClass = TaxLotState
         ObjectViewClass = TaxLotView
-        ParentAttrName = "taxlot"
+        # ParentAttrName = "taxlot"
     else:
         raise ValueError("Unknown class '{}' passed to merge_unmatched_into_views".format(
             type(unmatched_states[0])))
 
-    class_views = ObjectViewClass.objects.filter(
-        state__organization=org,
-        cycle_id=current_match_cycle
-    ).select_related('state')
-    existing_view_states = defaultdict(dict)
-    existing_view_state_hashes = set()
+    matching_criteria_column_names = [
+        'normalized_address' if c.column_name == "address_line_1" else c.column_name
+        for c
+        in Column.objects.filter(
+            organization_id=organization.id,
+            is_matching_criteria=True,
+            table_name=table_name
+        )
+    ]
 
-    # TODO #239: this is an expensive calculation
-    for view in class_views:
-        equivalence_can_key = partitioner.calculate_canonical_key(view.state)
-        existing_view_states[equivalence_can_key][view.cycle] = view
-        existing_view_state_hashes.add(view.state.hash_object)
-
-    matched_views = []
+    state_ids_from_views = [
+        view.state_id
+        for view
+        in ObjectViewClass.objects.filter(
+            state__organization=organization,
+            cycle_id=current_match_cycle
+        )
+    ]
 
     merge_data = []
     promote_data = []
-    for unmatched in unmatched_states:
-        if unmatched.hash_object in existing_view_state_hashes:
-            # If an exact duplicate exists, delete the unmatched state
-            unmatched.data_state = DATA_STATE_DELETE
-            unmatched.save()
-        else:
-            # Look to see if there is a match among the property states of the object.
+    for state in unmatched_states:
+        if PropertyState.objects.filter(id__in=state_ids_from_views, hash_object=state.hash_object).exists():
+            state.data_state = DATA_STATE_DELETE
+            state.save()
+            continue
 
-            # equiv_key = False
-            # equiv_can_key = partitioner.calculate_canonical_key(unmatched)
-            equiv_cmp_key = partitioner.calculate_comparison_key(unmatched)
-            for key in existing_view_states:
-                if partitioner.calculate_key_equivalence(key, equiv_cmp_key):
-                    if current_match_cycle in existing_view_states[key]:
-                        # There is an existing View for the current cycle that matches us.
-                        # Merge the new state in with the existing one and update the view,
-                        # audit log.
-                        current_view = existing_view_states[key][current_match_cycle]
-                        merge_data.append((current_view, unmatched))
-                    else:
-                        # Grab another view that has the same parent as the one we belong to.
-                        cousin_view = existing_view_states[key].values()[0]
-                        view_parent = getattr(cousin_view, ParentAttrName)
-                        new_view = type(cousin_view)()
-                        setattr(new_view, ParentAttrName, view_parent)
-                        new_view.cycle = current_match_cycle
-                        new_view.state = unmatched
-                        try:
-                            new_view.save()
-                            matched_views.append(new_view)
-                        except IntegrityError:
-                            _log.warn("Unable to save the new view as it already exists in the db")
+        matching_criteria = {
+            (column if hasattr(state, column) else 'extra_data__{}'.format(column)): (getattr(state, column, None) if hasattr(state, column) else state.extra_data.get(column, None))
+            for column
+            in matching_criteria_column_names
+        }
+        state_matches = ObjectStateClass.objects.filter(id__in=state_ids_from_views, **matching_criteria).order_by('-id')
 
-                    break
-            else:
-                # Create a new object/view for the current object.
-                promote_data.append((unmatched, current_match_cycle))
+        if state_matches.exists() and any(v is not None for v in matching_criteria.values()):
+            merge_data.append([state] + list(state_matches))
+            continue
 
-    # create the data atomically to speed it up
-    _log.debug("There are %s merge_data and %s promote_data" % (len(merge_data), len(promote_data)))
-    priorities = Column.retrieve_priorities(org.pk)
+        promote_data.append([state, current_match_cycle])
+
+    # _log.debug("There are %s merge_data and %s promote_data" % (len(merge_data), len(promote_data)))
+    matched_views = []  # this gets passed at the end. seems to be the views that have been updated
+    priorities = Column.retrieve_priorities(organization.pk)
     try:
         with transaction.atomic():
-            for merge_datum in merge_data:
-                merge_datum[0].state = save_state_match(
-                    merge_datum[0].state, merge_datum[1], priorities
-                )
-                merge_datum[0].save()
+            for datum in merge_data:
+                merge_state = datum.pop()
+                initial_view = ObjectViewClass.objects.get(state_id=merge_state.id)
 
-                matched_views.append(merge_datum[0])
+                while len(datum) > 0:
+                    newer_state = datum.pop()  # This is newer due to the previous sort by PK
+                    merge_state = save_state_match(merge_state, newer_state, priorities)
+                    initial_view.state = merge_state
+
+                initial_view.save()
+                matched_views.append(initial_view)
 
             for promote_datum in promote_data:
                 created_view = promote_datum[0].promote(promote_datum[1])
@@ -274,8 +266,6 @@ def match_properties_and_taxlots(file_pk, progress_key):
     duplicates_of_existing_property_states = []
     duplicates_of_existing_taxlot_states = []
     if all_unmatched_properties:
-        property_partitioner = EquivalencePartitioner.make_default_state_equivalence(PropertyState)
-
         # Filter out the duplicates within the import file.
         _log.debug("Start filter_duplicated_states: %s" % dt.datetime.now().strftime(
             "%Y-%m-%d %H:%M:%S"))
@@ -300,7 +290,6 @@ def match_properties_and_taxlots(file_pk, progress_key):
             "%Y-%m-%d %H:%M:%S"))
         merged_property_views = merge_unmatched_into_views(
             unmatched_properties,
-            property_partitioner,
             org,
             import_file
         )
@@ -325,8 +314,6 @@ def match_properties_and_taxlots(file_pk, progress_key):
         unmatched_tax_lots, duplicate_tax_lot_states = filter_duplicated_states(
             all_unmatched_tax_lots)
 
-        taxlot_partitioner = EquivalencePartitioner.make_default_state_equivalence(TaxLotState)
-
         # Merge everything together based on the notion of equivalence
         # provided by the partitioner.
         unmatched_tax_lots = match_and_merge_unmatched_objects(unmatched_tax_lots)
@@ -337,7 +324,6 @@ def match_properties_and_taxlots(file_pk, progress_key):
             "%Y-%m-%d %H:%M:%S"))
         merged_taxlot_views = merge_unmatched_into_views(
             unmatched_tax_lots,
-            taxlot_partitioner,
             org,
             import_file
         )

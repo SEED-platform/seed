@@ -331,6 +331,236 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
         self.assertEqual(PropertyView.objects.first().state.city, 'Denver')
 
 
+class TestMatchingOutsideImportFile(DataMappingBaseTestCase):
+    def setUp(self):
+        selfvars = self.set_up(ASSESSED_RAW)
+        self.user, self.org, self.import_file_1, self.import_record_1, self.cycle = selfvars
+
+        self.import_record_2, self.import_file_2 = self.create_import_file(
+            self.user, self.org, self.cycle
+        )
+
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+        self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
+
+    def test_duplicate_properties_identified(self):
+        base_details = {
+            'address_line_1': '123 Match Street',
+            'import_file_id': self.import_file_1.id,
+            'data_state': DATA_STATE_MAPPING,
+            'no_default_data': False,
+        }
+        # Create property in first ImportFile
+        ps_1 = self.property_state_factory.get_property_state(**base_details)
+
+        self.import_file_1.mapping_done = True
+        self.import_file_1.save()
+        match_buildings(self.import_file_1.id)
+
+        # Create duplicate property coming from second ImportFile
+        base_details['import_file_id'] = self.import_file_2.id
+        ps_2 = self.property_state_factory.get_property_state(**base_details)
+
+        self.import_file_2.mapping_done = True
+        self.import_file_2.save()
+        match_buildings(self.import_file_2.id)
+
+        # 1 Property, 1 PropertyViews, 2 PropertyStates
+        self.assertEqual(Property.objects.count(), 1)
+        self.assertEqual(PropertyView.objects.count(), 1)
+        self.assertEqual(PropertyState.objects.count(), 2)
+
+        # Be sure the first property is used in the -View and the second is marked for "deletion"
+        self.assertEqual(PropertyView.objects.first().state_id, ps_1.id)
+        self.assertEqual(PropertyState.objects.get(data_state=DATA_STATE_DELETE).id, ps_2.id)
+
+    def test_match_properties_if_all_default_fields_match(self):
+        base_details = {
+            'address_line_1': '123 Match Street',
+            'import_file_id': self.import_file_1.id,
+            'data_state': DATA_STATE_MAPPING,
+            'no_default_data': False,
+        }
+        # Create property in first ImportFile
+        ps_1 = self.property_state_factory.get_property_state(**base_details)
+
+        self.import_file_1.mapping_done = True
+        self.import_file_1.save()
+        match_buildings(self.import_file_1.id)
+
+        # Create properties from second ImportFile, one matching existing PropertyState
+        base_details['import_file_id'] = self.import_file_2.id
+
+        base_details['city'] = 'Denver'
+        ps_2 = self.property_state_factory.get_property_state(**base_details)
+
+        base_details['pm_property_id'] = '11111'
+        base_details['city'] = 'Philadelphia'
+        ps_3 = self.property_state_factory.get_property_state(**base_details)
+
+        self.import_file_2.mapping_done = True
+        self.import_file_2.save()
+        match_buildings(self.import_file_2.id)
+
+        # 2 Property, 2 PropertyViews, 4 PropertyStates (3 imported, 1 merge result)
+        self.assertEqual(Property.objects.count(), 2)
+        self.assertEqual(PropertyView.objects.count(), 2)
+        self.assertEqual(PropertyState.objects.count(), 4)
+
+        cities_from_views = []
+        ps_ids_from_views = []
+        for pv in PropertyView.objects.all():
+            cities_from_views.append(pv.state.city)
+            ps_ids_from_views.append(pv.state_id)
+
+        self.assertIn('Denver', cities_from_views)
+        self.assertIn('Philadelphia', cities_from_views)
+
+        self.assertIn(ps_3.id, ps_ids_from_views)
+        self.assertNotIn(ps_1.id, ps_ids_from_views)
+        self.assertNotIn(ps_2.id, ps_ids_from_views)
+
+    def test_match_taxlots_if_all_default_fields_match(self):
+        base_details = {
+            'address_line_1': '123 Match Street',
+            'import_file_id': self.import_file_1.id,
+            'data_state': DATA_STATE_MAPPING,
+            'no_default_data': False,
+        }
+        # Create property in first ImportFile
+        tls_1 = self.taxlot_state_factory.get_taxlot_state(**base_details)
+
+        self.import_file_1.mapping_done = True
+        self.import_file_1.save()
+        match_buildings(self.import_file_1.id)
+
+        # Create properties from second ImportFile, one matching existing PropertyState
+        base_details['import_file_id'] = self.import_file_2.id
+
+        base_details['city'] = 'Denver'
+        tls_2 = self.taxlot_state_factory.get_taxlot_state(**base_details)
+
+        base_details['jurisdiction_tax_lot_id'] = '11111'
+        base_details['city'] = 'Philadelphia'
+        tls_3 = self.taxlot_state_factory.get_taxlot_state(**base_details)
+
+        self.import_file_2.mapping_done = True
+        self.import_file_2.save()
+        match_buildings(self.import_file_2.id)
+
+        # 2 TaxLot, 2 TaxLotViews, 4 TaxLotStates (3 imported, 1 merge result)
+        self.assertEqual(TaxLot.objects.count(), 2)
+        self.assertEqual(TaxLotView.objects.count(), 2)
+        self.assertEqual(TaxLotState.objects.count(), 4)
+
+        cities_from_views = []
+        tls_ids_from_views = []
+        for tlv in TaxLotView.objects.all():
+            cities_from_views.append(tlv.state.city)
+            tls_ids_from_views.append(tlv.state_id)
+
+        self.assertIn('Denver', cities_from_views)
+        self.assertIn('Philadelphia', cities_from_views)
+
+        self.assertIn(tls_3.id, tls_ids_from_views)
+        self.assertNotIn(tls_1.id, tls_ids_from_views)
+        self.assertNotIn(tls_2.id, tls_ids_from_views)
+
+    def test_match_properties_using_extra_data_field(self):
+        # Create extra_data column and make it matching criteria
+        Column.objects.create(
+            organization_id=self.org.id,
+            column_name='ed_1',
+            is_extra_data=True,
+            table_name='PropertyState',
+            is_matching_criteria=True
+        )
+
+        base_details = {
+            'import_file_id': self.import_file_1.id,
+            'data_state': DATA_STATE_MAPPING,
+            'no_default_data': False,
+            'extra_data': {'ed_1': 'some matching value'},
+        }
+
+        ps_1 = self.property_state_factory.get_property_state(**base_details)
+
+        # set import_file mapping done so that matching can occur.
+        self.import_file_1.mapping_done = True
+        self.import_file_1.save()
+        match_buildings(self.import_file_1.id)
+
+        # Create properties from second ImportFile, one matching existing PropertyState
+        base_details['import_file_id'] = self.import_file_2.id
+        base_details['city'] = 'Denver'
+        ps_2 = self.property_state_factory.get_property_state(**base_details)
+
+        base_details['extra_data']['ed_1'] = 'non-matching value'
+        ps_3 = self.property_state_factory.get_property_state(**base_details)
+
+        # set import_file mapping done so that matching can occur.
+        self.import_file_2.mapping_done = True
+        self.import_file_2.save()
+        match_buildings(self.import_file_2.id)
+
+        # 2 Property, 2 PropertyView, 4 PropertyStates (3 imported, 1 merge result)
+        self.assertEqual(Property.objects.count(), 2)
+        self.assertEqual(PropertyView.objects.count(), 2)
+        self.assertEqual(PropertyState.objects.count(), 4)
+
+        ps_ids_from_views = [pv.state_id for pv in PropertyView.objects.all()]
+        self.assertIn(ps_3.id, ps_ids_from_views)
+        self.assertNotIn(ps_1.id, ps_ids_from_views)
+        self.assertNotIn(ps_2.id, ps_ids_from_views)
+
+    def test_match_taxlots_using_extra_data_field(self):
+        # Create extra_data column and make it matching criteria
+        Column.objects.create(
+            organization_id=self.org.id,
+            column_name='ed_1',
+            is_extra_data=True,
+            table_name='TaxLotState',
+            is_matching_criteria=True
+        )
+
+        base_details = {
+            'import_file_id': self.import_file_1.id,
+            'data_state': DATA_STATE_MAPPING,
+            'no_default_data': False,
+            'extra_data': {'ed_1': 'some matching value'},
+        }
+
+        tls_1 = self.taxlot_state_factory.get_taxlot_state(**base_details)
+
+        # set import_file mapping done so that matching can occur.
+        self.import_file_1.mapping_done = True
+        self.import_file_1.save()
+        match_buildings(self.import_file_1.id)
+
+        # Create taxlots from second ImportFile, one matching existing TaxLotState
+        base_details['import_file_id'] = self.import_file_2.id
+        base_details['city'] = 'Denver'
+        tls_2 = self.taxlot_state_factory.get_taxlot_state(**base_details)
+
+        base_details['extra_data']['ed_1'] = 'non-matching value'
+        tls_3 = self.taxlot_state_factory.get_taxlot_state(**base_details)
+
+        # set import_file mapping done so that matching can occur.
+        self.import_file_2.mapping_done = True
+        self.import_file_2.save()
+        match_buildings(self.import_file_2.id)
+
+        # 2 TaxLot, 2 TaxLotView, 4 TaxLotStates (3 imported, 1 merge result)
+        self.assertEqual(TaxLot.objects.count(), 2)
+        self.assertEqual(TaxLotView.objects.count(), 2)
+        self.assertEqual(TaxLotState.objects.count(), 4)
+
+        tls_ids_from_views = [tlv.state_id for tlv in TaxLotView.objects.all()]
+        self.assertIn(tls_3.id, tls_ids_from_views)
+        self.assertNotIn(tls_1.id, tls_ids_from_views)
+        self.assertNotIn(tls_2.id, tls_ids_from_views)
+
+
 class TestMatchingHelperMethods(DataMappingBaseTestCase):
     def setUp(self):
         selfvars = self.set_up(ASSESSED_RAW)
