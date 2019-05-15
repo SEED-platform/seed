@@ -123,7 +123,7 @@ class TestProperties(DataMappingBaseTestCase):
             # grab all the other relationships that this would have merged
             # for now just verify that 3 records were merged.
             self.assertTrue(True)
-            self.assertEqual(len(history), 3)
+            self.assertEqual(len(history), 2)
             self.assertEqual(history[0]['filename'], 'example-data-properties-small-changes.xlsx')
-            self.assertEqual(history[1]['filename'], 'example-data-properties-small-changes.xlsx')
-            self.assertEqual(history[2]['filename'], 'example-data-properties.xlsx')
+            # self.assertEqual(history[1]['filename'], 'example-data-properties-small-changes.xlsx')
+            self.assertEqual(history[1]['filename'], 'example-data-properties.xlsx')
