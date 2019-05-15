@@ -114,10 +114,10 @@ def merge_unmatched_into_views(unmatched_states, org, import_file):
             for column
             in matching_criteria_column_names
         }
-        state_matches = ObjectStateClass.objects.filter(id__in=state_ids_from_views, **matching_criteria).order_by('-id')
+        state_match = ObjectStateClass.objects.filter(id__in=state_ids_from_views, **matching_criteria)
 
-        if state_matches.exists() and any(v is not None for v in matching_criteria.values()):
-            merge_data.append([state] + list(state_matches))
+        if state_match.exists() and any(v is not None for v in matching_criteria.values()):
+            merge_data.append((state_match.first(), state))
             continue
 
         promote_data.append([state, current_match_cycle])
@@ -128,15 +128,12 @@ def merge_unmatched_into_views(unmatched_states, org, import_file):
     try:
         with transaction.atomic():
             for datum in merge_data:
-                merge_state = datum.pop()
-                initial_view = ObjectViewClass.objects.get(state_id=merge_state.id)
+                existing_state, newer_state = datum
+                initial_view = ObjectViewClass.objects.get(state_id=existing_state.id)
 
-                while len(datum) > 0:
-                    newer_state = datum.pop()  # This is newer due to the previous sort by PK
-                    merge_state = save_state_match(merge_state, newer_state, priorities)
-                    initial_view.state = merge_state
-
+                initial_view.state = save_state_match(existing_state, newer_state, priorities)
                 initial_view.save()
+
                 matched_views.append(initial_view)
 
             for promote_datum in promote_data:
