@@ -47,7 +47,7 @@ class TestEquivalenceWithFile(DataMappingBaseTestCase):
 
     def test_equivalence(self):
         all_unmatched_properties = self.import_file.find_unmatched_property_states()
-        unmatched_properties, duplicate_property_states = match.filter_duplicated_states(
+        unmatched_properties, duplicate_property_states = match.filter_duplicate_states(
             all_unmatched_properties
         )
         partitioner = EquivalencePartitioner.make_propertystate_equivalence()

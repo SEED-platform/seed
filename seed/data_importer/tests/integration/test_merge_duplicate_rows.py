@@ -198,7 +198,7 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
         self.assertEqual(len(hashes), 9)
         self.assertEqual(len(set(hashes)), 4)
 
-        unique_property_states, _ = match.filter_duplicated_states(ps)
+        unique_property_states, _ = match.filter_duplicate_states(ps)
         self.assertEqual(len(unique_property_states), 4)
 
         tasks.match_buildings(self.import_file.id)

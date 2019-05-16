@@ -17,13 +17,10 @@ from django.db import (
     transaction,
 )
 
+from functools import reduce
+
 from itertools import chain
-# from seed.data_importer.equivalence_partitioner import EquivalencePartitioner
-from seed.data_importer.models import (
-    ImportFile,
-    # ImportRecord,
-    # STATUS_READY_TO_MERGE,
-)
+from seed.data_importer.models import ImportFile
 from seed.decorators import lock_and_track
 from seed.lib.merging import merging
 from seed.lib.progress_data.progress_data import ProgressData
@@ -46,6 +43,35 @@ from seed.models import (
 from seed.models.auditlog import AUDIT_IMPORT
 
 _log = get_task_logger(__name__)
+
+
+def filter_duplicate_states(unmatched_states):
+    """
+    Takes a QuerySet of -States, where some records are exact duplicates of
+    others. This method returns two lists:
+        - IDs of unique -States + IDs for representative -States of duplicates
+        - IDs of duplicate -States not chosen to represent their set of duplicates
+
+    This is done by constructing a dictionary where the keys are hash_objects
+    and the values are lists of IDs of -States with that hash_object.
+
+    The first list being returned is created by taking one member of each of
+    the dictionary values (list of IDs). The second is created by combining the
+    remaining dictionary values into one list.
+
+    :param unmatched_states: QuerySet, unmatched states
+    :return: canonical_state_ids, duplicate_state_ids
+    """
+
+    hash_object_ids = defaultdict(list)
+    for unmatched in unmatched_states:
+        hash_object_ids[unmatched.hash_object].append(unmatched.pk)
+
+    ids_grouped_by_hash = hash_object_ids.values()
+    canonical_state_ids = [ids.pop() for ids in ids_grouped_by_hash]
+    duplicate_state_ids = reduce(lambda x, y: x + y, ids_grouped_by_hash)
+
+    return canonical_state_ids, duplicate_state_ids
 
 
 # @cprofile(n=50)
@@ -147,7 +173,7 @@ def merge_unmatched_into_views(unmatched_states, org, import_file):
 
 # from seed.utils.cprofile import cprofile
 # @cprofile()
-def match_and_merge_unmatched_objects(unmatched_states):
+def match_and_merge_unmatched_objects(unmatched_state_ids, ObjectStateClass):
     """
     Take a list of unmatched_property_states or unmatched_tax_lot_states and returns a set of
     states that correspond to unmatched states.
@@ -156,6 +182,7 @@ def match_and_merge_unmatched_objects(unmatched_states):
     :param partitioner: instance of EquivalencePartitioner
     :return: [list, list], merged_objects, equivalence_classes keys
     """
+    unmatched_states = list(ObjectStateClass.objects.filter(pk__in=unmatched_state_ids))
     organization = unmatched_states[0].organization
     table_name = type(unmatched_states[0]).__name__
 
@@ -206,34 +233,6 @@ def match_and_merge_unmatched_objects(unmatched_states):
     return merged_objects
 
 
-def filter_duplicated_states(unmatched_states):
-    """
-    Takes a list of states, where some values may contain the same data
-    as others, and returns two lists.  The first list consists of a
-    single state for each equivalent set of states in
-    unmatched_states.  The second list consists of all the
-    non-representative states which (for example) could be deleted.
-
-    :param unmatched_states: List, unmatched states
-    :return:
-    """
-
-    hash_values = []
-    for unmatch in unmatched_states:
-        hash_values.append(unmatch.hash_object)
-    equality_classes = defaultdict(list)
-
-    for (ndx, hashval) in enumerate(hash_values):
-        equality_classes[hashval].append(ndx)
-
-    canonical_states = [unmatched_states[equality_list[0]] for equality_list in
-                        equality_classes.values()]
-    canonical_state_ids = set([s.pk for s in canonical_states])
-    noncanonical_states = [u for u in unmatched_states if u.pk not in canonical_state_ids]
-
-    return canonical_states, noncanonical_states
-
-
 @shared_task
 @lock_and_track
 # @cprofile()
@@ -264,19 +263,19 @@ def match_properties_and_taxlots(file_pk, progress_key):
     duplicates_of_existing_taxlot_states = []
     if all_unmatched_properties:
         # Filter out the duplicates within the import file.
-        _log.debug("Start filter_duplicated_states: %s" % dt.datetime.now().strftime(
+        _log.debug("Start filter_duplicate_states: %s" % dt.datetime.now().strftime(
             "%Y-%m-%d %H:%M:%S"))
-        unmatched_properties, duplicate_property_states = filter_duplicated_states(
+        unmatched_property_ids, duplicate_property_state_ids = filter_duplicate_states(
             all_unmatched_properties
         )
-        _log.debug("End filter_duplicated_states: %s" % dt.datetime.now().strftime(
+        _log.debug("End filter_duplicate_states: %s" % dt.datetime.now().strftime(
             "%Y-%m-%d %H:%M:%S"))
 
         # Merge everything together based on the notion of equivalence
         # provided by the partitioner, while ignoring duplicates.
         _log.debug("Start match_and_merge_unmatched_objects: %s" % dt.datetime.now().strftime(
             "%Y-%m-%d %H:%M:%S"))
-        unmatched_properties = match_and_merge_unmatched_objects(unmatched_properties)
+        unmatched_properties = match_and_merge_unmatched_objects(unmatched_property_ids, PropertyState)
         _log.debug("End match_and_merge_unmatched_objects: %s" % dt.datetime.now().strftime(
             "%Y-%m-%d %H:%M:%S"))
 
@@ -299,7 +298,7 @@ def match_properties_and_taxlots(file_pk, progress_key):
         unmatched_properties = [state for state in unmatched_properties
                                 if state not in duplicates_of_existing_property_states]
     else:
-        duplicate_property_states = []
+        duplicate_property_state_ids = []
         merged_property_views = []
 
     # Do the same process with the TaxLots.
@@ -308,12 +307,12 @@ def match_properties_and_taxlots(file_pk, progress_key):
     if all_unmatched_tax_lots:
         # Filter out the duplicates.  Do we actually want to delete them
         # here?  Mark their abandonment in the Audit Logs?
-        unmatched_tax_lots, duplicate_tax_lot_states = filter_duplicated_states(
+        unmatched_tax_lot_ids, duplicate_tax_lot_state_ids = filter_duplicate_states(
             all_unmatched_tax_lots)
 
         # Merge everything together based on the notion of equivalence
         # provided by the partitioner.
-        unmatched_tax_lots = match_and_merge_unmatched_objects(unmatched_tax_lots)
+        unmatched_tax_lots = match_and_merge_unmatched_objects(unmatched_tax_lot_ids, TaxLotState)
 
         # Take the final merged-on-import objects, and find Views that
         # correspond to it and merge those together.
@@ -333,7 +332,7 @@ def match_properties_and_taxlots(file_pk, progress_key):
         unmatched_tax_lots = [state for state in unmatched_tax_lots if
                               state not in duplicates_of_existing_taxlot_states]
     else:
-        duplicate_tax_lot_states = []
+        duplicate_tax_lot_state_ids = []
         merged_taxlot_views = []
 
     # TODO #239: This is the next slowest... fix me too.
@@ -357,19 +356,17 @@ def match_properties_and_taxlots(file_pk, progress_key):
             state.merge_state = MERGE_STATE_NEW
         state.save()
 
-    for state in chain(duplicate_property_states, duplicate_tax_lot_states):
-        state.data_state = DATA_STATE_DELETE
-        # state.merge_state = MERGE_STATE_DUPLICATE
-        state.save()
+    PropertyState.objects.filter(pk__in=duplicate_property_state_ids).update(data_state=DATA_STATE_DELETE)
+    TaxLotState.objects.filter(pk__in=duplicate_tax_lot_state_ids).update(data_state=DATA_STATE_DELETE)
 
     return {
         'import_file_records': import_file.num_rows,
         'property_all_unmatched': len(all_unmatched_properties),
-        'property_duplicates': len(duplicate_property_states),
+        'property_duplicates': len(duplicate_property_state_ids),
         'property_duplicates_of_existing': len(duplicates_of_existing_property_states),
         'property_unmatched': len(unmatched_properties),
         'tax_lot_all_unmatched': len(all_unmatched_tax_lots),
-        'tax_lot_duplicates': len(duplicate_tax_lot_states),
+        'tax_lot_duplicates': len(duplicate_tax_lot_state_ids),
         'tax_lot_duplicates_of_existing': len(duplicates_of_existing_taxlot_states),
         'tax_lot_unmatched': len(unmatched_tax_lots),
     }
