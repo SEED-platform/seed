@@ -75,7 +75,7 @@ def filter_duplicate_states(unmatched_states):
 
 
 # @cprofile(n=50)
-def merge_unmatched_into_views(unmatched_states, org, import_file):
+def merge_unmatched_into_views(unmatched_state_ids, org, import_file, ObjectStateClass):
     """
     This is fairly inefficient, because we grab all the organization's entire PropertyViews at once.
     Surely this can be improved, but the logic is unusual/particularly dynamic here, so hopefully
@@ -93,17 +93,14 @@ def merge_unmatched_into_views(unmatched_states, org, import_file):
     # Cycle coming from the import_file does not make sense here.
     # Makes testing hard. Should be an argument.
     current_match_cycle = import_file.cycle
-    organization = unmatched_states[0].organization
-    table_name = type(unmatched_states[0]).__name__
+    organization = org
+    table_name = ObjectStateClass.__name__
+    unmatched_states = ObjectStateClass.objects.filter(pk__in=unmatched_state_ids)
 
     if table_name == 'PropertyState':
-        ObjectStateClass = PropertyState
         ObjectViewClass = PropertyView
-        # ParentAttrName = "property"
     elif table_name == 'TaxLotState':
-        ObjectStateClass = TaxLotState
         ObjectViewClass = TaxLotView
-        # ParentAttrName = "taxlot"
     else:
         raise ValueError("Unknown class '{}' passed to merge_unmatched_into_views".format(
             type(unmatched_states[0])))
@@ -182,55 +179,46 @@ def match_and_merge_unmatched_objects(unmatched_state_ids, ObjectStateClass):
     :param partitioner: instance of EquivalencePartitioner
     :return: [list, list], merged_objects, equivalence_classes keys
     """
-    unmatched_states = list(ObjectStateClass.objects.filter(pk__in=unmatched_state_ids))
-    organization = unmatched_states[0].organization
-    table_name = type(unmatched_states[0]).__name__
+    example_state = ObjectStateClass.objects.get(pk=unmatched_state_ids[0])
+    organization = example_state.organization
+    table_name = ObjectStateClass.__name__
 
-    # Collect matching criteria columns while replacing address_line_1 with
-    # normalized_address if applicable. No errors if normalized_address shows up
-    # twice, which shouldn't really happen anyway.
-    matching_criteria_column_names = [
-        'normalized_address' if c.column_name == "address_line_1" else c.column_name
-        for c
-        in Column.objects.filter(
-            organization_id=organization.id,
-            is_matching_criteria=True,
-            table_name=table_name
-        )
-    ]
+    promoted_ids = _empty_criteria_ids(unmatched_state_ids, example_state, ObjectStateClass, table_name)
+    unmatched_state_ids = list(
+        set(unmatched_state_ids) - set(promoted_ids)
+    )
 
-    merged_objects = []
-    unmatched_ids = defaultdict(list)
-    # Iterate through sorted -States (by ascending PK) ensuring precedence is
-    # given to newer state on merges done later.
-    for state in sorted(unmatched_states, key=lambda state: -getattr(state, "pk", None)):
-        matching_criteria_values = tuple(
-            getattr(
-                state,
-                column_name,
-                state.extra_data.get(column_name, None)
+    matching_states = []
+    while unmatched_state_ids:
+        state_id = unmatched_state_ids.pop()
+        state = ObjectStateClass.objects.get(pk=state_id)
+
+        matching_criteria = _matching_filter_criteria(organization.id, table_name, state)
+        state_matches = ObjectStateClass.objects.filter(
+            id__in=unmatched_state_ids + [state_id],
+            **matching_criteria
+        ).order_by('-id')
+
+        if state_matches.exists():
+            matching_states.append(state_matches)
+            unmatched_state_ids = list(
+                set(unmatched_state_ids) - set(state_matches.values_list('id', flat=True))
             )
-            for column_name
-            in matching_criteria_column_names
-        )
-
-        # If values are all None append -State to return list
-        if all(value is None for value in matching_criteria_values):
-            merged_objects.append(state)
         else:
-            unmatched_ids[matching_criteria_values].append(state)
+            promoted_ids.append(state.id)
 
     priorities = Column.retrieve_priorities(organization)
-    for ids in unmatched_ids.values():
-        merge_state = ids.pop()
+    for states in matching_states:
+        states = list(states)
+        merge_state = states.pop()
 
-        while len(ids) > 0:
-            newer_state = ids.pop()  # This is newer due to the previous sort by PK
+        while len(states) > 0:
+            newer_state = states.pop()
             merge_state = save_state_match(merge_state, newer_state, priorities)
 
-        merged_objects.append(merge_state)
+        promoted_ids.append(merge_state.id)
 
-    return merged_objects
+    return promoted_ids
 
 
 @shared_task
@@ -275,7 +263,7 @@ def match_properties_and_taxlots(file_pk, progress_key):
         # provided by the partitioner, while ignoring duplicates.
         _log.debug("Start match_and_merge_unmatched_objects: %s" % dt.datetime.now().strftime(
             "%Y-%m-%d %H:%M:%S"))
-        unmatched_properties = match_and_merge_unmatched_objects(unmatched_property_ids, PropertyState)
+        unmatched_property_ids = match_and_merge_unmatched_objects(unmatched_property_ids, PropertyState)
         _log.debug("End match_and_merge_unmatched_objects: %s" % dt.datetime.now().strftime(
             "%Y-%m-%d %H:%M:%S"))
 
@@ -285,9 +273,10 @@ def match_properties_and_taxlots(file_pk, progress_key):
         _log.debug("Start merge_unmatched_into_views: %s" % dt.datetime.now().strftime(
             "%Y-%m-%d %H:%M:%S"))
         merged_property_views = merge_unmatched_into_views(
-            unmatched_properties,
+            unmatched_property_ids,
             org,
-            import_file
+            import_file,
+            PropertyState
         )
         _log.debug(
             "End merge_unmatched_into_views: %s" % dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
@@ -312,16 +301,17 @@ def match_properties_and_taxlots(file_pk, progress_key):
 
         # Merge everything together based on the notion of equivalence
         # provided by the partitioner.
-        unmatched_tax_lots = match_and_merge_unmatched_objects(unmatched_tax_lot_ids, TaxLotState)
+        unmatched_tax_lot_ids = match_and_merge_unmatched_objects(unmatched_tax_lot_ids, TaxLotState)
 
         # Take the final merged-on-import objects, and find Views that
         # correspond to it and merge those together.
         _log.debug("Start tax_lot merge_unmatched_into_views: %s" % dt.datetime.now().strftime(
             "%Y-%m-%d %H:%M:%S"))
         merged_taxlot_views = merge_unmatched_into_views(
-            unmatched_tax_lots,
+            unmatched_tax_lot_ids,
             org,
-            import_file
+            import_file,
+            TaxLotState
         )
         _log.debug("End tax_lot merge_unmatched_into_views: %s" % dt.datetime.now().strftime(
             "%Y-%m-%d %H:%M:%S"))
@@ -436,3 +426,57 @@ def save_state_match(state1, state2, priorities):
     merged_state.save()
 
     return merged_state
+
+
+def _empty_criteria_ids(unmatched_state_ids, example_state, ObjectStateClass, table_name):
+    empty_criteria_filter = {
+        '{}__isnull'.format(_filter_column_name(example_state, column_name)): True
+        for column_name
+        in _matching_criteria_column_names(example_state.organization_id, table_name)
+    }
+    return list(
+        ObjectStateClass.objects.filter(
+            pk__in=unmatched_state_ids,
+            **empty_criteria_filter
+        ).values_list('id', flat=True)
+    )
+
+def _matching_filter_criteria(organization_id, table_name, state):
+    return {
+        _filter_column_name(state, column_name): _filter_column_value(state, column_name)
+        for column_name
+        in _matching_criteria_column_names(organization_id, table_name)
+    }
+
+
+def _matching_criteria_column_names(organization_id, table_name):
+    """
+    Collect matching criteria columns while replacing address_line_1 with
+    normalized_address if applicable. A Python set is returned to handle the
+    case where normalized_address might show up twice, which shouldn't really
+    happen anyway.
+    """
+    return {
+        'normalized_address' if c.column_name == "address_line_1" else c.column_name
+        for c
+        in Column.objects.filter(
+            organization_id=organization_id,
+            is_matching_criteria=True,
+            table_name=table_name
+        )
+    }
+
+
+def _filter_column_name(state, column_name):
+    if hasattr(state, column_name):
+        return column_name
+    else:
+        return 'extra_data__{}'.format(column_name)
+
+
+def _filter_column_value(state, column_name):
+    return getattr(
+        state,
+        column_name,
+        state.extra_data.get(column_name, None)
+    )
