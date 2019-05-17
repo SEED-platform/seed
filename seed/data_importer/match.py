@@ -16,6 +16,7 @@ from django.db import (
     IntegrityError,
     transaction,
 )
+from django.db.models import Subquery
 
 from functools import reduce
 
@@ -75,7 +76,7 @@ def filter_duplicate_states(unmatched_states):
 
 
 # @cprofile(n=50)
-def merge_unmatched_into_views(unmatched_state_ids, org, import_file, ObjectStateClass):
+def merge_unmatched_into_views(unmatched_state_ids, org, cycle, ObjectStateClass):
     """
     This is fairly inefficient, because we grab all the organization's entire PropertyViews at once.
     Surely this can be improved, but the logic is unusual/particularly dynamic here, so hopefully
@@ -89,83 +90,61 @@ def merge_unmatched_into_views(unmatched_state_ids, org, import_file, ObjectStat
     :param import_file:
     :return:
     """
-
-    # Cycle coming from the import_file does not make sense here.
-    # Makes testing hard. Should be an argument.
-    current_match_cycle = import_file.cycle
-    organization = org
     table_name = ObjectStateClass.__name__
-    unmatched_states = ObjectStateClass.objects.filter(pk__in=unmatched_state_ids)
 
     if table_name == 'PropertyState':
         ObjectViewClass = PropertyView
     elif table_name == 'TaxLotState':
         ObjectViewClass = TaxLotView
-    else:
-        raise ValueError("Unknown class '{}' passed to merge_unmatched_into_views".format(
-            type(unmatched_states[0])))
 
-    matching_criteria_column_names = [
-        'normalized_address' if c.column_name == "address_line_1" else c.column_name
-        for c
-        in Column.objects.filter(
-            organization_id=organization.id,
-            is_matching_criteria=True,
-            table_name=table_name
-        )
-    ]
+    existing_cycle_views = ObjectViewClass.objects.filter(cycle_id=cycle)
 
-    state_ids_from_views = [
-        view.state_id
-        for view
-        in ObjectViewClass.objects.filter(
-            state__organization=organization,
-            cycle_id=current_match_cycle
-        )
-    ]
+    # Apply DATA_STATE_DELETE to incoming duplicate -States of existing -States in Cycle
+    existing_states = ObjectStateClass.objects.filter(pk__in=Subquery(existing_cycle_views.values('state_id')))
+    ObjectStateClass.objects.filter(
+        pk__in=unmatched_state_ids,
+        hash_object__in=Subquery(existing_states.values('hash_object'))
+    ).update(data_state=DATA_STATE_DELETE)
 
-    merge_data = []
-    promote_data = []
+    # For incoming -States, filter those duplicates and identify -States with matches
+    unmatched_states = ObjectStateClass.objects.filter(pk__in=unmatched_state_ids).exclude(data_state=DATA_STATE_DELETE)
+    merge_state_pairs = []
+    promote_states = []
     for state in unmatched_states:
-        if PropertyState.objects.filter(id__in=state_ids_from_views, hash_object=state.hash_object).exists():
-            state.data_state = DATA_STATE_DELETE
-            state.save()
-            continue
-
-        matching_criteria = {
-            (column if hasattr(state, column) else 'extra_data__{}'.format(column)): (getattr(state, column, None) if hasattr(state, column) else state.extra_data.get(column, None))
-            for column
-            in matching_criteria_column_names
-        }
-        state_match = ObjectStateClass.objects.filter(id__in=state_ids_from_views, **matching_criteria)
+        matching_criteria = _matching_filter_criteria(org.id, table_name, state)
+        state_match = ObjectStateClass.objects.filter(
+            id__in=Subquery(existing_cycle_views.values('state_id')),
+            **matching_criteria
+        )
 
         if state_match.exists() and any(v is not None for v in matching_criteria.values()):
-            merge_data.append((state_match.first(), state))
-            continue
+            merge_state_pairs.append((state_match.first(), state))
+        else:
+            promote_states.append(state)
 
-        promote_data.append([state, current_match_cycle])
-
-    # _log.debug("There are %s merge_data and %s promote_data" % (len(merge_data), len(promote_data)))
-    matched_views = []  # this gets passed at the end. seems to be the views that have been updated
-    priorities = Column.retrieve_priorities(organization.pk)
+    # Process -States into -Views
+    _log.debug("There are %s merge_state_pairs and %s promote_states" % (len(merge_state_pairs), len(promote_states)))
+    processed_views = []
+    priorities = Column.retrieve_priorities(org.pk)
     try:
         with transaction.atomic():
-            for datum in merge_data:
-                existing_state, newer_state = datum
-                initial_view = ObjectViewClass.objects.get(state_id=existing_state.id)
+            for state_pair in merge_state_pairs:
+                existing_state, newer_state = state_pair
+                existing_view = ObjectViewClass.objects.get(state_id=existing_state.id)
 
-                initial_view.state = save_state_match(existing_state, newer_state, priorities)
-                initial_view.save()
+                # Merge -States and assign new/merged -State to existing -View
+                existing_view.state = save_state_match(existing_state, newer_state, priorities)
+                existing_view.save()
 
-                matched_views.append(initial_view)
+                processed_views.append(existing_view)
 
-            for promote_datum in promote_data:
-                created_view = promote_datum[0].promote(promote_datum[1])
-                matched_views.append(created_view)
+            for state in promote_states:
+                created_view = state.promote(cycle)
+                processed_views.append(created_view)
     except IntegrityError as e:
         raise IntegrityError("Could not merge results with error: %s" % (e))
 
-    return list(set(matched_views))
+    return list(set(processed_views))
 
 
 # from seed.utils.cprofile import cprofile
@@ -275,7 +254,7 @@ def match_properties_and_taxlots(file_pk, progress_key):
         merged_property_views = merge_unmatched_into_views(
             unmatched_property_ids,
             org,
-            import_file,
+            import_file.cycle,
             PropertyState
         )
         _log.debug(
@@ -310,7 +289,7 @@ def match_properties_and_taxlots(file_pk, progress_key):
         merged_taxlot_views = merge_unmatched_into_views(
             unmatched_tax_lot_ids,
             org,
-            import_file,
+            import_file.cycle,
             TaxLotState
         )
         _log.debug("End tax_lot merge_unmatched_into_views: %s" % dt.datetime.now().strftime(
@@ -440,6 +419,7 @@ def _empty_criteria_ids(unmatched_state_ids, example_state, ObjectStateClass, ta
             **empty_criteria_filter
         ).values_list('id', flat=True)
     )
+
 
 def _matching_filter_criteria(organization_id, table_name, state):
     return {
