@@ -66,10 +66,10 @@ class TestProperties(DataMappingBaseTestCase):
         # get a specific test case with coparents.
         #   Pizza House is the Child
         #   Retail is the Master / Parent
-        property_state = PropertyState.objects.filter(
+        property_state = PropertyState.objects.filter( # TODO: revisit this. Under what circumstances should DATA_STATE_MATCHING be applied to a -State
             use_description='Pizza House',
             import_file_id=self.import_file_2,
-            data_state__in=[DATA_STATE_MATCHING],
+            # data_state__in=[DATA_STATE_MATCHING],
             merge_state__in=[MERGE_STATE_UNKNOWN, MERGE_STATE_NEW]
         ).first()
 
@@ -88,12 +88,12 @@ class TestProperties(DataMappingBaseTestCase):
 
     def test_get_history(self):
         # This is the last property state of the object that is in test_coparent test above
-        property_state = PropertyState.objects.filter(
+        property_state = PropertyState.objects.get( # TODO: History of latest, merged -State contains both files - verify what was intended...
             use_description='Pizza House',
-            ubid='86HJX5QV+FJ3-2-3-2-2',
-            data_state__in=[DATA_STATE_MATCHING],
-            merge_state__in=[MERGE_STATE_MERGED]
-        ).first()
+            data_state=DATA_STATE_MATCHING,
+            merge_state=MERGE_STATE_MERGED
+        )
+
         self.assertIsNotNone(property_state)
         history, master = property_state.history()
 

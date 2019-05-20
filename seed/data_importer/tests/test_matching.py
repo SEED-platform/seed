@@ -637,8 +637,8 @@ class TestMatchingHelperMethods(DataMappingBaseTestCase):
             )
 
         props = self.import_file.find_unmatched_property_states()
-        uniq_state_ids, dup_state_ids = filter_duplicate_states(props)
+        uniq_state_ids, dup_state_count = filter_duplicate_states(props)
 
         # There should be 6 uniq states. 5 from the second call, and one of 'The Same Address'
         self.assertEqual(len(uniq_state_ids), 6)
-        self.assertEqual(len(dup_state_ids), 9)
+        self.assertEqual(dup_state_count, 9)

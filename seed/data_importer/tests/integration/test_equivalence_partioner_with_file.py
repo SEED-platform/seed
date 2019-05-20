@@ -17,6 +17,7 @@ from seed.data_importer.tests.util import (
 from seed.models import (
     ASSESSED_RAW,
     Column,
+    PropertyState
 )
 
 logger = logging.getLogger(__name__)
@@ -47,10 +48,11 @@ class TestEquivalenceWithFile(DataMappingBaseTestCase):
 
     def test_equivalence(self):
         all_unmatched_properties = self.import_file.find_unmatched_property_states()
-        unmatched_properties, duplicate_property_states = match.filter_duplicate_states(
+        unmatched_property_ids, duplicate_property_count = match.filter_duplicate_states(
             all_unmatched_properties
         )
         partitioner = EquivalencePartitioner.make_propertystate_equivalence()
 
+        unmatched_properties = list(PropertyState.objects.filter(pk__in=unmatched_property_ids))
         equiv_classes = partitioner.calculate_equivalence_classes(unmatched_properties)
         self.assertEqual(len(equiv_classes), 512)

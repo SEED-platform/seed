@@ -46,6 +46,10 @@ from seed.models.auditlog import AUDIT_IMPORT
 _log = get_task_logger(__name__)
 
 
+def log_debug(message):
+    _log.debug('{}: {}'.format(message, dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+
+
 def filter_duplicate_states(unmatched_states):
     """
     Takes a QuerySet of -States, where some records are exact duplicates of
@@ -71,12 +75,13 @@ def filter_duplicate_states(unmatched_states):
     ids_grouped_by_hash = hash_object_ids.values()
     canonical_state_ids = [ids.pop() for ids in ids_grouped_by_hash]
     duplicate_state_ids = reduce(lambda x, y: x + y, ids_grouped_by_hash)
+    duplicate_count = unmatched_states.filter(pk__in=duplicate_state_ids).update(data_state=DATA_STATE_DELETE)
 
-    return canonical_state_ids, duplicate_state_ids
+    return canonical_state_ids, duplicate_count
 
 
 # @cprofile(n=50)
-def merge_unmatched_into_views(unmatched_state_ids, org, cycle, ObjectStateClass):
+def states_to_views(unmatched_state_ids, org, cycle, ObjectStateClass):
     """
     This is fairly inefficient, because we grab all the organization's entire PropertyViews at once.
     Surely this can be improved, but the logic is unusual/particularly dynamic here, so hopefully
@@ -101,7 +106,7 @@ def merge_unmatched_into_views(unmatched_state_ids, org, cycle, ObjectStateClass
 
     # Apply DATA_STATE_DELETE to incoming duplicate -States of existing -States in Cycle
     existing_states = ObjectStateClass.objects.filter(pk__in=Subquery(existing_cycle_views.values('state_id')))
-    ObjectStateClass.objects.filter(
+    duplicate_count = ObjectStateClass.objects.filter(
         pk__in=unmatched_state_ids,
         hash_object__in=Subquery(existing_states.values('hash_object'))
     ).update(data_state=DATA_STATE_DELETE)
@@ -126,6 +131,7 @@ def merge_unmatched_into_views(unmatched_state_ids, org, cycle, ObjectStateClass
     _log.debug("There are %s merge_state_pairs and %s promote_states" % (len(merge_state_pairs), len(promote_states)))
     processed_views = []
     priorities = Column.retrieve_priorities(org.pk)
+    promoted_ids = []
     try:
         with transaction.atomic():
             for state_pair in merge_state_pairs:
@@ -139,17 +145,20 @@ def merge_unmatched_into_views(unmatched_state_ids, org, cycle, ObjectStateClass
                 processed_views.append(existing_view)
 
             for state in promote_states:
+                promoted_ids.append(state.id)
                 created_view = state.promote(cycle)
                 processed_views.append(created_view)
     except IntegrityError as e:
         raise IntegrityError("Could not merge results with error: %s" % (e))
 
-    return list(set(processed_views))
+    new_count = ObjectStateClass.objects.filter(pk__in=promoted_ids).update(data_state=DATA_STATE_MATCHING)
+
+    return list(set(processed_views)), duplicate_count, new_count
 
 
 # from seed.utils.cprofile import cprofile
 # @cprofile()
-def match_and_merge_unmatched_objects(unmatched_state_ids, ObjectStateClass):
+def inclusive_match_and_merge(unmatched_state_ids, ObjectStateClass):
     """
     Take a list of unmatched_property_states or unmatched_tax_lot_states and returns a set of
     states that correspond to unmatched states.
@@ -218,126 +227,91 @@ def match_properties_and_taxlots(file_pk, progress_key):
     # Don't query the org table here, just get the organization from the import_record
     org = import_file.import_record.super_organization
 
-    # Return a list of all the properties/tax lots based on the import file.
-    all_unmatched_properties = import_file.find_unmatched_property_states()
-
     # Set the progress to started - 33%
     progress_data.step('Matching data')
 
-    unmatched_properties = []
-    unmatched_tax_lots = []
-    duplicates_of_existing_property_states = []
-    duplicates_of_existing_taxlot_states = []
-    if all_unmatched_properties:
-        # Filter out the duplicates within the import file.
-        _log.debug("Start filter_duplicate_states: %s" % dt.datetime.now().strftime(
-            "%Y-%m-%d %H:%M:%S"))
-        unmatched_property_ids, duplicate_property_state_ids = filter_duplicate_states(
-            all_unmatched_properties
+    # Set defaults
+    file_duplicate_property_count = 0
+    file_duplicate_tax_lot_count = 0
+    existing_duplicate_property_count = 0
+    existing_duplicate_tax_lot_count = 0
+    new_property_count = 0
+    new_tax_lot_count = 0
+    merged_property_views = []
+    merged_taxlot_views = []
+
+    # Get lists of all the properties and tax lots based on the import file.
+    incoming_properties = import_file.find_unmatched_property_states()
+    incoming_tax_lots = import_file.find_unmatched_tax_lot_states()
+
+    if incoming_properties.exists():
+        # Within the ImportFile, filter out the duplicates.
+        log_debug("Start Properties filter_duplicate_states")
+        unmatched_property_ids, file_duplicate_property_count = filter_duplicate_states(
+            incoming_properties
         )
-        _log.debug("End filter_duplicate_states: %s" % dt.datetime.now().strftime(
-            "%Y-%m-%d %H:%M:%S"))
 
-        # Merge everything together based on the notion of equivalence
-        # provided by the partitioner, while ignoring duplicates.
-        _log.debug("Start match_and_merge_unmatched_objects: %s" % dt.datetime.now().strftime(
-            "%Y-%m-%d %H:%M:%S"))
-        unmatched_property_ids = match_and_merge_unmatched_objects(unmatched_property_ids, PropertyState)
-        _log.debug("End match_and_merge_unmatched_objects: %s" % dt.datetime.now().strftime(
-            "%Y-%m-%d %H:%M:%S"))
+        # Within the ImportFile, merge -States together based on user defined matching_criteria
+        log_debug('Start Properties inclusive_match_and_merge')
+        unmatched_property_ids = inclusive_match_and_merge(unmatched_property_ids, PropertyState)
 
-        # Take the final merged-on-import objects, and find Views that
-        # correspond to it and merge those together.
-        # TODO #239: This is quite slow... fix this next
-        _log.debug("Start merge_unmatched_into_views: %s" % dt.datetime.now().strftime(
-            "%Y-%m-%d %H:%M:%S"))
-        merged_property_views = merge_unmatched_into_views(
+        # Filter Cycle-wide duplicates then merge and/or assign -States to -Views
+        log_debug('Start Properties states_to_views')
+        merged_property_views, existing_duplicate_property_count, new_property_count = states_to_views(
             unmatched_property_ids,
             org,
             import_file.cycle,
             PropertyState
         )
-        _log.debug(
-            "End merge_unmatched_into_views: %s" % dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
-        # Filter out the exact duplicates found in the previous step
-        duplicates_of_existing_property_states = [state for state in unmatched_properties if
-                                                  state.data_state == DATA_STATE_DELETE]
-        unmatched_properties = [state for state in unmatched_properties
-                                if state not in duplicates_of_existing_property_states]
-    else:
-        duplicate_property_state_ids = []
-        merged_property_views = []
+        # # Indicate that matching has been run on -States still marked with DATA_STATE_MAPPING
+        # incoming_properties.filter(data_state=DATA_STATE_MAPPING).update(data_state=DATA_STATE_MATCHING)
 
-    # Do the same process with the TaxLots.
-    all_unmatched_tax_lots = import_file.find_unmatched_tax_lot_states()
+    if incoming_tax_lots.exists():
+        # Within the ImportFile, filter out the duplicates.
+        log_debug("Start TaxLots filter_duplicate_states")
+        unmatched_tax_lot_ids, file_duplicate_tax_lot_count = filter_duplicate_states(
+            incoming_tax_lots)
 
-    if all_unmatched_tax_lots:
-        # Filter out the duplicates.  Do we actually want to delete them
-        # here?  Mark their abandonment in the Audit Logs?
-        unmatched_tax_lot_ids, duplicate_tax_lot_state_ids = filter_duplicate_states(
-            all_unmatched_tax_lots)
+        # Within the ImportFile, merge -States together based on user defined matching_criteria
+        log_debug('Start TaxLots inclusive_match_and_merge')
+        unmatched_tax_lot_ids = inclusive_match_and_merge(unmatched_tax_lot_ids, TaxLotState)
 
-        # Merge everything together based on the notion of equivalence
-        # provided by the partitioner.
-        unmatched_tax_lot_ids = match_and_merge_unmatched_objects(unmatched_tax_lot_ids, TaxLotState)
-
-        # Take the final merged-on-import objects, and find Views that
-        # correspond to it and merge those together.
-        _log.debug("Start tax_lot merge_unmatched_into_views: %s" % dt.datetime.now().strftime(
-            "%Y-%m-%d %H:%M:%S"))
-        merged_taxlot_views = merge_unmatched_into_views(
+        # Filter Cycle-wide duplicates then merge and/or assign -States to -Views
+        log_debug('Start TaxLots states_to_views')
+        merged_taxlot_views, existing_duplicate_tax_lot_count, new_tax_lot_count = states_to_views(
             unmatched_tax_lot_ids,
             org,
             import_file.cycle,
             TaxLotState
         )
-        _log.debug("End tax_lot merge_unmatched_into_views: %s" % dt.datetime.now().strftime(
-            "%Y-%m-%d %H:%M:%S"))
 
-        # Filter out the exact duplicates found in the previous step
-        duplicates_of_existing_taxlot_states = [state for state in unmatched_tax_lots
-                                                if state.data_state == DATA_STATE_DELETE]
-        unmatched_tax_lots = [state for state in unmatched_tax_lots if
-                              state not in duplicates_of_existing_taxlot_states]
-    else:
-        duplicate_tax_lot_state_ids = []
-        merged_taxlot_views = []
+        # # Indicate that matching has been run on -States still marked with DATA_STATE_MAPPING
+        # incoming_tax_lots.filter(data_state=DATA_STATE_MAPPING).update(data_state=DATA_STATE_MATCHING)
 
-    # TODO #239: This is the next slowest... fix me too.
-    _log.debug("Start pair_new_states: %s" % dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    log_debug('Start pair_new_states')
     progress_data.step('Pairing data')
     pair_new_states(merged_property_views, merged_taxlot_views)
-    _log.debug("End pair_new_states: %s" % dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-
-    # Mark all the unmatched objects as done with matching and mapping
-    # There should be some kind of bulk-update/save thing we can do to
-    # improve upon this.
-    for state in chain(unmatched_properties, unmatched_tax_lots):
-        state.data_state = DATA_STATE_MATCHING
-        state.save()
+    log_debug('End pair_new_states')
 
     for state in map(lambda x: x.state, chain(merged_property_views, merged_taxlot_views)):
         state.data_state = DATA_STATE_MATCHING
         # The merge state seems backwards, but it isn't for some reason, if they are not marked as
-        # MERGE_STATE_MERGED when called in the merge_unmatched_into_views, then they are new.
+        # MERGE_STATE_MERGED when called in the states_to_views, then they are new.
         if state.merge_state != MERGE_STATE_MERGED:
             state.merge_state = MERGE_STATE_NEW
         state.save()
 
-    PropertyState.objects.filter(pk__in=duplicate_property_state_ids).update(data_state=DATA_STATE_DELETE)
-    TaxLotState.objects.filter(pk__in=duplicate_tax_lot_state_ids).update(data_state=DATA_STATE_DELETE)
-
     return {
         'import_file_records': import_file.num_rows,
-        'property_all_unmatched': len(all_unmatched_properties),
-        'property_duplicates': len(duplicate_property_state_ids),
-        'property_duplicates_of_existing': len(duplicates_of_existing_property_states),
-        'property_unmatched': len(unmatched_properties),
-        'tax_lot_all_unmatched': len(all_unmatched_tax_lots),
-        'tax_lot_duplicates': len(duplicate_tax_lot_state_ids),
-        'tax_lot_duplicates_of_existing': len(duplicates_of_existing_taxlot_states),
-        'tax_lot_unmatched': len(unmatched_tax_lots),
+        'property_all_unmatched': incoming_properties.count(),
+        'property_duplicates': file_duplicate_property_count,
+        'property_duplicates_of_existing': existing_duplicate_property_count,
+        'property_unmatched': new_property_count,
+        'tax_lot_all_unmatched': incoming_tax_lots.count(),
+        'tax_lot_duplicates': file_duplicate_tax_lot_count,
+        'tax_lot_duplicates_of_existing': existing_duplicate_tax_lot_count,
+        'tax_lot_unmatched': new_tax_lot_count,
     }
 
 
