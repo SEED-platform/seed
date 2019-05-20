@@ -206,6 +206,8 @@ def inclusive_match_and_merge(unmatched_state_ids, ObjectStateClass):
 
         promoted_ids.append(merge_state.id)
 
+    ObjectStateClass.objects.filter(pk__in=promoted_ids).update(data_state=DATA_STATE_MATCHING)
+
     return promoted_ids
 
 
@@ -264,9 +266,6 @@ def match_properties_and_taxlots(file_pk, progress_key):
             PropertyState
         )
 
-        # # Indicate that matching has been run on -States still marked with DATA_STATE_MAPPING
-        # incoming_properties.filter(data_state=DATA_STATE_MAPPING).update(data_state=DATA_STATE_MATCHING)
-
     if incoming_tax_lots.exists():
         # Within the ImportFile, filter out the duplicates.
         log_debug("Start TaxLots filter_duplicate_states")
@@ -285,9 +284,6 @@ def match_properties_and_taxlots(file_pk, progress_key):
             import_file.cycle,
             TaxLotState
         )
-
-        # # Indicate that matching has been run on -States still marked with DATA_STATE_MAPPING
-        # incoming_tax_lots.filter(data_state=DATA_STATE_MAPPING).update(data_state=DATA_STATE_MATCHING)
 
     log_debug('Start pair_new_states')
     progress_data.step('Pairing data')
