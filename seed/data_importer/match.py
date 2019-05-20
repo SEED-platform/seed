@@ -20,7 +20,6 @@ from django.db.models import Subquery
 
 from functools import reduce
 
-from itertools import chain
 from seed.data_importer.models import ImportFile
 from seed.decorators import lock_and_track
 from seed.lib.merging import merging
@@ -111,7 +110,7 @@ def states_to_views(unmatched_state_ids, org, cycle, ObjectStateClass):
         hash_object__in=Subquery(existing_states.values('hash_object'))
     ).update(data_state=DATA_STATE_DELETE)
 
-    # For incoming -States, filter those duplicates and identify -States with matches
+    # For the remaining incoming -States (filtering those duplicates), identify -States with matches
     unmatched_states = ObjectStateClass.objects.filter(pk__in=unmatched_state_ids).exclude(data_state=DATA_STATE_DELETE)
     merge_state_pairs = []
     promote_states = []
@@ -132,6 +131,7 @@ def states_to_views(unmatched_state_ids, org, cycle, ObjectStateClass):
     processed_views = []
     priorities = Column.retrieve_priorities(org.pk)
     promoted_ids = []
+    merged_state_ids = []
     try:
         with transaction.atomic():
             for state_pair in merge_state_pairs:
@@ -139,10 +139,12 @@ def states_to_views(unmatched_state_ids, org, cycle, ObjectStateClass):
                 existing_view = ObjectViewClass.objects.get(state_id=existing_state.id)
 
                 # Merge -States and assign new/merged -State to existing -View
-                existing_view.state = save_state_match(existing_state, newer_state, priorities)
+                merged_state = save_state_match(existing_state, newer_state, priorities)
+                existing_view.state = merged_state
                 existing_view.save()
 
                 processed_views.append(existing_view)
+                merged_state_ids.append(merged_state.id)
 
             for state in promote_states:
                 promoted_ids.append(state.id)
@@ -151,9 +153,15 @@ def states_to_views(unmatched_state_ids, org, cycle, ObjectStateClass):
     except IntegrityError as e:
         raise IntegrityError("Could not merge results with error: %s" % (e))
 
-    new_count = ObjectStateClass.objects.filter(pk__in=promoted_ids).update(data_state=DATA_STATE_MATCHING)
+    new_count = ObjectStateClass.objects.filter(pk__in=promoted_ids).exclude(merge_state=MERGE_STATE_MERGED).update(
+        merge_state=MERGE_STATE_NEW
+    )
+    matched_count = ObjectStateClass.objects.filter(pk__in=merged_state_ids).update(
+        data_state=DATA_STATE_MATCHING,
+        merge_state=MERGE_STATE_MERGED
+    )
 
-    return list(set(processed_views)), duplicate_count, new_count
+    return list(set(processed_views)), duplicate_count, new_count + matched_count
 
 
 # from seed.utils.cprofile import cprofile
@@ -289,14 +297,6 @@ def match_properties_and_taxlots(file_pk, progress_key):
     progress_data.step('Pairing data')
     pair_new_states(merged_property_views, merged_taxlot_views)
     log_debug('End pair_new_states')
-
-    for state in map(lambda x: x.state, chain(merged_property_views, merged_taxlot_views)):
-        state.data_state = DATA_STATE_MATCHING
-        # The merge state seems backwards, but it isn't for some reason, if they are not marked as
-        # MERGE_STATE_MERGED when called in the states_to_views, then they are new.
-        if state.merge_state != MERGE_STATE_MERGED:
-            state.merge_state = MERGE_STATE_NEW
-        state.save()
 
     return {
         'import_file_records': import_file.num_rows,
