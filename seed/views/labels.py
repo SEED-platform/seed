@@ -7,6 +7,7 @@
 from collections import namedtuple
 
 from django.apps import apps
+from django.db import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import (
     response,
@@ -176,11 +177,24 @@ class UpdateInventoryLabelsAPIView(APIView):
 
     def label_factory(self, inventory_type, label_id, inventory_id):
         Model = self.models[inventory_type]
-        create_dict = {
-            'statuslabel_id': label_id,
-            "{}_id".format(inventory_type): inventory_id
-        }
-        return Model(**create_dict)
+
+        # Ensure the the label org and inventory org are the same
+        inventory_org_id = getattr(Model, inventory_type).get_queryset().get(pk=inventory_id).organization_id
+        label_org_id = Model.statuslabel.get_queryset().get(pk=label_id).super_organization_id
+        if inventory_org_id == label_org_id:
+            create_dict = {
+                'statuslabel_id': label_id,
+                "{}_id".format(inventory_type): inventory_id
+            }
+
+            return Model(**create_dict)
+        else:
+            raise IntegrityError(
+                'Label with org_id={} cannot be applied to a record with org_id={}.'.format(
+                    label_org_id,
+                    inventory_org_id
+                )
+            )
 
     def add_labels(self, qs, inventory_type, inventory_ids, add_label_ids):
         added = []
