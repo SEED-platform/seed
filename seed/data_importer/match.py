@@ -49,176 +49,6 @@ def log_debug(message):
     _log.debug('{}: {}'.format(message, dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
 
 
-def filter_duplicate_states(unmatched_states):
-    """
-    Takes a QuerySet of -States, where some records are exact duplicates of
-    others. This method returns two lists:
-        - IDs of unique -States + IDs for representative -States of duplicates
-        - IDs of duplicate -States not chosen to represent their set of duplicates
-
-    This is done by constructing a dictionary where the keys are hash_objects
-    and the values are lists of IDs of -States with that hash_object.
-
-    The first list being returned is created by taking one member of each of
-    the dictionary values (list of IDs). The second is created by combining the
-    remaining dictionary values into one list.
-
-    :param unmatched_states: QuerySet, unmatched states
-    :return: canonical_state_ids, duplicate_state_ids
-    """
-
-    hash_object_ids = defaultdict(list)
-    for unmatched in unmatched_states:
-        hash_object_ids[unmatched.hash_object].append(unmatched.pk)
-
-    ids_grouped_by_hash = hash_object_ids.values()
-    canonical_state_ids = [ids.pop() for ids in ids_grouped_by_hash]
-    duplicate_state_ids = reduce(lambda x, y: x + y, ids_grouped_by_hash)
-    duplicate_count = unmatched_states.filter(pk__in=duplicate_state_ids).update(data_state=DATA_STATE_DELETE)
-
-    return canonical_state_ids, duplicate_count
-
-
-# @cprofile(n=50)
-def states_to_views(unmatched_state_ids, org, cycle, ObjectStateClass):
-    """
-    This is fairly inefficient, because we grab all the organization's entire PropertyViews at once.
-    Surely this can be improved, but the logic is unusual/particularly dynamic here, so hopefully
-    this can be refactored into a better, purely database approach... Perhaps existing_view_states
-    can wrap database calls. Still the abstractions are subtly different (can I refactor the
-    partitioner to use Query objects); it may require a bit of thinking.
-
-    :param unmatched_states:
-    :param partitioner:
-    :param org:
-    :param import_file:
-    :return:
-    """
-    table_name = ObjectStateClass.__name__
-
-    if table_name == 'PropertyState':
-        ObjectViewClass = PropertyView
-    elif table_name == 'TaxLotState':
-        ObjectViewClass = TaxLotView
-
-    existing_cycle_views = ObjectViewClass.objects.filter(cycle_id=cycle)
-
-    # Apply DATA_STATE_DELETE to incoming duplicate -States of existing -States in Cycle
-    existing_states = ObjectStateClass.objects.filter(pk__in=Subquery(existing_cycle_views.values('state_id')))
-    duplicate_count = ObjectStateClass.objects.filter(
-        pk__in=unmatched_state_ids,
-        hash_object__in=Subquery(existing_states.values('hash_object'))
-    ).update(data_state=DATA_STATE_DELETE)
-
-    # For the remaining incoming -States (filtering those duplicates), identify -States with matches
-    unmatched_states = ObjectStateClass.objects.filter(pk__in=unmatched_state_ids).exclude(data_state=DATA_STATE_DELETE)
-    merge_state_pairs = []
-    promote_states = []
-    for state in unmatched_states:
-        matching_criteria = _matching_filter_criteria(org.id, table_name, state)
-        state_match = ObjectStateClass.objects.filter(
-            id__in=Subquery(existing_cycle_views.values('state_id')),
-            **matching_criteria
-        )
-
-        if state_match.exists() and any(v is not None for v in matching_criteria.values()):
-            merge_state_pairs.append((state_match.first(), state))
-        else:
-            promote_states.append(state)
-
-    # Process -States into -Views
-    _log.debug("There are %s merge_state_pairs and %s promote_states" % (len(merge_state_pairs), len(promote_states)))
-    processed_views = []
-    priorities = Column.retrieve_priorities(org.pk)
-    promoted_ids = []
-    merged_state_ids = []
-    try:
-        with transaction.atomic():
-            for state_pair in merge_state_pairs:
-                existing_state, newer_state = state_pair
-                existing_view = ObjectViewClass.objects.get(state_id=existing_state.id)
-
-                # Merge -States and assign new/merged -State to existing -View
-                merged_state = save_state_match(existing_state, newer_state, priorities)
-                existing_view.state = merged_state
-                existing_view.save()
-
-                processed_views.append(existing_view)
-                merged_state_ids.append(merged_state.id)
-
-            for state in promote_states:
-                promoted_ids.append(state.id)
-                created_view = state.promote(cycle)
-                processed_views.append(created_view)
-    except IntegrityError as e:
-        raise IntegrityError("Could not merge results with error: %s" % (e))
-
-    new_count = ObjectStateClass.objects.filter(pk__in=promoted_ids).exclude(merge_state=MERGE_STATE_MERGED).update(
-        merge_state=MERGE_STATE_NEW
-    )
-    matched_count = ObjectStateClass.objects.filter(pk__in=merged_state_ids).update(
-        data_state=DATA_STATE_MATCHING,
-        merge_state=MERGE_STATE_MERGED
-    )
-
-    return list(set(processed_views)), duplicate_count, new_count + matched_count
-
-
-# from seed.utils.cprofile import cprofile
-# @cprofile()
-def inclusive_match_and_merge(unmatched_state_ids, ObjectStateClass):
-    """
-    Take a list of unmatched_property_states or unmatched_tax_lot_states and returns a set of
-    states that correspond to unmatched states.
-
-    :param unmatched_states: list, PropertyStates or TaxLotStates
-    :param partitioner: instance of EquivalencePartitioner
-    :return: [list, list], merged_objects, equivalence_classes keys
-    """
-    example_state = ObjectStateClass.objects.get(pk=unmatched_state_ids[0])
-    organization = example_state.organization
-    table_name = ObjectStateClass.__name__
-
-    promoted_ids = _empty_criteria_ids(unmatched_state_ids, example_state, ObjectStateClass, table_name)
-    unmatched_state_ids = list(
-        set(unmatched_state_ids) - set(promoted_ids)
-    )
-
-    matching_states = []
-    while unmatched_state_ids:
-        state_id = unmatched_state_ids.pop()
-        state = ObjectStateClass.objects.get(pk=state_id)
-
-        matching_criteria = _matching_filter_criteria(organization.id, table_name, state)
-        state_matches = ObjectStateClass.objects.filter(
-            id__in=unmatched_state_ids + [state_id],
-            **matching_criteria
-        ).order_by('-id')
-
-        if state_matches.exists():
-            matching_states.append(state_matches)
-            unmatched_state_ids = list(
-                set(unmatched_state_ids) - set(state_matches.values_list('id', flat=True))
-            )
-        else:
-            promoted_ids.append(state.id)
-
-    priorities = Column.retrieve_priorities(organization)
-    for states in matching_states:
-        states = list(states)
-        merge_state = states.pop()
-
-        while len(states) > 0:
-            newer_state = states.pop()
-            merge_state = save_state_match(merge_state, newer_state, priorities)
-
-        promoted_ids.append(merge_state.id)
-
-    ObjectStateClass.objects.filter(pk__in=promoted_ids).update(data_state=DATA_STATE_MATCHING)
-
-    return promoted_ids
-
-
 @shared_task
 @lock_and_track
 # @cprofile()
@@ -309,6 +139,176 @@ def match_properties_and_taxlots(file_pk, progress_key):
         'tax_lot_duplicates_of_existing': existing_duplicate_tax_lot_count,
         'tax_lot_unmatched': new_tax_lot_count,
     }
+
+
+def filter_duplicate_states(unmatched_states):
+    """
+    Takes a QuerySet of -States, where some records are exact duplicates of
+    others. This method returns two lists:
+        - IDs of unique -States + IDs for representative -States of duplicates
+        - IDs of duplicate -States not chosen to represent their set of duplicates
+
+    This is done by constructing a dictionary where the keys are hash_objects
+    and the values are lists of IDs of -States with that hash_object.
+
+    The first list being returned is created by taking one member of each of
+    the dictionary values (list of IDs). The second is created by combining the
+    remaining dictionary values into one list.
+
+    :param unmatched_states: QuerySet, unmatched states
+    :return: canonical_state_ids, duplicate_state_ids
+    """
+
+    hash_object_ids = defaultdict(list)
+    for unmatched in unmatched_states:
+        hash_object_ids[unmatched.hash_object].append(unmatched.pk)
+
+    ids_grouped_by_hash = hash_object_ids.values()
+    canonical_state_ids = [ids.pop() for ids in ids_grouped_by_hash]
+    duplicate_state_ids = reduce(lambda x, y: x + y, ids_grouped_by_hash)
+    duplicate_count = unmatched_states.filter(pk__in=duplicate_state_ids).update(data_state=DATA_STATE_DELETE)
+
+    return canonical_state_ids, duplicate_count
+
+
+# from seed.utils.cprofile import cprofile
+# @cprofile()
+def inclusive_match_and_merge(unmatched_state_ids, ObjectStateClass):
+    """
+    Take a list of unmatched_property_states or unmatched_tax_lot_states and returns a set of
+    states that correspond to unmatched states.
+
+    :param unmatched_states: list, PropertyStates or TaxLotStates
+    :param partitioner: instance of EquivalencePartitioner
+    :return: [list, list], merged_objects, equivalence_classes keys
+    """
+    example_state = ObjectStateClass.objects.get(pk=unmatched_state_ids[0])
+    organization = example_state.organization
+    table_name = ObjectStateClass.__name__
+
+    promoted_ids = _empty_criteria_ids(unmatched_state_ids, example_state, ObjectStateClass, table_name)
+    unmatched_state_ids = list(
+        set(unmatched_state_ids) - set(promoted_ids)
+    )
+
+    matching_states = []
+    while unmatched_state_ids:
+        state_id = unmatched_state_ids.pop()
+        state = ObjectStateClass.objects.get(pk=state_id)
+
+        matching_criteria = _matching_filter_criteria(organization.id, table_name, state)
+        state_matches = ObjectStateClass.objects.filter(
+            id__in=unmatched_state_ids + [state_id],
+            **matching_criteria
+        ).order_by('-id')
+
+        if state_matches.exists():
+            matching_states.append(state_matches)
+            unmatched_state_ids = list(
+                set(unmatched_state_ids) - set(state_matches.values_list('id', flat=True))
+            )
+        else:
+            promoted_ids.append(state.id)
+
+    priorities = Column.retrieve_priorities(organization)
+    for states in matching_states:
+        states = list(states)
+        merge_state = states.pop()
+
+        while len(states) > 0:
+            newer_state = states.pop()
+            merge_state = save_state_match(merge_state, newer_state, priorities)
+
+        promoted_ids.append(merge_state.id)
+
+    ObjectStateClass.objects.filter(pk__in=promoted_ids).update(data_state=DATA_STATE_MATCHING)
+
+    return promoted_ids
+
+
+# @cprofile(n=50)
+def states_to_views(unmatched_state_ids, org, cycle, ObjectStateClass):
+    """
+    This is fairly inefficient, because we grab all the organization's entire PropertyViews at once.
+    Surely this can be improved, but the logic is unusual/particularly dynamic here, so hopefully
+    this can be refactored into a better, purely database approach... Perhaps existing_view_states
+    can wrap database calls. Still the abstractions are subtly different (can I refactor the
+    partitioner to use Query objects); it may require a bit of thinking.
+
+    :param unmatched_states:
+    :param partitioner:
+    :param org:
+    :param import_file:
+    :return:
+    """
+    table_name = ObjectStateClass.__name__
+
+    if table_name == 'PropertyState':
+        ObjectViewClass = PropertyView
+    elif table_name == 'TaxLotState':
+        ObjectViewClass = TaxLotView
+
+    existing_cycle_views = ObjectViewClass.objects.filter(cycle_id=cycle)
+
+    # Apply DATA_STATE_DELETE to incoming duplicate -States of existing -States in Cycle
+    existing_states = ObjectStateClass.objects.filter(pk__in=Subquery(existing_cycle_views.values('state_id')))
+    duplicate_count = ObjectStateClass.objects.filter(
+        pk__in=unmatched_state_ids,
+        hash_object__in=Subquery(existing_states.values('hash_object'))
+    ).update(data_state=DATA_STATE_DELETE)
+
+    # For the remaining incoming -States (filtering those duplicates), identify -States with matches
+    unmatched_states = ObjectStateClass.objects.filter(pk__in=unmatched_state_ids).exclude(data_state=DATA_STATE_DELETE)
+    merge_state_pairs = []
+    promote_states = []
+    for state in unmatched_states:
+        matching_criteria = _matching_filter_criteria(org.id, table_name, state)
+        state_match = ObjectStateClass.objects.filter(
+            id__in=Subquery(existing_cycle_views.values('state_id')),
+            **matching_criteria
+        )
+
+        if state_match.exists() and any(v is not None for v in matching_criteria.values()):
+            merge_state_pairs.append((state_match.first(), state))
+        else:
+            promote_states.append(state)
+
+    # Process -States into -Views
+    _log.debug("There are %s merge_state_pairs and %s promote_states" % (len(merge_state_pairs), len(promote_states)))
+    processed_views = []
+    priorities = Column.retrieve_priorities(org.pk)
+    promoted_ids = []
+    merged_state_ids = []
+    try:
+        with transaction.atomic():
+            for state_pair in merge_state_pairs:
+                existing_state, newer_state = state_pair
+                existing_view = ObjectViewClass.objects.get(state_id=existing_state.id)
+
+                # Merge -States and assign new/merged -State to existing -View
+                merged_state = save_state_match(existing_state, newer_state, priorities)
+                existing_view.state = merged_state
+                existing_view.save()
+
+                processed_views.append(existing_view)
+                merged_state_ids.append(merged_state.id)
+
+            for state in promote_states:
+                promoted_ids.append(state.id)
+                created_view = state.promote(cycle)
+                processed_views.append(created_view)
+    except IntegrityError as e:
+        raise IntegrityError("Could not merge results with error: %s" % (e))
+
+    new_count = ObjectStateClass.objects.filter(pk__in=promoted_ids).exclude(merge_state=MERGE_STATE_MERGED).update(
+        merge_state=MERGE_STATE_NEW
+    )
+    matched_count = ObjectStateClass.objects.filter(pk__in=merged_state_ids).update(
+        data_state=DATA_STATE_MATCHING,
+        merge_state=MERGE_STATE_MERGED
+    )
+
+    return list(set(processed_views)), duplicate_count, new_count + matched_count
 
 
 def save_state_match(state1, state2, priorities):
