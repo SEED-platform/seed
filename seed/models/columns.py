@@ -12,6 +12,7 @@ import os.path
 from collections import OrderedDict
 
 from django.apps import apps
+from django.db import IntegrityError
 from django.core.exceptions import ValidationError
 from django.db import (
     models,
@@ -1383,8 +1384,12 @@ class Column(models.Model):
 
 
 def validate_model(sender, **kwargs):
+    instance = kwargs['instance']
+    if instance.is_extra_data and instance.is_matching_criteria:
+        raise IntegrityError("Extra data columns can't be matching criteria.")
+
     if 'raw' in kwargs and not kwargs['raw']:
-        kwargs['instance'].full_clean()
+        instance.full_clean()
 
 
 pre_save.connect(validate_model, sender=Column)

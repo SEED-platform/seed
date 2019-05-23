@@ -7,6 +7,7 @@
 
 import os.path
 
+from django.db import IntegrityError
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 
@@ -225,6 +226,22 @@ class TestColumns(TestCase):
 
         test_mapping, _ = ColumnMapping.get_column_mappings(self.fake_org)
         self.assertCountEqual(expected, test_mapping)
+
+    def test_column_cant_be_both_extra_data_and_matching_criteria(self):
+        extra_data_column = Column.objects.create(
+            table_name='PropertyState',
+            column_name='test_column',
+            organization=self.fake_org,
+            is_extra_data=True,
+        )
+
+        extra_data_column.is_matching_criteria = True
+        with self.assertRaises(IntegrityError):
+            extra_data_column.save()
+
+        rextra_data_column = Column.objects.get(pk=extra_data_column.id)
+        self.assertTrue(rextra_data_column.is_extra_data)
+        self.assertFalse(rextra_data_column.is_matching_criteria)
 
 
 class TestRenameColumns(TestCase):
