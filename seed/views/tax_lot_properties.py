@@ -156,7 +156,6 @@ class TaxLotPropertyViewSet(GenericViewSet):
                     label_string.append(label.name)
                 data[i]['taxlot_labels'] = ','.join(label_string)
 
-
         # force the data into the same order as the IDs
         if ids:
             order_dict = {obj_id: index for index, obj_id in enumerate(ids)}
@@ -250,7 +249,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
         for index, val in enumerate(list(column_name_mappings.values())):
             ws1.write(row, index, val, bold)
 
-        #iterate over the results to preserve column order and write row.
+        # iterate over the results to preserve column order and write row.
         for datum in data:
             row += 1
             id = None
@@ -288,7 +287,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
                 col2 = 0
                 for key in property_measure_keys:
                     ws2.write(row2, col2, getattr(m, key))
-                    col2+= 1
+                    col2 += 1
                 for key in measure_keys:
                     ws2.write(row2, col2, getattr(m.measure, key))
                     col2 += 1
@@ -310,7 +309,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
                 col3 = 0
                 for key in scenario_keys:
                     ws3.write(row3, col3, getattr(s, key))
-                    col3+= 1
+                    col3 += 1
 
                 #print("SCENARIO {}".format(scenario_id))
 
@@ -328,7 +327,6 @@ class TaxLotPropertyViewSet(GenericViewSet):
 
         response.write(xlsx_data)
         return response
-
 
     def _json_response(self, filename, data, column_name_mappings):
         polygon_fields = ["bounding_box", "centroid", "property_footprint", "taxlot_footprint", "long_lat"]
