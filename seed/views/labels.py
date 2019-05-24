@@ -179,9 +179,10 @@ class UpdateInventoryLabelsAPIView(APIView):
         Model = self.models[inventory_type]
 
         # Ensure the the label org and inventory org are the same
-        inventory_org_id = getattr(Model, inventory_type).get_queryset().get(pk=inventory_id).organization_id
-        label_org_id = Model.statuslabel.get_queryset().get(pk=label_id).super_organization_id
-        if inventory_org_id == label_org_id:
+        inventory_parent_org_id = getattr(Model, inventory_type).get_queryset().get(pk=inventory_id).organization\
+            .get_parent().id
+        label_super_org_id = Model.statuslabel.get_queryset().get(pk=label_id).super_organization_id
+        if inventory_parent_org_id == label_super_org_id:
             create_dict = {
                 'statuslabel_id': label_id,
                 "{}_id".format(inventory_type): inventory_id
@@ -190,9 +191,10 @@ class UpdateInventoryLabelsAPIView(APIView):
             return Model(**create_dict)
         else:
             raise IntegrityError(
-                'Label with org_id={} cannot be applied to a record with org_id={}.'.format(
-                    label_org_id,
-                    inventory_org_id
+                'Label with super_organization_id={} cannot be applied to a record with parent '
+                'organization_id={}.'.format(
+                    label_super_org_id,
+                    inventory_parent_org_id
                 )
             )
 

@@ -111,10 +111,11 @@ def json_serializer(obj):
 def compare_orgs_between_label_and_target(sender, pk_set, instance, model, action, **kwargs):
     for id in pk_set:
         label = model.objects.get(pk=id)
-        if instance.organization_id != label.super_organization_id:
+        if instance.organization.get_parent().id != label.super_organization_id:
             raise IntegrityError(
-                'Label with org_id={} cannot be applied to a record with org_id={}.'.format(
+                'Label with super_organization_id={} cannot be applied to a record with parent '
+                'organization_id={}.'.format(
                     label.super_organization_id,
-                    instance.organization_id
+                    instance.organization.get_parent().id
                 )
             )

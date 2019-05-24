@@ -927,27 +927,29 @@ class DataQualityCheck(models.Model):
             label_org_id = rule.status_label.super_organization_id
 
             if rule.table_name == 'PropertyState':
-                property_org_id = Property.objects.get(pk=linked_id).organization_id
-                if property_org_id == label_org_id:
+                property_parent_org_id = Property.objects.get(pk=linked_id).organization.get_parent().id
+                if property_parent_org_id == label_org_id:
                     label_class.objects.get_or_create(property_id=linked_id,
                                                       statuslabel_id=rule.status_label_id)
                 else:
                     raise IntegrityError(
-                        'Label with org_id={} cannot be applied to a record with org_id={}.'.format(
+                        'Label with super_organization_id={} cannot be applied to a property with parent '
+                        'organization_id={}.'.format(
                             label_org_id,
-                            property_org_id
+                            property_parent_org_id
                         )
                     )
             else:
-                taxlot_org_id = TaxLot.objects.get(pk=linked_id).organization_id
-                if taxlot_org_id == label_org_id:
+                taxlot_parent_org_id = TaxLot.objects.get(pk=linked_id).organization.get_parent().id
+                if taxlot_parent_org_id == label_org_id:
                     label_class.objects.get_or_create(taxlot_id=linked_id,
                                                       statuslabel_id=rule.status_label_id)
                 else:
                     raise IntegrityError(
-                        'Label with org_id={} cannot be applied to a record with org_id={}.'.format(
+                        'Label with super_organization_id={} cannot be applied to a taxlot with parent '
+                        'organization_id={}.'.format(
                             label_org_id,
-                            taxlot_org_id
+                            taxlot_parent_org_id
                         )
                     )
             return True
