@@ -217,7 +217,6 @@ class TaxLotPropertyViewSet(GenericViewSet):
         measure_keys = ('name', 'display_name', 'category', 'category_display_name')
         # find measures and scenarios
         for i, record in enumerate(data):
-            #print("property_state_id: ", record['property_state_id'])
             measures = PropertyMeasure.objects.filter(property_state_id=record['property_state_id'])
             record['measures'] = measures
 
@@ -298,7 +297,6 @@ class TaxLotPropertyViewSet(GenericViewSet):
             ws4.write('B1', 'Scenario ID', bold)
             ws4.write('C1', 'Measure ID', bold)
             for index, s in enumerate(datum['scenarios']):
-                #print("SCENARIO ID: ", s.id)
                 scenario_id = s.id
                 if index == 0:
                     # grab headers
@@ -311,10 +309,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
                     ws3.write(row3, col3, getattr(s, key))
                     col3 += 1
 
-                #print("SCENARIO {}".format(scenario_id))
-
                 for sm in s.measures.all():
-                    #print("measure: ", sm)
                     row4 += 1
                     ws4.write(row4, 0, id)
                     ws4.write(row4, 1, scenario_id)
