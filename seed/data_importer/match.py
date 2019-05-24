@@ -93,7 +93,7 @@ def match_properties_and_taxlots(file_pk, progress_key):
 
         # Within the ImportFile, merge -States together based on user defined matching_criteria
         log_debug('Start Properties inclusive_match_and_merge')
-        unmatched_property_ids = inclusive_match_and_merge(unmatched_property_ids, PropertyState)
+        unmatched_property_ids = inclusive_match_and_merge(unmatched_property_ids, org, PropertyState)
 
         # Filter Cycle-wide duplicates then merge and/or assign -States to -Views
         log_debug('Start Properties states_to_views')
@@ -112,7 +112,7 @@ def match_properties_and_taxlots(file_pk, progress_key):
 
         # Within the ImportFile, merge -States together based on user defined matching_criteria
         log_debug('Start TaxLots inclusive_match_and_merge')
-        unmatched_tax_lot_ids = inclusive_match_and_merge(unmatched_tax_lot_ids, TaxLotState)
+        unmatched_tax_lot_ids = inclusive_match_and_merge(unmatched_tax_lot_ids, org, TaxLotState)
 
         # Filter Cycle-wide duplicates then merge and/or assign -States to -Views
         log_debug('Start TaxLots states_to_views')
@@ -173,7 +173,7 @@ def filter_duplicate_states(unmatched_states):
 
 # from seed.utils.cprofile import cprofile
 # @cprofile()
-def inclusive_match_and_merge(unmatched_state_ids, ObjectStateClass):
+def inclusive_match_and_merge(unmatched_state_ids, org, ObjectStateClass):
     """
     Take a list of unmatched_property_states or unmatched_tax_lot_states and returns a set of
     states that correspond to unmatched states.
@@ -182,11 +182,16 @@ def inclusive_match_and_merge(unmatched_state_ids, ObjectStateClass):
     :param partitioner: instance of EquivalencePartitioner
     :return: [list, list], merged_objects, equivalence_classes keys
     """
-    example_state = ObjectStateClass.objects.get(pk=unmatched_state_ids[0])
-    organization = example_state.organization
     table_name = ObjectStateClass.__name__
 
-    promoted_ids = _empty_criteria_ids(unmatched_state_ids, example_state, ObjectStateClass, table_name)
+    promoted_ids = list(
+        _empty_criteria_states_qs(
+            unmatched_state_ids,
+            org.id,
+            ObjectStateClass
+        ).values_list('id', flat=True)
+    )
+
     unmatched_state_ids = list(
         set(unmatched_state_ids) - set(promoted_ids)
     )
@@ -196,7 +201,7 @@ def inclusive_match_and_merge(unmatched_state_ids, ObjectStateClass):
         state_id = unmatched_state_ids.pop()
         state = ObjectStateClass.objects.get(pk=state_id)
 
-        matching_criteria = _matching_filter_criteria(organization.id, table_name, state)
+        matching_criteria = _matching_filter_criteria(org.id, table_name, state)
         state_matches = ObjectStateClass.objects.filter(
             id__in=unmatched_state_ids + [state_id],
             **matching_criteria
@@ -210,7 +215,7 @@ def inclusive_match_and_merge(unmatched_state_ids, ObjectStateClass):
         else:
             promoted_ids.append(state.id)
 
-    priorities = Column.retrieve_priorities(organization)
+    priorities = Column.retrieve_priorities(org)
     for states in matching_states:
         states = list(states)
         merge_state = states.pop()
@@ -252,26 +257,37 @@ def states_to_views(unmatched_state_ids, org, cycle, ObjectStateClass):
 
     # Apply DATA_STATE_DELETE to incoming duplicate -States of existing -States in Cycle
     existing_states = ObjectStateClass.objects.filter(pk__in=Subquery(existing_cycle_views.values('state_id')))
-    duplicate_count = ObjectStateClass.objects.filter(
+    duplicate_states = ObjectStateClass.objects.filter(
         pk__in=unmatched_state_ids,
         hash_object__in=Subquery(existing_states.values('hash_object'))
-    ).update(data_state=DATA_STATE_DELETE)
+    )
+    duplicate_count = duplicate_states.update(data_state=DATA_STATE_DELETE)
 
     # For the remaining incoming -States (filtering those duplicates), identify -States with matches
-    unmatched_states = ObjectStateClass.objects.filter(pk__in=unmatched_state_ids).exclude(data_state=DATA_STATE_DELETE)
+    promote_states = _empty_criteria_states_qs(
+        unmatched_state_ids,
+        org.id,
+        ObjectStateClass
+    ).exclude(pk__in=Subquery(duplicate_states.values('id')))
+
+    # Comment
+    handled_states = promote_states | duplicate_states
+    unmatched_states = ObjectStateClass.objects.filter(pk__in=unmatched_state_ids).exclude(
+        pk__in=Subquery(handled_states.values('id'))
+    )
+
     merge_state_pairs = []
-    promote_states = []
     for state in unmatched_states:
         matching_criteria = _matching_filter_criteria(org.id, table_name, state)
         state_match = ObjectStateClass.objects.filter(
-            id__in=Subquery(existing_cycle_views.values('state_id')),
+            pk__in=Subquery(existing_cycle_views.values('state_id')),
             **matching_criteria
         )
 
         if state_match.exists() and any(v is not None for v in matching_criteria.values()):
             merge_state_pairs.append((state_match.first(), state))
         else:
-            promote_states.append(state)
+            promote_states = promote_states | ObjectStateClass.objects.filter(pk=state.id)
 
     # Process -States into -Views
     _log.debug("There are %s merge_state_pairs and %s promote_states" % (len(merge_state_pairs), len(promote_states)))
@@ -377,23 +393,23 @@ def save_state_match(state1, state2, priorities):
     return merged_state
 
 
-def _empty_criteria_ids(unmatched_state_ids, example_state, ObjectStateClass, table_name):
-    empty_criteria_filter = {
-        '{}__isnull'.format(_filter_column_name(example_state, column_name)): True
-        for column_name
-        in _matching_criteria_column_names(example_state.organization_id, table_name)
-    }
-    return list(
-        ObjectStateClass.objects.filter(
-            pk__in=unmatched_state_ids,
-            **empty_criteria_filter
-        ).values_list('id', flat=True)
+def _empty_criteria_states_qs(state_ids, organization_id, ObjectStateClass):
+    empty_state = ObjectStateClass()
+    empty_criteria_filter = _matching_filter_criteria(
+        organization_id,
+        ObjectStateClass.__name__,
+        empty_state
+    )
+
+    return ObjectStateClass.objects.filter(
+        pk__in=state_ids,
+        **empty_criteria_filter
     )
 
 
 def _matching_filter_criteria(organization_id, table_name, state):
     return {
-        _filter_column_name(state, column_name): _filter_column_value(state, column_name)
+        column_name: getattr(state, column_name, None)
         for column_name
         in _matching_criteria_column_names(organization_id, table_name)
     }
@@ -415,18 +431,3 @@ def _matching_criteria_column_names(organization_id, table_name):
             table_name=table_name
         )
     }
-
-
-def _filter_column_name(state, column_name):
-    if hasattr(state, column_name):
-        return column_name
-    else:
-        return 'extra_data__{}'.format(column_name)
-
-
-def _filter_column_value(state, column_name):
-    return getattr(
-        state,
-        column_name,
-        state.extra_data.get(column_name, None)
-    )
