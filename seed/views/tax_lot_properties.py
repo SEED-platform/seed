@@ -10,6 +10,8 @@ All rights reserved.  # NOQA
 
 import csv
 import datetime
+import xlsxwriter
+import io
 from collections import OrderedDict
 
 from django.http import JsonResponse, HttpResponse
@@ -25,6 +27,12 @@ from seed.models import (
     TaxLotProperty,
     TaxLotView,
     ColumnListSetting,
+)
+from seed.models.property_measures import (
+    PropertyMeasure
+)
+from seed.models.scenarios import (
+    Scenario
 )
 from seed.serializers.tax_lot_properties import (
     TaxLotPropertySerializer
@@ -148,6 +156,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
                     label_string.append(label.name)
                 data[i]['taxlot_labels'] = ','.join(label_string)
 
+
         # force the data into the same order as the IDs
         if ids:
             order_dict = {obj_id: index for index, obj_id in enumerate(ids)}
@@ -161,6 +170,8 @@ class TaxLotPropertyViewSet(GenericViewSet):
             return self._csv_response(filename, data, column_name_mappings)
         elif export_type == "geojson":
             return self._json_response(filename, data, column_name_mappings)
+        elif export_type == "xlsx":
+            return self._spreadsheet_response(filename, data, column_name_mappings)
 
     def _csv_response(self, filename, data, column_name_mappings):
         response = HttpResponse(content_type='text/csv')
@@ -197,6 +208,127 @@ class TaxLotPropertyViewSet(GenericViewSet):
             writer.writerow(row)
 
         return response
+
+    def _spreadsheet_response(self, filename, data, column_name_mappings):
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="{}"'.format(filename)
+
+        scenario_keys = ('id', 'name', 'description', 'annual_site_energy_savings', 'annual_source_energy_savings', 'annual_cost_savings', 'summer_peak_load_reduction', 'winter_peak_load_reduction', 'hdd', 'cdd', 'analysis_state', 'analysis_state_message')
+        property_measure_keys = ('id', 'property_measure_name', 'measure_id', 'cost_mv', 'cost_total_first', 'cost_installation', 'cost_material', 'cost_capital_replacement', 'cost_residual_value')
+        measure_keys = ('name', 'display_name', 'category', 'category_display_name')
+        # find measures and scenarios
+        for i, record in enumerate(data):
+            #print("property_state_id: ", record['property_state_id'])
+            measures = PropertyMeasure.objects.filter(property_state_id=record['property_state_id'])
+            record['measures'] = measures
+
+            scenarios = Scenario.objects.filter(property_state_id=record['property_state_id'])
+            record['scenarios'] = scenarios
+
+        output = io.BytesIO()
+        wb = xlsxwriter.Workbook(output)
+
+        # add tabs
+        ws1 = wb.add_worksheet('Properties')
+        ws2 = wb.add_worksheet('Measures')
+        ws3 = wb.add_worksheet('Scenarios')
+        ws4 = wb.add_worksheet('Scenario Measure Join Table')
+        bold = wb.add_format({'bold': True})
+
+        # properties tab
+        header = list(column_name_mappings.values())
+        if header[0] == 'ID':
+            header[0] = 'id'
+
+        row = 0
+        row2 = 0
+        col2 = 0
+        row3 = 0
+        col3 = 0
+        row4 = 0
+
+        for index, val in enumerate(list(column_name_mappings.values())):
+            ws1.write(row, index, val, bold)
+
+        #iterate over the results to preserve column order and write row.
+        for datum in data:
+            row += 1
+            id = None
+            for index, column in enumerate(column_name_mappings):
+                if column == 'id':
+                    id = datum.get(column, None)
+
+                row_result = datum.get(column, None)
+
+                # Try grabbing the value out of the related field if not found yet.
+                if row_result is None and datum.get('related'):
+                    row_result = datum['related'][0].get(column, None)
+
+                # Convert quantities (this is typically handled in the JSON Encoder, but that isn't here).
+                if isinstance(row_result, ureg.Quantity):
+                    row_result = row_result.magnitude
+                elif isinstance(row_result, datetime.datetime):
+                    row_result = row_result.strftime("%Y-%m-%d %H:%M:%S")
+                elif isinstance(row_result, datetime.date):
+                    row_result = row_result.strftime("%Y-%m-%d")
+                ws1.write(row, index, row_result)
+
+            # measures
+            for index, m in enumerate(datum['measures']):
+                if index == 0:
+                    # grab headers
+                    for key in property_measure_keys:
+                        ws2.write(row2, col2, key, bold)
+                        col2 += 1
+                    for key in measure_keys:
+                        ws2.write(row2, col2, 'measure ' + key, bold)
+                        col2 += 1
+
+                row2 += 1
+                col2 = 0
+                for key in property_measure_keys:
+                    ws2.write(row2, col2, getattr(m, key))
+                    col2+= 1
+                for key in measure_keys:
+                    ws2.write(row2, col2, getattr(m.measure, key))
+                    col2 += 1
+
+            # scenarios (and join table)
+            # join table
+            ws4.write('A1', 'Property ID', bold)
+            ws4.write('B1', 'Scenario ID', bold)
+            ws4.write('C1', 'Measure ID', bold)
+            for index, s in enumerate(datum['scenarios']):
+                #print("SCENARIO ID: ", s.id)
+                scenario_id = s.id
+                if index == 0:
+                    # grab headers
+                    for key in scenario_keys:
+                        ws3.write(row3, col3, key, bold)
+                        col3 += 1
+                row3 += 1
+                col3 = 0
+                for key in scenario_keys:
+                    ws3.write(row3, col3, getattr(s, key))
+                    col3+= 1
+
+                #print("SCENARIO {}".format(scenario_id))
+
+                for sm in s.measures.all():
+                    #print("measure: ", sm)
+                    row4 += 1
+                    ws4.write(row4, 0, id)
+                    ws4.write(row4, 1, scenario_id)
+                    ws4.write(row4, 2, sm.id)
+
+        wb.close()
+
+        # xlsx_data contains the Excel file
+        xlsx_data = output.getvalue()
+
+        response.write(xlsx_data)
+        return response
+
 
     def _json_response(self, filename, data, column_name_mappings):
         polygon_fields = ["bounding_box", "centroid", "property_footprint", "taxlot_footprint", "long_lat"]

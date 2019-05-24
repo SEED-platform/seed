@@ -21,34 +21,59 @@ angular.module('BE.seed.controller.export_inventory_modal', []).controller('expo
       var ext = '.' + export_type;
       if (!_.endsWith(filename, ext)) filename += ext;
 
+      // excel is different (arraybuffer)
+      if (export_type === 'xlsx') {
+        return $http.post('/api/v2.1/tax_lot_properties/export/', {
+          ids: ids,
+          filename: filename,
+          profile_id: profile_id,
+          export_type: export_type
+        }, {
+          params: {
+            organization_id: user_service.get_organization().id,
+            cycle_id: cycle_id,
+            inventory_type: inventory_type
+          },
+          responseType: 'arraybuffer'
+        }).then(function (response) {
 
-      return $http.post('/api/v2.1/tax_lot_properties/export/', {
-        ids: ids,
-        filename: filename,
-        profile_id: profile_id,
-        export_type: export_type
-      }, {
-        params: {
-          organization_id: user_service.get_organization().id,
-          cycle_id: cycle_id,
-          inventory_type: inventory_type
-        }
-      }).then(function (response) {
-        var blob_type = response.headers()['content-type'];
-        var blob_data;
+          var blob_type = response.headers()['content-type'];
+          var blob = new Blob([response.data], {type: blob_type});
+          saveAs(blob, filename);
 
-        if (blob_type === 'application/json') {
-          blob_data = JSON.stringify(response.data, null, '    ');
-        } else if (blob_type === 'text/csv') {
-          blob_data = response.data;
-        }
+          $scope.close();
+          return response.data;
+        });
 
-        var blob = new Blob([blob_data], {type: blob_type});
-        saveAs(blob, filename);
+      } else {
+        return $http.post('/api/v2.1/tax_lot_properties/export/', {
+          ids: ids,
+          filename: filename,
+          profile_id: profile_id,
+          export_type: export_type
+        }, {
+          params: {
+            organization_id: user_service.get_organization().id,
+            cycle_id: cycle_id,
+            inventory_type: inventory_type
+          }
+        }).then(function (response) {
+          var blob_type = response.headers()['content-type'];
+          var blob_data;
 
-        $scope.close();
-        return response.data;
-      });
+          if (blob_type === 'application/json') {
+            blob_data = JSON.stringify(response.data, null, '    ');
+          } else if (blob_type === 'text/csv') {
+            blob_data = response.data;
+          }
+
+          var blob = new Blob([blob_data], {type: blob_type});
+          saveAs(blob, filename);
+
+          $scope.close();
+          return response.data;
+        });
+      }
     };
 
     $scope.cancel = function () {
