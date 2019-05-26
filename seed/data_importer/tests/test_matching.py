@@ -5,9 +5,9 @@
 :author
 """
 
-from seed.data_importer.tasks import (
-    match_buildings,
-)
+from seed.data_importer.models import ImportFile
+
+from seed.data_importer.tasks import match_buildings
 from seed.data_importer.match import (
     filter_duplicate_states,
     save_state_match,
@@ -578,6 +578,281 @@ class TestMatchingOutsideImportFile(DataMappingBaseTestCase):
         rtls_3 = TaxLotState.objects.get(pk=tls_3.id)
         self.assertEqual(rtls_3.data_state, DATA_STATE_MATCHING)
         self.assertEqual(rtls_3.merge_state, MERGE_STATE_NEW)
+
+
+class TestMatchingIntegration(DataMappingBaseTestCase):
+    def setUp(self):
+        selfvars = self.set_up(ASSESSED_RAW)
+        self.user, self.org, self.import_file_1, self.import_record_1, self.cycle = selfvars
+
+        self.import_record_2, self.import_file_2 = self.create_import_file(
+            self.user, self.org, self.cycle
+        )
+
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+        self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
+
+    def test_properties(self):
+        # Define matching values
+        matching_pm_property_id = '11111'
+        matching_address_line_1 = '123 Match Street'
+        matching_ubid = '86HJPCWQ+2VV-1-3-2-3'
+        matching_custom_id_1 = 'MatchingID12345'
+
+        # For first file, create properties with no duplicates or matches
+        base_details_file_1 = {
+            'import_file_id': self.import_file_1.id,
+            'data_state': DATA_STATE_MAPPING,
+            'no_default_data': False,
+        }
+
+        # No matching_criteria values
+        self.property_state_factory.get_property_state(**base_details_file_1)
+
+        # Build out properties with increasingly more matching_criteria values
+        base_details_file_1['pm_property_id'] = matching_pm_property_id
+        self.property_state_factory.get_property_state(**base_details_file_1)
+        base_details_file_1['address_line_1'] = matching_address_line_1
+        self.property_state_factory.get_property_state(**base_details_file_1)
+        base_details_file_1['ubid'] = matching_ubid
+        self.property_state_factory.get_property_state(**base_details_file_1)
+        base_details_file_1['custom_id_1'] = matching_custom_id_1
+        self.property_state_factory.get_property_state(**base_details_file_1)
+
+        self.import_file_1.mapping_done = True
+        self.import_file_1.save()
+        match_buildings(self.import_file_1.id)
+
+        # Verify no duplicates/matched-merges yet
+        counts = [
+            Property.objects.count(),
+            PropertyState.objects.count(),
+            PropertyView.objects.count(),
+        ]
+        self.assertEqual([5, 5, 5], counts)
+
+        """
+        For second file, create several properties that are one or many of the following:
+            - duplicates amongst file_1
+            - duplicates amongst file_2
+            - matching amongst file_1
+            - matching amongst file_2
+            - completely new
+        """
+        base_details_file_2 = {
+            'import_file_id': self.import_file_2.id,
+            'data_state': DATA_STATE_MAPPING,
+            'no_default_data': False,
+        }
+
+        # Create 2 duplicates of the 'No matching_criteria values' properties
+        # (outcome: 2 additional -States, NO new Property/-View)
+        ps_1 = self.property_state_factory.get_property_state(**base_details_file_2)
+        ps_2 = self.property_state_factory.get_property_state(**base_details_file_2)
+
+        # Create 2 completely new properties with misaligned combinations of matching values
+        # (outcome: 2 additional -States, 2 new Property/-View)
+        base_details_file_2['custom_id_1'] = matching_custom_id_1
+        ps_3 = self.property_state_factory.get_property_state(**base_details_file_2)
+        base_details_file_2['ubid'] = matching_ubid
+        ps_4 = self.property_state_factory.get_property_state(**base_details_file_2)
+
+        # Create 3 properties - with 1 duplicate and 1 match within it's own file that will
+        # eventually become 1 completely new property
+        # (outcome: 4 additional -States, 1 new Property/-View)
+        base_details_file_2['address_line_1'] = matching_address_line_1
+        base_details_file_2['city'] = 'Denver'
+        ps_5 = self.property_state_factory.get_property_state(**base_details_file_2)
+        ps_6 = self.property_state_factory.get_property_state(**base_details_file_2)
+        base_details_file_2['city'] = 'Golden'
+        ps_7 = self.property_state_factory.get_property_state(**base_details_file_2)
+
+        # Create 3 properties - with 1 duplicate and 1 match within it's own file that will
+        # eventually match the last property in file_1
+        # (outcome: 5 additional -States, NO new Property/-View)
+        base_details_file_2['pm_property_id'] = matching_pm_property_id
+        base_details_file_2['state'] = 'Colorado'
+        ps_8 = self.property_state_factory.get_property_state(**base_details_file_2)
+        ps_9 = self.property_state_factory.get_property_state(**base_details_file_2)
+        base_details_file_2['state'] = 'California'
+        ps_10 = self.property_state_factory.get_property_state(**base_details_file_2)
+
+        self.import_file_2.mapping_done = True
+        self.import_file_2.save()
+        match_buildings(self.import_file_2.id)
+
+        self.assertEqual(8, Property.objects.count())
+        self.assertEqual(8, PropertyView.objects.count())
+        self.assertEqual(18, PropertyState.objects.count())
+
+        ps_ids_of_deleted = PropertyState.objects.filter(
+            data_state=DATA_STATE_DELETE
+        ).values_list('id', flat=True).order_by('id')
+        self.assertEqual(
+            [ps_1.id, ps_2.id, ps_6.id, ps_9.id],
+            list(ps_ids_of_deleted)
+        )
+
+        ps_ids_of_merged_in_file = PropertyState.objects.filter(
+            data_state=DATA_STATE_MAPPING,
+            merge_state=MERGE_STATE_UNKNOWN
+        ).values_list('id', flat=True).order_by('id')
+        self.assertEqual(
+            [ps_5.id, ps_7.id, ps_8.id, ps_10.id],
+            list(ps_ids_of_merged_in_file)
+        )
+
+        ps_ids_of_all_promoted = PropertyView.objects.values_list('state_id', flat=True)
+        self.assertIn(ps_3.id, ps_ids_of_all_promoted)
+        self.assertIn(ps_4.id, ps_ids_of_all_promoted)
+
+        rimport_file_2 = ImportFile.objects.get(pk=self.import_file_2.id)
+        results = rimport_file_2.matching_results_data
+        del results['progress_key']
+
+        expected = {
+            'import_file_records': None,  # This is calculated in a separate process
+            'property_all_unmatched': 10,
+            'property_duplicates': 3,
+            'property_duplicates_of_existing': 1,
+            'property_unmatched': 3,
+            'tax_lot_all_unmatched': 0,
+            'tax_lot_duplicates': 0,
+            'tax_lot_duplicates_of_existing': 0,
+            'tax_lot_unmatched': 0,
+        }
+        self.assertEqual(results, expected)
+
+    def test_taxlots(self):
+        # Define matching values
+        matching_jurisdiction_tax_lot_id = '11111'
+        matching_address_line_1 = '123 Match Street'
+        matching_ulid = '86HJPCWQ+2VV-1-3-2-3'
+        matching_custom_id_1 = 'MatchingID12345'
+
+        # For first file, create taxlots with no duplicates or matches
+        base_details_file_1 = {
+            'import_file_id': self.import_file_1.id,
+            'data_state': DATA_STATE_MAPPING,
+            'no_default_data': False,
+        }
+
+        # No matching_criteria values
+        self.taxlot_state_factory.get_taxlot_state(**base_details_file_1)
+
+        # Build out taxlots with increasingly more matching_criteria values
+        base_details_file_1['jurisdiction_tax_lot_id'] = matching_jurisdiction_tax_lot_id
+        self.taxlot_state_factory.get_taxlot_state(**base_details_file_1)
+        base_details_file_1['address_line_1'] = matching_address_line_1
+        self.taxlot_state_factory.get_taxlot_state(**base_details_file_1)
+        base_details_file_1['ulid'] = matching_ulid
+        self.taxlot_state_factory.get_taxlot_state(**base_details_file_1)
+        base_details_file_1['custom_id_1'] = matching_custom_id_1
+        self.taxlot_state_factory.get_taxlot_state(**base_details_file_1)
+
+        self.import_file_1.mapping_done = True
+        self.import_file_1.save()
+        match_buildings(self.import_file_1.id)
+
+        # Verify no duplicates/matched-merges yet
+        counts = [
+            TaxLot.objects.count(),
+            TaxLotState.objects.count(),
+            TaxLotView.objects.count(),
+        ]
+        self.assertEqual([5, 5, 5], counts)
+
+        """
+        For second file, create several taxlots that are one or many of the following:
+            - duplicates amongst file_1
+            - duplicates amongst file_2
+            - matching amongst file_1
+            - matching amongst file_2
+            - completely new
+        """
+        base_details_file_2 = {
+            'import_file_id': self.import_file_2.id,
+            'data_state': DATA_STATE_MAPPING,
+            'no_default_data': False,
+        }
+
+        # Create 2 duplicates of the 'No matching_criteria values' taxlots
+        # (outcome: 2 additional -States, NO new TaxLot/-View)
+        tls_1 = self.taxlot_state_factory.get_taxlot_state(**base_details_file_2)
+        tls_2 = self.taxlot_state_factory.get_taxlot_state(**base_details_file_2)
+
+        # Create 2 completely new taxlots with misaligned combinations of matching values
+        # (outcome: 2 additional -States, 2 new TaxLot/-View)
+        base_details_file_2['custom_id_1'] = matching_custom_id_1
+        tls_3 = self.taxlot_state_factory.get_taxlot_state(**base_details_file_2)
+        base_details_file_2['ulid'] = matching_ulid
+        tls_4 = self.taxlot_state_factory.get_taxlot_state(**base_details_file_2)
+
+        # Create 3 taxlots - with 1 duplicate and 1 match within it's own file that will
+        # eventually become 1 completely new property
+        # (outcome: 4 additional -States, 1 new TaxLot/-View)
+        base_details_file_2['address_line_1'] = matching_address_line_1
+        base_details_file_2['city'] = 'Denver'
+        tls_5 = self.taxlot_state_factory.get_taxlot_state(**base_details_file_2)
+        tls_6 = self.taxlot_state_factory.get_taxlot_state(**base_details_file_2)
+        base_details_file_2['city'] = 'Golden'
+        tls_7 = self.taxlot_state_factory.get_taxlot_state(**base_details_file_2)
+
+        # Create 3 properties - with 1 duplicate and 1 match within it's own file that will
+        # eventually match the last property in file_1
+        # (outcome: 5 additional -States, NO new TaxLot/-View)
+        base_details_file_2['jurisdiction_tax_lot_id'] = matching_jurisdiction_tax_lot_id
+        base_details_file_2['state'] = 'Colorado'
+        tls_8 = self.taxlot_state_factory.get_taxlot_state(**base_details_file_2)
+        tls_9 = self.taxlot_state_factory.get_taxlot_state(**base_details_file_2)
+        base_details_file_2['state'] = 'California'
+        tls_10 = self.taxlot_state_factory.get_taxlot_state(**base_details_file_2)
+
+        self.import_file_2.mapping_done = True
+        self.import_file_2.save()
+        match_buildings(self.import_file_2.id)
+
+        self.assertEqual(8, TaxLot.objects.count())
+        self.assertEqual(8, TaxLotView.objects.count())
+        self.assertEqual(18, TaxLotState.objects.count())
+
+        tls_ids_of_deleted = TaxLotState.objects.filter(
+            data_state=DATA_STATE_DELETE
+        ).values_list('id', flat=True).order_by('id')
+        self.assertEqual(
+            [tls_1.id, tls_2.id, tls_6.id, tls_9.id],
+            list(tls_ids_of_deleted)
+        )
+
+        tls_ids_of_merged_in_file = TaxLotState.objects.filter(
+            data_state=DATA_STATE_MAPPING,
+            merge_state=MERGE_STATE_UNKNOWN
+        ).values_list('id', flat=True).order_by('id')
+        self.assertEqual(
+            [tls_5.id, tls_7.id, tls_8.id, tls_10.id],
+            list(tls_ids_of_merged_in_file)
+        )
+
+        tls_ids_of_all_promoted = TaxLotView.objects.values_list('state_id', flat=True)
+        self.assertIn(tls_3.id, tls_ids_of_all_promoted)
+        self.assertIn(tls_4.id, tls_ids_of_all_promoted)
+
+        rimport_file_2 = ImportFile.objects.get(pk=self.import_file_2.id)
+        results = rimport_file_2.matching_results_data
+        del results['progress_key']
+
+        expected = {
+            'import_file_records': None,  # This is calculated in a separate process
+            'property_all_unmatched': 0,
+            'property_duplicates': 0,
+            'property_duplicates_of_existing': 0,
+            'property_unmatched': 0,
+            'tax_lot_all_unmatched': 10,
+            'tax_lot_duplicates': 3,
+            'tax_lot_duplicates_of_existing': 1,
+            'tax_lot_unmatched': 3,
+        }
+        self.assertEqual(results, expected)
 
 
 class TestMatchingHelperMethods(DataMappingBaseTestCase):
