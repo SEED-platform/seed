@@ -2,7 +2,7 @@
 # starts local server and create test user for protractor tests
 
 echo "updating webdriver"
-./node_modules/.bin/webdriver-manager update --gecko=false
+./node_modules/protractor/bin/webdriver-manager update --gecko=false
 echo "migrating"
 ./manage.py migrate &> tox_migrate.log
 echo "creating default user"
@@ -15,7 +15,7 @@ echo "starting server"
 ./manage.py runserver & &> main.log
 sleep 15
 echo "run e2e tests"
-./node_modules/grunt/bin/grunt test
+./node_modules/protractor/bin/protractor seed/static/seed/tests/protractor-tests/protractorConfigCoverage.js
 # echo "install coverall merge stuffs"
 # gem install coveralls-lcov
 # pip install coveralls-merge
