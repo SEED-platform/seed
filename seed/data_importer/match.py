@@ -51,13 +51,25 @@ def log_debug(message):
 
 @shared_task
 @lock_and_track
-# @cprofile()
 def match_properties_and_taxlots(file_pk, progress_key):
     """
-    Match the properties and taxlots
+    Match the properties and taxlots.
+
+    The process starts by identifying the incoming PropertyStates
+    then TaxLotStates of an ImportFile. The steps are exactly the same for each:
+         - Remove duplicates amongst the -States within the ImportFile.
+         - Merge together any matches amongst the -States within the ImportFile.
+         - Parse through the remaining -States to ultimately associate them
+           to -Views of the current Cycle.
+            - Filter duplicates of existing -States.
+            - Merge incoming -States into existing -States if they match,
+              keeping the existing -View.
+
+    Throughout the process, the results are captured and a summary of this is
+    returned as a dict.
 
     :param file_pk: ImportFile Primary Key
-    :return:
+    :return results: dict
     """
     from seed.data_importer.tasks import pair_new_states
 
@@ -108,7 +120,8 @@ def match_properties_and_taxlots(file_pk, progress_key):
         # Within the ImportFile, filter out the duplicates.
         log_debug("Start TaxLots filter_duplicate_states")
         unmatched_tax_lot_ids, file_duplicate_tax_lot_count = filter_duplicate_states(
-            incoming_tax_lots)
+            incoming_tax_lots
+        )
 
         # Within the ImportFile, merge -States together based on user defined matching_criteria
         log_debug('Start TaxLots inclusive_match_and_merge')
@@ -143,20 +156,20 @@ def match_properties_and_taxlots(file_pk, progress_key):
 
 def filter_duplicate_states(unmatched_states):
     """
-    Takes a QuerySet of -States, where some records are exact duplicates of
-    others. This method returns two lists:
-        - IDs of unique -States + IDs for representative -States of duplicates
-        - IDs of duplicate -States not chosen to represent their set of duplicates
+    Takes a QuerySet of -States and flags then separates exact duplicates. This
+    method returns two items:
+        - list of IDs of unique -States + IDs for representative -States of duplicates
+        - count of duplicates that were filtered out of the original set
 
     This is done by constructing a dictionary where the keys are hash_objects
-    and the values are lists of IDs of -States with that hash_object.
+    and each of the values are a list of IDs of -States with that hash_object.
 
-    The first list being returned is created by taking one member of each of
-    the dictionary values (list of IDs). The second is created by combining the
-    remaining dictionary values into one list.
+    The list being returned is created by taking one member of each of
+    the dictionary values (list of IDs). The IDs that were not taken are used to
+    flag the corresponding -States with DATA_STATE_DELETE.
 
-    :param unmatched_states: QuerySet, unmatched states
-    :return: canonical_state_ids, duplicate_state_ids
+    :param unmatched_states: QS
+    :return: canonical_state_ids, duplicate_count
     """
 
     hash_object_ids = defaultdict(list)
@@ -171,19 +184,21 @@ def filter_duplicate_states(unmatched_states):
     return canonical_state_ids, duplicate_count
 
 
-# from seed.utils.cprofile import cprofile
-# @cprofile()
 def inclusive_match_and_merge(unmatched_state_ids, org, ObjectStateClass):
     """
-    Take a list of unmatched_property_states or unmatched_tax_lot_states and returns a set of
-    states that correspond to unmatched states.
+    Takes a list of unmatched_state_ids, combines matches of the corresponding
+    -States, and returns a set of IDs of the remaining -States.
 
-    :param unmatched_states: list, PropertyStates or TaxLotStates
-    :param partitioner: instance of EquivalencePartitioner
-    :return: [list, list], merged_objects, equivalence_classes keys
+
+    :param unmatched_states_ids: list
+    :param org: Organization object
+    :param ObjectStateClass: PropertyState or TaxLotState
+    :return: promoted_ids: list
     """
     table_name = ObjectStateClass.__name__
 
+    # IDs of -States with all matching criteria equal to None are intially promoted
+    # as they're not eligible for matching.
     promoted_ids = list(
         _empty_criteria_states_qs(
             unmatched_state_ids,
@@ -192,10 +207,14 @@ def inclusive_match_and_merge(unmatched_state_ids, org, ObjectStateClass):
         ).values_list('id', flat=True)
     )
 
+    # Update the list of IDs whose states haven't been checked for matches.
     unmatched_state_ids = list(
         set(unmatched_state_ids) - set(promoted_ids)
     )
 
+    # Iterate through -States of each ID. For each -State, find matches amongst
+    # the remaining set of -States. When matches are found, separate ALL of the
+    # matched -States from the "remaining set". Repeat until no -States remain.
     matching_states = []
     while unmatched_state_ids:
         state_id = unmatched_state_ids.pop()
@@ -203,18 +222,16 @@ def inclusive_match_and_merge(unmatched_state_ids, org, ObjectStateClass):
 
         matching_criteria = _matching_filter_criteria(org.id, table_name, state)
         state_matches = ObjectStateClass.objects.filter(
-            id__in=unmatched_state_ids + [state_id],
+            id__in=unmatched_state_ids + [state_id],  # add current state to search
             **matching_criteria
         ).order_by('-id')
 
-        if state_matches.exists():
-            matching_states.append(state_matches)
-            unmatched_state_ids = list(
-                set(unmatched_state_ids) - set(state_matches.values_list('id', flat=True))
-            )
-        else:
-            promoted_ids.append(state.id)
+        matching_states.append(state_matches)
+        unmatched_state_ids = list(
+            set(unmatched_state_ids) - set(state_matches.values_list('id', flat=True))
+        )
 
+    # Collapse groups of matches found in the previous step into 1 -State per group
     priorities = Column.retrieve_priorities(org)
     for states in matching_states:
         states = list(states)
@@ -226,25 +243,31 @@ def inclusive_match_and_merge(unmatched_state_ids, org, ObjectStateClass):
 
         promoted_ids.append(merge_state.id)
 
+    # Flag the soon to be promoted ID -States as having gone through matching
     ObjectStateClass.objects.filter(pk__in=promoted_ids).update(data_state=DATA_STATE_MATCHING)
 
     return promoted_ids
 
 
-# @cprofile(n=50)
 def states_to_views(unmatched_state_ids, org, cycle, ObjectStateClass):
     """
-    This is fairly inefficient, because we grab all the organization's entire PropertyViews at once.
-    Surely this can be improved, but the logic is unusual/particularly dynamic here, so hopefully
-    this can be refactored into a better, purely database approach... Perhaps existing_view_states
-    can wrap database calls. Still the abstractions are subtly different (can I refactor the
-    partitioner to use Query objects); it may require a bit of thinking.
+    The purpose of this method is to take incoming -States and, apply them to a
+    -View. In the process of doing so, -States could be flagged for "deletion"
+    (and not applied to a -View), merged with existing -States, or found to be
+    brand new. Regardless, the goal is to ultimately associate -States to -Views.
 
-    :param unmatched_states:
-    :param partitioner:
-    :param org:
-    :param import_file:
-    :return:
+    For incoming -States needing to be matched to an existing -State, merge
+    them and take the existing -State's -View to be the -View for the new merged
+    state.
+
+    For directly promote-able -States, a new -View and canonical object
+    (Property or TaxLot) are created for it.
+
+    :param unmatched_states: list
+    :param org: Organization object
+    :param cycle: Cycle object
+    :param ObjectStateClass: PropertyState or TaxLotState
+    :return: processed_views, duplicate_count, new + matched counts
     """
     table_name = ObjectStateClass.__name__
 
@@ -256,26 +279,31 @@ def states_to_views(unmatched_state_ids, org, cycle, ObjectStateClass):
     existing_cycle_views = ObjectViewClass.objects.filter(cycle_id=cycle)
 
     # Apply DATA_STATE_DELETE to incoming duplicate -States of existing -States in Cycle
-    existing_states = ObjectStateClass.objects.filter(pk__in=Subquery(existing_cycle_views.values('state_id')))
+    existing_states = ObjectStateClass.objects.filter(
+        pk__in=Subquery(existing_cycle_views.values('state_id'))
+    )
     duplicate_states = ObjectStateClass.objects.filter(
         pk__in=unmatched_state_ids,
         hash_object__in=Subquery(existing_states.values('hash_object'))
     )
     duplicate_count = duplicate_states.update(data_state=DATA_STATE_DELETE)
 
-    # For the remaining incoming -States (filtering those duplicates), identify -States with matches
+    # For the remaining incoming -States (filtering those duplicates), identify
+    # -States with all matching criteria being None. These aren't eligible for matching.
     promote_states = _empty_criteria_states_qs(
         unmatched_state_ids,
         org.id,
         ObjectStateClass
     ).exclude(pk__in=Subquery(duplicate_states.values('id')))
 
-    # Comment
+    # Identify and filter out -States that have been "handled".
     handled_states = promote_states | duplicate_states
     unmatched_states = ObjectStateClass.objects.filter(pk__in=unmatched_state_ids).exclude(
         pk__in=Subquery(handled_states.values('id'))
     )
 
+    # For the remaining -States, search for a match within the -States that are attached to -Views.
+    # If matches are found, take the first match. Otherwise, add current -State to be promoted as is.
     merge_state_pairs = []
     for state in unmatched_states:
         matching_criteria = _matching_filter_criteria(org.id, table_name, state)
@@ -284,15 +312,15 @@ def states_to_views(unmatched_state_ids, org, cycle, ObjectStateClass):
             **matching_criteria
         )
 
-        if state_match.exists() and any(v is not None for v in matching_criteria.values()):
+        if state_match.exists():
             merge_state_pairs.append((state_match.first(), state))
         else:
             promote_states = promote_states | ObjectStateClass.objects.filter(pk=state.id)
 
-    # Process -States into -Views
-    _log.debug("There are %s merge_state_pairs and %s promote_states" % (len(merge_state_pairs), len(promote_states)))
-    processed_views = []
+    # Process -States into -Views either directly (promoted_ids) or post-merge (merge_state_pairs).
+    _log.debug("There are %s merge_state_pairs and %s promote_states" % (len(merge_state_pairs), promote_states.count()))
     priorities = Column.retrieve_priorities(org.pk)
+    processed_views = []
     promoted_ids = []
     merged_state_ids = []
     try:
@@ -394,6 +422,10 @@ def save_state_match(state1, state2, priorities):
 
 
 def _empty_criteria_states_qs(state_ids, organization_id, ObjectStateClass):
+    """
+    Using an empty -State, return a QS that searches for -States within a given
+    group that where all matching criteria values are None.
+    """
     empty_state = ObjectStateClass()
     empty_criteria_filter = _matching_filter_criteria(
         organization_id,

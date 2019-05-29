@@ -645,9 +645,13 @@ class TestMatchingIntegration(DataMappingBaseTestCase):
             'no_default_data': False,
         }
 
-        # Create 2 duplicates of the 'No matching_criteria values' properties
-        # (outcome: 2 additional -States, NO new Property/-View)
+        # Create 1 duplicate of the 'No matching_criteria values' properties
+        # (outcome: 1 additional -States, NO new Property/-View)
         ps_1 = self.property_state_factory.get_property_state(**base_details_file_2)
+
+        # Create a non-duplicate property also having no matching criteria values
+        # (outcome: 1 additional -States, 1 new Property/-View)
+        base_details_file_2['postal_code'] = '01234'
         ps_2 = self.property_state_factory.get_property_state(**base_details_file_2)
 
         # Create 2 completely new properties with misaligned combinations of matching values
@@ -681,15 +685,15 @@ class TestMatchingIntegration(DataMappingBaseTestCase):
         self.import_file_2.save()
         match_buildings(self.import_file_2.id)
 
-        self.assertEqual(8, Property.objects.count())
-        self.assertEqual(8, PropertyView.objects.count())
+        self.assertEqual(9, Property.objects.count())
+        self.assertEqual(9, PropertyView.objects.count())
         self.assertEqual(18, PropertyState.objects.count())
 
         ps_ids_of_deleted = PropertyState.objects.filter(
             data_state=DATA_STATE_DELETE
         ).values_list('id', flat=True).order_by('id')
         self.assertEqual(
-            [ps_1.id, ps_2.id, ps_6.id, ps_9.id],
+            [ps_1.id, ps_6.id, ps_9.id],
             list(ps_ids_of_deleted)
         )
 
@@ -703,6 +707,7 @@ class TestMatchingIntegration(DataMappingBaseTestCase):
         )
 
         ps_ids_of_all_promoted = PropertyView.objects.values_list('state_id', flat=True)
+        self.assertIn(ps_2.id, ps_ids_of_all_promoted)
         self.assertIn(ps_3.id, ps_ids_of_all_promoted)
         self.assertIn(ps_4.id, ps_ids_of_all_promoted)
 
@@ -713,9 +718,9 @@ class TestMatchingIntegration(DataMappingBaseTestCase):
         expected = {
             'import_file_records': None,  # This is calculated in a separate process
             'property_all_unmatched': 10,
-            'property_duplicates': 3,
+            'property_duplicates': 2,
             'property_duplicates_of_existing': 1,
-            'property_unmatched': 3,
+            'property_unmatched': 4,
             'tax_lot_all_unmatched': 0,
             'tax_lot_duplicates': 0,
             'tax_lot_duplicates_of_existing': 0,
