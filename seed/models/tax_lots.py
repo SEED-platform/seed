@@ -485,4 +485,4 @@ class TaxLotAuditLog(models.Model):
         index_together = [['state', 'name'], ['parent_state1', 'parent_state2']]
 
 
-m2m_changed.connect(compare_orgs_between_label_and_target, sender=TaxLot.labels.through)
+m2m_changed.connect(compare_orgs_between_label_and_target, sender=TaxLotView.labels.through)

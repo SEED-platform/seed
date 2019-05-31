@@ -808,4 +808,4 @@ def sync_latitude_longitude_and_long_lat(sender, instance, **kwargs):
             instance.geocoding_confidence = None
 
 
-m2m_changed.connect(compare_orgs_between_label_and_target, sender=Property.labels.through)
+m2m_changed.connect(compare_orgs_between_label_and_target, sender=PropertyView.labels.through)
