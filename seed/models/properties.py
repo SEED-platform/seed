@@ -17,7 +17,7 @@ from django.contrib.postgres.fields import JSONField
 from django.contrib.gis.db import models as geomodels
 from django.db import IntegrityError
 from django.db import models
-from django.db.models.signals import pre_delete, pre_save, post_save
+from django.db.models.signals import pre_delete, pre_save, post_save, m2m_changed
 from django.dispatch import receiver
 from django.forms.models import model_to_dict
 from quantityfield.fields import QuantityField
@@ -39,7 +39,11 @@ from seed.models import (
     TaxLotProperty
 )
 from seed.utils.address import normalize_address_str
-from seed.utils.generic import split_model_fields, obj_to_dict
+from seed.utils.generic import (
+    compare_orgs_between_label_and_target,
+    split_model_fields,
+    obj_to_dict,
+)
 from seed.utils.time import convert_datestr
 from seed.utils.time import convert_to_js_timestamp
 
@@ -801,3 +805,6 @@ def sync_latitude_longitude_and_long_lat(sender, instance, **kwargs):
         elif (latitude_change or longitude_change) and not lat_and_long_both_populated:
             instance.long_lat = None
             instance.geocoding_confidence = None
+
+
+m2m_changed.connect(compare_orgs_between_label_and_target, sender=Property.labels.through)
