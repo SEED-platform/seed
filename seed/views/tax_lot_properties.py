@@ -156,7 +156,6 @@ class TaxLotPropertyViewSet(GenericViewSet):
                     label_string.append(label.name)
                 data[i]['taxlot_labels'] = ','.join(label_string)
 
-
         # force the data into the same order as the IDs
         if ids:
             order_dict = {obj_id: index for index, obj_id in enumerate(ids)}
@@ -218,7 +217,6 @@ class TaxLotPropertyViewSet(GenericViewSet):
         measure_keys = ('name', 'display_name', 'category', 'category_display_name')
         # find measures and scenarios
         for i, record in enumerate(data):
-            #print("property_state_id: ", record['property_state_id'])
             measures = PropertyMeasure.objects.filter(property_state_id=record['property_state_id'])
             record['measures'] = measures
 
@@ -250,7 +248,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
         for index, val in enumerate(list(column_name_mappings.values())):
             ws1.write(row, index, val, bold)
 
-        #iterate over the results to preserve column order and write row.
+        # iterate over the results to preserve column order and write row.
         for datum in data:
             row += 1
             id = None
@@ -288,7 +286,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
                 col2 = 0
                 for key in property_measure_keys:
                     ws2.write(row2, col2, getattr(m, key))
-                    col2+= 1
+                    col2 += 1
                 for key in measure_keys:
                     ws2.write(row2, col2, getattr(m.measure, key))
                     col2 += 1
@@ -299,7 +297,6 @@ class TaxLotPropertyViewSet(GenericViewSet):
             ws4.write('B1', 'Scenario ID', bold)
             ws4.write('C1', 'Measure ID', bold)
             for index, s in enumerate(datum['scenarios']):
-                #print("SCENARIO ID: ", s.id)
                 scenario_id = s.id
                 if index == 0:
                     # grab headers
@@ -310,12 +307,9 @@ class TaxLotPropertyViewSet(GenericViewSet):
                 col3 = 0
                 for key in scenario_keys:
                     ws3.write(row3, col3, getattr(s, key))
-                    col3+= 1
-
-                #print("SCENARIO {}".format(scenario_id))
+                    col3 += 1
 
                 for sm in s.measures.all():
-                    #print("measure: ", sm)
                     row4 += 1
                     ws4.write(row4, 0, id)
                     ws4.write(row4, 1, scenario_id)
@@ -328,7 +322,6 @@ class TaxLotPropertyViewSet(GenericViewSet):
 
         response.write(xlsx_data)
         return response
-
 
     def _json_response(self, filename, data, column_name_mappings):
         polygon_fields = ["bounding_box", "centroid", "property_footprint", "taxlot_footprint", "long_lat"]

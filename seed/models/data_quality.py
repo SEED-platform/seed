@@ -13,7 +13,7 @@ from random import randint
 import pytz
 from builtins import str
 from django.apps import apps
-from django.db import models
+from django.db import models, IntegrityError
 from django.utils.timezone import get_current_timezone, make_aware, make_naive
 from past.builtins import basestring
 from quantityfield import ureg
@@ -22,7 +22,9 @@ from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     Column,
     StatusLabel,
+    Property,
     PropertyView,
+    TaxLot,
     TaxLotView
 )
 from seed.models import obj_to_dict
@@ -922,12 +924,34 @@ class DataQualityCheck(models.Model):
         """
 
         if rule.status_label_id is not None and linked_id is not None:
+            label_org_id = rule.status_label.super_organization_id
+
             if rule.table_name == 'PropertyState':
-                label_class.objects.get_or_create(property_id=linked_id,
-                                                  statuslabel_id=rule.status_label_id)
+                property_parent_org_id = Property.objects.get(pk=linked_id).organization.get_parent().id
+                if property_parent_org_id == label_org_id:
+                    label_class.objects.get_or_create(property_id=linked_id,
+                                                      statuslabel_id=rule.status_label_id)
+                else:
+                    raise IntegrityError(
+                        'Label with super_organization_id={} cannot be applied to a property with parent '
+                        'organization_id={}.'.format(
+                            label_org_id,
+                            property_parent_org_id
+                        )
+                    )
             else:
-                label_class.objects.get_or_create(taxlot_id=linked_id,
-                                                  statuslabel_id=rule.status_label_id)
+                taxlot_parent_org_id = TaxLot.objects.get(pk=linked_id).organization.get_parent().id
+                if taxlot_parent_org_id == label_org_id:
+                    label_class.objects.get_or_create(taxlot_id=linked_id,
+                                                      statuslabel_id=rule.status_label_id)
+                else:
+                    raise IntegrityError(
+                        'Label with super_organization_id={} cannot be applied to a taxlot with parent '
+                        'organization_id={}.'.format(
+                            label_org_id,
+                            taxlot_parent_org_id
+                        )
+                    )
             return True
 
     def remove_status_label(self, label_class, rule, linked_id):
