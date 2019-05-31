@@ -495,14 +495,19 @@ class PropertyViewSet(GenericViewSet):
             paired_view_ids = list(TaxLotProperty.objects.filter(property_view_id__in=view_ids)
                                    .order_by('taxlot_view_id').distinct('taxlot_view_id')
                                    .values_list('taxlot_view_id', flat=True))
-            for v in views:
-                label_ids.extend(list(v.property.labels.all().values_list('id', flat=True)))
-                v.property.delete()
-            label_ids = list(set(label_ids))
 
             # Create new inventory record
             inventory_record = inventory(organization_id=organization_id)
             inventory_record.save()
+
+            # Add meters in the following order.
+            inventory_record.copy_meters(view.objects.get(state_id=state1.id).property_id)
+            inventory_record.copy_meters(view.objects.get(state_id=state2.id).property_id)
+
+            for v in views:
+                label_ids.extend(list(v.property.labels.all().values_list('id', flat=True)))
+                v.property.delete()
+            label_ids = list(set(label_ids))
 
             # Create new labels and view
             for label_id in label_ids:

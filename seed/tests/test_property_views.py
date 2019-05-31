@@ -4,14 +4,22 @@
 :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+import os
 import json
 from datetime import datetime
 
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.urlresolvers import reverse
 from django.utils import timezone
 
 from seed.landing.models import SEEDUser as User
+from seed.data_importer.models import (
+    ImportFile,
+    ImportRecord,
+)
 from seed.models import (
+    Meter,
+    MeterReading,
     PropertyState,
     PropertyView,
 )
@@ -183,3 +191,169 @@ class PropertyViewTests(DeleteModelsTestCase):
         self.assertEqual(result['status'], 'success')
         results = result['properties']
         self.assertEqual(len(results), 1)
+
+
+class PropertyMergeViewTests(DeleteModelsTestCase):
+    def setUp(self):
+        user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+            'email': 'test_user@demo.com'
+        }
+        self.user = User.objects.create_superuser(**user_details)
+        self.org, self.org_user, _ = create_organization(self.user)
+        # self.column_factory = FakeColumnFactory(organization=self.org)
+        cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
+        self.property_factory = FakePropertyFactory(organization=self.org)
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+        # self.property_view_factory = FakePropertyViewFactory(organization=self.org)
+        # self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
+        self.cycle = cycle_factory.get_cycle(
+            start=datetime(2010, 10, 10, tzinfo=timezone.get_current_timezone()))
+        self.client.login(**user_details)
+
+        self.state_1 = self.property_state_factory.get_property_state(
+            address_line_1='1 property state',
+            pm_property_id='5766973'  # this allows the Property to be targetted for PM meter additions
+        )
+        self.property_1 = self.property_factory.get_property()
+        view_1 = PropertyView.objects.create(
+            property=self.property_1, cycle=self.cycle, state=self.state_1
+        )
+
+        self.state_2 = self.property_state_factory.get_property_state(address_line_1='2 property state')
+        self.property_2 = self.property_factory.get_property()
+        view_2 = PropertyView.objects.create(
+            property=self.property_2, cycle=self.cycle, state=self.state_2
+        )
+
+        self.import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
+
+
+    def test_properties_merge_without_losing_meters_1st_has_meters(self):
+        # Assign meters to the first Property
+        filename = "example-GreenButton-data.xml"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+        import_file = ImportFile.objects.create(
+            import_record=self.import_record,
+            source_type="GreenButton",
+            uploaded_filename=filename,
+            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            cycle=self.cycle,
+            matching_results_data={"property_id": self.property_1.id}  # this is how target property is specified
+        )
+        gb_import_url = reverse("api:v2:import_files-save-raw-data", args=[import_file.id])
+        gb_import_post_params = {
+            'cycle_id': self.cycle.pk,
+            'organization_id': self.org.pk,
+        }
+        self.client.post(gb_import_url, gb_import_post_params)
+
+
+        # Merge PropertyStates
+        url = reverse('api:v2:properties-merge') + '?organization_id={}'.format(self.org.pk)
+        post_params = json.dumps({
+            'state_ids': [self.state_2.pk, self.state_1.pk]
+        })
+        results = self.client.post(url, post_params, content_type='application/json')
+
+        # There should only be one PropertyView
+        self.assertEqual(PropertyView.objects.count(), 1)
+
+        self.assertEqual(PropertyView.objects.first().property.meters.count(), 1)
+        self.assertEqual(PropertyView.objects.first().property.meters.first().meter_readings.count(), 2)
+
+
+    def test_properties_merge_without_losing_meters_2nd_has_meters(self):
+        # Assign Meters to the second Property
+        filename = "example-GreenButton-data.xml"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+        import_file = ImportFile.objects.create(
+            import_record=self.import_record,
+            source_type="GreenButton",
+            uploaded_filename=filename,
+            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            cycle=self.cycle,
+            matching_results_data={"property_id": self.property_2.id}  # this is how target property is specified
+        )
+        gb_import_url = reverse("api:v2:import_files-save-raw-data", args=[import_file.id])
+        gb_import_post_params = {
+            'cycle_id': self.cycle.pk,
+            'organization_id': self.org.pk,
+        }
+        self.client.post(gb_import_url, gb_import_post_params)
+
+        # Merge PropertyStates
+        url = reverse('api:v2:properties-merge') + '?organization_id={}'.format(self.org.pk)
+        post_params = json.dumps({
+            'state_ids': [self.state_2.pk, self.state_1.pk]
+        })
+        results = self.client.post(url, post_params, content_type='application/json')
+
+        # There should only be one PropertyView
+        self.assertEqual(PropertyView.objects.count(), 1)
+
+        self.assertEqual(PropertyView.objects.first().property.meters.count(), 1)
+        self.assertEqual(PropertyView.objects.first().property.meters.first().meter_readings.count(), 2)
+
+    def test_properties_merge_without_losing_meters_from_different_sources(self):
+        # For first Property, PM Meters containing 2 readings for each Electricty and Natural Gas for property_1
+        pm_filename = "example-pm-monthly-meter-usage.xlsx"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + pm_filename
+        pm_import_file = ImportFile.objects.create(
+            import_record=self.import_record,
+            source_type="PM Meter Usage",
+            uploaded_filename=pm_filename,
+            file=SimpleUploadedFile(name=pm_filename, content=open(filepath, 'rb').read()),
+            cycle=self.cycle,
+        )
+        pm_import_url = reverse("api:v2:import_files-save-raw-data", args=[pm_import_file.id])
+        pm_import_post_params = {
+            'cycle_id': self.cycle.pk,
+            'organization_id': self.org.pk,
+        }
+        self.client.post(pm_import_url, pm_import_post_params)
+
+        # For second Property, add GreenButton Meters containing 2 readings for Electricity only
+        gb_filename = "example-GreenButton-data.xml"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + gb_filename
+        gb_import_file = ImportFile.objects.create(
+            import_record=self.import_record,
+            source_type="GreenButton",
+            uploaded_filename=gb_filename,
+            file=SimpleUploadedFile(name=gb_filename, content=open(filepath, 'rb').read()),
+            cycle=self.cycle,
+            matching_results_data={"property_id": self.property_2.id}  # this is how target property is specified
+        )
+        gb_import_url = reverse("api:v2:import_files-save-raw-data", args=[gb_import_file.id])
+        gb_import_post_params = {
+            'cycle_id': self.cycle.pk,
+            'organization_id': self.org.pk,
+        }
+        self.client.post(gb_import_url, gb_import_post_params)
+
+        # Merge PropertyStates
+        url = reverse('api:v2:properties-merge') + '?organization_id={}'.format(self.org.pk)
+        post_params = json.dumps({
+            'state_ids': [self.state_2.pk, self.state_1.pk]  # priority given to state_1
+        })
+        results = self.client.post(url, post_params, content_type='application/json')
+
+        # There should only be one PropertyView
+        self.assertEqual(PropertyView.objects.count(), 1)
+
+        # The Property of the (only) -View has all of the Meters now.
+        meters = PropertyView.objects.first().property.meters
+
+        # import pdb; pdb.set_trace()
+        self.assertEqual(meters.count(), 3)
+        self.assertEqual(meters.get(type=Meter.ELECTRICITY, source=Meter.GREENBUTTON).meter_readings.count(), 2)
+        self.assertEqual(meters.get(type=Meter.ELECTRICITY, source=Meter.PORTFOLIO_MANAGER).meter_readings.count(), 2)
+        self.assertEqual(meters.get(type=Meter.NATURAL_GAS).meter_readings.count(), 2)
+
+        # Old meters deleted, so only merged meters exist
+        self.assertEqual(Meter.objects.count(), 3)
+        self.assertEqual(MeterReading.objects.count(), 6)
+
+    # def test_properties_merge_without_losing_meters_when_some_meters_are_overlapping(self):
+    # def test_properties_merge_without_losing_meters_both_have_overlapping_meters(self):

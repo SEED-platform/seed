@@ -15,8 +15,12 @@ from past.builtins import basestring
 from django.apps import apps
 from django.contrib.postgres.fields import JSONField
 from django.contrib.gis.db import models as geomodels
-from django.db import IntegrityError
-from django.db import models
+from django.db import (
+    connection,
+    models,
+    transaction,
+    IntegrityError,
+)
 from django.db.models.signals import pre_delete, pre_save, post_save
 from django.dispatch import receiver
 from django.forms.models import model_to_dict
@@ -74,6 +78,47 @@ class Property(models.Model):
 
     def __str__(self):
         return 'Property - %s' % (self.pk)
+
+    def copy_meters(self, source_state_id):
+        source = Property.objects.get(pk=source_state_id)
+
+        # If the source has no meters, there's nothing to do.
+        if not source.meters.exists():
+            return
+
+        if self.meters.exists():
+            for source_meter in source.meters.all():
+                with transaction.atomic():
+                    target_meter, created = self.meters.get_or_create(
+                        is_virtual=source_meter.is_virtual,
+                        source=source_meter.source,
+                        source_id=source_meter.source_id,
+                        type=source_meter.type
+                    )
+
+                    if created:
+                        source_meter.meter_readings.update(meter=target_meter)
+                        source_meter.save()
+                    else:
+                        continue
+                        # reading_strings = [
+                        #     f"({target_meter.id}, '{reading.start_time}', '{reading.end_time}', {reading.reading.magnitude}, '{reading.source_unit}', {reading.conversion_factor})"
+                        #     for reading
+                        #     in source_meter.meter_readings.all()
+                        # ]
+                        #
+                        # sql = (
+                        #     "INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor)" +
+                        #     " VALUES " + ", ".join(reading_strings) +
+                        #     " ON CONFLICT (meter_id, start_time, end_time)" +
+                        #     " DO UPDATE SET reading = EXCLUDED.reading, source_unit = EXCLUDED.source_unit, conversion_factor = EXCLUDED.conversion_factor" +
+                        #     " RETURNING reading;"
+                        # )
+                        #
+                        # with connection.cursor() as cursor:
+                        #     cursor.execute(sql)
+        else:
+            source.meters.update(property_id=self.id)
 
 
 class PropertyState(models.Model):
