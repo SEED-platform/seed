@@ -14,7 +14,7 @@ from os import path
 from django.contrib.gis.db import models as geomodels
 from django.contrib.postgres.fields import JSONField
 from django.db import models
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, m2m_changed
 from django.dispatch import receiver
 
 from seed.data_importer.models import ImportFile
@@ -30,7 +30,11 @@ from seed.models import (
     MERGE_STATE_UNKNOWN,
 )
 from seed.utils.address import normalize_address_str
-from seed.utils.generic import split_model_fields, obj_to_dict
+from seed.utils.generic import (
+    compare_orgs_between_label_and_target,
+    split_model_fields,
+    obj_to_dict,
+)
 from seed.utils.time import convert_to_js_timestamp
 from .auditlog import AUDIT_IMPORT
 from .auditlog import DATA_UPDATE_TYPE
@@ -479,3 +483,6 @@ class TaxLotAuditLog(models.Model):
 
     class Meta:
         index_together = [['state', 'name'], ['parent_state1', 'parent_state2']]
+
+
+m2m_changed.connect(compare_orgs_between_label_and_target, sender=TaxLot.labels.through)
