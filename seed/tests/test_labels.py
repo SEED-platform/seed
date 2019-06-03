@@ -50,7 +50,7 @@ class TestLabelIntegrityChecks(DataMappingBaseTestCase):
             name='org_2_label', super_organization=org_2
         )
 
-    def test_error_occurs_when_trying_to_apply_a_label_to_property_from_a_different_org(self):
+    def test_error_occurs_when_trying_to_apply_a_label_to_propertyview_from_a_different_org(self):
         org_1_property = Property.objects.create(organization=self.org)
         property_state_factory = FakePropertyStateFactory(organization=self.org)
         org_1_propertystate = property_state_factory.get_property_state()
@@ -70,7 +70,7 @@ class TestLabelIntegrityChecks(DataMappingBaseTestCase):
                     [self.org_2_status_label.id]
                 )
 
-        # Via Property Model
+        # Via PropertyView Model
         with transaction.atomic():
             with self.assertRaises(IntegrityError):
                 org_1_propertyview.labels.add(self.org_2_status_label)
@@ -92,7 +92,7 @@ class TestLabelIntegrityChecks(DataMappingBaseTestCase):
 
         self.assertFalse(PropertyView.objects.get(pk=org_1_propertyview.id).labels.all().exists())
 
-    def test_error_occurs_when_trying_to_apply_a_label_to_taxlot_from_a_different_org(self):
+    def test_error_occurs_when_trying_to_apply_a_label_to_taxlotview_from_a_different_org(self):
         org_1_taxlot = TaxLot.objects.create(organization=self.org)
         taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
         org_1_taxlotstate = taxlot_state_factory.get_taxlot_state()
@@ -115,7 +115,7 @@ class TestLabelIntegrityChecks(DataMappingBaseTestCase):
             with self.assertRaises(IntegrityError):
                 org_1_taxlotview.labels.add(self.org_2_status_label)
 
-        # Via TaxLot Rule with Label
+        # Via TaxLotState Rule with Label
         org_1_dq = DataQualityCheck.objects.get(organization=self.org)
         org_1_tls_rule = org_1_dq.rules.filter(table_name='TaxLotState').first()
         # Purposely give an Org 1 Rule an Org 2 Label

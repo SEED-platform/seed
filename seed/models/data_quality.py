@@ -915,7 +915,7 @@ class DataQualityCheck(models.Model):
     def update_status_label(self, label_class, rule, linked_id):
         """
 
-        :param label_class: statuslabel object, either property label or taxlot label
+        :param label_class: statuslabel object, either propertyview label or taxlotview label
         :param rule: rule object
         :param linked_id: id of propertystate or taxlotstate object
         :return: boolean, if labeled was applied
@@ -931,7 +931,7 @@ class DataQualityCheck(models.Model):
                                                       statuslabel_id=rule.status_label_id)
                 else:
                     raise IntegrityError(
-                        'Label with super_organization_id={} cannot be applied to a property with parent '
+                        'Label with super_organization_id={} cannot be applied to a record with parent '
                         'organization_id={}.'.format(
                             label_org_id,
                             property_parent_org_id
@@ -944,7 +944,7 @@ class DataQualityCheck(models.Model):
                                                       statuslabel_id=rule.status_label_id)
                 else:
                     raise IntegrityError(
-                        'Label with super_organization_id={} cannot be applied to a taxlot with parent '
+                        'Label with super_organization_id={} cannot be applied to a record with parent '
                         'organization_id={}.'.format(
                             label_org_id,
                             taxlot_parent_org_id
