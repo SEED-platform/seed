@@ -49,8 +49,6 @@ COLUMNS_TO_SEND = [
     'state_province',
     'postal_code',
     'pm_parent_property_id',
-    # 'calculated_taxlot_ids',
-    # 'primary',
     'extra_data_field',
     'jurisdiction_tax_lot_id'
 ]
@@ -210,12 +208,11 @@ class PropertyMergeViewTests(DeleteModelsTestCase):
         }
         self.user = User.objects.create_superuser(**user_details)
         self.org, self.org_user, _ = create_organization(self.user)
-        # self.column_factory = FakeColumnFactory(organization=self.org)
+
         cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
         self.property_factory = FakePropertyFactory(organization=self.org)
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
-        # self.property_view_factory = FakePropertyViewFactory(organization=self.org)
-        # self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
+
         self.cycle = cycle_factory.get_cycle(
             start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
         self.client.login(**user_details)
@@ -442,3 +439,92 @@ class PropertyMergeViewTests(DeleteModelsTestCase):
 
         # Overlapping reading that wasn't prioritized should not exist
         self.assertFalse(MeterReading.objects.filter(reading=property_2_reading).exists())
+
+
+class PropertyUnmergeViewTests(DeleteModelsTestCase):
+    def setUp(self):
+        user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+            'email': 'test_user@demo.com'
+        }
+        self.user = User.objects.create_superuser(**user_details)
+        self.org, self.org_user, _ = create_organization(self.user)
+
+        cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
+        self.property_factory = FakePropertyFactory(organization=self.org)
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+
+        self.cycle = cycle_factory.get_cycle(
+            start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
+        self.client.login(**user_details)
+
+        self.state_1 = self.property_state_factory.get_property_state(
+            address_line_1='1 property state',
+            pm_property_id='5766973'  # this allows the Property to be targetted for PM meter additions
+        )
+        self.property_1 = self.property_factory.get_property()
+        PropertyView.objects.create(
+            property=self.property_1, cycle=self.cycle, state=self.state_1
+        )
+
+        self.state_2 = self.property_state_factory.get_property_state(address_line_1='2 property state')
+        self.property_2 = self.property_factory.get_property()
+        PropertyView.objects.create(
+            property=self.property_2, cycle=self.cycle, state=self.state_2
+        )
+
+        self.import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
+
+        # Give 2 meters to one of the properties
+        gb_filename = "example-GreenButton-data.xml"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + gb_filename
+        gb_import_file = ImportFile.objects.create(
+            import_record=self.import_record,
+            source_type="GreenButton",
+            uploaded_filename=gb_filename,
+            file=SimpleUploadedFile(name=gb_filename, content=open(filepath, 'rb').read()),
+            cycle=self.cycle,
+            matching_results_data={"property_id": self.property_1.id}  # this is how target property is specified
+        )
+        gb_import_url = reverse("api:v2:import_files-save-raw-data", args=[gb_import_file.id])
+        gb_import_post_params = {
+            'cycle_id': self.cycle.pk,
+            'organization_id': self.org.pk,
+        }
+        self.client.post(gb_import_url, gb_import_post_params)
+
+        # Merge the properties
+        url = reverse('api:v2:properties-merge') + '?organization_id={}'.format(self.org.pk)
+        post_params = json.dumps({
+            'state_ids': [self.state_2.pk, self.state_1.pk]  # priority given to state_1
+        })
+        self.client.post(url, post_params, content_type='application/json')
+
+    def test_unmerging_two_properties_with_meters_gives_meters_to_both_of_the_resulting_records(self):
+        # Unmerge the properties
+        view_id = PropertyView.objects.first().id  # There's only one PropertyView
+        url = reverse('api:v2:properties-unmerge', args=[view_id]) + '?organization_id={}'.format(self.org.pk)
+        self.client.post(url, content_type='application/json')
+
+        # Verify 2 -Views now exist
+        self.assertEqual(PropertyView.objects.count(), 2)
+
+        # Check that meters and readings of each -View exists and verify they are identical.
+        reading_sets = []
+        for view in PropertyView.objects.all():
+            self.assertEqual(view.property.meters.count(), 1)
+            self.assertEqual(view.property.meters.first().meter_readings.count(), 2)
+            reading_sets.append([
+                {
+                    'start_time': reading.start_time,
+                    'end_time': reading.end_time,
+                    'reading': reading.reading,
+                    'source_unit': reading.source_unit,
+                    'conversion_factor': reading.conversion_factor,
+                }
+                for reading
+                in view.property.meters.first().meter_readings.all().order_by('start_time')
+            ])
+
+        self.assertEqual(reading_sets[0], reading_sets[1])

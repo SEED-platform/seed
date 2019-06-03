@@ -500,9 +500,15 @@ class PropertyViewSet(GenericViewSet):
             inventory_record = inventory(organization_id=organization_id)
             inventory_record.save()
 
-            # Add meters in the following order.
-            inventory_record.copy_meters(view.objects.get(state_id=state1.id).property_id)
-            inventory_record.copy_meters(view.objects.get(state_id=state2.id).property_id)
+            # Add meters in the following order without regard for the source persisting.
+            inventory_record.copy_meters(
+                view.objects.get(state_id=state1.id).property_id,
+                source_persists=False
+            )
+            inventory_record.copy_meters(
+                view.objects.get(state_id=state2.id).property_id,
+                source_persists=False
+            )
 
             for v in views:
                 label_ids.extend(list(v.property.labels.all().values_list('id', flat=True)))
@@ -593,12 +599,14 @@ class PropertyViewSet(GenericViewSet):
         state2 = log.parent_state2
         cycle_id = old_view.cycle_id
 
-        # Clone the property record, then the labels
+        # Clone the property record, then copy over meters and labels
         old_property = old_view.property
         label_ids = list(old_property.labels.all().values_list('id', flat=True))
         new_property = old_property
         new_property.id = None
         new_property.save()
+
+        Property.objects.get(pk=new_property.id).copy_meters(old_view.property_id)
 
         for label_id in label_ids:
             label(property_id=new_property.id, statuslabel_id=label_id).save()

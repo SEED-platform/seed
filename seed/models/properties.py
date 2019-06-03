@@ -16,7 +16,6 @@ from django.apps import apps
 from django.contrib.postgres.fields import JSONField
 from django.contrib.gis.db import models as geomodels
 from django.db import (
-    connection,
     models,
     transaction,
     IntegrityError,
@@ -79,16 +78,28 @@ class Property(models.Model):
     def __str__(self):
         return 'Property - %s' % (self.pk)
 
-    def copy_meters(self, source_state_id):
-        source = Property.objects.get(pk=source_state_id)
+    def copy_meters(self, source_state_id, source_persists=True):
+        """
+        Copies meters from a source Property to the current Property.
 
-        # If the source has no meters, there's nothing to do.
-        if not source.meters.exists():
+        It's most efficient if the persistence of the source Property's readings
+        aren't needed as bulk reassignments can then be used.
+
+        The cases and logic are described in comments throughout.
+        """
+        source_property = Property.objects.get(pk=source_state_id)
+
+        # If the source property has no meters to copy, there's nothing to do.
+        if not source_property.meters.exists():
             return
 
-        # If the source does have meters, copy over the readings one meter at a time.
-        if self.meters.exists():
-            for source_meter in source.meters.all():
+        if self.meters.exists() is False and source_persists is False:
+            # In this case, simply copy over the meters and readings from source in bulk.
+            source_property.meters.update(property_id=self.id)
+        else:
+            # In any other case, copy over the readings from source one meter at
+            # a time, checking to see if self has a similar meter each time.
+            for source_meter in source_property.meters.all():
                 with transaction.atomic():
                     target_meter, created = self.meters.get_or_create(
                         is_virtual=source_meter.is_virtual,
@@ -97,29 +108,17 @@ class Property(models.Model):
                         type=source_meter.type
                     )
 
-                    # If self didn't have a similar meter, meters and their readings are simply reassigned
                     if created:
-                        source_meter.meter_readings.update(meter=target_meter)
-                        source_meter.save()
-                    else:  # else a mass upsert is used to give priority to the source readings if necessary
-                        reading_strings = [
-                            f"({target_meter.id}, '{reading.start_time}', '{reading.end_time}', {reading.reading.magnitude}, '{reading.source_unit}', {reading.conversion_factor})"
-                            for reading
-                            in source_meter.meter_readings.all()
-                        ]
-
-                        sql = (
-                            "INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor)" +
-                            " VALUES " + ", ".join(reading_strings) +
-                            " ON CONFLICT (meter_id, start_time, end_time)" +
-                            " DO UPDATE SET reading = EXCLUDED.reading, source_unit = EXCLUDED.source_unit, conversion_factor = EXCLUDED.conversion_factor" +
-                            " RETURNING reading;"
-                        )
-
-                        with connection.cursor() as cursor:
-                            cursor.execute(sql)
-        else:
-            source.meters.update(property_id=self.id)
+                        # If self didn't have a similar meter and a new one was created,
+                        # decide what to do depending on whether source meters need to persist.
+                        if source_persists:
+                            # Note, overlaps aren't possible since a new meter was created.
+                            target_meter.copy_readings(source_meter, overlaps_possible=False)
+                        else:
+                            source_meter.meter_readings.update(meter=target_meter)
+                    else:
+                        # If self did have a similar meter, copy readings assuming overlaps are possible.
+                        target_meter.copy_readings(source_meter, overlaps_possible=True)
 
 
 class PropertyState(models.Model):
