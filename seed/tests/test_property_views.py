@@ -6,11 +6,19 @@
 """
 import os
 import json
+
+from config.settings.common import TIME_ZONE
+
 from datetime import datetime
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.urlresolvers import reverse
-from django.utils import timezone
+from django.utils.timezone import (
+    get_current_timezone,
+    make_aware,  # make_aware is used because inconsistencies exist in creating datetime with tzinfo
+)
+
+from pytz import timezone
 
 from seed.landing.models import SEEDUser as User
 from seed.data_importer.models import (
@@ -65,7 +73,7 @@ class PropertyViewTests(DeleteModelsTestCase):
         self.property_view_factory = FakePropertyViewFactory(organization=self.org)
         self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
         self.cycle = self.cycle_factory.get_cycle(
-            start=datetime(2010, 10, 10, tzinfo=timezone.get_current_timezone()))
+            start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
         self.client.login(**user_details)
 
     def test_get_and_edit_properties(self):
@@ -209,7 +217,7 @@ class PropertyMergeViewTests(DeleteModelsTestCase):
         # self.property_view_factory = FakePropertyViewFactory(organization=self.org)
         # self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
         self.cycle = cycle_factory.get_cycle(
-            start=datetime(2010, 10, 10, tzinfo=timezone.get_current_timezone()))
+            start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
         self.client.login(**user_details)
 
         self.state_1 = self.property_state_factory.get_property_state(
@@ -217,18 +225,17 @@ class PropertyMergeViewTests(DeleteModelsTestCase):
             pm_property_id='5766973'  # this allows the Property to be targetted for PM meter additions
         )
         self.property_1 = self.property_factory.get_property()
-        view_1 = PropertyView.objects.create(
+        PropertyView.objects.create(
             property=self.property_1, cycle=self.cycle, state=self.state_1
         )
 
         self.state_2 = self.property_state_factory.get_property_state(address_line_1='2 property state')
         self.property_2 = self.property_factory.get_property()
-        view_2 = PropertyView.objects.create(
+        PropertyView.objects.create(
             property=self.property_2, cycle=self.cycle, state=self.state_2
         )
 
         self.import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
-
 
     def test_properties_merge_without_losing_meters_1st_has_meters(self):
         # Assign meters to the first Property
@@ -249,20 +256,18 @@ class PropertyMergeViewTests(DeleteModelsTestCase):
         }
         self.client.post(gb_import_url, gb_import_post_params)
 
-
         # Merge PropertyStates
         url = reverse('api:v2:properties-merge') + '?organization_id={}'.format(self.org.pk)
         post_params = json.dumps({
             'state_ids': [self.state_2.pk, self.state_1.pk]
         })
-        results = self.client.post(url, post_params, content_type='application/json')
+        self.client.post(url, post_params, content_type='application/json')
 
         # There should only be one PropertyView
         self.assertEqual(PropertyView.objects.count(), 1)
 
         self.assertEqual(PropertyView.objects.first().property.meters.count(), 1)
         self.assertEqual(PropertyView.objects.first().property.meters.first().meter_readings.count(), 2)
-
 
     def test_properties_merge_without_losing_meters_2nd_has_meters(self):
         # Assign Meters to the second Property
@@ -288,7 +293,7 @@ class PropertyMergeViewTests(DeleteModelsTestCase):
         post_params = json.dumps({
             'state_ids': [self.state_2.pk, self.state_1.pk]
         })
-        results = self.client.post(url, post_params, content_type='application/json')
+        self.client.post(url, post_params, content_type='application/json')
 
         # There should only be one PropertyView
         self.assertEqual(PropertyView.objects.count(), 1)
@@ -337,7 +342,7 @@ class PropertyMergeViewTests(DeleteModelsTestCase):
         post_params = json.dumps({
             'state_ids': [self.state_2.pk, self.state_1.pk]  # priority given to state_1
         })
-        results = self.client.post(url, post_params, content_type='application/json')
+        self.client.post(url, post_params, content_type='application/json')
 
         # There should only be one PropertyView
         self.assertEqual(PropertyView.objects.count(), 1)
@@ -345,7 +350,6 @@ class PropertyMergeViewTests(DeleteModelsTestCase):
         # The Property of the (only) -View has all of the Meters now.
         meters = PropertyView.objects.first().property.meters
 
-        # import pdb; pdb.set_trace()
         self.assertEqual(meters.count(), 3)
         self.assertEqual(meters.get(type=Meter.ELECTRICITY, source=Meter.GREENBUTTON).meter_readings.count(), 2)
         self.assertEqual(meters.get(type=Meter.ELECTRICITY, source=Meter.PORTFOLIO_MANAGER).meter_readings.count(), 2)
@@ -355,5 +359,86 @@ class PropertyMergeViewTests(DeleteModelsTestCase):
         self.assertEqual(Meter.objects.count(), 3)
         self.assertEqual(MeterReading.objects.count(), 6)
 
-    # def test_properties_merge_without_losing_meters_when_some_meters_are_overlapping(self):
-    # def test_properties_merge_without_losing_meters_both_have_overlapping_meters(self):
+    def test_properties_merge_without_losing_meters_when_some_meters_from_same_source_are_overlapping(self):
+        # For first Property, add GreenButton Meters containing 2 readings for Electricity only
+        gb_filename = "example-GreenButton-data.xml"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + gb_filename
+        gb_import_file = ImportFile.objects.create(
+            import_record=self.import_record,
+            source_type="GreenButton",
+            uploaded_filename=gb_filename,
+            file=SimpleUploadedFile(name=gb_filename, content=open(filepath, 'rb').read()),
+            cycle=self.cycle,
+            matching_results_data={"property_id": self.property_1.id}  # this is how target property is specified
+        )
+        gb_import_url = reverse("api:v2:import_files-save-raw-data", args=[gb_import_file.id])
+        gb_import_post_params = {
+            'cycle_id': self.cycle.pk,
+            'organization_id': self.org.pk,
+        }
+        self.client.post(gb_import_url, gb_import_post_params)
+
+        # For second Property, add GreenButton Meters containing 2 Electricitiy readings: 1 overlapping
+        gb_overlapping_filename = "example-GreenButton-data-1-overlapping.xml"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + gb_overlapping_filename
+        gb_overlapping_import_file = ImportFile.objects.create(
+            import_record=self.import_record,
+            source_type="GreenButton",
+            uploaded_filename=gb_overlapping_filename,
+            file=SimpleUploadedFile(name=gb_overlapping_filename, content=open(filepath, 'rb').read()),
+            cycle=self.cycle,
+            matching_results_data={"property_id": self.property_2.id}  # this is how target property is specified
+        )
+        gb_overlapping_import_url = reverse("api:v2:import_files-save-raw-data", args=[gb_overlapping_import_file.id])
+        gb_overlapping_import_post_params = {
+            'cycle_id': self.cycle.pk,
+            'organization_id': self.org.pk,
+        }
+        self.client.post(gb_overlapping_import_url, gb_overlapping_import_post_params)
+
+        # Check that there are 2 overlapping readings (that are separate for now) out of 4.
+        self.assertEqual(MeterReading.objects.count(), 4)
+        tz_obj = timezone(TIME_ZONE)
+        start_time_match = make_aware(datetime(2011, 3, 5, 21, 15, 0), timezone=tz_obj)
+        end_time_match = make_aware(datetime(2011, 3, 5, 21, 30, 0), timezone=tz_obj)
+        same_time_windows = MeterReading.objects.filter(
+            start_time=start_time_match,
+            end_time=end_time_match
+        )
+        self.assertEqual(same_time_windows.count(), 2)
+
+        # Capture the overlapping reading of property_1, and ensure it's different from property_2's
+        priority_property_id = self.property_1.meters.first().id
+        property_1_reading = same_time_windows.get(meter_id=priority_property_id).reading
+        property_2_reading = same_time_windows.exclude(meter_id=priority_property_id).get().reading
+        self.assertNotEqual(property_1_reading, property_2_reading)
+
+        # Merge PropertyStates
+        url = reverse('api:v2:properties-merge') + '?organization_id={}'.format(self.org.pk)
+        post_params = json.dumps({
+            'state_ids': [self.state_2.pk, self.state_1.pk]  # priority given to state_1
+        })
+        self.client.post(url, post_params, content_type='application/json')
+
+        # There should only be one PropertyView
+        self.assertEqual(PropertyView.objects.count(), 1)
+
+        # The Property of the (only) -View has all of the Meters now.
+        meters = PropertyView.objects.first().property.meters
+        self.assertEqual(meters.count(), 1)
+        self.assertEqual(meters.first().meter_readings.count(), 3)
+
+        # Old meters deleted, so only merged meters exist
+        self.assertEqual(Meter.objects.count(), 1)
+        self.assertEqual(MeterReading.objects.count(), 3)
+
+        # Check that the resulting reading used belonged to property_1
+        merged_reading = MeterReading.objects.filter(
+            start_time=start_time_match,
+            end_time=end_time_match
+        )
+        self.assertEqual(merged_reading.count(), 1)
+        self.assertEqual(merged_reading.first().reading, property_1_reading)
+
+        # Overlapping reading that wasn't prioritized should not exist
+        self.assertFalse(MeterReading.objects.filter(reading=property_2_reading).exists())

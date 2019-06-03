@@ -86,6 +86,7 @@ class Property(models.Model):
         if not source.meters.exists():
             return
 
+        # If the source does have meters, copy over the readings one meter at a time.
         if self.meters.exists():
             for source_meter in source.meters.all():
                 with transaction.atomic():
@@ -96,27 +97,27 @@ class Property(models.Model):
                         type=source_meter.type
                     )
 
+                    # If self didn't have a similar meter, meters and their readings are simply reassigned
                     if created:
                         source_meter.meter_readings.update(meter=target_meter)
                         source_meter.save()
-                    else:
-                        continue
-                        # reading_strings = [
-                        #     f"({target_meter.id}, '{reading.start_time}', '{reading.end_time}', {reading.reading.magnitude}, '{reading.source_unit}', {reading.conversion_factor})"
-                        #     for reading
-                        #     in source_meter.meter_readings.all()
-                        # ]
-                        #
-                        # sql = (
-                        #     "INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor)" +
-                        #     " VALUES " + ", ".join(reading_strings) +
-                        #     " ON CONFLICT (meter_id, start_time, end_time)" +
-                        #     " DO UPDATE SET reading = EXCLUDED.reading, source_unit = EXCLUDED.source_unit, conversion_factor = EXCLUDED.conversion_factor" +
-                        #     " RETURNING reading;"
-                        # )
-                        #
-                        # with connection.cursor() as cursor:
-                        #     cursor.execute(sql)
+                    else:  # else a mass upsert is used to give priority to the source readings if necessary
+                        reading_strings = [
+                            f"({target_meter.id}, '{reading.start_time}', '{reading.end_time}', {reading.reading.magnitude}, '{reading.source_unit}', {reading.conversion_factor})"
+                            for reading
+                            in source_meter.meter_readings.all()
+                        ]
+
+                        sql = (
+                            "INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor)" +
+                            " VALUES " + ", ".join(reading_strings) +
+                            " ON CONFLICT (meter_id, start_time, end_time)" +
+                            " DO UPDATE SET reading = EXCLUDED.reading, source_unit = EXCLUDED.source_unit, conversion_factor = EXCLUDED.conversion_factor" +
+                            " RETURNING reading;"
+                        )
+
+                        with connection.cursor() as cursor:
+                            cursor.execute(sql)
         else:
             source.meters.update(property_id=self.id)
 
