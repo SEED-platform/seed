@@ -8,17 +8,29 @@ from django.db import migrations, models
 def reassociate_labels_to_views(apps, schema_editor):
     db_alias = schema_editor.connection.alias
 
-    PropertyView = apps.get_model("seed", "PropertyView")
-    property_views = PropertyView.objects.using(db_alias).all().prefetch_related('property')
+    PropertyView = apps.get_model('seed', 'PropertyView')
+    ThroughModel = PropertyView.labels.through
+    records = []
+    property_views = PropertyView.objects.using(db_alias).all()\
+        .select_related('property').prefetch_related('property__labels')
     for p_view in property_views:
-        labels = [l for l in p_view.property.labels.all()]
-        p_view.labels.set(labels)
+        for label in p_view.property.labels.all():
+            records.append(ThroughModel(propertyview=p_view, statuslabel=label))
+    ThroughModel.objects.bulk_create(records)
+    # Free memory
+    del property_views
 
-    TaxLotView = apps.get_model("seed", "TaxLotView")
-    taxlot_views = TaxLotView.objects.using(db_alias).all().prefetch_related('taxlot')
+    TaxLotView = apps.get_model('seed', 'TaxLotView')
+    ThroughModel = TaxLotView.labels.through
+    records = []
+    taxlot_views = TaxLotView.objects.using(db_alias).all()\
+        .select_related('taxlot').prefetch_related('taxlot__labels')
     for tl_view in taxlot_views:
-        labels = [l for l in tl_view.taxlot.labels.all()]
-        tl_view.labels.set(labels)
+        for label in tl_view.taxlot.labels.all():
+            records.append(ThroughModel(taxlotview=tl_view, statuslabel=label))
+    ThroughModel.objects.bulk_create(records)
+    # Free memory
+    del taxlot_views
 
 
 class Migration(migrations.Migration):
