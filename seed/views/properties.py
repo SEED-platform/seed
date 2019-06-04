@@ -36,6 +36,7 @@ from seed.models import (
     MERGE_STATE_MERGED,
     MERGE_STATE_NEW,
     MERGE_STATE_UNKNOWN,
+    Meter,
     Measure,
     Note,
     Property,
@@ -396,6 +397,23 @@ class PropertyViewSet(GenericViewSet):
                 profile_id = request.data['profile_id']
 
         return self._get_filtered_results(request, profile_id=profile_id)
+
+    @api_endpoint_class
+    @ajax_request_class
+    @list_route(methods=['POST'])
+    def meter_check(self, request):
+        """
+        Check to see if the given Properties (given by ID) have Meters.
+        ---
+        parameters:
+            - name: inventory_ids
+              description: Array containing Property IDs.
+              paramType: body
+        """
+        body = request.data
+        property_ids = body.get('inventory_ids', [])
+
+        return Meter.objects.filter(property_id__in=property_ids).exists()
 
     @api_endpoint_class
     @ajax_request_class

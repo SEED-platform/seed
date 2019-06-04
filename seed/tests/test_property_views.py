@@ -198,6 +198,53 @@ class PropertyViewTests(DeleteModelsTestCase):
         results = result['properties']
         self.assertEqual(len(results), 1)
 
+    def test_meters_check(self):
+        # Create a property set with meters
+        state_1 = self.property_state_factory.get_property_state()
+        property_1 = self.property_factory.get_property()
+        PropertyView.objects.create(
+            property=property_1, cycle=self.cycle, state=state_1
+        )
+
+        import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
+        filename = "example-GreenButton-data.xml"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+        import_file = ImportFile.objects.create(
+            import_record=import_record,
+            source_type="GreenButton",
+            uploaded_filename=filename,
+            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            cycle=self.cycle,
+            matching_results_data={"property_id": property_1.id}  # this is how target property is specified
+        )
+        gb_import_url = reverse("api:v2:import_files-save-raw-data", args=[import_file.id])
+        gb_import_post_params = {
+            'cycle_id': self.cycle.pk,
+            'organization_id': self.org.pk,
+        }
+        self.client.post(gb_import_url, gb_import_post_params)
+
+        # Create a property set without meters
+        state_2 = self.property_state_factory.get_property_state()
+        property_2 = self.property_factory.get_property()
+        PropertyView.objects.create(
+            property=property_2, cycle=self.cycle, state=state_2
+        )
+
+        url = reverse('api:v2:properties-meter-check')
+
+        true_post_params = json.dumps({
+            'inventory_ids': [property_2.pk, property_1.pk]
+        })
+        true_result = self.client.post(url, true_post_params, content_type='application/json')
+        self.assertEqual(b'true', true_result.content)
+
+        false_post_params = json.dumps({
+            'inventory_ids': [property_2.pk]
+        })
+        false_result = self.client.post(url, false_post_params, content_type='application/json')
+        self.assertEqual(b'false', false_result.content)
+
 
 class PropertyMergeViewTests(DeleteModelsTestCase):
     def setUp(self):
@@ -298,7 +345,7 @@ class PropertyMergeViewTests(DeleteModelsTestCase):
         self.assertEqual(PropertyView.objects.first().property.meters.count(), 1)
         self.assertEqual(PropertyView.objects.first().property.meters.first().meter_readings.count(), 2)
 
-    def test_properties_merge_without_losing_meters_from_different_sources(self):
+    def test_properties_merge_without_losing_meters_from_different_sources_nonoverlapping(self):
         # For first Property, PM Meters containing 2 readings for each Electricty and Natural Gas for property_1
         pm_filename = "example-pm-monthly-meter-usage.xlsx"
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + pm_filename

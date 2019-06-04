@@ -15,13 +15,15 @@ angular.module('BE.seed.controller.merge_modal', [])
     'columns',
     'data',
     'inventory_type',
-    function ($scope, $log, matching_service, $uibModalInstance, Notification, spinner_utility, uiGridConstants, naturalSort, columns, data, inventory_type) {
+    'has_meters',
+    function ($scope, $log, matching_service, $uibModalInstance, Notification, spinner_utility, uiGridConstants, naturalSort, columns, data, inventory_type, has_meters) {
       spinner_utility.hide();
 
       $scope.inventory_type = inventory_type;
       $scope.data = data;
       $scope.result = [{}];
       $scope.processing = false;
+      $scope.has_meters = has_meters;
 
       // Columns
       $scope.columns = columns;
