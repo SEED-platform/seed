@@ -10,10 +10,10 @@ All rights reserved.  # NOQA
 
 import csv
 import datetime
-import xlsxwriter
 import io
 from collections import OrderedDict
 
+import xlsxwriter
 from django.http import JsonResponse, HttpResponse
 from quantityfield import ureg
 from rest_framework.decorators import list_route
@@ -138,7 +138,8 @@ class TaxLotPropertyViewSet(GenericViewSet):
             # always export the labels
             column_name_mappings['taxlot_labels'] = 'Tax Lot Labels'
 
-        model_views = view_klass.objects.select_related(*select_related).prefetch_related(*prefetch_related).filter(**filter_str).order_by('id')
+        model_views = view_klass.objects.select_related(*select_related).prefetch_related(
+            *prefetch_related).filter(**filter_str).order_by('id')
 
         # get the data in a dict which includes the related data
         data = TaxLotProperty.get_related(model_views, column_ids, columns_from_database)
@@ -209,11 +210,19 @@ class TaxLotPropertyViewSet(GenericViewSet):
         return response
 
     def _spreadsheet_response(self, filename, data, column_name_mappings):
-        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response = HttpResponse(
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         response['Content-Disposition'] = 'attachment; filename="{}"'.format(filename)
 
-        scenario_keys = ('id', 'name', 'description', 'annual_site_energy_savings', 'annual_source_energy_savings', 'annual_cost_savings', 'summer_peak_load_reduction', 'winter_peak_load_reduction', 'hdd', 'cdd', 'analysis_state', 'analysis_state_message')
-        property_measure_keys = ('id', 'property_measure_name', 'measure_id', 'cost_mv', 'cost_total_first', 'cost_installation', 'cost_material', 'cost_capital_replacement', 'cost_residual_value')
+        scenario_keys = (
+            'id', 'name', 'description', 'annual_site_energy_savings',
+            'annual_source_energy_savings', 'annual_cost_savings', 'summer_peak_load_reduction',
+            'winter_peak_load_reduction', 'hdd', 'cdd', 'analysis_state', 'analysis_state_message'
+        )
+        property_measure_keys = (
+            'id', 'property_measure_name', 'measure_id', 'cost_mv', 'cost_total_first',
+            'cost_installation', 'cost_material', 'cost_capital_replacement', 'cost_residual_value'
+        )
         measure_keys = ('name', 'display_name', 'category', 'category_display_name')
         # find measures and scenarios
         for i, record in enumerate(data):
@@ -233,11 +242,6 @@ class TaxLotPropertyViewSet(GenericViewSet):
         ws4 = wb.add_worksheet('Scenario Measure Join Table')
         bold = wb.add_format({'bold': True})
 
-        # properties tab
-        header = list(column_name_mappings.values())
-        if header[0] == 'ID':
-            header[0] = 'id'
-
         row = 0
         row2 = 0
         col2 = 0
@@ -246,7 +250,11 @@ class TaxLotPropertyViewSet(GenericViewSet):
         row4 = 0
 
         for index, val in enumerate(list(column_name_mappings.values())):
-            ws1.write(row, index, val, bold)
+            # Do not write the first element as ID, this causes weird issues with Excel.
+            if index == 0 and val == 'ID':
+                ws1.write(row, index, 'id', bold)
+            else:
+                ws1.write(row, index, val, bold)
 
         # iterate over the results to preserve column order and write row.
         for datum in data:
@@ -324,7 +332,8 @@ class TaxLotPropertyViewSet(GenericViewSet):
         return response
 
     def _json_response(self, filename, data, column_name_mappings):
-        polygon_fields = ["bounding_box", "centroid", "property_footprint", "taxlot_footprint", "long_lat"]
+        polygon_fields = ["bounding_box", "centroid", "property_footprint", "taxlot_footprint",
+                          "long_lat"]
         features = []
 
         # extract related records
