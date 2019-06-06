@@ -30,11 +30,8 @@ from seed.models import (
     TaxLotView,
 )
 from seed.test_helpers.fake import (
-    # FakePropertyFactory,
     FakePropertyStateFactory,
     FakeTaxLotStateFactory,
-    # FakeTaxLotViewFactory,
-    # FakePropertyViewFactory,
 )
 from seed.tests.util import DataMappingBaseTestCase
 

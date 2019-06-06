@@ -12,6 +12,8 @@ from collections import defaultdict
 
 import datetime as dt
 
+from django.contrib.postgres.aggregates.general import ArrayAgg
+
 from django.db import (
     IntegrityError,
     transaction,
@@ -212,36 +214,29 @@ def inclusive_match_and_merge(unmatched_state_ids, org, ObjectStateClass):
         set(unmatched_state_ids) - set(promoted_ids)
     )
 
-    # Iterate through -States of each ID. For each -State, find matches amongst
-    # the remaining set of -States. When matches are found, separate ALL of the
-    # matched -States from the "remaining set". Repeat until no -States remain.
-    matching_states = []
-    while unmatched_state_ids:
-        state_id = unmatched_state_ids.pop()
-        state = ObjectStateClass.objects.get(pk=state_id)
-
-        matching_criteria = _matching_filter_criteria(org.id, table_name, state)
-        state_matches = ObjectStateClass.objects.filter(
-            id__in=unmatched_state_ids + [state_id],  # add current state to search
-            **matching_criteria
-        ).order_by('-id')
-
-        matching_states.append(state_matches)
-        unmatched_state_ids = list(
-            set(unmatched_state_ids) - set(state_matches.values_list('id', flat=True))
-        )
+    # Group IDs by -States that match each other
+    column_names = _matching_criteria_column_names(org.id, table_name)
+    matched_id_groups = ObjectStateClass.objects.\
+        filter(id__in=unmatched_state_ids).\
+        values(*column_names).\
+        annotate(matched_ids=ArrayAgg('id')).\
+        values_list('matched_ids', flat=True)
 
     # Collapse groups of matches found in the previous step into 1 -State per group
     priorities = Column.retrieve_priorities(org)
-    for states in matching_states:
-        states = list(states)
-        merge_state = states.pop()
+    for ids in matched_id_groups:
+        if len(ids) == 1:
+            # If there's only 1, no merging is needed, so just promote the ID.
+            promoted_ids += ids
+        else:
+            states = [s for s in ObjectStateClass.objects.filter(pk__in=ids).order_by('-id')]
+            merge_state = states.pop()
 
-        while len(states) > 0:
-            newer_state = states.pop()
-            merge_state = save_state_match(merge_state, newer_state, priorities)
+            while len(states) > 0:
+                newer_state = states.pop()
+                merge_state = save_state_match(merge_state, newer_state, priorities)
 
-        promoted_ids.append(merge_state.id)
+            promoted_ids.append(merge_state.id)
 
     # Flag the soon to be promoted ID -States as having gone through matching
     ObjectStateClass.objects.filter(pk__in=promoted_ids).update(data_state=DATA_STATE_MATCHING)
