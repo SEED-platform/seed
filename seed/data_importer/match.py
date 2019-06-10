@@ -8,8 +8,6 @@
 from celery import shared_task
 from celery.utils.log import get_task_logger
 
-from collections import defaultdict
-
 import datetime as dt
 
 from django.contrib.postgres.aggregates.general import ArrayAgg
@@ -94,9 +92,11 @@ def match_properties_and_taxlots(file_pk, progress_key):
     merged_property_views = []
     merged_taxlot_views = []
 
-    # Get lists of all the properties and tax lots based on the import file.
+    # Get lists and counts of all the properties and tax lots based on the import file.
     incoming_properties = import_file.find_unmatched_property_states()
+    incoming_properties_count = incoming_properties.count()
     incoming_tax_lots = import_file.find_unmatched_tax_lot_states()
+    incoming_tax_lots_count = incoming_tax_lots.count()
 
     if incoming_properties.exists():
         # Within the ImportFile, filter out the duplicates.
@@ -145,11 +145,11 @@ def match_properties_and_taxlots(file_pk, progress_key):
 
     return {
         'import_file_records': import_file.num_rows,
-        'property_all_unmatched': incoming_properties.count(),
+        'property_all_unmatched': incoming_properties_count,
         'property_duplicates': file_duplicate_property_count,
         'property_duplicates_of_existing': existing_duplicate_property_count,
         'property_unmatched': new_property_count,
-        'tax_lot_all_unmatched': incoming_tax_lots.count(),
+        'tax_lot_all_unmatched': incoming_tax_lots_count,
         'tax_lot_duplicates': file_duplicate_tax_lot_count,
         'tax_lot_duplicates_of_existing': existing_duplicate_tax_lot_count,
         'tax_lot_unmatched': new_tax_lot_count,
@@ -163,23 +163,27 @@ def filter_duplicate_states(unmatched_states):
         - list of IDs of unique -States + IDs for representative -States of duplicates
         - count of duplicates that were filtered out of the original set
 
-    This is done by constructing a dictionary where the keys are hash_objects
-    and each of the values are a list of IDs of -States with that hash_object.
+    Sets of IDs for duplicate -States are captured in lists.
 
     The list being returned is created by taking one member of each of
-    the dictionary values (list of IDs). The IDs that were not taken are used to
+    the duplicate sets. The IDs that were not taken are used to
     flag the corresponding -States with DATA_STATE_DELETE.
 
     :param unmatched_states: QS
     :return: canonical_state_ids, duplicate_count
     """
 
-    hash_object_ids = defaultdict(list)
-    for unmatched in unmatched_states:
-        hash_object_ids[unmatched.hash_object].append(unmatched.pk)
+    ids_grouped_by_hash = unmatched_states.\
+        values('hash_object').\
+        annotate(duplicate_sets=ArrayAgg('id')).\
+        values_list('duplicate_sets', flat=True)
 
-    ids_grouped_by_hash = hash_object_ids.values()
-    canonical_state_ids = [ids.pop() for ids in ids_grouped_by_hash]
+    # For consistency, take the first member of each of the duplicate sets
+    canonical_state_ids = [
+        ids.pop(ids.index(min(ids)))
+        for ids
+        in ids_grouped_by_hash
+    ]
     duplicate_state_ids = reduce(lambda x, y: x + y, ids_grouped_by_hash)
     duplicate_count = unmatched_states.filter(pk__in=duplicate_state_ids).update(data_state=DATA_STATE_DELETE)
 
@@ -190,7 +194,6 @@ def inclusive_match_and_merge(unmatched_state_ids, org, ObjectStateClass):
     """
     Takes a list of unmatched_state_ids, combines matches of the corresponding
     -States, and returns a set of IDs of the remaining -States.
-
 
     :param unmatched_states_ids: list
     :param org: Organization object
@@ -271,12 +274,13 @@ def states_to_views(unmatched_state_ids, org, cycle, ObjectStateClass):
     elif table_name == 'TaxLotState':
         ObjectViewClass = TaxLotView
 
+    # Identify existing used -States
     existing_cycle_views = ObjectViewClass.objects.filter(cycle_id=cycle)
-
-    # Apply DATA_STATE_DELETE to incoming duplicate -States of existing -States in Cycle
     existing_states = ObjectStateClass.objects.filter(
         pk__in=Subquery(existing_cycle_views.values('state_id'))
     )
+
+    # Apply DATA_STATE_DELETE to incoming duplicate -States of existing -States in Cycle
     duplicate_states = ObjectStateClass.objects.filter(
         pk__in=unmatched_state_ids,
         hash_object__in=Subquery(existing_states.values('hash_object'))
