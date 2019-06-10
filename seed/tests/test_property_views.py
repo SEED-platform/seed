@@ -37,6 +37,7 @@ from seed.test_helpers.fake import (
     FakeColumnFactory,
     FakePropertyFactory,
     FakePropertyStateFactory,
+    FakeNoteFactory,
     FakeTaxLotStateFactory,
     FakePropertyViewFactory,
 )
@@ -270,17 +271,43 @@ class PropertyMergeViewTests(DeleteModelsTestCase):
             pm_property_id='5766973'  # this allows the Property to be targetted for PM meter additions
         )
         self.property_1 = self.property_factory.get_property()
-        PropertyView.objects.create(
+        self.view_1 = PropertyView.objects.create(
             property=self.property_1, cycle=self.cycle, state=self.state_1
         )
 
         self.state_2 = self.property_state_factory.get_property_state(address_line_1='2 property state')
         self.property_2 = self.property_factory.get_property()
-        PropertyView.objects.create(
+        self.view_2 = PropertyView.objects.create(
             property=self.property_2, cycle=self.cycle, state=self.state_2
         )
 
         self.import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
+
+    def test_properties_merge_without_losing_notes(self):
+        note_factory = FakeNoteFactory(organization=self.org, user=self.user)
+
+        # Create 2 Notes and distribute them to the two -Views.
+        note1 = note_factory.get_note(name='non_default_name_1')
+        note2 = note_factory.get_note(name='non_default_name_2')
+        self.view_1.notes.add(note1)
+        self.view_1.notes.add(note2)
+
+        note3 = note_factory.get_note(name='non_default_name_3')
+        self.view_2.notes.add(note2)
+        self.view_2.notes.add(note3)
+
+        url = reverse('api:v2:properties-merge') + '?organization_id={}'.format(self.org.pk)
+        post_params = json.dumps({
+            'state_ids': [self.state_2.pk, self.state_1.pk]
+        })
+        self.client.post(url, post_params, content_type='application/json')
+
+        # The resulting -View should have 3 notes
+        view = PropertyView.objects.first()
+
+        self.assertEqual(view.notes.count(), 3)
+        note_names = list(view.notes.values_list('name', flat=True))
+        self.assertCountEqual(note_names, [note1.name, note2.name, note3.name])
 
     def test_properties_merge_without_losing_meters_1st_has_meters(self):
         # Assign meters to the first Property
