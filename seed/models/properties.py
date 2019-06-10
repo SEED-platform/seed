@@ -15,9 +15,12 @@ from past.builtins import basestring
 from django.apps import apps
 from django.contrib.postgres.fields import JSONField
 from django.contrib.gis.db import models as geomodels
-from django.db import IntegrityError
-from django.db import models
-from django.db.models.signals import pre_delete, pre_save, post_save
+from django.db import (
+    models,
+    transaction,
+    IntegrityError,
+)
+from django.db.models.signals import pre_delete, pre_save, post_save, m2m_changed
 from django.dispatch import receiver
 from django.forms.models import model_to_dict
 from quantityfield.fields import QuantityField
@@ -39,7 +42,11 @@ from seed.models import (
     TaxLotProperty
 )
 from seed.utils.address import normalize_address_str
-from seed.utils.generic import split_model_fields, obj_to_dict
+from seed.utils.generic import (
+    compare_orgs_between_label_and_target,
+    split_model_fields,
+    obj_to_dict,
+)
 from seed.utils.time import convert_datestr
 from seed.utils.time import convert_to_js_timestamp
 
@@ -74,6 +81,48 @@ class Property(models.Model):
 
     def __str__(self):
         return 'Property - %s' % (self.pk)
+
+    def copy_meters(self, source_state_id, source_persists=True):
+        """
+        Copies meters from a source Property to the current Property.
+
+        It's most efficient if the persistence of the source Property's readings
+        aren't needed as bulk reassignments can then be used.
+
+        The cases and logic are described in comments throughout.
+        """
+        source_property = Property.objects.get(pk=source_state_id)
+
+        # If the source property has no meters to copy, there's nothing to do.
+        if not source_property.meters.exists():
+            return
+
+        if self.meters.exists() is False and source_persists is False:
+            # In this case, simply copy over the meters and readings from source in bulk.
+            source_property.meters.update(property_id=self.id)
+        else:
+            # In any other case, copy over the readings from source one meter at
+            # a time, checking to see if self has a similar meter each time.
+            for source_meter in source_property.meters.all():
+                with transaction.atomic():
+                    target_meter, created = self.meters.get_or_create(
+                        is_virtual=source_meter.is_virtual,
+                        source=source_meter.source,
+                        source_id=source_meter.source_id,
+                        type=source_meter.type
+                    )
+
+                    if created:
+                        # If self didn't have a similar meter and a new one was created,
+                        # decide what to do depending on whether source meters need to persist.
+                        if source_persists:
+                            # Note, overlaps aren't possible since a new meter was created.
+                            target_meter.copy_readings(source_meter, overlaps_possible=False)
+                        else:
+                            source_meter.meter_readings.update(meter=target_meter)
+                    else:
+                        # If self did have a similar meter, copy readings assuming overlaps are possible.
+                        target_meter.copy_readings(source_meter, overlaps_possible=True)
 
 
 class PropertyState(models.Model):
@@ -801,3 +850,6 @@ def sync_latitude_longitude_and_long_lat(sender, instance, **kwargs):
         elif (latitude_change or longitude_change) and not lat_and_long_both_populated:
             instance.long_lat = None
             instance.geocoding_confidence = None
+
+
+m2m_changed.connect(compare_orgs_between_label_and_target, sender=Property.labels.through)

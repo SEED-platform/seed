@@ -846,19 +846,19 @@ class InventoryViewTests(DeleteModelsTestCase):
 
         self.assertEquals(len(results['taxlots']), 1)
 
-        rtaxlot = results['taxlots'][0]
-        self.assertEqual(rtaxlot['id'], taxlot.pk)
+        rtaxlot_view = results['taxlots'][0]
+        self.assertEqual(rtaxlot_view['id'], taxlot_view.pk)
         self.assertDictContainsSubset(
             {'id': taxlot.pk, 'organization': self.org.pk, 'labels': []},
-            rtaxlot['taxlot'],
+            rtaxlot_view['taxlot'],
         )
 
-        tcycle = rtaxlot['cycle']
+        tcycle = rtaxlot_view['cycle']
         self.assertEquals(tcycle['name'], '2010 Annual')
         self.assertEquals(tcycle['user'], self.user.pk)
         self.assertEquals(tcycle['organization'], self.org.pk)
 
-        tstate = rtaxlot['state']
+        tstate = rtaxlot_view['state']
         self.assertEqual(tstate['id'], taxlot_state.pk)
         self.assertEqual(tstate['address_line_1'], taxlot_state.address_line_1)
 
@@ -903,35 +903,35 @@ class InventoryViewTests(DeleteModelsTestCase):
 
         self.assertEquals(len(results['taxlots']), 2)
 
-        rtaxlot_1 = results['taxlots'][0]
-        self.assertEqual(rtaxlot_1['id'], taxlot_1.pk)
+        rtaxlot_view_1 = results['taxlots'][0]
+        self.assertEqual(rtaxlot_view_1['id'], taxlot_view_1.pk)
         self.assertDictContainsSubset(
             {'id': taxlot_1.pk, 'organization': self.org.pk, 'labels': []},
-            rtaxlot_1['taxlot'],
+            rtaxlot_view_1['taxlot'],
         )
 
-        tcycle_1 = rtaxlot_1['cycle']
+        tcycle_1 = rtaxlot_view_1['cycle']
         self.assertEquals(tcycle_1['name'], '2010 Annual')
         self.assertEquals(tcycle_1['user'], self.user.pk)
         self.assertEquals(tcycle_1['organization'], self.org.pk)
 
-        tstate_1 = rtaxlot_1['state']
+        tstate_1 = rtaxlot_view_1['state']
         self.assertEqual(tstate_1['id'], taxlot_state_1.pk)
         self.assertEqual(tstate_1['address_line_1'], taxlot_state_1.address_line_1)
 
-        rtaxlot_2 = results['taxlots'][1]
-        self.assertEqual(rtaxlot_2['id'], taxlot_2.pk)
+        rtaxlot_view_2 = results['taxlots'][1]
+        self.assertEqual(rtaxlot_view_2['id'], taxlot_view_2.pk)
         self.assertDictContainsSubset(
             {'id': taxlot_2.pk, 'organization': self.org.pk, 'labels': []},
-            rtaxlot_2['taxlot'],
+            rtaxlot_view_2['taxlot'],
         )
 
-        tcycle_2 = rtaxlot_2['cycle']
+        tcycle_2 = rtaxlot_view_2['cycle']
         self.assertEquals(tcycle_2['name'], '2010 Annual')
         self.assertEquals(tcycle_2['user'], self.user.pk)
         self.assertEquals(tcycle_2['organization'], self.org.pk)
 
-        tstate_2 = rtaxlot_2['state']
+        tstate_2 = rtaxlot_view_2['state']
         self.assertEqual(tstate_2['id'], taxlot_state_2.pk)
         self.assertEqual(tstate_2['address_line_1'], taxlot_state_2.address_line_1)
 
