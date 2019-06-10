@@ -28,6 +28,7 @@ from seed.data_importer.models import (
 from seed.models import (
     Meter,
     MeterReading,
+    Property,
     PropertyState,
     PropertyView,
 )
@@ -547,6 +548,22 @@ class PropertyUnmergeViewTests(DeleteModelsTestCase):
             'state_ids': [self.state_2.pk, self.state_1.pk]  # priority given to state_1
         })
         self.client.post(url, post_params, content_type='application/json')
+
+    def test_unmerging_assigns_new_canonical_records_to_each_resulting_records(self):
+        # Capture old property_ids
+        view = PropertyView.objects.first()  # There's only one PropertyView
+        old_property_ids = [
+            view.property_id,
+            self.property_1.id,
+            self.property_2.id,
+        ]
+
+        # Unmerge the properties
+        url = reverse('api:v2:properties-unmerge', args=[view.id]) + '?organization_id={}'.format(self.org.pk)
+        self.client.post(url, content_type='application/json')
+
+        self.assertFalse(PropertyView.objects.filter(property_id__in=old_property_ids).exists())
+        self.assertFalse(Property.objects.filter(pk__in=old_property_ids).exists())
 
     def test_unmerging_two_properties_with_meters_gives_meters_to_both_of_the_resulting_records(self):
         # Unmerge the properties

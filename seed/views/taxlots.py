@@ -432,15 +432,22 @@ class TaxLotViewSet(GenericViewSet):
         state2 = log.parent_state2
         cycle_id = old_view.cycle_id
 
-        # Clone the taxlot record, then the labels
+        # Clone the taxlot record twice, then the labels
         old_taxlot = old_view.taxlot
         label_ids = list(old_taxlot.labels.all().values_list('id', flat=True))
         new_taxlot = old_taxlot
         new_taxlot.id = None
         new_taxlot.save()
 
+        new_taxlot_2 = TaxLot.objects.get(pk=new_taxlot.pk)
+        new_taxlot_2.id = None
+        new_taxlot_2.save()
+
         for label_id in label_ids:
             label(taxlot_id=new_taxlot.id, statuslabel_id=label_id).save()
+            label(taxlot_id=new_taxlot_2.id, statuslabel_id=label_id).save()
+
+        TaxLot.objects.get(pk=old_view.taxlot_id).delete()
 
         # Create the views
         new_view1 = TaxLotView(
@@ -450,7 +457,7 @@ class TaxLotViewSet(GenericViewSet):
         )
         new_view2 = TaxLotView(
             cycle_id=cycle_id,
-            taxlot_id=old_view.taxlot_id,
+            taxlot_id=new_taxlot_2.id,
             state=state2
         )
 

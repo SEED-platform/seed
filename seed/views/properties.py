@@ -617,17 +617,25 @@ class PropertyViewSet(GenericViewSet):
         state2 = log.parent_state2
         cycle_id = old_view.cycle_id
 
-        # Clone the property record, then copy over meters and labels
+        # Clone the property record twice, then copy over meters and labels
         old_property = old_view.property
         label_ids = list(old_property.labels.all().values_list('id', flat=True))
         new_property = old_property
         new_property.id = None
         new_property.save()
 
+        new_property_2 = Property.objects.get(pk=new_property.id)
+        new_property_2.id = None
+        new_property_2.save()
+
         Property.objects.get(pk=new_property.id).copy_meters(old_view.property_id)
+        Property.objects.get(pk=new_property_2.id).copy_meters(old_view.property_id)
 
         for label_id in label_ids:
             label(property_id=new_property.id, statuslabel_id=label_id).save()
+            label(property_id=new_property_2.id, statuslabel_id=label_id).save()
+
+        Property.objects.get(pk=old_view.property_id).delete()
 
         # Create the views
         new_view1 = PropertyView(
@@ -637,7 +645,7 @@ class PropertyViewSet(GenericViewSet):
         )
         new_view2 = PropertyView(
             cycle_id=cycle_id,
-            property_id=old_view.property_id,
+            property_id=new_property_2.id,
             state=state2
         )
 
