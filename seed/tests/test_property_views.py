@@ -31,6 +31,8 @@ from seed.models import (
     Property,
     PropertyState,
     PropertyView,
+    TaxLotView,
+    TaxLotProperty,
 )
 from seed.test_helpers.fake import (
     FakeCycleFactory,
@@ -38,6 +40,7 @@ from seed.test_helpers.fake import (
     FakePropertyFactory,
     FakePropertyStateFactory,
     FakeNoteFactory,
+    FakeTaxLotFactory,
     FakeTaxLotStateFactory,
     FakePropertyViewFactory,
 )
@@ -71,7 +74,6 @@ class PropertyViewTests(DeleteModelsTestCase):
         self.property_factory = FakePropertyFactory(organization=self.org)
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
         self.property_view_factory = FakePropertyViewFactory(organization=self.org)
-        self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
         self.cycle = self.cycle_factory.get_cycle(
             start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
         self.client.login(**user_details)
@@ -286,7 +288,7 @@ class PropertyMergeViewTests(DeleteModelsTestCase):
     def test_properties_merge_without_losing_notes(self):
         note_factory = FakeNoteFactory(organization=self.org, user=self.user)
 
-        # Create 2 Notes and distribute them to the two -Views.
+        # Create 3 Notes and distribute them to the two -Views.
         note1 = note_factory.get_note(name='non_default_name_1')
         note2 = note_factory.get_note(name='non_default_name_2')
         self.view_1.notes.add(note1)
@@ -308,6 +310,53 @@ class PropertyMergeViewTests(DeleteModelsTestCase):
         self.assertEqual(view.notes.count(), 3)
         note_names = list(view.notes.values_list('name', flat=True))
         self.assertCountEqual(note_names, [note1.name, note2.name, note3.name])
+
+    def test_properties_merge_without_losing_pairings(self):
+        # Create 2 pairings and distribute them to the two -Views.
+        taxlot_factory = FakeTaxLotFactory(organization=self.org)
+        taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
+
+        taxlot_1 = taxlot_factory.get_taxlot()
+        state_1 = taxlot_state_factory.get_taxlot_state()
+        taxlot_view_1 = TaxLotView.objects.create(
+            taxlot=taxlot_1, cycle=self.cycle, state=state_1
+        )
+
+        taxlot_2 = taxlot_factory.get_taxlot()
+        state_2 = taxlot_state_factory.get_taxlot_state()
+        taxlot_view_2 = TaxLotView.objects.create(
+            taxlot=taxlot_2, cycle=self.cycle, state=state_2
+        )
+
+        TaxLotProperty(
+            primary=True,
+            cycle_id=self.cycle.id,
+            property_view_id=self.view_1.id,
+            taxlot_view_id=taxlot_view_1.id
+        ).save()
+
+        TaxLotProperty(
+            primary=True,
+            cycle_id=self.cycle.id,
+            property_view_id=self.view_2.id,
+            taxlot_view_id=taxlot_view_2.id
+        ).save()
+
+        # Merge the properties
+        url = reverse('api:v2:properties-merge') + '?organization_id={}'.format(self.org.pk)
+        post_params = json.dumps({
+            'state_ids': [self.state_2.pk, self.state_1.pk]  # priority given to state_1
+        })
+        self.client.post(url, post_params, content_type='application/json')
+
+        # There should still be 2 TaxLotProperties
+        self.assertEqual(TaxLotProperty.objects.count(), 2)
+
+        property_view = PropertyView.objects.first()
+        paired_taxlotview_ids = list(
+            TaxLotProperty.objects.filter(property_view_id=property_view.id).values_list('taxlot_view_id', flat=True)
+        )
+        self.assertCountEqual(paired_taxlotview_ids, [taxlot_view_1.id, taxlot_view_2.id])
 
     def test_properties_merge_without_losing_meters_1st_has_meters(self):
         # Assign meters to the first Property

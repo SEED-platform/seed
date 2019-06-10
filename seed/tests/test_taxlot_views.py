@@ -13,12 +13,16 @@ from django.utils.timezone import get_current_timezone
 
 from seed.landing.models import SEEDUser as User
 from seed.models import (
+    PropertyView,
     TaxLot,
+    TaxLotProperty,
     TaxLotView,
 )
 from seed.test_helpers.fake import (
     FakeCycleFactory,
     FakeNoteFactory,
+    FakePropertyFactory,
+    FakePropertyStateFactory,
     FakeTaxLotFactory,
     FakeTaxLotStateFactory,
 )
@@ -26,7 +30,7 @@ from seed.tests.util import DeleteModelsTestCase
 from seed.utils.organizations import create_organization
 
 
-class TaxLotUnmergeViewTests(DeleteModelsTestCase):
+class TaxLotMergeUnmergeViewTests(DeleteModelsTestCase):
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -59,7 +63,7 @@ class TaxLotUnmergeViewTests(DeleteModelsTestCase):
     def test_taxlots_merge_without_losing_notes(self):
         note_factory = FakeNoteFactory(organization=self.org, user=self.user)
 
-        # Create 2 Notes and distribute them to the two -Views.
+        # Create 3 Notes and distribute them to the two -Views.
         note1 = note_factory.get_note(name='non_default_name_1')
         note2 = note_factory.get_note(name='non_default_name_2')
         self.view_1.notes.add(note1)
@@ -82,6 +86,53 @@ class TaxLotUnmergeViewTests(DeleteModelsTestCase):
         self.assertEqual(view.notes.count(), 3)
         note_names = list(view.notes.values_list('name', flat=True))
         self.assertCountEqual(note_names, [note1.name, note2.name, note3.name])
+
+    def test_taxlots_merge_without_losing_pairings(self):
+        # Create 2 pairings and distribute them to the two -Views.
+        property_factory = FakePropertyFactory(organization=self.org)
+        property_state_factory = FakePropertyStateFactory(organization=self.org)
+
+        property_1 = property_factory.get_property()
+        state_1 = property_state_factory.get_property_state()
+        property_view_1 = PropertyView.objects.create(
+            property=property_1, cycle=self.cycle, state=state_1
+        )
+
+        property_2 = property_factory.get_property()
+        state_2 = property_state_factory.get_property_state()
+        property_view_2 = PropertyView.objects.create(
+            property=property_2, cycle=self.cycle, state=state_2
+        )
+
+        TaxLotProperty(
+            primary=True,
+            cycle_id=self.cycle.id,
+            property_view_id=property_view_1.id,
+            taxlot_view_id=self.view_1.id
+        ).save()
+
+        TaxLotProperty(
+            primary=True,
+            cycle_id=self.cycle.id,
+            property_view_id=property_view_2.id,
+            taxlot_view_id=self.view_2.id
+        ).save()
+
+        # Merge the taxlots
+        url = reverse('api:v2:taxlots-merge') + '?organization_id={}'.format(self.org.pk)
+        post_params = json.dumps({
+            'state_ids': [self.state_2.pk, self.state_1.pk]  # priority given to state_1
+        })
+        self.client.post(url, post_params, content_type='application/json')
+
+        # There should still be 2 TaxLotProperties
+        self.assertEqual(TaxLotProperty.objects.count(), 2)
+
+        taxlot_view = TaxLotView.objects.first()
+        paired_propertyview_ids = list(
+            TaxLotProperty.objects.filter(taxlot_view_id=taxlot_view.id).values_list('property_view_id', flat=True)
+        )
+        self.assertCountEqual(paired_propertyview_ids, [property_view_1.id, property_view_2.id])
 
     def test_unmerging_assigns_new_canonical_records_to_each_resulting_records(self):
         # Merge the taxlots
