@@ -367,9 +367,8 @@ class TestPropertyViewAsStateSerializers(DeleteModelsTestCase):
             'property': 4
         }
 
-        serializer = PropertyViewAsStateSerializer()
+        serializer = PropertyViewAsStateSerializer(context={'request': mock_request})
         mock_request.METHOD = 'PUT'
-        serializer.context = {'request': mock_request}
         serializer.update(self.property_view, data)
         mock_serializer.assert_called_with(
             data={'test': 3}
@@ -389,8 +388,7 @@ class TestPropertyViewAsStateSerializers(DeleteModelsTestCase):
             'state': {'test': 3},
             'property': 4
         }
-        serializer = PropertyViewAsStateSerializer()
-        serializer.context = {'request': mock_request}
+        serializer = PropertyViewAsStateSerializer(context={'request': mock_request})
         serializer.update(self.property_view, data)
         mock_serializer.assert_called_with(
             self.property_state,

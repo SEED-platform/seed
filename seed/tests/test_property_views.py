@@ -117,9 +117,10 @@ class PropertyViewTests(DeleteModelsTestCase):
         # make sure the address was updated and that the datetimes were modified
         self.assertEqual(data['status'], 'success')
         self.assertEqual(data['state']['address_line_1'], '742 Evergreen Terrace')
-        self.assertEqual(datetime.strptime(db_created_time, "%Y-%m-%dT%H:%M:%S.%fZ").replace(microsecond=0),
-                         datetime.strptime(data['property']['created'], "%Y-%m-%dT%H:%M:%S.%fZ").replace(
-                             microsecond=0))
+        self.assertEqual(
+            datetime.strptime(db_created_time, "%Y-%m-%dT%H:%M:%S.%fZ").replace(microsecond=0),
+            datetime.strptime(data['property']['created'], "%Y-%m-%dT%H:%M:%S.%fZ").replace(microsecond=0)
+        )
         self.assertGreater(datetime.strptime(data['property']['updated'], "%Y-%m-%dT%H:%M:%S.%fZ"),
                            datetime.strptime(db_updated_time, "%Y-%m-%dT%H:%M:%S.%fZ"))
 

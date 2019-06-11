@@ -11,27 +11,12 @@ All rights reserved.
 provides function for handling exceptions not otherwise handled by DRF
 """
 
-# Imports from Standard Library
-
-# Imports from Third Party Modules
-
-# Imports from Django
 from django.db.models.deletion import ProtectedError
-from rest_framework.views import exception_handler
-from rest_framework import status
-from rest_framework.compat import set_rollback
-from rest_framework.response import Response
 from django.utils import six
 from django.utils.translation import ugettext_lazy as _
-# Local Imports
-
-# Constants
-
-# Data Structure Definitions
-
-# Private Functions
-
-# Public Classes and Functions
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import exception_handler
 
 
 def custom_exception_handler(exc, context):
@@ -46,6 +31,10 @@ def custom_exception_handler(exc, context):
                     'related objects still exist')
             data = {'detail': six.text_type(msg)}
 
-            set_rollback()
+            # Set Rollback removed in https://www.django-rest-framework.org/community/release-notes/#374. The
+            # method is now handled in the views exception_handler which is called above
+            # in exception_handler(exc, context)
+
+            # set_rollback()
             return Response(data, status=status.HTTP_400_BAD_REQUEST)
     return response
