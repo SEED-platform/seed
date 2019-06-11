@@ -322,7 +322,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
           controller: 'update_item_labels_modal_controller',
           resolve: {
             inventory_ids: function () {
-              return [$scope.item_parent.id];
+              return [$scope.inventory.view_id];
             },
             inventory_type: function () {
               return $scope.inventory_type;
@@ -330,7 +330,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
           }
         });
         modalInstance.result.then(function () {
-          label_service.get_labels([$scope.item_parent.id], {
+          label_service.get_labels([$scope.inventory.view_id], {
             inventory_type: $scope.inventory_type
           }).then(function (labels) {
             $scope.labels = _.filter(labels, function (label) {
