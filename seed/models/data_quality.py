@@ -22,9 +22,7 @@ from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     Column,
     StatusLabel,
-    Property,
     PropertyView,
-    TaxLot,
     TaxLotView
 )
 from seed.models import obj_to_dict
@@ -617,21 +615,21 @@ class DataQualityCheck(models.Model):
         # check if the row has any rules applied to it
         model_labels = {'linked_id': None, 'label_ids': []}
         if row.__class__.__name__ == 'PropertyState':
-            label = apps.get_model('seed', 'Property_labels')
+            label = apps.get_model('seed', 'PropertyView_labels')
             if PropertyView.objects.filter(state=row).exists():
-                model_labels['linked_id'] = PropertyView.objects.get(state=row).property_id
+                model_labels['linked_id'] = PropertyView.objects.get(state=row).id
                 model_labels['label_ids'] = list(
-                    label.objects.filter(property_id=model_labels['linked_id']).values_list(
+                    label.objects.filter(propertyview_id=model_labels['linked_id']).values_list(
                         'statuslabel_id', flat=True)
                 )
                 # _log.debug("Property {} has {} labels".format(model_labels['linked_id'],
                 #                                               len(model_labels['label_ids'])))
         elif row.__class__.__name__ == 'TaxLotState':
-            label = apps.get_model('seed', 'TaxLot_labels')
+            label = apps.get_model('seed', 'TaxLotView_labels')
             if TaxLotView.objects.filter(state=row).exists():
-                model_labels['linked_id'] = TaxLotView.objects.get(state=row).taxlot_id
+                model_labels['linked_id'] = TaxLotView.objects.get(state=row).id
                 model_labels['label_ids'] = list(
-                    label.objects.filter(taxlot_id=model_labels['linked_id']).values_list(
+                    label.objects.filter(taxlotview_id=model_labels['linked_id']).values_list(
                         'statuslabel_id', flat=True)
                 )
                 # _log.debug("TaxLot {} has {} labels".format(model_labels['linked_id'],
@@ -917,7 +915,7 @@ class DataQualityCheck(models.Model):
     def update_status_label(self, label_class, rule, linked_id):
         """
 
-        :param label_class: statuslabel object, either property label or taxlot label
+        :param label_class: statuslabel object, either propertyview label or taxlotview label
         :param rule: rule object
         :param linked_id: id of propertystate or taxlotstate object
         :return: boolean, if labeled was applied
@@ -927,26 +925,26 @@ class DataQualityCheck(models.Model):
             label_org_id = rule.status_label.super_organization_id
 
             if rule.table_name == 'PropertyState':
-                property_parent_org_id = Property.objects.get(pk=linked_id).organization.get_parent().id
+                property_parent_org_id = PropertyView.objects.get(pk=linked_id).property.organization.get_parent().id
                 if property_parent_org_id == label_org_id:
-                    label_class.objects.get_or_create(property_id=linked_id,
+                    label_class.objects.get_or_create(propertyview_id=linked_id,
                                                       statuslabel_id=rule.status_label_id)
                 else:
                     raise IntegrityError(
-                        'Label with super_organization_id={} cannot be applied to a property with parent '
+                        'Label with super_organization_id={} cannot be applied to a record with parent '
                         'organization_id={}.'.format(
                             label_org_id,
                             property_parent_org_id
                         )
                     )
             else:
-                taxlot_parent_org_id = TaxLot.objects.get(pk=linked_id).organization.get_parent().id
+                taxlot_parent_org_id = TaxLotView.objects.get(pk=linked_id).taxlot.organization.get_parent().id
                 if taxlot_parent_org_id == label_org_id:
-                    label_class.objects.get_or_create(taxlot_id=linked_id,
+                    label_class.objects.get_or_create(taxlotview_id=linked_id,
                                                       statuslabel_id=rule.status_label_id)
                 else:
                     raise IntegrityError(
-                        'Label with super_organization_id={} cannot be applied to a taxlot with parent '
+                        'Label with super_organization_id={} cannot be applied to a record with parent '
                         'organization_id={}.'.format(
                             label_org_id,
                             taxlot_parent_org_id

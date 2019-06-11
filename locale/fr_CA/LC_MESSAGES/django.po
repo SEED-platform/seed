@@ -792,11 +792,17 @@ msgstr "Exportation"
 msgid "Export Buildings"
 msgstr "Exporter les bâtiments"
 
+msgid "Export BuildingSync"
+msgstr "Exporter BuildingSync"
+
 msgid "Export Name"
 msgstr "Nom d'exportation"
 
 msgid "Export Selected"
 msgstr "Exporter la sélection"
+
+msgid "Export Spreadsheet"
+msgstr "Exporter la feuille de calcul"
 
 msgid "Export your Properties and Tax Lots"
 msgstr "Exportez vos propriétés et vos lots d'impôt"
