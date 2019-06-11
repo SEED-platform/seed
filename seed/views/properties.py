@@ -454,7 +454,7 @@ class PropertyViewSet(GenericViewSet):
 
         audit_log = PropertyAuditLog
         inventory = Property
-        label = apps.get_model('seed', 'Property_labels')
+        label = apps.get_model('seed', 'PropertyView_labels')
         state = PropertyState
         view = PropertyView
 
@@ -529,16 +529,16 @@ class PropertyViewSet(GenericViewSet):
             )
 
             for v in views:
-                label_ids.extend(list(v.property.labels.all().values_list('id', flat=True)))
+                label_ids.extend(list(v.labels.all().values_list('id', flat=True)))
                 v.property.delete()
             label_ids = list(set(label_ids))
 
             # Create new labels and view
-            for label_id in label_ids:
-                label(property_id=inventory_record.id, statuslabel_id=label_id).save()
             new_view = view(cycle_id=cycle_id, state_id=merged_state.id,
                             property_id=inventory_record.id)
             new_view.save()
+            for label_id in label_ids:
+                label(propertyview_id=new_view.id, statuslabel_id=label_id).save()
 
             # Assign notes to the new view
             for note in notes:
@@ -612,22 +612,18 @@ class PropertyViewSet(GenericViewSet):
                 'message': 'property view with id {} must have two parent states'.format(pk)
             }
 
-        label = apps.get_model('seed', 'Property_labels')
+        label = apps.get_model('seed', 'PropertyView_labels')
         state1 = log.parent_state1
         state2 = log.parent_state2
         cycle_id = old_view.cycle_id
 
-        # Clone the property record, then copy over meters and labels
+        # Clone the property record, then copy over meters
         old_property = old_view.property
-        label_ids = list(old_property.labels.all().values_list('id', flat=True))
         new_property = old_property
         new_property.id = None
         new_property.save()
 
         Property.objects.get(pk=new_property.id).copy_meters(old_view.property_id)
-
-        for label_id in label_ids:
-            label(property_id=new_property.id, statuslabel_id=label_id).save()
 
         # Create the views
         new_view1 = PropertyView(
@@ -640,6 +636,13 @@ class PropertyViewSet(GenericViewSet):
             property_id=old_view.property_id,
             state=state2
         )
+
+        # Save old labels to both views
+        label_ids = list(old_view.labels.all().values_list('id', flat=True))
+
+        for label_id in label_ids:
+            label(propertyview_id=new_view1.id, statuslabel_id=label_id).save()
+            label(propertyview_id=new_view2.id, statuslabel_id=label_id).save()
 
         # Mark the merged state as deleted
         merged_state.merge_state = MERGE_STATE_DELETE
@@ -884,7 +887,7 @@ class PropertyViewSet(GenericViewSet):
     def _get_taxlots(self, pk):
         lot_view_pks = TaxLotProperty.objects.filter(property_view_id=pk).values_list(
             'taxlot_view_id', flat=True)
-        lot_views = TaxLotView.objects.filter(pk__in=lot_view_pks).select_related('cycle', 'state')
+        lot_views = TaxLotView.objects.filter(pk__in=lot_view_pks).select_related('cycle', 'state').prefetch_related('labels')
         lots = []
         for lot in lot_views:
             lots.append(TaxLotViewSerializer(lot).data)

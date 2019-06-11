@@ -63,8 +63,9 @@ angular.module('BE.seed.service.label', [])
           organization_id: org_id
         }, search_params);
 
-        // If no inventory_type specified use 'property' just to get the list of all labels
-        searchArgs.inventory_type = (searchArgs.inventory_type === 'taxlots') ? 'taxlot' : 'property';
+        // If no inventory_type specified use 'property_view' just to get the list of all labels
+        // Used to specify which Label-connected Model to use in the the back-end.
+        searchArgs.inventory_type = (searchArgs.inventory_type === 'taxlots') ? 'taxlot_view' : 'property_view';
 
         return $http.post('/api/v2/labels/filter/', {
           selected: selected
@@ -95,7 +96,7 @@ angular.module('BE.seed.service.label', [])
       function create_label_for_org (org_id, label) {
         return $http.post('/api/v2/labels/', label, {
           params: {
-            inventory_type: 'property',
+            inventory_type: 'property_view',
             organization_id: org_id
           }
         }).then(function (response) {

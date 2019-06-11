@@ -793,11 +793,11 @@ class InventoryViewTests(DeleteModelsTestCase):
     def test_get_property(self):
         property_state = self.property_state_factory.get_property_state()
         property_property = self.property_factory.get_property()
-        property_property.labels.add(self.status_label)
         property_property.save()
         property_view = PropertyView.objects.create(
             property=property_property, cycle=self.cycle, state=property_state
         )
+        property_view.labels.add(self.status_label)
         taxlot_state = self.taxlot_state_factory.get_taxlot_state(
             postal_code=property_state.postal_code
         )
@@ -822,7 +822,7 @@ class InventoryViewTests(DeleteModelsTestCase):
 
         # there should be 1 history item now because we are creating an audit log entry
         self.assertEqual(len(results['history']), 1)
-        self.assertEqual(results['property']['labels'], [self.status_label.pk])
+        self.assertEqual(results['labels'], [self.status_label.pk])
         self.assertEqual(results['changed_fields'], None)
 
         expected_property = {
@@ -830,7 +830,6 @@ class InventoryViewTests(DeleteModelsTestCase):
             'campus': False,
             'organization': self.org.pk,
             'parent_property': None,
-            'labels': [self.status_label.pk]
         }
         self.assertDictContainsSubset(expected_property, results['property'])
         self.assertTrue(results['property']['created'])
@@ -848,8 +847,9 @@ class InventoryViewTests(DeleteModelsTestCase):
 
         rtaxlot_view = results['taxlots'][0]
         self.assertEqual(rtaxlot_view['id'], taxlot_view.pk)
+        self.assertEqual(rtaxlot_view['labels'], [])
         self.assertDictContainsSubset(
-            {'id': taxlot.pk, 'organization': self.org.pk, 'labels': []},
+            {'id': taxlot.pk, 'organization': self.org.pk},
             rtaxlot_view['taxlot'],
         )
 
@@ -905,8 +905,9 @@ class InventoryViewTests(DeleteModelsTestCase):
 
         rtaxlot_view_1 = results['taxlots'][0]
         self.assertEqual(rtaxlot_view_1['id'], taxlot_view_1.pk)
+        self.assertEqual(rtaxlot_view_1['labels'], [])
         self.assertDictContainsSubset(
-            {'id': taxlot_1.pk, 'organization': self.org.pk, 'labels': []},
+            {'id': taxlot_1.pk, 'organization': self.org.pk},
             rtaxlot_view_1['taxlot'],
         )
 
@@ -921,8 +922,9 @@ class InventoryViewTests(DeleteModelsTestCase):
 
         rtaxlot_view_2 = results['taxlots'][1]
         self.assertEqual(rtaxlot_view_2['id'], taxlot_view_2.pk)
+        self.assertEqual(rtaxlot_view_2['labels'], [])
         self.assertDictContainsSubset(
-            {'id': taxlot_2.pk, 'organization': self.org.pk, 'labels': []},
+            {'id': taxlot_2.pk, 'organization': self.org.pk},
             rtaxlot_view_2['taxlot'],
         )
 
@@ -938,7 +940,6 @@ class InventoryViewTests(DeleteModelsTestCase):
         expected_property = {
             'campus': False,
             'id': property_property.pk,
-            'labels': [],
             'organization': self.org.pk,
             'parent_property': None,
         }
@@ -1260,10 +1261,10 @@ class InventoryViewTests(DeleteModelsTestCase):
     def test_get_taxlot(self):
         taxlot_state = self.taxlot_state_factory.get_taxlot_state()
         taxlot = TaxLot.objects.create(organization=self.org)
-        taxlot.labels.add(self.status_label)
         taxlot_view = TaxLotView.objects.create(
             taxlot=taxlot, state=taxlot_state, cycle=self.cycle
         )
+        taxlot_view.labels.add(self.status_label)
 
         property_state_1 = self.property_state_factory.get_property_state()
         property_property_1 = self.property_factory.get_property()
@@ -1292,6 +1293,9 @@ class InventoryViewTests(DeleteModelsTestCase):
         }
         response = self.client.get('/api/v2/taxlots/' + str(taxlot_view.id) + '/', params)
         result = json.loads(response.content)
+
+        labels = result['labels']
+        self.assertEqual(labels, [self.status_label.pk])
 
         cycle = result['cycle']
         self.assertEqual(cycle['id'], self.cycle.pk)
@@ -1324,7 +1328,6 @@ class InventoryViewTests(DeleteModelsTestCase):
         self.assertDictContainsSubset(
             {
                 'id': taxlot.pk,
-                'labels': [self.status_label.pk],
                 'organization': self.org.pk
             },
             result['taxlot'],

@@ -6,17 +6,25 @@
 
 Unit tests for seed/views/labels.py
 """
+from collections import defaultdict
+
+from datetime import datetime
+
 from django.core.urlresolvers import reverse
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APIClient
 
 from seed.landing.models import SEEDUser as User
 from seed.models import (
     Property,
+    PropertyView,
     StatusLabel as Label,
 )
 from seed.test_helpers.fake import (
     mock_queryset_factory,
+    FakeCycleFactory,
+    FakePropertyStateFactory,
 )
 from seed.tests.util import DeleteModelsTestCase
 from seed.utils.organizations import create_organization
@@ -114,8 +122,8 @@ class TestUpdateInventoryLabelsAPIView(DeleteModelsTestCase):
         self.api_view = UpdateInventoryLabelsAPIView()
 
         # Models can't  be imported directly hence self
-        self.PropertyLabels = self.api_view.models['property']
-        self.TaxlotLabels = self.api_view.models['taxlot']
+        self.PropertyViewLabels = self.api_view.models['property']
+        self.TaxlotViewLabels = self.api_view.models['taxlot']
 
         self.user_details = {
             'username': 'test_user@demo.com',
@@ -127,6 +135,9 @@ class TestUpdateInventoryLabelsAPIView(DeleteModelsTestCase):
         self.status_label = Label.objects.create(
             name='test', super_organization=self.org
         )
+        self.status_label_2 = Label.objects.create(
+            name='test_2', super_organization=self.org
+        )
         self.client.login(**self.user_details)
 
         self.label_1 = Label.objects.all()[0]
@@ -134,16 +145,25 @@ class TestUpdateInventoryLabelsAPIView(DeleteModelsTestCase):
         self.label_3 = Label.objects.all()[2]
         self.label_4 = Label.objects.all()[3]
 
-        # Create some real Properties and StatusLabels since validations happen
+        # Create some real PropertyViews, Properties, PropertyStates, and StatusLabels since validations happen
+        cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
+        cycle = cycle_factory.get_cycle(start=datetime(2010, 10, 10, tzinfo=timezone.get_current_timezone()))
+        property_state_factory = FakePropertyStateFactory(organization=self.org)
         for i in range(1, 11):
-            Property.objects.create(organization=self.org)
+            ps = property_state_factory.get_property_state()
+            p = Property.objects.create(organization=self.org)
+            PropertyView.objects.create(
+                cycle=cycle,
+                state=ps,
+                property=p
+            )
 
-        self.property_ids = Property.objects.all().order_by('id').values_list('id', flat=True)
+        self.propertyview_ids = PropertyView.objects.all().order_by('id').values_list('id', flat=True)
 
-        self.mock_property_label_qs = mock_queryset_factory(
-            self.PropertyLabels,
+        self.mock_propertyview_label_qs = mock_queryset_factory(
+            self.PropertyViewLabels,
             flatten=True,
-            property_id=self.property_ids,
+            propertyview_id=self.propertyview_ids,
             statuslabel_id=[self.label_1.id] * 3 + [self.label_2.id] * 3 + [self.label_3.id] * 2 + [self.label_4.id] * 2
         )
 
@@ -162,48 +182,48 @@ class TestUpdateInventoryLabelsAPIView(DeleteModelsTestCase):
 
     def test_get_inventory_id(self):
         result = self.api_view.get_inventory_id(
-            self.mock_property_label_qs[0], 'property'
+            self.mock_propertyview_label_qs[0], 'property'
         )
-        self.assertEqual(result, self.property_ids[0])
+        self.assertEqual(result, self.propertyview_ids[0])
 
     def test_exclude(self):
         result = self.api_view.exclude(
-            self.mock_property_label_qs, 'property', [self.label_3.id, self.label_4.id]
+            self.mock_propertyview_label_qs, 'property', [self.label_3.id, self.label_4.id]
         )
 
-        pid_7 = self.property_ids[6]
-        pid_8 = self.property_ids[7]
-        pid_9 = self.property_ids[8]
-        pid_10 = self.property_ids[9]
+        pvid_7 = self.propertyview_ids[6]
+        pvid_8 = self.propertyview_ids[7]
+        pvid_9 = self.propertyview_ids[8]
+        pvid_10 = self.propertyview_ids[9]
 
-        expected = {self.label_3.id: [pid_7, pid_8], self.label_4.id: [pid_9, pid_10]}
+        expected = {self.label_3.id: [pvid_7, pvid_8], self.label_4.id: [pvid_9, pvid_10]}
         self.assertEqual(result, expected)
 
     def test_label_factory(self):
-        result = self.api_view.label_factory('property', self.label_1.id, self.property_ids[0])
+        result = self.api_view.label_factory('property', self.label_1.id, self.propertyview_ids[0])
         self.assertEqual(
-            result.__class__.__name__, self.PropertyLabels.__name__
+            result.__class__.__name__, self.PropertyViewLabels.__name__
         )
-        self.assertEqual(result.property_id, self.property_ids[0])
+        self.assertEqual(result.propertyview_id, self.propertyview_ids[0])
         self.assertEqual(result.statuslabel_id, self.label_1.id)
 
     def test_add_remove_labels(self):
-        pid_1 = self.property_ids[0]
-        pid_2 = self.property_ids[1]
-        pid_3 = self.property_ids[2]
+        pvid_1 = self.propertyview_ids[0]
+        pvid_2 = self.propertyview_ids[1]
+        pvid_3 = self.propertyview_ids[2]
 
         result = self.api_view.add_labels(
-            self.mock_property_label_qs, 'property',
-            [pid_1, pid_2, pid_3], [self.label_2.id, self.label_3.id]
+            self.mock_propertyview_label_qs, 'property',
+            [pvid_1, pvid_2, pvid_3], [self.label_2.id, self.label_3.id]
         )
-        self.assertEqual(result, [pid_1, pid_2, pid_3] * 2)
-        qs = self.PropertyLabels.objects.all()
+        self.assertEqual(result, [pvid_1, pvid_2, pvid_3] * 2)
+        qs = self.PropertyViewLabels.objects.all()
         self.assertEqual(len(qs), 6)
-        self.assertEqual(qs[0].property_id, pid_1)
+        self.assertEqual(qs[0].propertyview_id, pvid_1)
         self.assertEqual(qs[0].statuslabel_id, self.label_2.id)
 
         result = self.api_view.remove_labels(qs, 'property', [self.label_2.id, self.label_3.id])
-        qs = self.PropertyLabels.objects.all()
+        qs = self.PropertyViewLabels.objects.all()
         self.assertEqual(len(qs), 0)
 
     def test_put(self):
@@ -217,14 +237,14 @@ class TestUpdateInventoryLabelsAPIView(DeleteModelsTestCase):
             r, self.org.id
         )
 
-        pid_1 = self.property_ids[0]
-        pid_2 = self.property_ids[1]
-        pid_3 = self.property_ids[2]
+        pvid_1 = self.propertyview_ids[0]
+        pvid_2 = self.propertyview_ids[1]
+        pvid_3 = self.propertyview_ids[2]
 
         post_params = {
-            'add_label_ids': [self.status_label.id],
+            'add_label_ids': [self.status_label.id, self.status_label_2.id],
             'remove_label_ids': [],
-            'inventory_ids': [pid_1, pid_2, pid_3],
+            'inventory_ids': [pvid_1, pvid_2, pvid_3],
         }
         response = client.put(
             url, post_params, format='json'
@@ -235,15 +255,20 @@ class TestUpdateInventoryLabelsAPIView(DeleteModelsTestCase):
         self.assertEqual(result['status'], 'success')
         self.assertEqual(result['num_updated'], 3)
 
-        label = result['labels'][0]
-        self.assertEqual(label['color'], self.status_label.color)
-        self.assertEqual(label['id'], self.status_label.id)
-        self.assertEqual(label['name'], self.status_label.name)
+        self.assertEqual(self.PropertyViewLabels.objects.count(), 6)
+        label_assignments = defaultdict(list)
+        for prop_label in self.PropertyViewLabels.objects.all():
+            label_assignments[prop_label.statuslabel_id].append(prop_label.propertyview_id)
+        expected_label_assignments = {
+            self.status_label.id: [pvid_1, pvid_2, pvid_3],
+            self.status_label_2.id: [pvid_1, pvid_2, pvid_3],
+        }
+        self.assertEqual(label_assignments, expected_label_assignments)
 
         post_params = {
             'add_label_ids': [],
             'remove_label_ids': [self.status_label.id],
-            'inventory_ids': [pid_1, pid_2, pid_3],
+            'inventory_ids': [pvid_1, pvid_2],
         }
         response = client.put(
             url, post_params, format='json'
@@ -252,9 +277,14 @@ class TestUpdateInventoryLabelsAPIView(DeleteModelsTestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(result['status'], 'success')
-        self.assertEqual(result['num_updated'], 3)
+        self.assertEqual(result['num_updated'], 2)
 
-        label = result['labels'][0]
-        self.assertEqual(label['color'], self.status_label.color)
-        self.assertEqual(label['id'], self.status_label.id)
-        self.assertEqual(label['name'], self.status_label.name)
+        self.assertEqual(self.PropertyViewLabels.objects.count(), 4)
+        label_assignments = defaultdict(list)
+        for prop_label in self.PropertyViewLabels.objects.all():
+            label_assignments[prop_label.statuslabel_id].append(prop_label.propertyview_id)
+        expected_label_assignments = {
+            self.status_label.id: [pvid_3],
+            self.status_label_2.id: [pvid_1, pvid_2, pvid_3],
+        }
+        self.assertEqual(label_assignments, expected_label_assignments)
