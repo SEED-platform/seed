@@ -24,7 +24,7 @@ pytz==2018.7
 django-pint==0.4
 
 # API
-djangorestframework==3.9.1
+djangorestframework==3.9.4
 # simplejson dependency needs to be installed via github due to a pip segfault with Python 3.6.7
 -e git+https://github.com/simplejson/simplejson@v3.16.1#egg=simplejson
 django-rest-swagger==2.2.0
