@@ -165,30 +165,17 @@ class TestPropertySerializers(DeleteModelsTestCase):
         # TODO test to representation
         property1 = self.property_factory.get_property()
         property2 = self.property_factory.get_property()
-        label1 = self.label_factory.get_statuslabel()
-        label2 = self.label_factory.get_statuslabel()
-
-        # make sure that the second label didn't by chance turn out to be the same as label1
-        while label2 == label1:
-            print("label was the same as the first, trying again")
-            label2 = self.label_factory.get_statuslabel()
-
-        property1.labels.add(label1)
-        property1.labels.add(label2)
-        property2.labels.add(label2)
 
         expected = [
             OrderedDict([
                 ('id', property1.id),
                 ('campus', False),
                 ('parent_property', None),
-                ('labels', [label1.id, label2.id])
             ]),
             OrderedDict([
                 ('id', property2.id),
                 ('campus', False),
                 ('parent_property', None),
-                ('labels', [label2.id])
             ]),
         ]
 
