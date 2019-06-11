@@ -192,7 +192,7 @@ class TestGreenAssessmentPropertySerializer(DeleteModelsTestCase):
         mock_request = mock.MagicMock()
         mock_request.user = self.user
         serializer = GreenAssessmentPropertySerializer(context={'request': mock_request})
-        
+
         # assert raises error if rating and metric supplied
         data = self.data.copy()
         data['rating'] = 'Gold Star'
