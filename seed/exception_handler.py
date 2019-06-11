@@ -34,7 +34,7 @@ def custom_exception_handler(exc, context):
             # Set Rollback removed in https://www.django-rest-framework.org/community/release-notes/#374. The
             # method is now handled in the views exception_handler which is called above
             # in exception_handler(exc, context)
-            
+
             # set_rollback()
             return Response(data, status=status.HTTP_400_BAD_REQUEST)
     return response
