@@ -6,12 +6,13 @@ through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
 :author Paul Munday <paul@paulmunday.net>
+:author Nicholas Long  <nicholas.long@nrel.gov>
 """
 import json
 from collections import OrderedDict
 
+import pytz
 from django.db import models
-from django.utils.timezone import make_naive
 from past.builtins import basestring
 from rest_framework import serializers
 from rest_framework.fields import empty
@@ -104,6 +105,9 @@ class PropertyListSerializer(serializers.ListSerializer):
 
 
 class PropertySerializer(serializers.ModelSerializer):
+    # The created and updated fields are in UTC time and need to be casted accordingly in this format
+    created = serializers.DateTimeField("%Y-%m-%dT%H:%M:%S.%fZ", default_timezone=pytz.utc)
+    updated = serializers.DateTimeField("%Y-%m-%dT%H:%M:%S.%fZ", default_timezone=pytz.utc)
 
     class Meta:
         model = Property
@@ -147,6 +151,13 @@ class PropertyStateSerializer(serializers.ModelSerializer):
     source_eui_modeled = PintQuantitySerializerField(allow_null=True)
     site_eui_weather_normalized = PintQuantitySerializerField(allow_null=True)
 
+    # support naive datetime objects
+    generation_date = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True)
+    recent_sale_date = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True)
+    release_date = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True)
+    analysis_start_time = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True)
+    analysis_end_time = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True)
+
     # to support the old state serializer method with the PROPERTY_STATE_FIELDS variables
     import_file_id = serializers.IntegerField(allow_null=True, read_only=True)
     organization_id = serializers.IntegerField()
@@ -177,22 +188,6 @@ class PropertyStateSerializer(serializers.ModelSerializer):
 
             result['extra_data'] = prepopulated_extra_data
 
-        # for datetime to be isoformat and remove timezone data
-        if data.generation_date:
-            result['generation_date'] = make_naive(data.generation_date).isoformat()
-
-        if data.recent_sale_date:
-            result['recent_sale_date'] = make_naive(data.recent_sale_date).isoformat()
-
-        if data.release_date:
-            result['release_date'] = make_naive(data.release_date).isoformat()
-
-        if data.analysis_start_time:
-            result['analysis_start_time'] = make_naive(data.analysis_start_time).isoformat()
-
-        if data.analysis_end_time:
-            result['analysis_end_time'] = make_naive(data.analysis_end_time).isoformat()
-
         return result
 
 
@@ -214,6 +209,14 @@ class PropertyStateWritableSerializer(serializers.ModelSerializer):
     import_file_id = serializers.IntegerField(allow_null=True, read_only=True)
     organization_id = serializers.IntegerField(read_only=True)
 
+    # support naive datetime objects
+    # support naive datetime objects
+    generation_date = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True)
+    recent_sale_date = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True)
+    release_date = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True)
+    analysis_start_time = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True)
+    analysis_end_time = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True)
+
     # support the pint objects
     conditioned_floor_area = PintQuantitySerializerField(allow_null=True, required=False)
     gross_floor_area = PintQuantitySerializerField(allow_null=True, required=False)
@@ -229,33 +232,13 @@ class PropertyStateWritableSerializer(serializers.ModelSerializer):
         fields = '__all__'
         model = PropertyState
 
-    def to_representation(self, data):
-        """Overwritten to handle time conversion"""
-        result = super(PropertyStateWritableSerializer, self).to_representation(data)
-        # for datetime to be isoformat and remove timezone data
-        if data.generation_date:
-            result['generation_date'] = make_naive(data.generation_date).isoformat()
-
-        if data.recent_sale_date:
-            result['recent_sale_date'] = make_naive(data.recent_sale_date).isoformat()
-
-        if data.release_date:
-            result['release_date'] = make_naive(data.release_date).isoformat()
-
-        if data.analysis_start_time:
-            result['analysis_start_time'] = make_naive(data.analysis_start_time).isoformat()
-
-        if data.analysis_end_time:
-            result['analysis_end_time'] = make_naive(data.analysis_end_time).isoformat()
-
-        return result
-
 
 class PropertyViewSerializer(serializers.ModelSerializer):
     # list of status labels (rather than the join field)
     labels = PropertyLabelsField(read_only=True, many=True)
 
     state = PropertyStateSerializer()
+    property = PropertySerializer()
 
     class Meta:
         model = PropertyView
@@ -613,7 +596,10 @@ def unflatten_values(vdict, fkeys):
     :param fkeys: field names for foreign key (e.g. state for state__city)
     :type fkeys: list
     """
-    assert set(list(vdict.keys())).isdisjoint(set(fkeys)), "unflatten_values: {} has fields named in {}".format(vdict, fkeys)
+    assert set(
+        list(vdict.keys())
+    ).isdisjoint(set(fkeys)), "unflatten_values: {} has fields named in {}".format(vdict, fkeys)
+
     idents = tuple(["{}__".format(fkey) for fkey in fkeys])
     newdict = vdict.copy()
     for key, val in vdict.items():

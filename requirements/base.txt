@@ -24,10 +24,7 @@ pytz==2018.7
 django-pint==0.4
 
 # API
-# Do not upgrade to DRF 3.6.x+. There are some changes and it seems to break a few things. So far
-# the issues are:
-#  - can't set attributes in Mock
-djangorestframework==3.5.4
+djangorestframework==3.9.4
 # simplejson dependency needs to be installed via github due to a pip segfault with Python 3.6.7
 -e git+https://github.com/simplejson/simplejson@v3.16.1#egg=simplejson
 django-rest-swagger==2.2.0
