@@ -6,8 +6,10 @@ through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
 :author Paul Munday <paul@paulmunday.net>
+:author Nicholas Long  <nicholas.long@nrel.gov>
 """
 import json
+import pytz
 from collections import OrderedDict
 
 from django.db import models
@@ -104,6 +106,10 @@ class PropertyListSerializer(serializers.ListSerializer):
 
 
 class PropertySerializer(serializers.ModelSerializer):
+
+    # The created and updated fields are in UTC time and need to be casted accordingly in this format
+    created = serializers.DateTimeField("%Y-%m-%dT%H:%M:%S.%fZ", default_timezone=pytz.utc)
+    updated = serializers.DateTimeField("%Y-%m-%dT%H:%M:%S.%fZ", default_timezone=pytz.utc)
 
     class Meta:
         model = Property
@@ -256,6 +262,7 @@ class PropertyViewSerializer(serializers.ModelSerializer):
     labels = PropertyLabelsField(read_only=True, many=True)
 
     state = PropertyStateSerializer()
+    property = PropertySerializer()
 
     class Meta:
         model = PropertyView
