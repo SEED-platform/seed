@@ -90,13 +90,22 @@ class MeterUtilTests(TestCase):
     def test_parse_meter_details_splits_monthly_info_into_meter_data_and_readings_even_with_DST_changing(self):
         raw_meters = [
             {
-                'Property Id': self.pm_property_id,
-                'Property Name': 'EPA Sample Library',
-                'Parent Property Id': 'Not Applicable: Standalone Property',
-                'Parent Property Name': 'Not Applicable: Standalone Property',
-                'Month': 'Mar-16',
-                'Electricity Use  (kBtu)': 597478.9,
-                'Natural Gas Use  (kBtu)': 576000.2
+                'Portfolio Manager ID': self.pm_property_id,
+                'Portfolio Manager Meter ID': '123-PMMeterID',
+                'Start Date': '2016-03-01 00:00:00',
+                'End Date': '2016-04-01 00:00:00',
+                'Meter Type': 'Electric - Grid',
+                'Usage Units': 'kBtu (thousand Btu)',
+                'Usage/Quantity': 100,
+            },
+            {
+                'Portfolio Manager ID': self.pm_property_id,
+                'Portfolio Manager Meter ID': '123-PMMeterID',
+                'Start Date': '2016-03-01 00:00:00',
+                'End Date': '2016-04-01 00:00:00',
+                'Meter Type': 'Natural Gas',
+                'Usage Units': 'kBtu (thousand Btu)',
+                'Usage/Quantity': 200,
             }
         ]
 
@@ -104,14 +113,14 @@ class MeterUtilTests(TestCase):
             {
                 'property_id': self.property.id,
                 'source': Meter.PORTFOLIO_MANAGER,
-                'source_id': self.pm_property_id,
-                'type': Meter.ELECTRICITY,
+                'source_id': '123-PMMeterID',
+                'type': Meter.ELECTRICITY_GRID,
                 'readings': [
                     {
                         'start_time': make_aware(datetime(2016, 3, 1, 0, 0, 0), timezone=self.tz_obj),
                         'end_time': make_aware(datetime(2016, 4, 1, 0, 0, 0), timezone=self.tz_obj),
-                        'reading': 597478.9,
-                        'source_unit': 'kBtu',
+                        'reading': 100,
+                        'source_unit': 'kBtu (thousand Btu)',
                         'conversion_factor': 1
                     }
                 ]
@@ -119,14 +128,14 @@ class MeterUtilTests(TestCase):
             {
                 'property_id': self.property.id,
                 'source': Meter.PORTFOLIO_MANAGER,
-                'source_id': self.pm_property_id,
+                'source_id': '123-PMMeterID',
                 'type': Meter.NATURAL_GAS,
                 'readings': [
                     {
                         'start_time': make_aware(datetime(2016, 3, 1, 0, 0, 0), timezone=self.tz_obj),
                         'end_time': make_aware(datetime(2016, 4, 1, 0, 0, 0), timezone=self.tz_obj),
-                        'reading': 576000.2,
-                        'source_unit': 'kBtu',
+                        'reading': 200,
+                        'source_unit': 'kBtu (thousand Btu)',
                         'conversion_factor': 1
                     }
                 ]
@@ -143,9 +152,13 @@ class MeterUtilTests(TestCase):
 
         raw_meters = [
             {
-                'Property Id': self.pm_property_id,
-                'Month': 'Mar-16',
-                'Natural Gas Use  (cubic meters)': 1000
+                'Portfolio Manager ID': self.pm_property_id,
+                'Portfolio Manager Meter ID': '123-PMMeterID',
+                'Start Date': '2016-03-01 00:00:00',
+                'End Date': '2016-04-01 00:00:00',
+                'Meter Type': 'Natural Gas',
+                'Usage Units': 'cm (cubic meters)',
+                'Usage/Quantity': 1000,
             }
         ]
 
@@ -155,9 +168,9 @@ class MeterUtilTests(TestCase):
         expected = {
             'start_time': make_aware(datetime(2016, 3, 1, 0, 0, 0), timezone=self.tz_obj),
             'end_time': make_aware(datetime(2016, 4, 1, 0, 0, 0), timezone=self.tz_obj),
-            'reading': 36425.0,
-            'source_unit': 'cubic meters',
-            'conversion_factor': 36.425,
+            'reading': 36420.0,
+            'source_unit': 'cm (cubic meters)',
+            'conversion_factor': 36.42,
         }
 
         self.assertEqual(actual, expected)
@@ -177,26 +190,61 @@ class MeterUtilTests(TestCase):
             }
 
         ]
+        raw_meters = [
+            {
+                'Portfolio Manager ID': self.pm_property_id,
+                'Portfolio Manager Meter ID': '123-PMMeterID',
+                'Start Date': '2016-02-01 00:00:00',
+                'End Date': '2016-03-01 00:00:00',
+                'Meter Type': 'Electric - Grid',
+                'Usage Units': 'kBtu (thousand Btu)',
+                'Usage/Quantity': 111,
+            }, {
+                'Portfolio Manager ID': self.pm_property_id,
+                'Portfolio Manager Meter ID': '123-PMMeterID',
+                'Start Date': '2016-02-01 00:00:00',
+                'End Date': '2016-03-01 00:00:00',
+                'Meter Type': 'Natural Gas',
+                'Usage Units': 'kBtu (thousand Btu)',
+                'Usage/Quantity': 333,
+            }, {
+                'Portfolio Manager ID': self.pm_property_id,
+                'Portfolio Manager Meter ID': '123-PMMeterID',
+                'Start Date': '2017-02-01 00:00:00',
+                'End Date': '2017-03-01 00:00:00',
+                'Meter Type': 'Electric - Grid',
+                'Usage Units': 'kBtu (thousand Btu)',
+                'Usage/Quantity': 222,
+            }, {
+                'Portfolio Manager ID': self.pm_property_id,
+                'Portfolio Manager Meter ID': '123-PMMeterID',
+                'Start Date': '2017-02-01 00:00:00',
+                'End Date': '2017-03-01 00:00:00',
+                'Meter Type': 'Natural Gas',
+                'Usage Units': 'kBtu (thousand Btu)',
+                'Usage/Quantity': 444,
+            }
+        ]
 
         expected = [
             {
                 'property_id': self.property.id,
                 'source': Meter.PORTFOLIO_MANAGER,
-                'source_id': self.pm_property_id,
-                'type': Meter.ELECTRICITY,
+                'source_id': '123-PMMeterID',
+                'type': Meter.ELECTRICITY_GRID,
                 'readings': [
                     {
                         'start_time': make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=self.tz_obj),
                         'end_time': make_aware(datetime(2016, 3, 1, 0, 0, 0), timezone=self.tz_obj),
                         'reading': 111,
-                        'source_unit': 'kBtu',
+                        'source_unit': 'kBtu (thousand Btu)',
                         'conversion_factor': 1
                     },
                     {
                         'start_time': make_aware(datetime(2017, 2, 1, 0, 0, 0), timezone=self.tz_obj),
                         'end_time': make_aware(datetime(2017, 3, 1, 0, 0, 0), timezone=self.tz_obj),
                         'reading': 222,
-                        'source_unit': 'kBtu',
+                        'source_unit': 'kBtu (thousand Btu)',
                         'conversion_factor': 1
                     }
                 ]
@@ -204,21 +252,21 @@ class MeterUtilTests(TestCase):
             {
                 'property_id': self.property.id,
                 'source': Meter.PORTFOLIO_MANAGER,
-                'source_id': self.pm_property_id,
+                'source_id': '123-PMMeterID',
                 'type': Meter.NATURAL_GAS,
                 'readings': [
                     {
                         'start_time': make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=self.tz_obj),
                         'end_time': make_aware(datetime(2016, 3, 1, 0, 0, 0), timezone=self.tz_obj),
                         'reading': 333,
-                        'source_unit': 'kBtu',
+                        'source_unit': 'kBtu (thousand Btu)',
                         'conversion_factor': 1
                     },
                     {
                         'start_time': make_aware(datetime(2017, 2, 1, 0, 0, 0), timezone=self.tz_obj),
                         'end_time': make_aware(datetime(2017, 3, 1, 0, 0, 0), timezone=self.tz_obj),
                         'reading': 444,
-                        'source_unit': 'kBtu',
+                        'source_unit': 'kBtu (thousand Btu)',
                         'conversion_factor': 1
                     }
                 ]
@@ -232,13 +280,21 @@ class MeterUtilTests(TestCase):
     def test_parse_meter_details_converts_energy_units_if_necessary(self):
         raw_meters = [
             {
-                'Property Id': self.pm_property_id,
-                'Property Name': 'EPA Sample Library',
-                'Parent Property Id': 'Not Applicable: Standalone Property',
-                'Parent Property Name': 'Not Applicable: Standalone Property',
-                'Month': 'Mar-16',
-                'Natural Gas Use  (Ccf (hundred cubic feet))': 1000,
-                'Fuel Oil (No. 1) Use  (GJ)': 1000
+                'Portfolio Manager ID': self.pm_property_id,
+                'Portfolio Manager Meter ID': '123-PMMeterID',
+                'Start Date': '2016-03-01 00:00:00',
+                'End Date': '2016-04-01 00:00:00',
+                'Meter Type': 'Natural Gas',
+                'Usage Units': 'ccf (hundred cubic feet)',
+                'Usage/Quantity': 1000,
+            }, {
+                'Portfolio Manager ID': self.pm_property_id,
+                'Portfolio Manager Meter ID': '123-PMMeterID',
+                'Start Date': '2016-03-01 00:00:00',
+                'End Date': '2016-04-01 00:00:00',
+                'Meter Type': 'Fuel Oil (No. 1)',
+                'Usage Units': 'GJ',
+                'Usage/Quantity': 1000,
             }
         ]
 
@@ -253,42 +309,40 @@ class MeterUtilTests(TestCase):
             fuel_oil_details = result[1]
             gas_details = result[0]
 
-        self.assertEqual(fuel_oil_details["readings"][0]["reading"], 947817)
+        self.assertEqual(fuel_oil_details["readings"][0]["reading"], 947820)
         self.assertEqual(fuel_oil_details["readings"][0]["source_unit"], "GJ")
-        self.assertEqual(fuel_oil_details["readings"][0]["conversion_factor"], 947.817)
+        self.assertEqual(fuel_oil_details["readings"][0]["conversion_factor"], 947.82)
         self.assertEqual(gas_details["readings"][0]["reading"], 102600)
-        self.assertEqual(gas_details["readings"][0]["source_unit"], "Ccf (hundred cubic feet)")
+        self.assertEqual(gas_details["readings"][0]["source_unit"], "ccf (hundred cubic feet)")
         self.assertEqual(gas_details["readings"][0]["conversion_factor"], 102.6)
 
     def test_unlinked_properties_are_identified(self):
         raw_meters = [
             {
-                'Property Id': "11111111",
-                'Property Name': 'EPA Sample Library',
-                'Parent Property Id': 'Not Applicable: Standalone Property',
-                'Parent Property Name': 'Not Applicable: Standalone Property',
-                'Month': 'Mar-16',
-                'Electricity Use  (kWh)': 1000,
-                'Fuel Oil (No. 1) Use  (GJ)': 1000
-            },
-            {
-                'Property Id': "22222222",
-                'Property Name': 'EPA Sample Library',
-                'Parent Property Id': 'Not Applicable: Standalone Property',
-                'Parent Property Name': 'Not Applicable: Standalone Property',
-                'Month': 'Mar-16',
-                'Electricity Use  (kBtu)': 597478.9,
-                'Natural Gas Use  (kBtu)': 576000.2
-            },
-            {
-                'Property Id': "22222222",
-                'Property Name': 'EPA Sample Library',
-                'Parent Property Id': 'Not Applicable: Standalone Property',
-                'Parent Property Name': 'Not Applicable: Standalone Property',
-                'Month': 'Feb-16',
-                'Electricity Use  (kBtu)': 597478.9,
-                'Natural Gas Use  (kBtu)': 576000.2
-            },
+                'Portfolio Manager ID': "11111111",
+                'Portfolio Manager Meter ID': '123-PMMeterID',
+                'Start Date': '2016-03-01 00:00:00',
+                'End Date': '2016-04-01 00:00:00',
+                'Meter Type': 'Electric - Grid',
+                'Usage Units': 'kBtu (thousand Btu)',
+                'Usage/Quantity': 100,
+            }, {
+                'Portfolio Manager ID': "22222222",
+                'Portfolio Manager Meter ID': '123-PMMeterID',
+                'Start Date': '2016-03-01 00:00:00',
+                'End Date': '2016-04-01 00:00:00',
+                'Meter Type': 'Electric - Grid',
+                'Usage Units': 'kBtu (thousand Btu)',
+                'Usage/Quantity': 100,
+            }, {
+                'Portfolio Manager ID': "22222222",
+                'Portfolio Manager Meter ID': '123-PMMeterID',
+                'Start Date': '2016-04-01 00:00:00',
+                'End Date': '2016-05-01 00:00:00',
+                'Meter Type': 'Electric - Grid',
+                'Usage Units': 'kBtu (thousand Btu)',
+                'Usage/Quantity': 100,
+            }
         ]
 
         meters_parser = MetersParser(self.org.id, raw_meters)
@@ -308,41 +362,20 @@ class MeterUtilTests(TestCase):
                 'start_time': 1552211999,  # Mar. 10, 2019 01:59:59 (pre-DST change)
                 'source_id': 'ABCDEF',
                 'duration': 900,
-                'Electricity Use  (kBtu)': 100,
-                'Natural Gas Use  (GJ)': 100
-            },
-            {
+                'Meter Type': 'Natural Gas',
+                'Usage Units': 'GJ',
+                'Usage/Quantity': 100
+            }, {
                 'start_time': 1456732799,  # Feb. 28, 2016 23:59:59 (leap year)
-                'duration': 900,
                 'source_id': 'ABCDEF',
-                'Electricity Use  (kBtu)': 1000,
-                'Natural Gas Use  (GJ)': 1000
+                'duration': 900,
+                'Meter Type': 'Natural Gas',
+                'Usage Units': 'GJ',
+                'Usage/Quantity': 1000
             }
         ]
 
         expected = [
-            {
-                'property_id': self.property.id,
-                'source': Meter.GREENBUTTON,
-                'source_id': 'ABCDEF',
-                'type': Meter.ELECTRICITY,
-                'readings': [
-                    {
-                        'start_time': make_aware(datetime(2019, 3, 10, 1, 59, 59), timezone=self.tz_obj),
-                        'end_time': make_aware(datetime(2019, 3, 10, 3, 14, 59), timezone=self.tz_obj),
-                        'reading': 100,
-                        'source_unit': 'kBtu',
-                        'conversion_factor': 1
-                    },
-                    {
-                        'start_time': make_aware(datetime(2016, 2, 28, 23, 59, 59), timezone=self.tz_obj),
-                        'end_time': make_aware(datetime(2016, 2, 29, 0, 14, 59), timezone=self.tz_obj),
-                        'reading': 1000,
-                        'source_unit': 'kBtu',
-                        'conversion_factor': 1
-                    },
-                ]
-            },
             {
                 'property_id': self.property.id,
                 'source': Meter.GREENBUTTON,
@@ -352,16 +385,16 @@ class MeterUtilTests(TestCase):
                     {
                         'start_time': make_aware(datetime(2019, 3, 10, 1, 59, 59), timezone=self.tz_obj),
                         'end_time': make_aware(datetime(2019, 3, 10, 3, 14, 59), timezone=self.tz_obj),
-                        'reading': 94781.7,
+                        'reading': 94782.0,
                         'source_unit': 'GJ',
-                        'conversion_factor': 947.817
+                        'conversion_factor': 947.82
                     },
                     {
                         'start_time': make_aware(datetime(2016, 2, 28, 23, 59, 59), timezone=self.tz_obj),
                         'end_time': make_aware(datetime(2016, 2, 29, 0, 14, 59), timezone=self.tz_obj),
-                        'reading': 947817.0,
+                        'reading': 947820.0,
                         'source_unit': 'GJ',
-                        'conversion_factor': 947.817
+                        'conversion_factor': 947.82
                     },
                 ]
             }

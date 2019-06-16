@@ -108,9 +108,9 @@ class MeterUsageImportTest(TestCase):
         refreshed_property_1 = Property.objects.get(pk=self.property_1.id)
         self.assertEqual(refreshed_property_1.meters.all().count(), 2)
 
-        meter_1 = refreshed_property_1.meters.get(type=Meter.ELECTRICITY)
+        meter_1 = refreshed_property_1.meters.get(type=Meter.ELECTRICITY_GRID)
         self.assertEqual(meter_1.source, Meter.PORTFOLIO_MANAGER)
-        self.assertEqual(meter_1.source_id, '5766973')
+        self.assertEqual(meter_1.source_id, '5766973-0')
         self.assertEqual(meter_1.is_virtual, False)
         self.assertEqual(meter_1.meter_readings.all().count(), 2)
 
@@ -119,7 +119,7 @@ class MeterUsageImportTest(TestCase):
         self.assertEqual(meter_reading_10.start_time, make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=self.tz_obj))
         self.assertEqual(meter_reading_10.end_time, make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=self.tz_obj))
         self.assertEqual(meter_reading_10.reading, 597478.9 * ureg('kBtu'))
-        self.assertEqual(meter_reading_10.source_unit, "kBtu")  # spot check
+        self.assertEqual(meter_reading_10.source_unit, "kBtu (thousand Btu)")  # spot check
         self.assertEqual(meter_reading_10.conversion_factor, 1)  # spot check
 
         self.assertEqual(meter_reading_11.start_time, make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=self.tz_obj))
@@ -128,7 +128,7 @@ class MeterUsageImportTest(TestCase):
 
         meter_2 = refreshed_property_1.meters.get(type=Meter.NATURAL_GAS)
         self.assertEqual(meter_2.source, Meter.PORTFOLIO_MANAGER)
-        self.assertEqual(meter_2.source_id, '5766973')
+        self.assertEqual(meter_2.source_id, '5766973-1')
         self.assertEqual(meter_2.meter_readings.all().count(), 2)
 
         meter_reading_20, meter_reading_21 = list(meter_2.meter_readings.order_by('start_time').all())
@@ -144,9 +144,9 @@ class MeterUsageImportTest(TestCase):
         refreshed_property_2 = Property.objects.get(pk=self.property_2.id)
         self.assertEqual(refreshed_property_2.meters.all().count(), 2)
 
-        meter_3 = refreshed_property_2.meters.get(type=Meter.ELECTRICITY)
+        meter_3 = refreshed_property_2.meters.get(type=Meter.ELECTRICITY_GRID)
         self.assertEqual(meter_3.source, Meter.PORTFOLIO_MANAGER)
-        self.assertEqual(meter_3.source_id, '5766975')
+        self.assertEqual(meter_3.source_id, '5766975-0')
         self.assertEqual(meter_3.meter_readings.all().count(), 2)
 
         meter_reading_30, meter_reading_40 = list(meter_3.meter_readings.order_by('start_time').all())
@@ -154,7 +154,7 @@ class MeterUsageImportTest(TestCase):
         self.assertEqual(meter_reading_30.start_time, make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=self.tz_obj))
         self.assertEqual(meter_reading_30.end_time, make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=self.tz_obj))
         self.assertEqual(meter_reading_30.reading, 154572.2 * ureg('kBtu'))
-        self.assertEqual(meter_reading_30.source_unit, "kBtu")  # spot check
+        self.assertEqual(meter_reading_30.source_unit, "kBtu (thousand Btu)")  # spot check
         self.assertEqual(meter_reading_30.conversion_factor, 1)  # spot check
 
         self.assertEqual(meter_reading_40.start_time, make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=self.tz_obj))
@@ -163,7 +163,7 @@ class MeterUsageImportTest(TestCase):
 
         meter_4 = refreshed_property_2.meters.get(type=Meter.NATURAL_GAS)
         self.assertEqual(meter_4.source, Meter.PORTFOLIO_MANAGER)
-        self.assertEqual(meter_4.source_id, '5766975')
+        self.assertEqual(meter_4.source_id, '5766975-1')
         self.assertEqual(meter_4.meter_readings.all().count(), 2)
 
         meter_reading_40, meter_reading_41 = list(meter_4.meter_readings.order_by('start_time').all())
@@ -187,8 +187,8 @@ class MeterUsageImportTest(TestCase):
         unsaved_meter = Meter(
             property=property,
             source=Meter.PORTFOLIO_MANAGER,
-            source_id='5766973',
-            type=Meter.ELECTRICITY,
+            source_id='5766973-0',
+            type=Meter.ELECTRICITY_GRID,
         )
         unsaved_meter.save()
         existing_meter = Meter.objects.get(pk=unsaved_meter.id)
@@ -213,7 +213,7 @@ class MeterUsageImportTest(TestCase):
         refreshed_property_1 = Property.objects.get(pk=self.property_1.id)
         self.assertEqual(refreshed_property_1.meters.all().count(), 2)
 
-        refreshed_meter = refreshed_property_1.meters.get(type=Meter.ELECTRICITY)
+        refreshed_meter = refreshed_property_1.meters.get(type=Meter.ELECTRICITY_GRID)
 
         meter_reading_10, meter_reading_11, meter_reading_12 = list(refreshed_meter.meter_readings.order_by('start_time').all())
         self.assertEqual(meter_reading_10.reading, 597478.9 * ureg('kBtu'))
@@ -229,8 +229,8 @@ class MeterUsageImportTest(TestCase):
         unsaved_meter = Meter(
             property=property,
             source=Meter.PORTFOLIO_MANAGER,
-            source_id='5766973',
-            type=Meter.ELECTRICITY,
+            source_id='5766973-0',
+            type=Meter.ELECTRICITY_GRID,
         )
         unsaved_meter.save()
         existing_meter = Meter.objects.get(pk=unsaved_meter.id)
@@ -245,7 +245,7 @@ class MeterUsageImportTest(TestCase):
             end_time=end_time,
             reading=12345,
             source_unit="GJ",
-            conversion_factor=947.817
+            conversion_factor=947.82
         )
         unsaved_meter_reading.save()
 
@@ -260,12 +260,12 @@ class MeterUsageImportTest(TestCase):
         self.assertEqual(MeterReading.objects.all().count(), 8)
 
         refreshed_property = Property.objects.get(pk=self.property_1.id)
-        refreshed_meter = refreshed_property.meters.get(type=Meter.ELECTRICITY)
+        refreshed_meter = refreshed_property.meters.get(type=Meter.ELECTRICITY_GRID)
         meter_reading = refreshed_meter.meter_readings.get(start_time=start_time)
 
         self.assertEqual(meter_reading.end_time, end_time)
         self.assertEqual(meter_reading.reading, 597478.9 * ureg('kBtu'))
-        self.assertEqual(meter_reading.source_unit, "kBtu")
+        self.assertEqual(meter_reading.source_unit, "kBtu (thousand Btu)")
         self.assertEqual(meter_reading.conversion_factor, 1)
 
     def test_property_existing_in_multiple_cycles_can_have_meters_and_readings_associated_to_it(self):
@@ -339,18 +339,28 @@ class MeterUsageImportTest(TestCase):
 
         expectation = [
             {
-                "source_id": "5766973",
-                "incoming": 4,
-                "successfully_imported": 4,
+                "source_id": "5766973-0",
+                "incoming": 2,
+                "successfully_imported": 2,
             },
             {
-                "source_id": "5766975",
-                "incoming": 4,
-                "successfully_imported": 4,
+                "source_id": "5766973-1",
+                "incoming": 2,
+                "successfully_imported": 2,
+            },
+            {
+                "source_id": "5766975-0",
+                "incoming": 2,
+                "successfully_imported": 2,
+            },
+            {
+                "source_id": "5766975-1",
+                "incoming": 2,
+                "successfully_imported": 2,
             },
         ]
 
-        self.assertEqual(result['message'], expectation)
+        self.assertCountEqual(result['message'], expectation)
 
     def test_error_noted_in_response_if_meter_has_overlapping_readings(self):
         """
@@ -386,18 +396,30 @@ class MeterUsageImportTest(TestCase):
 
         expected_import_summary = [
             {
-                "source_id": "5766973",
-                "incoming": 4,
-                "successfully_imported": 4,
+                "source_id": "5766973-0",
+                "incoming": 2,
+                "successfully_imported": 2,
                 "errors": "",
             },
             {
-                "source_id": "5766975",
-                "incoming": 8,
+                "source_id": "5766973-1",
+                "incoming": 2,
+                "successfully_imported": 2,
+                "errors": "",
+            },
+            {
+                "source_id": "5766975-0",
+                "incoming": 4,
+                "successfully_imported": 0,
+                "errors": "Overlapping readings.",
+            },
+            {
+                "source_id": "5766975-1",
+                "incoming": 4,
                 "successfully_imported": 0,
                 "errors": "Overlapping readings.",
             },
         ]
 
-        self.assertEqual(result_summary['message'], expected_import_summary)
+        self.assertCountEqual(result_summary['message'], expected_import_summary)
         self.assertEqual(total_meters_count, 2)

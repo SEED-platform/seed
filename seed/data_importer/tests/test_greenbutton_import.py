@@ -91,7 +91,7 @@ class GreenButtonImportTest(TestCase):
         refreshed_property_1 = Property.objects.get(pk=self.property_1.id)
         self.assertEqual(refreshed_property_1.meters.all().count(), 1)
 
-        meter_1 = refreshed_property_1.meters.get(type=Meter.ELECTRICITY)
+        meter_1 = refreshed_property_1.meters.get(type=Meter.ELECTRICITY_GRID)
         self.assertEqual(meter_1.source, Meter.GREENBUTTON)
         self.assertEqual(meter_1.source_id, 'User/6150855/UsagePoint/409483/MeterReading/1/IntervalBlock/1')
         self.assertEqual(meter_1.is_virtual, False)
@@ -101,15 +101,15 @@ class GreenButtonImportTest(TestCase):
 
         self.assertEqual(meter_reading_10.start_time, make_aware(datetime(2011, 3, 5, 21, 0, 0), timezone=self.tz_obj))
         self.assertEqual(meter_reading_10.end_time, make_aware(datetime(2011, 3, 5, 21, 15, 0), timezone=self.tz_obj))
-        self.assertEqual(meter_reading_10.reading, 1790 * 3.412 / 1000 * ureg('kBtu'))
-        self.assertEqual(meter_reading_10.source_unit, "kWh")
-        self.assertEqual(meter_reading_10.conversion_factor, 3.412)
+        self.assertEqual(meter_reading_10.reading, 1790 * 3.41 / 1000 * ureg('kBtu'))
+        self.assertEqual(meter_reading_10.source_unit, 'kWh (thousand Watt-hours)')
+        self.assertEqual(meter_reading_10.conversion_factor, 3.41)
 
         self.assertEqual(meter_reading_11.start_time, make_aware(datetime(2011, 3, 5, 21, 15, 0), timezone=self.tz_obj))
         self.assertEqual(meter_reading_11.end_time, make_aware(datetime(2011, 3, 5, 21, 30, 0), timezone=self.tz_obj))
-        self.assertEqual(meter_reading_11.reading, 1791 * 3.412 / 1000 * ureg('kBtu'))
-        self.assertEqual(meter_reading_11.source_unit, "kWh")
-        self.assertEqual(meter_reading_11.conversion_factor, 3.412)
+        self.assertEqual(meter_reading_11.reading, 1791 * 3.41 / 1000 * ureg('kBtu'))
+        self.assertEqual(meter_reading_11.source_unit, 'kWh (thousand Watt-hours)')
+        self.assertEqual(meter_reading_11.conversion_factor, 3.41)
 
         # matching_results_data gets cleared out since the field wasn't meant for this
         refreshed_import_file = ImportFile.objects.get(pk=self.import_file.id)
@@ -126,7 +126,7 @@ class GreenButtonImportTest(TestCase):
             property=property,
             source=Meter.GREENBUTTON,
             source_id='User/6150855/UsagePoint/409483/MeterReading/1/IntervalBlock/1',
-            type=Meter.ELECTRICITY,
+            type=Meter.ELECTRICITY_GRID,
         )
         unsaved_meter.save()
         existing_meter = Meter.objects.get(pk=unsaved_meter.id)
@@ -151,11 +151,11 @@ class GreenButtonImportTest(TestCase):
         refreshed_property_1 = Property.objects.get(pk=self.property_1.id)
         self.assertEqual(refreshed_property_1.meters.all().count(), 1)
 
-        refreshed_meter = refreshed_property_1.meters.get(type=Meter.ELECTRICITY)
+        refreshed_meter = refreshed_property_1.meters.get(type=Meter.ELECTRICITY_GRID)
 
         meter_reading_10, meter_reading_11, meter_reading_12 = list(refreshed_meter.meter_readings.order_by('start_time').all())
-        self.assertEqual(meter_reading_10.reading, 1790 * 3.412 / 1000 * ureg('kBtu'))
-        self.assertEqual(meter_reading_11.reading, 1791 * 3.412 / 1000 * ureg('kBtu'))
+        self.assertEqual(meter_reading_10.reading, 1790 * 3.41 / 1000 * ureg('kBtu'))
+        self.assertEqual(meter_reading_11.reading, 1791 * 3.41 / 1000 * ureg('kBtu'))
 
         # Sanity check to be sure, nothing was changed with existing meter reading
         self.assertEqual(meter_reading_12, existing_meter_reading)
@@ -168,7 +168,7 @@ class GreenButtonImportTest(TestCase):
             property=property,
             source=Meter.GREENBUTTON,
             source_id='User/6150855/UsagePoint/409483/MeterReading/1/IntervalBlock/1',
-            type=Meter.ELECTRICITY,
+            type=Meter.ELECTRICITY_GRID,
         )
         unsaved_meter.save()
         existing_meter = Meter.objects.get(pk=unsaved_meter.id)
@@ -183,7 +183,7 @@ class GreenButtonImportTest(TestCase):
             end_time=end_time,
             reading=1000,
             source_unit="GJ",
-            conversion_factor=947.817
+            conversion_factor=947.82
         )
         unsaved_meter_reading.save()
 
@@ -198,13 +198,13 @@ class GreenButtonImportTest(TestCase):
         self.assertEqual(MeterReading.objects.all().count(), 2)
 
         refreshed_property = Property.objects.get(pk=self.property_1.id)
-        refreshed_meter = refreshed_property.meters.get(type=Meter.ELECTRICITY)
+        refreshed_meter = refreshed_property.meters.get(type=Meter.ELECTRICITY_GRID)
         meter_reading = refreshed_meter.meter_readings.get(start_time=start_time)
 
         self.assertEqual(meter_reading.end_time, end_time)
-        self.assertEqual(meter_reading.reading, 1790 * 3.412 / 1000 * ureg('kBtu'))
-        self.assertEqual(meter_reading.source_unit, "kWh")
-        self.assertEqual(meter_reading.conversion_factor, 3.412)
+        self.assertEqual(meter_reading.reading, 1790 * 3.41 / 1000 * ureg('kBtu'))
+        self.assertEqual(meter_reading.source_unit, 'kWh (thousand Watt-hours)')
+        self.assertEqual(meter_reading.conversion_factor, 3.41)
 
     def test_the_response_contains_expected_and_actual_reading_counts_for_pm_ids(self):
         url = reverse("api:v2:import_files-save-raw-data", args=[self.import_file.id])

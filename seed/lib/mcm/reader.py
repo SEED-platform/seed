@@ -120,7 +120,9 @@ class GreenButtonParser(object):
                         'start_time': int(reading['timePeriod']['start']),
                         'source_id': source_id,
                         'duration': int(reading['timePeriod']['duration']),
-                        "{} Use  ({})".format(type, unit): float(reading['value']) * multiplier,
+                        'Meter Type': type,
+                        'Usage Units': unit,
+                        'Usage/Quantity': float(reading['value']) * multiplier,
                     }
                     for reading
                     in readings

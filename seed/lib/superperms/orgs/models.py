@@ -106,7 +106,7 @@ class Organization(models.Model):
 
     # US factors are usable here as the type-unit combinations are the same (though actual factors differ).
     _default_display_meter_units = {
-        type: 'kBtu'
+        type: 'kBtu (thousand Btu)'
         for type, _units
         in kbtu_thermal_conversion_factors("US").items()
     }
