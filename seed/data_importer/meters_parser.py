@@ -29,10 +29,13 @@ class MetersParser(object):
     format of these raw details should be a list of dictionaries where the
     dictionaries are of the following formats:
         {
-            'Property Id': <pm_property_id>,
-            'Month': '<abbr. Month>-YY',
-            '<energy_type_name_1> Use  (<units_1>)': <reading>,
-            '<energy_type_name_2> Use  (<units_2>)': <reading>,
+            'Portfolio Manager ID': "11111111",
+            'Portfolio Manager Meter ID': '123-PMMeterID',
+            'Start Date': 'YYYY-MM-DD 00:00:00',
+            'End Date': 'YYYY-MM-DD 00:00:00',
+            'Meter Type': '<energy_type_name_1>',
+            'Usage Units': '<units_1>',
+            'Usage/Quantity': <reading>,
             ...
         }
     or
@@ -40,13 +43,13 @@ class MetersParser(object):
             'start_time': <epoch_time>,
             'source_id': <greenbutton_source_id>,
             'duration': <seconds>,
-            '<energy_type_name_1> Use  (<units_1>)': <reading>,
-            '<energy_type_name_2> Use  (<units_2>)': <reading>,
-            ...
+            'Meter Type': '<energy_type_name_1>',
+            'Usage Units': '<units_1>',
+            'Usage/Quantity': <reading>,
         }
 
     It's able to create a collection of Meter object details and their
-    corresponding Meter Reading objects details.
+    corresponding MeterReading objects details.
     """
 
     _tz = timezone(TIME_ZONE)
@@ -106,44 +109,59 @@ class MetersParser(object):
             ...(more meters and their readings)
         }
 
+        This is used to be able to group and associate MeterReadings to the
+        appropriate Meters without duplicates being created. The logic for this
+        lives in _parse_meter_readings().
+
         The unique identifier of a meter is composed of the values of it's details
         which include property_id, type, etc. This is used to easily associate
         readings to a previously parsed meter without creating duplicates.
         """
         if self._cache_meter_and_reading_objs is None:
-            for details in self._meters_and_readings_details:
-                meter_details = {}
-
-                meter_details['source'] = self._source_type
-
-                # Set source_id and property_id - using source_id to find property_id if necessary
-                if self._source_type == Meter.PORTFOLIO_MANAGER and self._property_id is None:
-                    meter_details['source_id'] = str(details['Portfolio Manager Meter ID'])
-
-                    # Continue/skip, if no property is found.
-                    given_property_id = str(details['Portfolio Manager ID'])
-                    if not self._get_property_id(given_property_id, meter_details):
-                        continue
-                elif self._property_id:
-                    meter_details['source_id'] = details['source_id']
-                    meter_details['property_id'] = self._property_id
-
-                # Define start_time and end_time
-                if self._source_type == Meter.PORTFOLIO_MANAGER:
-                    unaware_start = datetime.strptime(details['Start Date'], "%Y-%m-%d %H:%M:%S")
-                    start_time = make_aware(unaware_start, timezone=self._tz)
-
-                    unaware_end = datetime.strptime(details['End Date'], "%Y-%m-%d %H:%M:%S")
-                    end_time = make_aware(unaware_end, timezone=self._tz)
-                else:
-                    start_time = datetime.fromtimestamp(details['start_time'], tz=self._tz)
-                    end_time = datetime.fromtimestamp((details['start_time'] + details['duration']), tz=self._tz)
-
-                self._parse_meter_readings(details, meter_details, start_time, end_time)
+            if self._source_type == Meter.PORTFOLIO_MANAGER:
+                self._parse_pm_meter_details()
+            elif self._source_type == Meter.GREENBUTTON:
+                self._parse_gb_meter_details()
 
             self._cache_meter_and_reading_objs = list(self._unique_meters.values())
 
         return self._cache_meter_and_reading_objs
+
+    def _parse_pm_meter_details(self):
+        for details in self._meters_and_readings_details:
+            meter_details = {
+                'source': self._source_type,
+            }
+
+            meter_details['source_id'] = str(details['Portfolio Manager Meter ID'])
+
+            # Continue/skip, if no property is found.
+            given_property_id = str(details['Portfolio Manager ID'])
+            if not self._get_property_id(given_property_id, meter_details):
+                continue
+
+            # Define start_time and end_time
+            unaware_start = datetime.strptime(details['Start Date'], "%Y-%m-%d %H:%M:%S")
+            start_time = make_aware(unaware_start, timezone=self._tz)
+
+            unaware_end = datetime.strptime(details['End Date'], "%Y-%m-%d %H:%M:%S")
+            end_time = make_aware(unaware_end, timezone=self._tz)
+
+            self._parse_meter_readings(details, meter_details, start_time, end_time)
+
+    def _parse_gb_meter_details(self):
+        for details in self._meters_and_readings_details:
+            meter_details = {
+                'source': self._source_type,
+                'source_id': details['source_id'],
+                'property_id': self._property_id,
+            }
+
+            # Define start_time and end_time
+            start_time = datetime.fromtimestamp(details['start_time'], tz=self._tz)
+            end_time = datetime.fromtimestamp((details['start_time'] + details['duration']), tz=self._tz)
+
+            self._parse_meter_readings(details, meter_details, start_time, end_time)
 
     def _get_property_id(self, source_id, shared_details):
         """
@@ -212,18 +230,33 @@ class MetersParser(object):
 
     def validated_type_units(self):
         """
+        Creates/returns the validated type and unit combinations given in the
+        import file.
 
+        This is done by creating a set of tuples containing type and unit
+        combinations found in the import file. Since a set is used, these are
+        deduplicated. Those combinations are checked to be valid and, if so, are
+        returned in a dictionary format.
         """
-        type_units = {
-            (details['Meter Type'], details['Usage Units'])
-            for details
-            in self._meters_and_readings_details
-        }
-        return [
-            {'parsed_type': type_unit[0], 'parsed_unit': type_unit[1]}
-            for type_unit
-            in type_units
-        ]
+        if self._cache_validated_type_units is None:
+            type_units = {
+                (details['Meter Type'], details['Usage Units'])
+                for details
+                in self._meters_and_readings_details
+            }
+            self._cache_validated_type_units = [
+                {'parsed_type': type_unit[0], 'parsed_unit': type_unit[1]}
+                for type_unit
+                in type_units
+                if self._valid_type_unit(type_unit)
+            ]
+
+        return self._cache_validated_type_units
+
+    def _valid_type_unit(self, type_unit):
+        return self._kbtu_thermal_conversion_factors.\
+            get(type_unit[0], []).\
+            get(type_unit[1], None) is not None
 
     def proposed_imports(self):
         """
@@ -248,6 +281,9 @@ class MetersParser(object):
         ]
 
     def usage_point_id(self, raw_source_id):
+        """
+        Extracts and returns the usage point ID of a GreenButton full uri ID.
+        """
         id_split = raw_source_id.split('/')
         usage_point_index = next(i for i, substr in enumerate(id_split) if substr == "UsagePoint") + 1
         return id_split[usage_point_index]
