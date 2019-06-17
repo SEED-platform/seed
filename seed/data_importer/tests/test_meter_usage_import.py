@@ -96,7 +96,7 @@ class MeterUsageImportTest(TestCase):
         """
         Expect to have 4 meters - 2 for each property - 1 for gas and 1 for electricity.
         Each meter will have 2 readings, for a total of 8 readings.
-        These come from 4 meter usage rows in the .xlsx file, each with 2 meter readings.
+        These come from 8 meter usage rows in the .xlsx file - 1 per reading.
         """
         url = reverse("api:v2:import_files-save-raw-data", args=[self.import_file.id])
         post_params = {

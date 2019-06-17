@@ -403,3 +403,64 @@ class MeterUtilTests(TestCase):
         meters_parser = MetersParser(self.org.id, raw_meters, source_type=Meter.GREENBUTTON, property_id=self.property.id)
 
         self.assertEqual(meters_parser.meter_and_reading_objs, expected)
+
+    def test_meters_parser_can_handle_delivered_PM_meters(self):
+        raw_meters = [
+            {
+                'Portfolio Manager ID': self.pm_property_id,
+                'Portfolio Manager Meter ID': '123-PMMeterID',
+                'Start Date': 'Not Available',
+                'End Date': 'Not Available',
+                'Delivery Date': '2016-03-05 00:00:00',
+                'Meter Type': 'Electric - Grid',
+                'Usage Units': 'kBtu (thousand Btu)',
+                'Usage/Quantity': 100,
+            },
+            {
+                'Portfolio Manager ID': self.pm_property_id,
+                'Portfolio Manager Meter ID': '123-PMMeterID',
+                'Start Date': 'Not Available',
+                'End Date': 'Not Available',
+                'Delivery Date': '2016-03-01 00:00:00',
+                'Meter Type': 'Natural Gas',
+                'Usage Units': 'kBtu (thousand Btu)',
+                'Usage/Quantity': 200,
+            }
+        ]
+
+        expected = [
+            {
+                'property_id': self.property.id,
+                'source': Meter.PORTFOLIO_MANAGER,
+                'source_id': '123-PMMeterID',
+                'type': Meter.ELECTRICITY_GRID,
+                'readings': [
+                    {
+                        'start_time': make_aware(datetime(2016, 3, 1, 0, 0, 0), timezone=self.tz_obj),
+                        'end_time': make_aware(datetime(2016, 4, 1, 0, 0, 0), timezone=self.tz_obj),
+                        'reading': 100,
+                        'source_unit': 'kBtu (thousand Btu)',
+                        'conversion_factor': 1
+                    }
+                ]
+            },
+            {
+                'property_id': self.property.id,
+                'source': Meter.PORTFOLIO_MANAGER,
+                'source_id': '123-PMMeterID',
+                'type': Meter.NATURAL_GAS,
+                'readings': [
+                    {
+                        'start_time': make_aware(datetime(2016, 3, 1, 0, 0, 0), timezone=self.tz_obj),
+                        'end_time': make_aware(datetime(2016, 4, 1, 0, 0, 0), timezone=self.tz_obj),
+                        'reading': 200,
+                        'source_unit': 'kBtu (thousand Btu)',
+                        'conversion_factor': 1
+                    }
+                ]
+            }
+        ]
+
+        meters_parser = MetersParser(self.org.id, raw_meters)
+
+        self.assertEqual(meters_parser.meter_and_reading_objs, expected)

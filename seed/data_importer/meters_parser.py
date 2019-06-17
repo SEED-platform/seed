@@ -1,11 +1,16 @@
 # !/usr/bin/env python
 # encoding: utf-8
 
+from calendar import monthrange
+
 from config.settings.common import TIME_ZONE
 
 from collections import defaultdict
 
-from datetime import datetime
+from datetime import (
+    datetime,
+    timedelta,
+)
 
 from django.utils.timezone import make_aware
 
@@ -141,10 +146,25 @@ class MetersParser(object):
                 continue
 
             # Define start_time and end_time
-            unaware_start = datetime.strptime(details['Start Date'], "%Y-%m-%d %H:%M:%S")
-            start_time = make_aware(unaware_start, timezone=self._tz)
+            raw_start = details['Start Date']
+            if raw_start == 'Not Available':
+                """
+                In this case, the meter is delivered, so the start and end times
+                are set to the first of delivery date month to the first of the
+                following month.
+                """
+                delivery_date = datetime.strptime(details['Delivery Date'], "%Y-%m-%d %H:%M:%S")
+                year = delivery_date.year
+                month = delivery_date.month
+                _start_day, days_in_month = monthrange(year, month)
 
-            unaware_end = datetime.strptime(details['End Date'], "%Y-%m-%d %H:%M:%S")
+                unaware_start = datetime(year, month, 1, 0, 0, 0)
+                unaware_end = datetime(year, month, days_in_month, 23, 59, 59) + timedelta(seconds=1)
+            else:
+                unaware_start = datetime.strptime(raw_start, "%Y-%m-%d %H:%M:%S")
+                unaware_end = datetime.strptime(details['End Date'], "%Y-%m-%d %H:%M:%S")
+
+            start_time = make_aware(unaware_start, timezone=self._tz)
             end_time = make_aware(unaware_end, timezone=self._tz)
 
             self._parse_meter_readings(details, meter_details, start_time, end_time)
