@@ -10,7 +10,6 @@ from datetime import datetime
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.urlresolvers import reverse
-from django.test import TestCase
 from django.utils.timezone import (
     get_current_timezone,
     make_aware,  # make_aware is used because inconsistencies exist in creating datetime with tzinfo
@@ -35,9 +34,10 @@ from seed.test_helpers.fake import (
     FakePropertyStateFactory,
 )
 from seed.utils.organizations import create_organization
+from seed.tests.util import DataMappingBaseTestCase
 
 
-class GreenButtonImportTest(TestCase):
+class GreenButtonImportTest(DataMappingBaseTestCase):
     def setUp(self):
         self.user_details = {
             'username': 'test_user@demo.com',

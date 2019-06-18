@@ -44,6 +44,7 @@ angular.module('BE.seed.controller.inventory_detail_energy', [])
       $scope.gridOptions = {
         data: 'data',
         columnDefs: property_energy_usage.column_defs,
+        enableColumnResizing: true,
         enableFiltering: true,
         flatEntityAccess: true,
         fastWatch: true,

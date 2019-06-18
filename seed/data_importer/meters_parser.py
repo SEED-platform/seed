@@ -21,7 +21,10 @@ from seed.models import (
     Meter,
     PropertyState,
 )
-from seed.data_importer.utils import kbtu_thermal_conversion_factors
+from seed.data_importer.utils import (
+    kbtu_thermal_conversion_factors,
+    usage_point_id,
+)
 
 
 class MetersParser(object):
@@ -290,7 +293,7 @@ class MetersParser(object):
             id = obj.get("source_id")
 
             if obj['source'] == Meter.GREENBUTTON:
-                id = self.usage_point_id(id)
+                id = usage_point_id(id)
 
             id_counts[id] += len(obj.get("readings"))
 
@@ -299,11 +302,3 @@ class MetersParser(object):
             for id, reading_count
             in id_counts.items()
         ]
-
-    def usage_point_id(self, raw_source_id):
-        """
-        Extracts and returns the usage point ID of a GreenButton full uri ID.
-        """
-        id_split = raw_source_id.split('/')
-        usage_point_index = next(i for i, substr in enumerate(id_split) if substr == "UsagePoint") + 1
-        return id_split[usage_point_index]

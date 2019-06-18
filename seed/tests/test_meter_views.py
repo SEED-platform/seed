@@ -11,7 +11,6 @@ from datetime import datetime
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.urlresolvers import reverse
-from django.test import TestCase
 from django.utils.timezone import (
     get_current_timezone,
     make_aware,
@@ -36,9 +35,10 @@ from seed.test_helpers.fake import (
     FakePropertyStateFactory,
 )
 from seed.utils.organizations import create_organization
+from seed.tests.util import DataMappingBaseTestCase
 
 
-class TestMeterViewSet(TestCase):
+class TestMeterViewSet(DataMappingBaseTestCase):
     def setUp(self):
         self.user_details = {
             'username': 'test_user@demo.com',
@@ -48,6 +48,10 @@ class TestMeterViewSet(TestCase):
             email='test_user@demo.com', **self.user_details
         )
         self.org, _, _ = create_organization(self.user)
+
+        # For some reason, defaults weren't established consistently for each test.
+        self.org.display_meter_units = Organization._default_display_meter_units.copy()
+        self.org.save()
         self.client.login(**self.user_details)
 
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
@@ -207,509 +211,501 @@ class TestMeterViewSet(TestCase):
 
         self.assertCountEqual(result_dict.get("unlinkable_pm_ids"), expectation)
 
-    # def test_property_energy_usage_returns_meter_readings_and_column_defs_given_property_view_and_nondefault_meter_display_org_settings(self):
-    #     # Update settings for display meter units to change it from the default values.
-    #     self.org.display_meter_units['Electric - Grid'] = 'kWh (thousand Watt-hours)'
-    #     self.org.display_meter_units['Fuel Oil (No. 5 and No. 6)'] = 'Gallons (US)'
-    #     self.org.save()
-    #
-    #     # add meters and readings to property associated to property_view_1
-    #     save_raw_data(self.import_file.id)
-    #
-    #     # add meter with parenthesis in type name: FUEL_OIL_NO_5_AND_NO_6
-    #     meter_details = {
-    #         'source': Meter.PORTFOLIO_MANAGER,
-    #         'source_id': self.property_view_1.state.pm_property_id,
-    #         'type': Meter.FUEL_OIL_NO_5_AND_NO_6,
-    #         'property_id': self.property_view_1.property.id,
-    #     }
-    #     fuel_meter = Meter.objects.create(**meter_details)
-    #
-    #     tz_obj = timezone(TIME_ZONE)
-    #     fuel_reading_details = {
-    #         'start_time': make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=tz_obj),
-    #         'end_time': make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=tz_obj),
-    #         'reading': 10,
-    #         'source_unit': 'kBtu (thousand Btu)',
-    #         'conversion_factor': 1,
-    #         'meter_id': fuel_meter.id,
-    #     }
-    #     MeterReading.objects.create(**fuel_reading_details)
-    #
-    #     url = reverse('api:v2:meters-property-energy-usage')
-    #
-    #     post_params = json.dumps({
-    #         'property_view_id': self.property_view_1.id,
-    #         'organization_id': self.org.pk,
-    #         'interval': 'Exact',
-    #     })
-    #     result = self.client.post(url, post_params, content_type="application/json")
-    #     result_dict = ast.literal_eval(result.content.decode("utf-8"))
-    #
-    #     expectation = {
-    #         'readings': [
-    #             {
-    #                 'start_time': '2016-01-01 00:00:00',
-    #                 'end_time': '2016-02-01 00:00:00',
-    #                 'Electric - Grid': (597478.9 / 3.41),
-    #                 'Natural Gas': 545942781.5634,
-    #                 'Fuel Oil (No. 5 & No. 6)': 10 / 150,
-    #             },
-    #             {
-    #                 'start_time': '2016-02-01 00:00:00',
-    #                 'end_time': '2016-03-01 00:00:00',
-    #                 'Electric - Grid': (548603.7 / 3.41),
-    #                 'Natural Gas': 462534790.7817,
-    #             },
-    #         ],
-    #         'column_defs': [
-    #             {
-    #                 'field': 'start_time',
-    #                 '_filter_type': 'datetime',
-    #             },
-    #             {
-    #                 'field': 'end_time',
-    #                 '_filter_type': 'datetime',
-    #             },
-    #             {
-    #                 'field': 'Electricity',
-    #                 'displayName': 'Electric - Grid (kWh (thousand Watt-hours))',
-    #                 '_filter_type': 'reading',
-    #             },
-    #             {
-    #                 'field': 'Natural Gas',
-    #                 'displayName': 'Natural Gas (kBtu (thousand Btu))',
-    #                 '_filter_type': 'reading',
-    #             },
-    #             {
-    #                 'field': 'Fuel Oil (No. 5 and No. 6)',
-    #                 'displayName': 'Fuel Oil (No. 5 and No. 6) (Gallons (US))',
-    #                 '_filter_type': 'reading',
-    #             },
-    #         ]
-    #     }
-    #
-    #     self.assertCountEqual(result_dict['readings'], expectation['readings'])
-    #     self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
-    #
-#     def test_property_energy_usage_returns_meter_readings_according_to_thermal_conversion_preferences_of_an_org_if_applicable_for_display_settings(self):
-#         # update the org settings thermal preference and display preference
-#         self.org.thermal_conversion_assumption = Organization.CAN
-#         self.org.display_meter_units["Diesel"] = "liters"
-#         self.org.display_meter_units["Coke"] = "Lbs"
-#         self.org.save()
-#
-#         # add meters and readings to property associated to property_view_1
-#         meter_details = {
-#             'source': Meter.PORTFOLIO_MANAGER,
-#             'source_id': self.property_view_1.state.pm_property_id,
-#             'type': Meter.DIESEL,
-#             'property_id': self.property_view_1.property.id,
-#         }
-#         diesel_meter = Meter.objects.create(**meter_details)
-#
-#         meter_details['type'] = Meter.COKE
-#         coke_meter = Meter.objects.create(**meter_details)
-#
-#         tz_obj = timezone(TIME_ZONE)
-#         diesel_reading_details = {
-#             'start_time': make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=tz_obj),
-#             'end_time': make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=tz_obj),
-#             'reading': 10,
-#             'source_unit': 'kBtu',
-#             'conversion_factor': 1,
-#             'meter_id': diesel_meter.id,
-#         }
-#         MeterReading.objects.create(**diesel_reading_details)
-#
-#         coke_reading_details = {
-#             'start_time': make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=tz_obj),
-#             'end_time': make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=tz_obj),
-#             'reading': 100,
-#             'source_unit': 'kBtu',
-#             'conversion_factor': 1,
-#             'meter_id': coke_meter.id,
-#         }
-#         MeterReading.objects.create(**coke_reading_details)
-#
-#         post_params = json.dumps({
-#             'property_view_id': self.property_view_1.id,
-#             'organization_id': self.org.pk,
-#             'interval': 'Exact',
-#         })
-#
-#         url = reverse('api:v2:meters-property-energy-usage')
-#         result = self.client.post(url, post_params, content_type="application/json")
-#         result_dict = ast.literal_eval(result.content.decode("utf-8"))
-#
-#         display_readings = [
-#             {
-#                 'start_time': '2016-01-01 00:00:00',
-#                 'end_time': '2016-02-01 00:00:00',
-#                 'Diesel': 10 / 36.301,
-#                 'Coke': 100 / 12.395,
-#             },
-#         ]
-#
-#         self.assertCountEqual(result_dict['readings'], display_readings)
-#
-#     def test_property_energy_usage_can_return_monthly_meter_readings_and_column_defs_while_handling_a_DST_change_and_nondefault_display_setting(self):
-#         # Update settings for display meter units to change it from the default values.
-#         self.org.display_meter_units['Electricity'] = 'kWh'
-#         self.org.save()
-#
-#         # add initial meters and readings
-#         save_raw_data(self.import_file.id)
-#
-#         # add additional entries for each initial meter
-#         tz_obj = timezone(TIME_ZONE)
-#         for meter in Meter.objects.all():
-#             # March 2016 reading
-#             reading_details = {
-#                 'meter_id': meter.id,
-#                 'start_time': make_aware(datetime(2016, 3, 1, 0, 0, 0), timezone=tz_obj),
-#                 'end_time': make_aware(datetime(2016, 4, 1, 0, 0, 0), timezone=tz_obj),
-#                 'reading': 100,
-#                 'source_unit': 'kBtu',
-#                 'conversion_factor': 1
-#             }
-#             MeterReading.objects.create(**reading_details)
-#
-#             # May 2016 reading
-#             reading_details['start_time'] = make_aware(datetime(2016, 5, 1, 0, 0, 0), timezone=tz_obj)
-#             reading_details['end_time'] = make_aware(datetime(2016, 6, 1, 0, 0, 0), timezone=tz_obj)
-#             reading_details['reading'] = 200
-#             MeterReading.objects.create(**reading_details)
-#
-#         url = reverse('api:v2:meters-property-energy-usage')
-#
-#         post_params = json.dumps({
-#             'property_view_id': self.property_view_1.id,
-#             'organization_id': self.org.pk,
-#             'interval': 'Month',
-#         })
-#         result = self.client.post(url, post_params, content_type="application/json")
-#         result_dict = ast.literal_eval(result.content.decode("utf-8"))
-#
-#         expectation = {
-#             'readings': [
-#                 {
-#                     'month': 'January 2016',
-#                     'Electricity': 597478.9 / 3.412,
-#                     'Natural Gas': 545942781.5634,
-#                 },
-#                 {
-#                     'month': 'February 2016',
-#                     'Electricity': 548603.7 / 3.412,
-#                     'Natural Gas': 462534790.7817,
-#                 },
-#                 {
-#                     'month': 'March 2016',
-#                     'Electricity': 100 / 3.412,
-#                     'Natural Gas': 100,
-#                 },
-#                 {
-#                     'month': 'May 2016',
-#                     'Electricity': 200 / 3.412,
-#                     'Natural Gas': 200,
-#                 },
-#             ],
-#             'column_defs': [
-#                 {
-#                     'field': 'month',
-#                     '_filter_type': 'datetime',
-#                 },
-#                 {
-#                     'field': 'Electricity',
-#                     'displayName': 'Electricity (kWh)',
-#                     '_filter_type': 'reading',
-#                 },
-#                 {
-#                     'field': 'Natural Gas',
-#                     'displayName': 'Natural Gas (kBtu)',
-#                     '_filter_type': 'reading',
-#                 },
-#             ]
-#         }
-#
-#         self.assertCountEqual(result_dict['readings'], expectation['readings'])
-#         self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
-#
-#     def test_property_energy_usage_can_return_monthly_meter_readings_and_column_defs_for_submonthly_data_with_DST_transitions(self):
-#         # Update settings for display meter units to change back to default
-#         self.org.display_meter_units['Electricity'] = 'kBtu'
-#         self.org.save()
-#
-#         # add initial meters and readings
-#         save_raw_data(self.import_file.id)
-#
-#         # add additional sub-montly entries for each initial meter
-#         tz_obj = timezone(TIME_ZONE)
-#         for meter in Meter.objects.all():
-#             # November 2019 reading between DST transition
-#             reading_details = {
-#                 'meter_id': meter.id,
-#                 'start_time': make_aware(datetime(2019, 11, 3, 1, 59, 59), timezone=tz_obj, is_dst=True),
-#                 'end_time': make_aware(datetime(2019, 11, 3, 1, 59, 59), timezone=tz_obj, is_dst=False),
-#                 'reading': 100,
-#                 'source_unit': 'kBtu',
-#                 'conversion_factor': 1
-#             }
-#             MeterReading.objects.create(**reading_details)
-#
-#             # November 2019 reading after DST transition
-#             reading_details['start_time'] = make_aware(datetime(2019, 11, 3, 2, 0, 0), timezone=tz_obj)
-#             reading_details['end_time'] = make_aware(datetime(2019, 11, 3, 3, 0, 0), timezone=tz_obj)
-#             reading_details['reading'] = 200
-#             MeterReading.objects.create(**reading_details)
-#
-#         url = reverse('api:v2:meters-property-energy-usage')
-#
-#         post_params = json.dumps({
-#             'property_view_id': self.property_view_1.id,
-#             'organization_id': self.org.pk,
-#             'interval': 'Month',
-#         })
-#         result = self.client.post(url, post_params, content_type="application/json")
-#         result_dict = ast.literal_eval(result.content.decode("utf-8"))
-#
-#         expectation = {
-#             'readings': [
-#                 {
-#                     'month': 'January 2016',
-#                     'Electricity': 597478.9,
-#                     'Natural Gas': 545942781.5634,
-#                 },
-#                 {
-#                     'month': 'February 2016',
-#                     'Electricity': 548603.7,
-#                     'Natural Gas': 462534790.7817,
-#                 },
-#                 {
-#                     'month': 'November 2019',
-#                     'Electricity': 300,
-#                     'Natural Gas': 300,
-#                 },
-#             ],
-#             'column_defs': [
-#                 {
-#                     'field': 'month',
-#                     '_filter_type': 'datetime',
-#                 },
-#                 {
-#                     'field': 'Electricity',
-#                     'displayName': 'Electricity (kBtu)',
-#                     '_filter_type': 'reading',
-#                 },
-#                 {
-#                     'field': 'Natural Gas',
-#                     'displayName': 'Natural Gas (kBtu)',
-#                     '_filter_type': 'reading',
-#                 },
-#             ]
-#         }
-#
-#         self.assertCountEqual(result_dict['readings'], expectation['readings'])
-#         self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
-#
-#     def test_property_energy_usage_can_return_monthly_meter_readings_and_column_defs_of_overlapping_submonthly_data_aggregating_monthly_data_to_maximize_total(self):
-#         # Update settings for display meter units to change back to default
-#         self.org.display_meter_units['Electricity'] = 'kBtu'
-#         self.org.save()
-#
-#         # add initial meters and readings
-#         save_raw_data(self.import_file.id)
-#
-#         # add additional entries for the Electricity meter
-#         tz_obj = timezone(TIME_ZONE)
-#         meter = Meter.objects.get(property_id=self.property_view_1.property.id, type=Meter.type_lookup['Electricity'])
-#         # 2016 January reading that should override the existing reading
-#         reading_details = {
-#             'meter_id': meter.id,
-#             'start_time': make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=tz_obj),
-#             'end_time': make_aware(datetime(2016, 1, 20, 23, 59, 59), timezone=tz_obj),
-#             'reading': 100000000000000,
-#             'source_unit': 'kBtu',
-#             'conversion_factor': 1
-#         }
-#         MeterReading.objects.create(**reading_details)
-#
-#         # 2016 January reading that should be ignored
-#         reading_details['start_time'] = make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=tz_obj)
-#         reading_details['end_time'] = make_aware(datetime(2016, 3, 31, 23, 59, 59), timezone=tz_obj)
-#         reading_details['reading'] = 0.1
-#         MeterReading.objects.create(**reading_details)
-#
-#         # Create March 2016 entries having disregarded readings when finding monthly total
-#         # 1 week - not included in total
-#         reading_details['start_time'] = make_aware(datetime(2016, 3, 1, 0, 0, 0), timezone=tz_obj)
-#         reading_details['end_time'] = make_aware(datetime(2016, 3, 6, 23, 59, 59), timezone=tz_obj)
-#         reading_details['reading'] = 1
-#         MeterReading.objects.create(**reading_details)
-#
-#         # 1 week - not included in total
-#         reading_details['start_time'] = make_aware(datetime(2016, 3, 7, 0, 0, 0), timezone=tz_obj)
-#         reading_details['end_time'] = make_aware(datetime(2016, 3, 13, 23, 59, 59), timezone=tz_obj)
-#         reading_details['reading'] = 10
-#         MeterReading.objects.create(**reading_details)
-#
-#         # 10 days - included in total
-#         reading_details['start_time'] = make_aware(datetime(2016, 3, 2, 0, 0, 0), timezone=tz_obj)
-#         reading_details['end_time'] = make_aware(datetime(2016, 3, 11, 23, 59, 59), timezone=tz_obj)
-#         reading_details['reading'] = 100
-#         MeterReading.objects.create(**reading_details)
-#
-#         # 10 days - included in total
-#         reading_details['start_time'] = make_aware(datetime(2016, 3, 12, 0, 0, 0), timezone=tz_obj)
-#         reading_details['end_time'] = make_aware(datetime(2016, 3, 21, 23, 59, 59), timezone=tz_obj)
-#         reading_details['reading'] = 1000
-#         MeterReading.objects.create(**reading_details)
-#
-#         # Create April 2016 entries having disregarded readings when finding monthly total
-#         # 5 days - not included in total
-#         reading_details['start_time'] = make_aware(datetime(2016, 4, 1, 0, 0, 0), timezone=tz_obj)
-#         reading_details['end_time'] = make_aware(datetime(2016, 4, 4, 23, 59, 59), timezone=tz_obj)
-#         reading_details['reading'] = 2
-#         MeterReading.objects.create(**reading_details)
-#
-#         # 10 days - not included in total
-#         reading_details['start_time'] = make_aware(datetime(2016, 4, 6, 0, 0, 0), timezone=tz_obj)
-#         reading_details['end_time'] = make_aware(datetime(2016, 4, 15, 23, 59, 59), timezone=tz_obj)
-#         reading_details['reading'] = 20
-#         MeterReading.objects.create(**reading_details)
-#
-#         # 20 days - included in total
-#         reading_details['start_time'] = make_aware(datetime(2016, 4, 2, 0, 0, 0), timezone=tz_obj)
-#         reading_details['end_time'] = make_aware(datetime(2016, 4, 21, 23, 59, 59), timezone=tz_obj)
-#         reading_details['reading'] = 200
-#         MeterReading.objects.create(**reading_details)
-#
-#         url = reverse('api:v2:meters-property-energy-usage')
-#
-#         post_params = json.dumps({
-#             'property_view_id': self.property_view_1.id,
-#             'organization_id': self.org.pk,
-#             'interval': 'Month',
-#         })
-#         result = self.client.post(url, post_params, content_type="application/json")
-#         result_dict = ast.literal_eval(result.content.decode("utf-8"))
-#
-#         expectation = {
-#             'readings': [
-#                 {
-#                     'month': 'January 2016',
-#                     'Electricity': 100000000000000,
-#                     'Natural Gas': 545942781.5634,
-#                 },
-#                 {
-#                     'month': 'February 2016',
-#                     'Electricity': 548603.7,
-#                     'Natural Gas': 462534790.7817,
-#                 },
-#                 {
-#                     'month': 'March 2016',
-#                     'Electricity': 1100,
-#                 },
-#                 {
-#                     'month': 'April 2016',
-#                     'Electricity': 200,
-#                 },
-#             ],
-#             'column_defs': [
-#                 {
-#                     'field': 'month',
-#                     '_filter_type': 'datetime',
-#                 },
-#                 {
-#                     'field': 'Electricity',
-#                     'displayName': 'Electricity (kBtu)',
-#                     '_filter_type': 'reading',
-#                 },
-#                 {
-#                     'field': 'Natural Gas',
-#                     'displayName': 'Natural Gas (kBtu)',
-#                     '_filter_type': 'reading',
-#                 },
-#             ]
-#         }
-#
-#         self.assertCountEqual(result_dict['readings'], expectation['readings'])
-#         self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
-#
-#     def test_property_energy_usage_can_return_annual_meter_readings_and_column_defs_while_handling_a_nondefault_display_setting(self):
-#         # Update settings for display meter units to change it from the default values.
-#         self.org.display_meter_units['Electricity'] = 'kWh'
-#         self.org.save()
-#
-#         # add initial meters and readings
-#         save_raw_data(self.import_file.id)
-#
-#         # add additional 2018 entries for each initial meter
-#         tz_obj = timezone(TIME_ZONE)
-#         for meter in Meter.objects.all():
-#             # March 2018 reading
-#             reading_details = {
-#                 'meter_id': meter.id,
-#                 'start_time': make_aware(datetime(2018, 3, 1, 0, 0, 0), timezone=tz_obj),
-#                 'end_time': make_aware(datetime(2018, 4, 1, 0, 0, 0), timezone=tz_obj),
-#                 'reading': 100,
-#                 'source_unit': 'kBtu',
-#                 'conversion_factor': 1
-#             }
-#             MeterReading.objects.create(**reading_details)
-#
-#             # May 2018 reading
-#             reading_details['start_time'] = make_aware(datetime(2018, 5, 1, 0, 0, 0), timezone=tz_obj)
-#             reading_details['end_time'] = make_aware(datetime(2018, 6, 1, 0, 0, 0), timezone=tz_obj)
-#             reading_details['reading'] = 200
-#             MeterReading.objects.create(**reading_details)
-#
-#         url = reverse('api:v2:meters-property-energy-usage')
-#
-#         post_params = json.dumps({
-#             'property_view_id': self.property_view_1.id,
-#             'organization_id': self.org.pk,
-#             'interval': 'Year',
-#         })
-#         result = self.client.post(url, post_params, content_type="application/json")
-#         result_dict = ast.literal_eval(result.content.decode("utf-8"))
-#
-#         expectation = {
-#             'readings': [
-#                 {
-#                     'year': 2016,
-#                     'Electricity': (597478.9 + 548603.7) / 3.412,
-#                     'Natural Gas': 545942781.5634 + 462534790.7817,
-#                 },
-#                 {
-#                     'year': 2018,
-#                     'Electricity': (100 + 200) / 3.412,
-#                     'Natural Gas': 100 + 200,
-#                 },
-#             ],
-#             'column_defs': [
-#                 {
-#                     'field': 'year',
-#                     '_filter_type': 'datetime',
-#                 },
-#                 {
-#                     'field': 'Electricity',
-#                     'displayName': 'Electricity (kWh)',
-#                     '_filter_type': 'reading',
-#                 },
-#                 {
-#                     'field': 'Natural Gas',
-#                     'displayName': 'Natural Gas (kBtu)',
-#                     '_filter_type': 'reading',
-#                 },
-#             ]
-#         }
-#
-#         self.assertCountEqual(result_dict['readings'], expectation['readings'])
-#         self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
-#
-#
-class TestMeterValidTypesUnits(TestCase):
+    def test_property_energy_usage_returns_meter_readings_and_column_defs_given_property_view_and_nondefault_meter_display_org_settings(self):
+        # Update settings for display meter units to change it from the default values.
+        self.org.display_meter_units['Electric - Grid'] = 'kWh (thousand Watt-hours)'
+        self.org.display_meter_units['Natural Gas'] = 'kcf (thousand cubic feet)'
+        self.org.save()
+
+        # add meters and readings to property associated to property_view_1
+        save_raw_data(self.import_file.id)
+
+        meter_details = {
+            'source': Meter.GREENBUTTON,
+            'source_id': '/v1/User/000/UsagePoint/123fakeID/MeterReading/000',
+            'type': Meter.NATURAL_GAS,
+            'property_id': self.property_view_1.property.id,
+        }
+        fuel_meter = Meter.objects.create(**meter_details)
+
+        tz_obj = timezone(TIME_ZONE)
+        fuel_reading_details = {
+            'start_time': make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=tz_obj),
+            'end_time': make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=tz_obj),
+            'reading': 1000,
+            'source_unit': 'kBtu (thousand Btu)',
+            'conversion_factor': 1,
+            'meter_id': fuel_meter.id,
+        }
+        MeterReading.objects.create(**fuel_reading_details)
+
+        url = reverse('api:v2:meters-property-energy-usage')
+
+        post_params = json.dumps({
+            'property_view_id': self.property_view_1.id,
+            'organization_id': self.org.pk,
+            'interval': 'Exact',
+        })
+        result = self.client.post(url, post_params, content_type="application/json")
+        result_dict = ast.literal_eval(result.content.decode("utf-8"))
+
+        expectation = {
+            'readings': [
+                {
+                    'start_time': '2016-01-01 00:00:00',
+                    'end_time': '2016-02-01 00:00:00',
+                    'Electric - Grid - PM - 5766973-0': (597478.9 / 3.41),
+                    'Natural Gas - PM - 5766973-1': 576000.2 / 1026,
+                    'Natural Gas - GB - 123fakeID': 1000 / 1026,
+                },
+                {
+                    'start_time': '2016-02-01 00:00:00',
+                    'end_time': '2016-03-01 00:00:00',
+                    'Electric - Grid - PM - 5766973-0': (548603.7 / 3.41),
+                    'Natural Gas - PM - 5766973-1': 488000.1 / 1026,
+                },
+            ],
+            'column_defs': [
+                {
+                    'field': 'start_time',
+                    '_filter_type': 'datetime',
+                },
+                {
+                    'field': 'end_time',
+                    '_filter_type': 'datetime',
+                },
+                {
+                    'field': 'Electric - Grid - PM - 5766973-0',
+                    'displayName': 'Electric - Grid - PM - 5766973-0 (kWh (thousand Watt-hours))',
+                    '_filter_type': 'reading',
+                },
+                {
+                    'field': 'Natural Gas - PM - 5766973-1',
+                    'displayName': 'Natural Gas - PM - 5766973-1 (kcf (thousand cubic feet))',
+                    '_filter_type': 'reading',
+                },
+                {
+                    'field': 'Natural Gas - GB - 123fakeID',
+                    'displayName': 'Natural Gas - GB - 123fakeID (kcf (thousand cubic feet))',
+                    '_filter_type': 'reading',
+                },
+            ]
+        }
+
+        self.assertCountEqual(result_dict['readings'], expectation['readings'])
+        self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
+
+    def test_property_energy_usage_returns_meter_readings_according_to_thermal_conversion_preferences_of_an_org_if_applicable_for_display_settings(self):
+        # update the org settings thermal preference and display preference
+        self.org.thermal_conversion_assumption = Organization.CAN
+        self.org.display_meter_units["Diesel"] = "Liters"
+        self.org.display_meter_units["Coke"] = "Lbs. (pounds)"
+        self.org.save()
+
+        # add meters and readings to property associated to property_view_1
+        meter_details = {
+            'source': Meter.PORTFOLIO_MANAGER,
+            'source_id': '123fakeID',
+            'type': Meter.DIESEL,
+            'property_id': self.property_view_1.property.id,
+        }
+        diesel_meter = Meter.objects.create(**meter_details)
+
+        tz_obj = timezone(TIME_ZONE)
+        diesel_reading_details = {
+            'start_time': make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=tz_obj),
+            'end_time': make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=tz_obj),
+            'reading': 10,
+            'source_unit': 'kBtu (thousand Btu)',
+            'conversion_factor': 1,
+            'meter_id': diesel_meter.id,
+        }
+        MeterReading.objects.create(**diesel_reading_details)
+
+        meter_details['type'] = Meter.COKE
+        meter_details['source_id'] = '456fakeID'
+        coke_meter = Meter.objects.create(**meter_details)
+
+        coke_reading_details = {
+            'start_time': make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=tz_obj),
+            'end_time': make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=tz_obj),
+            'reading': 100,
+            'source_unit': 'kBtu (thousand Btu)',
+            'conversion_factor': 1,
+            'meter_id': coke_meter.id,
+        }
+        MeterReading.objects.create(**coke_reading_details)
+
+        post_params = json.dumps({
+            'property_view_id': self.property_view_1.id,
+            'organization_id': self.org.pk,
+            'interval': 'Exact',
+        })
+
+        url = reverse('api:v2:meters-property-energy-usage')
+        result = self.client.post(url, post_params, content_type="application/json")
+        result_dict = ast.literal_eval(result.content.decode("utf-8"))
+
+        display_readings = [
+            {
+                'start_time': '2016-01-01 00:00:00',
+                'end_time': '2016-02-01 00:00:00',
+                'Diesel - PM - 123fakeID': 10 / 36.30,
+                'Coke - PM - 456fakeID': 100 / 12.39,
+            },
+        ]
+
+        self.assertCountEqual(result_dict['readings'], display_readings)
+
+    def test_property_energy_usage_can_return_monthly_meter_readings_and_column_defs_while_handling_a_DST_change_and_nondefault_display_setting(self):
+        # Update settings for display meter units to change it from the default values.
+        self.org.display_meter_units['Electric - Grid'] = 'kWh (thousand Watt-hours)'
+        self.org.save()
+
+        # add initial meters and readings
+        save_raw_data(self.import_file.id)
+
+        # add additional entries for each initial meter
+        tz_obj = timezone(TIME_ZONE)
+        for meter in Meter.objects.all():
+            # March 2016 reading
+            reading_details = {
+                'meter_id': meter.id,
+                'start_time': make_aware(datetime(2016, 3, 1, 0, 0, 0), timezone=tz_obj),
+                'end_time': make_aware(datetime(2016, 4, 1, 0, 0, 0), timezone=tz_obj),
+                'reading': 100,
+                'source_unit': 'kBtu (thousand Btu)',
+                'conversion_factor': 1
+            }
+            MeterReading.objects.create(**reading_details)
+
+            # May 2016 reading
+            reading_details['start_time'] = make_aware(datetime(2016, 5, 1, 0, 0, 0), timezone=tz_obj)
+            reading_details['end_time'] = make_aware(datetime(2016, 6, 1, 0, 0, 0), timezone=tz_obj)
+            reading_details['reading'] = 200
+            MeterReading.objects.create(**reading_details)
+
+        url = reverse('api:v2:meters-property-energy-usage')
+
+        post_params = json.dumps({
+            'property_view_id': self.property_view_1.id,
+            'organization_id': self.org.pk,
+            'interval': 'Month',
+        })
+        result = self.client.post(url, post_params, content_type="application/json")
+        result_dict = ast.literal_eval(result.content.decode("utf-8"))
+
+        expectation = {
+            'readings': [
+                {
+                    'month': 'January 2016',
+                    'Electric - Grid - PM - 5766973-0': 597478.9 / 3.41,
+                    'Natural Gas - PM - 5766973-1': 576000.2,
+                },
+                {
+                    'month': 'February 2016',
+                    'Electric - Grid - PM - 5766973-0': 548603.7 / 3.41,
+                    'Natural Gas - PM - 5766973-1': 488000.1,
+                },
+                {
+                    'month': 'March 2016',
+                    'Electric - Grid - PM - 5766973-0': 100 / 3.41,
+                    'Natural Gas - PM - 5766973-1': 100,
+                },
+                {
+                    'month': 'May 2016',
+                    'Electric - Grid - PM - 5766973-0': 200 / 3.41,
+                    'Natural Gas - PM - 5766973-1': 200,
+                },
+            ],
+            'column_defs': [
+                {
+                    'field': 'month',
+                    '_filter_type': 'datetime',
+                },
+                {
+                    'field': 'Electric - Grid - PM - 5766973-0',
+                    'displayName': 'Electric - Grid - PM - 5766973-0 (kWh (thousand Watt-hours))',
+                    '_filter_type': 'reading',
+                },
+                {
+                    'field': 'Natural Gas - PM - 5766973-1',
+                    'displayName': 'Natural Gas - PM - 5766973-1 (kBtu (thousand Btu))',
+                    '_filter_type': 'reading',
+                },
+            ]
+        }
+
+        self.assertCountEqual(result_dict['readings'], expectation['readings'])
+        self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
+
+    def test_property_energy_usage_can_return_monthly_meter_readings_and_column_defs_for_submonthly_data_with_DST_transitions(self):
+        # add initial meters and readings
+        save_raw_data(self.import_file.id)
+
+        # add additional sub-montly entries for each initial meter
+        tz_obj = timezone(TIME_ZONE)
+        for meter in Meter.objects.all():
+            # November 2019 reading between DST transition
+            reading_details = {
+                'meter_id': meter.id,
+                'start_time': make_aware(datetime(2019, 11, 3, 1, 59, 59), timezone=tz_obj, is_dst=True),
+                'end_time': make_aware(datetime(2019, 11, 3, 1, 59, 59), timezone=tz_obj, is_dst=False),
+                'reading': 100,
+                'source_unit': 'kBtu (thousand Btu)',
+                'conversion_factor': 1
+            }
+            MeterReading.objects.create(**reading_details)
+
+            # November 2019 reading after DST transition
+            reading_details['start_time'] = make_aware(datetime(2019, 11, 3, 2, 0, 0), timezone=tz_obj)
+            reading_details['end_time'] = make_aware(datetime(2019, 11, 3, 3, 0, 0), timezone=tz_obj)
+            reading_details['reading'] = 200
+            MeterReading.objects.create(**reading_details)
+
+        url = reverse('api:v2:meters-property-energy-usage')
+
+        post_params = json.dumps({
+            'property_view_id': self.property_view_1.id,
+            'organization_id': self.org.pk,
+            'interval': 'Month',
+        })
+        result = self.client.post(url, post_params, content_type="application/json")
+        result_dict = ast.literal_eval(result.content.decode("utf-8"))
+
+        expectation = {
+            'readings': [
+                {
+                    'month': 'January 2016',
+                    'Electric - Grid - PM - 5766973-0': 597478.9,
+                    'Natural Gas - PM - 5766973-1': 576000.2,
+                },
+                {
+                    'month': 'February 2016',
+                    'Electric - Grid - PM - 5766973-0': 548603.7,
+                    'Natural Gas - PM - 5766973-1': 488000.1,
+                },
+                {
+                    'month': 'November 2019',
+                    'Electric - Grid - PM - 5766973-0': 300,
+                    'Natural Gas - PM - 5766973-1': 300,
+                },
+            ],
+            'column_defs': [
+                {
+                    'field': 'month',
+                    '_filter_type': 'datetime',
+                },
+                {
+                    'field': 'Electric - Grid - PM - 5766973-0',
+                    'displayName': 'Electric - Grid - PM - 5766973-0 (kBtu (thousand Btu))',
+                    '_filter_type': 'reading',
+                },
+                {
+                    'field': 'Natural Gas - PM - 5766973-1',
+                    'displayName': 'Natural Gas - PM - 5766973-1 (kBtu (thousand Btu))',
+                    '_filter_type': 'reading',
+                },
+            ]
+        }
+
+        self.assertCountEqual(result_dict['readings'], expectation['readings'])
+        self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
+
+    def test_property_energy_usage_can_return_monthly_meter_readings_and_column_defs_of_overlapping_submonthly_data_aggregating_monthly_data_to_maximize_total(self):
+        # add initial meters and readings
+        save_raw_data(self.import_file.id)
+
+        # add additional entries for the Electricity meter
+        tz_obj = timezone(TIME_ZONE)
+        meter = Meter.objects.get(property_id=self.property_view_1.property.id, type=Meter.type_lookup['Electric - Grid'])
+        # 2016 January reading that should override the existing reading
+        reading_details = {
+            'meter_id': meter.id,
+            'start_time': make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=tz_obj),
+            'end_time': make_aware(datetime(2016, 1, 20, 23, 59, 59), timezone=tz_obj),
+            'reading': 100000000000000,
+            'source_unit': 'kBtu (thousand Btu)',
+            'conversion_factor': 1
+        }
+        MeterReading.objects.create(**reading_details)
+
+        # 2016 January reading that should be ignored
+        reading_details['start_time'] = make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=tz_obj)
+        reading_details['end_time'] = make_aware(datetime(2016, 3, 31, 23, 59, 59), timezone=tz_obj)
+        reading_details['reading'] = 0.1
+        MeterReading.objects.create(**reading_details)
+
+        # Create March 2016 entries having disregarded readings when finding monthly total
+        # 1 week - not included in total
+        reading_details['start_time'] = make_aware(datetime(2016, 3, 1, 0, 0, 0), timezone=tz_obj)
+        reading_details['end_time'] = make_aware(datetime(2016, 3, 6, 23, 59, 59), timezone=tz_obj)
+        reading_details['reading'] = 1
+        MeterReading.objects.create(**reading_details)
+
+        # 1 week - not included in total
+        reading_details['start_time'] = make_aware(datetime(2016, 3, 7, 0, 0, 0), timezone=tz_obj)
+        reading_details['end_time'] = make_aware(datetime(2016, 3, 13, 23, 59, 59), timezone=tz_obj)
+        reading_details['reading'] = 10
+        MeterReading.objects.create(**reading_details)
+
+        # 10 days - included in total
+        reading_details['start_time'] = make_aware(datetime(2016, 3, 2, 0, 0, 0), timezone=tz_obj)
+        reading_details['end_time'] = make_aware(datetime(2016, 3, 11, 23, 59, 59), timezone=tz_obj)
+        reading_details['reading'] = 100
+        MeterReading.objects.create(**reading_details)
+
+        # 10 days - included in total
+        reading_details['start_time'] = make_aware(datetime(2016, 3, 12, 0, 0, 0), timezone=tz_obj)
+        reading_details['end_time'] = make_aware(datetime(2016, 3, 21, 23, 59, 59), timezone=tz_obj)
+        reading_details['reading'] = 1000
+        MeterReading.objects.create(**reading_details)
+
+        # Create April 2016 entries having disregarded readings when finding monthly total
+        # 5 days - not included in total
+        reading_details['start_time'] = make_aware(datetime(2016, 4, 1, 0, 0, 0), timezone=tz_obj)
+        reading_details['end_time'] = make_aware(datetime(2016, 4, 4, 23, 59, 59), timezone=tz_obj)
+        reading_details['reading'] = 2
+        MeterReading.objects.create(**reading_details)
+
+        # 10 days - not included in total
+        reading_details['start_time'] = make_aware(datetime(2016, 4, 6, 0, 0, 0), timezone=tz_obj)
+        reading_details['end_time'] = make_aware(datetime(2016, 4, 15, 23, 59, 59), timezone=tz_obj)
+        reading_details['reading'] = 20
+        MeterReading.objects.create(**reading_details)
+
+        # 20 days - included in total
+        reading_details['start_time'] = make_aware(datetime(2016, 4, 2, 0, 0, 0), timezone=tz_obj)
+        reading_details['end_time'] = make_aware(datetime(2016, 4, 21, 23, 59, 59), timezone=tz_obj)
+        reading_details['reading'] = 200
+        MeterReading.objects.create(**reading_details)
+
+        url = reverse('api:v2:meters-property-energy-usage')
+
+        post_params = json.dumps({
+            'property_view_id': self.property_view_1.id,
+            'organization_id': self.org.pk,
+            'interval': 'Month',
+        })
+        result = self.client.post(url, post_params, content_type="application/json")
+        result_dict = ast.literal_eval(result.content.decode("utf-8"))
+
+        expectation = {
+            'readings': [
+                {
+                    'month': 'January 2016',
+                    'Electric - Grid - PM - 5766973-0': 100000000000000,
+                    'Natural Gas - PM - 5766973-1': 576000.2,
+                },
+                {
+                    'month': 'February 2016',
+                    'Electric - Grid - PM - 5766973-0': 548603.7,
+                    'Natural Gas - PM - 5766973-1': 488000.1,
+                },
+                {
+                    'month': 'March 2016',
+                    'Electric - Grid - PM - 5766973-0': 1100,
+                },
+                {
+                    'month': 'April 2016',
+                    'Electric - Grid - PM - 5766973-0': 200,
+                },
+            ],
+            'column_defs': [
+                {
+                    'field': 'month',
+                    '_filter_type': 'datetime',
+                },
+                {
+                    'field': 'Electric - Grid - PM - 5766973-0',
+                    'displayName': 'Electric - Grid - PM - 5766973-0 (kBtu (thousand Btu))',
+                    '_filter_type': 'reading',
+                },
+                {
+                    'field': 'Natural Gas - PM - 5766973-1',
+                    'displayName': 'Natural Gas - PM - 5766973-1 (kBtu (thousand Btu))',
+                    '_filter_type': 'reading',
+                },
+            ]
+        }
+
+        self.assertCountEqual(result_dict['readings'], expectation['readings'])
+        self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
+
+    def test_property_energy_usage_can_return_annual_meter_readings_and_column_defs_while_handling_a_nondefault_display_setting(self):
+        # Update settings for display meter units to change it from the default values.
+        self.org.display_meter_units['Electric - Grid'] = 'kWh (thousand Watt-hours)'
+        self.org.save()
+
+        # add initial meters and readings
+        save_raw_data(self.import_file.id)
+
+        # add additional 2018 entries for each initial meter
+        tz_obj = timezone(TIME_ZONE)
+        for meter in Meter.objects.all():
+            # March 2018 reading
+            reading_details = {
+                'meter_id': meter.id,
+                'start_time': make_aware(datetime(2018, 3, 1, 0, 0, 0), timezone=tz_obj),
+                'end_time': make_aware(datetime(2018, 4, 1, 0, 0, 0), timezone=tz_obj),
+                'reading': 100,
+                'source_unit': 'kBtu (thousand Btu)',
+                'conversion_factor': 1
+            }
+            MeterReading.objects.create(**reading_details)
+
+            # May 2018 reading
+            reading_details['start_time'] = make_aware(datetime(2018, 5, 1, 0, 0, 0), timezone=tz_obj)
+            reading_details['end_time'] = make_aware(datetime(2018, 6, 1, 0, 0, 0), timezone=tz_obj)
+            reading_details['reading'] = 200
+            MeterReading.objects.create(**reading_details)
+
+        url = reverse('api:v2:meters-property-energy-usage')
+
+        post_params = json.dumps({
+            'property_view_id': self.property_view_1.id,
+            'organization_id': self.org.pk,
+            'interval': 'Year',
+        })
+        result = self.client.post(url, post_params, content_type="application/json")
+        result_dict = ast.literal_eval(result.content.decode("utf-8"))
+
+        expectation = {
+            'readings': [
+                {
+                    'year': 2016,
+                    'Electric - Grid - PM - 5766973-0': (597478.9 + 548603.7) / 3.41,
+                    'Natural Gas - PM - 5766973-1': 576000.2 + 488000.1,
+                },
+                {
+                    'year': 2018,
+                    'Electric - Grid - PM - 5766973-0': (100 + 200) / 3.41,
+                    'Natural Gas - PM - 5766973-1': 100 + 200,
+                },
+            ],
+            'column_defs': [
+                {
+                    'field': 'year',
+                    '_filter_type': 'datetime',
+                },
+                {
+                    'field': 'Electric - Grid - PM - 5766973-0',
+                    'displayName': 'Electric - Grid - PM - 5766973-0 (kWh (thousand Watt-hours))',
+                    '_filter_type': 'reading',
+                },
+                {
+                    'field': 'Natural Gas - PM - 5766973-1',
+                    'displayName': 'Natural Gas - PM - 5766973-1 (kBtu (thousand Btu))',
+                    '_filter_type': 'reading',
+                },
+            ]
+        }
+
+        self.assertCountEqual(result_dict['readings'], expectation['readings'])
+        self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
+
+
+class TestMeterValidTypesUnits(DataMappingBaseTestCase):
     def setUp(self):
         self.user_details = {
             'username': 'test_user@demo.com',

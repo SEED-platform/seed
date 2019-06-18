@@ -38,6 +38,7 @@ from seed.data_importer.models import (
     ImportRecord,
     STATUS_READY_TO_MERGE,
 )
+from seed.data_importer.utils import usage_point_id
 from seed.decorators import lock_and_track
 from seed.lib.mcm import cleaners, mapper, reader
 from seed.lib.mcm.mapper import expand_rows
@@ -735,7 +736,7 @@ def _save_greenbutton_data_create_tasks(file_pk, progress_key):
 
     meter_id = meter.id
 
-    meter_usage_point_id = meters_parser.usage_point_id(meter.source_id)
+    meter_usage_point_id = usage_point_id(meter.source_id)
 
     chunk_size = 1000
 
