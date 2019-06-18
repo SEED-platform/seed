@@ -33,6 +33,7 @@ from seed.models import (
     MERGE_STATE_DELETE,
     Column,
     ColumnListSetting,
+    ColumnListSettingColumn,
     Cycle,
     Note,
     PropertyView,
