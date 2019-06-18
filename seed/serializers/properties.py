@@ -314,10 +314,13 @@ class PropertyViewListSerializer(serializers.ListSerializer, OrgMixin, ProfileId
             view_ids = [view.id for view in iterable]
             results = []
 
-            # grab the organization and profile_id
-            org_id = self.get_organization(self.context['request'])
-            profile_id = self.context['request'].query_params.get('profile_id', None)
-            show_columns = self.get_show_columns(org_id, profile_id)
+            # grab the organization and profile_id. In testing the context is none in some cases.
+            if self.context.get('request') is not None:
+                org_id = self.get_organization(self.context['request'])
+                profile_id = self.context['request'].query_params.get('profile_id', None)
+                show_columns = self.get_show_columns(org_id, profile_id)
+            else:
+                show_columns = None
 
             for item in iterable:
                 cycle = [
