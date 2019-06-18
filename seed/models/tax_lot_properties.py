@@ -11,8 +11,8 @@ from collections import defaultdict
 from itertools import chain
 
 from django.apps import apps
-from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.gis.db.models import GeometryField
+from django.contrib.gis.geos import GEOSGeometry
 from django.db import models
 from django.db.models import Count
 from django.utils.timezone import make_naive
@@ -186,6 +186,7 @@ class TaxLotProperty(models.Model):
         related_views = apps.get_model('seed', lookups['related_class']).objects.select_related(
             lookups['select_related'], 'state', 'cycle').filter(pk__in=related_ids)
 
+        # bunch of work to get only the column names that are requested in the show_columns field
         related_columns = []
         related_column_name_mapping = {}
         obj_columns = []
@@ -273,7 +274,7 @@ class TaxLotProperty(models.Model):
                 prop_to_jurisdiction_tl[name].append(pth)
 
         join_note_counts = {x[0]: x[1] for x in Note.objects.filter(**{lookups['related_query_in']: related_ids})
-                            .values_list(lookups['related_view_id']).order_by().annotate(Count(lookups['related_view_id']))}
+            .values_list(lookups['related_view_id']).order_by().annotate(Count(lookups['related_view_id']))}
 
         # A mapping of object's view pk to a list of related state info for a related view
         join_map = {}
@@ -323,14 +324,16 @@ class TaxLotProperty(models.Model):
                                               and col['id'] in show_columns])
 
         obj_note_counts = {x[0]: x[1] for x in Note.objects.filter(**{lookups['obj_query_in']: ids})
-                           .values_list(lookups['obj_view_id']).order_by().annotate(Count(lookups['obj_view_id']))}
+            .values_list(lookups['obj_view_id']).order_by().annotate(Count(lookups['obj_view_id']))}
 
         for obj in object_list:
             # Each object in the response is built from the state data, with related data added on.
-            obj_dict = TaxLotProperty.model_to_dict_with_mapping(obj.state,
-                                                                 obj_column_name_mapping,
-                                                                 fields=filtered_fields,
-                                                                 exclude=['extra_data'])
+            obj_dict = TaxLotProperty.model_to_dict_with_mapping(
+                obj.state,
+                obj_column_name_mapping,
+                fields=filtered_fields,
+                exclude=['extra_data']
+            )
 
             # Only add extra data columns if a settings profile was used
             if show_columns is not None:

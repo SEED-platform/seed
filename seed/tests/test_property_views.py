@@ -14,6 +14,7 @@ from seed.landing.models import SEEDUser as User
 from seed.models import (
     PropertyState,
     PropertyView,
+    Column,
 )
 from seed.test_helpers.fake import (
     FakeCycleFactory,
@@ -22,6 +23,7 @@ from seed.test_helpers.fake import (
     FakePropertyStateFactory,
     FakeTaxLotStateFactory,
     FakePropertyViewFactory,
+    FakeColumnListSettingsFactory,
 )
 from seed.tests.util import DeleteModelsTestCase
 from seed.utils.organizations import create_organization
@@ -58,6 +60,7 @@ class PropertyViewTests(DeleteModelsTestCase):
         self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
         self.cycle = self.cycle_factory.get_cycle(
             start=datetime(2010, 10, 10, tzinfo=timezone.get_current_timezone()))
+        self.column_list_factory = FakeColumnListSettingsFactory(organization=self.org)
         self.client.login(**user_details)
 
     def test_get_and_edit_properties(self):
@@ -108,6 +111,31 @@ class PropertyViewTests(DeleteModelsTestCase):
                              microsecond=0))
         self.assertGreater(datetime.strptime(data['property']['updated'], "%Y-%m-%dT%H:%M:%S.%fZ"),
                            datetime.strptime(db_updated_time, "%Y-%m-%dT%H:%M:%S.%fZ"))
+
+    def test_list_properties_with_profile_id(self):
+        state = self.property_state_factory.get_property_state(extra_data={"field_1": "value_1"})
+        prprty = self.property_factory.get_property()
+        PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=state
+        )
+
+        # save all the columns in the state to the database so we can setup column list settings
+        Column.save_column_names(state)
+        # get the columnlistsetting (default) for all columns
+        columnlistsetting = self.column_list_factory.get_columnlistsettings(columns=['address_line_1', 'field_1'])
+
+        params = {
+            'organization_id': self.org.pk,
+            'profile_id': columnlistsetting.id,
+        }
+        url = reverse('api:v2.1:properties-list') + '?cycle_id={}'.format(self.cycle.pk)
+        response = self.client.get(url, params)
+        data = response.json()
+        self.assertEqual(len(data['properties']), 1)
+        result = data['properties'][0]
+        self.assertEqual(result['state']['address_line_1'], state.address_line_1)
+        self.assertEqual(result['state']['extra_data']['field_1'], 'value_1')
+        self.assertFalse(result['state'].get('city', None))
 
     def test_search_identifier(self):
         self.property_view_factory.get_property_view(cycle=self.cycle, custom_id_1='123456')
