@@ -274,7 +274,7 @@ class TaxLotProperty(models.Model):
                 prop_to_jurisdiction_tl[name].append(pth)
 
         join_note_counts = {x[0]: x[1] for x in Note.objects.filter(**{lookups['related_query_in']: related_ids})
-            .values_list(lookups['related_view_id']).order_by().annotate(Count(lookups['related_view_id']))}
+                            .values_list(lookups['related_view_id']).order_by().annotate(Count(lookups['related_view_id']))}
 
         # A mapping of object's view pk to a list of related state info for a related view
         join_map = {}
@@ -324,7 +324,7 @@ class TaxLotProperty(models.Model):
                                               and col['id'] in show_columns])
 
         obj_note_counts = {x[0]: x[1] for x in Note.objects.filter(**{lookups['obj_query_in']: ids})
-            .values_list(lookups['obj_view_id']).order_by().annotate(Count(lookups['obj_view_id']))}
+                           .values_list(lookups['obj_view_id']).order_by().annotate(Count(lookups['obj_view_id']))}
 
         for obj in object_list:
             # Each object in the response is built from the state data, with related data added on.
