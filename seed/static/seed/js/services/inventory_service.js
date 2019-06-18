@@ -118,8 +118,8 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
      *
      */
 
-     inventory_service.properties_meter_check = function (inventory_ids) {
-       return $http.post('/api/v2/properties/meter_check/', {
+     inventory_service.properties_meters_exist = function (inventory_ids) {
+       return $http.post('/api/v2/properties/meters_exist/', {
          inventory_ids: inventory_ids,
        }).then(function (response) {
          return response.data;

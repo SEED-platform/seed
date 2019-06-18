@@ -401,7 +401,7 @@ class PropertyViewSet(GenericViewSet):
     @api_endpoint_class
     @ajax_request_class
     @list_route(methods=['POST'])
-    def meter_check(self, request):
+    def meters_exist(self, request):
         """
         Check to see if the given Properties (given by ID) have Meters.
         ---

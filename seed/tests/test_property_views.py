@@ -199,7 +199,7 @@ class PropertyViewTests(DeleteModelsTestCase):
         results = result['properties']
         self.assertEqual(len(results), 1)
 
-    def test_meters_check(self):
+    def test_meters_exist(self):
         # Create a property set with meters
         state_1 = self.property_state_factory.get_property_state()
         property_1 = self.property_factory.get_property()
@@ -232,7 +232,7 @@ class PropertyViewTests(DeleteModelsTestCase):
             property=property_2, cycle=self.cycle, state=state_2
         )
 
-        url = reverse('api:v2:properties-meter-check')
+        url = reverse('api:v2:properties-meters-exist')
 
         true_post_params = json.dumps({
             'inventory_ids': [property_2.pk, property_1.pk]

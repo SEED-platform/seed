@@ -329,7 +329,7 @@ angular.module('BE.seed.controller.inventory_list', [])
             has_meters: function() {
               if ($scope.inventory_type === 'properties') {
                 var inventory_ids = $scope.selectedOrder.slice().reverse();
-                return inventory_service.properties_meter_check(inventory_ids).then(function (has_meters) {
+                return inventory_service.properties_meters_exist(inventory_ids).then(function (has_meters) {
                   return has_meters;
                 });
               } else {
