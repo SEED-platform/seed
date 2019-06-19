@@ -28,12 +28,13 @@ from seed.models import (
 from seed.serializers.properties import (
     PropertyViewAsStateSerializer,
 )
+from seed.utils.api import OrgMixin
 from seed.utils.viewsets import (
     SEEDOrgReadOnlyModelViewSet
 )
 
 
-class PropertyViewFilterSet(FilterSet):
+class PropertyViewFilterSet(FilterSet, OrgMixin):
     """
     Advanced filtering for PropertyView sets version 2.1.
     """

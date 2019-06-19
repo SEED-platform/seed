@@ -119,9 +119,7 @@ class TestPropertySerializers(DeleteModelsTestCase):
         serializer = PropertyViewListSerializer(
             child=PropertyViewSerializer()
         )
-        result = serializer.to_representation(
-            [property_view_1, property_view_2]
-        )
+        result = serializer.to_representation([property_view_1, property_view_2])
         self.assertEqual(result[0]['cycle']['id'], property_view_1.cycle_id)
         self.assertEqual(result[1]['cycle']['id'], property_view_2.cycle_id)
         self.assertEqual(result[0]['state']['id'], property_view_1.state_id)

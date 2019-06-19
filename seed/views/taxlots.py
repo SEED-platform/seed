@@ -55,7 +55,7 @@ from seed.serializers.taxlots import (
     TaxLotStateSerializer,
     TaxLotViewSerializer
 )
-from seed.utils.api import api_endpoint_class
+from seed.utils.api import api_endpoint_class, ProfileIdMixin
 from seed.utils.properties import (
     get_changed_fields,
     pair_unpair_property_taxlot,
@@ -68,7 +68,7 @@ DISPLAY_RAW_EXTRADATA = True
 DISPLAY_RAW_EXTRADATA_TIME = True
 
 
-class TaxLotViewSet(GenericViewSet):
+class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
     renderer_classes = (JSONRenderer,)
     serializer_class = TaxLotSerializer
 
@@ -77,6 +77,8 @@ class TaxLotViewSet(GenericViewSet):
         per_page = request.query_params.get('per_page', 1)
         org_id = request.query_params.get('organization_id', None)
         cycle_id = request.query_params.get('cycle')
+        # check if there is a query paramater for the profile_id. If so, then use that one
+        profile_id = request.query_params.get('profile_id', profile_id)
         if not org_id:
             return JsonResponse(
                 {'status': 'error', 'message': 'Need to pass organization_id as query parameter'},
@@ -127,6 +129,8 @@ class TaxLotViewSet(GenericViewSet):
         # Retrieve all the columns that are in the db for this organization
         columns_from_database = Column.retrieve_all(org_id, 'taxlot', False)
 
+        # This uses an old method of returning the show_columns. There is a new method that
+        # is prefered in v2.1 API with the ProfileIdMixin.
         if profile_id is None:
             show_columns = None
         elif profile_id == -1:
