@@ -3,8 +3,10 @@
 :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 """
 
-from django.db import models
-
+from django.db import (
+    connection,
+    models,
+)
 from seed.models import Property
 
 from quantityfield.fields import QuantityField
@@ -78,6 +80,46 @@ class Meter(models.Model):
     source_id = models.CharField(max_length=255, null=True, blank=True)
 
     type = models.IntegerField(choices=ENERGY_TYPES, default=None, null=True)
+
+    def copy_readings(self, source_meter, overlaps_possible=True):
+        """
+        Copies MeterReadings of another Meter. By default, overlapping readings
+        are considered possible so a SQL bulk upsert is used. But if overlapping
+        readings are explicitly specified as not possible, a more efficient
+        bulk_create is used.
+        """
+        if overlaps_possible:
+            reading_strings = [
+                f"({self.id}, '{reading.start_time}', '{reading.end_time}', {reading.reading.magnitude}, '{reading.source_unit}', {reading.conversion_factor})"
+                for reading
+                in source_meter.meter_readings.all()
+            ]
+
+            sql = (
+                "INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor)" +
+                " VALUES " + ", ".join(reading_strings) +
+                " ON CONFLICT (meter_id, start_time, end_time)" +
+                " DO UPDATE SET reading = EXCLUDED.reading, source_unit = EXCLUDED.source_unit, conversion_factor = EXCLUDED.conversion_factor" +
+                " RETURNING reading;"
+            )
+
+            with connection.cursor() as cursor:
+                cursor.execute(sql)
+        else:
+            readings = {
+                MeterReading(
+                    start_time=reading.start_time,
+                    end_time=reading.end_time,
+                    reading=reading.reading,
+                    source_unit=reading.source_unit,
+                    conversion_factor=reading.conversion_factor,
+                    meter_id=self.id,
+                )
+                for reading
+                in source_meter.meter_readings.all()
+            }
+
+            MeterReading.objects.bulk_create(readings)
 
 
 class MeterReading(models.Model):

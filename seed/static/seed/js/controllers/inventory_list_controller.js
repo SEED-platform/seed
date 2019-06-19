@@ -325,7 +325,17 @@ angular.module('BE.seed.controller.inventory_list', [])
             },
             inventory_type: function () {
               return $scope.inventory_type;
-            }
+            },
+            has_meters: function() {
+              if ($scope.inventory_type === 'properties') {
+                var inventory_ids = $scope.selectedOrder.slice().reverse();
+                return inventory_service.properties_meters_exist(inventory_ids).then(function (has_meters) {
+                  return has_meters;
+                });
+              } else {
+                return false;
+              }
+            },
           }
         });
         modalInstance.result.then(function () {
