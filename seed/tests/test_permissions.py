@@ -31,6 +31,7 @@ from seed.utils.organizations import create_organization
 
 class PermissionsFunctionsTests(TestCase):
     """Tests for Custom DRF Permissions util functions"""
+
     # pylint: disable=too-many-instance-attributes
 
     def test_org_or_id(self):
@@ -99,10 +100,12 @@ class PermissionsFunctionsTests(TestCase):
 
 class SEEDOrgPermissionsTests(TestCase):
     """Tests for Custom DRF Permissions"""
+
     # pylint: disable=too-many-instance-attributes
 
     def setUp(self):
-        self.user = User.objects.create_superuser('test_user@demo.com', 'test_user@demo.com', 'test_pass')
+        self.user = User.objects.create_user('test_user@demo.com', 'test_user@demo.com', 'test_pass')
+        self.superuser = User.objects.create_superuser('test_superuser@demo.com', 'test_superuser@demo.com', 'test_pass')
         self.org, self.org_user, _ = create_organization(self.user)
 
     def tearDown(self):
@@ -140,13 +143,9 @@ class SEEDOrgPermissionsTests(TestCase):
             mock_request.method = view_type
             self.assertFalse(permissions.has_perm(mock_request))
 
-        # test with higher role_level
-        self.org_user.role_level = ROLE_OWNER
-        self.org_user.save()
-        assert self.org_user.role_level > ROLE_MEMBER
-        for view_type in SEEDOrgPermissions.perm_map:
-            mock_request.method = view_type
-            self.assertTrue(permissions.has_perm(mock_request))
+        # test with admin
+        mock_request.user = self.superuser
+        self.assertTrue(permissions.has_perm(mock_request))
 
     @mock.patch.object(SEEDOrgPermissions, 'has_perm')
     @mock.patch('seed.lib.superperms.orgs.permissions.is_authenticated')
@@ -202,10 +201,11 @@ class SEEDOrgPermissionsTests(TestCase):
 
 class SEEDPublicPermissionsTests(TestCase):
     """Tests for Custom DRF Permissions"""
+
     # pylint: disable=too-many-instance-attributes
 
     def setUp(self):
-        self.user = User.objects.create_superuser('test_user@demo.com', 'test_user@demo.com', 'test_pass')
+        self.user = User.objects.create_user('test_user@demo.com', 'test_user@demo.com', 'test_pass')
         self.org, self.org_user, _ = create_organization(self.user)
 
     def tearDown(self):
