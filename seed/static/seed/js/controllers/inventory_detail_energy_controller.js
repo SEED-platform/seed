@@ -9,6 +9,7 @@ angular.module('BE.seed.controller.inventory_detail_energy', [])
     'cycles',
     'dataset_service',
     'inventory_service',
+    'meters',
     'property_energy_usage',
     'spinner_utility',
     'urls',
@@ -23,6 +24,7 @@ angular.module('BE.seed.controller.inventory_detail_energy', [])
       cycles,
       dataset_service,
       inventory_service,
+      meters,
       property_energy_usage,
       spinner_utility,
       urls,
@@ -38,8 +40,29 @@ angular.module('BE.seed.controller.inventory_detail_energy', [])
         view_id: $stateParams.view_id
       };
 
+      // On page load, all meters and readings
+      $scope.excluded_meter_ids = [];
       $scope.data = property_energy_usage.readings;
-      $scope.has_meters = $scope.data.length > 0;
+      $scope.has_readings = $scope.data.length > 0;
+
+      $scope.meter_selections = _.map(meters, function(meter) {
+        return {
+          selected: true,
+          label: meter.type + ' - ' + meter.source + ' - ' + meter.source_id,
+          value: meter.id,
+        };
+      });
+      $scope.has_meters = $scope.meter_selections.length > 0;
+
+      $scope.meter_selection_toggled = function(is_open) {
+        if (!is_open) {
+          var updated_selections = _.map(_.filter($scope.meter_selections, ['selected', false]), 'value');
+          if (!_.isEqual($scope.excluded_meter_ids, updated_selections)) {
+            $scope.excluded_meter_ids = updated_selections;
+            $scope.refresh_readings();
+          }
+        }
+      };
 
       $scope.gridOptions = {
         data: 'data',
@@ -64,6 +87,7 @@ angular.module('BE.seed.controller.inventory_detail_energy', [])
       $scope.apply_column_settings = function () {
         _.forEach($scope.gridOptions.columnDefs, function (column) {
           column.enableHiding = false;
+          column.enableColumnResizing = true;
 
           if (column.field === 'year') {
             // Filter years like integers
@@ -90,13 +114,17 @@ angular.module('BE.seed.controller.inventory_detail_energy', [])
         selected: 'Exact'
       };
 
-      $scope.update_interval = function (selected_interval) {
+      $scope.refresh_readings = function () {
         spinner_utility.show();
-        $scope.interval.selected = selected_interval;
-        energy_service.property_energy_usage($scope.inventory.view_id, $scope.organization.id, selected_interval).then(function (usage) {
+        energy_service.property_energy_usage(
+          $scope.inventory.view_id,
+          $scope.organization.id,
+          $scope.interval.selected,
+          $scope.excluded_meter_ids
+        ).then(function (usage) {
           $scope.data = usage.readings;
           $scope.gridOptions.columnDefs = usage.column_defs;
-          $scope.has_meters = $scope.data.length > 0;
+          $scope.has_readings = $scope.data.length > 0;
           $scope.apply_column_settings();
           spinner_utility.hide();
         });

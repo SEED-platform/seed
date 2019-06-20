@@ -36,10 +36,10 @@ class PropertyMeterReadingsExporter():
     settings are considered/used when returning actual reading magnitudes.
     """
 
-    def __init__(self, property_id, org_id):
+    def __init__(self, property_id, org_id, excluded_meter_ids):
         self._cache_factors = None
 
-        self.meters = Property.objects.get(pk=property_id).meters.all()
+        self.meters = Property.objects.get(pk=property_id).meters.exclude(pk__in=excluded_meter_ids)
         self.org_id = org_id
         self.org_meter_display_settings = Organization.objects.get(pk=org_id).display_meter_units
         self.tz = timezone(TIME_ZONE)
